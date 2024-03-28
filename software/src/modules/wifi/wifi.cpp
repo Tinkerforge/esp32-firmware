@@ -32,6 +32,11 @@
 
 #include "build.h"
 #include "tools.h"
+#include "string_builder.h"
+
+// result line: {"ssid":"%s","bssid":"%s","rssi":%d,"channel":%d,"encryption":%d}
+// worst case length ~140
+#define MAX_SCAN_RESULT_LENGTH 145
 
 extern char local_uid_str[32];
 extern char passphrase[20];
@@ -728,54 +733,28 @@ void Wifi::setup()
     initialized = true;
 }
 
-String Wifi::get_scan_results()
+// FIXME: use TFJson on top of StringBuilder
+void Wifi::get_scan_results(StringBuilder *sb, int network_count)
 {
-    int network_count = WiFi.scanComplete();
-
-    if (network_count == WIFI_SCAN_RUNNING) {
-        return "scan in progress";
-    }
-
-    if (network_count < 0) {
-        return "scan failed";
-    }
-
-    if (network_count == 0) {
-        return "[]";
-    }
-
-    // result line: {"ssid": "%s", "bssid": "%s", "rssi": %d, "channel": %d, "encryption": %d}
-    // worst case length ~ 140
-    String result;
-    result.reserve(145 * network_count);
-    logger.printfln("%d networks found", network_count);
-    result += "[";
+    sb->putc('[');
 
     for (int i = 0; i < network_count; ++i) {
-        // Print SSID and RSSI for each network found
-        result += "{\"ssid\":\"";
-        result += WiFi.SSID(i);
-        result += "\",\"bssid\":\"";
-        result += WiFi.BSSIDstr(i);
-        result += "\",\"rssi\":";
-        result += WiFi.RSSI(i);
-        result += ",\"channel\":";
-        result += WiFi.channel(i);
-        result += ",\"encryption\":";
-        result += WiFi.encryptionType(i);
-        result += "}";
-        if (i != network_count - 1)
-            result += ",";
+        if (i > 0) {
+            sb->putc(',');
+        }
+
+        sb->printf("{\"ssid\":\"%s\",\"bssid\":\"%s\",\"rssi\":%d,\"channel\":%d,\"encryption\":%d}",
+                   WiFi.SSID(i).c_str(), WiFi.BSSIDstr(i).c_str(), WiFi.RSSI(i), WiFi.channel(i), WiFi.encryptionType(i));
     }
-    result += "]";
-    return result;
+
+    sb->putc(']');
 }
 
 void Wifi::check_for_scan_completion()
 {
-    String result = this->get_scan_results();
+    int network_count = WiFi.scanComplete();
 
-    if (result == "scan in progress") {
+    if (network_count == WIFI_SCAN_RUNNING) {
         logger.printfln("Scan in progress...");
         task_scheduler.scheduleOnce([this]() {
             this->check_for_scan_completion();
@@ -783,15 +762,20 @@ void Wifi::check_for_scan_completion()
         return;
     }
 
-    if (result == "scan failed") {
+    if (network_count < 0) {
         logger.printfln("Scan failed.");
         return;
     }
 
-    logger.printfln("Scan done. %d networks.", WiFi.scanComplete());
+    logger.printfln("Scan done. %d networks.", network_count);
 
 #if MODULE_WS_AVAILABLE()
-    ws.pushRawStateUpdate(result, "wifi/scan_results");
+    StringBuilder sb;
+
+    if (ws.pushRawStateUpdateBegin(&sb, MAX_SCAN_RESULT_LENGTH * network_count, "wifi/scan_results")) {
+        get_scan_results(&sb, network_count);
+        ws.pushRawStateUpdateEnd(&sb);
+    }
 #endif
 }
 
@@ -839,14 +823,24 @@ void Wifi::register_urls()
 
     server.on("/wifi/scan_results", HTTP_GET, [this](WebServerRequest request) {
         int network_count = WiFi.scanComplete();
-        String result = this->get_scan_results();
 
-        if (network_count < 0) {
-            return request.send(200, "text/plain; charset=utf-8", result.c_str());
+        if (network_count == WIFI_SCAN_RUNNING) {
+            return request.send(200, "text/plain; charset=utf-8", "scan in progress");
         }
 
-        logger.printfln("scan done");
-        return request.send(200, "application/json; charset=utf-8", result.c_str());
+        if (network_count < 0) {
+            return request.send(200, "text/plain; charset=utf-8", "scan failed");
+        }
+
+        StringBuilder sb;
+
+        if (!sb.setCapacity(MAX_SCAN_RESULT_LENGTH * network_count)) {
+            return request.send(200, "text/plain; charset=utf-8", "scan out of memory");
+        }
+
+        get_scan_results(&sb, network_count);
+
+        return request.send(200, "application/json; charset=utf-8", sb.getPtr());
     });
 
     api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase", "password"});

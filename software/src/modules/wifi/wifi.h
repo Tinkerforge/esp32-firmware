@@ -36,6 +36,8 @@ enum class EapConfigID: uint8_t {
     PEAP_TTLS
 };
 
+class StringBuilder;
+
 class Wifi final : public IModule
 {
 public:
@@ -58,7 +60,7 @@ private:
 
     void start_scan();
     void check_for_scan_completion();
-    String get_scan_results();
+    void get_scan_results(StringBuilder *sb, int network_count);
 
     ConfigRoot ap_config;
     ConfigRoot sta_config;
