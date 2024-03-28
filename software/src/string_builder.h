@@ -28,6 +28,7 @@ class StringWriter
 {
 public:
     StringWriter(char *buffer, size_t buffer_len);
+    virtual ~StringWriter() {}
 
     size_t getCapacity() const { return capacity; }
     void setLength(size_t new_length);
@@ -53,7 +54,7 @@ class StringBuilder : public StringWriter
 {
 public:
     StringBuilder();
-    ~StringBuilder();
+    virtual ~StringBuilder();
 
     bool setCapacity(size_t capacity);
     bool shrink() { return setCapacity(getLength()); }
