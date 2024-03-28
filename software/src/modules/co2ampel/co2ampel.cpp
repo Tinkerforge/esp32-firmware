@@ -131,13 +131,13 @@ void Co2Ampel::setup()
         check(tf_lcd_128x64_draw_text(&lcd, 0, 0, TF_LCD_128X64_FONT_18X32, TF_LCD_128X64_COLOR_BLACK, test.c_str()), "call draw_text");
 
         char temp_buf[12] = {0};
-        int written = snprintf(temp_buf, ARRAY_SIZE(temp_buf), "%2.1f \xF8", static_cast<double>(temperature / 100.0f));
+        int written = snprintf_u(temp_buf, ARRAY_SIZE(temp_buf), "%2.1f \xF8", static_cast<double>(temperature / 100.0f));
         temp_buf[written] = 'C';
         temp_buf[written+1] = ' ';
         check(tf_lcd_128x64_draw_text(&lcd, 0, 40, TF_LCD_128X64_FONT_6X24, TF_LCD_128X64_COLOR_BLACK, temp_buf), "call draw_text");
 
         char hum_buf[12] = {0};
-        written = snprintf(hum_buf, ARRAY_SIZE(hum_buf), " %2.1f %%RH", static_cast<double>(humidity / 100.0f));
+        written = snprintf_u(hum_buf, ARRAY_SIZE(hum_buf), " %2.1f %%RH", static_cast<double>(humidity / 100.0f));
         check(tf_lcd_128x64_draw_text(&lcd, static_cast<uint8_t>(128 - written * 6), 40, TF_LCD_128X64_FONT_6X24, TF_LCD_128X64_COLOR_BLACK, hum_buf), "call draw_text");
 
         char t_buf[22] = {0};
@@ -150,10 +150,10 @@ void Co2Ampel::setup()
         t -= m * 60 * 1000;
         uint32_t s = t / 1000;
 
-        written = snprintf(t_buf, sizeof(t_buf)/sizeof(t_buf[0]), "%02u %02u", d, h);
+        written = snprintf_u(t_buf, sizeof(t_buf)/sizeof(t_buf[0]), "%02u %02u", d, h);
         tf_lcd_128x64_write_line(&lcd, 6, 8, t_buf);
 
-        written = snprintf(t_buf, sizeof(t_buf)/sizeof(t_buf[0]), "%02u %02u", m, s);
+        written = snprintf_u(t_buf, sizeof(t_buf)/sizeof(t_buf[0]), "%02u %02u", m, s);
         tf_lcd_128x64_write_line(&lcd, 7, 8, t_buf);
 
         if(co2_concentration > red_limit) {

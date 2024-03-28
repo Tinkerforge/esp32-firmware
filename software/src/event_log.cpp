@@ -65,7 +65,7 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
         auto now = millis();
         auto secs = now / 1000;
         auto ms = now % 1000;
-        auto to_write = snprintf(nullptr, 0, "%lu", secs) + 6; // + 6 for the decimal sign, fractional part and two spaces
+        auto to_write = snprintf_u(nullptr, 0, "%lu", secs) + 6; // + 6 for the decimal sign, fractional part and two spaces
         auto start = TIMESTAMP_LEN - to_write;
 
         for (int i = 0; i < start; ++i)
@@ -153,7 +153,7 @@ int EventLog::vprintfln_prefixed(const char *prefix, size_t prefix_len, const ch
         written += prefix_len;
     }
 
-    written += vsnprintf(buf + written, buf_size - written, fmt, args);
+    written += vsnprintf_u(buf + written, buf_size - written, fmt, args);
     if (written >= buf_size) {
         write("Next log message was truncated. Bump EventLog::printfln buffer size!", 68); // Don't include termination in write request.
         written = buf_size - 1; // Don't include termination, which vsnprintf always leaves in.

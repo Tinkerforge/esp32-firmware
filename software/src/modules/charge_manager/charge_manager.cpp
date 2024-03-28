@@ -548,7 +548,7 @@ const char *ChargeManager::get_charger_name(uint8_t idx)
     return this->state.get("chargers")->get(idx)->get("name")->asEphemeralCStr();
 }
 
-#define LOCAL_LOG(fmt, ...) if(local_log) local_log += snprintf(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
+#define LOCAL_LOG(fmt, ...) if(local_log) local_log += snprintf_u(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
 
 void ChargeManager::distribute_current()
 {
@@ -567,7 +567,7 @@ void ChargeManager::distribute_current()
     bool print_local_log = false;
     char *local_log = distribution_log.get();
     if (local_log)
-        local_log += snprintf(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log.get()), "Redistributing current%c", '\0');
+        local_log += snprintf_u(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log.get()), "Redistributing current%c", '\0');
 
     bool any_charger_blocking_firmware_update = false;
 

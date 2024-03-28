@@ -931,6 +931,16 @@ time_t ms_until_time(int h, int m)
 	return delay;
 }
 
+size_t sprintf_u(char *buf, const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    int res = vsprintf(buf, format, args);
+    va_end(args);
+
+    return res < 0 ? 0 : static_cast<size_t>(res);
+}
+
 size_t snprintf_u(char *buf, size_t len, const char *format, ...)
 {
     va_list args;

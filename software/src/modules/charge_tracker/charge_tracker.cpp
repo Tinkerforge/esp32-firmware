@@ -509,9 +509,9 @@ static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp
     localtime_r(&timestamp, &t);
 
     if (english)
-        return sprintf(buf, "%4.4i-%2.2i-%2.2i %2.2i:%2.2i", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min);
+        return sprintf_u(buf, "%4.4i-%2.2i-%2.2i %2.2i:%2.2i", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min);
 
-    return sprintf(buf, "%2.2i.%2.2i.%4.4i %2.2i:%2.2i", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min);
+    return sprintf_u(buf, "%2.2i.%2.2i.%4.4i %2.2i:%2.2i", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min);
 }
 
 static int get_display_name(uint8_t user_id, char *ret_buf)
@@ -534,7 +534,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
     } else {
         float charged = ce.meter_end - cs.meter_start;
         if (charged <= 999.999f) {
-            int written = sprintf(buf, "%.3f", charged);
+            int written = sprintf_u(buf, "%.3f", charged);
             if (!english)
                 for (int i = 0; i < written; ++i)
                     if (buf[i] == '.')
@@ -556,13 +556,13 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
     ce.charge_duration = ce.charge_duration % 60;
     int seconds = ce.charge_duration;
 
-    buf += 1 + sprintf(buf, "%i:%2.2i:%2.2i", hours, minutes, seconds);
+    buf += 1 + sprintf_u(buf, "%i:%2.2i:%2.2i", hours, minutes, seconds);
 
     if (isnan(cs.meter_start)) {
         memcpy(buf, "N/A", ARRAY_SIZE("N/A"));
         buf += ARRAY_SIZE("N/A");
     } else {
-        int written = sprintf(buf, "%.3f", cs.meter_start);
+        int written = sprintf_u(buf, "%.3f", cs.meter_start);
         if (!english)
             for (int i = 0; i < written; ++i)
                 if (buf[i] == '.')
@@ -583,7 +583,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
             memcpy(buf, ">=10000", ARRAY_SIZE(">=10000"));
             buf += ARRAY_SIZE(">=10000");
         } else {
-            buf += 1 + sprintf(buf, "%d%c%02d", cost / 100, english ? '.' : ',', cost % 100);
+            buf += 1 + sprintf_u(buf, "%d%c%02d", cost / 100, english ? '.' : ',', cost % 100);
         }
     }
     return buf;
@@ -897,35 +897,35 @@ void ChargeTracker::register_urls()
 search_done:
 
         char *stats_head = stats_buf;
-        stats_head += 1 + sprintf(stats_head, "%s: %s", english ? "Charger" : "Wallbox", dev_name.c_str());
+        stats_head += 1 + sprintf_u(stats_head, "%s: %s", english ? "Charger" : "Wallbox", dev_name.c_str());
 
-        stats_head += sprintf(stats_head, "%s: ", english ? "Exported on" : "Exportiert an");
+        stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported on" : "Exportiert an");
         stats_head += 1 + timestamp_min_to_date_time_string(stats_head, current_timestamp_min, english);
 
-        stats_head += sprintf(stats_head, "%s: ", english ? "Exported users" : "Exportierte Benutzer");
+        stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported users" : "Exportierte Benutzer");
         if (user_filter == -2)
-            stats_head += sprintf(stats_head, "%s", english ? "all users" : "Alle Benutzer");
+            stats_head += sprintf_u(stats_head, "%s", english ? "all users" : "Alle Benutzer");
         else if (user_filter == -1)
-            stats_head += sprintf(stats_head, "%s", english ? "deleted users" : "Gelöschte Benutzer");
+            stats_head += sprintf_u(stats_head, "%s", english ? "deleted users" : "Gelöschte Benutzer");
         else
             stats_head += get_display_name(user_filter, stats_head);
         ++stats_head;
 
-        stats_head += sprintf(stats_head, "%s: ", english ? "Exported period" : "Exportierter Zeitraum");
+        stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported period" : "Exportierter Zeitraum");
         if (start_timestamp_min == 0)
-            stats_head += sprintf(stats_head, "%s", english ? "record start" : "Aufzeichnungsbeginn");
+            stats_head += sprintf_u(stats_head, "%s", english ? "record start" : "Aufzeichnungsbeginn");
         else
             stats_head += timestamp_min_to_date_time_string(stats_head, start_timestamp_min, english);
 
-        stats_head += sprintf(stats_head, "%s", english ? " to " : " bis ");
+        stats_head += sprintf_u(stats_head, "%s", english ? " to " : " bis ");
 
         if (end_timestamp_min == 0)
-            stats_head += sprintf(stats_head, "%s", english ? "record end" : (start_timestamp_min == 0 ? "-ende" : "Aufzeichnungsende"));
+            stats_head += sprintf_u(stats_head, "%s", english ? "record end" : (start_timestamp_min == 0 ? "-ende" : "Aufzeichnungsende"));
         else
             stats_head += timestamp_min_to_date_time_string(stats_head, end_timestamp_min, english);
         ++stats_head;
 
-        int written = sprintf(stats_head, "%s: %9.3f kWh", english ? "Total energy of exported charges" : "Gesamtenergie exportierter Ladevorgänge", charged_sum);
+        int written = sprintf_u(stats_head, "%s: %9.3f kWh", english ? "Total energy of exported charges" : "Gesamtenergie exportierter Ladevorgänge", charged_sum);
         if (!english)
             for (int i = 0; i < written; ++i)
                 if (stats_head[i] == '.')
@@ -933,7 +933,7 @@ search_done:
         stats_head += 1 + written;
 
         if (electricity_price != 0) {
-            written = sprintf(stats_head, "%s: %d.%02d€ (%.2f ct/kWh)%s",
+            written = sprintf_u(stats_head, "%s: %d.%02d€ (%.2f ct/kWh)%s",
                             english ? "Total cost" : "Gesamtkosten",
                             charged_cost_sum / 100, charged_cost_sum % 100,
                             electricity_price / 100.0f,
