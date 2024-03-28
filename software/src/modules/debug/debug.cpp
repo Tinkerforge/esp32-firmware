@@ -31,6 +31,7 @@
 
 #include "api.h"
 #include "task_scheduler.h"
+#include "string_builder.h"
 
 #include "gcc_warnings.h"
 
@@ -319,16 +320,14 @@ void Debug::register_urls()
     });
 
     server.on_HTTPThread("/debug/state_sizes", HTTP_GET, [](WebServerRequest req) {
-        char str[3072]; // on httpd stack, which is large enough
-        ssize_t len = 0;
-        task_scheduler.await([&str, &len]() {
-            size_t offset = 0;
+        char buf[3072]; // on httpd stack, which is large enough
+        StringWriter sw(buf, sizeof(buf));
+        task_scheduler.await([&sw]() {
             for (const auto &reg : api.states) {
-                offset += snprintf_u(str + offset, sizeof(str) - offset, "%4u %s\n", reg.config->string_length(), reg.path);
+                sw.printf("%4u %s\n", reg.config->string_length(), reg.path);
             }
-            len = static_cast<ssize_t>(offset);
         });
-        return req.send(200, "text/plain", str, len);
+        return req.send(200, "text/plain", sw.getPtr(), static_cast<ssize_t>(sw.getLength()));
     });
 
 #ifdef DEBUG_FS_ENABLE
