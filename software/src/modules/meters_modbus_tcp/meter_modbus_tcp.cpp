@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "meter_modbus_tcp"
+
 #include "meter_modbus_tcp.h"
 #include "modbus_tcp_tools.h"
 #include "module_dependencies.h"
@@ -79,21 +81,21 @@ void MeterModbusTCP::poll_next()
     request_start = now_us();
     uint16_t ret = mb->readHreg(host_ip, offset, register_buffer, numregs, [this](Modbus::ResultCode result_code, uint16_t transaction_id, void *data)->bool {
         if (result_code != Modbus::ResultCode::EX_SUCCESS) {
-            logger.printfln("meter_modbus_tcp: readHreg failed: %s (0x%02x)", get_modbus_result_code_name(result_code), static_cast<uint32_t>(result_code));
+            logger.printfln("readHreg failed: %s (0x%02x)", get_modbus_result_code_name(result_code), static_cast<uint32_t>(result_code));
             this->start_connection();
             return false;
         }
         if (data) {
-            logger.printfln("meter_modbus_tcp: data is %p", data);
+            logger.printfln("data is %p", data);
         }
         this->handle_data();
         return true;
     });
     if (ret == 0) {
-        logger.printfln("meter_modbus_tcp: readHreg failed");
+        logger.printfln("readHreg failed");
         start_connection();
     }
-    //logger.printfln("meter_modbus_tcp: Requested %u registers from offset %u, returned %u", numregs, offset, ret);
+    //logger.printfln("Requested %u registers from offset %u, returned %u", numregs, offset, ret);
 }
 
 void MeterModbusTCP::handle_data()
@@ -111,7 +113,7 @@ void MeterModbusTCP::handle_data()
         if (poll_count >= register_buffer_size) {
             uint32_t total_runtime = static_cast<uint32_t>(static_cast<int64_t>(now_us() - all_start));
             uint32_t avg_runtime = total_runtime / register_buffer_size;
-            logger.printfln("meter_modbus_tcp: Single run done: avg=%u best=%u worst=%u", avg_runtime, best_runtime, worst_runtime);
+            logger.printfln("Single run done: avg=%u best=%u worst=%u", avg_runtime, best_runtime, worst_runtime);
 
             poll_state = PollState::Combined;
             poll_count = 1;
@@ -119,18 +121,18 @@ void MeterModbusTCP::handle_data()
     } else if (poll_state == PollState::Combined) {
         if (runtime32 > worst_runtime) {
             worst_runtime = runtime32;
-            logger.printfln("meter_modbus_tcp: New worst runtime: %u", runtime32);
+            logger.printfln("New worst runtime: %u", runtime32);
         }
         if (runtime32 < best_runtime) {
             best_runtime = runtime32;
-            logger.printfln("meter_modbus_tcp: New best runtime: %u", runtime32);
+            logger.printfln("New best runtime: %u", runtime32);
         }
 
         if (runtime32 > 50000) { // 50ms
-            logger.printfln("meter_modbus_tcp: Long runtime: %u", runtime32);
+            logger.printfln("Long runtime: %u", runtime32);
         }
 
-        logger.printfln("meter_modbus_tcp: Combined run with %u values: %u us", poll_count, runtime32);
+        logger.printfln("Combined run with %u values: %u us", poll_count, runtime32);
 
         poll_count++;
         if (poll_count > register_buffer_size) {
@@ -138,7 +140,7 @@ void MeterModbusTCP::handle_data()
             poll_count = 0;
         }
     } else {
-        logger.printfln("meter_modbus_tcp: Shouldn't be here.");
+        logger.printfln("Shouldn't be here.");
         return;
     }
     poll_next();

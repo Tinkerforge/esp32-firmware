@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "sdm_helpers"
+
 #include "sdm_helpers.h"
 
 #include <string.h>
@@ -144,7 +146,7 @@ void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size
             break;
 
         default:
-            logger.printfln("sdm_helpers: Value IDs unsupported for meter type %u.", meter_type);
+            logger.printfln("Value IDs unsupported for meter type %u.", meter_type);
             /* FALLTHROUGH */
         case METER_TYPE_DSZ15DZMOD: // Known unsupported
             *value_ids_len = 0;
@@ -152,7 +154,7 @@ void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size
     }
 
     if (*value_ids_len < id_count) {
-        logger.printfln("sdm_helpers: Passed array of length %u too short for %u value IDs for meter type %u.", *value_ids_len, id_count, meter_type);
+        logger.printfln("Passed array of length %u too short for %u value IDs for meter type %u.", *value_ids_len, id_count, meter_type);
         *value_ids_len = 0;
         return;
     }
@@ -172,7 +174,7 @@ void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VAL
             continue;
 
         if (i_out >= *value_count) {
-            logger.printfln("sdm_helpers: Not enough space for all value IDs: %u", *value_count);
+            logger.printfln("Not enough space for all value IDs: %u", *value_count);
             break;
         }
 
@@ -195,15 +197,15 @@ void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VAL
         if (i_out != value_ids_len) {
             if (!value_ids_len) {
                 if (meter_type != METER_TYPE_DSZ15DZMOD) { // Validating this meter type is known unsupported
-                    logger.printfln("sdm_helpers: Can't validate value IDs for meter type %u.", meter_type);
+                    logger.printfln("Can't validate value IDs for meter type %u.", meter_type);
                 }
             } else {
-                logger.printfln("sdm_helpers: Value ID count mismatch for meter type %u: detected %u but expected %u.", meter_type, i_out, value_ids_len);
+                logger.printfln("Value ID count mismatch for meter type %u: detected %u but expected %u.", meter_type, i_out, value_ids_len);
             }
         } else {
             for (size_t i = 0; i < value_ids_len; i++) {
                 if (value_ids[i] != static_value_ids[i]) {
-                    logger.printfln("sdm_helpers: Value ID mismatch at position %u for meter type %u: detected %u but expected %u.", i, meter_type, static_cast<uint32_t>(value_ids[i]), static_cast<uint32_t>(static_value_ids[i]));
+                    logger.printfln("Value ID mismatch at position %u for meter type %u: detected %u but expected %u.", i, meter_type, static_cast<uint32_t>(value_ids[i]), static_cast<uint32_t>(static_value_ids[i]));
                 }
             }
         }
@@ -233,13 +235,13 @@ void sdm_helper_pack_all_values(uint32_t meter_type, float *values, size_t *valu
             break;
 
         default:
-            logger.printfln("sdm_helpers: Cannot pack values for meter type %u.", meter_type);
+            logger.printfln("Cannot pack values for meter type %u.", meter_type);
             *values_len = 0;
             return;
     }
 
     if (*values_len < values_count) {
-        logger.printfln("sdm_helpers: Not enough space to pack %u values for meter type %u into an array of size %u.", values_count, meter_type, *values_len);
+        logger.printfln("Not enough space to pack %u values for meter type %u into an array of size %u.", values_count, meter_type, *values_len);
         *values_len = 0;
         return;
     }

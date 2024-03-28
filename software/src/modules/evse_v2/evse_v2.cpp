@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "evse_v2"
+
 #include "evse_v2.h"
 #include "module_dependencies.h"
 
@@ -301,7 +303,7 @@ void EVSEV2::post_register_urls()
     api.addState("evse/control_pilot_disconnect", &control_pilot_disconnect);
     api.addCommand("evse/control_pilot_disconnect_update", &control_pilot_disconnect_update, {}, [this](){
         if (evse_common.management_enabled.get("enabled")->asBool()) { // Disallow updating control pilot configuration if management is enabled because the charge manager will override the CP config every second.
-            logger.printfln("evse: Control pilot cannot be (dis)connected by API while charge management is enabled.");
+            logger.printfln("Control pilot cannot be (dis)connected by API while charge management is enabled.");
             return;
         }
         is_in_bootloader(tf_evse_v2_set_control_pilot_disconnect(&device, control_pilot_disconnect_update.get("disconnect")->asBool(), nullptr));
@@ -805,7 +807,7 @@ PhaseSwitcherBackend::SwitchingState EVSEV2::get_phase_switching_state()
 bool EVSEV2::switch_phases_3phase(bool wants_3phase)
 {
     if (!can_switch_phases_now(wants_3phase)) {
-        logger.printfln("evse_v2: Requested phase switch but can't switch at the moment.");
+        logger.printfln("Requested phase switch but can't switch at the moment.");
         return false;
     }
 
@@ -816,7 +818,7 @@ bool EVSEV2::switch_phases_3phase(bool wants_3phase)
         return true;
     }
 
-    logger.printfln("evse_v2: switch_phases_3phase failed: %s (%i)", tf_hal_strerror(err), err);
+    logger.printfln("switch_phases_3phase failed: %s (%i)", tf_hal_strerror(err), err);
 
     return false;
 }
@@ -1007,29 +1009,29 @@ void EVSEV2::update_all_data()
 
     if (contactor_error_changed) {
         if (contactor_error != 0) {
-            logger.printfln("EVSE: Contactor error %u PE error %u", contactor_error >> 1, contactor_error & 1);
+            logger.printfln("Contactor error %u PE error %u", contactor_error >> 1, contactor_error & 1);
         } else {
-            logger.printfln("EVSE: Contactor/PE error cleared");
+            logger.printfln("Contactor/PE error cleared");
         }
     }
 
     if (error_state_changed) {
         if (error_state != 0) {
-            logger.printfln("EVSE: Error state %d", error_state);
+            logger.printfln("Error state %d", error_state);
         } else {
-            logger.printfln("EVSE: Error state cleared");
+            logger.printfln("Error state cleared");
         }
     }
 
     if (dc_fault_current_state_changed) {
         if (dc_fault_current_state != 0) {
-            logger.printfln("EVSE: DC Fault current state %u (%s %u; sensor type %u)",
+            logger.printfln("DC Fault current state %u (%s %u; sensor type %u)",
                                 dc_fault_current_state,
                                 dc_fault_current_state == 4 ? "calibration error code" : "pins",
                                 dc_fault_pins,
                                 dc_sensor_type);
         } else {
-            logger.printfln("EVSE: DC Fault current state cleared");
+            logger.printfln("DC Fault current state cleared");
         }
     }
 

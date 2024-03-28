@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "meter_pv_faker"
+
 #include "meter_pv_faker.h"
 #include "module_dependencies.h"
 
@@ -61,7 +63,7 @@ void MeterPvFaker::setup(const Config &ephemeral_config)
     peak_at_lux_shifted = peak_at_lux - zero_at_lux;
 
     if (zero_at_lux >= peak_at_lux) {
-        logger.printfln("meter_pv_faker: Lux value for zero production must be less than lux value for peak production.");
+        logger.printfln("Lux value for zero production must be less than lux value for peak production.");
         return;
     }
 
@@ -69,12 +71,12 @@ void MeterPvFaker::setup(const Config &ephemeral_config)
     const String &global_topic_prefix = mqtt.config.get("global_topic_prefix")->asString();
 
     if (illuminance_topic.startsWith(global_topic_prefix)) {
-        logger.printfln("meter_pv_faker: Cannot listen to itself: Illuminance topic cannot start with the topic prefix from the MQTT config.");
+        logger.printfln("Cannot listen to itself: Illuminance topic cannot start with the topic prefix from the MQTT config.");
         return;
     }
 
     if (illuminance_topic.length() < 3) {
-        logger.printfln("meter_pv_faker: Illuminance topic too short: %u", illuminance_topic.length());
+        logger.printfln("Illuminance topic too short: %u", illuminance_topic.length());
         return;
     }
 
@@ -82,7 +84,7 @@ void MeterPvFaker::setup(const Config &ephemeral_config)
         StaticJsonDocument<JSON_OBJECT_SIZE(10)> doc;
         DeserializationError error = deserializeJson(doc, data, data_len);
         if (error) {
-            logger.printfln("meter_pv_faker: Failed to deserialize MQTT payload: %s", error.c_str());
+            logger.printfln("Failed to deserialize MQTT payload: %s", error.c_str());
             return;
         }
 

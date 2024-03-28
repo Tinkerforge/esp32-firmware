@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "meters_legacy_api"
+
 #include "meters_legacy_api.h"
 #include "module_dependencies.h"
 
@@ -69,7 +71,7 @@ void MetersLegacyAPI::setup()
     linked_meter_slot = config.get("linked_meter_slot")->asUint();
     if (linked_meter_slot >= METERS_SLOTS) {
         if (linked_meter_slot != UINT32_MAX) {
-            logger.printfln("meters_legacy_api: Configured meter slot %u not available.", linked_meter_slot);
+            logger.printfln("Configured meter slot %u not available.", linked_meter_slot);
         }
         return;
     }
@@ -156,20 +158,20 @@ void MetersLegacyAPI::register_urls()
     api.addCommand("meter/reset", Config::Null(), {}, [this](){
         String err = api.callCommand(meters.get_path(this->linked_meter_slot, Meters::PathType::Reset).c_str(), nullptr);
         if (!err.isEmpty())
-            logger.printfln("meters_legacy_api: Cannot reset meter %u (%s)", this->linked_meter_slot, err.c_str());
+            logger.printfln("Cannot reset meter %u (%s)", this->linked_meter_slot, err.c_str());
     }, true);
 
     api.addCommand("meter/state_update", &legacy_state_update, {}, [this](){
         if (!this->meter_writable) {
-            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
+            logger.printfln("Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
         }
-        logger.printfln("meters_legacy_api: Meter %u state cannot be updated. Change the meter's configuration instead.", this->linked_meter_slot);
+        logger.printfln("Meter %u state cannot be updated. Change the meter's configuration instead.", this->linked_meter_slot);
     }, false);
 
     api.addCommand("meter/values_update", &legacy_values_update, {}, [this](){
         if (!this->meter_writable) {
-            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
+            logger.printfln("Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
         }
 
@@ -187,7 +189,7 @@ void MetersLegacyAPI::register_urls()
 
     api.addCommand("meter/phases_update", &legacy_phases_update, {}, [this](){
         if (!this->meter_writable) {
-            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
+            logger.printfln("Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
         }
         if (!this->has_phases) {
@@ -211,17 +213,17 @@ void MetersLegacyAPI::register_urls()
 
     api.addCommand("meter/all_values_update", &legacy_all_values_update, {}, [this](){
         if (!this->meter_writable) {
-            logger.printfln("meters_legacy_api: Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
+            logger.printfln("Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
         }
 
         if (this->linked_meter_value_count == 0) {
-            logger.printfln("meters_legacy_api: Cannot update meter %u that holds no values.", this->linked_meter_slot);
+            logger.printfln("Cannot update meter %u that holds no values.", this->linked_meter_slot);
             return;
         }
 
         if (this->linked_meter_value_count > METERS_MAX_VALUES_PER_METER) {
-            logger.printfln("meters_legacy_api: Cannot update meter %u with too many many values (%u)", this->linked_meter_slot, this->linked_meter_value_count);
+            logger.printfln("Cannot update meter %u with too many many values (%u)", this->linked_meter_slot, this->linked_meter_value_count);
             return;
         }
 
@@ -320,7 +322,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     auto cnt = value_ids->count();
     if (cnt == 0) {
         if (show_blank_value_id_update_warnings) {
-            logger.printfln("meters_legacy_api: Ignoring blank value IDs update from linked meter in slot %u.", linked_meter_slot);
+            logger.printfln("Ignoring blank value IDs update from linked meter in slot %u.", linked_meter_slot);
         }
         return EventResult::OK;
     }
@@ -329,7 +331,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     meter_setup_done = true;
 
     if (linked_meter_value_count > METERS_MAX_VALUES_PER_METER) {
-        logger.printfln("meters_legacy_api: Linked meter has too many values (%u)", linked_meter_value_count);
+        logger.printfln("Linked meter has too many values (%u)", linked_meter_value_count);
         return EventResult::Deregister;
     }
 
@@ -419,7 +421,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
             meter_type = METER_TYPE_SDM630;
         }
     } else {
-        logger.printfln("meters_legacy_api: Meter detection failed: %u matching meters. 72:%u 72v2:%u 630:%u", can_be_count, can_be_sdm72, can_be_sdm72v2, can_be_sdm630);
+        logger.printfln("Meter detection failed: %u matching meters. 72:%u 72v2:%u 630:%u", can_be_count, can_be_sdm72, can_be_sdm72v2, can_be_sdm630);
     }
 
     MeterClassID linked_meter_class = meters.get_meter_class(linked_meter_slot);
@@ -432,17 +434,17 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
             uint32_t local_meter_type = linked_state->get("type")->asUint();
             if (meter_type != local_meter_type) {
                 if (local_meter_type != METER_TYPE_DSZ15DZMOD) { // Known undetectable
-                    logger.printfln("meters_legacy_api: Meter type %u from Bricklet overrides auto-detected meter type %u.", local_meter_type, meter_type);
+                    logger.printfln("Meter type %u from Bricklet overrides auto-detected meter type %u.", local_meter_type, meter_type);
                 }
                 meter_type = local_meter_type;
             }
         } else {
-            logger.printfln("meters_legacy_api: Expected state %s not found.", state_path.c_str());
+            logger.printfln("Expected state %s not found.", state_path.c_str());
         }
     }
 
     if (meter_type == METER_TYPE_NONE) {
-        logger.printfln("meters_legacy_api: Meter type detection failed. 72=%u 72v2=%u 630=%u", can_be_sdm72, can_be_sdm72v2, can_be_sdm630);
+        logger.printfln("Meter type detection failed. 72=%u 72v2=%u 630=%u", can_be_sdm72, can_be_sdm72v2, can_be_sdm630);
         legacy_state.get("state")->updateUint(1); // 1 - initialization error
         return EventResult::Deregister;
     }
@@ -524,7 +526,7 @@ static void update_config_values(uint16_t *indices, uint16_t index_count, const 
     uint16_t target_count = needs_values_helper ? 3 : static_cast<uint16_t>(target_values->count());
 
     if (target_count != index_count) {
-        logger.printfln("meters_legacy_api: Cannot update config values, count mismatch: %i vs %i", target_count, index_count);
+        logger.printfln("Cannot update config values, count mismatch: %i vs %i", target_count, index_count);
         return;
     }
 

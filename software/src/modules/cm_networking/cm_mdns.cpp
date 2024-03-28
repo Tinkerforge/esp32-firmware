@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "cm_networking"
+
 #include "cm_networking.h"
 #include "module_dependencies.h"
 
@@ -136,7 +138,7 @@ void CMNetworking::clear_cached_hostname(uint8_t charger_idx)
 {
     auto err = dns_removehost(this->hosts[charger_idx], nullptr);
     if (err != ESP_OK)
-        logger.printfln("cm_networking: Couldn't remove hostname from cache: error %i", err);
+        logger.printfln("Couldn't remove hostname from cache: error %i", err);
 }
 
 void CMNetworking::check_results()

@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "meter_meta"
+
 #include "meter_meta.h"
 #include "meters_meta.h"
 #include "module_dependencies.h"
@@ -108,19 +110,19 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
     const Config *value_ids_a = api.getState(meters.get_path(source_meter_a, Meters::PathType::ValueIDs));
     size_t value_count_a = value_ids_a->count();
     if (value_count_a == 0) {
-        logger.printfln("meter_meta: Meter A value IDs not available yet.");
+        logger.printfln("Meter A value IDs not available yet.");
         return EventResult::OK;
     }
 
     const Config *value_ids_b = api.getState(meters.get_path(source_meter_b, Meters::PathType::ValueIDs));
     size_t value_count_b = value_ids_b->count();
     if (value_count_b == 0) {
-        logger.printfln("meter_meta: Meter B value IDs not available yet.");
+        logger.printfln("Meter B value IDs not available yet.");
         return EventResult::OK;
     }
 
     if (mode == ConfigMode::Add || mode == ConfigMode::Mul) {
-        logger.printfln("meter_meta: Mode %u not supported yet.", static_cast<uint32_t>(mode));
+        logger.printfln("Mode %u not supported yet.", static_cast<uint32_t>(mode));
         return EventResult::Deregister;
     }
 
@@ -193,12 +195,12 @@ void MeterMeta::on_values_change_task()
     }
 
     if (availability_a != MeterValueAvailability::Fresh) {
-        //logger.printfln("meter_meta: Meter A values not fresh.");
+        //logger.printfln("Meter A values not fresh.");
         return;
     }
 
     if (availability_b != MeterValueAvailability::Fresh) {
-        //logger.printfln("meter_meta: Meter B values not fresh.");
+        //logger.printfln("Meter B values not fresh.");
         return;
     }
 
@@ -214,7 +216,7 @@ void MeterMeta::on_values_change_task()
         } else if (mode == ConfigMode::Diff) {
             value = value_a - value_b;
         } else {
-            logger.printfln("meter_meta: Unsupported mode %u", static_cast<uint32_t>(mode));
+            logger.printfln("Unsupported mode %u", static_cast<uint32_t>(mode));
             value = NAN;
         }
 

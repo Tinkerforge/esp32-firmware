@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "meter_mqtt_mirror"
+
 #include "meter_mqtt_mirror.h"
 #include "module_dependencies.h"
 
@@ -39,7 +41,7 @@ void MeterMqttMirror::setup(const Config &ephemeral_config)
     bool automatic = ephemeral_config.get("auto")->asBool();
 
     if (meter_path.length() < 3) {
-        logger.printfln("meter_mqtt_mirror: Meter path too short: '%s'", meter_path.c_str());
+        logger.printfln("Meter path too short: '%s'", meter_path.c_str());
         return;
     }
 
@@ -53,7 +55,7 @@ void MeterMqttMirror::setup(const Config &ephemeral_config)
                 this->onMessage(topic, topic_len, data, data_len, &MeterMqttMirror::handle_mqtt_value_ids);
         }, Mqtt::Retained::Accept);
     } else {
-        logger.printfln("meter_mqtt_mirror: Manual mode not yet implemented.");
+        logger.printfln("Manual mode not yet implemented.");
         return;
     }
 
@@ -69,7 +71,7 @@ void MeterMqttMirror::onMessage(const char *topic, size_t topic_len, char *data,
 
     DeserializationError error = deserializeJson(doc, data, data_len);
     if (error) {
-        logger.printfln("meter_mqtt_mirror: Failed to deserialize payload received on MQTT topic %*s: %s", static_cast<int>(topic_len), topic, error.c_str());
+        logger.printfln("Failed to deserialize payload received on MQTT topic %*s: %s", static_cast<int>(topic_len), topic, error.c_str());
         return;
     }
 
@@ -81,12 +83,12 @@ void MeterMqttMirror::handle_mqtt_value_ids(const JsonArrayConst &array)
 {
     size_t array_size = array.size();
     if (array_size > METERS_MAX_VALUES_PER_METER) {
-        logger.printfln("meter_mqtt_mirror: Too many value IDs from mirrored meter: %u > %i", array_size, METERS_MAX_VALUES_PER_METER);
+        logger.printfln("Too many value IDs from mirrored meter: %u > %i", array_size, METERS_MAX_VALUES_PER_METER);
         return;
     }
 
     if (array_size == 0) {
-        logger.printfln("meter_mqtt_mirror: Ignoring zero-length value IDs update.");
+        logger.printfln("Ignoring zero-length value IDs update.");
         return;
     }
 
@@ -129,17 +131,17 @@ void MeterMqttMirror::handle_mqtt_value_ids(const JsonArrayConst &array)
 
     if (value_ids_match) {
         if (accepting_updates) {
-            //logger.printfln("meter_mqtt_mirror: Ignoring matching value IDs update.");
+            //logger.printfln("Ignoring matching value IDs update.");
         } else {
-            logger.printfln("meter_mqtt_mirror: Received matching value IDs update; resuming value updates.");
+            logger.printfln("Received matching value IDs update; resuming value updates.");
             accepting_updates = true;
         }
     } else { // non-matching
         if (accepting_updates) {
-            logger.printfln("meter_mqtt_mirror: Received non-matching value IDs update; suspending value updates.");
+            logger.printfln("Received non-matching value IDs update; suspending value updates.");
             accepting_updates = false;
         } else {
-            logger.printfln("meter_mqtt_mirror: Ignoring repeated non-matching value IDs update.");
+            logger.printfln("Ignoring repeated non-matching value IDs update.");
         }
     }
 }
@@ -150,7 +152,7 @@ void MeterMqttMirror::handle_mqtt_values(const JsonArrayConst &array)
         return;
 
     if (array.size() != declared_values_count) {
-        logger.printfln("meter_mqtt_mirror: Unexpected amount of values from mirrored meter: %u, expected %u", array.size(), declared_values_count);
+        logger.printfln("Unexpected amount of values from mirrored meter: %u, expected %u", array.size(), declared_values_count);
         return;
     }
 

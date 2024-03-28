@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "debug"
+
 #include "backtrace.h"
 #include "debug.h"
 
@@ -196,19 +198,17 @@ void Debug::setup()
         state_slow.get("largest_free_psram_block")->updateUint(psram_info.largest_free_block);
 
         if (dram_info.largest_free_block < 2000) {
-            logger.printfln("debug: Heap full. Largest block is %u bytes.", dram_info.largest_free_block);
+            logger.printfln("Heap full. Largest block is %u bytes.", dram_info.largest_free_block);
         }
-
 
         uint32_t task_count = this->task_handles.size();
         for (uint16_t i = 0; i < task_count; i++) {
             uint32_t hwm = uxTaskGetStackHighWaterMark(this->task_handles[i]);
             Config *conf_task_hwm = static_cast<Config *>(this->state_hwm.get(i));
             if (conf_task_hwm->get("hwm")->updateUint(hwm) && hwm < 200 && this->show_hwm_changes) {
-                logger.printfln("debug: HWM of task '%s' changed: %u", conf_task_hwm->get("task_name")->asUnsafeCStr(), hwm);
+                logger.printfln("HWM of task '%s' changed: %u", conf_task_hwm->get("task_name")->asUnsafeCStr(), hwm);
             }
         }
-
 
         uint32_t runtime_avg;
         if (this->integrity_check_runs == 0) {
@@ -496,12 +496,12 @@ void Debug::register_task(const char *task_name, uint32_t stack_size, TaskAvaila
     TaskHandle_t handle = xTaskGetHandle(task_name);
     if (!handle) {
         if (availability == ExpectPresent) {
-            logger.printfln("debug: Can't find task '%s'", task_name);
+            logger.printfln("Can't find task '%s'", task_name);
         }
         return;
     }
     if (availability == ExpectMissing) {
-        logger.printfln("debug: Found task '%s'", task_name);
+        logger.printfln("Found task '%s'", task_name);
     }
     register_task(handle, stack_size);
 }
@@ -509,13 +509,13 @@ void Debug::register_task(const char *task_name, uint32_t stack_size, TaskAvaila
 void Debug::register_task(TaskHandle_t handle, uint32_t stack_size)
 {
     if (!handle) {
-        logger.printfln("debug: register_task called with invalid handle.");
+        logger.printfln("register_task called with invalid handle.");
         return;
     }
 
     const char *task_name = pcTaskGetName(handle);
     if (!task_name) {
-        logger.printfln("debug: register_task couldn't find task.");
+        logger.printfln("register_task couldn't find task.");
         return;
     }
 
@@ -531,7 +531,7 @@ static float benchmark_area(uint8_t *start_address, size_t max_length)
 {
     uint8_t *buffer = static_cast<uint8_t *>(heap_caps_malloc(BENCHMARK_BLOCKSIZE, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
     if (!buffer) {
-        logger.printfln("debug: Can't malloc %i bytes for benchmark buffer.", BENCHMARK_BLOCKSIZE);
+        logger.printfln("Can't malloc %i bytes for benchmark buffer.", BENCHMARK_BLOCKSIZE);
         return 0;
     }
 
@@ -583,7 +583,7 @@ static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_c
         }
     } else {
         *spi_mode = "invalid mode";
-        logger.printfln("debug: fread_qio=%u fread_dio=%u fread_quad=%u fread_dual=%u", fread_qio, fread_dio, fread_quad, fread_dual);
+        logger.printfln("fread_qio=%u fread_dio=%u fread_quad=%u fread_dual=%u", fread_qio, fread_dio, fread_quad, fread_dual);
     }
 
     // Clock

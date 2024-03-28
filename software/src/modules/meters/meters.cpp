@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "meters"
+
 #include "meters.h"
 #include "meter_class_none.h"
 #include "module_dependencies.h"
@@ -134,7 +136,7 @@ void Meters::setup()
 
         IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_errors);
         if (!meter) {
-            logger.printfln("meters: Failed to create meter of class %u in slot %u.", static_cast<uint32_t>(configured_meter_class), slot);
+            logger.printfln("Failed to create meter of class %u in slot %u.", static_cast<uint32_t>(configured_meter_class), slot);
             meter = new_meter_of_class(MeterClassID::None, slot, meter_state, meter_errors);
         }
         if (configured_meter_class != MeterClassID::None) {
@@ -382,7 +384,7 @@ void Meters::register_meter_generator(MeterClassID meter_class, MeterGenerator *
     for (const auto &generator_tuple : generators) {
         MeterClassID known_class = std::get<0>(generator_tuple);
         if (meter_class == known_class) {
-            logger.printfln("meters: Tried to register meter generator for already registered meter class %u.", static_cast<uint32_t>(meter_class));
+            logger.printfln("Tried to register meter generator for already registered meter class %u.", static_cast<uint32_t>(meter_class));
             return;
         }
     }
@@ -400,11 +402,11 @@ MeterGenerator *Meters::get_generator_for_class(MeterClassID meter_class)
     }
 
     if (meter_class == MeterClassID::None) {
-        logger.printfln("meters: No generator for dummy meter available. This is probably fatal.");
+        logger.printfln("No generator for dummy meter available. This is probably fatal.");
         return nullptr;
     }
 
-    logger.printfln("meters: No generator for meter class %u.", static_cast<uint32_t>(meter_class));
+    logger.printfln("No generator for meter class %u.", static_cast<uint32_t>(meter_class));
     return get_generator_for_class(MeterClassID::None);
 }
 
@@ -620,12 +622,12 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
         return;
 
     if (slot >= METERS_SLOTS) {
-        logger.printfln("meters: Tried to update value %u for meter in non-existent slot %u.", index, slot);
+        logger.printfln("Tried to update value %u for meter in non-existent slot %u.", index, slot);
         return;
     }
 
     if (index == UINT32_MAX) {
-        logger.printfln("meters: Tried to update a value for meter in slot %u that is known to not exist (index = UINT32_MAX).", slot);
+        logger.printfln("Tried to update a value for meter in slot %u that is known to not exist (index = UINT32_MAX).", slot);
         return;
     }
 
@@ -649,7 +651,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 void Meters::update_all_values(uint32_t slot, const float new_values[])
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("meters: Tried to update all values from array for meter in non-existent slot %u.", slot);
+        logger.printfln("Tried to update all values from array for meter in non-existent slot %u.", slot);
         return;
     }
 
@@ -692,7 +694,7 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
 void Meters::update_all_values(uint32_t slot, const Config *new_values)
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("meters: Tried to update all values from Config for meter in non-existent slot %u.", slot);
+        logger.printfln("Tried to update all values from Config for meter in non-existent slot %u.", slot);
         return;
     }
 
@@ -704,7 +706,7 @@ void Meters::update_all_values(uint32_t slot, const Config *new_values)
     bool changed_any_value = false;
 
     if (new_values->count() != value_count) {
-        logger.printfln("meters: Update all values element count mismatch: %u != %u", new_values->count(), value_count);
+        logger.printfln("Update all values element count mismatch: %u != %u", new_values->count(), value_count);
         return;
     }
 
@@ -740,7 +742,7 @@ void Meters::update_all_values(uint32_t slot, const Config *new_values)
 void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[], uint32_t value_id_count)
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("meters: Tried to declare value IDs for meter in non-existent slot %u.", slot);
+        logger.printfln("Tried to declare value IDs for meter in non-existent slot %u.", slot);
         return;
     }
 
@@ -750,12 +752,12 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     Config &values    = meter_slot.values;
 
     if (value_ids.count() != 0) {
-        logger.printfln("meters: Meter in slot %u already declared %u values. Refusing to re-declare %u values.", slot, value_ids.count(), value_id_count);
+        logger.printfln("Meter in slot %u already declared %u values. Refusing to re-declare %u values.", slot, value_ids.count(), value_id_count);
         return;
     }
 
     if (value_id_count <= 0) {
-        logger.printfln("meters: Cannot declare zero value IDs for meter in slot %u.", value_id_count);
+        logger.printfln("Cannot declare zero value IDs for meter in slot %u.", value_id_count);
         return;
     }
 
@@ -780,7 +782,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L3 ]         = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL3Import);
 
     meter_slot.values_declared = true;
-    logger.printfln("meters: Meter in slot %u declared %u values.", slot, value_id_count);
+    logger.printfln("Meter in slot %u declared %u values.", slot, value_id_count);
 
     if (!meters_feature_declared) {
         api.addFeature("meters");
@@ -797,7 +799,7 @@ bool Meters::get_cached_real_power_index(uint32_t slot, uint32_t *index)
 void Meters::fill_index_cache(uint32_t slot, size_t find_value_count, const MeterValueID find_value_ids[], uint32_t index_cache[])
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("meters: Tried to fill an index cache for meter in non-existent slot %u.", slot);
+        logger.printfln("Tried to fill an index cache for meter in non-existent slot %u.", slot);
         return;
     }
 

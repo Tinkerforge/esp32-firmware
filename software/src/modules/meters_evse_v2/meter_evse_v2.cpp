@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "meter_evse_v2"
+
 #include "meter_evse_v2.h"
 
 #include "modules/meters/meter_value_id.h"
@@ -51,7 +53,7 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data)
     if (meter_type != meter_data->meter_type) {
         if (meter_type != METER_TYPE_NONE) {
             if (!meter_change_warning_printed) {
-                logger.printfln("meter_em: Meter change detected. This is not supported.");
+                logger.printfln("Meter change detected. This is not supported.");
                 meter_change_warning_printed = true;
             }
             return;
@@ -89,7 +91,7 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data)
 void MeterEVSEV2::energy_meter_values_callback(float power, float current[3])
 {
     if (value_index_power == UINT32_MAX) {
-        logger.printfln("meter_evse_v2: Received values callback before detecting a meter.");
+        logger.printfln("Received values callback before detecting a meter.");
         return;
     }
 

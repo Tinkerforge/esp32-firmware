@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "energy_manager"
+
 #include <type_traits>
 
 #include "energy_manager.h"
@@ -178,7 +180,7 @@ bool EnergyManager::action_triggered(const Config *automation_config, void *data
 void EnergyManager::setup_energy_manager()
 {
     if (!this->DeviceModule::setup_device()) {
-        logger.printfln("energy_manager: setup_device error. Reboot in 5 Minutes.");
+        logger.printfln("setup_device error. Reboot in 5 Minutes.");
 
         task_scheduler.scheduleOnce([]() {
             trigger_reboot("Energy Manager");
@@ -302,12 +304,12 @@ PhaseSwitcherBackend::SwitchingState EnergyManager::get_phase_switching_state()
 bool EnergyManager::switch_phases_3phase(bool wants_3phase)
 {
     if (!contactor_installed) {
-        logger.printfln("energy_manager: Requested phase switch without contactor installed.");
+        logger.printfln("Requested phase switch without contactor installed.");
         return false;
     }
 
     if (get_phase_switching_state() != PhaseSwitcherBackend::SwitchingState::Ready) {
-        logger.printfln("energy_manager: Requested phase switch while not ready.");
+        logger.printfln("Requested phase switch while not ready.");
         return false;
     }
 
@@ -447,18 +449,18 @@ void EnergyManager::check_bricklet_reachable(int rc, const char *context)
         if (!bricklet_reachable) {
             bricklet_reachable = true;
             clr_error(ERROR_FLAGS_BRICKLET_MASK);
-            logger.printfln("energy_manager: Bricklet is reachable again.");
+            logger.printfln("Bricklet is reachable again.");
         }
     } else {
         if (rc == TF_E_TIMEOUT) {
-            logger.printfln("energy_manager (%s): Bricklet access timed out.", context);
+            logger.printfln_plain("energy_manager (%s): Bricklet access timed out.", context);
         } else {
-            logger.printfln("energy_manager (%s): Bricklet access returned error %d.", context, rc);
+            logger.printfln_plain("energy_manager (%s): Bricklet access returned error %d.", context, rc);
         }
         if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
             bricklet_reachable = false;
             set_error(ERROR_FLAGS_BRICKLET_MASK);
-            logger.printfln("energy_manager (%s): Bricklet is unreachable.", context);
+            logger.printfln_plain("energy_manager (%s): Bricklet is unreachable.", context);
         }
     }
     low_level_state.get("consecutive_bricklet_errors")->updateUint(consecutive_bricklet_errors);
@@ -526,7 +528,7 @@ bool EnergyManager::get_sdcard_info(struct sdcard_info *data)
 
     if (rc != TF_E_OK) {
         set_error(ERROR_FLAGS_SDCARD_MASK);
-        logger.printfln("energy_manager: Failed to get SD card information. Error %i", rc);
+        logger.printfln("Failed to get SD card information. Error %i", rc);
         return false;
     }
 
@@ -572,7 +574,7 @@ void EnergyManager::set_output(bool output_value)
     // Don't check if bricklet is reachable because the setter call won't tell us.
 
     if (result != TF_E_OK)
-        logger.printfln("energy_manager: Failed to set output relay: error %i", result);
+        logger.printfln("Failed to set output relay: error %i", result);
 }
 
 void EnergyManager::set_rgb_led(uint8_t pattern, uint16_t hue)
@@ -582,7 +584,7 @@ void EnergyManager::set_rgb_led(uint8_t pattern, uint16_t hue)
     // Don't check if bricklet is reachable because the setter call won't tell us.
 
     if (rc != TF_E_OK)
-        logger.printfln("energy_manager: Failed to set LED state: error %i. Continuing anyway.", rc);
+        logger.printfln("Failed to set LED state: error %i. Continuing anyway.", rc);
 }
 
 void EnergyManager::set_time(const tm &date_time)
@@ -603,7 +605,7 @@ void EnergyManager::set_time(const tm &date_time)
             return;
     } while (retries-- > 0);
 
-    logger.printfln("energy_manager: Failed to set datetime: error %i", rc);
+    logger.printfln("Failed to set datetime: error %i", rc);
 }
 
 struct timeval EnergyManager::get_time()
@@ -650,7 +652,7 @@ struct timeval EnergyManager::get_time()
         return time;
     } while (retries-- > 0);
 
-    logger.printfln("energy_manager: Failed to get datetime: error %i", rc);
+    logger.printfln("Failed to get datetime: error %i", rc);
     time.tv_sec = 0;
     return time;
 }

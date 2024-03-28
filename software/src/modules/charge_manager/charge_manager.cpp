@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "charge_manager"
+
 #include "charge_manager.h"
 #include "module_dependencies.h"
 
@@ -172,7 +174,7 @@ void ChargeManager::pre_setup()
     }), [](const Config &conf, ConfigSource source) -> String {
 #if MODULE_POWER_MANAGER_AVAILABLE()
         if (source == ConfigSource::API && power_manager.get_enabled()) {
-            logger.printfln("charge_manager: Cannot set available_current via the API if the Power Manager is enabled.");
+            logger.printfln("Cannot set available_current via the API if the Power Manager is enabled.");
             return "Cannot set available_current if the Power Manager is enabled.";
         }
 #endif
@@ -452,7 +454,7 @@ void ChargeManager::check_watchdog()
 
     uint32_t default_available_current = this->default_available_current;
 
-    logger.printfln("Charge manager watchdog triggered! Received no available current update for %d ms. Setting available current to %u mA", WATCHDOG_TIMEOUT_MS, default_available_current);
+    logger.printfln("Watchdog triggered! Received no available current update for %d ms. Setting available current to %u mA", WATCHDOG_TIMEOUT_MS, default_available_current);
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.trigger_action(AutomationTriggerID::ChargeManagerWd, nullptr, [this](Config *conf, void *data) -> bool {
@@ -552,7 +554,7 @@ void ChargeManager::distribute_current()
 {
     bool seen_all_chargers_local = seen_all_chargers();
     if (seen_all_chargers_local && !printed_all_chargers_seen) {
-        logger.printfln("Charge manager: Seen all chargers.");
+        logger.printfln("Seen all chargers.");
         printed_all_chargers_seen = true;
     }
 
@@ -962,7 +964,7 @@ void ChargeManager::register_urls()
     api.addCommand("charge_manager/available_phases_update", &available_phases_update, {}, [this](){
         uint32_t phases = this->available_phases_update.get("phases")->asUint();
         this->available_phases.get("phases")->updateUint(phases);
-        logger.printfln("charge_manager: Available phases: %u", phases);
+        logger.printfln("Available phases: %u", phases);
     }, false);
 
     //api.addState("charge_manager/control_pilot_disconnect", &control_pilot_disconnect);

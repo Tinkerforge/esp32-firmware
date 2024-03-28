@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "coredump"
+
 #include "coredump.h"
 
 #include "build.h"
@@ -80,9 +82,9 @@ void Coredump::pre_setup()
     });
 
     if (setup_error == CoredumpSetupError::BufferToSmall) {
-        logger.printfln("Coredump: Buffer too small for any info data.");
+        logger.printfln("Buffer too small for any info data.");
     } else if (setup_error == CoredumpSetupError::Truncated) {
-        logger.printfln("Coredump: Buffer too small for all data; info data truncated.");
+        logger.printfln("Buffer too small for all data; info data truncated.");
     }
 }
 

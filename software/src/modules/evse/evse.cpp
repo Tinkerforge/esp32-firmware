@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "evse"
+
 #include "evse.h"
 #include "module_dependencies.h"
 
@@ -544,17 +546,17 @@ void EVSE::update_all_data()
 
     if (contactor_error_changed) {
         if (contactor_error != 0) {
-            logger.printfln("EVSE: Contactor error %d", contactor_error);
+            logger.printfln("Contactor error %d", contactor_error);
         } else {
-            logger.printfln("EVSE: Contactor error cleared");
+            logger.printfln("Contactor error cleared");
         }
     }
 
     if (error_state_changed) {
         if (error_state != 0) {
-            logger.printfln("EVSE: Error state %d", error_state);
+            logger.printfln("Error state %d", error_state);
         } else {
-            logger.printfln("EVSE: Error state cleared");
+            logger.printfln("Error state cleared");
         }
     }
 

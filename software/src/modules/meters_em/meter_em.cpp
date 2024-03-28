@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "meter_em"
+
 #include "meter_em.h"
 #include "module_dependencies.h"
 
@@ -54,7 +56,7 @@ void MeterEM::update_from_em_all_data(const EnergyManagerAllData &all_data)
     if (meter_type != all_data.energy_meter_type) {
         if (meter_type != METER_TYPE_NONE) {
             if (!meter_change_warning_printed) {
-                logger.printfln("meter_em: Meter change detected. This is not supported.");
+                logger.printfln("Meter change detected. This is not supported.");
                 meter_change_warning_printed = true;
             }
             return;

@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "energy_manager"
+
 #include "energy_manager.h"
 #include "module_dependencies.h"
 
@@ -60,7 +62,7 @@ void EnergyManager::register_events()
 
             if (count == 0) {
                 if (show_blank_value_id_update_warnings) {
-                    logger.printfln("data_points: Ignoring blank value IDs update from meter in slot %u.", slot);
+                    logger.printfln("Ignoring blank value IDs update from meter in slot %u.", slot);
                 }
                 return EventResult::OK;
             }
@@ -74,7 +76,7 @@ void EnergyManager::register_events()
                     return EventResult::OK;
                 });
             } else {
-                logger.printfln("data_points: Meter in slot %u doesn't provide power.", slot);
+                logger.printfln("Meter in slot %u doesn't provide power.", slot);
             }
 
             return EventResult::Deregister;
@@ -174,7 +176,7 @@ void EnergyManager::collect_data_points()
                 }
 
                 if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
-                    logger.printfln("energy_manager: Data point queue is full, dropping new data point");
+                    logger.printfln("Data point queue is full, dropping new data point");
                 }
                 else {
                     pending_data_points.push_back([this, utc, local, uid, flags, power]{
@@ -216,7 +218,7 @@ void EnergyManager::collect_data_points()
             }
 
             if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
-                logger.printfln("energy_manager: Data point queue is full, dropping new data point");
+                logger.printfln("Data point queue is full, dropping new data point");
             }
             else {
                 pending_data_points.push_back([this, utc, local, flags, power]{
@@ -244,7 +246,7 @@ void EnergyManager::collect_data_points()
 
                 if (have_data) {
                     if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
-                        logger.printfln("energy_manager: Data point queue is full, dropping new data point");
+                        logger.printfln("Data point queue is full, dropping new data point");
                     }
                     else {
                         pending_data_points.push_back([this, local, uid, energy]{
@@ -283,7 +285,7 @@ void EnergyManager::collect_data_points()
             availability = meters.get_energy_import(slot, &total_import, max_age);
             if (availability == MeterValueAvailability::Fresh) {
                 if (isnan(total_import)) {
-                    logger.printfln("data_points: Meter claims fresh 'import' value but returned NaN.");
+                    logger.printfln("Meter claims fresh 'import' value but returned NaN.");
                 } else {
                     have_data = true;
                     energy_import[slot] = clamp<uint64_t>(0,
@@ -301,7 +303,7 @@ void EnergyManager::collect_data_points()
             availability = meters.get_energy_export(slot, &total_export, max_age);
             if (availability == MeterValueAvailability::Fresh) {
                 if (isnan(total_export)) {
-                    logger.printfln("data_points: Meter claims fresh 'export' value but returned NaN.");
+                    logger.printfln("Meter claims fresh 'export' value but returned NaN.");
                 } else {
                     have_data = true;
                     energy_export[slot] = clamp<uint64_t>(0,
@@ -318,7 +320,7 @@ void EnergyManager::collect_data_points()
 
         if (have_data) {
             if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
-                logger.printfln("energy_manager: Data point queue is full, dropping new data point");
+                logger.printfln("Data point queue is full, dropping new data point");
             }
             else {
                 pending_data_points.push_back([this, local, energy_import, energy_export]{
@@ -424,17 +426,17 @@ void EnergyManager::load_persistent_data_v1(uint8_t *buf)
     memset(&zero_v1, 0, sizeof(zero_v1));
 
     if (memcmp(&data_v1, &zero_v1, sizeof(data_v1)) == 0) {
-        logger.printfln("energy_manager: Persistent data v1 missing, first boot?");
+        logger.printfln("Persistent data v1 missing, first boot?");
         return; // all zero, first boot
     }
 
     if (internet_checksum((uint8_t *)&data_v1, sizeof(data_v1)) != 0) {
-        logger.printfln("energy_manager: Checksum mismatch while reading persistent data v1");
+        logger.printfln("Checksum mismatch while reading persistent data v1");
         return;
     }
 
     if (data_v1.version != 1) {
-        logger.printfln("energy_manager: Unexpected version %u while reading persistent data v1", data_v1.version);
+        logger.printfln("Unexpected version %u while reading persistent data v1", data_v1.version);
         return;
     }
 
@@ -452,17 +454,17 @@ void EnergyManager::load_persistent_data_v2(uint8_t *buf)
     memset(&zero_v2, 0, sizeof(zero_v2));
 
     if (memcmp(&data_v2, &zero_v2, sizeof(data_v2)) == 0) {
-        logger.printfln("energy_manager: Persistent data v2 missing, first boot?");
+        logger.printfln("Persistent data v2 missing, first boot?");
         return; // all zero, first boot with v2 firmware
     }
 
     if (internet_checksum((uint8_t *)&data_v2, sizeof(data_v2)) != 0) {
-        logger.printfln("energy_manager: Checksum mismatch while reading persistent data v2");
+        logger.printfln("Checksum mismatch while reading persistent data v2");
         return;
     }
 
     if (data_v2.version != 2) {
-        logger.printfln("energy_manager: Unexpected version %u while reading persistent data v2", data_v2.version);
+        logger.printfln("Unexpected version %u while reading persistent data v2", data_v2.version);
         return;
     }
 
@@ -554,7 +556,7 @@ bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const stru
             return false; // retry
         }
         else {
-            logger.printfln("energy_manager: Failed to set wallbox 5min data point: error %d", rc);
+            logger.printfln("Failed to set wallbox 5min data point: error %d", rc);
             return true;
         }
     }
@@ -563,7 +565,7 @@ bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const stru
             return false; // retry
         }
         else {
-            logger.printfln("energy_manager: Failed to set wallbox 5min data point: status (%s, %u)", get_data_status_string(status), status);
+            logger.printfln("Failed to set wallbox 5min data point: status (%s, %u)", get_data_status_string(status), status);
             return true;
         }
     }
@@ -628,7 +630,7 @@ bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_
             return false; // retry
         }
         else {
-            logger.printfln("energy_manager: Failed to set wallbox daily data point: error %d", rc);
+            logger.printfln("Failed to set wallbox daily data point: error %d", rc);
             return true;
         }
     }
@@ -637,7 +639,7 @@ bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_
             return false; // retry
         }
         else {
-            logger.printfln("energy_manager: Failed to set wallbox daily data point: status (%s, %u)", get_data_status_string(status), status);
+            logger.printfln("Failed to set wallbox daily data point: status (%s, %u)", get_data_status_string(status), status);
             return true;
         }
     }
@@ -705,7 +707,7 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
             return false; // retry
         }
         else {
-            logger.printfln("energy_manager: Failed to set energy manager 5min data point: error %d", rc);
+            logger.printfln("Failed to set energy manager 5min data point: error %d", rc);
             return true;
         }
     }
@@ -714,7 +716,7 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
             return false; // retry
         }
         else {
-            logger.printfln("energy_manager: Failed to set energy manager 5min data point: status (%s, %u)", get_data_status_string(status), status);
+            logger.printfln("Failed to set energy manager 5min data point: status (%s, %u)", get_data_status_string(status), status);
             return true;
         }
     }
@@ -797,7 +799,7 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
             return false; // retry
         }
         else {
-            logger.printfln("energy_manager: Failed to set energy manager daily data point: error %i", rc);
+            logger.printfln("Failed to set energy manager daily data point: error %i", rc);
             return true;
         }
     }
@@ -806,7 +808,7 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
             return false; // retry
         }
         else {
-            logger.printfln("energy_manager: Failed to set energy manager daily data point: status (%s, %u)", get_data_status_string(status), status);
+            logger.printfln("Failed to set energy manager daily data point: status (%s, %u)", get_data_status_string(status), status);
             return true;
         }
     }
@@ -903,7 +905,7 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("energy_manager: Failed to get wallbox 5min data point: stream out of sync (%u != %u)", metadata->next_offset, data_chunk_offset);
+        logger.printfln("Failed to get wallbox 5min data point: stream out of sync (%u != %u)", metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
             write_success = response->write("]");
@@ -979,10 +981,10 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
 
                     if (rc != TF_E_OK || status != 0) {
                         if (rc != TF_E_OK) {
-                            logger.printfln("energy_manager: Failed to continue getting wallbox 5min data point: error %d", rc);
+                            logger.printfln("Failed to continue getting wallbox 5min data point: error %d", rc);
                         }
                         else if (status != 0) {
-                            logger.printfln("energy_manager: Failed to continue getting wallbox 5min data point: status (%s, %u)", get_data_status_string(status), status);
+                            logger.printfln("Failed to continue getting wallbox 5min data point: status (%s, %u)", get_data_status_string(status), status);
                         }
 
                         OwnershipGuard ownership_guard2(metadata->response_ownership, metadata->response_owner_id);
@@ -1104,11 +1106,11 @@ void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ow
 
             if (rc != TF_E_OK) {
                 response->writef("Failed to get wallbox 5min data point: error %d", rc);
-                logger.printfln("energy_manager: Failed to get wallbox 5min data point: error %d", rc);
+                logger.printfln("Failed to get wallbox 5min data point: error %d", rc);
             }
             else if (status != 0) {
                 response->writef("Failed to get wallbox 5min data point: status (%s, %u)", get_data_status_string(status), status);
-                logger.printfln("energy_manager: Failed to get wallbox 5min data point: status (%s, %u)", get_data_status_string(status), status);
+                logger.printfln("Failed to get wallbox 5min data point: status (%s, %u)", get_data_status_string(status), status);
             }
 
             response->flush();
@@ -1163,7 +1165,7 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("energy_manager: Failed to get wallbox daily data point: stream out of sync (%u != %u)",
+        logger.printfln("Failed to get wallbox daily data point: stream out of sync (%u != %u)",
                         metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
@@ -1264,11 +1266,11 @@ void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
 
             if (rc != TF_E_OK) {
                 response->writef("Failed to get wallbox daily data point: error %d", rc);
-                logger.printfln("energy_manager: Failed to get wallbox daily data point: error %d", rc);
+                logger.printfln("Failed to get wallbox daily data point: error %d", rc);
             }
             else if (status != 0) {
                 response->writef("Failed to get wallbox daily data point: status (%s, %u)", get_data_status_string(status), status);
-                logger.printfln("energy_manager: Failed to get wallbox daily data point: status (%s, %u)", get_data_status_string(status), status);
+                logger.printfln("Failed to get wallbox daily data point: status (%s, %u)", get_data_status_string(status), status);
             }
 
             response->flush();
@@ -1323,7 +1325,7 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("energy_manager: Failed to get energy manager 5min data point: stream out of sync (%u != %u)",
+        logger.printfln("Failed to get energy manager 5min data point: stream out of sync (%u != %u)",
                         metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
@@ -1404,10 +1406,10 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
 
                     if (rc != TF_E_OK || status != 0) {
                         if (rc != TF_E_OK) {
-                            logger.printfln("energy_manager: Failed to continue getting energy manager 5min data point: error %d", rc);
+                            logger.printfln("Failed to continue getting energy manager 5min data point: error %d", rc);
                         }
                         else if (status != 0) {
-                            logger.printfln("energy_manager: Failed to continue getting energy manager 5min data point: status (%s, %u)", get_data_status_string(status), status);
+                            logger.printfln("Failed to continue getting energy manager 5min data point: status (%s, %u)", get_data_status_string(status), status);
                         }
 
                         OwnershipGuard ownership_guard2(metadata->response_ownership, metadata->response_owner_id);
@@ -1527,11 +1529,11 @@ void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *respo
 
             if (rc != TF_E_OK) {
                 response->writef("Failed to get energy manager 5min data point: error %d", rc);
-                logger.printfln("energy_manager: Failed to get energy manager 5min data point: error %d", rc);
+                logger.printfln("Failed to get energy manager 5min data point: error %d", rc);
             }
             else if (status != 0) {
                 response->writef("Failed to get energy manager 5min data point: status (%s, %u)", get_data_status_string(status), status);
-                logger.printfln("energy_manager: Failed to get energy manager 5min data point: status (%s, %u)", get_data_status_string(status), status);
+                logger.printfln("Failed to get energy manager 5min data point: status (%s, %u)", get_data_status_string(status), status);
             }
 
             response->flush();
@@ -1585,7 +1587,7 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("energy_manager: Failed to get energy manager daily data point: stream out of sync (%u != %u)",
+        logger.printfln("Failed to get energy manager daily data point: stream out of sync (%u != %u)",
                         metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
@@ -1675,11 +1677,11 @@ void EnergyManager::history_energy_manager_daily_response(IChunkedResponse *resp
 
             if (rc != TF_E_OK) {
                 response->writef("Failed to get energy manager daily data point: error %d", rc);
-                logger.printfln("energy_manager: Failed to get energy manager daily data point: error %d", rc);
+                logger.printfln("Failed to get energy manager daily data point: error %d", rc);
             }
             else if (status != 0) {
                 response->writef("Failed to get energy manager daily data point: status (%s, %u)", get_data_status_string(status), status);
-                logger.printfln("energy_manager: Failed to get energy manager daily data point: status (%s, %u)", get_data_status_string(status), status);
+                logger.printfln("Failed to get energy manager daily data point: status (%s, %u)", get_data_status_string(status), status);
             }
 
             response->flush();

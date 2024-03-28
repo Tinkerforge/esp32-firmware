@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "em_sdcard"
+
 #include "em_sdcard.h"
 #include "module_dependencies.h"
 
@@ -63,7 +65,7 @@ void EMSDcard::register_urls()
             return;
         }
 
-        logger.printfln("em_sdcard: Formatting SD card...");
+        logger.printfln("Formatting SD card...");
         if (!energy_manager.format_sdcard()) {
             result = "Format request failed";
             return;

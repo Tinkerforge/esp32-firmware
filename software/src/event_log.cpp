@@ -142,12 +142,18 @@ void EventLog::write(const char *buf, size_t len)
 #endif
 }
 
-int EventLog::printfln(const char *fmt, va_list args)
+int EventLog::vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
 {
     char buf[256];
     auto buf_size = sizeof(buf) / sizeof(buf[0]);
+    auto written = 0;
 
-    auto written = vsnprintf(buf, buf_size, fmt, args);
+    if (prefix != nullptr && prefix_len < buf_size) {
+        memcpy(buf, prefix, prefix_len);
+        written += prefix_len;
+    }
+
+    written += vsnprintf(buf + written, buf_size - written, fmt, args);
     if (written >= buf_size) {
         write("Next log message was truncated. Bump EventLog::printfln buffer size!", 68); // Don't include termination in write request.
         written = buf_size - 1; // Don't include termination, which vsnprintf always leaves in.
@@ -158,11 +164,11 @@ int EventLog::printfln(const char *fmt, va_list args)
     return written;
 }
 
-int EventLog::printfln(const char *fmt, ...)
+int EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    int result = this->printfln(fmt, args);
+    int result = vprintfln_prefixed(prefix, prefix_len, fmt, args);
     va_end(args);
 
     return result;

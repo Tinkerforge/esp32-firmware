@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "mqtt"
+
 #include "mqtt.h"
 #include "module_dependencies.h"
 
@@ -186,12 +188,12 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 {
     auto req_size = reg.config->max_string_length();
     if (req_size > MQTT_RECV_BUFFER_SIZE) {
-        logger.printfln("MQTT: Recv buf is %u bytes. %s requires %u. Bump MQTT_RECV_BUFFER_SIZE! Updates on this topic might break the MQTT connection!", MQTT_RECV_BUFFER_SIZE, reg.path, req_size);
+        logger.printfln("Recv buf is %u bytes. %s requires %u. Bump MQTT_RECV_BUFFER_SIZE! Updates on this topic might break the MQTT connection!", MQTT_RECV_BUFFER_SIZE, reg.path, req_size);
         return;
     }
 #if MODULE_DEBUG_AVAILABLE()
     if (req_size > (MQTT_RECV_BUFFER_SIZE - MQTT_RECV_BUFFER_HEADROOM))
-        logger.printfln("MQTT: Recv buf is %u bytes. %s requires %u. Maybe bump MQTT_RECV_BUFFER_SIZE?", MQTT_RECV_BUFFER_SIZE, reg.path, req_size);
+        logger.printfln("Recv buf is %u bytes. %s requires %u. Maybe bump MQTT_RECV_BUFFER_SIZE?", MQTT_RECV_BUFFER_SIZE, reg.path, req_size);
 #endif
 }
 
@@ -282,7 +284,7 @@ void Mqtt::onMqttConnect()
     last_connected_ms = millis();
     state.get("connection_start")->updateUint(last_connected_ms);
     was_connected = true;
-    logger.printfln("MQTT: Connected to broker.");
+    logger.printfln("Connected to broker.");
     this->state.get("connection_state")->updateInt((int)MqttConnectionState::CONNECTED);
 
     for (size_t i = 0; i < api.commands.size(); ++i) {
@@ -311,9 +313,9 @@ void Mqtt::onMqttConnect()
 void Mqtt::onMqttDisconnect()
 {
     if (this->state.get("connection_state")->asEnum<MqttConnectionState>() == MqttConnectionState::NOT_CONNECTED)
-        logger.printfln("MQTT: Failed to connect to broker.");
+        logger.printfln("Failed to connect to broker.");
     else
-        logger.printfln("MQTT: Disconnected from broker.");
+        logger.printfln("Disconnected from broker.");
 
     this->state.get("connection_state")->updateInt((int)MqttConnectionState::NOT_CONNECTED);
     if (was_connected) {
@@ -322,9 +324,9 @@ void Mqtt::onMqttDisconnect()
         uint32_t connected_for = now - last_connected_ms;
         state.get("connection_end")->updateUint(now);
         if (connected_for < 0x7FFFFFFF) {
-            logger.printfln("MQTT: Was connected for %u seconds.", connected_for / 1000);
+            logger.printfln("Was connected for %u seconds.", connected_for / 1000);
         } else {
-            logger.printfln("MQTT: Was connected for a long time.");
+            logger.printfln("Was connected for a long time.");
         }
     }
 }
@@ -354,7 +356,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
 
         if (retain && c.retained != Retained::Accept) {
             if (c.retained == Retained::IgnoreWarn) {
-                logger.printfln("MQTT: Retained messages on topic %s are forbidden. Ignoring retained message (data_len=%u).", c.topic.c_str(), data_len);
+                logger.printfln("Retained messages on topic %s are forbidden. Ignoring retained message (data_len=%u).", c.topic.c_str(), data_len);
             }
             return;
         }
@@ -363,7 +365,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             esp_mqtt_client_disable_receive(client, 100);
             char *copy_buf = (char *)malloc(topic_len + data_len);
             if (copy_buf == nullptr) {
-                logger.printfln("MQTT: Failed to run command %s: Failed to allocate copy_buf", c.topic.c_str());
+                logger.printfln("Failed to run command %s: Failed to allocate copy_buf", c.topic.c_str());
                 return;
             }
 
@@ -396,19 +398,19 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             continue;
 
         if (retain && reg.is_action) {
-            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path, data_len);
+            logger.printfln("Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path, data_len);
             return;
         }
 
         if (reg.is_action && data_len == 0) {
-            logger.printfln("MQTT: Topic %s is an action. Ignoring empty message.", reg.path);
+            logger.printfln("Topic %s is an action. Ignoring empty message.", reg.path);
             return;
         }
 
         esp_mqtt_client_disable_receive(client, 100);
         api.callCommandNonBlocking(reg, data, data_len, [this, reg](String error) {
             if (!error.isEmpty())
-                logger.printfln("MQTT: On %s: %s", reg.path, error.c_str());
+                logger.printfln("On %s: %s", reg.path, error.c_str());
             esp_mqtt_client_enable_receive(this->client);
         });
 
@@ -420,13 +422,13 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             continue;
 
         if (retain && reg.is_action) {
-            logger.printfln("MQTT: Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path, data_len);
+            logger.printfln("Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path, data_len);
             return;
         }
 
         char *data_cpy = (char *)malloc(data_len);
         if (data_cpy == nullptr) {
-            logger.printfln("MQTT: Failed to run raw command %s: Failed to allocate copy_buf", reg.path);
+            logger.printfln("Failed to run raw command %s: Failed to allocate copy_buf", reg.path);
             return;
         }
         memcpy(data_cpy, data, data_len);
@@ -435,7 +437,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         task_scheduler.scheduleOnce([this, reg, data_cpy, data_len](){
             String error = reg.callback(data_cpy, data_len);
             if (!error.isEmpty())
-                logger.printfln("MQTT: On %s: %s", reg.path, error.c_str());
+                logger.printfln("On %s: %s", reg.path, error.c_str());
 
             free(data_cpy);
             esp_mqtt_client_enable_receive(this->client);
@@ -456,7 +458,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     // It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client
     // because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].
     if (!retain && filter_mqtt_log(topic, topic_len))
-        logger.printfln("MQTT: Received message on unknown topic '%.*s' (data_len=%u)", static_cast<int>(topic_len), topic, data_len);
+        logger.printfln("Received message on unknown topic '%.*s' (data_len=%u)", static_cast<int>(topic_len), topic, data_len);
 }
 
 static char err_buf[64] = {0};
@@ -504,7 +506,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             if (event->current_data_offset != 0)
                 return;
             if (event->total_data_len != event->data_len) {
-                logger.printfln("MQTT: Ignoring message with payload length %d for topic %.*s. Maximum length allowed is %u.", event->total_data_len, event->topic_len, event->topic, MQTT_RECV_BUFFER_SIZE);
+                logger.printfln("Ignoring message with payload length %d for topic %.*s. Maximum length allowed is %u.", event->total_data_len, event->topic_len, event->topic, MQTT_RECV_BUFFER_SIZE);
                 return;
             }
             mqtt->onMqttMessage(event->topic, event->topic_len, event->data, event->data_len, event->retain);
@@ -517,25 +519,25 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                     if (eh.error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
                         if (was_connected && eh.esp_tls_last_esp_err != ESP_OK) {
                             const char *e = esp_err_to_name_r(eh.esp_tls_last_esp_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
-                            logger.printfln("MQTT: Transport error: %s (esp_tls_last_esp_err)", e);
+                            logger.printfln("Transport error: %s (esp_tls_last_esp_err)", e);
                             mqtt->state.get("last_error")->updateInt(eh.esp_tls_last_esp_err);
                         }
                         if (was_connected && eh.esp_tls_stack_err != 0) {
                             const char *e = esp_err_to_name_r(eh.esp_tls_stack_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
-                            logger.printfln("MQTT: Transport error: %s (esp_tls_stack_err)", e);
+                            logger.printfln("Transport error: %s (esp_tls_stack_err)", e);
                             mqtt->state.get("last_error")->updateInt(eh.esp_tls_stack_err);
                         }
                         if (eh.esp_transport_sock_errno != 0) {
                             const char *e = strerror(eh.esp_transport_sock_errno);
-                            logger.printfln("MQTT: Transport error: %s", e);
+                            logger.printfln("Transport error: %s", e);
                             mqtt->state.get("last_error")->updateInt(eh.esp_transport_sock_errno);
                         }
                     } else if (eh.error_type == MQTT_ERROR_TYPE_CONNECTION_REFUSED) {
-                        logger.printfln("MQTT: Connection refused: %s", get_mqtt_error(eh.connect_return_code));
+                        logger.printfln("Connection refused: %s", get_mqtt_error(eh.connect_return_code));
                         // Minus to indicate this is a connection error
                         mqtt->state.get("last_error")->updateInt(-eh.connect_return_code);
                     } else {
-                        logger.printfln("MQTT: Unknown error");
+                        logger.printfln("Unknown error");
                         mqtt->state.get("last_error")->updateInt(0xFFFFFFFF);
                     }
                 }, 0);
@@ -607,13 +609,13 @@ void Mqtt::setup()
         size_t cert_len = 0;
         auto cert = certs.get_cert((uint8_t) config_in_use.get("cert_id")->asInt(), &cert_len);
         if (cert == nullptr) {
-            logger.printfln("MQTT: Failed to get certificate with ID %d", config_in_use.get("cert_id")->asInt());
+            logger.printfln("Failed to get certificate with ID %d", config_in_use.get("cert_id")->asInt());
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
         mqtt_cfg.cert_pem = (const char *)cert.release();
 #else
-        logger.printfln("MQTT: Can't use custom certitifate: certs module is not built into this firmware!");
+        logger.printfln("Can't use custom certitifate: certs module is not built into this firmware!");
         return;
 #endif
     }
@@ -626,13 +628,13 @@ void Mqtt::setup()
         size_t cert_len = 0;
         auto cert = certs.get_cert((uint8_t) config_in_use.get("client_cert_id")->asInt(), &cert_len);
         if (cert == nullptr) {
-            logger.printfln("MQTT: Failed to get client certificate with ID %d", config_in_use.get("client_cert_id")->asInt());
+            logger.printfln("Failed to get client certificate with ID %d", config_in_use.get("client_cert_id")->asInt());
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
         mqtt_cfg.client_cert_pem = (const char *)cert.release();
 #else
-        logger.printfln("MQTT: Can't use custom client certitifate: certs module is not built into this firmware!");
+        logger.printfln("Can't use custom client certitifate: certs module is not built into this firmware!");
         return;
 #endif
     }
@@ -642,13 +644,13 @@ void Mqtt::setup()
         size_t cert_len = 0;
         auto cert = certs.get_cert((uint8_t) config_in_use.get("client_key_id")->asInt(), &cert_len);
         if (cert == nullptr) {
-            logger.printfln("MQTT: Failed to get client certificate with ID %d", config_in_use.get("client_key_id")->asInt());
+            logger.printfln("Failed to get client certificate with ID %d", config_in_use.get("client_key_id")->asInt());
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
         mqtt_cfg.client_key_pem = (const char *)cert.release();
 #else
-        logger.printfln("MQTT: Can't use custom client key: certs module is not built into this firmware!");
+        logger.printfln("Can't use custom client key: certs module is not built into this firmware!");
         return;
 #endif
     }

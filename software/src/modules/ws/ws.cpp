@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "ws"
+
 #include "ws.h"
 
 #include <esp_http_server.h>
@@ -58,7 +60,7 @@ void WS::register_urls()
             // However if the allocation fails we probably used the DRAM.
             multi_heap_info_t dram_info;
             heap_caps_get_info(&dram_info,  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-            logger.printfln("ws: Not enough memory to send initial state. %u > %u (%u)", buf_size, dram_info.largest_free_block, dram_info.total_free_bytes);
+            logger.printfln("Not enough memory to send initial state. %u > %u (%u)", buf_size, dram_info.largest_free_block, dram_info.total_free_bytes);
             client.close_HTTPThread();
             return;
         }

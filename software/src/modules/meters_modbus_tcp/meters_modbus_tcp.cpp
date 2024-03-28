@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "meters_modbus_tcp"
+
 #include "meter_modbus_tcp.h"
 #include "meters_modbus_tcp.h"
 #include "module_dependencies.h"
@@ -80,7 +82,7 @@ MeterClassID MetersModbusTCP::get_class() const
 IMeter * MetersModbusTCP::new_meter(uint32_t slot, Config *state, Config *errors)
 {
     if (instance_count >= MODBUSIP_MAX_CLIENTS) {
-        logger.printfln("meters_modbus_tcp: Cannot create more than " MACRO_VALUE_TO_STRING(MODBUSIP_MAX_CLIENTS) " meters of class ModbusTCP.");
+        logger.printfln("Cannot create more than " MACRO_VALUE_TO_STRING(MODBUSIP_MAX_CLIENTS) " meters of class ModbusTCP.");
         return nullptr;
     }
     instance_count++;

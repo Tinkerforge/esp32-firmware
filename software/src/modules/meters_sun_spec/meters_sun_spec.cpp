@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "meters_sun_spec"
+
 #include "meter_sun_spec.h"
 #include "meters_sun_spec.h"
 #include "api.h"

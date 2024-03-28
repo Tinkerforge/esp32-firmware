@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "automation"
+
 #include "automation.h"
 
 #include "api.h"
@@ -37,7 +39,7 @@ void Automation::pre_setup()
             {"message", Config::Str("", 0, 64)}
         }),
         [this](const Config *cfg) {
-            logger.printfln("    %s", cfg->get("message")->asString().c_str());
+            logger.printfln_plain("    %s", cfg->get("message")->asString().c_str());
         }
     );
     register_trigger(
@@ -158,7 +160,7 @@ void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorC
 bool Automation::trigger_action(AutomationTriggerID number, void *data, std::function<bool(Config *, void *)> &&cb)
 {
     if (config_in_use.is_null()) {
-        logger.printfln("automation: Received trigger ID %u before loading config. Event lost.", static_cast<uint32_t>(number));
+        logger.printfln("Received trigger ID %u before loading config. Event lost.", static_cast<uint32_t>(number));
         return false;
     }
     bool triggered = false;
@@ -167,7 +169,7 @@ bool Automation::trigger_action(AutomationTriggerID number, void *data, std::fun
         Config *trigger = static_cast<Config *>(conf.get("trigger"));
         if (trigger->getTag<AutomationTriggerID>() == number && cb(trigger, data)) {
             triggered = true;
-            logger.printfln("Running automation rule #%d", current_rule);
+            logger.printfln("Running rule #%d", current_rule);
             const Config *action = static_cast<const Config *>(conf.get("action"));
             AutomationActionID action_ident = action->getTag<AutomationActionID>();
             if (action_ident != AutomationActionID::None && action_map.find(action_ident) != action_map.end()) {
