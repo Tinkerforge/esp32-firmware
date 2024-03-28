@@ -26,7 +26,7 @@ let x = {
             "pv_excess_settings": "PV excess charging"
         },
         "content": {
-            "page_header": "Power Manager",
+            "page_header": "Energy Manager",
 
             "enable_pm": "Power Manager enabled",
             "enable_pm_desc": "Automatically adjust the amount of available charging power",

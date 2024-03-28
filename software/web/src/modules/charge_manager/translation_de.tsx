@@ -69,7 +69,7 @@ let x = {
             "multi_broadcast_modal_cancel": "Abbrechen",
 
             "scan_error_1": "Firmwareversion inkompatibel",
-            "scan_error_2": "Lastmanagement deaktiviert",
+            "scan_error_2": "Fremdsteuerung deaktiviert",
 
             "mode_disabled": "Deaktiviert",
             "mode_manager": "Lastmanager / PV-Überschussladen",
@@ -107,7 +107,7 @@ let x = {
             "charge_error_0": "OK",
             "charge_error_1": "Kommunikationsfehler",
             "charge_error_2": "Paketheader ungültig oder Firmware inkompatibel",
-            "charge_error_3": "Lastmanagement deaktiviert",
+            "charge_error_3": "Fremdsteuerung deaktiviert",
             "charge_error_128": "Wallbox nicht erreichbar",
             "charge_error_129": "Ladecontroller nicht erreichbar",
             "charge_error_130": "Ladecontroller reagiert nicht",
