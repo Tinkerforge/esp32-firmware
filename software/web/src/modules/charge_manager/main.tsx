@@ -137,8 +137,8 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                     ]}/>
             </FormRow>
 
-            {// The energy manager controls the available current.
-                API.hasModule("energy_manager") ? null:
+            {// The power manager controls the available current.
+                API.get_unchecked("power_manager/config")?.enabled ? null:
                 <FormRow label={__("charge_manager.status.available_current")}>
                     <InputFloat min={0} max={state.config.maximum_available_current} digits={3} unit="A"
                         value={state.available_current.current}
