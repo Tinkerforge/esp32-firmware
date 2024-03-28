@@ -336,8 +336,9 @@ void FirmwareUpdate::register_urls()
             return;
         }
 
+        logger.printfln("Factory reset requested");
+
         task_scheduler.scheduleOnce([](){
-            logger.printfln("Factory reset requested");
             factory_reset();
         }, 3000);
     }, true);
@@ -348,9 +349,9 @@ void FirmwareUpdate::register_urls()
             return;
         }
 
-        task_scheduler.scheduleOnce([](){
-            logger.printfln("Config reset requested");
+        logger.printfln("Config reset requested");
 
+        task_scheduler.scheduleOnce([](){
 #if MODULE_EVSE_COMMON_AVAILABLE()
         evse_common.factory_reset();
 #endif
