@@ -26,10 +26,10 @@ import { FormRow as VanillaFormRow, FormRowProps } from "../../ts/components/for
 import { FormSeparator  } from "../../ts/components/form_separator";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputText      } from "../../ts/components/input_text";
+import { NavbarItem     } from "../../ts/components/navbar_item";
 import { OutputFloat    } from "../../ts/components/output_float";
 import { PageHeader     } from "../../ts/components/page_header";
 import { SubPage        } from "../../ts/components/sub_page";
-import { NavbarItem } from "../../ts/components/navbar_item";
 import { Terminal } from "react-feather";
 
 export function DebugNavbar() {
@@ -263,30 +263,44 @@ export class Debug extends Component {
 
                 <FormRow label="">
                     <div class="row">
-                    <div class="mb-1 col-12 col-sm-6">
-                            <p class="mb-0 form-label text-center">{__("debug.content.flash")}</p>
+                        <div class="mb-1 col-12 col-sm-3">
+                            <p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-6">
+                        <div class="mb-1 col-12 col-sm-3">
+                            <p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-3">
                             <p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-3">
+                            <p class="mb-0 form-label text-center">{__("debug.content.flash")}</p>
                         </div>
                     </div>
                 </FormRow>
 
                 <FormRow label={__("debug.content.speed_benchmark")}>
                     <div class="row">
-                        <div class="mb-1 col-12 col-sm-6">
-                            <OutputFloat value={state_static.flash_benchmark} digits={1} scale={0} unit="MiB/s"/>
+                        <div class="mb-1 col-12 col-sm-3">
+                            <OutputFloat value={state_static.dram_benchmark} digits={1} scale={0} unit="MiB/s" />
                         </div>
-                        <div class="mb-1 col-12 col-sm-6">
-                            <OutputFloat value={state_static.psram_benchmark} digits={1} scale={0} unit="MiB/s"/>
+                        <div class="mb-1 col-12 col-sm-3">
+                            <OutputFloat value={state_static.iram_benchmark} digits={1} scale={0} unit="MiB/s" />
+                        </div>
+                        <div class="mb-1 col-12 col-sm-3">
+                            <OutputFloat value={state_static.psram_benchmark} digits={1} scale={0} unit="MiB/s" />
+                        </div>
+                        <div class="mb-1 col-12 col-sm-3">
+                            <OutputFloat value={state_static.flash_benchmark} digits={1} scale={0} unit="MiB/s" />
                         </div>
                     </div>
                 </FormRow>
 
                 <FormRow label={__("debug.content.memory_mode")} label_muted={__("debug.content.memory_mode_muted")}>
                     <div class="row">
-                        <div class="mb-1 col-12 col-sm-6">
-                            <InputText value={state_static.flash_mode}/>
+                        <div class="mb-1 col-12 col-sm-9">
+                        </div>
+                        <div class="mb-1 col-12 col-sm-3">
+                            <InputText value={state_static.flash_mode} />
                         </div>
                     </div>
                 </FormRow>

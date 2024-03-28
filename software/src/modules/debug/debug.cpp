@@ -105,6 +105,8 @@ void Debug::pre_setup()
     psram_speed = benchmark_area(reinterpret_cast<uint8_t *>(0x3FB00000), 128*1024); // 128KiB inside the fourth MiB
 #endif
 
+    float dram_speed  = benchmark_area(reinterpret_cast<uint8_t *>(0x3FFAE000), 200*1024);
+    float iram_speed  = benchmark_area(reinterpret_cast<uint8_t *>(0x40080000), 128*1024);
     float flash_speed = benchmark_area(&_text_start, 128*1024); // 128KiB at the beginning of the code
 
     rtc_cpu_freq_config_t cpu_freq_conf;
@@ -125,9 +127,11 @@ void Debug::pre_setup()
             })},
             0, 4, Config::type_id<Config::ConfObject>()
         )},
-        {"flash_mode", Config::Str(flash_mode, 0, 8)},
-        {"flash_benchmark", Config::Float(flash_speed)},
+        {"dram_benchmark",  Config::Float(dram_speed)},
+        {"iram_benchmark",  Config::Float(iram_speed)},
         {"psram_benchmark", Config::Float(psram_speed)},
+        {"flash_benchmark", Config::Float(flash_speed)},
+        {"flash_mode",      Config::Str(flash_mode, 0, 8)},
     });
 
     for (uint32_t i = 0; i < 4; i++) {

@@ -12,9 +12,11 @@ export interface state_static {
     cpu_clk: number;
     apb_clk: number;
     spi_buses: spi_state[];
-    flash_mode: string;
-    flash_benchmark: number;
+    dram_benchmark: number;
+    iram_benchmark: number;
     psram_benchmark: number;
+    flash_benchmark: number;
+    flash_mode: string;
 }
 
 export interface state_fast {
