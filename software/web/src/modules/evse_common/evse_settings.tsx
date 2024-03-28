@@ -293,8 +293,8 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                             ["0",__("evse.content.gpio_shutdown_not_configured")],
                                             ["1",__("evse.content.gpio_shutdown_on_open")],
                                             ["2",__("evse.content.gpio_shutdown_on_close")],
-                                            ["3",__("evse.content.gpio_4300w_on_open")],
-                                            ["4",__("evse.content.gpio_4300w_on_close")],
+                                            ["3",__("evse.content.gpio_4200w_on_open")],
+                                            ["4",__("evse.content.gpio_4200w_on_close")],
                                         ]}
                                     value={gpio_cfg.shutdown_input}
                                     onValue={async (v) => {
