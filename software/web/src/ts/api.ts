@@ -138,33 +138,33 @@ export function trigger_unchecked<T extends keyof ConfigMap>(topic: string, even
     event_source.dispatchEvent(new MessageEvent<Readonly<ConfigMap[T]>>(topic, {'data': get(topic as any)}));
 }
 
-export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string) {
+export function save<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string?: string, reboot_string?: string) {
     let extracted = extract(topic, payload);
     return call((topic + "_update") as any, extracted, error_string, reboot_string);
 }
 
-export function save_unchecked<T extends string>(topic: T, payload: (T extends keyof ConfigMap ? ConfigMap[T] : any), error_string: string, reboot_string?: string) {
+export function save_unchecked<T extends string>(topic: T, payload: (T extends keyof ConfigMap ? ConfigMap[T] : any), error_string?: string, reboot_string?: string) {
     if (topic in api_cache)
         return call((topic + "_update") as any, payload, error_string, reboot_string);
     return Promise.resolve();
 }
 
-export function reset<T extends keyof ConfigMap>(topic: T, error_string: string, reboot_string?: string) {
+export function reset<T extends keyof ConfigMap>(topic: T, error_string?: string, reboot_string?: string) {
     return call((topic + "_reset") as any, null, error_string, reboot_string);
 }
 
 
-export function reset_unchecked<T extends string>(topic: T, error_string: string, reboot_string?: string) {
+export function reset_unchecked<T extends string>(topic: T, error_string?: string, reboot_string?: string) {
     if (topic in api_cache)
         return call((topic + "_reset") as any, null, error_string, reboot_string);
     return Promise.resolve();
 }
 
-export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string: string, reboot_string?: string, timeout_ms: number = 5000) {
+export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string?: string, reboot_string?: string, timeout_ms: number = 5000) {
     return call_unchecked(topic, payload, error_string, reboot_string, timeout_ms);
 }
 
-export async function call_unchecked(topic: string, payload: any, error_string: string, reboot_string?: string, timeout_ms: number = 5000) {
+export async function call_unchecked(topic: string, payload: any, error_string?: string, reboot_string?: string, timeout_ms: number = 5000) {
     try {
         let blob = await util.put('/' + topic, payload, timeout_ms);
         if (reboot_string) {
@@ -184,7 +184,8 @@ export async function call_unchecked(topic: string, payload: any, error_string: 
         }
         return blob;
     } catch (e) {
-        util.add_alert(topic.replace("/", "_") + '_failed', 'danger', error_string, e);
+        if (error_string)
+            util.add_alert(topic.replace("/", "_") + '_failed', 'danger', error_string, e);
         throw e;
     }
 }
