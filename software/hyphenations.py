@@ -82,7 +82,7 @@ de_hyph = [
     'ein-stell-ungen',
     'elek-trische',
     'Energie-bilanz',
-    'Energie-management',
+    'Energie-manage-ment',
     'Energie-manager',
     'Energie-managers',
     'Energie-wert',
@@ -576,7 +576,20 @@ de_hyph = [
     "Standard-modus",
     "Standard-wert",
     "Um-schaltung",
-    "über-prüfen"
+    "über-prüfen",
+    "Client-zer-ti-fi-kat",
+    "Ein-deu-tige",
+    "Fremd-steuer-ung",
+    "Modell-instanz",
+    "Phasen-wechsel",
+    "Serien-nummer",
+    "Server-zer-ti-fi-kat",
+    "Versions-de-tek-tion",
+    "an-ge-schlos-sene",
+    "be-lie-bi-gem",
+    "ein-ge-tra-gen",
+    "kon-trol-lierte",
+    "kon-trol-lierten"
 ]
 
 en_hyph = [
@@ -733,6 +746,7 @@ en_hyph = [
     "ca-pa-ci-tive",
     "over-ridden",
     "reset-table",
+    "manu-fac-turer"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
@@ -828,5 +842,7 @@ allowed_missing = set([
     "default_mode",
     "drawing_power",
     "ConcurrentTx",
-    "last_tag_reason"
+    "last_tag_reason",
+    "default_port",
+    "payload_str"
 ])
