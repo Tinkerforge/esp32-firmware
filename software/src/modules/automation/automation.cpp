@@ -82,7 +82,7 @@ void Automation::pre_setup()
                     return "ActionID must not be 0!";
                 }
 
-                ValidatorCb &action_validator = this->action_map[action_id].second;
+                ValidatorCb &action_validator = this->action_map[action_id].validator;
                 if (action_validator) {
                     String ret = action_validator(static_cast<const Config *>(action->get()));
                     if (!ret.isEmpty()) {
@@ -96,7 +96,7 @@ void Automation::pre_setup()
                     return "TriggerID must not be 0!";
                 }
 
-                ValidatorCb &trigger_validator = this->trigger_map[trigger_id];
+                ValidatorCb &trigger_validator = this->trigger_map[trigger_id].validator;
                 if (trigger_validator) {
                     String ret = trigger_validator(static_cast<const Config *>(trigger->get()));
                     if (!ret.isEmpty()) {
@@ -148,13 +148,13 @@ void Automation::register_urls()
 void Automation::register_action(AutomationActionID id, Config cfg, ActionCb &&callback, ValidatorCb &&validator)
 {
     action_vec.push_back({id, cfg});
-    action_map[id] = std::pair<ActionCb, ValidatorCb>(std::forward<ActionCb>(callback), std::forward<ValidatorCb>(validator));
+    action_map[id] = ActionValue{std::forward<ActionCb>(callback), std::forward<ValidatorCb>(validator)};
 }
 
 void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb &&validator)
 {
     trigger_vec.push_back({id, cfg});
-    trigger_map[id] = std::forward<ValidatorCb>(validator);
+    trigger_map[id] = TriggerValue{std::forward<ValidatorCb>(validator)};
 }
 
 bool Automation::trigger_action(AutomationTriggerID number, void *data, std::function<bool(Config *, void *)> &&cb)
@@ -173,7 +173,7 @@ bool Automation::trigger_action(AutomationTriggerID number, void *data, std::fun
             const Config *action = static_cast<const Config *>(conf.get("action"));
             AutomationActionID action_ident = action->getTag<AutomationActionID>();
             if (action_ident != AutomationActionID::None && action_map.find(action_ident) != action_map.end()) {
-                action_map[action_ident].first(static_cast<const Config *>(action->get()));
+                action_map[action_ident].callback(static_cast<const Config *>(action->get()));
             } else {
                 logger.printfln("There is no action with ID %u!", (uint8_t)action_ident);
             }
@@ -193,7 +193,7 @@ bool Automation::is_trigger_active(AutomationTriggerID number)
     return false;
 }
 
-ConfigVec Automation::get_configured_triggers(AutomationTriggerID number)
+Automation::ConfigVec Automation::get_configured_triggers(AutomationTriggerID number)
 {
     ConfigVec vec;
     Config *tasks = static_cast<Config *>(config_in_use.get("tasks"));

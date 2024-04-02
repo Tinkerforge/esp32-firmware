@@ -25,24 +25,24 @@
 #include <vector>
 #include "automation_defs.h"
 
-typedef std::function<void(const Config *)>                             ActionCb;
-typedef std::function<String (const Config *)>                          ValidatorCb;
-typedef std::map<AutomationActionID, std::pair<ActionCb, ValidatorCb>>        ActionMap;
-typedef std::map<AutomationTriggerID, ValidatorCb>                            TriggerMap;
-typedef std::vector<std::pair<size_t, Config *>>                        ConfigVec;
-
 class Automation : public IModule {
-    ConfigRoot config;
-    ConfigRoot config_in_use;
-    ConfigRoot enabled;
-    ConfigRoot enabled_in_use;
-
-    ActionMap   action_map;
-    TriggerMap  trigger_map;
-    std::vector<ConfUnionPrototype<AutomationTriggerID>>    trigger_vec;
-    std::vector<ConfUnionPrototype<AutomationActionID>>     action_vec;
-
 public:
+    typedef std::function<void(const Config *)>    ActionCb;
+    typedef std::function<String (const Config *)> ValidatorCb;
+
+    struct ActionValue {
+        ActionCb callback;
+        ValidatorCb validator;
+    };
+
+    struct TriggerValue {
+        ValidatorCb validator;
+    };
+
+    typedef std::map<AutomationActionID, ActionValue>   ActionMap;
+    typedef std::map<AutomationTriggerID, TriggerValue> TriggerMap;
+    typedef std::vector<std::pair<size_t, Config *>>    ConfigVec;
+
     Automation();
 
     void pre_setup() override;
@@ -58,4 +58,13 @@ public:
     bool action_triggered(const Config *conf, void *data);
 
     ConfigVec get_configured_triggers(AutomationTriggerID number);
+
+private:
+    ConfigRoot config;
+    ConfigRoot config_in_use;
+
+    ActionMap   action_map;
+    TriggerMap  trigger_map;
+    std::vector<ConfUnionPrototype<AutomationTriggerID>>    trigger_vec;
+    std::vector<ConfUnionPrototype<AutomationActionID>>     action_vec;
 };

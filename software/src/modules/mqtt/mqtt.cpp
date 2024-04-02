@@ -673,7 +673,7 @@ void Mqtt::register_urls()
 
 #if MODULE_AUTOMATION_AVAILABLE()
     if (automation.is_trigger_active(AutomationTriggerID::MQTT) && config.get("enable_mqtt")->asBool()) {
-        ConfigVec trigger_config = automation.get_configured_triggers(AutomationTriggerID::MQTT);
+        Automation::ConfigVec trigger_config = automation.get_configured_triggers(AutomationTriggerID::MQTT);
         std::vector<String> subscribed_topics;
         for (auto &conf : trigger_config) {
             bool already_subscribed = false;
