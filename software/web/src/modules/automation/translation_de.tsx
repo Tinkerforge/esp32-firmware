@@ -117,9 +117,9 @@ let x = {
                 </>
             }/*NF*/,
 
-            "print_action": "Gebe im Ereignislog aus",
+            "print_action": "Gebe im Ereignis-Log aus",
             "print_action_message": "Nachricht",
-            "print_action_text": /*FFN*/(message: string) => <>zeige "{message}" im <b>Ereignislog</b> an.</> /*NF*/
+            "print_action_text": /*FFN*/(message: string) => <>zeige "{message}" im <b>Ereignis-Log</b> an.</> /*NF*/
 
         },
         "content": {
