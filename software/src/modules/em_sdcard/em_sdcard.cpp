@@ -22,6 +22,7 @@
 
 #include "api.h"
 #include "task_scheduler.h"
+#include "event_log.h"
 
 #include "gcc_warnings.h"
 
