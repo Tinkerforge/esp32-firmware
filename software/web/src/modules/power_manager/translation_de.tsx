@@ -54,7 +54,7 @@ let x = {
             "default_mode_muted": "wird nach Neustart verwendet",
             "meter_slot_grid_power": "Stromzähler",
             "meter_slot_grid_power_select": "Auswählen...",
-            "meter_slot_grid_power_none": "Keine Stromzähler konfiguriert",
+            "meter_slot_grid_power_none": "Kein Stromzähler konfiguriert",
             "guaranteed_power": "Min + PV: Mindestladeleistung",
             "guaranteed_power_muted": "Leistung, die im Min + PV-Modus zum Laden von Fahrzeugen aus dem Netz bezogen werden darf.",
             "target_power_from_grid": "Soll-Netzbezug",

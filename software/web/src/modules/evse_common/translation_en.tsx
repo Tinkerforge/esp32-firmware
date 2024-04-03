@@ -236,8 +236,8 @@ let x = {
 
             "phases_connected": "Supply",
             "phases_connected_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
-            "phases_connected_1": "single-phase",
-            "phases_connected_3": "three-phase"
+            "phases_connected_1": "Single-phase",
+            "phases_connected_3": "Three-phase"
         },
         "automation": {
             "external_current_wd": "External control watchdog triggered",
