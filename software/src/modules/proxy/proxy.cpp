@@ -24,6 +24,7 @@
 #include "bindings/hal_common.h"
 
 #include "task_scheduler.h"
+#include "event_log.h"
 
 #include "api.h"
 
