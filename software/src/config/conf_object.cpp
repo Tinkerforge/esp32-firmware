@@ -1,5 +1,7 @@
 #include "config/private.h"
 
+#include "event_log.h"
+
 bool Config::ConfObject::slotEmpty(size_t i)
 {
     return object_buf[i].schema == nullptr;
@@ -31,8 +33,8 @@ Config *Config::ConfObject::get(const String &needle)
             return &slot->values[i];
     }
 
-    logger.printfln("Config key %s not found!", needle.c_str());
-    esp_system_abort("");
+    char *message;
+    esp_system_abort(asprintf(&message, "Config key %s not found!", needle.c_str()) < 0 ? "" : message);
 }
 
 const Config *Config::ConfObject::get(const String &needle) const
@@ -51,8 +53,8 @@ const Config *Config::ConfObject::get(const String &needle) const
             return &slot->values[i];
     }
 
-    logger.printfln("Config key %s not found!", needle.c_str());
-    esp_system_abort("");
+    char *message;
+    esp_system_abort(asprintf(&message, "Config key %s not found!", needle.c_str()) < 0 ? "" : message);
 }
 
 const Config::ConfObject::Slot *Config::ConfObject::getSlot() const { return &object_buf[idx]; }

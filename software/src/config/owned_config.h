@@ -3,8 +3,8 @@
 #include <vector>
 #include <memory>
 
-#include "event_log.h"
 #include "cool_string.h"
+#include "esp_system.h"
 
 #define STRICT_VARIANT_ASSUME_MOVE_NOTHROW true
 #include "strict_variant/variant.hpp"
@@ -64,8 +64,7 @@ struct OwnedConfig {
     template<typename ConfigT>
     const ConfigT *as() const {
         if (!this->is<ConfigT>()) {
-            logger.printfln("as: Config has wrong type.");
-            esp_system_abort("");
+            esp_system_abort("as: Config has wrong type.");
         }
         return strict_variant::get<ConfigT>(&value);
     }
@@ -88,8 +87,7 @@ struct OwnedConfig {
         } else if (this->is<int32_t>()) {
             return (T) this->asInt();
         } else {
-            logger.printfln("asEnum: Config has wrong type.");
-            esp_system_abort("");
+            esp_system_abort("asEnum: Config has wrong type.");
         }
     }
 
@@ -127,8 +125,7 @@ private:
     template<typename T, typename ConfigT>
     size_t fillArray(T *arr, size_t count) const{
         if (!this->is<OwnedConfigArray>()) {
-            logger.printfln("Can't fill array, Config is not an array");
-            esp_system_abort("");
+            esp_system_abort("Can't fill array, Config is not an array");
         }
 
         const auto &elements = strict_variant::get<OwnedConfig::OwnedConfigArray>(&value)->elements;
@@ -137,8 +134,7 @@ private:
         for (size_t i = 0; i < toWrite; ++i) {
             const OwnedConfig *entry = &elements[i];
             if (!entry->is<ConfigT>()) {
-                logger.printfln("Config entry has wrong type.");
-                esp_system_abort("");
+                esp_system_abort("Config entry has wrong type.");
             }
             arr[i] = *strict_variant::get<ConfigT>(&entry->value);
         }

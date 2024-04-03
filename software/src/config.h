@@ -25,7 +25,6 @@
 #include "FS.h"
 
 #include "cool_string.h"
-#include "event_log.h"
 #include "tools.h"
 
 #define STRICT_VARIANT_ASSUME_MOVE_NOTHROW true
@@ -565,8 +564,7 @@ public:
     T getTag() const {
         Config::check_enum_template_type<T>();
         if (!this->is<Config::ConfUnion>()) {
-            logger.printfln("Tried to get tag of a node that is not a union!");
-            esp_system_abort("");
+            esp_system_abort("Tried to get tag of a node that is not a union!");
         }
         return (T) this->get<ConfUnion>()->getTag();
     }
@@ -576,11 +574,14 @@ private:
     ConfigT *get() {
         ASSERT_MAIN_THREAD();
         if (!this->is<ConfigT>()) {
-            logger.printfln("get: Config has wrong type. This is %s, requested is %s", this->value.getVariantName(), ConfigT::variantName);
-#ifdef DEBUG_FS_ENABLE
-            logger.printfln("Content is %s", this->to_string().c_str());
+            char *message;
+            int result = -1;
+#ifndef DEBUG_FS_ENABLE
+            result = asprintf(&message, "get: Config has wrong type. This is %s, requested is %s", this->value.getVariantName(), ConfigT::variantName);
+#else
+            result = asprintf(&message, "get: Config has wrong type. This is %s, requested is %s.\n Content is %s", this->value.getVariantName(), ConfigT::variantName, this->to_string().c_str());
 #endif
-            esp_system_abort("");
+            esp_system_abort(result < 0 ? "" : message);
         }
 
         return reinterpret_cast<ConfigT *>(&value.val);
@@ -590,11 +591,14 @@ private:
     const ConfigT *get() const {
         ASSERT_MAIN_THREAD();
         if (!this->is<ConfigT>()) {
-            logger.printfln("get: Config has wrong type. This is %s, requested is %s", this->value.getVariantName(), ConfigT::variantName);
-#ifdef DEBUG_FS_ENABLE
-            logger.printfln("Content is %s", this->to_string().c_str());
+            char *message;
+            int result = -1;
+#ifndef DEBUG_FS_ENABLE
+            result = asprintf(&message, "get: Config has wrong type. This is %s, requested is %s", this->value.getVariantName(), ConfigT::variantName);
+#else
+            result = asprintf(&message, "get: Config has wrong type. This is %s, requested is %s.\n Content is %s", this->value.getVariantName(), ConfigT::variantName, this->to_string().c_str());
 #endif
-            esp_system_abort("");
+            esp_system_abort(result < 0 ? "" : message);
         }
 
         return reinterpret_cast<const ConfigT *>(&value.val);
@@ -619,11 +623,14 @@ public:
         } else if (this->is<ConfInt>()) {
             return (T) this->asInt();
         } else {
-            logger.printfln("asEnum: Config has wrong type. This is %s, (not a ConfInt or ConfUint)", this->value.getVariantName());
-#ifdef DEBUG_FS_ENABLE
-            logger.printfln("Content is %s", this->to_string().c_str());
+            char *message;
+            int result = -1;
+#ifndef DEBUG_FS_ENABLE
+            result = asprintf(&message, "asEnum: Config has wrong type. This is %s, (not a ConfInt or ConfUint)", this->value.getVariantName());
+#else
+            result = asprintf(&message, "asEnum: Config has wrong type. This is %s, (not a ConfInt or ConfUint)\nContent is %s", this->value.getVariantName(), this->to_string().c_str());
 #endif
-            esp_system_abort("");
+            esp_system_abort(result < 0 ? "" : message);
         }
     }
 
@@ -639,12 +646,14 @@ private:
     bool update_value(T value, const char *value_type) {
         ASSERT_MAIN_THREAD();
         if (!this->is<ConfigT>()) {
-            logger.printfln("update_value: Config has wrong type. This is a %s. new value is a %s", this->value.getVariantName(), value_type);
-#ifdef DEBUG_FS_ENABLE
-            logger.printfln("Content is %s", this->to_string().c_str());
-            logger.printfln("value is %s", String(value).c_str());
+            char *message;
+            int result = -1;
+#ifndef DEBUG_FS_ENABLE
+            result = asprintf(&message, "update_value: Config has wrong type. This is a %s. new value is a %s", this->value.getVariantName(), value_type);
+#else
+            result = asprintf(&message, "update_value: Config has wrong type. This is a %s. new value is a %s\nContent is %s\nvalue is %s", this->value.getVariantName(), value_type, this->to_string().c_str(), String(value).c_str());
 #endif
-            esp_system_abort("");
+            esp_system_abort(result < 0 ? "" : message);
         }
         T *target = get<ConfigT>()->getVal();
         T old_value = *target;
@@ -669,8 +678,7 @@ private:
     size_t fillArray(T *arr, size_t elements) {
         ASSERT_MAIN_THREAD();
         if (!this->is<ConfArray>()) {
-            logger.printfln("Can't fill array, Config is not an array");
-            esp_system_abort("");
+            esp_system_abort("Can't fill array, Config is not an array");
         }
 
         const ConfArray &confArr = this->value.val.a;
@@ -679,8 +687,7 @@ private:
         for (size_t i = 0; i < toWrite; ++i) {
             const Config *entry = confArr.get(i);
             if (!entry->is<ConfigT>()) {
-                logger.printfln("Config entry has wrong type.");
-                esp_system_abort("");
+                esp_system_abort("Config entry has wrong type.");
             }
             arr[i] = *entry->get<ConfigT>()->getVal();
         }

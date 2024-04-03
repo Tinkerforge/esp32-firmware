@@ -1,5 +1,7 @@
 #include "owned_config.h"
 
+#include "event_log.h"
+
 OwnedConfig::OwnedConfigWrap::OwnedConfigWrap(const OwnedConfig *_conf) : conf(_conf)
 {
 }
@@ -12,8 +14,7 @@ const OwnedConfig *OwnedConfig::OwnedConfigWrap::operator->() const
 const OwnedConfig::OwnedConfigWrap OwnedConfig::get() const
 {
     if (!this->is<OwnedConfig::OwnedConfigUnion>()) {
-        logger.printfln("Config is not a union!");
-        esp_system_abort("");
+        esp_system_abort("Config is not a union!");
     }
     OwnedConfig::OwnedConfigWrap wrap(&strict_variant::get<OwnedConfig::OwnedConfigUnion>(&value)->value[0]);
 
@@ -23,15 +24,14 @@ const OwnedConfig::OwnedConfigWrap OwnedConfig::get() const
 const OwnedConfig::OwnedConfigWrap OwnedConfig::get(uint16_t i) const
 {
     if (!this->is<OwnedConfig::OwnedConfigArray>()) {
-        logger.printfln("Config is not an array!");
-        esp_system_abort("");
+        esp_system_abort("Config is not an array!");
     }
 
     const auto &elements = strict_variant::get<OwnedConfig::OwnedConfigArray>(&value)->elements;
 
     if (i >= elements.size()) {
-        logger.printfln("Config index %u out of bounds (vector size %u)!", i, elements.size());
-        esp_system_abort("");
+        char *message;
+        esp_system_abort(asprintf(&message, "Config index %u out of bounds (vector size %u)!", i, elements.size()) < 0 ? "" : message);
     }
 
     return OwnedConfig::OwnedConfigWrap(&elements[i]);
@@ -40,8 +40,7 @@ const OwnedConfig::OwnedConfigWrap OwnedConfig::get(uint16_t i) const
 const OwnedConfig::OwnedConfigWrap OwnedConfig::get(const String &key) const
 {
     if (!this->is<OwnedConfig::OwnedConfigObject>()) {
-        logger.printfln("Config is not an object!");
-        esp_system_abort("");
+        esp_system_abort("Config is not an object!");
     }
 
     const auto &elements = strict_variant::get<OwnedConfig::OwnedConfigObject>(&value)->elements;
@@ -53,15 +52,14 @@ const OwnedConfig::OwnedConfigWrap OwnedConfig::get(const String &key) const
             return OwnedConfig::OwnedConfigWrap(&val_pair.second);
     }
 
-    logger.printfln("Config key %s not found!", key.c_str());
-    esp_system_abort("");
+    char *message;
+    esp_system_abort(asprintf(&message, "Config key %s not found!", key.c_str()) < 0 ? "" : message);
 }
 
 size_t OwnedConfig::count() const
 {
     if (!this->is<OwnedConfig::OwnedConfigArray>()) {
-        logger.printfln("Config is not an array!");
-        esp_system_abort("");
+        esp_system_abort("Config is not an array!");
     }
 
     const auto &elements = strict_variant::get<OwnedConfig::OwnedConfigArray>(&value)->elements;
@@ -71,8 +69,7 @@ size_t OwnedConfig::count() const
 const std::vector<OwnedConfig>::const_iterator OwnedConfig::cbegin() const
 {
     if (!this->is<OwnedConfig::OwnedConfigArray>()) {
-        logger.printfln("Config is not an array!");
-        esp_system_abort("");
+        esp_system_abort("Config is not an array!");
     }
     const auto &elements = strict_variant::get<OwnedConfig::OwnedConfigArray>(&value)->elements;
     return elements.cbegin();
@@ -81,8 +78,7 @@ const std::vector<OwnedConfig>::const_iterator OwnedConfig::cbegin() const
 const std::vector<OwnedConfig>::const_iterator OwnedConfig::cend() const
 {
     if (!this->is<OwnedConfig::OwnedConfigArray>()) {
-        logger.printfln("Config is not an array!");
-        esp_system_abort("");
+        esp_system_abort("Config is not an array!");
     }
     const auto &elements = strict_variant::get<OwnedConfig::OwnedConfigArray>(&value)->elements;
     return elements.cend();
