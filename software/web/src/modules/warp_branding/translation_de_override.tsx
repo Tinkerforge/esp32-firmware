@@ -17,11 +17,6 @@ let x = {
             "enable_desc": "Die Wallbox verbindet sich automatisch beim Start oder wenn ein Kabel eingesteckt wird"
         }
     },
-    "event_log": {
-        "content": {
-            "debug_report_desc_muted": "kompletter Report aller Statusinformationen der Wallbox außer Passwörtern"
-        }
-    },
     "firmware_update": {
         "content": {
             "factory_reset_modal_text": <>Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. Alle aufgezeichneten Ladevorgänge gehen verloren. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Die Wallbox öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren</>,

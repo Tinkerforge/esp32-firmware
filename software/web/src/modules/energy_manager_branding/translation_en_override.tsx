@@ -12,11 +12,6 @@ let x = {
             "charge_manager": "Chargers"
         }
     },
-    "event_log": {
-        "content": {
-            "debug_report_desc_muted": "complete report of all status information of this energy manager except passwords"
-        }
-    },
     "firmware_update": {
         "content": {
             "factory_reset_modal_text": <>A factory reset will reset all configuration to their default values. <b>This action cannot be undone!</b> The energy manager will re-open the WiFi access point with the default SSID and passphrase from the manual. Are you sure?</>,

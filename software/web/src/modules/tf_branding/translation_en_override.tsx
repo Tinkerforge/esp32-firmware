@@ -12,11 +12,6 @@ let x = {
             "charge_manager": "Charge Manager"
         }
     },
-    "event_log": {
-        "content": {
-            "debug_report_desc_muted": "complete report of all status information of this Brick except passwords"
-        }
-    },
     "firmware_update": {
         "content": {
             "factory_reset_modal_text": <>A factory reset will reset all configuration to their default values. <b>This action cannot be undone!</b> The Brick will re-open the WiFi access point with the default SSID and passphrase from the label on the backside of the Brick. Are you sure?</>,

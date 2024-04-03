@@ -17,11 +17,6 @@ let x = {
             "enable_desc": "Der Brick verbindet sich automatisch beim Start oder wenn ein Kabel eingesteckt wird"
         }
     },
-    "event_log": {
-        "content": {
-            "debug_report_desc_muted": "kompletter Report aller Statusinformationen des Bricks außer Passwörtern"
-        }
-    },
     "firmware_update": {
         "content": {
             "factory_reset_modal_text": <>Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Brick öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus dem Etikett auf der Rückseite des Bricks. Fortfahren?</>,

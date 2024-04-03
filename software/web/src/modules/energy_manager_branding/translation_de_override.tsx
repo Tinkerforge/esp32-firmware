@@ -17,11 +17,6 @@ let x = {
             "enable_desc": "Der Energy Manager verbindet sich beim Start automatisch zum konfigurierten Netzwerk"
         }
     },
-    "event_log": {
-        "content": {
-            "debug_report_desc_muted": "kompletter Report aller Statusinformationen des Energy Managers außer Passwörtern"
-        }
-    },
     "firmware_update": {
         "content": {
             "factory_reset_modal_text": <>Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Energy Manager öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?</>,

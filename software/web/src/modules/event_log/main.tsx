@@ -37,9 +37,9 @@ interface EventLogState {
     show_spinner: boolean;
 }
 
-const TIMESTAMP_LEN = 25;
-const TIMESTAMP_REGEX = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}),(\d{3})  $/;
-const RELATIVE_TIME_REGEX = /^\s+(\d+),(\d{3})  $/;
+const TIMESTAMP_LEN = 24;
+const TIMESTAMP_REGEX = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}),(\d{3}) $/;
+const RELATIVE_TIME_REGEX = /^\s+(\d+),(\d{3}) $/;
 const LOG_MAX_LEN = 10 * 1024 * 1024;
 const LOG_CHUNK_LEN_DROPPED_WHEN_FULL = 1024 * 1024;
 
@@ -210,23 +210,25 @@ export class EventLog extends Component<{}, EventLogState> {
             return <SubPage name="event_log" />;
 
         return (
-            <SubPage name="event_log">
+            <SubPage name="event_log" colClasses="col-xl-10">
                 <PageHeader title={__("event_log.content.event_log")} />
 
-                <FormRow label={__("event_log.content.event_log_desc")} label_muted={__("event_log.content.event_log_desc_muted")}>
-                    <OutputTextarea
+                <OutputTextarea moreClass="form-group"
                         value={state.log}
                         placeholder={__("event_log.content.event_log_placeholder")}
+                        style="resize: both; width: 100%; white-space: pre; line-height: 1.4; text-shadow: none; font-size: 0.75rem;"
                         />
-                </FormRow>
 
-                <FormRow label={__("event_log.content.debug_report_desc")} label_muted={__("event_log.content.debug_report_desc_muted")}>
-                    <Button variant="primary" className="form-control" onClick={() => this.download_debug_report()}>
-                        <span class="mr-2">{__("event_log.content.debug_report")}</span>
-                        <Download/>
-                        <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
+                <div class="form-group">
+                    <Button variant="primary" className="form-control" onClick={() => this.download_debug_report()} style="height: unset;">
+                        <span class="text-nowrap">{__("event_log.content.debug_report")}</span>{" "}
+                        <span class="text-nowrap">
+                            <span class="ml-1 mr-2">{__("event_log.content.debug_report_no_passwords")}</span>
+                            <Download/>
+                            <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
+                        </span>
                     </Button>
-                </FormRow>
+                </div>
             </SubPage>
         );
     }
