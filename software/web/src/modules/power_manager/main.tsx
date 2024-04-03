@@ -456,7 +456,6 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                                     items={meter_slots}
                                     value={s.meter_slot_grid_power}
                                     onValue={(v) => this.setState({meter_slot_grid_power: parseInt(v)})}
-                                    disabled={meter_slots.length == 0}
                                 />
                             </FormRow>
 
