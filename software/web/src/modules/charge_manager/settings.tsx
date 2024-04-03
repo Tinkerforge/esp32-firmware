@@ -205,7 +205,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                 <div>
                                     <FormRow label="">
                                         <div style="color:red">
-                                            Lastmanagement-Einstellungen werden ignoriert: Wallbox steuert nur sich selbst oder ist fremdgesteuert.
+                                            {__("charge_manager.content.managed_disabled")}
                                         </div>
                                     </FormRow>
                                 </div>

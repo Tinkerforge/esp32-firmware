@@ -83,7 +83,9 @@ let x = {
             "charge_manager_chargers_reset_modal_text": "Resetting the charge manager configuration also deletes the list of controlled chargers. Continue?",
 
             "header_load_management": "Dynamic load management",
-            "load_management_explainer": "Adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)"
+            "load_management_explainer": "Adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)",
+
+            "managed_disabled": "Charge management settings will be ignored: Charger only controls itself or is controlled externally."
         },
         "automation": {
           "charge_manager_wd": "Charge manager watchdog triggered",
