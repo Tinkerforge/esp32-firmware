@@ -17,7 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "meters_rs485_bricklet"
+#define EVENT_LOG_PREFIX "meters_rs485_brk"
+
+#include "event_log.h"
 
 #include "meters_rs485_bricklet.h"
 

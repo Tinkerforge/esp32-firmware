@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "meters_meta"
-
 #include "meters_meta.h"
 #include "module_dependencies.h"
 

@@ -17,13 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "automation"
-
 #include "automation.h"
 
 #include "api.h"
 #include "task_scheduler.h"
 #include "tools.h"
+
+#include "event_log.h"
 
 Automation::Automation()
 {

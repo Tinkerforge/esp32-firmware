@@ -21,6 +21,7 @@
 #include "tools.h"
 #include "module_dependencies.h"
 #include "modules/meters/meter_value_availability.h"
+#include "event_log.h"
 
 extern RequireMeter require_meter;
 

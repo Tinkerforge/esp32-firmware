@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "em_sdcard"
-
 #include "em_sdcard.h"
 #include "module_dependencies.h"
 

@@ -1,7 +1,5 @@
 // WARNING: Edit only power_manager_debug.cpp.template. Do not edit power_manager_debug.cpp.
 
-#define EVENT_LOG_PREFIX "power_manager"
-
 #include "power_manager.h"
 #include "module_dependencies.h"
 

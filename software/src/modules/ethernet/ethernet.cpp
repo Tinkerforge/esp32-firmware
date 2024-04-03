@@ -32,6 +32,7 @@
 #include "task_scheduler.h"
 #include "build.h"
 #include "tools.h"
+#include "event_log.h"
 
 extern char local_uid_str[32];
 
@@ -92,9 +93,9 @@ void Ethernet::print_con_duration()
         uint32_t now = millis();
         uint32_t connected_for = now - last_connected;
         if (connected_for < 0x7FFFFFFF) {
-            logger.printfln("Ethernet was connected for %u seconds.", connected_for / 1000);
+            logger.printfln("Was connected for %u seconds.", connected_for / 1000);
         } else {
-            logger.printfln("Ethernet was connected for a long time.");
+            logger.printfln("Was connected for a long time.");
         }
     }
 }
@@ -124,7 +125,7 @@ void Ethernet::setup()
     state.get("connection_state")->updateUint((uint)EthernetState::NOT_CONNECTED);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Ethernet started");
+            logger.printfln("Started");
             ETH.setHostname(hostname.c_str());
 
             connection_state = EthernetState::NOT_CONNECTED;
@@ -138,7 +139,7 @@ void Ethernet::setup()
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             uint32_t link_speed = ETH.linkSpeed();
             bool full_duplex    = ETH.fullDuplex();
-            logger.printfln("Ethernet connected: %u Mbps %s Duplex, MAC: %s", link_speed, full_duplex ? "Full" : "Half", ETH.macAddress().c_str());
+            logger.printfln("Connected: %u Mbps %s Duplex, MAC: %s", link_speed, full_duplex ? "Full" : "Half", ETH.macAddress().c_str());
 
             IPAddress ip, subnet, gateway, dns, dns2;
             ip.fromString(config_in_use.get("ip")->asEphemeralCStr());
@@ -176,7 +177,7 @@ void Ethernet::setup()
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             auto ip = ETH.localIP().toString();
             auto subnet = ETH.subnetMask();
-            logger.printfln("Ethernet got IP address: %s/%u", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet));
+            logger.printfln("Got IP address: %s/%u", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet));
 
             uint32_t now = millis();
             was_connected = true;
@@ -194,12 +195,12 @@ void Ethernet::setup()
         ARDUINO_EVENT_ETH_GOT_IP);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Ethernet got IPv6 address: %s.", ETH.localIPv6().toString().c_str());
+            logger.printfln("Got IPv6 address: %s.", ETH.localIPv6().toString().c_str());
         },
         ARDUINO_EVENT_ETH_GOT_IP6);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Ethernet lost IP address.");
+            logger.printfln("Lost IP address.");
             this->print_con_duration();
 
             uint32_t now = millis();
@@ -216,7 +217,7 @@ void Ethernet::setup()
         ARDUINO_EVENT_ETH_LOST_IP);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Ethernet disconnected");
+            logger.printfln("Disconnected");
             this->print_con_duration();
 
             uint32_t now = millis();
@@ -233,7 +234,7 @@ void Ethernet::setup()
         ARDUINO_EVENT_ETH_DISCONNECTED);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Ethernet stopped");
+            logger.printfln("Stopped");
             this->print_con_duration();
 
             uint32_t now = millis();

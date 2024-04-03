@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "meter_sun_spec"
-
 #include "meter_sun_spec.h"
 #include "modules/meters_modbus_tcp/modbus_tcp_tools.h"
 #include "module_dependencies.h"

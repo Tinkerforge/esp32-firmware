@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "meter_rs485_bricklet"
+#define EVENT_LOG_PREFIX "meters_rs485_brk"
 
 #include "meter_rs485_bricklet.h"
 
@@ -26,12 +26,13 @@
 #include "modules/meters/sdm_helpers.h"
 #include "task_scheduler.h"
 #include "tools.h"
-
-//#include "gcc_warnings.h"
+#include "event_log.h"
 
 #include "sdm630_defs.h"
 #include "sdm72dmv2_defs.h"
 #include "sdm72dm_defs.h"
+
+//#include "gcc_warnings.h"
 
 static uint16_t write_buf[100];
 static uint16_t registers[400];

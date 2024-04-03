@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "migrations"
+
 #include "config_migrations.h"
 
 #include <vector>
@@ -32,6 +34,8 @@
 #include "digest_auth.h"
 #include "task_scheduler.h"
 #include "tools.h"
+
+#include "event_log.h"
 
 struct ConfigMigration {
     const int major, minor, patch;

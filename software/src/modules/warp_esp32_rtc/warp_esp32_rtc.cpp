@@ -25,6 +25,7 @@
 #include "task_scheduler.h"
 #include "build.h"
 #include "tools.h"
+#include "event_log.h"
 #include <ctime>
 
 #include "gcc_warnings.h"

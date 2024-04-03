@@ -33,6 +33,72 @@ EventLog logger;
 // event_log.h can't include config.h because config.h includes event_log.h
 static ConfigRoot boot_id;
 
+static size_t log_alignment = 0;
+
+#define LOG_ALIGNMENT_WARN_THRESHOLD 16
+
+size_t strlen_with_log_alignment(const char *c) {
+    auto result = strlen(c);
+
+    if (result > LOG_ALIGNMENT_WARN_THRESHOLD) {
+        printf("(1) Log prefix %.*s is longer than threshold (%u > %u)\n", result, c, result, LOG_ALIGNMENT_WARN_THRESHOLD);
+    }
+
+    log_alignment = MAX(log_alignment, result);
+
+    return result;
+}
+
+const char *get_module_offset_and_length(const char *path, size_t *out_length) {
+    auto len = strlen(path);
+    auto needle = "src/modules/";
+    auto needle_len = strlen(needle);
+
+    // Path is shorter or does not start with src/modules/
+    if (len < needle_len || memcmp(path, needle, needle_len) != 0) {
+        auto last_slash = strrchr(path, '/');
+
+        if (last_slash == nullptr) {
+            *out_length = 0;
+            return nullptr;
+        }
+
+        auto last_dot = strrchr(last_slash, '.');
+        if (last_dot == nullptr) {
+            *out_length = 0;
+            return nullptr;
+        }
+
+        *out_length = last_dot - last_slash - 1;
+
+        if (*out_length > LOG_ALIGNMENT_WARN_THRESHOLD) {
+            printf("(2) Log prefix %.*s is longer than threshold (%u > %u) in %s\n", *out_length,  last_slash + 1, *out_length, LOG_ALIGNMENT_WARN_THRESHOLD, path);
+        }
+
+        log_alignment = MAX(log_alignment, *out_length);
+
+        return last_slash + 1;
+    }
+
+    const auto *result = path + needle_len;
+
+    auto *ptr = strchr(result, '/');
+    if (ptr == nullptr) {
+        *out_length = 0;
+        return nullptr;
+    }
+
+    *out_length = (size_t)(ptr - result);
+
+    if (*out_length > LOG_ALIGNMENT_WARN_THRESHOLD) {
+        printf("(3) Log prefix %.*s is longer than threshold (%u > %u) in %s\n", *out_length, result, *out_length, LOG_ALIGNMENT_WARN_THRESHOLD, path);
+    }
+
+    log_alignment = MAX(log_alignment, *out_length);
+
+    return result;
+}
+
 void EventLog::pre_init()
 {
     event_buf.setup();
@@ -60,17 +126,17 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
 
         // ISO 8601 allows omitting the T between date and time. Also  ',' is the preferred decimal sign.
         int written = strftime(buf, TIMESTAMP_LEN + 1, "%F %T", &timeinfo);
-        snprintf(buf + written, TIMESTAMP_LEN + 1 - written, ",%03ld  ", tv_now.tv_usec / 1000);
+        snprintf(buf + written, TIMESTAMP_LEN + 1 - written, ",%03ld ", tv_now.tv_usec / 1000);
     } else {
         auto now = millis();
         auto secs = now / 1000;
         auto ms = now % 1000;
-        auto to_write = snprintf_u(nullptr, 0, "%lu", secs) + 6; // + 6 for the decimal sign, fractional part and two spaces
+        auto to_write = snprintf_u(nullptr, 0, "%lu", secs) + 5; // + 5 for the decimal sign, fractional part and one space
         auto start = TIMESTAMP_LEN - to_write;
 
         for (int i = 0; i < start; ++i)
             buf[i] = ' ';
-        snprintf(buf + start, to_write + 1, "%lu,%03lu  ", secs, ms); // + 1 for the null terminator
+        snprintf(buf + start, to_write + 1, "%lu,%03lu ", secs, ms); // + 1 for the null terminator
     }
 
     buf[TIMESTAMP_LEN] = '\0';
@@ -142,16 +208,36 @@ void EventLog::write(const char *buf, size_t len)
 #endif
 }
 
-int EventLog::vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
+int EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
 {
     char buf[256];
     auto buf_size = sizeof(buf) / sizeof(buf[0]);
     auto written = 0;
 
+    *(buf + written) = '|';
+    ++written;
+
+    *(buf + written) = ' ';
+    ++written;
+
     if (prefix != nullptr && prefix_len < buf_size) {
-        memcpy(buf, prefix, prefix_len);
+        memcpy(buf + written, prefix, prefix_len);
         written += prefix_len;
     }
+
+    while (written < log_alignment + 2) {
+        *(buf + written) = ' ';
+        ++written;
+    }
+
+    *(buf + written) = ' ';
+    ++written;
+
+    *(buf + written) = '|';
+    ++written;
+
+    *(buf + written) = ' ';
+    ++written;
 
     written += vsnprintf_u(buf + written, buf_size - written, fmt, args);
     if (written >= buf_size) {
@@ -168,7 +254,7 @@ int EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const cha
 {
     va_list args;
     va_start(args, fmt);
-    int result = vprintfln_prefixed(prefix, prefix_len, fmt, args);
+    int result = printfln_prefixed(prefix, prefix_len, fmt, args);
     va_end(args);
 
     return result;

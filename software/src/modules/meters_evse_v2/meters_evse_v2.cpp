@@ -17,10 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "meters_evse_v2"
-
 #include "meters_evse_v2.h"
 
+#include "event_log.h"
 #include "gcc_warnings.h"
 
 void MetersEVSEV2::pre_setup()

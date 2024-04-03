@@ -26,6 +26,7 @@
 #include "task_scheduler.h"
 #include "tools.h"
 #include "module_dependencies.h"
+#include "event_log.h"
 
 #include "digest_auth.h"
 #include <cmath>

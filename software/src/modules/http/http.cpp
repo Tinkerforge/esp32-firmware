@@ -22,6 +22,7 @@
 #include "api.h"
 #include "task_scheduler.h"
 #include "web_server.h"
+#include "event_log.h"
 
 #include "module_dependencies.h"
 

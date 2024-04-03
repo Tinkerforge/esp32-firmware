@@ -20,6 +20,7 @@
 #include "task_scheduler.h"
 
 #include "web_server.h"
+#include "event_log.h"
 
 // Global definition here to match the declaration in task_scheduler.h.
 TaskScheduler task_scheduler;

@@ -25,6 +25,7 @@
 #include "time.h"
 #include "module_dependencies.h"
 #include "musl_libc_timegm.h"
+#include "event_log.h"
 
 void IRtcBackend::set_time(const timeval &time) {
     struct tm tm;

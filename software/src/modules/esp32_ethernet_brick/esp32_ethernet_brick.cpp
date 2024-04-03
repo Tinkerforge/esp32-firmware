@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "esp32_eth_brick"
+
 #include "esp32_ethernet_brick.h"
 #include "module_dependencies.h"
 

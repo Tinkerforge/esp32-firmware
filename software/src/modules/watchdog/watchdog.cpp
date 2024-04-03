@@ -25,6 +25,7 @@
 #include <mutex>
 
 #include "tools.h"
+#include "event_log.h"
 
 #define WATCHDOG_MAX_REGS 10
 // Highest observed stack usage was 616.

@@ -17,14 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "coredump"
-
 #include "coredump.h"
 
 #include "build.h"
 #include "api.h"
 #include "tools.h"
 #include "task_scheduler.h"
+#include "event_log.h"
 
 #include "LittleFS.h"
 

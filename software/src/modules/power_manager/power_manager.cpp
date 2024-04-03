@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "power_manager"
-
 #include "power_manager.h"
 #include "module_dependencies.h"
 
@@ -407,7 +405,7 @@ void PowerManager::register_urls()
                     // All good, proceed.
                     break;
                 default:
-                    esp_system_abort("");
+                    esp_system_abort("Unexpected value of phase_switcher_backend->get_phase_switching_state()");
             }
 
             bool _wants_3phase = external_control_update.get("phases_wanted")->asUint() == 3;
@@ -428,7 +426,7 @@ void PowerManager::register_urls()
                     ext_state = EXTERNAL_CONTROL_STATE_AVAILABLE;
                     break;
                 default:
-                    esp_system_abort("");
+                    esp_system_abort("Unexpected value of phase_switcher_backend->get_phase_switching_state()");
             }
 
             state.get("external_control")->updateUint(ext_state);

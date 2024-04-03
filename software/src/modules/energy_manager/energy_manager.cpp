@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "energy_manager"
-
 #include <type_traits>
 
 #include "energy_manager.h"
@@ -453,14 +451,14 @@ void EnergyManager::check_bricklet_reachable(int rc, const char *context)
         }
     } else {
         if (rc == TF_E_TIMEOUT) {
-            logger.printfln_plain("energy_manager (%s): Bricklet access timed out.", context);
+            logger.printfln_plain("(%s) Bricklet access timed out.", context);
         } else {
-            logger.printfln_plain("energy_manager (%s): Bricklet access returned error %d.", context, rc);
+            logger.printfln_plain("(%s) Bricklet access returned error %d.", context, rc);
         }
         if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
             bricklet_reachable = false;
             set_error(ERROR_FLAGS_BRICKLET_MASK);
-            logger.printfln_plain("energy_manager (%s): Bricklet is unreachable.", context);
+            logger.printfln_plain("(%s) Bricklet is unreachable.", context);
         }
     }
     low_level_state.get("consecutive_bricklet_errors")->updateUint(consecutive_bricklet_errors);

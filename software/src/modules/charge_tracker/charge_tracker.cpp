@@ -28,6 +28,8 @@
 
 #include "pdf_charge_log.h"
 
+#include "event_log.h"
+
 struct [[gnu::packed]] ChargeStart {
     uint32_t timestamp_minutes = 0;
     float meter_start = 0.0f;

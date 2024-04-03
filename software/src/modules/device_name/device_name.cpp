@@ -21,6 +21,7 @@
 #include "build.h"
 #include "api.h"
 #include "task_scheduler.h"
+#include "event_log.h"
 
 extern char local_uid_str[32];
 

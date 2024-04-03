@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "debug"
-
 #include "backtrace.h"
 #include "debug.h"
 
@@ -32,6 +30,7 @@
 #include "soc/spi_reg.h"
 
 #include "api.h"
+#include "event_log.h"
 #include "task_scheduler.h"
 #include "string_builder.h"
 

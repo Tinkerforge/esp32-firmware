@@ -23,6 +23,7 @@
 #include "build.h"
 #include <ctime>
 
+#include "event_log.h"
 #include "gcc_warnings.h"
 
 void RtcBricklet::setup()

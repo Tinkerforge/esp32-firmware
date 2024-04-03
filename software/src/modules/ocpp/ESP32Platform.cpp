@@ -17,6 +17,7 @@
 #include "build.h"
 #include "task_scheduler.h"
 #include "module_dependencies.h"
+#include "event_log.h"
 #include "ocpp.h"
 #include "modules/meters/meter_defs.h"
 

@@ -11,6 +11,7 @@
 
 #include "tools.h"
 #include "api.h"
+#include "event_log.h"
 
 #include "module_dependencies.h"
 

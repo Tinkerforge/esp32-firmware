@@ -25,6 +25,7 @@
 
 #include "task_scheduler.h"
 #include "digest_auth.h"
+#include "event_log.h"
 
 #include "cool_string.h"
 

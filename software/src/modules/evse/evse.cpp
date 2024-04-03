@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "evse"
-
 #include "evse.h"
 #include "module_dependencies.h"
 

@@ -29,7 +29,6 @@
 
 #include "module.h"
 #include "api.h"
-#include "event_log.h"
 #include "task_scheduler.h"
 #include "tools.h"
 #include "web_server.h"
@@ -38,6 +37,8 @@ extern TF_HAL hal;
 
 #define BOOTLOADER_MODE_FIRMWARE 1
 #define FIRMWARE_DEVICE_IDENTIFIER_OFFSET 8
+
+int device_module_printfln(const char *fmt, ...);
 
 template <typename DeviceT,
           const uint8_t *firmware,
@@ -87,9 +88,9 @@ public:
 
         if (!log_message_printed) {
             if (tfp == nullptr && mandatory)
-                logger.printfln("No %s Bricklet found. Disabling %s support.", device_name, module_name);
+                device_module_printfln("No %s Bricklet found. Disabling %s support.", device_name, module_name);
             else if (tfp != nullptr && !mandatory)
-                logger.printfln("%s Bricklet found. Enabling %s support.", device_name, module_name);
+                device_module_printfln("%s Bricklet found. Enabling %s support.", device_name, module_name);
         }
         log_message_printed = true;
 
@@ -98,14 +99,14 @@ public:
 
         device_found = true;
 
-        int result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, &logger, false);
+        int result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, false);
 
         if (result != 0) {
-            logger.printfln("Flashing %s Bricklet failed (%d)", device_name, result);
-            logger.printfln("Retrying once.");
-            result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, &logger, false);
+            device_module_printfln("Flashing %s Bricklet failed (%d)", device_name, result);
+            device_module_printfln("Retrying once.");
+            result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, false);
             if (result != 0) {
-                logger.printfln("Flashing %s Bricklet failed twice (%d). Disabling completely.", device_name, result);
+                device_module_printfln("Flashing %s Bricklet failed twice (%d). Disabling completely.", device_name, result);
                 device_found = false;
                 return false;
             }
@@ -118,7 +119,7 @@ public:
         result = init_function(&device, uid, &hal);
 
         if (result != TF_E_OK) {
-            logger.printfln("Failed to initialize %s Bricklet (%d). Disabling %s support.", device_name, result, module_name);
+            device_module_printfln("Failed to initialize %s Bricklet (%d). Disabling %s support.", device_name, result, module_name);
             return false;
         }
 
@@ -133,7 +134,7 @@ public:
             TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, false);
 
             if (tfp != nullptr) {
-                ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, &logger, true);
+                ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, true);
             }
         }, true);
 
@@ -218,13 +219,13 @@ private:
         defer {tf_unknown_destroy(&unknown);};
 
         if (rc != TF_E_OK) {
-            logger.printfln("Creation of unknown device failed with rc %i", rc);
+            device_module_printfln("Creation of unknown device failed with rc %i", rc);
             return;
         }
 
         rc = tf_unknown_get_identity(&unknown, uid, connected_uid, &position, hw_version, fw_version, &device_identifier);
         if (rc != TF_E_OK) {
-            logger.printfln("Getting identity of unknown device failed with rc %i", rc);
+            device_module_printfln("Getting identity of unknown device failed with rc %i", rc);
         }
 
         String value(uid);

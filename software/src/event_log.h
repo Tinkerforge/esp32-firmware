@@ -19,6 +19,10 @@
 
 #pragma once
 
+#if __INCLUDE_LEVEL__ > 1
+#error "Don't include event_log.h in headers, only in sources!"
+#endif
+
 #include <stdarg.h>
 #include <mutex>
 
@@ -29,20 +33,22 @@
 
 // Length of a timestamp with two spaces at the end. For example "2022-02-11 12:34:56,789"
 // Also change in frontend when changing here!
-#define TIMESTAMP_LEN 25
+#define TIMESTAMP_LEN 24
+
+const char *get_module_offset_and_length(const char *path, size_t *out_length);
+size_t strlen_with_log_alignment(const char *c);
 
 #ifdef EVENT_LOG_PREFIX
+static const char *logger_prefix = EVENT_LOG_PREFIX;
+static size_t logger_prefix_len = strlen_with_log_alignment(logger_prefix);
+#else
+static size_t logger_prefix_len = 0;
+static const char *logger_prefix = get_module_offset_and_length(__BASE_FILE__, &logger_prefix_len);
+#endif
 
-static const char *logger_prefix = EVENT_LOG_PREFIX ": ";
-static size_t logger_prefix_len = strlen(logger_prefix);
-
-#define vprintfln(...) vprintfln_prefixed(logger_prefix, logger_prefix_len, __VA_ARGS__)
 #define printfln(...) printfln_prefixed(logger_prefix, logger_prefix_len, __VA_ARGS__)
 
-#define vprintfln_plain(...) vprintfln_prefixed(nullptr, 0, __VA_ARGS__)
 #define printfln_plain(...) printfln_prefixed(nullptr, 0, __VA_ARGS__)
-
-#endif
 
 class EventLog
 {
@@ -64,25 +70,8 @@ public:
 
     void write(const char *buf, size_t len);
 
-    int vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
+    int printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
     [[gnu::format(__printf__, 4, 5)]] int printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...);
-
-#ifndef EVENT_LOG_PREFIX
-    int vprintfln(const char *fmt, va_list args)
-    {
-        return vprintfln_prefixed(nullptr, 0, fmt, args);
-    }
-
-    [[gnu::format(__printf__, 2, 3)]] int printfln(const char *fmt, ...)
-    {
-        va_list args;
-        va_start(args, fmt);
-        int result = vprintfln_prefixed(nullptr, 0, fmt, args);
-        va_end(args);
-
-        return result;
-    }
-#endif
 
     #define tf_dbg(fmt, ...) printfln("[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
 

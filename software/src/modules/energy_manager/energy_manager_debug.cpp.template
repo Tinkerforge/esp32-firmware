@@ -1,7 +1,5 @@
 // WARNING: Edit only energy_manager_debug.cpp.template. Do not edit energy_manager_debug.cpp.
 
-#define EVENT_LOG_PREFIX "energy_manager"
-
 #include "energy_manager.h"
 #include "module_dependencies.h"
 
@@ -44,7 +42,7 @@ const char *EnergyManager::prepare_fmtstr() {
     sb.shrink();
     fmtstr = sb.take().release();
 
-    //logger.printfln("using fmtstr='%s'", fmtstr);
+    //logger.printfln("Using fmtstr='%s'", fmtstr);
 
     return nullptr;
 }

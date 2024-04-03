@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "mqtt_disco"
+
 #include "mqtt_auto_discovery.h"
 #include "module_dependencies.h"
 
@@ -26,6 +28,7 @@
 #include "api.h"
 #include "build.h"
 #include "task_scheduler.h"
+#include "event_log.h"
 
 void MqttAutoDiscovery::pre_setup()
 {

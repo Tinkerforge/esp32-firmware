@@ -24,6 +24,7 @@
 #include "task_scheduler.h"
 #include "debug_protocol_backend.h"
 #include "string_builder.h"
+#include "event_log.h"
 
 #include "gcc_warnings.h"
 

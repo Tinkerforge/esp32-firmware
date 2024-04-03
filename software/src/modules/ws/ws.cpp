@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "ws"
-
 #include "ws.h"
 
 #include <esp_http_server.h>
@@ -27,6 +25,7 @@
 #include "task_scheduler.h"
 #include "web_server.h"
 #include "cool_string.h"
+#include "event_log.h"
 
 static const char *prefix = "{\"topic\":\"";
 static const char *infix = "\",\"payload\":";

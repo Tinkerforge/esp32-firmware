@@ -26,6 +26,7 @@
 #include "api.h"
 #include "task_scheduler.h"
 #include "module_dependencies.h"
+#include "event_log.h"
 
 #include "modbus_tcp.h"
 #include "build.h"

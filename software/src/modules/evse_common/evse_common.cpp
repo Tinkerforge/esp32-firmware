@@ -20,6 +20,8 @@
 #include "evse_common.h"
 #include "module_dependencies.h"
 
+#include "event_log.h"
+
 extern EvseCommon evse_common;
 extern uint32_t local_uid_num;
 

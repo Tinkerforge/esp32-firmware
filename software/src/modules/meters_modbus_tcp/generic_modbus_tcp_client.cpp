@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "generic_modbus_tcp_client"
+#define EVENT_LOG_PREFIX "gen_mbtcp_client"
 
 #include "generic_modbus_tcp_client.h"
 #include "modbus_tcp_tools.h"

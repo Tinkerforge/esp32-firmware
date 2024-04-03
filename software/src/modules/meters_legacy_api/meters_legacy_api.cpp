@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "meters_legacy_api"
+#define EVENT_LOG_PREFIX "meters_legacy"
 
 #include "meters_legacy_api.h"
 #include "module_dependencies.h"

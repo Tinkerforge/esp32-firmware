@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "charge_manager"
-
 #include "charge_manager.h"
 #include "module_dependencies.h"
 
@@ -32,6 +30,7 @@
 
 #include "api.h"
 #include "build.h"
+#include "event_log.h"
 #include "task_scheduler.h"
 #include "tools.h"
 

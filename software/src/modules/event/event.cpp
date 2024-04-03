@@ -17,10 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "event"
-
 #include "event.h"
 #include "tools.h"
+#include "event_log.h"
 
 void Event::pre_setup()
 {

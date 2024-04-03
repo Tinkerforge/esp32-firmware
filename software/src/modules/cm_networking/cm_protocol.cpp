@@ -229,13 +229,13 @@ void CMNetworking::register_manager(const char *const *const hosts,
 
     ManagerTaskData *task_data = static_cast<ManagerTaskData *>(heap_caps_calloc(1, sizeof(ManagerTaskData), MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
     if (!task_data) {
-        logger.printfln("cm_protocol: Failed to allocate task data");
+        logger.printfln("Failed to allocate task data");
         return;
     }
 
     uint8_t *queue_storage = static_cast<uint8_t *>(heap_caps_calloc_prefer(this->charger_count, sizeof(ManagerQueueItem), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
     if (!queue_storage) {
-        logger.printfln("cm_protocol: Failed to allocate queue storage");
+        logger.printfln("Failed to allocate queue storage");
         free(task_data);
         return;
     }
@@ -374,11 +374,11 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
             return true;
         }
 
-        logger.printfln("CM failed to send command: %s (%d)", strerror(errno), errno);
+        logger.printfln("Failed to send command: %s (%d)", strerror(errno), errno);
         return true;
     }
     if (err != CM_COMMAND_PACKET_LENGTH) {
-        logger.printfln("CM failed to send command: sendto truncated packet (of %u bytes) to %d bytes.", CM_COMMAND_PACKET_LENGTH, err);
+        logger.printfln("Failed to send command: sendto truncated packet (of %u bytes) to %d bytes.", CM_COMMAND_PACKET_LENGTH, err);
         return true;
     }
     return true;
@@ -425,7 +425,7 @@ void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_ca
         }
 
         if (seq_num_invalid(command_pkt.header.seq_num, last_seen_seq_num)) {
-            logger.printfln("received stale (out of order?) command packet. last seen seq_num is %u, received seq_num is %u", last_seen_seq_num, command_pkt.header.seq_num);
+            logger.printfln("Received stale (out of order?) command packet. last seen seq_num is %u, received seq_num is %u", last_seen_seq_num, command_pkt.header.seq_num);
             return;
         }
 
@@ -436,7 +436,7 @@ void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_ca
             char temp_str[16];
             inet_ntoa_r(((struct sockaddr_in*)&manager_addr)->sin_addr, manager_str, sizeof(manager_str));
             inet_ntoa_r(((struct sockaddr_in*)&temp_addr   )->sin_addr, temp_str,    sizeof(temp_str   ));
-            logger.printfln("cm_networking: Warning: Manager address changed from %s to %s.", manager_str, temp_str);
+            logger.printfln("Warning: Manager address changed from %s to %s.", manager_str, temp_str);
         }
 
         last_successful_recv = millis();
@@ -463,7 +463,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     static uint16_t next_seq_num = 0;
 
     if (!manager_addr_valid) {
-        //logger.printfln("manager addr not valid.");
+        //logger.printfln("Manager addr not valid.");
         return false;
     }
     //logger.printfln("Sending state packet.");
@@ -542,11 +542,11 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     int err = sendto(client_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&manager_addr, sizeof(manager_addr));
     if (err < 0) {
         if (errno != EAGAIN && errno != EWOULDBLOCK)
-            logger.printfln("CM failed to send state: %s (%d)", strerror(errno), errno);
+            logger.printfln("Failed to send state: %s (%d)", strerror(errno), errno);
         return false;
     }
     if (err != CM_STATE_PACKET_LENGTH) {
-        logger.printfln("CM failed to send state: sendto truncated packet (of %u bytes) to %d bytes.", CM_STATE_PACKET_LENGTH, err);
+        logger.printfln("Failed to send state: sendto truncated packet (of %u bytes) to %d bytes.", CM_STATE_PACKET_LENGTH, err);
         return false;
     }
 
