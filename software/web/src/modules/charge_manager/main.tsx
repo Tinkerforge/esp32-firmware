@@ -71,8 +71,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
     render(props: {}, state: Readonly<ChargeManagerStatusState>) {
         if (!util.render_allowed()
          || !state.config.enable_charge_manager
-         || state.config.chargers.length == 0
-         || (state.config.chargers.length == 1 && (state.config.chargers[0].host == '127.0.0.1' || state.config.chargers[0].host == 'localhost')))
+         || state.config.chargers.length == 0)
             return <StatusSection name="charge_manager" />;
 
         let cards = state.state.chargers.map((c, i) => {
@@ -124,18 +123,24 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                     </div>
         });
 
+        let controls_only_self = (state.config.chargers.length == 1
+                       && (state.config.chargers[0].host == '127.0.0.1' || state.config.chargers[0].host == 'localhost'));
+
         return <StatusSection name="charge_manager">
-            <FormRow label={__("charge_manager.status.charge_manager")}>
-                <IndicatorGroup
-                    style="width: 100%"
-                    class="flex-wrap"
-                    value={state.state.state}
-                    items={[
-                        ["primary", __("charge_manager.status.not_configured")],
-                        ["success", __("charge_manager.status.manager")],
-                        ["danger", __("charge_manager.status.error")]
-                    ]}/>
-            </FormRow>
+
+            {controls_only_self && API.get_unchecked("power_manager/config")?.enabled ? null :
+                <FormRow label={__("charge_manager.status.charge_manager")}>
+                    <IndicatorGroup
+                        style="width: 100%"
+                        class="flex-wrap"
+                        value={state.state.state}
+                        items={[
+                            ["primary", __("charge_manager.status.not_configured")],
+                            ["success", __("charge_manager.status.manager")],
+                            ["danger", __("charge_manager.status.error")]
+                        ]}/>
+                </FormRow>
+            }
 
             {// The power manager controls the available current.
                 API.get_unchecked("power_manager/config")?.enabled ? null:
@@ -147,14 +152,16 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                 </FormRow>
             }
 
-            <FormRow label={__("charge_manager.status.managed_boxes")}>
-                {util.range(Math.ceil(cards.length / 2)).map(i =>
-                    <div class="card-deck mb-4">
-                        {cards[2 * i]}
-                        {cards.length > (2 * i + 1) ? cards[2 * i + 1] : undefined}
-                    </div>)
-                }
-            </FormRow>
+            {controls_only_self ? null :
+                <FormRow label={__("charge_manager.status.managed_boxes")}>
+                    {util.range(Math.ceil(cards.length / 2)).map(i =>
+                        <div class="card-deck mb-4">
+                            {cards[2 * i]}
+                            {cards.length > (2 * i + 1) ? cards[2 * i + 1] : undefined}
+                        </div>)
+                    }
+                </FormRow>
+            }
         </StatusSection>;
     }
 }
