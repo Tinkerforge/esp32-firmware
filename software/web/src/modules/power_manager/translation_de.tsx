@@ -164,7 +164,7 @@ let x = {
             "phases_wanted": "Umschaltung auf",
             "single_phase": "auf einphasig",
             "three_phase": "auf dreiphasig",
-            "automation_action_text": /*FFN*/(phases: number) => <>Schalte auf <b>{phases == 1 ? "Einphasig" : "Dreiphasig"}</b> um.</>/*NF*/
+            "automation_action_text": /*FFN*/(phases: number) => <>schalte auf <b>{phases == 1 ? "einphasig" : "dreiphasig"}</b> um.</>/*NF*/
         },
         "script": {
             "save_failed": "Speichern der Power Manager-Einstellungen fehlgeschlagen.",
