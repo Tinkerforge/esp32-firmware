@@ -612,8 +612,8 @@ def main():
     build_lines.append('const char *build_timestamp_hex_str(void) {{ return "{:x}"; }}'.format(timestamp))
     build_lines.append('const char *build_version_full_str(void) {{ return "{}.{}.{}-{:x}"; }}'.format(*version, timestamp))
     build_lines.append('const char *build_info_str(void) {{ return "git url: {}, git branch: {}, git commit id: {}"; }}'.format(git_url, branch_name, git_commit_id))
-    build_lines.append('const char *build_filename_str(void){{return "{}"; }}'.format(firmware_basename))
-    build_lines.append('const char *build_commit_id_str(void){{return "{}"; }}'.format(git_commit_id))
+    build_lines.append('const char *build_filename_str(void) {{ return "{}"; }}'.format(firmware_basename))
+    build_lines.append('const char *build_commit_id_str(void) {{ return "{}"; }}'.format(git_commit_id))
     util.write_file_if_different(os.path.join('src', 'build.cpp'), '\n'.join(build_lines))
     del build_lines
 
