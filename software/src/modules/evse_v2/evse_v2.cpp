@@ -22,6 +22,7 @@
 
 #include "bindings/errors.h"
 
+#include "build.h"
 #include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
