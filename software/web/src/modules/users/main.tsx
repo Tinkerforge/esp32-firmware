@@ -169,8 +169,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         await API.call_unchecked('users/http_auth_update', {
             "enabled": enabled
         },
-        __("users.script.save_failed"),
-        __("users.script.reboot_content_changed"));
+        __("users.script.save_failed"));
     }
 
     user_has_password(u: User) {
@@ -249,7 +248,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         await this.save_authentication_config(new_config.http_auth_enabled);
 
-        await API.save_unchecked('evse/user_enabled', {"enabled": this.state.userSlotEnabled}, __("evse.script.save_failed"));
+        await API.save('evse/user_enabled', {"enabled": this.state.userSlotEnabled}, __("evse.script.save_failed"), __("users.script.reboot_content_changed"));
     }
 
     setUser(i: number, val: Partial<User>) {
