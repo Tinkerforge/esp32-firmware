@@ -131,8 +131,8 @@ let x = {
             "add_rule_count": /*SFN*/(count: number, max: number) => count + " von " + max + " Regeln konfiguriert"/*NF*/,
             "edit_rule_title": "Regel bearbeiten",
             "select": "Auswählen...",
-            "trigger_disabled": <><span class="danger">[Deaktiviert]</span></>,
-            "action_disabled": <><span class="danger">[Deaktiviert]</span></>
+            "trigger_disabled": <><span class="text-danger">[Deaktiviert]</span></>,
+            "action_disabled": <><span class="text-danger">[Deaktiviert]</span></>
         }
     }
 }
