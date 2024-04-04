@@ -20,7 +20,6 @@
 #pragma once
 
 #include "meter_rs485_bricklet.h"
-#include "module_dependencies.h"
 
 #include <stdint.h>
 

@@ -20,6 +20,7 @@
 #define EVENT_LOG_PREFIX "meters_rs485_brk"
 
 #include "event_log.h"
+#include "module_dependencies.h"
 
 #include "meters_rs485_bricklet.h"
 

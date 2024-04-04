@@ -20,7 +20,6 @@
 #pragma once
 
 #include "meter_evse_v2.h"
-#include "module_dependencies.h"
 
 #include <stdint.h>
 

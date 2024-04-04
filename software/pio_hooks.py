@@ -108,7 +108,7 @@ def write_firmware_info(display_name, major, minor, patch, build_time):
     with open(os.path.join(env.subst("$BUILD_DIR"), "firmware_info.bin"), "wb") as f:
         f.write(buf)
 
-def generate_module_dependencies_header(info_path, header_path, backend_module, backend_modules, all_mods_upper):
+def generate_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_mods_upper):
     if backend_module:
         module_name = backend_module.space
     else:
@@ -239,26 +239,35 @@ def generate_module_dependencies_header(info_path, header_path, backend_module, 
             includes = ''.join([f'#include "modules/{x.under}/{x.under}.h"\n' for x in dep_mods])
             decls    = ''.join([f'extern {x.camel} {x.under};\n' for x in dep_mods])
 
-            header_content  = '// WARNING: This file is generated.\n\n'
-            header_content += '#pragma once\n'
+            available_h_content  = '// WARNING: This file is generated.\n\n'
+            available_h_content += '#pragma once\n'
+
+            dependencies_h_content  = '// WARNING: This file is generated.\n\n'
+            dependencies_h_content += '#pragma once\n\n'
+            dependencies_h_content += '#if __INCLUDE_LEVEL__ > 1\n'
+            dependencies_h_content += f'#error "Don\'t include {header_path_prefix.split("/")[-1]}dependencies.h in headers, only in sources!"\n'
+            dependencies_h_content += '#endif\n\n'
+            dependencies_h_content += f'#include "{header_path_prefix.split("/")[-1]}available.h"\n'
 
             if defines:
-                header_content += '\n' + defines
+                available_h_content += '\n' + defines
             if includes:
-                header_content += '\n' + includes
+                dependencies_h_content += '\n' + includes
             if decls:
-                header_content += '\n' + decls
+                dependencies_h_content += '\n' + decls
 
             if config['Dependencies'].getboolean('ModuleList', False):
-                header_content += '\n'
-                header_content += '#include "config.h"\n'
-                header_content += 'extern Config modules;\n'
+                dependencies_h_content += '\n'
+                dependencies_h_content += '#include "config.h"\n'
+                dependencies_h_content += 'extern Config modules;\n'
 
-            util.write_file_if_different(header_path, header_content)
+            util.write_file_if_different(header_path_prefix + 'available.h', available_h_content)
+            util.write_file_if_different(header_path_prefix + 'dependencies.h', dependencies_h_content)
 
     if not has_dependencies:
         try:
-            os.remove(header_path)
+            os.remove(header_path_prefix + 'available.h')
+            os.remove(header_path_prefix + 'dependencies.h')
         except FileNotFoundError:
             pass
 
@@ -770,13 +779,13 @@ def main():
     })
 
     util.log("Generating module_dependencies.h from module.ini", flush=True)
-    generate_module_dependencies_header('src/event_log_dependencies.ini', 'src/event_log_dependencies.h', None, backend_modules, all_mods)
-    generate_module_dependencies_header('src/web_dependencies.ini', 'src/web_dependencies.h', None, backend_modules, all_mods)
+    generate_module_dependencies_header('src/event_log_dependencies.ini', 'src/event_log_', None, backend_modules, all_mods)
+    generate_module_dependencies_header('src/web_dependencies.ini', 'src/web_', None, backend_modules, all_mods)
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
         info_path = os.path.join(mod_path, 'module.ini')
-        header_path = os.path.join(mod_path, 'module_dependencies.h')
-        generate_module_dependencies_header(info_path, header_path, backend_module, backend_modules, all_mods)
+        header_path_prefix = os.path.join(mod_path, 'module_')
+        generate_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_mods)
 
     # Handle frontend modules
     main_ts_entries = []

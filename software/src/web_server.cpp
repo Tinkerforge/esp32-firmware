@@ -18,6 +18,7 @@
  */
 
 #include "web_server.h"
+#include "web_available.h"
 #include "web_dependencies.h"
 
 #include "esp_log.h"

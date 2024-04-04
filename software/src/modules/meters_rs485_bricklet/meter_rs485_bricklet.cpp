@@ -21,6 +21,7 @@
 
 #include "meter_rs485_bricklet.h"
 
+#include "module_dependencies.h"
 #include "meters_rs485_bricklet.h"
 #include "modules/meters/meter_value_id.h"
 #include "modules/meters/sdm_helpers.h"

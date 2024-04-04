@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "module_dependencies.h"
-
 #include <math.h>
 
 #include "bindings/bricklet_rs485.h"

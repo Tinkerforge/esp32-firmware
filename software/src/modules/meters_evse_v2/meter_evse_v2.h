@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "module_dependencies.h"
-
 #include <math.h>
 
 #include "config.h"
