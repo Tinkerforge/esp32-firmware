@@ -71,7 +71,6 @@ export function init(): InitResult {
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_evse_gp_output_edit_children,
                 get_table_children: get_evse_gp_output_table_children,
-                require_feature: "button_configuration",
             },
         },
     };
