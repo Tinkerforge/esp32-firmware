@@ -64,16 +64,18 @@ export class ItemModal extends Component<ItemModalProps, any> {
                     <Modal.Body className="pb-0">
                         {children}
                     </Modal.Body>
-                    <Modal.Footer>
-                        {no_variant && no_text ?
-                        <Button variant={no_variant} onClick={() => onHide()}>
-                            {no_text}
-                        </Button>: undefined}
-                        {yes_variant && yes_text ?
-                        <Button variant={yes_variant} type="submit">
-                            {yes_text}
-                        </Button> : undefined}
-                    </Modal.Footer>
+                    {(no_variant && no_text) || (yes_variant && yes_text) ?
+                        <Modal.Footer>
+                            {no_variant && no_text ?
+                            <Button variant={no_variant} onClick={() => onHide()}>
+                                {no_text}
+                            </Button>: undefined}
+                            {yes_variant && yes_text ?
+                            <Button variant={yes_variant} type="submit">
+                                {yes_text}
+                            </Button> : undefined}
+                        </Modal.Footer>
+                        : undefined}
                 </form>
             </Modal>
         );
