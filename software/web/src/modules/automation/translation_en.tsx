@@ -134,8 +134,8 @@ let x = {
             "add_rule_count": /*SFN*/(count: number, max: number) => count + " of " + max + " rules configured"/*NF*/,
             "edit_rule_title": "Edit rule",
             "select": "Select...",
-            "trigger_disabled": <><span class="text-danger">[Disabled]</span></>,
-            "action_disabled": <><span class="text-danger">[Disabled]</span></>
+            "trigger_disabled": "Disabled",
+            "action_disabled": "Disabled"
         }
     }
 }
