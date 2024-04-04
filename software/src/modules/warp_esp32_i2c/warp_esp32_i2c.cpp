@@ -53,7 +53,7 @@ void WarpEsp32I2c::setup()
     conf.scl_io_num = I2C_MASTER_SCL_IO;
     conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
     conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.master.clk_speed = 100000;
+    conf.master.clk_speed = 400000;
 
     i2c_param_config(I2C_MASTER_PORT, &conf);
     i2c_driver_install(I2C_MASTER_PORT, conf.mode, 0, 0, 0);
