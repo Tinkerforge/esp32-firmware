@@ -43,6 +43,10 @@ type AutomationState = {
     displayed_trigger: number;
     displayed_action: number;
     edit_task: Task;
+    registered_triggers: number[];
+    registered_actions: number[];
+    enabled_triggers: number[];
+    enabled_actions: number[];
 };
 
 let automation_trigger_components: AutomationTriggerComponents = {};
@@ -61,23 +65,36 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                       action: [AutomationActionID.None, null]
                   }
              });
+
+        util.addApiEventListener("automation/state", () => {
+            let state = API.get("automation/state");
+
+            this.setState({
+                registered_triggers: state.registered_triggers,
+                registered_actions: state.registered_actions,
+                enabled_triggers: state.enabled_triggers,
+                enabled_actions: state.enabled_actions,
+            })
+        });
     }
 
     createSelectors() {
         let trigger: [string, string][] = [];
         for (let i in automation_trigger_components) {
-            const entry: [string, string] = [i, automation_trigger_components[i].name]
-            if (automation_trigger_components[i].require_feature && !API.hasFeature(automation_trigger_components[i].require_feature))
+            if (this.state.registered_triggers.indexOf(parseInt(i)) < 0) {
                 continue;
-            trigger.push(entry);
+            }
+
+            trigger.push([i, automation_trigger_components[i].name]);
         }
 
         let action: [string, string][] = [];
         for (let i in automation_action_components) {
-            const entry: [string, string] = [i, automation_action_components[i].name];
-            if (automation_action_components[i].require_feature && !API.hasFeature(automation_action_components[i].require_feature))
+            if (this.state.registered_actions.indexOf(parseInt(i)) < 0) {
                 continue;
-            action.push(entry);
+            }
+
+            action.push([i, automation_action_components[i].name]);
         }
 
         let triggerSelector: ComponentChild[] = [
@@ -140,14 +157,25 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
         const trigger_children = automation_trigger_components[this.state.displayed_trigger];
         if (trigger_children) {
             preview.push(trigger_children.get_table_children(this.state.edit_task.trigger));
+
+            if (this.state.enabled_triggers.indexOf(this.state.displayed_trigger) < 0) {
+                preview.push(__("automation.content.trigger_disabled"));
+            }
         }
+
         const action_children = automation_action_components[this.state.displayed_action];
         if (action_children) {
             preview.push(action_children.get_table_children(this.state.edit_task.action));
+
+            if (this.state.enabled_actions.indexOf(this.state.displayed_action) < 0) {
+                preview.push(__("automation.content.action_disabled"));
+            }
         }
+
         if (preview.length === 0) {
             return triggerSelector.concat(actionSelector);
         }
+
         return triggerSelector.concat(actionSelector).concat(<hr/>).concat(<div class="pb-3">{preview}</div>);
     }
 
@@ -164,8 +192,12 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                 trigger: trigger_component.clone_config(task.trigger),
                 action: action_component.clone_config(task.action),
             };
+
             const trigger_children = trigger_component.get_table_children(task.trigger);
             const action_children = action_component.get_table_children(task.action);
+
+            const trigger_disabled = this.state.enabled_triggers.indexOf(trigger_id) < 0 ? __("automation.content.trigger_disabled") : undefined;
+            const action_disabled = this.state.enabled_actions.indexOf(trigger_id) < 0 ? __("automation.content.action_disabled") : undefined;
 
             let row: TableRow = {
                 columnValues: [
@@ -174,7 +206,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                     [action_children],
                 ],
                 fieldNames: ["", ""],
-                fieldValues: [__("automation.content.rule") + " #" + (idx + 1) as ComponentChild, <div class="pb-3">{trigger_children}{action_children}</div>],
+                fieldValues: [__("automation.content.rule") + " #" + (idx + 1) as ComponentChild, <div class="pb-3">{trigger_children} {trigger_disabled} {action_children} {action_disabled}</div>],
                 onEditShow: async () => {
                     this.setState({
                         displayed_trigger: task.trigger[0] as number,

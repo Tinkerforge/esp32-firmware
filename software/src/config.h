@@ -673,6 +673,26 @@ public:
     bool updateFloat(float value);
     bool updateBool(bool value);
 
+    template<typename T>
+    bool updateEnum(T value) {
+        if (this->is<ConfUint>()) {
+            return updateUint(static_cast<uint32_t>(value));
+        }
+        else if (this->is<ConfInt>()) {
+            return updateInt(static_cast<int32_t>(value));
+        }
+        else {
+            char *message;
+            int result = -1;
+#ifndef DEBUG_FS_ENABLE
+            result = asprintf(&message, "updateEnum: Config has wrong type. This is %s, (not a ConfInt or ConfUint)", this->value.getVariantName());
+#else
+            result = asprintf(&message, "updateEnum: Config has wrong type. This is %s, (not a ConfInt or ConfUint)\nContent is %s", this->value.getVariantName(), this->to_string().c_str());
+#endif
+            esp_system_abort(result < 0 ? "" : message);
+        }
+    }
+
 private:
     template<typename T, typename ConfigT>
     size_t fillArray(T *arr, size_t elements) {

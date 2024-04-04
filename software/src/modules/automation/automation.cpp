@@ -108,6 +108,29 @@ void Automation::pre_setup()
             return "";
         }
     };
+
+    state = Config::Object({
+        {"registered_triggers", Config::Array({}, new Config{Config::Uint8(0)}, 0, static_cast<uint16_t>(AutomationTriggerID::Count), Config::type_id<Config::ConfInt>())},
+        {"registered_actions", Config::Array({}, new Config{Config::Uint8(0)}, 0, static_cast<uint16_t>(AutomationActionID::Count), Config::type_id<Config::ConfInt>())},
+        {"enabled_triggers", Config::Array({}, new Config{Config::Uint8(0)}, 0, static_cast<uint16_t>(AutomationTriggerID::Count), Config::type_id<Config::ConfInt>())},
+        {"enabled_actions", Config::Array({}, new Config{Config::Uint8(0)}, 0, static_cast<uint16_t>(AutomationActionID::Count), Config::type_id<Config::ConfInt>())},
+    });
+
+    for (auto const& trigger : trigger_map) {
+        state.get("registered_triggers")->add()->updateEnum(trigger.first);
+
+        if (trigger.second.enable) {
+            state.get("enabled_triggers")->add()->updateEnum(trigger.first);
+        }
+    }
+
+    for (auto const& action : action_map) {
+        state.get("registered_actions")->add()->updateEnum(action.first);
+
+        if (action.second.enable) {
+            state.get("enabled_actions")->add()->updateEnum(action.first);
+        }
+    }
 }
 
 void Automation::setup()
@@ -143,18 +166,77 @@ void Automation::setup()
 void Automation::register_urls()
 {
     api.addPersistentConfig("automation/config", &config);
+    api.addState("automation/state", &state);
 }
 
-void Automation::register_action(AutomationActionID id, Config cfg, ActionCb &&callback, ValidatorCb &&validator)
+void Automation::register_action(AutomationActionID id, Config cfg, ActionCb &&callback, ValidatorCb &&validator, bool enable)
 {
+    if (action_map.find(id) != action_map.end()) {
+        logger.printfln("Action %u is already registered", static_cast<uint>(id));
+        return;
+    }
+
     action_vec.push_back({id, cfg});
-    action_map[id] = ActionValue{std::forward<ActionCb>(callback), std::forward<ValidatorCb>(validator)};
+    action_map[id] = ActionValue{std::forward<ActionCb>(callback), std::forward<ValidatorCb>(validator), enable};
 }
 
-void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb &&validator)
+void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb &&validator, bool enable)
 {
+    if (trigger_map.find(id) != trigger_map.end()) {
+        logger.printfln("Trigger %u is already registered", static_cast<uint>(id));
+        return;
+    }
+
     trigger_vec.push_back({id, cfg});
-    trigger_map[id] = TriggerValue{std::forward<ValidatorCb>(validator)};
+    trigger_map[id] = TriggerValue{std::forward<ValidatorCb>(validator), enable};
+}
+
+void Automation::enable_action(AutomationActionID id, bool enable)
+{
+    if (action_map.find(id) == action_map.end()) {
+        logger.printfln("Action %u is not registered", static_cast<uint>(id));
+        return;
+    }
+
+    auto enabled_actions = state.get("enabled_actions");
+
+    for (size_t i = 0; i < enabled_actions->count(); ++i) {
+        if (enabled_actions->get(i)->asEnum<AutomationActionID>() == id) {
+            if (!enable) {
+                enabled_actions->remove(i);
+            }
+
+            return;
+        }
+    }
+
+    if (enable) {
+        enabled_actions->add()->updateEnum(id);
+    }
+}
+
+void Automation::enable_trigger(AutomationTriggerID id, bool enable)
+{
+    if (trigger_map.find(id) == trigger_map.end()) {
+        logger.printfln("Trigger %u is not registered", static_cast<uint>(id));
+        return;
+    }
+
+    auto enabled_triggers = state.get("enabled_triggers");
+
+    for (size_t i = 0; i < enabled_triggers->count(); ++i) {
+        if (enabled_triggers->get(i)->asEnum<AutomationTriggerID>() == id) {
+            if (!enable) {
+                enabled_triggers->remove(i);
+            }
+
+            return;
+        }
+    }
+
+    if (enable) {
+        enabled_triggers->add()->updateEnum(id);
+    }
 }
 
 bool Automation::trigger_action(AutomationTriggerID number, void *data, std::function<bool(Config *, void *)> &&cb)

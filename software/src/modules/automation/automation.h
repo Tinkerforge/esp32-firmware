@@ -33,10 +33,12 @@ public:
     struct ActionValue {
         ActionCb callback;
         ValidatorCb validator;
+        bool enable;
     };
 
     struct TriggerValue {
         ValidatorCb validator;
+        bool enable;
     };
 
     typedef std::map<AutomationActionID, ActionValue>   ActionMap;
@@ -49,8 +51,11 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void register_action(AutomationActionID id, Config cfg, ActionCb &&callback, ValidatorCb &&validator = nullptr);
-    void register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb &&validator = nullptr);
+    void register_action(AutomationActionID id, Config cfg, ActionCb &&callback, ValidatorCb &&validator = nullptr, bool enable = true);
+    void register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb &&validator = nullptr, bool enable = true);
+
+    void enable_action(AutomationActionID id, bool enable);
+    void enable_trigger(AutomationTriggerID id, bool enable);
 
     bool trigger_action(AutomationTriggerID number, void *data, std::function<bool(Config *, void *)> &&cb);
     bool is_trigger_active(AutomationTriggerID number);
@@ -62,6 +67,7 @@ public:
 private:
     ConfigRoot config;
     ConfigRoot config_in_use;
+    ConfigRoot state;
 
     ActionMap   action_map;
     TriggerMap  trigger_map;

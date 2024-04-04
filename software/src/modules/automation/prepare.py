@@ -77,9 +77,11 @@ with open('automation_defs.h', 'w', encoding='utf-8') as f:
     f.write('#pragma once\n\n')
     f.write('enum class AutomationTriggerID : uint8_t {\n')
     f.write(''.join(trigger_values))
+    f.write(f'\n    Count = {len(triggers)},\n')
     f.write('};\n\n')
     f.write('enum class AutomationActionID : uint8_t {\n')
     f.write(''.join(action_values))
+    f.write(f'\n    Count = {len(actions)},\n')
     f.write('};\n')
 
 with open('../../../web/src/modules/automation/automation_defs.ts', 'w', encoding='utf-8') as f:

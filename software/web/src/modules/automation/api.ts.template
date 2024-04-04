@@ -4,6 +4,13 @@ export interface config {
     tasks: Task[]
 }
 
+export interface state {
+    registered_triggers: number[]
+    registered_actions: number[]
+    enabled_triggers: number[]
+    enabled_actions: number[]
+}
+
 interface Task {
     trigger: AutomationTrigger,
     action: AutomationAction
