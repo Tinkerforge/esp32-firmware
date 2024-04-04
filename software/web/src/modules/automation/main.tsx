@@ -154,21 +154,23 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
         }
 
         const preview = [];
-        const trigger_children = automation_trigger_components[this.state.displayed_trigger];
-        if (trigger_children) {
-            preview.push(trigger_children.get_table_children(this.state.edit_task.trigger));
-
+        const trigger_component = automation_trigger_components[this.state.displayed_trigger];
+        if (trigger_component) {
             if (this.state.enabled_triggers.indexOf(this.state.displayed_trigger) < 0) {
-                preview.push(__("automation.content.trigger_disabled"));
+                preview.push(trigger_component.get_disabled_reason ? trigger_component.get_disabled_reason(this.state.edit_task.trigger) : __("automation.content.trigger_disabled"));
+                preview.push(" ");
             }
+
+            preview.push(trigger_component.get_table_children(this.state.edit_task.trigger));
         }
 
-        const action_children = automation_action_components[this.state.displayed_action];
-        if (action_children) {
-            preview.push(action_children.get_table_children(this.state.edit_task.action));
+        const action_component = automation_action_components[this.state.displayed_action];
+        if (action_component) {
+            preview.push(action_component.get_table_children(this.state.edit_task.action));
 
             if (this.state.enabled_actions.indexOf(this.state.displayed_action) < 0) {
-                preview.push(__("automation.content.action_disabled"));
+                preview.push(" ");
+                preview.push(action_component.get_disabled_reason ? action_component.get_disabled_reason(this.state.edit_task.action) : __("automation.content.action_disabled"));
             }
         }
 
@@ -196,17 +198,21 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             const trigger_children = trigger_component.get_table_children(task.trigger);
             const action_children = action_component.get_table_children(task.action);
 
-            const trigger_disabled = this.state.enabled_triggers.indexOf(trigger_id) < 0 ? __("automation.content.trigger_disabled") : undefined;
-            const action_disabled = this.state.enabled_actions.indexOf(trigger_id) < 0 ? __("automation.content.action_disabled") : undefined;
+            const trigger_disabled = this.state.enabled_triggers.indexOf(trigger_id) < 0
+                                     ? trigger_component.get_disabled_reason ? trigger_component.get_disabled_reason(task.trigger) : __("automation.content.trigger_disabled")
+                                     : undefined;
+            const action_disabled = this.state.enabled_actions.indexOf(action_id) < 0
+                                    ? action_component.get_disabled_reason ? action_component.get_disabled_reason(task.action) : __("automation.content.action_disabled")
+                                    : undefined;
 
             let row: TableRow = {
                 columnValues: [
                     [idx + 1],
-                    [trigger_children],
-                    [action_children],
+                    [<>{trigger_disabled}{" "}{trigger_children}</>],
+                    [<>{action_children}{" "}{action_disabled}</>],
                 ],
                 fieldNames: ["", ""],
-                fieldValues: [__("automation.content.rule") + " #" + (idx + 1) as ComponentChild, <div class="pb-3">{trigger_children} {trigger_disabled} {action_children} {action_disabled}</div>],
+                fieldValues: [__("automation.content.rule") + " #" + (idx + 1) as ComponentChild, <div class="pb-3">{trigger_disabled}{" "}{trigger_children}{" "}{action_children}{" "}{action_disabled}</div>],
                 onEditShow: async () => {
                     this.setState({
                         displayed_trigger: task.trigger[0] as number,

@@ -31,6 +31,7 @@ export interface AutomationTriggerComponent {
     clone_config: (trigger: AutomationTrigger) => AutomationTrigger,
     get_edit_children: (trigger: AutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) => ComponentChildren,
     get_table_children: (trigger: AutomationTrigger) => ComponentChildren,
+    get_disabled_reason?: (trigger: AutomationTrigger) => ComponentChildren,
     require_feature?: API.feature,
 }
 
@@ -40,6 +41,7 @@ export interface AutomationActionComponent {
     clone_config: (action: AutomationAction) => AutomationAction,
     get_edit_children: (action: AutomationAction, on_action: (action: AutomationAction) => void) => ComponentChildren,
     get_table_children: (action: AutomationAction) => ComponentChildren,
+    get_disabled_reason?: (action: AutomationAction) => ComponentChildren,
     require_feature?: API.feature,
 }
 
