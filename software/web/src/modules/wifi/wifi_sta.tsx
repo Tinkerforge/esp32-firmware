@@ -192,9 +192,13 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             this.setDirty(true);
                         }}
                         key={ap.bssid}>
-                        <div class="d-flex w-100 justify-content-between">
-                            <span class="text-left"><span class="mr-2">{wifi_symbol(ap.rssi)}</span>{ap.encryption == 0 ? <Unlock {...{class: "mr-2"} as any}/> : <Lock {...{class: "mr-2"} as any}/>}<span>{display_name}</span></span>
-                            <span class="text-right">{ap.bssid}</span>
+                        <div class="row align-items-center mb-2">
+                            <div class="col">{wifi_symbol(ap.rssi)}</div>
+                            <div class="col-auto" style="font-size: 1.1rem">{display_name}</div>
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col">{ap.encryption == 0 ? <Unlock {...{class: "mr-2"} as any}/> : <Lock {...{class: "mr-2"} as any}/>}</div>
+                            <div class="col-auto">{ap.bssid}</div>
                         </div>
                 </ListGroupItem>
         });
@@ -501,7 +505,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                 </ConfigForm>
 
                 <ItemModal
-                    size="lg"
+                    size="sm"
                     onCheck={async () => {
                         return true;
                     }}
@@ -511,9 +515,8 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         this.setState({scan_show: false});
                     }}
                     show={state.scan_show}
-                    no_variant="secondary"
                     title={__("wifi.content.sta_scan")}
-                    no_text={__("component.table.abort")}
+                    dialogClassName="modal-width-auto"
                 >
                     {this.get_scan_results()}
                 </ItemModal>

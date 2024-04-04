@@ -599,3 +599,19 @@ table ul {
 .list-group-item {
     padding: 0.75rem;
 }
+
+// Use modal-width-auto as dialog class for a modal that always has the width of it's content, even < 576px viewport width.
+// These are bootstrap's modal-dialog(-centered) with the media query removed and a max-width of max-content.
+.modal-dialog.modal-width-auto {
+    max-width: max-content !important;
+    margin: $modal-dialog-margin-y-sm-up auto;
+}
+
+.modal-dialog.modal-width-auto.modal-dialog-centered {
+    min-height: subtract(100%, $modal-dialog-margin-y-sm-up * 2);
+
+    &::before {
+      height: subtract(100vh, $modal-dialog-margin-y-sm-up * 2);
+      height: min-content;
+    }
+}
