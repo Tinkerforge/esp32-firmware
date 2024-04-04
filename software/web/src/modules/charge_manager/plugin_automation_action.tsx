@@ -24,7 +24,6 @@ import { AutomationActionID } from "../automation/automation_defs";
 import { AutomationAction, InitResult } from "../automation/types";
 import { InputFloat } from "../../ts/components/input_float";
 import { FormRow } from "../../ts/components/form_row";
-import { IS_ENERGY_MANAGER } from "src/build";
 import * as API from "../../ts/api"
 
 export type ChargeManagerAutomationAction = [

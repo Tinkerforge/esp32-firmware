@@ -21,7 +21,6 @@ import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_defs";
 import { AutomationTrigger, InitResult } from "../automation/types";
-import { IS_ENERGY_MANAGER } from "src/build";
 
 export type ChargeManagerWdAutomationTrigger = [
     AutomationTriggerID.ChargeManagerWd,
