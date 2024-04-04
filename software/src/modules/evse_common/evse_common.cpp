@@ -143,7 +143,9 @@ void EvseCommon::pre_setup()
 
     automation.register_trigger(
         AutomationTriggerID::EVSEExternalCurrentWd,
-        *Config::Null()
+        *Config::Null(),
+        nullptr,
+        false
     );
 
     automation.register_action(

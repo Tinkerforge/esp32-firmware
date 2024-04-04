@@ -54,8 +54,8 @@ public:
     void register_action(AutomationActionID id, Config cfg, ActionCb &&callback, ValidatorCb &&validator = nullptr, bool enable = true);
     void register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb &&validator = nullptr, bool enable = true);
 
-    void enable_action(AutomationActionID id, bool enable);
-    void enable_trigger(AutomationTriggerID id, bool enable);
+    void set_enabled(AutomationActionID id, bool enable);
+    void set_enabled(AutomationTriggerID id, bool enable);
 
     bool trigger_action(AutomationTriggerID number, void *data, std::function<bool(Config *, void *)> &&cb);
     bool is_trigger_active(AutomationTriggerID number);

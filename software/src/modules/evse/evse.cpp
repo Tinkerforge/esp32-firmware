@@ -612,7 +612,12 @@ void EVSE::update_all_data()
     evse_common.modbus_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_MODBUS_TCP]));
     evse_common.ocpp_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_OCPP]));
 
-    evse_common.external_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));
+    if (evse_common.external_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]))) {
+#if MODULE_AUTOMATION_AVAILABLE()
+        automation.set_enabled(AutomationTriggerID::EVSEExternalCurrentWd, evse_common.external_enabled.get("enabled")->asBool());
+#endif
+    }
+
     evse_common.external_clear_on_disconnect.get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));
 
     evse_common.global_current.get("current")->updateUint(max_current[CHARGING_SLOT_GLOBAL]);

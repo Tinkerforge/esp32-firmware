@@ -127,7 +127,8 @@ void Mqtt::pre_setup()
                 return String("Invalid use of wildcards in topic.");
             }
             return String("");
-        }
+        },
+        false
     );
 
     automation.register_action(
@@ -155,7 +156,8 @@ void Mqtt::pre_setup()
                 return String("MQTT topic must not contain wildcards.");
             }
             return String("");
-        }
+        },
+        false
     );
 #endif
 }
@@ -579,6 +581,11 @@ void Mqtt::setup()
     if (!config.get("enable_mqtt")->asBool()) {
         return;
     }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.set_enabled(AutomationTriggerID::MQTT, true);
+    automation.set_enabled(AutomationActionID::MQTT, true);
+#endif
 
     this->backend_idx = api.registerBackend(this);
 

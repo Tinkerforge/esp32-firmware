@@ -138,7 +138,9 @@ void NFC::pre_setup()
         Config::Object({
             {"tag_type", Config::Uint(0, 0, 4)},
             {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
-        })
+        }),
+        nullptr,
+        false
     );
 
     automation.register_action(
@@ -149,15 +151,18 @@ void NFC::pre_setup()
             {"action", Config::Uint(0, 0, 2)}
         }),
         [this](const Config *config) {
-        inject_tag.get("tag_type")->updateUint(config->get("tag_type")->asUint());
-        inject_tag.get("tag_id")->updateString(config->get("tag_id")->asString());
-        last_tag_injection = millis();
-        tag_injection_action = config->get("action")->asUint();
-        // 0 is the marker that no injection happened or the last one was handled.
-        // Fake that we were one ms faster.
-        if (last_tag_injection == 0)
-            last_tag_injection -= 1;
-    });
+            inject_tag.get("tag_type")->updateUint(config->get("tag_type")->asUint());
+            inject_tag.get("tag_id")->updateString(config->get("tag_id")->asString());
+            last_tag_injection = millis();
+            tag_injection_action = config->get("action")->asUint();
+            // 0 is the marker that no injection happened or the last one was handled.
+            // Fake that we were one ms faster.
+            if (last_tag_injection == 0)
+                last_tag_injection -= 1;
+        },
+        nullptr,
+        false
+    );
 #endif
 
     auth_info = Config::Object({
@@ -191,6 +196,11 @@ void NFC::setup_nfc()
 
     initialized = true;
     api.addFeature("nfc");
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.set_enabled(AutomationTriggerID::NFC, true);
+    automation.set_enabled(AutomationActionID::NFCInjectTag, true);
+#endif
 }
 
 void NFC::check_nfc_state()

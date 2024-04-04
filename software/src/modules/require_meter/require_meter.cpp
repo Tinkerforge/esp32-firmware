@@ -43,7 +43,10 @@ void RequireMeter::pre_setup()
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_trigger(
         AutomationTriggerID::RequireMeter,
-        *Config::Null());
+        *Config::Null(),
+        nullptr,
+        false
+    );
 #endif
 }
 
@@ -106,6 +109,10 @@ void RequireMeter::start_task()
     static bool is_running = false;
     if (is_running)
         return;
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.set_enabled(AutomationTriggerID::RequireMeter, true);
+#endif
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         bool meter_timeout = false;

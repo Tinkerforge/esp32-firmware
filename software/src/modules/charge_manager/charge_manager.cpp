@@ -950,6 +950,11 @@ void ChargeManager::set_allocated_current_callback(std::function<void(uint32_t)>
 
 void ChargeManager::register_urls()
 {
+#if MODULE_AUTOMATION_AVAILABLE() && MODULE_POWER_MANAGER_AVAILABLE() && !MODULE_ENERGY_MANAGER_AVAILABLE()
+    automation.set_enabled(AutomationTriggerID::ChargeManagerWd, !power_manager.get_enabled());
+    automation.set_enabled(AutomationActionID::SetManagerCurrent, !power_manager.get_enabled());
+#endif
+
     api.addPersistentConfig("charge_manager/config", &config);
     api.addState("charge_manager/state", &state);
 

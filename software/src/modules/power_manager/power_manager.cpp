@@ -138,7 +138,9 @@ void PowerManager::pre_setup()
             api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
                 {"mode", configured_mode}
             }});
-        });
+        },
+        nullptr,
+        false);
 
     automation.register_action(
         AutomationActionID::PMLimitMaxCurrent,
@@ -152,8 +154,11 @@ void PowerManager::pre_setup()
             } else {
                 this->limit_max_current(static_cast<uint32_t>(current));
             }
-        });
+        },
+        nullptr,
+        false);
 
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
     automation.register_action(
         AutomationActionID::PMBlockCharge,
         Config::Object({
@@ -163,18 +168,25 @@ void PowerManager::pre_setup()
         [this](const Config *cfg) {
             this->charging_blocked.pin[cfg->get("slot")->asUint()] = static_cast<uint8_t>(cfg->get("block")->asBool());
         });
+#endif
 
     automation.register_trigger(
         AutomationTriggerID::PMPowerAvailable,
         Config::Object({
             {"power_available", Config::Bool(false)}
-        }));
+        }),
+        nullptr,
+        false
+    );
 
     automation.register_trigger(
         AutomationTriggerID::PMGridPowerDraw,
         Config::Object({
             {"drawing_power", Config::Bool(false)}
-        }));
+        }),
+        nullptr,
+        false
+    );
 #endif
 }
 
@@ -191,6 +203,13 @@ void PowerManager::setup()
     if (!config.get("enabled")->asBool()) {
         return;
     }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.set_enabled(AutomationActionID::PMChargeModeSwitch, true);
+    automation.set_enabled(AutomationActionID::PMLimitMaxCurrent, true);
+    automation.set_enabled(AutomationTriggerID::PMPowerAvailable, true);
+    automation.set_enabled(AutomationTriggerID::PMGridPowerDraw, true);
+#endif
 
     debug_protocol.register_backend(this);
 
@@ -217,7 +236,7 @@ void PowerManager::setup()
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
         api.addFeature("phase_switch");
-        automation.enable_action(AutomationActionID::PMPhaseSwitch, true);
+        automation.set_enabled(AutomationActionID::PMPhaseSwitch, true);
     }
 
     // Set up meter power filter.
@@ -393,7 +412,7 @@ void PowerManager::register_urls()
         logger.printfln("Disabled but phase switching backend can switch autonomously. Enabling external control API.");
 
         api.addFeature("phase_switch");
-        automation.enable_action(AutomationActionID::PMPhaseSwitch, true);
+        automation.set_enabled(AutomationActionID::PMPhaseSwitch, true);
 
         api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this]() {
             switch (phase_switcher_backend->get_phase_switching_state()) {

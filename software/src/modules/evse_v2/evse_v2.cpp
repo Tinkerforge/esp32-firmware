@@ -175,12 +175,13 @@ void EVSEV2::pre_setup()
     );
 
     automation.register_trigger(
-        AutomationTriggerID::EVSEGPInput,
+        AutomationTriggerID::EVSEShutdownInput,
         automation_cfg
     );
 
+#if defined(BUILD_NAME_WARP2)
     automation.register_trigger(
-        AutomationTriggerID::EVSEShutdownInput,
+        AutomationTriggerID::EVSEGPInput,
         automation_cfg
     );
 
@@ -191,6 +192,8 @@ void EVSEV2::pre_setup()
             is_in_bootloader(tf_evse_v2_set_gp_output(&device, config->get("closed")->asBool() ? 0 : 1));
         }
     );
+#endif
+
 #endif
 }
 
@@ -1037,6 +1040,7 @@ void EVSEV2::update_all_data()
     evse_common.hardware_configuration.get("jumper_configuration")->updateUint(jumper_configuration);
     evse_common.hardware_configuration.get("has_lock_switch")->updateBool(has_lock_switch);
     evse_common.hardware_configuration.get("evse_version")->updateUint(evse_version);
+
     evse_common.hardware_configuration.get("energy_meter_type")->updateUint(meter_data.meter_type);
 
     // get_low_level_state
@@ -1134,7 +1138,12 @@ void EVSEV2::update_all_data()
     evse_common.modbus_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_MODBUS_TCP]));
     evse_common.ocpp_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_OCPP]));
 
-    evse_common.external_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));
+    if (evse_common.external_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]))) {
+#if MODULE_AUTOMATION_AVAILABLE()
+        automation.set_enabled(AutomationTriggerID::EVSEExternalCurrentWd, evse_common.external_enabled.get("enabled")->asBool());
+#endif
+    }
+
     evse_common.external_clear_on_disconnect.get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[CHARGING_SLOT_EXTERNAL]));
 
     evse_common.global_current.get("current")->updateUint(max_current[CHARGING_SLOT_GLOBAL]);

@@ -221,13 +221,19 @@ void EnergyManager::setup()
     power_manager.register_phase_switcher_backend(this);
 
 #if MODULE_AUTOMATION_AVAILABLE()
+    if (!contactor_installed) {
+        automation.set_enabled(AutomationTriggerID::EMPhaseSwitch, false);
+        automation.set_enabled(AutomationTriggerID::EMContactorMonitoring, false);
+    }
+
     task_scheduler.scheduleOnce([this]() {
         auto trigger_action = [this](const Config *cfg, void *data) -> bool {return this->action_triggered(cfg, data);};
         automation.trigger_action(AutomationTriggerID::EMInputThree,  nullptr, trigger_action);
         automation.trigger_action(AutomationTriggerID::EMInputFour,   nullptr, trigger_action);
-        automation.trigger_action(AutomationTriggerID::EMPhaseSwitch, nullptr, trigger_action);
 
         if (this->contactor_installed) {
+            automation.trigger_action(AutomationTriggerID::EMPhaseSwitch, nullptr, trigger_action);
+
             bool contactor_okay = all_data.contactor_check_state & 1;
             automation.trigger_action(AutomationTriggerID::EMContactorMonitoring, &contactor_okay, trigger_action);
         }

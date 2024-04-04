@@ -42,6 +42,8 @@ void Automation::pre_setup()
             logger.printfln_plain("    %s", cfg->get("message")->asString().c_str());
         }
     );
+
+    // TODO: disable here and enable whenever settimeofday is called.
     register_trigger(
         AutomationTriggerID::Cron,
         Config::Object({
@@ -191,7 +193,7 @@ void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorC
     trigger_map[id] = TriggerValue{std::forward<ValidatorCb>(validator), enable};
 }
 
-void Automation::enable_action(AutomationActionID id, bool enable)
+void Automation::set_enabled(AutomationActionID id, bool enable)
 {
     if (action_map.find(id) == action_map.end()) {
         logger.printfln("Action %u is not registered", static_cast<uint>(id));
@@ -215,7 +217,7 @@ void Automation::enable_action(AutomationActionID id, bool enable)
     }
 }
 
-void Automation::enable_trigger(AutomationTriggerID id, bool enable)
+void Automation::set_enabled(AutomationTriggerID id, bool enable)
 {
     if (trigger_map.find(id) == trigger_map.end()) {
         logger.printfln("Trigger %u is not registered", static_cast<uint>(id));
