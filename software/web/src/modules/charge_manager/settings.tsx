@@ -92,7 +92,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
         let warpUltimateMode  = API.hasModule("energy_manager") &&  (API.hasModule("evse_v2") || API.hasModule("evse"));
         let is_warp3          = API.get_unchecked("evse/hardware_configuration")?.evse_version >= 30;
-        let show_1p_current   = energyManagerMode || warpUltimateMode || is_warp3;
+        let show_1p_current   = energyManagerMode || warpUltimateMode || is_warp3 || API.hasFeature("phase_switch");
 
         let verbose = <FormRow label={__("charge_manager.content.verbose")}>
                 <Switch desc={__("charge_manager.content.verbose_desc")}
