@@ -1,7 +1,5 @@
 #include "config/private.h"
 
-#include "event_log.h"
-
 bool Config::ConfObject::slotEmpty(size_t i)
 {
     return object_buf[i].schema == nullptr;

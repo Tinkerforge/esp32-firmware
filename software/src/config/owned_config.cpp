@@ -1,7 +1,5 @@
 #include "owned_config.h"
 
-#include "event_log.h"
-
 OwnedConfig::OwnedConfigWrap::OwnedConfigWrap(const OwnedConfig *_conf) : conf(_conf)
 {
 }

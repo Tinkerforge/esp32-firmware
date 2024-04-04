@@ -19,7 +19,6 @@
 #include "certs.h"
 
 #include "api.h"
-#include "event_log.h"
 #include "task_scheduler.h"
 
 #include "LittleFS.h"
