@@ -537,7 +537,7 @@ static const size_t debug_header_suffix_len = strlen(debug_header_suffix);
 size_t EVSEV2::get_debug_header_length() const
 {
     return debug_header_prefix_len +
-           (evse_common.hardware_configuration.get("evse_version")->asUint() >= 30
+           (evse_common.get_evse_version() >= 30
             ? debug_header_infix_v3_len
             : debug_header_infix_v2_len) +
            debug_header_suffix_len;
@@ -547,7 +547,7 @@ void EVSEV2::get_debug_header(StringBuilder *sb)
 {
     sb->puts(debug_header_prefix, debug_header_prefix_len);
 
-    if (evse_common.hardware_configuration.get("evse_version")->asUint() >= 30) {
+    if (evse_common.get_evse_version() >= 30) {
         sb->puts(debug_header_infix_v3, debug_header_infix_v3_len);
     }
     else {
@@ -770,7 +770,7 @@ void EVSEV2::get_debug_line(StringBuilder *sb)
 
 bool EVSEV2::phase_switching_capable()
 {
-    return evse_common.hardware_configuration.get("evse_version")->asUint() >= 30 && evse_v2.phases_connected.get("phases")->asUint() > 1;
+    return evse_common.get_evse_version() >= 30 && evse_v2.phases_connected.get("phases")->asUint() > 1;
 }
 
 bool EVSEV2::can_switch_phases_now(bool wants_3phase)

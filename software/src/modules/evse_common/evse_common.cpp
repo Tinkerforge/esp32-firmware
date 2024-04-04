@@ -750,3 +750,8 @@ bool EvseCommon::get_management_enabled()
 {
     return management_enabled.get("enabled")->asBool();
 }
+
+uint32_t EvseCommon::get_evse_version()
+{
+    return hardware_configuration.get("evse_version")->asUint();
+}

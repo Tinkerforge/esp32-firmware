@@ -161,6 +161,7 @@ public:
     ConfigRoot &get_slots();
     ConfigRoot &get_low_level_state();
     bool get_management_enabled();
+    uint32_t get_evse_version();
 
     bool action_triggered(Config *config, void *data);
 
