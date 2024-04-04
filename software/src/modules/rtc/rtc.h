@@ -59,6 +59,4 @@ public:
     void set_time(const timeval &_time);
     timeval get_time();
     bool update_system_time();
-
-    bool action_triggered(Config *config, void *data);
 };
