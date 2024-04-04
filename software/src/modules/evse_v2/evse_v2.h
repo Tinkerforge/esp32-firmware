@@ -28,6 +28,15 @@
 
 #define EVSEV2_PHASES_INFO_1P_CAR_MASK (1 << 0)
 
+struct EVSEV2MeterData {
+    bool phases_active[3];
+    bool phases_connected[3];
+    uint8_t meter_type;
+    float power;
+    float currents[3];
+    uint32_t error_count[6];
+};
+
 class EVSEV2 final : public DeviceModule<TF_EVSEV2,
                                          evse_v2_bricklet_firmware_bin_data,
                                          evse_v2_bricklet_firmware_bin_length,
@@ -89,7 +98,7 @@ protected:
     PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override;
     bool switch_phases_3phase(bool wants_3phase) override;
 
-// To allow the evse_v2_meter module to get/set energy meter values
+// To allow the meters_evse_v2 module to get/set energy meter values
 public:
     bool action_triggered(Config *config, void *data);
     void update_all_data() override;
@@ -98,15 +107,6 @@ public:
     uint16_t get_all_energy_meter_values(float *ret_values);
     bool reset_energy_meter_relative_energy();
     uint8_t get_energy_meter_type();
-
-    struct meter_data {
-        bool phases_active[3];
-        bool phases_connected[3];
-        uint8_t meter_type;
-        float power;
-        float currents[3];
-        uint32_t error_count[6];
-    };
 
 private:
     ConfigRoot reset_dc_fault_current_state;

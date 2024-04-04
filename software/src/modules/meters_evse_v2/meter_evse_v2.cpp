@@ -19,6 +19,7 @@
 
 #include "meter_evse_v2.h"
 
+#include "module_dependencies.h"
 #include "modules/meters/meter_value_id.h"
 #include "modules/meters/sdm_helpers.h"
 #include "task_scheduler.h"
@@ -39,7 +40,7 @@ void MeterEVSEV2::setup(const Config &/*ephemeral_config*/)
     evse_v2.update_all_data();
 }
 
-void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data)
+void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2MeterData *meter_data)
 {
     // Always update error counters, even if no meter could be detected.
     errors->get("local_timeout"       )->updateUint(meter_data->error_count[0]);

@@ -34,6 +34,8 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
+struct EVSEV2MeterData;
+
 class MetersEVSEV2 final : public IModule, public MeterGenerator
 {
 public:
@@ -47,7 +49,7 @@ public:
     [[gnu::const]] virtual const Config *get_state_prototype()  override;
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
-    void update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data);
+    void update_from_evse_v2_all_data(EVSEV2MeterData *meter_data);
     void energy_meter_values_callback(float power, float current[3]);
 
 private:

@@ -842,7 +842,7 @@ void EVSEV2::update_all_data()
     uint8_t jumper_configuration;
     bool has_lock_switch;
     uint8_t evse_version;
-    struct meter_data meter_data;
+    EVSEV2MeterData meter_data;
 
     // get_all_data_2
     uint8_t shutdown_input_configuration;

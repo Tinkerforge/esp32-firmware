@@ -31,6 +31,8 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
+struct EVSEV2MeterData;
+
 class MeterEVSEV2 final : public IMeter
 {
 public:
@@ -47,7 +49,7 @@ public:
     bool supports_reset()         override {return true;}
     bool reset()                  override;
 
-    void update_from_evse_v2_all_data(EVSEV2::meter_data *meter_data);
+    void update_from_evse_v2_all_data(EVSEV2MeterData *meter_data);
     void energy_meter_values_callback(float power, float current[3]);
 private:
     void update_all_values(float *values);
