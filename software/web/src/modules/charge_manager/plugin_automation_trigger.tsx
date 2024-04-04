@@ -44,18 +44,15 @@ function new_charge_manager_wd_config(): AutomationTrigger {
 }
 
 export function init(): InitResult {
-    if (!IS_ENERGY_MANAGER) {
-        return {
-            trigger_components: {
-                [AutomationTriggerID.ChargeManagerWd]: {
-                    name: __("charge_manager.automation.charge_manager_wd"),
-                    clone_config: (action: AutomationTrigger) => [action[0], {...action[1]}] as AutomationTrigger,
-                    new_config: new_charge_manager_wd_config,
-                    get_table_children: get_charge_manager_wd_table_children,
-                    get_edit_children: get_charge_manager_wd_edit_children,
-                },
+    return {
+        trigger_components: {
+            [AutomationTriggerID.ChargeManagerWd]: {
+                name: __("charge_manager.automation.charge_manager_wd"),
+                clone_config: (action: AutomationTrigger) => [action[0], {...action[1]}] as AutomationTrigger,
+                new_config: new_charge_manager_wd_config,
+                get_table_children: get_charge_manager_wd_table_children,
+                get_edit_children: get_charge_manager_wd_edit_children,
             },
-        };
-    }
-    return {};
+        },
+    };
 }

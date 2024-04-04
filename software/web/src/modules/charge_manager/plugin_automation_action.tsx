@@ -64,18 +64,15 @@ function new_set_manager_current_config(): AutomationAction {
 }
 
 export function init(): InitResult {
-    if (!IS_ENERGY_MANAGER) {
-        return {
-            action_components: {
-                [AutomationActionID.SetManagerCurrent]: {
-                    name: __("charge_manager.automation.set_charge_manager"),
-                    new_config: new_set_manager_current_config,
-                    clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                    get_edit_children: get_set_manager_edit_children,
-                    get_table_children: get_set_manager_table_children,
-                },
+    return {
+        action_components: {
+            [AutomationActionID.SetManagerCurrent]: {
+                name: __("charge_manager.automation.set_charge_manager"),
+                new_config: new_set_manager_current_config,
+                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+                get_edit_children: get_set_manager_edit_children,
+                get_table_children: get_set_manager_table_children,
             },
-        };
-    }
-    return {};
+        },
+    };
 }
