@@ -751,7 +751,9 @@ void ChargeManager::distribute_current()
                 uint16_t requested_current = charger.requested_current;
 
                 // If exactly one charger is charging, double the current margin for faster power manager control.
-                if (chargers_allocated_current_to == 1) {
+                // If the requested current is exactly 6 A, the car limits itself to less than 6 A - requested_current_margin,
+                // so we don't have to increase it.
+                if (chargers_allocated_current_to == 1 && requested_current > 6000) {
                     requested_current += requested_current_margin;
                 }
 
