@@ -1,0 +1,43 @@
+From 99b0b3152f28146c510c7a955b7382c619162e92 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Thu, 4 Apr 2024 18:41:02 +0200
+Subject: [PATCH] dns: Enforce a minimum TTL of 30s
+
+---
+ src/core/dns.c | 19 ++++++++-----------
+ 1 file changed, 8 insertions(+), 11 deletions(-)
+
+diff --git a/src/core/dns.c b/src/core/dns.c
+index 81a4c20b..1b2a7ba8 100644
+--- a/src/core/dns.c
++++ b/src/core/dns.c
+@@ -1246,18 +1246,15 @@ dns_correct_response(u8_t idx, u32_t ttl)
+   if (entry->ttl > DNS_MAX_TTL) {
+     entry->ttl = DNS_MAX_TTL;
+   }
++
++  /* Enforce a minimum TTL of 30s to avoid excessive DNS queries in certain
++     workloads. This is not recommended in RFC 1035, but 30s should be
++     short enough for this to be safe. */
++  if (entry->ttl < 30) {
++    entry->ttl = 30;
++  }
++
+   dns_call_found(idx, &entry->ipaddr);
+-
+-  if (entry->ttl == 0) {
+-    /* RFC 883, page 29: "Zero values are
+-       interpreted to mean that the RR can only be used for the
+-       transaction in progress, and should not be cached."
+-       -> flush this entry now */
+-    /* entry reused during callback? */
+-    if (entry->state == DNS_STATE_DONE) {
+-      entry->state = DNS_STATE_UNUSED;
+-    }
+-  }
+ }
+ 
+ /**
+-- 
+2.39.2
+
