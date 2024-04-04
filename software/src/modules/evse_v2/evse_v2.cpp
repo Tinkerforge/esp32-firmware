@@ -165,6 +165,7 @@ void EVSEV2::pre_setup()
     gp_output_update = gp_output;
 
 #if MODULE_AUTOMATION_AVAILABLE()
+    // Create a temporary config that allocates a schema.
     auto automation_cfg = Config::Object({
         {"closed", Config::Bool(true)}
     });
