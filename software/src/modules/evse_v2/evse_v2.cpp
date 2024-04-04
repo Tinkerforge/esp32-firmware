@@ -116,9 +116,7 @@ void EVSEV2::pre_setup()
         {"dc_fault_sensor_type", Config::Uint8(0)}
     });
 
-
     // Actions
-
     reset_dc_fault_current_state = Config::Object({
         {"password", Config::Uint32(0)} // 0xDC42FA23
     });
@@ -1062,8 +1060,15 @@ void EVSEV2::update_all_data()
 
 #if MODULE_AUTOMATION_AVAILABLE()
     static InputState last_shutdown_input_state = InputState::Unknown;
+#if defined(BUILD_NAME_WARP2)
+    bool gpio_enable = gpio[5];
+#elif defined(BUILD_NAME_WARP3)
+    bool gpio_enable = gpio[18];
+#else
+    #error "GPIO layout is unknown"
+#endif
 
-    InputState shutdown_input_state = gpio[5] ? InputState::Closed : InputState::Open;
+    InputState shutdown_input_state = gpio_enable ? InputState::Closed : InputState::Open;
     if (last_shutdown_input_state != shutdown_input_state) {
         // We need to schedule this since the first call of update_all_data happens before automation is initialized.
         task_scheduler.scheduleOnce([this, gpio]() {
@@ -1072,6 +1077,7 @@ void EVSEV2::update_all_data()
         last_shutdown_input_state = shutdown_input_state;
     }
 
+#if defined(BUILD_NAME_WARP2)
     static InputState last_input_state = InputState::Unknown;
 
     InputState input_state = gpio[16] ? InputState::Closed : InputState::Open;
@@ -1082,6 +1088,8 @@ void EVSEV2::update_all_data()
         }, 0);
         last_input_state = input_state;
     }
+#endif
+
 #endif
 
     evse_common.low_level_state.get("charging_time")->updateUint(charging_time);
@@ -1211,7 +1219,9 @@ bool EVSEV2::action_triggered(Config *config, void *data)
     case AutomationTriggerID::EVSEButton:
         return true;
 
+#if defined(BUILD_NAME_WARP2)
     case AutomationTriggerID::EVSEGPInput:
+#endif
     case AutomationTriggerID::EVSEShutdownInput:
         return *static_cast<bool *>(data) != cfg->get("closed")->asBool();
     default:
