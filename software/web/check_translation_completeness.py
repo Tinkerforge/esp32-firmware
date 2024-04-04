@@ -158,6 +158,18 @@ def main():
             '.firmware_update.script.info_page_corrupted',
             '.firmware_update.script.no_info_page',
             '.firmware_update.script.wrong_firmware_type',
+            '.evse.content.evse_v2_gpio_names_0',
+            '.evse.content.evse_v2_gpio_names_1',
+            '.evse.content.evse_v2_gpio_names_2',
+            '.evse.content.evse_v2_gpio_names_3',
+            '.evse.content.evse_v2_gpio_names_4',
+            '.evse.content.evse_v2_gpio_names_5',
+            '.evse.content.evse_v3_gpio_names_0',
+            '.evse.content.evse_v3_gpio_names_1',
+            '.evse.content.evse_v3_gpio_names_2',
+            '.evse.content.evse_v3_gpio_names_3',
+            '.evse.content.evse_v3_gpio_names_4',
+            '.evse.content.evse_v3_gpio_names_5',
         ]
 
         for x in sorted(unused):
