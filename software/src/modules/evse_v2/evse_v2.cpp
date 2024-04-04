@@ -1072,8 +1072,8 @@ void EVSEV2::update_all_data()
     InputState shutdown_input_state = gpio_enable ? InputState::Closed : InputState::Open;
     if (last_shutdown_input_state != shutdown_input_state) {
         // We need to schedule this since the first call of update_all_data happens before automation is initialized.
-        task_scheduler.scheduleOnce([this, gpio]() {
-            automation.trigger_action(AutomationTriggerID::EVSEShutdownInput, (void *)&gpio[5], &trigger_action);
+        task_scheduler.scheduleOnce([this, gpio_enable]() {
+            automation.trigger_action(AutomationTriggerID::EVSEShutdownInput, (void *)&gpio_enable, &trigger_action);
         }, 0);
         last_shutdown_input_state = shutdown_input_state;
     }
