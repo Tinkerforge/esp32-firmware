@@ -4,12 +4,6 @@ let x = {
     "charge_manager": {
         "status": {
             "charge_manager": "Charge management"
-        },
-        "navbar": {
-            "charge_manager": "Chargers"
-        },
-        "content": {
-            "charge_manager": "Chargers"
         }
     },
     "firmware_update": {

@@ -4,12 +4,6 @@ let x = {
     "charge_manager": {
         "status": {
             "charge_manager": "Lastmanager"
-        },
-        "navbar": {
-            "charge_manager": "Lastmanager"
-        },
-        "content": {
-            "charge_manager": "Lastmanager"
         }
     },
     "ethernet": {
