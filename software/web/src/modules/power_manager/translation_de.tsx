@@ -11,11 +11,6 @@ let x = {
             "phase_switching": "Phasenumschaltung",
             "single_phase": "Einphasig",
             "three_phase":"Dreiphasig",
-            "external_control_state": "Externe Steuerung",
-            "external_control_state_available": "Verfügbar",
-            "external_control_state_disabled": "Deaktiviert",
-            "external_control_state_unavailable": "Nicht verfügbar",
-            "external_control_state_switching": "Schaltet gerade",
             "config_error_phase_switching": "Phasenumschaltung oder Schütz nicht konfiguriert",
             "config_error_no_max_current": "Maximaler Gesamtstrom der Wallboxen nicht konfiguriert",
             "config_error_no_chargers": "Keine Wallboxen konfiguriert",
@@ -30,8 +25,7 @@ let x = {
 
             "enable_pm": "Power Manager aktiviert",
             "enable_pm_desc": "Passt die verfügbare Ladeleistung automatisch an",
-            "cm_requirements_warning_em": "Keine kontrollierten Wallboxen eingetragen. Um das PV-Überschussladen zu nutzen, müssen alle angeschlossenen Wallboxen im Lastmanagement als kontrollierte Wallboxen eingetragen sein.",
-            "cm_requirements_warning_wb": "Um das PV-Überschussladen zu nutzen, muss das Lastmanagement auf „Lastmanager“ eingestellt und nur diese Wallbox als kontrollierte Wallbox eingetragen sein.",
+            "cm_requirements_warning": null,
             "cm_multiple_chargers_warning": "Um das PV-Überschussladen mit dieser Wallbox zu nutzen, sollten im Lastmanagement keine weiteren Wallboxen als kontrollierte Wallboxen eingetragen sein.",
 
             "contactor_installed": "Schütz angeschlossen",
@@ -169,8 +163,7 @@ let x = {
         "script": {
             "save_failed": "Speichern der Power Manager-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "Power Manager-Einstellungen",
-            "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen.",
-            "meter": /*SFN*/(slot: number|"?") => "Zähler #" + slot/*NF*/
+            "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen."
         }
     }
 }

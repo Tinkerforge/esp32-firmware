@@ -73,7 +73,7 @@ let x = {
                 </>
             }/*NF*/,
             "automation_trigger_text": /*FFN*/(topic: string, payload: string, retained: boolean) => {
-                let ret = <></>;
+                let ret;
                 if (payload.length == 0) {
                     ret = <>Wenn eine beliebige MQTT-Nachricht</>;
                 } else {

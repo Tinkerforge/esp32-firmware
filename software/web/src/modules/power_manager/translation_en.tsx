@@ -11,11 +11,6 @@ let x = {
             "phase_switching": "Phase switching",
             "single_phase": "Single-phase",
             "three_phase":"Three-phase",
-            "external_control_state": "External control",
-            "external_control_state_available": "Available",
-            "external_control_state_disabled": "Disabled",
-            "external_control_state_unavailable": "Unavailable",
-            "external_control_state_switching": "Switching now",
             "config_error_phase_switching": "Phase switching or contactor not configured",
             "config_error_no_max_current": "No maximum current configured for chargers",
             "config_error_no_chargers": "No chargers configured",
@@ -30,8 +25,7 @@ let x = {
 
             "enable_pm": "Power Manager enabled",
             "enable_pm_desc": "Automatically adjust the amount of available charging power",
-            "cm_requirements_warning_em": "No chargers configured. To use the PV excess charging, all connected chargers must be configured as managed chargers in the charge manager.",
-            "cm_requirements_warning_wb": "To use the PV excess charging, charge management must be enabled and set to “Charge manager” and the charger should only manage itself.",
+            "cm_requirements_warning": null,
             "cm_multiple_chargers_warning": "To use the PV excess charging with this charger, no other chargers should be configured as manager chargers in the charge manager.",
 
             "contactor_installed": "Contactor installed",
@@ -169,8 +163,7 @@ let x = {
         "script": {
             "save_failed": "Failed to save power manager settings.",
             "reboot_content_changed": "power manager settings",
-            "mode_change_failed": "Failed to change charging mode.",
-            "meter": /*SFN*/(slot: number|"?") => "Meter #" + slot/*NF*/
+            "mode_change_failed": "Failed to change charging mode."
         }
     }
 }

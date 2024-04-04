@@ -24,7 +24,6 @@ let x = {
             "sta_enable_sta_desc": null,
             "sta_ssid": "Netzwerkname (SSID)",
             "sta_scan": "Netzwerksuche",
-            "sta_scanning": "Suche Netzwerke...",
             "sta_bssid": "BSSID",
             "sta_bssid_lock": "BSSID-Sperre",
             "sta_bssid_invalid": "Die BSSID muss aus sechs Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",

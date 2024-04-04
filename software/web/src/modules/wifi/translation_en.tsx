@@ -24,7 +24,6 @@ let x = {
             "sta_enable_sta_desc": "Automatically connects to the configured network on start-up",
             "sta_ssid": "Network name (SSID)",
             "sta_scan": "Search for networks",
-            "sta_scanning": "Searching for networks...",
             "sta_bssid": "BSSID",
             "sta_bssid_invalid": "The BSSID must have six groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
             "sta_bssid_lock": "BSSID lock",

@@ -42,5 +42,10 @@ let x = {
         "status": {
             "power_history": "Power history"
         }
+    },
+    "power_manager": {
+        "content": {
+            "cm_requirements_warning": "No chargers configured. To use the PV excess charging, all connected chargers must be configured as managed chargers in the charge manager."
+        }
     }
 }

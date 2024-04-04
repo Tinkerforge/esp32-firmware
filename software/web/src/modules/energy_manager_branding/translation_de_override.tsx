@@ -48,5 +48,10 @@ let x = {
         "status": {
             "power_history": "Leistungsverlauf"
         }
+    },
+    "power_manager": {
+        "content": {
+            "cm_requirements_warning": "Keine kontrollierten Wallboxen eingetragen. Um das PV-Überschussladen zu nutzen, müssen alle angeschlossenen Wallboxen im Lastmanagement als kontrollierte Wallboxen eingetragen sein."
+        }
     }
 }

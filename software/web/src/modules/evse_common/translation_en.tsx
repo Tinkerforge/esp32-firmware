@@ -231,8 +231,6 @@ let x = {
             "phases_current": "Phases current",
             "phases_requested": "Phases requested",
             "phases_state": "Phase switching state",
-            "switch_to_one_phase": "Switch to one phase",
-            "switch_to_three_phases": "Switch to three phases",
 
             "phases_connected": "Supply",
             "phases_connected_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,

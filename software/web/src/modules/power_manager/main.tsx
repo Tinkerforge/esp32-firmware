@@ -372,7 +372,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                         <div>
                             <FormRow label="">
                                 <div style="color:red">
-                                    {translate_unchecked("power_manager.content.cm_requirements_warning_" + device_translation_suffix)}
+                                    {__("power_manager.content.cm_requirements_warning")}
                                 </div>
                             </FormRow>
                         </div>

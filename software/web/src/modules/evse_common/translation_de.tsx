@@ -231,8 +231,6 @@ let x = {
             "phases_current": "Phasen geschaltet",
             "phases_requested": "Phasen angefordert",
             "phases_state": "Zustand der Phasenumschaltung",
-            "switch_to_one_phase": "Umschalten auf einphasig",
-            "switch_to_three_phases": "Umschalten auf dreiphasig",
 
             "phases_connected": "Zuleitung",
             "phases_connected_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
