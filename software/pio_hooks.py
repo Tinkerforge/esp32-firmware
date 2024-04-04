@@ -580,7 +580,10 @@ def main():
     build_lines.append('#define BUILD_VERSION_PATCH {}'.format(version[2]))
     build_lines.append('#define BUILD_VERSION_STRING "{}.{}.{}"'.format(*version))
     build_lines.append('#define BUILD_HOST_PREFIX "{}"'.format(host_prefix))
-    build_lines.append('#define BUILD_NAME_{}'.format(name.upper()))
+
+    for firmware in ['WARP', 'WARP2', 'WARP3', 'ENERGY_MANAGER']:
+        build_lines.append('#define BUILD_IS_{}() {}'.format(firmware, 1 if firmware == name.upper() else 0))
+
     build_lines.append('#define BUILD_CONFIG_TYPE "{}"'.format(config_type))
     build_lines.append('#define BUILD_DISPLAY_NAME "{}"'.format(display_name))
     build_lines.append('#define BUILD_DISPLAY_NAME_UPPER "{}"'.format(display_name.upper()))

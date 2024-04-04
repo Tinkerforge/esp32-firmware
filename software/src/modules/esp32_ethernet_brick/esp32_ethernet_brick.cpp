@@ -67,7 +67,7 @@ static TF_Local local;
 #define WEM_FACTORY_RESET_WAIT_TIME 8
 #endif
 
-#if defined(BUILD_NAME_ENERGY_MANAGER) && MODULE_FIRMWARE_UPDATE_AVAILABLE()
+#if BUILD_IS_ENERGY_MANAGER() && MODULE_FIRMWARE_UPDATE_AVAILABLE()
 static void check_for_factory_reset()
 {
     // A factory reset will leave the green LED on, even across a restart. Switch it off here.
@@ -131,7 +131,7 @@ static void check_for_factory_reset()
 
 bool ESP32EthernetBrick::initHAL()
 {
-#if defined(BUILD_NAME_WARP3)
+#if BUILD_IS_WARP3()
     uint8_t ports = 4;
 #else
     uint8_t ports = 6;
@@ -148,7 +148,7 @@ void ESP32EthernetBrick::pre_init()
 {
     button_pin = BUTTON;
 
-#if defined(BUILD_NAME_WARP3)
+#if BUILD_IS_WARP3()
         blue_led_pin = BLUE_LED_WARP_ESP32_ETHERNET_BRICK;
         // green LED is connected directly to 3.3 V
 #else
@@ -165,13 +165,13 @@ void ESP32EthernetBrick::pre_init()
 void ESP32EthernetBrick::setup()
 {
     read_efuses(&local_uid_num, local_uid_str, passphrase);
-#if defined(BUILD_NAME_WARP3)
+#if BUILD_IS_WARP3()
     logger.printfln("WARP ESP32 Ethernet Brick UID: %s", local_uid_str);
 #else
     logger.printfln("ESP32 Ethernet Brick UID: %s", local_uid_str);
 #endif
 
-#if defined(BUILD_NAME_ENERGY_MANAGER) && MODULE_FIRMWARE_UPDATE_AVAILABLE()
+#if BUILD_IS_ENERGY_MANAGER() && MODULE_FIRMWARE_UPDATE_AVAILABLE()
     check_for_factory_reset();
 #endif
 

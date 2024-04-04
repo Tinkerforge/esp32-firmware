@@ -39,7 +39,7 @@ void DeviceName::pre_setup()
     });
 }
 
-#if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
+#if BUILD_IS_WARP() || BUILD_IS_WARP2()
 String getWarpDisplayName()
 {
     String display_type = api.hasFeature("meter") ? " Pro" : " Smart";
@@ -51,7 +51,7 @@ String getWarpDisplayName()
         display_type += " without EVSE";
     }
 
-#if defined BUILD_NAME_WARP
+#if BUILD_IS_WARP()
     if (api.hasFeature("nfc")) {
         display_type += " +NFC";
     }
@@ -72,7 +72,7 @@ static bool isVowel(char c)
 void DeviceName::updateDisplayType()
 {
     String display_type = BUILD_DISPLAY_NAME;
-#if defined BUILD_NAME_WARP || defined BUILD_NAME_WARP2
+#if BUILD_IS_WARP() || BUILD_IS_WARP2()
     display_type += getWarpDisplayName(); // FIXME: Also add more details for WARP Energy Manager, similar to WARP[2] here?
 #endif
 

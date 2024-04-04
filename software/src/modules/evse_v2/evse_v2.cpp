@@ -179,7 +179,7 @@ void EVSEV2::pre_setup()
         automation_cfg
     );
 
-#if defined(BUILD_NAME_WARP2)
+#if BUILD_IS_WARP2()
     automation.register_trigger(
         AutomationTriggerID::EVSEGPInput,
         automation_cfg
@@ -1061,9 +1061,9 @@ void EVSEV2::update_all_data()
 
 #if MODULE_AUTOMATION_AVAILABLE()
     static InputState last_shutdown_input_state = InputState::Unknown;
-#if defined(BUILD_NAME_WARP2)
+#if BUILD_IS_WARP2()
     bool gpio_enable = gpio[5];
-#elif defined(BUILD_NAME_WARP3)
+#elif BUILD_IS_WARP3()
     bool gpio_enable = gpio[18];
 #else
     #error "GPIO layout is unknown"
@@ -1078,7 +1078,7 @@ void EVSEV2::update_all_data()
         last_shutdown_input_state = shutdown_input_state;
     }
 
-#if defined(BUILD_NAME_WARP2)
+#if BUILD_IS_WARP2()
     static InputState last_input_state = InputState::Unknown;
 
     InputState input_state = gpio[16] ? InputState::Closed : InputState::Open;
@@ -1220,7 +1220,7 @@ bool EVSEV2::action_triggered(Config *config, void *data)
     case AutomationTriggerID::EVSEButton:
         return true;
 
-#if defined(BUILD_NAME_WARP2)
+#if BUILD_IS_WARP2()
     case AutomationTriggerID::EVSEGPInput:
 #endif
     case AutomationTriggerID::EVSEShutdownInput:

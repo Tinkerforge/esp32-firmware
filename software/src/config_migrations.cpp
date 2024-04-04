@@ -149,7 +149,7 @@ static void migrate_charge_manager_minimum_current()
 // Don't use LittleFS.[...] directly in migrations if not necessary!
 // Prefer to use the functions above.
 static const ConfigMigration migrations[] = {
-#if defined(BUILD_NAME_WARP)
+#if BUILD_IS_WARP()
     {
         // WARP1 1.3.0 changes
         // - Renamed xyz.json.tmp to .xyz
@@ -171,7 +171,7 @@ static const ConfigMigration migrations[] = {
     },
 #endif
 
-#if defined(BUILD_NAME_WARP) || defined(BUILD_NAME_WARP2)
+#if BUILD_IS_WARP() || BUILD_IS_WARP2()
     {
         2, 0, 0,
         // 2.0.0 changes
@@ -396,7 +396,7 @@ static const ConfigMigration migrations[] = {
     }
 #endif
 
-#if defined(BUILD_NAME_ENERGY_MANAGER)
+#if BUILD_IS_ENERGY_MANAGER()
     {
         1, 0, 2,
         // 1.0.2 changes
