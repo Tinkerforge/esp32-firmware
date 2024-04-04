@@ -589,7 +589,9 @@ de_hyph = [
     "be-lie-bi-gem",
     "ein-ge-tra-gen",
     "kon-trol-lierte",
-    "kon-trol-lierten"
+    "kon-trol-lierten",
+    "Pass-wörter",
+    "fremd-gesteuert"
 ]
 
 en_hyph = [
@@ -746,7 +748,8 @@ en_hyph = [
     "ca-pa-ci-tive",
     "over-ridden",
     "reset-table",
-    "manu-fac-turer"
+    "manu-fac-turer",
+    "ex-ter-nal-ly"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
