@@ -20,7 +20,7 @@
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_defs";
-import { AutomationTrigger } from "../automation/types";
+import { AutomationTrigger, InitResult } from "../automation/types";
 import { IS_ENERGY_MANAGER } from "src/build";
 
 export type ChargeManagerWdAutomationTrigger = [
@@ -43,7 +43,7 @@ function new_charge_manager_wd_config(): AutomationTrigger {
     ];
 }
 
-export function init() {
+export function init(): InitResult {
     if (!IS_ENERGY_MANAGER) {
         return {
             trigger_components: {

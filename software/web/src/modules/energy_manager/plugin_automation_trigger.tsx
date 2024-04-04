@@ -20,7 +20,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_defs";
-import { AutomationTrigger } from "../automation/types";
+import { AutomationTrigger, InitResult } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import * as util from "../../ts/util";
@@ -170,7 +170,7 @@ function new_em_contactor_monitoring_config(): AutomationTrigger {
     ];
 }
 
-export function init() {
+export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.EMInputThree]: {

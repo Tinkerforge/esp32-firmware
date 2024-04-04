@@ -31,7 +31,7 @@ export interface AutomationTriggerComponent {
     clone_config: (trigger: AutomationTrigger) => AutomationTrigger,
     get_edit_children: (trigger: AutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) => ComponentChildren,
     get_table_children: (trigger: AutomationTrigger) => ComponentChildren,
-    require_feature?: string,
+    require_feature?: API.feature,
 }
 
 export interface AutomationActionComponent {
@@ -40,8 +40,10 @@ export interface AutomationActionComponent {
     clone_config: (action: AutomationAction) => AutomationAction,
     get_edit_children: (action: AutomationAction, on_action: (action: AutomationAction) => void) => ComponentChildren,
     get_table_children: (action: AutomationAction) => ComponentChildren,
-    require_feature?: string,
+    require_feature?: API.feature,
 }
 
 export type AutomationTriggerComponents = {[key: number]: AutomationTriggerComponent};
 export type AutomationActionComponents = {[key: number]: AutomationActionComponent};
+
+export type InitResult = {trigger_components?: AutomationTriggerComponents, action_components?: AutomationActionComponents};

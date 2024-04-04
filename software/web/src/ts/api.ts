@@ -190,7 +190,13 @@ export async function call_unchecked(topic: string, payload: any, error_string?:
     }
 }
 
-export function hasFeature(feature: string) {
+export type feature = "evse" | "energy_manager" | "cp_disconnect" | "button_configuration" | "ethernet" | "meters" | "nfc" | "phase_switch" | "rtc"| "meter" | "meter_phases" | "meter_all_values";
+
+export function hasFeature(feature: feature) {
+    return hasFeature_unchecked(feature);
+}
+
+export function hasFeature_unchecked(feature: string) {
     let features = get('info/features');
     if (features === null)
         return false;

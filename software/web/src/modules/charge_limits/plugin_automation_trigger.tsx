@@ -18,7 +18,7 @@
  */
 
 import { __ } from "../../ts/translation";
-import { AutomationTrigger } from "../automation/types";
+import { AutomationTrigger, InitResult } from "../automation/types";
 import { AutomationTriggerID } from "../automation/automation_defs";
 import { ComponentChildren } from "preact";
 
@@ -42,7 +42,7 @@ function new_charge_limits_config(): AutomationTrigger {
     ];
 }
 
-export function init() {
+export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.ChargeLimits]: {

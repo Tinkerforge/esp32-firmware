@@ -20,7 +20,7 @@
 import { h, Fragment } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_defs";
-import { AutomationTrigger } from "../automation/types";
+import { AutomationTrigger, InitResult } from "../automation/types";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
@@ -115,7 +115,7 @@ function get_nfc_edit_children(trigger: NfcAutomationTrigger, on_trigger: (trigg
     </>]
 }
 
-export function init() {
+export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.NFC]: {

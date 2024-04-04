@@ -21,7 +21,7 @@ import { h } from "preact";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/automation_defs";
-import { AutomationAction } from "../automation/types";
+import { AutomationAction, InitResult } from "../automation/types";
 import { InputFloat } from "../../ts/components/input_float";
 import { FormRow } from "../../ts/components/form_row";
 import { IS_ENERGY_MANAGER } from "src/build";
@@ -63,7 +63,7 @@ function new_set_manager_current_config(): AutomationAction {
     ];
 }
 
-export function init() {
+export function init(): InitResult {
     if (!IS_ENERGY_MANAGER) {
         return {
             action_components: {

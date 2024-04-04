@@ -19,7 +19,7 @@
 
 import { h } from "preact";
 import { __ } from "../../ts/translation";
-import { AutomationAction } from "../automation/types";
+import { AutomationAction, InitResult } from "../automation/types";
 import { AutomationActionID } from "../automation/automation_defs";
 import { ComponentChildren } from "preact";
 import { FormRow } from "../../ts/components/form_row";
@@ -72,7 +72,7 @@ function new_meter_reset_config(): AutomationAction {
     ];
 }
 
-export function init() {
+export function init(): InitResult {
     return {
         action_components: {
             [AutomationActionID.MeterReset]: {

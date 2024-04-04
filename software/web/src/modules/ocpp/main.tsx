@@ -85,7 +85,8 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
         if (!util.render_allowed())
             return <SubPage name="ocpp" />;
 
-        let ocpp_debug = API.hasFeature("ocpp_debug");
+        // This is not an official feature.
+        let ocpp_debug = API.hasFeature_unchecked("ocpp_debug");
         let msg_in_flight = state.state.message_in_flight_id_high != 0 || state.state.message_in_flight_id_low != 0;
 
         return (

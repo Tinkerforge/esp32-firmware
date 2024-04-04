@@ -20,7 +20,7 @@
 import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/automation_defs";
-import { AutomationAction } from "../automation/types";
+import { AutomationAction, InitResult } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
 import { InputNumber } from "../../ts/components/input_number";
@@ -168,7 +168,7 @@ function new_led_config(): AutomationAction {
     ];
 }
 
-export function init() {
+export function init(): InitResult {
     return {
         action_components: {
             [AutomationActionID.SetCurrent]: {

@@ -22,7 +22,7 @@ import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { AutomationActionID } from "../automation/automation_defs";
-import { AutomationAction } from "../automation/types";
+import { AutomationAction, InitResult } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
@@ -139,7 +139,7 @@ function new_charge_limits_config(): AutomationAction {
     ];
 }
 
-export function init() {
+export function init(): InitResult {
     return {
         action_components: {
             [AutomationActionID.ChargeLimits]: {
