@@ -63,7 +63,7 @@ function get_mqtt_edit_children(action: MqttAutomationAction, on_action: (action
                 required
                 value={action[1].topic}
                 class={isInvalid ? "is-invalid" : undefined}
-                maxLength={64}
+                maxLength={32}
                 onValue={(v) => {
                     if (v.startsWith(mqtt_config.global_topic_prefix)) {
                         isInvalidSetter(true);
@@ -79,7 +79,7 @@ function get_mqtt_edit_children(action: MqttAutomationAction, on_action: (action
             <InputText
                 required={!action[1].retain}
                 placeholder={!action[1].retain ? "" : __("mqtt.automation.delete_reatianed_message")}
-                maxLength={64}
+                maxLength={32}
                 value={action[1].payload}
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {payload: v}));
