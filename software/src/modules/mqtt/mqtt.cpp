@@ -38,8 +38,10 @@ extern Mqtt mqtt;
 
 extern char local_uid_str[32];
 
-// Default task stack size in mqtt_config.h is 6144.
-#define MQTT_TASK_STACK_SIZE  3072U
+// MQTT over WSS takes ~ 3.4k only for the connection
+// + ~ 1.2k for publishing/subscribing.
+// 6144 byte is the default value.
+#define MQTT_TASK_STACK_SIZE  6144U
 
 #if defined(BOARD_HAS_PSRAM)
 #define MQTT_RECV_BUFFER_SIZE 6144U
