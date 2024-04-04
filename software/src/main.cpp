@@ -151,6 +151,9 @@ void setup(void) {
     set_main_task_handle();
 
     boot_stage = BootStage::PRE_INIT;
+
+    // Technically the serial console is already active, because the ESP's ROM bootloader prints some messages.
+    // However if BUILD_MONITOR_SPEED is not the ROM bootloader's preferred speed, this call will change the speed.
     Serial.begin(BUILD_MONITOR_SPEED);
 
     logger.pre_init();
