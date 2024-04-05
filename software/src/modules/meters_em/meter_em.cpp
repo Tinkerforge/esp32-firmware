@@ -54,7 +54,7 @@ void MeterEM::update_from_em_all_data(const EnergyManagerAllData &all_data)
 
     if (meter_type != all_data.energy_meter_type) {
         if (meter_type != METER_TYPE_NONE) {
-            // Don't print warning if this is a not none -> non transition.
+            // Don't print warning if this is a not-none -> none transition.
             // This happens if the EVSE restarts without the ESP also restarting.
             // The meter will be detected again in a few seconds.
             if (!meter_change_warning_printed && all_data.energy_meter_type != METER_TYPE_NONE) {
