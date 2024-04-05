@@ -52,7 +52,10 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2MeterData *meter_data)
 
     if (meter_type != meter_data->meter_type) {
         if (meter_type != METER_TYPE_NONE) {
-            if (!meter_change_warning_printed) {
+            // Don't print warning if this is a not none -> non transition.
+            // This happens if the EVSE restarts without the ESP also restarting.
+            // The meter will be detected again in a few seconds.
+            if (!meter_change_warning_printed && meter_data->meter_type != METER_TYPE_NONE) {
                 logger.printfln("Meter change detected. This is not supported.");
                 meter_change_warning_printed = true;
             }
