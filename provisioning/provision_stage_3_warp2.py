@@ -448,7 +448,12 @@ class Stage3:
     def is_front_panel_led_white(self):
         color = self.try_action('20D', lambda device: device.get_color())
 
-        return color[0] / color[3] < 0.5 and color[0] / color[3] < 0.5 and color[0] / color[3] < 0.5 and color[3] > 40000
+        # White can saturate the sensor
+        if color[0] == 65535 and color[1] == 65535 and color[2] == 65535 and color[3] == 65535:
+            return True
+
+
+        return color[0] / color[3] < 0.5 and color[1] / color[3] < 0.5 and color[2] / color[3] < 0.5 and color[3] > 40000
 
 
     # internal
