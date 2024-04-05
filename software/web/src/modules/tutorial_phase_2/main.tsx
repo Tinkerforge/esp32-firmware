@@ -56,12 +56,14 @@ export class TutorialPhase2 extends Component<{}, TutorialPhase2State> {
     }
 
     render() {
-        return <SubPage name="tutorial_phase_2">
+        return (
+            <SubPage name="tutorial_phase_2">
                 <PageHeader title={__("tutorial_phase_2.content.tutorial_phase_2")} />
+
                 <FormRow label={__("tutorial_phase_2.content.color")}>
                     <input class="form-control" type="color" value={this.state.color} />
                 </FormRow>
-            </SubPage>;
+            </SubPage>);
     }
 }
 

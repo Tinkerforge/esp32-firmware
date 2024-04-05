@@ -56,8 +56,10 @@ export class TutorialPhase3 extends Component<{}, TutorialPhase3State> {
     }
 
     render() {
-        return <SubPage name="tutorial_phase_3">
+        return (
+            <SubPage name="tutorial_phase_3">
                 <PageHeader title={__("tutorial_phase_3.content.tutorial_phase_3")} />
+
                 <FormRow label={__("tutorial_phase_3.content.color")}>
                     <input class="form-control" type="color" value={this.state.color} onChange={(event) => {
                         // Get current color value from the HTML element and create new config
@@ -67,7 +69,7 @@ export class TutorialPhase3 extends Component<{}, TutorialPhase3State> {
                         API.save("tutorial_phase_3/config", config, __("tutorial_phase_3.script.save_config_failed"));
                     }} />
                 </FormRow>
-            </SubPage>;
+            </SubPage>);
     }
 }
 

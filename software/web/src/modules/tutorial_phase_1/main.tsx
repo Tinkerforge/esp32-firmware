@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import * as API from "../../ts/api";
 import { h, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
@@ -31,9 +30,10 @@ export function TutorialPhase1Navbar() {
 
 export class TutorialPhase1 extends Component {
     render() {
-        return <SubPage name="tutorial_phase_1">
+        return (
+            <SubPage name="tutorial_phase_1">
                 <PageHeader title={__("tutorial_phase_1.content.tutorial_phase_1")} />
-            </SubPage>;
+            </SubPage>);
     }
 }
 
