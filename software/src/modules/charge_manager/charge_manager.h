@@ -22,7 +22,7 @@
 #include "config.h"
 
 #include "module.h"
-#include "module_dependencies.h"
+#include "module_available.h"
 
 class ChargeManager final : public IModule
 {
