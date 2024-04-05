@@ -167,7 +167,7 @@ void Ethernet::setup()
 #if MODULE_WIFI_AVAILABLE()
                 if (wifi.is_sta_enabled()) {
                     logger.printfln("Warning: Ethernet is connected and WiFi station is enabled at the same time.");
-                    logger.printfln("         This can lead to connectivity issues and is not recommended.");
+                    logger.printfln_plain("         This can lead to connectivity issues and is not recommended.");
                 }
 #endif
             }, 0);

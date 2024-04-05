@@ -104,7 +104,7 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
     int err = dns_gethostbyname_addrtype_lwip_ctx(this->hosts[charger_idx], &ip, dns_callback, &resolve_state[charger_idx], LWIP_DNS_ADDRTYPE_IPV4);
 
     if (err == ERR_VAL)
-        logger.printfln("Charge manager has charger configured with hostname %s, but no DNS server is configured!", this->hosts[charger_idx]);
+        logger.printfln("Charger configured with hostname %s, but no DNS server is configured!", this->hosts[charger_idx]);
 
     if (err != ERR_OK || ip.type != IPADDR_TYPE_V4)
         return;

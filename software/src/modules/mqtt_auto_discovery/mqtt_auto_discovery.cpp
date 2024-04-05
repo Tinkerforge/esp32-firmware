@@ -159,7 +159,7 @@ void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_le
     String tp(topic, topic_len);
 
     // Unknown discovery topic with data; needs to be removed by sending a retained empty payload.
-    logger.printfln("MQTT auto discovery: Removing unused topic '%s'.", tp.c_str());
+    logger.printfln("Removing unused topic '%s'.", tp.c_str());
     mqtt.publish(tp, String(), true);
 }
 

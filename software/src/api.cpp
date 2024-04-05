@@ -157,12 +157,12 @@ void API::addCommand(const char * const path, ConfigRoot *config, std::initializ
     size_t path_len = strlen(path);
 
     if (path_len > std::numeric_limits<decltype(CommandRegistration::path_len)>::max()) {
-        logger.printfln("API command %s: path too long!", path);
+        logger.printfln("Command %s: path too long!", path);
         return;
     }
 
     if (keys_to_censor_in_debug_report.size() > std::numeric_limits<decltype(CommandRegistration::keys_to_censor_in_debug_report_len)>::max()) {
-        logger.printfln("API command %s: keys_to_censor_in_debug_report too long!", path);
+        logger.printfln("Command %s: keys_to_censor_in_debug_report too long!", path);
         return;
     }
 
@@ -204,12 +204,12 @@ void API::addState(const char * const path, ConfigRoot *config, std::initializer
     size_t path_len = strlen(path);
 
     if (path_len > std::numeric_limits<decltype(StateRegistration::path_len)>::max()) {
-        logger.printfln("API state %s: path too long!", path);
+        logger.printfln("State %s: path too long!", path);
         return;
     }
 
     if (keys_to_censor.size() > std::numeric_limits<decltype(StateRegistration::keys_to_censor_len)>::max()) {
-        logger.printfln("API state %s: keys_to_censor too long!", path);
+        logger.printfln("State %s: keys_to_censor too long!", path);
         return;
     }
 
@@ -290,7 +290,7 @@ void API::addRawCommand(const char * const path, std::function<String(char *, si
     size_t path_len = strlen(path);
 
     if (path_len > std::numeric_limits<decltype(RawCommandRegistration::path_len)>::max()) {
-        logger.printfln("API raw command %s: path too long!", path);
+        logger.printfln("Raw command %s: path too long!", path);
         return;
     }
 
@@ -331,12 +331,12 @@ void API::addResponse(const char * const path, ConfigRoot *config, std::initiali
     size_t path_len = strlen(path);
 
     if (path_len > std::numeric_limits<decltype(ResponseRegistration::path_len)>::max()) {
-        logger.printfln("API response %s: path too long!", path);
+        logger.printfln("Response %s: path too long!", path);
         return;
     }
 
     if (keys_to_censor_in_debug_report.size() > std::numeric_limits<decltype(ResponseRegistration::keys_to_censor_in_debug_report_len)>::max()) {
-        logger.printfln("API state %s: keys_to_censor_in_debug_report too long!", path);
+        logger.printfln("State %s: keys_to_censor_in_debug_report too long!", path);
         return;
     }
 
@@ -620,10 +620,10 @@ const Config *API::getState(const String &path, bool log_if_not_found)
     }
 
     if (log_if_not_found) {
-        logger.printfln("API state %s not found. Known states are:", path.c_str());
+        logger.printfln("State %s not found. Known states are:", path.c_str());
 
         for (auto &reg : states) {
-            logger.printfln("%s,", reg.path);
+            logger.printfln_plain("    %s,", reg.path);
         }
     }
 

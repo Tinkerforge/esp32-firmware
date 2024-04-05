@@ -365,7 +365,7 @@ bool ChargeTracker::setupRecords()
     uint32_t first = found_blobs[0];
     uint32_t last = found_blobs[found_blob_counter - 1];
 
-    logger.printfln("Charge Tracker found %u record%s: first is %u, last is %u", found_blob_counter, found_blob_counter == 1 ? "" : "s", first, last);
+    logger.printfln("Found %u record%s: first is %u, last is %u", found_blob_counter, found_blob_counter == 1 ? "" : "s", first, last);
     for (int i = 0; i < found_blob_counter - 1; ++i) {
         if (found_blobs[i] + 1 != found_blobs[i + 1]) {
             logger.printfln("Non-consecutive charge records found! (Next after %u is %u. Expected was %u", found_blobs[i], found_blobs[i+1], found_blobs[i] + 1);

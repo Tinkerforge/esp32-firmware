@@ -158,9 +158,9 @@ void setup(void) {
 
     logger.pre_init();
 
-    logger.printfln("    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str());
-    logger.printfln("         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
-    logger.printfln("READY.");
+    logger.printfln_plain("    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str());
+    logger.printfln_plain("         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
+    logger.printfln_plain("READY.");
 
     logger.printfln("Last reset reason was: %s", tf_reset_reason());
 

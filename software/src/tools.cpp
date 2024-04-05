@@ -407,16 +407,16 @@ static bool wait_for_bootloader_mode(TF_Unknown *bricklet, int target_mode)
 
 static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t firmware_len, int regular_plugin_upto)
 {
-    logger.printfln("    Setting bootloader mode to bootloader.");
+    logger.printfln_plain("    Setting bootloader mode to bootloader.");
     tf_unknown_set_bootloader_mode(bricklet, 0, nullptr);
-    logger.printfln("    Waiting for bootloader...");
+    logger.printfln_plain("    Waiting for bootloader...");
 
     if (!wait_for_bootloader_mode(bricklet, 0)) {
-        logger.printfln("    Timed out, flashing failed");
+        logger.printfln_plain("    Timed out, flashing failed");
         return false;
     }
 
-    logger.printfln("    Device is in bootloader, flashing...");
+    logger.printfln_plain("    Device is in bootloader, flashing...");
 
     int num_packets = firmware_len / 64;
     int last_packet = 0;
@@ -434,14 +434,14 @@ static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t f
 
         if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
             if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
-                logger.printfln("    Failed to set firmware pointer to %d", start);
+                logger.printfln_plain("    Failed to set firmware pointer to %d", start);
                 return false;
             }
         }
 
         if (tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
             if (tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
-                logger.printfln("    Failed to write firmware at %d", start);
+                logger.printfln_plain("    Failed to write firmware at %d", start);
                 return false;
             }
         }
@@ -453,21 +453,21 @@ static bool flash_plugin(TF_Unknown *bricklet, const uint8_t *firmware, size_t f
 
             if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
                 if (tf_unknown_set_write_firmware_pointer(bricklet, start) != TF_E_OK) {
-                    logger.printfln("    (Footer) Failed to set firmware pointer to %d", start);
+                    logger.printfln_plain("    (Footer) Failed to set firmware pointer to %d", start);
                     return false;
                 }
             }
 
             if (tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
                 if (tf_unknown_write_firmware(bricklet, const_cast<uint8_t *>(firmware + start), nullptr) != TF_E_OK) {
-                    logger.printfln("    (Footer) Failed to write firmware at %d", start);
+                    logger.printfln_plain("    (Footer) Failed to write firmware at %d", start);
                     return false;
                 }
             }
         }
     }
 
-    logger.printfln("    Device flashed successfully.");
+    logger.printfln_plain("    Device flashed successfully.");
 
     return true;
 }
@@ -487,7 +487,7 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
     }
 
     if (regular_plugin_upto == -1) {
-        logger.printfln("    Firmware end marker not found. Is this a valid firmware?");
+        logger.printfln_plain("    Firmware end marker not found. Is this a valid firmware?");
         return false;
     }
 
@@ -495,20 +495,20 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
         return false;
     }
 
-    logger.printfln("    Setting bootloader mode to firmware.");
+    logger.printfln_plain("    Setting bootloader mode to firmware.");
 
     uint8_t ret_status = 0;
 
     tf_unknown_set_bootloader_mode(bricklet, 1, &ret_status);
 
     if (ret_status != 0 && ret_status != 2) {
-        logger.printfln("    Failed to set bootloader mode to firmware. status %d.", ret_status);
+        logger.printfln_plain("    Failed to set bootloader mode to firmware. status %d.", ret_status);
 
         if (ret_status != 5) {
             return false;
         }
 
-        logger.printfln("    Status is 5, retrying.");
+        logger.printfln_plain("    Status is 5, retrying.");
 
         if (!flash_plugin(bricklet, firmware, firmware_len, firmware_len)) {
             return false;
@@ -516,23 +516,23 @@ static bool flash_firmware(TF_Unknown *bricklet, const uint8_t *firmware, size_t
 
         ret_status = 0;
 
-        logger.printfln("    Setting bootloader mode to firmware.");
+        logger.printfln_plain("    Setting bootloader mode to firmware.");
         tf_unknown_set_bootloader_mode(bricklet, 1, &ret_status);
 
         if (ret_status != 0 && ret_status != 2) {
-            logger.printfln("    (Second attempt) Failed to set bootloader mode to firmware. status %d.", ret_status);
+            logger.printfln_plain("    (Second attempt) Failed to set bootloader mode to firmware. status %d.", ret_status);
             return false;
         }
     }
 
-    logger.printfln("    Waiting for firmware...");
+    logger.printfln_plain("    Waiting for firmware...");
 
     if (!wait_for_bootloader_mode(bricklet, 1)) {
-        logger.printfln("    Timed out, flashing failed");
+        logger.printfln_plain("    Timed out, flashing failed");
         return false;
     }
 
-    logger.printfln("    Firmware flashed successfully");
+    logger.printfln_plain("    Firmware flashed successfully");
 
     return true;
 }

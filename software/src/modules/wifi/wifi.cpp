@@ -213,7 +213,7 @@ void Wifi::apply_soft_ap_config_and_start()
 
     if (channel_to_use == 0) {
         if (scan_start_time == 0) {
-            logger.printfln("Wifi starting scan to select unoccupied channel for soft AP");
+            logger.printfln("Starting scan to select unoccupied channel for soft AP");
             WiFi.scanDelete();
             WiFi.scanNetworks(true, true);
             scan_start_time = millis();
@@ -262,7 +262,7 @@ void Wifi::apply_soft_ap_config_and_start()
                     if (channels_smeared[i] < channels_smeared[min])
                         min = i;
                 }
-                logger.printfln("Wifi selecting channel %d for soft AP", min);
+                logger.printfln("Selecting channel %d for soft AP", min);
                 channel_to_use = min;
             }
 
@@ -287,7 +287,7 @@ void Wifi::apply_soft_ap_config_and_start()
     int ap_config_attempts = 0;
     do {
         if (!WiFi.softAPConfig(ip, gateway, subnet)) {
-            logger.printfln("WiFi.softAPConfig() failed. Try different Access Point settings.");
+            logger.printfln("softAPConfig() failed. Try different Access Point settings.");
         }
         ++ap_config_attempts;
     } while (ip != WiFi.softAPIP());
@@ -297,10 +297,10 @@ void Wifi::apply_soft_ap_config_and_start()
     if (ap_config_attempts != 1) {
         logger.printfln("Had to configure soft AP IP address %d times.", ap_config_attempts);
     }
-    logger.printfln("Wifi soft AP started");
-    logger.printfln("    SSID: %s", ap_config_in_use.get("ssid")->asEphemeralCStr());
-    logger.printfln("    MAC address: %s", WiFi.softAPmacAddress().c_str());
-    logger.printfln("    IP address: %s", ip.toString().c_str());
+    logger.printfln("Soft AP started");
+    logger.printfln_plain("    SSID: %s", ap_config_in_use.get("ssid")->asEphemeralCStr());
+    logger.printfln_plain("    MAC address: %s", WiFi.softAPmacAddress().c_str());
+    logger.printfln_plain("    IP address: %s", ip.toString().c_str());
 }
 
 bool Wifi::apply_sta_config_and_connect()
@@ -340,7 +340,7 @@ bool Wifi::apply_sta_config_and_connect(WifiState current_state)
         WiFi.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
     }
 
-    logger.printfln("Wifi connecting to %s", ssid);
+    logger.printfln("Connecting to %s", ssid);
     EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
     switch (eap_config_id) {
         case EapConfigID::None:
@@ -494,16 +494,16 @@ void Wifi::setup()
             uint8_t reason_code = info.wifi_sta_disconnected.reason;
             const char *reason = reason2str(reason_code);
             if (!this->was_connected) {
-                logger.printfln("Wifi failed to connect to %s: %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
+                logger.printfln("Failed to connect to %s: %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
             } else {
                 uint32_t now = millis();
                 uint32_t connected_for = now - last_connected_ms;
 
                 // FIXME: Use a better way of time keeping here.
                 if (connected_for < 0x7FFFFFFF)
-                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for %u seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
+                    logger.printfln("Disconnected from %s: %s (%u). Was connected for %u seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
                 else
-                    logger.printfln("Wifi disconnected from %s: %s (%u). Was connected for a long time.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
+                    logger.printfln("Disconnected from %s: %s (%u). Was connected for a long time.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
 
                 task_scheduler.scheduleOnce([this, now](){
                     state.get("connection_end")->updateUint(now);
@@ -523,7 +523,7 @@ void Wifi::setup()
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             this->was_connected = true;
 
-            logger.printfln("Wifi connected to %s, BSSID %s", WiFi.SSID().c_str(), WiFi.BSSIDstr().c_str());
+            logger.printfln("Connected to %s, BSSID %s", WiFi.SSID().c_str(), WiFi.BSSIDstr().c_str());
             auto now = millis();
             last_connected_ms = now;
 
@@ -542,7 +542,7 @@ void Wifi::setup()
 
             auto ip = WiFi.localIP().toString();
             auto subnet = WiFi.subnetMask();
-            logger.printfln("Wifi got IP address: %s/%u. Own MAC address: %s", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet), WiFi.macAddress().c_str());
+            logger.printfln("Got IP address: %s/%u. Own MAC address: %s", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet), WiFi.macAddress().c_str());
             task_scheduler.scheduleOnce([this, ip, subnet](){
                 state.get("sta_ip")->updateString(ip);
                 state.get("sta_subnet")->updateString(subnet.toString());
@@ -552,7 +552,7 @@ void Wifi::setup()
         ARDUINO_EVENT_WIFI_STA_GOT_IP);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Wifi got IPv6 address: %s.", WiFi.localIPv6().toString().c_str());
+            logger.printfln("Got IPv6 address: %s.", WiFi.localIPv6().toString().c_str());
         },
         ARDUINO_EVENT_WIFI_STA_GOT_IP6);
 
@@ -562,7 +562,7 @@ void Wifi::setup()
 
             this->was_connected = false;
 
-            logger.printfln("Wifi lost IP. Forcing disconnect and reconnect of WiFi");
+            logger.printfln("Lost IP. Forcing disconnect and reconnect of WiFi");
             WiFi.disconnect(false, true);
 
             task_scheduler.scheduleOnce([this](){
@@ -612,11 +612,11 @@ void Wifi::setup()
     esp_err_t err;
     err = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
     if (enable_sta && err != ESP_OK)
-        logger.printfln("WiFi: Setting HT20 for station failed: %i", err);
+        logger.printfln("Setting HT20 for station failed: %i", err);
 
     err = esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
     if (enable_ap && err != ESP_OK)
-        logger.printfln("WiFi: Setting HT20 for AP failed: %i", err);
+        logger.printfln("Setting HT20 for AP failed: %i", err);
 
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
 
