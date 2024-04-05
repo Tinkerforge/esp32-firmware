@@ -222,3 +222,31 @@
 - Fix HTTP API causing errors if receiving payload is slow
 - Update timezone database
 - Preserve external phase request across reboots
+
+<unknown>: 2.1.0 (<unknown>)
+- Last changed 2024-05-04 9b7cc88c
+- Add MQTTS and MQTT over WS(S) support
+- Add HTTP automation trigger
+- Add modal for WiFi scan results
+- Add phase switch buttons to status page if external control is enabled
+- SunSpec: Support multiple common models per device
+- SunSpec: Support multiple devices in one register set
+- SunSpec: Support multiple instances of the same model in one device
+- SunSpec: Improve boot scan robustness
+- SunSpec: Fix power factor scaling
+- WiFi Enterprise: Fix EAP-TLS connections with client key
+- Fix low entropy of boot ID
+- Fix DSZ15DZMOD support of legacy API
+- Fix automatic channel selection of soft AP
+- Fix phases not being shown as active if phase current is over threshold but negative (grid feed)
+- Fix Min+PV charge mode with non-default minimum current
+- Fix auto scaling of non-stacked graphs
+- Fix PV mode stopping a charge after 3p->1p switch
+- Double charge manager current margin if exactly one charger is active
+- Print module in event log messages
+- Reorganize web interface menu structure
+- Split charge management settings in chargers (also used for PV excess charging) and settings subpages
+- Unify label/content split of status and other subpages
+- Show placeholder if RTC time is not set
+- Show disabled automation actions
+- Improve translations
