@@ -1,3 +1,5 @@
+#!/usr/bin/python3 -u
+
 import os
 import sys
 import time
@@ -12,7 +14,7 @@ from tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuad
 from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from tinkerforge.bricklet_temperature_v2 import BrickletTemperatureV2
 
-SERIAL_SETTLE_DELAY = 2
+SERIAL_SETTLE_DELAY = 3
 
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
@@ -357,7 +359,7 @@ def main():
     for k, v in relay_to_serial.items():
         t = ThreadWithReturnValue(target=lambda: \
             subprocess.run(
-                ['python', 'provision_stage_0_warp2.py', ' ../../firmwares/bricks/warp3_charger/brick_warp3_charger_firmware_latest.bin', v, "warp3"],
+                ['python', 'provision_stage_0_warp2.py', '/home/pi/tf/firmwares/bricks/warp3_charger/brick_warp3_charger_firmware_latest.bin', v, "warp3"],
                 capture_output=True,
                 encoding='utf-8'))
         t.start()
