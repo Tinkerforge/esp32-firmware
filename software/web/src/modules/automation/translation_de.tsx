@@ -132,7 +132,8 @@ let x = {
             "edit_rule_title": "Regel bearbeiten",
             "select": "Auswählen...",
             "trigger_disabled": "Deaktiviert",
-            "action_disabled": "Deaktiviert"
+            "action_disabled": "Deaktiviert",
+            "preview": "Vorschau"
         }
     }
 }

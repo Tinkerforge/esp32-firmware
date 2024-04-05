@@ -202,7 +202,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             return triggerSelector.concat(actionSelector);
         }
 
-        return triggerSelector.concat(actionSelector).concat(<hr key="action_preview_separator"/>).concat(<FormRow label={"Vorschau"}><div class="form-control" style="height: unset;">{preview}</div></FormRow>);
+        return triggerSelector.concat(actionSelector).concat(<hr key="action_preview_separator"/>).concat(<FormRow label={__("automation.content.preview")}><div class="form-control" style="height: unset;">{preview}</div></FormRow>);
     }
 
     assembleTable() {

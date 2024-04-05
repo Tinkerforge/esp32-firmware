@@ -135,7 +135,8 @@ let x = {
             "edit_rule_title": "Edit rule",
             "select": "Select...",
             "trigger_disabled": "Disabled",
-            "action_disabled": "Disabled"
+            "action_disabled": "Disabled",
+            "preview": "Preview"
         }
     }
 }
