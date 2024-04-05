@@ -125,13 +125,6 @@ void ChargeLimits::setup()
     initialized = true;
 }
 
-#if MODULE_AUTOMATION_AVAILABLE()
-static bool trigger_action(Config *cfg, void *data)
-{
-    return charge_limits.action_triggered(cfg, data);
-}
-#endif
-
 void ChargeLimits::register_urls()
 {
     api.addPersistentConfig("charge_limits/default_limits", &config);
@@ -233,7 +226,7 @@ void ChargeLimits::register_urls()
 
 #if MODULE_AUTOMATION_AVAILABLE()
         if (target_current == 0 && !was_triggered) {
-            automation.trigger_action(AutomationTriggerID::ChargeLimits, nullptr, &trigger_action);
+            automation.trigger(AutomationTriggerID::ChargeLimits, nullptr, this);
             was_triggered = true;
         } else if (!charging) {
             was_triggered = false;
@@ -248,14 +241,14 @@ void ChargeLimits::register_urls()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    bool ChargeLimits::action_triggered(Config *config, void *data) {
-        switch (config->getTag<AutomationTriggerID>()) {
-        case AutomationTriggerID::ChargeLimits:
-            return true;
+bool ChargeLimits::has_triggered(const Config *conf, void *data) {
+    switch (conf->getTag<AutomationTriggerID>()) {
+    case AutomationTriggerID::ChargeLimits:
+        return true;
 
-        default:
-            break;
-        }
-        return false;
+    default:
+        break;
     }
+    return false;
+}
 #endif

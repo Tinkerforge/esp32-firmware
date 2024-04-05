@@ -24,11 +24,17 @@
 
 #include "config.h"
 
+#include "device_module.h"
+#include "module_available.h"
+
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
+
 #include "bindings/bricklet_warp_energy_manager.h"
 #include "modules/power_manager/phase_switcher_back-end.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
 
-#include "device_module.h"
 #include "em_rgb_led.h"
 #include "structs.h"
 #include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
@@ -50,13 +56,18 @@
 #define ERROR_FLAGS_ALL_ERRORS_MASK         (0x7FFF0000)
 #define ERROR_FLAGS_ALL_WARNINGS_MASK       (0x0000FFFF)
 
-class EnergyManager final : public PhaseSwitcherBackend, public DeviceModule<TF_WARPEnergyManager,
-                                          warp_energy_manager_bricklet_firmware_bin_data,
-                                          warp_energy_manager_bricklet_firmware_bin_length,
-                                          tf_warp_energy_manager_create,
-                                          tf_warp_energy_manager_get_bootloader_mode,
-                                          tf_warp_energy_manager_reset,
-                                          tf_warp_energy_manager_destroy>, public IDebugProtocolBackend
+class EnergyManager final : public PhaseSwitcherBackend,
+                            public DeviceModule<TF_WARPEnergyManager,
+                                                warp_energy_manager_bricklet_firmware_bin_data,
+                                                warp_energy_manager_bricklet_firmware_bin_length,
+                                                tf_warp_energy_manager_create,
+                                                tf_warp_energy_manager_get_bootloader_mode,
+                                                tf_warp_energy_manager_reset,
+                                                tf_warp_energy_manager_destroy>,
+                            public IDebugProtocolBackend
+#if MODULE_AUTOMATION_AVAILABLE()
+                          , public IAutomationBackend
+#endif
 {
 public:
     EnergyManager() : DeviceModule("energy_manager", "WARP Energy Manager", "Energy Manager", [this](){this->setup_energy_manager();}) {}
@@ -97,6 +108,10 @@ public:
 
     bool disallow_fw_update_with_vehicle_connected();
 
+#if MODULE_AUTOMATION_AVAILABLE()
+    bool has_triggered(const Config *conf, void *data) override;
+#endif
+
 private:
     void update_status_led();
     void clr_error(uint32_t error_mask);
@@ -110,8 +125,6 @@ private:
     void update_all_data_struct();
 
     void start_network_check_task();
-
-    bool action_triggered(const Config *config, void *data);
     const char *prepare_fmtstr();
 
     ConfigRoot state;

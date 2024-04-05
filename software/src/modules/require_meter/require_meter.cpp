@@ -87,20 +87,15 @@ void RequireMeter::register_events()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool RequireMeter::action_triggered(Config *config, void *data)
+bool RequireMeter::has_triggered(const Config *conf, void *data)
 {
-    switch (config->getTag<AutomationTriggerID>()) {
+    switch (conf->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::RequireMeter:
             return true;
 
         default:
             return false;
     }
-}
-
-static bool trigger_action(Config *config, void *data)
-{
-    return require_meter.action_triggered(config, data);
 }
 #endif
 
@@ -175,7 +170,7 @@ void RequireMeter::start_task()
         static bool was_triggered = false;
         if (meter_timeout) {
             if (!was_triggered) {
-                automation.trigger_action(AutomationTriggerID::RequireMeter, nullptr, trigger_action);
+                automation.trigger(AutomationTriggerID::RequireMeter, nullptr, this);
                 was_triggered = true;
             }
         } else {

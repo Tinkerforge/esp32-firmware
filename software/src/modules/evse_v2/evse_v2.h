@@ -23,8 +23,14 @@
 
 #include "config.h"
 #include "device_module.h"
+#include "module_available.h"
+
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
+
 #include "evse_v2_bricklet_firmware_bin.embedded.h"
-#include "../evse_common/evse_common.h"
+#include "modules/evse_common/evse_common.h"
 
 #define EVSEV2_PHASES_INFO_1P_CAR_MASK (1 << 0)
 
@@ -43,7 +49,11 @@ class EVSEV2 final : public DeviceModule<TF_EVSEV2,
                                          tf_evse_v2_create,
                                          tf_evse_v2_get_bootloader_mode,
                                          tf_evse_v2_reset,
-                                         tf_evse_v2_destroy>, public IEvseBackend
+                                         tf_evse_v2_destroy>,
+                     public IEvseBackend
+#if MODULE_AUTOMATION_AVAILABLE()
+                   , public IAutomationBackend
+#endif
 {
 public:
     EVSEV2();
@@ -100,10 +110,10 @@ protected:
 
 // To allow the meters_evse_v2 module to get/set energy meter values
 public:
-    bool action_triggered(Config *config, void *data);
     void update_all_data() override;
     // End IEvseBackend implementation
 
+    bool has_triggered(const Config *conf, void *data) override;
     uint16_t get_all_energy_meter_values(float *ret_values);
     bool reset_energy_meter_relative_energy();
     uint8_t get_energy_meter_type();

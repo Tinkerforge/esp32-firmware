@@ -24,8 +24,10 @@
 #include <map>
 #include <vector>
 #include "automation_defs.h"
+#include "automation_backend.h"
 
-class Automation : public IModule {
+class Automation : public IModule, public IAutomationBackend
+{
 public:
     typedef std::function<void(const Config *)>    ActionCb;
     typedef std::function<String (const Config *)> ValidatorCb;
@@ -57,11 +59,9 @@ public:
     void set_enabled(AutomationActionID id, bool enable);
     void set_enabled(AutomationTriggerID id, bool enable);
 
-    bool trigger_action(AutomationTriggerID number, void *data, std::function<bool(Config *, void *)> &&cb);
-    bool is_trigger_active(AutomationTriggerID number);
-
-    bool action_triggered(const Config *conf, void *data);
-
+    bool trigger(AutomationTriggerID number, void *data, IAutomationBackend *backend);
+    bool has_task_with_trigger(AutomationTriggerID number);
+    bool has_triggered(const Config *conf, void *data) override;
     ConfigVec get_configured_triggers(AutomationTriggerID number);
 
 private:

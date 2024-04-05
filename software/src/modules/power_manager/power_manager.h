@@ -24,6 +24,11 @@
 #include "config.h"
 #include "module.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
+#include "module_available.h"
+
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
 
 #define PM_TASK_DELAY_MS                    250
 #define CURRENT_POWER_SMOOTHING_SAMPLES     4
@@ -73,7 +78,11 @@ enum class SwitchingState
     WaitUntilSwitched,
 };
 
-class PowerManager final : public IModule, public IDebugProtocolBackend
+class PowerManager final : public IModule,
+                           public IDebugProtocolBackend
+#if MODULE_AUTOMATION_AVAILABLE()
+                         , public IAutomationBackend
+#endif
 {
     friend class EnergyManager;
 
@@ -119,7 +128,9 @@ private:
     void set_config_error(uint32_t config_error_mask);
     const char *prepare_fmtstr();
 
-    bool action_triggered(const Config *config, void *data);
+#if MODULE_AUTOMATION_AVAILABLE()
+    bool has_triggered(const Config *conf, void *data) override;
+#endif
 
     ConfigRoot state;
     ConfigRoot low_level_state;

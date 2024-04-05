@@ -244,13 +244,6 @@ void NFC::remove_user(uint8_t user_id)
     API::writeConfig("nfc/config", &config);
 }
 
-#if MODULE_AUTOMATION_AVAILABLE()
-static bool trigger_action(Config *cfg, void *data)
-{
-    return nfc.action_triggered(cfg, data);
-}
-#endif
-
 void NFC::tag_seen(tag_info_t *tag, bool injected)
 {
     uint8_t idx = 0;
@@ -285,7 +278,7 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
     }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    automation.trigger_action(AutomationTriggerID::NFC, tag, &trigger_action);
+    automation.trigger(AutomationTriggerID::NFC, tag, this);
 #endif
 }
 
@@ -478,11 +471,11 @@ void NFC::loop()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool NFC::action_triggered(Config *config, void *data)
+bool NFC::has_triggered(const Config *conf, void *data)
 {
-    auto cfg = config->get();
+    const Config *cfg = static_cast<const Config *>(conf->get());
     tag_info_t *tag = (tag_info_t *)data;
-    switch (config->getTag<AutomationTriggerID>()) {
+    switch (conf->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::NFC:
         if (cfg->get("tag_type")->asUint() == tag->tag_type && cfg->get("tag_id")->asString() == tag->tag_id) {
             return true;

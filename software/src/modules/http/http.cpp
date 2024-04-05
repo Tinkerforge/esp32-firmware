@@ -317,49 +317,70 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
     return req.send(405, "text/plain", "Request method for this URI is not handled by server");
 }
 
-
-
-Http::HttpTriggerActionResult Http::trigger_action(Config *trigger_config, void *user_data) {
 #if MODULE_AUTOMATION_AVAILABLE()
-    auto *trigger = (HttpTrigger *) user_data;
+bool Http::has_triggered(const Config *conf, void *data)
+{
+    const Config *cfg = static_cast<const Config *>(conf->get());
+    auto *trigger = (HttpTrigger *) data;
 
     auto method = trigger->req.method();
-    switch (trigger_config->get()->get("method")->asEnum<HttpTriggerMethod>()) {
+    switch (cfg->get("method")->asEnum<HttpTriggerMethod>()) {
         case HttpTriggerMethod::GET:
-            if (method != HTTP_GET)
-                return HttpTriggerActionResult::WrongMethod;
+            if (method != HTTP_GET) {
+                trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
+                return false;
+            }
+
             break;
         case HttpTriggerMethod::POST:
-            if (method != HTTP_POST)
-                return HttpTriggerActionResult::WrongMethod;
+            if (method != HTTP_POST) {
+                trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
+                return false;
+            }
+
             break;
         case HttpTriggerMethod::PUT:
-            if (method != HTTP_PUT)
-                return HttpTriggerActionResult::WrongMethod;
+            if (method != HTTP_PUT) {
+                trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
+                return false;
+            }
+
             break;
         case HttpTriggerMethod::POST_PUT:
             if (method != HTTP_POST
-             && method != HTTP_PUT)
-                return HttpTriggerActionResult::WrongMethod;
+             && method != HTTP_PUT) {
+                trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
+                return false;
+            }
+
             break;
         case HttpTriggerMethod::GET_POST_PUT:
             if (method != HTTP_GET
              && method != HTTP_POST
-             && method != HTTP_PUT)
-                return HttpTriggerActionResult::WrongMethod;
+             && method != HTTP_PUT) {
+                trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
+                return false;
+            }
+
             break;
     }
 
-    if (trigger->uri_suffix != trigger_config->get()->get("url_suffix")->asEphemeralCStr())
-        return HttpTriggerActionResult::WrongUrl;
+    if (trigger->uri_suffix != cfg->get("url_suffix")->asEphemeralCStr()) {
+        trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongUrl);
+        return false;
+    }
 
-    const auto &expected_payload = trigger_config->get()->get("payload")->asString();
+    const auto &expected_payload = cfg->get("payload")->asString();
 
-    if (expected_payload.length() != 0 && expected_payload.length() != trigger->req.contentLength())
-        return HttpTriggerActionResult::WrongPayloadLength;
+    if (expected_payload.length() != 0 && expected_payload.length() != trigger->req.contentLength()) {
+        trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongPayloadLength);
+        return false;
+    }
 
-    if (expected_payload.length() == 0)
-        return HttpTriggerActionResult::OK;
+    if (expected_payload.length() == 0) {
+        trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::OK);
+        return true;
+    }
 
     if (trigger->payload == nullptr) {
         auto size = trigger->req.contentLength();
@@ -367,20 +388,26 @@ Http::HttpTriggerActionResult Http::trigger_action(Config *trigger_config, void 
 
         if (trigger->req.receive(trigger->payload.get(), size) < 0) {
             trigger->payload_receive_failed = true;
-            return HttpTriggerActionResult::FailedToReceivePayload;
+            trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::FailedToReceivePayload);
+            return false;
         }
 
         trigger->payload[size] = '\0';
         trigger->payload_receive_failed = false;
     } else if (trigger->payload_receive_failed) {
-        return HttpTriggerActionResult::FailedToReceivePayload;
+        trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::FailedToReceivePayload);
+        return false;
     }
 
-    return expected_payload == trigger->payload.get() ? HttpTriggerActionResult::OK : HttpTriggerActionResult::WrongPayload;
-#else
-    return HttpTriggerActionResult::WrongUrl;
-#endif
+    if (expected_payload != trigger->payload.get()) {
+        trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongPayload);
+        return false;
+    }
+
+    trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::OK);
+    return true;
 }
+#endif
 
 WebServerRequestReturnProtect Http::automation_trigger_handler(WebServerRequest req)
 {
@@ -392,17 +419,10 @@ WebServerRequestReturnProtect Http::automation_trigger_handler(WebServerRequest 
     }
     uri = uri.substring(idx + strlen("automation_trigger/"));
 
-    HttpTrigger t{req, uri, nullptr, false};
-    HttpTriggerActionResult most_specific_error = HttpTriggerActionResult::WrongUrl;
+    HttpTrigger trigger{req, uri, nullptr, false, HttpTriggerActionResult::WrongUrl};
+    automation.trigger(AutomationTriggerID::HTTP, &trigger, this);
 
-    automation.trigger_action(AutomationTriggerID::HTTP, &t, [this, &most_specific_error](Config *c, void *u) mutable {
-        auto result = this->trigger_action(c, u);
-        if (result > most_specific_error)
-            most_specific_error = result;
-        return result == HttpTriggerActionResult::OK;
-    });
-
-    switch (most_specific_error) {
+    switch (trigger.most_specific_error) {
         case HttpTriggerActionResult::WrongUrl:
             return req.send(404, "text/plain", "No automation rule matches this URL");
         case HttpTriggerActionResult::WrongMethod:

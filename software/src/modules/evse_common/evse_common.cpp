@@ -260,12 +260,6 @@ void EvseCommon::apply_defaults()
     }
 }
 
-#if MODULE_AUTOMATION_AVAILABLE()
-    bool trigger_action(Config *cfg, void *data) {
-        return evse_common.action_triggered(cfg, data);
-    }
-#endif
-
 void EvseCommon::setup()
 {
     api.restorePersistentConfig("evse/meter_config", &meter_config);
@@ -292,7 +286,7 @@ void EvseCommon::setup()
 
 #if MODULE_AUTOMATION_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {
-        automation.trigger_action(AutomationTriggerID::ChargerState, nullptr, trigger_action);
+        automation.trigger(AutomationTriggerID::ChargerState, nullptr, this);
     }, 0);
 #endif
 
@@ -309,11 +303,11 @@ void EvseCommon::setup()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool EvseCommon::action_triggered(Config *config, void *data)
+bool EvseCommon::has_triggered(const Config *conf, void *data)
 {
-    Config *cfg = (Config*)config->get();
+    const Config *cfg = static_cast<const Config *>(conf->get());
     uint32_t *states = (uint32_t*)data;
-    switch (config->getTag<AutomationTriggerID>()) {
+    switch (conf->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::ChargerState:
         {
             uint32_t tmp_states[2] = {0};
@@ -579,26 +573,26 @@ void EvseCommon::register_urls()
     backend->post_register_urls();
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    if (automation.is_trigger_active(AutomationTriggerID::ChargerState)) {
+    if (automation.has_task_with_trigger(AutomationTriggerID::ChargerState)) {
         event.registerEvent("evse/state", {}, [this](const Config *cfg) {
             // we need this since not only iec state changes trigger this api event.
             static uint32_t last_state = 0;
             uint32_t state_now = cfg->get("charger_state")->asUint();
             uint32_t states[2] = {last_state, state_now};
             if (last_state != state_now) {
-                automation.trigger_action(AutomationTriggerID::ChargerState, (void *)states, &trigger_action);
+                automation.trigger(AutomationTriggerID::ChargerState, (void *)states, this);
                 last_state = state_now;
             }
             return EventResult::OK;
         });
     }
 
-    if (automation.is_trigger_active(AutomationTriggerID::EVSEExternalCurrentWd)) {
+    if (automation.has_task_with_trigger(AutomationTriggerID::EVSEExternalCurrentWd)) {
         task_scheduler.scheduleWithFixedDelay([this](){
             static bool was_triggered = false;
             const bool elapsed = deadline_elapsed(last_external_update + 30000);
             if (external_enabled.get("enabled")->asBool() && elapsed && !was_triggered) {
-                automation.trigger_action(AutomationTriggerID::EVSEExternalCurrentWd, nullptr, &trigger_action);
+                automation.trigger(AutomationTriggerID::EVSEExternalCurrentWd, nullptr, this);
                 was_triggered = true;
             } else if (!elapsed) {
                 was_triggered = false;

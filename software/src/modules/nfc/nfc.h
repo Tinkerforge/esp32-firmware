@@ -19,12 +19,19 @@
 
 #pragma once
 
-#include "bindings/bricklet_nfc.h"
-
-#include "build.h"
 #include "config.h"
+#include "build.h"
+
 #include "device_module.h"
+#include "module_available.h"
+
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
+
 #include "nfc_bricklet_firmware_bin.embedded.h"
+
+#include "bindings/bricklet_nfc.h"
 
 // in bytes
 #define NFC_TAG_ID_LENGTH 10
@@ -47,6 +54,9 @@ class NFC : public DeviceModule<TF_NFC,
 #endif
 
                                 >
+#if MODULE_AUTOMATION_AVAILABLE()
+          , public IAutomationBackend
+#endif
 {
 public:
     NFC() : DeviceModule("nfc", "NFC", "NFC", [this](){this->setup_nfc();}) {}
@@ -77,7 +87,9 @@ public:
 
     void remove_user(uint8_t user_id);
 
-    bool action_triggered(Config *config, void *data);
+#if MODULE_AUTOMATION_AVAILABLE()
+    bool has_triggered(const Config *conf, void *data) override;
+#endif
 
 private:
     ConfigRoot config;

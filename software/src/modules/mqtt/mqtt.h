@@ -24,6 +24,12 @@
 #include "api.h"
 #include "config.h"
 
+#include "module_available.h"
+
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
+
 enum class MqttConnectionState {
     NOT_CONFIGURED,
     NOT_CONNECTED,
@@ -32,6 +38,9 @@ enum class MqttConnectionState {
 };
 
 class Mqtt final : public IAPIBackend
+#if MODULE_AUTOMATION_AVAILABLE()
+                 , public IAutomationBackend
+#endif
 {
 public:
     using SubscribeCallback = std::function<void(const char *, size_t, char *, size_t)>;
@@ -80,7 +89,9 @@ public:
 
     void resubscribe();
 
-    bool action_triggered(Config *config, void *data);
+#if MODULE_AUTOMATION_AVAILABLE()
+    bool has_triggered(const Config *conf, void *data) override;
+#endif
 
     ConfigRoot config;
     ConfigRoot state;

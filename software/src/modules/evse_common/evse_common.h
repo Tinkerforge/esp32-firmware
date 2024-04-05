@@ -21,10 +21,16 @@
 
 #include "config.h"
 
+#include "module.h"
+#include "module_available.h"
+
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
+
 #include "modules/meters/meter_value_availability.h"
 #include "modules/power_manager/phase_switcher_back-end.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
-#include "module.h"
 #include "tools.h"
 
 #define CHARGING_SLOT_COUNT 15
@@ -106,6 +112,9 @@ protected:
 };
 
 class EvseCommon final : public IModule
+#if MODULE_AUTOMATION_AVAILABLE()
+                       , public IAutomationBackend
+#endif
 {
     // TODO: It's a bit ugly that we have to declare all specific EVSE modules as friends here.
     // But this allows us to make the configs private, to enforce all access happens via the public methods below.
@@ -163,7 +172,9 @@ public:
     bool get_management_enabled();
     uint32_t get_evse_version();
 
-    bool action_triggered(Config *config, void *data);
+#if MODULE_AUTOMATION_AVAILABLE()
+    bool has_triggered(const Config *conf, void *data) override;
+#endif
 
     uint32_t last_current_update = 0;
     bool shutdown_logged = false;

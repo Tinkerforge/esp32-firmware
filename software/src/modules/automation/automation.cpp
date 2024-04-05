@@ -53,6 +53,7 @@ void Automation::pre_setup()
             {"minute", Config::Int(-1, -1, 59)}
         })
     );
+
     Config trigger_prototype = Config::Union<AutomationTriggerID>(
                     *Config::Null(),
                     AutomationTriggerID::None,
@@ -141,20 +142,18 @@ void Automation::setup()
 
     config_in_use = config;
 
-    if (is_trigger_active(AutomationTriggerID::Cron)) {
+    if (has_task_with_trigger(AutomationTriggerID::Cron)) {
         task_scheduler.scheduleWithFixedDelay([this]() {
             static int last_min = 0;
             static bool was_synced = false;
-            auto func = [this](Config *cfg, void *data) -> bool {
-                return action_triggered(cfg, data);
-            };
             timeval tv;
             bool is_synced = clock_synced(&tv);
-
             tm time_struct;
+
             localtime_r(&tv.tv_sec, &time_struct);
+
             if (was_synced && time_struct.tm_min != last_min) {
-                trigger_action(AutomationTriggerID::Cron, &time_struct, func);
+                trigger(AutomationTriggerID::Cron, &time_struct, this);
             }
 
             last_min = time_struct.tm_min;
@@ -241,7 +240,7 @@ void Automation::set_enabled(AutomationTriggerID id, bool enable)
     }
 }
 
-bool Automation::trigger_action(AutomationTriggerID number, void *data, std::function<bool(Config *, void *)> &&cb)
+bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBackend *backend)
 {
     if (config_in_use.is_null()) {
         logger.printfln("Received trigger ID %u before loading config. Event lost.", static_cast<uint32_t>(number));
@@ -251,7 +250,7 @@ bool Automation::trigger_action(AutomationTriggerID number, void *data, std::fun
     int current_rule = 1;
     for (Config &conf : config_in_use.get("tasks")) {
         Config *trigger = static_cast<Config *>(conf.get("trigger"));
-        if (trigger->getTag<AutomationTriggerID>() == number && cb(trigger, data)) {
+        if (trigger->getTag<AutomationTriggerID>() == number && backend->has_triggered(trigger, data)) {
             triggered = true;
             logger.printfln("Running rule #%d", current_rule);
             const Config *action = static_cast<const Config *>(conf.get("action"));
@@ -267,7 +266,7 @@ bool Automation::trigger_action(AutomationTriggerID number, void *data, std::fun
     return triggered;
 }
 
-bool Automation::is_trigger_active(AutomationTriggerID number)
+bool Automation::has_task_with_trigger(AutomationTriggerID number)
 {
     for (const Config &conf : config_in_use.get("tasks")) {
         if (conf.get("trigger")->getTag<AutomationTriggerID>() == number) {
@@ -299,7 +298,7 @@ static bool is_last_day(struct tm time)
     return time.tm_mon != mon;
 }
 
-bool Automation::action_triggered(const Config *conf, void *data)
+bool Automation::has_triggered(const Config *conf, void *data)
 {
     const Config *cfg = static_cast<const Config *>(conf->get());
     tm *time_struct = (tm *)data;

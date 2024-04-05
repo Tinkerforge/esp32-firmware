@@ -137,14 +137,14 @@ void EnergyManager::pre_setup()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool EnergyManager::action_triggered(const Config *automation_config, void *data)
+bool EnergyManager::has_triggered(const Config *conf, void *data)
 {
-    const Config *cfg = static_cast<const Config *>(automation_config->get());
+    const Config *cfg = static_cast<const Config *>(conf->get());
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
 
-    switch (automation_config->getTag<AutomationTriggerID>()) {
+    switch (conf->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::EMInputThree:
             if (cfg->get("closed")->asBool() == state.get("input3_state")->asBool()) {
                 return true;
@@ -227,15 +227,14 @@ void EnergyManager::setup()
     }
 
     task_scheduler.scheduleOnce([this]() {
-        auto trigger_action = [this](const Config *cfg, void *data) -> bool {return this->action_triggered(cfg, data);};
-        automation.trigger_action(AutomationTriggerID::EMInputThree,  nullptr, trigger_action);
-        automation.trigger_action(AutomationTriggerID::EMInputFour,   nullptr, trigger_action);
+        automation.trigger(AutomationTriggerID::EMInputThree, nullptr, this);
+        automation.trigger(AutomationTriggerID::EMInputFour,  nullptr, this);
 
         if (this->contactor_installed) {
-            automation.trigger_action(AutomationTriggerID::EMPhaseSwitch, nullptr, trigger_action);
+            automation.trigger(AutomationTriggerID::EMPhaseSwitch, nullptr, this);
 
             bool contactor_okay = all_data.contactor_check_state & 1;
-            automation.trigger_action(AutomationTriggerID::EMContactorMonitoring, &contactor_okay, trigger_action);
+            automation.trigger(AutomationTriggerID::EMContactorMonitoring, &contactor_okay, this);
         }
     }, 0);
 #endif
@@ -330,12 +329,12 @@ void EnergyManager::update_all_data_triggers(T id, void *data_)
     // Don't attempt to trigger actions during the setup stage because the automation rules are probably not loaded yet.
     // Start-up triggers are dispatched from a task started in our setup().
     if (boot_stage > BootStage::SETUP) {
-        automation.trigger_action(id, data_, [this](const Config *cfg, void *data) -> bool {return this->action_triggered(cfg, data);});
+        automation.trigger(id, data_, this);
     }
 }
-#define AUTOMATION_TRIGGER_ACTION(TRIGGER_ID, DATA) update_all_data_triggers(AutomationTriggerID::TRIGGER_ID, DATA)
+#define AUTOMATION_TRIGGER(TRIGGER_ID, DATA) update_all_data_triggers(AutomationTriggerID::TRIGGER_ID, DATA)
 #else
-#define AUTOMATION_TRIGGER_ACTION(TRIGGER_ID, DATA) do {} while (0)
+#define AUTOMATION_TRIGGER(TRIGGER_ID, DATA) do {} while (0)
 #endif
 
 void EnergyManager::update_all_data()
@@ -346,8 +345,8 @@ void EnergyManager::update_all_data()
     low_level_state.get("led_rgb")->get(0)->updateUint(all_data.rgb_value_r);
     low_level_state.get("led_rgb")->get(1)->updateUint(all_data.rgb_value_g);
     low_level_state.get("led_rgb")->get(2)->updateUint(all_data.rgb_value_b);
-    if (state.get("input3_state")->updateBool(all_data.input[0])) AUTOMATION_TRIGGER_ACTION(EMInputThree, nullptr);
-    if (state.get("input4_state")->updateBool(all_data.input[1])) AUTOMATION_TRIGGER_ACTION(EMInputFour, nullptr);
+    if (state.get("input3_state")->updateBool(all_data.input[0])) AUTOMATION_TRIGGER(EMInputThree, nullptr);
+    if (state.get("input4_state")->updateBool(all_data.input[1])) AUTOMATION_TRIGGER(EMInputFour, nullptr);
     state.get("relay_state")->updateBool(all_data.relay);
     low_level_state.get("input_voltage")->updateUint(all_data.voltage);
     low_level_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
@@ -355,7 +354,7 @@ void EnergyManager::update_all_data()
 
     // Update derived states
     uint32_t have_phases = 1 + static_cast<uint32_t>(all_data.contactor_value) * 2;
-    if (state.get("phases_switched")->updateUint(have_phases)) AUTOMATION_TRIGGER_ACTION(EMPhaseSwitch, nullptr);
+    if (state.get("phases_switched")->updateUint(have_phases)) AUTOMATION_TRIGGER(EMPhaseSwitch, nullptr);
 
 #if MODULE_METERS_EM_AVAILABLE()
     meters_em.update_from_em_all_data(all_data);
@@ -370,7 +369,7 @@ void EnergyManager::update_all_data()
             logger.printfln("Contactor check tripped. Check contactor.");
             if (!contactor_check_tripped) {
                 bool contactor_okay = all_data.contactor_check_state & 1;
-                AUTOMATION_TRIGGER_ACTION(EMContactorMonitoring, &contactor_okay);
+                AUTOMATION_TRIGGER(EMContactorMonitoring, &contactor_okay);
             }
             contactor_check_tripped = true;
             set_error(ERROR_FLAGS_CONTACTOR_MASK);

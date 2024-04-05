@@ -22,12 +22,21 @@
 #include "config.h"
 
 #include "module.h"
+#include "module_available.h"
+
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
+
 #include "api.h"
 #include "tools.h"
 
 bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len);
 
 class Http final : public IAPIBackend
+#if MODULE_AUTOMATION_AVAILABLE()
+                 , public IAutomationBackend
+#endif
 {
 public:
     Http(){}
@@ -48,13 +57,7 @@ public:
 
     WebServerRequestReturnProtect automation_trigger_handler(WebServerRequest req);
 
-    struct HttpTrigger {
-        WebServerRequest &req;
-        const String &uri_suffix;
-        std::unique_ptr<char[]> payload;
-        bool payload_receive_failed;
-    };
-
+#if MODULE_AUTOMATION_AVAILABLE()
     enum class HttpTriggerActionResult {
         WrongUrl,
         WrongMethod,
@@ -63,7 +66,17 @@ public:
         WrongPayload,
         OK,
     };
-    HttpTriggerActionResult trigger_action(Config *trigger_config, void *user_data);
+
+    struct HttpTrigger {
+        WebServerRequest &req;
+        const String &uri_suffix;
+        std::unique_ptr<char[]> payload;
+        bool payload_receive_failed;
+        HttpTriggerActionResult most_specific_error;
+    };
+
+    bool has_triggered(const Config *conf, void *data) override;
+#endif
 
     Ownership response_ownership;
 };

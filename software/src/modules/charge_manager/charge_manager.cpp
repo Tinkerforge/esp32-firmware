@@ -68,8 +68,8 @@ static void apply_energy_manager_config(Config &conf)
 #endif
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool ChargeManager::action_triggered(Config *config, void *data) {
-    switch(config->getTag<AutomationTriggerID>()) {
+bool ChargeManager::has_triggered(const Config *conf, void *data) {
+    switch(conf->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::ChargeManagerWd:
             return true;
 
@@ -456,9 +456,7 @@ void ChargeManager::check_watchdog()
     logger.printfln("Watchdog triggered! Received no available current update for %d ms. Setting available current to %u mA", WATCHDOG_TIMEOUT_MS, default_available_current);
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    automation.trigger_action(AutomationTriggerID::ChargeManagerWd, nullptr, [this](Config *conf, void *data) -> bool {
-        return charge_manager.action_triggered(conf, data);
-    });
+    automation.trigger(AutomationTriggerID::ChargeManagerWd, nullptr, this);
 #endif
     this->available_current.get("current")->updateUint(default_available_current);
 

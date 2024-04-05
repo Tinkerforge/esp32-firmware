@@ -197,19 +197,6 @@ void EVSEV2::pre_setup()
 #endif
 }
 
-#if MODULE_AUTOMATION_AVAILABLE()
-static bool trigger_action(Config *cfg, void *data)
-{
-    return evse_v2.action_triggered(cfg, data);
-}
-
-enum class InputState {
-    Unknown,
-    Open,
-    Closed
-};
-#endif
-
 void EVSEV2::post_setup()
 {
     if (!device_found)
@@ -1060,6 +1047,12 @@ void EVSEV2::update_all_data()
         evse_common.low_level_state.get("gpio")->get(i)->updateBool(gpio[i]);
 
 #if MODULE_AUTOMATION_AVAILABLE()
+    enum class InputState {
+        Unknown,
+        Open,
+        Closed
+    };
+
     static InputState last_shutdown_input_state = InputState::Unknown;
 #if BUILD_IS_WARP2()
     bool gpio_enable = gpio[5];
@@ -1073,7 +1066,7 @@ void EVSEV2::update_all_data()
     if (last_shutdown_input_state != shutdown_input_state) {
         // We need to schedule this since the first call of update_all_data happens before automation is initialized.
         task_scheduler.scheduleOnce([this, gpio_enable]() {
-            automation.trigger_action(AutomationTriggerID::EVSEShutdownInput, (void *)&gpio_enable, &trigger_action);
+            automation.trigger(AutomationTriggerID::EVSEShutdownInput, (void *)&gpio_enable, this);
         }, 0);
         last_shutdown_input_state = shutdown_input_state;
     }
@@ -1085,7 +1078,7 @@ void EVSEV2::update_all_data()
     if (last_input_state != input_state) {
         // We need to schedule this since the first call of update_all_data happens before automation is initialized.
         task_scheduler.scheduleOnce([this, gpio]() {
-            automation.trigger_action(AutomationTriggerID::EVSEGPInput, (void *)&gpio[16], &trigger_action);
+            automation.trigger(AutomationTriggerID::EVSEGPInput, (void *)&gpio[16], this);
         }, 0);
         last_input_state = input_state;
     }
@@ -1117,7 +1110,7 @@ void EVSEV2::update_all_data()
 
 #if MODULE_AUTOMATION_AVAILABLE()
     if (button_pressed && !evse_common.button_state.get("button_pressed")->asBool())
-        automation.trigger_action(AutomationTriggerID::EVSEButton, nullptr, &trigger_action);
+        automation.trigger(AutomationTriggerID::EVSEButton, nullptr, this);
 #endif
 
     // get_button_state
@@ -1212,10 +1205,10 @@ static void energy_meter_values_callback(struct TF_EVSEV2 * /*evse_v2*/, float p
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool EVSEV2::action_triggered(Config *config, void *data)
+bool EVSEV2::has_triggered(const Config *conf, void *data)
 {
-    auto cfg = config->get();
-    switch (config->getTag<AutomationTriggerID>())
+    const Config *cfg = static_cast<const Config *>(conf->get());
+    switch (conf->getTag<AutomationTriggerID>())
     {
     case AutomationTriggerID::EVSEButton:
         return true;

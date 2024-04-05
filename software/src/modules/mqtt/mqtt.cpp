@@ -333,13 +333,6 @@ void Mqtt::onMqttDisconnect()
     }
 }
 
-#if MODULE_AUTOMATION_AVAILABLE()
-static bool trigger_action(Config *cfg, void *data)
-{
-    return mqtt.action_triggered(cfg, data);
-}
-#endif
-
 static bool filter_mqtt_log(const char *topic, size_t topic_len)
 {
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -681,7 +674,7 @@ void Mqtt::register_urls()
     api.addState("mqtt/state", &state);
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    if (automation.is_trigger_active(AutomationTriggerID::MQTT) && config.get("enable_mqtt")->asBool()) {
+    if (automation.has_task_with_trigger(AutomationTriggerID::MQTT) && config.get("enable_mqtt")->asBool()) {
         Automation::ConfigVec trigger_config = automation.get_configured_triggers(AutomationTriggerID::MQTT);
         std::vector<String> subscribed_topics;
         for (auto &conf : trigger_config) {
@@ -701,7 +694,7 @@ void Mqtt::register_urls()
                     msg.topic = String(tpic).substring(0, tpic_len);
                     msg.payload = String(data).substring(0, data_len);
                     msg.retained = false;
-                    if (automation.trigger_action(AutomationTriggerID::MQTT, &msg, &trigger_action))
+                    if (automation.trigger(AutomationTriggerID::MQTT, &msg, this))
                         return;
                 }, conf.second->get("retain")->asBool() ? Retained::Accept : Retained::IgnoreWarn);
                 subscribed_topics.push_back(topic);
@@ -741,20 +734,20 @@ void Mqtt::register_events()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool Mqtt::action_triggered(Config *config, void *data)
+bool Mqtt::has_triggered(const Config *conf, void *data)
 {
-    Config *cfg = (Config *)config->get();
+    const Config *cfg = static_cast<const Config *>(conf->get());
     MqttMessage *msg = (MqttMessage *)data;
     const CoolString &payload = cfg->get("payload")->asString();
-
     CoolString topic = cfg->get("topic_filter")->asString();
+
     if (cfg->get("use_prefix")->asBool()) {
         topic = this->config.get("global_topic_prefix")->asString();
         topic += "/automation_trigger/";
         topic += cfg->get("topic")->asString();
     }
 
-    switch (config->getTag<AutomationTriggerID>())
+    switch (conf->getTag<AutomationTriggerID>())
     {
     case AutomationTriggerID::MQTT:
         if (msg->topic == topic && (payload == msg->payload || payload.length() == 0))

@@ -24,7 +24,14 @@
 #include "module.h"
 #include "module_available.h"
 
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
+
 class ChargeManager final : public IModule
+#if MODULE_AUTOMATION_AVAILABLE()
+                          , public IAutomationBackend
+#endif
 {
 public:
     ChargeManager(){}
@@ -46,7 +53,7 @@ public:
     const char *get_charger_name(uint8_t idx);
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    bool action_triggered(Config *config, void *data);
+    bool has_triggered(const Config *conf, void *data) override;
 #endif
 
     ConfigRoot config;

@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Matthias Bolte <matthias@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,32 +19,12 @@
 
 #pragma once
 
-#include "module.h"
-#include "config.h"
-#include "module_available.h"
+class Config;
 
-#if MODULE_AUTOMATION_AVAILABLE()
-#include "modules/automation/automation_backend.h"
-#endif
-
-class RequireMeter final : public IModule
-#if MODULE_AUTOMATION_AVAILABLE()
-                         , public IAutomationBackend
-#endif
+class IAutomationBackend
 {
-private:
-    ConfigRoot config;
-
 public:
-    void pre_setup() override;
-    void setup() override;
-    void register_urls() override;
-    void register_events() override;
+    virtual ~IAutomationBackend() = default;
 
-    void start_task();
-    bool allow_charging(float meter_value);
-
-#if MODULE_AUTOMATION_AVAILABLE()
-    bool has_triggered(const Config *conf, void *data);
-#endif
+    virtual bool has_triggered(const Config *conf, void *data) = 0;
 };
