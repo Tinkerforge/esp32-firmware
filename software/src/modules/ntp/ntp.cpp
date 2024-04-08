@@ -44,7 +44,7 @@ static void ntp_sync_cb(struct timeval *t)
         auto now = millis();
         auto secs = now / 1000;
         auto ms = now % 1000;
-        logger.printfln("NTP synchronized at %lu,%03lu!", secs, ms);
+        logger.printfln("NTP synchronized at %lu,%03lu", secs, ms);
 
         task_scheduler.scheduleWithFixedDelay([](){
             ntp.state.get("time")->updateUint(timestamp_minutes());
@@ -134,6 +134,13 @@ void NTP::setup()
 
         sntp_opts sntp_opts = {ntp_server1, ntp_server2, set_servers_from_dhcp};
 
+        // Enable network stack before setting any SNTP options.
+        // Cannot be called via esp_netif_tcpip_exec() because that function
+        // will fail if the network stack it started during its execution.
+        // It should be safe to set SNTP options without the network stack
+        // running, but it needs to be running to send any SNTP queries anyway.
+        esp_netif_init();
+
         esp_netif_tcpip_exec([](void *ctx) -> esp_err_t {
             const struct sntp_opts *opts = static_cast<struct sntp_opts *>(ctx);
 
@@ -149,11 +156,14 @@ void NTP::setup()
             sntp_setoperatingmode(SNTP_OPMODE_POLL);
             sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
 
+            // Always set first two NTP server slots and don't leave any room for
+            // servers received via DHCP. If NTP via DHCP is enabled and NTP
+            // servers are recieved via DHCP, all previously set servers are removed.
             if (!opts->server1.isEmpty()) {
-                sntp_setservername(opts->set_servers_from_dhcp ? 1 : 0, opts->server1.c_str());
+                sntp_setservername(0, opts->server1.c_str());
             }
             if (!opts->server2.isEmpty()) {
-                sntp_setservername(opts->set_servers_from_dhcp ? 2 : 1, opts->server2.c_str());
+                sntp_setservername(1, opts->server2.c_str());
             }
 
             sntp_init();
