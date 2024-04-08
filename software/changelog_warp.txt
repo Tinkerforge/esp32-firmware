@@ -539,7 +539,6 @@
 - Add MQTTS and MQTT over WS(S) support
 - Add HTTP automation trigger
 - Add modal for WiFi scan results
-- SunSpec: Support multiple common models per device
 - SunSpec: Support multiple devices in one register set
 - SunSpec: Support multiple instances of the same model in one device
 - SunSpec: Improve boot scan robustness
