@@ -136,13 +136,19 @@ void Rtc::register_backend(IRtcBackend *_backend)
         update_system_time();
     }, 1000 * 60 * 10, 1000 * 60 * 10);
 
-    if (update_system_time()) {
-        auto now = millis();
-        auto secs = now / 1000;
-        auto ms = now % 1000;
-        logger.printfln("Set system time from RTC at %lu,%03lu", secs, ms);
+    struct timeval tv_now;
+    if (clock_synced(&tv_now)) {
+        // Got NTP sync before RTC init.
+        set_time(tv_now);
     } else {
-        logger.printfln("RTC not set!");
+        if (update_system_time()) {
+            auto now = millis();
+            auto secs = now / 1000;
+            auto ms = now % 1000;
+            logger.printfln("Set system time from RTC at %lu,%03lu", secs, ms);
+        } else {
+            logger.printfln("RTC not set!");
+        }
     }
 }
 
