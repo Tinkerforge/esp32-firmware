@@ -481,8 +481,10 @@ def main(stage3):
 
         if (qr_stand != '0' and qr_stand_wiring != '0') or qr_supply_cable != 0 or qr_cee:
             stage3.power_on('CEE')
+        elif generation == 3:
+            stage3.power_on('Smart')
         else:
-            stage3.power_on({"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant])
+            stage3.power_on({"S": "Smart", "P": "Pro"}[qr_variant])
 
         hardware_type = match.group(1)
         esp_uid_qr = match.group(2)
@@ -646,7 +648,7 @@ def main(stage3):
         if (qr_stand != '0' and qr_stand_wiring != '0') or qr_supply_cable != 0 or qr_cee:
             stage3.power_on('CEE')
         else:
-            stage3.power_on({"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant])
+            stage3.power_on('Basic')
 
         result["uid"] = None
 
