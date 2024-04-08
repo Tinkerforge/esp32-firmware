@@ -89,7 +89,14 @@ for name in sorted(os.listdir('packages')):
     except FileNotFoundError:
         pass
 
-    urlretrieve('{0}/archive/{1}.zip'.format(url, commit), zip_path + '.tmp')
+    zip_url = '{0}/archive/{1}.zip'.format(url, commit)
+
+    try:
+        urlretrieve(zip_url, zip_path + '.tmp')
+    except Exception as e:
+        print('Error while downloading {0}: {1}'.format(zip_url, e))
+        sys.exit(1)
+
     os.rename(zip_path + '.tmp', zip_path)
 
     print('Unpacking {0}'.format(name))
