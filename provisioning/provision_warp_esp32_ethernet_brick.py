@@ -379,8 +379,9 @@ def brick_removed(relay_to_rgb_led):
                 time.sleep(0.1)
     except Error as e:
         if e.value in (Error.TIMEOUT, Error.NOT_CONNECTED):
-            return k
-        raise
+            yield k
+        else:
+            raise
 
 def main():
     cleanup = []
