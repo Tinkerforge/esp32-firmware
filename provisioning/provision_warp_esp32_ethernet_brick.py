@@ -14,7 +14,10 @@ from tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuad
 from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from tinkerforge.bricklet_temperature_v2 import BrickletTemperatureV2
 
-SERIAL_SETTLE_DELAY = 3
+SERIAL_SETTLE_DELAY = 2
+
+import termios
+import fcntl
 
 class NonBlockingInput:
     def __enter__(self):
@@ -380,7 +383,7 @@ def main():
     ipcon.connect("localhost", 4223)
 
     iqr = BrickletIndustrialQuadRelayV2("23th", ipcon)
-    irq.set_response_expected_all(True)
+    iqr.set_response_expected_all(True)
 
     iqr.set_value([True, True, True, True])
     time.sleep(SERIAL_SETTLE_DELAY)
@@ -453,7 +456,7 @@ def main():
             relay_to_ssid[k] = result[0]
             relay_to_passphrase[k] = result[1]
 
-    print(green(relay_to_ssid))
+    print(green(str(relay_to_ssid)))
 
     threads.clear()
 
@@ -498,7 +501,7 @@ def main():
         fn()
 
     while len(relay_to_rgb_led) > 0:
-        print(green(f"ESPs in testers {', '.join(relay_to_rgb_led.keys())} tested successfully. Remove one of the ESPs to print its label!"))
+        print(green(f"ESPs in testers {', '.join(str(x) for x in relay_to_rgb_led.keys())} tested successfully. Remove one of the ESPs to print its label!"))
         try:
             while True:
                 for k, rgb in list(relay_to_rgb_led.items()):
