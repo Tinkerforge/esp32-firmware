@@ -523,4 +523,6 @@ def main():
     threads.clear()
 
 if __name__ == "__main__":
-    main()
+    while True:
+        main()
+        input("Done! Press enter to start next run")
