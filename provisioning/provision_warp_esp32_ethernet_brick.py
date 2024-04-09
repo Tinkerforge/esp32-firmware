@@ -50,13 +50,19 @@ def nonblocking_input(prompt, generator):
 
     result = ""
     with NonBlockingInput():
-        c = sys.stdin.read(1)
-        if c == "\n":
-            return result, None
-        result += c
+        while True:
+            c = sys.stdin.read(1)
+            sys.stdout.write(c)
+            sys.stdout.flush()
 
-        if (x := next(generator)) is not None:
-            return "y", x
+            if c == "\n":
+                return result, None
+            result += c
+
+            if (x := next(generator)) is not None:
+                sys.stdout.write("y\n")
+                sys.stdout.flush()
+                return "y", x
 
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
