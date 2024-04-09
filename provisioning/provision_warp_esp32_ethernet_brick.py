@@ -16,6 +16,45 @@ from tinkerforge.bricklet_temperature_v2 import BrickletTemperatureV2
 
 SERIAL_SETTLE_DELAY = 3
 
+class NonBlockingInput:
+    def __enter__(self):
+        # canonical mode, no echo
+        self.old = termios.tcgetattr(sys.stdin)
+        new = termios.tcgetattr(sys.stdin)
+        new[3] = new[3] & ~(termios.ICANON | termios.ECHO)
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, new)
+
+        # set for non-blocking io
+        self.orig_fl = fcntl.fcntl(sys.stdin, fcntl.F_GETFL)
+        fcntl.fcntl(sys.stdin, fcntl.F_SETFL, self.orig_fl | os.O_NONBLOCK)
+
+    def __exit__(self, *args):
+        # restore terminal to previous state
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.old)
+        fcntl.fcntl(sys.stdin, fcntl.F_SETFL, self.orig_fl)
+
+
+def drop_stdin_buffer():
+    with NonBlockingInput():
+        c = '1'
+
+        while len(c) > 0:
+            c = sys.stdin.read(1)
+
+def nonblocking_input(prompt, generator):
+    drop_stdin_buffer()
+    print(prompt, end="")
+
+    result = ""
+    with NonBlockingInput():
+        c = sys.stdin.read(1)
+        if c == "\n":
+            return result, None
+        result += c
+
+        if (x := next(generator)) is not None:
+            return "y", x
+
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
                 args=(), kwargs={}, Verbose=None):
@@ -276,22 +315,23 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
     return ipcon, rgb_led_uid
 
 
-def print_label(ssid, passphrase, stage_1_test_report):
+def print_label(ssid, passphrase, stage_1_test_report, generator_fn):
     with open("{}_{}_report_stage_1.json".format(ssid, now().replace(":", "-")), "w") as f:
         json.dump(stage_1_test_report, f, indent=4)
 
     label_success = "n"
+    removed_brick = None
     while label_success != "y":
         run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "4"])
-        label_prompt = "Stick one label on the ESP, put ESP{} in the ESD bag. Press n to retry printing the label{}. [y/n]".format(
+        label_prompt = "Stick one label on the ESP, put ESP{} in the ESD bag. Press n to retry printing the label{}. Press y or remove next ESP to continue [y/n]".format(
                 " and the other three labels",
                 "s")
 
-        label_success = input(label_prompt)
+        label_success, removed_brick = nonblocking_input(label_prompt, generator_fn())
         while label_success not in ("y", "n"):
-            label_success = input(label_prompt)
+            label_success, removed_brick = nonblocking_input(label_prompt, generator_fn())
 
-    print('Done!')
+    return removed_brick
 
 def reset_ntp_config_fn(ethernet_ip):
     def inner(ethernet_ip):
@@ -310,6 +350,28 @@ def reset_ethernet_config_fn(ethernet_ip):
         except:
             fatal_error("Failed to re-enable NTP")
     return lambda: inner(ethernet_ip)
+
+
+def brick_removed(relay_to_rgb_led):
+    try:
+        while True:
+            for k, rgb in list(relay_to_rgb_led.items()):
+                rgb.set_rgb_value(0,63,0)
+
+            for i in range(5):
+                yield
+                time.sleep(0.1)
+
+            for k, rgb in list(relay_to_rgb_led.items()):
+                rgb.set_rgb_value(0,0,0)
+
+            for i in range(5):
+                yield
+                time.sleep(0.1)
+    except Error as e:
+        if e.value in (Error.TIMEOUT, Error.NOT_CONNECTED):
+            return k
+        raise
 
 def main():
     cleanup = []
@@ -436,6 +498,7 @@ def main():
         fn()
 
     while len(relay_to_rgb_led) > 0:
+        print(green(f"ESPs in testers {', '.join(relay_to_rgb_led.keys())} tested successfully. Remove one of the ESPs to print its label!"))
         try:
             while True:
                 for k, rgb in list(relay_to_rgb_led.items()):
@@ -449,9 +512,11 @@ def main():
                 time.sleep(0.5)
         except Error as e:
             if e.value in (Error.TIMEOUT, Error.NOT_CONNECTED):
-                print(f"Removed {k}")
-                print_label(relay_to_ssid[k], relay_to_passphrase[k], test_reports[k])
-                relay_to_rgb_led.pop(k)
+                next_brick = k
+                while next_brick is not None and len(relay_to_rgb_led) > 0:
+                    print(green(f"Removed {next_brick}"))
+                    relay_to_rgb_led.pop(next_brick)
+                    next_brick = print_label(relay_to_ssid[next_brick], relay_to_passphrase[next_brick], test_reports[next_brick], lambda: brick_removed(relay_to_rgb_led))
             else:
                 raise
 
