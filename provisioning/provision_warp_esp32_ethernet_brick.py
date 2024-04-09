@@ -9,7 +9,7 @@ from pathlib import Path
 
 from provision_common.provision_common import *
 
-from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58, Error
 from tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
 from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from tinkerforge.bricklet_temperature_v2 import BrickletTemperatureV2
@@ -426,6 +426,8 @@ def main():
         else:
             ipcon, rgb_led_uid = result
             rgb_led = BrickletRGBLEDV2(rgb_led_uid, ipcon)
+            rgb_led.set_response_expected_all(True)
+            ipcon.set_timeout(0.5)
 
             relay_to_rgb_led[k] = rgb_led
 
@@ -433,15 +435,25 @@ def main():
     for fn in cleanup:
         fn()
 
-    for k, v in list(relay_to_rgb_led.items()):
-            stop_event = threading.Event()
-            blink_thread = threading.Thread(target=blink_thread_fn, args=([v], stop_event))
-            blink_thread.start()
+    while len(relay_to_rgb_led) > 0:
+        try:
+            while True:
+                for k, rgb in list(relay_to_rgb_led.items()):
+                    rgb.set_rgb_value(0,63,0)
 
-            print_label(relay_to_ssid[k], relay_to_passphrase[k], test_reports[k])
+                time.sleep(0.5)
 
-            stop_event.set()
-            blink_thread.join()
+                for k, rgb in list(relay_to_rgb_led.items()):
+                    rgb.set_rgb_value(0,0,0)
+
+                time.sleep(0.5)
+        except Error as e:
+            if e.value in (Error.TIMEOUT, Error.NOT_CONNECTED):
+                print(f"Removed {k}")
+                print_label(relay_to_ssid[k], relay_to_passphrase[k], test_reports[k])
+                relay_to_rgb_led.pop(k)
+            else:
+                raise
 
     threads.clear()
 
