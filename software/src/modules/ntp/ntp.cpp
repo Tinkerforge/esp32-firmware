@@ -136,7 +136,7 @@ void NTP::setup()
 
         // Enable network stack before setting any SNTP options.
         // Cannot be called via esp_netif_tcpip_exec() because that function
-        // will fail if the network stack it started during its execution.
+        // will fail if the network stack is started during its execution.
         // It should be safe to set SNTP options without the network stack
         // running, but it needs to be running to send any SNTP queries anyway.
         esp_netif_init();
@@ -159,12 +159,10 @@ void NTP::setup()
             // Always set first two NTP server slots and don't leave any room for
             // servers received via DHCP. If NTP via DHCP is enabled and NTP
             // servers are recieved via DHCP, all previously set servers are removed.
-            if (!opts->server1.isEmpty()) {
-                sntp_setservername(0, opts->server1.c_str());
-            }
-            if (!opts->server2.isEmpty()) {
-                sntp_setservername(1, opts->server2.c_str());
-            }
+            // Always set both servers, even when only one is configured, as the SNTP
+            // client will query all servers round-robin, including unset ones.
+            sntp_setservername(0, opts->server1.isEmpty() ? opts->server2.c_str() : opts->server1.c_str());
+            sntp_setservername(1, opts->server2.isEmpty() ? opts->server1.c_str() : opts->server2.c_str());
 
             sntp_init();
 
