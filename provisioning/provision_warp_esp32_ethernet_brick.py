@@ -341,7 +341,7 @@ def main():
 
         all_serials = new_all_serials
 
-    print(relay_to_serial)
+    print(green(relay_to_serial))
 
     iqr.set_value([True, True, True, True])
     time.sleep(SERIAL_SETTLE_DELAY)
@@ -391,6 +391,8 @@ def main():
             relay_to_ssid[k] = result[0]
             relay_to_passphrase[k] = result[1]
 
+    print(green(relay_to_ssid))
+
     threads.clear()
 
     run(["systemctl", "restart", "NetworkManager.service"])
@@ -409,6 +411,7 @@ def main():
 
     for k, v in relay_to_serial.items():
         cleanup.append(reset_ntp_config_fn(f"192.168.1.{9 + k}"))
+        print(green(f"{k}: 192.168.1.{9 + k}"))
         t = ThreadWithReturnValue(target=run_stage_1_tests_fn(v, f"192.168.1.{9 + k}", k, test_reports[k]))
         t.start()
         threads.append((k, v, t))
