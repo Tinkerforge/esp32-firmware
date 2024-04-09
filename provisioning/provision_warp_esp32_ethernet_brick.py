@@ -316,17 +316,9 @@ def main():
 
     ipcon = IPConnection()
     ipcon.connect("localhost", 4223)
-    devices = enumerate_devices(ipcon)
 
-    iqr = None
-
-    for d in devices:
-        if d.device_identifier == BrickletIndustrialQuadRelayV2.DEVICE_IDENTIFIER:
-            iqr = BrickletIndustrialQuadRelayV2(d.uid, ipcon)
-            break
-    else:
-        print("No industrial quad relay 2.0 bricklet found!")
-        sys.exit(-1)
+    iqr = BrickletIndustrialQuadRelayV2("23th", ipcon)
+    irq.set_response_expected_all(True)
 
     iqr.set_value([True, True, True, True])
     time.sleep(SERIAL_SETTLE_DELAY)
