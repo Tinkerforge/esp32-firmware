@@ -282,9 +282,9 @@ def print_label(ssid, passphrase, stage_1_test_report):
 
     label_success = "n"
     while label_success != "y":
-        run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "3"])
+        run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "4"])
         label_prompt = "Stick one label on the ESP, put ESP{} in the ESD bag. Press n to retry printing the label{}. [y/n]".format(
-                " and the other two labels",
+                " and the other three labels",
                 "s")
 
         label_success = input(label_prompt)
