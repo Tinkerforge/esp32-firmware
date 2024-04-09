@@ -94,3 +94,7 @@ extern EventLog logger;
 // extern int tf_event_log_printf(const char *fmt, va_list args);
 // instead of including event_log.h (a C++ header)
 extern "C" int tf_event_log_printf(const char *fmt, va_list args);
+
+// To directly print from external C code, add
+// extern int tf_event_log_printfln(const char *fmt, ...);
+extern "C" int tf_event_log_printfln(const char *fmt, ...);

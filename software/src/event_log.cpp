@@ -299,5 +299,15 @@ void EventLog::register_urls()
 
 int tf_event_log_printf(const char *fmt, va_list args)
 {
-    return logger.printfln(fmt, args);
+    return logger.printfln_prefixed("external code", 13, fmt, args);
+}
+
+int tf_event_log_printfln(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    int result = logger.printfln_prefixed("external code", 13, fmt, args);
+    va_end(args);
+
+    return result;
 }
