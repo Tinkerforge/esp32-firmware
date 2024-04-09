@@ -388,25 +388,7 @@ def main():
     iqr.set_value([True, True, True, True])
     time.sleep(SERIAL_SETTLE_DELAY)
 
-    relay_to_serial = {}
-
-    all_serials = set(Path('/dev/').glob('ttyUSB*'))
-
-    for i in range(4):
-        iqr.set_selected_value(i, False)
-        time.sleep(SERIAL_SETTLE_DELAY)
-        new_all_serials = set(Path('/dev/').glob('ttyUSB*'))
-        missing = all_serials - new_all_serials
-        if len(missing) == 1:
-            relay_to_serial[i] = list(missing)[0]
-        elif len(missing) == 0:
-            print(f"Quad relay pin {i} not plugged in")
-        else:
-            print(f"Switching quad relay pin {i} off removed more than one serial console: {missing} Is the hardware plugged in correctly?")
-
-        all_serials = new_all_serials
-
-    print(green(relay_to_serial))
+    relay_to_serial = {k: f"/dev/ttyUSBESPTESTER{k}" for k in range(4) if os.path.exists(f"/dev/ttyUSBESPTESTER{k}")}
 
     iqr.set_value([True, True, True, True])
     time.sleep(SERIAL_SETTLE_DELAY)
