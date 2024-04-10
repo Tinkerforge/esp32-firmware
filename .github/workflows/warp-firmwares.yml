@@ -16,7 +16,7 @@ jobs:
         with:
           path: |
             ~/.cache/pip
-            ~/.platformio/.cache
+            ~/.platformio
             ./software/.pio
           key: ${{ matrix.environment }}-${{ runner.os }}-pio
       - uses: actions/setup-python@v5
