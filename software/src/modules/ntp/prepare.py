@@ -105,6 +105,8 @@ if generated_db_version >= installed_db_version:
     util.log("Skipping timezone database generation. Installed version {} is not newer than last generated version {}".format(installed_db_version, generated_db_version))
     sys.exit(0)
 
+print("Generating timezone database: Installed version {} is newer than last generated version {}".format(installed_db_version, generated_db_version))
+
 timezones = OrderedDict(sorted(make_timezones_dict().items(), key=lambda x: x[0]))
 
 nested_dict = OrderedDict()
