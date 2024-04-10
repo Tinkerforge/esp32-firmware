@@ -1,0 +1,85 @@
+From a0f6c21dd4c7f69d6facb352774bc88896f9ce2b Mon Sep 17 00:00:00 2001
+From: Nick Ballhorn-Wagner <nevyn@wingedbeast.org>
+Date: Fri, 21 Feb 2020 17:17:08 +0100
+Subject: [PATCH] fix memory leak in netif_loop_output if tcpip_try_callback fails
+
+---
+ src/core/netif.c         | 24 +++++++++++++++++++-----
+ src/include/lwip/netif.h |  4 ++++
+ 2 files changed, 23 insertions(+), 5 deletions(-)
+
+diff --git a/src/core/netif.c b/src/core/netif.c
+index 45f8e34f..d9bbb410 100644
+--- a/src/core/netif.c
++++ b/src/core/netif.c
+@@ -366,6 +366,9 @@ netif_add(struct netif *netif,
+ #if ENABLE_LOOPBACK && LWIP_LOOPBACK_MAX_PBUFS
+   netif->loop_cnt_current = 0;
+ #endif /* ENABLE_LOOPBACK && LWIP_LOOPBACK_MAX_PBUFS */
++#if ENABLE_LOOPBACK && LWIP_NETIF_LOOPBACK_MULTITHREADING
++  netif->reschedule_poll = 0;
++#endif /* ENABLE_LOOPBACK && LWIP_NETIF_LOOPBACK_MULTITHREADING */
+ 
+ #if ESP_LWIP
+ #if IP_NAPT
+@@ -1089,11 +1092,12 @@ netif_set_link_callback(struct netif *netif, netif_status_callback_fn link_callb
+ /**
+  * @ingroup netif
+  * Send an IP packet to be received on the same netif (loopif-like).
+- * The pbuf is simply copied and handed back to netif->input.
+- * In multithreaded mode, this is done directly since netif->input must put
+- * the packet on a queue.
+- * In callback mode, the packet is put on an internal queue and is fed to
++ * The pbuf is copied and added to an internal queue which is fed to
+  * netif->input by netif_poll().
++ * In multithreaded mode, the call to netif_poll() is queued to be done on the
++ * TCP/IP thread.
++ * In callback mode, the user has the responsibility to call netif_poll() in
++ * the main loop of their application.
+  *
+  * @param netif the lwip network interface structure
+  * @param p the (IP) packet to 'send'
+@@ -1170,6 +1174,12 @@ netif_loop_output(struct netif *netif, struct pbuf *p)
+     LWIP_ASSERT("if first != NULL, last must also be != NULL", netif->loop_last != NULL);
+     netif->loop_last->next = r;
+     netif->loop_last = last;
++#if LWIP_NETIF_LOOPBACK_MULTITHREADING
++    if (netif->reschedule_poll) {
++      schedule_poll = 1;
++      netif->reschedule_poll = 0;
++    }
++#endif /* LWIP_NETIF_LOOPBACK_MULTITHREADING */
+   } else {
+     netif->loop_first = r;
+     netif->loop_last = last;
+@@ -1187,7 +1197,11 @@ netif_loop_output(struct netif *netif, struct pbuf *p)
+ #if LWIP_NETIF_LOOPBACK_MULTITHREADING
+   /* For multithreading environment, schedule a call to netif_poll */
+   if (schedule_poll) {
+-    tcpip_try_callback((tcpip_callback_fn)netif_poll, netif);
++    if (tcpip_try_callback((tcpip_callback_fn)netif_poll, netif) != ERR_OK) {
++      SYS_ARCH_PROTECT(lev);
++      netif->reschedule_poll = 1;
++      SYS_ARCH_UNPROTECT(lev);
++    }
+   }
+ #endif /* LWIP_NETIF_LOOPBACK_MULTITHREADING */
+ 
+diff --git a/src/include/lwip/netif.h b/src/include/lwip/netif.h
+index dd1c0d31..aa0f4e7c 100644
+--- a/src/include/lwip/netif.h
++++ b/src/include/lwip/netif.h
+@@ -405,6 +405,10 @@ struct netif {
+ #if LWIP_LOOPBACK_MAX_PBUFS
+   u16_t loop_cnt_current;
+ #endif /* LWIP_LOOPBACK_MAX_PBUFS */
++#if LWIP_NETIF_LOOPBACK_MULTITHREADING
++  /* Used if the original scheduling failed. */
++  u8_t reschedule_poll;
++#endif /* LWIP_NETIF_LOOPBACK_MULTITHREADING */
+ #endif /* ENABLE_LOOPBACK */
+ #if ESP_PBUF
+   void (*l2_buffer_free_notify)(struct netif *lwip_netif, void *user_buf); /* Allows LWIP to notify driver when a L2-supplied pbuf can be freed */
+-- 
+2.39.2
+
