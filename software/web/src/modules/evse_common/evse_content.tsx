@@ -104,15 +104,15 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                 class="mb-1 col px-1"
                                 value={(state.contactor_state & 1) == 1 ? 1 : 0}
                                 items={[
-                                    ["secondary", __("evse.content.contactor_not_live")],
-                                    ["primary", __("evse.content.contactor_live")]
+                                    ["secondary", __("evse.content.contactor_not_live")(is_evse_v3)],
+                                    ["primary", __("evse.content.contactor_live")(is_evse_v3)]
                                 ]}/>
                             <IndicatorGroup
                                 class="mb-1 col px-1"
                                 value={(state.contactor_state & 2) == 2 ? 1 : 0}
                                 items={[
-                                    ["secondary", __("evse.content.contactor_not_live")],
-                                    ["primary", __("evse.content.contactor_live")]
+                                    ["secondary", __("evse.content.contactor_not_live")(is_evse_v3)],
+                                    ["primary", __("evse.content.contactor_live")(is_evse_v3)]
                                 ]}/>
                             <IndicatorGroup
                                 class="mb-1 col-auto px-1"

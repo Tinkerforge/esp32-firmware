@@ -30,8 +30,8 @@ let x = {
             "iec_state_ef": "E/F (Fehler)",
             "contactor_state": "Schützprüfung",
             "contactor_names": /*SFN*/(is_evse_v3: boolean) => is_evse_v3 ? "Schütz L1+N, Schütz L2+L3, Zustand" : "vor Schütz, nach Schütz, Zustand"/*NF*/,
-            "contactor_not_live": "Stromlos",
-            "contactor_live": "Stromführend",
+            "contactor_not_live": /*SFN*/(is_evse_v3: boolean) => is_evse_v3 ? "Offen" : "Stromlos"/*NF*/,
+            "contactor_live": /*SFN*/(is_evse_v3: boolean) => is_evse_v3 ? "Geschlossen" : "Stromführend"/*NF*/,
             "contactor_ok": "OK",
             "contactor_error": /*SFN*/(contactor_error: number) => {
                 if (contactor_error == 0)

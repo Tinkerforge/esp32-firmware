@@ -30,8 +30,8 @@ let x = {
             "iec_state_ef": "E/F (error)",
             "contactor_state": "Contactor check",
             "contactor_names": /*SFN*/(is_evse_v3: boolean) => is_evse_v3 ? "contactor L1+N, contactor L2+L3, state" : "before contactor, behind contactor, state"/*NF*/,
-            "contactor_not_live": "Not live",
-            "contactor_live": "Live",
+            "contactor_not_live": /*SFN*/(is_evse_v3: boolean) => is_evse_v3 ? "Open" : "Not live"/*NF*/,
+            "contactor_live": /*SFN*/(is_evse_v3: boolean) => is_evse_v3 ? "Closed" : "Live"/*NF*/,
             "contactor_ok": "OK",
             "contactor_error": /*SFN*/(contactor_error: number) => {
                 if (contactor_error == 0)
