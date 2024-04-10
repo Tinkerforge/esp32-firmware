@@ -103,6 +103,8 @@ void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
                                                dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg,
                                                u8_t dns_addrtype);
 
+void poke_localhost();
+
 void trigger_reboot(const char *initiator);
 
 time_t ms_until_datetime(int *year, int *month, int *day, int *hour, int *minutes, int *seconds);

@@ -31,6 +31,7 @@
 #include "esp_system.h"
 #include "esp_timer.h"
 #include "freertos/task.h"
+#include "lwip/udp.h"
 
 #include <soc/efuse_reg.h>
 #include "bindings/base58.h"
@@ -847,6 +848,40 @@ void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
     callback_arg->addr_ptr = &callback_arg->addr;
 
     found_callback(callback_arg);
+}
+
+static esp_err_t poke_localhost_fn(void * /*ctx*/)
+{
+    udp_pcb *l_udp_pcb = udp_new();
+    if (l_udp_pcb) {
+        //udp_bind(l_udp_pcb, IP_ADDR_ANY, 0); // pcb will be bound in udp_sendto()
+
+        struct pbuf *p = pbuf_alloc(PBUF_TRANSPORT, 0, PBUF_ROM); // PBUF_ROM because we have no payload
+        if (p) {
+            p->payload = nullptr; // payload can be nullptr because length is 0 and pbuf type is PBUF_ROM
+            p->len = 0;
+            p->tot_len = 0;
+
+            ip_addr_t dst_addr;
+            dst_addr.type = IPADDR_TYPE_V4;
+            dst_addr.u_addr.ip4.addr = htonl(IPADDR_LOOPBACK);
+
+            errno = 0;
+            err_t err = udp_sendto(l_udp_pcb,p, &dst_addr, 9);
+            if (err != ERR_OK) {
+                logger.printfln("udp_sendto failed: %i | %s (%i)", err, strerror(errno), errno);
+            }
+
+            pbuf_free(p);
+        }
+        udp_remove(l_udp_pcb);
+    }
+    return ESP_OK; // Don't care about errors.
+}
+
+void poke_localhost()
+{
+    esp_netif_tcpip_exec(poke_localhost_fn, nullptr);
 }
 
 void trigger_reboot(const char *initiator)

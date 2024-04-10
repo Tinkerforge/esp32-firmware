@@ -58,7 +58,7 @@ void clear_ws_work_item(ws_work_item *wi);
 class WebSockets
 {
 public:
-    WebSockets() : worker_active(WEBSOCKET_WORKER_DONE), worker_start_errors(0)
+    WebSockets() : worker_active(WEBSOCKET_WORKER_DONE)
     {
     }
 
@@ -102,7 +102,8 @@ public:
     std::deque<ws_work_item> work_queue;
 
     std::atomic<uint8_t> worker_active;
-    std::atomic<uint32_t> worker_start_errors;
+    uint32_t last_worker_run = 0;
+    uint32_t worker_poll_count = 0;
 
     std::function<void(WebSocketsClient)> on_client_connect_fn;
 

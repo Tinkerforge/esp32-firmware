@@ -23,14 +23,15 @@
 #include "api.h"
 #include "event_log.h"
 #include "task_scheduler.h"
+#include "tools.h"
 #include "web_server.h"
 
 #include "esp_httpd_priv.h"
 
 #define KEEP_ALIVE_TIMEOUT_MS 10000
-#define WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT 60 * 60 * 1000
 
 #if MODULE_WATCHDOG_AVAILABLE()
+#define WORKER_WATCHDOG_TIMEOUT (5 * 60 * 1000)
 static int watchdog_handle = -1;
 #endif
 
@@ -80,7 +81,9 @@ bool WebSockets::queueFull()
     if (work_queue.size() >= MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE) {
         return true;
     }
-    logger.printfln("Work queue was full but %u items were cleaned.", MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE - work_queue.size());
+    // Print only to the console because printing to the event log
+    // would generate more websocket messages to fill up the queue.
+    printf("web_sockets: Work queue was full but %u items were cleaned.\n", MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE - work_queue.size());
 
     return false;
 }
@@ -127,7 +130,6 @@ static void work(void *arg)
         clear_ws_work_item(&wi);
     }
 
-    ws->worker_start_errors = 0;
     ws->worker_active = WEBSOCKET_WORKER_DONE;
 #if MODULE_WATCHDOG_AVAILABLE()
     watchdog.reset(watchdog_handle);
@@ -482,49 +484,50 @@ bool WebSockets::sendToAll(const char *payload, size_t payload_len)
     return true;
 }
 
-static uint32_t last_worker_run = 0;
-
 void WebSockets::triggerHttpThread()
 {
+    if (worker_active == WEBSOCKET_WORKER_RUNNING) {
+        return;
+    }
+
     if (worker_active == WEBSOCKET_WORKER_ENQUEUED) {
-        // Protect against lost UDP packet in httpd_queue_work control socket.
-        // If the packet that enqueues the worker is lost
-        // worker_active must be reset or web sockets will never send data again.
-        if (last_worker_run != 0 && deadline_elapsed(last_worker_run + KEEP_ALIVE_TIMEOUT_MS * 2)) {
-            logger.printfln("Worker did not start for %u seconds. Control socket drop? Retrying.", (KEEP_ALIVE_TIMEOUT_MS * 2) / 1000U);
-            last_worker_run = millis();
-            worker_active = WEBSOCKET_WORKER_DONE;
-
-            worker_start_errors += (KEEP_ALIVE_TIMEOUT_MS * 2) / 100; // count a hanging worker as if we've attempted to start the worker the whole time.
-
-            std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-            while (!work_queue.empty()) {
-                ws_work_item *wi = &work_queue.front();
-                clear_ws_work_item(wi);
-                work_queue.pop_front();
-            }
+        // Protect against stuck localhost communication that blocks the
+        // httpd_queue_work control socket. While the worker is enqueued,
+        // poke localhost in regular intervals to get things going again.
+        // A poll count of 32 results in a poke interval of roughly 4s.
+        if ((++worker_poll_count) % 32 == 0) {
+            // Don't log this because it happens constantly during a firmware upload.
+            //logger.printfln("Poking localhost to get the worker unstuck");
+            poke_localhost();
         }
         return;
     }
 
-    last_worker_run = millis();
-/*
+    // Don't schedule work task if no work is pending.
+    // Schedule it anyway once in a while to reset the watchdog.
+#if MODULE_WATCHDOG_AVAILABLE()
+    if (!deadline_elapsed(last_worker_run + WORKER_WATCHDOG_TIMEOUT / 8))
+#endif
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
         if (work_queue.empty()) {
             return;
         }
     }
-*/
+
     // If we don't set worker_active to "enqueued" BEFORE enqueueing the worker,
     // we can be preempted after enqueueing, but before we set worker_active to "enqueued"
     // the worker can then run to completion, we then set worker_active to "enqueued" and are
     // NEVER able to start the worker again.
     worker_active = WEBSOCKET_WORKER_ENQUEUED;
-    if (httpd_queue_work(server.httpd, work, this) != ESP_OK) {
-        logger.printfln("Failed to start WebSocket worker!");
+    errno = 0;
+    err_t err = httpd_queue_work(server.httpd, work, this);
+    if (err == ESP_OK) {
+        last_worker_run = millis();
+        worker_poll_count = 0;
+    } else {
+        logger.printfln("Failed to start WebSocket worker: %i | %s (%i)", err, strerror(errno), errno);
         worker_active = WEBSOCKET_WORKER_DONE;
-        ++worker_start_errors;
     }
 }
 
@@ -581,11 +584,10 @@ void WebSockets::start(const char *uri)
     }, 1000, 1000);
 
 #if MODULE_WATCHDOG_AVAILABLE()
-    task_scheduler.scheduleOnce([this]() {
-        watchdog_handle = watchdog.add(
-            "websocket_worker",
-            "Websocket worker was not able to start for five minutes. The control socket is probably dead.");
-    }, WORKER_START_ERROR_MIN_UPTIME_FOR_REBOOT);
+    watchdog_handle = watchdog.add(
+        "websocket_worker",
+        "Websocket worker was not able to start for five minutes. The control socket is probably dead.",
+        WORKER_WATCHDOG_TIMEOUT);
 #endif
 
     task_scheduler.scheduleWithFixedDelay([this](){
