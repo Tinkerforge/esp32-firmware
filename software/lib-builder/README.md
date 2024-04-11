@@ -68,9 +68,9 @@ Press S Enter to write sdkconfig (don't change the filename!), ~/esp32-firmware/
 ### Add built libs to arduino-esp32 Repo:
 
     (git clone https://github.com/Tinkerforge/arduino-esp32)
-    Go to https://github.com/Tinkerforge/arduino-esp32 and click "sync fork" (so that our master == espressif's master)
+    Go to https://github.com/Tinkerforge/arduino-esp32, switch to "release/v2.x" and click "sync fork" (so that our "release/v2.x" == espressif's "release/v2.x")
     cd ~/arduino-esp32
-    git switch master
+    git switch release/v2.x
     git pull
     git checkout -b warp-x.y.z (or warp2-x.y.z for ESP32 Ethernet Brick)
     rm platform.txt
@@ -85,7 +85,7 @@ Press S Enter to write sdkconfig (don't change the filename!), ~/esp32-firmware/
 
 ### Push arduino-esp32
 
-    git push -u origin warp-x.y.z
+    git push -u origin warp-x.y.z (or warp2-x.y.z for ESP32 Ethernet Brick)
 
 ### Update packages
 
