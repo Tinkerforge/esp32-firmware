@@ -456,14 +456,14 @@ void EnergyManager::check_bricklet_reachable(int rc, const char *context)
         }
     } else {
         if (rc == TF_E_TIMEOUT) {
-            logger.printfln_plain("(%s) Bricklet access timed out.", context);
+            logger.printfln("%s: Bricklet access timed out.", context);
         } else {
-            logger.printfln_plain("(%s) Bricklet access returned error %d.", context, rc);
+            logger.printfln("%s: Bricklet access returned error %d.", context, rc);
         }
         if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
             bricklet_reachable = false;
             set_error(ERROR_FLAGS_BRICKLET_MASK);
-            logger.printfln_plain("(%s) Bricklet is unreachable.", context);
+            logger.printfln("%s: Bricklet is unreachable.", context);
         }
     }
     low_level_state.get("consecutive_bricklet_errors")->updateUint(consecutive_bricklet_errors);
