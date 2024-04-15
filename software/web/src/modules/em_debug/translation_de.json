@@ -29,7 +29,12 @@
             "state_input_voltage": "Eingangsspannung",
 
             "low": "Low",
-            "high": "High"
+            "high": "High",
+
+            "reset_description": "Aktionen",
+            "reset_description_muted": "",
+            "reset_em": "Neu starten",
+            "reflash_em": "Neu flashen"
         },
         "script": {
             "loading_debug_report": "Lade Debug-Report",

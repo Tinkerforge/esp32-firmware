@@ -29,7 +29,12 @@
             "state_input_voltage": "Input voltage",
 
             "low": "Low",
-            "high": "High"
+            "high": "High",
+
+            "reset_description": "Actions",
+            "reset_description_muted": "",
+            "reset_em": "Restart",
+            "reflash_em": "Reflash"
         },
         "script": {
             "loading_debug_report": "Loading debug protocol",

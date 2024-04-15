@@ -56,3 +56,9 @@ export interface history_energy_manager_daily_changed {
     energy_import: number[];
     energy_export: number[];
 }
+
+export interface reflash {
+}
+
+export interface reset {
+}
