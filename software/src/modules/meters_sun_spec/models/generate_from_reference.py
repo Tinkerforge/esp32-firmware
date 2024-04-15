@@ -6,7 +6,15 @@ import os
 import re
 import shutil
 import sys
-from xlsx2csv import Xlsx2csv
+
+for path in glob.glob("**/xlsx2csv.py", recursive=True):
+    sys.path.append(os.path.dirname(path))
+
+try:
+    from xlsx2csv import Xlsx2csv
+except ModuleNotFoundError:
+    print("Xlsx2csv not found. Please run:\npython3 -m venv venv\n. venv/bin/activate\npip install Xlsx2csv", file=sys.stderr)
+    sys.exit(1)
 
 xlsx_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "..", "..", "..", "wallbox", "sunspec", "SunSpec_Information_Model_Reference_20211209.xlsx")
 model_ids = [1, 101, 102, 103, 111, 112, 113,  201, 202, 203, 204, 211, 212, 213, 214]
