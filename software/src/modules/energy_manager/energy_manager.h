@@ -177,4 +177,5 @@ private:
     double history_meter_power_duration[METERS_SLOTS] = {0}; // seconds
     double history_meter_energy_import[METERS_SLOTS] = {0}; // daWh
     double history_meter_energy_export[METERS_SLOTS] = {0}; // daWh
+    uint32_t history_request_seqnum = 0;
 };

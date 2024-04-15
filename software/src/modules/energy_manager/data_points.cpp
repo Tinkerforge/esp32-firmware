@@ -866,6 +866,7 @@ typedef struct {
     bool call_begin;
     bool write_comma;
     uint16_t next_offset;
+    uint32_t seqnum;
     uint32_t uid;
     uint8_t utc_end_year;
     uint8_t utc_end_month;
@@ -903,7 +904,7 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("Failed to get wallbox 5min data point: stream out of sync (%u != %u)", metadata->next_offset, data_chunk_offset);
+        logger.printfln("Failed to get wallbox 5min data point: seqnum %u, stream out of sync (%u != %u)", metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
             write_success = response->write("]");
@@ -979,10 +980,10 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
 
                     if (rc != TF_E_OK || status != 0) {
                         if (rc != TF_E_OK) {
-                            logger.printfln("Failed to continue getting wallbox 5min data point: error %d", rc);
+                            logger.printfln("Failed to continue getting wallbox 5min data point: seqnum %u, error %d", metadata->seqnum, rc);
                         }
                         else if (status != 0) {
-                            logger.printfln("Failed to continue getting wallbox 5min data point: status (%s, %u)", get_data_status_string(status), status);
+                            logger.printfln("Failed to continue getting wallbox 5min data point: seqnum %u, status (%s, %u)", metadata->seqnum, get_data_status_string(status), status);
                         }
 
                         OwnershipGuard ownership_guard2(metadata->response_ownership, metadata->response_owner_id);
@@ -1067,6 +1068,7 @@ void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ow
     uint8_t utc_end_minute = utc_end.tm_min;
     uint16_t utc_end_slots = (utc_end_hour * 60 + utc_end_minute) / 5; // since midnight
 
+    uint32_t seqnum = history_request_seqnum++;
     uint8_t status;
     int rc;
 
@@ -1103,12 +1105,12 @@ void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ow
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get wallbox 5min data point: error %d", rc);
-                logger.printfln("Failed to get wallbox 5min data point: error %d", rc);
+                response->writef("Failed to get wallbox 5min data point: seqnum %u, error %d", seqnum, rc);
+                logger.printfln("Failed to get wallbox 5min data point: seqnum %u, error %d", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get wallbox 5min data point: status (%s, %u)", get_data_status_string(status), status);
-                logger.printfln("Failed to get wallbox 5min data point: status (%s, %u)", get_data_status_string(status), status);
+                response->writef("Failed to get wallbox 5min data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                logger.printfln("Failed to get wallbox 5min data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
             }
 
             response->flush();
@@ -1124,6 +1126,7 @@ void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ow
         metadata->call_begin = true;
         metadata->write_comma = false;
         metadata->next_offset = 0;
+        metadata->seqnum = seqnum;
         metadata->uid = uid;
         metadata->utc_end_year = utc_end_year;
         metadata->utc_end_month = utc_end_month;
@@ -1163,8 +1166,8 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("Failed to get wallbox daily data point: stream out of sync (%u != %u)",
-                        metadata->next_offset, data_chunk_offset);
+        logger.printfln("Failed to get wallbox daily data point: seqnum %u, stream out of sync (%u != %u)",
+                        metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
             write_success = response->write("]");
@@ -1250,6 +1253,7 @@ void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
     uint8_t year = history_wallbox_daily.get("year")->asUint() - 2000;
     uint8_t month = history_wallbox_daily.get("month")->asUint();
 
+    uint32_t seqnum = history_request_seqnum++;
     uint8_t status;
     int rc = tf_warp_energy_manager_get_sd_wallbox_daily_data_points(&device, uid, year, month, 1, days_per_month(2000 + year, month), &status);
 
@@ -1263,12 +1267,12 @@ void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get wallbox daily data point: error %d", rc);
-                logger.printfln("Failed to get wallbox daily data point: error %d", rc);
+                response->writef("Failed to get wallbox daily data point: seqnum %u, error %d", seqnum, rc);
+                logger.printfln("Failed to get wallbox daily data point: seqnum %u, error %d", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get wallbox daily data point: status (%s, %u)", get_data_status_string(status), status);
-                logger.printfln("Failed to get wallbox daily data point: status (%s, %u)", get_data_status_string(status), status);
+                response->writef("Failed to get wallbox daily data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                logger.printfln("Failed to get wallbox daily data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
             }
 
             response->flush();
@@ -1284,6 +1288,7 @@ void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
         metadata->call_begin = true;
         metadata->write_comma = false;
         metadata->next_offset = 0;
+        metadata->seqnum = seqnum;
 
         tf_warp_energy_manager_register_sd_wallbox_daily_data_points_low_level_callback(&device, wallbox_daily_data_points_handler, metadata);
     }
@@ -1323,8 +1328,8 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("Failed to get energy manager 5min data point: stream out of sync (%u != %u)",
-                        metadata->next_offset, data_chunk_offset);
+        logger.printfln("Failed to get energy manager 5min data point: seqnum %u, stream out of sync (%u != %u)",
+                        metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
             write_success = response->write("]");
@@ -1404,10 +1409,10 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
 
                     if (rc != TF_E_OK || status != 0) {
                         if (rc != TF_E_OK) {
-                            logger.printfln("Failed to continue getting energy manager 5min data point: error %d", rc);
+                            logger.printfln("Failed to continue getting energy manager 5min data point: seqnum %u, error %d", metadata->seqnum, rc);
                         }
                         else if (status != 0) {
-                            logger.printfln("Failed to continue getting energy manager 5min data point: status (%s, %u)", get_data_status_string(status), status);
+                            logger.printfln("Failed to continue getting energy manager 5min data point: seqnum %u, status (%s, %u)", metadata->seqnum, get_data_status_string(status), status);
                         }
 
                         OwnershipGuard ownership_guard2(metadata->response_ownership, metadata->response_owner_id);
@@ -1492,6 +1497,7 @@ void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *respo
     uint8_t utc_end_minute = utc_end.tm_min;
     uint16_t utc_end_slots = (utc_end_hour * 60 + utc_end_minute) / 5; // since midnight
 
+    uint32_t seqnum = history_request_seqnum++;
     uint8_t status;
     int rc;
 
@@ -1526,12 +1532,12 @@ void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *respo
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get energy manager 5min data point: error %d", rc);
-                logger.printfln("Failed to get energy manager 5min data point: error %d", rc);
+                response->writef("Failed to get energy manager 5min data point: seqnum %u, error %d", seqnum, rc);
+                logger.printfln("Failed to get energy manager 5min data point: seqnum %u, error %d", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get energy manager 5min data point: status (%s, %u)", get_data_status_string(status), status);
-                logger.printfln("Failed to get energy manager 5min data point: status (%s, %u)", get_data_status_string(status), status);
+                response->writef("Failed to get energy manager 5min data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                logger.printfln("Failed to get energy manager 5min data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
             }
 
             response->flush();
@@ -1547,6 +1553,7 @@ void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *respo
         metadata->call_begin = true;
         metadata->write_comma = false;
         metadata->next_offset = 0;
+        metadata->seqnum = seqnum;
         metadata->utc_end_year = utc_end_year;
         metadata->utc_end_month = utc_end_month;
         metadata->utc_end_day = utc_end_day;
@@ -1585,8 +1592,8 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("Failed to get energy manager daily data point: stream out of sync (%u != %u)",
-                        metadata->next_offset, data_chunk_offset);
+        logger.printfln("Failed to get energy manager daily data point: seqnum %u, stream out of sync (%u != %u)",
+                        metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
             write_success = response->write("]");
@@ -1661,6 +1668,7 @@ void EnergyManager::history_energy_manager_daily_response(IChunkedResponse *resp
     uint8_t year = history_energy_manager_daily.get("year")->asUint() - 2000;
     uint8_t month = history_energy_manager_daily.get("month")->asUint();
 
+    uint32_t seqnum = history_request_seqnum++;
     uint8_t status;
     int rc = tf_warp_energy_manager_get_sd_energy_manager_daily_data_points(&device, year, month, 1, days_per_month(2000 + year, month), &status);
 
@@ -1674,12 +1682,12 @@ void EnergyManager::history_energy_manager_daily_response(IChunkedResponse *resp
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get energy manager daily data point: error %d", rc);
-                logger.printfln("Failed to get energy manager daily data point: error %d", rc);
+                response->writef("Failed to get energy manager daily data point: seqnum %u, error %d", seqnum, rc);
+                logger.printfln("Failed to get energy manager daily data point: seqnum %u, error %d", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get energy manager daily data point: status (%s, %u)", get_data_status_string(status), status);
-                logger.printfln("Failed to get energy manager daily data point: status (%s, %u)", get_data_status_string(status), status);
+                response->writef("Failed to get energy manager daily data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                logger.printfln("Failed to get energy manager daily data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
             }
 
             response->flush();
@@ -1695,6 +1703,7 @@ void EnergyManager::history_energy_manager_daily_response(IChunkedResponse *resp
         metadata->call_begin = true;
         metadata->write_comma = false;
         metadata->next_offset = 0;
+        metadata->seqnum = seqnum;
 
         tf_warp_energy_manager_register_sd_energy_manager_daily_data_points_low_level_callback(&device, energy_manager_daily_data_points_handler, metadata);
     }
