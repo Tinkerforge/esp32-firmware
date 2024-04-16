@@ -74,6 +74,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
     uplot: uPlot;
     data: UplotData;
     pending_data: UplotData;
+    pending_visible: boolean;
     series_visibility: {[id: string]: boolean} = {};
     visible: boolean = false;
     div_ref = createRef();
@@ -97,7 +98,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             this.visible = util.get_active_sub_page() == this.props.sub_page;
 
             if (this.visible && this.pending_data !== undefined) {
-                this.set_data(this.pending_data);
+                this.set_data(this.pending_data, this.pending_visible);
             }
         });
 
@@ -315,7 +316,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
         }
 
         if (this.pending_data !== undefined) {
-            this.set_data(this.pending_data);
+            this.set_data(this.pending_data, this.pending_visible);
         }
     }
 
@@ -529,11 +530,13 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
     set_data(data: UplotData, visible?: boolean) {
         if (!this.uplot || !this.visible) {
             this.pending_data = data;
+            this.pending_visible = visible;
             return;
         }
 
         this.data = data;
         this.pending_data = undefined;
+        this.pending_visible = undefined;
 
         if (visible === false || (visible === undefined && (!this.data || this.data.keys.length <= 1))) {
             this.div_ref.current.style.visibility = 'hidden';
