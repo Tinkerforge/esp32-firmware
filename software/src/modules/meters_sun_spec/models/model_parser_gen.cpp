@@ -224,6 +224,7 @@ static float get_model_101_W(const void *register_data, uint32_t quirks, bool de
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= (get_scale_factor(model->W_SF) * -1.0f);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -539,6 +540,7 @@ static float get_model_102_W(const void *register_data, uint32_t quirks, bool de
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= (get_scale_factor(model->W_SF) * -1.0f);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -854,6 +856,7 @@ static float get_model_103_W(const void *register_data, uint32_t quirks, bool de
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= (get_scale_factor(model->W_SF) * -1.0f);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -1127,6 +1130,7 @@ static float get_model_111_W(const void *register_data, uint32_t quirks, bool de
     float val = convert_me_float(model->W);
     float fval = val;
     fval *= -1.0f;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -1361,6 +1365,7 @@ static float get_model_112_W(const void *register_data, uint32_t quirks, bool de
     float val = convert_me_float(model->W);
     float fval = val;
     fval *= -1.0f;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -1595,6 +1600,7 @@ static float get_model_113_W(const void *register_data, uint32_t quirks, bool de
     float val = convert_me_float(model->W);
     float fval = val;
     fval *= -1.0f;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -1880,6 +1886,7 @@ static float get_model_201_W(const void *register_data, uint32_t quirks, bool de
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -1890,6 +1897,7 @@ static float get_model_201_WphA(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -1900,6 +1908,7 @@ static float get_model_201_WphB(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -1910,6 +1919,7 @@ static float get_model_201_WphC(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -2694,6 +2704,7 @@ static float get_model_202_W(const void *register_data, uint32_t quirks, bool de
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -2704,6 +2715,7 @@ static float get_model_202_WphA(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -2714,6 +2726,7 @@ static float get_model_202_WphB(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -2724,6 +2737,7 @@ static float get_model_202_WphC(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -3508,6 +3522,7 @@ static float get_model_203_W(const void *register_data, uint32_t quirks, bool de
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -3518,6 +3533,7 @@ static float get_model_203_WphA(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -3528,6 +3544,7 @@ static float get_model_203_WphB(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -3538,6 +3555,7 @@ static float get_model_203_WphC(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -4322,6 +4340,7 @@ static float get_model_204_W(const void *register_data, uint32_t quirks, bool de
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -4332,6 +4351,7 @@ static float get_model_204_WphA(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -4342,6 +4362,7 @@ static float get_model_204_WphB(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -4352,6 +4373,7 @@ static float get_model_204_WphC(const void *register_data, uint32_t quirks, bool
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -5108,6 +5130,7 @@ static float get_model_211_W(const void *register_data, uint32_t quirks, bool de
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->W);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -5116,6 +5139,7 @@ static float get_model_211_WphA(const void *register_data, uint32_t quirks, bool
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->WphA);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -5124,6 +5148,7 @@ static float get_model_211_WphB(const void *register_data, uint32_t quirks, bool
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->WphB);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -5132,6 +5157,7 @@ static float get_model_211_WphC(const void *register_data, uint32_t quirks, bool
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(model->WphC);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -5713,6 +5739,7 @@ static float get_model_212_W(const void *register_data, uint32_t quirks, bool de
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->W);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -5721,6 +5748,7 @@ static float get_model_212_WphA(const void *register_data, uint32_t quirks, bool
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->WphA);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -5729,6 +5757,7 @@ static float get_model_212_WphB(const void *register_data, uint32_t quirks, bool
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->WphB);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -5737,6 +5766,7 @@ static float get_model_212_WphC(const void *register_data, uint32_t quirks, bool
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(model->WphC);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -6318,6 +6348,7 @@ static float get_model_213_W(const void *register_data, uint32_t quirks, bool de
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->W);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -6326,6 +6357,7 @@ static float get_model_213_WphA(const void *register_data, uint32_t quirks, bool
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->WphA);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -6334,6 +6366,7 @@ static float get_model_213_WphB(const void *register_data, uint32_t quirks, bool
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->WphB);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -6342,6 +6375,7 @@ static float get_model_213_WphC(const void *register_data, uint32_t quirks, bool
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(model->WphC);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -6923,6 +6957,7 @@ static float get_model_214_W(const void *register_data, uint32_t quirks, bool de
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->W);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -6931,6 +6966,7 @@ static float get_model_214_WphA(const void *register_data, uint32_t quirks, bool
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->WphA);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -6939,6 +6975,7 @@ static float get_model_214_WphB(const void *register_data, uint32_t quirks, bool
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->WphB);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 
@@ -6947,6 +6984,7 @@ static float get_model_214_WphC(const void *register_data, uint32_t quirks, bool
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(model->WphC);
     float fval = val;
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
 

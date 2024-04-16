@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -B
 
 import glob
 import io
@@ -504,6 +504,7 @@ for model in models:
 
         usable_value_count += 1
 
+        value_is_active_power = re.match(r"^PowerActiveL.+ImExDiff$", value_id_mapping[0])
         value_is_inverter_current = model_id >= 100 and model_id < 200 and re.match(r"^CurrentL.Export$", value_id_mapping[0])
         value_is_integer_meter_power_factor = model_id >= 200 and model_id < 210 and re.match(r"^PowerFactorL.+Directional$", value_id_mapping[0])
 
@@ -603,6 +604,10 @@ for model in models:
                 print_cpp(r"    }")
             else:
                 print_cpp(f"    fval *= {value_mapping_factor}f;")
+
+        # Handle active power quirk
+        if value_is_active_power:
+            print_cpp(r'    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;')
 
         print_cpp(r"    return fval;")
         print_cpp(r"}")
