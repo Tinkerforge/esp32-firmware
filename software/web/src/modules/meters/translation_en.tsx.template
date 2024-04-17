@@ -11,8 +11,10 @@ let x = {
         },
         "content": {
             "meters": "Energy Meters",
-            "history": "History (48 h)",
-            "live": "Live",
+            "history_48": "History (48 h)",
+            "history_24": "History (24 h)",
+            "history_12": "History (12 h)",
+            "live": "Live (6 min)",
             "no_data": "No data available!",
             "loading": "Loading data...",
             "detailed_values": "Details",

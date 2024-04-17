@@ -70,7 +70,7 @@ interface MetersState {
     configs_plot: {[meter_slot: number]: MeterConfig};
     configs_table: {[meter_slot: number]: MeterConfig};
     values_by_id: {[meter_slot: number]: NumberToNumber};
-    chart_selected: "history"|"live";
+    chart_selected: "history_48"|"history_24"|"history_12"|"live";
     addMeterSlot: number;
     addMeter: MeterConfig;
     editMeterSlot: number;
@@ -189,7 +189,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                   configs_plot: {},
                   configs_table: {},
                   values_by_id: {},
-                  chart_selected: "history",
+                  chart_selected: "history_48",
                   addMeterSlot: null,
                   addMeter: [MeterClassID.None, null],
                   editMeterSlot: null,
@@ -343,7 +343,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
             this.history_data = calculate_history_data(0, history_samples);
 
-            if (this.state.chart_selected == "history") {
+            if (this.state.chart_selected.startsWith("history_")) {
                 this.update_uplot();
             }
 
@@ -444,17 +444,26 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         }
         else {
             if (this.uplot_wrapper_history_ref && this.uplot_wrapper_history_ref.current) {
+                let history_tail = 720; // history_48
+
+                if (this.state.chart_selected == 'history_24') {
+                    history_tail = 360;
+                }
+                else if (this.state.chart_selected == 'history_12') {
+                    history_tail = 180;
+                }
+
                 let history_data: UplotData = {
                     keys: [null],
                     names: [null],
-                    values: [this.history_data.timestamps],
+                    values: [this.history_data.timestamps.slice(-history_tail)],
                 };
 
                 for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
                     if (this.history_data.samples[meter_slot].length > 0) {
                         history_data.keys.push('meter_' + meter_slot);
                         history_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
-                        history_data.values.push(this.history_data.samples[meter_slot]);
+                        history_data.values.push(this.history_data.samples[meter_slot].slice(-history_tail));
                     }
                 }
 
@@ -525,7 +534,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 <FormSeparator heading={__("meters.status.power_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
                     <div class="mb-2">
                         <InputSelect value={this.state.chart_selected} onValue={(v) => {
-                            let chart_selected: "live"|"history" = v as any;
+                            let chart_selected: "history_48"|"history_24"|"history_12"|"live" = v as any;
 
                             this.setState({chart_selected: chart_selected}, () => {
                                 if (chart_selected == 'live') {
@@ -541,7 +550,9 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                             });
                         }}
                             items={[
-                                ["history", __("meters.content.history")],
+                                ["history_48", __("meters.content.history_48")],
+                                ["history_24", __("meters.content.history_24")],
+                                ["history_12", __("meters.content.history_12")],
                                 ["live", __("meters.content.live")],
                             ]}/>
                     </div>
