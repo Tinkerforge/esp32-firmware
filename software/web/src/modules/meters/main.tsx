@@ -1019,28 +1019,30 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             <StatusSection name="meters">
                 <FormRow label={__("meters.status.power_history")} hidden={!show}>
                     <div class="card pl-1 pb-1">
-                        <UplotLoader ref={this.uplot_loader_ref}
-                                    show={true}
-                                    marker_class={'h4'}
-                                    no_data={__("meters.content.no_data")}
-                                    loading={__("meters.content.loading")} >
-                            <UplotWrapper ref={this.uplot_wrapper_ref}
-                                        class="status-meters-chart"
-                                        sub_page="status"
-                                        color_cache_group="meters.default"
+                        <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                            <UplotLoader ref={this.uplot_loader_ref}
                                         show={true}
-                                        legend_time_label={__("meters.script.time")}
-                                        legend_time_with_seconds={false}
-                                        aspect_ratio={3}
-                                        x_height={50}
-                                        x_padding_factor={0}
-                                        x_include_date={true}
-                                        y_min={0}
-                                        y_max={1500}
-                                        y_unit="W"
-                                        y_label={__("meters.script.power") + " [Watt]"}
-                                        y_digits={0} />
-                        </UplotLoader>
+                                        marker_class={'h4'}
+                                        no_data={__("meters.content.no_data")}
+                                        loading={__("meters.content.loading")} >
+                                <UplotWrapper ref={this.uplot_wrapper_ref}
+                                            class="status-meters-chart"
+                                            sub_page="status"
+                                            color_cache_group="meters.default"
+                                            show={true}
+                                            legend_time_label={__("meters.script.time")}
+                                            legend_time_with_seconds={false}
+                                            aspect_ratio={3}
+                                            x_height={50}
+                                            x_padding_factor={0}
+                                            x_include_date={true}
+                                            y_min={0}
+                                            y_max={1500}
+                                            y_unit="W"
+                                            y_label={__("meters.script.power") + " [Watt]"}
+                                            y_digits={0} />
+                            </UplotLoader>
+                        </div>
                     </div>
                 </FormRow>
                 <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(state.meter_configs, state.meter_slot)} hidden={!show}>
