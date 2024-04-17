@@ -50,7 +50,7 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
                     API.save("info/display_name", state, __("device_name.script.save_failed"));
                 }}>
                     <InputText maxLength={32} value={state.display_name} onValue={(v) => this.setState({display_name: v})} required>
-                        {state.display_name == API.get('info/display_name').display_name ? <></> :
+                        {state.display_name == API.get('info/display_name').display_name ? undefined :
                             <div class="input-group-append">
                                 <Button className="form-control rounded-right" type="submit"><Save/></Button>
                             </div>
