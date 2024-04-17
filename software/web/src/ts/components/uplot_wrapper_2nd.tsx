@@ -19,11 +19,12 @@
 
 // em_energy_analysis
 
-import { h, Component, ComponentChild, RefObject, createRef } from "preact";
+import { h, Component, RefObject, createRef } from "preact";
 import { effect } from "@preact/signals-core";
 import * as util from "../util";
 import * as plot from "../plot";
 import uPlot from "uplot";
+import type { UplotDataBase } from "./uplot_wrapper";
 import type { UplotFlagsWrapper } from './uplot_wrapper_3rd';
 
 export interface CachedData {
@@ -31,8 +32,7 @@ export interface CachedData {
     use_timestamp: number;
 }
 
-export interface UplotData extends CachedData {
-    keys: string[];
+export interface UplotData extends CachedData, UplotDataBase {
     names: string[];
     values: number[][];
     extras?: number[][];
@@ -320,8 +320,8 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
         }
     }
 
-    render(props?: UplotWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
-        return <div ref={this.div_ref} class={props.class} style={`display: ${props.show ? 'block' : 'none'}; visibility: hidden;`} />;
+    render() {
+        return <div ref={this.div_ref} class={this.props.class} style={`display: ${this.props.show ? 'block' : 'none'}; visibility: hidden;`} />;
     }
 
     resize() {

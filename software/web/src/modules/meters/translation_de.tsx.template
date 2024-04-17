@@ -13,6 +13,8 @@ let x = {
             "meters": "Stromzähler",
             "history": "Verlauf (48 h)",
             "live": "Live",
+            "no_data": "Keine Daten vorhanden!",
+            "loading": "Lade Daten...",
             "detailed_values": "Details",
             "detailed_values_none": "Es sind bisher keine Werte vorhanden.",
 

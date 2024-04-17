@@ -30,6 +30,7 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
+import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotWrapper, UplotData } from "../../ts/components/uplot_wrapper";
 import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS, METER_VALUE_ORDER } from "./meter_value_id";
 import { MeterClassID } from "./meters_defs";
@@ -480,6 +481,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 status_data.values.push(this.history_data.samples[meter_slot]);
             }
 
+            this.props.status_ref.current.uplot_loader_ref.current.set_data(status_data);
             this.props.status_ref.current.uplot_wrapper_ref.current.set_data(status_data);
         }
     }
@@ -969,6 +971,7 @@ function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, mete
 }
 
 export class MetersStatus extends Component<{}, MetersStatusState> {
+    uplot_loader_ref = createRef();
     uplot_wrapper_ref = createRef();
 
     constructor() {
@@ -1018,23 +1021,29 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             <StatusSection name="meters">
                 <FormRow label={__("meters.status.power_history")} hidden={!show}>
                     <div class="card pl-1 pb-1">
-                        <UplotWrapper ref={this.uplot_wrapper_ref}
-                                      id="status_meters_chart"
-                                      class="status-meters-chart"
-                                      sub_page="status"
-                                      color_cache_group="meters.default"
-                                      show={true}
-                                      legend_time_label={__("meters.script.time")}
-                                      legend_time_with_seconds={false}
-                                      aspect_ratio={3}
-                                      x_height={50}
-                                      x_padding_factor={0}
-                                      x_include_date={true}
-                                      y_min={0}
-                                      y_max={1500}
-                                      y_unit="W"
-                                      y_label={__("meters.script.power") + " [Watt]"}
-                                      y_digits={0} />
+                        <UplotLoader ref={this.uplot_loader_ref}
+                                    show={true}
+                                    marker_class={'h4'}
+                                    no_data={__("meters.content.no_data")}
+                                    loading={__("meters.content.loading")} >
+                            <UplotWrapper ref={this.uplot_wrapper_ref}
+                                        id="status_meters_chart"
+                                        class="status-meters-chart"
+                                        sub_page="status"
+                                        color_cache_group="meters.default"
+                                        show={true}
+                                        legend_time_label={__("meters.script.time")}
+                                        legend_time_with_seconds={false}
+                                        aspect_ratio={3}
+                                        x_height={50}
+                                        x_padding_factor={0}
+                                        x_include_date={true}
+                                        y_min={0}
+                                        y_max={1500}
+                                        y_unit="W"
+                                        y_label={__("meters.script.power") + " [Watt]"}
+                                        y_digits={0} />
+                        </UplotLoader>
                     </div>
                 </FormRow>
                 <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(state.meter_configs, state.meter_slot)} hidden={!show}>

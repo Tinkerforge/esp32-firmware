@@ -19,7 +19,7 @@
 
 // em_energy_analysis
 
-import { h, Component, ComponentChild, RefObject, createRef } from "preact";
+import { h, Component, RefObject, createRef } from "preact";
 import { effect } from "@preact/signals-core";
 import * as util from "../util";
 import uPlot from "uplot";
@@ -230,8 +230,8 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
         }
     }
 
-    render(props?: UplotFlagsWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
-        return <div ref={this.div_ref} class={props.class} style={`display: ${props.show ? 'block' : 'none'}; visibility: hidden;`} />;
+    render() {
+        return <div ref={this.div_ref} class={this.props.class} style={`display: ${this.props.show ? 'block' : 'none'}; visibility: hidden;`} />;
     }
 
     resize() {

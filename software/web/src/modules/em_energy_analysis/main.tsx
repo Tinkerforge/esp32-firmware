@@ -20,7 +20,7 @@
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { METERS_SLOTS } from "../../build";
-import { h, createRef, Fragment, Component, ComponentChild, RefObject, ComponentChildren } from "preact";
+import { h, createRef, Fragment, Component, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { InputDate } from "../../ts/components/input_date";
@@ -30,6 +30,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { FormSeparator } from "../../ts/components/form_separator";
+import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotWrapper, UplotData, CachedData } from "../../ts/components/uplot_wrapper_2nd";
 import { UplotFlagsWrapper } from "../../ts/components/uplot_wrapper_3rd";
 import uPlot from "uplot";
@@ -142,52 +143,6 @@ const em_relay_fills: {[id: number]: string} = {
     1: 'rgb( 40, 167,  69, 0.66)',
 };
 
-interface UplotLoaderProps {
-    show: boolean;
-    marker_class: 'h3'|'h4';
-    children: ComponentChildren;
-}
-
-class UplotLoader extends Component<UplotLoaderProps, {}> {
-    no_data_ref = createRef();
-    loading_ref = createRef();
-
-    set_loading() {
-        this.no_data_ref.current.style.visibility = 'hidden';
-        this.loading_ref.current.style.visibility = 'inherit';
-    }
-
-    set_show(show: boolean) {
-        this.no_data_ref.current.style.display = show ? 'flex' : 'none';
-        this.loading_ref.current.style.display = show ? 'flex' : 'none';
-    }
-
-    set_data(data: UplotData, visible?: boolean) {
-        this.loading_ref.current.style.visibility = 'hidden';
-
-        if (visible === false || (visible === undefined && (!data || data.keys.length <= 1))) {
-            this.no_data_ref.current.style.visibility = 'inherit';
-        }
-        else {
-            this.no_data_ref.current.style.visibility = 'hidden';
-        }
-    }
-
-    render(props?: UplotLoaderProps, state?: Readonly<{}>, context?: any): ComponentChild {
-        return (
-            <>
-                <div ref={this.no_data_ref} style={`position: absolute; width: 100%; height: 100%; visibility: hidden; display: ${props.show ? 'flex' : 'none'};`}>
-                    <span class={props.marker_class} style="margin: auto;">{__("em_energy_analysis.content.no_data")}</span>
-                </div>
-                <div ref={this.loading_ref} style={`position: absolute; width: 100%; height: 100%; visibility: ${props.show ? 'inherit' : 'hidden'}; display: ${props.show ? 'flex' : 'none'};`}>
-                    <span class={props.marker_class} style="margin: auto;">{__("em_energy_analysis.content.loading")}</span>
-                </div>
-                {props.children}
-            </>
-        );
-    }
-}
-
 interface EMEnergyAnalysisStatusState {
     force_render: number,
     meter_slot: number,
@@ -273,7 +228,9 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader ref={this.uplot_loader_ref}
                                         show={true}
-                                        marker_class={'h4'} >
+                                        marker_class={'h4'}
+                                        no_data={__("em_energy_analysis.content.no_data")}
+                                        loading={__("em_energy_analysis.content.loading")}>
                             <UplotWrapper ref={this.uplot_wrapper_ref}
                                             id="em_energy_analysis_status_chart"
                                             class="em-energy-analysis-status-chart"
@@ -1835,7 +1792,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         }
 
-        if (this.props.status_ref.current && this.props.status_ref.current.uplot_wrapper_ref.current) {
+        if (this.props.status_ref.current && this.props.status_ref.current.uplot_loader_ref.current && this.props.status_ref.current.uplot_wrapper_ref.current) {
             let status_date: Date = new Date();
 
             status_date.setHours(0);
@@ -2005,7 +1962,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                     <UplotLoader ref={this.uplot_loader_5min_ref}
                                     show={true}
-                                    marker_class={'h3'} >
+                                    marker_class={'h3'}
+                                    no_data={__("em_energy_analysis.content.no_data")}
+                                    loading={__("em_energy_analysis.content.loading")} >
                         <UplotFlagsWrapper ref={this.uplot_wrapper_5min_flags_ref}
                                             id="em_energy_analysis_5min_flags_chart"
                                             class="em-energy-analysis-flags-chart"
@@ -2045,7 +2004,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     </UplotLoader>
                     <UplotLoader ref={this.uplot_loader_daily_ref}
                                     show={false}
-                                    marker_class={'h3'} >
+                                    marker_class={'h3'}
+                                    no_data={__("em_energy_analysis.content.no_data")}
+                                    loading={__("em_energy_analysis.content.loading")} >
                         <UplotWrapper ref={this.uplot_wrapper_daily_ref}
                                         id="em_energy_analysis_daily_chart"
                                         class="em-energy-analysis-chart pb-4"

@@ -19,14 +19,17 @@
 
 // meters
 
-import { h, Component, ComponentChild, createRef } from "preact";
+import { h, Component, createRef } from "preact";
 import { effect } from "@preact/signals-core";
 import * as util from "../util";
 import * as plot from "../plot";
 import uPlot from "uplot";
 
-export interface UplotData {
+export interface UplotDataBase {
     keys: string[];
+}
+
+export interface UplotData extends UplotDataBase {
     names: string[];
     values: number[][];
 }
@@ -283,9 +286,9 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
         }
     }
 
-    render(props?: UplotWrapperProps, state?: Readonly<{}>, context?: any): ComponentChild {
+    render() {
         // the plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow
-        return <div><div ref={this.div_ref} id={props.id} class={props.class} style={`display: ${props.show ? 'block' : 'none'};`} /></div>;
+        return <div><div ref={this.div_ref} id={this.props.id} class={this.props.class} style={`display: ${this.props.show ? 'block' : 'none'}; visibility: hidden;`} /></div>;
     }
 
     resize() {
@@ -409,6 +412,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
         this.data = data;
         this.pending_data = undefined;
+        this.div_ref.current.style.visibility = 'inherit';
 
         while (this.uplot.series.length > 1) {
             this.uplot.delSeries(this.uplot.series.length - 1);

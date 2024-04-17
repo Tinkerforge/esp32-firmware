@@ -13,6 +13,8 @@ let x = {
             "meters": "Energy Meters",
             "history": "History (48 h)",
             "live": "Live",
+            "no_data": "No data available!",
+            "loading": "Loading data...",
             "detailed_values": "Details",
             "detailed_values_none": "No values are available yet.",
 
