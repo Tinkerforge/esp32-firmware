@@ -232,7 +232,6 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                                         no_data={__("em_energy_analysis.content.no_data")}
                                         loading={__("em_energy_analysis.content.loading")}>
                             <UplotWrapper ref={this.uplot_wrapper_ref}
-                                            id="em_energy_analysis_status_chart"
                                             class="em-energy-analysis-status-chart"
                                             sub_page="status"
                                             color_cache_group="em_energy_analysis.status"
@@ -1966,7 +1965,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                     no_data={__("em_energy_analysis.content.no_data")}
                                     loading={__("em_energy_analysis.content.loading")} >
                         <UplotFlagsWrapper ref={this.uplot_wrapper_5min_flags_ref}
-                                            id="em_energy_analysis_5min_flags_chart"
                                             class="em-energy-analysis-flags-chart"
                                             sub_page="em_energy_analysis"
                                             show={true}
@@ -1978,7 +1976,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                             x_padding_factor={0}
                                             y_sync_ref={this.uplot_wrapper_5min_power_ref} />
                         <UplotWrapper ref={this.uplot_wrapper_5min_power_ref}
-                                        id="em_energy_analysis_5min_power_chart"
                                         class="em-energy-analysis-chart pb-4"
                                         sub_page="em_energy_analysis"
                                         color_cache_group="em_energy_analysis.analsyis"
@@ -2008,7 +2005,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                     no_data={__("em_energy_analysis.content.no_data")}
                                     loading={__("em_energy_analysis.content.loading")} >
                         <UplotWrapper ref={this.uplot_wrapper_daily_ref}
-                                        id="em_energy_analysis_daily_chart"
                                         class="em-energy-analysis-chart pb-4"
                                         sub_page="em_energy_analysis"
                                         color_cache_group="em_energy_analysis.analsyis"

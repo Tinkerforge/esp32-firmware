@@ -35,7 +35,6 @@ export interface UplotData extends UplotDataBase {
 }
 
 interface UplotWrapperProps {
-    id: string;
     class: string;
     sub_page: string;
     color_cache_group: string;
@@ -288,7 +287,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
     render() {
         // the plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow
-        return <div><div ref={this.div_ref} id={this.props.id} class={this.props.class} style={`display: ${this.props.show ? 'block' : 'none'}; visibility: hidden;`} /></div>;
+        return <div><div ref={this.div_ref} class={this.props.class} style={`display: ${this.props.show ? 'block' : 'none'}; visibility: hidden;`} /></div>;
     }
 
     resize() {

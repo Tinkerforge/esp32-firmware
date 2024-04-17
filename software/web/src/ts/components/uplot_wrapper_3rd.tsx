@@ -28,7 +28,6 @@ import { UplotData } from "./uplot_wrapper_2nd";
 import { uPlotTimelinePlugin } from "../uplot-plugins";
 
 interface UplotFlagsWrapperProps {
-    id: string;
     class: string;
     sub_page: string;
     show: boolean;

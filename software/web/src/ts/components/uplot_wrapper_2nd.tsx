@@ -46,7 +46,6 @@ export interface UplotData extends CachedData, UplotDataBase {
 }
 
 interface UplotWrapperProps {
-    id: string;
     class: string;
     sub_page: string;
     color_cache_group: string;

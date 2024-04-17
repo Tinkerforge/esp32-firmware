@@ -550,7 +550,6 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
                 <div hidden={!show_plot}>
                     <UplotWrapper ref={this.uplot_wrapper_live_ref}
-                                    id="meters_chart_live"
                                     class="meters-chart pb-3"
                                     sub_page="meters"
                                     color_cache_group="meters.default"
@@ -566,7 +565,6 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                     y_label={__("meters.script.power") + " [Watt]"}
                                     y_digits={0} />
                     <UplotWrapper ref={this.uplot_wrapper_history_ref}
-                                    id="meters_chart_history"
                                     class="meters-chart pb-3"
                                     sub_page="meters"
                                     color_cache_group="meters.default"
@@ -1027,7 +1025,6 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                     no_data={__("meters.content.no_data")}
                                     loading={__("meters.content.loading")} >
                             <UplotWrapper ref={this.uplot_wrapper_ref}
-                                        id="status_meters_chart"
                                         class="status-meters-chart"
                                         sub_page="status"
                                         color_cache_group="meters.default"
