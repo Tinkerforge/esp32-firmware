@@ -1004,7 +1004,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         // we have to handle rendering before the web socket connection is established.
         let value_ids = API.get_unchecked(`meters/${state.meter_slot}/value_ids`);
         let values = API.get_unchecked(`meters/${state.meter_slot}/values`);
-        let power = 0;
+        let power: number = undefined;
 
         if (value_ids && value_ids.length > 0 && values && values.length > 0) {
             let idx = value_ids.indexOf(MeterValueID.PowerActiveLSumImExDiff);
