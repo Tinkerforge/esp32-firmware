@@ -70,7 +70,7 @@ interface MetersState {
     configs_plot: {[meter_slot: number]: MeterConfig};
     configs_table: {[meter_slot: number]: MeterConfig};
     values_by_id: {[meter_slot: number]: NumberToNumber};
-    chart_selected: "history_48"|"history_24"|"history_12"|"live";
+    chart_selected: "history_48"|"history_24"|"history_12"|"history_6"|"history_3"|"live";
     addMeterSlot: number;
     addMeter: MeterConfig;
     editMeterSlot: number;
@@ -452,6 +452,12 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 else if (this.state.chart_selected == 'history_12') {
                     history_tail = 180;
                 }
+                else if (this.state.chart_selected == 'history_6') {
+                    history_tail = 90;
+                }
+                else if (this.state.chart_selected == 'history_3') {
+                    history_tail = 45;
+                }
 
                 let history_data: UplotData = {
                     keys: [null],
@@ -534,7 +540,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 <FormSeparator heading={__("meters.status.power_history")} first={true} colClasses={"justify-content-between align-items-center col"} extraClasses={"pr-0 pr-lg-3"} >
                     <div class="mb-2">
                         <InputSelect value={this.state.chart_selected} onValue={(v) => {
-                            let chart_selected: "history_48"|"history_24"|"history_12"|"live" = v as any;
+                            let chart_selected: "history_48"|"history_24"|"history_12"|"history_6"|"history_3"|"live" = v as any;
 
                             this.setState({chart_selected: chart_selected}, () => {
                                 if (chart_selected == 'live') {
@@ -553,6 +559,8 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                 ["history_48", __("meters.content.history_48")],
                                 ["history_24", __("meters.content.history_24")],
                                 ["history_12", __("meters.content.history_12")],
+                                ["history_6", __("meters.content.history_6")],
+                                ["history_3", __("meters.content.history_3")],
                                 ["live", __("meters.content.live")],
                             ]}/>
                     </div>
