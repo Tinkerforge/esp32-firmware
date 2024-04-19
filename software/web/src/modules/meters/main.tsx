@@ -175,6 +175,8 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
     pending_live_data: CachedData;
     history_initialized = false;
     history_data: CachedData = {timestamps: [], samples: []};
+    uplot_loader_live_ref = createRef();
+    uplot_loader_history_ref = createRef();
     uplot_wrapper_live_ref = createRef();
     uplot_wrapper_history_ref = createRef();
     value_ids: {[meter_slot: number]: Readonly<number[]>} = {};
@@ -320,7 +322,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 }
 
                 if (this.state.chart_selected == "live") {
-                    this.update_uplot();
+                    this.update_live_uplot();
                 }
             }
         });
@@ -344,11 +346,17 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
             this.history_data = calculate_history_data(0, history_samples);
 
             if (this.state.chart_selected.startsWith("history_")) {
-                this.update_uplot();
+                this.update_history_uplot();
             }
 
             this.update_status_uplot();
         });
+    }
+
+    componentDidMount() {
+        if (this.props.status_ref) {
+            this.props.status_ref.current.set_on_mount(() => this.update_status_uplot());
+        }
     }
 
     update_live_cache() {
@@ -362,7 +370,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                     return;
                 }
 
-                this.update_uplot();
+                this.update_live_uplot();
             });
     }
 
@@ -400,7 +408,8 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                     return;
                 }
 
-                this.update_uplot();
+                this.update_history_uplot();
+                this.update_status_uplot();
             });
     }
 
@@ -422,66 +431,65 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         return true;
     }
 
-    update_uplot() {
-        if (this.state.chart_selected == 'live') {
-            if (this.uplot_wrapper_live_ref && this.uplot_wrapper_live_ref.current) {
-                let live_data: UplotData = {
-                    keys: [null],
-                    names: [null],
-                    values: [this.live_data.timestamps],
-                };
+    update_live_uplot() {
+        if (this.live_initialized && this.uplot_loader_live_ref.current && this.uplot_wrapper_live_ref.current) {
+            let live_data: UplotData = {
+                keys: [null],
+                names: [null],
+                values: [this.live_data.timestamps],
+            };
 
-                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-                    if (this.live_data.samples[meter_slot].length > 0) {
-                        live_data.keys.push('meter_' + meter_slot);
-                        live_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
-                        live_data.values.push(this.live_data.samples[meter_slot]);
-                    }
+            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                if (this.live_data.samples[meter_slot].length > 0) {
+                    live_data.keys.push('meter_' + meter_slot);
+                    live_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
+                    live_data.values.push(this.live_data.samples[meter_slot]);
                 }
-
-                this.uplot_wrapper_live_ref.current.set_data(live_data);
             }
+
+            this.uplot_loader_live_ref.current.set_data(live_data.keys.length > 1);
+            this.uplot_wrapper_live_ref.current.set_data(live_data);
         }
-        else {
-            if (this.uplot_wrapper_history_ref && this.uplot_wrapper_history_ref.current) {
-                let history_tail = 720; // history_48
+    }
 
-                if (this.state.chart_selected == 'history_24') {
-                    history_tail = 360;
-                }
-                else if (this.state.chart_selected == 'history_12') {
-                    history_tail = 180;
-                }
-                else if (this.state.chart_selected == 'history_6') {
-                    history_tail = 90;
-                }
-                else if (this.state.chart_selected == 'history_3') {
-                    history_tail = 45;
-                }
+    update_history_uplot() {
+        if (this.history_initialized && this.uplot_loader_history_ref.current && this.uplot_wrapper_history_ref.current) {
+            let history_tail = 720; // history_48
 
-                let history_data: UplotData = {
-                    keys: [null],
-                    names: [null],
-                    values: [this.history_data.timestamps.slice(-history_tail)],
-                };
-
-                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-                    if (this.history_data.samples[meter_slot].length > 0) {
-                        history_data.keys.push('meter_' + meter_slot);
-                        history_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
-                        history_data.values.push(this.history_data.samples[meter_slot].slice(-history_tail));
-                    }
-                }
-
-                this.uplot_wrapper_history_ref.current.set_data(history_data);
+            if (this.state.chart_selected == 'history_24') {
+                history_tail = 360;
             }
-        }
+            else if (this.state.chart_selected == 'history_12') {
+                history_tail = 180;
+            }
+            else if (this.state.chart_selected == 'history_6') {
+                history_tail = 90;
+            }
+            else if (this.state.chart_selected == 'history_3') {
+                history_tail = 45;
+            }
 
-        this.update_status_uplot();
+            let history_data: UplotData = {
+                keys: [null],
+                names: [null],
+                values: [this.history_data.timestamps.slice(-history_tail)],
+            };
+
+            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                if (this.history_data.samples[meter_slot].length > 0) {
+                    history_data.keys.push('meter_' + meter_slot);
+                    history_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
+                    history_data.values.push(this.history_data.samples[meter_slot].slice(-history_tail));
+                }
+            }
+
+            this.uplot_loader_history_ref.current.set_data(history_data.keys.length > 1);
+            this.uplot_wrapper_history_ref.current.set_data(history_data);
+        }
     }
 
     update_status_uplot() {
-        if (this.props.status_ref && this.props.status_ref.current && this.props.status_ref.current.uplot_wrapper_ref.current) {
+        if (this.history_initialized && this.props.status_ref && this.props.status_ref.current && this.props.status_ref.current.uplot_loader_ref.current && this.props.status_ref.current.uplot_wrapper_ref.current) {
             let status_data: UplotData = {
                 keys: [null],
                 names: [null],
@@ -496,7 +504,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 status_data.values.push(this.history_data.samples[meter_slot]);
             }
 
-            this.props.status_ref.current.uplot_loader_ref.current.set_data(status_data);
+            this.props.status_ref.current.uplot_loader_ref.current.set_data(status_data.keys.length > 1);
             this.props.status_ref.current.uplot_wrapper_ref.current.set_data(status_data);
         }
     }
@@ -544,15 +552,21 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
                             this.setState({chart_selected: chart_selected}, () => {
                                 if (chart_selected == 'live') {
+                                    this.uplot_loader_live_ref.current.set_show(true);
                                     this.uplot_wrapper_live_ref.current.set_show(true);
+                                    this.uplot_loader_history_ref.current.set_show(false);
                                     this.uplot_wrapper_history_ref.current.set_show(false);
+
+                                    this.update_live_uplot();
                                 }
                                 else {
+                                    this.uplot_loader_history_ref.current.set_show(true);
                                     this.uplot_wrapper_history_ref.current.set_show(true);
+                                    this.uplot_loader_live_ref.current.set_show(false);
                                     this.uplot_wrapper_live_ref.current.set_show(false);
-                                }
 
-                                this.update_uplot();
+                                    this.update_history_uplot();
+                                }
                             });
                         }}
                             items={[
@@ -568,37 +582,53 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 : undefined}
 
                 <div hidden={!show_plot}>
-                    <UplotWrapper ref={this.uplot_wrapper_live_ref}
-                                    class="meters-chart pb-3"
-                                    sub_page="meters"
-                                    color_cache_group="meters.default"
-                                    show={false}
-                                    legend_time_label={__("meters.script.time")}
-                                    legend_time_with_seconds={true}
-                                    aspect_ratio={3}
-                                    x_height={30}
-                                    x_padding_factor={0}
-                                    x_include_date={false}
-                                    y_diff_min={100}
-                                    y_unit="W"
-                                    y_label={__("meters.script.power") + " [Watt]"}
-                                    y_digits={0} />
-                    <UplotWrapper ref={this.uplot_wrapper_history_ref}
-                                    class="meters-chart pb-3"
-                                    sub_page="meters"
-                                    color_cache_group="meters.default"
-                                    show={true}
-                                    legend_time_label={__("meters.script.time")}
-                                    legend_time_with_seconds={false}
-                                    aspect_ratio={3}
-                                    x_height={50}
-                                    x_padding_factor={0}
-                                    x_include_date={true}
-                                    y_min={0}
-                                    y_max={1500}
-                                    y_unit="W"
-                                    y_label={__("meters.script.power") + " [Watt]"}
-                                    y_digits={0} />
+                    <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                        <UplotLoader ref={this.uplot_loader_live_ref}
+                                        show={false}
+                                        marker_class={'h3'}
+                                        no_data={__("meters.content.no_data")}
+                                        loading={__("meters.content.loading")} >
+                            <UplotWrapper ref={this.uplot_wrapper_live_ref}
+                                            class="meters-chart pb-3"
+                                            sub_page="meters"
+                                            color_cache_group="meters.default"
+                                            show={false}
+                                            on_mount={() => this.update_live_uplot()}
+                                            legend_time_label={__("meters.script.time")}
+                                            legend_time_with_seconds={true}
+                                            aspect_ratio={3}
+                                            x_height={30}
+                                            x_padding_factor={0}
+                                            x_include_date={false}
+                                            y_diff_min={100}
+                                            y_unit="W"
+                                            y_label={__("meters.script.power") + " [Watt]"}
+                                            y_digits={0} />
+                        </UplotLoader>
+                        <UplotLoader ref={this.uplot_loader_history_ref}
+                                        show={true}
+                                        marker_class={'h3'}
+                                        no_data={__("meters.content.no_data")}
+                                        loading={__("meters.content.loading")} >
+                            <UplotWrapper ref={this.uplot_wrapper_history_ref}
+                                            class="meters-chart pb-3"
+                                            sub_page="meters"
+                                            color_cache_group="meters.default"
+                                            show={true}
+                                            on_mount={() => this.update_history_uplot()}
+                                            legend_time_label={__("meters.script.time")}
+                                            legend_time_with_seconds={false}
+                                            aspect_ratio={3}
+                                            x_height={50}
+                                            x_padding_factor={0}
+                                            x_include_date={true}
+                                            y_min={0}
+                                            y_max={1500}
+                                            y_unit="W"
+                                            y_label={__("meters.script.power") + " [Watt]"}
+                                            y_digits={0} />
+                        </UplotLoader>
+                    </div>
                 </div>
 
                 <ConfigForm id="meters_config_form" title={show_plot ? __("meters.content.settings") : __("meters.content.meters")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty} small={show_plot}>
@@ -988,6 +1018,8 @@ function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, mete
 }
 
 export class MetersStatus extends Component<{}, MetersStatusState> {
+    on_mount: () => void;
+    on_mount_pending = false;
     uplot_loader_ref = createRef();
     uplot_wrapper_ref = createRef();
 
@@ -1009,6 +1041,16 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                     }
                 }));
             });
+        }
+    }
+
+    set_on_mount(on_mount: () => void) {
+        this.on_mount = on_mount;
+
+        if (this.on_mount_pending && this.on_mount) {
+            this.on_mount_pending = false;
+
+            this.on_mount();
         }
     }
 
@@ -1049,6 +1091,14 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                             sub_page="status"
                                             color_cache_group="meters.default"
                                             show={true}
+                                            on_mount={() => {
+                                                if (this.on_mount) {
+                                                    this.on_mount();
+                                                }
+                                                else {
+                                                    this.on_mount_pending = true;
+                                                }
+                                            }}
                                             legend_time_label={__("meters.script.time")}
                                             legend_time_with_seconds={false}
                                             aspect_ratio={3}

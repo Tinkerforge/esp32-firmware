@@ -18,7 +18,6 @@
  */
 
 import { h, Fragment, Component, ComponentChildren, createRef } from "preact";
-import type { UplotDataBase } from "./uplot_wrapper";
 
 interface UplotLoaderProps {
     show: boolean;
@@ -42,15 +41,9 @@ export class UplotLoader extends Component<UplotLoaderProps, {}> {
         this.loading_ref.current.style.display = show ? 'flex' : 'none';
     }
 
-    set_data(data: UplotDataBase, visible?: boolean) {
+    set_data(data: boolean) {
+        this.no_data_ref.current.style.visibility = data ? 'hidden' : 'inherit';
         this.loading_ref.current.style.visibility = 'hidden';
-
-        if (visible === false || (visible === undefined && (!data || data.keys.length <= 1))) {
-            this.no_data_ref.current.style.visibility = 'inherit';
-        }
-        else {
-            this.no_data_ref.current.style.visibility = 'hidden';
-        }
     }
 
     render() {

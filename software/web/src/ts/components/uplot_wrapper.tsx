@@ -25,11 +25,8 @@ import * as util from "../util";
 import * as plot from "../plot";
 import uPlot from "uplot";
 
-export interface UplotDataBase {
+export interface UplotData {
     keys: string[];
-}
-
-export interface UplotData extends UplotDataBase {
     names: string[];
     values: number[][];
 }
@@ -39,6 +36,7 @@ interface UplotWrapperProps {
     sub_page: string;
     color_cache_group: string;
     show: boolean;
+    on_mount?: () => void;
     sync?: uPlot.SyncPubSub;
     legend_time_label: string;
     legend_time_with_seconds: boolean;
@@ -283,6 +281,10 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
         if (this.pending_data !== undefined) {
             this.set_data(this.pending_data);
         }
+
+        if (this.props.on_mount) {
+            this.props.on_mount();
+        }
     }
 
     render() {
@@ -410,7 +412,13 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
         this.data = data;
         this.pending_data = undefined;
-        this.div_ref.current.style.visibility = 'inherit';
+
+        if (!this.data || this.data.keys.length <= 1) {
+            this.div_ref.current.style.visibility = 'hidden';
+        }
+        else {
+            this.div_ref.current.style.visibility = 'inherit';
+        }
 
         while (this.uplot.series.length > 1) {
             this.uplot.delSeries(this.uplot.series.length - 1);

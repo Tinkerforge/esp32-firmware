@@ -24,7 +24,6 @@ import { effect } from "@preact/signals-core";
 import * as util from "../util";
 import * as plot from "../plot";
 import uPlot from "uplot";
-import type { UplotDataBase } from "./uplot_wrapper";
 import type { UplotFlagsWrapper } from './uplot_wrapper_3rd';
 
 export interface CachedData {
@@ -32,7 +31,8 @@ export interface CachedData {
     use_timestamp: number;
 }
 
-export interface UplotData extends CachedData, UplotDataBase {
+export interface UplotData extends CachedData {
+    keys: string[];
     names: string[];
     values: number[][];
     extras?: number[][];
@@ -50,6 +50,7 @@ interface UplotWrapperProps {
     sub_page: string;
     color_cache_group: string;
     show: boolean;
+    on_mount?: () => void;
     sync?: uPlot.SyncPubSub;
     legend_time_label: string;
     legend_time_with_minutes: boolean;
@@ -316,6 +317,10 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
         if (this.pending_data !== undefined) {
             this.set_data(this.pending_data, this.pending_visible);
+        }
+
+        if (this.props.on_mount) {
+            this.props.on_mount();
         }
     }
 

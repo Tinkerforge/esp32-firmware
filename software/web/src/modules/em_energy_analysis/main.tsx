@@ -160,6 +160,8 @@ function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, mete
 }
 
 export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatusState> {
+    on_mount: () => void;
+    on_mount_pending = false;
     uplot_loader_ref = createRef();
     uplot_wrapper_ref = createRef();
 
@@ -200,6 +202,16 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
         });
     }
 
+    set_on_mount(on_mount: () => void) {
+        this.on_mount = on_mount;
+
+        if (this.on_mount_pending && this.on_mount) {
+            this.on_mount_pending = false;
+
+            this.on_mount();
+        }
+    }
+
     render(props: {}, state: EMEnergyAnalysisStatusState) {
         // Don't check util.render_allowed() here.
         // We can receive graph data points with the first web socket packet and
@@ -236,6 +248,14 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                                             sub_page="status"
                                             color_cache_group="em_energy_analysis.status"
                                             show={true}
+                                            on_mount={() => {
+                                                if (this.on_mount) {
+                                                    this.on_mount();
+                                                }
+                                                else {
+                                                    this.on_mount_pending = true;
+                                                }
+                                            }}
                                             legend_time_label={__("em_energy_analysis.script.time_5min")}
                                             legend_time_with_minutes={true}
                                             aspect_ratio={3}
@@ -299,7 +319,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     uplot_5min_flags_cache: {[id: string]: UplotData} = {};
     uplot_5min_power_cache: {[id: string]: UplotData} = {};
     uplot_5min_status_cache: {[id: string]: UplotData} = {};
+    uplot_5min_cache_initalized: boolean = false;
     uplot_daily_cache: {[id: string]: UplotData} = {};
+    uplot_daily_cache_initalized: boolean = false;
     wallbox_5min_cache: {[id: number]: { [id: string]: Wallbox5minData}} = {};
     wallbox_daily_cache: {[id: string]: { [id: string]: WallboxDailyData}} = {};
     energy_manager_5min_cache: {[id: string]: EnergyManager5minData} = {};
@@ -565,6 +587,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
             this.setState({meter_slot_status: config.meter_slot_grid_power});
         });
+    }
+
+    componentDidMount() {
+        this.props.status_ref.current.set_on_mount(() => this.update_status_uplot());
     }
 
     date_to_5min_key(date: Date) {
@@ -1641,7 +1667,12 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     return;
                 }
 
-                this.update_uplot();
+                if (this.state.data_type == '5min') {
+                    this.update_5min_uplot();
+                }
+                else {
+                    this.update_daily_uplot();
+                }
             });
     }
 
@@ -1685,7 +1716,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     return;
                 }
 
-                this.update_uplot();
+                this.uplot_5min_cache_initalized = true;
+
+                this.update_5min_uplot();
+                this.update_status_uplot();
             });
     }
 
@@ -1707,7 +1741,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     return;
                 }
 
-                this.update_uplot();
+                this.uplot_daily_cache_initalized = true;
+
+                this.update_daily_uplot();
             });
     }
 
@@ -1718,80 +1754,89 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         this.uplot_update_timeout = window.setTimeout(() => {
             this.uplot_update_timeout = null;
-            this.update_uplot();
+
+            if (this.state.data_type == '5min') {
+                this.update_5min_uplot();
+            }
+            else {
+                this.update_daily_uplot();
+            }
+
+            this.update_status_uplot();
         }, 100);
     }
 
-    update_uplot() {
-        if (this.state.data_type == '5min') {
-            if (this.uplot_loader_5min_ref.current && this.uplot_wrapper_5min_power_ref.current && this.uplot_wrapper_5min_flags_ref.current) {
-                this.update_uplot_5min_power_cache(this.state.current_5min_date);
-                this.update_uplot_5min_flags_cache(this.state.current_5min_date);
+    update_5min_uplot() {
+        if (this.uplot_5min_cache_initalized && this.uplot_loader_5min_ref.current && this.uplot_wrapper_5min_power_ref.current && this.uplot_wrapper_5min_flags_ref.current) {
+            this.update_uplot_5min_power_cache(this.state.current_5min_date);
+            this.update_uplot_5min_flags_cache(this.state.current_5min_date);
 
-                let current_daily_date: Date = new Date(this.state.current_5min_date);
+            let current_daily_date: Date = new Date(this.state.current_5min_date);
 
-                current_daily_date.setDate(1);
-                current_daily_date.setHours(0);
-                current_daily_date.setMinutes(0);
-                current_daily_date.setSeconds(0);
-                current_daily_date.setMilliseconds(0);
+            current_daily_date.setDate(1);
+            current_daily_date.setHours(0);
+            current_daily_date.setMinutes(0);
+            current_daily_date.setSeconds(0);
+            current_daily_date.setMilliseconds(0);
 
-                this.update_uplot_daily_cache(current_daily_date);
+            this.update_uplot_daily_cache(current_daily_date);
 
-                let key = this.date_to_5min_key(this.state.current_5min_date);
-                let data_power = this.uplot_5min_power_cache[key];
-                let data_flags = this.uplot_5min_flags_cache[key];
+            let key = this.date_to_5min_key(this.state.current_5min_date);
+            let data_power = this.uplot_5min_power_cache[key];
+            let data_flags = this.uplot_5min_flags_cache[key];
 
-                let visible_flags = data_flags !== undefined && data_flags.keys.length > 1;
-                let visible_power = data_power !== undefined && data_power.keys.length > 1;
-                let visible = visible_flags || visible_power;
+            let has_flags = data_flags && data_flags.keys.length > 1;
+            let has_power = data_power && data_power.keys.length > 1;
+            let visible = has_flags || has_power;
 
-                if (visible_flags && !visible_power) {
-                    data_power = {
-                        update_timestamp: null,
-                        use_timestamp: null,
-                        keys: [null],
-                        names: [null],
-                        values: [data_flags.values[0]],
-                        extras: [null],
-                        stacked: [false],
-                        bars: [false],
-                        extra_names: [null],
-                    };
-                }
-
-                if (!visible_flags && visible_power) {
-                    data_flags = {
-                        update_timestamp: null,
-                        use_timestamp: null,
-                        keys: [null],
-                        names: [null],
-                        values: [data_power.values[0]],
-                        extras: [null],
-                        stacked: [false],
-                        bars: [false],
-                        extra_names: [null],
-                    };
-                }
-
-                this.uplot_loader_5min_ref.current.set_data(data_flags, visible);
-                this.uplot_wrapper_5min_power_ref.current.set_data(data_power, visible);
-                this.uplot_wrapper_5min_flags_ref.current.set_data(data_flags, visible);
+            if (has_flags && !has_power) {
+                data_power = {
+                    update_timestamp: null,
+                    use_timestamp: null,
+                    keys: [null],
+                    names: [null],
+                    values: [data_flags.values[0]],
+                    extras: [null],
+                    stacked: [false],
+                    bars: [false],
+                    extra_names: [null],
+                };
             }
-        }
-        else {
-            if (this.uplot_loader_daily_ref.current && this.uplot_wrapper_daily_ref.current) {
-                this.update_uplot_daily_cache(this.state.current_daily_date);
 
-                let key = this.date_to_daily_key(this.state.current_daily_date);
-                let data = this.uplot_daily_cache[key];
-
-                this.uplot_loader_daily_ref.current.set_data(data);
-                this.uplot_wrapper_daily_ref.current.set_data(data);
+            if (!has_flags && has_power) {
+                data_flags = {
+                    update_timestamp: null,
+                    use_timestamp: null,
+                    keys: [null],
+                    names: [null],
+                    values: [data_power.values[0]],
+                    extras: [null],
+                    stacked: [false],
+                    bars: [false],
+                    extra_names: [null],
+                };
             }
-        }
 
-        if (this.props.status_ref.current && this.props.status_ref.current.uplot_loader_ref.current && this.props.status_ref.current.uplot_wrapper_ref.current) {
+            this.uplot_loader_5min_ref.current.set_data(visible);
+            this.uplot_wrapper_5min_power_ref.current.set_data(data_power, visible);
+            this.uplot_wrapper_5min_flags_ref.current.set_data(data_flags, visible);
+        }
+    }
+
+    update_daily_uplot() {
+        if (this.uplot_daily_cache_initalized && this.uplot_loader_daily_ref.current && this.uplot_wrapper_daily_ref.current) {
+            this.update_uplot_daily_cache(this.state.current_daily_date);
+
+            let key = this.date_to_daily_key(this.state.current_daily_date);
+            let data = this.uplot_daily_cache[key];
+
+            this.uplot_loader_daily_ref.current.set_data(data && data.keys.length > 1);
+            this.uplot_wrapper_daily_ref.current.set_data(data);
+        }
+    }
+
+    update_status_uplot() {
+        if (this.uplot_5min_cache_initalized && this.props.status_ref.current && this.props.status_ref.current.uplot_loader_ref.current && this.props.status_ref.current.uplot_wrapper_ref.current) {
             let status_date: Date = new Date();
 
             status_date.setHours(0);
@@ -1804,7 +1849,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let key = this.date_to_5min_key(status_date);
             let data = this.uplot_5min_status_cache[key];
 
-            this.props.status_ref.current.uplot_loader_ref.current.set_data(data);
+            this.props.status_ref.current.uplot_loader_ref.current.set_data(data && data.keys.length > 1);
             this.props.status_ref.current.uplot_wrapper_ref.current.set_data(data);
         }
     }
@@ -1933,6 +1978,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                             this.uplot_wrapper_5min_power_ref.current.set_show(true);
                             this.uplot_loader_daily_ref.current.set_show(false);
                             this.uplot_wrapper_daily_ref.current.set_show(false);
+
+                            this.update_5min_uplot();
                         }
                         else {
                             this.uplot_loader_daily_ref.current.set_show(true);
@@ -1940,9 +1987,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                             this.uplot_loader_5min_ref.current.set_show(false);
                             this.uplot_wrapper_5min_flags_ref.current.set_show(false);
                             this.uplot_wrapper_5min_power_ref.current.set_show(false);
-                        }
 
-                        this.update_uplot();
+                            this.update_daily_uplot();
+                        }
                     });
                 }}
                 items={[
@@ -1980,6 +2027,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         sub_page="em_energy_analysis"
                                         color_cache_group="em_energy_analysis.analsyis"
                                         show={true}
+                                        on_mount={() => this.update_5min_uplot()}
                                         sync={this.uplot_sync}
                                         legend_time_label={__("em_energy_analysis.script.time_5min")}
                                         legend_time_with_minutes={true}
@@ -2009,6 +2057,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         sub_page="em_energy_analysis"
                                         color_cache_group="em_energy_analysis.analsyis"
                                         show={false}
+                                        on_mount={() => this.update_daily_uplot()}
                                         legend_time_label={__("em_energy_analysis.script.time_daily")}
                                         legend_time_with_minutes={false}
                                         aspect_ratio={3}

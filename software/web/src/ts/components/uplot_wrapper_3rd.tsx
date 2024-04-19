@@ -31,6 +31,7 @@ interface UplotFlagsWrapperProps {
     class: string;
     sub_page: string;
     show: boolean;
+    on_mount?: () => void;
     sync?: uPlot.SyncPubSub;
     legend_time_label: string;
     legend_time_with_minutes: boolean;
@@ -226,6 +227,10 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
         if (this.pending_data !== undefined) {
             this.set_data(this.pending_data, this.pending_visible);
+        }
+
+        if (this.props.on_mount) {
+            this.props.on_mount();
         }
     }
 
