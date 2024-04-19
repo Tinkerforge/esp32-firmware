@@ -8,7 +8,7 @@ let x = {
         },
         "content": {
             "remote_access": "Fernzugriff",
-            "email": "Email",
+            "username": "Nutzername",
             "password": "Passwort",
             "relay_host": "Relay Host",
             "relay_host_muted": "Hostname des Relay Servers",

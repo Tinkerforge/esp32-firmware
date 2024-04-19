@@ -31,6 +31,10 @@
 #include "build.h"
 #include "esp_http_client.h"
 #include "task_scheduler.h"
+#include "TFJson.h"
+#include "tools.h"
+#include "mbedtls/aes.h"
+#include "mbedtls/base64.h"
 #include <WiFi.h>
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
@@ -52,6 +56,12 @@ struct ManagementResponse {
     uint32_t charger_id;
     int32_t connection_no;
     uint8_t connection_uuid[16];
+};
+
+struct HttpResponse {
+    char *cookie = nullptr;
+    String body;
+    uint64_t data_read = 0;
 };
 
 static int create_sock_and_send_to(const void *payload, size_t payload_len, const char *dest_host, uint16_t port, uint16_t *local_port) {
@@ -98,7 +108,6 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     }
 
     ret = sendto(sock, payload, payload_len, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
-    logger.printfln("Sendto returned %i", ret);
     close(sock);
     return ret;
 }
@@ -106,8 +115,8 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
 void RemoteAccess::pre_setup() {
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
-        {"email", Config::Str("", 0, 64)},
-        {"password", Config::Str("", 0, 64)},
+        {"username", Config::Str("", 0, 64)},
+        {"login_key", Config::Str("", 0, 64)},
         {"relay_host", Config::Str("fernzugriff.warp-charger.com", 0, 64)},
         {"relay_host_port", Config::Uint16(443)},
         {"self_signed_cert_id", Config::Int8(-1)}
@@ -205,6 +214,32 @@ void RemoteAccess::pre_setup() {
                 }, 5, 5, Config::type_id<Config::ConfObject>())}
         })
     };
+
+    register_config = ConfigRoot {
+        Config::Object({
+            {"remote_host", Config::Str("", 0, 64)},
+            {"remote_port", Config::Uint16(0)},
+            {"charger_pub", Config::Str("", 0, 44)},
+            {"id", Config::Str("", 0, 6)},
+            {"name", Config::Str("", 0, 32)},
+            {"wg_charger_ip", Config::Str("", 0, 15)},
+            {"wg_server_ip", Config::Str("", 0, 15)},
+            {"secret", Config::Str("", 0, 256)},
+            {"secret_key", Config::Str("", 0, 256)},
+            {"config", config},
+            {"keys", Config::Array({}, new Config {
+                Config::Object({
+                    {"charger_address", Config::Str("", 0, 15)},
+                    {"charger_public", Config::Str("", 0, 44)},
+                    {"connection_no", Config::Uint8(0)},
+                    {"web_address", Config::Str("", 0, 15)},
+                    {"web_private", Config::Str("", 0, 44)},
+                    {"web_private_iv", Config::Str("", 0, 32)},
+                })
+            },
+            5, 5, Config::type_id<Config::ConfObject>())}
+        })
+    };
 }
 
 void RemoteAccess::setup() {
@@ -219,9 +254,15 @@ void RemoteAccess::setup() {
     logger.printfln("Remote Access is enabled trying to connect");
 }
 
+static std::unique_ptr<char []> decode_bas64(const CoolString &input, size_t buffer_size, size_t *bytes_written) {
+    std::unique_ptr<char []> out = heap_alloc_array<char>(buffer_size);
+    mbedtls_base64_decode((unsigned char *)out.get(), buffer_size, bytes_written, (unsigned char *)input.c_str(), input.length());
+    return out;
+}
+
 void RemoteAccess::register_urls() {
     api.addPersistentConfig("remote_access/config", &config, {
-        "password"
+        "login_key"
     });
     api.addPersistentConfig("remote_access/management_connection", &management_connection, {
         "private_key",
@@ -233,6 +274,107 @@ void RemoteAccess::register_urls() {
     });
 
     api.addState("remote_access/state", &connection_state);
+
+    server.on("/remote_access/register", HTTP_PUT, [this](WebServerRequest request) {
+        std::unique_ptr<char[]> req_body = heap_alloc_array<char>(request.contentLength() + 1);
+        if (request.receive(req_body.get(), request.contentLength()) <= 0) {
+            return request.send(500);
+        }
+        req_body[request.contentLength()] = '\0';
+        String err_string = register_config.update_from_cstr(req_body.get(), request.contentLength());
+        if (!err_string.isEmpty()) {
+            return request.send(400, "text/plain", err_string.c_str(), err_string.length());
+        }
+        std::unique_ptr<char[]> ptr = heap_alloc_array<char>(2500);
+
+        Config *tmp_cfg = (Config *)register_config.get("config");
+        config = *tmp_cfg;
+
+        CoolString secret_string = register_config.get("secret")->asString();
+        size_t outlen;
+
+        std::unique_ptr<char[]> secret = decode_bas64(secret_string, 16, &outlen);
+
+        TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), 2500);
+        serializer.addObject();
+        serializer.addMemberArray("keys");
+        int a = 0;
+        for (auto &key : register_config.get("keys")) {
+            serializer.addObject();
+            serializer.addMemberString("charger_address", key.get("charger_address")->asEphemeralCStr());
+            serializer.addMemberString("charger_public", key.get("charger_public")->asEphemeralCStr());
+            serializer.addMemberNumber("connection_no", key.get("connection_no")->asUint());
+            serializer.addMemberString("web_address", key.get("web_address")->asEphemeralCStr());
+            mbedtls_aes_context aes;
+            mbedtls_aes_init(&aes);
+            mbedtls_aes_setkey_enc(&aes, (unsigned char *)secret.get(), 256);
+            CoolString wg_key = key.get("web_private")->asString();
+
+            const uint8_t padding = 16 - (wg_key.length() % 16);
+            // we need alway a size dividable by 16
+            const size_t length = wg_key.length() + padding;
+            std::unique_ptr<char[]> input = heap_alloc_array<char>(length);
+            std::unique_ptr<char[]> output = heap_alloc_array<char>(length);
+            memset(input.get() + wg_key.length(), padding, padding);
+            strncpy(input.get(), wg_key.c_str(), wg_key.length());
+
+            CoolString iv_string = key.get("web_private_iv")->asString();
+            std::unique_ptr<char[]> iv = decode_bas64(iv_string, 16, &outlen);
+
+            serializer.addMemberArray("web_private_iv");
+            for (size_t i = 0; i < 16; i++) {
+                serializer.addNumber(iv[16]);
+            }
+            serializer.endArray();
+
+            mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_ENCRYPT, length, (unsigned char*)iv.get(), (unsigned char*)input.get(), (unsigned char*)output.get());
+
+            serializer.addMemberArray("web_private");
+            for (size_t i = 0; i < length; i++) {
+                serializer.addNumber(output[i]);
+            }
+            serializer.endArray();
+            serializer.endObject();
+            a++;
+        }
+        serializer.endArray();
+
+        serializer.addMemberObject("charger");
+
+        serializer.addMemberString("charger_pub", register_config.get("charger_pub")->asEphemeralCStr());
+        serializer.addMemberString("id", register_config.get("id")->asEphemeralCStr());
+        serializer.addMemberString("name", register_config.get("name")->asEphemeralCStr());
+        serializer.addMemberString("wg_charger_ip", register_config.get("wg_charger_ip")->asEphemeralCStr());
+        serializer.addMemberString("wg_server_ip", register_config.get("wg_server_ip")->asEphemeralCStr());
+
+        serializer.endObject();
+        serializer.endObject();
+        size_t size = serializer.end();
+
+        login();
+
+        CoolString relay_host = config.get("relay_host")->asString();
+        uint32_t relay_host_port = config.get("relay_host_port")->asUint();
+        CoolString url = "https://";
+        url += relay_host;
+        url += ":";
+        url += relay_host_port;
+        url += "/api/charger/add";
+
+        CoolString access_token = "access_token=";
+        access_token += jwt + ";";
+
+        std::vector<std::pair<CoolString, CoolString>> headers;
+        headers.push_back(std::pair<CoolString, CoolString>(CoolString("Cookie"), access_token));
+        headers.push_back(std::pair<CoolString, CoolString>(CoolString("Content-Type"), CoolString("application/json")));
+        esp_err_t err;
+        String response = make_http_request(url.c_str(), HTTP_METHOD_PUT, ptr.get(), size, &headers, &err);
+        if (err != ESP_OK) {
+            return request.send(500);
+        }
+
+        return request.send(200, "application/json", response.c_str(), response.length());
+    });
 
     if (!config.get("enable")->asBool()) {
         return;
@@ -257,7 +399,7 @@ void RemoteAccess::register_urls() {
 }
 
 static esp_err_t http_event_handle(esp_http_client_event *evt) {
-    char **cookie = reinterpret_cast<char **>(evt->user_data);
+    HttpResponse *response = reinterpret_cast<HttpResponse*>(evt->user_data);
     switch (evt->event_id)
     {
     case HTTP_EVENT_ERROR:
@@ -266,8 +408,12 @@ static esp_err_t http_event_handle(esp_http_client_event *evt) {
 
     case HTTP_EVENT_ON_HEADER:
         if (!strcmp("set-cookie", evt->header_key)) {
-            *cookie = strdup(evt->header_value);
+            response->cookie = strdup(evt->header_value);
         }
+        break;
+
+    case HTTP_EVENT_ON_DATA:
+        response->body += String((char*)evt->data, evt->data_len);
         break;
 
     default:
@@ -276,13 +422,14 @@ static esp_err_t http_event_handle(esp_http_client_event *evt) {
     return ESP_OK;
 }
 
-static String parse_cookie(String cookie) {
+static String parse_cookie(const String &cookie) {
     size_t start = cookie.indexOf('=') + 1;
     size_t end = cookie.indexOf(';');
     return cookie.substring(start, end);
 }
 
-void RemoteAccess::login() {
+String RemoteAccess::make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error) {
+    esp_err_t err = ESP_OK;
     size_t cert_len = 0;
     int self_signed_cert_id = config.get("self_signed_cert_id")->asInt();
     std::unique_ptr<unsigned char[]> cert = nullptr;
@@ -290,27 +437,19 @@ void RemoteAccess::login() {
         cert = certs.get_cert(static_cast<uint8_t>(self_signed_cert_id), &cert_len);
         if (cert == nullptr) {
             logger.printfln("Management: Failed to get self signed cert");
-            return;
+            *ret_error = ESP_FAIL;
+            return "";
         }
     }
 
-    CoolString relay_host = config.get("relay_host")->asString();
-    uint32_t relay_host_port = config.get("relay_host_port")->asUint();
-    CoolString login_url = "https://";
-    login_url += relay_host;
-    login_url += ":";
-    login_url += relay_host_port;
-    login_url += "/api/auth/login";
-
-    char *cookie = nullptr;
-
+    HttpResponse response;
     esp_http_client_config_t http_config;
     bzero(&http_config, sizeof(esp_http_client_config_t));
 
-    http_config.url = login_url.c_str();
+    http_config.url = url;
     http_config.event_handler = http_event_handle;
-    http_config.method = HTTP_METHOD_POST;
-    http_config.user_data = &cookie;
+    http_config.method = method;
+    http_config.user_data = &response;
 
     if (cert == nullptr) {
         http_config.crt_bundle_attach = esp_crt_bundle_attach;
@@ -322,30 +461,74 @@ void RemoteAccess::login() {
 
     esp_http_client_handle_t client = esp_http_client_init(&http_config);
 
-    CoolString login_data = "{\"email\":\"";
-    login_data += config.get("email")->asString() + "\",";
-    login_data += "\"password\":\"" + config.get("password")->asString() + "\"}";
-
-
-
-    esp_err_t ret = esp_http_client_set_post_field(client, login_data.c_str(), login_data.length());
-    if (ret != ESP_OK) {
-        logger.printfln("Failed to set post data: %i", ret);
-        esp_http_client_cleanup(client);
-        return;
+    if (payload != nullptr && payload_size > 0) {
+        err = esp_http_client_set_post_field(client, payload, payload_size);
+        if (err != ESP_OK) {
+            logger.printfln("Failed to set post data: %i", err);
+            esp_http_client_cleanup(client);
+            *ret_error = err;
+            return "";
+        }
     }
 
-    ret = esp_http_client_perform(client);
-    if (ret != ESP_OK) {
-        logger.printfln("Failed to send request: %i", ret);
+    if (headers != nullptr) {
+        for (auto &header : *headers) {
+            err = esp_http_client_set_header(client, header.first.c_str(), header.second.c_str());
+            if (err != ESP_OK) {
+                logger.printfln("Failed to set header");
+                *ret_error = err;
+                return "";
+            }
+        }
     }
 
-    if (cookie != nullptr) {
-        jwt = parse_cookie(String(cookie));
-        free(cookie);
+    err = esp_http_client_perform(client);
+    if (err != ESP_OK) {
+        logger.printfln("Failed to send request: %i", err);
+    }
+    response.body += "\0";
+
+    if (response.cookie != nullptr) {
+        jwt = parse_cookie(String(response.cookie));
+        free(response.cookie);
+    }
+
+    int status = esp_http_client_get_status_code(client);
+    if (status < 200 || status > 299) {
+        logger.printfln("Request to %s failed with code %i", url, status);
     }
 
     esp_http_client_cleanup(client);
+    *ret_error = err;
+    return response.body;
+}
+
+void RemoteAccess::login() {
+    CoolString relay_host = config.get("relay_host")->asString();
+    uint32_t relay_host_port = config.get("relay_host_port")->asUint();
+    CoolString login_url = "https://";
+    login_url += relay_host;
+    login_url += ":";
+    login_url += relay_host_port;
+    login_url += "/api/auth/login";
+
+    size_t bytes_written;
+    std::unique_ptr<char[]> login_key = decode_bas64(config.get("login_key")->asString(), 24, &bytes_written);
+    std::unique_ptr<char[]> json = heap_alloc_array<char>(250);
+
+    TFJsonSerializer serializer = TFJsonSerializer(json.get(), 250);
+    serializer.addObject();
+    serializer.addMemberString("username", config.get("username")->asEphemeralCStr());
+    serializer.addMemberArray("login_key");
+    for (int i = 0; i < 24; i++) {
+        serializer.addNumber(login_key.get()[i]);
+    }
+    serializer.endArray();
+    serializer.endObject();
+    size_t json_size = serializer.end();
+
+    esp_err_t err;
+    make_http_request(login_url.c_str(), HTTP_METHOD_POST, json.get(), json_size, nullptr, &err);
 }
 
 void RemoteAccess::resolve_management() {
@@ -367,47 +550,18 @@ void RemoteAccess::resolve_management() {
     url += ":";
     url += relay_host_port;
     url += "/api/management";
-    esp_http_client_config_t http_config;
-    bzero(&http_config, sizeof(esp_http_client_config_t));
-
-    http_config.url = url.c_str();
-    http_config.event_handler = http_event_handle;
-    http_config.method = HTTP_METHOD_PUT;
-
-    if (cert == nullptr) {
-        http_config.crt_bundle_attach = esp_crt_bundle_attach;
-        http_config.transport_type = HTTP_TRANSPORT_OVER_SSL;
-    } else {
-        http_config.cert_pem = (const char *)cert.get();
-        http_config.skip_cert_common_name_check = true;
-    }
-
-    esp_http_client_handle_t client = esp_http_client_init(&http_config);
 
     CoolString management_data = "{\"id\":";
     management_data += String(local_uid_num) + "}";
 
-    esp_err_t ret = esp_http_client_set_post_field(client, management_data.c_str(), management_data.length());
-    if (ret != ESP_OK) {
-        logger.printfln("Failed to set post data: %i", ret);
-        esp_http_client_cleanup(client);
-        return;
-    }
-    String access_token = "access_token=";
+    CoolString access_token = "access_token=";
     access_token += jwt + ";";
-    esp_http_client_set_header(client, "Cookie", access_token.c_str());
-    esp_http_client_set_header(client, "Content-Type", "application/json");
 
-    ret = esp_http_client_perform(client);
-    if (ret != ESP_OK) {
-        logger.printfln("Failed to send request: %i", ret);
-    }
-
-    int status_code = esp_http_client_get_status_code(client);
-    if (status_code != 200) {
-        logger.printfln("management response code: %i", status_code);
-    }
-    esp_http_client_cleanup(client);
+    std::vector<std::pair<CoolString, CoolString>> headers;
+    headers.push_back(std::pair<CoolString, CoolString>(CoolString("Cookie"), access_token));
+    headers.push_back(std::pair<CoolString, CoolString>(CoolString("Content-Type"), CoolString("application/json")));
+    esp_err_t err;
+    make_http_request(url.c_str(), HTTP_METHOD_PUT, management_data.c_str(), management_data.length(), &headers, &err);
 }
 
 void RemoteAccess::connect_management() {
@@ -533,7 +687,6 @@ void RemoteAccess::connect_remote_access(uint8_t i) {
 }
 
 int RemoteAccess::setup_inner_socket() {
-    logger.printfln("Setting up inner socket.");
     if (inner_socket < 0) {
         close(inner_socket);
     }
@@ -582,11 +735,7 @@ void RemoteAccess::run_management() {
         close(inner_socket);
         inner_socket = -1;
         return;
-    }
-
-    logger.printfln("received %i bytes", ret);
-
-    if (ret != sizeof(ManagementCommand)) {
+    } if (ret != sizeof(ManagementCommand)) {
         logger.printfln("Didnt receive Management command.");
         return;
     }
@@ -596,7 +745,7 @@ void RemoteAccess::run_management() {
         return;
     }
 
-    logger.printfln("%i, %i", command->command_id, command->connection_no);
+    logger.printfln("Got command: %i, %i", command->command_id, command->connection_no);
 
     switch (command->command_id) {
         case ManagementCommandId::Connect:

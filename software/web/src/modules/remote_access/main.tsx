@@ -32,23 +32,68 @@ import { Switch } from "src/ts/components/switch";
 import { __ } from "src/ts/translation";
 import "./wireguard";
 import { config, management_connection } from "./api";
-import { Button } from "react-bootstrap";
 import { InputNumber } from "src/ts/components/input_number";
 import { InputSelect } from "src/ts/components/input_select";
-
+import { ArgonType, hash } from "argon2-browser";
 
 export function RemoteAccessNavbar() {
     return <NavbarItem name="remote_access" module="remote_access" title={__("remote_access.navbar.remote_access")} symbol={<Watch />} />;
 }
 
-export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
+interface RemoteAccessState {
+    password: string
+}
+
+export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, RemoteAccessState> {
     constructor() {
         super("remote_access/config",
             __("remote_access.script.save_failed"),
             __("remote_access.script.reboot_content_changed"));
+
+        const start = Date.now();
+
+        // Takes about 1.5 seconds on a Nexus 4. https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
+        const calc_hash = hash({
+            pass: "supersecretpass",
+            salt: "sharemewithyourfriends",
+            time: 2,
+            mem: 19 * 1024,
+            hashLen: 24,
+            parallelism: 1,
+            type: ArgonType.Argon2id
+        }).then((hash) => {
+            const end = Date.now();
+            console.log(`finished hashing in ${end - start} ms and got: ${hash.hash.length}`);
+        })
     }
 
-    async registerCharger() {
+    async get_salt_for_user(username: string) {
+        const resp = await fetch(`https://${this.state.relay_host}:${this.state.relay_host_port}/api/auth/get_login_salt?username=${username}`, {
+            method: "GET"
+        });
+        if (resp.status !== 200) {
+            throw `Failed to get login_salt for user ${username}: ${await resp.text()}`;
+        }
+        const json = await resp.text();
+        const data = JSON.parse(json);
+
+        return new Uint8Array(data);
+    }
+
+    async get_secret() {
+        const resp = await fetch(`https://${this.state.relay_host}:${this.state.relay_host_port}/api/user/get_secret`, {
+            method: "GET",
+            credentials: "include",
+        });
+        if (resp.status !== 200) {
+            throw `Failed to get secret: ${await resp.text()}`;
+        }
+        const json = await resp.text();
+        const data = JSON.parse(json);
+        return data
+    }
+
+    async registerCharger(cfg: config) {
         const charger_id = API.get("info/name").uid;
         const charger_name = API.get("info/display_name").display_name;
         const mg_charger_address = "10.123.123.2";
@@ -63,11 +108,18 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
             const charger_address = "10.123." + i + ".2";
             const web_address = "10.123." + i + ".3";
             const port = 51825 + i;
+
+            const iv = new Uint8Array(16);
+            crypto.getRandomValues(iv);
+            const iv_blob = new Blob([iv]);
+            const iv_string = await util.blobToBase64(iv_blob);
+
             keys.push({
                 charger_address: charger_address,
                 web_address: web_address,
                 charger_public: charger_keypair.publicKey,
                 web_private: web_keypair.privateKey,
+                web_private_iv: iv_string.replace("data:application/octet-stream;base64,", ""),
                 connection_no: i
             });
 
@@ -85,32 +137,37 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
             connections.push(connection);
         }
 
-        await API.save("remote_access/remote_connection_config", {
-            connections: connections
-        }, __("remote_access.script.save_failed"));
+        const {
+            secret,
+            secret_salt
+        } = await this.get_secret();
 
-        const charger = {
-            charger: {
-                charger_pub: mg_charger_keypair.publicKey,
-                id: charger_id,
-                name: charger_name,
-                wg_charger_ip: mg_charger_address,
-                wg_server_ip: mg_server_address
-            },
+        const secret_blob = new Blob([secret]);
+        const secret_string = await util.blobToBase64(secret_blob);
+        const secret_salt_blob = new Blob([secret_salt]);
+        const secret_salt_string = await util.blobToBase64(secret_salt_blob);
+
+        const registration_data = {
+            charger_pub: mg_charger_keypair.publicKey,
+            id: charger_id,
+            name: charger_name,
+            wg_charger_ip: mg_charger_address,
+            wg_server_ip: mg_server_address,
+            secret: secret_string.replace("data:application/octet-stream;base64,", ""),
+            secret_key: secret_salt_string.replace("data:application/octet-stream;base64,", ""),
+            remote_host: this.state.relay_host,
+            remote_port: this.state.relay_host_port,
+            config: cfg,
             keys: keys
         };
 
-        const resp = await fetch("https://" + this.state.relay_host + ":" + this.state.relay_host_port + "/api/charger/add", {
-            method: "POST",
-            credentials: "include",
-            body: JSON.stringify(charger),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
+        const resp = await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"));
+        await API.save("remote_access/remote_connection_config", {
+            connections: connections
+        }, __("remote_access.script.save_failed"));
+        console.log("a");
         const pub_key = (JSON.parse(await resp.text()));
-
+        console.log("b");
         const ret = {
             charger_pub: mg_charger_keypair.publicKey,
             wg_charger_ip: mg_charger_address,
@@ -123,9 +180,21 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
     }
 
     async login(): Promise<boolean> {
+        const salt = await this.get_salt_for_user(this.state.username);
+        const login_hash = await hash({
+            pass: this.state.password,
+            salt: salt,
+            time: 2,
+            mem: 19 * 1024,
+            hashLen: 24,
+            parallelism: 1,
+            type: ArgonType.Argon2id
+        });
+        const login_key = login_hash.hash;
+
         const login_schema = {
-            email: this.state.email,
-            password: this.state.password
+            username: this.state.username,
+            login_key: [].slice.call(login_key),
         };
 
         const resp = await fetch("https://" + this.state.relay_host + ":" + this.state.relay_host_port + "/api/auth/login", {
@@ -137,6 +206,11 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
             }
         });
 
+        const login_blob = new Blob([login_key]);
+        const login_string = await util.blobToBase64(login_blob);
+
+        this.setState({login_key: login_string.replace("data:application/octet-stream;base64,", "")});
+
         return resp.status === 200;
     }
 
@@ -145,7 +219,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
     }
 
     override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
-        const info = await this.registerCharger();
+        cfg.login_key = this.state.login_key;
+        const info = await this.registerCharger(cfg);
 
         await API.save("remote_access/management_connection", {
             internal_ip: info.wg_charger_ip,
@@ -158,7 +233,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
             private_key: info.charger_private,
             remote_public_key: info.remote_public
         }, __("remote_access.script.save_failed"));
-
         await super.sendSave(t, cfg);
     }
 
@@ -186,12 +260,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}> {
                                         this.setState({enable: !this.state.enable});
                                     }} />
                         </FormRow>
-                        <FormRow label={__("remote_access.content.email")}>
-                            <InputText value={this.state.email}
+                        <FormRow label={__("remote_access.content.username")}>
+                            <InputText value={this.state.username}
                                        required
                                        maxLength={64}
                                        onValue={(v) => {
-                                            this.setState({email: v});
+                                            this.setState({username: v});
                                        }} />
                         </FormRow>
                         <FormRow label={__("remote_access.content.password")}>
