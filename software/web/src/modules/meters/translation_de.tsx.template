@@ -53,7 +53,7 @@ let x = {
             "last_reset": "Stromzähler zuletzt zurückgesetzt",
             "last_reset_unknown": "Unbekannt",
             "last_reset_counter": /*SFN*/ (n: number) => `${n} mal zurückgesetzt`/*NF*/,
-            "reset": "Stromzähler zurücksetzen",
+            "reset": "Zurücksetzen",
             "never": "Nie",
 
             "reset_modal": "Zählerwerte zurücksetzen?",
