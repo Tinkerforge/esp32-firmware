@@ -536,7 +536,7 @@ void MetersSunSpec::loop()
             break;
         }
 
-        scan_printfln("Reading Model header");
+        scan_printfln("Reading Model header (address: %zu)", scan_read_address);
 
         scan_read_size = 2;
         scan_read_state = ScanState::ReadModelHeaderDone;
