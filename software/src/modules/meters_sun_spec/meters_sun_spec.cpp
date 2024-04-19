@@ -477,7 +477,7 @@ void MetersSunSpec::loop()
 
         scan_printfln("Reading Common Model block");
 
-        scan_read_size = scan_block_length;
+        scan_read_size = 65; // don't read optional padding, skip it later
         scan_read_state = ScanState::ReadCommonModelBlockDone;
         scan_state = ScanState::Read;
 
@@ -513,6 +513,12 @@ void MetersSunSpec::loop()
                           version,
                           scan_common_serial_number,
                           device_address);
+
+            if (scan_block_length == 66) {
+                scan_printfln("Skipping Common Model padding");
+
+                ++scan_read_address; // skip padding
+            }
 
             scan_state = ScanState::ReadModelHeader;
         }
@@ -627,7 +633,7 @@ void MetersSunSpec::loop()
                 break; // need report the scan result before doing something else
             }
 
-            scan_read_address += scan_block_length;
+            scan_read_address += scan_block_length; // skip block
             scan_state = ScanState::ReadModelHeader;
         }
 
