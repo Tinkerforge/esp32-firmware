@@ -20,6 +20,7 @@
 import {ConfigMap, api_cache, Modules, ConfigModified, ConfigModifiedKey} from './api_defs';
 import * as util from "./util";
 import { __ } from "./translation";
+import { RevertDeepSignal } from 'deepsignal';
 
 export { type ConfigMap as getType, type Modules };
 
@@ -127,6 +128,16 @@ export class APIEventTarget implements EventTarget {
 
     public removeEventListener(...args: any): void {
         return this.delegate.removeEventListener.apply(this.delegate, args);
+    }
+}
+
+export function trigger_all(event_source: APIEventTarget) {
+    for (let x of Object.keys(api_cache as RevertDeepSignal<typeof api_cache>)) {
+        let key = x as keyof ConfigMap;
+        if (get(key) == undefined)
+            continue;
+
+        trigger(key, event_source);
     }
 }
 

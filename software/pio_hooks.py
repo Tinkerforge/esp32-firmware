@@ -849,8 +849,8 @@ def main():
                 api_suffix = type_.split("___")[0]
 
                 api_config_map_entries.append("'{}{}': module_{}.{},".format(api_path, api_suffix, module_counter, type_))
-                api_cache_entries.append("'{}{}': null as any,".format(api_path, api_suffix))
-                api_cache_entries.append("'{}{}_modified': null as any,".format(api_path, api_suffix))
+                api_cache_entries.append("'{}{}': undefined as any,".format(api_path, api_suffix))
+                api_cache_entries.append("'{}{}_modified': undefined as any,".format(api_path, api_suffix))
 
             if found_api_exports:
                 api_module = "module_{}".format(module_counter)

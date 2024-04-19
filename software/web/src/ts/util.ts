@@ -234,11 +234,14 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
                 API.update(obj["topic"], obj["payload"]);
             }
 
-            for (let topic of topics) {
-                API.trigger(topic, eventTarget);
+            if (allow_render.peek()) {
+                for (let topic of topics) {
+                    API.trigger(topic, eventTarget);
+                }
             }
 
             if (end_marker_found) {
+                API.trigger_all(eventTarget);
                 allow_render.value = true;
             }
         });
