@@ -183,6 +183,13 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
 
         result["energy_meter_reachable"] = True
 
+        meter_str = urllib.request.urlopen('http://{}/meter/values'.format(ssid), timeout=3).read()
+        meter_data = json.loads(meter_str)
+        if meter_data["energy_abs"] >= 1:
+            stage3.beep_notify()
+            while my_input(f'Energy meter reports {meter_data["energy_abs"]:.3f} kWh. Only < 1 kWh is allowed. Check if this is okay and press y + return to continue') != "y":
+                pass
+
     return seen_tags
 
 def exists_evse_test_report(evse_uid):
