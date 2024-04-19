@@ -40,7 +40,7 @@ const char* get_modbus_result_code_name(Modbus::ResultCode rc)
         case 0xE6: return "CANCEL";
         case 0xE7: return "PASSTHROUGH";
         case 0xE8: return "FORCE_PROCESS";
-        default:   return "Unkown error code";
+        default:   return "Unknown error code";
     }
 }
 
