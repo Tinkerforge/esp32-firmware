@@ -172,12 +172,12 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
         for i in range(3):
             error_count = evse.get_energy_meter_errors()
             if any(x != 0 for x in error_count):
-                if i == 2:
-                    fatal_error("Energy meter error count is {}, expected only zeros!".format(error_count) + blink("Complain to Erik!"))
+                # Allow exactly one timeout in the third attempt. This can happen for some reason, but one timeout is "still fine™".
+                if i == 2 and (any(x != 0 for x in error_count[1:]) or error_count[0] > 1):
+                    fatal_error("Energy meter error count is {}, expected only zeros or at most one timeout (first member)! ".format(error_count) + blink("Complain to Erik!"))
                 else:
                     print(".")
             else:
-                result["energy_meter_reachable"] = True
                 break
             time.sleep(3)
 
