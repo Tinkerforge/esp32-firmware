@@ -554,8 +554,9 @@ void MetersSunSpec::loop()
             uint16_t model_id = scan_deserializer.read_uint16();
             size_t block_length = scan_deserializer.read_uint16();
 
-            if (model_id == NON_IMPLEMENTED_UINT16 && block_length == 0) {
-                scan_printfln("End Model found");
+            if (model_id == NON_IMPLEMENTED_UINT16 && (block_length == 0 || block_length == NON_IMPLEMENTED_UINT16)) {
+                // accept non-implemented block length as a SUNGROW quirk
+                scan_printfln("End Model found (block-length: %zu)", block_length);
 
                 scan_state = ScanState::NextDeviceAddress;
             }
