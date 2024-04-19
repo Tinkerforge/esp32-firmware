@@ -522,7 +522,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 } else {
                     this.uplot.addBand({
                         series: [i, last_stacked_index],
-                        fill: plot.get_color("em_energy_analysis." + this.props.color_cache_group, this.data.names[i]).fill,
+                        fill: plot.get_color(this.props.color_cache_group, this.data.names[i]).fill,
                     });
                 }
 
