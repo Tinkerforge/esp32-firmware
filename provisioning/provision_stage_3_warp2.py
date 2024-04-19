@@ -433,17 +433,17 @@ class Stage3:
     def is_front_panel_led_blue(self):
         color = self.try_action('20D', lambda device: device.get_color())
         # C > 20000 for WARP2 compat
-        return color[2] / color[3] > 0.65 and color[3] > 20000
+        return color[2] / color[3] > 0.65 and color[3] > 10000
 
     def is_front_panel_led_red(self):
         color = self.try_action('20D', lambda device: device.get_color())
 
-        return color[0] / color[3] > 0.85 and color[3] > 25000
+        return color[0] / color[3] > 0.85 and color[3] > 10000
 
     def is_front_panel_led_green(self):
         color = self.try_action('20D', lambda device: device.get_color())
 
-        return color[1] / color[3] > 0.60 and color[3] > 25000
+        return color[1] / color[3] > 0.60 and color[3] > 10000
 
     def is_front_panel_led_white(self):
         color = self.try_action('20D', lambda device: device.get_color())
@@ -453,7 +453,7 @@ class Stage3:
             return True
 
 
-        return color[0] / color[3] < 0.5 and color[1] / color[3] < 0.5 and color[2] / color[3] < 0.5 and color[3] > 40000
+        return color[0] / color[3] < 0.5 and color[1] / color[3] < 0.5 and color[2] / color[3] < 0.5 and color[3] > 10000
 
 
     # internal
