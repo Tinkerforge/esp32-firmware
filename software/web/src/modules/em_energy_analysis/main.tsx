@@ -212,18 +212,12 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
         }
     }
 
-    render(props: {}, state: EMEnergyAnalysisStatusState) {
-        // Don't check util.render_allowed() here.
-        // We can receive graph data points with the first web socket packet and
-        // want to push them into the uplot graph immediately.
-        // This only works if the wrapper component is already created.
-        // Hide the form rows to fix any visual bugs instead.
-        let show = util.render_allowed() && API.hasFeature("energy_manager");
+    render() {
+        if (!util.render_allowed() || !API.hasFeature("energy_manager"))
+            return <StatusSection name="em_energy_analysis" />;
 
-        // As we don't check util.render_allowed(),
-        // we have to handle rendering before the web socket connection is established.
-        let value_ids = API.get_unchecked(`meters/${state.meter_slot}/value_ids`);
-        let values = API.get_unchecked(`meters/${state.meter_slot}/values`);
+        let value_ids = API.get_unchecked(`meters/${this.state.meter_slot}/value_ids`);
+        let values = API.get_unchecked(`meters/${this.state.meter_slot}/values`);
         let power: number = undefined;
 
         if (value_ids && value_ids.length > 0 && values && values.length > 0) {
@@ -235,7 +229,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
         }
 
         return <StatusSection name="em_energy_analysis">
-            <FormRow label={__("em_energy_analysis.status.power_history")} hidden={!show}>
+            <FormRow label={__("em_energy_analysis.status.power_history")}>
                 <div class="card pl-1 pb-1">
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader ref={this.uplot_loader_ref}
@@ -273,7 +267,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                     </div>
                 </div>
             </FormRow>
-            <FormRow label={__("em_energy_analysis.status.current_power")} label_muted={get_meter_name(state.meter_configs, state.meter_slot)} hidden={!show}>
+            <FormRow label={__("em_energy_analysis.status.current_power")} label_muted={get_meter_name(this.state.meter_configs, this.state.meter_slot)}>
                 <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
             </FormRow>
         </StatusSection>;
