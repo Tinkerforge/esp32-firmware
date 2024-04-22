@@ -55,6 +55,22 @@ static inline uint32_t convert_me_uint32(uint32_t me32)
     return me32 << 16 | me32 >> 16;
 }
 
+static inline uint64_t convert_me_uint64(const uint64_t *me64)
+{
+    union {
+        uint64_t u64;
+        uint16_t u16[4];
+    } uni;
+
+    const uint16_t *regs = reinterpret_cast<const uint16_t *>(me64);
+    uni.u16[0] = regs[3];
+    uni.u16[1] = regs[2];
+    uni.u16[2] = regs[1];
+    uni.u16[3] = regs[0];
+
+    return uni.u64;
+}
+
 static inline float convert_me_float(uint32_t me32)
 {
     union {
@@ -7481,9 +7497,711 @@ static const MetersSunSpecParser::ModelData model_214_data = {
     }
 };
 
+// ========================
+// 701 - DER AC Measurement
+// ========================
+
+#include "model_701.h"
+
+static float get_model_701_W(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->W;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
+    return fval;
+}
+
+static float get_model_701_VA(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->VA;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->VA_SF);
+    return fval;
+}
+
+static float get_model_701_Var(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->Var;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->Var_SF);
+    return fval;
+}
+
+static float get_model_701_PF(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->PF;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->PF_SF) * 0.01f);
+    return fval;
+}
+
+static float get_model_701_A(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->A;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->A_SF);
+    return fval;
+}
+
+static float get_model_701_LLV(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint16_t val = model->LLV;
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->V_SF);
+    return fval;
+}
+
+static float get_model_701_LNV(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint16_t val = model->LNV;
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->V_SF);
+    return fval;
+}
+
+static float get_model_701_Hz(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint32_t val = convert_me_uint32(model->Hz);
+    if (val == UINT32_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->Hz_SF);
+    return fval;
+}
+
+static float get_model_701_TotWhInj(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotWhInj);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotWhAbs(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotWhAbs);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotVarhInj(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotVarhInj);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotVarhAbs(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotVarhAbs);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TmpCab(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->TmpCab;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->Tmp_SF);
+    return fval;
+}
+
+static float get_model_701_TmpSnk(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->TmpSnk;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->Tmp_SF);
+    return fval;
+}
+
+static float get_model_701_TmpTrns(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->TmpTrns;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->Tmp_SF);
+    return fval;
+}
+
+static float get_model_701_TmpOt(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->TmpOt;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->Tmp_SF);
+    return fval;
+}
+
+static float get_model_701_WL1(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->WL1;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
+    return fval;
+}
+
+static float get_model_701_VAL1(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->VAL1;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->VA_SF);
+    return fval;
+}
+
+static float get_model_701_VarL1(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->VarL1;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->Var_SF);
+    return fval;
+}
+
+static float get_model_701_PFL1(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->PFL1;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->PF_SF) * 0.01f);
+    return fval;
+}
+
+static float get_model_701_AL1(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->AL1;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->A_SF);
+    return fval;
+}
+
+static float get_model_701_VL1L2(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint16_t val = model->VL1L2;
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->V_SF);
+    return fval;
+}
+
+static float get_model_701_VL1(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint16_t val = model->VL1;
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->V_SF);
+    return fval;
+}
+
+static float get_model_701_TotWhInjL1(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotWhInjL1);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotWhAbsL1(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotWhAbsL1);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotVarhInjL1(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotVarhInjL1);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotVarhAbsL1(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotVarhAbsL1);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_WL2(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->WL2;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
+    return fval;
+}
+
+static float get_model_701_VAL2(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->VAL2;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->VA_SF);
+    return fval;
+}
+
+static float get_model_701_VarL2(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->VarL2;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->Var_SF);
+    return fval;
+}
+
+static float get_model_701_PFL2(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->PFL2;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->PF_SF) * 0.01f);
+    return fval;
+}
+
+static float get_model_701_AL2(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->AL2;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->A_SF);
+    return fval;
+}
+
+static float get_model_701_VL2L3(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint16_t val = model->VL2L3;
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->V_SF);
+    return fval;
+}
+
+static float get_model_701_VL2(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint16_t val = model->VL2;
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->V_SF);
+    return fval;
+}
+
+static float get_model_701_TotWhInjL2(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotWhInjL2);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotWhAbsL2(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotWhAbsL2);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotVarhInjL2(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotVarhInjL2);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotVarhAbsL2(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotVarhAbsL2);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_WL3(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->WL3;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->W_SF);
+    if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
+    return fval;
+}
+
+static float get_model_701_VAL3(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->VAL3;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->VA_SF);
+    return fval;
+}
+
+static float get_model_701_VarL3(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->VarL3;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->Var_SF);
+    return fval;
+}
+
+static float get_model_701_PFL3(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->PFL3;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->PF_SF) * 0.01f);
+    return fval;
+}
+
+static float get_model_701_AL3(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    int16_t val = model->AL3;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->A_SF);
+    return fval;
+}
+
+static float get_model_701_VL3L1(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint16_t val = model->VL3L1;
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->V_SF);
+    return fval;
+}
+
+static float get_model_701_VL3(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint16_t val = model->VL3;
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->V_SF);
+    return fval;
+}
+
+static float get_model_701_TotWhInjL3(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotWhInjL3);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotWhAbsL3(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotWhAbsL3);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotVarhInjL3(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotVarhInjL3);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    return fval;
+}
+
+static float get_model_701_TotVarhAbsL3(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->TotVarhAbsL3);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    return fval;
+}
+
+static bool model_701_validator(const uint16_t * const register_data[2])
+{
+    const SunSpecDERACMeasurementModel701_s *block0 = reinterpret_cast<const SunSpecDERACMeasurementModel701_s *>(register_data[0]);
+    const SunSpecDERACMeasurementModel701_s *block1 = reinterpret_cast<const SunSpecDERACMeasurementModel701_s *>(register_data[1]);
+    if (block0->ID != 701) return false;
+    if (block1->ID != 701) return false;
+    if (block0->L  != 153) return false;
+    if (block1->L  != 153) return false;
+    if (block0->A_SF != block1->A_SF) return false;
+    if (block0->V_SF != block1->V_SF) return false;
+    if (block0->Hz_SF != block1->Hz_SF) return false;
+    if (block0->W_SF != block1->W_SF) return false;
+    if (block0->PF_SF != block1->PF_SF) return false;
+    if (block0->VA_SF != block1->VA_SF) return false;
+    if (block0->Var_SF != block1->Var_SF) return false;
+    if (block0->TotWh_SF != block1->TotWh_SF) return false;
+    if (block0->TotVarh_SF != block1->TotVarh_SF) return false;
+    if (block0->Tmp_SF != block1->Tmp_SF) return false;
+    return true;
+}
+
+static const MetersSunSpecParser::ModelData model_701_data = {
+    701, // model_id
+    153, // model_length
+    123, // interesting_registers_count
+    false, // is_meter
+    true, // read_twice
+    &model_701_validator,
+    49,  // value_count
+    {    // value_data
+        { &get_model_701_W, MeterValueID::PowerActiveLSumImExDiff, 116 },
+        { &get_model_701_VA, MeterValueID::PowerApparentLSumImExDiff, 118 },
+        { &get_model_701_Var, MeterValueID::PowerReactiveLSumIndCapDiff, 119 },
+        { &get_model_701_PF, MeterValueID::PowerFactorLSumDirectional, 117 },
+        { &get_model_701_A, MeterValueID::CurrentLSumImExSum, 113 },
+        { &get_model_701_LLV, MeterValueID::VoltageLLAvg, 114 },
+        { &get_model_701_LNV, MeterValueID::VoltageLNAvg, 114 },
+        { &get_model_701_Hz, MeterValueID::FrequencyLAvg, 115 },
+        { &get_model_701_TotWhInj, MeterValueID::EnergyActiveLSumExport, 120 },
+        { &get_model_701_TotWhAbs, MeterValueID::EnergyActiveLSumImport, 120 },
+        { &get_model_701_TotVarhInj, MeterValueID::EnergyReactiveLSumInductive, 121 },
+        { &get_model_701_TotVarhAbs, MeterValueID::EnergyReactiveLSumCapacitive, 121 },
+        { &get_model_701_TmpCab, MeterValueID::TemperatureCabinet, 122 },
+        { &get_model_701_TmpSnk, MeterValueID::TemperatureHeatSink, 122 },
+        { &get_model_701_TmpTrns, MeterValueID::TemperatureTransformer, 122 },
+        { &get_model_701_TmpOt, MeterValueID::Temperature, 122 },
+        { &get_model_701_WL1, MeterValueID::PowerActiveL1ImExDiff, 116 },
+        { &get_model_701_VAL1, MeterValueID::PowerApparentL1ImExDiff, 118 },
+        { &get_model_701_VarL1, MeterValueID::PowerReactiveL1IndCapDiff, 119 },
+        { &get_model_701_PFL1, MeterValueID::PowerFactorL1Directional, 117 },
+        { &get_model_701_AL1, MeterValueID::CurrentL1ImExSum, 113 },
+        { &get_model_701_VL1L2, MeterValueID::VoltageL1L2, 114 },
+        { &get_model_701_VL1, MeterValueID::VoltageL1N, 114 },
+        { &get_model_701_TotWhInjL1, MeterValueID::EnergyActiveL1Export, 120 },
+        { &get_model_701_TotWhAbsL1, MeterValueID::EnergyActiveL1Import, 120 },
+        { &get_model_701_TotVarhInjL1, MeterValueID::EnergyReactiveL1Inductive, 121 },
+        { &get_model_701_TotVarhAbsL1, MeterValueID::EnergyReactiveL1Capacitive, 121 },
+        { &get_model_701_WL2, MeterValueID::PowerActiveL2ImExDiff, 116 },
+        { &get_model_701_VAL2, MeterValueID::PowerApparentL2ImExDiff, 118 },
+        { &get_model_701_VarL2, MeterValueID::PowerReactiveL2IndCapDiff, 119 },
+        { &get_model_701_PFL2, MeterValueID::PowerFactorL2Directional, 117 },
+        { &get_model_701_AL2, MeterValueID::CurrentL2ImExSum, 113 },
+        { &get_model_701_VL2L3, MeterValueID::VoltageL2L3, 114 },
+        { &get_model_701_VL2, MeterValueID::VoltageL2N, 114 },
+        { &get_model_701_TotWhInjL2, MeterValueID::EnergyActiveL2Export, 120 },
+        { &get_model_701_TotWhAbsL2, MeterValueID::EnergyActiveL2Import, 120 },
+        { &get_model_701_TotVarhInjL2, MeterValueID::EnergyReactiveL2Inductive, 121 },
+        { &get_model_701_TotVarhAbsL2, MeterValueID::EnergyReactiveL2Capacitive, 121 },
+        { &get_model_701_WL3, MeterValueID::PowerActiveL3ImExDiff, 116 },
+        { &get_model_701_VAL3, MeterValueID::PowerApparentL3ImExDiff, 118 },
+        { &get_model_701_VarL3, MeterValueID::PowerReactiveL3IndCapDiff, 119 },
+        { &get_model_701_PFL3, MeterValueID::PowerFactorL3Directional, 117 },
+        { &get_model_701_AL3, MeterValueID::CurrentL3ImExSum, 113 },
+        { &get_model_701_VL3L1, MeterValueID::VoltageL3L1, 114 },
+        { &get_model_701_VL3, MeterValueID::VoltageL3N, 114 },
+        { &get_model_701_TotWhInjL3, MeterValueID::EnergyActiveL3Export, 120 },
+        { &get_model_701_TotWhAbsL3, MeterValueID::EnergyActiveL3Import, 120 },
+        { &get_model_701_TotVarhInjL3, MeterValueID::EnergyReactiveL3Inductive, 121 },
+        { &get_model_701_TotVarhAbsL3, MeterValueID::EnergyReactiveL3Capacitive, 121 },
+    }
+};
+
+// ==========================
+// 713 - DER Storage Capacity
+// ==========================
+
+#include "model_713.h"
+
+static float get_model_713_SoC(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERStorageCapacityModel713_s *model = static_cast<const struct SunSpecDERStorageCapacityModel713_s *>(register_data);
+    uint16_t val = model->SoC;
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->Pct_SF);
+    return fval;
+}
+
+static bool model_713_validator(const uint16_t * const register_data[2])
+{
+    const SunSpecDERStorageCapacityModel713_s *block0 = reinterpret_cast<const SunSpecDERStorageCapacityModel713_s *>(register_data[0]);
+    const SunSpecDERStorageCapacityModel713_s *block1 = reinterpret_cast<const SunSpecDERStorageCapacityModel713_s *>(register_data[1]);
+    if (block0->ID != 713) return false;
+    if (block1->ID != 713) return false;
+    if (block0->L  !=   7) return false;
+    if (block1->L  !=   7) return false;
+    if (block0->WH_SF != block1->WH_SF) return false;
+    if (block0->Pct_SF != block1->Pct_SF) return false;
+    return true;
+}
+
+static const MetersSunSpecParser::ModelData model_713_data = {
+    713, // model_id
+    7, // model_length
+    9, // interesting_registers_count
+    false, // is_meter
+    true, // read_twice
+    &model_713_validator,
+    1,  // value_count
+    {    // value_data
+        { &get_model_713_SoC, MeterValueID::StateOfCharge, 8 },
+    }
+};
+
+// ========================
+// 714 - DER DC Measurement
+// ========================
+
+#include "model_714.h"
+
+static float get_model_714_DCA(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERDCMeasurementModel714_s *model = static_cast<const struct SunSpecDERDCMeasurementModel714_s *>(register_data);
+    int16_t val = model->DCA;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->DCA_SF);
+    return fval;
+}
+
+static float get_model_714_DCW(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERDCMeasurementModel714_s *model = static_cast<const struct SunSpecDERDCMeasurementModel714_s *>(register_data);
+    int16_t val = model->DCW;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->DCW_SF);
+    return fval;
+}
+
+static float get_model_714_DCWhInj(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERDCMeasurementModel714_s *model = static_cast<const struct SunSpecDERDCMeasurementModel714_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->DCWhInj);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->DCWH_SF);
+    return fval;
+}
+
+static float get_model_714_DCWhAbs(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecDERDCMeasurementModel714_s *model = static_cast<const struct SunSpecDERDCMeasurementModel714_s *>(register_data);
+    uint64_t val = convert_me_uint64(&model->DCWhAbs);
+    if (val == UINT64_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_scale_factor(model->DCWH_SF);
+    return fval;
+}
+
+static bool model_714_validator(const uint16_t * const register_data[2])
+{
+    const SunSpecDERDCMeasurementModel714_s *block0 = reinterpret_cast<const SunSpecDERDCMeasurementModel714_s *>(register_data[0]);
+    const SunSpecDERDCMeasurementModel714_s *block1 = reinterpret_cast<const SunSpecDERDCMeasurementModel714_s *>(register_data[1]);
+    if (block0->ID != 714) return false;
+    if (block1->ID != 714) return false;
+    if (block0->L  !=  18) return false;
+    if (block1->L  !=  18) return false;
+    if (block0->DCA_SF != block1->DCA_SF) return false;
+    if (block0->DCV_SF != block1->DCV_SF) return false;
+    if (block0->DCW_SF != block1->DCW_SF) return false;
+    if (block0->DCWH_SF != block1->DCWH_SF) return false;
+    if (block0->Tmp_SF != block1->Tmp_SF) return false;
+    return true;
+}
+
+static const MetersSunSpecParser::ModelData model_714_data = {
+    714, // model_id
+    18, // model_length
+    19, // interesting_registers_count
+    false, // is_meter
+    true, // read_twice
+    &model_714_validator,
+    4,  // value_count
+    {    // value_data
+        { &get_model_714_DCA, MeterValueID::CurrentDC, 15 },
+        { &get_model_714_DCW, MeterValueID::PowerDC, 17 },
+        { &get_model_714_DCWhInj, MeterValueID::EnergyActiveLSumExport, 18 },
+        { &get_model_714_DCWhAbs, MeterValueID::EnergyActiveLSumImport, 18 },
+    }
+};
+
 
 const MetersSunSpecParser::AllModelData meters_sun_spec_all_model_data {
-    15, // model_count
+    18, // model_count
     { // model_data
         &model_001_data,
         &model_101_data,
@@ -7500,5 +8218,8 @@ const MetersSunSpecParser::AllModelData meters_sun_spec_all_model_data {
         &model_212_data,
         &model_213_data,
         &model_214_data,
+        &model_701_data,
+        &model_713_data,
+        &model_714_data,
     }
 };

@@ -17,7 +17,7 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 xlsx_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "..", "..", "..", "wallbox", "sunspec", "SunSpec_Information_Model_Reference_20211209.xlsx")
-model_ids = [1, 101, 102, 103, 111, 112, 113,  201, 202, 203, 204, 211, 212, 213, 214]
+model_ids = [1, 101, 102, 103, 111, 112, 113,  201, 202, 203, 204, 211, 212, 213, 214, 701, 713, 714]
 
 value_id_mappings_inverter = {
     "A"       : [ "CurrentLSumExport",           None  ],
@@ -142,6 +142,71 @@ value_id_mappings_float_meter["PFphB"] = [ "PowerFactorL2Directional",   None ]
 value_id_mappings_float_meter["PFphC"] = [ "PowerFactorL3Directional",   None ]
 value_id_mappings_float_meter["PF"   ] = [ "PowerFactorLSumDirectional", None ]
 
+value_id_mappings_der = {
+    "VL1"          : [ "VoltageL1N",                   None  ],
+    "VL2"          : [ "VoltageL2N",                   None  ],
+    "VL3"          : [ "VoltageL3N",                   None  ],
+    "VL1L2"        : [ "VoltageL1L2",                  None  ],
+    "VL2L3"        : [ "VoltageL2L3",                  None  ],
+    "VL3L1"        : [ "VoltageL3L1",                  None  ],
+    "LNV"          : [ "VoltageLNAvg",                 None  ],
+    "LLV"          : [ "VoltageLLAvg",                 None  ],
+    "AL1"          : [ "CurrentL1ImExSum",             None  ],
+    "AL2"          : [ "CurrentL2ImExSum",             None  ],
+    "AL3"          : [ "CurrentL3ImExSum",             None  ],
+    "A"            : [ "CurrentLSumImExSum",           None  ],
+
+    "WL1"          : [ "PowerActiveL1ImExDiff",        None  ],
+    "WL2"          : [ "PowerActiveL2ImExDiff",        None  ],
+    "WL3"          : [ "PowerActiveL3ImExDiff",        None  ],
+    "W"            : [ "PowerActiveLSumImExDiff",      None  ], # Power values might be sign-inverted
+    "VarL1"        : [ "PowerReactiveL1IndCapDiff",    None  ],
+    "VarL2"        : [ "PowerReactiveL2IndCapDiff",    None  ],
+    "VarL3"        : [ "PowerReactiveL3IndCapDiff",    None  ],
+    "Var"          : [ "PowerReactiveLSumIndCapDiff",  None  ],
+    "VAL1"         : [ "PowerApparentL1ImExDiff",      None  ],
+    "VAL2"         : [ "PowerApparentL2ImExDiff",      None  ],
+    "VAL3"         : [ "PowerApparentL3ImExDiff",      None  ],
+    "VA"           : [ "PowerApparentLSumImExDiff",    None  ],
+
+    "TotWhAbsL1"   : [ "EnergyActiveL1Import",         0.001 ],
+    "TotWhInjL1"   : [ "EnergyActiveL1Export",         0.001 ],
+    "TotWhAbsL2"   : [ "EnergyActiveL2Import",         0.001 ],
+    "TotWhInjL2"   : [ "EnergyActiveL2Export",         0.001 ],
+    "TotWhAbsL3"   : [ "EnergyActiveL3Import",         0.001 ],
+    "TotWhInjL3"   : [ "EnergyActiveL3Export",         0.001 ],
+    "TotWhAbs"     : [ "EnergyActiveLSumImport",       0.001 ],
+    "TotWhInj"     : [ "EnergyActiveLSumExport",       0.001 ],
+
+    "TotVarhInjL1" : [ "EnergyReactiveL1Inductive",    0.001 ],
+    "TotVarhInjL2" : [ "EnergyReactiveL2Inductive",    0.001 ],
+    "TotVarhInjL3" : [ "EnergyReactiveL3Inductive",    0.001 ],
+    "TotVarhAbsL1" : [ "EnergyReactiveL1Capacitive",   0.001 ],
+    "TotVarhAbsL2" : [ "EnergyReactiveL2Capacitive",   0.001 ],
+    "TotVarhAbsL3" : [ "EnergyReactiveL3Capacitive",   0.001 ],
+    "TotVarhInj"   : [ "EnergyReactiveLSumInductive",  0.001 ],
+    "TotVarhAbs"   : [ "EnergyReactiveLSumCapacitive", 0.001 ],
+
+    "PFL1"         : [ "PowerFactorL1Directional",     0.01  ],
+    "PFL2"         : [ "PowerFactorL2Directional",     0.01  ],
+    "PFL3"         : [ "PowerFactorL3Directional",     0.01  ],
+    "PF"           : [ "PowerFactorLSumDirectional",   0.01  ],
+
+    "Hz"           : [ "FrequencyLAvg",                None  ],
+
+    "TmpCab"       : [ "TemperatureCabinet",           None  ], # Model order
+    "TmpSnk"       : [ "TemperatureHeatSink",          None  ],
+    "TmpTrns"      : [ "TemperatureTransformer",       None  ],
+    "TmpOt"        : [ "Temperature",                  None  ],
+
+    "DCA"          : [ "CurrentDC",                    None  ],
+    "DCW"          : [ "PowerDC",                      None  ],
+    "DCWhInj"      : [ "EnergyActiveLSumExport",       None  ],
+    "DCWhAbs"      : [ "EnergyActiveLSumImport",       None  ],
+
+    "SoC"          : [ "StateOfCharge",                None  ],
+}
+
 # Unmapped SunSpec IDs
 #    "ID"  : None,
 #    "L"   : None,
@@ -165,6 +230,7 @@ value_id_mappings_float_meter["PF"   ] = [ "PowerFactorLSumDirectional", None ]
 #    "W_SF"   : None,
 #    "VAR_SF" : None,
 #    "VAr_SF" : None,
+#    "Var_SF" : None,
 #    "VA_SF"  : None,
 #    "PF_SF"  : None,
 #    "Hz_SF"  : None,
@@ -180,6 +246,11 @@ value_id_mappings_float_meter["PF"   ] = [ "PowerFactorLSumDirectional", None ]
 #    "TotWh_SF"   : None,
 #    "TotVArh_SF" : None,
 #    "TotVAh_SF"  : None,
+#
+# DER only
+#    "TmpAmb"
+#    "TmpSw"
+#    "TotVarh_SF"
 
 for path in glob.glob("model_*.h"):
     os.remove(path)
@@ -214,6 +285,8 @@ for model_id in model_ids:
         value_id_mappings = value_id_mappings_float_meter
     elif model_id >= 200 and model_id <= 299:
         value_id_mappings = value_id_mappings_meter
+    elif model_id >= 700 and model_id <= 799:
+        value_id_mappings = value_id_mappings_der
     else:
         print(f"No value ID mappings available for model ID {model_id}.", file=sys.stderr)
         exit(1)
@@ -252,17 +325,22 @@ for model_id in model_ids:
         elif field_type == "uint32"     : c_type = "uint32_t"
         elif field_type == "acc32"      : c_type = "uint32_t"
         elif field_type == "bitfield32" : c_type = "uint32_t"
+        elif field_type == "uint64"     : c_type = "uint64_t"
         elif field_type == "enum16"     : c_type = "uint16_t"
         elif field_type == "float32"    : c_type = "uint32_t"
         elif field_type == "string":
             c_type = "char"
             field_length = int(fields[6]) * 2
             is_array = True
+        else:
+            print(f"C type for field type '{field_type}' not known.", file=sys.stderr)
+            exit(1)
 
         if   c_type == "char"    : field_bytes = 1
         elif c_type == "uint16_t": field_bytes = 2
         elif c_type == "int16_t" : field_bytes = 2
         elif c_type == "uint32_t": field_bytes = 4
+        elif c_type == "uint64_t": field_bytes = 8
         elif c_type == "float"   : field_bytes = 4
         else:
             print(f"Field bytes for type '{field_type}' not known.", file=sys.stderr)
@@ -454,6 +532,22 @@ static inline uint32_t convert_me_uint32(uint32_t me32)
     return me32 << 16 | me32 >> 16;
 }
 
+static inline uint64_t convert_me_uint64(const uint64_t *me64)
+{
+    union {
+        uint64_t u64;
+        uint16_t u16[4];
+    } uni;
+
+    const uint16_t *regs = reinterpret_cast<const uint16_t *>(me64);
+    uni.u16[0] = regs[3];
+    uni.u16[1] = regs[2];
+    uni.u16[2] = regs[1];
+    uni.u16[3] = regs[0];
+
+    return uni.u64;
+}
+
 static inline float convert_me_float(uint32_t me32)
 {
     union {
@@ -524,6 +618,8 @@ for model in models:
             print_cpp(f"    uint16_t val = model->{name};")
         elif field_type == "uint32" or field_type == "acc32":
             print_cpp(f"    uint32_t val = convert_me_uint32(model->{name});")
+        elif field_type == "uint64":
+            print_cpp(f"    uint64_t val = convert_me_uint64(&model->{name});")
         elif field_type == "float32":
             print_cpp(f"    float val = convert_me_float(model->{name});")
         else:
@@ -547,6 +643,8 @@ for model in models:
         elif field_type == "acc32":
             print_cpp(r"    uint32_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) == 0 ? UINT32_MAX : 0x80000000u;")
             print_cpp(r"    if (val == not_implemented_val) return NAN;")
+        elif field_type == "uint64":
+            print_cpp(r"    if (val == UINT64_MAX) return NAN;")
         elif field_type == "float32":
             pass # isnan(val)) -> NAN is redundant
         else:
