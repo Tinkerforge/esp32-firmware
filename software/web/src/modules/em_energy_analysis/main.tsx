@@ -2019,7 +2019,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         <UplotWrapper ref={this.uplot_wrapper_5min_power_ref}
                                         class="em-energy-analysis-chart pb-4"
                                         sub_page="em_energy_analysis"
-                                        color_cache_group="em_energy_analysis.analsyis"
+                                        color_cache_group="em_energy_analysis.analsyis_5min"
                                         show={true}
                                         on_mount={() => this.update_5min_uplot()}
                                         sync={this.uplot_sync}
@@ -2049,7 +2049,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         <UplotWrapper ref={this.uplot_wrapper_daily_ref}
                                         class="em-energy-analysis-chart pb-4"
                                         sub_page="em_energy_analysis"
-                                        color_cache_group="em_energy_analysis.analsyis"
+                                        color_cache_group="em_energy_analysis.analsyis_daily"
                                         show={false}
                                         on_mount={() => this.update_daily_uplot()}
                                         legend_time_label={__("em_energy_analysis.script.time_daily")}
