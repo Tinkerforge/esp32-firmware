@@ -309,7 +309,7 @@ void MeterSunSpec::scan_next()
                         }
 
                         if (quirks) {
-                            logger.printfln("Enabling quirks mode 0x%02x for %.*s device.", quirks, static_cast<int>(strnlen(m->Mn, 32)), m->Mn);
+                            logger.printfln("Enabling quirks mode 0x%02x for %.32s device.", quirks, m->Mn);
                         }
                     }
                 }
