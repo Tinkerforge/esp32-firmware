@@ -82,6 +82,8 @@ static bool model_001_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_001_data = {
     1, // model_id
+    65, // model_length
+    0, // interesting_registers_count
     false, // is_meter
     false, // read_twice
     &model_001_validator,
@@ -375,6 +377,8 @@ static bool model_101_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_101_data = {
     101, // model_id
+    50, // model_length
+    38, // interesting_registers_count
     false, // is_meter
     true, // read_twice
     &model_101_validator,
@@ -691,6 +695,8 @@ static bool model_102_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_102_data = {
     102, // model_id
+    50, // model_length
+    38, // interesting_registers_count
     false, // is_meter
     true, // read_twice
     &model_102_validator,
@@ -1007,6 +1013,8 @@ static bool model_103_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_103_data = {
     103, // model_id
+    50, // model_length
+    38, // interesting_registers_count
     false, // is_meter
     true, // read_twice
     &model_103_validator,
@@ -1242,6 +1250,8 @@ static bool model_111_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_111_data = {
     111, // model_id
+    60, // model_length
+    48, // interesting_registers_count
     false, // is_meter
     false, // read_twice
     &model_111_validator,
@@ -1477,6 +1487,8 @@ static bool model_112_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_112_data = {
     112, // model_id
+    60, // model_length
+    48, // interesting_registers_count
     false, // is_meter
     false, // read_twice
     &model_112_validator,
@@ -1712,6 +1724,8 @@ static bool model_113_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_113_data = {
     113, // model_id
+    60, // model_length
+    48, // interesting_registers_count
     false, // is_meter
     false, // read_twice
     &model_113_validator,
@@ -2492,6 +2506,8 @@ static bool model_201_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_201_data = {
     201, // model_id
+    105, // model_length
+    105, // interesting_registers_count
     true, // is_meter
     true, // read_twice
     &model_201_validator,
@@ -3310,6 +3326,8 @@ static bool model_202_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_202_data = {
     202, // model_id
+    105, // model_length
+    105, // interesting_registers_count
     true, // is_meter
     true, // read_twice
     &model_202_validator,
@@ -4128,6 +4146,8 @@ static bool model_203_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_203_data = {
     203, // model_id
+    105, // model_length
+    105, // interesting_registers_count
     true, // is_meter
     true, // read_twice
     &model_203_validator,
@@ -4946,6 +4966,8 @@ static bool model_204_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_204_data = {
     204, // model_id
+    105, // model_length
+    105, // interesting_registers_count
     true, // is_meter
     true, // read_twice
     &model_204_validator,
@@ -5555,6 +5577,8 @@ static bool model_211_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_211_data = {
     211, // model_id
+    124, // model_length
+    124, // interesting_registers_count
     true, // is_meter
     false, // read_twice
     &model_211_validator,
@@ -6164,6 +6188,8 @@ static bool model_212_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_212_data = {
     212, // model_id
+    124, // model_length
+    124, // interesting_registers_count
     true, // is_meter
     false, // read_twice
     &model_212_validator,
@@ -6773,6 +6799,8 @@ static bool model_213_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_213_data = {
     213, // model_id
+    124, // model_length
+    124, // interesting_registers_count
     true, // is_meter
     false, // read_twice
     &model_213_validator,
@@ -7382,6 +7410,8 @@ static bool model_214_validator(const uint16_t * const register_data[2])
 
 static const MetersSunSpecParser::ModelData model_214_data = {
     214, // model_id
+    124, // model_length
+    124, // interesting_registers_count
     true, // is_meter
     false, // read_twice
     &model_214_validator,

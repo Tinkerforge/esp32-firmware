@@ -653,8 +653,19 @@ for model in models:
 
     is_meter = model_id >= 200 and model_id < 300
 
+    max_interesting_register = -1
+    for value in values:
+        if not value['value_id_mapping']:
+            continue
+        if value['max_register'] > max_interesting_register:
+            max_interesting_register = value['max_register']
+    if max_interesting_register > 124:
+        print(f"Warning: Model {model_id} has max_interesting_register > 124")
+
     print_cpp(f"static const MetersSunSpecParser::ModelData {model_data_name} = {{")
     print_cpp(f"    {model_id}, // model_id")
+    print_cpp(f"    {model_length}, // model_length")
+    print_cpp(f"    {max_interesting_register + 1}, // interesting_registers_count")
     print_cpp(f"    {str(is_meter).lower()}, // is_meter")
     print_cpp(f"    {str(read_twice).lower()}, // read_twice")
     print_cpp(f"    &{validator_fn_name},")

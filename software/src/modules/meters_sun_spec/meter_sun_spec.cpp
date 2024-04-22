@@ -244,11 +244,17 @@ void MeterSunSpec::scan_next()
                         start_generic_read();
                     }
                     else {
-                        scan_state_next = ScanState::Idle;
+                        if (block_length != model_parser->get_model_length()) {
+                            logger.printfln("Configured SunSpec model found but has incorrect length. Expected %u, got %u.", model_parser->get_model_length(), block_length);
+                            scan_start_delay();
+                        }
+                        else {
+                            scan_state_next = ScanState::Idle;
 
-                        logger.printfln("Configured SunSpec model %u/%u found at %s:%u:%u:%u",
-                                        model_id, model_instance, host_name.c_str(), port, device_address, generic_read_request.start_address);
-                        read_start(generic_read_request.start_address, 2 + block_length);
+                            logger.printfln("Configured SunSpec model %u/%u found at %s:%u:%u:%u",
+                                            model_id, model_instance, host_name.c_str(), port, device_address, generic_read_request.start_address);
+                            read_start(generic_read_request.start_address, model_parser->get_interesting_registers_count());
+                        }
                     }
                 }
                 else if (scan_model_id == 1) { // Common model

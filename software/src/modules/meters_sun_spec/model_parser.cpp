@@ -92,3 +92,13 @@ bool MetersSunSpecParser::must_read_twice()
 {
     return model->read_twice;
 }
+
+uint32_t MetersSunSpecParser::get_model_length()
+{
+    return model->model_length;
+}
+
+uint32_t MetersSunSpecParser::get_interesting_registers_count()
+{
+    return model->interesting_registers_count;
+}
