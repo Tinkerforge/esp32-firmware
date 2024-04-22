@@ -67,7 +67,7 @@ void DebugProtocol::register_urls()
         return request.send(200);
     });
 
-    server.on("/debug_protocol/stop", HTTP_GET, [this](WebServerRequest request){
+    server.on("/debug_protocol/stop", HTTP_GET, [this](WebServerRequest request) {
         debug = false;
         return request.send(200);
     });

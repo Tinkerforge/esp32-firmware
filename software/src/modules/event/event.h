@@ -24,7 +24,6 @@
 
 #include "api.h"
 
-
 enum class EventResult {
     OK = 0,
     Deregister

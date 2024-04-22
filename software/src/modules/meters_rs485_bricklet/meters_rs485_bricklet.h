@@ -40,13 +40,14 @@
 #endif
 
 class MetersRS485Bricklet final : public DeviceModule<TF_RS485,
-                                                  rs485_bricklet_firmware_bin_data,
-                                                  rs485_bricklet_firmware_bin_length,
-                                                  tf_rs485_create,
-                                                  tf_rs485_get_bootloader_mode,
-                                                  tf_rs485_reset,
-                                                  tf_rs485_destroy,
-                                                  false>, public MeterGenerator
+                                                      rs485_bricklet_firmware_bin_data,
+                                                      rs485_bricklet_firmware_bin_length,
+                                                      tf_rs485_create,
+                                                      tf_rs485_get_bootloader_mode,
+                                                      tf_rs485_reset,
+                                                      tf_rs485_destroy,
+                                                      false>,
+                                  public MeterGenerator
 {
 public:
     MetersRS485Bricklet() : DeviceModule("rs485", "RS485", "Modbus Meter", [this](){this->setupRS485();}) {}

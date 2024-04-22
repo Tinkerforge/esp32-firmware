@@ -130,8 +130,7 @@ void Coredump::register_urls()
 
         request.beginChunkedResponse(200, "application/octet-stream");
 
-        for (size_t i = 0; i < size; i += 4096)
-        {
+        for (size_t i = 0; i < size; i += 4096) {
             size_t to_send = min((size_t)4096, size - i);
             if (esp_flash_read(NULL, buffer, addr + i, to_send) != ESP_OK) {
                 String s = "ESP_FLASH_READ failed. Core dump truncated";

@@ -209,7 +209,8 @@ static const uint8_t leading_zeros_to_char_count[33] = {10,10,10,9,9,9,8,8,8,7,7
 
 // Never underestimates length. Overestimates by 0.12 chars on average.
 // Tested against the returned length of snprintf([...],"%u") for every 32 bit number.
-static size_t estimate_chars_per_uint(uint32_t v) {
+static size_t estimate_chars_per_uint(uint32_t v)
+{
 #if !defined(__XTENSA_EL__) || __XTENSA_EL__ != 1
     // __builtin_clz(v) is undefined for v == 0. Set the lowest bit to work around that.
     // The workaround is not neccessary on Xtensa, which uses the NSAU instruction that handles 0 correctly.
@@ -563,8 +564,7 @@ struct from_json {
             const auto *slot = x.getSlot();
             const auto *key = slot->schema->keys[i];
 
-            if (!obj.containsKey(key))
-            {
+            if (!obj.containsKey(key)) {
                 if (!force_same_keys)
                     continue;
 
@@ -575,21 +575,18 @@ struct from_json {
             }
 
             String inner_error = Config::apply_visitor(from_json{obj[key], force_same_keys, permit_null_updates, false}, slot->values[i].value);
-            if(obj.size() > 0)
+            if (obj.size() > 0)
                 obj.remove(key);
-            if (inner_error != "")
-            {
+            if (inner_error != "") {
                 if (return_str.length() < 1000)
                     return_str += String("[\"") + key + "\"] " + inner_error + "\n";
                 else
                     more_errors = true;
             }
-
         }
 
         if (force_same_keys) {
-            for (auto i = obj.begin(); i != obj.end(); i += 1)
-            {
+            for (auto i = obj.begin(); i != obj.end(); i += 1) {
                 if (return_str.length() < 1000)
                     return_str += String("JSON object has unknown key '") + i->key().c_str() + "'.\n";
                 else
@@ -597,8 +594,7 @@ struct from_json {
             }
         }
 
-        if (return_str.length() > 0)
-        {
+        if (return_str.length() > 0) {
             if (more_errors)
                 return_str += "More errors occurred that got filtered out.\n";
             return return_str;
@@ -634,7 +630,6 @@ struct from_json {
         } else {
             return "[0] JSON node was not an unsigned integer.";
         }
-
 
         if (new_tag != old_tag) {
             if (!x.changeUnionVariant(new_tag))
@@ -697,7 +692,7 @@ struct from_update {
             if (update_val_int == nullptr || *update_val_int < 0)
                 return "ConfUpdate node was not an unsigned integer.";
 
-            new_val = (uint32_t) *update_val_int;
+            new_val = (uint32_t)*update_val_int;
         } else {
             new_val = *update_val_uint;
         }

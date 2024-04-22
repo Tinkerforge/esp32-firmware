@@ -68,8 +68,9 @@ static void apply_energy_manager_config(Config &conf)
 #endif
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool ChargeManager::has_triggered(const Config *conf, void *data) {
-    switch(conf->getTag<AutomationTriggerID>()) {
+bool ChargeManager::has_triggered(const Config *conf, void *data)
+{
+    switch (conf->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::ChargeManagerWd:
             return true;
 

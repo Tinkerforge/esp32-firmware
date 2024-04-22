@@ -48,5 +48,4 @@ struct timeval EmRtc::get_time()
 
 void EmRtc::reset()
 {
-
 }

@@ -1014,10 +1014,10 @@ void EVSEV2::update_all_data()
     if (dc_fault_current_state_changed) {
         if (dc_fault_current_state != 0) {
             logger.printfln("DC Fault current state %u (%s %u; sensor type %u)",
-                                dc_fault_current_state,
-                                dc_fault_current_state == 4 ? "calibration error code" : "pins",
-                                dc_fault_pins,
-                                dc_sensor_type);
+                            dc_fault_current_state,
+                            dc_fault_current_state == 4 ? "calibration error code" : "pins",
+                            dc_fault_pins,
+                            dc_sensor_type);
         } else {
             logger.printfln("DC Fault current state cleared");
         }

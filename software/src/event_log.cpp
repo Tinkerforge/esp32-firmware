@@ -37,7 +37,8 @@ static size_t log_alignment = 0;
 
 #define LOG_ALIGNMENT_WARN_THRESHOLD 16
 
-size_t strlen_with_log_alignment(const char *c) {
+size_t strlen_with_log_alignment(const char *c)
+{
     auto result = strlen(c);
 
     if (result > LOG_ALIGNMENT_WARN_THRESHOLD) {
@@ -49,7 +50,8 @@ size_t strlen_with_log_alignment(const char *c) {
     return result;
 }
 
-const char *get_module_offset_and_length(const char *path, size_t *out_length) {
+const char *get_module_offset_and_length(const char *path, size_t *out_length)
+{
     auto len = strlen(path);
     auto needle = "src/modules/";
     auto needle_len = strlen(needle);
@@ -104,13 +106,15 @@ void EventLog::pre_init()
     event_buf.setup();
 }
 
-void EventLog::pre_setup() {
+void EventLog::pre_setup()
+{
     boot_id = Config::Object({
         {"boot_id", Config::Uint32(0)}
     });
 }
 
-void EventLog::post_setup() {
+void EventLog::post_setup()
+{
     // Entropy is created by the wifi modem.
     auto id = esp_random();
     boot_id.get("boot_id")->updateUint(id);

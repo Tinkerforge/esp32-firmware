@@ -72,8 +72,10 @@
 
 #define EXTERNAL_TIMEOUT 30
 
-class IEvseBackend : virtual public IModule, public PhaseSwitcherBackend, public IDebugProtocolBackend {
+class IEvseBackend : virtual public IModule, public PhaseSwitcherBackend, public IDebugProtocolBackend
+{
     friend class EvseCommon;
+
 protected:
     IEvseBackend() {}
     virtual ~IEvseBackend() {}

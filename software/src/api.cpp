@@ -285,7 +285,7 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
     return true;
 }
 
-void API::addRawCommand(const char * const path, std::function<String(char *, size_t)> &&callback, bool is_action)
+void API::addRawCommand(const char *const path, std::function<String(char *, size_t)> &&callback, bool is_action)
 {
     size_t path_len = strlen(path);
 
@@ -297,8 +297,7 @@ void API::addRawCommand(const char * const path, std::function<String(char *, si
     if (already_registered(path, path_len, "raw command"))
         return;
 
-
-    raw_commands.push_back({path, std::forward<std::function<String(char *, size_t)>>(callback), (uint8_t) path_len, is_action});
+    raw_commands.push_back({path, std::forward<std::function<String(char *, size_t)>>(callback), (uint8_t)path_len, is_action});
     auto rawCommandIdx = raw_commands.size() - 1;
 
     for (auto *backend : this->backends) {

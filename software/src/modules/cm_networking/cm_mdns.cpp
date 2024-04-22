@@ -179,8 +179,7 @@ void CMNetworking::start_scan()
 
     {
         std::lock_guard<std::mutex> lock{scan_results_mutex};
-        if (scan_results != nullptr)
-        {
+        if (scan_results != nullptr) {
             mdns_query_results_free(scan_results);
             scan_results = nullptr;
         }
@@ -242,7 +241,7 @@ void CMNetworking::resolve_via_mdns(mdns_result_t *entry)
             if (host == entry->hostname) {
                 this->dest_addrs[i].sin_addr.s_addr = entry->addr->addr.u_addr.ip4.addr;
                 if (this->resolve_state[i] != RESOLVE_STATE_RESOLVED) {
-                    logger.printfln("Resolved %s to %s (via mDNS scan)", this->hosts[i], ipaddr_ntoa((const ip_addr*)&entry->addr->addr));
+                    logger.printfln("Resolved %s to %s (via mDNS scan)", this->hosts[i], ipaddr_ntoa((const ip_addr *)&entry->addr->addr));
                 }
                 this->resolve_state[i] = RESOLVE_STATE_RESOLVED;
             }

@@ -119,7 +119,7 @@ void Automation::pre_setup()
         {"enabled_actions", Config::Array({}, new Config{Config::Uint8(0)}, 0, static_cast<uint16_t>(AutomationActionID::Count), Config::type_id<Config::ConfInt>())},
     });
 
-    for (auto const& trigger : trigger_map) {
+    for (auto const &trigger : trigger_map) {
         state.get("registered_triggers")->add()->updateEnum(trigger.first);
 
         if (trigger.second.enable) {
@@ -127,7 +127,7 @@ void Automation::pre_setup()
         }
     }
 
-    for (auto const& action : action_map) {
+    for (auto const &action : action_map) {
         state.get("registered_actions")->add()->updateEnum(action.first);
 
         if (action.second.enable) {
@@ -316,7 +316,7 @@ bool Automation::has_triggered(const Config *conf, void *data)
         triggered |= (wday % 7) == time_struct->tm_wday;
     }
 
-    int32_t hour   = cfg->get("hour")->asInt();
+    int32_t hour = cfg->get("hour")->asInt();
     triggered = (hour == time_struct->tm_hour || hour == -1) && triggered;
     int32_t minute = cfg->get("minute")->asInt();
     triggered = (minute == time_struct->tm_min || minute == -1) && triggered;

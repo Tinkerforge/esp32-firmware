@@ -38,7 +38,8 @@ static TickType_t i2c_timeout = 1000 / portTICK_PERIOD_MS;
 static uint8_t tmp_cmd_buf[I2C_LINK_RECOMMENDED_SIZE(2)] = {};
 static uint8_t tmp_read_buf[2] = {};
 
-void WarpEsp32I2c::pre_setup() {
+void WarpEsp32I2c::pre_setup()
+{
     this->state = Config::Object({
         {"temperature", Config::Int16(0)}
     });
@@ -84,6 +85,7 @@ void WarpEsp32I2c::setup()
     }, 1000, 1000);
 }
 
-void WarpEsp32I2c::register_urls() {
+void WarpEsp32I2c::register_urls()
+{
     api.addState("esp32/temperature", &state);
 }

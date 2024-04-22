@@ -601,13 +601,13 @@ void Mqtt::setup()
     mqtt_cfg.network_timeout_ms = 1000;
     mqtt_cfg.message_retransmit_timeout = 400;
     // + 1 to undo the -1 in the config's definition.
-    mqtt_cfg.transport = (esp_mqtt_transport_t) (config_in_use.get("protocol")->asUint() + 1);
+    mqtt_cfg.transport = (esp_mqtt_transport_t)(config_in_use.get("protocol")->asUint() + 1);
     bool encrypted = mqtt_cfg.transport == MQTT_TRANSPORT_OVER_SSL || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS;
 
     if (encrypted && config_in_use.get("cert_id")->asInt() != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t) config_in_use.get("cert_id")->asInt(), &cert_len);
+        auto cert = certs.get_cert((uint8_t)config_in_use.get("cert_id")->asInt(), &cert_len);
         if (cert == nullptr) {
             logger.printfln("Failed to get certificate with ID %d", config_in_use.get("cert_id")->asInt());
             return;
@@ -626,7 +626,7 @@ void Mqtt::setup()
     if (encrypted && config_in_use.get("client_cert_id")->asInt() != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t) config_in_use.get("client_cert_id")->asInt(), &cert_len);
+        auto cert = certs.get_cert((uint8_t)config_in_use.get("client_cert_id")->asInt(), &cert_len);
         if (cert == nullptr) {
             logger.printfln("Failed to get client certificate with ID %d", config_in_use.get("client_cert_id")->asInt());
             return;
@@ -642,7 +642,7 @@ void Mqtt::setup()
     if (encrypted && config_in_use.get("client_key_id")->asInt() != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t) config_in_use.get("client_key_id")->asInt(), &cert_len);
+        auto cert = certs.get_cert((uint8_t)config_in_use.get("client_key_id")->asInt(), &cert_len);
         if (cert == nullptr) {
             logger.printfln("Failed to get client certificate with ID %d", config_in_use.get("client_key_id")->asInt());
             return;

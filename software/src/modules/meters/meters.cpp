@@ -558,7 +558,6 @@ MeterValueAvailability Meters::get_energy_imexsum(uint32_t slot, float *total_im
     return get_single_value(slot, INDEX_CACHE_ENERGY_IMEXSUM, total_imexsum_kwh, max_age);
 }
 
-
 MeterValueAvailability Meters::get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age)
 {
     return get_single_value(slot, INDEX_CACHE_ENERGY_EXPORT, total_export_kwh, max_age);

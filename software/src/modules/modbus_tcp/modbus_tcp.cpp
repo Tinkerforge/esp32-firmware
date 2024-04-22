@@ -512,31 +512,25 @@ void ModbusTcp::update_bender_regs()
 
     for (int i = 0; i < 4; i++)
         bender_general_cpy->errorcodes[i] = fromUint(NOT_SUPPORTED);
-    for (int i = 0; i < 5; i++)
-    {
-        if (bender_write_uid_cpy->user_id[i])
-        {
+    for (int i = 0; i < 5; i++) {
+        if (bender_write_uid_cpy->user_id[i]) {
             logger.printfln("Writing userid is not supported");
             bender_write_uid_cpy->user_id[i] = fromUint(NOT_SUPPORTED);
         }
     }
 
-    if (bender_general_cpy->comm_timeout)
-    {
+    if (bender_general_cpy->comm_timeout) {
         logger.printfln("Writing communication timeout is not supported");
         bender_general_cpy->comm_timeout = fromUint(NOT_SUPPORTED);
     }
 
-    if (bender_general_cpy->safe_current)
-    {
+    if (bender_general_cpy->safe_current) {
         logger.printfln("Writing safe current is not supported");
         bender_general_cpy->safe_current = fromUint(NOT_SUPPORTED);
     }
 
-    for (int i = 0; i < 3; i++)
-    {
-        if (bender_dlm_cpy->operator_evse_limit[i])
-        {
+    for (int i = 0; i < 3; i++) {
+        if (bender_dlm_cpy->operator_evse_limit[i]) {
             logger.printfln("Writing dlm operator current l%i is not supported", i);
             bender_dlm_cpy->operator_evse_limit[i] = fromUint(NOT_SUPPORTED);
         }
@@ -545,10 +539,8 @@ void ModbusTcp::update_bender_regs()
     memcpy(bender_general_cpy->firmware_version, ".404", 4);
     memcpy(bender_general_cpy->protocol_version, "0\0006.", 4);
 
-    if (api.hasFeature("evse"))
-    {
-        switch (api.getState("evse/state")->get("charger_state")->asUint())
-        {
+    if (api.hasFeature("evse")) {
+        switch (api.getState("evse/state")->get("charger_state")->asUint()) {
         case 0:
             bender_general_cpy->ocpp_cp_state = 0;
             break;
@@ -584,14 +576,11 @@ void ModbusTcp::update_bender_regs()
     }
 
 #if MODULE_METERS_LEGACY_API_AVAILABLE()
-    if (api.hasFeature("meter"))
-    {
-        if (api.hasFeature("meter_all_values"))
-        {
+    if (api.hasFeature("meter")) {
+        if (api.hasFeature("meter_all_values")) {
             auto meter_values = api.getState("meter/all_values");
 
-            for (int i = 0; i < 3; i++)
-            {
+            for (int i = 0; i < 3; i++) {
                 bender_phases_cpy->current[i] = fromUint(meter_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000);
                 bender_phases_cpy->energy[i] =  fromUint(meter_values->get(i + METER_ALL_VALUES_IMPORT_KWH_L1)->asFloat() * 1000);
                 bender_phases_cpy->power[i] =  fromUint(meter_values->get(i + METER_ALL_VALUES_POWER_L1_W)->asFloat() * 1000);
@@ -604,18 +593,13 @@ void ModbusTcp::update_bender_regs()
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
         auto meter_start = api.getState("charge_tracker/current_charge")->get("meter_start")->asFloat();
         auto meter_absolute = api.getState("meter/values")->get("energy_abs")->asFloat();
-        if (!charging)
-        {
+        if (!charging) {
             bender_charge_cpy->wh_charged = fromUint(0);
             bender_charge_cpy->charged_energy = fromUint(0);
-        }
-        else if (isnan(meter_start))
-        {
+        } else if (isnan(meter_start)) {
             bender_charge_cpy->wh_charged = 0;
             bender_charge_cpy->charged_energy = fromUint(0);
-        }
-        else
-        {
+        } else {
             bender_charge_cpy->wh_charged = uint16_t((meter_absolute - meter_start) * 1000);
             bender_charge_cpy->charged_energy = fromUint((meter_absolute - meter_start) * 1000);
         }
@@ -633,7 +617,8 @@ void ModbusTcp::update_bender_regs()
     taskEXIT_CRITICAL(&mtx);
 }
 
-static inline void swap_bytes(char *str, size_t len) {
+static inline void swap_bytes(char *str, size_t len)
+{
     char tmp;
     for (int i = 0; i < len; i += 2) {
         tmp = str[i];
@@ -733,8 +718,7 @@ void ModbusTcp::update_regs()
     }
 #endif
 
-    if (has_feature_evse)
-    {
+    if (has_feature_evse) {
         discrete_inputs_copy->evse = true;
         evse_input_regs_copy->iec_state = fromUint(api.getState("evse/state")->get("iec61851_state")->asUint());
         evse_input_regs_copy->charger_state = fromUint(api.getState("evse/state")->get("charger_state")->asUint());
@@ -747,13 +731,11 @@ void ModbusTcp::update_regs()
 
         auto slots = api.getState("evse/slots");
 
-        for (int i = 0; i < slots->count(); i++)
-        {
+        for (int i = 0; i < slots->count(); i++) {
             uint32_t current = slots->get(i)->get("max_current")->asUint();
             uint32_t val = 0xFFFFFFFF;
 
-            if (slots->get(i)->get("active")->asBool())
-            {
+            if (slots->get(i)->get("active")->asBool()) {
                 val = current;
             }
             evse_input_regs_copy->slots[i] = fromUint(val);
@@ -783,8 +765,7 @@ void ModbusTcp::update_regs()
     }
 
 #if MODULE_METERS_LEGACY_API_AVAILABLE()
-    if (api.hasFeature("meter"))
-    {
+    if (api.hasFeature("meter")) {
         discrete_inputs_copy->meter = true;
 
         meter_input_regs_copy->meter_type = fromUint(api.getState("meter/state")->get("type")->asUint());
@@ -807,8 +788,7 @@ void ModbusTcp::update_regs()
             api.callCommand("meter/reset", {});
     }
 
-    if (api.hasFeature("meter_phases"))
-    {
+    if (api.hasFeature("meter_phases")) {
         discrete_inputs_copy->meter_phases = true;
 
         auto meter_phase_values = api.getState("meter/phases");
@@ -820,8 +800,7 @@ void ModbusTcp::update_regs()
         meter_discrete_inputs_copy->phase_three_connected = meter_phase_values->get("phases_connected")->get(2)->asBool();
     }
 
-    if (api.hasFeature("meter_all_values"))
-    {
+    if (api.hasFeature("meter_all_values")) {
         discrete_inputs_copy->meter_all_values = true;
 
         auto meter_all_values = api.getState("meter/all_values");
@@ -880,14 +859,10 @@ uint32_t keba_get_features()
     features *= 10;
     features += 1;
     features *= 10;
-    if (api.hasFeature("meter"))
-    {
+    if (api.hasFeature("meter")) {
         features += 2;
-    }
-    else
-    {
-        if (!warned)
-        {
+    } else {
+        if (!warned) {
             logger.printfln("Wallbox has no meter. Erros are expected!");
             warned = true;
         }
@@ -915,8 +890,7 @@ static uint32_t export_tag_id_as_uint32(const String &str)
     int str_idx = 0;
     char c[4];
 
-    for (int i = 3; i >= 0; i--)
-    {
+    for (int i = 3; i >= 0; i--) {
         c[i] = hextouint(str[str_idx++]) << 4;
         c[i] |= hextouint(str[str_idx++]);
         str_idx++;
@@ -934,8 +908,7 @@ void ModbusTcp::update_keba_regs()
     keba_read_general_cpy->features = fromUint(keba_get_features());
     keba_read_general_cpy->firmware_version = fromUint(0x30A1B00);
 
-    if (api.hasFeature("evse"))
-    {
+    if (api.hasFeature("evse")) {
 
         evse_common.set_modbus_current(keba_write_cpy->set_charging_current);
         evse_common.set_modbus_enabled(keba_write_cpy->enable_station == 1 ? true : false);
@@ -957,8 +930,7 @@ void ModbusTcp::update_keba_regs()
     }
 
 #if MODULE_METERS_LEGACY_API_AVAILABLE()
-    if (api.hasFeature("meter"))
-    {
+    if (api.hasFeature("meter")) {
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
         int32_t user_id = api.getState("charge_tracker/current_charge")->get("user_id")->asInt();
         bool charging = user_id != -1;
@@ -976,21 +948,17 @@ void ModbusTcp::update_keba_regs()
 #endif
 
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
-    if (api.getState("charge_tracker/current_charge")->get("authorization_type")->asUint() == 2)
-    {
+    if (api.getState("charge_tracker/current_charge")->get("authorization_type")->asUint() == 2) {
         const auto &tag_id = api.getState("charge_tracker/current_charge")->get("authorization_info")->get("tag_id")->asString();
         keba_read_charge_cpy->rfid_tag = fromUint(export_tag_id_as_uint32(tag_id));
     }
 #endif
 
 #if MODULE_METERS_LEGACY_API_AVAILABLE()
-    if (api.hasFeature("meter"))
-    {
-        if (api.hasFeature("meter_all_values"))
-        {
+    if (api.hasFeature("meter")) {
+        if (api.hasFeature("meter_all_values")) {
             auto meter_all_values = api.getState("meter/all_values");
-            for (int i = 0; i < 3; i++)
-            {
+            for (int i = 0; i < 3; i++) {
                 keba_read_general_cpy->currents[i] = fromUint(meter_all_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000);
                 keba_read_general_cpy->voltages[i] = fromUint(meter_all_values->get(i)->asFloat());
             }
@@ -1020,14 +988,12 @@ void ModbusTcp::register_urls()
 
     uint32_t config_table = config.get("table")->asUint();
 
-    if (config_table == 0)
-    {
+    if (config_table == 0) {
         uint16_t allowed_current = 32000;
         bool enable_charging = false;
         bool autostart_button = false;
 
-        if (api.hasFeature("evse"))
-        {
+        if (api.hasFeature("evse")) {
             auto slots = api.getState("evse/slots");
             allowed_current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint();
             enable_charging = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;

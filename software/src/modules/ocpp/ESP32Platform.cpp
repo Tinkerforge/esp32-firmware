@@ -220,10 +220,10 @@ void platform_register_tag_seen_callback(void *ctx, void (*cb)(int32_t, const ch
 }
 
 const char *trt_string[] = {
-"Blocked",
-"Expired",
-"Invalid",
-"ConcurrentTx",
+    "Blocked",
+    "Expired",
+    "Invalid",
+    "ConcurrentTx",
 };
 
 void platform_tag_expected(int32_t connectorId)
@@ -248,7 +248,7 @@ void platform_tag_rejected(int32_t connectorId, const char *tag, TagRejectionTyp
     evse_led.set_module(EvseLed::Blink::Nack, 2000);
 #endif
     ocpp.state.get("last_rejected_tag")->updateString(tag);
-    ocpp.state.get("last_rejected_tag_reason")->updateUint((uint8_t) trt);
+    ocpp.state.get("last_rejected_tag_reason")->updateUint((uint8_t)trt);
     logger.printfln("Tag %s rejected: %s", tag, trt_string[(size_t)trt]);
 }
 

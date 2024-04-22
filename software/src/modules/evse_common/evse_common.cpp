@@ -25,7 +25,8 @@
 extern EvseCommon evse_common;
 extern uint32_t local_uid_num;
 
-EvseCommon::EvseCommon() {
+EvseCommon::EvseCommon()
+{
 #if MODULE_EVSE_AVAILABLE()
     backend = &evse;
 #elif MODULE_EVSE_V2_AVAILABLE()
@@ -306,7 +307,7 @@ void EvseCommon::setup()
 bool EvseCommon::has_triggered(const Config *conf, void *data)
 {
     const Config *cfg = static_cast<const Config *>(conf->get());
-    uint32_t *states = (uint32_t*)data;
+    uint32_t *states = (uint32_t *)data;
     switch (conf->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::ChargerState:
         {
@@ -323,7 +324,7 @@ bool EvseCommon::has_triggered(const Config *conf, void *data)
             break;
 
         case AutomationTriggerID::EVSEExternalCurrentWd:
-        return true;
+            return true;
 
         default:
             return false;

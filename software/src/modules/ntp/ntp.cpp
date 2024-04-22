@@ -69,16 +69,14 @@ static void ntp_sync_cb(struct timeval *t)
 // we have to replace the sntp_sync_time function with a thread-safe implementation.
 extern "C" void sntp_sync_time(struct timeval *tv)
 {
-    if (sntp_get_sync_mode() == SNTP_SYNC_MODE_IMMED)
-    {
+    if (sntp_get_sync_mode() == SNTP_SYNC_MODE_IMMED) {
         {
             std::lock_guard<std::mutex> lock{ntp.mtx};
             settimeofday(tv, NULL);
             ntp.sync_counter++;
         }
         sntp_set_sync_status(SNTP_SYNC_STATUS_COMPLETED);
-    }
-    else
+    } else
         logger.printfln("This sync mode is not supported.");
     ntp_sync_cb(tv);
 }

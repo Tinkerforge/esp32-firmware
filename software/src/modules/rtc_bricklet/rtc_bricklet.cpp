@@ -34,7 +34,8 @@ void RtcBricklet::setup()
         return;
 }
 
-void RtcBricklet::register_urls() {
+void RtcBricklet::register_urls()
+{
     if (!device_found)
         return;
 
@@ -64,8 +65,7 @@ struct timeval RtcBricklet::get_time()
 {
     int64_t ts;
     int ret = tf_real_time_clock_v2_get_timestamp(&device, &ts);
-    if (ret)
-    {
+    if (ret) {
         logger.printfln("Reading RTC failed with code %i", ret);
         struct timeval tmp;
         tmp.tv_sec = 0;
@@ -83,8 +83,7 @@ struct timeval RtcBricklet::get_time()
     // Allow time to be 24h older than the build timestamp,
     // in case the RTC is set by hand to test something.
     // FIXME not Y2038-safe
-    if (time.tv_sec < static_cast<time_t>(build_timestamp() - 24 * 3600))
-    {
+    if (time.tv_sec < static_cast<time_t>(build_timestamp() - 24 * 3600)) {
         struct timeval tmp;
         tmp.tv_sec = 0;
         tmp.tv_usec = 0;

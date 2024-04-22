@@ -701,8 +701,7 @@ void Users::remove_from_username_file(uint8_t user_id)
     }
 
     this->rename_user(user_id, "", "");
-    if (config.get("next_user_id")->asUint() == 0)
-    {
+    if (config.get("next_user_id")->asUint() == 0) {
         config.get("next_user_id")->updateUint(user_id);
         API::writeConfig("users/config", &config);
     }

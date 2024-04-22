@@ -27,13 +27,15 @@
 #include "musl_libc_timegm.h"
 #include "event_log.h"
 
-void IRtcBackend::set_time(const timeval &time) {
+void IRtcBackend::set_time(const timeval &time)
+{
     struct tm tm;
     gmtime_r(&time.tv_sec, &tm);
     set_time(tm);
 }
 
-void IRtcBackend::set_time(const tm &time) {
+void IRtcBackend::set_time(const tm &time)
+{
     struct tm copy = time;
     struct timeval timeval;
     timeval.tv_sec = timegm(&copy);

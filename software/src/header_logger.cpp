@@ -21,11 +21,13 @@
 
 #include "event_log.h"
 
-int header_printfln(const char *prefix, const char *fmt, va_list args) {
+int header_printfln(const char *prefix, const char *fmt, va_list args)
+{
     return logger.printfln_prefixed(prefix, strlen(prefix), fmt, args);
 }
 
-int header_printfln(const char *prefix, const char *fmt, ...) {
+int header_printfln(const char *prefix, const char *fmt, ...)
+{
     va_list args;
     va_start(args, fmt);
     int result = header_printfln(prefix, fmt, args);

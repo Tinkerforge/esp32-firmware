@@ -33,9 +33,9 @@
 #include "tools.h"
 
 struct StateRegistration {
-    const char * const path;
-    const String * const keys_to_censor;
-    ConfigRoot * const config;
+    const char *const path;
+    const String *const keys_to_censor;
+    ConfigRoot *const config;
 
     const uint8_t path_len;
     const uint8_t keys_to_censor_len;
@@ -43,9 +43,9 @@ struct StateRegistration {
 };
 
 struct CommandRegistration {
-    const char * const path;
-    const String * const keys_to_censor_in_debug_report;
-    ConfigRoot * const config;
+    const char *const path;
+    const String *const keys_to_censor_in_debug_report;
+    ConfigRoot *const config;
     const std::function<void(String &)> callback;
 
     const uint8_t path_len;
@@ -54,7 +54,7 @@ struct CommandRegistration {
 };
 
 struct RawCommandRegistration {
-    const char * const path;
+    const char *const path;
     std::function<String(char *, size_t)> callback;
 
     const uint8_t path_len;
@@ -62,8 +62,8 @@ struct RawCommandRegistration {
 };
 
 struct ResponseRegistration {
-    const char * const path;
-    const String * const keys_to_censor_in_debug_report;
+    const char *const path;
+    const String *const keys_to_censor_in_debug_report;
     ConfigRoot *config;
     std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback;
 

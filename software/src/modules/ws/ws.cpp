@@ -191,7 +191,7 @@ bool WS::pushStateUpdateBegin(StringBuilder *sb, size_t stateIdx, size_t payload
 }
 
 // returns true on success
-bool WS::pushStateUpdateEnd(StringBuilder* sb)
+bool WS::pushStateUpdateEnd(StringBuilder *sb)
 {
     sb->puts(suffix, suffix_len);
 
@@ -208,7 +208,7 @@ bool WS::pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_len, const ch
 }
 
 // returns true on success
-bool WS::pushRawStateUpdateEnd(StringBuilder* sb)
+bool WS::pushRawStateUpdateEnd(StringBuilder *sb)
 {
     return pushStateUpdateEnd(sb);
 }

@@ -197,8 +197,7 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
 {
     size_t req_uri_len = strlen(req.uriCStr() + 1);
 
-    for (size_t i = 0; i < api.states.size(); i++)
-    {
+    for (size_t i = 0; i < api.states.size(); i++) {
         if (api.states[i].path_len != req_uri_len || memcmp(api.states[i].path, req.uriCStr() + 1, req_uri_len) != 0)
             continue;
 
@@ -229,8 +228,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
         if (api.commands[i].path_len == req_uri_len && memcmp(api.commands[i].path, req.uriCStr() + 1, req_uri_len) == 0)
             return run_command(req, i);
 
-    for (size_t i = 0; i < api.raw_commands.size(); i++)
-    {
+    for (size_t i = 0; i < api.raw_commands.size(); i++) {
         if (api.raw_commands[i].path_len != req_uri_len || memcmp(api.raw_commands[i].path, req.uriCStr() + 1, req_uri_len) != 0)
             continue;
 
@@ -257,8 +255,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
         return req.send(400, "text/plain; charset=utf-8", message.c_str());
     }
 
-    for (size_t i = 0; i < api.responses.size(); i++)
-    {
+    for (size_t i = 0; i < api.responses.size(); i++) {
         if (api.responses[i].path_len != req_uri_len || memcmp(api.responses[i].path, req.uriCStr() + 1, req_uri_len) != 0)
             continue;
 
@@ -297,8 +294,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
         return req.send(405, "text/plain", "Request method for this URI is not handled by server");
     }
 
-    for (size_t i = 0; i < api.states.size(); i++)
-    {
+    for (size_t i = 0; i < api.states.size(); i++) {
         if (api.states[i].path_len != req_uri_len || memcmp(api.states[i].path, req.uriCStr() + 1, req_uri_len) != 0)
             continue;
 
@@ -321,7 +317,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
 bool Http::has_triggered(const Config *conf, void *data)
 {
     const Config *cfg = static_cast<const Config *>(conf->get());
-    auto *trigger = (HttpTrigger *) data;
+    auto *trigger = (HttpTrigger *)data;
 
     auto method = trigger->req.method();
     switch (cfg->get("method")->asEnum<HttpTriggerMethod>()) {
