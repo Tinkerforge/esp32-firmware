@@ -89,11 +89,11 @@ public:
 extern EventLog logger;
 
 // To capture ESP-IDF log messages, use
-// esp_log_set_vprintf(tf_event_log_printf);
+// esp_log_set_vprintf(tf_event_log_vprintfln);
 // If this is in a c (not cpp) file, also add
-// extern int tf_event_log_printf(const char *fmt, va_list args);
+// extern int tf_event_log_vprintfln(const char *fmt, va_list args);
 // instead of including event_log.h (a C++ header)
-extern "C" int tf_event_log_printf(const char *fmt, va_list args);
+extern "C" int tf_event_log_vprintfln(const char *fmt, va_list args);
 
 // To directly print from external C code, add
 // extern int tf_event_log_printfln(const char *fmt, ...);
