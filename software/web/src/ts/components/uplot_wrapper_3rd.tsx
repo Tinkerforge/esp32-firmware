@@ -35,7 +35,7 @@ interface UplotFlagsWrapperProps {
     sync?: uPlot.SyncPubSub;
     legend_time_label: string;
     legend_time_with_minutes: boolean;
-    legend_div_ref: RefObject<HTMLDivElement>;
+    legend_div_ref?: RefObject<HTMLDivElement>;
     x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
     y_sync_ref?: RefObject<UplotWrapper>;
@@ -168,7 +168,7 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             padding: [null, 5, 0, null] as uPlot.Padding,
             legend: {
                 mount: (self: uPlot, legend: HTMLElement) => {
-                    if (this.props.legend_div_ref.current) {
+                    if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
                         this.props.legend_div_ref.current.appendChild(legend);
                     }
                 },
@@ -288,7 +288,7 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
     set_loading() {
         this.div_ref.current.style.visibility = 'hidden';
 
-        if (this.props.legend_div_ref.current) {
+        if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
             this.props.legend_div_ref.current.style.visibility = 'hidden';
         }
     }
@@ -296,7 +296,7 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
     set_show(show: boolean) {
         this.div_ref.current.style.display = show ? 'block' : 'none';
 
-        if (this.props.legend_div_ref.current) {
+        if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
             this.props.legend_div_ref.current.style.display = show ? 'block' : 'none';
         }
     }
@@ -332,14 +332,14 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
         if (visible === false || (visible === undefined && (!this.data || this.data.keys.length <= 1))) {
             this.div_ref.current.style.visibility = 'hidden';
 
-            if (this.props.legend_div_ref.current) {
+            if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
                 this.props.legend_div_ref.current.style.visibility = 'hidden';
             }
         }
         else {
             this.div_ref.current.style.visibility = 'inherit';
 
-            if (this.props.legend_div_ref.current) {
+            if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
                 this.props.legend_div_ref.current.style.visibility = 'inherit';
             }
 

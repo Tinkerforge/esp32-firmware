@@ -29,6 +29,7 @@ export interface UplotData {
     keys: string[];
     names: string[];
     values: number[][];
+    default_visibilty?: boolean[];
 }
 
 interface UplotWrapperProps {
@@ -56,6 +57,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
     uplot: uPlot;
     data: UplotData;
     pending_data: UplotData;
+    pending_visible: boolean;
     series_visibility: {[id: string]: boolean} = {};
     visible: boolean = false;
     div_ref = createRef();
@@ -76,7 +78,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             this.visible = util.get_active_sub_page() == this.props.sub_page;
 
             if (this.visible && this.pending_data !== undefined) {
-                this.set_data(this.pending_data);
+                this.set_data(this.pending_data, this.pending_visible);
             }
         });
 
@@ -279,7 +281,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
         }
 
         if (this.pending_data !== undefined) {
-            this.set_data(this.pending_data);
+            this.set_data(this.pending_data, this.pending_visible);
         }
 
         if (this.props.on_mount) {
@@ -404,36 +406,42 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
         this.uplot.setData(this.data.values as any);
     }
 
-    set_data(data: UplotData) {
+    set_data(data: UplotData, visible?: boolean) {
         if (!this.uplot || !this.visible) {
             this.pending_data = data;
+            this.pending_visible = visible;
             return;
         }
 
         this.data = data;
         this.pending_data = undefined;
+        this.pending_visible = undefined;
 
-        if (!this.data || this.data.keys.length <= 1) {
+        if (visible === false || (visible === undefined && (!this.data || this.data.keys.length <= 1))) {
             this.div_ref.current.style.visibility = 'hidden';
         }
         else {
             this.div_ref.current.style.visibility = 'inherit';
-        }
 
-        while (this.uplot.series.length > 1) {
-            this.uplot.delSeries(this.uplot.series.length - 1);
-        }
+            while (this.uplot.series.length > 1) {
+                this.uplot.delSeries(this.uplot.series.length - 1);
+            }
 
-        if (this.data) {
             while (this.uplot.series.length < this.data.keys.length) {
                 if (this.series_visibility[this.data.keys[this.uplot.series.length]] === undefined) {
-                    this.series_visibility[this.data.keys[this.uplot.series.length]] = true;
+                    let visibilty = true;
+
+                    if (this.data.default_visibilty) {
+                        visibilty = this.data.default_visibilty[this.uplot.series.length];
+                    }
+
+                    this.series_visibility[this.data.keys[this.uplot.series.length]] = visibilty;
                 }
 
                 this.uplot.addSeries(this.get_series_opts(this.uplot.series.length, this.data.keys.length <= 2));
             }
-        }
 
-        this.update_internal_data();
+            this.update_internal_data();
+        }
     }
 }
