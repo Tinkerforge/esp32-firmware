@@ -527,9 +527,18 @@ static float get_scale_factor(int32_t sunssf)
 
 }
 
-static inline uint32_t convert_me_uint32(uint32_t me32)
+static inline uint32_t convert_me_uint32(const uint32_t *me32)
 {
-    return me32 << 16 | me32 >> 16;
+    union {
+        uint32_t u32;
+        uint16_t u16[2];
+    } uni;
+
+    const uint16_t *regs = reinterpret_cast<const uint16_t *>(me32);
+    uni.u16[0] = regs[1];
+    uni.u16[1] = regs[0];
+
+    return uni.u32;
 }
 
 static inline uint64_t convert_me_uint64(const uint64_t *me64)
@@ -548,7 +557,7 @@ static inline uint64_t convert_me_uint64(const uint64_t *me64)
     return uni.u64;
 }
 
-static inline float convert_me_float(uint32_t me32)
+static inline float convert_me_float(const uint32_t *me32)
 {
     union {
         float result;
@@ -617,11 +626,11 @@ for model in models:
         elif field_type == "uint16":
             print_cpp(f"    uint16_t val = model->{name};")
         elif field_type == "uint32" or field_type == "acc32":
-            print_cpp(f"    uint32_t val = convert_me_uint32(model->{name});")
+            print_cpp(f"    uint32_t val = convert_me_uint32(&model->{name});")
         elif field_type == "uint64":
             print_cpp(f"    uint64_t val = convert_me_uint64(&model->{name});")
         elif field_type == "float32":
-            print_cpp(f"    float val = convert_me_float(model->{name});")
+            print_cpp(f"    float val = convert_me_float(&model->{name});")
         else:
             print(f"Unhandled field_type {field_type} for field {name}", file=sys.stderr)
 
