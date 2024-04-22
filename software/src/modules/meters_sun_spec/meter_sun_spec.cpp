@@ -229,7 +229,7 @@ void MeterSunSpec::scan_next()
                 uint16_t scan_model_id = scan_deserializer.read_uint16();
                 size_t block_length = scan_deserializer.read_uint16();
 
-                if (scan_model_id == NON_IMPLEMENTED_UINT16 && block_length == 0) {
+                if (scan_model_id == NON_IMPLEMENTED_UINT16) { // End model found
                     logger.printfln("Configured SunSpec model %u/%u not found at %s:%u:%u",
                                     model_id, model_instance, host_name.c_str(), port, device_address);
                     scan_start_delay();
