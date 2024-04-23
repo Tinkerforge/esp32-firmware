@@ -67,6 +67,8 @@ interface DeviceScannerProps {
 }
 
 interface DeviceScannerState {
+    scan_device_address_first: number;
+    scan_device_address_last: number;
     scan_running: boolean;
     scan_cookie: number;
     scan_progress: number;
@@ -82,6 +84,8 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         super();
 
         this.state = {
+            scan_device_address_first: 1,
+            scan_device_address_last: 247,
             scan_running: false,
             scan_cookie: null,
             scan_progress: 0,
@@ -146,7 +150,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 this.scan_continue_timer = undefined;
             }
 
-            this.setState({scan_running: false, scan_cookie: null});
+            this.setState({scan_running: false, scan_cookie: null, scan_progress: 100});
         });
     }
 
@@ -258,6 +262,30 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
 
     render() {
         return <>
+            <FormRow label={__("meters_sun_spec.content.scan_device_address_range")}>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <InputNumber
+                            required
+                            min={1}
+                            max={247}
+                            value={this.state.scan_device_address_first}
+                            onValue={(v) => {
+                                this.setState({scan_device_address_first: v});
+                            }} />
+                    </div>
+                    <div class="col-sm-6">
+                        <InputNumber
+                            required
+                            min={1}
+                            max={247}
+                            value={this.state.scan_device_address_last}
+                            onValue={(v) => {
+                                this.setState({scan_device_address_last: v});
+                            }} />
+                    </div>
+                </div>
+            </FormRow>
             <FormRow label={__("meters_sun_spec.content.scan_title")}>
             {!this.state.scan_running ?
                 <Button variant="primary"
@@ -276,8 +304,13 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                                 let result;
 
                                 try {
-                                    result = await (await util.put('/meters_sun_spec/scan',
-                                                                   {host: this.props.host, port: this.props.port, cookie: scan_cookie})).text();
+                                    result = await (await util.put('/meters_sun_spec/scan', {
+                                        host: this.props.host,
+                                        port: this.props.port,
+                                        device_address_first: this.state.scan_device_address_first,
+                                        device_address_last: this.state.scan_device_address_last,
+                                        cookie: scan_cookie,
+                                    })).text();
                                 }
                                 catch (e) {
                                     this.setState({

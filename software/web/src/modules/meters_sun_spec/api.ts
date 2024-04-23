@@ -1,6 +1,8 @@
 export interface scan {
     host: string;
     port: number;
+    device_address_first: number;
+    device_address_last: number;
     cookie: number;
 }
 

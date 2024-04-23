@@ -21,6 +21,7 @@ let x = {
             "config_model_id_select": "Auswählen...",
             "config_model_instance": "Modellinstanz",
 
+            "scan_device_address_range": "Geräteadressbereich",
             "scan_title": "Gerätesuche",
             "scan": "Suche starten",
             "scan_results": "Gefundene Geräte",

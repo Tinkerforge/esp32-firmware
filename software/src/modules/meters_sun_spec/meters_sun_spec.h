@@ -89,6 +89,8 @@ private:
     bool scan_new = false;
     String scan_new_host;
     uint16_t scan_new_port;
+    uint8_t scan_new_device_address_first;
+    uint8_t scan_new_device_address_last;
     uint32_t scan_new_cookie;
 
     micros_t scan_last_keep_alive = 0_usec;
@@ -98,6 +100,8 @@ private:
     dns_gethostbyname_addrtype_lwip_ctx_async_data scan_host_data;
     IPAddress scan_host_address;
     uint16_t scan_port;
+    uint8_t scan_device_address_first;
+    uint8_t scan_device_address_last;
     uint32_t scan_cookie;
     uint8_t scan_device_address;
     size_t scan_base_address_index;

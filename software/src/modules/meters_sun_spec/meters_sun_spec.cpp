@@ -34,9 +34,6 @@
 #define MAX_SCAN_READ_RETRIES 5
 #define MAX_SCAN_READ_TIMEOUT_BURST 10
 
-#define DEVICE_ADDRESS_FIRST 1u
-#define DEVICE_ADDRESS_LAST 247u
-
 #define SUN_SPEC_ID 0x53756E53
 
 #define COMMON_MODEL_ID 1
@@ -69,6 +66,8 @@ void MetersSunSpec::pre_setup()
     scan_config = ConfigRoot{Config::Object({
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(0)},
+        {"device_address_first", Config::Uint(1, 1, 247)},
+        {"device_address_last", Config::Uint(247, 1, 247)},
         {"cookie", Config::Uint32(0)},
     })};
 
@@ -96,7 +95,14 @@ void MetersSunSpec::register_urls()
 
         scan_new_host = scan_config.get("host")->asString();
         scan_new_port = static_cast<uint16_t>(scan_config.get("port")->asUint());
+        scan_new_device_address_first = static_cast<uint8_t>(scan_config.get("device_address_first")->asUint());
+        scan_new_device_address_last = static_cast<uint8_t>(scan_config.get("device_address_last")->asUint());
         scan_new_cookie = scan_config.get("cookie")->asUint();
+
+        if (scan_new_device_address_last < scan_new_device_address_first) {
+            scan_new_device_address_last = scan_new_device_address_first;
+        }
+
         scan_new = true;
         scan_last_keep_alive = now_us();
     }, true);
@@ -155,8 +161,10 @@ void MetersSunSpec::loop()
             scan_state = ScanState::Resolve;
             scan_host = scan_new_host;
             scan_port = scan_new_port;
+            scan_device_address_first = scan_new_device_address_first;
+            scan_device_address_last = scan_new_device_address_last;
             scan_cookie = scan_new_cookie;
-            scan_device_address = DEVICE_ADDRESS_FIRST;
+            scan_device_address = scan_device_address_first;
             scan_base_address_index = 0;
             scan_read_timeout_burst = 0;
             ++scan_read_cookie;
@@ -269,7 +277,7 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::NextDeviceAddress:
-        if (scan_abort || scan_device_address >= DEVICE_ADDRESS_LAST) {
+        if (scan_abort || scan_device_address >= scan_device_address_last) {
             scan_state = ScanState::Disconnect;
         }
         else {
@@ -278,7 +286,7 @@ void MetersSunSpec::loop()
 
             json.addObject();
             json.addMemberNumber("cookie", scan_cookie);
-            json.addMemberNumber("progress", static_cast<float>(scan_device_address + 1u - DEVICE_ADDRESS_FIRST) * 100.0f / static_cast<float>(DEVICE_ADDRESS_LAST - DEVICE_ADDRESS_FIRST));
+            json.addMemberNumber("progress", static_cast<float>(scan_device_address + 1u - scan_device_address_first) * 100.0f / static_cast<float>(scan_device_address_last - scan_device_address_first));
             json.endObject();
             json.end();
 
