@@ -13,7 +13,7 @@ let x = {
             "add_value_title": "Add value",
             "add_value_count": /*SFN*/(x: number, max: number) => x + " of " + max + " values configured"/*NF*/,
             "edit_value_title": "Edit value",
-            "api_meter_preset": "Presets",
+            "api_meter_preset": "Preset",
             "api_meter_no_preset": "No preset selected",
             "override_modal_title": "Override meter values",
             "override_modal_body": "The meter values will be overridden. Are you sure?",
