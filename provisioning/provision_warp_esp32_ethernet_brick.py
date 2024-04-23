@@ -377,8 +377,6 @@ def brick_removed(relay_to_rgb_led):
             raise
 
 def main():
-    cleanup = []
-
     ipcon = IPConnection()
     ipcon.connect("localhost", 4223)
 
@@ -475,10 +473,6 @@ def main():
             ipcon.set_timeout(0.5)
 
             relay_to_rgb_led[k] = rgb_led
-
-    print("Running cleanup functions")
-    for fn in cleanup:
-        fn()
 
     while len(relay_to_rgb_led) > 0:
         print(green(f"ESPs in testers {', '.join(str(x) for x in relay_to_rgb_led.keys())} tested successfully. Remove one of the ESPs to print its label!"))
