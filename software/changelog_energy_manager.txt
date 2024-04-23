@@ -25,7 +25,7 @@
 - Fix deletion of WiFi station passphrase
 - Fix missing meter values on UI
 
-2023-05-16: 1.0.2 (48162334)
+2023-05-17: 1.0.2 (48162334)
 - Add fill to meter plot
 - Add cloud filter
 - Add PWA-style bookmark support
@@ -151,26 +151,26 @@
 
 2023-11-03: 1.0.92 (<unknown>)
 - SunSpec Beta 3
-- Add quirks mode for KOSTAL devices: acc32 can be signed.
-- Fixed detection of inverter values at night; fixes missing values of SMA inverters.
-- Improved performance of SunSpec devices with float models; reduces risk of timeouts during reads.
+- Add quirks mode for KOSTAL devices: acc32 can be signed
+- Fixed detection of inverter values at night; fixes missing values of SMA inverters
+- Improved performance of SunSpec devices with float models; reduces risk of timeouts during reads
 
 2023-11-06: 1.0.93 (<unknown>)
 - SunSpec Beta 4
-- Fixed display of inverter power.
-- Fixed display of phase currents of SMA inverters.
-- Improved read performance, especially with Modbus RTU bridges.
+- Fixed display of inverter power
+- Fixed display of phase currents of SMA inverters
+- Improved read performance, especially with Modbus RTU bridges
 
 2023-11-17: 1.0.94 (<unknown>)
 - SunSpec Beta 5
-- Change inverter power value ID so that the power shows up in the table and plot.
+- Change inverter power value ID so that the power shows up in the table and plot
 
 2023-12-21: 1.0.95 (96c641c6)
 - 2.0.0 Beta 1
 - Add automation
 - Add WPA Enterprise EAP-TLS, EAP-PEAP and EAP-TTLS support
 - Add SunSpec meter/inverter support
-- Rework meter handling. Support 7 energy meters. Add meters API.
+- Rework meter handling. Support 7 energy meters. Add meters API
 - Add configurable API meter
 - Support Eltako DSZ15DZMOD and YTL DEM4A
 - Add resettable import/export energy values

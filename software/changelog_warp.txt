@@ -117,7 +117,7 @@
 - Don't allow empty client ID in MQTT
 
 2022-01-10: 1.3.3 (d365e548)
-- Add waking up chargers that already charged once  (charge management)
+- Add waking up chargers that already charged once (charge management)
 - Allow firmware update if vehicle state is error
 - Make web interface usable for screens with 320 to 360 px width
 - Warn when activating authentication that a password reset can only be done by resetting to factory defaults
@@ -478,7 +478,7 @@
 - Check that entered IP addresses are not network or broadcast addresses
 - Improve Translations
 - Improve WebSocket connection establishment reliability and performance
-- Fix reverse proxy support.
+- Fix reverse proxy support
 - Don't draw zero line outside plot area
 
 2023-12-21: 2.1.90 (96c641c6)
@@ -486,7 +486,7 @@
 - Add automation
 - Add WPA Enterprise EAP-TLS, EAP-PEAP and EAP-TTLS support
 - Add SunSpec meter/inverter support
-- Rework meter handling. Support 2 energy meters. Add meters API.
+- Rework meter handling. Support 2 energy meters. Add meters API
 - Add configurable API meter
 - Add resettable import/export energy values
 - Use import energy for charge tracker etc. Switch over when factory resetting or removing all tracked charges

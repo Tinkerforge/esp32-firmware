@@ -40,11 +40,11 @@
 - Add warning before downgrades
 - Log more network events
 - Improve active/connected phase detection (through EVSE 2.0 Bricklet firmware 2.0.6)
-- Improve vehicle connected detection in case of error on startup  (through EVSE 2.0 Bricklet firmware 2.0.6)
+- Improve vehicle connected detection in case of error on startup (through EVSE 2.0 Bricklet firmware 2.0.6)
 
 2022-01-10: 1.1.2 (d365e548)
 - Don't allow empty client ID in MQTT
-- Add waking up chargers that already charged once  (charge management)
+- Add waking up chargers that already charged once (charge management)
 - Increase active phase threshold to 300 mA (through EVSE 2.0 Bricklet firmware 2.0.7)
 - Allow firmware update if vehicle state is error
 - Make web interface usable for screens with 320 to 360 px width
@@ -290,7 +290,7 @@
 - Silence confusing web socket error message
 
 2023-02-28: 2.1.0 (17f4001d)
-- Add finished OCPP implementation:
+- Add finished OCPP implementation
 - Send NFC tag IDs without ':' to OCPP server
 - Improve OCPP basic auth support
 - Fix OCPP connections without basic auth
@@ -474,7 +474,7 @@
 - Add automation
 - Add WPA Enterprise EAP-TLS, EAP-PEAP and EAP-TTLS support
 - Add SunSpec meter/inverter support
-- Rework meter handling. Support 2 energy meters. Add meters API.
+- Rework meter handling. Support 2 energy meters. Add meters API
 - Add configurable API meter
 - Support Eltako DSZ15DZMOD and YTL DEM4A (through EVSE 2.0 Bricklet firmware 2.2.0)
 - Add resettable import/export energy values
