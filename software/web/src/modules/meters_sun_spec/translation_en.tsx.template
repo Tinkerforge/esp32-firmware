@@ -21,8 +21,8 @@ let x = {
             "config_model_id_select": "Select...",
             "config_model_instance": "Model instance",
 
-            "scan_device_address_range": "Device address range",
             "scan_title": "Device search",
+            "scan_title_muted": "first device address, last device address",
             "scan": "Start search",
             "scan_results": "Discovered devices",
             "scan_log": "Log",

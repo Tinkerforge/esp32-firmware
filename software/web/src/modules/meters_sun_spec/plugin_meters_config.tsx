@@ -262,7 +262,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
 
     render() {
         return <>
-            <FormRow label={__("meters_sun_spec.content.scan_device_address_range")}>
+            <FormRow label={__("meters_sun_spec.content.scan_title")} label_muted={__("meters_sun_spec.content.scan_title_muted")}>
                 <div class="row">
                     <div class="col-sm-6">
                         <InputNumber
@@ -286,7 +286,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                     </div>
                 </div>
             </FormRow>
-            <FormRow label={__("meters_sun_spec.content.scan_title")}>
+            <FormRow label="">
             {!this.state.scan_running ?
                 <Button variant="primary"
                         className="form-control"
