@@ -52,7 +52,7 @@ public:
     [[gnu::const]] virtual const Config *get_state_prototype()  override;
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
-//private:
+private:
     enum class ScanState {
         Idle,
         Resolve,
