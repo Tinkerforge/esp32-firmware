@@ -406,7 +406,7 @@ void MetersSunSpec::loop()
 
             if (rc == 0) {
                 if (scan_read_retries > 0) {
-                    scan_printfln("Read error, retrying");
+                    scan_printfln("Unknown read error, retrying");
 
                     --scan_read_retries;
                     scan_state = ScanState::ReadNext;
