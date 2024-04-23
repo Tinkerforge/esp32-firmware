@@ -305,6 +305,18 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
     result["rtc_test_successful"] = True
 
     try:
+        with urllib.request.urlopen(f"http://{ethernet_ip}/ntp/config_reset", timeout=1) as f:
+            f.read()
+    except:
+        fatal_error("Failed to re-enable NTP")
+
+    try:
+        with urllib.request.urlopen(f"http://{ethernet_ip}/ethernet/config_reset", timeout=1) as f:
+            f.read()
+    except:
+        fatal_error("Failed to re-enable NTP")
+
+    try:
         with urllib.request.urlopen(f"http://{ethernet_ip}/hidden_proxy/enable", timeout=10) as f:
             f.read()
     except Exception as e:
@@ -341,25 +353,6 @@ def print_label(ssid, passphrase, stage_1_test_report, generator_fn):
             label_success, removed_brick = nonblocking_input(label_prompt, generator_fn())
 
     return removed_brick
-
-def reset_ntp_config_fn(ethernet_ip):
-    def inner(ethernet_ip):
-        try:
-            with urllib.request.urlopen(f"http://{ethernet_ip}/ntp/config_reset", timeout=1) as f:
-                f.read()
-        except:
-            fatal_error("Failed to re-enable NTP")
-    return lambda: inner(ethernet_ip)
-
-def reset_ethernet_config_fn(ethernet_ip):
-    def inner(ethernet_ip):
-        try:
-            with urllib.request.urlopen(f"http://{ethernet_ip}/ethernet/config_reset", timeout=1) as f:
-                f.read()
-        except:
-            fatal_error("Failed to re-enable NTP")
-    return lambda: inner(ethernet_ip)
-
 
 def brick_removed(relay_to_rgb_led):
     try:
@@ -454,7 +447,6 @@ def main():
 
     for k, v in list(relay_to_serial.items()):
         try:
-            cleanup.append(reset_ethernet_config_fn(f"192.168.1.{9 + k}"))
             test_wifi(relay_to_ssid[k], relay_to_passphrase[k], f"192.168.1.{9 + k}", test_reports[k])
         except BaseException as e:
             print(red(f"Failed to test WiFi for {k} {v}: {e}"))
@@ -464,7 +456,6 @@ def main():
         return lambda: run_stage_1_tests(serial_port, ethernet_ip, lambda: iqr.set_selected_value(relay_pin, False), lambda: iqr.set_selected_value(relay_pin, True), test_report)
 
     for k, v in relay_to_serial.items():
-        cleanup.append(reset_ntp_config_fn(f"192.168.1.{9 + k}"))
         print(green(f"{k}: 192.168.1.{9 + k}"))
         t = ThreadWithReturnValue(target=run_stage_1_tests_fn(v, f"192.168.1.{9 + k}", k, test_reports[k]))
         t.start()
