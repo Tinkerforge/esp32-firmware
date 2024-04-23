@@ -243,13 +243,14 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
         with urllib.request.urlopen(req, timeout=10) as f:
             fw_version = json.loads(f.read().decode("utf-8"))["firmware"].split("-")[0]
     except Exception as e:
+        traceback.print_exc()
         fatal_error("Failed to read firmware version!")
 
     try:
         with urllib.request.urlopen(f"http://{ethernet_ip}/hidden_proxy/enable", timeout=10) as f:
             f.read()
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         fatal_error("Failed to enable hidden_proxy!")
 
     time.sleep(3)
@@ -268,7 +269,7 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
         with urllib.request.urlopen(f"http://{ethernet_ip}/esp32/temperature", timeout=10) as f:
             esp_temp = float(json.loads(f.read())["temperature"]) / 100
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         fatal_error("Failed to read temperature value!")
 
     if abs(avg_bricklet_temp - esp_temp) > 15:
@@ -292,6 +293,7 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
         with urllib.request.urlopen(req, timeout=1) as f:
             f.read()
     except:
+        traceback.print_exc()
         fatal_error("Failed to disable NTP")
 
     power_off_fn()
@@ -308,19 +310,21 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
         with urllib.request.urlopen(f"http://{ethernet_ip}/ntp/config_reset", timeout=1) as f:
             f.read()
     except:
+        traceback.print_exc()
         fatal_error("Failed to re-enable NTP")
 
     try:
         with urllib.request.urlopen(f"http://{ethernet_ip}/ethernet/config_reset", timeout=1) as f:
             f.read()
     except:
+        traceback.print_exc()
         fatal_error("Failed to re-enable NTP")
 
     try:
         with urllib.request.urlopen(f"http://{ethernet_ip}/hidden_proxy/enable", timeout=10) as f:
             f.read()
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         fatal_error("Failed to enable hidden_proxy!")
 
     time.sleep(3)
