@@ -27,40 +27,40 @@
 #include "obis.h"
 
 #if defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #include "gcc_warnings.h"
-  #pragma GCC diagnostic ignored "-Weffc++"
+    #pragma GCC diagnostic push
+    #include "gcc_warnings.h"
+    #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
 struct cmpMeterValueID
 {
-  bool operator()(MeterValueID left, MeterValueID right) const
-  {
-    return static_cast<uint16_t>(left) < static_cast<uint16_t>(right);
-  }
+    bool operator()(MeterValueID left, MeterValueID right) const
+    {
+        return static_cast<uint16_t>(left) < static_cast<uint16_t>(right);
+    }
 };
 
 class MeterSMASpeedwire final : public IMeter
 {
 public:
-  MeterSMASpeedwire(uint32_t slot);
+    MeterSMASpeedwire(uint32_t slot);
 
-  MeterClassID get_class() const override;
-  void setup(const Config &ephemeral_config) override;
+    MeterClassID get_class() const override;
+    void setup(const Config &ephemeral_config) override;
 
-  bool supports_power() override          {return true;}
-  bool supports_energy_import() override  {return true;}
-  bool supports_energy_imexsum() override {return true;}
-  bool supports_energy_export() override  {return true;}
-  bool supports_currents() override       {return true;}
+    bool supports_power() override          {return true;}
+    bool supports_energy_import() override  {return true;}
+    bool supports_energy_imexsum() override {return true;}
+    bool supports_energy_export() override  {return true;}
+    bool supports_currents() override       {return true;}
 
 private:
-  void update_all_values();
+    void update_all_values();
 
-  uint32_t _slot;
-  std::map<MeterValueID, obis*, cmpMeterValueID> _values;
+    uint32_t _slot;
+    std::map<MeterValueID, obis*, cmpMeterValueID> _values;
 };
 
 #if defined(__GNUC__)
-  #pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
 #endif
