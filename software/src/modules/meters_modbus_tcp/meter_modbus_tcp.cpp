@@ -143,12 +143,12 @@ static const ValueSpec value_specs[] = {
         1.0f,
     },
     {
-        MeterValueID::NotSupported,
+        MeterValueID::PowerActiveLSumImExDiff,
         "Export Power [W]",
         13010,
         2,
         ValueType::S32,
-        1.0f,
+        -1.0f,
     },
     {
         MeterValueID::NotSupported,
@@ -255,7 +255,7 @@ static const ValueSpec value_specs[] = {
         0.1f,
     },
     {
-        MeterValueID::PowerActiveLSumImExDiff,
+        MeterValueID::NotSupported,
         "Total Active Power [W]",
         13034,
         2,
