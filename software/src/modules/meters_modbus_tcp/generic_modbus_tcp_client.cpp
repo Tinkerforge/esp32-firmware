@@ -133,8 +133,15 @@ void GenericModbusTCPClient::read_next()
     // Return value doesn't matter. The caller discards it.
     cbTransaction read_done_cb = [this](Modbus::ResultCode result_code, uint16_t /*transaction_id*/, void * /*data*/)->bool {
         if (result_code != Modbus::ResultCode::EX_SUCCESS) {
-            logger.printfln("readHreg failed: %s (0x%02x) host=%s port=%u device_address=%u rtype=%i start_address=%u register_count=%u", get_modbus_result_code_name(result_code), static_cast<uint32_t>(result_code),
-                host_ip.toString().c_str(), port, device_address, generic_read_request.register_type, generic_read_request.start_address, generic_read_request.register_count);
+            logger.printfln("read%creg failed: %s (0x%02x) host=%s port=%u device_address=%u start_address=%u register_count=%u",
+                            generic_read_request.register_type == TAddress::RegType::HREG ? 'H' : 'I',
+                            get_modbus_result_code_name(result_code),
+                            static_cast<uint32_t>(result_code),
+                            host_ip.toString().c_str(),
+                            port,
+                            device_address,
+                            generic_read_request.start_address,
+                            generic_read_request.register_count);
 
             generic_read_request.result_code = result_code;
             generic_read_request.done_callback();

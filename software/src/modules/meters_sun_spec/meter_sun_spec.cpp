@@ -116,7 +116,7 @@ void MeterSunSpec::read_done_callback()
     read_allowed = true;
 
     if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
-        logger.printfln("Read unsuccessful (%i)", generic_read_request.result_code);
+        logger.printfln("Read error: %s (%d)", get_modbus_result_code_name(generic_read_request.result_code), generic_read_request.result_code);
         return;
     }
 
