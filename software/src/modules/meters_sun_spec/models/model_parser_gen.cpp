@@ -291,7 +291,10 @@ static float get_model_101_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->PF_SF) * 0.01f);
+    fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -609,7 +612,10 @@ static float get_model_102_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->PF_SF) * 0.01f);
+    fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 
@@ -927,7 +933,10 @@ static float get_model_103_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->PF_SF) * 0.01f);
+    fval *= get_scale_factor(model->PF_SF);
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY) == 0) {
+        fval *= 0.01f;
+    }
     return fval;
 }
 

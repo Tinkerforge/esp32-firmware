@@ -312,6 +312,8 @@ void MeterSunSpec::scan_next()
                         } else if (strncmp(m->Mn, "SolarEdge", 9) == 0) {
                             // Compare only 9 characters. The manufacturer name for SolarEdge devices sometimes has a trailing space.
                             quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;
+                        } else if (strncmp(m->Mn, "SUNGROW", 32) == 0) {
+                            quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY;
                         }
 
                         if (quirks) {

@@ -610,6 +610,7 @@ for model in models:
         value_is_active_power = re.match(r"^PowerActiveL.+ImExDiff$", value_id_mapping[0])
         value_is_inverter_current = model_id >= 100 and model_id < 200 and re.match(r"^CurrentL.Export$", value_id_mapping[0])
         value_is_integer_meter_power_factor = model_id >= 200 and model_id < 210 and re.match(r"^PowerFactorL.+Directional$", value_id_mapping[0])
+        value_is_integer_inverter_power_factor = model_id >= 100 and model_id < 110 and re.match(r"^PowerFactorL.+Directional$", value_id_mapping[0])
 
         get_fn_name =  f"get_model_{model_id:03d}_{name}"
         value['get_fn_name'] = get_fn_name
@@ -700,6 +701,11 @@ for model in models:
                 print_cpp(r"    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {")
                 print_cpp(f"        fval *= {value_mapping_factor}f;")
                 print_cpp(r"    }")
+            elif value_is_integer_inverter_power_factor:
+                print_cpp(f"    fval *= {scale_factor};")
+                print_cpp(r"    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY) == 0) {")
+                print_cpp(f"        fval *= {value_mapping_factor}f;")
+                print_cpp(r"    }")
             else:
                 print_cpp(f"    fval *= ({scale_factor} * {value_mapping_factor}f);")
         elif scale_factor:
@@ -707,6 +713,10 @@ for model in models:
         elif value_mapping_factor:
             if value_is_integer_meter_power_factor:
                 print_cpp(r"    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {")
+                print_cpp(f"        fval *= {value_mapping_factor}f;")
+                print_cpp(r"    }")
+            elif value_is_integer_inverter_power_factor:
+                print_cpp(r"    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY) == 0) {")
                 print_cpp(f"        fval *= {value_mapping_factor}f;")
                 print_cpp(r"    }")
             else:
