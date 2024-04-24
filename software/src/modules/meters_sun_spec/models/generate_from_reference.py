@@ -187,10 +187,10 @@ value_id_mappings_der = {
     "TotVarhInj"   : [ "EnergyReactiveLSumInductive",  0.001 ],
     "TotVarhAbs"   : [ "EnergyReactiveLSumCapacitive", 0.001 ],
 
-    "PFL1"         : [ "PowerFactorL1Directional",     0.01  ],
-    "PFL2"         : [ "PowerFactorL2Directional",     0.01  ],
-    "PFL3"         : [ "PowerFactorL3Directional",     0.01  ],
-    "PF"           : [ "PowerFactorLSumDirectional",   0.01  ],
+    "PFL1"         : [ "PowerFactorL1Directional",     None  ],
+    "PFL2"         : [ "PowerFactorL2Directional",     None  ],
+    "PFL3"         : [ "PowerFactorL3Directional",     None  ],
+    "PF"           : [ "PowerFactorLSumDirectional",   None  ],
 
     "Hz"           : [ "FrequencyLAvg",                None  ],
 

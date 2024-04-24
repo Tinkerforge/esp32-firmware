@@ -7549,7 +7549,7 @@ static float get_model_701_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->PF_SF) * 0.01f);
+    fval *= get_scale_factor(model->PF_SF);
     return fval;
 }
 
@@ -7710,7 +7710,7 @@ static float get_model_701_PFL1(const void *register_data, uint32_t quirks, bool
     int16_t val = model->PFL1;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->PF_SF) * 0.01f);
+    fval *= get_scale_factor(model->PF_SF);
     return fval;
 }
 
@@ -7821,7 +7821,7 @@ static float get_model_701_PFL2(const void *register_data, uint32_t quirks, bool
     int16_t val = model->PFL2;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->PF_SF) * 0.01f);
+    fval *= get_scale_factor(model->PF_SF);
     return fval;
 }
 
@@ -7932,7 +7932,7 @@ static float get_model_701_PFL3(const void *register_data, uint32_t quirks, bool
     int16_t val = model->PFL3;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->PF_SF) * 0.01f);
+    fval *= get_scale_factor(model->PF_SF);
     return fval;
 }
 
