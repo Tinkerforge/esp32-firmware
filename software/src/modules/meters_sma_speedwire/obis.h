@@ -23,6 +23,7 @@
 
 class obis {
 public:
+    obis();
     obis(uint8_t kanal, uint8_t messgroesse, uint8_t messart, uint8_t tarifstufe, float faktor, uint8_t valueSize);
 
     float value(uint8_t buf[], size_t bufSize);

@@ -58,7 +58,7 @@ private:
     void update_all_values();
 
     uint32_t _slot;
-    std::map<MeterValueID, obis*, cmpMeterValueID> _values;
+    std::map<MeterValueID, obis, cmpMeterValueID> _values;
 };
 
 #if defined(__GNUC__)
