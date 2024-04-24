@@ -26,8 +26,8 @@ import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api";
 
-export type SMAMetersConfig = [
-    MeterClassID.SMA,
+export type SMASpeedwireMetersConfig = [
+    MeterClassID.SMASpeedwire,
     {
         display_name: string;
     },
@@ -35,13 +35,13 @@ export type SMAMetersConfig = [
 
 export function init() {
     return {
-        [MeterClassID.SMA]: {
-            name: __("meters_sma.content.meter_class"),
-            new_config: () => [MeterClassID.SMA, {display_name: ""}] as MeterConfig,
+        [MeterClassID.SMASpeedwire]: {
+            name: __("meters_sma_speedwire.content.meter_class"),
+            new_config: () => [MeterClassID.SMASpeedwire, {display_name: ""}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
-            get_edit_children: (config: SMAMetersConfig, on_config: (config: SMAMetersConfig) => void): ComponentChildren => {
+            get_edit_children: (config: SMASpeedwireMetersConfig, on_config: (config: SMASpeedwireMetersConfig) => void): ComponentChildren => {
                 return [
-                    <FormRow label={__("meters_sma.content.config_display_name")}>
+                    <FormRow label={__("meters_sma_speedwire.content.config_display_name")}>
                         <InputText
                             required
                             maxLength={32}

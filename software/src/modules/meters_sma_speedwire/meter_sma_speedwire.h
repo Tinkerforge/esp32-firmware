@@ -40,10 +40,10 @@ struct cmpMeterValueID
   }
 };
 
-class MeterSMA final : public IMeter
+class MeterSMASpeedwire final : public IMeter
 {
 public:
-  MeterSMA(uint32_t slot);
+  MeterSMASpeedwire(uint32_t slot);
 
   MeterClassID get_class() const override;
   void setup(const Config &ephemeral_config) override;

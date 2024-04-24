@@ -17,17 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meter_sma.h"
-#include "meters_sma.h"
+#include "meter_sma_speedwire.h"
+#include "meters_sma_speedwire.h"
 #include "module_dependencies.h"
 #include "modules/meters/meter_defs.h"
 
 #include "gcc_warnings.h"
 
-void MetersSMA::pre_setup()
+void MetersSMASpeedwire::pre_setup()
 {
     config_prototype = Config::Object({
-        {"display_name", Config::Str("SMA Energy Meter 2.0", 0, 32)}
+        {"display_name", Config::Str("SMA Speedwire", 0, 32)}
     });
 
     state_prototype = Config::Object({
@@ -38,29 +38,29 @@ void MetersSMA::pre_setup()
 }
 
 _ATTRIBUTE((const))
-MeterClassID MetersSMA::get_class() const
+MeterClassID MetersSMASpeedwire::get_class() const
 {
-    return MeterClassID::SMA;
+    return MeterClassID::SMASpeedwire;
 }
 
-IMeter * MetersSMA::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
+IMeter * MetersSMASpeedwire::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
 {
-    return new MeterSMA(slot);
+    return new MeterSMASpeedwire(slot);
 }
 
 _ATTRIBUTE((const))
-const Config * MetersSMA::get_config_prototype()
+const Config * MetersSMASpeedwire::get_config_prototype()
 {
     return &config_prototype;
 }
 
 _ATTRIBUTE((const))
-const Config * MetersSMA::get_state_prototype()
+const Config * MetersSMASpeedwire::get_state_prototype()
 {
     return &state_prototype;
 }
 
-const Config * MetersSMA::get_errors_prototype()
+const Config * MetersSMASpeedwire::get_errors_prototype()
 {
     return Config::Null();
 }

@@ -19,7 +19,7 @@
 
 #include <WiFiUdp.h>
 
-#include "meter_sma.h"
+#include "meter_sma_speedwire.h"
 #include "module_dependencies.h"
 
 #include "event_log.h"
@@ -34,18 +34,18 @@ uint16_t   mc_Port = 9522;
 
 #define SMA_PACKET_LEN 608
 
-MeterSMA::MeterSMA(uint32_t slot)
+MeterSMASpeedwire::MeterSMASpeedwire(uint32_t slot)
   : _slot(slot), _values()
 {
 }
 
 _ATTRIBUTE((const))
-MeterClassID MeterSMA::get_class() const
+MeterClassID MeterSMASpeedwire::get_class() const
 {
-  return MeterClassID::SMA;
+  return MeterClassID::SMASpeedwire;
 }
 
-void MeterSMA::setup(const Config &ephemeral_config)
+void MeterSMASpeedwire::setup(const Config &ephemeral_config)
 {
   // Wirkleistung Bezug (aktueller Mittelwert)
   _values[MeterValueID::PowerActiveLSumImport]        = new obis(0,  1, 4, 0,      10.0, 4);  // Summe
@@ -158,7 +158,7 @@ void MeterSMA::setup(const Config &ephemeral_config)
   }, 0, 990);
 }
 
-void MeterSMA::update_all_values()
+void MeterSMASpeedwire::update_all_values()
 {
   auto packetSize = udp.parsePacket();
 

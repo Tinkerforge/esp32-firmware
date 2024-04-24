@@ -1,9 +1,9 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 let x = {
-    "meters_sma": {
+    "meters_sma_speedwire": {
         "content": {
-            "meter_class": "SMA Energy Meter 2.0",
+            "meter_class": "SMA Speedwire",
 
             "config_display_name": "Display name"
         }

@@ -31,7 +31,7 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-class MetersSMA final : public IModule, public MeterGenerator
+class MetersSMASpeedwire final : public IModule, public MeterGenerator
 {
 public:
     // for IModule

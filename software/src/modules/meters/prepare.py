@@ -285,7 +285,7 @@ classes = [
     'API',
     'Sun Spec',
     'Modbus TCP',
-    'SMA'
+    'SMA Speedwire',
 ]
 
 class_values = []
