@@ -112,7 +112,7 @@ static const ValueSpec value_specs[] = {
     },
     {
         MeterValueID::FrequencyLAvg,
-        "Grid frequency [0.01 Hz]",
+        "Grid Frequency [0.01 Hz]",
         5036,
         1,
         ValueType::U16,
