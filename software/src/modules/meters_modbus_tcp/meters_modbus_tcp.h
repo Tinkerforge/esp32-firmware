@@ -35,38 +35,9 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-#define METERS_MODBUS_TCP_REGISTER_COUNT_MAX 26
-
 class MetersModbusTCP final : public IModule, public MeterGenerator
 {
 public:
-    enum class ValueType {
-        Int16      =  0,
-        Uint16     =  1,
-        Bitfield   =  3,
-        Int32      = 32,
-        Uint32     = 33,
-        Float32    = 34,
-        Bitfield32 = 36,
-        Int64      = 64,
-        Uint64     = 65,
-        float64    = 66,
-    };
-
-    struct HostInfo {
-        const char *hostname;
-        uint16_t port;
-        uint8_t unit_address;
-    };
-
-    struct RegisterInfo {
-        TAddress address;       // {type, address}, type: {COIL, ISTS, IREG, HREG, NONE}, address: uint16_t
-        ValueType value_type;   // uint16, int16, uint32, int32, etc...
-        float scale;
-        float offset;
-        MeterValueID value_id;
-    };
-
     // for IModule
     void pre_setup() override;
     void setup() override;
@@ -82,15 +53,11 @@ public:
     [[gnu::const]] ModbusTCP *get_modbus_tcp_handle();
 
 private:
-    Config register_element;
-
     Config config_prototype;
     Config state_prototype;
     Config errors_prototype;
 
     ModbusTCP mb;
-
-    uint32_t instance_count = 0;
 };
 
 #if defined(__GNUC__)

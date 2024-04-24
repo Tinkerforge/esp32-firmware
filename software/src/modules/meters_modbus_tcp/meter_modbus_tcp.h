@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Mattias Schäffersmann <mattias@tinkerforge.com>
+ * Copyright (C) 2024 Matthias Bolte <matthias@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,6 +26,7 @@
 
 #include "config.h"
 #include "modules/meters/imeter.h"
+#include "meters_modbus_tcp.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -35,6 +37,12 @@
 class MeterModbusTCP final : protected GenericModbusTCPClient, public IMeter
 {
 public:
+    enum class Preset : uint8_t {
+        Custom = 0,
+        SungrowResidentialHybridInverter = 1, // SH...
+        SungrowGridConnectedStringInverter = 2, // SG...
+    };
+
     MeterModbusTCP(uint32_t slot_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), state(state_), errors(errors_) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
@@ -46,30 +54,22 @@ public:
     bool supports_energy_export() override {return true;}
     bool supports_currents()      override {return true;}
 
+    void read_done_callback();
+
 private:
     void connect_callback() override;
     void disconnect_callback() override;
-    void poll_next();
-    void handle_data();
 
-    const uint32_t slot;
-    Config *const state;
-    Config *const errors;
+    uint32_t slot;
+    Config *state;
+    Config *errors;
 
-    enum PollState {
-        Single,
-        Combined,
-        Done,
-    };
-    PollState poll_state;
-    uint16_t poll_count;
-    uint16_t *register_buffer;
-    uint32_t register_buffer_size = METERS_MODBUS_TCP_MAX_HREG_WORDS;
+    bool read_allowed = false;
+    bool values_declared = false;
+    size_t read_index = 0;
 
-    micros_t request_start;
-    micros_t all_start;
-    uint32_t worst_runtime;
-    uint32_t best_runtime;
+    Preset preset;
+    uint16_t register_buffer[2];
 };
 
 #if defined(__GNUC__)

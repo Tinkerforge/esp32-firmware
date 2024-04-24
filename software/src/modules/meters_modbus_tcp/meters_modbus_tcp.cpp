@@ -30,27 +30,18 @@
 
 void MetersModbusTCP::pre_setup()
 {
-    register_element = Config::Object({
-        {"ra", Config::Uint16(0)},  // register address
-        {"rt", Config::Uint8(0)},   // register type: input, holding, coil, discrete
-        {"vt", Config::Uint8(0)},   // value type: uint16, int16, uint32, int32, etc...
-        {"s",  Config::Float(1.0)}, // scale
-        {"o",  Config::Float(0.0)}, // offset
-        {"mv", Config::Uint32(0)},  // MeterValueID
-    });
+    config_prototype = ConfigRoot{Config::Object({
+        {"display_name",   Config::Str("", 0, 32)},
+        {"host",           Config::Str("", 0, 64)},
+        {"port",           Config::Uint16(502)},
+        {"device_address", Config::Uint8(1)},
+        {"preset",         Config::Uint8(static_cast<uint8_t>(MeterModbusTCP::Preset::Custom))},
+    }), [this](Config &update, ConfigSource source) -> String {
+        if (update.get("preset")->asEnum<MeterModbusTCP::Preset>() != MeterModbusTCP::Preset::SungrowResidentialHybridInverter)
+            return "Invalid preset.";
 
-    config_prototype = Config::Object({
-        {"host",      Config::Str("", 0, 64)},
-        {"port",      Config::Uint16(502)},
-        {"address",   Config::Uint8(255)}, // device address
-        {"registers", Config::Array(
-            {},
-            &register_element,
-            0,
-            METERS_MODBUS_TCP_REGISTER_COUNT_MAX,
-            Config::type_id<Config::ConfObject>()
-        )},
-    });
+        return "";
+    }};
 
     state_prototype = Config::Object({
         {"connected", Config::Bool(false)},
@@ -79,13 +70,8 @@ MeterClassID MetersModbusTCP::get_class() const
     return MeterClassID::ModbusTCP;
 }
 
-IMeter * MetersModbusTCP::new_meter(uint32_t slot, Config *state, Config *errors)
+IMeter *MetersModbusTCP::new_meter(uint32_t slot, Config *state, Config *errors)
 {
-    if (instance_count >= MODBUSIP_MAX_CLIENTS) {
-        logger.printfln("Cannot create more than " MACRO_VALUE_TO_STRING(MODBUSIP_MAX_CLIENTS) " meters of class ModbusTCP.");
-        return nullptr;
-    }
-    instance_count++;
     return new MeterModbusTCP(slot, state, errors, &mb);
 }
 
