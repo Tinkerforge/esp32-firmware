@@ -75,6 +75,14 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         value_index        = sungrow_hybrid_inverter_battery_index;
         break;
 
+    case MeterModbusTCPPreset::SungrowHybridInverterLoad:
+        value_specs        = sungrow_hybrid_inverter_load_specs;
+        value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_load_specs);
+        value_ids          = sungrow_hybrid_inverter_load_ids;
+        value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_load_ids);
+        value_index        = sungrow_hybrid_inverter_load_index;
+        break;
+
     /*
     case MeterModbusTCPPreset::SungrowStringInverter:
     case MeterModbusTCPPreset::SungrowStringInverterGrid:

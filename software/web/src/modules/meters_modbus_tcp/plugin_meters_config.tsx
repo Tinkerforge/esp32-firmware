@@ -50,6 +50,7 @@ export function init() {
                     [MeterModbusTCPPreset.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.preset_sungrow_hybrid_inverter")],
                     [MeterModbusTCPPreset.SungrowHybridInverterGrid.toString(), __("meters_modbus_tcp.content.preset_sungrow_hybrid_inverter_grid")],
                     [MeterModbusTCPPreset.SungrowHybridInverterBattery.toString(), __("meters_modbus_tcp.content.preset_sungrow_hybrid_inverter_battery")],
+                    [MeterModbusTCPPreset.SungrowHybridInverterLoad.toString(), __("meters_modbus_tcp.content.preset_sungrow_hybrid_inverter_load")],
                 ];
 
                 return [<>

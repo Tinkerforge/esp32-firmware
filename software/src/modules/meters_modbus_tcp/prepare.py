@@ -25,11 +25,12 @@ presets = [
     ('Sungrow Hybrid Inverter', 1),
     ('Sungrow Hybrid Inverter Grid', 2),
     ('Sungrow Hybrid Inverter Battery', 3),
-    #('Sungrow String Inverter', 4),
-    #('Sungrow String Inverter Grid', 5),
-    #('Solarmax Max Storage Inverter', 6),
-    #('Solarmax Max Storage Grid', 7),
-    #('Solarmax Max Storage Battery', 8),
+    ('Sungrow Hybrid Inverter Load', 4),
+    #('Sungrow String Inverter', 5),
+    #('Sungrow String Inverter Grid', 6),
+    #('Solarmax Max Storage Inverter', 7),
+    #('Solarmax Max Storage Grid', 8),
+    #('Solarmax Max Storage Battery', 9),
 ]
 
 preset_values = []
@@ -194,13 +195,6 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Load Power [W]',
-                'value_id': None,
-                'start_address': 13008,
-                'value_type': 'S32',
-                'scale_factor': 1.0,
-            },
-            {
                 'name': 'Export Power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 13010,
@@ -281,6 +275,18 @@ specs = [
                 'start_address': 13041,
                 'value_type': 'U32',
                 'scale_factor': 0.1,
+            },
+        ],
+    },
+    {
+        'name': 'Sungrow Hybrid Inverter Load',
+        'values': [
+            {
+                'name': 'Load Power [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 13008,
+                'value_type': 'S32',
+                'scale_factor': 1.0,
             },
         ],
     },

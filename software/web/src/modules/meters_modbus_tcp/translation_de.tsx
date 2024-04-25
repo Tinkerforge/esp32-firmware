@@ -19,7 +19,8 @@ let x = {
 
             "preset_sungrow_hybrid_inverter": "Sungrow Hybrid Wechselrichter (SH...)",
             "preset_sungrow_hybrid_inverter_grid": "Sungrow Hybrid Wechselrichter Netzanschluss (SH...)",
-            "preset_sungrow_hybrid_inverter_battery": "Sungrow Hybrid Wechselrichter Speicher (SH...)"
+            "preset_sungrow_hybrid_inverter_battery": "Sungrow Hybrid Wechselrichter Speicher (SH...)",
+            "preset_sungrow_hybrid_inverter_load": "Sungrow Hybrid Wechselrichter Last (SH...)"
         },
         "script": {
         }
