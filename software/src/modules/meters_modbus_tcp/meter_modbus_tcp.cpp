@@ -284,5 +284,11 @@ void MeterModbusTCP::read_done_callback()
     generic_read_request.start_address = value_specs[read_index].start_address - 1;
     generic_read_request.register_count = static_cast<uint8_t>(value_specs[read_index].value_type) % 10;
 
-    start_generic_read();
+    if (read_index == 0) {
+        // make a little pause after each round trip
+        read_allowed = true;
+    }
+    else {
+        start_generic_read();
+    }
 }
