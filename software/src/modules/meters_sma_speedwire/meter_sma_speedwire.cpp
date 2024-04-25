@@ -19,10 +19,10 @@
 
 #define EVENT_LOG_PREFIX "meters_sma_swire"
 
-#include <WiFiUdp.h>
-
 #include "meter_sma_speedwire.h"
 #include "module_dependencies.h"
+
+#include <math.h>
 
 #include "event_log.h"
 #include "task_scheduler.h"
@@ -30,152 +30,203 @@
 
 #include "gcc_warnings.h"
 
-WiFiUDP   udp;
-IPAddress mc_groupIP(239, 12, 255, 254);
-uint16_t  mc_Port = 9522;
+static float convert_uint32(const uint8_t *buf)
+{
+    uint32_t u32 = static_cast<uint32_t>(buf[0]) << 24 |
+                   static_cast<uint32_t>(buf[1]) << 16 |
+                   static_cast<uint32_t>(buf[2]) <<  8 |
+                   static_cast<uint32_t>(buf[3]) <<  0;
 
-#define SMA_PACKET_LEN 608
-#define SMA_SPEEDWIRE_VALUE_COUNT 59
+    return static_cast<float>(u32);
+}
+
+static float convert_uint64(const uint8_t *buf)
+{
+    uint64_t u64 = static_cast<uint64_t>(buf[0]) << 56 |
+                   static_cast<uint64_t>(buf[1]) << 48 |
+                   static_cast<uint64_t>(buf[2]) << 40 |
+                   static_cast<uint64_t>(buf[3]) << 32 |
+                   static_cast<uint64_t>(buf[4]) << 24 |
+                   static_cast<uint64_t>(buf[5]) << 16 |
+                   static_cast<uint64_t>(buf[6]) <<  8 |
+                   static_cast<uint64_t>(buf[7]) <<  0;
+
+    return static_cast<float>(u64);
+}
+
+union obis_code {
+    uint8_t  u8[4];
+    uint32_t u32;
+};
+
+struct obis_value_mapping {
+    MeterValueID value_id;
+    obis_code obis;
+    float scaling_factor;
+    float (*parser_fn)(const uint8_t *buf);
+};
+
+static const obis_value_mapping obis_value_mappings[] {
+    {MeterValueID::PowerActiveLSumImport,        {0,  1, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerActiveL1Import,          {0, 21, 4, 0},      1/10.0F, convert_uint32},  // L1
+    {MeterValueID::PowerActiveL2Import,          {0, 41, 4, 0},      1/10.0F, convert_uint32},  // L2
+    {MeterValueID::PowerActiveL3Import,          {0, 61, 4, 0},      1/10.0F, convert_uint32},  // L3
+
+    {MeterValueID::EnergyActiveLSumImport,       {0,  1, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyActiveL1Import,         {0, 21, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
+    {MeterValueID::EnergyActiveL2Import,         {0, 41, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
+    {MeterValueID::EnergyActiveL3Import,         {0, 61, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
+
+    {MeterValueID::PowerActiveLSumExport,        {0,  2, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerActiveL1Export,          {0, 22, 4, 0},      1/10.0F, convert_uint32},  // L1
+    {MeterValueID::PowerActiveL2Export,          {0, 42, 4, 0},      1/10.0F, convert_uint32},  // L2
+    {MeterValueID::PowerActiveL3Export,          {0, 62, 4, 0},      1/10.0F, convert_uint32},  // L3
+
+    {MeterValueID::EnergyActiveLSumExport,       {0,  2, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyActiveL1Export,         {0, 22, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
+    {MeterValueID::EnergyActiveL2Export,         {0, 42, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
+    {MeterValueID::EnergyActiveL3Export,         {0, 62, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
+
+    {MeterValueID::PowerReactiveLSumInductive,   {0,  3, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerReactiveL1Inductive,     {0, 23, 4, 0},      1/10.0F, convert_uint32},  // L1
+    {MeterValueID::PowerReactiveL2Inductive,     {0, 43, 4, 0},      1/10.0F, convert_uint32},  // L2
+    {MeterValueID::PowerReactiveL3Inductive,     {0, 63, 4, 0},      1/10.0F, convert_uint32},  // L3
+
+    {MeterValueID::EnergyReactiveLSumInductive,  {0,  3, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyReactiveL1Inductive,    {0, 23, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
+    {MeterValueID::EnergyReactiveL2Inductive,    {0, 43, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
+    {MeterValueID::EnergyReactiveL3Inductive,    {0, 63, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
+
+    {MeterValueID::PowerReactiveLSumCapacitive,  {0,  4, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerReactiveL1Capacitive,    {0, 24, 4, 0},      1/10.0F, convert_uint32},  // L1
+    {MeterValueID::PowerReactiveL2Capacitive,    {0, 44, 4, 0},      1/10.0F, convert_uint32},  // L2
+    {MeterValueID::PowerReactiveL3Capacitive,    {0, 64, 4, 0},      1/10.0F, convert_uint32},  // L3
+
+    {MeterValueID::EnergyReactiveLSumCapacitive, {0,  4, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyReactiveL1Capacitive,   {0, 24, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
+    {MeterValueID::EnergyReactiveL2Capacitive,   {0, 44, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
+    {MeterValueID::EnergyReactiveL3Capacitive,   {0, 64, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
+
+    {MeterValueID::PowerApparentLSumImport,      {0,  9, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerApparentL1Import,        {0, 29, 4, 0},      1/10.0F, convert_uint32},  // L1
+    {MeterValueID::PowerApparentL2Import,        {0, 49, 4, 0},      1/10.0F, convert_uint32},  // L2
+    {MeterValueID::PowerApparentL3Import,        {0, 69, 4, 0},      1/10.0F, convert_uint32},  // L3
+
+    {MeterValueID::EnergyApparentLSumImport,     {0,  9, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyApparentL1Import,       {0, 29, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
+    {MeterValueID::EnergyApparentL2Import,       {0, 49, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
+    {MeterValueID::EnergyApparentL3Import,       {0, 69, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
+
+    {MeterValueID::PowerApparentLSumExport,      {0, 10, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerApparentL1Export,        {0, 30, 4, 0},      1/10.0F, convert_uint32},  // L1
+    {MeterValueID::PowerApparentL2Export,        {0, 50, 4, 0},      1/10.0F, convert_uint32},  // L2
+    {MeterValueID::PowerApparentL3Export,        {0, 70, 4, 0},      1/10.0F, convert_uint32},  // L3
+
+    {MeterValueID::EnergyApparentLSumExport,     {0, 10, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyApparentL1Export,       {0, 30, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
+    {MeterValueID::EnergyApparentL2Export,       {0, 50, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
+    {MeterValueID::EnergyApparentL3Export,       {0, 70, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
+
+    {MeterValueID::PowerFactorLSum,              {0, 13, 4, 0},    1/1000.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerFactorL1,                {0, 33, 4, 0},    1/1000.0F, convert_uint32},  // L1
+    {MeterValueID::PowerFactorL2,                {0, 53, 4, 0},    1/1000.0F, convert_uint32},  // L2
+    {MeterValueID::PowerFactorL3,                {0, 73, 4, 0},    1/1000.0F, convert_uint32},  // L3
+
+    {MeterValueID::VoltageL1N,                   {0, 32, 4, 0},    1/1000.0F, convert_uint32},  // L1
+    {MeterValueID::VoltageL2N,                   {0, 52, 4, 0},    1/1000.0F, convert_uint32},  // L2
+    {MeterValueID::VoltageL3N,                   {0, 72, 4, 0},    1/1000.0F, convert_uint32},  // L3
+
+    {MeterValueID::CurrentL1ImExSum,             {0, 31, 4, 0},    1/1000.0F, convert_uint32},  // L1
+    {MeterValueID::CurrentL2ImExSum,             {0, 51, 4, 0},    1/1000.0F, convert_uint32},  // L2
+    {MeterValueID::CurrentL3ImExSum,             {0, 71, 4, 0},    1/1000.0F, convert_uint32},  // L3
+
+    {MeterValueID::FrequencyLAvg,                {0, 14, 4, 0},    1/1000.0F, convert_uint32},
+};
+
+static_assert(ARRAY_SIZE(obis_value_mappings) == METERS_SMA_SPEEDWIRE_OBIS_COUNT, "obis_value_mappings size mismatch");
 
 MeterClassID MeterSMASpeedwire::get_class() const
 {
     return MeterClassID::SMASpeedwire;
 }
 
-void MeterSMASpeedwire::setup(const Config &ephemeral_config)
+void MeterSMASpeedwire::setup(const Config & /*ephemeral_config*/)
 {
-    // Wirkleistung Bezug (aktueller Mittelwert)
-    _values[MeterValueID::PowerActiveLSumImport]        = obis(0,  1, 4, 0,      10.0, 4);  // Summe
-    _values[MeterValueID::PowerActiveL1Import]          = obis(0, 21, 4, 0,      10.0, 4);  // L1
-    _values[MeterValueID::PowerActiveL2Import]          = obis(0, 41, 4, 0,      10.0, 4);  // L2
-    _values[MeterValueID::PowerActiveL3Import]          = obis(0, 61, 4, 0,      10.0, 4);  // L3
-
-    // Wirkleistung Bezug (Zählerstand)
-    _values[MeterValueID::EnergyActiveLSumImport]       = obis(0,  1, 8, 0, 3600000.0, 8);  // Summe
-    _values[MeterValueID::EnergyActiveL1Import]         = obis(0, 21, 8, 0, 3600000.0, 8);  // L1
-    _values[MeterValueID::EnergyActiveL2Import]         = obis(0, 41, 8, 0, 3600000.0, 8);  // L2
-    _values[MeterValueID::EnergyActiveL3Import]         = obis(0, 61, 8, 0, 3600000.0, 8);  // L3
-
-    // Blindleistung Bezug (aktueller Mittelwert)
-    _values[MeterValueID::PowerReactiveLSumInductive]   = obis(0,  3, 4, 0,      10.0, 4);  // Summe
-    _values[MeterValueID::PowerReactiveL1Inductive]     = obis(0, 23, 4, 0,      10.0, 4);  // L1
-    _values[MeterValueID::PowerReactiveL2Inductive]     = obis(0, 43, 4, 0,      10.0, 4);  // L2
-    _values[MeterValueID::PowerReactiveL3Inductive]     = obis(0, 63, 4, 0,      10.0, 4);  // L3
-
-    // Blindleistung Bezug (Zählerstand)
-    _values[MeterValueID::EnergyReactiveLSumInductive]  = obis(0,  3, 8, 0, 3600000.0, 8);  // Summe
-    _values[MeterValueID::EnergyReactiveL1Inductive]    = obis(0, 23, 8, 0, 3600000.0, 8);  // L1
-    _values[MeterValueID::EnergyReactiveL2Inductive]    = obis(0, 43, 8, 0, 3600000.0, 8);  // L2
-    _values[MeterValueID::EnergyReactiveL3Inductive]    = obis(0, 63, 8, 0, 3600000.0, 8);  // L3
-
-    // Scheinleistung Bezug (aktueller Mittelwert)
-    _values[MeterValueID::PowerApparentLSumImport]      = obis(0,  9, 4, 0,      10.0, 4);  // Summe
-    _values[MeterValueID::PowerApparentL1Import]        = obis(0, 29, 4, 0,      10.0, 4);  // L1
-    _values[MeterValueID::PowerApparentL2Import]        = obis(0, 49, 4, 0,      10.0, 4);  // L2
-    _values[MeterValueID::PowerApparentL3Import]        = obis(0, 69, 4, 0,      10.0, 4);  // L3
-
-    // Scheinleistung Bezug (Zählerstand)
-    _values[MeterValueID::EnergyApparentLSumImport]     = obis(0,  9, 8, 0, 3600000.0, 8);  // Summe
-    _values[MeterValueID::EnergyApparentL1Import]       = obis(0, 29, 8, 0, 3600000.0, 8);  // L1
-    _values[MeterValueID::EnergyApparentL2Import]       = obis(0, 49, 8, 0, 3600000.0, 8);  // L2
-    _values[MeterValueID::EnergyApparentL3Import]       = obis(0, 69, 8, 0, 3600000.0, 8);  // L3
-
-    // Wirkleistung Einspeisung (aktueller Mittelwert)
-    _values[MeterValueID::PowerActiveLSumExport]        = obis(0,  2, 4, 0,      10.0, 4);  // Summe
-    _values[MeterValueID::PowerActiveL1Export]          = obis(0, 22, 4, 0,      10.0, 4);  // L1
-    _values[MeterValueID::PowerActiveL2Export]          = obis(0, 42, 4, 0,      10.0, 4);  // L2
-    _values[MeterValueID::PowerActiveL3Export]          = obis(0, 62, 4, 0,      10.0, 4);  // L3
-
-    // Wirkleistung Einspeisung (Zählerstand)
-    _values[MeterValueID::EnergyActiveLSumExport]       = obis(0,  2, 8, 0, 3600000.0, 8);  // Summe
-    _values[MeterValueID::EnergyActiveL1Export]         = obis(0, 22, 8, 0, 3600000.0, 8);  // L1
-    _values[MeterValueID::EnergyActiveL2Export]         = obis(0, 42, 8, 0, 3600000.0, 8);  // L2
-    _values[MeterValueID::EnergyActiveL3Export]         = obis(0, 62, 8, 0, 3600000.0, 8);  // L3
-
-    // Blindleistung Einspeisung (aktueller Mittelwert)
-    _values[MeterValueID::PowerReactiveLSumCapacitive]  = obis(0,  4, 4, 0,      10.0, 4);  // Summe
-    _values[MeterValueID::PowerReactiveL1Capacitive]    = obis(0, 24, 4, 0,      10.0, 4);  // L1
-    _values[MeterValueID::PowerReactiveL2Capacitive]    = obis(0, 44, 4, 0,      10.0, 4);  // L2
-    _values[MeterValueID::PowerReactiveL3Capacitive]    = obis(0, 64, 4, 0,      10.0, 4);  // L3
-
-    // Blindleistung Einspeisung (Zählerstand)
-    _values[MeterValueID::EnergyReactiveLSumCapacitive] = obis(0,  4, 8, 0, 3600000.0, 8);  // Summe
-    _values[MeterValueID::EnergyReactiveL1Capacitive]   = obis(0, 24, 8, 0, 3600000.0, 8);  // L1
-    _values[MeterValueID::EnergyReactiveL2Capacitive]   = obis(0, 44, 8, 0, 3600000.0, 8);  // L2
-    _values[MeterValueID::EnergyReactiveL3Capacitive]   = obis(0, 64, 8, 0, 3600000.0, 8);  // L3
-
-    // Scheinleistung Einspeisung (aktueller Mittelwert)
-    _values[MeterValueID::PowerApparentLSumExport]      = obis(0, 10, 4, 0,      10.0, 4);  // Summe
-    _values[MeterValueID::PowerApparentL1Export]        = obis(0, 30, 4, 0,      10.0, 4);  // L1
-    _values[MeterValueID::PowerApparentL2Export]        = obis(0, 50, 4, 0,      10.0, 4);  // L2
-    _values[MeterValueID::PowerApparentL3Export]        = obis(0, 70, 4, 0,      10.0, 4);  // L3
-
-    // Scheinleistung Einspeisung (Zählerstand)
-    _values[MeterValueID::EnergyApparentLSumExport]     = obis(0, 10, 8, 0, 3600000.0, 8);  // Summe
-    _values[MeterValueID::EnergyApparentL1Export]       = obis(0, 30, 8, 0, 3600000.0, 8);  // L1
-    _values[MeterValueID::EnergyApparentL2Export]       = obis(0, 50, 8, 0, 3600000.0, 8);  // L2
-    _values[MeterValueID::EnergyApparentL3Export]       = obis(0, 70, 8, 0, 3600000.0, 8);  // L3
-
-    // Leistungsfaktor (cos phi)
-    _values[MeterValueID::PowerFactorLSum]              = obis(0, 13, 4, 0,    1000.0, 4);  // Summe
-    _values[MeterValueID::PowerFactorL1]                = obis(0, 33, 4, 0,    1000.0, 4);  // L1
-    _values[MeterValueID::PowerFactorL2]                = obis(0, 53, 4, 0,    1000.0, 4);  // L2
-    _values[MeterValueID::PowerFactorL3]                = obis(0, 73, 4, 0,    1000.0, 4);  // L3
-
-    // Spannung
-    _values[MeterValueID::VoltageL1N]                   = obis(0, 32, 4, 0,    1000.0, 4);  // L1
-    _values[MeterValueID::VoltageL2N]                   = obis(0, 52, 4, 0,    1000.0, 4);  // L2
-    _values[MeterValueID::VoltageL3N]                   = obis(0, 72, 4, 0,    1000.0, 4);  // L3
-
-    // Strom
-    _values[MeterValueID::CurrentL1ImExSum]             = obis(0, 31, 4, 0,    1000.0, 4);  // L1
-    _values[MeterValueID::CurrentL2ImExSum]             = obis(0, 51, 4, 0,    1000.0, 4);  // L2
-    _values[MeterValueID::CurrentL3ImExSum]             = obis(0, 71, 4, 0,    1000.0, 4);  // L3
-
-    // Netzfrequenz
-    _values[MeterValueID::FrequencyLAvg]                = obis(0, 14, 4, 0,    1000.0, 4);
-
-    if (udp.beginMulticast(mc_groupIP, mc_Port)) {
-        logger.printfln("Listening for multicasts to %s:%u", mc_groupIP.toString().c_str(), mc_Port);
+    IPAddress mc_groupIP(239, 12, 255, 254);
+    if (udp.beginMulticast(mc_groupIP, 9522)) {
+        logger.printfln("Joined multicast group %s:9522", mc_groupIP.toString().c_str());
     } else {
-        logger.printfln("Listening for multicasts to %s:%u failed", mc_groupIP.toString().c_str(), mc_Port);
+        logger.printfln("Couldn't join multicast group %s:9522", mc_groupIP.toString().c_str());
         return;
     }
 
-    size_t index = 0;
-    MeterValueID valueIds[SMA_SPEEDWIRE_VALUE_COUNT + 1];
-    assert(_values.size() == SMA_SPEEDWIRE_VALUE_COUNT);
+    MeterValueID valueIds[METERS_SMA_SPEEDWIRE_VALUE_COUNT];
 
-    for (auto const &value : _values) {
-        valueIds[index++] = value.first;
+    for (size_t i = 0; i < ARRAY_SIZE(obis_value_mappings); i++) {
+        MeterValueID value_id = obis_value_mappings[i].value_id;
+        valueIds[i] = value_id;
+
+        if (value_id == MeterValueID::PowerActiveLSumImport) {
+            power_import_index = i;
+        } else if (value_id == MeterValueID::PowerActiveLSumExport) {
+            power_export_index = i;
+        }
     }
 
-    valueIds[index++] = MeterValueID::PowerActiveLSumImExDiff;
+    valueIds[METERS_SMA_SPEEDWIRE_VALUE_COUNT - 1] = MeterValueID::PowerActiveLSumImExDiff;
+
     meters.declare_value_ids(slot, valueIds, ARRAY_SIZE(valueIds));
 
+    // Tested Speedwire products send one packet per second.
+    // Poll twice a second to reduce latency and packet backlog.
     task_scheduler.scheduleWithFixedDelay([this]() {
-        update_all_values();
-    }, 0, 990);
+        parse_packet();
+    }, 0, 500);
 }
 
-void MeterSMASpeedwire::update_all_values()
+void MeterSMASpeedwire::parse_packet()
 {
-    auto packetSize = udp.parsePacket();
-
-    if (packetSize > 0) {
+    if (udp.parsePacket() > 0) {
         uint8_t buf[1024];
-        auto len = static_cast<size_t>(udp.read(buf, sizeof(buf)));
+        int len = udp.read(buf, sizeof(buf));
 
-        if (len == SMA_PACKET_LEN) {
-            size_t index = 0;
-            float values[SMA_SPEEDWIRE_VALUE_COUNT + 1];
-
-            for (auto &value : _values) {
-                values[index++] = value.second.value(buf, len);
+        if (len == 608) { // Supports only the currently known packet length.
+            if (!values_parsed) {
+                parse_values(buf, len);
+                values_parsed = true;
             }
 
-            values[index++] = _values.at(MeterValueID::PowerActiveLSumImport).value(buf, len) - _values.at(MeterValueID::PowerActiveLSumExport).value(buf, len);
+            float values[METERS_SMA_SPEEDWIRE_VALUE_COUNT];
+
+            for (size_t i = 0; i < ARRAY_SIZE(obis_value_positions); i++) {
+                size_t position = obis_value_positions[i];
+                if (position > 0) {
+                    auto mapping = obis_value_mappings[i];
+                    values[i] = mapping.parser_fn(buf + position) * mapping.scaling_factor;
+                } else {
+                    values[i] = NAN;
+                }
+            }
+
+            values[METERS_SMA_SPEEDWIRE_VALUE_COUNT - 1] = values[power_import_index] - values[power_export_index];
+
             meters.update_all_values(slot, values);
+        }
+    }
+}
+
+void MeterSMASpeedwire::parse_values(const uint8_t *buf, int buflen)
+{
+    // TODO: Properly parse packet structure instead of probing values.
+    for (size_t i = 0; i < METERS_SMA_SPEEDWIRE_OBIS_COUNT; i++) {
+        for (int pos = 28; pos < buflen - 4; pos += 4) {
+            const uint8_t *value_start = buf + pos;
+            obis_code obis_code{value_start[0], value_start[1], value_start[2], value_start[3]};
+            if (obis_code.u32 == obis_value_mappings[i].obis.u32) {
+                pos += 4;
+                obis_value_positions[i] = static_cast<size_t>(pos);
+                break;
+            }
         }
     }
 }

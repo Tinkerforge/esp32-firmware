@@ -19,12 +19,11 @@
 
 #pragma once
 
-#include <map>
-#include <math.h>
+#include <stdint.h>
+#include <WiFiUdp.h>
 
 #include "modules/meters/imeter.h"
 #include "modules/meters/meter_value_id.h"
-#include "obis.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -32,18 +31,15 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-struct cmpMeterValueID
-{
-    bool operator()(MeterValueID left, MeterValueID right) const
-    {
-        return static_cast<uint16_t>(left) < static_cast<uint16_t>(right);
-    }
-};
+#define METERS_SMA_SPEEDWIRE_OBIS_COUNT  59
+#define METERS_SMA_SPEEDWIRE_VALUE_COUNT 60
+
+static_assert(METERS_SMA_SPEEDWIRE_OBIS_COUNT + 1 == METERS_SMA_SPEEDWIRE_VALUE_COUNT, "OBIS/value count mismatch. Need one value more than OBIS count.");
 
 class MeterSMASpeedwire final : public IMeter
 {
 public:
-    MeterSMASpeedwire(uint32_t slot_) : slot(slot_), _values() {}
+    MeterSMASpeedwire(uint32_t slot_) : slot(slot_) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(const Config &ephemeral_config) override;
@@ -54,10 +50,15 @@ public:
     //bool supports_currents() override       {return true;}
 
 private:
-    void update_all_values();
+    void parse_packet();
+    void parse_values(const uint8_t *buf, int buflen);
 
     uint32_t slot;
-    std::map<MeterValueID, obis, cmpMeterValueID> _values;
+    uint32_t power_export_index = 0;
+    uint32_t power_import_index = 0;
+    size_t   obis_value_positions[METERS_SMA_SPEEDWIRE_OBIS_COUNT];
+    bool     values_parsed = false;
+    WiFiUDP  udp;
 };
 
 #if defined(__GNUC__)
