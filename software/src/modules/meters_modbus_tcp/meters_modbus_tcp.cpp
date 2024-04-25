@@ -30,18 +30,13 @@
 
 void MetersModbusTCP::pre_setup()
 {
-    config_prototype = ConfigRoot{Config::Object({
+    config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"host",           Config::Str("", 0, 64)},
         {"port",           Config::Uint16(502)},
         {"device_address", Config::Uint8(1)},
-        {"preset",         Config::Uint8(static_cast<uint8_t>(MeterModbusTCP::Preset::Custom))},
-    }), [this](Config &update, ConfigSource source) -> String {
-        if (update.get("preset")->asEnum<MeterModbusTCP::Preset>() != MeterModbusTCP::Preset::SungrowResidentialHybridInverter)
-            return "Invalid preset.";
-
-        return "";
-    }};
+        {"preset",         Config::Uint8(static_cast<uint8_t>(/*MeterModbusTCPPreset::Custom*/0))},
+    });
 
     state_prototype = Config::Object({
         {"connected", Config::Bool(false)},

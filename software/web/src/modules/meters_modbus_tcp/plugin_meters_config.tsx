@@ -22,6 +22,7 @@ import { h, Fragment, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
+import { MeterModbusTCPPreset } from "./meters_modbus_tcp_defs";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
@@ -46,7 +47,9 @@ export function init() {
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: ModbusTCPMetersConfig, on_config: (config: ModbusTCPMetersConfig) => void): ComponentChildren => {
                 let model_ids: [string, string][] = [
-                    ["1", __("meters_modbus_tcp.content.preset_sungrow_residential_hybrid_inverter")],
+                    [MeterModbusTCPPreset.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.preset_sungrow_hybrid_inverter")],
+                    [MeterModbusTCPPreset.SungrowHybridInverterGrid.toString(), __("meters_modbus_tcp.content.preset_sungrow_hybrid_inverter_grid")],
+                    [MeterModbusTCPPreset.SungrowHybridInverterBattery.toString(), __("meters_modbus_tcp.content.preset_sungrow_hybrid_inverter_battery")],
                 ];
 
                 return [<>

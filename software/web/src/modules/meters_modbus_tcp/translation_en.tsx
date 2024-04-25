@@ -17,7 +17,9 @@ let x = {
             "config_preset": "Preset",
             "config_preset_select": "Select...",
 
-            "preset_sungrow_residential_hybrid_inverter": "Sungrow Hybrid Inverter (SH...)"
+            "preset_sungrow_hybrid_inverter": "Sungrow Hybrid Inverter (SH...)",
+            "preset_sungrow_hybrid_inverter_grid": "Sungrow Hybrid Inverter Grid (SH...)",
+            "preset_sungrow_hybrid_inverter_battery": "Sungrow Hybrid Inverter Battery (SH...)"
         },
         "script": {
         }

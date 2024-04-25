@@ -27,6 +27,7 @@
 #include "config.h"
 #include "modules/meters/imeter.h"
 #include "meters_modbus_tcp.h"
+#include "meters_modbus_tcp_defs.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -37,10 +38,18 @@
 class MeterModbusTCP final : protected GenericModbusTCPClient, public IMeter
 {
 public:
-    enum class Preset : uint8_t {
-        Custom = 0,
-        SungrowResidentialHybridInverter = 1, // SH...
-        SungrowGridConnectedStringInverter = 2, // SG...
+    enum class ValueType : uint8_t {
+        U16 = 11,
+        S16 = 21,
+        U32 = 32,
+        S32 = 42,
+    };
+
+    struct ValueSpec {
+        const char *name;
+        size_t start_address;
+        ValueType value_type;
+        float scale_factor;
     };
 
     MeterModbusTCP(uint32_t slot_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), state(state_), errors(errors_) {}
@@ -64,12 +73,20 @@ private:
     Config *state;
     Config *errors;
 
+    ValueSpec *value_specs ;
+    size_t value_specs_length;
+    MeterValueID *value_ids;
+    uint32_t * value_index;
+
     bool read_allowed = false;
     bool values_declared = false;
     size_t read_index = 0;
 
-    Preset preset;
+    MeterModbusTCPPreset preset;
     uint16_t register_buffer[2];
+
+    int sungrow_hybrid_inverter_output_type = -1;
+    uint16_t sungrow_hybrid_inverter_battery_running_state;
 };
 
 #if defined(__GNUC__)

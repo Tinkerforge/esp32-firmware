@@ -17,7 +17,9 @@ let x = {
             "config_preset": "Vorlage",
             "config_preset_select": "Auswählen...",
 
-            "preset_sungrow_residential_hybrid_inverter": "Sungrow Hybrid Wechselrichter (SH...)"
+            "preset_sungrow_hybrid_inverter": "Sungrow Hybrid Wechselrichter (SH...)",
+            "preset_sungrow_hybrid_inverter_grid": "Sungrow Hybrid Wechselrichter Netzanschluss (SH...)",
+            "preset_sungrow_hybrid_inverter_battery": "Sungrow Hybrid Wechselrichter Speicher (SH...)"
         },
         "script": {
         }
