@@ -703,3 +703,11 @@ export function toIsoString(date: Date) {
         ':' + leftPad(date.getMinutes(), 0, 2) +
         ':' + leftPad(date.getSeconds(), 0, 2);
 }
+
+export function blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, _) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+    });
+}
