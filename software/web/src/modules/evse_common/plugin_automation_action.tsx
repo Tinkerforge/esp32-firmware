@@ -44,7 +44,7 @@ export type EvseLedAutomationAction = [
 ];
 
 function get_set_current_table_children(action: EvseAutomationAction) {
-    return __("evse.automation.automation_action_text")((action[1].current / 1000).toLocaleString());
+    return __("evse.automation.automation_action_text")(util.toLocaleFixed(action[1].current / 1000, 3));
 }
 
 function get_set_current_edit_children(action: EvseAutomationAction, on_action: (action: AutomationAction) => void) {

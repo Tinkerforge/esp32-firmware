@@ -122,15 +122,18 @@ export function format_timespan(secs: number) {
     return dayString + hourString + minString + secString;
 }
 
+let number_formats: {[id: number]: Intl.NumberFormat} = {};
+
 export function toLocaleFixed(i: number, fractionDigits?: number) {
     if (fractionDigits === undefined) {
         fractionDigits = 0;
     }
 
-    return i.toLocaleString(undefined, {
-        minimumFractionDigits: fractionDigits,
-        maximumFractionDigits: fractionDigits,
-    });
+    if (!number_formats[fractionDigits]) {
+        number_formats[fractionDigits] = new Intl.NumberFormat(undefined, {minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits});
+    }
+
+    return number_formats[fractionDigits].format(i);
 }
 
 let wsReconnectTimeout: number = null;
