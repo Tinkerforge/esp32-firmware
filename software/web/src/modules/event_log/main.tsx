@@ -27,6 +27,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Download, FileText } from "react-feather";
+import { blobToBase64 } from "../../ts/util";
 
 export function EventLogNavbar() {
     return <NavbarItem name="event_log" module="event_log" title={__("event_log.navbar.event_log")} symbol={<FileText />} />;
@@ -165,14 +166,6 @@ export class EventLog extends Component<{}, EventLogState> {
             .catch(e => util.add_alert("event_log_load_failed", "danger", __("event_log.script.load_event_log_error"), e.message))
     }
 
-    blobToBase64(blob: Blob): Promise<string> {
-        return new Promise((resolve, _) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-        });
-    }
-
     async download_debug_report() {
         let timeout = window.setTimeout(() => this.setState({show_spinner: true}), 1000);
 
@@ -185,7 +178,7 @@ export class EventLog extends Component<{}, EventLogState> {
             debug_log += this.state.log;
             try {
                 let blob = await util.download("/coredump/coredump.elf");
-                let base64 = await this.blobToBase64(blob);
+                let base64 = await blobToBase64(blob);
                 base64 = base64.replace(/(.{80})/g, "$1\n");
                 debug_log += "\n\n___CORE_DUMP_START___\n\n";
                 debug_log += base64;
