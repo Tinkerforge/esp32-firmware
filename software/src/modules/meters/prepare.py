@@ -234,9 +234,6 @@ MeterValue{name} getMeterValue{name}(MeterValueID id) {{
 }}
 """)
 
-
-
-
 def format_value_id_tree(sub_tree, indent):
     result = ''
 
