@@ -146,7 +146,6 @@ void Meters::setup()
         // setup whether to support reset. This could for example depend on the
         // meter's configuration.
         if (meter->supports_reset()) {
-            meter_slot.reset = *Config::Null();
             meter_slot.last_reset = last_reset_prototype;
             api.restorePersistentConfig(get_path(slot, Meters::PathType::LastReset), &meter_slot.last_reset);
         }
@@ -283,7 +282,7 @@ void Meters::register_urls()
         }
 
         if (meter_slot.meter->supports_reset()) {
-            api.addCommand(get_path(slot, Meters::PathType::Reset), &meter_slot.reset, {}, [this, &meter_slot, slot]() mutable {
+            api.addCommand(get_path(slot, Meters::PathType::Reset), Config::Null(), {}, [this, &meter_slot, slot]() mutable {
                 if (!meter_slot.meter->reset())
                     return;
 

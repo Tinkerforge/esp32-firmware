@@ -120,7 +120,6 @@ private:
         ConfigRoot config_union;
         ConfigRoot state;
         ConfigRoot errors;
-        ConfigRoot reset;
         ConfigRoot last_reset;
 
         ValueHistory power_history;
