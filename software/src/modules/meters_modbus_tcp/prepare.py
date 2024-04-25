@@ -70,6 +70,34 @@ sungrow_hybrid_inverter_base_values = [
         'scale_factor': 0.1,
     },
     {
+        'name': 'MPPT 1 Voltage [0.1 V]',
+        'value_id': 'VoltageDC',
+        'start_address': 5011,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+    },
+    {
+        'name': 'MPPT 1 Current [0.1 A]',
+        'value_id': 'CurrentDC',
+        'start_address': 5012,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+    },
+    {
+        'name': 'MPPT 2 Voltage [0.1 V]',
+        'value_id': None, # FIXME: merge with MPPT 1?
+        'start_address': 5013,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+    },
+    {
+        'name': 'MPPT 2 Current [0.1 A]',
+        'value_id': None, # FIXME: merge with MPPT 1?
+        'start_address': 5014,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+    },
+    {
         'name': 'Total DC Power [W]',
         'value_id': 'PowerDC',
         'start_address': 5017,
