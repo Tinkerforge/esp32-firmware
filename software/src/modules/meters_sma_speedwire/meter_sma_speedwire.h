@@ -43,21 +43,20 @@ struct cmpMeterValueID
 class MeterSMASpeedwire final : public IMeter
 {
 public:
-    MeterSMASpeedwire(uint32_t slot);
+    MeterSMASpeedwire(uint32_t slot_) : slot(slot_), _values() {}
 
-    MeterClassID get_class() const override;
+    [[gnu::const]] MeterClassID get_class() const override;
     void setup(const Config &ephemeral_config) override;
 
     bool supports_power() override          {return true;}
     bool supports_energy_import() override  {return true;}
-    bool supports_energy_imexsum() override {return true;}
     bool supports_energy_export() override  {return true;}
-    bool supports_currents() override       {return true;}
+    //bool supports_currents() override       {return true;}
 
 private:
     void update_all_values();
 
-    uint32_t _slot;
+    uint32_t slot;
     std::map<MeterValueID, obis, cmpMeterValueID> _values;
 };
 

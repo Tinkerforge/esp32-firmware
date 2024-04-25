@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "meters_sma_swire"
+
 #include <WiFiUdp.h>
 
 #include "meter_sma_speedwire.h"
@@ -35,11 +37,6 @@ uint16_t  mc_Port = 9522;
 #define SMA_PACKET_LEN 608
 #define SMA_SPEEDWIRE_VALUE_COUNT 59
 
-MeterSMASpeedwire::MeterSMASpeedwire(uint32_t slot) : _slot(slot), _values()
-{
-}
-
-_ATTRIBUTE((const))
 MeterClassID MeterSMASpeedwire::get_class() const
 {
     return MeterClassID::SMASpeedwire;
@@ -139,7 +136,10 @@ void MeterSMASpeedwire::setup(const Config &ephemeral_config)
     _values[MeterValueID::FrequencyLAvg]                = obis(0, 14, 4, 0,    1000.0, 4);
 
     if (udp.beginMulticast(mc_groupIP, mc_Port)) {
-        logger.printfln("MeterSMA: Listening to Multicast at %s:%u\n", mc_groupIP.toString().c_str(), mc_Port);
+        logger.printfln("Listening for multicasts to %s:%u", mc_groupIP.toString().c_str(), mc_Port);
+    } else {
+        logger.printfln("Listening for multicasts to %s:%u failed", mc_groupIP.toString().c_str(), mc_Port);
+        return;
     }
 
     size_t index = 0;
@@ -151,7 +151,7 @@ void MeterSMASpeedwire::setup(const Config &ephemeral_config)
     }
 
     valueIds[index++] = MeterValueID::PowerActiveLSumImExDiff;
-    meters.declare_value_ids(_slot, valueIds, ARRAY_SIZE(valueIds));
+    meters.declare_value_ids(slot, valueIds, ARRAY_SIZE(valueIds));
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         update_all_values();
@@ -163,8 +163,8 @@ void MeterSMASpeedwire::update_all_values()
     auto packetSize = udp.parsePacket();
 
     if (packetSize > 0) {
-        uint8_t buf[1024] = {0};
-        auto len = static_cast<size_t>(udp.read(buf, 1023));
+        uint8_t buf[1024];
+        auto len = static_cast<size_t>(udp.read(buf, sizeof(buf)));
 
         if (len == SMA_PACKET_LEN) {
             size_t index = 0;
@@ -175,7 +175,7 @@ void MeterSMASpeedwire::update_all_values()
             }
 
             values[index++] = _values.at(MeterValueID::PowerActiveLSumImport).value(buf, len) - _values.at(MeterValueID::PowerActiveLSumExport).value(buf, len);
-            meters.update_all_values(_slot, values);
+            meters.update_all_values(slot, values);
         }
     }
 }

@@ -20,7 +20,6 @@
 #include "meter_sma_speedwire.h"
 #include "meters_sma_speedwire.h"
 #include "module_dependencies.h"
-#include "modules/meters/meter_defs.h"
 
 #include "gcc_warnings.h"
 
@@ -30,37 +29,30 @@ void MetersSMASpeedwire::pre_setup()
         {"display_name", Config::Str("SMA Speedwire", 0, 32)}
     });
 
-    state_prototype = Config::Object({
-        {"type",  Config::Uint(METER_TYPE_CUSTOM_ALL_VALUES)}
-    });
-
     meters.register_meter_generator(get_class(), this);
 }
 
-_ATTRIBUTE((const))
 MeterClassID MetersSMASpeedwire::get_class() const
 {
     return MeterClassID::SMASpeedwire;
 }
 
-IMeter * MetersSMASpeedwire::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
+IMeter *MetersSMASpeedwire::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
 {
     return new MeterSMASpeedwire(slot);
 }
 
-_ATTRIBUTE((const))
-const Config * MetersSMASpeedwire::get_config_prototype()
+const Config *MetersSMASpeedwire::get_config_prototype()
 {
     return &config_prototype;
 }
 
-_ATTRIBUTE((const))
-const Config * MetersSMASpeedwire::get_state_prototype()
+const Config *MetersSMASpeedwire::get_state_prototype()
 {
-    return &state_prototype;
+    return Config::Null();
 }
 
-const Config * MetersSMASpeedwire::get_errors_prototype()
+const Config *MetersSMASpeedwire::get_errors_prototype()
 {
     return Config::Null();
 }
