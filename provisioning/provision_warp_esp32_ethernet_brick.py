@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import traceback
 from threading import Thread
 
 from pathlib import Path
