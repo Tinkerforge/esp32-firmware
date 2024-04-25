@@ -60,32 +60,52 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
     is_smart = not is_basic and energy_meter_type == 0
     is_pro = not is_basic and energy_meter_type != 0
 
-    stage3.test_front_panel_button(qr_stand == '0' or qr_stand_wiring == '0')
+    automatic = qr_stand == '0' or qr_stand_wiring == '0'
+
+    stage3.test_front_panel_button(automatic)
     result["front_panel_button_tested"] = True
 
     if generation >= 3:
-        if not (qr_stand == '0' or qr_stand_wiring == '0'):
-            fatal_error("WARP 3 RGB LED test not yet implemented for stand. " + blink("Complain to Erik!"))
+        def manual_check_color(color):
+            stage3.beep_notify()
 
-        evse.set_indicator_led(255, 1000, 0, 255, 255)
+            input_result = "n"
+
+            while input_result := input(green(f'Is front LED {color}? [y/n]')) not in ["y", "n"]:
+                pass
+
+            if input_result == "n":
+                fatal_error(f"Front LED not {color}!")
+
+        evse.set_indicator_led(255, 60000, 0, 255, 255)
         time.sleep(0.5)
-        if not stage3.is_front_panel_led_red():
+        if automatic and not stage3.is_front_panel_led_red():
             fatal_error("Front LED not red!")
+        elif not automatic:
+            manual_check_color('red')
 
-        evse.set_indicator_led(255, 1000, 120, 255, 255)
+        evse.set_indicator_led(255, 60000, 120, 255, 255)
         time.sleep(0.5)
-        if not stage3.is_front_panel_led_green():
+        if automatic and not stage3.is_front_panel_led_green():
             fatal_error("Front LED not green!")
+        elif not automatic:
+            manual_check_color('green')
 
-        evse.set_indicator_led(255, 1000, 240, 255, 255)
+        evse.set_indicator_led(255, 60000, 240, 255, 255)
         time.sleep(0.5)
-        if not stage3.is_front_panel_led_blue():
+        if automatic and not stage3.is_front_panel_led_blue():
             fatal_error("Front LED not blue!")
+        elif not automatic:
+            manual_check_color('blue')
 
-        evse.set_indicator_led(255, 1000, 0, 0, 255)
+        evse.set_indicator_led(255, 60000, 0, 0, 255)
         time.sleep(0.5)
-        if not stage3.is_front_panel_led_white():
+        if automatic and not stage3.is_front_panel_led_white():
             fatal_error("Front LED not white!")
+        elif not automatic:
+            manual_check_color('white')
+
+        evse.set_indicator_led(-1, 1000, 0, 0, 0)
 
         result["front_panel_led_tested"] = True
 
