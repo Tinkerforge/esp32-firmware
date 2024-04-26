@@ -200,6 +200,11 @@ WebServerHandler *WebServer::addHandler(const char *uri, httpd_method_t method, 
     handlers.emplace_front(callbackInMainThread, std::forward<wshCallback>(callback), std::forward<wshUploadCallback>(uploadCallback));
     ++handler_count;
     WebServerHandler *result = &handlers.front();
+#ifdef DEBUG_FS_ENABLE
+    result->uri = strdup(uri);
+    result->method = method;
+    result->accepts_upload = uploadCallback != nullptr;
+#endif
 
     UserCtx *user_ctx = (UserCtx *)malloc(sizeof(UserCtx));
     user_ctx->server = this;

@@ -101,6 +101,12 @@ struct WebServerHandler {
     bool callbackInMainThread;
     wshCallback callback;
     wshUploadCallback uploadCallback;
+
+#ifdef DEBUG_FS_ENABLE
+    const char *uri;
+    httpd_method_t method;
+    bool accepts_upload;
+#endif
 };
 
 class WebServer

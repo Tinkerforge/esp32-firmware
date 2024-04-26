@@ -2,6 +2,8 @@
 
 #include "config/private.h"
 
+#include "header_logger.h"
+
 struct default_validator {
     String operator()(const Config::ConfString &x) const
     {
@@ -973,3 +975,72 @@ struct to_owned {
         return OwnedConfig(OwnedConfig::OwnedConfigUnion{x.getTag(), result});
     }
 };
+
+#ifdef DEBUG_FS_ENABLE
+struct api_info {
+    void operator()(const Config::ConfString &x)
+    {
+        header_printfln("api_info", "{\"type\":\"string\",\"val\":\"%s\",\"minChars\":%u,\"maxChars\":%u}", x.getSlot()->val.c_str(), x.getSlot()->minChars, x.getSlot()->maxChars);
+    }
+    void operator()(const Config::ConfFloat &x)
+    {
+        header_printfln("api_info", "{\"type\":\"float\",\"val\":%f,\"min\":%f,\"max\":%f}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+    }
+    void operator()(const Config::ConfInt &x)
+    {
+        header_printfln("api_info", "{\"type\":\"int\",\"val\":%d,\"min\":%d,\"max\":%d}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+    }
+    void operator()(const Config::ConfUint &x)
+    {
+        header_printfln("api_info", "{\"type\":\"uint\",\"val\":%u,\"min\":%u,\"max\":%u}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+    }
+    void operator()(const Config::ConfBool &x)
+    {
+        header_printfln("api_info", "{\"type\":\"bool\",\"val\":%s}", x.value ? "true" : "false");
+    }
+    void operator()(const Config::ConfVariant::Empty &x)
+    {
+        header_printfln("api_info", "{\"type\":\"null\"}");
+    }
+    void operator()(const Config::ConfArray &x)
+    {
+        header_printfln("api_info", "{\"type\":\"array\",\"prototype\":");
+        Config::apply_visitor(api_info{}, x.getSlot()->prototype->value);
+        header_printfln("api_info", ",\"minElements\":%u,\"maxElements\":%u,\"variantType\":%d,\"content\":[", x.getSlot()->minElements, x.getSlot()->maxElements, x.getSlot()->variantType);
+        for (const Config &c : *x.getVal()) {
+            Config::apply_visitor(api_info{}, c.value);
+            header_printfln("api_info", ",");
+        }
+        header_printfln("api_info", "]}");
+    }
+    void operator()(const Config::ConfObject &x)
+    {
+        const auto *slot = x.getSlot();
+        const auto size = slot->schema->length;
+
+        header_printfln("api_info", "{\"type\":\"object\",\"length\":%u,\"entries\":[", size);
+
+        for (size_t i = 0; i < size; ++i) {
+            header_printfln("api_info", "{\"key\":\"%.*s\",\"value\":", slot->schema->key_lengths[i], slot->schema->keys[i]);
+            Config::apply_visitor(api_info{}, slot->values[i].value);
+            header_printfln("api_info", "},");
+        }
+        header_printfln("api_info", "]}");
+    }
+    void operator()(const Config::ConfUnion &x)
+    {
+        header_printfln("api_info", "{\"type\":\"union\",\"tag\":%u,\"prototypes_len\":%u,\"prototypes\":[", x.getSlot()->tag, x.getSlot()->prototypes_len);
+
+        for (size_t i = 0; i < x.getSlot()->prototypes_len; ++i) {
+            header_printfln("api_info", "{\"tag\": %u,\"value\":", x.getSlot()->prototypes[i].tag);
+            Config::apply_visitor(api_info{}, x.getSlot()->prototypes[i].config.value);
+            header_printfln("api_info", "},");
+        }
+        header_printfln("api_info", "],\"val\":");
+
+        auto &value = x.getVal()->value;
+        Config::apply_visitor(api_info{}, value);
+        header_printfln("api_info", "}");
+    }
+};
+#endif

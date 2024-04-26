@@ -153,3 +153,9 @@ bool ConfigRoot::get_permit_null_updates() {
     // Inverted; see set_permit_null_updates.
     return (((std::uintptr_t)this->validator) & 0x01) == 0;
 }
+
+#ifdef DEBUG_FS_ENABLE
+void ConfigRoot::print_api_info() {
+    Config::apply_visitor(api_info{}, this->value);
+}
+#endif

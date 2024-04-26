@@ -70,6 +70,7 @@ enum class ConfigSource {
 
 struct Config {
     struct ConfString {
+        friend struct api_info;
         using Slot = ConfStringSlot;
 
     private:
@@ -94,6 +95,7 @@ struct Config {
     };
 
     struct ConfFloat {
+        friend struct api_info;
         using Slot = ConfFloatSlot;
 
     private:
@@ -118,6 +120,7 @@ struct Config {
     };
 
     struct ConfInt {
+        friend struct api_info;
         using Slot = ConfIntSlot;
 
     private:
@@ -142,6 +145,7 @@ struct Config {
     };
 
     struct ConfUint {
+        friend struct api_info;
         using Slot = ConfUintSlot;
 
     private:
@@ -174,6 +178,7 @@ struct Config {
     };
 
     struct ConfArray {
+        friend struct api_info;
         using Slot = ConfArraySlot;
 
     private:
@@ -200,6 +205,7 @@ struct Config {
     };
 
     struct ConfObject {
+        friend struct api_info;
         using Slot = ConfObjectSlot;
 
     private:
@@ -224,6 +230,7 @@ struct Config {
     };
 
     struct ConfUnion {
+        friend struct api_info;
         using Slot = ConfUnionSlot;
 
     private:
@@ -783,6 +790,10 @@ public:
     String validate(ConfigSource source);
 
     OwnedConfig get_owned_copy();
+
+#ifdef DEBUG_FS_ENABLE
+    void print_api_info();
+#endif
 
 private:
     template<typename T>

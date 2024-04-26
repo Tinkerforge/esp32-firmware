@@ -435,6 +435,65 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config)
 
 void API::registerDebugUrl()
 {
+    #ifdef DEBUG_FS_ENABLE
+    server.on("/api_info", HTTP_GET, [this](WebServerRequest request) {
+        task_scheduler.scheduleOnce([this](){
+            auto len = strlen("api_info");
+            logger.printfln_prefixed("api_info", len, "[");
+            for (auto &reg : states) {
+                logger.printfln_prefixed("api_info", len, "{\"path\":\"%.*s\",\"type\":\"state\",\"low_latency\":%s,\"keys_to_censor\":[",
+                                reg.path_len, reg.path,
+                                reg.low_latency ? "true" : "false");
+
+                for (int i = 0; i < reg.keys_to_censor_len; ++i)
+                    logger.printfln_prefixed("api_info", len, "\"%s\",", reg.keys_to_censor[i].c_str());
+
+                logger.printfln_prefixed("api_info", len, "],\"content\":");
+                reg.config->print_api_info();
+                logger.printfln_prefixed("api_info", len, "},");
+            }
+
+            for (auto &reg : commands) {
+                logger.printfln_prefixed("api_info", len, "{\"path\":\"%.*s\",\"type\":\"command\",\"is_action\":%s,\"keys_to_censor\":[",
+                                reg.path_len, reg.path,
+                                reg.is_action ? "true" : "false");
+
+                for (int i = 0; i < reg.keys_to_censor_in_debug_report_len; ++i)
+                    logger.printfln_prefixed("api_info", len, "\"%s\",", reg.keys_to_censor_in_debug_report[i].c_str());
+
+                logger.printfln_prefixed("api_info", len, "],\"content\":");
+                reg.config->print_api_info();
+                logger.printfln_prefixed("api_info", len, "},");
+            }
+
+            for (auto &reg : responses) {
+                logger.printfln_prefixed("api_info", len, "{\"path\":\"%.*s\",\"type\":\"response\",\"keys_to_censor\":[",
+                                reg.path_len, reg.path);
+
+                for (int i = 0; i < reg.keys_to_censor_in_debug_report_len; ++i)
+                    logger.printfln_prefixed("api_info", len, "\"%s\",", reg.keys_to_censor_in_debug_report[i].c_str());
+
+                logger.printfln_prefixed("api_info", len, "],\"content\":");
+                reg.config->print_api_info();
+                logger.printfln_prefixed("api_info", len, "},");
+            }
+
+            for (auto &reg : raw_commands) {
+                logger.printfln_prefixed("api_info", len, "{\"path\":\"%.*s\",\"type\":\"raw_command\",\"is_action\":%s},", reg.path_len, reg.path, reg.is_action ? "true" : "false");
+            }
+
+            for (auto &handler : server.handlers) {
+                logger.printfln_prefixed("api_info", len, "{\"path\":\"%s\",\"type\":\"http_only\",\"method\":%d,\"accepts_upload\":%s},", handler.uri + 1, handler.method, handler.accepts_upload ? "true" : "false"); // Skip first /
+            }
+
+
+            logger.printfln_prefixed("api_info", len, "]");
+        }, 0);
+
+        return request.send(200);
+    });
+    #endif
+
     server.on("/debug_report", HTTP_GET, [this](WebServerRequest request) {
         String result = "{\"uptime\": ";
         result += String(millis());
