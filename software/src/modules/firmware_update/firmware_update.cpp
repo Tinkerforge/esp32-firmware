@@ -319,16 +319,16 @@ void FirmwareUpdate::register_urls()
         return handle_update_chunk(U_FLASH, request, index, data, len, final, request.contentLength());
     });
 
-    server.on_HTTPThread("/flash_spiffs", HTTP_POST, [this](WebServerRequest request){
-        if(!Update.hasError()) {
-            logger.printfln("SPFFS flashed successfully! Rebooting in one second.");
-            task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);
-        }
+    // server.on_HTTPThread("/flash_spiffs", HTTP_POST, [this](WebServerRequest request){
+    //     if(!Update.hasError()) {
+    //         logger.printfln("SPFFS flashed successfully! Rebooting in one second.");
+    //         task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);
+    //     }
 
-        return request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
-    },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-        return handle_update_chunk(U_SPIFFS, request, index, data, len, final, request.contentLength());
-    });
+    //     return request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
+    // },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+    //     return handle_update_chunk(U_SPIFFS, request, index, data, len, final, request.contentLength());
+    // });
 
     api.addCommand("factory_reset", Config::Confirm(), {Config::ConfirmKey()}, [this](String &result) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
