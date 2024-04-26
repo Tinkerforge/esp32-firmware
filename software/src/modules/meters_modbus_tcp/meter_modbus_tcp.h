@@ -86,7 +86,7 @@ private:
     uint16_t register_buffer[2];
 
     int sungrow_hybrid_inverter_output_type = -1;
-    uint16_t sungrow_hybrid_inverter_battery_running_state;
+    uint16_t sungrow_hybrid_inverter_running_state;
 };
 
 #if defined(__GNUC__)

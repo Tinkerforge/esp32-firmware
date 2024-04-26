@@ -274,15 +274,15 @@ void MeterModbusTCP::read_done_callback()
     }
     else if (preset == MeterModbusTCPPreset::SungrowHybridInverterBattery) {
         if (generic_read_request.start_address == 13001 - 1) { // running state
-            sungrow_hybrid_inverter_battery_running_state = register_buffer[0];
+            sungrow_hybrid_inverter_running_state = register_buffer[0];
         }
         else if (generic_read_request.start_address == 13021 - 1) { // battery current
-            if ((sungrow_hybrid_inverter_battery_running_state & (1 << 2)) != 0) {
+            if ((sungrow_hybrid_inverter_running_state & (1 << 2)) != 0) {
                 value = -value;
             }
         }
         else if (generic_read_request.start_address == 13022 - 1) { // battery power
-            if ((sungrow_hybrid_inverter_battery_running_state & (1 << 2)) != 0) {
+            if ((sungrow_hybrid_inverter_running_state & (1 << 2)) != 0) {
                 value = -value;
             }
         }
