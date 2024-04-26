@@ -259,6 +259,10 @@ void MeterModbusTCP::read_done_callback()
         break;
     }
 
+    if (value_index[read_index] != UINT32_MAX) {
+        value *= value_specs[read_index].scale_factor;
+    }
+
     if (preset == MeterModbusTCPPreset::SungrowHybridInverterGrid) {
         if (generic_read_request.start_address == 5036 - 1) { // grid frequency
             if (value > 100) {
@@ -285,7 +289,7 @@ void MeterModbusTCP::read_done_callback()
     }
 
     if (value_index[read_index] != UINT32_MAX) {
-        meters.update_value(slot, value_index[read_index], value * value_specs[read_index].scale_factor);
+        meters.update_value(slot, value_index[read_index], value);
     }
 
     read_index = (read_index + 1) % value_specs_length;
