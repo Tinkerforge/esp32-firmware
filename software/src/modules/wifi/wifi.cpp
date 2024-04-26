@@ -110,7 +110,7 @@ void Wifi::pre_setup()
         {"client_key_id", Config::Int(-1, -1, MAX_CERT_ID)}
     })});
 
-    Config eap_proto = Config::Union<EapConfigID>(
+    Config eap_config_union = Config::Union<EapConfigID>(
         *Config::Null(),
         EapConfigID::None,
         eap_config_prototypes.data(),
@@ -140,7 +140,7 @@ void Wifi::pre_setup()
         {"subnet", Config::Str("0.0.0.0", 7, 15)},
         {"dns", Config::Str("0.0.0.0", 7, 15)},
         {"dns2", Config::Str("0.0.0.0", 7, 15)},
-        {"wpa_eap_config", eap_proto}
+        {"wpa_eap_config", eap_config_union}
     }), [](Config &cfg, ConfigSource source) -> String {
         const String &phrase = cfg.get("passphrase")->asString();
         if (phrase.length() > 0 && phrase.length() < 8)
