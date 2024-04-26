@@ -372,14 +372,6 @@ for spec in specs:
     spec_values.append(f'static const MeterValueID {name.under}_ids[] = {{\n' + '\n'.join(value_ids) + '\n};')
     spec_values.append(f'static const uint32_t {name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
 
-with open('meters_modbus_tcp_defs.h', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated.\n\n')
-    f.write('#include <stdint.h>\n\n')
-    f.write('#pragma once\n\n')
-    f.write('enum class MeterModbusTCPPreset : uint8_t {\n')
-    f.write(''.join(preset_values))
-    f.write('};\n')
-
 with open('meters_modbus_tcp_defs.inc', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('\n\n'.join(spec_values) + '\n\n')
