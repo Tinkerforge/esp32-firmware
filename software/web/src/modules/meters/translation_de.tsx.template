@@ -84,6 +84,8 @@ let x = {
             "meter_type_5": "Eastron SDM630MCT",
             "meter_type_6": "Eltako DSZ15DZMOD",
             "meter_type_7": "YTL DEM4A",
+            "meter_type_200": "Unbekannt/Benutzerdefiniert (einfach)",
+            "meter_type_201": "Unbekannt/Benutzerdefiniert (Extrawerte)",
             "meter_type_254": "Intern",
             "meter_type_255": "Automatische Erkennung",
             "reboot_required": "Neustart erforderlich"
