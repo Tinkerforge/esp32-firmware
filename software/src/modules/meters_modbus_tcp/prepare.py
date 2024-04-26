@@ -119,6 +119,13 @@ sungrow_hybrid_inverter_base_values = [
         'scale_factor': 0.001,
     },
     {
+        'name': 'Total PV Generation [0.1 kWh]',
+        'value_id': None,
+        'start_address': 13003,
+        'value_type': 'U32',
+        'scale_factor': 0.1,
+    },
+    {
         'name': 'Total Active Power [W]',
         'value_id': 'PowerActiveLSumImExDiff',
         'start_address': 13034,
@@ -181,21 +188,21 @@ sungrow_hybrid_inverter_phase_currents = [
         'value_id': 'CurrentL1ImExDiff',
         'start_address': 13031,
         'value_type': 'S16',
-        'scale_factor': -0.1,
+        'scale_factor': -0.1,  # FIXME: is the current always positive?
     },
     {
         'name': 'Phase B Current [0.1 A]',
         'value_id': 'CurrentL2ImExDiff',
         'start_address': 13032,
         'value_type': 'S16',
-        'scale_factor': -0.1,
+        'scale_factor': -0.1,  # FIXME: is the current always positive?
     },
     {
         'name': 'Phase C Current [0.1 A]',
         'value_id': 'CurrentL3ImExDiff',
         'start_address': 13033,
         'value_type': 'S16',
-        'scale_factor': -0.1,
+        'scale_factor': -0.1,  # FIXME: is the current always positive?
     },
 ]
 
@@ -256,6 +263,13 @@ specs = [
                 'scale_factor': 1.0,
             },
             {
+                'name': 'Total Battery Charge Energy From PV [0.1 kWh]',
+                'value_id': None,
+                'start_address': 13013,
+                'value_type': 'U32',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Battery Voltage [0.1 V]',
                 'value_id': 'VoltageDC',
                 'start_address': 13020,
@@ -284,6 +298,13 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Battery State Of Health [0.1 %]',
+                'value_id': None,
+                'start_address': 13024,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Battery Temperature [0.1 °C]',
                 'value_id': 'Temperature',
                 'start_address': 13025,
@@ -291,7 +312,7 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Total Battery Energy Discharge [0.1 kWh]',
+                'name': 'Total Battery Discharge Energy [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 13027,
                 'value_type': 'U32',
