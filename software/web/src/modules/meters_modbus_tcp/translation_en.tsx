@@ -13,6 +13,7 @@ let x = {
             "config_host": "Host",
             "config_host_invalid": "Host is invalid",
             "config_port": "Port",
+            "config_port_muted": "typically 502",
             "config_device_address": "Device address",
             "config_preset": "Preset",
             "config_preset_select": "Select...",

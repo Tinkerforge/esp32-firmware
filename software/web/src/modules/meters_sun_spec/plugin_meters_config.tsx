@@ -403,7 +403,7 @@ export function init() {
                             }}
                             invalidFeedback={__("meters_sun_spec.content.config_host_invalid")} />
                     </FormRow>
-                    <FormRow label={__("meters_sun_spec.content.config_port")}>
+                    <FormRow label={__("meters_sun_spec.content.config_port")} label_muted={__("meters_sun_spec.content.config_port_muted")}>
                         <InputNumber
                             required
                             min={1}
