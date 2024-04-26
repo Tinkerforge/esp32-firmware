@@ -71,6 +71,6 @@ private:
 
     ActionMap   action_map;
     TriggerMap  trigger_map;
-    std::vector<ConfUnionPrototype<AutomationTriggerID>>    trigger_vec;
-    std::vector<ConfUnionPrototype<AutomationActionID>>     action_vec;
+    std::vector<ConfUnionPrototype<AutomationTriggerID>>    trigger_prototypes;
+    std::vector<ConfUnionPrototype<AutomationActionID>>     action_prototypes;
 };

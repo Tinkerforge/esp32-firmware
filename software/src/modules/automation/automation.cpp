@@ -27,8 +27,8 @@
 
 Automation::Automation()
 {
-    trigger_vec.push_back({AutomationTriggerID::None, *Config::Null()});
-    action_vec.push_back({AutomationActionID::None, *Config::Null()});
+    trigger_prototypes.push_back({AutomationTriggerID::None, *Config::Null()});
+    action_prototypes.push_back({AutomationActionID::None, *Config::Null()});
 }
 
 void Automation::pre_setup()
@@ -54,25 +54,25 @@ void Automation::pre_setup()
         })
     );
 
-    Config trigger_prototype = Config::Union<AutomationTriggerID>(
+    Config trigger_union = Config::Union<AutomationTriggerID>(
                     *Config::Null(),
                     AutomationTriggerID::None,
-                    trigger_vec.data(),
-                    trigger_vec.size());
+                    trigger_prototypes.data(),
+                    trigger_prototypes.size());
 
-    Config action_prototype = Config::Union<AutomationActionID>(
+    Config action_union = Config::Union<AutomationActionID>(
                     *Config::Null(),
                     AutomationActionID::None,
-                    action_vec.data(),
-                    action_vec.size());
+                    action_prototypes.data(),
+                    action_prototypes.size());
 
     config = ConfigRoot{Config::Object({
             {"tasks", Config::Array(
                 {},
                 new Config{
                     Config::Object({
-                        {"trigger", trigger_prototype},
-                        {"action", action_prototype}
+                        {"trigger", trigger_union},
+                        {"action", action_union}
                     })
                 }, 0, 14, Config::type_id<Config::ConfObject>())
             }
@@ -177,7 +177,7 @@ void Automation::register_action(AutomationActionID id, Config cfg, ActionCb &&c
         return;
     }
 
-    action_vec.push_back({id, cfg});
+    action_prototypes.push_back({id, cfg});
     action_map[id] = ActionValue{std::forward<ActionCb>(callback), std::forward<ValidatorCb>(validator), enable};
 }
 
@@ -188,7 +188,7 @@ void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorC
         return;
     }
 
-    trigger_vec.push_back({id, cfg});
+    trigger_prototypes.push_back({id, cfg});
     trigger_map[id] = TriggerValue{std::forward<ValidatorCb>(validator), enable};
 }
 
