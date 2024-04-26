@@ -68,6 +68,7 @@ public:
 private:
     void connect_callback() override;
     void disconnect_callback() override;
+    void prepare_read();
 
     uint32_t slot;
     Config *state;

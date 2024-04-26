@@ -31,7 +31,7 @@
 
 #include "meters_modbus_tcp_defs.inc"
 
-#define DEBUG_LOG_ALL_READS
+//#define DEBUG_LOG_ALL_VALUES
 
 #define SUNGROW_HYBRID_INVERTER_OUTPUT_TYPE_ADDRESS     5002u
 #define SUNGROW_HYBRID_INVERTER_GRID_FREQUENCY_ADDRESS  5036u
@@ -119,9 +119,11 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
 void MeterModbusTCP::connect_callback()
 {
-    read_index = 0;
-
     generic_read_request.register_type = TAddress::RegType::IREG;
+    generic_read_request.data[0] = register_buffer;
+    generic_read_request.data[1] = nullptr;
+    generic_read_request.read_twice = false;
+    generic_read_request.done_callback = [this]{ read_done_callback(); };
 
     if (preset == MeterModbusTCPPreset::SungrowHybridInverter) {
         if (sungrow_hybrid_inverter_output_type < 0) {
@@ -130,14 +132,10 @@ void MeterModbusTCP::connect_callback()
         }
     }
     else {
-        generic_read_request.start_address = value_specs[read_index].start_address - 1;
-        generic_read_request.register_count = static_cast<uint8_t>(value_specs[read_index].value_type) % 10;
-    }
+        read_index = 0;
 
-    generic_read_request.data[0] = register_buffer;
-    generic_read_request.data[1] = nullptr;
-    generic_read_request.read_twice = false;
-    generic_read_request.done_callback = [this]{ read_done_callback(); };
+        prepare_read();
+    }
 
     start_generic_read();
 }
@@ -145,6 +143,18 @@ void MeterModbusTCP::connect_callback()
 void MeterModbusTCP::disconnect_callback()
 {
     read_allowed = false;
+}
+
+void MeterModbusTCP::prepare_read()
+{
+#ifndef DEBUG_LOG_ALL_VALUES
+    while (value_index[read_index] == VALUE_IS_DEBUG) {
+        read_index = (read_index + 1) % value_specs_length;
+    }
+#endif
+
+    generic_read_request.start_address = value_specs[read_index].start_address - 1;
+    generic_read_request.register_count = static_cast<uint8_t>(value_specs[read_index].value_type) % 10;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -209,7 +219,7 @@ void MeterModbusTCP::read_done_callback()
 
             sungrow_hybrid_inverter_output_type = register_buffer[0];
 
-#ifdef DEBUG_LOG_ALL_READS
+#ifdef DEBUG_LOG_ALL_VALUES
             logger.printfln("%s / Output Type (%u): %d",
                             get_preset_name(preset),
                             SUNGROW_HYBRID_INVERTER_OUTPUT_TYPE_ADDRESS,
@@ -222,8 +232,7 @@ void MeterModbusTCP::read_done_callback()
         read_allowed = true;
         read_index = 0;
 
-        generic_read_request.start_address = value_specs[read_index].start_address - 1;
-        generic_read_request.register_count = static_cast<uint8_t>(value_specs[read_index].value_type) % 10;
+        prepare_read();
 
         return;
     }
@@ -240,28 +249,28 @@ void MeterModbusTCP::read_done_callback()
 
     switch (value_specs[read_index].value_type) {
     case ValueType::U16:
-#ifdef DEBUG_LOG_ALL_READS
+#ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %u", get_preset_name(preset), value_specs[read_index].name, value_specs[read_index].start_address, register_buffer[0]);
 #endif
         value = static_cast<float>(register_buffer[0]);
         break;
 
     case ValueType::S16:
-#ifdef DEBUG_LOG_ALL_READS
+#ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %d", get_preset_name(preset), value_specs[read_index].name, value_specs[read_index].start_address, static_cast<int16_t>(register_buffer[0]));
 #endif
         value = static_cast<float>(static_cast<int16_t>(register_buffer[0]));
         break;
 
     case ValueType::U32:
-#ifdef DEBUG_LOG_ALL_READS
+#ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %u (%u %u)", get_preset_name(preset), value_specs[read_index].name, value_specs[read_index].start_address, u.v, register_buffer[0], register_buffer[1]);
 #endif
         value = static_cast<float>(u.v);
         break;
 
     case ValueType::S32:
-#ifdef DEBUG_LOG_ALL_READS
+#ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %d (%u %u)", get_preset_name(preset), value_specs[read_index].name, value_specs[read_index].start_address, static_cast<int32_t>(u.v), register_buffer[0], register_buffer[1]);
 #endif
         value = static_cast<float>(static_cast<int32_t>(u.v));
@@ -271,9 +280,7 @@ void MeterModbusTCP::read_done_callback()
         break;
     }
 
-    if (value_index[read_index] != UINT32_MAX) {
-        value *= value_specs[read_index].scale_factor;
-    }
+    value *= value_specs[read_index].scale_factor;
 
     if (preset == MeterModbusTCPPreset::SungrowHybridInverterGrid) {
         if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_GRID_FREQUENCY_ADDRESS - 1) { // grid frequency
@@ -300,19 +307,20 @@ void MeterModbusTCP::read_done_callback()
         }
     }
 
-    if (value_index[read_index] != UINT32_MAX) {
+    if (value_index[read_index] != VALUE_IS_META && value_index[read_index] != VALUE_IS_DEBUG) {
         meters.update_value(slot, value_index[read_index], value);
     }
 
     read_index = (read_index + 1) % value_specs_length;
-    generic_read_request.start_address = value_specs[read_index].start_address - 1;
-    generic_read_request.register_count = static_cast<uint8_t>(value_specs[read_index].value_type) % 10;
 
     if (read_index == 0) {
         // make a little pause after each round trip
         read_allowed = true;
     }
-    else {
+
+    prepare_read();
+
+    if (!read_allowed) {
         start_generic_read();
     }
 }
