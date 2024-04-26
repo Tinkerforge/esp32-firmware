@@ -21,5 +21,6 @@
 
 #include <stdarg.h>
 
+[[gnu::format(__printf__, 2, 3)]]
 int header_printfln(const char *prefix, const char *fmt, ...);
 int header_printfln(const char *prefix, const char *fmt, va_list args);
