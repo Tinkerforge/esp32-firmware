@@ -74,7 +74,7 @@ private:
     Config *state;
     Config *errors;
 
-    const ValueSpec *value_specs ;
+    const ValueSpec *value_specs;
     size_t value_specs_length;
     const MeterValueID *value_ids;
     const uint32_t *value_index;
