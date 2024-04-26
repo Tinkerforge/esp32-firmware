@@ -72,7 +72,7 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {host: v}));
                             }}
-                            invalidFeedback={__("meters_sun_spec.content.config_host_invalid")} />
+                            invalidFeedback={__("meters_modbus_tcp.content.config_host_invalid")} />
                     </FormRow>
                     <FormRow label={__("meters_modbus_tcp.content.config_port")} label_muted={__("meters_modbus_tcp.content.config_port_muted")}>
                         <InputNumber
