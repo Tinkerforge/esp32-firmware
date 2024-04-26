@@ -73,10 +73,10 @@ private:
     Config *state;
     Config *errors;
 
-    ValueSpec *value_specs ;
+    const ValueSpec *value_specs ;
     size_t value_specs_length;
-    MeterValueID *value_ids;
-    uint32_t * value_index;
+    const MeterValueID *value_ids;
+    const uint32_t *value_index;
 
     bool read_allowed = false;
     bool values_declared = false;

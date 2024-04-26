@@ -347,9 +347,9 @@ for spec in specs:
 
     name = util.FlavoredName(spec["name"]).get()
 
-    spec_values.append(f'static MeterModbusTCP::ValueSpec {name.under}_specs[] = {{\n' + '\n'.join(value_specs) + '\n};')
-    spec_values.append(f'static MeterValueID {name.under}_ids[] = {{\n' + '\n'.join(value_ids) + '\n};')
-    spec_values.append(f'static uint32_t {name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
+    spec_values.append(f'static const MeterModbusTCP::ValueSpec {name.under}_specs[] = {{\n' + '\n'.join(value_specs) + '\n};')
+    spec_values.append(f'static const MeterValueID {name.under}_ids[] = {{\n' + '\n'.join(value_ids) + '\n};')
+    spec_values.append(f'static const uint32_t {name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
 
 with open('meters_modbus_tcp_defs.h', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
