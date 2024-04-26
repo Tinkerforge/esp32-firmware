@@ -53,7 +53,7 @@ void MetersSunSpec::pre_setup()
         {"display_name", Config::Str("", 0, 65)}, // 32 chars manufacturer name; space; 32 chars model name
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
-        {"device_address", Config::Uint(0, 1, 247)},
+        {"device_address", Config::Uint(1, 1, 247)},
         {"manufacturer_name", Config::Str("", 0, 32)},
         {"model_name", Config::Str("", 0, 32)},
         {"serial_number", Config::Str("", 0, 32)},
