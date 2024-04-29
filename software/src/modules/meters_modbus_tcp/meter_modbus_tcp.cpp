@@ -112,12 +112,48 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
-    /*
-    case MeterModbusTCPTableID::SungrowStringInverter:
-    case MeterModbusTCPTableID::SungrowStringInverterGrid:
-    case MeterModbusTCPTableID::SolarmaxMaxStorageInverter:
-    case MeterModbusTCPTableID::SolarmaxMaxStorageGrid:
-    case MeterModbusTCPTableID::SolarmaxMaxStorageBattery:*/
+    //case MeterModbusTCPTableID::SungrowStringInverter:
+
+    case MeterModbusTCPTableID::SolarmaxMaxStorage:
+        solarmax_max_storage_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SolarmaxMaxStorageVirtualMeterID>();
+
+        switch (solarmax_max_storage_virtual_meter) {
+        case SolarmaxMaxStorageVirtualMeterID::None:
+            logger.printfln("No Solarmax Max Storage Virtual Meter selected");
+            return;
+
+        case SolarmaxMaxStorageVirtualMeterID::Inverter:
+            value_specs        = solarmax_max_storage_inverter_specs;
+            value_specs_length = ARRAY_SIZE(solarmax_max_storage_inverter_specs);
+            value_ids          = solarmax_max_storage_inverter_ids;
+            value_ids_length   = ARRAY_SIZE(solarmax_max_storage_inverter_ids);
+            value_index        = solarmax_max_storage_inverter_index;
+            break;
+
+        case SolarmaxMaxStorageVirtualMeterID::Grid:
+            value_specs        = solarmax_max_storage_grid_specs;
+            value_specs_length = ARRAY_SIZE(solarmax_max_storage_grid_specs);
+            value_ids          = solarmax_max_storage_grid_ids;
+            value_ids_length   = ARRAY_SIZE(solarmax_max_storage_grid_ids);
+            value_index        = solarmax_max_storage_grid_index;
+            break;
+
+        case SolarmaxMaxStorageVirtualMeterID::Battery:
+            value_specs        = solarmax_max_storage_battery_specs;
+            value_specs_length = ARRAY_SIZE(solarmax_max_storage_battery_specs);
+            value_ids          = solarmax_max_storage_battery_ids;
+            value_ids_length   = ARRAY_SIZE(solarmax_max_storage_battery_ids);
+            value_index        = solarmax_max_storage_battery_index;
+            break;
+
+        default:
+            logger.printfln("Unknown Solarmax Max Storage Virtual Meter: %u", static_cast<uint8_t>(solarmax_max_storage_virtual_meter));
+            return;
+        }
+
+        break;
+
+
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table));
         return;

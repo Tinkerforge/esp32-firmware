@@ -93,6 +93,8 @@ private:
     float sungrow_hybrid_inverter_mppt_1_current;
     float sungrow_hybrid_inverter_mppt_2_voltage;
     float sungrow_hybrid_inverter_mppt_2_current;
+
+    SolarmaxMaxStorageVirtualMeterID solarmax_max_storage_virtual_meter;
 };
 
 #if defined(__GNUC__)

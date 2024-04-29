@@ -24,11 +24,8 @@ tables = [
     ('None', 0),
     #('Custom', 1),
     ('Sungrow Hybrid Inverter', 2),
-    #('Sungrow String Inverter', 5),
-    #('Sungrow String Inverter Grid', 6),
-    #('Solarmax Max Storage Inverter', 7),
-    #('Solarmax Max Storage Grid', 8),
-    #('Solarmax Max Storage Battery', 9),
+    #('Sungrow String Inverter', 3),
+    ('Solarmax Max Storage', 4),
 ]
 
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
@@ -38,6 +35,14 @@ sungrow_hybrid_inverter_virtual_meters = [
     ('Grid', 2),
     ('Battery', 3),
     ('Load', 4),
+]
+
+# NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
+solarmax_max_storage_virtual_meters = [
+    ('None', 0),
+    ('Inverter', 1),
+    ('Grid', 2),
+    ('Battery', 3),
 ]
 
 table_values = []
@@ -52,6 +57,11 @@ sungrow_hybrid_inverter_virtual_meter_values = []
 for virtual_meter in sungrow_hybrid_inverter_virtual_meters:
     sungrow_hybrid_inverter_virtual_meter_values.append('    {0} = {1},\n'.format(util.FlavoredName(virtual_meter[0]).get().camel, virtual_meter[1]))
 
+solarmax_max_storage_virtual_meter_values = []
+
+for virtual_meter in solarmax_max_storage_virtual_meters:
+    solarmax_max_storage_virtual_meter_values.append('    {0} = {1},\n'.format(util.FlavoredName(virtual_meter[0]).get().camel, virtual_meter[1]))
+
 with open('meters_modbus_tcp_defs.h', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#include <stdint.h>\n\n')
@@ -61,6 +71,9 @@ with open('meters_modbus_tcp_defs.h', 'w', encoding='utf-8') as f:
     f.write('};\n\n')
     f.write('enum class SungrowHybridInverterVirtualMeterID : uint8_t {\n')
     f.write(''.join(sungrow_hybrid_inverter_virtual_meter_values))
+    f.write('};\n\n')
+    f.write('enum class SolarmaxMaxStorageVirtualMeterID : uint8_t {\n')
+    f.write(''.join(solarmax_max_storage_virtual_meter_values))
     f.write('};\n')
 
 with open('../../../web/src/modules/meters_modbus_tcp/meters_modbus_tcp_defs.ts', 'w', encoding='utf-8') as f:
@@ -70,6 +83,9 @@ with open('../../../web/src/modules/meters_modbus_tcp/meters_modbus_tcp_defs.ts'
     f.write('}\n\n')
     f.write('export const enum SungrowHybridInverterVirtualMeterID {\n')
     f.write(''.join(sungrow_hybrid_inverter_virtual_meter_values))
+    f.write('}\n\n')
+    f.write('export const enum SolarmaxMaxStorageVirtualMeterID {\n')
+    f.write(''.join(solarmax_max_storage_virtual_meter_values))
     f.write('}\n')
 
 VALUE_ID_META  = 0xFFFFFFFF - 1
@@ -159,6 +175,13 @@ sungrow_hybrid_inverter_base_values = [
         'name': 'Total PV Generation [0.1 kWh]',
         'value_id': VALUE_ID_DEBUG,
         'start_address': 13003,
+        'value_type': 'U32',
+        'scale_factor': 0.1,
+    },
+    {
+        'name': 'Total Direct Energy Consumption [0.1 kWh]',
+        'value_id': VALUE_ID_DEBUG,
+        'start_address': 13018,
         'value_type': 'U32',
         'scale_factor': 0.1,
     },
@@ -372,6 +395,70 @@ specs = [
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 13008,
                 'value_type': 'S32',
+                'scale_factor': 1.0,
+            },
+        ],
+    },
+    {
+        'name': 'Solarmax Max Storage Inverter',
+        'values': [
+            {
+                'name': 'Inverter DC Power [W]',
+                'value_id': VALUE_ID_DEBUG,
+                'start_address': 110,
+                'value_type': 'U32',
+                'scale_factor': 1.0,
+            },
+            {
+                'name': 'Total DC Power [W]',
+                'value_id': 'PowerDC',
+                'start_address': 112,
+                'value_type': 'U32',
+                'scale_factor': 1.0,
+            },
+            {
+                'name': 'Direct Power Usage [W]',
+                'value_id': VALUE_ID_DEBUG,
+                'start_address': 116,
+                'value_type': 'U32',
+                'scale_factor': 1.0,
+            },
+            {
+                'name': 'Active Power [W]',
+                'value_id': 'PowerActiveLSumExport',
+                'start_address': 120,
+                'value_type': 'U32',
+                'scale_factor': 1.0,
+            },
+        ],
+    },
+    {
+        'name': 'Solarmax Max Storage Grid',
+        'values': [
+            {
+                'name': 'Export Power [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 118,
+                'value_type': 'S32',
+                'scale_factor': -1.0,
+            },
+        ],
+    },
+    {
+        'name': 'Solarmax Max Storage Battery',
+        'values': [
+            {
+                'name': 'Battery Power [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 114,
+                'value_type': 'S32',
+                'scale_factor': 1.0,
+            },
+            {
+                'name': 'Battery SoC [%]',
+                'value_id': 'StateOfCharge',
+                'start_address': 122,
+                'value_type': 'U16',
                 'scale_factor': 1.0,
             },
         ],

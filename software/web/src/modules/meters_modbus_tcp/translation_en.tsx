@@ -19,13 +19,20 @@ let x = {
             "config_table_select": "Select...",
 
             "table_sungrow_hybrid_inverter": "Sungrow Hybrid Inverter (SH...)",
+            "table_solarmax_max_storage": "Solarmax Max.Storage",
 
             "sungrow_hybrid_inverter_virtual_meter": "Virtual meter",
             "sungrow_hybrid_inverter_virtual_meter_select": "Select...",
             "sungrow_hybrid_inverter_virtual_meter_inverter": "Inverter",
             "sungrow_hybrid_inverter_virtual_meter_grid": "Grid",
             "sungrow_hybrid_inverter_virtual_meter_battery": "Battery",
-            "sungrow_hybrid_inverter_virtual_meter_load": "Load"
+            "sungrow_hybrid_inverter_virtual_meter_load": "Load",
+
+            "solarmax_max_storage_virtual_meter": "Virtual meter",
+            "solarmax_max_storage_virtual_meter_select": "Select...",
+            "solarmax_max_storage_virtual_meter_inverter": "Inverter",
+            "solarmax_max_storage_virtual_meter_grid": "Grid",
+            "solarmax_max_storage_virtual_meter_battery": "Battery"
         },
         "script": {
         }

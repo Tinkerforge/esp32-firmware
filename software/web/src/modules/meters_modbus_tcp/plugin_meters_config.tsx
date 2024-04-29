@@ -22,7 +22,7 @@ import { h, Fragment, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
-import { MeterModbusTCPTableID, SungrowHybridInverterVirtualMeterID } from "./meters_modbus_tcp_defs";
+import { MeterModbusTCPTableID, SungrowHybridInverterVirtualMeterID, SolarmaxMaxStorageVirtualMeterID } from "./meters_modbus_tcp_defs";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
@@ -40,7 +40,14 @@ type TableConfigSungrowHybridInverter = [
     },
 ];
 
-type TableConfig = TableConfigNone | TableConfigSungrowHybridInverter;
+type TableConfigSolarmaxMaxStorage = [
+    MeterModbusTCPTableID.SolarmaxMaxStorage,
+    {
+        virtual_meter: number;
+    },
+];
+
+type TableConfig = TableConfigNone | TableConfigSungrowHybridInverter | TableConfigSolarmaxMaxStorage;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -58,6 +65,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
         case MeterModbusTCPTableID.SungrowHybridInverter:
             return [MeterModbusTCPTableID.SungrowHybridInverter, {virtual_meter: null}];
 
+        case MeterModbusTCPTableID.SolarmaxMaxStorage:
+            return [MeterModbusTCPTableID.SolarmaxMaxStorage, {virtual_meter: null}];
+
         default:
             return [MeterModbusTCPTableID.None, {}];
     }
@@ -72,6 +82,7 @@ export function init() {
             get_edit_children: (config: ModbusTCPMetersConfig, on_config: (config: ModbusTCPMetersConfig) => void): ComponentChildren => {
                 let table_ids: [string, string][] = [
                     [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_hybrid_inverter")],
+                    [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.table_solarmax_max_storage")],
                 ];
 
                 return [
@@ -137,6 +148,24 @@ export function init() {
                                     [SungrowHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_load")],
                                 ]}
                                 placeholder={__("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_select")}
+                                value={util.hasValue(config[1].table[1]) && util.hasValue(config[1].table[1].virtual_meter) ? config[1].table[1].virtual_meter.toString() : undefined}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
+                                }} />
+                        </FormRow>
+                        : undefined
+                    }
+
+                    {util.hasValue(config[1].table) && config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage ?
+                        <FormRow label={__("meters_modbus_tcp.content.solarmax_max_storage_virtual_meter")}>
+                            <InputSelect
+                                required
+                                items={[
+                                    [SolarmaxMaxStorageVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.solarmax_max_storage_virtual_meter_inverter")],
+                                    [SolarmaxMaxStorageVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.solarmax_max_storage_virtual_meter_grid")],
+                                    [SolarmaxMaxStorageVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.solarmax_max_storage_virtual_meter_battery")],
+                                ]}
+                                placeholder={__("meters_modbus_tcp.content.solarmax_max_storage_virtual_meter_select")}
                                 value={util.hasValue(config[1].table[1]) && util.hasValue(config[1].table[1].virtual_meter) ? config[1].table[1].virtual_meter.toString() : undefined}
                                 onValue={(v) => {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
