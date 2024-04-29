@@ -27,6 +27,7 @@
 #include "modules/meters/imeter.h"
 #include "modules/meters/meter_generator.h"
 #include "modules/meters/meter_value_id.h"
+#include "meters_modbus_tcp_defs.h"
 #include "module.h"
 
 #if defined(__GNUC__)
@@ -54,8 +55,8 @@ public:
 
 private:
     Config config_prototype;
-    Config state_prototype;
-    Config errors_prototype;
+
+    std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> table_prototypes;
 
     ModbusTCP mb;
 };

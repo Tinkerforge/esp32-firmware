@@ -53,54 +53,73 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
     host_name      = ephemeral_config.get("host")->asString();
     port           = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
     device_address = static_cast<uint8_t>(ephemeral_config.get("device_address")->asUint());
-    preset         = ephemeral_config.get("preset")->asEnum<MeterModbusTCPPreset>();
+    table          = ephemeral_config.get("table")->getTag<MeterModbusTCPTableID>();
 
     uint32_t value_ids_length;
 
-    switch (preset) {
-    //case MeterModbusTCPPreset::Custom:
+    switch (table) {
+    case MeterModbusTCPTableID::None:
+        logger.printfln("No table selected");
+        return;
 
-    case MeterModbusTCPPreset::SungrowHybridInverter:
-        // will be set after output type discovery
-        value_specs        = nullptr;
-        value_specs_length = 0;
-        value_ids          = nullptr;
-        value_ids_length   = 0;
-        value_index        = nullptr;
-        break;
+    //case MeterModbusTCPTableID::Custom:
 
-    case MeterModbusTCPPreset::SungrowHybridInverterGrid:
-        value_specs        = sungrow_hybrid_inverter_grid_specs;
-        value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_grid_specs);
-        value_ids          = sungrow_hybrid_inverter_grid_ids;
-        value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_grid_ids);
-        value_index        = sungrow_hybrid_inverter_grid_index;
-        break;
+    case MeterModbusTCPTableID::SungrowHybridInverter:
+        sungrow_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowHybridInverterVirtualMeterID>();
 
-    case MeterModbusTCPPreset::SungrowHybridInverterBattery:
-        value_specs        = sungrow_hybrid_inverter_battery_specs;
-        value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_battery_specs);
-        value_ids          = sungrow_hybrid_inverter_battery_ids;
-        value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_battery_ids);
-        value_index        = sungrow_hybrid_inverter_battery_index;
-        break;
+        switch (sungrow_hybrid_inverter_virtual_meter) {
+        case SungrowHybridInverterVirtualMeterID::None:
+            logger.printfln("No Sungrow Hybrid Inverter Virtual Meter selected");
+            return;
 
-    case MeterModbusTCPPreset::SungrowHybridInverterLoad:
-        value_specs        = sungrow_hybrid_inverter_load_specs;
-        value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_load_specs);
-        value_ids          = sungrow_hybrid_inverter_load_ids;
-        value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_load_ids);
-        value_index        = sungrow_hybrid_inverter_load_index;
+        case SungrowHybridInverterVirtualMeterID::Inverter:
+            // will be set after output type discovery
+            value_specs        = nullptr;
+            value_specs_length = 0;
+            value_ids          = nullptr;
+            value_ids_length   = 0;
+            value_index        = nullptr;
+            break;
+
+        case SungrowHybridInverterVirtualMeterID::Grid:
+            value_specs        = sungrow_hybrid_inverter_grid_specs;
+            value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_grid_specs);
+            value_ids          = sungrow_hybrid_inverter_grid_ids;
+            value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_grid_ids);
+            value_index        = sungrow_hybrid_inverter_grid_index;
+            break;
+
+        case SungrowHybridInverterVirtualMeterID::Battery:
+            value_specs        = sungrow_hybrid_inverter_battery_specs;
+            value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_battery_specs);
+            value_ids          = sungrow_hybrid_inverter_battery_ids;
+            value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_battery_ids);
+            value_index        = sungrow_hybrid_inverter_battery_index;
+            break;
+
+        case SungrowHybridInverterVirtualMeterID::Load:
+            value_specs        = sungrow_hybrid_inverter_load_specs;
+            value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_load_specs);
+            value_ids          = sungrow_hybrid_inverter_load_ids;
+            value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_load_ids);
+            value_index        = sungrow_hybrid_inverter_load_index;
+            break;
+
+        default:
+            logger.printfln("Unknown Sungrow Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sungrow_hybrid_inverter_virtual_meter));
+            return;
+        }
+
         break;
 
     /*
-    case MeterModbusTCPPreset::SungrowStringInverter:
-    case MeterModbusTCPPreset::SungrowStringInverterGrid:
-    case MeterModbusTCPPreset::SolarmaxMaxStorageInverter:
-    case MeterModbusTCPPreset::SolarmaxMaxStorageGrid:
-    case MeterModbusTCPPreset::SolarmaxMaxStorageBattery:*/
+    case MeterModbusTCPTableID::SungrowStringInverter:
+    case MeterModbusTCPTableID::SungrowStringInverterGrid:
+    case MeterModbusTCPTableID::SolarmaxMaxStorageInverter:
+    case MeterModbusTCPTableID::SolarmaxMaxStorageGrid:
+    case MeterModbusTCPTableID::SolarmaxMaxStorageBattery:*/
     default:
-        logger.printfln("Unknown preset %u", static_cast<uint8_t>(preset));
+        logger.printfln("Unknown table: %u", static_cast<uint8_t>(table));
         return;
     }
 
@@ -129,7 +148,8 @@ void MeterModbusTCP::connect_callback()
     generic_read_request.read_twice = false;
     generic_read_request.done_callback = [this]{ read_done_callback(); };
 
-    if (preset == MeterModbusTCPPreset::SungrowHybridInverter) {
+    if (table == MeterModbusTCPTableID::SungrowHybridInverter
+     && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Inverter) {
         if (sungrow_hybrid_inverter_output_type < 0) {
             generic_read_request.start_address = SUNGROW_HYBRID_INVERTER_OUTPUT_TYPE_ADDRESS - 1; // read output type
             generic_read_request.register_count = 1;
@@ -168,17 +188,18 @@ void MeterModbusTCP::read_done_callback()
     if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
         read_allowed = true;
 
-        if (preset == MeterModbusTCPPreset::SungrowHybridInverter
+        if (table == MeterModbusTCPTableID::SungrowHybridInverter
+         && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Inverter
          && generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_OUTPUT_TYPE_ADDRESS - 1) {
             logger.printfln("Error reading %s / Output Type (%u): %s [%d]",
-                            get_preset_name(preset),
+                            get_table_name(table),
                             SUNGROW_HYBRID_INVERTER_OUTPUT_TYPE_ADDRESS,
                             get_modbus_result_code_name(generic_read_request.result_code),
                             generic_read_request.result_code);
         }
         else {
             logger.printfln("Error reading %s / %s (%zu): %s [%d]",
-                            get_preset_name(preset),
+                            get_table_name(table),
                             value_specs[read_index].name,
                             value_specs[read_index].start_address,
                             get_modbus_result_code_name(generic_read_request.result_code),
@@ -188,7 +209,8 @@ void MeterModbusTCP::read_done_callback()
         return;
     }
 
-    if (preset == MeterModbusTCPPreset::SungrowHybridInverter
+    if (table == MeterModbusTCPTableID::SungrowHybridInverter
+     && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Inverter
      && generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_OUTPUT_TYPE_ADDRESS - 1) {
         if (sungrow_hybrid_inverter_output_type < 0) {
             uint32_t value_ids_length;
@@ -219,7 +241,7 @@ void MeterModbusTCP::read_done_callback()
                 break;
 
             default:
-                logger.printfln("%s has unknown Output Type: %u", get_preset_name(preset), register_buffer[0]);
+                logger.printfln("%s has unknown Output Type: %u", get_table_name(table), register_buffer[0]);
                 return;
             }
 
@@ -227,7 +249,7 @@ void MeterModbusTCP::read_done_callback()
 
 #ifdef DEBUG_LOG_ALL_VALUES
             logger.printfln("%s / Output Type (%u): %d",
-                            get_preset_name(preset),
+                            get_table_name(table),
                             SUNGROW_HYBRID_INVERTER_OUTPUT_TYPE_ADDRESS,
                             sungrow_hybrid_inverter_output_type);
 #endif
@@ -255,30 +277,54 @@ void MeterModbusTCP::read_done_callback()
 
     switch (value_specs[read_index].value_type) {
     case ValueType::U16:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %u", get_preset_name(preset), value_specs[read_index].name, value_specs[read_index].start_address, register_buffer[0]);
+#ifdef DEBUG_LOG_ALL_READS
+        logger.printfln("%s / %s (%zu): %u",
+                        get_table_name(table),
+                        value_specs[read_index].name,
+                        value_specs[read_index].start_address,
+                        register_buffer[0]);
 #endif
+
         value = static_cast<float>(register_buffer[0]);
         break;
 
     case ValueType::S16:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %d", get_preset_name(preset), value_specs[read_index].name, value_specs[read_index].start_address, static_cast<int16_t>(register_buffer[0]));
+#ifdef DEBUG_LOG_ALL_READS
+        logger.printfln("%s / %s (%zu): %d",
+                        get_table_name(table),
+                        value_specs[read_index].name,
+                        value_specs[read_index].start_address,
+                        static_cast<int16_t>(register_buffer[0]));
 #endif
+
         value = static_cast<float>(static_cast<int16_t>(register_buffer[0]));
         break;
 
     case ValueType::U32:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %u (%u %u)", get_preset_name(preset), value_specs[read_index].name, value_specs[read_index].start_address, u.v, register_buffer[0], register_buffer[1]);
+#ifdef DEBUG_LOG_ALL_READS
+        logger.printfln("%s / %s (%zu): %u (%u %u)",
+                        get_table_name(table),
+                        value_specs[read_index].name,
+                        value_specs[read_index].start_address,
+                        u.v,
+                        register_buffer[0],
+                        register_buffer[1]);
 #endif
+
         value = static_cast<float>(u.v);
         break;
 
     case ValueType::S32:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %d (%u %u)", get_preset_name(preset), value_specs[read_index].name, value_specs[read_index].start_address, static_cast<int32_t>(u.v), register_buffer[0], register_buffer[1]);
+#ifdef DEBUG_LOG_ALL_READS
+        logger.printfln("%s / %s (%zu): %d (%u %u)",
+                        get_table_name(table),
+                        value_specs[read_index].name,
+                        value_specs[read_index].start_address,
+                        static_cast<int32_t>(u.v),
+                        register_buffer[0],
+                        register_buffer[1]);
 #endif
+
         value = static_cast<float>(static_cast<int32_t>(u.v));
         break;
 
@@ -288,7 +334,8 @@ void MeterModbusTCP::read_done_callback()
 
     value *= value_specs[read_index].scale_factor;
 
-    if (preset == MeterModbusTCPPreset::SungrowHybridInverter) {
+    if (table == MeterModbusTCPTableID::SungrowHybridInverter
+     && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Inverter) {
         if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_MPPT_1_VOLTAGE_ADDRESS - 1) {
             sungrow_hybrid_inverter_mppt_1_voltage = value;
         }
@@ -316,7 +363,8 @@ void MeterModbusTCP::read_done_callback()
             meters.update_value(slot, value_index[read_index + 2], current);
         }
     }
-    else if (preset == MeterModbusTCPPreset::SungrowHybridInverterGrid) {
+    else if (table == MeterModbusTCPTableID::SungrowHybridInverter
+          && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Grid) {
         if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_GRID_FREQUENCY_ADDRESS - 1) {
             if (value > 100) {
                 // according to the spec the grid frequency is given
@@ -325,7 +373,8 @@ void MeterModbusTCP::read_done_callback()
             }
         }
     }
-    else if (preset == MeterModbusTCPPreset::SungrowHybridInverterBattery) {
+    else if (table == MeterModbusTCPTableID::SungrowHybridInverter
+          && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Battery) {
         if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS - 1) {
             sungrow_hybrid_inverter_running_state = register_buffer[0];
         }

@@ -15,13 +15,17 @@ let x = {
             "config_port": "Port",
             "config_port_muted": "typischerweise 502",
             "config_device_address": "Geräteadresse",
-            "config_preset": "Vorlage",
-            "config_preset_select": "Auswählen...",
+            "config_table": "Registertabelle",
+            "config_table_select": "Auswählen...",
 
-            "preset_sungrow_hybrid_inverter": "Sungrow Hybrid Wechselrichter (SH...)",
-            "preset_sungrow_hybrid_inverter_grid": "Sungrow Hybrid Wechselrichter Netzanschluss (SH...)",
-            "preset_sungrow_hybrid_inverter_battery": "Sungrow Hybrid Wechselrichter Speicher (SH...)",
-            "preset_sungrow_hybrid_inverter_load": "Sungrow Hybrid Wechselrichter Last (SH...)"
+            "table_sungrow_hybrid_inverter": "Sungrow Hybrid Wechselrichter (SH...)",
+
+            "sungrow_hybrid_inverter_virtual_meter": "Virtueller Zähler",
+            "sungrow_hybrid_inverter_virtual_meter_select": "Auswählen...",
+            "sungrow_hybrid_inverter_virtual_meter_inverter": "Wechselrichter",
+            "sungrow_hybrid_inverter_virtual_meter_grid": "Netzanschluss",
+            "sungrow_hybrid_inverter_virtual_meter_battery": "Speicher",
+            "sungrow_hybrid_inverter_virtual_meter_load": "Last"
         },
         "script": {
         }

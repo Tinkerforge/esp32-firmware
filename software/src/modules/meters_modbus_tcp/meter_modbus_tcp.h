@@ -83,9 +83,10 @@ private:
     bool values_declared = false;
     size_t read_index = 0;
 
-    MeterModbusTCPPreset preset;
+    MeterModbusTCPTableID table;
     uint16_t register_buffer[2];
 
+    SungrowHybridInverterVirtualMeterID sungrow_hybrid_inverter_virtual_meter;
     int sungrow_hybrid_inverter_output_type = -1;
     uint16_t sungrow_hybrid_inverter_running_state;
     float sungrow_hybrid_inverter_mppt_1_voltage;

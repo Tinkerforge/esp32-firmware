@@ -22,11 +22,25 @@ import { h, Fragment, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
-import { MeterModbusTCPPreset } from "./meters_modbus_tcp_defs";
+import { MeterModbusTCPTableID, SungrowHybridInverterVirtualMeterID } from "./meters_modbus_tcp_defs";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
+
+type TableConfigNone = [
+    MeterModbusTCPTableID.None,
+    {},
+];
+
+type TableConfigSungrowHybridInverter = [
+    MeterModbusTCPTableID.SungrowHybridInverter,
+    {
+        virtual_meter: number;
+    },
+];
+
+type TableConfig = TableConfigNone | TableConfigSungrowHybridInverter;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -35,25 +49,32 @@ export type ModbusTCPMetersConfig = [
         host: string;
         port: number;
         device_address: number;
-        preset: number;
+        table: TableConfig;
     },
 ];
+
+function new_table_config(table: MeterModbusTCPTableID): TableConfig {
+    switch (table) {
+        case MeterModbusTCPTableID.SungrowHybridInverter:
+            return [MeterModbusTCPTableID.SungrowHybridInverter, {virtual_meter: null}];
+
+        default:
+            return [MeterModbusTCPTableID.None, {}];
+    }
+}
 
 export function init() {
     return {
         [MeterClassID.ModbusTCP]: {
             name: __("meters_modbus_tcp.content.meter_class"),
-            new_config: () => [MeterClassID.ModbusTCP, {display_name: "", host: "", port: 502, device_address: 1, preset: null}] as MeterConfig,
+            new_config: () => [MeterClassID.ModbusTCP, {display_name: "", host: "", port: 502, device_address: 1, table: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: ModbusTCPMetersConfig, on_config: (config: ModbusTCPMetersConfig) => void): ComponentChildren => {
-                let model_ids: [string, string][] = [
-                    [MeterModbusTCPPreset.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.preset_sungrow_hybrid_inverter")],
-                    [MeterModbusTCPPreset.SungrowHybridInverterGrid.toString(), __("meters_modbus_tcp.content.preset_sungrow_hybrid_inverter_grid")],
-                    [MeterModbusTCPPreset.SungrowHybridInverterBattery.toString(), __("meters_modbus_tcp.content.preset_sungrow_hybrid_inverter_battery")],
-                    [MeterModbusTCPPreset.SungrowHybridInverterLoad.toString(), __("meters_modbus_tcp.content.preset_sungrow_hybrid_inverter_load")],
+                let table_ids: [string, string][] = [
+                    [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_hybrid_inverter")],
                 ];
 
-                return [<>
+                return [
                     <FormRow label={__("meters_modbus_tcp.content.config_display_name")}>
                         <InputText
                             required
@@ -62,7 +83,7 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }} />
-                    </FormRow>
+                    </FormRow>,
                     <FormRow label={__("meters_modbus_tcp.content.config_host")}>
                         <InputText
                             required
@@ -73,7 +94,7 @@ export function init() {
                                 on_config(util.get_updated_union(config, {host: v}));
                             }}
                             invalidFeedback={__("meters_modbus_tcp.content.config_host_invalid")} />
-                    </FormRow>
+                    </FormRow>,
                     <FormRow label={__("meters_modbus_tcp.content.config_port")} label_muted={__("meters_modbus_tcp.content.config_port_muted")}>
                         <InputNumber
                             required
@@ -83,7 +104,7 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {port: v}));
                             }} />
-                    </FormRow>
+                    </FormRow>,
                     <FormRow label={__("meters_modbus_tcp.content.config_device_address")}>
                         <InputNumber
                             required
@@ -93,18 +114,37 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {device_address: v}));
                             }} />
-                    </FormRow>
-                    <FormRow label={__("meters_modbus_tcp.content.config_preset")}>
+                    </FormRow>,
+                    <FormRow label={__("meters_modbus_tcp.content.config_table")}>
                         <InputSelect
                             required
-                            items={model_ids}
-                            placeholder={__("meters_modbus_tcp.content.config_preset_select")}
-                            value={util.hasValue(config[1].preset) ? config[1].preset.toString() : config[1].preset}
+                            items={table_ids}
+                            placeholder={__("meters_modbus_tcp.content.config_table_select")}
+                            value={util.hasValue(config[1].table) ? config[1].table[0].toString() : undefined}
                             onValue={(v) => {
-                                on_config(util.get_updated_union(config, {preset: parseInt(v)}));
+                                on_config(util.get_updated_union(config, {table: new_table_config(parseInt(v))}));
                             }} />
-                    </FormRow>
-                </>];
+                    </FormRow>,
+
+                    <>{util.hasValue(config[1].table) && config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter ?
+                        <FormRow label={__("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter")}>
+                            <InputSelect
+                                required
+                                items={[
+                                    [SungrowHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_inverter")],
+                                    [SungrowHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_grid")],
+                                    [SungrowHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_battery")],
+                                    [SungrowHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_load")],
+                                ]}
+                                placeholder={__("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_select")}
+                                value={util.hasValue(config[1].table[1]) && util.hasValue(config[1].table[1].virtual_meter) ? config[1].table[1].virtual_meter.toString() : undefined}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
+                                }} />
+                        </FormRow>
+                        : undefined
+                    }</>
+                ];
             },
         },
     };

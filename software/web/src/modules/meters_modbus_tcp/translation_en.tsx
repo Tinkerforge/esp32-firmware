@@ -15,13 +15,17 @@ let x = {
             "config_port": "Port",
             "config_port_muted": "typically 502",
             "config_device_address": "Device address",
-            "config_preset": "Preset",
-            "config_preset_select": "Select...",
+            "config_table": "Register table",
+            "config_table_select": "Select...",
 
-            "preset_sungrow_hybrid_inverter": "Sungrow Hybrid Inverter (SH...)",
-            "preset_sungrow_hybrid_inverter_grid": "Sungrow Hybrid Inverter Grid (SH...)",
-            "preset_sungrow_hybrid_inverter_battery": "Sungrow Hybrid Inverter Battery (SH...)",
-            "preset_sungrow_hybrid_inverter_load": "Sungrow Hybrid Inverter Load (SH...)"
+            "table_sungrow_hybrid_inverter": "Sungrow Hybrid Inverter (SH...)",
+
+            "sungrow_hybrid_inverter_virtual_meter": "Virtual meter",
+            "sungrow_hybrid_inverter_virtual_meter_select": "Select...",
+            "sungrow_hybrid_inverter_virtual_meter_inverter": "Inverter",
+            "sungrow_hybrid_inverter_virtual_meter_grid": "Grid",
+            "sungrow_hybrid_inverter_virtual_meter_battery": "Battery",
+            "sungrow_hybrid_inverter_virtual_meter_load": "Load"
         },
         "script": {
         }

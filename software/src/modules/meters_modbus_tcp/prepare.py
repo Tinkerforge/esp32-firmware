@@ -20,12 +20,10 @@ if 'software' not in sys.modules:
 from software import util
 
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-presets = [
-    #('Custom', 0),
-    ('Sungrow Hybrid Inverter', 1),
-    ('Sungrow Hybrid Inverter Grid', 2),
-    ('Sungrow Hybrid Inverter Battery', 3),
-    ('Sungrow Hybrid Inverter Load', 4),
+tables = [
+    ('None', 0),
+    #('Custom', 1),
+    ('Sungrow Hybrid Inverter', 2),
     #('Sungrow String Inverter', 5),
     #('Sungrow String Inverter Grid', 6),
     #('Solarmax Max Storage Inverter', 7),
@@ -33,25 +31,45 @@ presets = [
     #('Solarmax Max Storage Battery', 9),
 ]
 
-preset_values = []
-preset_names = []
+# NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
+sungrow_hybrid_inverter_virtual_meters = [
+    ('None', 0),
+    ('Inverter', 1),
+    ('Grid', 2),
+    ('Battery', 3),
+    ('Load', 4),
+]
 
-for preset in presets:
-    preset_values.append('    {0} = {1},\n'.format(util.FlavoredName(preset[0]).get().camel, preset[1]))
-    preset_names.append('    case MeterModbusTCPPreset::{0}: return "{1}";\n'.format(util.FlavoredName(preset[0]).get().camel, preset[0]))
+table_values = []
+table_names = []
+
+for table in tables:
+    table_values.append('    {0} = {1},\n'.format(util.FlavoredName(table[0]).get().camel, table[1]))
+    table_names.append('    case MeterModbusTCPTableID::{0}: return "{1}";\n'.format(util.FlavoredName(table[0]).get().camel, table[0]))
+
+sungrow_hybrid_inverter_virtual_meter_values = []
+
+for virtual_meter in sungrow_hybrid_inverter_virtual_meters:
+    sungrow_hybrid_inverter_virtual_meter_values.append('    {0} = {1},\n'.format(util.FlavoredName(virtual_meter[0]).get().camel, virtual_meter[1]))
 
 with open('meters_modbus_tcp_defs.h', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#include <stdint.h>\n\n')
     f.write('#pragma once\n\n')
-    f.write('enum class MeterModbusTCPPreset : uint8_t {\n')
-    f.write(''.join(preset_values))
+    f.write('enum class MeterModbusTCPTableID : uint8_t {\n')
+    f.write(''.join(table_values))
+    f.write('};\n\n')
+    f.write('enum class SungrowHybridInverterVirtualMeterID : uint8_t {\n')
+    f.write(''.join(sungrow_hybrid_inverter_virtual_meter_values))
     f.write('};\n')
 
 with open('../../../web/src/modules/meters_modbus_tcp/meters_modbus_tcp_defs.ts', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
-    f.write('export const enum MeterModbusTCPPreset {\n')
-    f.write(''.join(preset_values))
+    f.write('export const enum MeterModbusTCPTableID {\n')
+    f.write(''.join(table_values))
+    f.write('}\n\n')
+    f.write('export const enum SungrowHybridInverterVirtualMeterID {\n')
+    f.write(''.join(sungrow_hybrid_inverter_virtual_meter_values))
     f.write('}\n')
 
 VALUE_ID_META  = 0xFFFFFFFF - 1
@@ -399,10 +417,10 @@ with open('meters_modbus_tcp_defs.inc', 'w', encoding='utf-8') as f:
     f.write(f'#define VALUE_INDEX_DEBUG {VALUE_ID_DEBUG}u\n\n')
     f.write(f'#define START_ADDRESS_VIRTUAL {START_ADDRESS_VIRTUAL}u\n\n')
     f.write('\n\n'.join(spec_values) + '\n\n')
-    f.write('\n\nstatic const char *get_preset_name(MeterModbusTCPPreset preset)\n')
+    f.write('\n\nstatic const char *get_table_name(MeterModbusTCPTableID table)\n')
     f.write('{\n')
-    f.write('    switch (preset) {\n')
-    f.write(''.join(preset_names))
-    f.write('    default: return "Unknown preset";\n')
+    f.write('    switch (table) {\n')
+    f.write(''.join(table_names))
+    f.write('    default: return "Unknown table";\n')
     f.write('    }\n')
     f.write('}\n')

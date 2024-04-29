@@ -30,20 +30,24 @@
 
 void MetersModbusTCP::pre_setup()
 {
+    table_prototypes.push_back({MeterModbusTCPTableID::None, *Config::Null()});
+
+    table_prototypes.push_back({MeterModbusTCPTableID::SungrowHybridInverter, Config::Object({
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowHybridInverterVirtualMeterID::None))}
+    })});
+
+    Config table_union = Config::Union<MeterModbusTCPTableID>(
+        *Config::Null(),
+        MeterModbusTCPTableID::None,
+        table_prototypes.data(),
+        static_cast<uint8_t>(table_prototypes.size()));
+
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"host",           Config::Str("", 0, 64)},
         {"port",           Config::Uint16(502)},
         {"device_address", Config::Uint8(1)},
-        {"preset",         Config::Uint8(static_cast<uint8_t>(/*MeterModbusTCPPreset::Custom*/0))},
-    });
-
-    state_prototype = Config::Object({
-        {"connected", Config::Bool(false)},
-    });
-
-    errors_prototype = Config::Object({
-        {"connection_failure", Config::Uint32(0)},
+        {"table",          table_union},
     });
 
     meters.register_meter_generator(get_class(), this);
@@ -77,12 +81,12 @@ const Config *MetersModbusTCP::get_config_prototype()
 
 const Config *MetersModbusTCP::get_state_prototype()
 {
-    return &state_prototype;
+    return Config::Null();;
 }
 
 const Config *MetersModbusTCP::get_errors_prototype()
 {
-    return &errors_prototype;
+    return Config::Null();;
 }
 
 ModbusTCP *MetersModbusTCP::get_modbus_tcp_handle()
