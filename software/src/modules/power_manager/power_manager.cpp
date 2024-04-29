@@ -400,7 +400,7 @@ void PowerManager::register_urls()
 
         auto runtime_mode = this->charge_mode.get("mode");
         uint32_t old_mode = runtime_mode->asUint();
-        just_switched_mode = runtime_mode->updateUint(new_mode);
+        just_switched_mode |= runtime_mode->updateUint(new_mode); // If this callback runs again before just_switched_mode was consumed, keep it true instead of overwriting it to false;
         mode = new_mode;
 
         logger.printfln("Switched mode %u->%u", old_mode, mode);
@@ -888,6 +888,9 @@ void PowerManager::update_energy()
                 } else if (just_switched_phases && a_after_b(time_now, on_state_change_blocked_until - switching_hysteresis_ms/2)) {
                     logger.printfln("Opportunistic switch-%s, power available: %i, current available: %u", wants_on ? "on" : "off", power_available_w, current_available_ma);
                 } else { // Switched too recently
+                    if (just_switched_phases) {
+                        logger.printfln("Just switched phases but considering it too recent: time_now=%ums on_state_change_blocked_until=%ums switching_hysteresis_ms=%ums", time_now, on_state_change_blocked_until, switching_hysteresis_ms);
+                    }
                     //logger.printfln("Start/stop wanted but decision changed too recently. Have to wait another %ums.", off_state_change_blocked_until - time_now);
                     if (is_on) { // Is on, needs to stay on at minimum current.
                         current_available_ma = min_current_now_ma;
