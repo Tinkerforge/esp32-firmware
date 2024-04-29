@@ -1,6 +1,7 @@
 
 export interface config {
     enable: boolean,
+    password: string,
     username: string,
     login_key: string,
     relay_host: string,

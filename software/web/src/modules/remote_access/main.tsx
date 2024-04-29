@@ -49,22 +49,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         super("remote_access/config",
             __("remote_access.script.save_failed"),
             __("remote_access.script.reboot_content_changed"));
-
-        const start = Date.now();
-
-        // Takes about 1.5 seconds on a Nexus 4. https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
-        const calc_hash = hash({
-            pass: "supersecretpass",
-            salt: "sharemewithyourfriends",
-            time: 2,
-            mem: 19 * 1024,
-            hashLen: 24,
-            parallelism: 1,
-            type: ArgonType.Argon2id
-        }).then((hash) => {
-            const end = Date.now();
-            console.log(`finished hashing in ${end - start} ms and got: ${hash.hash.length}`);
-        })
     }
 
     async get_salt_for_user(username: string) {
@@ -139,13 +123,27 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
 
         const {
             secret,
-            secret_salt
+            secret_salt,
+            secret_iv
         } = await this.get_secret();
 
-        const secret_blob = new Blob([secret]);
+        const secret_key = await hash({
+            pass: this.state.password,
+            salt: secret_salt,
+            // Takes about 1.5 seconds on a Nexus 4
+            time: 2, // the number of iterations
+            mem: 19 * 1024, // used memory, in KiB
+            hashLen: 16, // desired hash length
+            parallelism: 1, // desired parallelism (it won't be computed in parallel, however)
+            type: ArgonType.Argon2id,
+        })
+
+        const secret_blob = new Blob([new Uint8Array(secret)]);
         const secret_string = await util.blobToBase64(secret_blob);
-        const secret_salt_blob = new Blob([secret_salt]);
-        const secret_salt_string = await util.blobToBase64(secret_salt_blob);
+        const secret_key_blob = new Blob([secret_key.hash]);
+        const secret_key_string = await util.blobToBase64(secret_key_blob);
+        const secret_iv_blob = new Blob([new Uint8Array(secret_iv)]);
+        const secret_iv_string = await util.blobToBase64(secret_iv_blob);
 
         const registration_data = {
             charger_pub: mg_charger_keypair.publicKey,
@@ -154,7 +152,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             wg_charger_ip: mg_charger_address,
             wg_server_ip: mg_server_address,
             secret: secret_string.replace("data:application/octet-stream;base64,", ""),
-            secret_key: secret_salt_string.replace("data:application/octet-stream;base64,", ""),
+            secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
+            secret_iv: secret_iv_string.replace("data:application/octet-stream;base64,", ""),
             remote_host: this.state.relay_host,
             remote_port: this.state.relay_host_port,
             config: cfg,
@@ -165,15 +164,14 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         await API.save("remote_access/remote_connection_config", {
             connections: connections
         }, __("remote_access.script.save_failed"));
-        console.log("a");
-        const pub_key = (JSON.parse(await resp.text()));
-        console.log("b");
+        const json = (JSON.parse(await resp.text()));
         const ret = {
             charger_pub: mg_charger_keypair.publicKey,
             wg_charger_ip: mg_charger_address,
             wg_server_ip: mg_server_address,
             charger_private: mg_charger_keypair.privateKey,
-            remote_public: pub_key.management_pub
+            remote_public: json.management_pub,
+            password: json.charger_password,
         }
 
         return ret;
@@ -221,6 +219,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
         cfg.login_key = this.state.login_key;
         const info = await this.registerCharger(cfg);
+        cfg.password = info.password;
 
         await API.save("remote_access/management_connection", {
             internal_ip: info.wg_charger_ip,
