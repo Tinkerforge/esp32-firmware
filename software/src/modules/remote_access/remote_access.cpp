@@ -299,17 +299,17 @@ void RemoteAccess::register_urls() {
         CoolString secret_string = register_config.get("secret")->asString();
         size_t outlen;
 
-        std::unique_ptr<char[]> encrypted_secret = decode_bas64(secret_string, 512, &outlen);
+        std::unique_ptr<char[]> encrypted_secret = decode_bas64(secret_string, 48, &outlen);
 
-        char secret[32];
+        char secret[48];
         {
-            std::unique_ptr<char[]> secret_iv = decode_bas64(register_config.get("secret_iv")->asString(), 512, &outlen);
-            std::unique_ptr<char[]> secret_key = decode_bas64(register_config.get("secret_key")->asString(), 512, &outlen);
+            std::unique_ptr<char[]> secret_iv = decode_bas64(register_config.get("secret_iv")->asString(), 16, &outlen);
+            std::unique_ptr<char[]> secret_key = decode_bas64(register_config.get("secret_key")->asString(), 32, &outlen);
 
             mbedtls_aes_context aes;
             mbedtls_aes_init(&aes);
-            mbedtls_aes_setkey_dec(&aes, (unsigned char*)secret_key.get(), 128);
-            mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_DECRYPT, 32, (unsigned char*)secret_iv.get(), (unsigned char*)encrypted_secret.get(), (unsigned char*)secret);
+            mbedtls_aes_setkey_dec(&aes, (unsigned char*)secret_key.get(), 256);
+            mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_DECRYPT, 48, (unsigned char*)secret_iv.get(), (unsigned char*)encrypted_secret.get(), (unsigned char*)secret);
         }
 
         TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), 2500);
@@ -323,12 +323,13 @@ void RemoteAccess::register_urls() {
             serializer.addMemberString("web_address", key.get("web_address")->asEphemeralCStr());
             mbedtls_aes_context aes;
             mbedtls_aes_init(&aes);
-            mbedtls_aes_setkey_enc(&aes, (unsigned char *)secret, 128);
+            mbedtls_aes_setkey_enc(&aes, (unsigned char *)secret, 256);
             CoolString wg_key = key.get("web_private")->asString();
 
-            const uint8_t padding = 16 - (wg_key.length() % 16);
             // we need alway a size dividable by 16
+            const uint8_t padding = 16 - (wg_key.length() % 16);
             const size_t length = wg_key.length() + padding;
+
             std::unique_ptr<char[]> input = heap_alloc_array<char>(length);
             std::unique_ptr<char[]> output = heap_alloc_array<char>(length);
             memset(input.get() + wg_key.length(), padding, padding);
