@@ -51,7 +51,12 @@ Config::ConfUnion::ConfUnion(const ConfUnion &cpy)
 {
     idx = nextSlot<Config::ConfUnion>(union_buf, union_buf_size);
 
-    // If cpy->inUse is false, it is okay that we don't mark this slot as inUse.
+    // We have to mark this slot as in use here:
+    // This union could contain a nested union that will be copied over
+    // The inner union's copy constructor then takes the first free slot, i.e.
+    // ours if we don't mark it as inUse first.
+    this->getSlot()->prototypes = cpy.getSlot()->prototypes;
+
 
     // this->getSlot() is evaluated before the RHS of the assignment is copied over.
     // This results in the LHS pointing to a deallocated array if copying the RHS
