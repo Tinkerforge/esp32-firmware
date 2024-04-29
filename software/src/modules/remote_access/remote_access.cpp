@@ -261,8 +261,6 @@ static std::unique_ptr<char []> decode_bas64(const CoolString &input, size_t buf
     int ret = mbedtls_base64_decode((unsigned char *)out.get(), buffer_size, bytes_written, (unsigned char *)input.c_str(), input.length());
     if (ret != 0) {
         logger.printfln("Error while decoding: %i", ret);
-    } else {
-        logger.printfln("Wrote %u", *bytes_written);
     }
     return out;
 }
@@ -313,11 +311,6 @@ void RemoteAccess::register_urls() {
             mbedtls_aes_setkey_dec(&aes, (unsigned char*)secret_key.get(), 128);
             mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_DECRYPT, 32, (unsigned char*)secret_iv.get(), (unsigned char*)encrypted_secret.get(), (unsigned char*)secret);
         }
-
-        for (int i = 0; i < 32; i++) {
-            printf("%i, ", secret[i]);
-        }
-        printf("\n");
 
         TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), 2500);
         serializer.addObject();
