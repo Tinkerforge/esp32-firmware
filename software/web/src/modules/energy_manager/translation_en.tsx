@@ -22,13 +22,13 @@ let x = {
                 }
             }/*NF*/,
             "contactor_monitoring_state": "",
-            "contactor_error": "detected",
+            "contactor_error": "Detected",
             "contactor_okay": "Not detected on boot",
 
             "phase_switch": "Phases switched",
             "phase": "",
-            "single_phase": "to single phase",
-            "three_phase": "to three phases",
+            "single_phase": "To single phase",
+            "three_phase": "To three phases",
             "automation_phase_switch_text": /*FFN*/(phase: number) => {
                 let ret = <></>;
                 switch (phase) {
@@ -45,8 +45,8 @@ let x = {
 
             "input": /*SFN*/(input: number) => "Input " + input + " switched"/*NF*/,
             "state": "",
-            "closed": "to closed",
-            "open": "to open",
+            "closed": "To closed",
+            "open": "To open",
             "automation_input_text": /*FFN*/(input: number, state: boolean) => {
                 return <>If <b>Input {input}</b> switches to state {state ? <><b>closed</b></> : <><b>open</b></>}, </>
             }/*NF*/,
