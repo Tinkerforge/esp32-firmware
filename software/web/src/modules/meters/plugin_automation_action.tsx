@@ -59,7 +59,7 @@ function get_meter_reset_edit_children(action: MeterAutomationAction, on_action:
                     on_action([AutomationActionID.MeterReset, {...action[1], meter_slot: parseInt(v)}]);
                 }}
                 value={action[1].meter_slot.toString()}/>
-        </FormRow>
+        </FormRow>,
     ];
 }
 

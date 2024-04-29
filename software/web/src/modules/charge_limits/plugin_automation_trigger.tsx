@@ -32,7 +32,7 @@ function get_charge_limits_table_children(_: ChargeLimitsAutomationTrigger) {
 }
 
 function get_charge_limits_edit_children(_: ChargeLimitsAutomationTrigger, __: (trigger: AutomationTrigger) => void): ComponentChildren {
-    return []
+    return [];
 }
 
 function new_charge_limits_config(): AutomationTrigger {

@@ -139,7 +139,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             const trigger_config = automation_trigger_components[this.state.displayed_trigger].get_edit_children(this.state.edit_task.trigger, (trigger) => {
                 this.setState({edit_task: {...this.state.edit_task, trigger: trigger}});
             });
-            triggerSelector = triggerSelector.concat(<div key="trigger_config">{trigger_config}</div>);
+            triggerSelector = triggerSelector.concat(<div key={`trigger_config_${this.state.displayed_trigger}`}>{trigger_config}</div>);
         }
 
         triggerSelector = triggerSelector.concat(<hr key="trigger_action_separator"/>);
@@ -168,7 +168,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             const action_config = automation_action_components[this.state.displayed_action].get_edit_children(this.state.edit_task.action, (action) => {
                 this.setState({edit_task: {...this.state.edit_task, action: action}});
             });
-            actionSelector = actionSelector.concat(<div key="action_config">{action_config}</div>);
+            actionSelector = actionSelector.concat(<div key={`action_config_${this.state.displayed_action}`}>{action_config}</div>);
         }
 
         const preview = [];
@@ -176,11 +176,11 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
         if (trigger_component) {
             if (this.state.enabled_triggers.indexOf(this.state.displayed_trigger) < 0) {
                 let reason = trigger_component.get_disabled_reason ? trigger_component.get_disabled_reason(this.state.edit_task.trigger) : __("automation.content.trigger_disabled");
-                preview.push(<span class="text-danger" key="trigger_disabled_reason">[{reason}]</span>);
+                preview.push(<span class="text-danger" key={`trigger_disabled_reason_${this.state.displayed_trigger}`}>[{reason}]</span>);
                 preview.push(" ");
             }
 
-            preview.push(<span key="trigger_preview">{trigger_component.get_table_children(this.state.edit_task.trigger)}</span>);
+            preview.push(<span key={`trigger_preview_${this.state.displayed_trigger}`}>{trigger_component.get_table_children(this.state.edit_task.trigger)}</span>);
         }
 
         const action_component = automation_action_components[this.state.displayed_action];
@@ -191,11 +191,11 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
 
             if (this.state.enabled_actions.indexOf(this.state.displayed_action) < 0) {
                 let reason = action_component.get_disabled_reason ? action_component.get_disabled_reason(this.state.edit_task.action) : __("automation.content.action_disabled");
-                preview.push(<span class="text-danger">[{reason}]</span>);
+                preview.push(<span class="text-danger" key={`action_disabled_reason_${this.state.displayed_action}`}>[{reason}]</span>);
                 preview.push(" ");
             }
 
-            preview.push(<span key="action_preview">{action_component.get_table_children(this.state.edit_task.action)}</span>);
+            preview.push(<span key={`action_preview_${this.state.displayed_trigger}`}>{action_component.get_table_children(this.state.edit_task.action)}</span>);
         }
 
         if (preview.length === 0) {
@@ -232,8 +232,8 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             let row: TableRow = {
                 columnValues: [
                     [idx + 1],
-                    [<>{trigger_disabled}{" "}{trigger_children}</>],
-                    [<>{action_disabled}{" "}{action_children}</>],
+                    [<Fragment key={`trigger_${trigger_id}`}>{trigger_disabled}{" "}{trigger_children}</Fragment>],
+                    [<Fragment key={`actionr_${action_id}`}>{action_disabled}{" "}{action_children}</Fragment>],
                 ],
                 fieldNames: ["", ""],
                 fieldValues: [__("automation.content.rule") + " #" + (idx + 1) as ComponentChild, <div class="pb-3">{trigger_disabled}{" "}{trigger_children}<hr class="my-2"/>{action_disabled}{" "}{action_children}</div>],

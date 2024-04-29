@@ -49,7 +49,7 @@ function get_mqtt_edit_children(action: MqttAutomationAction, on_action: (action
     const mqtt_config = API.get("mqtt/config");
     const [isInvalid, isInvalidSetter] = useState(false);
 
-    return [<>
+    return [
         <FormRow label={__("mqtt.automation.use_topic_prefix")}>
             <Switch
                 checked={action[1].use_prefix}
@@ -57,7 +57,7 @@ function get_mqtt_edit_children(action: MqttAutomationAction, on_action: (action
                     on_action(util.get_updated_union(action, {use_prefix: !action[1].use_prefix}));
                 }}
                 desc={__("mqtt.automation.use_topic_prefix_muted") + mqtt_config.global_topic_prefix + "/automation_action/"}/>
-        </FormRow>
+        </FormRow>,
         <FormRow label={__("mqtt.automation.send_topic")}>
              <InputText
                 required
@@ -74,7 +74,7 @@ function get_mqtt_edit_children(action: MqttAutomationAction, on_action: (action
                     on_action(util.get_updated_union(action, {topic: v}));
                 }}
                 invalidFeedback={__("mqtt.automation.use_topic_prefix_invalid")} />
-        </FormRow>
+        </FormRow>,
         <FormRow label={__("mqtt.automation.send_payload")}>
             <InputText
                 required={!action[1].retain}
@@ -84,15 +84,15 @@ function get_mqtt_edit_children(action: MqttAutomationAction, on_action: (action
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {payload: v}));
                 }} />
-        </FormRow>
+        </FormRow>,
         <FormRow label={__("mqtt.automation.retain")}>
             <Switch
                 checked={action[1].retain}
                 onClick={() => {
                     on_action(util.get_updated_union(action, {retain: !action[1].retain}));
                 }} />
-        </FormRow>
-    </>]
+        </FormRow>,
+    ];
 }
 
 function new_mqtt_config(): AutomationAction {

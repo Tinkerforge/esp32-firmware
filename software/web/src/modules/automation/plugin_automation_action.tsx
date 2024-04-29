@@ -42,7 +42,7 @@ function get_print_edit_children(action: PrintAutomationAction, on_action: (acti
     const mqtt_config = API.get("mqtt/config");
     const [isInvalid, isInvalidSetter] = useState(false);
 
-    return [<>
+    return [
         <FormRow label={__("automation.automation.print_action_message")}>
              <InputText
                 required
@@ -51,8 +51,8 @@ function get_print_edit_children(action: PrintAutomationAction, on_action: (acti
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {message: v}));
                 }} />
-        </FormRow>
-    </>]
+        </FormRow>,
+    ]
 }
 
 function new_mqtt_config(): AutomationAction {

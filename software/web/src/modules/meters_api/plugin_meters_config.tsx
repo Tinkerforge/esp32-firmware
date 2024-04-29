@@ -311,7 +311,7 @@ export function init() {
             new_config: () => [MeterClassID.API, {display_name: "", value_ids: new Array<number>()}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: APIMetersConfig, on_config: (config: APIMetersConfig) => void): ComponentChildren => {
-                return [<>
+                return [
                     <FormRow label={__("meters_api.content.config_display_name")}>
                         <InputText
                             required
@@ -320,14 +320,14 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }}/>
-                    </FormRow>
+                    </FormRow>,
                     <FormRow label={__("meters_api.content.api_meter_preset")}>
                         <PresetSelector config={config} on_config={on_config} />
-                    </FormRow>
+                    </FormRow>,
                     <FormRow label={__("meters_api.content.config_value_ids")}>
                         <MeterValueIDTable config={config} on_config={on_config} />
-                    </FormRow>
-                </>];
+                    </FormRow>,
+                ];
             },
         },
     };

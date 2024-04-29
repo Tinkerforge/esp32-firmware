@@ -391,7 +391,7 @@ export function init() {
                     }
                 }
 
-                return [<>
+                return [
                     <FormRow label={__("meters_sun_spec.content.config_host")}>
                         <InputText
                             required
@@ -402,7 +402,7 @@ export function init() {
                                 on_config(util.get_updated_union(config, {host: v}));
                             }}
                             invalidFeedback={__("meters_sun_spec.content.config_host_invalid")} />
-                    </FormRow>
+                    </FormRow>,
                     <FormRow label={__("meters_sun_spec.content.config_port")} label_muted={__("meters_sun_spec.content.config_port_muted")}>
                         <InputNumber
                             required
@@ -412,8 +412,8 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {port: v}));
                             }} />
-                    </FormRow>
-                    <hr/>
+                    </FormRow>,
+                    <hr/>,
                     <DeviceScanner host={config[1].host} port={config[1].port} onResultSelected={(result: DeviceScannerResult) => {
                         on_config(util.get_updated_union(config, {
                             display_name: result.display_name,
@@ -424,8 +424,8 @@ export function init() {
                             model_id: result.model_id,
                             model_instance: result.model_instance,
                         }));
-                    }} />
-                    <hr/>
+                    }} />,
+                    <hr/>,
                     <FormRow label={__("meters_sun_spec.content.config_display_name")}>
                         <InputText
                             required
@@ -434,7 +434,7 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }} />
-                    </FormRow>
+                    </FormRow>,
                     <FormRow label={__("meters_sun_spec.content.config_device_address")}>
                         <InputNumber
                             required
@@ -444,7 +444,7 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {device_address: v}));
                             }} />
-                    </FormRow>
+                    </FormRow>,
                     <FormRow label={__("meters_sun_spec.content.config_unique_id")} label_muted={__("meters_sun_spec.content.config_unique_id_muted")}>
                         <div class="row">
                             <div class="col-sm-4">
@@ -472,7 +472,7 @@ export function init() {
                                     }} />
                             </div>
                         </div>
-                    </FormRow>
+                    </FormRow>,
                     <FormRow label={__("meters_sun_spec.content.config_model_id")}>
                         <InputSelect
                             required
@@ -482,7 +482,7 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {model_id: parseInt(v)}));
                             }} />
-                    </FormRow>
+                    </FormRow>,
                     <FormRow label={__("meters_sun_spec.content.config_model_instance")}>
                         <InputNumber
                             required
@@ -492,8 +492,8 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {model_instance: v}));
                             }} />
-                    </FormRow>
-                </>];
+                    </FormRow>,
+                ];
             },
         },
     };

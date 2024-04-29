@@ -50,7 +50,7 @@ function get_em_contactor_edit_children(action: EMContactorAutomationAction, on_
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {closed: v == '1'}));
                 }} />
-        </FormRow>
+        </FormRow>,
     ]
 }
 

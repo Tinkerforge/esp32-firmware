@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from "preact";
+import { h } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_defs";
 import { AutomationTrigger, InitResult } from "../automation/types";
@@ -80,12 +80,12 @@ function get_nfc_edit_children(trigger: NfcAutomationTrigger, on_trigger: (trigg
 
     const all_tags = known_items.concat(seen_tags);
 
-    return [<>
+    return [
         <FormRow label={__("nfc.automation.last_seen_and_known_tags")}>
             {all_tags.length > 0 ?
                 <ListGroup>{all_tags}</ListGroup>
                 : <span>{__("nfc.automation.add_tag_description")}</span>}
-        </FormRow>
+        </FormRow>,
         <FormRow label={__("nfc.automation.table_tag_id")}>
             <InputText
                 required
@@ -97,7 +97,7 @@ function get_nfc_edit_children(trigger: NfcAutomationTrigger, on_trigger: (trigg
                 maxLength={29}
                 pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
                 invalidFeedback={__("nfc.automation.tag_id_invalid_feedback")} />
-        </FormRow>
+        </FormRow>,
         <FormRow label={__("nfc.automation.table_tag_type")}>
             <InputSelect
                 items={[
@@ -111,8 +111,8 @@ function get_nfc_edit_children(trigger: NfcAutomationTrigger, on_trigger: (trigg
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {tag_type: parseInt(v)}));
                 }} />
-        </FormRow>
-    </>]
+        </FormRow>,
+    ]
 }
 
 export function init(): InitResult {

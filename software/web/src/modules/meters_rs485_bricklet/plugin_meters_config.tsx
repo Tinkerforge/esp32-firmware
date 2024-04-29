@@ -64,7 +64,7 @@ export function init() {
                             value={config[1].type_override}
                             onValue={(v) => on_config(util.get_updated_union(config, {type_override: parseInt(v)}))}
                             />
-                    </FormRow>
+                    </FormRow>,
                 ];
             },
             get_extra_rows: (meter_slot: number) => {
@@ -76,7 +76,7 @@ export function init() {
                         <InputText class="form-control-sm"
                                 value={meter_type_string}/>
                     </div></div>
-                </FormRow>
+                </FormRow>;
             }
         },
     };

@@ -99,7 +99,7 @@ function get_em_input_four_edit_children(trigger: EMInputFourAutomationTrigger, 
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {closed: v === '1'}));
                 }} />
-        </FormRow>
+        </FormRow>,
     ];
 }
 
@@ -128,7 +128,7 @@ function get_em_phase_switch_edit_children(trigger: EMPhaseSwitchAutomationTrigg
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {phases: parseInt(v)}));
                 }} />
-        </FormRow>
+        </FormRow>,
     ];
 }
 
@@ -157,7 +157,7 @@ function get_em_contactor_monitoring_edit_children(trigger: EMContactorMonitorin
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {contactor_okay: v === '1'}));
                 }} />
-        </FormRow>
+        </FormRow>,
     ];
 }
 

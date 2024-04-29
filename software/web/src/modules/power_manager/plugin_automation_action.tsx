@@ -73,7 +73,7 @@ function get_pm_phase_switch_edit_children(action: PMPhaseSwitchAutomationAction
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {phases_wanted: parseInt(v)}));
                 }} />
-        </FormRow>
+        </FormRow>,
     ];
 }
 
@@ -108,8 +108,8 @@ function get_pm_charge_mode_switch_edit_children(action: PMChargeModeSwitchAutom
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {mode: parseInt(v)}));
                 }} />
-        </FormRow>
-    ]
+        </FormRow>,
+    ];
 }
 
 function new_pm_charge_mode_switch_config(): AutomationAction {
@@ -149,7 +149,7 @@ function get_pm_limit_max_current_edit_children(action: PMLimitMaxCurrentAutomat
                 min={0}
                 unit="A"
                 digits={3} />
-        </FormRow>
+        </FormRow>,
     ];
 }
 
@@ -194,7 +194,7 @@ function get_pm_block_charge_edit_children(action: PMBlockChargeAutomationAction
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {block: v == '1'}));
                 }} />
-        </FormRow>
+        </FormRow>,
     ];
 }
 

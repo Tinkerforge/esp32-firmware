@@ -55,8 +55,8 @@ function get_pm_power_available_edit_children(trigger: PMPowerAvailableAutomatio
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {power_available: v === '1'}));
                 }} />
-        </FormRow>
-    ]
+        </FormRow>,
+    ];
 }
 
 function new_pm_power_available_config(): AutomationTrigger {
@@ -84,8 +84,8 @@ function get_pm_grid_power_draw_edit_children(trigger: PMGridPowerDrawAutomation
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {drawing_power: v === '1'}));
                 }} />
-        </FormRow>
-    ]
+        </FormRow>,
+    ];
 }
 
 function new_pm_grid_power_draw_config(): AutomationTrigger {

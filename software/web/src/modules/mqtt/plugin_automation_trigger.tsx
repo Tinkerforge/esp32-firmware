@@ -49,7 +49,7 @@ function get_mqtt_edit_children(trigger: MqttAutomationTrigger, on_trigger: (tri
     const mqtt_config = API.get("mqtt/config");
     const [isInvalid, isInvalidSetter] = useState(false);
 
-    return [<>
+    return [
         <FormRow label={__("mqtt.automation.use_topic_prefix")}>
             <Switch
                 checked={trigger[1].use_prefix}
@@ -57,7 +57,7 @@ function get_mqtt_edit_children(trigger: MqttAutomationTrigger, on_trigger: (tri
                     on_trigger(util.get_updated_union(trigger, {use_prefix: !trigger[1].use_prefix}));
                 }}
                 desc={__("mqtt.automation.use_topic_prefix_muted") + mqtt_config.global_topic_prefix + "/automation_trigger/"} />
-        </FormRow>
+        </FormRow>,
         <FormRow label={__("mqtt.automation.topic")}>
             <InputText
                 required
@@ -74,7 +74,7 @@ function get_mqtt_edit_children(trigger: MqttAutomationTrigger, on_trigger: (tri
                     on_trigger(util.get_updated_union(trigger, {topic_filter: v}));
                 }}
                 invalidFeedback={__("mqtt.automation.use_topic_prefix_invalid")} />
-        </FormRow>
+        </FormRow>,
         <FormRow label={__("mqtt.automation.payload")}>
             <InputText
                 placeholder={__("mqtt.automation.match_any")}
@@ -83,15 +83,15 @@ function get_mqtt_edit_children(trigger: MqttAutomationTrigger, on_trigger: (tri
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {payload: v}));
                 }} />
-        </FormRow>
+        </FormRow>,
         <FormRow label={__("mqtt.automation.accept_retain")}>
             <Switch
                 checked={trigger[1].retain}
                 onClick={() => {
                     on_trigger(util.get_updated_union(trigger, {retain: !trigger[1].retain}));
                 }} />
-        </FormRow>
-    </>]
+        </FormRow>,
+    ];
 }
 
 function new_mqtt_config(): AutomationTrigger {

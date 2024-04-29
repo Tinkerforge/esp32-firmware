@@ -824,7 +824,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
                                 let extraValue = meter_reset_row;
                                 if (config_plugins[config[0]]?.get_extra_rows)
-                                    extraValue = extraValue.concat(toChildArray(config_plugins[config[0]].get_extra_rows(meter_slot)))
+                                    extraValue = extraValue.concat(<Fragment key={`extra_rows_${config[0]}`}>{config_plugins[config[0]].get_extra_rows(meter_slot)}</Fragment>);
 
                                 extraValue = extraValue.concat(allValues);
 
@@ -903,7 +903,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                         </>]
 
                                         if (state.editMeter[0] != MeterClassID.None) {
-                                            rows = rows.concat(toChildArray(config_plugins[state.editMeter[0]].get_edit_children(state.editMeter, (meter_config) => this.setState({editMeter: meter_config}))));
+                                            rows = rows.concat(<Fragment key={`edit_children_${state.editMeter[0]}`}>{config_plugins[state.editMeter[0]].get_edit_children(state.editMeter, (meter_config) => this.setState({editMeter: meter_config}))}</Fragment>);
                                         }
 
                                         return rows;
@@ -980,7 +980,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                 ];
 
                                 if (state.addMeter[0] != MeterClassID.None) {
-                                    rows = rows.concat(toChildArray(config_plugins[state.addMeter[0]].get_edit_children(state.addMeter, (meter_config) => this.setState({addMeter: meter_config}))));
+                                    rows = rows.concat(<Fragment key={`edit_children_${state.editMeter[0]}`}>{config_plugins[state.addMeter[0]].get_edit_children(state.addMeter, (meter_config) => this.setState({addMeter: meter_config}))}</Fragment>);
                                 }
 
                                 return rows;

@@ -98,7 +98,7 @@ function get_charge_limits_edit_children(action: ChargeLimitsAutomationAction, o
                     const restart = v === "0" && action[1].duration === 0 ? false : action[1].restart;
                     on_action(util.get_updated_union(action, {energy_wh: parseInt(v), restart: restart}));
                 }} />
-        </FormRow>
+        </FormRow>,
     ] : [];
 
     const reset = [
@@ -112,7 +112,7 @@ function get_charge_limits_edit_children(action: ChargeLimitsAutomationAction, o
                         }} />
                 </FormRow>
             </div>
-        </Collapse>
+        </Collapse>,
     ]
 
     return [
@@ -124,7 +124,7 @@ function get_charge_limits_edit_children(action: ChargeLimitsAutomationAction, o
                     const restart = v === "0" && action[1].energy_wh === 0 ? false : action[1].restart;
                     on_action(util.get_updated_union(action, {duration: parseInt(v), restart: restart}));
                 }} />
-        </FormRow>
+        </FormRow>,
     ].concat(meter_entry).concat(reset);
 }
 

@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from "preact";
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_defs";
 import { AutomationTrigger, InitResult } from "../automation/types";
@@ -85,7 +85,7 @@ function get_cron_edit_children(trigger: CronAutomationTrigger, on_trigger: (tri
 
     const day = trigger[1].mday != -1 ? trigger[1].mday == 32 ? 10 : trigger[1].mday + 10 : trigger[1].wday;
 
-    return [<>
+    return [
         <FormRow label={__("automation.automation.cron_mday")}>
             <InputSelect
                 items={days}
@@ -105,7 +105,7 @@ function get_cron_edit_children(trigger: CronAutomationTrigger, on_trigger: (tri
 
                     on_trigger(util.get_updated_union(trigger, {mday: mday, wday: wday}));
                 }} />
-        </FormRow>
+        </FormRow>,
         <FormRow label={__("automation.automation.cron_time")}>
             <div class="input-group mb-2">
                 <InputSelect
@@ -121,8 +121,8 @@ function get_cron_edit_children(trigger: CronAutomationTrigger, on_trigger: (tri
                         on_trigger(util.get_updated_union(trigger, {minute: parseInt(v)}));
                     }} />
             </div>
-        </FormRow>
-    </>]
+        </FormRow>,
+    ];
 }
 
 const enum HttpTriggerMethod {
@@ -162,7 +162,7 @@ function get_http_table_children(trigger: HTTPAutomationTrigger) {
 }
 
 function get_http_edit_children(trigger: HTTPAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
-    return [<>
+    return [
         <FormRow label={__("automation.automation.http_method")}>
             <InputSelect
                 items={[
@@ -174,22 +174,22 @@ function get_http_edit_children(trigger: HTTPAutomationTrigger, on_trigger: (tri
                 ]}
                 value={trigger[1].method.toString()}
                 onValue={(v) => on_trigger(util.get_updated_union(trigger, {method: parseInt(v)}))} />
-        </FormRow>
+        </FormRow>,
         <FormRow label={__("automation.automation.http_url_suffix")}>
             <InputText
                 required
                 value={trigger[1].url_suffix}
                 maxLength={32}
                 onValue={(v) => on_trigger(util.get_updated_union(trigger, {url_suffix: v}))} />
-        </FormRow>
+        </FormRow>,
         <FormRow label={__("automation.automation.http_payload")}>
             <InputText
                 placeholder={__("automation.automation.http_match_any")}
                 maxLength={32}
                 value={trigger[1].payload}
                 onValue={(v) => on_trigger(util.get_updated_union(trigger, {payload: v}))} />
-        </FormRow>
-    </>]
+        </FormRow>,
+    ];
 }
 
 export function init(): InitResult {

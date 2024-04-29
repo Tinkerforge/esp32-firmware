@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from "preact";
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/automation_defs";
 import { AutomationAction, InitResult } from "../automation/types";
@@ -55,32 +55,30 @@ function get_set_current_edit_children(action: EvseAutomationAction, on_action: 
     ];
 
     return [
-        <>
-            <FormRow label="">
-                <InputSelect
-                    items={items}
-                    value={action[1].current === 0 ? "0" : action[1].current === 32000 ? "32000" : "6000"}
-                    onValue={(v) => {
-                        on_action(util.get_updated_union(action, {current: parseInt(v)}));
-                    }} />
-            </FormRow>
-            <Collapse in={action[1].current !== 0 && action[1].current !== 32000}>
-                    <div>
-                    <FormRow label={__("evse.automation.allowed_charging_current")}>
-                        <InputFloat
-                            digits={3}
-                            min={6000}
-                            max={32000}
-                            unit="A"
-                            value={action[1].current}
-                            onValue={(v) => {
-                                on_action(util.get_updated_union(action, {current: v}));
-                            }}
-                        />
-                    </FormRow>
-                </div>
-            </Collapse>
-        </>,
+        <FormRow label="">
+            <InputSelect
+                items={items}
+                value={action[1].current === 0 ? "0" : action[1].current === 32000 ? "32000" : "6000"}
+                onValue={(v) => {
+                    on_action(util.get_updated_union(action, {current: parseInt(v)}));
+                }} />
+        </FormRow>,
+        <Collapse in={action[1].current !== 0 && action[1].current !== 32000}>
+                <div>
+                <FormRow label={__("evse.automation.allowed_charging_current")}>
+                    <InputFloat
+                        digits={3}
+                        min={6000}
+                        max={32000}
+                        unit="A"
+                        value={action[1].current}
+                        onValue={(v) => {
+                            on_action(util.get_updated_union(action, {current: v}));
+                        }}
+                    />
+                </FormRow>
+            </div>
+        </Collapse>,
     ];
 }
 
@@ -136,7 +134,7 @@ function get_led_edit_children(action: EvseLedAutomationAction, on_action: (acti
         items.push([String(2000 + i), __("evse.automation.led_indication_error")(i)]);
     }
 
-    return [<>
+    return [
         <FormRow label={__("evse.automation.indication")}>
             <InputSelect
                 items={items}
@@ -144,7 +142,7 @@ function get_led_edit_children(action: EvseLedAutomationAction, on_action: (acti
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {indication: parseInt(v)}));
                 }} />
-        </FormRow>
+        </FormRow>,
         <FormRow label={ __("evse.automation.led_duration")}>
             <InputNumber
                 min={1}
@@ -154,8 +152,8 @@ function get_led_edit_children(action: EvseLedAutomationAction, on_action: (acti
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {duration: v * 1000}));
                 }} />
-        </FormRow>
-    </>];
+        </FormRow>,
+    ];
 }
 
 function new_led_config(): AutomationAction {

@@ -61,7 +61,7 @@ export function init() {
                         <InputText class="form-control-sm"
                                 value={meter_type_string}/>
                     </div></div>
-                </FormRow>
+                </FormRow>;
             },
         },
     };
