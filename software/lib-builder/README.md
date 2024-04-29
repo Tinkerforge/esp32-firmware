@@ -79,6 +79,25 @@ cp sdkconfig sdkconfig.vanilla
 ~/esp32-firmware/software/lib-builder/build_idf_libs.py ~/esp32-arduino-lib-builder ~/esp32-firmware/software/lib-builder/defconfig.esp32brick
 ```
 
+### Test built libs:
+
+```bash
+cd ~/esp32-firmware/software/packages/
+
+# Copy the latest package; Directories ending in -dev are not cleaned up by the firmware build scripts. Remember to use warp2-x.y.z if building WARP2, WARP3 or WEM firmwares (i.e. something that runs on an ESP with ethernet and PSRAM)
+cp -r arduino-esp32#warp-x.y.z_commit_id arduino-esp32#warp-x.y.z-dev
+cd arduino-esp32#warp-x.y.z-dev
+rm platform.txt
+rm -r tools/sdk
+
+# Either
+cp ~/esp32-arduino-lib-builder/out/* .
+# Or
+ln -s ~/esp32-arduino-lib-builder/out/platform.txt platform.txt
+ln -s ~/esp32-arduino-lib-builder/out/tools/sdk tools/sdk
+```
+
+
 ### Add built libs to arduino-esp32 Repo:
 
 ```bash
