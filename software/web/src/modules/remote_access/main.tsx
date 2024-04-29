@@ -133,7 +133,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             // Takes about 1.5 seconds on a Nexus 4
             time: 2, // the number of iterations
             mem: 19 * 1024, // used memory, in KiB
-            hashLen: 16, // desired hash length
+            hashLen: 32, // desired hash length
             parallelism: 1, // desired parallelism (it won't be computed in parallel, however)
             type: ArgonType.Argon2id,
         })
