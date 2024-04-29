@@ -54,8 +54,10 @@ with open('../../../web/src/modules/meters_modbus_tcp/meters_modbus_tcp_defs.ts'
     f.write(''.join(preset_values))
     f.write('}\n')
 
-VALUE_IS_META  = 0xFFFFFFFF - 1
-VALUE_IS_DEBUG = 0xFFFFFFFF - 2
+VALUE_ID_META  = 0xFFFFFFFF - 1
+VALUE_ID_DEBUG = 0xFFFFFFFF - 2
+
+START_ADDRESS_VIRTUAL = 0xFFFFFFFF - 1
 
 sungrow_hybrid_inverter_base_values = [
     {
@@ -74,31 +76,45 @@ sungrow_hybrid_inverter_base_values = [
     },
     {
         'name': 'MPPT 1 Voltage [0.1 V]',
-        'value_id': 'VoltageDC',
+        'value_id': VALUE_ID_META,
         'start_address': 5011,
         'value_type': 'U16',
         'scale_factor': 0.1,
     },
     {
         'name': 'MPPT 1 Current [0.1 A]',
-        'value_id': 'CurrentDC',
+        'value_id': VALUE_ID_META,
         'start_address': 5012,
         'value_type': 'U16',
         'scale_factor': 0.1,
     },
     {
         'name': 'MPPT 2 Voltage [0.1 V]',
-        'value_id': VALUE_IS_DEBUG, # FIXME: merge with MPPT 1?
+        'value_id': VALUE_ID_META,
         'start_address': 5013,
         'value_type': 'U16',
         'scale_factor': 0.1,
     },
     {
         'name': 'MPPT 2 Current [0.1 A]',
-        'value_id': VALUE_IS_DEBUG, # FIXME: merge with MPPT 1?
+        'value_id': VALUE_ID_META,
         'start_address': 5014,
         'value_type': 'U16',
         'scale_factor': 0.1,
+    },
+    {
+        'name': 'MPPT 1&2 Voltage [V]',
+        'value_id': 'VoltageDC',
+        'start_address': START_ADDRESS_VIRTUAL,
+        'value_type': 'U16',
+        'scale_factor': 1.0,
+    },
+    {
+        'name': 'MPPT 1&2 Current [A]',
+        'value_id': 'CurrentDC',
+        'start_address': START_ADDRESS_VIRTUAL,
+        'value_type': 'U16',
+        'scale_factor': 1.0,
     },
     {
         'name': 'Total DC Power [W]',
@@ -123,7 +139,7 @@ sungrow_hybrid_inverter_base_values = [
     },
     {
         'name': 'Total PV Generation [0.1 kWh]',
-        'value_id': VALUE_IS_DEBUG,
+        'value_id': VALUE_ID_DEBUG,
         'start_address': 13003,
         'value_type': 'U32',
         'scale_factor': 0.1,
@@ -260,14 +276,14 @@ specs = [
         'values': [
             {
                 'name': 'Running State',
-                'value_id': VALUE_IS_META,
+                'value_id': VALUE_ID_META,
                 'start_address': 13001,
                 'value_type': 'U16',
                 'scale_factor': 1.0,
             },
             {
                 'name': 'Total Battery Charge Energy From PV [0.1 kWh]',
-                'value_id': VALUE_IS_DEBUG,
+                'value_id': VALUE_ID_DEBUG,
                 'start_address': 13013,
                 'value_type': 'U32',
                 'scale_factor': 0.1,
@@ -302,7 +318,7 @@ specs = [
             },
             {
                 'name': 'Battery State Of Health [0.1 %]',
-                'value_id': VALUE_IS_DEBUG,
+                'value_id': VALUE_ID_DEBUG,
                 'start_address': 13024,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
@@ -356,16 +372,16 @@ for spec in specs:
         value_specs.append(
             '    {\n'
             f'        "{value["name"]}",\n'
-            f'        {value["start_address"]},\n'
+            f'        {value["start_address"] if value["start_address"] != START_ADDRESS_VIRTUAL else "START_ADDRESS_VIRTUAL"},\n'
             f'        MeterModbusTCP::ValueType::{value["value_type"]},\n'
             f'        {value["scale_factor"]}f,\n'
             '    },'
         )
 
-        if value["value_id"] == VALUE_IS_META:
-            value_index.append('    VALUE_IS_META,')
-        elif value["value_id"] == VALUE_IS_DEBUG:
-            value_index.append('    VALUE_IS_DEBUG,')
+        if value["value_id"] == VALUE_ID_META:
+            value_index.append('    VALUE_INDEX_META,')
+        elif value["value_id"] == VALUE_ID_DEBUG:
+            value_index.append('    VALUE_INDEX_DEBUG,')
         else:
             value_ids.append(f'    MeterValueID::{value["value_id"]},')
             value_index.append(f'    {current_index},')
@@ -379,8 +395,9 @@ for spec in specs:
 
 with open('meters_modbus_tcp_defs.inc', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
-    f.write(f'#define VALUE_IS_META  {VALUE_IS_META}u\n')
-    f.write(f'#define VALUE_IS_DEBUG {VALUE_IS_DEBUG}u\n\n')
+    f.write(f'#define VALUE_INDEX_META  {VALUE_ID_META}u\n')
+    f.write(f'#define VALUE_INDEX_DEBUG {VALUE_ID_DEBUG}u\n\n')
+    f.write(f'#define START_ADDRESS_VIRTUAL {START_ADDRESS_VIRTUAL}u\n\n')
     f.write('\n\n'.join(spec_values) + '\n\n')
     f.write('\n\nstatic const char *get_preset_name(MeterModbusTCPPreset preset)\n')
     f.write('{\n')

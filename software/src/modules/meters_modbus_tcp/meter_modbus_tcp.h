@@ -88,6 +88,10 @@ private:
 
     int sungrow_hybrid_inverter_output_type = -1;
     uint16_t sungrow_hybrid_inverter_running_state;
+    float sungrow_hybrid_inverter_mppt_1_voltage;
+    float sungrow_hybrid_inverter_mppt_1_current;
+    float sungrow_hybrid_inverter_mppt_2_voltage;
+    float sungrow_hybrid_inverter_mppt_2_current;
 };
 
 #if defined(__GNUC__)

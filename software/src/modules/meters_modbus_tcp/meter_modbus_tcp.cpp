@@ -34,6 +34,10 @@
 //#define DEBUG_LOG_ALL_VALUES
 
 #define SUNGROW_HYBRID_INVERTER_OUTPUT_TYPE_ADDRESS     5002u
+#define SUNGROW_HYBRID_INVERTER_MPPT_1_VOLTAGE_ADDRESS  5011u
+#define SUNGROW_HYBRID_INVERTER_MPPT_1_CURRENT_ADDRESS  5012u
+#define SUNGROW_HYBRID_INVERTER_MPPT_2_VOLTAGE_ADDRESS  5013u
+#define SUNGROW_HYBRID_INVERTER_MPPT_2_CURRENT_ADDRESS  5014u
 #define SUNGROW_HYBRID_INVERTER_GRID_FREQUENCY_ADDRESS  5036u
 #define SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS   13001u
 #define SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS 13021u
@@ -147,11 +151,13 @@ void MeterModbusTCP::disconnect_callback()
 
 void MeterModbusTCP::prepare_read()
 {
+    while (
 #ifndef DEBUG_LOG_ALL_VALUES
-    while (value_index[read_index] == VALUE_IS_DEBUG) {
+        value_index[read_index] == VALUE_INDEX_DEBUG ||
+#endif
+        value_specs[read_index].start_address == START_ADDRESS_VIRTUAL) {
         read_index = (read_index + 1) % value_specs_length;
     }
-#endif
 
     generic_read_request.start_address = value_specs[read_index].start_address - 1;
     generic_read_request.register_count = static_cast<uint8_t>(value_specs[read_index].value_type) % 10;
@@ -282,8 +288,36 @@ void MeterModbusTCP::read_done_callback()
 
     value *= value_specs[read_index].scale_factor;
 
-    if (preset == MeterModbusTCPPreset::SungrowHybridInverterGrid) {
-        if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_GRID_FREQUENCY_ADDRESS - 1) { // grid frequency
+    if (preset == MeterModbusTCPPreset::SungrowHybridInverter) {
+        if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_MPPT_1_VOLTAGE_ADDRESS - 1) {
+            sungrow_hybrid_inverter_mppt_1_voltage = value;
+        }
+        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_MPPT_1_CURRENT_ADDRESS - 1) {
+            sungrow_hybrid_inverter_mppt_1_current = value;
+        }
+        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_MPPT_2_VOLTAGE_ADDRESS - 1) {
+            sungrow_hybrid_inverter_mppt_2_voltage = value;
+        }
+        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_MPPT_2_CURRENT_ADDRESS - 1) {
+            sungrow_hybrid_inverter_mppt_2_current = value;
+
+            float current = sungrow_hybrid_inverter_mppt_1_current + sungrow_hybrid_inverter_mppt_2_current;
+            float voltage;
+
+            if (current > 0.0f) {
+                voltage = (sungrow_hybrid_inverter_mppt_1_voltage * sungrow_hybrid_inverter_mppt_1_current) / current
+                        + (sungrow_hybrid_inverter_mppt_2_voltage * sungrow_hybrid_inverter_mppt_2_current) / current;
+            }
+            else {
+                voltage = (sungrow_hybrid_inverter_mppt_1_voltage + sungrow_hybrid_inverter_mppt_2_voltage) / 2.0f;
+            }
+
+            meters.update_value(slot, value_index[read_index + 1], voltage);
+            meters.update_value(slot, value_index[read_index + 2], current);
+        }
+    }
+    else if (preset == MeterModbusTCPPreset::SungrowHybridInverterGrid) {
+        if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_GRID_FREQUENCY_ADDRESS - 1) {
             if (value > 100) {
                 // according to the spec the grid frequency is given
                 // as 0.1 Hz, but some inverters report it as 0.01 Hz
@@ -292,22 +326,22 @@ void MeterModbusTCP::read_done_callback()
         }
     }
     else if (preset == MeterModbusTCPPreset::SungrowHybridInverterBattery) {
-        if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS - 1) { // running state
+        if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS - 1) {
             sungrow_hybrid_inverter_running_state = register_buffer[0];
         }
-        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS - 1) { // battery current
+        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS - 1) {
             if ((sungrow_hybrid_inverter_running_state & (1 << 2)) != 0) {
                 value = -value;
             }
         }
-        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS - 1) { // battery power
+        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS - 1) {
             if ((sungrow_hybrid_inverter_running_state & (1 << 2)) != 0) {
                 value = -value;
             }
         }
     }
 
-    if (value_index[read_index] != VALUE_IS_META && value_index[read_index] != VALUE_IS_DEBUG) {
+    if (value_index[read_index] != VALUE_INDEX_META && value_index[read_index] != VALUE_INDEX_DEBUG) {
         meters.update_value(slot, value_index[read_index], value);
     }
 
