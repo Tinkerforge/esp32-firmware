@@ -535,7 +535,7 @@
 - Fix HTTP API causing errors if receiving payload is slow
 - Update timezone database
 
-2024-05-04: 2.3.0 (a2116460)
+2024-04-05: 2.3.0 (a2116460)
 - Add MQTTS and MQTT over WS(S) support
 - Add HTTP automation trigger
 - Add modal for WiFi scan results
