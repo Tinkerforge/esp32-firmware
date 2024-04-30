@@ -36,6 +36,14 @@ void MetersModbusTCP::pre_setup()
         {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowHybridInverterVirtualMeterID::None))}
     })});
 
+    table_prototypes.push_back({MeterModbusTCPTableID::SungrowStringInverter, Config::Object({
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowStringInverterVirtualMeterID::None))}
+    })});
+
+    table_prototypes.push_back({MeterModbusTCPTableID::SolarmaxMaxStorage, Config::Object({
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SolarmaxMaxStorageVirtualMeterID::None))}
+    })});
+
     Config table_union = Config::Union<MeterModbusTCPTableID>(
         *Config::Null(),
         MeterModbusTCPTableID::None,
