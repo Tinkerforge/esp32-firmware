@@ -2,7 +2,6 @@ import os
 import sys
 import importlib.util
 import importlib.machinery
-import csv
 
 software_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
@@ -28,29 +27,39 @@ tables = [
     ('Solarmax Max Storage', 4),
 ]
 
-# NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-sungrow_hybrid_inverter_virtual_meters = [
-    ('None', 0),
-    ('Inverter', 1),
-    ('Grid', 2),
-    ('Battery', 3),
-    ('Load', 4),
-]
+enums = [
+    {
+        'name': 'Sungrow Hybrid Inverter Virtual Meter ID',
+        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
+        'values': [
+            ('None', 0),
+            ('Inverter', 1),
+            ('Grid', 2),
+            ('Battery', 3),
+            ('Load', 4),
+        ],
+    },
+    {
+        'name': 'Sungrow String Inverter Virtual Meter ID',
+        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
+        'values': [
+            ('None', 0),
+            ('Inverter', 1),
+            ('Grid', 2),
+            ('Load', 3),
+        ],
+    },
+    {
 
-# NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-sungrow_string_inverter_virtual_meters = [
-    ('None', 0),
-    ('Inverter', 1),
-    ('Grid', 2),
-    ('Load', 3),
-]
-
-# NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-solarmax_max_storage_virtual_meters = [
-    ('None', 0),
-    ('Inverter', 1),
-    ('Grid', 2),
-    ('Battery', 3),
+        'name': 'Solarmax Max Storage Virtual Meter ID',
+        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
+        'values': [
+            ('None', 0),
+            ('Inverter', 1),
+            ('Grid', 2),
+            ('Battery', 3),
+        ],
+    },
 ]
 
 table_values = []
@@ -60,52 +69,35 @@ for table in tables:
     table_values.append('    {0} = {1},\n'.format(util.FlavoredName(table[0]).get().camel, table[1]))
     table_names.append('    case MeterModbusTCPTableID::{0}: return "{1}";\n'.format(util.FlavoredName(table[0]).get().camel, table[0]))
 
-sungrow_hybrid_inverter_virtual_meter_values = []
-
-for virtual_meter in sungrow_hybrid_inverter_virtual_meters:
-    sungrow_hybrid_inverter_virtual_meter_values.append('    {0} = {1},\n'.format(util.FlavoredName(virtual_meter[0]).get().camel, virtual_meter[1]))
-
-sungrow_string_inverter_virtual_meter_values = []
-
-for virtual_meter in sungrow_string_inverter_virtual_meters:
-    sungrow_string_inverter_virtual_meter_values.append('    {0} = {1},\n'.format(util.FlavoredName(virtual_meter[0]).get().camel, virtual_meter[1]))
-
-solarmax_max_storage_virtual_meter_values = []
-
-for virtual_meter in solarmax_max_storage_virtual_meters:
-    solarmax_max_storage_virtual_meter_values.append('    {0} = {1},\n'.format(util.FlavoredName(virtual_meter[0]).get().camel, virtual_meter[1]))
-
 with open('meters_modbus_tcp_defs.h', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#include <stdint.h>\n\n')
     f.write('#pragma once\n\n')
     f.write('enum class MeterModbusTCPTableID : uint8_t {\n')
     f.write(''.join(table_values))
-    f.write('};\n\n')
-    f.write('enum class SungrowHybridInverterVirtualMeterID : uint8_t {\n')
-    f.write(''.join(sungrow_hybrid_inverter_virtual_meter_values))
-    f.write('};\n\n')
-    f.write('enum class SungrowStringInverterVirtualMeterID : uint8_t {\n')
-    f.write(''.join(sungrow_string_inverter_virtual_meter_values))
-    f.write('};\n\n')
-    f.write('enum class SolarmaxMaxStorageVirtualMeterID : uint8_t {\n')
-    f.write(''.join(solarmax_max_storage_virtual_meter_values))
     f.write('};\n')
+
+    for enum in enums:
+        f.write(f'\nenum class {util.FlavoredName(enum["name"]).get().camel} : uint8_t {{\n')
+
+        for value in enum['values']:
+            f.write('    {0} = {1},\n'.format(util.FlavoredName(value[0]).get().camel, value[1]))
+
+        f.write('};\n')
 
 with open('../../../web/src/modules/meters_modbus_tcp/meters_modbus_tcp_defs.ts', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('export const enum MeterModbusTCPTableID {\n')
     f.write(''.join(table_values))
-    f.write('}\n\n')
-    f.write('export const enum SungrowHybridInverterVirtualMeterID {\n')
-    f.write(''.join(sungrow_hybrid_inverter_virtual_meter_values))
-    f.write('}\n\n')
-    f.write('export const enum SungrowStringInverterVirtualMeterID {\n')
-    f.write(''.join(sungrow_string_inverter_virtual_meter_values))
-    f.write('}\n\n')
-    f.write('export const enum SolarmaxMaxStorageVirtualMeterID {\n')
-    f.write(''.join(solarmax_max_storage_virtual_meter_values))
     f.write('}\n')
+
+    for enum in enums:
+        f.write(f'\nexport const enum {util.FlavoredName(enum["name"]).get().camel} {{\n')
+
+        for value in enum['values']:
+            f.write('    {0} = {1},\n'.format(util.FlavoredName(value[0]).get().camel, value[1]))
+
+        f.write('}\n')
 
 VALUE_ID_META  = 0xFFFFFFFF - 1
 VALUE_ID_DEBUG = 0xFFFFFFFF - 2
@@ -696,6 +688,13 @@ for spec in specs:
         spec_values.append(f'static const MeterModbusTCP::ValueSpec {name.under}_specs[] = {{\n' + '\n'.join(value_specs) + '\n};')
         spec_values.append(f'static const MeterValueID {name.under}_ids[] = {{\n' + '\n'.join(value_ids) + '\n};')
         spec_values.append(f'static const uint32_t {name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
+        spec_values.append(f'static const MeterModbusTCP::ValueTable {name.under}_table = {{\n'
+                           f'    {name.under}_specs,\n'
+                           f'    ARRAY_SIZE({name.under}_specs),\n'
+                           f'    {name.under}_ids,\n'
+                           f'    ARRAY_SIZE({name.under}_ids),\n'
+                           f'    {name.under}_index,\n'
+                           '};')
 
 with open('meters_modbus_tcp_defs.inc', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
@@ -703,7 +702,7 @@ with open('meters_modbus_tcp_defs.inc', 'w', encoding='utf-8') as f:
     f.write(f'#define VALUE_INDEX_DEBUG {VALUE_ID_DEBUG}u\n\n')
     f.write(f'#define START_ADDRESS_VIRTUAL {START_ADDRESS_VIRTUAL}u\n\n')
     f.write('\n\n'.join(spec_values) + '\n\n')
-    f.write('\n\nstatic const char *get_table_name(MeterModbusTCPTableID table)\n')
+    f.write('static const char *get_table_name(MeterModbusTCPTableID table)\n')
     f.write('{\n')
     f.write('    switch (table) {\n')
     f.write(''.join(table_names))

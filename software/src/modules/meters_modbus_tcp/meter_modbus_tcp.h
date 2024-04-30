@@ -52,6 +52,14 @@ public:
         float scale_factor;
     };
 
+    struct ValueTable {
+        const ValueSpec *specs;
+        size_t specs_length;
+        const MeterValueID *ids;
+        size_t ids_length;
+        const uint32_t *index;
+    };
+
     MeterModbusTCP(uint32_t slot_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), state(state_), errors(errors_) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
@@ -77,16 +85,13 @@ private:
     Config *state;
     Config *errors;
 
-    const ValueSpec *value_specs;
-    size_t value_specs_length;
-    const MeterValueID *value_ids;
-    const uint32_t *value_index;
+    MeterModbusTCPTableID table_id;
+    const ValueTable *table;
 
     bool read_allowed = false;
     bool values_declared = false;
     size_t read_index = 0;
 
-    MeterModbusTCPTableID table;
     uint16_t register_buffer[2];
 
     SungrowHybridInverterVirtualMeterID sungrow_hybrid_inverter_virtual_meter;

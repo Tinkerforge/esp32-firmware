@@ -53,11 +53,9 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
     host_name      = ephemeral_config.get("host")->asString();
     port           = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
     device_address = static_cast<uint8_t>(ephemeral_config.get("device_address")->asUint());
-    table          = ephemeral_config.get("table")->getTag<MeterModbusTCPTableID>();
+    table_id       = ephemeral_config.get("table")->getTag<MeterModbusTCPTableID>();
 
-    uint32_t value_ids_length;
-
-    switch (table) {
+    switch (table_id) {
     case MeterModbusTCPTableID::None:
         logger.printfln("No table selected");
         return;
@@ -65,6 +63,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
     //case MeterModbusTCPTableID::Custom:
 
     case MeterModbusTCPTableID::SungrowHybridInverter:
+        generic_read_request.register_type = TAddress::RegType::IREG;
         sungrow_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowHybridInverterVirtualMeterID>();
 
         switch (sungrow_hybrid_inverter_virtual_meter) {
@@ -74,35 +73,19 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         case SungrowHybridInverterVirtualMeterID::Inverter:
             // will be set after output type discovery
-            value_specs        = nullptr;
-            value_specs_length = 0;
-            value_ids          = nullptr;
-            value_ids_length   = 0;
-            value_index        = nullptr;
+            table = nullptr;
             break;
 
         case SungrowHybridInverterVirtualMeterID::Grid:
-            value_specs        = sungrow_hybrid_inverter_grid_specs;
-            value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_grid_specs);
-            value_ids          = sungrow_hybrid_inverter_grid_ids;
-            value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_grid_ids);
-            value_index        = sungrow_hybrid_inverter_grid_index;
+            table = &sungrow_hybrid_inverter_grid_table;
             break;
 
         case SungrowHybridInverterVirtualMeterID::Battery:
-            value_specs        = sungrow_hybrid_inverter_battery_specs;
-            value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_battery_specs);
-            value_ids          = sungrow_hybrid_inverter_battery_ids;
-            value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_battery_ids);
-            value_index        = sungrow_hybrid_inverter_battery_index;
+            table = &sungrow_hybrid_inverter_battery_table;
             break;
 
         case SungrowHybridInverterVirtualMeterID::Load:
-            value_specs        = sungrow_hybrid_inverter_load_specs;
-            value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_load_specs);
-            value_ids          = sungrow_hybrid_inverter_load_ids;
-            value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_load_ids);
-            value_index        = sungrow_hybrid_inverter_load_index;
+            table = &sungrow_hybrid_inverter_load_table;
             break;
 
         default:
@@ -113,6 +96,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SungrowStringInverter:
+        generic_read_request.register_type = TAddress::RegType::IREG;
         sungrow_string_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowStringInverterVirtualMeterID>();
 
         switch (sungrow_string_inverter_virtual_meter) {
@@ -122,27 +106,15 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         case SungrowStringInverterVirtualMeterID::Inverter:
             // will be set after output type discovery
-            value_specs        = nullptr;
-            value_specs_length = 0;
-            value_ids          = nullptr;
-            value_ids_length   = 0;
-            value_index        = nullptr;
+            table = nullptr;
             break;
 
         case SungrowStringInverterVirtualMeterID::Grid:
-            value_specs        = sungrow_string_inverter_grid_specs;
-            value_specs_length = ARRAY_SIZE(sungrow_string_inverter_grid_specs);
-            value_ids          = sungrow_string_inverter_grid_ids;
-            value_ids_length   = ARRAY_SIZE(sungrow_string_inverter_grid_ids);
-            value_index        = sungrow_string_inverter_grid_index;
+            table = &sungrow_string_inverter_grid_table;
             break;
 
         case SungrowStringInverterVirtualMeterID::Load:
-            value_specs        = sungrow_string_inverter_load_specs;
-            value_specs_length = ARRAY_SIZE(sungrow_string_inverter_load_specs);
-            value_ids          = sungrow_string_inverter_load_ids;
-            value_ids_length   = ARRAY_SIZE(sungrow_string_inverter_load_ids);
-            value_index        = sungrow_string_inverter_load_index;
+            table = &sungrow_string_inverter_load_table;
             break;
 
         default:
@@ -153,6 +125,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SolarmaxMaxStorage:
+        generic_read_request.register_type = TAddress::RegType::IREG;
         solarmax_max_storage_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SolarmaxMaxStorageVirtualMeterID>();
 
         switch (solarmax_max_storage_virtual_meter) {
@@ -161,27 +134,15 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             return;
 
         case SolarmaxMaxStorageVirtualMeterID::Inverter:
-            value_specs        = solarmax_max_storage_inverter_specs;
-            value_specs_length = ARRAY_SIZE(solarmax_max_storage_inverter_specs);
-            value_ids          = solarmax_max_storage_inverter_ids;
-            value_ids_length   = ARRAY_SIZE(solarmax_max_storage_inverter_ids);
-            value_index        = solarmax_max_storage_inverter_index;
+            table = &solarmax_max_storage_inverter_table;
             break;
 
         case SolarmaxMaxStorageVirtualMeterID::Grid:
-            value_specs        = solarmax_max_storage_grid_specs;
-            value_specs_length = ARRAY_SIZE(solarmax_max_storage_grid_specs);
-            value_ids          = solarmax_max_storage_grid_ids;
-            value_ids_length   = ARRAY_SIZE(solarmax_max_storage_grid_ids);
-            value_index        = solarmax_max_storage_grid_index;
+            table = &solarmax_max_storage_grid_table;
             break;
 
         case SolarmaxMaxStorageVirtualMeterID::Battery:
-            value_specs        = solarmax_max_storage_battery_specs;
-            value_specs_length = ARRAY_SIZE(solarmax_max_storage_battery_specs);
-            value_ids          = solarmax_max_storage_battery_ids;
-            value_ids_length   = ARRAY_SIZE(solarmax_max_storage_battery_ids);
-            value_index        = solarmax_max_storage_battery_index;
+            table = &solarmax_max_storage_battery_table;
             break;
 
         default:
@@ -191,14 +152,13 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
-
     default:
-        logger.printfln("Unknown table: %u", static_cast<uint8_t>(table));
+        logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
     }
 
-    if (value_ids != nullptr) {
-        meters.declare_value_ids(slot, value_ids, value_ids_length);
+    if (table != nullptr) {
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
     }
 
     task_scheduler.scheduleOnce([this]() {
@@ -216,7 +176,6 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
 void MeterModbusTCP::connect_callback()
 {
-    generic_read_request.register_type = TAddress::RegType::IREG;
     generic_read_request.data[0] = register_buffer;
     generic_read_request.data[1] = nullptr;
     generic_read_request.read_twice = false;
@@ -246,35 +205,35 @@ void MeterModbusTCP::prepare_read()
 {
     while (
 #ifndef DEBUG_LOG_ALL_VALUES
-        value_index[read_index] == VALUE_INDEX_DEBUG ||
+        table->index[read_index] == VALUE_INDEX_DEBUG ||
 #endif
-        value_specs[read_index].start_address == START_ADDRESS_VIRTUAL) {
-        read_index = (read_index + 1) % value_specs_length;
+        table->specs[read_index].start_address == START_ADDRESS_VIRTUAL) {
+        read_index = (read_index + 1) % table->specs_length;
     }
 
-    generic_read_request.start_address = value_specs[read_index].start_address - 1;
-    generic_read_request.register_count = static_cast<uint8_t>(value_specs[read_index].value_type) % 10;
+    generic_read_request.start_address = table->specs[read_index].start_address - 1;
+    generic_read_request.register_count = static_cast<uint8_t>(table->specs[read_index].value_type) % 10;
 }
 
 bool MeterModbusTCP::is_sungrow_inverter_meter() const
 {
-    return (table == MeterModbusTCPTableID::SungrowHybridInverter
+    return (table_id == MeterModbusTCPTableID::SungrowHybridInverter
          && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Inverter)
-        || (table == MeterModbusTCPTableID::SungrowStringInverter
+        || (table_id == MeterModbusTCPTableID::SungrowStringInverter
          && sungrow_string_inverter_virtual_meter == SungrowStringInverterVirtualMeterID::Inverter);
 }
 
 bool MeterModbusTCP::is_sungrow_grid_meter() const
 {
-    return (table == MeterModbusTCPTableID::SungrowHybridInverter
+    return (table_id == MeterModbusTCPTableID::SungrowHybridInverter
          && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Grid)
-        || (table == MeterModbusTCPTableID::SungrowStringInverter
+        || (table_id == MeterModbusTCPTableID::SungrowStringInverter
          && sungrow_string_inverter_virtual_meter == SungrowStringInverterVirtualMeterID::Grid);
 }
 
 bool MeterModbusTCP::is_sungrow_battery_meter() const
 {
-    return table == MeterModbusTCPTableID::SungrowHybridInverter
+    return table_id == MeterModbusTCPTableID::SungrowHybridInverter
         && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Battery;
 }
 
@@ -286,16 +245,16 @@ void MeterModbusTCP::read_done_callback()
         if (is_sungrow_inverter_meter()
          && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS - 1) {
             logger.printfln("Error reading %s / Output Type (%u): %s [%d]",
-                            get_table_name(table),
+                            get_table_name(table_id),
                             SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS,
                             get_modbus_result_code_name(generic_read_request.result_code),
                             generic_read_request.result_code);
         }
         else {
             logger.printfln("Error reading %s / %s (%zu): %s [%d]",
-                            get_table_name(table),
-                            value_specs[read_index].name,
-                            value_specs[read_index].start_address,
+                            get_table_name(table_id),
+                            table->specs[read_index].name,
+                            table->specs[read_index].start_address,
                             get_modbus_result_code_name(generic_read_request.result_code),
                             generic_read_request.result_code);
         }
@@ -306,65 +265,39 @@ void MeterModbusTCP::read_done_callback()
     if (is_sungrow_inverter_meter()
      && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS - 1) {
         if (sungrow_inverter_output_type < 0) {
-            uint32_t value_ids_length;
-
             switch (register_buffer[0]) {
             case 0:
-                if (table == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    value_specs        = sungrow_hybrid_inverter_1p2l_specs;
-                    value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_1p2l_specs);
-                    value_ids          = sungrow_hybrid_inverter_1p2l_ids;
-                    value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_1p2l_ids);
-                    value_index        = sungrow_hybrid_inverter_1p2l_index;
+                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
+                    table = &sungrow_hybrid_inverter_1p2l_table;
                 }
                 else { // MeterModbusTCPTableID::SungrowStringInverter
-                    value_specs        = sungrow_string_inverter_1p2l_specs;
-                    value_specs_length = ARRAY_SIZE(sungrow_string_inverter_1p2l_specs);
-                    value_ids          = sungrow_string_inverter_1p2l_ids;
-                    value_ids_length   = ARRAY_SIZE(sungrow_string_inverter_1p2l_ids);
-                    value_index        = sungrow_string_inverter_1p2l_index;
+                    table = &sungrow_string_inverter_1p2l_table;
                 }
 
                 break;
 
             case 1:
-                if (table == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    value_specs        = sungrow_hybrid_inverter_3p4l_specs;
-                    value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_3p4l_specs);
-                    value_ids          = sungrow_hybrid_inverter_3p4l_ids;
-                    value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_3p4l_ids);
-                    value_index        = sungrow_hybrid_inverter_3p4l_index;
+                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
+                    table = &sungrow_hybrid_inverter_3p4l_table;
                 }
                 else { // MeterModbusTCPTableID::SungrowStringInverter
-                    value_specs        = sungrow_string_inverter_3p4l_specs;
-                    value_specs_length = ARRAY_SIZE(sungrow_string_inverter_3p4l_specs);
-                    value_ids          = sungrow_string_inverter_3p4l_ids;
-                    value_ids_length   = ARRAY_SIZE(sungrow_string_inverter_3p4l_ids);
-                    value_index        = sungrow_string_inverter_3p4l_index;
+                    table = &sungrow_string_inverter_3p4l_table;
                 }
 
                 break;
 
             case 2:
-                if (table == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    value_specs        = sungrow_hybrid_inverter_3p3l_specs;
-                    value_specs_length = ARRAY_SIZE(sungrow_hybrid_inverter_3p3l_specs);
-                    value_ids          = sungrow_hybrid_inverter_3p3l_ids;
-                    value_ids_length   = ARRAY_SIZE(sungrow_hybrid_inverter_3p3l_ids);
-                    value_index        = sungrow_hybrid_inverter_3p3l_index;
+                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
+                    table = &sungrow_hybrid_inverter_3p3l_table;
                 }
                 else { // MeterModbusTCPTableID::SungrowStringInverter
-                    value_specs        = sungrow_string_inverter_3p3l_specs;
-                    value_specs_length = ARRAY_SIZE(sungrow_string_inverter_3p3l_specs);
-                    value_ids          = sungrow_string_inverter_3p3l_ids;
-                    value_ids_length   = ARRAY_SIZE(sungrow_string_inverter_3p3l_ids);
-                    value_index        = sungrow_string_inverter_3p3l_index;
+                    table = &sungrow_string_inverter_3p3l_table;
                 }
 
                 break;
 
             default:
-                logger.printfln("%s has unknown Output Type: %u", get_table_name(table), register_buffer[0]);
+                logger.printfln("%s has unknown Output Type: %u", get_table_name(table_id), register_buffer[0]);
                 return;
             }
 
@@ -372,12 +305,12 @@ void MeterModbusTCP::read_done_callback()
 
 #ifdef DEBUG_LOG_ALL_VALUES
             logger.printfln("%s / Output Type (%u): %d",
-                            get_table_name(table),
+                            get_table_name(table_id),
                             SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS,
                             sungrow_inverter_output_type);
 #endif
 
-            meters.declare_value_ids(slot, value_ids, value_ids_length);
+            meters.declare_value_ids(slot, table->ids, table->ids_length);
         }
 
         read_allowed = true;
@@ -398,13 +331,13 @@ void MeterModbusTCP::read_done_callback()
 
     float value = NAN;
 
-    switch (value_specs[read_index].value_type) {
+    switch (table->specs[read_index].value_type) {
     case ValueType::U16:
 #ifdef DEBUG_LOG_ALL_READS
         logger.printfln("%s / %s (%zu): %u",
-                        get_table_name(table),
-                        value_specs[read_index].name,
-                        value_specs[read_index].start_address,
+                        get_table_name(table_id),
+                        table->specs[read_index].name,
+                        table->specs[read_index].start_address,
                         register_buffer[0]);
 #endif
 
@@ -414,9 +347,9 @@ void MeterModbusTCP::read_done_callback()
     case ValueType::S16:
 #ifdef DEBUG_LOG_ALL_READS
         logger.printfln("%s / %s (%zu): %d",
-                        get_table_name(table),
-                        value_specs[read_index].name,
-                        value_specs[read_index].start_address,
+                        get_table_name(table_id),
+                        table->specs[read_index].name,
+                        table->specs[read_index].start_address,
                         static_cast<int16_t>(register_buffer[0]));
 #endif
 
@@ -426,9 +359,9 @@ void MeterModbusTCP::read_done_callback()
     case ValueType::U32:
 #ifdef DEBUG_LOG_ALL_READS
         logger.printfln("%s / %s (%zu): %u (%u %u)",
-                        get_table_name(table),
-                        value_specs[read_index].name,
-                        value_specs[read_index].start_address,
+                        get_table_name(table_id),
+                        table->specs[read_index].name,
+                        table->specs[read_index].start_address,
                         u.v,
                         register_buffer[0],
                         register_buffer[1]);
@@ -440,9 +373,9 @@ void MeterModbusTCP::read_done_callback()
     case ValueType::S32:
 #ifdef DEBUG_LOG_ALL_READS
         logger.printfln("%s / %s (%zu): %d (%u %u)",
-                        get_table_name(table),
-                        value_specs[read_index].name,
-                        value_specs[read_index].start_address,
+                        get_table_name(table_id),
+                        table->specs[read_index].name,
+                        table->specs[read_index].start_address,
                         static_cast<int32_t>(u.v),
                         register_buffer[0],
                         register_buffer[1]);
@@ -455,7 +388,7 @@ void MeterModbusTCP::read_done_callback()
         break;
     }
 
-    value *= value_specs[read_index].scale_factor;
+    value *= table->specs[read_index].scale_factor;
 
     if (is_sungrow_inverter_meter()) {
         if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_1_VOLTAGE_ADDRESS - 1) {
@@ -481,8 +414,8 @@ void MeterModbusTCP::read_done_callback()
                 voltage = (sungrow_inverter_mppt_1_voltage + sungrow_inverter_mppt_2_voltage) / 2.0f;
             }
 
-            meters.update_value(slot, value_index[read_index + 1], voltage);
-            meters.update_value(slot, value_index[read_index + 2], current);
+            meters.update_value(slot, table->index[read_index + 1], voltage);
+            meters.update_value(slot, table->index[read_index + 2], current);
         }
     }
     else if (is_sungrow_grid_meter()) {
@@ -510,11 +443,11 @@ void MeterModbusTCP::read_done_callback()
         }
     }
 
-    if (value_index[read_index] != VALUE_INDEX_META && value_index[read_index] != VALUE_INDEX_DEBUG) {
-        meters.update_value(slot, value_index[read_index], value);
+    if (table->index[read_index] != VALUE_INDEX_META && table->index[read_index] != VALUE_INDEX_DEBUG) {
+        meters.update_value(slot, table->index[read_index], value);
     }
 
-    read_index = (read_index + 1) % value_specs_length;
+    read_index = (read_index + 1) % table->specs_length;
 
     if (read_index == 0) {
         // make a little pause after each round trip
