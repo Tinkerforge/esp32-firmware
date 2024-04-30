@@ -69,6 +69,9 @@ private:
     void connect_callback() override;
     void disconnect_callback() override;
     void prepare_read();
+    bool is_sungrow_inverter_meter() const;
+    bool is_sungrow_grid_meter() const;
+    bool is_sungrow_battery_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -87,12 +90,13 @@ private:
     uint16_t register_buffer[2];
 
     SungrowHybridInverterVirtualMeterID sungrow_hybrid_inverter_virtual_meter;
-    int sungrow_hybrid_inverter_output_type = -1;
+    SungrowStringInverterVirtualMeterID sungrow_string_inverter_virtual_meter;
+    int sungrow_inverter_output_type = -1;
     uint16_t sungrow_hybrid_inverter_running_state;
-    float sungrow_hybrid_inverter_mppt_1_voltage;
-    float sungrow_hybrid_inverter_mppt_1_current;
-    float sungrow_hybrid_inverter_mppt_2_voltage;
-    float sungrow_hybrid_inverter_mppt_2_current;
+    float sungrow_inverter_mppt_1_voltage;
+    float sungrow_inverter_mppt_1_current;
+    float sungrow_inverter_mppt_2_voltage;
+    float sungrow_inverter_mppt_2_current;
 
     SolarmaxMaxStorageVirtualMeterID solarmax_max_storage_virtual_meter;
 };

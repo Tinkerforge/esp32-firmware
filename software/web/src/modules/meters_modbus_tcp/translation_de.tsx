@@ -19,6 +19,7 @@ let x = {
             "config_table_select": "Auswählen...",
 
             "table_sungrow_hybrid_inverter": "Sungrow Hybrid Wechselrichter (SH...)",
+            "table_sungrow_string_inverter": "Sungrow String Wechselrichter (SG...)",
             "table_solarmax_max_storage": "Solarmax Max.Storage",
 
             "sungrow_hybrid_inverter_virtual_meter": "Virtueller Zähler",
@@ -27,6 +28,12 @@ let x = {
             "sungrow_hybrid_inverter_virtual_meter_grid": "Netzanschluss",
             "sungrow_hybrid_inverter_virtual_meter_battery": "Speicher",
             "sungrow_hybrid_inverter_virtual_meter_load": "Last",
+
+            "sungrow_string_inverter_virtual_meter": "Virtueller Zähler",
+            "sungrow_string_inverter_virtual_meter_select": "Auswählen...",
+            "sungrow_string_inverter_virtual_meter_inverter": "Wechselrichter",
+            "sungrow_string_inverter_virtual_meter_grid": "Netzanschluss",
+            "sungrow_string_inverter_virtual_meter_load": "Last",
 
             "solarmax_max_storage_virtual_meter": "Virtueller Zähler",
             "solarmax_max_storage_virtual_meter_select": "Auswählen...",

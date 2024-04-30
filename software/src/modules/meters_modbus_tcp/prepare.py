@@ -24,7 +24,7 @@ tables = [
     ('None', 0),
     #('Custom', 1),
     ('Sungrow Hybrid Inverter', 2),
-    #('Sungrow String Inverter', 3),
+    ('Sungrow String Inverter', 3),
     ('Solarmax Max Storage', 4),
 ]
 
@@ -35,6 +35,14 @@ sungrow_hybrid_inverter_virtual_meters = [
     ('Grid', 2),
     ('Battery', 3),
     ('Load', 4),
+]
+
+# NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
+sungrow_string_inverter_virtual_meters = [
+    ('None', 0),
+    ('Inverter', 1),
+    ('Grid', 2),
+    ('Load', 3),
 ]
 
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
@@ -57,6 +65,11 @@ sungrow_hybrid_inverter_virtual_meter_values = []
 for virtual_meter in sungrow_hybrid_inverter_virtual_meters:
     sungrow_hybrid_inverter_virtual_meter_values.append('    {0} = {1},\n'.format(util.FlavoredName(virtual_meter[0]).get().camel, virtual_meter[1]))
 
+sungrow_string_inverter_virtual_meter_values = []
+
+for virtual_meter in sungrow_string_inverter_virtual_meters:
+    sungrow_string_inverter_virtual_meter_values.append('    {0} = {1},\n'.format(util.FlavoredName(virtual_meter[0]).get().camel, virtual_meter[1]))
+
 solarmax_max_storage_virtual_meter_values = []
 
 for virtual_meter in solarmax_max_storage_virtual_meters:
@@ -72,6 +85,9 @@ with open('meters_modbus_tcp_defs.h', 'w', encoding='utf-8') as f:
     f.write('enum class SungrowHybridInverterVirtualMeterID : uint8_t {\n')
     f.write(''.join(sungrow_hybrid_inverter_virtual_meter_values))
     f.write('};\n\n')
+    f.write('enum class SungrowStringInverterVirtualMeterID : uint8_t {\n')
+    f.write(''.join(sungrow_string_inverter_virtual_meter_values))
+    f.write('};\n\n')
     f.write('enum class SolarmaxMaxStorageVirtualMeterID : uint8_t {\n')
     f.write(''.join(solarmax_max_storage_virtual_meter_values))
     f.write('};\n')
@@ -84,6 +100,9 @@ with open('../../../web/src/modules/meters_modbus_tcp/meters_modbus_tcp_defs.ts'
     f.write('export const enum SungrowHybridInverterVirtualMeterID {\n')
     f.write(''.join(sungrow_hybrid_inverter_virtual_meter_values))
     f.write('}\n\n')
+    f.write('export const enum SungrowStringInverterVirtualMeterID {\n')
+    f.write(''.join(sungrow_string_inverter_virtual_meter_values))
+    f.write('}\n\n')
     f.write('export const enum SolarmaxMaxStorageVirtualMeterID {\n')
     f.write(''.join(solarmax_max_storage_virtual_meter_values))
     f.write('}\n')
@@ -93,13 +112,44 @@ VALUE_ID_DEBUG = 0xFFFFFFFF - 2
 
 START_ADDRESS_VIRTUAL = 0xFFFFFFFF - 1
 
-sungrow_hybrid_inverter_base_values = [
+sungrow_hybrid_string_inverter_base_values = [
+    {
+        'name': 'Device Type',
+        'value_id': VALUE_ID_DEBUG,
+        'start_address': 5000,
+        'value_type': 'U16',
+        'scale_factor': 1.0,
+    },
+    {
+        'name': 'Nominal Output Power [0.1 kW]',
+        'value_id': VALUE_ID_DEBUG,
+        'start_address': 5001,
+        'value_type': 'U16',
+        'scale_factor': 1.0,
+    },
     {
         'name': 'Total Output Energy [0.1 kWh]',
         'value_id': 'EnergyActiveLSumExport',
         'start_address': 5004,
         'value_type': 'U32',
         'scale_factor': 0.1,
+        'variant': 'Hybrid',
+    },
+    {
+        'name': 'Total Output Energy [kWh]',
+        'value_id': 'EnergyActiveLSumExport',
+        'start_address': 5004,
+        'value_type': 'U32',
+        'scale_factor': 1.0,
+        'variant': 'String',
+    },
+    {
+        'name': 'Total Running Time [h]',
+        'value_id': VALUE_ID_DEBUG,
+        'start_address': 5006,
+        'value_type': 'U32',
+        'scale_factor': 1.0,
+        'variant': 'String',
     },
     {
         'name': 'Inside Temperature [0.1 °C]',
@@ -107,6 +157,14 @@ sungrow_hybrid_inverter_base_values = [
         'start_address': 5008,
         'value_type': 'S16',
         'scale_factor': 0.1,
+    },
+    {
+        'name': 'Total Apparent Power [VA]',  # FIXME: not available for all device types
+        'value_id': 'PowerApparentLSumImExDiff',
+        'start_address': 5009,
+        'value_type': 'U32',
+        'scale_factor': 1.0,
+        'variant': 'String',
     },
     {
         'name': 'MPPT 1 Voltage [0.1 V]',
@@ -158,6 +216,38 @@ sungrow_hybrid_inverter_base_values = [
         'scale_factor': 1.0,
     },
     {
+        'name': 'Phase A Current [0.1 A]',  # FIXME: not available for all device types
+        'value_id': 'CurrentL1Export',
+        'start_address': 5022,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+        'variant': 'String',
+    },
+    {
+        'name': 'Phase B Current [0.1 A]',  # FIXME: not available for all device types
+        'value_id': 'CurrentL2Export',
+        'start_address': 5023,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+        'variant': 'String',
+    },
+    {
+        'name': 'Phase C Current [0.1 A]',  # FIXME: not available for all device types
+        'value_id': 'CurrentL3Export',
+        'start_address': 5024,
+        'value_type': 'U16',
+        'scale_factor': 0.1,
+        'variant': 'String',
+    },
+    {
+        'name': 'Total Active Power [W]',
+        'value_id': 'PowerActiveLSumExport',
+        'start_address': 5031,
+        'value_type': 'U32',
+        'scale_factor': 1.0,
+        'variant': 'String',
+    },
+    {
         'name': 'Reactive Power [var]',
         'value_id': 'PowerReactiveLSumIndCapDiff',
         'start_address': 5033,
@@ -172,11 +262,36 @@ sungrow_hybrid_inverter_base_values = [
         'scale_factor': 0.001,
     },
     {
+        'name': 'Nominal Reactive Power [0.1 kvar]',
+        'value_id': VALUE_ID_DEBUG,
+        'start_address': 5049,
+        'value_type': 'U16',
+        'scale_factor': 1.0,
+        'variant': 'String',
+    },
+    {
+        'name': 'Total Direct Energy Consumption [0.1 kWh]',
+        'value_id': VALUE_ID_DEBUG,
+        'start_address': 5103,
+        'value_type': 'U32',
+        'scale_factor': 0.1,
+        'variant': 'String',
+    },
+    {
+        'name': 'Total Output Energy [0.1 kWh]',
+        'value_id': VALUE_ID_DEBUG,
+        'start_address': 5144, # FIXME: use this instead of 5004, if available
+        'value_type': 'U32',
+        'scale_factor': 0.1,
+        'variant': 'String',
+    },
+    {
         'name': 'Total PV Generation [0.1 kWh]',
         'value_id': VALUE_ID_DEBUG,
         'start_address': 13003,
         'value_type': 'U32',
         'scale_factor': 0.1,
+        'variant': 'Hybrid',
     },
     {
         'name': 'Total Direct Energy Consumption [0.1 kWh]',
@@ -184,6 +299,7 @@ sungrow_hybrid_inverter_base_values = [
         'start_address': 13018,
         'value_type': 'U32',
         'scale_factor': 0.1,
+        'variant': 'Hybrid',
     },
     {
         'name': 'Total Active Power [W]',
@@ -191,26 +307,27 @@ sungrow_hybrid_inverter_base_values = [
         'start_address': 13034,
         'value_type': 'S32',
         'scale_factor': -1.0,
+        'variant': 'Hybrid',
     },
 ]
 
-sungrow_hybrid_inverter_phase_voltages = [
+sungrow_hybrid_string_inverter_phase_voltages = [
     {
-        'name': 'A-N Voltage [0.1 V]',
+        'name': 'A-N Voltage [0.1 V]',  # FIXME: not available for all string device types
         'value_id': 'VoltageL1N',
         'start_address': 5019,
         'value_type': 'U16',
         'scale_factor': 0.1,
     },
     {
-        'name': 'B-N Voltage [0.1 V]',
+        'name': 'B-N Voltage [0.1 V]',  # FIXME: not available for all string device types
         'value_id': 'VoltageL2N',
         'start_address': 5020,
         'value_type': 'U16',
         'scale_factor': 0.1,
     },
     {
-        'name': 'C-N Voltage [0.1 V]',
+        'name': 'C-N Voltage [0.1 V]',  # FIXME: not available for all string device types
         'value_id': 'VoltageL3N',
         'start_address': 5021,
         'value_type': 'U16',
@@ -218,23 +335,23 @@ sungrow_hybrid_inverter_phase_voltages = [
     },
 ]
 
-sungrow_hybrid_inverter_line_voltages = [
+sungrow_hybrid_string_inverter_line_voltages = [
     {
-        'name': 'A-B Voltage [0.1 V]',
+        'name': 'A-B Voltage [0.1 V]',  # FIXME: not available for all string device types
         'value_id': 'VoltageL1L2',
         'start_address': 5019,
         'value_type': 'U16',
         'scale_factor': 0.1,
     },
     {
-        'name': 'B-C Voltage [0.1 V]',
+        'name': 'B-C Voltage [0.1 V]',  # FIXME: not available for all string device types
         'value_id': 'VoltageL2L3',
         'start_address': 5020,
         'value_type': 'U16',
         'scale_factor': 0.1,
     },
     {
-        'name': 'C-A Voltage [0.1 V]',
+        'name': 'C-A Voltage [0.1 V]',  # FIXME: not available for all string device types
         'value_id': 'VoltageL3L1',
         'start_address': 5021,
         'value_type': 'U16',
@@ -249,6 +366,7 @@ sungrow_hybrid_inverter_phase_currents = [
         'start_address': 13031,
         'value_type': 'S16',
         'scale_factor': -0.1,  # FIXME: is the current always positive?
+        'variant': 'Hybrid',
     },
     {
         'name': 'Phase B Current [0.1 A]',
@@ -256,6 +374,7 @@ sungrow_hybrid_inverter_phase_currents = [
         'start_address': 13032,
         'value_type': 'S16',
         'scale_factor': -0.1,  # FIXME: is the current always positive?
+        'variant': 'Hybrid',
     },
     {
         'name': 'Phase C Current [0.1 A]',
@@ -263,24 +382,29 @@ sungrow_hybrid_inverter_phase_currents = [
         'start_address': 13033,
         'value_type': 'S16',
         'scale_factor': -0.1,  # FIXME: is the current always positive?
+        'variant': 'Hybrid',
     },
 ]
 
 specs = [
     {
-        'name': 'Sungrow Hybrid Inverter 1P2L',  # output type 1
-        'values': sungrow_hybrid_inverter_base_values + sungrow_hybrid_inverter_phase_voltages[:1] + sungrow_hybrid_inverter_phase_currents[:1],
+        'name': 'Sungrow {variant} Inverter 1P2L',  # output type 1
+        'variants': ['Hybrid', 'String'],
+        'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_phase_voltages[:1] + sungrow_hybrid_inverter_phase_currents[:1],
     },
     {
-        'name': 'Sungrow Hybrid Inverter 3P4L',  # output type 2
-        'values': sungrow_hybrid_inverter_base_values + sungrow_hybrid_inverter_phase_voltages + sungrow_hybrid_inverter_phase_currents,
+        'name': 'Sungrow {variant} Inverter 3P4L',  # output type 2
+        'variants': ['Hybrid', 'String'],
+        'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_phase_voltages + sungrow_hybrid_inverter_phase_currents,
     },
     {
-        'name': 'Sungrow Hybrid Inverter 3P3L',  # output type 3
-        'values': sungrow_hybrid_inverter_base_values + sungrow_hybrid_inverter_line_voltages + sungrow_hybrid_inverter_phase_currents,
+        'name': 'Sungrow {variant} Inverter 3P3L',  # output type 3
+        'variants': ['Hybrid', 'String'],
+        'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_line_voltages + sungrow_hybrid_inverter_phase_currents,
     },
     {
-        'name': 'Sungrow Hybrid Inverter Grid',
+        'name': 'Sungrow {variant} Inverter Grid',
+        'variants': ['Hybrid', 'String'],
         'values': [
             {
                 'name': 'Grid Frequency [0.1 Hz]',
@@ -290,11 +414,68 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Grid Frequency [0.01 Hz]',  # FIXME: use this instead of 5036, if available
+                'value_id': VALUE_ID_DEBUG,
+                'start_address': 5148,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
+                'variant': 'String',
+            },
+            {
+                'name': 'Meter Power [W]',  # FIXME: not available for all device types
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 5083,
+                'value_type': 'S32',
+                'scale_factor': -1.0,
+                'variant': 'String',
+            },
+            {
+                'name': 'Meter Phase A Power [W]',  # FIXME: not available for all device types
+                'value_id': 'PowerActiveL1ImExDiff',
+                'start_address': 5085,
+                'value_type': 'S32',
+                'scale_factor': -1.0,
+                'variant': 'String',
+            },
+            {
+                'name': 'Meter Phase B Power [W]',  # FIXME: not available for all device types
+                'value_id': 'PowerActiveL2ImExDiff',
+                'start_address': 5087,
+                'value_type': 'S32',
+                'scale_factor': -1.0,
+                'variant': 'String',
+            },
+            {
+                'name': 'Meter Phase C Power [W]',  # FIXME: not available for all device types
+                'value_id': 'PowerActiveL3ImExDiff',
+                'start_address': 5089,
+                'value_type': 'S32',
+                'scale_factor': -1.0,
+                'variant': 'String',
+            },
+            {
+                'name': 'Total Export Energy [0.1 kWh]',  # FIXME: not available for all device types
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 5095,
+                'value_type': 'U32',
+                'scale_factor': 0.1,
+                'variant': 'String',
+            },
+            {
+                'name': 'Total Import Energy [0.1 kWh]',  # FIXME: not available for all device types
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 5099,
+                'value_type': 'U32',
+                'scale_factor': 0.1,
+                'variant': 'String',
+            },
+            {
                 'name': 'Export Power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 13010,
                 'value_type': 'S32',
                 'scale_factor': -1.0,
+                'variant': 'Hybrid',
             },
             {
                 'name': 'Total Import Energy [0.1 kWh]',
@@ -302,6 +483,7 @@ specs = [
                 'start_address': 13037,
                 'value_type': 'U32',
                 'scale_factor': 0.1,
+                'variant': 'Hybrid',
             },
             {
                 'name': 'Total Export Energy [0.1 kWh]',
@@ -309,6 +491,7 @@ specs = [
                 'start_address': 13046,
                 'value_type': 'U32',
                 'scale_factor': 0.1,
+                'variant': 'Hybrid',
             },
         ],
     },
@@ -388,14 +571,24 @@ specs = [
         ],
     },
     {
-        'name': 'Sungrow Hybrid Inverter Load',
+        'name': 'Sungrow {variant} Inverter Load',
+        'variants': ['Hybrid', 'String'],
         'values': [
+            {
+                'name': 'Load Power [W]',  # FIXME: not available for all device types
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 5091,
+                'value_type': 'S32',
+                'scale_factor': 1.0,
+                'variant': 'String',
+            },
             {
                 'name': 'Load Power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 13008,
                 'value_type': 'S32',
                 'scale_factor': 1.0,
+                'variant': 'Hybrid',
             },
         ],
     },
@@ -468,35 +661,41 @@ specs = [
 spec_values = []
 
 for spec in specs:
-    value_specs = []
-    value_ids = []
-    value_index = []
-    current_index = 0
+    for variant_spec in spec.get('variants', [None]):
+        value_specs = []
+        value_ids = []
+        value_index = []
+        current_index = 0
 
-    for value in spec['values']:
-        value_specs.append(
-            '    {\n'
-            f'        "{value["name"]}",\n'
-            f'        {value["start_address"] if value["start_address"] != START_ADDRESS_VIRTUAL else "START_ADDRESS_VIRTUAL"},\n'
-            f'        MeterModbusTCP::ValueType::{value["value_type"]},\n'
-            f'        {value["scale_factor"]}f,\n'
-            '    },'
-        )
+        for value in spec['values']:
+            variant_value = value.get('variant')
 
-        if value["value_id"] == VALUE_ID_META:
-            value_index.append('    VALUE_INDEX_META,')
-        elif value["value_id"] == VALUE_ID_DEBUG:
-            value_index.append('    VALUE_INDEX_DEBUG,')
-        else:
-            value_ids.append(f'    MeterValueID::{value["value_id"]},')
-            value_index.append(f'    {current_index},')
-            current_index += 1
+            if variant_value != None and variant_value not in variant_spec:
+                continue
 
-    name = util.FlavoredName(spec["name"]).get()
+            value_specs.append(
+                '    {\n'
+                f'        "{value["name"]}",\n'
+                f'        {value["start_address"] if value["start_address"] != START_ADDRESS_VIRTUAL else "START_ADDRESS_VIRTUAL"},\n'
+                f'        MeterModbusTCP::ValueType::{value["value_type"]},\n'
+                f'        {value["scale_factor"]}f,\n'
+                '    },'
+            )
 
-    spec_values.append(f'static const MeterModbusTCP::ValueSpec {name.under}_specs[] = {{\n' + '\n'.join(value_specs) + '\n};')
-    spec_values.append(f'static const MeterValueID {name.under}_ids[] = {{\n' + '\n'.join(value_ids) + '\n};')
-    spec_values.append(f'static const uint32_t {name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
+            if value["value_id"] == VALUE_ID_META:
+                value_index.append('    VALUE_INDEX_META,')
+            elif value["value_id"] == VALUE_ID_DEBUG:
+                value_index.append('    VALUE_INDEX_DEBUG,')
+            else:
+                value_ids.append(f'    MeterValueID::{value["value_id"]},')
+                value_index.append(f'    {current_index},')
+                current_index += 1
+
+        name = util.FlavoredName(spec["name"].format(variant=variant_spec)).get()
+
+        spec_values.append(f'static const MeterModbusTCP::ValueSpec {name.under}_specs[] = {{\n' + '\n'.join(value_specs) + '\n};')
+        spec_values.append(f'static const MeterValueID {name.under}_ids[] = {{\n' + '\n'.join(value_ids) + '\n};')
+        spec_values.append(f'static const uint32_t {name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
 
 with open('meters_modbus_tcp_defs.inc', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
