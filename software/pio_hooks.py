@@ -386,7 +386,7 @@ def hyphenate(s, key):
         sys.exit(1)
 
     # Replace longest words first. This prevents replacing parts of longer words.
-    for word in sorted(re.split('\W+', s.replace("&shy;", "")), key=lambda x: len(x), reverse=True):
+    for word in sorted(re.split(r'\W+', s.replace("&shy;", "")), key=lambda x: len(x), reverse=True):
         for l, r in hyphenations:
             if word == l:
                 s = s.replace(l, r)
