@@ -41,7 +41,7 @@ static uint8_t tmp_read_buf[2] = {};
 void WarpEsp32I2c::pre_setup()
 {
     this->state = Config::Object({
-        {"temperature", Config::Int16(0)}
+        {"temperature", Config::Int(0, -8192, 12800)}
     });
 }
 
@@ -71,17 +71,10 @@ void WarpEsp32I2c::setup()
         if(ret != ESP_OK)
             return;
 
-        int temp = 0;
+        int temp = static_cast<int8_t>(tmp_read_buf[0]) << 4 | tmp_read_buf[1] >> 4; // Cast to int8_t for sign-extension.
+        temp = temp * 25 / 4; // equivalent to * 6.25 centicelsius per LSB
 
-        temp = ((tmp_read_buf[0] << 8) | tmp_read_buf[1]) >> 4;
-        // 12-bit to 16-bit two-complement
-        if(temp & (1 << 11)) {
-            temp = temp | 0xF000;
-        }
-
-        temp = temp * 625 / 100;
-
-        state.get("temperature")->updateInt(static_cast<int16_t>(temp));
+        state.get("temperature")->updateInt(temp);
     }, 1000, 1000);
 }
 
