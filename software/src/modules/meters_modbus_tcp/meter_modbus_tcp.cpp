@@ -336,7 +336,7 @@ void MeterModbusTCP::read_done_callback()
 
     switch (table->specs[read_index].value_type) {
     case ValueType::U16:
-#ifdef DEBUG_LOG_ALL_READS
+#ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %u",
                         get_table_name(table_id),
                         table->specs[read_index].name,
@@ -348,7 +348,7 @@ void MeterModbusTCP::read_done_callback()
         break;
 
     case ValueType::S16:
-#ifdef DEBUG_LOG_ALL_READS
+#ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %d",
                         get_table_name(table_id),
                         table->specs[read_index].name,
@@ -360,7 +360,7 @@ void MeterModbusTCP::read_done_callback()
         break;
 
     case ValueType::U32:
-#ifdef DEBUG_LOG_ALL_READS
+#ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %u (%u %u)",
                         get_table_name(table_id),
                         table->specs[read_index].name,
@@ -374,7 +374,7 @@ void MeterModbusTCP::read_done_callback()
         break;
 
     case ValueType::S32:
-#ifdef DEBUG_LOG_ALL_READS
+#ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %d (%u %u)",
                         get_table_name(table_id),
                         table->specs[read_index].name,
