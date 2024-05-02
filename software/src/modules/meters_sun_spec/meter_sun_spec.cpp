@@ -99,6 +99,7 @@ void MeterSunSpec::read_start(size_t model_start_address, size_t model_regcount)
     }
 
     generic_read_request.register_type = TAddress::RegType::HREG;
+    generic_read_request.start_address_offset = 0; // register address mode
     generic_read_request.start_address = model_start_address;
     generic_read_request.register_count = model_regcount;
 
@@ -165,6 +166,7 @@ void MeterSunSpec::scan_start()
     scan_model_counter = model_instance;
 
     generic_read_request.register_type = TAddress::RegType::HREG;
+    generic_read_request.start_address_offset = 0; // register address mode
     generic_read_request.start_address = scan_base_addresses[scan_base_address_index];
     generic_read_request.register_count = 2;
     generic_read_request.data[0] = buffer;

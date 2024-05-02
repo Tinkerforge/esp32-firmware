@@ -64,6 +64,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
     case MeterModbusTCPTableID::SungrowHybridInverter:
         generic_read_request.register_type = TAddress::RegType::IREG;
+        generic_read_request.start_address_offset = 1; // register number mode
         sungrow_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowHybridInverterVirtualMeterID>();
 
         switch (sungrow_hybrid_inverter_virtual_meter) {
@@ -97,6 +98,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
     case MeterModbusTCPTableID::SungrowStringInverter:
         generic_read_request.register_type = TAddress::RegType::IREG;
+        generic_read_request.start_address_offset = 1; // register number mode
         sungrow_string_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowStringInverterVirtualMeterID>();
 
         switch (sungrow_string_inverter_virtual_meter) {
@@ -126,6 +128,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
     case MeterModbusTCPTableID::SolarmaxMaxStorage:
         generic_read_request.register_type = TAddress::RegType::IREG;
+        generic_read_request.start_address_offset = 0; // register address mode
         solarmax_max_storage_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SolarmaxMaxStorageVirtualMeterID>();
 
         switch (solarmax_max_storage_virtual_meter) {
@@ -183,7 +186,7 @@ void MeterModbusTCP::connect_callback()
 
     if (is_sungrow_inverter_meter()) {
         if (sungrow_inverter_output_type < 0) {
-            generic_read_request.start_address = SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS - 1; // read output type
+            generic_read_request.start_address = SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS; // read output type
             generic_read_request.register_count = 1;
         }
     }
@@ -211,7 +214,7 @@ void MeterModbusTCP::prepare_read()
         read_index = (read_index + 1) % table->specs_length;
     }
 
-    generic_read_request.start_address = table->specs[read_index].start_address - 1;
+    generic_read_request.start_address = table->specs[read_index].start_address;
     generic_read_request.register_count = static_cast<uint8_t>(table->specs[read_index].value_type) % 10;
 }
 
@@ -243,7 +246,7 @@ void MeterModbusTCP::read_done_callback()
         read_allowed = true;
 
         if (is_sungrow_inverter_meter()
-         && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS - 1) {
+         && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS) {
             logger.printfln("Error reading %s / Output Type (%u): %s [%d]",
                             get_table_name(table_id),
                             SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS,
@@ -263,7 +266,7 @@ void MeterModbusTCP::read_done_callback()
     }
 
     if (is_sungrow_inverter_meter()
-     && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS - 1) {
+     && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS) {
         if (sungrow_inverter_output_type < 0) {
             switch (register_buffer[0]) {
             case 0:
@@ -391,16 +394,16 @@ void MeterModbusTCP::read_done_callback()
     value *= table->specs[read_index].scale_factor;
 
     if (is_sungrow_inverter_meter()) {
-        if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_1_VOLTAGE_ADDRESS - 1) {
+        if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_1_VOLTAGE_ADDRESS) {
             sungrow_inverter_mppt_1_voltage = value;
         }
-        else if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_1_CURRENT_ADDRESS - 1) {
+        else if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_1_CURRENT_ADDRESS) {
             sungrow_inverter_mppt_1_current = value;
         }
-        else if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_2_VOLTAGE_ADDRESS - 1) {
+        else if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_2_VOLTAGE_ADDRESS) {
             sungrow_inverter_mppt_2_voltage = value;
         }
-        else if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_2_CURRENT_ADDRESS - 1) {
+        else if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_2_CURRENT_ADDRESS) {
             sungrow_inverter_mppt_2_current = value;
 
             float current = sungrow_inverter_mppt_1_current + sungrow_inverter_mppt_2_current;
@@ -419,7 +422,7 @@ void MeterModbusTCP::read_done_callback()
         }
     }
     else if (is_sungrow_grid_meter()) {
-        if (generic_read_request.start_address == SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS - 1) {
+        if (generic_read_request.start_address == SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS) {
             if (value > 100) {
                 // according to the spec the grid frequency is given
                 // as 0.1 Hz, but some inverters report it as 0.01 Hz
@@ -428,15 +431,15 @@ void MeterModbusTCP::read_done_callback()
         }
     }
     else if (is_sungrow_battery_meter()) {
-        if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS - 1) {
+        if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS) {
             sungrow_hybrid_inverter_running_state = register_buffer[0];
         }
-        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS - 1) {
+        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS) {
             if ((sungrow_hybrid_inverter_running_state & (1 << 2)) != 0) {
                 value = -value;
             }
         }
-        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS - 1) {
+        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS) {
             if ((sungrow_hybrid_inverter_running_state & (1 << 2)) != 0) {
                 value = -value;
             }
