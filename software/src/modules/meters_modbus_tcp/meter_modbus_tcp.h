@@ -76,7 +76,7 @@ public:
 private:
     void connect_callback() override;
     void disconnect_callback() override;
-    void prepare_read();
+    bool prepare_read();
     bool is_sungrow_inverter_meter() const;
     bool is_sungrow_grid_meter() const;
     bool is_sungrow_battery_meter() const;
