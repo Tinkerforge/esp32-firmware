@@ -44,6 +44,10 @@ void MetersModbusTCP::pre_setup()
         {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SolarmaxMaxStorageVirtualMeterID::None))}
     })});
 
+    table_prototypes.push_back({MeterModbusTCPTableID::VictronEnergyColorControlGX, Config::Object({
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(VictronEnergyColorControlGXVirtualMeterID::None))}
+    })});
+
     Config table_union = Config::Union<MeterModbusTCPTableID>(
         *Config::Null(),
         MeterModbusTCPTableID::None,

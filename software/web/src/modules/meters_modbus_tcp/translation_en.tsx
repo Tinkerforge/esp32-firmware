@@ -21,6 +21,7 @@ let x = {
             "table_sungrow_hybrid_inverter": "Sungrow Hybrid Inverter (SH...)",
             "table_sungrow_string_inverter": "Sungrow String Inverter (SG...)",
             "table_solarmax_max_storage": "Solarmax Max.Storage",
+            "table_victron_energy_color_control_gx": "Victron Energy Color Control GX",
 
             "sungrow_hybrid_inverter_virtual_meter": "Virtual meter",
             "sungrow_hybrid_inverter_virtual_meter_select": "Select...",
@@ -39,7 +40,14 @@ let x = {
             "solarmax_max_storage_virtual_meter_select": "Select...",
             "solarmax_max_storage_virtual_meter_inverter": "Inverter",
             "solarmax_max_storage_virtual_meter_grid": "Grid",
-            "solarmax_max_storage_virtual_meter_battery": "Battery"
+            "solarmax_max_storage_virtual_meter_battery": "Battery",
+
+            "victron_energy_color_control_gx_virtual_meter": "Virtual meter",
+            "victron_energy_color_control_gx_virtual_meter_select": "Select...",
+            "victron_energy_color_control_gx_virtual_meter_inverter": "Inverter",
+            "victron_energy_color_control_gx_virtual_meter_grid": "Grid",
+            "victron_energy_color_control_gx_virtual_meter_battery": "Battery",
+            "victron_energy_color_control_gx_virtual_meter_load": "Load"
         },
         "script": {
         }

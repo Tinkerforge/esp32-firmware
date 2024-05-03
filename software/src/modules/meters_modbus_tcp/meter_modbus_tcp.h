@@ -80,6 +80,9 @@ private:
     bool is_sungrow_inverter_meter() const;
     bool is_sungrow_grid_meter() const;
     bool is_sungrow_battery_meter() const;
+    bool is_victron_energy_color_control_gx_inverter_meter() const;
+    bool is_victron_energy_color_control_gx_grid_meter() const;
+    bool is_victron_energy_color_control_gx_load_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -100,6 +103,17 @@ private:
     uint16_t sungrow_hybrid_inverter_running_state;
 
     SolarmaxMaxStorageVirtualMeterID solarmax_max_storage_virtual_meter;
+
+    VictronEnergyColorControlGXVirtualMeterID victron_energy_color_control_gx_virtual_meter;
+    float victron_energy_color_control_gx_ac_coupled_pv_on_output_l1_power;
+    float victron_energy_color_control_gx_ac_coupled_pv_on_output_l2_power;
+    float victron_energy_color_control_gx_ac_coupled_pv_on_output_l3_power;
+    float victron_energy_color_control_gx_grid_l1_power;
+    float victron_energy_color_control_gx_grid_l2_power;
+    float victron_energy_color_control_gx_grid_l3_power;
+    float victron_energy_color_control_gx_ac_consumption_l1_power;
+    float victron_energy_color_control_gx_ac_consumption_l2_power;
+    float victron_energy_color_control_gx_ac_consumption_l3_power;
 };
 
 #if defined(__GNUC__)

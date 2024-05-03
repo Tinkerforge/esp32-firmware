@@ -21,6 +21,7 @@ let x = {
             "table_sungrow_hybrid_inverter": "Sungrow Hybrid Wechselrichter (SH...)",
             "table_sungrow_string_inverter": "Sungrow String Wechselrichter (SG...)",
             "table_solarmax_max_storage": "Solarmax Max.Storage",
+            "table_victron_energy_color_control_gx": "Victron Energy Color Control GX",
 
             "sungrow_hybrid_inverter_virtual_meter": "Virtueller Zähler",
             "sungrow_hybrid_inverter_virtual_meter_select": "Auswählen...",
@@ -39,7 +40,14 @@ let x = {
             "solarmax_max_storage_virtual_meter_select": "Auswählen...",
             "solarmax_max_storage_virtual_meter_inverter": "Wechselrichter",
             "solarmax_max_storage_virtual_meter_grid": "Netzanschluss",
-            "solarmax_max_storage_virtual_meter_battery": "Speicher"
+            "solarmax_max_storage_virtual_meter_battery": "Speicher",
+
+            "victron_energy_color_control_gx_virtual_meter": "Virtueller Zähler",
+            "victron_energy_color_control_gx_virtual_meter_select": "Auswählen...",
+            "victron_energy_color_control_gx_virtual_meter_inverter": "Wechselrichter",
+            "victron_energy_color_control_gx_virtual_meter_grid": "Netzanschluss",
+            "victron_energy_color_control_gx_virtual_meter_battery": "Speicher",
+            "victron_energy_color_control_gx_virtual_meter_load": "Last"
         },
         "script": {
         }

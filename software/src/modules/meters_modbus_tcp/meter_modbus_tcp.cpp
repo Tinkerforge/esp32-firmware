@@ -40,6 +40,16 @@
 #define SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS                      13022u
 #define SUNGROW_STRING_INVERTER_TOTAL_ACTVE_POWER_ADDRESS                  5031u
 
+#define VICTRON_ENERGY_COLOR_CONTROL_GX_AC_COUPLED_PV_ON_OUTPUT_L1_ADDRESS 808u
+#define VICTRON_ENERGY_COLOR_CONTROL_GX_AC_COUPLED_PV_ON_OUTPUT_L2_ADDRESS 809u
+#define VICTRON_ENERGY_COLOR_CONTROL_GX_AC_COUPLED_PV_ON_OUTPUT_L3_ADDRESS 810u
+#define VICTRON_ENERGY_COLOR_CONTROL_GX_GRID_L1_ADDRESS                    820u
+#define VICTRON_ENERGY_COLOR_CONTROL_GX_GRID_L2_ADDRESS                    821u
+#define VICTRON_ENERGY_COLOR_CONTROL_GX_GRID_L3_ADDRESS                    822u
+#define VICTRON_ENERGY_COLOR_CONTROL_GX_AC_CONSUMPTION_L1_ADDRESS          817u
+#define VICTRON_ENERGY_COLOR_CONTROL_GX_AC_CONSUMPTION_L2_ADDRESS          818u
+#define VICTRON_ENERGY_COLOR_CONTROL_GX_AC_CONSUMPTION_L3_ADDRESS          819u
+
 MeterClassID MeterModbusTCP::get_class() const
 {
     return MeterClassID::ModbusTCP;
@@ -152,6 +162,39 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::VictronEnergyColorControlGX:
+        generic_read_request.register_type = TAddress::RegType::IREG;
+        generic_read_request.start_address_offset = 0; // register address mode
+        victron_energy_color_control_gx_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<VictronEnergyColorControlGXVirtualMeterID>();
+
+        switch (victron_energy_color_control_gx_virtual_meter) {
+        case VictronEnergyColorControlGXVirtualMeterID::None:
+            logger.printfln("No Solarmax Max Storage Virtual Meter selected");
+            return;
+
+        case VictronEnergyColorControlGXVirtualMeterID::Inverter:
+            table = &victron_energy_color_control_gx_inverter_table;
+            break;
+
+        case VictronEnergyColorControlGXVirtualMeterID::Grid:
+            table = &victron_energy_color_control_gx_grid_table;
+            break;
+
+        case VictronEnergyColorControlGXVirtualMeterID::Battery:
+            table = &victron_energy_color_control_gx_battery_table;
+            break;
+
+        case VictronEnergyColorControlGXVirtualMeterID::Load:
+            table = &victron_energy_color_control_gx_load_table;
+            break;
+
+        default:
+            logger.printfln("Unknown Victron Energy Color Control GX Virtual Meter: %u", static_cast<uint8_t>(victron_energy_color_control_gx_virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
@@ -243,6 +286,24 @@ bool MeterModbusTCP::is_sungrow_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::SungrowHybridInverter
         && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Battery;
+}
+
+bool MeterModbusTCP::is_victron_energy_color_control_gx_inverter_meter() const
+{
+    return table_id == MeterModbusTCPTableID::VictronEnergyColorControlGX
+        && victron_energy_color_control_gx_virtual_meter == VictronEnergyColorControlGXVirtualMeterID::Inverter;
+}
+
+bool MeterModbusTCP::is_victron_energy_color_control_gx_grid_meter() const
+{
+    return table_id == MeterModbusTCPTableID::VictronEnergyColorControlGX
+        && victron_energy_color_control_gx_virtual_meter == VictronEnergyColorControlGXVirtualMeterID::Grid;
+}
+
+bool MeterModbusTCP::is_victron_energy_color_control_gx_load_meter() const
+{
+    return table_id == MeterModbusTCPTableID::VictronEnergyColorControlGX
+        && victron_energy_color_control_gx_virtual_meter == VictronEnergyColorControlGXVirtualMeterID::Load;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -425,6 +486,57 @@ void MeterModbusTCP::read_done_callback()
             if ((sungrow_hybrid_inverter_running_state & (1 << 2)) != 0) {
                 value = -value;
             }
+        }
+    }
+    else if (is_victron_energy_color_control_gx_inverter_meter()) {
+        if (generic_read_request.start_address == VICTRON_ENERGY_COLOR_CONTROL_GX_AC_COUPLED_PV_ON_OUTPUT_L1_ADDRESS) {
+            victron_energy_color_control_gx_ac_coupled_pv_on_output_l1_power = value;
+        }
+        else if (generic_read_request.start_address == VICTRON_ENERGY_COLOR_CONTROL_GX_AC_COUPLED_PV_ON_OUTPUT_L2_ADDRESS) {
+            victron_energy_color_control_gx_ac_coupled_pv_on_output_l2_power = value;
+        }
+        else if (generic_read_request.start_address == VICTRON_ENERGY_COLOR_CONTROL_GX_AC_COUPLED_PV_ON_OUTPUT_L3_ADDRESS) {
+            victron_energy_color_control_gx_ac_coupled_pv_on_output_l3_power = value;
+
+            float power = victron_energy_color_control_gx_ac_coupled_pv_on_output_l1_power
+                        + victron_energy_color_control_gx_ac_coupled_pv_on_output_l2_power
+                        + victron_energy_color_control_gx_ac_coupled_pv_on_output_l3_power;
+
+            meters.update_value(slot, table->index[read_index + 1], -power);
+        }
+    }
+    else if (is_victron_energy_color_control_gx_grid_meter()) {
+        if (generic_read_request.start_address == VICTRON_ENERGY_COLOR_CONTROL_GX_GRID_L1_ADDRESS) {
+            victron_energy_color_control_gx_grid_l1_power = value;
+        }
+        else if (generic_read_request.start_address == VICTRON_ENERGY_COLOR_CONTROL_GX_GRID_L2_ADDRESS) {
+            victron_energy_color_control_gx_grid_l2_power = value;
+        }
+        else if (generic_read_request.start_address == VICTRON_ENERGY_COLOR_CONTROL_GX_GRID_L3_ADDRESS) {
+            victron_energy_color_control_gx_grid_l3_power = value;
+
+            float power = victron_energy_color_control_gx_grid_l1_power
+                        + victron_energy_color_control_gx_grid_l2_power
+                        + victron_energy_color_control_gx_grid_l3_power;
+
+            meters.update_value(slot, table->index[read_index + 1], power);
+        }
+    }
+    else if (is_victron_energy_color_control_gx_load_meter()) {
+        if (generic_read_request.start_address == VICTRON_ENERGY_COLOR_CONTROL_GX_AC_CONSUMPTION_L1_ADDRESS) {
+            victron_energy_color_control_gx_ac_consumption_l1_power = value;
+        }
+        else if (generic_read_request.start_address == VICTRON_ENERGY_COLOR_CONTROL_GX_AC_CONSUMPTION_L2_ADDRESS) {
+            victron_energy_color_control_gx_ac_consumption_l2_power = value;
+        }
+        else if (generic_read_request.start_address == VICTRON_ENERGY_COLOR_CONTROL_GX_AC_CONSUMPTION_L3_ADDRESS) {
+            victron_energy_color_control_gx_ac_consumption_l3_power = value;
+
+            float power = victron_energy_color_control_gx_ac_consumption_l1_power
+                        + victron_energy_color_control_gx_ac_consumption_l2_power
+                        + victron_energy_color_control_gx_ac_consumption_l3_power;
+
+            meters.update_value(slot, table->index[read_index + 1], power);
         }
     }
 
