@@ -14,40 +14,20 @@ let x = {
             "config_host_invalid": "Host ist ungültig",
             "config_port": "Port",
             "config_port_muted": "typischerweise 502",
-            "config_device_address": "Geräteadresse",
             "config_table": "Registertabelle",
             "config_table_select": "Auswählen...",
-
-            "table_sungrow_hybrid_inverter": "Sungrow Hybrid Wechselrichter (SH...)",
-            "table_sungrow_string_inverter": "Sungrow String Wechselrichter (SG...)",
-            "table_solarmax_max_storage": "Solarmax Max.Storage",
-            "table_victron_energy_color_control_gx": "Victron Energy Color Control GX",
-
-            "sungrow_hybrid_inverter_virtual_meter": "Virtueller Zähler",
-            "sungrow_hybrid_inverter_virtual_meter_select": "Auswählen...",
-            "sungrow_hybrid_inverter_virtual_meter_inverter": "Wechselrichter",
-            "sungrow_hybrid_inverter_virtual_meter_grid": "Netzanschluss",
-            "sungrow_hybrid_inverter_virtual_meter_battery": "Speicher",
-            "sungrow_hybrid_inverter_virtual_meter_load": "Last",
-
-            "sungrow_string_inverter_virtual_meter": "Virtueller Zähler",
-            "sungrow_string_inverter_virtual_meter_select": "Auswählen...",
-            "sungrow_string_inverter_virtual_meter_inverter": "Wechselrichter",
-            "sungrow_string_inverter_virtual_meter_grid": "Netzanschluss",
-            "sungrow_string_inverter_virtual_meter_load": "Last",
-
-            "solarmax_max_storage_virtual_meter": "Virtueller Zähler",
-            "solarmax_max_storage_virtual_meter_select": "Auswählen...",
-            "solarmax_max_storage_virtual_meter_inverter": "Wechselrichter",
-            "solarmax_max_storage_virtual_meter_grid": "Netzanschluss",
-            "solarmax_max_storage_virtual_meter_battery": "Speicher",
-
-            "victron_energy_color_control_gx_virtual_meter": "Virtueller Zähler",
-            "victron_energy_color_control_gx_virtual_meter_select": "Auswählen...",
-            "victron_energy_color_control_gx_virtual_meter_inverter": "Wechselrichter",
-            "victron_energy_color_control_gx_virtual_meter_grid": "Netzanschluss",
-            "victron_energy_color_control_gx_virtual_meter_battery": "Speicher",
-            "victron_energy_color_control_gx_virtual_meter_load": "Last"
+            "config_table_sungrow_hybrid_inverter": "Sungrow Hybrid Wechselrichter (SH...)",
+            "config_table_sungrow_string_inverter": "Sungrow String Wechselrichter (SG...)",
+            "config_table_solarmax_max_storage": "Solarmax Max.Storage",
+            "config_table_victron_energy_color_control_gx": "Victron Energy Color Control GX",
+            "config_virtual_meter": "Virtueller Zähler",
+            "config_virtual_meter_select": "Auswählen...",
+            "config_virtual_meter_inverter": "Wechselrichter",
+            "config_virtual_meter_grid": "Netzanschluss",
+            "config_virtual_meter_battery": "Speicher",
+            "config_virtual_meter_load": "Last",
+            "config_device_address": "Geräteadresse",
+            "config_device_address_muted": /*SFN*/(port: number) => "typischerweise " + port/*NF*/
         },
         "script": {
         }

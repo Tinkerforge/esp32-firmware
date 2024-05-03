@@ -33,19 +33,23 @@ void MetersModbusTCP::pre_setup()
     table_prototypes.push_back({MeterModbusTCPTableID::None, *Config::Null()});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SungrowHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowHybridInverterVirtualMeterID::None))}
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowHybridInverterVirtualMeterID::None))},
+        {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SungrowStringInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowStringInverterVirtualMeterID::None))}
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowStringInverterVirtualMeterID::None))},
+        {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SolarmaxMaxStorage, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SolarmaxMaxStorageVirtualMeterID::None))}
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SolarmaxMaxStorageVirtualMeterID::None))},
+        {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::VictronEnergyColorControlGX, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(VictronEnergyColorControlGXVirtualMeterID::None))}
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(VictronEnergyColorControlGXVirtualMeterID::None))},
+        {"device_address", Config::Uint(100, 1, 247)},
     })});
 
     Config table_union = Config::Union<MeterModbusTCPTableID>(
@@ -58,7 +62,6 @@ void MetersModbusTCP::pre_setup()
         {"display_name",   Config::Str("", 0, 32)},
         {"host",           Config::Str("", 0, 64)},
         {"port",           Config::Uint16(502)},
-        {"device_address", Config::Uint8(1)},
         {"table",          table_union},
     });
 

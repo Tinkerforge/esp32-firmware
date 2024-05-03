@@ -14,40 +14,20 @@ let x = {
             "config_host_invalid": "Host is invalid",
             "config_port": "Port",
             "config_port_muted": "typically 502",
-            "config_device_address": "Device address",
             "config_table": "Register table",
             "config_table_select": "Select...",
-
-            "table_sungrow_hybrid_inverter": "Sungrow Hybrid Inverter (SH...)",
-            "table_sungrow_string_inverter": "Sungrow String Inverter (SG...)",
-            "table_solarmax_max_storage": "Solarmax Max.Storage",
-            "table_victron_energy_color_control_gx": "Victron Energy Color Control GX",
-
-            "sungrow_hybrid_inverter_virtual_meter": "Virtual meter",
-            "sungrow_hybrid_inverter_virtual_meter_select": "Select...",
-            "sungrow_hybrid_inverter_virtual_meter_inverter": "Inverter",
-            "sungrow_hybrid_inverter_virtual_meter_grid": "Grid",
-            "sungrow_hybrid_inverter_virtual_meter_battery": "Battery",
-            "sungrow_hybrid_inverter_virtual_meter_load": "Load",
-
-            "sungrow_string_inverter_virtual_meter": "Virtual meter",
-            "sungrow_string_inverter_virtual_meter_select": "Select...",
-            "sungrow_string_inverter_virtual_meter_inverter": "Inverter",
-            "sungrow_string_inverter_virtual_meter_grid": "Grid",
-            "sungrow_string_inverter_virtual_meter_load": "Load",
-
-            "solarmax_max_storage_virtual_meter": "Virtual meter",
-            "solarmax_max_storage_virtual_meter_select": "Select...",
-            "solarmax_max_storage_virtual_meter_inverter": "Inverter",
-            "solarmax_max_storage_virtual_meter_grid": "Grid",
-            "solarmax_max_storage_virtual_meter_battery": "Battery",
-
-            "victron_energy_color_control_gx_virtual_meter": "Virtual meter",
-            "victron_energy_color_control_gx_virtual_meter_select": "Select...",
-            "victron_energy_color_control_gx_virtual_meter_inverter": "Inverter",
-            "victron_energy_color_control_gx_virtual_meter_grid": "Grid",
-            "victron_energy_color_control_gx_virtual_meter_battery": "Battery",
-            "victron_energy_color_control_gx_virtual_meter_load": "Load"
+            "config_table_sungrow_hybrid_inverter": "Sungrow Hybrid Inverter (SH...)",
+            "config_table_sungrow_string_inverter": "Sungrow String Inverter (SG...)",
+            "config_table_solarmax_max_storage": "Solarmax Max.Storage",
+            "config_table_victron_energy_color_control_gx": "Victron Energy Color Control GX",
+            "config_virtual_meter": "Virtual meter",
+            "config_virtual_meter_select": "Select...",
+            "config_virtual_meter_inverter": "Inverter",
+            "config_virtual_meter_grid": "Grid",
+            "config_virtual_meter_battery": "Battery",
+            "config_virtual_meter_load": "Load",
+            "config_device_address": "Device address",
+            "config_device_address_muted": /*SFN*/(port: number) => "typically " + port/*NF*/
         },
         "script": {
         }

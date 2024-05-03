@@ -41,6 +41,7 @@ type TableConfigSungrowHybridInverter = [
     MeterModbusTCPTableID.SungrowHybridInverter,
     {
         virtual_meter: number;
+        device_address: number;
     },
 ];
 
@@ -48,6 +49,7 @@ type TableConfigSungrowStringInverter = [
     MeterModbusTCPTableID.SungrowStringInverter,
     {
         virtual_meter: number;
+        device_address: number;
     },
 ];
 
@@ -55,6 +57,7 @@ type TableConfigSolarmaxMaxStorage = [
     MeterModbusTCPTableID.SolarmaxMaxStorage,
     {
         virtual_meter: number;
+        device_address: number;
     },
 ];
 
@@ -62,6 +65,7 @@ type TableConfigVictronEnergyColorControlGX = [
     MeterModbusTCPTableID.VictronEnergyColorControlGX,
     {
         virtual_meter: number;
+        device_address: number;
     },
 ];
 
@@ -77,7 +81,6 @@ export type ModbusTCPMetersConfig = [
         display_name: string;
         host: string;
         port: number;
-        device_address: number;
         table: TableConfig;
     },
 ];
@@ -85,16 +88,16 @@ export type ModbusTCPMetersConfig = [
 function new_table_config(table: MeterModbusTCPTableID): TableConfig {
     switch (table) {
         case MeterModbusTCPTableID.SungrowHybridInverter:
-            return [MeterModbusTCPTableID.SungrowHybridInverter, {virtual_meter: null}];
+            return [MeterModbusTCPTableID.SungrowHybridInverter, {virtual_meter: null, device_address: 1}];
 
         case MeterModbusTCPTableID.SungrowStringInverter:
-            return [MeterModbusTCPTableID.SungrowStringInverter, {virtual_meter: null}];
+            return [MeterModbusTCPTableID.SungrowStringInverter, {virtual_meter: null, device_address: 1}];
 
         case MeterModbusTCPTableID.SolarmaxMaxStorage:
-            return [MeterModbusTCPTableID.SolarmaxMaxStorage, {virtual_meter: null}];
+            return [MeterModbusTCPTableID.SolarmaxMaxStorage, {virtual_meter: null, device_address: 1}];
 
         case MeterModbusTCPTableID.VictronEnergyColorControlGX:
-            return [MeterModbusTCPTableID.VictronEnergyColorControlGX, {virtual_meter: null}];
+            return [MeterModbusTCPTableID.VictronEnergyColorControlGX, {virtual_meter: null, device_address: 100}];
 
         default:
             return [MeterModbusTCPTableID.None, {}];
@@ -105,17 +108,17 @@ export function init() {
     return {
         [MeterClassID.ModbusTCP]: {
             name: __("meters_modbus_tcp.content.meter_class"),
-            new_config: () => [MeterClassID.ModbusTCP, {display_name: "", host: "", port: 502, device_address: 1, table: null}] as MeterConfig,
+            new_config: () => [MeterClassID.ModbusTCP, {display_name: "", host: "", port: 502, table: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: ModbusTCPMetersConfig, on_config: (config: ModbusTCPMetersConfig) => void): ComponentChildren => {
                 let table_ids: [string, string][] = [
-                    [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_hybrid_inverter")],
-                    [MeterModbusTCPTableID.SungrowStringInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_string_inverter")],
-                    [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.table_solarmax_max_storage")],
-                    [MeterModbusTCPTableID.VictronEnergyColorControlGX.toString(), __("meters_modbus_tcp.content.table_victron_energy_color_control_gx")],
+                    [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.config_table_sungrow_hybrid_inverter")],
+                    [MeterModbusTCPTableID.SungrowStringInverter.toString(), __("meters_modbus_tcp.content.config_table_sungrow_string_inverter")],
+                    [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.config_table_solarmax_max_storage")],
+                    [MeterModbusTCPTableID.VictronEnergyColorControlGX.toString(), __("meters_modbus_tcp.content.config_table_victron_energy_color_control_gx")],
                 ];
 
-                return [
+                let edit_children = [
                     <FormRow label={__("meters_modbus_tcp.content.config_display_name")}>
                         <InputText
                             required
@@ -146,16 +149,6 @@ export function init() {
                                 on_config(util.get_updated_union(config, {port: v}));
                             }} />
                     </FormRow>,
-                    <FormRow label={__("meters_modbus_tcp.content.config_device_address")}>
-                        <InputNumber
-                            required
-                            min={1}
-                            max={247}
-                            value={config[1].device_address}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {device_address: v}));
-                            }} />
-                    </FormRow>,
                     <FormRow label={__("meters_modbus_tcp.content.config_table")}>
                         <InputSelect
                             required
@@ -166,81 +159,73 @@ export function init() {
                                 on_config(util.get_updated_union(config, {table: new_table_config(parseInt(v))}));
                             }} />
                     </FormRow>,
-
-                    <>{util.hasValue(config[1].table) && config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter ?
-                        <FormRow label={__("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter")}>
-                            <InputSelect
-                                required
-                                items={[
-                                    [SungrowHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_inverter")],
-                                    [SungrowHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_grid")],
-                                    [SungrowHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_battery")],
-                                    [SungrowHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_load")],
-                                ]}
-                                placeholder={__("meters_modbus_tcp.content.sungrow_hybrid_inverter_virtual_meter_select")}
-                                value={util.hasValue(config[1].table[1]) && util.hasValue(config[1].table[1].virtual_meter) ? config[1].table[1].virtual_meter.toString() : undefined}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
-                                }} />
-                        </FormRow>
-                        : undefined
-                    }
-
-                    {util.hasValue(config[1].table) && config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter ?
-                        <FormRow label={__("meters_modbus_tcp.content.sungrow_string_inverter_virtual_meter")}>
-                            <InputSelect
-                                required
-                                items={[
-                                    [SungrowStringInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.sungrow_string_inverter_virtual_meter_inverter")],
-                                    [SungrowStringInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.sungrow_string_inverter_virtual_meter_grid")],
-                                    [SungrowStringInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.sungrow_string_inverter_virtual_meter_load")],
-                                ]}
-                                placeholder={__("meters_modbus_tcp.content.sungrow_string_inverter_virtual_meter_select")}
-                                value={util.hasValue(config[1].table[1]) && util.hasValue(config[1].table[1].virtual_meter) ? config[1].table[1].virtual_meter.toString() : undefined}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
-                                }} />
-                        </FormRow>
-                        : undefined
-                    }
-
-                    {util.hasValue(config[1].table) && config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage ?
-                        <FormRow label={__("meters_modbus_tcp.content.solarmax_max_storage_virtual_meter")}>
-                            <InputSelect
-                                required
-                                items={[
-                                    [SolarmaxMaxStorageVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.solarmax_max_storage_virtual_meter_inverter")],
-                                    [SolarmaxMaxStorageVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.solarmax_max_storage_virtual_meter_grid")],
-                                    [SolarmaxMaxStorageVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.solarmax_max_storage_virtual_meter_battery")],
-                                ]}
-                                placeholder={__("meters_modbus_tcp.content.solarmax_max_storage_virtual_meter_select")}
-                                value={util.hasValue(config[1].table[1]) && util.hasValue(config[1].table[1].virtual_meter) ? config[1].table[1].virtual_meter.toString() : undefined}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
-                                }} />
-                        </FormRow>
-                        : undefined
-                    }
-
-                    {util.hasValue(config[1].table) && config[1].table[0] == MeterModbusTCPTableID.VictronEnergyColorControlGX ?
-                        <FormRow label={__("meters_modbus_tcp.content.victron_energy_color_control_gx_virtual_meter")}>
-                            <InputSelect
-                                required
-                                items={[
-                                    [VictronEnergyColorControlGXVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.victron_energy_color_control_gx_virtual_meter_inverter")],
-                                    [VictronEnergyColorControlGXVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.victron_energy_color_control_gx_virtual_meter_grid")],
-                                    [VictronEnergyColorControlGXVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.victron_energy_color_control_gx_virtual_meter_battery")],
-                                    [VictronEnergyColorControlGXVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.victron_energy_color_control_gx_virtual_meter_load")],
-                                ]}
-                                placeholder={__("meters_modbus_tcp.content.victron_energy_color_control_gx_virtual_meter_select")}
-                                value={util.hasValue(config[1].table[1]) && util.hasValue(config[1].table[1].virtual_meter) ? config[1].table[1].virtual_meter.toString() : undefined}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
-                                }} />
-                        </FormRow>
-                        : undefined
-                    }</>
                 ];
+
+                if (util.hasValue(config[1].table)
+                 && (config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage
+                  || config[1].table[0] == MeterModbusTCPTableID.VictronEnergyColorControlGX)) {
+                    let items: [string, string][] = [];
+                    let device_address_default: number = 1;
+
+                    if (config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter) {
+                        items = [
+                            [SungrowHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
+                            [SungrowHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
+                            [SungrowHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.config_virtual_meter_battery")],
+                            [SungrowHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.config_virtual_meter_load")],
+                        ];
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter) {
+                        items = [
+                            [SungrowStringInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
+                            [SungrowStringInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
+                            [SungrowStringInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.config_virtual_meter_load")],
+                        ];
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage) {
+                        items = [
+                            [SolarmaxMaxStorageVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
+                            [SolarmaxMaxStorageVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
+                            [SolarmaxMaxStorageVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.config_virtual_meter_battery")],
+                        ];
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.VictronEnergyColorControlGX) {
+                        items = [
+                            [VictronEnergyColorControlGXVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
+                            [VictronEnergyColorControlGXVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
+                            [VictronEnergyColorControlGXVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.config_virtual_meter_battery")],
+                            [VictronEnergyColorControlGXVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.config_virtual_meter_load")],
+                        ];
+
+                        device_address_default = 100;
+                    }
+
+                    edit_children.push(
+                        <FormRow label={__("meters_modbus_tcp.content.config_virtual_meter")}>
+                            <InputSelect
+                                required
+                                items={items}
+                                placeholder={__("meters_modbus_tcp.content.config_virtual_meter_select")}
+                                value={util.hasValue(config[1].table[1]) && util.hasValue(config[1].table[1].virtual_meter) ? config[1].table[1].virtual_meter.toString() : undefined}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
+                                }} />
+                        </FormRow>,
+                        <FormRow label={__("meters_modbus_tcp.content.config_device_address")} label_muted={__("meters_modbus_tcp.content.config_device_address_muted")(device_address_default)}>
+                            <InputNumber
+                                required
+                                min={1}
+                                max={247}
+                                value={config[1].table[1].device_address}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
+                                }} />
+                        </FormRow>);
+                }
+
+                return edit_children;
             },
         },
     };
