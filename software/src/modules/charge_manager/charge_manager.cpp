@@ -86,7 +86,7 @@ void ChargeManager::pre_setup()
         {"enable_charge_manager", Config::Bool(false)},
         {"enable_watchdog", Config::Bool(false)},
         {"default_available_current", Config::Uint32(0)},
-        {"maximum_available_current", Config::Uint32(0xFFFFFFFF)},
+        {"maximum_available_current", Config::Uint(0, 0, 1000000)},
         {"minimum_current_auto", Config::Bool(true)},
         {"minimum_current", Config::Uint(6000, 6000, 32000)},
         {"minimum_current_1p", Config::Uint(6000, 6000, 32000)},
@@ -116,10 +116,6 @@ void ChargeManager::pre_setup()
 #else
         uint32_t default_available_current = conf.get("default_available_current")->asUint();
         uint32_t maximum_available_current = conf.get("maximum_available_current")->asUint();
-
-        if (maximum_available_current == 0xFFFFFFFF) {
-            conf.get("maximum_available_current")->updateUint(default_available_current);
-        }
 
         if (default_available_current > maximum_available_current)
             return "default_available_current can not be greater than maximum_available_current";
@@ -381,7 +377,6 @@ int idx_array[MAX_CONTROLLED_CHARGERS] = {0};
 void ChargeManager::setup()
 {
     if (!api.restorePersistentConfig("charge_manager/config", &config)) {
-        config.get("maximum_available_current")->updateUint(0);
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
         apply_energy_manager_config(config);
 #endif
