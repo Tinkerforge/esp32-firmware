@@ -27,7 +27,7 @@ interface KeyObject {
     connection_no: number,
     web_address: string,
     web_private: string,
-    web_private_iv: string,
+    web_private_nonce: string,
 }
 
 export interface register {
