@@ -93,17 +93,17 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             const web_address = "10.123." + i + ".3";
             const port = 51825 + i;
 
-            const iv = new Uint8Array(16);
-            crypto.getRandomValues(iv);
-            const iv_blob = new Blob([iv]);
-            const iv_string = await util.blobToBase64(iv_blob);
+            const nonce = new Uint8Array(16);
+            crypto.getRandomValues(nonce);
+            const nonce_blob = new Blob([nonce]);
+            const nonce_string = await util.blobToBase64(nonce_blob);
 
             keys.push({
                 charger_address: charger_address,
                 web_address: web_address,
                 charger_public: charger_keypair.publicKey,
                 web_private: web_keypair.privateKey,
-                web_private_iv: iv_string.replace("data:application/octet-stream;base64,", ""),
+                web_private_nonce: nonce_string.replace("data:application/octet-stream;base64,", ""),
                 connection_no: i
             });
 
