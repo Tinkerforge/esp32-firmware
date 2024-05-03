@@ -42,25 +42,25 @@ MeterClassID MetersAPI::get_class() const
     return MeterClassID::API;
 }
 
-IMeter * MetersAPI::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
+IMeter *MetersAPI::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
 {
     return new MeterAPI(slot);
 }
 
 [[gnu::const]]
-const Config * MetersAPI::get_config_prototype()
+const Config *MetersAPI::get_config_prototype()
 {
     return &config_prototype;
 }
 
 [[gnu::const]]
-const Config * MetersAPI::get_state_prototype()
+const Config *MetersAPI::get_state_prototype()
 {
     return Config::Null();
 }
 
 [[gnu::const]]
-const Config * MetersAPI::get_errors_prototype()
+const Config *MetersAPI::get_errors_prototype()
 {
     return Config::Null();
 }

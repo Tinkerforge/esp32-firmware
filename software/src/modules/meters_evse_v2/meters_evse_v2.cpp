@@ -51,7 +51,7 @@ MeterClassID MetersEVSEV2::get_class() const
     return MeterClassID::EVSEV2;
 }
 
-IMeter * MetersEVSEV2::new_meter(uint32_t slot, Config *state, Config * errors)
+IMeter *MetersEVSEV2::new_meter(uint32_t slot, Config *state, Config * errors)
 {
     if (meter_instance) {
         logger.printfln("Cannot create more than one meter of class EVSEV2.");
@@ -62,18 +62,18 @@ IMeter * MetersEVSEV2::new_meter(uint32_t slot, Config *state, Config * errors)
 }
 
 [[gnu::const]]
-const Config * MetersEVSEV2::get_config_prototype()
+const Config *MetersEVSEV2::get_config_prototype()
 {
     return &config_prototype;
 }
 
 [[gnu::const]]
-const Config * MetersEVSEV2::get_state_prototype()
+const Config *MetersEVSEV2::get_state_prototype()
 {
     return &state_prototype;
 }
 
-const Config * MetersEVSEV2::get_errors_prototype()
+const Config *MetersEVSEV2::get_errors_prototype()
 {
     return &errors_prototype;
 }

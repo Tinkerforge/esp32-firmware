@@ -668,19 +668,19 @@ IMeter *MetersSunSpec::new_meter(uint32_t slot, Config *state, Config *errors)
 }
 
 [[gnu::const]]
-const Config * MetersSunSpec::get_config_prototype()
+const Config *MetersSunSpec::get_config_prototype()
 {
     return &config_prototype;
 }
 
 [[gnu::const]]
-const Config * MetersSunSpec::get_state_prototype()
+const Config *MetersSunSpec::get_state_prototype()
 {
     return Config::Null();
 }
 
 [[gnu::const]]
-const Config * MetersSunSpec::get_errors_prototype()
+const Config *MetersSunSpec::get_errors_prototype()
 {
     return Config::Null();
 }

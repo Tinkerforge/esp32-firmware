@@ -840,13 +840,13 @@ String Meters::get_path(uint32_t slot, Meters::PathType path_type)
 }
 
 [[gnu::const]]
-const Config * Meters::get_config_bool_false_prototype() const
+const Config *Meters::get_config_bool_false_prototype() const
 {
     return &config_bool_false_prototype;
 }
 
 [[gnu::const]]
-const Config * Meters::get_config_float_nan_prototype()
+const Config *Meters::get_config_float_nan_prototype()
 {
     if (config_float_nan_prototype.is_null()) {
         config_float_nan_prototype = Config::Float(NAN);
@@ -855,7 +855,7 @@ const Config * Meters::get_config_float_nan_prototype()
 }
 
 [[gnu::const]]
-const Config * Meters::get_config_uint_max_prototype()
+const Config *Meters::get_config_uint_max_prototype()
 {
     if (config_uint_max_prototype.is_null()) {
         config_uint_max_prototype = Config::Uint32(UINT32_MAX);

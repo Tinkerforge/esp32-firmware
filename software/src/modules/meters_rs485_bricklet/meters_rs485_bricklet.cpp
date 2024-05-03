@@ -161,19 +161,19 @@ IMeter *MetersRS485Bricklet::new_meter(uint32_t slot, Config *state, Config *err
 }
 
 [[gnu::const]]
-const Config * MetersRS485Bricklet::get_config_prototype()
+const Config *MetersRS485Bricklet::get_config_prototype()
 {
     return &config_prototype;
 }
 
 [[gnu::const]]
-const Config * MetersRS485Bricklet::get_state_prototype()
+const Config *MetersRS485Bricklet::get_state_prototype()
 {
     return &state_prototype;
 }
 
 [[gnu::const]]
-const Config * MetersRS485Bricklet::get_errors_prototype()
+const Config *MetersRS485Bricklet::get_errors_prototype()
 {
     return &errors_prototype;
 }
