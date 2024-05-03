@@ -26,7 +26,8 @@ import { MeterModbusTCPTableID,
          SungrowHybridInverterVirtualMeterID,
          SungrowStringInverterVirtualMeterID,
          SolarmaxMaxStorageVirtualMeterID,
-         VictronEnergyColorControlGXVirtualMeterID } from "./meters_modbus_tcp_defs";
+         VictronEnergyColorControlGXVirtualMeterID,
+         DeyeHybridInverterVirtualMeterID } from "./meters_modbus_tcp_defs";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
@@ -69,11 +70,20 @@ type TableConfigVictronEnergyColorControlGX = [
     },
 ];
 
+type TableConfigDeyeHybridInverter = [
+    MeterModbusTCPTableID.DeyeHybridInverter,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigSungrowHybridInverter |
                    TableConfigSungrowStringInverter |
                    TableConfigSolarmaxMaxStorage |
-                   TableConfigVictronEnergyColorControlGX;
+                   TableConfigVictronEnergyColorControlGX |
+                   TableConfigDeyeHybridInverter;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -99,6 +109,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
         case MeterModbusTCPTableID.VictronEnergyColorControlGX:
             return [MeterModbusTCPTableID.VictronEnergyColorControlGX, {virtual_meter: null, device_address: 100}];
 
+        case MeterModbusTCPTableID.DeyeHybridInverter:
+            return [MeterModbusTCPTableID.DeyeHybridInverter, {virtual_meter: null, device_address: 1}];
+
         default:
             return [MeterModbusTCPTableID.None, {}];
     }
@@ -116,6 +129,7 @@ export function init() {
                     [MeterModbusTCPTableID.SungrowStringInverter.toString(), __("meters_modbus_tcp.content.config_table_sungrow_string_inverter")],
                     [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.config_table_solarmax_max_storage")],
                     [MeterModbusTCPTableID.VictronEnergyColorControlGX.toString(), __("meters_modbus_tcp.content.config_table_victron_energy_color_control_gx")],
+                    [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.config_table_deye_hybrid_inverter")],
                 ];
 
                 let edit_children = [
@@ -165,7 +179,8 @@ export function init() {
                  && (config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage
-                  || config[1].table[0] == MeterModbusTCPTableID.VictronEnergyColorControlGX)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.VictronEnergyColorControlGX
+                  || config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter)) {
                     let items: [string, string][] = [];
                     let device_address_default: number = 1;
 
@@ -200,6 +215,14 @@ export function init() {
                         ];
 
                         device_address_default = 100;
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter) {
+                        items = [
+                            [DeyeHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
+                            [DeyeHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
+                            [DeyeHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.config_virtual_meter_battery")],
+                            [DeyeHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.config_virtual_meter_load")],
+                        ];
                     }
 
                     edit_children.push(

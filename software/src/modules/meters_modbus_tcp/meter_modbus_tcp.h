@@ -97,13 +97,16 @@ private:
 
     uint16_t register_buffer[2];
 
+    // Sungrow
     SungrowHybridInverterVirtualMeterID sungrow_hybrid_inverter_virtual_meter;
     SungrowStringInverterVirtualMeterID sungrow_string_inverter_virtual_meter;
     int sungrow_inverter_output_type = -1;
     uint16_t sungrow_hybrid_inverter_running_state;
 
+    // Solarmax
     SolarmaxMaxStorageVirtualMeterID solarmax_max_storage_virtual_meter;
 
+    // Victron Energy
     VictronEnergyColorControlGXVirtualMeterID victron_energy_color_control_gx_virtual_meter;
     float victron_energy_color_control_gx_ac_coupled_pv_on_output_l1_power;
     float victron_energy_color_control_gx_ac_coupled_pv_on_output_l2_power;
@@ -114,6 +117,9 @@ private:
     float victron_energy_color_control_gx_ac_consumption_l1_power;
     float victron_energy_color_control_gx_ac_consumption_l2_power;
     float victron_energy_color_control_gx_ac_consumption_l3_power;
+
+    // Deye
+    DeyeHybridInverterVirtualMeterID deye_hybrid_inverter_virtual_meter;
 };
 
 #if defined(__GNUC__)
