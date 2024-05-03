@@ -93,12 +93,12 @@ const Config *MetersModbusTCP::get_config_prototype()
 
 const Config *MetersModbusTCP::get_state_prototype()
 {
-    return Config::Null();;
+    return Config::Null();
 }
 
 const Config *MetersModbusTCP::get_errors_prototype()
 {
-    return Config::Null();;
+    return Config::Null();
 }
 
 ModbusTCP *MetersModbusTCP::get_modbus_tcp_handle()
