@@ -117,8 +117,6 @@ void RemoteAccess::pre_setup() {
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
         {"password", Config::Str("", 0, 32)},
-        {"username", Config::Str("", 0, 64)},
-        {"login_key", Config::Str("", 0, 64)},
         {"relay_host", Config::Str("fernzugriff.warp-charger.com", 0, 64)},
         {"relay_host_port", Config::Uint16(443)},
         {"self_signed_cert_id", Config::Int8(-1)}
@@ -219,6 +217,8 @@ void RemoteAccess::pre_setup() {
 
     register_config = ConfigRoot {
         Config::Object({
+            {"email", Config::Str("", 0, 64)},
+            {"login_key", Config::Str("", 0, 64)},
             {"remote_host", Config::Str("", 0, 64)},
             {"remote_port", Config::Uint16(0)},
             {"charger_pub", Config::Str("", 0, 44)},
@@ -268,7 +268,6 @@ static std::unique_ptr<char []> decode_bas64(const CoolString &input, size_t buf
 
 void RemoteAccess::register_urls() {
     api.addPersistentConfig("remote_access/config", &config, {
-        "login_key",
         "password"
     });
     api.addPersistentConfig("remote_access/management_connection", &management_connection, {
@@ -531,12 +530,12 @@ void RemoteAccess::login() {
     login_url += "/api/auth/login";
 
     size_t bytes_written;
-    std::unique_ptr<char[]> login_key = decode_bas64(config.get("login_key")->asString(), 24, &bytes_written);
+    std::unique_ptr<char[]> login_key = decode_bas64(register_config.get("login_key")->asString(), 24, &bytes_written);
     std::unique_ptr<char[]> json = heap_alloc_array<char>(250);
 
     TFJsonSerializer serializer = TFJsonSerializer(json.get(), 250);
     serializer.addObject();
-    serializer.addMemberString("username", config.get("username")->asEphemeralCStr());
+    serializer.addMemberString("email", register_config.get("email")->asEphemeralCStr());
     serializer.addMemberArray("login_key");
     for (int i = 0; i < 24; i++) {
         serializer.addNumber(login_key.get()[i]);

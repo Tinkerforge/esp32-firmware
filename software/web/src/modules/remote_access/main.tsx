@@ -41,6 +41,8 @@ export function RemoteAccessNavbar() {
 }
 
 interface RemoteAccessState {
+    email: string,
+    login_key: string,
     password: string
 }
 
@@ -51,12 +53,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             __("remote_access.script.reboot_content_changed"));
     }
 
-    async get_salt_for_user(username: string) {
-        const resp = await fetch(`https://${this.state.relay_host}:${this.state.relay_host_port}/api/auth/get_login_salt?username=${username}`, {
+    async get_salt_for_user(email: string) {
+        const resp = await fetch(`https://${this.state.relay_host}:${this.state.relay_host_port}/api/auth/get_login_salt?email=${email}`, {
             method: "GET"
         });
         if (resp.status !== 200) {
-            throw `Failed to get login_salt for user ${username}: ${await resp.text()}`;
+            throw `Failed to get login_salt for user ${email}: ${await resp.text()}`;
         }
         const json = await resp.text();
         const data = JSON.parse(json);
@@ -146,6 +148,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         const secret_iv_string = await util.blobToBase64(secret_iv_blob);
 
         const registration_data = {
+            email: this.state.email,
+            login_key: this.state.login_key,
             charger_pub: mg_charger_keypair.publicKey,
             id: charger_id,
             name: charger_name,
@@ -178,7 +182,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     async login(): Promise<boolean> {
-        const salt = await this.get_salt_for_user(this.state.username);
+        const salt = await this.get_salt_for_user(this.state.email);
         const login_hash = await hash({
             pass: this.state.password,
             salt: salt,
@@ -191,7 +195,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         const login_key = login_hash.hash;
 
         const login_schema = {
-            username: this.state.username,
+            email: this.state.email,
             login_key: [].slice.call(login_key),
         };
 
@@ -217,7 +221,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
-        cfg.login_key = this.state.login_key;
         const info = await this.registerCharger(cfg);
         cfg.password = info.password;
 
@@ -259,12 +262,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                         this.setState({enable: !this.state.enable});
                                     }} />
                         </FormRow>
-                        <FormRow label={__("remote_access.content.username")}>
-                            <InputText value={this.state.username}
+                        <FormRow label={__("remote_access.content.email")}>
+                            <InputText value={this.state.email}
                                        required
                                        maxLength={64}
                                        onValue={(v) => {
-                                            this.setState({username: v});
+                                            this.setState({email: v});
                                        }} />
                         </FormRow>
                         <FormRow label={__("remote_access.content.password")}>
