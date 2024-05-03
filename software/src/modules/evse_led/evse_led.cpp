@@ -31,9 +31,9 @@ void EvseLed::pre_setup()
     led = Config::Object({
         {"indication", Config::Int(-1, -1, Blink::ErrorEnd)},
         {"duration", Config::Uint16(0)},
-        {"h", Config::Uint(0, 0, 360)},
-        {"s", Config::Uint8(0)},
-        {"v", Config::Uint8(0)},
+        {"color_h", Config::Uint(0, 0, 360)},
+        {"color_s", Config::Uint8(0)},
+        {"color_v", Config::Uint8(0)},
     });
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -65,7 +65,12 @@ void EvseLed::register_urls()
 
     // Has to be named this way, because evse/indicator_led is the corresponding read API.
     api.addCommand("evse/indicator_led_update", &led, {}, [this](){
-        this->set_api(led.get("indication")->asEnum<EvseLed::Blink>(), led.get("duration")->asUint(), led.get("h")->asUint(), led.get("s")->asUint(), led.get("v")->asUint());
+        this->set_api(
+            led.get("indication")->asEnum<EvseLed::Blink>(),
+            led.get("duration")->asUint(),
+            led.get("color_h")->asUint(),
+            led.get("color_s")->asUint(),
+            led.get("color_v")->asUint());
     }, true);
 }
 
