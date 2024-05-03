@@ -33,15 +33,12 @@
 
 //#define DEBUG_LOG_ALL_VALUES
 
-#define SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS            5002u
-#define SUNGROW_INVERTER_MPPT_1_VOLTAGE_ADDRESS         5011u
-#define SUNGROW_INVERTER_MPPT_1_CURRENT_ADDRESS         5012u
-#define SUNGROW_INVERTER_MPPT_2_VOLTAGE_ADDRESS         5013u
-#define SUNGROW_INVERTER_MPPT_2_CURRENT_ADDRESS         5014u
-#define SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS         5036u
-#define SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS   13001u
-#define SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS 13021u
-#define SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS   13022u
+#define SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS                               5002u
+#define SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS                            5036u
+#define SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS                      13001u
+#define SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS                    13021u
+#define SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS                      13022u
+#define SUNGROW_STRING_INVERTER_TOTAL_ACTVE_POWER_ADDRESS                  5031u
 
 MeterClassID MeterModbusTCP::get_class() const
 {
@@ -401,41 +398,18 @@ void MeterModbusTCP::read_done_callback()
 
     value *= table->specs[read_index].scale_factor;
 
-    if (is_sungrow_inverter_meter()) {
-        if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_1_VOLTAGE_ADDRESS) {
-            sungrow_inverter_mppt_1_voltage = value;
-        }
-        else if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_1_CURRENT_ADDRESS) {
-            sungrow_inverter_mppt_1_current = value;
-        }
-        else if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_2_VOLTAGE_ADDRESS) {
-            sungrow_inverter_mppt_2_voltage = value;
-        }
-        else if (generic_read_request.start_address == SUNGROW_INVERTER_MPPT_2_CURRENT_ADDRESS) {
-            sungrow_inverter_mppt_2_current = value;
-
-            float current = sungrow_inverter_mppt_1_current + sungrow_inverter_mppt_2_current;
-            float voltage;
-
-            if (current > 0.0f) {
-                voltage = (sungrow_inverter_mppt_1_voltage * sungrow_inverter_mppt_1_current) / current
-                        + (sungrow_inverter_mppt_2_voltage * sungrow_inverter_mppt_2_current) / current;
-            }
-            else {
-                voltage = (sungrow_inverter_mppt_1_voltage + sungrow_inverter_mppt_2_voltage) / 2.0f;
-            }
-
-            meters.update_value(slot, table->index[read_index + 1], voltage);
-            meters.update_value(slot, table->index[read_index + 2], current);
-        }
-    }
-    else if (is_sungrow_grid_meter()) {
+    if (is_sungrow_grid_meter()) {
         if (generic_read_request.start_address == SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS) {
             if (value > 100) {
                 // according to the spec the grid frequency is given
                 // as 0.1 Hz, but some inverters report it as 0.01 Hz
                 value /= 10;
             }
+        }
+    }
+    else if (is_sungrow_inverter_meter()) {
+        if (generic_read_request.start_address == SUNGROW_STRING_INVERTER_TOTAL_ACTVE_POWER_ADDRESS) {
+            meters.update_value(slot, table->index[read_index + 1], -value);
         }
     }
     else if (is_sungrow_battery_meter()) {

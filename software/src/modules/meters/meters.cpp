@@ -764,18 +764,30 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         values.add();
     }
 
-    uint32_t index_power_real    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiff);
-    uint32_t index_power_virtual = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiffVirtual);
+    uint32_t index_power_ac            = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiff);
+    uint32_t index_power_dc            = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerDCImExDiff);
+    uint32_t index_power_dc_battery    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerDCChaDisDiff);
+    uint32_t index_power_real          = std::min({index_power_ac, index_power_dc, index_power_dc_battery});
+    uint32_t index_power_virtual       = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiffVirtual);
+    uint32_t index_energy_ac_import    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImport);
+    uint32_t index_energy_ac_imexsum   = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImExSum);
+    uint32_t index_energy_ac_export    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumExport);
+    uint32_t index_energy_dc_import    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCImport);
+    uint32_t index_energy_dc_imexsum   = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCImExSum);
+    uint32_t index_energy_dc_export    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCExport);
+    uint32_t index_energy_dc_charge    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCCharge);
+    uint32_t index_energy_dc_chadissum = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCChaDisSum);
+    uint32_t index_energy_dc_discharge = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCDischarge);
 
     meter_slot.index_cache_single_values[INDEX_CACHE_POWER_REAL]     = index_power_real;
     meter_slot.index_cache_single_values[INDEX_CACHE_POWER_VIRTUAL]  = index_power_virtual != UINT32_MAX ? index_power_virtual : index_power_real;
-    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMPORT]  = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImport);
-    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMEXSUM] = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImExSum);
-    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_EXPORT]  = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumExport);
-    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_N  ]         = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentNImport);
-    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L1 ]         = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL1Import);
-    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L2 ]         = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL2Import);
-    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L3 ]         = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL3Import);
+    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMPORT]  = std::min({index_energy_ac_import,  index_energy_dc_import,  index_energy_dc_charge});
+    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMEXSUM] = std::min({index_energy_ac_imexsum, index_energy_dc_imexsum, index_energy_dc_chadissum});
+    meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_EXPORT]  = std::min({index_energy_ac_export,  index_energy_dc_export,  index_energy_dc_discharge});
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_N]           = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentNImport);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L1]          = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL1Import);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L2]          = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL2Import);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L3]          = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL3Import);
 
     meter_slot.values_declared = true;
     logger.printfln("Meter in slot %u declared %u values.", slot, value_id_count);

@@ -54,3 +54,8 @@ Ambient,Ambient,Umgebung
 Cabinet,Cabinet,Gehäuse
 Heat Sink,Heat sink,Kühlkörper
 Transformer,Transformer,Transformator
+Any,Any,Beliebig
+Charge,Charge,Laden
+Discharge,Discharge,Entladen
+Cha Dis Sum,Charge plus discharge,Laden plus Entladen
+Cha Dis Diff,Charge minus discharge,Laden minus Entladen

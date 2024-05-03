@@ -78,6 +78,24 @@ interface MetersState {
     extraShow: boolean[/*meter_slot*/];
 }
 
+export function get_meter_power_index(value_ids: Readonly<number[]>) {
+    let idx = -1;
+
+    if (value_ids && value_ids.length > 0) {
+        idx = value_ids.indexOf(MeterValueID.PowerActiveLSumImExDiff);
+
+        if (idx < 0) {
+            idx = value_ids.indexOf(MeterValueID.PowerDCImExDiff);
+
+            if (idx < 0) {
+                idx = value_ids.indexOf(MeterValueID.PowerDCChaDisDiff);
+            }
+        }
+    }
+
+    return idx;
+}
+
 function calculate_live_data(offset: number, samples_per_second: number, samples: number[/*meter_slot*/][]): CachedData {
     let timestamp_slot_count: number = 0;
 
@@ -639,34 +657,95 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                             rows={active_meter_slots.map((meter_slot_str) => {
                                 let meter_slot = parseInt(meter_slot_str);
                                 let config = state.configs_table[meter_slot];
+                                let values_by_id = state.values_by_id[meter_slot];
                                 let power: number = null;
                                 let energy_import: number = null;
                                 let energy_export: number = null;
                                 let phases: ["?"|"d"|"c"|"a", "?"|"d"|"c"|"a", "?"|"d"|"c"|"a"] = ["?", "?", "?"]; // [d]isconected, [c]onnected, [a]ctive
-                                let values_by_id = state.values_by_id[meter_slot];
                                 let highlighted_value_ids: number[] = [];
 
                                 if (util.hasValue(values_by_id)) {
-                                    power = values_by_id[MeterValueID.PowerActiveLSumImExDiff];
-                                    highlighted_value_ids.push(MeterValueID.PowerActiveLSumImExDiff);
+                                    let power_idx = get_meter_power_index(this.value_ids[meter_slot]);
+
+                                    if (power_idx >= 0) {
+                                        power = this.values[meter_slot][power_idx];
+                                        highlighted_value_ids.push(this.value_ids[meter_slot][power_idx]);
+                                    }
 
                                     energy_import = values_by_id[MeterValueID.EnergyActiveLSumImportResettable];
-                                    energy_export = values_by_id[MeterValueID.EnergyActiveLSumExportResettable];
 
                                     if (util.hasValue(energy_import)) {
                                         highlighted_value_ids.push(MeterValueID.EnergyActiveLSumImportResettable);
                                     }
                                     else {
                                         energy_import = values_by_id[MeterValueID.EnergyActiveLSumImport];
-                                        highlighted_value_ids.push(MeterValueID.EnergyActiveLSumImport);
+
+                                        if (util.hasValue(energy_import)) {
+                                            highlighted_value_ids.push(MeterValueID.EnergyActiveLSumImport);
+                                        }
+                                        else {
+                                            energy_import = values_by_id[MeterValueID.EnergyDCImportResettable];
+
+                                            if (util.hasValue(energy_import)) {
+                                                highlighted_value_ids.push(MeterValueID.EnergyDCImportResettable);
+                                            }
+                                            else {
+                                                energy_import = values_by_id[MeterValueID.EnergyDCImport];
+
+                                                if (util.hasValue(energy_import)) {
+                                                    highlighted_value_ids.push(MeterValueID.EnergyDCImport);
+                                                }
+                                                else {
+                                                    energy_import = values_by_id[MeterValueID.EnergyDCChargeResettable];
+
+                                                    if (util.hasValue(energy_import)) {
+                                                        highlighted_value_ids.push(MeterValueID.EnergyDCChargeResettable);
+                                                    }
+                                                    else {
+                                                        energy_import = values_by_id[MeterValueID.EnergyDCCharge];
+                                                        highlighted_value_ids.push(MeterValueID.EnergyDCCharge);
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
+
+                                    energy_export = values_by_id[MeterValueID.EnergyActiveLSumExportResettable];
 
                                     if (util.hasValue(energy_export)) {
                                         highlighted_value_ids.push(MeterValueID.EnergyActiveLSumExportResettable);
                                     }
                                     else {
                                         energy_export = values_by_id[MeterValueID.EnergyActiveLSumExport];
-                                        highlighted_value_ids.push(MeterValueID.EnergyActiveLSumExport);
+
+                                        if (util.hasValue(energy_export)) {
+                                            highlighted_value_ids.push(MeterValueID.EnergyActiveLSumExport);
+                                        }
+                                        else {
+                                            energy_export = values_by_id[MeterValueID.EnergyDCExportResettable];
+
+                                            if (util.hasValue(energy_export)) {
+                                                highlighted_value_ids.push(MeterValueID.EnergyDCExportResettable);
+                                            }
+                                            else {
+                                                energy_export = values_by_id[MeterValueID.EnergyDCExport];
+
+                                                if (util.hasValue(energy_export)) {
+                                                    highlighted_value_ids.push(MeterValueID.EnergyDCExport);
+                                                }
+                                                else {
+                                                    energy_export = values_by_id[MeterValueID.EnergyDCDischargeResettable];
+
+                                                    if (util.hasValue(energy_export)) {
+                                                        highlighted_value_ids.push(MeterValueID.EnergyDCDischargeResettable);
+                                                    }
+                                                    else {
+                                                        energy_export = values_by_id[MeterValueID.EnergyDCDischarge];
+                                                        highlighted_value_ids.push(MeterValueID.EnergyDCDischarge);
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
 
                                     let voltage_L1 = values_by_id[MeterValueID.VoltageL1N];
@@ -1061,13 +1140,10 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         let value_ids = API.get_unchecked(`meters/${this.state.meter_slot}/value_ids`);
         let values = API.get_unchecked(`meters/${this.state.meter_slot}/values`);
         let power: number = undefined;
+        let power_idx = get_meter_power_index(value_ids);
 
-        if (value_ids && value_ids.length > 0 && values && values.length > 0) {
-            let idx = value_ids.indexOf(MeterValueID.PowerActiveLSumImExDiff);
-
-            if (idx >= 0) {
-                power = values[idx];
-            }
+        if (power_idx >= 0 && values && values.length > 0) {
+            power = values[power_idx];
         }
 
         return (

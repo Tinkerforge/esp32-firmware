@@ -36,6 +36,7 @@ import { UplotFlagsWrapper } from "../../ts/components/uplot_wrapper_3rd";
 import uPlot from "uplot";
 import { MeterValueID } from "../meters/meter_value_id";
 import { MeterConfig } from "../meters/types";
+import { get_meter_power_index } from "../meters/main";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { PieChart } from "react-feather";
@@ -219,13 +220,10 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
         let value_ids = API.get_unchecked(`meters/${this.state.meter_slot}/value_ids`);
         let values = API.get_unchecked(`meters/${this.state.meter_slot}/values`);
         let power: number = undefined;
+        let power_idx = get_meter_power_index(value_ids);
 
-        if (value_ids && value_ids.length > 0 && values && values.length > 0) {
-            let idx = value_ids.indexOf(MeterValueID.PowerActiveLSumImExDiff);
-
-            if (idx >= 0) {
-                power = values[idx];
-            }
+        if (power_idx >= 0 && values && values.length > 0) {
+            power = values[power_idx];
         }
 
         return <StatusSection name="em_energy_analysis">

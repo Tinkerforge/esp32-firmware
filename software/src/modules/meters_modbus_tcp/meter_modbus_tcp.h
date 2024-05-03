@@ -98,10 +98,6 @@ private:
     SungrowStringInverterVirtualMeterID sungrow_string_inverter_virtual_meter;
     int sungrow_inverter_output_type = -1;
     uint16_t sungrow_hybrid_inverter_running_state;
-    float sungrow_inverter_mppt_1_voltage;
-    float sungrow_inverter_mppt_1_current;
-    float sungrow_inverter_mppt_2_voltage;
-    float sungrow_inverter_mppt_2_current;
 
     SolarmaxMaxStorageVirtualMeterID solarmax_max_storage_virtual_meter;
 };

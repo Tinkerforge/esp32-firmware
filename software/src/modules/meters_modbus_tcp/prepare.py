@@ -50,7 +50,6 @@ enums = [
         ],
     },
     {
-
         'name': 'Solarmax Max Storage Virtual Meter ID',
         # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
         'values': [
@@ -160,49 +159,49 @@ sungrow_hybrid_string_inverter_base_values = [
     },
     {
         'name': 'MPPT 1 Voltage [0.1 V]',
-        'value_id': VALUE_ID_META,
+        'value_id': VALUE_ID_DEBUG,
         'start_address': 5011,
         'value_type': 'U16',
         'scale_factor': 0.1,
     },
     {
         'name': 'MPPT 1 Current [0.1 A]',
-        'value_id': VALUE_ID_META,
+        'value_id': VALUE_ID_DEBUG,
         'start_address': 5012,
         'value_type': 'U16',
         'scale_factor': 0.1,
     },
     {
         'name': 'MPPT 2 Voltage [0.1 V]',
-        'value_id': VALUE_ID_META,
+        'value_id': VALUE_ID_DEBUG,
         'start_address': 5013,
         'value_type': 'U16',
         'scale_factor': 0.1,
     },
     {
         'name': 'MPPT 2 Current [0.1 A]',
-        'value_id': VALUE_ID_META,
+        'value_id': VALUE_ID_DEBUG,
         'start_address': 5014,
         'value_type': 'U16',
         'scale_factor': 0.1,
     },
     {
-        'name': 'MPPT 1&2 Voltage [V]',
-        'value_id': 'VoltageDC',
-        'start_address': START_ADDRESS_VIRTUAL,
+        'name': 'MPPT 3 Voltage [0.1 V]',
+        'value_id': VALUE_ID_DEBUG,
+        'start_address': 5015,
         'value_type': 'U16',
-        'scale_factor': 1.0,
+        'scale_factor': 0.1,
     },
     {
-        'name': 'MPPT 1&2 Current [A]',
-        'value_id': 'CurrentDC',
-        'start_address': START_ADDRESS_VIRTUAL,
+        'name': 'MPPT 3 Current [0.1 A]',
+        'value_id': VALUE_ID_DEBUG,
+        'start_address': 5016,
         'value_type': 'U16',
-        'scale_factor': 1.0,
+        'scale_factor': 0.1,
     },
     {
         'name': 'Total DC Power [W]',
-        'value_id': 'PowerDC',
+        'value_id': 'PowerDCExport',
         'start_address': 5017,
         'value_type': 'U32',
         'scale_factor': 1.0,
@@ -240,6 +239,14 @@ sungrow_hybrid_string_inverter_base_values = [
         'variant': 'String',
     },
     {
+        'name': 'Total Active Power [W]',
+        'value_id': 'PowerActiveLSumImExDiff',
+        'start_address': START_ADDRESS_VIRTUAL,
+        'value_type': 'U32',
+        'scale_factor': 1.0,
+        'variant': 'String',
+    },
+    {
         'name': 'Reactive Power [var]',
         'value_id': 'PowerReactiveLSumIndCapDiff',
         'start_address': 5033,
@@ -272,7 +279,7 @@ sungrow_hybrid_string_inverter_base_values = [
     {
         'name': 'Total Output Energy [0.1 kWh]',
         'value_id': VALUE_ID_DEBUG,
-        'start_address': 5144, # FIXME: use this instead of 5004, if available
+        'start_address': 5144,  # FIXME: use this instead of 5004, if available
         'value_type': 'U32',
         'scale_factor': 0.1,
         'variant': 'String',
@@ -513,14 +520,14 @@ specs = [
             },
             {
                 'name': 'Battery Current [0.1 A]',
-                'value_id': 'CurrentDC',
+                'value_id': 'CurrentDCChaDisDiff',
                 'start_address': 13021,
                 'value_type': 'U16',
                 'scale_factor': 0.1,  # sign depends on running state
             },
             {
                 'name': 'Battery Power [W]',
-                'value_id': 'PowerActiveLSumImExDiff',
+                'value_id': 'PowerDCChaDisDiff',
                 'start_address': 13022,
                 'value_type': 'U16',
                 'scale_factor': 1.0,  # sign depends on running state
@@ -596,7 +603,7 @@ specs = [
             },
             {
                 'name': 'Total DC Power [W]',
-                'value_id': 'PowerDC',
+                'value_id': 'PowerDCExport',
                 'start_address': 112,
                 'value_type': 'U32',
                 'scale_factor': 1.0,
@@ -634,7 +641,7 @@ specs = [
         'values': [
             {
                 'name': 'Battery Power [W]',
-                'value_id': 'PowerActiveLSumImExDiff',
+                'value_id': 'PowerDCChaDisDiff',
                 'start_address': 114,
                 'value_type': 'S32',
                 'scale_factor': 1.0,
