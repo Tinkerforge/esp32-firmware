@@ -35,6 +35,7 @@
 #include "tools.h"
 #include "mbedtls/aes.h"
 #include "mbedtls/base64.h"
+#include "sodium.h"
 #include <WiFi.h>
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
@@ -236,7 +237,7 @@ void RemoteAccess::pre_setup() {
                     {"connection_no", Config::Uint8(0)},
                     {"web_address", Config::Str("", 0, 15)},
                     {"web_private", Config::Str("", 0, 44)},
-                    {"web_private_iv", Config::Str("", 0, 32)},
+                    {"web_private_nonce", Config::Str("", 0, 32)},
                 })
             },
             5, 5, Config::type_id<Config::ConfObject>())}
@@ -291,7 +292,7 @@ void RemoteAccess::register_urls() {
         if (!err_string.isEmpty()) {
             return request.send(400, "text/plain", err_string.c_str(), err_string.length());
         }
-        std::unique_ptr<char[]> ptr = heap_alloc_array<char>(2500);
+        std::unique_ptr<char[]> ptr = heap_alloc_array<char>(3500);
 
         Config *tmp_cfg = (Config *)register_config.get("config");
         config = *tmp_cfg;
@@ -312,7 +313,7 @@ void RemoteAccess::register_urls() {
             mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_DECRYPT, 48, (unsigned char*)secret_iv.get(), (unsigned char*)encrypted_secret.get(), (unsigned char*)secret);
         }
 
-        TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), 2500);
+        TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), 3500);
         serializer.addObject();
         serializer.addMemberArray("keys");
         for (auto &key : register_config.get("keys")) {
@@ -326,28 +327,34 @@ void RemoteAccess::register_urls() {
             mbedtls_aes_setkey_enc(&aes, (unsigned char *)secret, 256);
             CoolString wg_key = key.get("web_private")->asString();
 
-            // we need alway a size dividable by 16
-            const uint8_t padding = 16 - (wg_key.length() % 16);
-            const size_t length = wg_key.length() + padding;
+            std::unique_ptr<char[]> output = heap_alloc_array<char>(crypto_box_SEALBYTES + wg_key.length());
 
-            std::unique_ptr<char[]> input = heap_alloc_array<char>(length);
-            std::unique_ptr<char[]> output = heap_alloc_array<char>(length);
-            memset(input.get() + wg_key.length(), padding, padding);
-            strncpy(input.get(), wg_key.c_str(), wg_key.length());
+            CoolString  nonce_string = key.get("web_private_nonce")->asString();
+            std::unique_ptr<char[]> nonce = decode_bas64(nonce_string, 16, &outlen);
 
-            CoolString iv_string = key.get("web_private_iv")->asString();
-            std::unique_ptr<char[]> iv = decode_bas64(iv_string, 16, &outlen);
-
-            serializer.addMemberArray("web_private_iv");
+            serializer.addMemberArray("web_private_nonce");
             for (size_t i = 0; i < 16; i++) {
-                serializer.addNumber(iv[i]);
+                serializer.addNumber(nonce[i]);
             }
             serializer.endArray();
 
-            mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_ENCRYPT, length, (unsigned char*)iv.get(), (unsigned char*)input.get(), (unsigned char*)output.get());
+            if (sodium_init() < 0) {
+                return request.send(500);
+            }
+
+            unsigned char pk[crypto_box_PUBLICKEYBYTES];
+            int ret = crypto_scalarmult_base(pk, (unsigned char *)secret);
+            if (ret < 0) {
+                return request.send(500);
+            }
+
+            ret = crypto_box_seal((unsigned char *)output.get(), (unsigned char *)wg_key.c_str(), wg_key.length(), pk);
+            if (ret < 0) {
+                return request.send(500);
+            }
 
             serializer.addMemberArray("web_private");
-            for (size_t i = 0; i < length; i++) {
+            for (size_t i = 0; i < crypto_box_SEALBYTES + wg_key.length(); i++) {
                 serializer.addNumber(output[i]);
             }
             serializer.endArray();
