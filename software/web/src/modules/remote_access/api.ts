@@ -2,8 +2,6 @@
 export interface config {
     enable: boolean,
     password: string,
-    username: string,
-    login_key: string,
     relay_host: string,
     relay_host_port: number,
     self_signed_cert_id: number,
@@ -31,6 +29,8 @@ interface KeyObject {
 }
 
 export interface register {
+    email: string,
+    login_key: string,
     remote_host: string,
     remote_port: number,
     charger_pub: string,
