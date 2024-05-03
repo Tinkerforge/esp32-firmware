@@ -660,6 +660,9 @@ void Mqtt::setup()
         logger.printfln("Using path %s", mqtt_cfg.path);
     }
 
+    // Set connection state here. Otherwise, it will stay stay "not configured" until the first connection attempt.
+    state.get("connection_state")->updateInt((int)MqttConnectionState::NOT_CONNECTED);
+
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
 
