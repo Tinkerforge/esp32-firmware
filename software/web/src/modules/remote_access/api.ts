@@ -1,6 +1,7 @@
 
 export interface config {
     enable: boolean,
+    email: string,
     password: string,
     relay_host: string,
     relay_host_port: number,
@@ -29,7 +30,6 @@ interface KeyObject {
 }
 
 export interface register {
-    email: string,
     login_key: string,
     remote_host: string,
     remote_port: number,
