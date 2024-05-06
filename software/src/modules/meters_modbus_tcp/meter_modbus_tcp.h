@@ -49,6 +49,7 @@ public:
         const char *name;
         size_t start_address;
         ValueType value_type;
+        float offset;
         float scale_factor;
     };
 

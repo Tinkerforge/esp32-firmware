@@ -133,14 +133,12 @@ sungrow_hybrid_string_inverter_base_values = [
         'value_id': VALUE_ID_DEBUG,
         'start_address': 5000,
         'value_type': 'U16',
-        'scale_factor': 1.0,
     },
     {
         'name': 'Nominal Output Power [0.1 kW]',
         'value_id': VALUE_ID_DEBUG,
         'start_address': 5001,
         'value_type': 'U16',
-        'scale_factor': 1.0,
     },
     {
         'name': 'Total Output Energy [0.1 kWh]',
@@ -155,7 +153,6 @@ sungrow_hybrid_string_inverter_base_values = [
         'value_id': 'EnergyActiveLSumExport',
         'start_address': 5004,
         'value_type': 'U32',
-        'scale_factor': 1.0,
         'variant': 'String',
     },
     {
@@ -163,7 +160,6 @@ sungrow_hybrid_string_inverter_base_values = [
         'value_id': VALUE_ID_DEBUG,
         'start_address': 5006,
         'value_type': 'U32',
-        'scale_factor': 1.0,
         'variant': 'String',
     },
     {
@@ -178,7 +174,6 @@ sungrow_hybrid_string_inverter_base_values = [
         'value_id': 'PowerApparentLSumImExDiff',
         'start_address': 5009,
         'value_type': 'U32',
-        'scale_factor': 1.0,
         'variant': 'String',
     },
     {
@@ -228,7 +223,6 @@ sungrow_hybrid_string_inverter_base_values = [
         'value_id': 'PowerDCExport',
         'start_address': 5017,
         'value_type': 'U32',
-        'scale_factor': 1.0,
     },
     {
         'name': 'Phase A Current [0.1 A]',  # FIXME: not available for all device types
@@ -259,7 +253,6 @@ sungrow_hybrid_string_inverter_base_values = [
         'value_id': 'PowerActiveLSumExport',
         'start_address': 5031,
         'value_type': 'U32',
-        'scale_factor': 1.0,
         'variant': 'String',
     },
     {
@@ -267,7 +260,6 @@ sungrow_hybrid_string_inverter_base_values = [
         'value_id': 'PowerActiveLSumImExDiff',
         'start_address': START_ADDRESS_VIRTUAL,
         'value_type': 'U32',
-        'scale_factor': 1.0,
         'variant': 'String',
     },
     {
@@ -275,7 +267,6 @@ sungrow_hybrid_string_inverter_base_values = [
         'value_id': 'PowerReactiveLSumIndCapDiff',
         'start_address': 5033,
         'value_type': 'S32',
-        'scale_factor': 1.0,
     },
     {
         'name': 'Power Factor [0.001]',
@@ -289,7 +280,6 @@ sungrow_hybrid_string_inverter_base_values = [
         'value_id': VALUE_ID_DEBUG,
         'start_address': 5049,
         'value_type': 'U16',
-        'scale_factor': 1.0,
         'variant': 'String',
     },
     {
@@ -526,7 +516,6 @@ specs = [
                 'value_id': VALUE_ID_META,
                 'start_address': 13001,
                 'value_type': 'U16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Total Battery Charge Energy From PV [0.1 kWh]',
@@ -602,7 +591,6 @@ specs = [
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 5091,
                 'value_type': 'S32',
-                'scale_factor': 1.0,
                 'variant': 'String',
             },
             {
@@ -610,7 +598,6 @@ specs = [
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 13008,
                 'value_type': 'S32',
-                'scale_factor': 1.0,
                 'variant': 'Hybrid',
             },
         ],
@@ -623,28 +610,24 @@ specs = [
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 110,
                 'value_type': 'U32',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Total DC Power [W]',
                 'value_id': 'PowerDCExport',
                 'start_address': 112,
                 'value_type': 'U32',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Direct Power Usage [W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 116,
                 'value_type': 'U32',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Active Power [W]',
                 'value_id': 'PowerActiveLSumExport',
                 'start_address': 120,
                 'value_type': 'U32',
-                'scale_factor': 1.0,
             },
         ],
     },
@@ -668,14 +651,12 @@ specs = [
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 114,
                 'value_type': 'S32',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Battery SoC [%]',
                 'value_id': 'StateOfCharge',
                 'start_address': 122,
                 'value_type': 'U16',
-                'scale_factor': 1.0,
             },
         ],
     },
@@ -687,28 +668,24 @@ specs = [
                 'value_id': 'PowerActiveL1Export',
                 'start_address': 808,
                 'value_type': 'U16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'AC Coupled PV On Output L2 [W]',
                 'value_id': 'PowerActiveL2Export',
                 'start_address': 809,
                 'value_type': 'U16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'AC Coupled PV On Output L3 [W]',
                 'value_id': 'PowerActiveL3Export',
                 'start_address': 810,
                 'value_type': 'U16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'AC Coupled PV On Output L1+L2+L3 [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': START_ADDRESS_VIRTUAL,
                 'value_type': 'S32',
-                'scale_factor': 1.0,
             },
         ],
     },
@@ -720,28 +697,24 @@ specs = [
                 'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 820,
                 'value_type': 'S16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Grid L2 [W]',
                 'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 821,
                 'value_type': 'S16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Grid L3 [W]',
                 'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 822,
                 'value_type': 'S16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Grid L1+L2+L3 [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': START_ADDRESS_VIRTUAL,
                 'value_type': 'S32',
-                'scale_factor': 1.0,
             },
         ],
     },
@@ -767,14 +740,12 @@ specs = [
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 842,
                 'value_type': 'S16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Battery State Of Charge [%]',
                 'value_id': 'StateOfCharge',
                 'start_address': 843,
                 'value_type': 'U16',
-                'scale_factor': 1.0,
             },
         ],
     },
@@ -786,28 +757,24 @@ specs = [
                 'value_id': 'PowerActiveL1Import',
                 'start_address': 817,
                 'value_type': 'U16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'AC Consumption L2 [W]',
                 'value_id': 'PowerActiveL2Import',
                 'start_address': 818,
                 'value_type': 'U16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'AC Consumption L3 [W]',
                 'value_id': 'PowerActiveL3Import',
                 'start_address': 819,
                 'value_type': 'U16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'AC Consumption L1+L2+L3 [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': START_ADDRESS_VIRTUAL,
                 'value_type': 'S32',
-                'scale_factor': 1.0,
             },
         ],
     },
@@ -819,14 +786,12 @@ specs = [
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 0,
                 'value_type': 'U16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Rated Power [0.1 W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 20,
                 'value_type': 'U32',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Total Active Power Generation [0.1 kWh]',
@@ -854,13 +819,15 @@ specs = [
                 'value_id': 'TemperatureTransformer',
                 'start_address': 540,
                 'value_type': 'U16',
+                'offset': -1000.0,
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Heat sink Temperature [0.1 °C]',
+                'name': 'Heat Sink Temperature [0.1 °C]',
                 'value_id': 'TemperatureHeatSink',
                 'start_address': 541,
                 'value_type': 'U16',
+                'offset': -1000.0,
                 'scale_factor': 0.1,
             },
             {
@@ -1186,6 +1153,7 @@ specs = [
                 'value_id': 'Temperature',
                 'start_address': 586,
                 'value_type': 'U16',
+                'offset': -1000.0,
                 'scale_factor': 0.1,
             },
             {
@@ -1200,7 +1168,6 @@ specs = [
                 'value_id': 'StateOfCharge',
                 'start_address': 588,
                 'value_type': 'U16',
-                'scale_factor': 1.0,
             },
             {
                 'name': 'Battery Power [W]',
@@ -1336,7 +1303,8 @@ for spec in specs:
                 f'        "{value["name"]}",\n'
                 f'        {value["start_address"] if value["start_address"] != START_ADDRESS_VIRTUAL else "START_ADDRESS_VIRTUAL"},\n'
                 f'        MeterModbusTCP::ValueType::{value["value_type"]},\n'
-                f'        {value["scale_factor"]}f,\n'
+                f'        {value.get("offset", 0.0)}f,\n'
+                f'        {value.get("scale_factor", 1.0)}f,\n'
                 '    },'
             )
 

@@ -494,7 +494,7 @@ void MeterModbusTCP::read_done_callback()
         break;
     }
 
-    value *= table->specs[read_index].scale_factor;
+    value = (value + table->specs[read_index].offset) * table->specs[read_index].scale_factor;
 
     if (is_sungrow_grid_meter()) {
         if (generic_read_request.start_address == SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS) {
