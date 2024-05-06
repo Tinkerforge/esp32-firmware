@@ -76,6 +76,8 @@ void MetersModbusTCP::pre_setup()
 void MetersModbusTCP::setup()
 {
     mb.client();
+
+    initialized = true;
 }
 
 void MetersModbusTCP::loop()
