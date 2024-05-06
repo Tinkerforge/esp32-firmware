@@ -403,19 +403,19 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 402,Power,,DC,Discharge,,W,0,DC power (discharge),,Leistung (Entladen),DC,,,,Für Batterie
 403,Power,,DC,Cha Dis Sum,,W,0,DC power (charge plus discharge),,Leistung (Laden plus Entladen),DC,,,,Für Batterie
 404,Power,,DC,Cha Dis Diff,,W,0,DC power (charge minus discharge),,Leistung (Laden minus Entladen),DC,,,,Für Batterie
-405,Energy,,DC,Import,*Absolute,kWh,0,DC energy (draw),Since manufacturing,Energie (Bezug),DC; seit Herstellung,,,,Für Inverter
-406,Energy,,DC,Import,Resettable,kWh,0,DC energy (draw),Since last reset,Energie (Bezug),DC; seit letztem Zurücksetzen,,,,Für Inverter
-407,Energy,,DC,Export,*Absolute,kWh,0,DC energy (feed),Since manufacturing,Energie (Einspeisung),DC; seit Herstellung,,,,Für Inverter
-408,Energy,,DC,Export,Resettable,kWh,0,DC energy (feed),Since last reset,Energie (Einspeisung),DC; seit letztem Zurücksetzen,,,,Für Inverter
-409,Energy,,DC,Im Ex Sum,*Absolute,kWh,0,DC energy (draw plus feed),Since manufacturing,Energie (Bezug plus Einspeisung),DC; seit Herstellung,,,,Für Inverter
-410,Energy,,DC,Im Ex Sum,Resettable,kWh,0,DC energy (draw plus feed),Since last reset,Energie (Bezug plus Einspeisung),DC; seit letztem Zurücksetzen,,,,Für Inverter
-411,Energy,,DC,Im Ex Diff,*Absolute,kWh,0,DC energy (draw minus feed),Since manufacturing,Energie (Bezug minus Einspeisung),DC; seit Herstellung,,,,Für Inverter
-412,Energy,,DC,Im Ex Diff,Resettable,kWh,0,DC energy (draw minus feed),Since last reset,Energie (Bezug minus Einspeisung),DC; seit letztem Zurücksetzen,,,,Für Inverter
-413,Energy,,DC,Charge,*Absolute,kWh,0,DC energy (charge),Since manufacturing,Energie (Laden),DC; seit Herstellung,,,,Für Batterie
-414,Energy,,DC,Charge,Resettable,kWh,0,DC energy (charge),Since last reset,Energie (Laden),DC; seit letztem Zurücksetzen,,,,Für Batterie
-415,Energy,,DC,Discharge,*Absolute,kWh,0,DC energy (discharge),Since manufacturing,Energie (Entladen),DC; seit Herstellung,,,,Für Batterie
-416,Energy,,DC,Discharge,Resettable,kWh,0,DC energy (discharge),Since last reset,Energie (Entladen),DC; seit letztem Zurücksetzen,,,,Für Batterie
-417,Energy,,DC,Cha Dis Sum,*Absolute,kWh,0,DC energy (charge plus discharge),Since manufacturing,Energie (Laden plus Entladen),DC; seit Herstellung,,,,Für Batterie
-418,Energy,,DC,Cha Dis Sum,Resettable,kWh,0,DC energy (charge plus discharge),Since last reset,Energie (Laden plus Entladen),DC; seit letztem Zurücksetzen,,,,Für Batterie
-419,Energy,,DC,Cha Dis Diff,*Absolute,kWh,0,DC energy (charge minus discharge),Since manufacturing,Energie (Laden minus Entladen),DC; seit Herstellung,,,,Für Batterie
-420,Energy,,DC,Cha Dis Diff,Resettable,kWh,0,DC energy (charge minus discharge),Since last reset,Energie (Laden minus Entladen),DC; seit letztem Zurücksetzen,,,,Für Batterie
+405,Energy,,DC,Import,*Absolute,kWh,3,DC energy (draw),Since manufacturing,Energie (Bezug),DC; seit Herstellung,,,,Für Inverter
+406,Energy,,DC,Import,Resettable,kWh,3,DC energy (draw),Since last reset,Energie (Bezug),DC; seit letztem Zurücksetzen,,,,Für Inverter
+407,Energy,,DC,Export,*Absolute,kWh,3,DC energy (feed),Since manufacturing,Energie (Einspeisung),DC; seit Herstellung,,,,Für Inverter
+408,Energy,,DC,Export,Resettable,kWh,3,DC energy (feed),Since last reset,Energie (Einspeisung),DC; seit letztem Zurücksetzen,,,,Für Inverter
+409,Energy,,DC,Im Ex Sum,*Absolute,kWh,3,DC energy (draw plus feed),Since manufacturing,Energie (Bezug plus Einspeisung),DC; seit Herstellung,,,,Für Inverter
+410,Energy,,DC,Im Ex Sum,Resettable,kWh,3,DC energy (draw plus feed),Since last reset,Energie (Bezug plus Einspeisung),DC; seit letztem Zurücksetzen,,,,Für Inverter
+411,Energy,,DC,Im Ex Diff,*Absolute,kWh,3,DC energy (draw minus feed),Since manufacturing,Energie (Bezug minus Einspeisung),DC; seit Herstellung,,,,Für Inverter
+412,Energy,,DC,Im Ex Diff,Resettable,kWh,3,DC energy (draw minus feed),Since last reset,Energie (Bezug minus Einspeisung),DC; seit letztem Zurücksetzen,,,,Für Inverter
+413,Energy,,DC,Charge,*Absolute,kWh,3,DC energy (charge),Since manufacturing,Energie (Laden),DC; seit Herstellung,,,,Für Batterie
+414,Energy,,DC,Charge,Resettable,kWh,3,DC energy (charge),Since last reset,Energie (Laden),DC; seit letztem Zurücksetzen,,,,Für Batterie
+415,Energy,,DC,Discharge,*Absolute,kWh,3,DC energy (discharge),Since manufacturing,Energie (Entladen),DC; seit Herstellung,,,,Für Batterie
+416,Energy,,DC,Discharge,Resettable,kWh,3,DC energy (discharge),Since last reset,Energie (Entladen),DC; seit letztem Zurücksetzen,,,,Für Batterie
+417,Energy,,DC,Cha Dis Sum,*Absolute,kWh,3,DC energy (charge plus discharge),Since manufacturing,Energie (Laden plus Entladen),DC; seit Herstellung,,,,Für Batterie
+418,Energy,,DC,Cha Dis Sum,Resettable,kWh,3,DC energy (charge plus discharge),Since last reset,Energie (Laden plus Entladen),DC; seit letztem Zurücksetzen,,,,Für Batterie
+419,Energy,,DC,Cha Dis Diff,*Absolute,kWh,3,DC energy (charge minus discharge),Since manufacturing,Energie (Laden minus Entladen),DC; seit Herstellung,,,,Für Batterie
+420,Energy,,DC,Cha Dis Diff,Resettable,kWh,3,DC energy (charge minus discharge),Since last reset,Energie (Laden minus Entladen),DC; seit letztem Zurücksetzen,,,,Für Batterie
