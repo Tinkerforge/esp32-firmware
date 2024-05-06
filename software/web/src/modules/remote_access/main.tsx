@@ -148,7 +148,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         const secret_iv_string = await util.blobToBase64(secret_iv_blob);
 
         const registration_data = {
-            email: this.state.email,
             login_key: this.state.login_key,
             charger_pub: mg_charger_keypair.publicKey,
             id: charger_id,
