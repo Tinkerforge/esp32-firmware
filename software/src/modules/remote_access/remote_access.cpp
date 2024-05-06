@@ -116,6 +116,7 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
 void RemoteAccess::pre_setup() {
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
+        {"email", Config::Str("", 0, 64)},
         {"password", Config::Str("", 0, 32)},
         {"relay_host", Config::Str("fernzugriff.warp-charger.com", 0, 64)},
         {"relay_host_port", Config::Uint16(443)},
@@ -217,7 +218,6 @@ void RemoteAccess::pre_setup() {
 
     register_config = ConfigRoot {
         Config::Object({
-            {"email", Config::Str("", 0, 64)},
             {"login_key", Config::Str("", 0, 64)},
             {"remote_host", Config::Str("", 0, 64)},
             {"remote_port", Config::Uint16(0)},
@@ -535,7 +535,7 @@ void RemoteAccess::login() {
 
     TFJsonSerializer serializer = TFJsonSerializer(json.get(), 250);
     serializer.addObject();
-    serializer.addMemberString("email", register_config.get("email")->asEphemeralCStr());
+    serializer.addMemberString("email", config.get("email")->asEphemeralCStr());
     serializer.addMemberArray("login_key");
     for (int i = 0; i < 24; i++) {
         serializer.addNumber(login_key.get()[i]);
