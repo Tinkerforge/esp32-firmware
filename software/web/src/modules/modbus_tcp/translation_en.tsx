@@ -163,6 +163,10 @@ let x = {
                                 <li>1: SDM72 (WARP1 only)</li>
                                 <li>2: SDM630</li>
                                 <li>3: SDM72 V2</li>
+                                <li>4: SDM72CTM</li>
+                                <li>5: SDM630MCT V2</li>
+                                <li>6: DSZ15DZMOD</li>
+                                <li>7: DEM4A</li>
                             </ul>
                         </td>
                     </tr>
