@@ -69,7 +69,6 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
     //case MeterModbusTCPTableID::Custom:
 
     case MeterModbusTCPTableID::SungrowHybridInverter:
-        generic_read_request.register_type = TAddress::RegType::IREG;
         generic_read_request.start_address_offset = 1; // register number mode
         sungrow_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowHybridInverterVirtualMeterID>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
@@ -104,7 +103,6 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SungrowStringInverter:
-        generic_read_request.register_type = TAddress::RegType::IREG;
         generic_read_request.start_address_offset = 1; // register number mode
         sungrow_string_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowStringInverterVirtualMeterID>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
@@ -135,7 +133,6 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SolarmaxMaxStorage:
-        generic_read_request.register_type = TAddress::RegType::IREG;
         generic_read_request.start_address_offset = 0; // register address mode
         solarmax_max_storage_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SolarmaxMaxStorageVirtualMeterID>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
@@ -165,7 +162,6 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::VictronEnergyColorControlGX:
-        generic_read_request.register_type = TAddress::RegType::IREG;
         generic_read_request.start_address_offset = 0; // register address mode
         victron_energy_color_control_gx_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<VictronEnergyColorControlGXVirtualMeterID>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
@@ -199,7 +195,6 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::DeyeHybridInverter:
-        generic_read_request.register_type = TAddress::RegType::HREG;
         generic_read_request.start_address_offset = 0; // register address mode
         deye_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<DeyeHybridInverterVirtualMeterID>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
@@ -263,6 +258,7 @@ void MeterModbusTCP::connect_callback()
 
     if (is_sungrow_inverter_meter()) {
         if (sungrow_inverter_output_type < 0) {
+            generic_read_request.register_type = TAddress::RegType::IREG;
             generic_read_request.start_address = SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS; // read output type
             generic_read_request.register_count = 1;
         }
@@ -297,6 +293,7 @@ bool MeterModbusTCP::prepare_read()
         }
     }
 
+    generic_read_request.register_type = table->specs[read_index].register_type;
     generic_read_request.start_address = table->specs[read_index].start_address;
     generic_read_request.register_count = static_cast<uint8_t>(table->specs[read_index].value_type) % 10;
 

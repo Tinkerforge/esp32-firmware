@@ -403,21 +403,25 @@ specs = [
     {
         'name': 'Sungrow {variant} Inverter 1P2L',  # output type 1
         'variants': ['Hybrid', 'String'],
+        'register_type': 'IREG',
         'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_phase_voltages[:1] + sungrow_hybrid_inverter_phase_currents[:1],
     },
     {
         'name': 'Sungrow {variant} Inverter 3P4L',  # output type 2
         'variants': ['Hybrid', 'String'],
+        'register_type': 'IREG',
         'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_phase_voltages + sungrow_hybrid_inverter_phase_currents,
     },
     {
         'name': 'Sungrow {variant} Inverter 3P3L',  # output type 3
         'variants': ['Hybrid', 'String'],
+        'register_type': 'IREG',
         'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_line_voltages + sungrow_hybrid_inverter_phase_currents,
     },
     {
         'name': 'Sungrow {variant} Inverter Grid',
         'variants': ['Hybrid', 'String'],
+        'register_type': 'IREG',
         'values': [
             {
                 'name': 'Grid Frequency [0.1 Hz]',
@@ -510,6 +514,7 @@ specs = [
     },
     {
         'name': 'Sungrow Hybrid Inverter Battery',
+        'register_type': 'IREG',
         'values': [
             {
                 'name': 'Running State',
@@ -585,6 +590,7 @@ specs = [
     {
         'name': 'Sungrow {variant} Inverter Load',
         'variants': ['Hybrid', 'String'],
+        'register_type': 'IREG',
         'values': [
             {
                 'name': 'Load Power [W]',  # FIXME: not available for all device types
@@ -604,6 +610,7 @@ specs = [
     },
     {
         'name': 'Solarmax Max Storage Inverter',
+        'register_type': 'IREG',
         'values': [
             {
                 'name': 'Inverter DC Power [W]',
@@ -633,6 +640,7 @@ specs = [
     },
     {
         'name': 'Solarmax Max Storage Grid',
+        'register_type': 'IREG',
         'values': [
             {
                 'name': 'Export Power [W]',
@@ -645,6 +653,7 @@ specs = [
     },
     {
         'name': 'Solarmax Max Storage Battery',
+        'register_type': 'IREG',
         'values': [
             {
                 'name': 'Battery Power [W]',
@@ -662,6 +671,7 @@ specs = [
     },
     {
         'name': 'Victron Energy Color Control GX Inverter',
+        'register_type': 'IREG',
         'values': [
             {
                 'name': 'AC Coupled PV On Output L1 [W]',
@@ -691,6 +701,7 @@ specs = [
     },
     {
         'name': 'Victron Energy Color Control GX Grid',
+        'register_type': 'IREG',
         'values': [
             {
                 'name': 'Grid L1 [W]',
@@ -720,6 +731,7 @@ specs = [
     },
     {
         'name': 'Victron Energy Color Control GX Battery',
+        'register_type': 'IREG',
         'values': [
             {
                 'name': 'Battery Voltage [0.1 V]',
@@ -751,6 +763,7 @@ specs = [
     },
     {
         'name': 'Victron Energy Color Control GX Load',
+        'register_type': 'IREG',
         'values': [
             {
                 'name': 'AC Consumption L1 [W]',
@@ -780,6 +793,7 @@ specs = [
     },
     {
         'name': 'Deye Hybrid Inverter',
+        'register_type': 'HREG',
         'values': [
             {
                 'name': 'Device Type',
@@ -918,6 +932,7 @@ specs = [
     },
     {
         'name': 'Deye Hybrid Inverter Grid',
+        'register_type': 'HREG',
         'values': [
             {
                 'name': 'Total Grid Buy [0.1 kWh]',
@@ -1133,6 +1148,7 @@ specs = [
     },
     {
         'name': 'Deye Hybrid Inverter Battery',
+        'register_type': 'HREG',
         'values': [
             {
                 'name': 'Total Battery Charge [0.1 kWh]',
@@ -1187,6 +1203,7 @@ specs = [
     },
     {
         'name': 'Deye Hybrid Inverter Load',
+        'register_type': 'HREG',
         'values': [
             {
                 'name': 'Total Load Power [0.1 kWh]',
@@ -1301,6 +1318,7 @@ for spec in specs:
             value_specs.append(
                 '    {\n'
                 f'        "{value["name"]}",\n'
+                f'        TAddress::RegType::{value.get("register_type", spec["register_type"])},\n'
                 f'        {value["start_address"] if value["start_address"] != START_ADDRESS_VIRTUAL else "START_ADDRESS_VIRTUAL"},\n'
                 f'        MeterModbusTCP::ValueType::{value["value_type"]},\n'
                 f'        {value.get("offset", 0.0)}f,\n'

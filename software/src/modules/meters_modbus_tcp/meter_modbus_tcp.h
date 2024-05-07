@@ -47,6 +47,7 @@ public:
 
     struct ValueSpec {
         const char *name;
+        TAddress::RegType register_type;
         size_t start_address;
         ValueType value_type;
         float offset;
