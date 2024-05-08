@@ -162,7 +162,6 @@ const char *Config::ConfVariant::getVariantName() const
 }
 
 Config::ConfVariant::ConfVariant(ConfVariant &&cpy) {
-    ++conf_variant_move_counter;
     if (tag != Tag::EMPTY)
         destroyUnionMember();
 
@@ -202,8 +201,6 @@ Config::ConfVariant::ConfVariant(ConfVariant &&cpy) {
 }
 
 Config::ConfVariant &Config::ConfVariant::operator=(ConfVariant &&cpy) {
-    ++conf_variant_move_counter;
-
     if (tag != Tag::EMPTY)
         destroyUnionMember();
 
