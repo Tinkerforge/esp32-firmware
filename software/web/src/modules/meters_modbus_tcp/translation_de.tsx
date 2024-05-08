@@ -19,7 +19,7 @@ let x = {
             "config_table_sungrow_hybrid_inverter": "Sungrow Hybrid Wechselrichter (SH...)",
             "config_table_sungrow_string_inverter": "Sungrow String Wechselrichter (SG...)",
             "config_table_solarmax_max_storage": "Solarmax Max.Storage",
-            "config_table_victron_energy_color_control_gx": "Victron Energy Color Control GX",
+            "config_table_victron_energy_gx": "Victron Energy GX",
             "config_table_deye_hybrid_inverter": "Deye Hybrid Wechselrichter",
             "config_virtual_meter": "Virtueller Zähler",
             "config_virtual_meter_select": "Auswählen...",

@@ -82,9 +82,9 @@ private:
     bool is_sungrow_inverter_meter() const;
     bool is_sungrow_grid_meter() const;
     bool is_sungrow_battery_meter() const;
-    bool is_victron_energy_color_control_gx_inverter_meter() const;
-    bool is_victron_energy_color_control_gx_grid_meter() const;
-    bool is_victron_energy_color_control_gx_load_meter() const;
+    bool is_victron_energy_gx_inverter_meter() const;
+    bool is_victron_energy_gx_grid_meter() const;
+    bool is_victron_energy_gx_load_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -109,16 +109,16 @@ private:
     SolarmaxMaxStorageVirtualMeterID solarmax_max_storage_virtual_meter;
 
     // Victron Energy
-    VictronEnergyColorControlGXVirtualMeterID victron_energy_color_control_gx_virtual_meter;
-    float victron_energy_color_control_gx_ac_coupled_pv_on_output_l1_power;
-    float victron_energy_color_control_gx_ac_coupled_pv_on_output_l2_power;
-    float victron_energy_color_control_gx_ac_coupled_pv_on_output_l3_power;
-    float victron_energy_color_control_gx_grid_l1_power;
-    float victron_energy_color_control_gx_grid_l2_power;
-    float victron_energy_color_control_gx_grid_l3_power;
-    float victron_energy_color_control_gx_ac_consumption_l1_power;
-    float victron_energy_color_control_gx_ac_consumption_l2_power;
-    float victron_energy_color_control_gx_ac_consumption_l3_power;
+    VictronEnergyGXVirtualMeterID victron_energy_gx_virtual_meter;
+    float victron_energy_gx_ac_coupled_pv_on_output_l1_power;
+    float victron_energy_gx_ac_coupled_pv_on_output_l2_power;
+    float victron_energy_gx_ac_coupled_pv_on_output_l3_power;
+    float victron_energy_gx_grid_l1_power;
+    float victron_energy_gx_grid_l2_power;
+    float victron_energy_gx_grid_l3_power;
+    float victron_energy_gx_ac_consumption_l1_power;
+    float victron_energy_gx_ac_consumption_l2_power;
+    float victron_energy_gx_ac_consumption_l3_power;
 
     // Deye
     DeyeHybridInverterVirtualMeterID deye_hybrid_inverter_virtual_meter;

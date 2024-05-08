@@ -47,8 +47,8 @@ void MetersModbusTCP::pre_setup()
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
-    table_prototypes.push_back({MeterModbusTCPTableID::VictronEnergyColorControlGX, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(VictronEnergyColorControlGXVirtualMeterID::None))},
+    table_prototypes.push_back({MeterModbusTCPTableID::VictronEnergyGX, Config::Object({
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(VictronEnergyGXVirtualMeterID::None))},
         {"device_address", Config::Uint(100, 1, 247)},
     })});
 

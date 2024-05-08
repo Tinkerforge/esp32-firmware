@@ -26,7 +26,7 @@ import { MeterModbusTCPTableID,
          SungrowHybridInverterVirtualMeterID,
          SungrowStringInverterVirtualMeterID,
          SolarmaxMaxStorageVirtualMeterID,
-         VictronEnergyColorControlGXVirtualMeterID,
+         VictronEnergyGXVirtualMeterID,
          DeyeHybridInverterVirtualMeterID } from "./meters_modbus_tcp_defs";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
@@ -62,8 +62,8 @@ type TableConfigSolarmaxMaxStorage = [
     },
 ];
 
-type TableConfigVictronEnergyColorControlGX = [
-    MeterModbusTCPTableID.VictronEnergyColorControlGX,
+type TableConfigVictronEnergyGX = [
+    MeterModbusTCPTableID.VictronEnergyGX,
     {
         virtual_meter: number;
         device_address: number;
@@ -82,7 +82,7 @@ type TableConfig = TableConfigNone |
                    TableConfigSungrowHybridInverter |
                    TableConfigSungrowStringInverter |
                    TableConfigSolarmaxMaxStorage |
-                   TableConfigVictronEnergyColorControlGX |
+                   TableConfigVictronEnergyGX |
                    TableConfigDeyeHybridInverter;
 
 export type ModbusTCPMetersConfig = [
@@ -106,8 +106,8 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
         case MeterModbusTCPTableID.SolarmaxMaxStorage:
             return [MeterModbusTCPTableID.SolarmaxMaxStorage, {virtual_meter: null, device_address: 1}];
 
-        case MeterModbusTCPTableID.VictronEnergyColorControlGX:
-            return [MeterModbusTCPTableID.VictronEnergyColorControlGX, {virtual_meter: null, device_address: 100}];
+        case MeterModbusTCPTableID.VictronEnergyGX:
+            return [MeterModbusTCPTableID.VictronEnergyGX, {virtual_meter: null, device_address: 100}];
 
         case MeterModbusTCPTableID.DeyeHybridInverter:
             return [MeterModbusTCPTableID.DeyeHybridInverter, {virtual_meter: null, device_address: 1}];
@@ -128,7 +128,7 @@ export function init() {
                     [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.config_table_sungrow_hybrid_inverter")],
                     [MeterModbusTCPTableID.SungrowStringInverter.toString(), __("meters_modbus_tcp.content.config_table_sungrow_string_inverter")],
                     [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.config_table_solarmax_max_storage")],
-                    [MeterModbusTCPTableID.VictronEnergyColorControlGX.toString(), __("meters_modbus_tcp.content.config_table_victron_energy_color_control_gx")],
+                    [MeterModbusTCPTableID.VictronEnergyGX.toString(), __("meters_modbus_tcp.content.config_table_victron_energy_gx")],
                     [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.config_table_deye_hybrid_inverter")],
                 ];
 
@@ -179,7 +179,7 @@ export function init() {
                  && (config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage
-                  || config[1].table[0] == MeterModbusTCPTableID.VictronEnergyColorControlGX
+                  || config[1].table[0] == MeterModbusTCPTableID.VictronEnergyGX
                   || config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter)) {
                     let items: [string, string][] = [];
                     let device_address_default: number = 1;
@@ -206,12 +206,12 @@ export function init() {
                             [SolarmaxMaxStorageVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.config_virtual_meter_battery")],
                         ];
                     }
-                    else if (config[1].table[0] == MeterModbusTCPTableID.VictronEnergyColorControlGX) {
+                    else if (config[1].table[0] == MeterModbusTCPTableID.VictronEnergyGX) {
                         items = [
-                            [VictronEnergyColorControlGXVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
-                            [VictronEnergyColorControlGXVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
-                            [VictronEnergyColorControlGXVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.config_virtual_meter_battery")],
-                            [VictronEnergyColorControlGXVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.config_virtual_meter_load")],
+                            [VictronEnergyGXVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
+                            [VictronEnergyGXVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
+                            [VictronEnergyGXVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.config_virtual_meter_battery")],
+                            [VictronEnergyGXVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.config_virtual_meter_load")],
                         ];
 
                         device_address_default = 100;

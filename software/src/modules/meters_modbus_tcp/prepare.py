@@ -25,7 +25,7 @@ tables = [
     ('Sungrow Hybrid Inverter', 2),
     ('Sungrow String Inverter', 3),
     ('Solarmax Max Storage', 4),
-    ('Victron Energy Color Control GX', 5),
+    ('Victron Energy GX', 5),
     ('Deye Hybrid Inverter', 6),
 ]
 
@@ -62,7 +62,7 @@ enums = [
         ],
     },
     {
-        'name': 'Victron Energy Color Control GX Virtual Meter ID',
+        'name': 'Victron Energy GX Virtual Meter ID',
         # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
         'values': [
             ('None', 0),
@@ -670,7 +670,7 @@ specs = [
         ],
     },
     {
-        'name': 'Victron Energy Color Control GX Inverter',
+        'name': 'Victron Energy GX Inverter',
         'register_type': 'IREG',
         'values': [
             {
@@ -700,7 +700,7 @@ specs = [
         ],
     },
     {
-        'name': 'Victron Energy Color Control GX Grid',
+        'name': 'Victron Energy GX Grid',
         'register_type': 'IREG',
         'values': [
             {
@@ -730,7 +730,7 @@ specs = [
         ],
     },
     {
-        'name': 'Victron Energy Color Control GX Battery',
+        'name': 'Victron Energy GX Battery',
         'register_type': 'IREG',
         'values': [
             {
@@ -762,7 +762,7 @@ specs = [
         ],
     },
     {
-        'name': 'Victron Energy Color Control GX Load',
+        'name': 'Victron Energy GX Load',
         'register_type': 'IREG',
         'values': [
             {
