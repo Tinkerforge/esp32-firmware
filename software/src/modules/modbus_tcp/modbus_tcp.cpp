@@ -293,6 +293,7 @@ struct discrete_inputs_t {
     bool meter : 1;
     bool meter_phases : 1;
     bool meter_all_values : 1;
+    bool cp_disconnect : 1;
     bool nfc : 1;
 };
 
