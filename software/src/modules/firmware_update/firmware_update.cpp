@@ -319,6 +319,8 @@ void FirmwareUpdate::register_urls()
         return handle_update_chunk(U_FLASH, request, index, data, len, final, request.contentLength());
     });
 
+    // Was never used, as far as we know, but if someone complains, we could reenable this (maybe only in ESP, not WARP firmwares)
+    // Remove completely when we implement signature checks for the flashed firmware.
     // server.on_HTTPThread("/flash_spiffs", HTTP_POST, [this](WebServerRequest request){
     //     if(!Update.hasError()) {
     //         logger.printfln("SPFFS flashed successfully! Rebooting in one second.");
