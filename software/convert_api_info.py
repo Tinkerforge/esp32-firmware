@@ -5,7 +5,7 @@ import re
 with open("api_info.json") as f:
     content = f.readlines()
 
-content = "".join(x for x in content if "| api_info             |" in x)
+content = "".join(x for x in content if "| api_info" in x)
 
 content = re.sub(r"^[^\|]*\|[^\|]*\| ", "", content, flags=re.MULTILINE)
 
