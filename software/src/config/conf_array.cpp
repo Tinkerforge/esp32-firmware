@@ -79,6 +79,9 @@ Config::ConfArray::ConfArray(const ConfArray &cpy)
 
 Config::ConfArray::~ConfArray()
 {
+    if (idx == std::numeric_limits<decltype(idx)>::max())
+        return;
+
     auto *slot = this->getSlot();
     slot->inUse = false;
 
@@ -96,5 +99,16 @@ Config::ConfArray &Config::ConfArray::operator=(const ConfArray &cpy)
 
     *this->getSlot() = *cpy.getSlot();
 
+    return *this;
+}
+
+Config::ConfArray::ConfArray(ConfArray &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
+}
+
+Config::ConfArray &Config::ConfArray::operator=(ConfArray &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;
 }

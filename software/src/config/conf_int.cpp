@@ -40,6 +40,9 @@ Config::ConfInt::ConfInt(const ConfInt &cpy)
 
 Config::ConfInt::~ConfInt()
 {
+    if (idx == std::numeric_limits<decltype(idx)>::max())
+        return;
+
     auto *slot = this->getSlot();
     slot->val = 0;
     slot->min = 0;
@@ -53,5 +56,16 @@ Config::ConfInt &Config::ConfInt::operator=(const ConfInt &cpy)
 
     *this->getSlot() = *cpy.getSlot();
 
+    return *this;
+}
+
+Config::ConfInt::ConfInt(ConfInt &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
+}
+
+Config::ConfInt &Config::ConfInt::operator=(ConfInt &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;
 }

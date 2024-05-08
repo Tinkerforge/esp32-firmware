@@ -118,6 +118,9 @@ Config::ConfObject::ConfObject(const ConfObject &cpy)
 
 Config::ConfObject::~ConfObject()
 {
+    if (idx == std::numeric_limits<decltype(idx)>::max())
+        return;
+
     auto *slot = this->getSlot();
     slot->schema = nullptr;
     slot->values = nullptr;
@@ -144,5 +147,16 @@ Config::ConfObject &Config::ConfObject::operator=(const ConfObject &cpy)
     // if the copy triggers a move of the slots.
     this->getSlot()->values = std::move(values);
 
+    return *this;
+}
+
+Config::ConfObject::ConfObject(ConfObject &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
+}
+
+Config::ConfObject &Config::ConfObject::operator=(ConfObject &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;
 }

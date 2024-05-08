@@ -41,10 +41,10 @@ Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_
     idx = nextSlot<Config::ConfUnion>(union_buf, union_buf_size);
 
     auto *slot = this->getSlot();
-    slot->val = val;
     slot->tag = tag;
     slot->prototypes_len = prototypes_len;
     slot->prototypes = prototypes;
+    slot->val = val;
 }
 
 Config::ConfUnion::ConfUnion(const ConfUnion &cpy)
@@ -68,6 +68,9 @@ Config::ConfUnion::ConfUnion(const ConfUnion &cpy)
 
 Config::ConfUnion::~ConfUnion()
 {
+    if (idx == std::numeric_limits<decltype(idx)>::max())
+        return;
+
     auto *slot = this->getSlot();
     slot->val = *Config::Null();
     slot->tag = 0;
@@ -83,5 +86,18 @@ Config::ConfUnion &Config::ConfUnion::operator=(const ConfUnion &cpy)
 
     *this->getSlot() = *cpy.getSlot();
 
+
+    return *this;
+}
+
+
+Config::ConfUnion::ConfUnion(ConfUnion &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
+}
+
+Config::ConfUnion &Config::ConfUnion::operator=(ConfUnion &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;
 }

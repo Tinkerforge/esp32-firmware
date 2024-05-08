@@ -160,3 +160,86 @@ const char *Config::ConfVariant::getVariantName() const
     __builtin_unreachable();
 #endif
 }
+
+Config::ConfVariant::ConfVariant(ConfVariant &&cpy) {
+    ++conf_variant_move_counter;
+    if (tag != Tag::EMPTY)
+        destroyUnionMember();
+
+    switch (cpy.tag) {
+        case ConfVariant::Tag::EMPTY:
+            new(&val.e) Empty(std::move(cpy.val.e));
+            break;
+        case ConfVariant::Tag::STRING:
+            new(&val.s) ConfString(std::move(cpy.val.s));
+            break;
+        case ConfVariant::Tag::FLOAT:
+            new(&val.f) ConfFloat(std::move(cpy.val.f));
+            break;
+        case ConfVariant::Tag::INT:
+            new(&val.i) ConfInt(std::move(cpy.val.i));
+            break;
+        case ConfVariant::Tag::UINT:
+            new(&val.u) ConfUint(std::move(cpy.val.u));
+            break;
+        case ConfVariant::Tag::BOOL:
+            new(&val.b) ConfBool(std::move(cpy.val.b));
+            break;
+        case ConfVariant::Tag::ARRAY:
+            new(&val.a) ConfArray(std::move(cpy.val.a));
+            break;
+        case ConfVariant::Tag::OBJECT:
+            new(&val.o) ConfObject(std::move(cpy.val.o));
+            break;
+        case ConfVariant::Tag::UNION:
+            new(&val.un) ConfUnion(std::move(cpy.val.un));
+            break;
+    }
+    this->tag = cpy.tag;
+    this->updated = cpy.updated;
+
+    cpy.tag = ConfVariant::Tag::EMPTY;
+}
+
+Config::ConfVariant &Config::ConfVariant::operator=(ConfVariant &&cpy) {
+    ++conf_variant_move_counter;
+
+    if (tag != Tag::EMPTY)
+        destroyUnionMember();
+
+    switch (cpy.tag) {
+        case ConfVariant::Tag::EMPTY:
+            new(&val.e) Empty(std::move(cpy.val.e));
+            break;
+        case ConfVariant::Tag::STRING:
+            new(&val.s) ConfString(std::move(cpy.val.s));
+            break;
+        case ConfVariant::Tag::FLOAT:
+            new(&val.f) ConfFloat(std::move(cpy.val.f));
+            break;
+        case ConfVariant::Tag::INT:
+            new(&val.i) ConfInt(std::move(cpy.val.i));
+            break;
+        case ConfVariant::Tag::UINT:
+            new(&val.u) ConfUint(std::move(cpy.val.u));
+            break;
+        case ConfVariant::Tag::BOOL:
+            new(&val.b) ConfBool(std::move(cpy.val.b));
+            break;
+        case ConfVariant::Tag::ARRAY:
+            new(&val.a) ConfArray(std::move(cpy.val.a));
+            break;
+        case ConfVariant::Tag::OBJECT:
+            new(&val.o) ConfObject(std::move(cpy.val.o));
+            break;
+        case ConfVariant::Tag::UNION:
+            new(&val.un) ConfUnion(std::move(cpy.val.un));
+            break;
+    }
+    this->tag = cpy.tag;
+    this->updated = cpy.updated;
+
+    cpy.tag = ConfVariant::Tag::EMPTY;
+
+    return *this;
+}

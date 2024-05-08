@@ -39,6 +39,9 @@ Config::ConfFloat::ConfFloat(const ConfFloat &cpy)
 
 Config::ConfFloat::~ConfFloat()
 {
+    if (idx == std::numeric_limits<decltype(idx)>::max())
+        return;
+
     auto *slot = this->getSlot();
     slot->val = 0;
     slot->min = 0;
@@ -52,5 +55,16 @@ Config::ConfFloat &Config::ConfFloat::operator=(const ConfFloat &cpy)
 
     *this->getSlot() = *cpy.getSlot();
 
+    return *this;
+}
+
+Config::ConfFloat::ConfFloat(ConfFloat &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
+}
+
+Config::ConfFloat &Config::ConfFloat::operator=(ConfFloat &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;
 }

@@ -48,6 +48,9 @@ Config::ConfString::ConfString(const ConfString &cpy)
 
 Config::ConfString::~ConfString()
 {
+    if (idx == std::numeric_limits<decltype(idx)>::max())
+        return;
+
     auto *slot = this->getSlot();
     string_buf[idx].inUse = false;
 
@@ -65,5 +68,16 @@ Config::ConfString &Config::ConfString::operator=(const ConfString &cpy)
 
     *this->getSlot() = *cpy.getSlot();
 
+    return *this;
+}
+
+Config::ConfString::ConfString(ConfString &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
+}
+
+Config::ConfString &Config::ConfString::operator=(ConfString &&cpy) {
+    this->idx = cpy.idx;
+    cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;
 }
