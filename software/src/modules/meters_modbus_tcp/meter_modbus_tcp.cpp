@@ -50,6 +50,9 @@
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L2_ADDRESS          818u
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS          819u
 
+#define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
+#define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
+
 MeterClassID MeterModbusTCP::get_class() const
 {
     return MeterClassID::ModbusTCP;
@@ -295,7 +298,7 @@ bool MeterModbusTCP::prepare_read()
 
     generic_read_request.register_type = table->specs[read_index].register_type;
     generic_read_request.start_address = table->specs[read_index].start_address;
-    generic_read_request.register_count = static_cast<uint8_t>(table->specs[read_index].value_type) % 10;
+    generic_read_request.register_count = MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[read_index].value_type);
 
     return overflow;
 }
@@ -425,17 +428,60 @@ void MeterModbusTCP::read_done_callback()
     }
 
     union {
-        uint32_t v;
+        uint32_t u;
+        float f;
         uint16_t r[2];
-    } u;
+    } c32;
 
-    u.r[0] = register_buffer[0];
-    u.r[1] = register_buffer[1];
+    union {
+        uint64_t u;
+        double f;
+        uint16_t r[4];
+    } c64;
 
     float value = NAN;
+    ModbusValueType value_type = table->specs[read_index].value_type;
+    size_t register_count = MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(value_type);
 
-    switch (table->specs[read_index].value_type) {
-    case ValueType::U16:
+    switch (register_count) {
+    case 1:
+        break;
+
+    case 2:
+        if (MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(value_type)) {
+            c32.r[0] = register_buffer[0];
+            c32.r[1] = register_buffer[1];
+        }
+        else {
+            c32.r[0] = register_buffer[1];
+            c32.r[1] = register_buffer[0];
+        }
+
+        break;
+
+    case 4:
+        if (MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(value_type)) {
+            c64.r[0] = register_buffer[0];
+            c64.r[1] = register_buffer[1];
+            c64.r[2] = register_buffer[2];
+            c64.r[3] = register_buffer[3];
+        }
+        else {
+            c64.r[0] = register_buffer[3];
+            c64.r[1] = register_buffer[2];
+            c64.r[2] = register_buffer[1];
+            c64.r[3] = register_buffer[0];
+        }
+
+        break;
+
+    default:
+        logger.printfln("%s / %s has unsupported register count: %u", get_table_name(table_id), table->specs[read_index].name, register_count);
+        return;
+    }
+
+    switch (value_type) {
+    case ModbusValueType::U16:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %u",
                         get_table_name(table_id),
@@ -447,7 +493,7 @@ void MeterModbusTCP::read_done_callback()
         value = static_cast<float>(register_buffer[0]);
         break;
 
-    case ValueType::S16:
+    case ModbusValueType::S16:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %d",
                         get_table_name(table_id),
@@ -459,32 +505,100 @@ void MeterModbusTCP::read_done_callback()
         value = static_cast<float>(static_cast<int16_t>(register_buffer[0]));
         break;
 
-    case ValueType::U32:
+    case ModbusValueType::U32BE:
+    case ModbusValueType::U32LE:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %u (%u %u)",
                         get_table_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
-                        u.v,
+                        c32.u,
                         register_buffer[0],
                         register_buffer[1]);
 #endif
 
-        value = static_cast<float>(u.v);
+        value = static_cast<float>(c32.u);
         break;
 
-    case ValueType::S32:
+    case ModbusValueType::S32BE:
+    case ModbusValueType::S32LE:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %d (%u %u)",
                         get_table_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
-                        static_cast<int32_t>(u.v),
+                        static_cast<int32_t>(c32.u),
                         register_buffer[0],
                         register_buffer[1]);
 #endif
 
-        value = static_cast<float>(static_cast<int32_t>(u.v));
+        value = static_cast<float>(static_cast<int32_t>(c32.u));
+        break;
+
+    case ModbusValueType::U64BE:
+    case ModbusValueType::U64LE:
+#ifdef DEBUG_LOG_ALL_VALUES
+        logger.printfln("%s / %s (%zu): %llu (%u %u %u %u)",
+                        get_table_name(table_id),
+                        table->specs[read_index].name,
+                        table->specs[read_index].start_address,
+                        c64.u,
+                        register_buffer[0],
+                        register_buffer[1],
+                        register_buffer[2],
+                        register_buffer[3]);
+#endif
+
+        value = static_cast<float>(c64.u);
+        break;
+
+    case ModbusValueType::S64BE:
+    case ModbusValueType::S64LE:
+#ifdef DEBUG_LOG_ALL_VALUES
+        logger.printfln("%s / %s (%zu): %lld (%u %u %u %u)",
+                        get_table_name(table_id),
+                        table->specs[read_index].name,
+                        table->specs[read_index].start_address,
+                        static_cast<int64_t>(c64.u),
+                        register_buffer[0],
+                        register_buffer[1],
+                        register_buffer[2],
+                        register_buffer[3]);
+#endif
+
+        value = static_cast<float>(static_cast<int64_t>(c64.u));
+        break;
+
+    case ModbusValueType::F32BE:
+    case ModbusValueType::F32LE:
+#ifdef DEBUG_LOG_ALL_VALUES
+        logger.printfln("%s / %s (%zu): %f (%u %u)",
+                        get_table_name(table_id),
+                        table->specs[read_index].name,
+                        table->specs[read_index].start_address,
+                        static_cast<double>(c32.f),
+                        register_buffer[0],
+                        register_buffer[1]);
+#endif
+
+        value = c32.f;
+        break;
+
+    case ModbusValueType::F64BE:
+    case ModbusValueType::F64LE:
+#ifdef DEBUG_LOG_ALL_VALUES
+        logger.printfln("%s / %s (%zu): %f (%u %u %u %u)",
+                        get_table_name(table_id),
+                        table->specs[read_index].name,
+                        table->specs[read_index].start_address,
+                        c64.f,
+                        register_buffer[0],
+                        register_buffer[1],
+                        register_buffer[2],
+                        register_buffer[3]);
+#endif
+
+        value = static_cast<float>(c64.f);
         break;
 
     default:

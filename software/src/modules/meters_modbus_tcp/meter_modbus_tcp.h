@@ -38,18 +38,11 @@
 class MeterModbusTCP final : protected GenericModbusTCPClient, public IMeter
 {
 public:
-    enum class ValueType : uint8_t {
-        U16 = 11,
-        S16 = 21,
-        U32 = 32,
-        S32 = 42,
-    };
-
     struct ValueSpec {
         const char *name;
         ModbusRegisterType register_type;
         size_t start_address;
-        ValueType value_type;
+        ModbusValueType value_type;
         float offset;
         float scale_factor;
     };
@@ -97,7 +90,7 @@ private:
     bool values_declared = false;
     size_t read_index = 0;
 
-    uint16_t register_buffer[2];
+    uint16_t register_buffer[4];
 
     // Sungrow
     SungrowHybridInverterVirtualMeterID sungrow_hybrid_inverter_virtual_meter;

@@ -18,6 +18,14 @@ if 'software' not in sys.modules:
 
 from software import util
 
+
+def make_modbus_value_type(register_count, is_signed, is_float, register_order_is_le):
+    assert 1 <= register_count <= 4, register_count
+
+    #      bit [0..2]              bit [3]                          bit [4]                         bit [5]
+    return register_count | ((1 if is_signed else 0) << 3) | ((1 if is_float else 0) << 4) | ((1 if register_order_is_le else 0) << 5)
+
+
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
 tables = [
     ('None', 0),
@@ -36,6 +44,26 @@ enums = [
         'values': [
             ('Holding Register', 0),
             ('Input Register', 1),
+        ],
+    },
+    {
+        'name': 'Modbus Value Type',
+        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
+        'values': [
+            ('U16',   make_modbus_value_type(1, False, False, False)),
+            ('S16',   make_modbus_value_type(1, True,  False, False)),
+            ('U32BE', make_modbus_value_type(2, False, False, False)),
+            ('U32LE', make_modbus_value_type(2, False, False, True)),
+            ('S32BE', make_modbus_value_type(2, True,  False, False)),
+            ('S32LE', make_modbus_value_type(2, True,  False, True)),
+            ('U64BE', make_modbus_value_type(4, False, False, False)),
+            ('U64LE', make_modbus_value_type(4, False, False, True)),
+            ('S64BE', make_modbus_value_type(4, True,  False, False)),
+            ('S64LE', make_modbus_value_type(4, True,  False, True)),
+            ('F32BE', make_modbus_value_type(2, True,  True,  False)),
+            ('F32LE', make_modbus_value_type(2, True,  True,  True)),
+            ('F64BE', make_modbus_value_type(4, True,  True,  False)),
+            ('F64LE', make_modbus_value_type(4, True,  True,  True)),
         ],
     },
     {
@@ -152,7 +180,7 @@ sungrow_hybrid_string_inverter_base_values = [
         'name': 'Total Output Energy [0.1 kWh]',
         'value_id': 'EnergyActiveLSumExport',
         'start_address': 5004,
-        'value_type': 'U32',
+        'value_type': 'U32LE',
         'scale_factor': 0.1,
         'variant': 'Hybrid',
     },
@@ -160,14 +188,14 @@ sungrow_hybrid_string_inverter_base_values = [
         'name': 'Total Output Energy [kWh]',
         'value_id': 'EnergyActiveLSumExport',
         'start_address': 5004,
-        'value_type': 'U32',
+        'value_type': 'U32LE',
         'variant': 'String',
     },
     {
         'name': 'Total Running Time [h]',
         'value_id': VALUE_ID_DEBUG,
         'start_address': 5006,
-        'value_type': 'U32',
+        'value_type': 'U32LE',
         'variant': 'String',
     },
     {
@@ -181,7 +209,7 @@ sungrow_hybrid_string_inverter_base_values = [
         'name': 'Total Apparent Power [VA]',  # FIXME: not available for all device types
         'value_id': 'PowerApparentLSumImExDiff',
         'start_address': 5009,
-        'value_type': 'U32',
+        'value_type': 'U32LE',
         'variant': 'String',
     },
     {
@@ -230,7 +258,7 @@ sungrow_hybrid_string_inverter_base_values = [
         'name': 'Total DC Power [W]',
         'value_id': 'PowerDCExport',
         'start_address': 5017,
-        'value_type': 'U32',
+        'value_type': 'U32LE',
     },
     {
         'name': 'Phase A Current [0.1 A]',  # FIXME: not available for all device types
@@ -260,21 +288,21 @@ sungrow_hybrid_string_inverter_base_values = [
         'name': 'Total Active Power [W]',
         'value_id': 'PowerActiveLSumExport',
         'start_address': 5031,
-        'value_type': 'U32',
+        'value_type': 'U32LE',
         'variant': 'String',
     },
     {
         'name': 'Total Active Power [W]',
         'value_id': 'PowerActiveLSumImExDiff',
         'start_address': START_ADDRESS_VIRTUAL,
-        'value_type': 'U32',
+        'value_type': 'U32LE',
         'variant': 'String',
     },
     {
         'name': 'Reactive Power [var]',
         'value_id': 'PowerReactiveLSumIndCapDiff',
         'start_address': 5033,
-        'value_type': 'S32',
+        'value_type': 'S32LE',
     },
     {
         'name': 'Power Factor [0.001]',
@@ -294,7 +322,7 @@ sungrow_hybrid_string_inverter_base_values = [
         'name': 'Total Direct Energy Consumption [0.1 kWh]',
         'value_id': VALUE_ID_DEBUG,
         'start_address': 5103,
-        'value_type': 'U32',
+        'value_type': 'U32LE',
         'scale_factor': 0.1,
         'variant': 'String',
     },
@@ -302,7 +330,7 @@ sungrow_hybrid_string_inverter_base_values = [
         'name': 'Total Output Energy [0.1 kWh]',
         'value_id': VALUE_ID_DEBUG,
         'start_address': 5144,  # FIXME: use this instead of 5004, if available
-        'value_type': 'U32',
+        'value_type': 'U32LE',
         'scale_factor': 0.1,
         'variant': 'String',
     },
@@ -310,7 +338,7 @@ sungrow_hybrid_string_inverter_base_values = [
         'name': 'Total PV Generation [0.1 kWh]',
         'value_id': VALUE_ID_DEBUG,
         'start_address': 13003,
-        'value_type': 'U32',
+        'value_type': 'U32LE',
         'scale_factor': 0.1,
         'variant': 'Hybrid',
     },
@@ -318,7 +346,7 @@ sungrow_hybrid_string_inverter_base_values = [
         'name': 'Total Direct Energy Consumption [0.1 kWh]',
         'value_id': VALUE_ID_DEBUG,
         'start_address': 13018,
-        'value_type': 'U32',
+        'value_type': 'U32LE',
         'scale_factor': 0.1,
         'variant': 'Hybrid',
     },
@@ -326,7 +354,7 @@ sungrow_hybrid_string_inverter_base_values = [
         'name': 'Total Active Power [W]',
         'value_id': 'PowerActiveLSumImExDiff',
         'start_address': 13034,
-        'value_type': 'S32',
+        'value_type': 'S32LE',
         'scale_factor': -1.0,
         'variant': 'Hybrid',
     },
@@ -450,7 +478,7 @@ specs = [
                 'name': 'Meter Power [W]',  # FIXME: not available for all device types
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 5083,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
                 'scale_factor': -1.0,
                 'variant': 'String',
             },
@@ -458,7 +486,7 @@ specs = [
                 'name': 'Meter Phase A Power [W]',  # FIXME: not available for all device types
                 'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 5085,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
                 'scale_factor': -1.0,
                 'variant': 'String',
             },
@@ -466,7 +494,7 @@ specs = [
                 'name': 'Meter Phase B Power [W]',  # FIXME: not available for all device types
                 'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 5087,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
                 'scale_factor': -1.0,
                 'variant': 'String',
             },
@@ -474,7 +502,7 @@ specs = [
                 'name': 'Meter Phase C Power [W]',  # FIXME: not available for all device types
                 'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 5089,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
                 'scale_factor': -1.0,
                 'variant': 'String',
             },
@@ -482,7 +510,7 @@ specs = [
                 'name': 'Total Export Energy [0.1 kWh]',  # FIXME: not available for all device types
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 5095,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
                 'variant': 'String',
             },
@@ -490,7 +518,7 @@ specs = [
                 'name': 'Total Import Energy [0.1 kWh]',  # FIXME: not available for all device types
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 5099,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
                 'variant': 'String',
             },
@@ -498,7 +526,7 @@ specs = [
                 'name': 'Export Power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 13010,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
                 'scale_factor': -1.0,
                 'variant': 'Hybrid',
             },
@@ -506,7 +534,7 @@ specs = [
                 'name': 'Total Import Energy [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 13037,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
                 'variant': 'Hybrid',
             },
@@ -514,7 +542,7 @@ specs = [
                 'name': 'Total Export Energy [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 13046,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
                 'variant': 'Hybrid',
             },
@@ -534,7 +562,7 @@ specs = [
                 'name': 'Total Battery Charge Energy From PV [0.1 kWh]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 13013,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
@@ -583,14 +611,14 @@ specs = [
                 'name': 'Total Battery Discharge Energy [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 13027,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Total Charge Energy [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 13041,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
         ],
@@ -604,14 +632,14 @@ specs = [
                 'name': 'Load Power [W]',  # FIXME: not available for all device types
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 5091,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
                 'variant': 'String',
             },
             {
                 'name': 'Load Power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 13008,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
                 'variant': 'Hybrid',
             },
         ],
@@ -624,25 +652,25 @@ specs = [
                 'name': 'Inverter DC Power [W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 110,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
             },
             {
                 'name': 'Total DC Power [W]',
                 'value_id': 'PowerDCExport',
                 'start_address': 112,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
             },
             {
                 'name': 'Direct Power Usage [W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 116,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
             },
             {
                 'name': 'Active Power [W]',
                 'value_id': 'PowerActiveLSumExport',
                 'start_address': 120,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
             },
         ],
     },
@@ -654,7 +682,7 @@ specs = [
                 'name': 'Export Power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 118,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
                 'scale_factor': -1.0,
             },
         ],
@@ -667,7 +695,7 @@ specs = [
                 'name': 'Battery Power [W]',
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 114,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
             },
             {
                 'name': 'Battery SoC [%]',
@@ -703,7 +731,7 @@ specs = [
                 'name': 'AC Coupled PV On Output L1+L2+L3 [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': START_ADDRESS_VIRTUAL,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
             },
         ],
     },
@@ -733,7 +761,7 @@ specs = [
                 'name': 'Grid L1+L2+L3 [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': START_ADDRESS_VIRTUAL,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
             },
         ],
     },
@@ -795,7 +823,7 @@ specs = [
                 'name': 'AC Consumption L1+L2+L3 [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': START_ADDRESS_VIRTUAL,
-                'value_type': 'S32',
+                'value_type': 'S32LE',
             },
         ],
     },
@@ -813,27 +841,27 @@ specs = [
                 'name': 'Rated Power [0.1 W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 20,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
             },
             {
                 'name': 'Total Active Power Generation [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 504,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Total Reactive Power Generation [0.1 kWh]',
                 'value_id': 'EnergyReactiveLSumIndCapSum',  # FIXME: sum vs diff?
                 'start_address': 506,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Total PV Power [0.1 kWh]',
                 'value_id': 'EnergyDCExport',
                 'start_address': 534,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
@@ -946,14 +974,14 @@ specs = [
                 'name': 'Total Grid Buy [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 522,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Total Grid Sell [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 524,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
@@ -1162,14 +1190,14 @@ specs = [
                 'name': 'Total Battery Charge [0.1 kWh]',
                 'value_id': 'EnergyDCCharge',
                 'start_address': 516,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Total Battery Discharge [0.1 kWh]',
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 518,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
@@ -1217,7 +1245,7 @@ specs = [
                 'name': 'Total Load Power [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 527,
-                'value_type': 'U32',
+                'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
@@ -1328,7 +1356,7 @@ for spec in specs:
                 f'        "{value["name"]}",\n'
                 f'        ModbusRegisterType::{value.get("register_type", spec["register_type"])},\n'
                 f'        {value["start_address"] if value["start_address"] != START_ADDRESS_VIRTUAL else "START_ADDRESS_VIRTUAL"},\n'
-                f'        MeterModbusTCP::ValueType::{value["value_type"]},\n'
+                f'        ModbusValueType::{value["value_type"]},\n'
                 f'        {value.get("offset", 0.0)}f,\n'
                 f'        {value.get("scale_factor", 1.0)}f,\n'
                 '    },'
