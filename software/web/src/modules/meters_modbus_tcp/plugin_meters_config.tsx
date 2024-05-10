@@ -18,7 +18,7 @@
  */
 
 import * as util from "../../ts/util";
-import { h, Fragment, ComponentChildren } from "preact";
+import { h, Fragment, Component, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
