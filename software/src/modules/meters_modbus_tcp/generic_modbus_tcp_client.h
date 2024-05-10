@@ -29,6 +29,7 @@
 #include "ModbusTCP.h"
 
 #include "tools.h"
+#include "meters_modbus_tcp_defs.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -47,7 +48,7 @@ class GenericModbusTCPClient
 {
 protected:
     struct read_request {
-        TAddress::RegType register_type;
+        ModbusRegisterType register_type;
         size_t start_address_offset; // 0 for register address mode, 1 for register number mode
         size_t start_address;
         size_t register_count;

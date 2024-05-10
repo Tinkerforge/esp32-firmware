@@ -258,7 +258,7 @@ void MeterModbusTCP::connect_callback()
 
     if (is_sungrow_inverter_meter()) {
         if (sungrow_inverter_output_type < 0) {
-            generic_read_request.register_type = TAddress::RegType::IREG;
+            generic_read_request.register_type = ModbusRegisterType::InputRegister;
             generic_read_request.start_address = SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS; // read output type
             generic_read_request.register_count = 1;
         }

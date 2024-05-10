@@ -134,7 +134,7 @@ void GenericModbusTCPClient::read_next()
     cbTransaction read_done_cb = [this](Modbus::ResultCode result_code, uint16_t /*transaction_id*/, void * /*data*/)->bool {
         if (result_code != Modbus::ResultCode::EX_SUCCESS) {
             logger.printfln("read%creg failed: %s (0x%02x) host=%s port=%u device_address=%u start_address=%u start_address_offset=%u register_count=%u",
-                            generic_read_request.register_type == TAddress::RegType::HREG ? 'H' : 'I',
+                            generic_read_request.register_type == ModbusRegisterType::HoldingRegister ? 'H' : 'I',
                             get_modbus_result_code_name(result_code),
                             static_cast<uint32_t>(result_code),
                             host_ip.toString().c_str(),
@@ -178,18 +178,15 @@ void GenericModbusTCPClient::read_next()
 
     uint16_t ret;
     switch (generic_read_request.register_type) {
-    case TAddress::RegType::HREG: ret = mb->readHreg(host_ip, read_start_address, target_buffer, read_count, read_done_cb, device_address); break;
-    case TAddress::RegType::IREG: ret = mb->readIreg(host_ip, read_start_address, target_buffer, read_count, read_done_cb, device_address); break;
-    case TAddress::RegType::COIL:
-    case TAddress::RegType::ISTS:
-    case TAddress::RegType::NONE:
+    case ModbusRegisterType::HoldingRegister: ret = mb->readHreg(host_ip, read_start_address, target_buffer, read_count, read_done_cb, device_address); break;
+    case ModbusRegisterType::InputRegister:   ret = mb->readIreg(host_ip, read_start_address, target_buffer, read_count, read_done_cb, device_address); break;
     default:
         esp_system_abort("generic_modbus_tcp_client: Unsupported register type to read.");
     }
 
     if (ret == 0) {
-        logger.printfln("Modbus read failed. host=%s port=%u device_address=%u rtype=%i read_start_address=%u read_count=%u",
-            host_ip.toString().c_str(), port, device_address, generic_read_request.register_type, read_start_address, read_count);
+        logger.printfln("Modbus read failed. host=%s port=%u device_address=%u rtype=%u read_start_address=%u read_count=%u",
+            host_ip.toString().c_str(), port, device_address, static_cast<uint8_t>(generic_read_request.register_type), read_start_address, read_count);
 
         generic_read_request.result_code = Modbus::ResultCode::EX_GENERAL_FAILURE;
         generic_read_request.done_callback();
