@@ -772,7 +772,7 @@ void Wifi::check_for_scan_completion()
 #if MODULE_WS_AVAILABLE()
     StringBuilder sb;
 
-    if (ws.pushRawStateUpdateBegin(&sb, MAX_SCAN_RESULT_LENGTH * network_count, "wifi/scan_results")) {
+    if (ws.pushRawStateUpdateBegin(&sb, MAX_SCAN_RESULT_LENGTH * network_count + 2, "wifi/scan_results")) {
         get_scan_results(&sb, network_count);
         ws.pushRawStateUpdateEnd(&sb);
     }
@@ -834,7 +834,7 @@ void Wifi::register_urls()
 
         StringBuilder sb;
 
-        if (!sb.setCapacity(MAX_SCAN_RESULT_LENGTH * network_count)) {
+        if (!sb.setCapacity(MAX_SCAN_RESULT_LENGTH * network_count + 2)) {
             return request.send(200, "text/plain; charset=utf-8", "scan out of memory");
         }
 
