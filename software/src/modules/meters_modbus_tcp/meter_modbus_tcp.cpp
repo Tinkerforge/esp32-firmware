@@ -69,7 +69,42 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         logger.printfln("No table selected");
         return;
 
-    //case MeterModbusTCPTableID::Custom:
+    case MeterModbusTCPTableID::Custom: {
+            generic_read_request.start_address_offset = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("register_address_mode")->asUint());
+            device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+
+            const Config *registers = static_cast<const Config *>(ephemeral_config.get("table")->get()->get("registers"));
+            uint16_t registers_count = static_cast<uint16_t>(registers->count());
+
+            // FIXME: leaking this, because as of right now meter instances don't get destroied
+            ValueSpec *customs_specs = new ValueSpec[registers_count];
+            MeterValueID *customs_ids = new MeterValueID[registers_count];
+            uint32_t *customs_index = new uint32_t[registers_count];
+
+            for (uint16_t i = 0; i < registers_count; ++i) {
+                customs_specs[i].name = "Custom";
+                customs_specs[i].register_type = registers->get(i)->get("register_type")->asEnum<ModbusRegisterType>();
+                customs_specs[i].start_address = registers->get(i)->get("start_address")->asUint();
+                customs_specs[i].value_type = registers->get(i)->get("value_type")->asEnum<ModbusValueType>();
+                customs_specs[i].offset = registers->get(i)->get("offset")->asFloat();
+                customs_specs[i].scale_factor = registers->get(i)->get("scale_factor")->asFloat();
+
+                customs_ids[i] = registers->get(i)->get("value_id")->asEnum<MeterValueID>();
+
+                customs_index[i] = i;
+            }
+
+            custom_table = new ValueTable;
+            custom_table->specs = customs_specs;
+            custom_table->specs_length = registers_count;
+            custom_table->ids = customs_ids;
+            custom_table->ids_length = registers_count;
+            custom_table->index = customs_index;
+
+            table = custom_table;
+        }
+
+        break;
 
     case MeterModbusTCPTableID::SungrowHybridInverter:
         generic_read_request.start_address_offset = 1; // register number mode

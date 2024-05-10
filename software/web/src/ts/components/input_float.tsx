@@ -29,9 +29,10 @@ interface InputFloatReadonlyProps {
     idContext?: Context<string>;
     value: number;
     digits: number;
-    unit: string;
+    unit?: string;
     class?: string;
     invalidFeedback?: string
+    required?: boolean
 }
 
 interface InputFloatProps extends InputFloatReadonlyProps {
@@ -125,38 +126,45 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                value={value}
                disabled={!('onValue' in props)}
                inputMode="decimal"
-               style="min-width: 5em;"/>
-    <div class="input-group-append">
-        <div class={"form-control input-group-text" + ('showMinMax' in props ? " d-none d-sm-block" : "")}>
-            {this.props.unit}
+               style="min-width: 5em;"
+               required={props.required}/>
+    {'unit' in props || 'onValue' in props ?
+        <div class="input-group-append">
+            {'unit' in props ?
+                <div class={"form-control input-group-text" + ('showMinMax' in props ? " d-none d-sm-block" : "")}>
+                    {this.props.unit}
+                </div>
+                : undefined
+            }
+            {'onValue' in props ?
+                <>
+                    <Button variant="primary"
+                            className="form-control px-1"
+                            style="margin-right: .125rem !important;"
+                            onClick={() => {
+                                let v = props.value;
+                                let target = (v % pow10 === 0) ? (v - pow10) : (v - (v % pow10));
+
+                                setTarget(target);
+                            }}>
+                        <Minus/>
+                    </Button>
+                    <Button variant="primary"
+                            className="form-control px-1 rounded-right"
+                            onClick={() => {
+                                let v = props.value;
+                                let target = (v - (v % pow10)) + pow10;
+
+                                setTarget(target);
+                            }}>
+                        <Plus/>
+                    </Button>
+                </>
+                : undefined
+            }
         </div>
-        {'onValue' in props ?
-            <>
-                <Button variant="primary"
-                        className="form-control px-1"
-                        style="margin-right: .125rem !important;"
-                        onClick={() => {
-                            let v = props.value;
-                            let target = (v % pow10 === 0) ? (v - pow10) : (v - (v % pow10));
-
-                            setTarget(target);
-                        }}>
-                    <Minus/>
-                </Button>
-                <Button variant="primary"
-                        className="form-control px-1 rounded-right"
-                        onClick={() => {
-                            let v = props.value;
-                            let target = (v - (v % pow10)) + pow10;
-
-                            setTarget(target);
-                        }}>
-                    <Plus/>
-                </Button>
-            </>
-            : <></>
-        }
-    </div>
+        : undefined
+    }
     {!('onValue' in props) || !props.showMinMax ? null :
         <ButtonGroup className="flex-wrap">
             <Button variant="primary"

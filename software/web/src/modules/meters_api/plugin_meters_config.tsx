@@ -51,7 +51,7 @@ interface MeterValueIDSelectorState {
     is_valid: boolean;
 }
 
-function get_value_id_name(value_id: number) {
+export function get_meter_value_id_name(value_id: number) {
     let name = translate_unchecked(`meters.content.value_${value_id}`);
     let name_muted = translate_unchecked(`meters.content.value_${value_id}_muted`);
     let unit = METER_VALUE_INFOS[value_id].unit;
@@ -67,7 +67,7 @@ function get_value_id_name(value_id: number) {
     return name;
 }
 
-class MeterValueIDSelector extends Component<MeterValueIDSelectorProps, MeterValueIDSelectorState> {
+export class MeterValueIDSelector extends Component<MeterValueIDSelectorProps, MeterValueIDSelectorState> {
     constructor(props: MeterValueIDSelectorProps) {
         super(props);
 
@@ -160,7 +160,7 @@ class MeterValueIDSelector extends Component<MeterValueIDSelectorProps, MeterVal
                 </div>
             })}
             {this.state.value_id !== null ?
-                <div class="mt-3"><span>{get_value_id_name(this.state.value_id)}</span></div>
+                <div class="mt-3"><span>{get_meter_value_id_name(this.state.value_id)}</span></div>
                 : undefined
             }
             </>;
@@ -190,7 +190,7 @@ class MeterValueIDTable extends Component<MeterValueIDTableProps, MeterValueIDTa
             nestingDepth={1}
             rows={this.props.config[1].value_ids.map((value_id, i) => {
                 const row: TableRow = {
-                    columnValues: [get_value_id_name(value_id)],
+                    columnValues: [get_meter_value_id_name(value_id)],
                     onRemoveClick: async () => {
                         this.props.on_config(util.get_updated_union(this.props.config, {value_ids: this.props.config[1].value_ids.filter((v, k) => k !== i)}));
                     },
@@ -203,7 +203,7 @@ class MeterValueIDTable extends Component<MeterValueIDTableProps, MeterValueIDTa
                     onEditGetChildren: () => [
                         <FormRow label={__("meters_api.content.config_value_id")}>
                             <MeterValueIDSelector value_id={this.state.value_id} value_ids={this.props.config[1].value_ids} on_value_id={
-                                (value_id) => this.setState({value_id: value_id})
+                                (v) => this.setState({value_id: v})
                             } edit_idx={i} />
                         </FormRow>
                     ],

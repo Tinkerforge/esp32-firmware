@@ -22,6 +22,7 @@
 #include "meter_modbus_tcp.h"
 #include "meters_modbus_tcp.h"
 #include "module_dependencies.h"
+#include "../meters/meter_value_id.h"
 
 #include "event_log.h"
 #include "tools.h"
@@ -31,6 +32,22 @@
 void MetersModbusTCP::pre_setup()
 {
     table_prototypes.push_back({MeterModbusTCPTableID::None, *Config::Null()});
+
+    table_prototypes.push_back({MeterModbusTCPTableID::Custom, Config::Object({
+        {"device_address", Config::Uint(1, 1, 247)},
+        {"register_address_mode", Config::Uint8(static_cast<uint8_t>(ModbusRegisterAddressMode::Address))},
+        {"registers", Config::Array({},
+            new Config{Config::Object({
+                {"register_type", Config::Uint8(static_cast<uint8_t>(ModbusRegisterType::HoldingRegister))},
+                {"start_address", Config::Uint32(0)},
+                {"value_type", Config::Uint8(static_cast<uint8_t>(ModbusValueType::U16))},
+                {"offset", Config::Float(0.0f)},
+                {"scale_factor", Config::Float(1.0f)},
+                {"value_id", Config::Uint16(static_cast<uint8_t>(MeterValueID::NotSupported))},
+            })},
+            0, METERS_MODBUS_TCP_MAX_CUSTOM_REGISTERS, Config::type_id<Config::ConfObject>()
+        )}
+    })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SungrowHybridInverter, Config::Object({
         {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowHybridInverterVirtualMeterID::None))},

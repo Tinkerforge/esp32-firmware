@@ -29,7 +29,7 @@ def make_modbus_value_type(register_count, is_signed, is_float, register_order_i
 # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
 tables = [
     ('None', 0),
-    #('Custom', 1),
+    ('Custom', 1),
     ('Sungrow Hybrid Inverter', 2),
     ('Sungrow String Inverter', 3),
     ('Solarmax Max Storage', 4),
@@ -44,6 +44,14 @@ enums = [
         'values': [
             ('Holding Register', 0),
             ('Input Register', 1),
+        ],
+    },
+    {
+        'name': 'Modbus Register Address Mode',
+        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
+        'values': [
+            ('Address', 0),
+            ('Number', 1),
         ],
     },
     {

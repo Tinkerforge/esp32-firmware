@@ -92,6 +92,9 @@ private:
 
     uint16_t register_buffer[4];
 
+    // custom
+    ValueTable *custom_table;
+
     // Sungrow
     SungrowHybridInverterVirtualMeterID sungrow_hybrid_inverter_virtual_meter;
     SungrowStringInverterVirtualMeterID sungrow_string_inverter_virtual_meter;

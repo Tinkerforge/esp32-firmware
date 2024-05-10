@@ -22,7 +22,11 @@ import { h, Fragment, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
+import { MeterValueIDSelector, get_meter_value_id_name } from "../meters_api/plugin_meters_config";
 import { MeterModbusTCPTableID,
+         ModbusRegisterType,
+         ModbusRegisterAddressMode,
+         ModbusValueType,
          SungrowHybridInverterVirtualMeterID,
          SungrowStringInverterVirtualMeterID,
          SolarmaxMaxStorageVirtualMeterID,
@@ -30,12 +34,34 @@ import { MeterModbusTCPTableID,
          DeyeHybridInverterVirtualMeterID } from "./meters_modbus_tcp_defs";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
+import { InputFloat } from "../../ts/components/input_float";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
+import { Table, TableRow } from "../../ts/components/table";
+
+const MAX_CUSTOM_REGISTERS = 10;
 
 type TableConfigNone = [
     MeterModbusTCPTableID.None,
     {},
+];
+
+type Register = {
+    register_type: number; // ModbusRegisterType
+    start_address: number;
+    value_type: number; // ModbusValueType
+    offset: number;
+    scale_factor: number;
+    value_id: number; // MeterValueID
+};
+
+type TableConfigCustom = [
+    MeterModbusTCPTableID.Custom,
+    {
+        device_address: number;
+        register_address_mode: number; // ModbusRegisterAddressMode
+        registers: Register[];
+    },
 ];
 
 type TableConfigSungrowHybridInverter = [
@@ -79,6 +105,7 @@ type TableConfigDeyeHybridInverter = [
 ];
 
 type TableConfig = TableConfigNone |
+                   TableConfigCustom |
                    TableConfigSungrowHybridInverter |
                    TableConfigSungrowStringInverter |
                    TableConfigSolarmaxMaxStorage |
@@ -97,6 +124,9 @@ export type ModbusTCPMetersConfig = [
 
 function new_table_config(table: MeterModbusTCPTableID): TableConfig {
     switch (table) {
+        case MeterModbusTCPTableID.Custom:
+            return [MeterModbusTCPTableID.Custom, {device_address: 1, register_address_mode: null, registers: []}];
+
         case MeterModbusTCPTableID.SungrowHybridInverter:
             return [MeterModbusTCPTableID.SungrowHybridInverter, {virtual_meter: null, device_address: 1}];
 
@@ -117,6 +147,157 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
     }
 }
 
+interface RegisterEditorProps {
+    min_address: number;
+    table: TableConfigCustom;
+    on_table: (table: TableConfigCustom) => void;
+}
+
+interface RegisterEditorState {
+    register: Register,
+}
+
+class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> {
+    constructor(props: RegisterEditorProps) {
+        super(props);
+
+        this.state = {
+            register: {
+                register_type: null,
+                start_address: props.min_address,
+                value_type: null,
+                offset: 0.0,
+                scale_factor: 1.0,
+                value_id: null,
+            },
+        } as any;
+    }
+
+    get_children() {
+        return [
+            <FormRow label={__("meters_modbus_tcp.content.registers_register_type")}>
+                <InputSelect
+                    required
+                    items={[
+                        [ModbusRegisterType.HoldingRegister.toString(), __("meters_modbus_tcp.content.registers_register_type_holding_register")],
+                        [ModbusRegisterType.InputRegister.toString(), __("meters_modbus_tcp.content.registers_register_type_input_register")],
+                    ]}
+                    placeholder={__("meters_modbus_tcp.content.registers_register_type_select")}
+                    value={util.hasValue(this.state.register.register_type) ? this.state.register.register_type.toString() : undefined}
+                    onValue={(v) => {
+                        this.setState({register: {...this.state.register, register_type: parseInt(v)}});
+                    }} />
+            </FormRow>,
+            <FormRow label={__("meters_modbus_tcp.content.registers_start_address")}>
+                <InputNumber
+                    required
+                    min={this.props.min_address}
+                    max={this.props.min_address + 65535}
+                    value={this.state.register.start_address}
+                    onValue={(v) => {
+                        this.setState({register: {...this.state.register, start_address: v}});
+                    }} />
+            </FormRow>,
+            <FormRow label={__("meters_modbus_tcp.content.registers_value_type")}>
+                <InputSelect
+                    required
+                    items={[
+                        [ModbusValueType.U16.toString(), __("meters_modbus_tcp.content.registers_value_type_u16")],
+                        [ModbusValueType.S16.toString(), __("meters_modbus_tcp.content.registers_value_type_s16")],
+                        [ModbusValueType.U32BE.toString(), __("meters_modbus_tcp.content.registers_value_type_u32be")],
+                        [ModbusValueType.U32LE.toString(), __("meters_modbus_tcp.content.registers_value_type_u32le")],
+                        [ModbusValueType.S32BE.toString(), __("meters_modbus_tcp.content.registers_value_type_s32be")],
+                        [ModbusValueType.S32LE.toString(), __("meters_modbus_tcp.content.registers_value_type_s32le")],
+                        [ModbusValueType.U64BE.toString(), __("meters_modbus_tcp.content.registers_value_type_u64be")],
+                        [ModbusValueType.U64LE.toString(), __("meters_modbus_tcp.content.registers_value_type_u64le")],
+                        [ModbusValueType.S64BE.toString(), __("meters_modbus_tcp.content.registers_value_type_s64be")],
+                        [ModbusValueType.S64LE.toString(), __("meters_modbus_tcp.content.registers_value_type_s64le")],
+                        [ModbusValueType.F32BE.toString(), __("meters_modbus_tcp.content.registers_value_type_f32be")],
+                        [ModbusValueType.F32LE.toString(), __("meters_modbus_tcp.content.registers_value_type_f32le")],
+                        [ModbusValueType.F64BE.toString(), __("meters_modbus_tcp.content.registers_value_type_f64be")],
+                        [ModbusValueType.F64LE.toString(), __("meters_modbus_tcp.content.registers_value_type_f64le")],
+                    ]}
+                    placeholder={__("meters_modbus_tcp.content.registers_value_type_select")}
+                    value={util.hasValue(this.state.register.value_type) ? this.state.register.value_type.toString() : undefined}
+                    onValue={(v) => {
+                        this.setState({register: {...this.state.register, value_type: parseInt(v)}});
+                    }} />
+            </FormRow>,
+            <FormRow label={__("meters_modbus_tcp.content.registers_offset")}>
+                <InputFloat
+                    required
+                    min={-10000000}
+                    max={10000000}
+                    digits={3}
+                    value={this.state.register.offset * 1000}
+                    onValue={(v) => {
+                        this.setState({register: {...this.state.register, offset: v / 1000}});
+                    }} />
+            </FormRow>,
+            <FormRow label={__("meters_modbus_tcp.content.registers_scale_factor")}>
+                <InputFloat
+                    required
+                    min={-10000000}
+                    max={10000000}
+                    digits={3}
+                    value={this.state.register.scale_factor * 1000}
+                    onValue={(v) => {
+                        this.setState({register: {...this.state.register, scale_factor: v / 1000}});
+                    }} />
+            </FormRow>,
+            <FormRow label={__("meters_modbus_tcp.content.registers_value_id")}>
+                <MeterValueIDSelector value_id={this.state.register.value_id} value_ids={[]} on_value_id={
+                    (v) => this.setState({register: {...this.state.register, value_id: v}})
+                } />
+            </FormRow>,
+        ];
+    }
+
+    render() {
+        return <Table
+            nestingDepth={1}
+            rows={this.props.table[1].registers.map((register, i) => {
+                const row: TableRow = {
+                    columnValues: [__("meters_modbus_tcp.content.registers_register")(register.start_address, get_meter_value_id_name(register.value_id))],
+                    onRemoveClick: async () => {
+                        this.props.on_table(util.get_updated_union(this.props.table, {registers: this.props.table[1].registers.filter((r, k) => k !== i)}));
+                    },
+                    onEditShow: async () => {
+                        this.setState({
+                            register: register,
+                        });
+                    },
+                    onEditSubmit: async () => {
+                        this.props.on_table(util.get_updated_union(this.props.table, {registers: this.props.table[1].registers.map((r, k) => k === i ? this.state.register : r)}));
+                    },
+                    onEditGetChildren: () => this.get_children(),
+                    editTitle: __("meters_modbus_tcp.content.registers_edit_title"),
+                }
+                return row
+            })}
+            columnNames={[""]}
+            addEnabled={this.props.table[1].registers.length < MAX_CUSTOM_REGISTERS}
+            addMessage={__("meters_modbus_tcp.content.registers_add_count")(this.props.table[1].registers.length, MAX_CUSTOM_REGISTERS)}
+            addTitle={__("meters_modbus_tcp.content.registers_add_title")}
+            onAddShow={async () => {
+                this.setState({
+                    register: {
+                        register_type: null,
+                        start_address: this.props.min_address,
+                        value_type: null,
+                        offset: 0.0,
+                        scale_factor: 1.0,
+                        value_id: null,
+                    },
+                });
+            }}
+            onAddGetChildren={() => this.get_children()}
+            onAddSubmit={async () => {
+                this.props.on_table(util.get_updated_union(this.props.table, {registers: this.props.table[1].registers.concat([this.state.register])}));
+            }}/>;
+    }
+}
+
 export function init() {
     return {
         [MeterClassID.ModbusTCP]: {
@@ -124,16 +305,8 @@ export function init() {
             new_config: () => [MeterClassID.ModbusTCP, {display_name: "", host: "", port: 502, table: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: ModbusTCPMetersConfig, on_config: (config: ModbusTCPMetersConfig) => void): ComponentChildren => {
-                let table_ids: [string, string][] = [
-                    [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.config_table_sungrow_hybrid_inverter")],
-                    [MeterModbusTCPTableID.SungrowStringInverter.toString(), __("meters_modbus_tcp.content.config_table_sungrow_string_inverter")],
-                    [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.config_table_solarmax_max_storage")],
-                    [MeterModbusTCPTableID.VictronEnergyGX.toString(), __("meters_modbus_tcp.content.config_table_victron_energy_gx")],
-                    [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.config_table_deye_hybrid_inverter")],
-                ];
-
                 let edit_children = [
-                    <FormRow label={__("meters_modbus_tcp.content.config_display_name")}>
+                    <FormRow label={__("meters_modbus_tcp.content.display_name")}>
                         <InputText
                             required
                             maxLength={32}
@@ -142,7 +315,7 @@ export function init() {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }} />
                     </FormRow>,
-                    <FormRow label={__("meters_modbus_tcp.content.config_host")}>
+                    <FormRow label={__("meters_modbus_tcp.content.host")}>
                         <InputText
                             required
                             maxLength={64}
@@ -151,9 +324,9 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {host: v}));
                             }}
-                            invalidFeedback={__("meters_modbus_tcp.content.config_host_invalid")} />
+                            invalidFeedback={__("meters_modbus_tcp.content.host_invalid")} />
                     </FormRow>,
-                    <FormRow label={__("meters_modbus_tcp.content.config_port")} label_muted={__("meters_modbus_tcp.content.config_port_muted")}>
+                    <FormRow label={__("meters_modbus_tcp.content.port")} label_muted={__("meters_modbus_tcp.content.port_muted")}>
                         <InputNumber
                             required
                             min={1}
@@ -163,11 +336,18 @@ export function init() {
                                 on_config(util.get_updated_union(config, {port: v}));
                             }} />
                     </FormRow>,
-                    <FormRow label={__("meters_modbus_tcp.content.config_table")}>
+                    <FormRow label={__("meters_modbus_tcp.content.table")}>
                         <InputSelect
                             required
-                            items={table_ids}
-                            placeholder={__("meters_modbus_tcp.content.config_table_select")}
+                            items={[
+                                [MeterModbusTCPTableID.Custom.toString(), __("meters_modbus_tcp.content.table_custom")],
+                                [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_hybrid_inverter")],
+                                [MeterModbusTCPTableID.SungrowStringInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_string_inverter")],
+                                [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.table_solarmax_max_storage")],
+                                [MeterModbusTCPTableID.VictronEnergyGX.toString(), __("meters_modbus_tcp.content.table_victron_energy_gx")],
+                                [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
+                            ]}
+                            placeholder={__("meters_modbus_tcp.content.table_select")}
                             value={util.hasValue(config[1].table) ? config[1].table[0].toString() : undefined}
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {table: new_table_config(parseInt(v))}));
@@ -186,57 +366,57 @@ export function init() {
 
                     if (config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter) {
                         items = [
-                            [SungrowHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
-                            [SungrowHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
-                            [SungrowHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.config_virtual_meter_battery")],
-                            [SungrowHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.config_virtual_meter_load")],
+                            [SungrowHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [SungrowHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [SungrowHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [SungrowHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter) {
                         items = [
-                            [SungrowStringInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
-                            [SungrowStringInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
-                            [SungrowStringInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.config_virtual_meter_load")],
+                            [SungrowStringInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [SungrowStringInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [SungrowStringInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage) {
                         items = [
-                            [SolarmaxMaxStorageVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
-                            [SolarmaxMaxStorageVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
-                            [SolarmaxMaxStorageVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.config_virtual_meter_battery")],
+                            [SolarmaxMaxStorageVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [SolarmaxMaxStorageVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [SolarmaxMaxStorageVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                         ];
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.VictronEnergyGX) {
                         items = [
-                            [VictronEnergyGXVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
-                            [VictronEnergyGXVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
-                            [VictronEnergyGXVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.config_virtual_meter_battery")],
-                            [VictronEnergyGXVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.config_virtual_meter_load")],
+                            [VictronEnergyGXVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [VictronEnergyGXVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [VictronEnergyGXVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [VictronEnergyGXVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
 
                         device_address_default = 100;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter) {
                         items = [
-                            [DeyeHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.config_virtual_meter_inverter")],
-                            [DeyeHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.config_virtual_meter_grid")],
-                            [DeyeHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.config_virtual_meter_battery")],
-                            [DeyeHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.config_virtual_meter_load")],
+                            [DeyeHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [DeyeHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [DeyeHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [DeyeHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
                     }
 
                     edit_children.push(
-                        <FormRow label={__("meters_modbus_tcp.content.config_virtual_meter")}>
+                        <FormRow label={__("meters_modbus_tcp.content.virtual_meter")}>
                             <InputSelect
                                 required
                                 items={items}
-                                placeholder={__("meters_modbus_tcp.content.config_virtual_meter_select")}
+                                placeholder={__("meters_modbus_tcp.content.virtual_meter_select")}
                                 value={util.hasValue(config[1].table[1]) && util.hasValue(config[1].table[1].virtual_meter) ? config[1].table[1].virtual_meter.toString() : undefined}
                                 onValue={(v) => {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
                                 }} />
                         </FormRow>,
-                        <FormRow label={__("meters_modbus_tcp.content.config_device_address")} label_muted={__("meters_modbus_tcp.content.config_device_address_muted")(device_address_default)}>
+                        <FormRow label={__("meters_modbus_tcp.content.device_address")} label_muted={__("meters_modbus_tcp.content.device_address_muted")(device_address_default)}>
                             <InputNumber
                                 required
                                 min={1}
@@ -246,6 +426,41 @@ export function init() {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
                                 }} />
                         </FormRow>);
+
+                }
+                else if (util.hasValue(config[1].table)
+                      && config[1].table[0] == MeterModbusTCPTableID.Custom) {
+                    edit_children.push(
+                        <FormRow label={__("meters_modbus_tcp.content.device_address")}>
+                            <InputNumber
+                                required
+                                min={1}
+                                max={247}
+                                value={config[1].table[1].device_address}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
+                                }} />
+                        </FormRow>,
+                        <FormRow label={__("meters_modbus_tcp.content.register_address_mode")}>
+                            <InputSelect
+                                required
+                                items={[
+                                    [ModbusRegisterAddressMode.Address.toString(), __("meters_modbus_tcp.content.register_address_mode_address")],
+                                    [ModbusRegisterAddressMode.Number.toString(), __("meters_modbus_tcp.content.register_address_mode_number")]
+                                ]}
+                                placeholder={__("meters_modbus_tcp.content.register_address_mode_select")}
+                                value={util.hasValue(config[1].table[1].register_address_mode) ? config[1].table[1].register_address_mode.toString() : undefined}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {register_address_mode: parseInt(v)})}));
+                                }} />
+                        </FormRow>,
+                        <FormRow label={__("meters_modbus_tcp.content.registers")}>
+                            <RegisterTable
+                                min_address={config[1].table[1].register_address_mode == ModbusRegisterAddressMode.Number ? 1 : 0}
+                                table={config[1].table}
+                                on_table={(table: TableConfigCustom) => on_config(util.get_updated_union(config, {table: table}))} />
+                        </FormRow>
+                    );
                 }
 
                 return edit_children;
