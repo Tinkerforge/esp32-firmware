@@ -34,8 +34,7 @@ tables = [
     ('Sungrow String Inverter', 3),
     ('Solarmax Max Storage', 4),
     ('Victron Energy GX', 5),
-    ('Deye Hybrid Inverter Low Voltage', 6),
-    ('Deye Hybrid Inverter High Voltage', 7),
+    ('Deye Hybrid Inverter', 6),
 ]
 
 enums = [
@@ -124,8 +123,9 @@ enums = [
             ('None', 0),
             ('Inverter', 1),
             ('Grid', 2),
-            ('Battery', 3),
-            ('Load', 4),
+            ('Low Voltage Battery', 3),
+            ('High Voltage Battery', 4),
+            ('Load', 5),
         ],
     },
 ]
@@ -1192,7 +1192,7 @@ specs = [
         ],
     },
     {
-        'name': 'Deye Hybrid Inverter Battery {variant}',
+        'name': 'Deye Hybrid Inverter {variant} Battery',
         'variants': ['Low Voltage', 'High Voltage'],
         'register_type': 'HoldingRegister',
         'values': [

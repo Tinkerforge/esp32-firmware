@@ -96,16 +96,8 @@ type TableConfigVictronEnergyGX = [
     },
 ];
 
-type TableConfigDeyeHybridInverterLowVoltage = [
-    MeterModbusTCPTableID.DeyeHybridInverterLowVoltage,
-    {
-        virtual_meter: number;
-        device_address: number;
-    },
-];
-
-type TableConfigDeyeHybridInverterHighVoltage = [
-    MeterModbusTCPTableID.DeyeHybridInverterHighVoltage,
+type TableConfigDeyeHybridInverter = [
+    MeterModbusTCPTableID.DeyeHybridInverter,
     {
         virtual_meter: number;
         device_address: number;
@@ -118,8 +110,7 @@ type TableConfig = TableConfigNone |
                    TableConfigSungrowStringInverter |
                    TableConfigSolarmaxMaxStorage |
                    TableConfigVictronEnergyGX |
-                   TableConfigDeyeHybridInverterLowVoltage |
-                   TableConfigDeyeHybridInverterHighVoltage;
+                   TableConfigDeyeHybridInverter;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -148,11 +139,8 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
         case MeterModbusTCPTableID.VictronEnergyGX:
             return [MeterModbusTCPTableID.VictronEnergyGX, {virtual_meter: null, device_address: 100}];
 
-        case MeterModbusTCPTableID.DeyeHybridInverterLowVoltage:
-            return [MeterModbusTCPTableID.DeyeHybridInverterLowVoltage, {virtual_meter: null, device_address: 1}];
-
-        case MeterModbusTCPTableID.DeyeHybridInverterHighVoltage:
-            return [MeterModbusTCPTableID.DeyeHybridInverterHighVoltage, {virtual_meter: null, device_address: 1}];
+        case MeterModbusTCPTableID.DeyeHybridInverter:
+            return [MeterModbusTCPTableID.DeyeHybridInverter, {virtual_meter: null, device_address: 1}];
 
         default:
             return [MeterModbusTCPTableID.None, {}];
@@ -357,8 +345,7 @@ export function init() {
                                 [MeterModbusTCPTableID.SungrowStringInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_string_inverter")],
                                 [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.table_solarmax_max_storage")],
                                 [MeterModbusTCPTableID.VictronEnergyGX.toString(), __("meters_modbus_tcp.content.table_victron_energy_gx")],
-                                [MeterModbusTCPTableID.DeyeHybridInverterLowVoltage.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter_low_voltage")],
-                                [MeterModbusTCPTableID.DeyeHybridInverterHighVoltage.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter_high_voltage")],
+                                [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
                             ]}
                             placeholder={__("meters_modbus_tcp.content.table_select")}
                             value={util.hasValue(config[1].table) ? config[1].table[0].toString() : undefined}
@@ -373,8 +360,7 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage
                   || config[1].table[0] == MeterModbusTCPTableID.VictronEnergyGX
-                  || config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverterLowVoltage
-                  || config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverterHighVoltage)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter)) {
                     let items: [string, string][] = [];
                     let device_address_default: number = 1;
 
@@ -410,12 +396,12 @@ export function init() {
 
                         device_address_default = 100;
                     }
-                    else if (config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverterLowVoltage
-                          || config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverterHighVoltage) {
+                    else if (config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter) {
                         items = [
                             [DeyeHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [DeyeHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [DeyeHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [DeyeHybridInverterVirtualMeterID.LowVoltageBattery.toString(), __("meters_modbus_tcp.content.virtual_meter_low_voltage_battery")],
+                            [DeyeHybridInverterVirtualMeterID.HighVoltageBattery.toString(), __("meters_modbus_tcp.content.virtual_meter_high_voltage_battery")],
                             [DeyeHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
                     }
