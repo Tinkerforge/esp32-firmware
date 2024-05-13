@@ -126,7 +126,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         const {
             secret,
             secret_salt,
-            secret_iv
+            secret_nonce
         } = await this.get_secret();
 
         const secret_key = await hash({
@@ -144,8 +144,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         const secret_string = await util.blobToBase64(secret_blob);
         const secret_key_blob = new Blob([secret_key.hash]);
         const secret_key_string = await util.blobToBase64(secret_key_blob);
-        const secret_iv_blob = new Blob([new Uint8Array(secret_iv)]);
-        const secret_iv_string = await util.blobToBase64(secret_iv_blob);
+        const secret_nonce_blob = new Blob([new Uint8Array(secret_nonce)]);
+        const secret_nonce_string = await util.blobToBase64(secret_nonce_blob);
 
         const registration_data = {
             login_key: this.state.login_key,
@@ -156,7 +156,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             wg_server_ip: mg_server_address,
             secret: secret_string.replace("data:application/octet-stream;base64,", ""),
             secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
-            secret_iv: secret_iv_string.replace("data:application/octet-stream;base64,", ""),
+            secret_nonce: secret_nonce_string.replace("data:application/octet-stream;base64,", ""),
             remote_host: this.state.relay_host,
             remote_port: this.state.relay_host_port,
             config: cfg,
