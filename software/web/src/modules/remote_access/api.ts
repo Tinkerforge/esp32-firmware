@@ -40,6 +40,7 @@ export interface register {
     wg_server_ip: string,
     secret: string,
     secret_key: string,
+    secret_nonce: string,
     config: config,
     keys: KeyObject[],
 }
