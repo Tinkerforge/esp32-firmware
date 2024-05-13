@@ -228,7 +228,7 @@ void RemoteAccess::pre_setup() {
             {"wg_server_ip", Config::Str("", 0, 15)},
             {"secret", Config::Str("", 0, 256)},
             {"secret_key", Config::Str("", 0, 256)},
-            {"secret_iv", Config::Str("", 0, 256)},
+            {"secret_nonce", Config::Str("", 0, 256)},
             {"config", config},
             {"keys", Config::Array({}, new Config {
                 Config::Object({
@@ -299,17 +299,16 @@ void RemoteAccess::register_urls() {
         CoolString secret_string = register_config.get("secret")->asString();
         size_t outlen;
 
-        std::unique_ptr<char[]> encrypted_secret = decode_bas64(secret_string, 48, &outlen);
+        std::unique_ptr<char[]> encrypted_secret = decode_bas64(secret_string, 32 + crypto_secretbox_MACBYTES, &outlen);
 
-        char secret[48];
-        {
-            std::unique_ptr<char[]> secret_iv = decode_bas64(register_config.get("secret_iv")->asString(), 16, &outlen);
-            std::unique_ptr<char[]> secret_key = decode_bas64(register_config.get("secret_key")->asString(), 32, &outlen);
+        char secret[32];
+        std::unique_ptr<char[]> secret_nonce = decode_bas64(register_config.get("secret_nonce")->asString(), crypto_secretbox_NONCEBYTES, &outlen);
+        std::unique_ptr<char[]> secret_key = decode_bas64(register_config.get("secret_key")->asString(), crypto_secretbox_KEYBYTES, &outlen);
 
-            mbedtls_aes_context aes;
-            mbedtls_aes_init(&aes);
-            mbedtls_aes_setkey_dec(&aes, (unsigned char*)secret_key.get(), 256);
-            mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_DECRYPT, 48, (unsigned char*)secret_iv.get(), (unsigned char*)encrypted_secret.get(), (unsigned char*)secret);
+        int ret = crypto_secretbox_open_easy((unsigned char *)secret, (unsigned char *)encrypted_secret.get(), 32 +crypto_secretbox_MACBYTES, (unsigned char*)secret_nonce.get(), (unsigned char*)secret_key.get());
+        if (ret != 0) {
+            logger.printfln("Failed to decrypt secret");
+            return request.send(500);
         }
 
         TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), 3500);
@@ -342,7 +341,7 @@ void RemoteAccess::register_urls() {
             }
 
             unsigned char pk[crypto_box_PUBLICKEYBYTES];
-            int ret = crypto_scalarmult_base(pk, (unsigned char *)secret);
+            ret = crypto_scalarmult_base(pk, (unsigned char *)secret);
             if (ret < 0) {
                 return request.send(500);
             }
