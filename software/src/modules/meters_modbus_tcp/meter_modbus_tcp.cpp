@@ -577,6 +577,21 @@ void MeterModbusTCP::read_done_callback()
         value = static_cast<float>(static_cast<int32_t>(c32.u));
         break;
 
+    case ModbusValueType::F32BE:
+    case ModbusValueType::F32LE:
+#ifdef DEBUG_LOG_ALL_VALUES
+        logger.printfln("%s / %s (%zu): %f (%u %u)",
+                        get_table_name(table_id),
+                        table->specs[read_index].name,
+                        table->specs[read_index].start_address,
+                        static_cast<double>(c32.f),
+                        register_buffer[0],
+                        register_buffer[1]);
+#endif
+
+        value = c32.f;
+        break;
+
     case ModbusValueType::U64BE:
     case ModbusValueType::U64LE:
 #ifdef DEBUG_LOG_ALL_VALUES
@@ -609,21 +624,6 @@ void MeterModbusTCP::read_done_callback()
 #endif
 
         value = static_cast<float>(static_cast<int64_t>(c64.u));
-        break;
-
-    case ModbusValueType::F32BE:
-    case ModbusValueType::F32LE:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %f (%u %u)",
-                        get_table_name(table_id),
-                        table->specs[read_index].name,
-                        table->specs[read_index].start_address,
-                        static_cast<double>(c32.f),
-                        register_buffer[0],
-                        register_buffer[1]);
-#endif
-
-        value = c32.f;
         break;
 
     case ModbusValueType::F64BE:
