@@ -1036,35 +1036,35 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Grid Side Inside Power A [W]',
+                'name': 'Grid Side Internal Power A [W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 604,
                 'value_type': 'S16',
                 'scale_factor': 1.0,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Inside Power B [W]',
+                'name': 'Grid Side Internal Power B [W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 605,
                 'value_type': 'S16',
                 'scale_factor': 1.0,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Inside Power C [W]',
+                'name': 'Grid Side Internal Power C [W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 606,
                 'value_type': 'S16',
                 'scale_factor': 1.0,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Inner Total Active Power [W]',
+                'name': 'Grid Side Internal Total Active Power [W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 607,
                 'value_type': 'S16',
                 'scale_factor': 1.0,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Inner Total Apparent Power [VA]',
+                'name': 'Grid Side Internal Total Apparent Power [VA]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 608,
                 'value_type': 'S16',
@@ -1078,77 +1078,77 @@ specs = [
                 'scale_factor': 0.01,  # FIXME: undocumented
             },
             {
-                'name': 'Grid Side Inner Current A [0.01 A]',
+                'name': 'Grid Side Internal Current A [0.01 A]',
                 'value_id': 'CurrentL1ImExDiff',  # FIXME: direction?
                 'start_address': 610,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Inner Current B [0.01 A]',
+                'name': 'Grid Side Internal Current B [0.01 A]',
                 'value_id': 'CurrentL2ImExDiff',  # FIXME: direction?
                 'start_address': 611,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Inner Current C [0.01 A]',
+                'name': 'Grid Side Internal Current C [0.01 A]',
                 'value_id': 'CurrentL3ImExDiff',  # FIXME: direction?
                 'start_address': 612,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Outer Current A [0.01 A]',
+                'name': 'Grid Side External Current A [0.01 A]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 613,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Outer Current B [0.01 A]',
+                'name': 'Grid Side External Current B [0.01 A]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 614,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Outer Current C [0.01 A]',
+                'name': 'Grid Side External Current C [0.01 A]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 615,
                 'value_type': 'S16',
                 'scale_factor': 0.01,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Outer Power A [W]',
+                'name': 'Grid Side External Power A [W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 616,
                 'value_type': 'S16',
                 'scale_factor': 1.0,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Outer Power B [W]',
+                'name': 'Grid Side External Power B [W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 617,
                 'value_type': 'S16',
                 'scale_factor': 1.0,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Outer Power C [W]',
+                'name': 'Grid Side External Power C [W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 618,
                 'value_type': 'S16',
                 'scale_factor': 1.0,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Outer Total Active Power [W]',
+                'name': 'Grid Side External Total Active Power [W]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 619,
                 'value_type': 'S16',
                 'scale_factor': 1.0,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Outer Total Apparent Power [VA]',
+                'name': 'Grid Side External Total Apparent Power [VA]',
                 'value_id': VALUE_ID_DEBUG,
                 'start_address': 620,
                 'value_type': 'S16',
@@ -1162,21 +1162,21 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
-                'name': 'Grid Side Phase A Power [W]',
+                'name': 'Grid Side Power A [W]',
                 'value_id': 'PowerActiveL1ImExDiff',  # FIXME: direction?
                 'start_address': 622,
                 'value_type': 'S16',
                 'scale_factor': 1.0,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Phase B Power [W]',
+                'name': 'Grid Side Power B [W]',
                 'value_id': 'PowerActiveL2ImExDiff',  # FIXME: direction?
                 'start_address': 623,
                 'value_type': 'S16',
                 'scale_factor': 1.0,  # FIXME: sign?
             },
             {
-                'name': 'Grid Side Phase C Power [W]',
+                'name': 'Grid Side Power C [W]',
                 'value_id': 'PowerActiveL3ImExDiff',  # FIXME: direction?
                 'start_address': 624,
                 'value_type': 'S16',
