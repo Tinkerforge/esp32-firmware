@@ -153,6 +153,10 @@ void evse_v2_button_recovery_handler()
             api.removeConfig("ethernet/config");
             api.removeConfig("wifi/sta_config");
             api.removeConfig("wifi/ap_config");
+            // Reset network config in case the hostname is broken or the web interface listen port is changed.
+            // Browsers block HTTP on "unsafe" ports:
+            // https://superuser.com/questions/188058/which-ports-are-considered-unsafe-by-chrome
+            api.removeConfig("network/config");
             LittleFS.end();
             logger.printfln("Stage 0 done");
             break;
