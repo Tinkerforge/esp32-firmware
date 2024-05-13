@@ -1016,21 +1016,21 @@ specs = [
             },
             {
                 'name': 'Grid Side Line Voltage A-B [0.1 V]',
-                'value_id': 'VoltageL1L2',
+                'value_id': VALUE_ID_DEBUG,  # FIXME: there seems to be no way to detect 3P4L vs 3P3L, ignore this voltage for now
                 'start_address': 601,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Grid Side Line Voltage B-C [0.1 V]',
-                'value_id': 'VoltageL2L3',
+                'value_id': VALUE_ID_DEBUG,  # FIXME: there seems to be no way to detect 3P4L vs 3P3L, ignore this voltage for now
                 'start_address': 602,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Grid Side Line Voltage C-A [0.1 V]',
-                'value_id': 'VoltageL3L1',
+                'value_id': VALUE_ID_DEBUG,  # FIXME: there seems to be no way to detect 3P4L vs 3P3L, ignore this voltage for now
                 'start_address': 603,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
