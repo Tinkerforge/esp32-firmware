@@ -34,7 +34,7 @@ import { MeterModbusTCPTableID,
          DeyeHybridInverterVirtualMeterID } from "./meters_modbus_tcp_defs";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
-import { InputFloat } from "../../ts/components/input_float";
+import { InputAnyFloat } from "../../ts/components/input_any_float";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Table, TableRow } from "../../ts/components/table";
@@ -224,25 +224,19 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
                     }} />
             </FormRow>,
             <FormRow label={__("meters_modbus_tcp.content.registers_offset")}>
-                <InputFloat
+                <InputAnyFloat
                     required
-                    min={-10000000}
-                    max={10000000}
-                    digits={3}
-                    value={this.state.register.offset * 1000}
+                    value={this.state.register.offset}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, offset: v / 1000}});
+                        this.setState({register: {...this.state.register, offset: v}});
                     }} />
             </FormRow>,
             <FormRow label={__("meters_modbus_tcp.content.registers_scale_factor")}>
-                <InputFloat
+                <InputAnyFloat
                     required
-                    min={-10000000}
-                    max={10000000}
-                    digits={3}
-                    value={this.state.register.scale_factor * 1000}
+                    value={this.state.register.scale_factor}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, scale_factor: v / 1000}});
+                        this.setState({register: {...this.state.register, scale_factor: v}});
                     }} />
             </FormRow>,
             <FormRow label={__("meters_modbus_tcp.content.registers_value_id")}>
