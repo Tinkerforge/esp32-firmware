@@ -116,16 +116,13 @@ static void register_default_urls(void) {
 
     server.onNotAuthorized_HTTPThread([](WebServerRequest request) {
         if (request.uri() == "/") {
-            // Safari does not support an unauthenticated login page and an authenticated main page on the same url,
-            // as it does not proactively send the credentials if the same url is known to have an unauthenticated
-            // version.
-            if (is_safari(request.header("User-Agent"))) {
-                return request.requestAuthentication();
-            }
-
             return send_index_html(request);
         } else if (request.uri() == "/login_state") {
-            // Same reasoning as above. If we don't force Safari, it does not send credentials, which breaks the login_state check.
+            // Force Safari to send credentials proactively.
+            // This still is broken for the ws:// handler,
+            // however there seems to be no way to force safari to proactively send credentials for it.
+            // See https://bugs.webkit.org/show_bug.cgi?id=80362
+            // Pressing cancel instead of logging in works at least on macOS.
             if (is_safari(request.header("User-Agent"))) {
                 return request.requestAuthentication();
             }
