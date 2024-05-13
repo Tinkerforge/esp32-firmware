@@ -34,7 +34,8 @@ tables = [
     ('Sungrow String Inverter', 3),
     ('Solarmax Max Storage', 4),
     ('Victron Energy GX', 5),
-    ('Deye Hybrid Inverter', 6),
+    ('Deye Hybrid Inverter Low Voltage', 6),
+    ('Deye Hybrid Inverter High Voltage', 7),
 ]
 
 enums = [
@@ -1191,7 +1192,8 @@ specs = [
         ],
     },
     {
-        'name': 'Deye Hybrid Inverter Battery',
+        'name': 'Deye Hybrid Inverter Battery {variant}',
+        'variants': ['Low Voltage', 'High Voltage'],
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -1222,6 +1224,15 @@ specs = [
                 'start_address': 587,
                 'value_type': 'U16',
                 'scale_factor': 0.01,
+                'variant': 'Low Voltage',
+            },
+            {
+                'name': 'Battery Voltage [0.1 V]',
+                'value_id': 'VoltageDC',
+                'start_address': 587,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+                'variant': 'High Voltage',
             },
             {
                 'name': 'Battery Capacity [%]',
@@ -1234,14 +1245,23 @@ specs = [
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 590,
                 'value_type': 'S16',
-                'scale_factor': 1.0,  # FIXME: sign?
+                'scale_factor': -1.0,
+                'variant': 'Low Voltage',
+            },
+            {
+                'name': 'Battery Power [10 W]',
+                'value_id': 'PowerDCChaDisDiff',
+                'start_address': 590,
+                'value_type': 'S16',
+                'scale_factor': -10.0,
+                'variant': 'High Voltage',
             },
             {
                 'name': 'Battery Current [0.01 A]',
                 'value_id': 'CurrentDCChaDisDiff',
                 'start_address': 591,
                 'value_type': 'S16',
-                'scale_factor': 0.01,  # FIXME: sign?
+                'scale_factor': -0.01,
             },
         ],
     },

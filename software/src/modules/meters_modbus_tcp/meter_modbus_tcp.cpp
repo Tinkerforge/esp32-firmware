@@ -232,7 +232,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
-    case MeterModbusTCPTableID::DeyeHybridInverter:
+    case MeterModbusTCPTableID::DeyeHybridInverterLowVoltage:
+    case MeterModbusTCPTableID::DeyeHybridInverterHighVoltage:
         generic_read_request.start_address_offset = 0; // register address mode
         deye_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<DeyeHybridInverterVirtualMeterID>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
@@ -251,7 +252,13 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             break;
 
         case DeyeHybridInverterVirtualMeterID::Battery:
-            table = &deye_hybrid_inverter_battery_table;
+            if (table_id == MeterModbusTCPTableID::DeyeHybridInverterLowVoltage) {
+                table = &deye_hybrid_inverter_battery_low_voltage_table;
+            }
+            else {
+                table = &deye_hybrid_inverter_battery_high_voltage_table;
+            }
+
             break;
 
         case DeyeHybridInverterVirtualMeterID::Load:
