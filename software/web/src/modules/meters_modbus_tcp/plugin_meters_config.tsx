@@ -148,7 +148,6 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 }
 
 interface RegisterEditorProps {
-    min_address: number;
     table: TableConfigCustom;
     on_table: (table: TableConfigCustom) => void;
 }
@@ -164,7 +163,7 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
         this.state = {
             register: {
                 register_type: null,
-                start_address: props.min_address,
+                start_address: props.table[1].register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1,
                 value_type: null,
                 offset: 0.0,
                 scale_factor: 1.0,
@@ -188,11 +187,21 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
                         this.setState({register: {...this.state.register, register_type: parseInt(v)}});
                     }} />
             </FormRow>,
-            <FormRow label={__("meters_modbus_tcp.content.registers_start_address")}>
+            <FormRow
+                label={
+                    this.props.table[1].register_address_mode == ModbusRegisterAddressMode.Address
+                    ? __("meters_modbus_tcp.content.registers_start_address")
+                    : __("meters_modbus_tcp.content.registers_start_number")
+                }
+                label_muted={
+                    this.props.table[1].register_address_mode == ModbusRegisterAddressMode.Address
+                    ? __("meters_modbus_tcp.content.registers_start_address_muted")
+                    : __("meters_modbus_tcp.content.registers_start_number_muted")
+                }>
                 <InputNumber
                     required
-                    min={this.props.min_address}
-                    max={this.props.min_address + 65535}
+                    min={this.props.table[1].register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1}
+                    max={(this.props.table[1].register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1) + 65535}
                     value={this.state.register.start_address}
                     onValue={(v) => {
                         this.setState({register: {...this.state.register, start_address: v}});
@@ -270,14 +279,18 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
                 return row
             })}
             columnNames={[""]}
-            addEnabled={this.props.table[1].registers.length < MAX_CUSTOM_REGISTERS}
-            addMessage={__("meters_modbus_tcp.content.registers_add_count")(this.props.table[1].registers.length, MAX_CUSTOM_REGISTERS)}
+            addEnabled={util.hasValue(this.props.table[1].register_address_mode) && this.props.table[1].registers.length < MAX_CUSTOM_REGISTERS}
+            addMessage={
+                util.hasValue(this.props.table[1].register_address_mode)
+                    ? __("meters_modbus_tcp.content.registers_add_count")(this.props.table[1].registers.length, MAX_CUSTOM_REGISTERS)
+                    : __("meters_modbus_tcp.content.registers_add_select_address_mode")
+            }
             addTitle={__("meters_modbus_tcp.content.registers_add_title")}
             onAddShow={async () => {
                 this.setState({
                     register: {
                         register_type: null,
-                        start_address: this.props.min_address,
+                        start_address: this.props.table[1].register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1,
                         value_type: null,
                         offset: 0.0,
                         scale_factor: 1.0,
@@ -451,7 +464,6 @@ export function init() {
                         </FormRow>,
                         <FormRow label={__("meters_modbus_tcp.content.registers")}>
                             <RegisterTable
-                                min_address={config[1].table[1].register_address_mode == ModbusRegisterAddressMode.Number ? 1 : 0}
                                 table={config[1].table}
                                 on_table={(table: TableConfigCustom) => on_config(util.get_updated_union(config, {table: table}))} />
                         </FormRow>
