@@ -1291,27 +1291,6 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Load Phase Current A [0.01 A]',
-                'value_id': 'CurrentL1ImExDiff',  # FIXME: direction?
-                'start_address': 647,
-                'value_type': 'S16',
-                'scale_factor': 0.01,  # FIXME: sign?
-            },
-            {
-                'name': 'Load Phase Current B [0.01 A]',
-                'value_id': 'CurrentL2ImExDiff',  # FIXME: direction?
-                'start_address': 648,
-                'value_type': 'S16',
-                'scale_factor': 0.01,  # FIXME: sign?
-            },
-            {
-                'name': 'Load Phase Current C [0.01 A]',
-                'value_id': 'CurrentL3ImExDiff',  # FIXME: direction?
-                'start_address': 649,
-                'value_type': 'S16',
-                'scale_factor': 0.01,  # FIXME: sign?
-            },
-            {
                 'name': 'Load Phase Power A [W]',
                 'value_id': 'PowerActiveL1ImExDiff',  # FIXME: direction?
                 'start_address': 650,
