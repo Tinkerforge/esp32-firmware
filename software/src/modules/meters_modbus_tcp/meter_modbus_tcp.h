@@ -78,6 +78,7 @@ private:
     bool is_victron_energy_gx_inverter_meter() const;
     bool is_victron_energy_gx_grid_meter() const;
     bool is_victron_energy_gx_load_meter() const;
+    bool is_deye_hybrid_inverter_battery_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -118,6 +119,7 @@ private:
 
     // Deye
     DeyeHybridInverterVirtualMeterID deye_hybrid_inverter_virtual_meter;
+    int deye_hybrid_inverter_device_type = -1;
 };
 
 #if defined(__GNUC__)

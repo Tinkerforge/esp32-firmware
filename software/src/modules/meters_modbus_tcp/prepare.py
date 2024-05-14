@@ -123,9 +123,8 @@ enums = [
             ('None', 0),
             ('Inverter', 1),
             ('Grid', 2),
-            ('Low Voltage Battery', 3),
-            ('High Voltage Battery', 4),
-            ('Load', 5),
+            ('Battery', 3),
+            ('Load', 4),
         ],
     },
 ]
@@ -840,12 +839,6 @@ specs = [
         'name': 'Deye Hybrid Inverter',
         'register_type': 'HoldingRegister',
         'values': [
-            {
-                'name': 'Device Type',
-                'value_id': VALUE_ID_DEBUG,
-                'start_address': 0,
-                'value_type': 'U16',
-            },
             {
                 'name': 'Rated Power [0.1 W]',
                 'value_id': VALUE_ID_DEBUG,

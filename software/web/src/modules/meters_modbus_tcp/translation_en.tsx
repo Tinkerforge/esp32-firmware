@@ -27,8 +27,6 @@ let x = {
             "virtual_meter_inverter": "Inverter",
             "virtual_meter_grid": "Grid",
             "virtual_meter_battery": "Battery",
-            "virtual_meter_low_voltage_battery": "Low Voltage Battery",
-            "virtual_meter_high_voltage_battery": "High Voltage Battery",
             "virtual_meter_load": "Load",
             "device_address": "Device address",
             "device_address_muted": /*SFN*/(port: number) => "typically " + port/*NF*/,

@@ -27,8 +27,6 @@ let x = {
             "virtual_meter_inverter": "Wechselrichter",
             "virtual_meter_grid": "Netzanschluss",
             "virtual_meter_battery": "Speicher",
-            "virtual_meter_low_voltage_battery": "Niederspannungs-Speicher",
-            "virtual_meter_high_voltage_battery": "Hochspannungs-Speicher",
             "virtual_meter_load": "Last",
             "device_address": "Geräteadresse",
             "device_address_muted": /*SFN*/(port: number) => "typischerweise " + port/*NF*/,

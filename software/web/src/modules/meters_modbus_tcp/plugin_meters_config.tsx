@@ -407,8 +407,7 @@ export function init() {
                         items = [
                             [DeyeHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [DeyeHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [DeyeHybridInverterVirtualMeterID.LowVoltageBattery.toString(), __("meters_modbus_tcp.content.virtual_meter_low_voltage_battery")],
-                            [DeyeHybridInverterVirtualMeterID.HighVoltageBattery.toString(), __("meters_modbus_tcp.content.virtual_meter_high_voltage_battery")],
+                            [DeyeHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                             [DeyeHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
                     }

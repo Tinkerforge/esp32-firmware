@@ -50,6 +50,8 @@
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L2_ADDRESS          818u
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS          819u
 
+#define DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS             0u
+
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
 
@@ -250,12 +252,9 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             table = &deye_hybrid_inverter_grid_table;
             break;
 
-        case DeyeHybridInverterVirtualMeterID::LowVoltageBattery:
-            table = &deye_hybrid_inverter_low_voltage_battery_table;
-            break;
-
-        case DeyeHybridInverterVirtualMeterID::HighVoltageBattery:
-            table = &deye_hybrid_inverter_high_voltage_battery_table;
+        case DeyeHybridInverterVirtualMeterID::Battery:
+            // will be set after device type discovery
+            table = nullptr;
             break;
 
         case DeyeHybridInverterVirtualMeterID::Load:
@@ -302,6 +301,13 @@ void MeterModbusTCP::connect_callback()
         if (sungrow_inverter_output_type < 0) {
             generic_read_request.register_type = ModbusRegisterType::InputRegister;
             generic_read_request.start_address = SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS; // read output type
+            generic_read_request.register_count = 1;
+        }
+    }
+    else if (is_deye_hybrid_inverter_battery_meter()) {
+        if (deye_hybrid_inverter_device_type < 0) {
+            generic_read_request.register_type = ModbusRegisterType::HoldingRegister;
+            generic_read_request.start_address = DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS; // read device type
             generic_read_request.register_count = 1;
         }
     }
@@ -382,6 +388,12 @@ bool MeterModbusTCP::is_victron_energy_gx_load_meter() const
         && victron_energy_gx_virtual_meter == VictronEnergyGXVirtualMeterID::Load;
 }
 
+bool MeterModbusTCP::is_deye_hybrid_inverter_battery_meter() const
+{
+    return table_id == MeterModbusTCPTableID::DeyeHybridInverter
+        && deye_hybrid_inverter_virtual_meter == DeyeHybridInverterVirtualMeterID::Battery;
+}
+
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
@@ -392,6 +404,14 @@ void MeterModbusTCP::read_done_callback()
             logger.printfln("Error reading %s / Output Type (%u): %s [%d]",
                             get_table_name(table_id),
                             SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS,
+                            get_modbus_result_code_name(generic_read_request.result_code),
+                            generic_read_request.result_code);
+        }
+        else if (is_deye_hybrid_inverter_battery_meter()
+              && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
+            logger.printfln("Error reading %s / Device Type (%u): %s [%d]",
+                            get_table_name(table_id),
+                            DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS,
                             get_modbus_result_code_name(generic_read_request.result_code),
                             generic_read_request.result_code);
         }
@@ -453,6 +473,50 @@ void MeterModbusTCP::read_done_callback()
                             get_table_name(table_id),
                             SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS,
                             sungrow_inverter_output_type);
+#endif
+
+            meters.declare_value_ids(slot, table->ids, table->ids_length);
+        }
+
+        read_allowed = true;
+        read_index = 0;
+
+        prepare_read();
+
+        return;
+    }
+
+    if (is_deye_hybrid_inverter_battery_meter()
+     && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
+        if (deye_hybrid_inverter_device_type < 0) {
+            switch (register_buffer[0]) {
+            case 0x200:
+            case 0x300:
+            case 0x400:
+                logger.printfln("%s has unsupported Device Type: %u", get_table_name(table_id), register_buffer[0]);
+                return;
+
+            case 0x500:
+                table = &deye_hybrid_inverter_low_voltage_battery_table;
+                break;
+
+            case 0x600:
+            case 0x601:
+                table = &deye_hybrid_inverter_high_voltage_battery_table;
+                break;
+
+            default:
+                logger.printfln("%s has unknown Device Type: %u", get_table_name(table_id), register_buffer[0]);
+                return;
+            }
+
+            deye_hybrid_inverter_device_type = register_buffer[0];
+
+#ifdef DEBUG_LOG_ALL_VALUES
+            logger.printfln("%s / Device Type (%u): %d",
+                            get_table_name(table_id),
+                            DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS,
+                            deye_hybrid_inverter_device_type);
 #endif
 
             meters.declare_value_ids(slot, table->ids, table->ids_length);
