@@ -33,6 +33,7 @@ static const size_t debug_header_prefix_len = strlen(debug_header_prefix);
 
 void DebugProtocol::register_urls()
 {
+    // TODO: Make this an API command?
     server.on("/debug_protocol/start", HTTP_GET, [this](WebServerRequest request) {
         last_debug_keep_alive = millis();
         check_debug();
@@ -62,11 +63,13 @@ void DebugProtocol::register_urls()
         return request.send(200);
     });
 
+    // TODO: Make this an API command?
     server.on("/debug_protocol/continue", HTTP_GET, [this](WebServerRequest request) {
         last_debug_keep_alive = millis();
         return request.send(200);
     });
 
+    // TODO: Make this an API command?
     server.on("/debug_protocol/stop", HTTP_GET, [this](WebServerRequest request) {
         debug = false;
         return request.send(200);

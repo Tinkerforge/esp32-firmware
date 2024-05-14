@@ -99,6 +99,7 @@ void Coredump::register_urls()
 {
     api.addState("coredump/state", &state);
 
+    // TODO: Make this an API command?
     server.on("/coredump/erase", HTTP_GET, [this](WebServerRequest request) {
         esp_core_dump_image_erase();
         if (esp_core_dump_image_check() == ESP_OK)
