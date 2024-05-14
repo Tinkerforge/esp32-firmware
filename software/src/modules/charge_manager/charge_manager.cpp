@@ -19,6 +19,7 @@
 
 #include "charge_manager.h"
 #include "module_dependencies.h"
+#include "charge_manager_private.h"
 
 #include <algorithm>
 #include <Arduino.h>
@@ -26,7 +27,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "time.h"
-#include "modules/cm_networking/cm_networking_defs.h"
 
 #include "api.h"
 #include "build.h"
@@ -34,20 +34,13 @@
 #include "task_scheduler.h"
 #include "tools.h"
 
-#define DISTRIBUTION_LOG_LEN 2048
-
-#define CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE 128
-#define CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE 129
-#define CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE 130
-#define CHARGE_MANAGER_CLIENT_ERROR_START 192
+#include "modules/cm_networking/cm_networking_defs.h"
 
 // This is a hack to allow the validator of available_current
 // to access config["maximum_available_current"]
 // It is necessary, because configs only take a function pointer as
 // validator function, so lambda capture lists have to be empty.
 static uint32_t max_avail_current = 0;
-
-#define TIMEOUT_MS 32000
 
 #define WATCHDOG_TIMEOUT_MS 30000
 
@@ -372,8 +365,6 @@ void ChargeManager::start_manager_task()
     }, 0, cm_send_delay);
 }
 
-int idx_array[MAX_CONTROLLED_CHARGERS] = {0};
-
 void ChargeManager::setup()
 {
     if (!api.restorePersistentConfig("charge_manager/config", &config)) {
@@ -400,11 +391,7 @@ void ChargeManager::setup()
     for (int i = 0; i < config.get("chargers")->count(); ++i) {
         state.get("chargers")->add();
         state.get("chargers")->get(i)->get("name")->updateString(config.get("chargers")->get(i)->get("name")->asString());
-        idx_array[i] = i;
     }
-
-    for (int i = config.get("chargers")->count(); i < MAX_CONTROLLED_CHARGERS; ++i)
-        idx_array[i] = -1;
 
     size_t hosts_buf_size = 0;
     for (int i = 0; i < config.get("chargers")->count(); ++i) {
@@ -428,7 +415,7 @@ void ChargeManager::setup()
 
     start_manager_task();
 
-    task_scheduler.scheduleWithFixedDelay([this](){this->distribute_current();}, 5000, 5000);
+    task_scheduler.scheduleWithFixedDelay([this](){this->allocate_current();}, 5000, 5000);
 
     if (config.get("enable_watchdog")->asBool()) {
         task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1000, 1000);
@@ -539,402 +526,6 @@ bool ChargeManager::is_control_pilot_disconnect_supported(uint32_t last_update_c
 const char *ChargeManager::get_charger_name(uint8_t idx)
 {
     return this->state.get("chargers")->get(idx)->get("name")->asEphemeralCStr();
-}
-
-#define LOCAL_LOG(fmt, ...) if(local_log) local_log += snprintf_u(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
-
-void ChargeManager::distribute_current()
-{
-    bool seen_all_chargers_local = seen_all_chargers();
-    if (seen_all_chargers_local && !printed_all_chargers_seen) {
-        logger.printfln("Seen all chargers.");
-        printed_all_chargers_seen = true;
-    }
-
-    uint32_t available = seen_all_chargers_local ? available_current.get("current")->asUint() : 0;
-
-    bool use_3phase_minimum_current = available_phases.get("phases")->asUint() >= 3;
-    uint32_t minimum_current = use_3phase_minimum_current ? this->minimum_current :
-                                                            this->minimum_current_1p;
-
-    bool print_local_log = false;
-    char *local_log = distribution_log.get();
-    if (local_log)
-        local_log += snprintf_u(local_log, DISTRIBUTION_LOG_LEN - (local_log - distribution_log.get()), "Redistributing current%c", '\0');
-
-    bool any_charger_blocking_firmware_update = false;
-
-    uint32_t current_array[MAX_CONTROLLED_CHARGERS] = {0};
-
-    // Update control pilot disconnect
-    {
-        bool disconnect_requested = control_pilot_disconnect.get("disconnect")->asBool();
-        for (size_t i = 0; i < charger_count; ++i) {
-            this->charger_state[i].cp_disconnect = disconnect_requested;
-        }
-    }
-
-    // Handle unreachable EVSEs
-    {
-        static bool last_print_local_log_was_error = false;
-
-        // If any EVSE is unreachable or in another error state, we set the available current to 0.
-        // The distribution algorithm can then run normally and will block all chargers.
-        bool unreachable_evse_found = false;
-        for (int i = 0; i < charger_count; ++i) {
-            auto &charger = this->charger_state[i];
-
-            auto charger_error = charger.error;
-            if (charger_error != CM_NETWORKING_ERROR_NO_ERROR &&
-                charger_error != CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE &&
-                charger_error != CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE &&
-                charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
-                unreachable_evse_found = true;
-                LOCAL_LOG("stage 0: %s (%s) reports error %u.", this->get_charger_name(i), this->hosts[i], charger.error);
-
-                print_local_log = !last_print_local_log_was_error;
-                last_print_local_log_was_error = true;
-            }
-
-            // Charger does not respond anymore
-            if (deadline_elapsed(charger.last_update + TIMEOUT_MS)) {
-                unreachable_evse_found = true;
-                LOCAL_LOG("stage 0: Can't reach EVSE of %s (%s): last_update too old.", this->get_charger_name(i), this->hosts[i]);
-
-                bool state_was_not_five = charger.state != 5;
-                charger.state = 5;
-                if (state_was_not_five || charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
-                    charger.error = CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE;
-                    cm_networking.clear_cached_hostname(i);
-
-                    print_local_log = !last_print_local_log_was_error;
-                    last_print_local_log_was_error = true;
-                }
-            } else if (charger.error == CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE) {
-                charger.error = CM_NETWORKING_ERROR_NO_ERROR;
-            }
-
-            // Charger did not update the charging current in time
-            if (charger.allocated_current < charger.allowed_current && deadline_elapsed(charger.last_sent_config + TIMEOUT_MS)) {
-                unreachable_evse_found = true;
-                LOCAL_LOG("stage 0: EVSE of %s (%s) did not react in time.", this->get_charger_name(i), this->hosts[i]);
-
-                bool state_was_not_five = charger.state != 5;
-                charger.state = 5;
-                if (state_was_not_five || charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
-                    charger.error = CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE;
-                    print_local_log = !last_print_local_log_was_error;
-                    last_print_local_log_was_error = true;
-                }
-            } else if (charger.error == CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE) {
-                charger.error = CM_NETWORKING_ERROR_NO_ERROR;
-            }
-
-            // Block firmware update if charger has a vehicle connected.
-            if (charger.state != 0)
-                any_charger_blocking_firmware_update = true;
-        }
-
-        if (unreachable_evse_found) {
-            // Shut down everything.
-            available = 0;
-            LOCAL_LOG("%s", "stage 0: Unreachable, unreactive or misconfigured EVSE(s) found. Setting available current to 0 mA.");
-            state.get("state")->updateUint(2);
-
-            // Any unreachable EVSE will block a firmware update.
-            any_charger_blocking_firmware_update = true;
-        } else {
-            state.get("state")->updateUint(1);
-            if (last_print_local_log_was_error) {
-                last_print_local_log_was_error = false;
-                print_local_log = true;
-            }
-        }
-    }
-
-    // Sort chargers.
-    {
-        // Sort the chargers by their minimum supported current,
-        // then sort chargers that are already charging before those that
-        // want to charge but are not charging yet.
-        // Sorting by the minimum current allows us to distribute the current "perfectly"
-        // with a single pass over the chargers.
-        int chargers_requesting_current = 0;
-        int chargers_requesting_current_low_priority = 0;
-        for (int i = 0; i < charger_count; ++i) {
-            auto &charger = this->charger_state[i];
-            if (charger.is_charging || charger.wants_to_charge) {
-                ++chargers_requesting_current;
-            } else if (charger.wants_to_charge_low_priority) {
-                ++chargers_requesting_current_low_priority;
-            }
-        }
-
-        LOCAL_LOG("%d charger%s request%s current. %u mA available.",
-                  chargers_requesting_current,
-                  chargers_requesting_current == 1 ? "" : "s",
-                  chargers_requesting_current == 1 ? "s" : "",
-                  available);
-
-        std::stable_sort(idx_array, idx_array + charger_count, [this](int left, int right) {
-            return this->charger_state[left].requested_current < this->charger_state[right].requested_current;
-        });
-
-        std::stable_sort(idx_array, idx_array + charger_count, [this](int left, int right) {
-            bool left_charging = this->charger_state[left].is_charging;
-            bool right_charging = this->charger_state[right].is_charging;
-            return left_charging && !right_charging;
-        });
-    }
-
-    // Allocate current to chargers.
-    {
-        // First allocate the minimum supported current to each charger.
-        // Then distribute the rest of the available current to those
-        // that received the minimum.
-        int chargers_allocated_current_to = 0;
-
-        uint16_t current_to_set = minimum_current;
-        for (int i = 0; i < charger_count; ++i) {
-            auto &charger = this->charger_state[idx_array[i]];
-
-            if (!charger.is_charging && !charger.wants_to_charge) {
-                continue;
-            }
-
-            uint16_t supported_current = charger.supported_current;
-            if (supported_current < current_to_set) {
-                LOCAL_LOG("stage 0: Can't unblock %s (%s): It only supports %u mA, but %u mA is the configured minimum current. Handling as low priority charger.",
-                          this->get_charger_name(idx_array[i]),
-                          this->hosts[idx_array[i]],
-                          supported_current,
-                          current_to_set);
-                continue;
-            }
-
-            if (available < current_to_set) {
-                LOCAL_LOG("stage 0: %u mA left, but %u mA required to unblock another charger. Blocking all following chargers.",available, current_to_set);
-                current_to_set = 0;
-            }
-
-            if (current_to_set > 0) {
-                ++chargers_allocated_current_to;
-            }
-
-            current_array[idx_array[i]] = current_to_set;
-            available -= current_to_set;
-
-            LOCAL_LOG("stage 0: Calculated target for %s (%s) of %u mA. %u mA left.",
-                      this->get_charger_name(idx_array[i]),
-                      this->hosts[idx_array[i]],
-                      current_to_set,
-                      available);
-        }
-
-        if (available > 0) {
-            LOCAL_LOG("stage 0: %u mA still available. Recalculating targets.", available);
-
-            int chargers_reallocated = 0;
-            for (int i = 0; i < charger_count; ++i) {
-                if (current_array[idx_array[i]] == 0)
-                    continue;
-
-                auto &charger = this->charger_state[idx_array[i]];
-                uint16_t current_per_charger = MIN(32000, available / (chargers_allocated_current_to - chargers_reallocated));
-
-                uint16_t requested_current = charger.requested_current;
-
-                // If exactly one charger is charging, double the current margin for faster power manager control.
-                // If the requested current is exactly 6 A, the car limits itself to less than 6 A - requested_current_margin,
-                // so we don't have to increase it.
-                if (chargers_allocated_current_to == 1 && requested_current > 6000) {
-                    requested_current += requested_current_margin;
-                }
-
-                // Protect against overflow.
-                if (requested_current < current_array[idx_array[i]])
-                    continue;
-
-                uint16_t current_to_add = MIN(requested_current - current_array[idx_array[i]], current_per_charger);
-
-                ++chargers_reallocated;
-
-                current_array[idx_array[i]] += current_to_add;
-                available -= current_to_add;
-
-                LOCAL_LOG("stage 0: Recalculated target for %s (%s) of %u mA. %u mA left.",
-                          this->get_charger_name(idx_array[i]),
-                          this->hosts[idx_array[i]],
-                          current_array[idx_array[i]],
-                          available);
-            }
-        }
-    }
-
-    // Wake up chargers that already charged once.
-    {
-        if (available > 0) {
-            LOCAL_LOG("stage 0: %u mA still available. Attempting to wake up chargers that already charged their vehicle once.", available);
-
-            uint16_t current_to_set = minimum_current;
-            for (int i = 0; i < charger_count; ++i) {
-                auto &charger = this->charger_state[idx_array[i]];
-
-                uint16_t supported_current = charger.supported_current;
-
-                bool high_prio = charger.is_charging || charger.wants_to_charge;
-                bool low_prio = charger.wants_to_charge_low_priority;
-
-                if (!low_prio && !(high_prio && supported_current < current_to_set)) {
-                    continue;
-                }
-
-                if (supported_current < current_to_set) {
-                    LOCAL_LOG("stage 0: %s (%s) only supports %u mA, but %u mA is the configured minimum current. Allocating %u mA.",
-                              this->get_charger_name(idx_array[i]),
-                              this->hosts[idx_array[i]],
-                              supported_current,
-                              current_to_set,
-                              current_to_set);
-                }
-
-                if (available < current_to_set) {
-                    LOCAL_LOG("stage 0: %u mA left, but %u mA required to unblock another charger. Blocking all following chargers.",available, current_to_set);
-                    current_to_set = 0;
-                }
-
-                /*if (current_to_set > 0) {
-                    ++chargers_allocated_current_to;
-                }*/
-
-                current_array[idx_array[i]] = current_to_set;
-                available -= current_to_set;
-
-                LOCAL_LOG("stage 0: Calculated target for %s (%s) of %u mA. %u mA left.",
-                          this->get_charger_name(idx_array[i]),
-                          this->hosts[idx_array[i]],
-                          current_to_set,
-                          available);
-            }
-        }
-    }
-
-    // Apply current limits.
-    {
-        // First, throttle chargers that have a higher current limit than the calculated one.
-        // If no charger has to be throttled, then also unthrottle other chargers. Skip this
-        // stage if even one charger needs to be throttled to be sure that the available current
-        // is never exceeded.
-        bool skip_stage_2 = false;
-        for (int i = 0; i < charger_count; ++i) {
-            auto &charger = this->charger_state[i];
-
-            uint16_t current_to_set = current_array[i];
-
-            bool will_throttle = current_to_set < charger.allocated_current || current_to_set < charger.allowed_current;
-
-            if (!will_throttle) {
-                continue;
-            }
-
-            LOCAL_LOG("stage 1: Throttled %s (%s) to %d mA.",
-                      this->get_charger_name(i),
-                      this->hosts[i],
-                      current_to_set);
-
-            bool current_changed = charger.allocated_current != current_to_set;
-            charger.allocated_current = current_to_set;
-            if (current_changed) {
-                print_local_log = true;
-                if (charger.error != CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE)
-                    charger.last_sent_config = millis();
-            }
-
-            // Skip stage 2 to wait for the charger to adapt to the now smaller limit.
-            // Some cars are slow to adapt to a new limit. The standard requires them to
-            // react in 5 seconds.
-            // More correct would be to detect whether the throttled current limit
-            // was accepted by the box more than 5 seconds ago (so that we can be sure the timing fits)
-            // However this is complicated and waiting a complete cycle (i.e. 10 seconds)
-            // works good enough.
-            if (!skip_stage_2) {
-                LOCAL_LOG("%s", "stage 1: Throttled a charger. Skipping stage 2");
-                skip_stage_2 = true;
-            }
-        }
-
-        if (!skip_stage_2) {
-            for (int i = 0; i < charger_count; ++i) {
-                auto &charger = this->charger_state[i];
-
-                uint16_t current_to_set = current_array[i];
-
-                // > instead of >= to only catch chargers that were not already modified in stage 1.
-                bool will_not_throttle = current_to_set > charger.allocated_current || current_to_set > charger.allowed_current;
-
-                if (!will_not_throttle) {
-                    continue;
-                }
-
-                LOCAL_LOG("stage 2: Unthrottled %s (%s) to %d mA.",
-                          this->get_charger_name(i),
-                          this->hosts[i],
-                          current_to_set);
-
-                bool current_changed = charger.allocated_current != current_to_set;
-                charger.allocated_current = current_to_set;
-                if (current_changed) {
-                    print_local_log = true;
-                    if (charger.error != CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE)
-                        charger.last_sent_config = millis();
-                }
-            }
-        } else {
-            LOCAL_LOG("%s", "Skipping stage 2");
-        }
-    }
-
-    if (print_local_log) {
-        local_log = distribution_log.get();
-        if (local_log) {
-            size_t len = strlen(local_log);
-            while (len > 0) {
-                logger.write(local_log, len);
-                local_log += len + 1;
-                if ((local_log - distribution_log.get()) >= DISTRIBUTION_LOG_LEN)
-                    break;
-                len = strlen(local_log);
-            }
-        }
-    }
-
-    if (allocated_current_callback) {
-        uint32_t allocated_current = 0;
-        for (int i = 0; i < charger_count; ++i) {
-            auto &charger = this->charger_state[i];
-            allocated_current += charger.allocated_current;
-        }
-
-        // Inform callback about how much current we distributed to chargers.
-        allocated_current_callback(allocated_current);
-    }
-
-#if MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
-    firmware_update_allowed = !any_charger_blocking_firmware_update;
-#else
-    (void)any_charger_blocking_firmware_update;
-#endif
-
-    for (int i = 0; i < charger_count; ++i) {
-        auto &charger = this->charger_state[i];
-        auto *charger_cfg = (Config *)this->state.get("chargers")->get(i);
-        charger_cfg->get("state")->updateUint(charger.state);
-        charger_cfg->get("error")->updateUint(charger.error);
-        charger_cfg->get("allocated_current")->updateUint(charger.allocated_current);
-        charger_cfg->get("supported_current")->updateUint(charger.supported_current);
-        charger_cfg->get("last_update")->updateUint(charger.last_update);
-        charger_cfg->get("uid")->updateUint(charger.uid);
-    }
 }
 
 void ChargeManager::set_allocated_current_callback(std::function<void(uint32_t)> &&callback)

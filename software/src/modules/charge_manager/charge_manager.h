@@ -39,7 +39,7 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void distribute_current();
+    void allocate_current();
     void start_manager_task();
     void check_watchdog();
     bool get_charger_count();
