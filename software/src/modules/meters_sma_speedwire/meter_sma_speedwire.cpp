@@ -67,67 +67,68 @@ struct obis_value_mapping {
 };
 
 static const obis_value_mapping obis_value_mappings[] {
-    {MeterValueID::PowerActiveLSumImport,        {0,  1, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerActiveLSumImport,        {0,  1, 4, 0},      1/10.0F, convert_uint32},  // Sum
     {MeterValueID::PowerActiveL1Import,          {0, 21, 4, 0},      1/10.0F, convert_uint32},  // L1
     {MeterValueID::PowerActiveL2Import,          {0, 41, 4, 0},      1/10.0F, convert_uint32},  // L2
     {MeterValueID::PowerActiveL3Import,          {0, 61, 4, 0},      1/10.0F, convert_uint32},  // L3
 
-    {MeterValueID::EnergyActiveLSumImport,       {0,  1, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyActiveLSumImport,       {0,  1, 8, 0}, 1/3600000.0F, convert_uint64},  // Sum
     {MeterValueID::EnergyActiveL1Import,         {0, 21, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
     {MeterValueID::EnergyActiveL2Import,         {0, 41, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
     {MeterValueID::EnergyActiveL3Import,         {0, 61, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
 
-    {MeterValueID::PowerActiveLSumExport,        {0,  2, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerActiveLSumExport,        {0,  2, 4, 0},      1/10.0F, convert_uint32},  // Sum
     {MeterValueID::PowerActiveL1Export,          {0, 22, 4, 0},      1/10.0F, convert_uint32},  // L1
     {MeterValueID::PowerActiveL2Export,          {0, 42, 4, 0},      1/10.0F, convert_uint32},  // L2
     {MeterValueID::PowerActiveL3Export,          {0, 62, 4, 0},      1/10.0F, convert_uint32},  // L3
 
-    {MeterValueID::EnergyActiveLSumExport,       {0,  2, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyActiveLSumExport,       {0,  2, 8, 0}, 1/3600000.0F, convert_uint64},  // Sum
     {MeterValueID::EnergyActiveL1Export,         {0, 22, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
     {MeterValueID::EnergyActiveL2Export,         {0, 42, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
     {MeterValueID::EnergyActiveL3Export,         {0, 62, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
 
-    {MeterValueID::PowerReactiveLSumInductive,   {0,  3, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerReactiveLSumInductive,   {0,  3, 4, 0},      1/10.0F, convert_uint32},  // Sum
     {MeterValueID::PowerReactiveL1Inductive,     {0, 23, 4, 0},      1/10.0F, convert_uint32},  // L1
     {MeterValueID::PowerReactiveL2Inductive,     {0, 43, 4, 0},      1/10.0F, convert_uint32},  // L2
     {MeterValueID::PowerReactiveL3Inductive,     {0, 63, 4, 0},      1/10.0F, convert_uint32},  // L3
 
-    {MeterValueID::EnergyReactiveLSumInductive,  {0,  3, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyReactiveLSumInductive,  {0,  3, 8, 0}, 1/3600000.0F, convert_uint64},  // Sum
     {MeterValueID::EnergyReactiveL1Inductive,    {0, 23, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
     {MeterValueID::EnergyReactiveL2Inductive,    {0, 43, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
     {MeterValueID::EnergyReactiveL3Inductive,    {0, 63, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
 
-    {MeterValueID::PowerReactiveLSumCapacitive,  {0,  4, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerReactiveLSumCapacitive,  {0,  4, 4, 0},      1/10.0F, convert_uint32},  // Sum
     {MeterValueID::PowerReactiveL1Capacitive,    {0, 24, 4, 0},      1/10.0F, convert_uint32},  // L1
     {MeterValueID::PowerReactiveL2Capacitive,    {0, 44, 4, 0},      1/10.0F, convert_uint32},  // L2
     {MeterValueID::PowerReactiveL3Capacitive,    {0, 64, 4, 0},      1/10.0F, convert_uint32},  // L3
 
-    {MeterValueID::EnergyReactiveLSumCapacitive, {0,  4, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyReactiveLSumCapacitive, {0,  4, 8, 0}, 1/3600000.0F, convert_uint64},  // Sum
     {MeterValueID::EnergyReactiveL1Capacitive,   {0, 24, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
     {MeterValueID::EnergyReactiveL2Capacitive,   {0, 44, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
     {MeterValueID::EnergyReactiveL3Capacitive,   {0, 64, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
 
-    {MeterValueID::PowerApparentLSumImport,      {0,  9, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerApparentLSumImport,      {0,  9, 4, 0},      1/10.0F, convert_uint32},  // Sum
     {MeterValueID::PowerApparentL1Import,        {0, 29, 4, 0},      1/10.0F, convert_uint32},  // L1
     {MeterValueID::PowerApparentL2Import,        {0, 49, 4, 0},      1/10.0F, convert_uint32},  // L2
     {MeterValueID::PowerApparentL3Import,        {0, 69, 4, 0},      1/10.0F, convert_uint32},  // L3
 
-    {MeterValueID::EnergyApparentLSumImport,     {0,  9, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyApparentLSumImport,     {0,  9, 8, 0}, 1/3600000.0F, convert_uint64},  // Sum
     {MeterValueID::EnergyApparentL1Import,       {0, 29, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
     {MeterValueID::EnergyApparentL2Import,       {0, 49, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
     {MeterValueID::EnergyApparentL3Import,       {0, 69, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
 
-    {MeterValueID::PowerApparentLSumExport,      {0, 10, 4, 0},      1/10.0F, convert_uint32},  // Summe
+    {MeterValueID::PowerApparentLSumExport,      {0, 10, 4, 0},      1/10.0F, convert_uint32},  // Sum
     {MeterValueID::PowerApparentL1Export,        {0, 30, 4, 0},      1/10.0F, convert_uint32},  // L1
     {MeterValueID::PowerApparentL2Export,        {0, 50, 4, 0},      1/10.0F, convert_uint32},  // L2
     {MeterValueID::PowerApparentL3Export,        {0, 70, 4, 0},      1/10.0F, convert_uint32},  // L3
 
-    {MeterValueID::EnergyApparentLSumExport,     {0, 10, 8, 0}, 1/3600000.0F, convert_uint64},  // Summe
+    {MeterValueID::EnergyApparentLSumExport,     {0, 10, 8, 0}, 1/3600000.0F, convert_uint64},  // Sum
     {MeterValueID::EnergyApparentL1Export,       {0, 30, 8, 0}, 1/3600000.0F, convert_uint64},  // L1
     {MeterValueID::EnergyApparentL2Export,       {0, 50, 8, 0}, 1/3600000.0F, convert_uint64},  // L2
     {MeterValueID::EnergyApparentL3Export,       {0, 70, 8, 0}, 1/3600000.0F, convert_uint64},  // L3
 
-    {MeterValueID::PowerFactorLSum,              {0, 13, 4, 0},    1/1000.0F, convert_uint32},  // Summe
+    // Power factors are always positive, for both import and export
+    {MeterValueID::PowerFactorLSum,              {0, 13, 4, 0},    1/1000.0F, convert_uint32},  // Sum
     {MeterValueID::PowerFactorL1,                {0, 33, 4, 0},    1/1000.0F, convert_uint32},  // L1
     {MeterValueID::PowerFactorL2,                {0, 53, 4, 0},    1/1000.0F, convert_uint32},  // L2
     {MeterValueID::PowerFactorL3,                {0, 73, 4, 0},    1/1000.0F, convert_uint32},  // L3
@@ -136,6 +137,7 @@ static const obis_value_mapping obis_value_mappings[] {
     {MeterValueID::VoltageL2N,                   {0, 52, 4, 0},    1/1000.0F, convert_uint32},  // L2
     {MeterValueID::VoltageL3N,                   {0, 72, 4, 0},    1/1000.0F, convert_uint32},  // L3
 
+    // Currents are always positive, for both import and export
     {MeterValueID::CurrentL1ImExSum,             {0, 31, 4, 0},    1/1000.0F, convert_uint32},  // L1
     {MeterValueID::CurrentL2ImExSum,             {0, 51, 4, 0},    1/1000.0F, convert_uint32},  // L2
     {MeterValueID::CurrentL3ImExSum,             {0, 71, 4, 0},    1/1000.0F, convert_uint32},  // L3
