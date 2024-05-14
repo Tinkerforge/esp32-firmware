@@ -119,8 +119,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             return;
 
         case SungrowHybridInverterVirtualMeterID::Inverter:
-            // will be set after output type discovery
-            table = nullptr;
+            table = &sungrow_hybrid_inverter_output_type_table;
             break;
 
         case SungrowHybridInverterVirtualMeterID::Grid:
@@ -153,8 +152,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             return;
 
         case SungrowStringInverterVirtualMeterID::Inverter:
-            // will be set after output type discovery
-            table = nullptr;
+            table = &sungrow_string_inverter_output_type_table;
             break;
 
         case SungrowStringInverterVirtualMeterID::Grid:
@@ -253,8 +251,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             break;
 
         case DeyeHybridInverterVirtualMeterID::Battery:
-            // will be set after device type discovery
-            table = nullptr;
+            table = &deye_hybrid_inverter_device_type_table;
             break;
 
         case DeyeHybridInverterVirtualMeterID::Load:
@@ -273,7 +270,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         return;
     }
 
-    if (table != nullptr) {
+    if (table->ids_length > 0) {
         meters.declare_value_ids(slot, table->ids, table->ids_length);
     }
 
@@ -285,7 +282,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (this->read_allowed) {
             this->read_allowed = false;
-            this->start_generic_read();
+            this->read_next();
         };
     }, 2000, 1000);
 }
@@ -297,27 +294,11 @@ void MeterModbusTCP::connect_callback()
     generic_read_request.read_twice = false;
     generic_read_request.done_callback = [this]{ read_done_callback(); };
 
-    if (is_sungrow_inverter_meter()) {
-        if (sungrow_inverter_output_type < 0) {
-            generic_read_request.register_type = ModbusRegisterType::InputRegister;
-            generic_read_request.start_address = SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS; // read output type
-            generic_read_request.register_count = 1;
-        }
-    }
-    else if (is_deye_hybrid_inverter_battery_meter()) {
-        if (deye_hybrid_inverter_device_type < 0) {
-            generic_read_request.register_type = ModbusRegisterType::HoldingRegister;
-            generic_read_request.start_address = DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS; // read device type
-            generic_read_request.register_count = 1;
-        }
-    }
-    else {
-        read_index = 0;
+    read_index = 0;
+    register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
 
-        prepare_read();
-    }
-
-    start_generic_read();
+    prepare_read();
+    read_next();
 }
 
 void MeterModbusTCP::disconnect_callback()
@@ -341,11 +322,38 @@ bool MeterModbusTCP::prepare_read()
         }
     }
 
-    generic_read_request.register_type = table->specs[read_index].register_type;
-    generic_read_request.start_address = table->specs[read_index].start_address;
-    generic_read_request.register_count = MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[read_index].value_type);
-
     return overflow;
+}
+
+void MeterModbusTCP::read_next()
+{
+    if (register_buffer_index < generic_read_request.register_count
+     && generic_read_request.register_type == table->specs[read_index].register_type
+     && generic_read_request.start_address + register_buffer_index == table->specs[read_index].start_address
+     && register_buffer_index + MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[read_index].value_type) <= generic_read_request.register_count) {
+        read_done_callback();
+    }
+    else {
+        generic_read_request.register_type = table->specs[read_index].register_type;
+        generic_read_request.start_address = table->specs[read_index].start_address;
+        generic_read_request.register_count = MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[read_index].value_type);
+
+        for (size_t i = read_index + 1; i < table->specs_length; ++i) {
+            if (generic_read_request.register_type == table->specs[i].register_type
+             && generic_read_request.start_address + generic_read_request.register_count == table->specs[i].start_address
+             && generic_read_request.register_count + MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[i].value_type) <= METER_MODBUS_TCP_REGISTER_BUFFER_SIZE) {
+                generic_read_request.register_count += MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[i].value_type);
+                continue;
+            }
+
+            break;
+        }
+
+        register_buffer_index = 0;
+        register_start_address = generic_read_request.start_address;
+
+        start_generic_read();
+    }
 }
 
 bool MeterModbusTCP::is_sungrow_inverter_meter() const
@@ -397,32 +405,15 @@ bool MeterModbusTCP::is_deye_hybrid_inverter_battery_meter() const
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
-        read_allowed = true;
+        logger.printfln("Error reading %s / %s (%zu): %s [%d]",
+                        get_table_name(table_id),
+                        table->specs[read_index].name,
+                        table->specs[read_index].start_address,
+                        get_modbus_result_code_name(generic_read_request.result_code),
+                        generic_read_request.result_code);
 
-        if (is_sungrow_inverter_meter()
-         && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS) {
-            logger.printfln("Error reading %s / Output Type (%u): %s [%d]",
-                            get_table_name(table_id),
-                            SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS,
-                            get_modbus_result_code_name(generic_read_request.result_code),
-                            generic_read_request.result_code);
-        }
-        else if (is_deye_hybrid_inverter_battery_meter()
-              && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
-            logger.printfln("Error reading %s / Device Type (%u): %s [%d]",
-                            get_table_name(table_id),
-                            DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS,
-                            get_modbus_result_code_name(generic_read_request.result_code),
-                            generic_read_request.result_code);
-        }
-        else {
-            logger.printfln("Error reading %s / %s (%zu): %s [%d]",
-                            get_table_name(table_id),
-                            table->specs[read_index].name,
-                            table->specs[read_index].start_address,
-                            get_modbus_result_code_name(generic_read_request.result_code),
-                            generic_read_request.result_code);
-        }
+        read_allowed = true;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
 
         return;
     }
@@ -430,7 +421,7 @@ void MeterModbusTCP::read_done_callback()
     if (is_sungrow_inverter_meter()
      && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS) {
         if (sungrow_inverter_output_type < 0) {
-            switch (register_buffer[0]) {
+            switch (register_buffer[register_buffer_index]) {
             case 0:
                 if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
                     table = &sungrow_hybrid_inverter_1p2l_table;
@@ -466,7 +457,7 @@ void MeterModbusTCP::read_done_callback()
                 return;
             }
 
-            sungrow_inverter_output_type = register_buffer[0];
+            sungrow_inverter_output_type = register_buffer[register_buffer_index];
 
 #ifdef DEBUG_LOG_ALL_VALUES
             logger.printfln("%s / Output Type (%u): %d",
@@ -480,6 +471,7 @@ void MeterModbusTCP::read_done_callback()
 
         read_allowed = true;
         read_index = 0;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
 
         prepare_read();
 
@@ -489,7 +481,7 @@ void MeterModbusTCP::read_done_callback()
     if (is_deye_hybrid_inverter_battery_meter()
      && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
         if (deye_hybrid_inverter_device_type < 0) {
-            switch (register_buffer[0]) {
+            switch (register_buffer[register_buffer_index]) {
             case 0x200:
             case 0x300:
             case 0x400:
@@ -510,7 +502,7 @@ void MeterModbusTCP::read_done_callback()
                 return;
             }
 
-            deye_hybrid_inverter_device_type = register_buffer[0];
+            deye_hybrid_inverter_device_type = register_buffer[register_buffer_index];
 
 #ifdef DEBUG_LOG_ALL_VALUES
             logger.printfln("%s / Device Type (%u): %d",
@@ -524,6 +516,7 @@ void MeterModbusTCP::read_done_callback()
 
         read_allowed = true;
         read_index = 0;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
 
         prepare_read();
 
@@ -552,28 +545,28 @@ void MeterModbusTCP::read_done_callback()
 
     case 2:
         if (MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(value_type)) {
-            c32.r[0] = register_buffer[0];
-            c32.r[1] = register_buffer[1];
+            c32.r[0] = register_buffer[register_buffer_index + 0];
+            c32.r[1] = register_buffer[register_buffer_index + 1];
         }
         else {
-            c32.r[0] = register_buffer[1];
-            c32.r[1] = register_buffer[0];
+            c32.r[0] = register_buffer[register_buffer_index + 1];
+            c32.r[1] = register_buffer[register_buffer_index + 0];
         }
 
         break;
 
     case 4:
         if (MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(value_type)) {
-            c64.r[0] = register_buffer[0];
-            c64.r[1] = register_buffer[1];
-            c64.r[2] = register_buffer[2];
-            c64.r[3] = register_buffer[3];
+            c64.r[0] = register_buffer[register_buffer_index + 0];
+            c64.r[1] = register_buffer[register_buffer_index + 1];
+            c64.r[2] = register_buffer[register_buffer_index + 2];
+            c64.r[3] = register_buffer[register_buffer_index + 3];
         }
         else {
-            c64.r[0] = register_buffer[3];
-            c64.r[1] = register_buffer[2];
-            c64.r[2] = register_buffer[1];
-            c64.r[3] = register_buffer[0];
+            c64.r[0] = register_buffer[register_buffer_index + 3];
+            c64.r[1] = register_buffer[register_buffer_index + 2];
+            c64.r[2] = register_buffer[register_buffer_index + 1];
+            c64.r[3] = register_buffer[register_buffer_index + 0];
         }
 
         break;
@@ -593,10 +586,10 @@ void MeterModbusTCP::read_done_callback()
                         get_table_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
-                        register_buffer[0]);
+                        register_buffer[register_buffer_index]);
 #endif
 
-        value = static_cast<float>(register_buffer[0]);
+        value = static_cast<float>(register_buffer[register_buffer_index]);
         break;
 
     case ModbusValueType::S16:
@@ -605,10 +598,10 @@ void MeterModbusTCP::read_done_callback()
                         get_table_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
-                        static_cast<int16_t>(register_buffer[0]));
+                        static_cast<int16_t>(register_buffer[register_buffer_index]));
 #endif
 
-        value = static_cast<float>(static_cast<int16_t>(register_buffer[0]));
+        value = static_cast<float>(static_cast<int16_t>(register_buffer[register_buffer_index]));
         break;
 
     case ModbusValueType::U32BE:
@@ -619,8 +612,8 @@ void MeterModbusTCP::read_done_callback()
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         c32.u,
-                        register_buffer[0],
-                        register_buffer[1]);
+                        register_buffer[register_buffer_index + 0],
+                        register_buffer[register_buffer_index + 1]);
 #endif
 
         value = static_cast<float>(c32.u);
@@ -634,8 +627,8 @@ void MeterModbusTCP::read_done_callback()
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         static_cast<int32_t>(c32.u),
-                        register_buffer[0],
-                        register_buffer[1]);
+                        register_buffer[register_buffer_index + 0],
+                        register_buffer[register_buffer_index + 1]);
 #endif
 
         value = static_cast<float>(static_cast<int32_t>(c32.u));
@@ -649,8 +642,8 @@ void MeterModbusTCP::read_done_callback()
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         static_cast<double>(c32.f),
-                        register_buffer[0],
-                        register_buffer[1]);
+                        register_buffer[register_buffer_index + 0],
+                        register_buffer[register_buffer_index + 1]);
 #endif
 
         value = c32.f;
@@ -664,10 +657,10 @@ void MeterModbusTCP::read_done_callback()
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         c64.u,
-                        register_buffer[0],
-                        register_buffer[1],
-                        register_buffer[2],
-                        register_buffer[3]);
+                        register_buffer[register_buffer_index + 0],
+                        register_buffer[register_buffer_index + 1],
+                        register_buffer[register_buffer_index + 2],
+                        register_buffer[register_buffer_index + 3]);
 #endif
 
         value = static_cast<float>(c64.u);
@@ -681,10 +674,10 @@ void MeterModbusTCP::read_done_callback()
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         static_cast<int64_t>(c64.u),
-                        register_buffer[0],
-                        register_buffer[1],
-                        register_buffer[2],
-                        register_buffer[3]);
+                        register_buffer[register_buffer_index + 0],
+                        register_buffer[register_buffer_index + 1],
+                        register_buffer[register_buffer_index + 2],
+                        register_buffer[register_buffer_index + 3]);
 #endif
 
         value = static_cast<float>(static_cast<int64_t>(c64.u));
@@ -698,10 +691,10 @@ void MeterModbusTCP::read_done_callback()
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         c64.f,
-                        register_buffer[0],
-                        register_buffer[1],
-                        register_buffer[2],
-                        register_buffer[3]);
+                        register_buffer[register_buffer_index + 0],
+                        register_buffer[register_buffer_index + 1],
+                        register_buffer[register_buffer_index + 2],
+                        register_buffer[register_buffer_index + 3]);
 #endif
 
         value = static_cast<float>(c64.f);
@@ -714,7 +707,7 @@ void MeterModbusTCP::read_done_callback()
     value = (value + table->specs[read_index].offset) * table->specs[read_index].scale_factor;
 
     if (is_sungrow_grid_meter()) {
-        if (generic_read_request.start_address == SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS) {
+        if (register_start_address == SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS) {
             if (value > 100) {
                 // according to the spec the grid frequency is given
                 // as 0.1 Hz, but some inverters report it as 0.01 Hz
@@ -723,33 +716,33 @@ void MeterModbusTCP::read_done_callback()
         }
     }
     else if (is_sungrow_inverter_meter()) {
-        if (generic_read_request.start_address == SUNGROW_STRING_INVERTER_TOTAL_ACTVE_POWER_ADDRESS) {
+        if (register_start_address == SUNGROW_STRING_INVERTER_TOTAL_ACTVE_POWER_ADDRESS) {
             meters.update_value(slot, table->index[read_index + 1], -value);
         }
     }
     else if (is_sungrow_battery_meter()) {
-        if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS) {
+        if (register_start_address == SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS) {
             sungrow_hybrid_inverter_running_state = register_buffer[0];
         }
-        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS) {
+        else if (register_start_address == SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS) {
             if ((sungrow_hybrid_inverter_running_state & (1 << 2)) != 0) {
                 value = -value;
             }
         }
-        else if (generic_read_request.start_address == SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS) {
+        else if (register_start_address == SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS) {
             if ((sungrow_hybrid_inverter_running_state & (1 << 2)) != 0) {
                 value = -value;
             }
         }
     }
     else if (is_victron_energy_gx_inverter_meter()) {
-        if (generic_read_request.start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L1_ADDRESS) {
+        if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L1_ADDRESS) {
             victron_energy_gx_ac_coupled_pv_on_output_l1_power = value;
         }
-        else if (generic_read_request.start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L2_ADDRESS) {
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L2_ADDRESS) {
             victron_energy_gx_ac_coupled_pv_on_output_l2_power = value;
         }
-        else if (generic_read_request.start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L3_ADDRESS) {
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L3_ADDRESS) {
             victron_energy_gx_ac_coupled_pv_on_output_l3_power = value;
 
             float power = victron_energy_gx_ac_coupled_pv_on_output_l1_power
@@ -760,13 +753,13 @@ void MeterModbusTCP::read_done_callback()
         }
     }
     else if (is_victron_energy_gx_grid_meter()) {
-        if (generic_read_request.start_address == VICTRON_ENERGY_GX_GRID_L1_ADDRESS) {
+        if (register_start_address == VICTRON_ENERGY_GX_GRID_L1_ADDRESS) {
             victron_energy_gx_grid_l1_power = value;
         }
-        else if (generic_read_request.start_address == VICTRON_ENERGY_GX_GRID_L2_ADDRESS) {
+        else if (register_start_address == VICTRON_ENERGY_GX_GRID_L2_ADDRESS) {
             victron_energy_gx_grid_l2_power = value;
         }
-        else if (generic_read_request.start_address == VICTRON_ENERGY_GX_GRID_L3_ADDRESS) {
+        else if (register_start_address == VICTRON_ENERGY_GX_GRID_L3_ADDRESS) {
             victron_energy_gx_grid_l3_power = value;
 
             float power = victron_energy_gx_grid_l1_power
@@ -777,13 +770,13 @@ void MeterModbusTCP::read_done_callback()
         }
     }
     else if (is_victron_energy_gx_load_meter()) {
-        if (generic_read_request.start_address == VICTRON_ENERGY_GX_AC_CONSUMPTION_L1_ADDRESS) {
+        if (register_start_address == VICTRON_ENERGY_GX_AC_CONSUMPTION_L1_ADDRESS) {
             victron_energy_gx_ac_consumption_l1_power = value;
         }
-        else if (generic_read_request.start_address == VICTRON_ENERGY_GX_AC_CONSUMPTION_L2_ADDRESS) {
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_CONSUMPTION_L2_ADDRESS) {
             victron_energy_gx_ac_consumption_l2_power = value;
         }
-        else if (generic_read_request.start_address == VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS) {
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS) {
             victron_energy_gx_ac_consumption_l3_power = value;
 
             float power = victron_energy_gx_ac_consumption_l1_power
@@ -798,6 +791,8 @@ void MeterModbusTCP::read_done_callback()
         meters.update_value(slot, table->index[read_index], value);
     }
 
+    register_buffer_index += register_count;
+    register_start_address += register_count;
     read_index = (read_index + 1) % table->specs_length;
 
     bool overflow = read_index == 0;
@@ -811,6 +806,6 @@ void MeterModbusTCP::read_done_callback()
         read_allowed = true;
     }
     else {
-        start_generic_read();
+        read_next();
     }
 }

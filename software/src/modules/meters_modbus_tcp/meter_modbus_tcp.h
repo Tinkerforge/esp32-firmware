@@ -35,6 +35,8 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
+#define METER_MODBUS_TCP_REGISTER_BUFFER_SIZE 32
+
 class MeterModbusTCP final : protected GenericModbusTCPClient, public IMeter
 {
 public:
@@ -72,6 +74,7 @@ private:
     void connect_callback() override;
     void disconnect_callback() override;
     bool prepare_read();
+    void read_next();
     bool is_sungrow_inverter_meter() const;
     bool is_sungrow_grid_meter() const;
     bool is_sungrow_battery_meter() const;
@@ -91,7 +94,9 @@ private:
     bool values_declared = false;
     size_t read_index = 0;
 
-    uint16_t register_buffer[4];
+    uint16_t register_buffer[METER_MODBUS_TCP_REGISTER_BUFFER_SIZE];
+    size_t register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+    size_t register_start_address;
 
     // custom
     ValueTable *custom_table;

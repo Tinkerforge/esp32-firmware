@@ -445,6 +445,19 @@ sungrow_hybrid_inverter_phase_currents = [
 
 specs = [
     {
+        'name': 'Sungrow {variant} Inverter Output Type',
+        'variants': ['Hybrid', 'String'],
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Output Type',
+                'value_id': VALUE_ID_META,
+                'start_address': 5002,
+                'value_type': 'U16',
+            },
+        ],
+    },
+    {
         'name': 'Sungrow {variant} Inverter 1P2L',  # output type 1
         'variants': ['Hybrid', 'String'],
         'register_type': 'InputRegister',
@@ -1182,6 +1195,18 @@ specs = [
         ],
     },
     {
+        'name': 'Deye Hybrid Inverter Device Type',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Device Type',
+                'value_id': VALUE_ID_META,
+                'start_address': 0,
+                'value_type': 'U16',
+            },
+        ],
+    },
+    {
         'name': 'Deye Hybrid Inverter {variant} Battery',
         'variants': ['Low Voltage', 'High Voltage'],
         'register_type': 'HoldingRegister',
@@ -1371,14 +1396,23 @@ for spec in specs:
         name = util.FlavoredName(spec["name"].format(variant=variant_spec)).get()
 
         spec_values.append(f'static const MeterModbusTCP::ValueSpec {name.under}_specs[] = {{\n' + '\n'.join(value_specs) + '\n};')
-        spec_values.append(f'static const MeterValueID {name.under}_ids[] = {{\n' + '\n'.join(value_ids) + '\n};')
+
+        if len(value_ids) > 0:
+            spec_values.append(f'static const MeterValueID {name.under}_ids[] = {{\n' + '\n'.join(value_ids) + '\n};')
+
         spec_values.append(f'static const uint32_t {name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
         spec_values.append(f'static const MeterModbusTCP::ValueTable {name.under}_table = {{\n'
                            f'    {name.under}_specs,\n'
-                           f'    ARRAY_SIZE({name.under}_specs),\n'
-                           f'    {name.under}_ids,\n'
-                           f'    ARRAY_SIZE({name.under}_ids),\n'
-                           f'    {name.under}_index,\n'
+                           f'    ARRAY_SIZE({name.under}_specs),\r')
+
+        if len(value_ids) > 0:
+            spec_values.append(f'    {name.under}_ids,\n'
+                               f'    ARRAY_SIZE({name.under}_ids),\r')
+        else:
+            spec_values.append('    nullptr,\n'
+                               '    0,\r')
+
+        spec_values.append(f'    {name.under}_index,\n'
                            '};')
 
 with open('meters_modbus_tcp_defs.inc', 'w', encoding='utf-8') as f:
@@ -1386,7 +1420,7 @@ with open('meters_modbus_tcp_defs.inc', 'w', encoding='utf-8') as f:
     f.write(f'#define VALUE_INDEX_META  {VALUE_ID_META}u\n')
     f.write(f'#define VALUE_INDEX_DEBUG {VALUE_ID_DEBUG}u\n\n')
     f.write(f'#define START_ADDRESS_VIRTUAL {START_ADDRESS_VIRTUAL}u\n\n')
-    f.write('\n\n'.join(spec_values) + '\n\n')
+    f.write('\n\n'.join(spec_values).replace('\r\n', '') + '\n\n')
     f.write('static const char *get_table_name(MeterModbusTCPTableID table)\n')
     f.write('{\n')
     f.write('    switch (table) {\n')
