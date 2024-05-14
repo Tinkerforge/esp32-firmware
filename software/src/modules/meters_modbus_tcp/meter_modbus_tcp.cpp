@@ -584,6 +584,9 @@ void MeterModbusTCP::read_done_callback()
     }
 
     switch (value_type) {
+    case ModbusValueType::None:
+        break;
+
     case ModbusValueType::U16:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %u",

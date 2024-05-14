@@ -58,6 +58,7 @@ enums = [
         'name': 'Modbus Value Type',
         # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
         'values': [
+            ('None',  0),
             ('U16',   make_modbus_value_type(1, False, False, False)),
             ('S16',   make_modbus_value_type(1, True,  False, False)),
             ('U32BE', make_modbus_value_type(2, False, False, False)),
@@ -303,7 +304,6 @@ sungrow_hybrid_string_inverter_base_values = [
         'name': 'Total Active Power [W]',
         'value_id': 'PowerActiveLSumImExDiff',
         'start_address': START_ADDRESS_VIRTUAL,
-        'value_type': 'U32LE',
         'variant': 'String',
     },
     {
@@ -739,7 +739,6 @@ specs = [
                 'name': 'AC Coupled PV On Output L1+L2+L3 [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': START_ADDRESS_VIRTUAL,
-                'value_type': 'S32LE',
             },
         ],
     },
@@ -769,7 +768,6 @@ specs = [
                 'name': 'Grid L1+L2+L3 [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': START_ADDRESS_VIRTUAL,
-                'value_type': 'S32LE',
             },
         ],
     },
@@ -831,7 +829,6 @@ specs = [
                 'name': 'AC Consumption L1+L2+L3 [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': START_ADDRESS_VIRTUAL,
-                'value_type': 'S32LE',
             },
         ],
     },
@@ -1356,7 +1353,7 @@ for spec in specs:
                 f'        "{value["name"]}",\n'
                 f'        ModbusRegisterType::{value.get("register_type", spec["register_type"])},\n'
                 f'        {value["start_address"] if value["start_address"] != START_ADDRESS_VIRTUAL else "START_ADDRESS_VIRTUAL"},\n'
-                f'        ModbusValueType::{value["value_type"]},\n'
+                f'        ModbusValueType::{value.get("value_type", "None")},\n'
                 f'        {value.get("offset", 0.0)}f,\n'
                 f'        {value.get("scale_factor", 1.0)}f,\n'
                 '    },'
