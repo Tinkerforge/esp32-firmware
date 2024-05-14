@@ -967,6 +967,4 @@ void ChargeManager::register_urls()
         logger.printfln("Available phases: %u", phases);
     }, false);
 
-    //api.addState("charge_manager/control_pilot_disconnect", &control_pilot_disconnect);
-    //api.addCommand("charge_manager/control_pilot_disconnect_update", &control_pilot_disconnect, {}, [](){}, false);
 }
