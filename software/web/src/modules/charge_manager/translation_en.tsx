@@ -72,8 +72,8 @@ let x = {
             "scan_error_2": "Charge management disabled",
 
             "mode_disabled": "Disabled",
-            "mode_manager": "Charge manager",
-            "mode_managed": "Externally controlled / PV excess charging",
+            "mode_manager": "Charge manager / PV excess charging",
+            "mode_managed": "Externally controlled",
 
             "managed_boxes": "Managed chargers",
 
@@ -143,7 +143,7 @@ let x = {
 
             "mode_explainer_0": "This WARP Charger is not part of a charge management group. PV excess charging is disabled.",
             "mode_explainer_1": "This WARP Charger is part of a charge management group with other WARP Chargers and/or a WARP Energy Manager. Another device controls this group to make sure the configured current is never exceeded.",
-            "mode_explainer_2": "This WARP Charger either uses the PV excess charging or controls a charge management group with othter WARP Chargers to make sure the configured current is never exceeded."
+            "mode_explainer_2": "This WARP Charger either uses the PV excess charging or controls a charge management group with other WARP Chargers to make sure the configured current is never exceeded."
         }
     }
 }
