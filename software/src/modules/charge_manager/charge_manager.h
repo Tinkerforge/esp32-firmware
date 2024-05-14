@@ -23,6 +23,7 @@
 
 #include "module.h"
 #include "module_available.h"
+#include "charge_manager_private.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
@@ -39,7 +40,6 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void allocate_current();
     void start_manager_task();
     void check_watchdog();
     bool get_charger_count();
@@ -73,13 +73,9 @@ public:
         uint32_t last_update;
         uint32_t uid;
         uint32_t uptime;
-        uint32_t last_sent_config;
         uint32_t power_total_count;
         float power_total_sum;
         float energy_abs;
-
-        // last current limit send to the charger
-        uint16_t allocated_current;
 
         // maximum current supported by the charger
         uint16_t supported_current;
@@ -91,10 +87,10 @@ public:
         uint16_t requested_current;
 
         // 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
-        uint8_t state;
+        //uint8_t state;
 
         // 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed
-        uint8_t error;
+        //uint8_t error;
         uint8_t charger_state;
         bool wants_to_charge;
         bool wants_to_charge_low_priority;
@@ -106,25 +102,39 @@ public:
         // last CP disconnect state reported by the charger: false - automatic, true - disconnected
         bool cp_disconnect_state;
 
-        // last CP disconnect request sent to charger: false - automatic/don't care, true - disconnect
-        bool cp_disconnect;
         bool meter_supported;
     };
 
+    struct ChargerAllocationState {
+        uint32_t last_sent_config;
+
+        // last current limit send to the charger
+        uint16_t allocated_current;
+        // last CP disconnect request sent to charger: false - automatic/don't care, true - disconnect
+        bool cp_disconnect;
+
+        // 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed
+        uint8_t error;
+
+        // 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
+        uint8_t state;
+    };
+
     ChargerState *charger_state = nullptr;
+    ChargerAllocationState *charger_allocation_state = nullptr;
     size_t charger_count = 0;
 
 private:
     bool all_chargers_seen = false;
-    bool printed_all_chargers_seen = false;
     std::function<void(uint32_t)> allocated_current_callback;
 
     std::unique_ptr<char[]> distribution_log;
 
     std::unique_ptr<const char *[]> hosts;
     uint32_t default_available_current;
-    uint32_t minimum_current;
-    uint32_t minimum_current_1p;
     uint16_t requested_current_threshold;
     uint16_t requested_current_margin;
+
+    CurrentAllocatorConfig ca_config;
+    CurrentAllocatorState ca_state;
 };

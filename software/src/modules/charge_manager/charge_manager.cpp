@@ -18,8 +18,8 @@
  */
 
 #include "charge_manager.h"
+#include "current_allocator.h"
 #include "module_dependencies.h"
-#include "charge_manager_private.h"
 
 #include <algorithm>
 #include <Arduino.h>
@@ -238,7 +238,8 @@ void ChargeManager::start_manager_task()
 
     cm_networking.register_manager(this->hosts.get(), config.get("chargers")->count(), [this](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2) mutable {
             // TODO: bounds check
-            ChargerState &target = this->charger_state[client_id];
+            auto &target = this->charger_state[client_id];
+            auto &target_alloc = this->charger_allocation_state[client_id];
 
             // Don't update if the uptimes are the same.
             // This means, that the EVSE hangs or the communication
@@ -249,8 +250,8 @@ void ChargeManager::start_manager_task()
                     this->get_charger_name(client_id), this->hosts[client_id],
                     v1->evse_uptime);
                 if (deadline_elapsed(target.last_update + 10000)) {
-                    target.state = 5;
-                    target.error = CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE;
+                    target_alloc.state = 5;
+                    target_alloc.error = CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE;
                 }
 
                 return;
@@ -321,33 +322,31 @@ void ChargeManager::start_manager_task()
             }
 
             if (v1->error_state != 0) {
-                target.error = CHARGE_MANAGER_CLIENT_ERROR_START + static_cast<uint32_t>(v1->error_state);
+                target_alloc.error = CHARGE_MANAGER_CLIENT_ERROR_START + static_cast<uint32_t>(v1->error_state);
             }
 
-            auto current_error = target.error;
-            if (current_error < 128 || current_error == CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE) {
-                target.error = 0;
+            if (target_alloc.error < 128 || target_alloc.error == CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE) {
+                target_alloc.error = 0;
             }
 
-            current_error = target.error;
-            if (current_error == 0 || current_error >= CHARGE_MANAGER_CLIENT_ERROR_START)
-                target.state = get_charge_state(v1->charger_state,
+            if (target_alloc.error == 0 || target_alloc.error >= CHARGE_MANAGER_CLIENT_ERROR_START)
+                target_alloc.state = get_charge_state(v1->charger_state,
                                                                   v1->supported_current,
                                                                   v1->charging_time,
-                                                                  target.allocated_current);
+                                                                  target_alloc.allocated_current);
 
             auto *charger_cfg = (Config *) this->state.get("chargers")->get(client_id);
-            charger_cfg->get("state")->updateUint(target.state);
-            charger_cfg->get("error")->updateUint(target.error);
-            charger_cfg->get("allocated_current")->updateUint(target.allocated_current);
+            charger_cfg->get("state")->updateUint(target_alloc.state);
+            charger_cfg->get("error")->updateUint(target_alloc.error);
+            charger_cfg->get("allocated_current")->updateUint(target_alloc.allocated_current);
             charger_cfg->get("supported_current")->updateUint(target.supported_current);
             charger_cfg->get("last_update")->updateUint(target.last_update);
             charger_cfg->get("uid")->updateUint(target.uid);
     }, [this](uint8_t client_id, uint8_t error){
         //TODO bounds check
-        ChargerState &target = this->charger_state[client_id];
-        target.state = 5;
-        target.error = error;
+        auto &target_alloc = this->charger_allocation_state[client_id];
+        target_alloc.state = 5;
+        target_alloc.error = error;
     });
 
     uint32_t cm_send_delay = 1000 / charger_count;
@@ -358,8 +357,8 @@ void ChargeManager::start_manager_task()
         if (i >= charger_count)
             i = 0;
 
-        auto &charger = this->charger_state[i];
-        if(cm_networking.send_manager_update(i, charger.allocated_current, charger.cp_disconnect))
+        auto &charger_alloc = this->charger_allocation_state[i];
+        if(cm_networking.send_manager_update(i, charger_alloc.allocated_current, charger_alloc.cp_disconnect))
             ++i;
 
     }, 0, cm_send_delay);
@@ -374,10 +373,11 @@ void ChargeManager::setup()
     }
 
     default_available_current = config.get("default_available_current")->asUint();
-    minimum_current = config.get("minimum_current")->asUint();
-    minimum_current_1p = config.get("minimum_current_1p")->asUint();
+    ca_config.minimum_current_3p = config.get("minimum_current")->asUint();
+    ca_config.minimum_current_3p = config.get("minimum_current_1p")->asUint();
     requested_current_threshold = config.get("requested_current_threshold")->asUint();
     requested_current_margin = config.get("requested_current_margin")->asUint();
+    ca_config.requested_current_margin = requested_current_margin;
 
     max_avail_current = config.get("maximum_available_current")->asUint();
 
@@ -411,18 +411,60 @@ void ChargeManager::setup()
     }
 
     this->charger_count = config.get("chargers")->count();
+    ca_config.charger_count = this->charger_count;
     this->charger_state = (ChargerState*) heap_caps_calloc_prefer(this->charger_count, sizeof(ChargerState), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    this->charger_allocation_state = (ChargerAllocationState*) heap_caps_calloc_prefer(this->charger_count, sizeof(ChargerAllocationState), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
     start_manager_task();
 
-    task_scheduler.scheduleWithFixedDelay([this](){this->allocate_current();}, 5000, 5000);
+    auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
+
+    task_scheduler.scheduleWithFixedDelay([this, get_charger_name_fn](){
+            uint32_t allocated_current = 0;
+            int result = allocate_current(
+                &this->ca_config,
+                this->seen_all_chargers(),
+                this->available_current.get("current")->asUint(),
+                this->available_phases.get("phases")->asUint(),
+                this->control_pilot_disconnect.get("disconnect")->asBool(),
+                this->charger_state,
+                this->hosts.get(),
+                get_charger_name_fn,
+
+                &this->ca_state,
+                this->charger_allocation_state,
+                &allocated_current
+            );
+            if (this->allocated_current_callback)
+                allocated_current_callback(allocated_current);
+
+            for (int i = 0; i < this->charger_count; ++i) {
+                auto &charger = charger_state[i];
+                auto &charger_alloc = charger_allocation_state[i];
+                auto *charger_cfg = (Config *)this->state.get("chargers")->get(i);
+                charger_cfg->get("state")->updateUint(charger_alloc.state);
+                charger_cfg->get("error")->updateUint(charger_alloc.error);
+                charger_cfg->get("allocated_current")->updateUint(charger_alloc.allocated_current);
+                charger_cfg->get("supported_current")->updateUint(charger.supported_current);
+                charger_cfg->get("last_update")->updateUint(charger.last_update);
+                charger_cfg->get("uid")->updateUint(charger.uid);
+            }
+
+
+            this->state.get("state")->updateUint(result);
+            }, 5000, 5000);
 
     if (config.get("enable_watchdog")->asBool()) {
         task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1000, 1000);
     }
 
-    if (config.get("verbose")->asBool())
-        this->distribution_log = heap_alloc_array<char>(DISTRIBUTION_LOG_LEN);
+    if (config.get("verbose")->asBool()) {
+        ca_config.distribution_log = heap_alloc_array<char>(DISTRIBUTION_LOG_LEN);
+        ca_config.distribution_log_len = DISTRIBUTION_LOG_LEN;
+    } else {
+        ca_config.distribution_log = nullptr;
+        ca_config.distribution_log_len = 0;
+    }
 
     initialized = true;
 }
@@ -465,6 +507,8 @@ bool ChargeManager::seen_all_chargers()
     for (size_t i = 0; i < charger_count; ++i)
         if (this->charger_state[i].last_update == 0)
             return false;
+
+    logger.printfln("Seen all chargers.");
 
     all_chargers_seen = true;
     return true;
