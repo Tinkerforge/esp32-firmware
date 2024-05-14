@@ -306,7 +306,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         if (cfg[0] as any == MeterClassID.RS485Bricklet || cfg[0] as any == MeterClassID.EVSEV2)
             return null;
 
-        return cfg[1].display_name;
+        return cfg[1]?.display_name;
     }
 
     render(props: {}, s: Readonly<API.getType['power_manager/config'] & API.getType['power_manager/debug_config']>) {
