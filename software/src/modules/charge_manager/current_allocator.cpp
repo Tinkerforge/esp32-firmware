@@ -11,6 +11,8 @@
 
 #define TIMEOUT_MS 32000
 
+extern bool firmware_update_allowed;
+
 int allocate_current(
     const CurrentAllocatorConfig *cfg,
     const bool seen_all_chargers,
