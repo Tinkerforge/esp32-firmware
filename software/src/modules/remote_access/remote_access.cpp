@@ -26,6 +26,7 @@
 #include "lwip/err.h"
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
+#include "lwip/pbuf.h"
 #include <lwip/netdb.h>
 
 #include "build.h"
@@ -53,7 +54,7 @@ struct ManagementCommand {
     uint8_t connection_uuid[16];
 };
 
-struct ManagementResponse {
+struct PortDiscoveryPacket {
     uint32_t charger_id;
     int32_t connection_no;
     uint8_t connection_uuid[16];
@@ -407,9 +408,8 @@ void RemoteAccess::register_urls() {
     }, 5000);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        this->resolve_management();
         if (!management.is_peer_up(nullptr, nullptr)) {
-            return;
+            this->resolve_management();
         }
     }, 1000 * 10, 1000 * 10);
 }
@@ -572,6 +572,7 @@ void RemoteAccess::resolve_management() {
     serializer.addObject();
     serializer.addMemberNumber("id", local_uid_num);
     serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
+    serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
     serializer.endObject();
     size_t len = serializer.end();
 
@@ -579,6 +580,41 @@ void RemoteAccess::resolve_management() {
     headers.push_back(std::pair<CoolString, CoolString>(CoolString("Content-Type"), CoolString("application/json")));
     esp_err_t err;
     make_http_request(url.c_str(), HTTP_METHOD_PUT, json.get(), len, &headers, &err);
+}
+
+static int management_filter_in(struct pbuf* packet) {
+    // When this function is called it is already ensured that the payload contains a valid ip packet.
+    uint8_t *payload = (uint8_t*)packet->payload;
+
+    if (payload[9] != 0x11) {
+        logger.printfln("Management blocked invalid incoming packet with protocol: 0x%X", payload[9]);
+        return -1;
+    }
+
+    int header_len = (payload[0] & 0xF) * 4;
+    if (packet->len - (header_len + 8) != sizeof(ManagementCommand)) {
+        logger.printfln("Management blocked invalid incoming packet of size: %i", (packet->len - (header_len + 8)));
+        return -1;
+    }
+
+    int dest_port = payload[header_len] << 8;
+    dest_port |= payload[header_len + 1];
+    if (dest_port != 12345) {
+        logger.printfln("Management blocked invalid incoming packet with destination port: %i.", dest_port);
+        return -1;
+    }
+    return 0;
+}
+
+static int management_filter_out(struct pbuf* packet) {
+    uint8_t *payload = (uint8_t*)packet->payload;
+
+    if (payload[9] == 0x1) {
+        return 0;
+    } else {
+        logger.printfln("Management blocked outgoing packet");
+    }
+    return -1;
 }
 
 void RemoteAccess::connect_management() {
@@ -626,7 +662,9 @@ void RemoteAccess::connect_management() {
              allowed_ip,
              allowed_subnet,
              false,
-             nullptr);
+             nullptr,
+             &management_filter_in,
+             &management_filter_out);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         bool up = management.is_peer_up(nullptr, nullptr);
@@ -768,7 +806,7 @@ void RemoteAccess::run_management() {
         case ManagementCommandId::Connect:
             {
                 uint32_t local_port = remote_connection_config.get("connections")->get(command->connection_no)->get("local_port")->asUint();
-                ManagementResponse response;
+                PortDiscoveryPacket response;
                 response.charger_id = local_uid_num;
                 response.connection_no = command->connection_no;
                 memcpy(&response.connection_uuid, &command->connection_uuid, 16);
