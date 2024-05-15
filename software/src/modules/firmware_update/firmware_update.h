@@ -30,6 +30,7 @@ class FirmwareUpdate final : public IModule
 {
 public:
     FirmwareUpdate(){}
+    void pre_setup() override;
     void setup() override;
     void register_urls() override;
 
@@ -41,13 +42,18 @@ private:
     void reset_firmware_info();
     bool handle_firmware_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length);
     String check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log);
+    void check_for_updates();
 
     struct firmware_info_t {
         uint32_t magic[2] = {0};
         char firmware_name[61] = {0};
         uint8_t fw_version[3] = {0};
-        uint32_t fw_build_date = {0};
+        uint32_t fw_build_time = {0};
+        uint8_t fw_version_beta = {0};
     };
+
+    ConfigRoot config;
+    ConfigRoot available_updates;
 
     firmware_info_t info;
     uint32_t info_offset = 0;
@@ -56,4 +62,6 @@ private:
     uint32_t checksum_offset = 0;
     bool update_aborted = false;
     bool info_found = false;
+    String update_url;
+    uint32_t update_cookie = 0;
 };

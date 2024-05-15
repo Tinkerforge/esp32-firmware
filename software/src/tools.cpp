@@ -607,8 +607,8 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
     return 0;
 }
 
-int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
-                    uint8_t right_major, uint8_t right_minor, uint8_t right_patch) {
+int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch, uint8_t left_beta /* 255 == no beta */, uint32_t left_timestamp,
+                    uint8_t right_major, uint8_t right_minor, uint8_t right_patch, uint8_t right_beta /* 255 == no beta */, uint32_t right_timestamp) {
     if (left_major > right_major)
         return 1;
 
@@ -625,6 +625,24 @@ int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch,
         return 1;
 
     if (left_patch < right_patch)
+        return -1;
+
+    if (left_beta == 255 && right_beta != 255)
+        return 1;
+
+    if (left_beta != 255 && right_beta == 255)
+        return -1;
+
+    if (left_beta > right_beta)
+        return 1;
+
+    if (left_beta < right_beta)
+        return -1;
+
+    if (left_timestamp > right_timestamp)
+        return 1;
+
+    if (left_timestamp < right_timestamp)
         return -1;
 
     return 0;

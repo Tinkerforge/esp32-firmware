@@ -21,6 +21,7 @@
 #include "module_dependencies.h"
 
 #include <Update.h>
+#include <esp_http_client.h>
 
 #include "api.h"
 #include "event_log.h"
@@ -31,12 +32,44 @@
 
 #include "./crc32.h"
 
+extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
+
 // Newer firmwares contain a firmware info page.
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
 
+void FirmwareUpdate::pre_setup()
+{
+    config = Config::Object({
+        {"update_url", Config::Str("", 0, 128)},
+    });
+
+    available_updates = Config::Object({
+        {"timestamp", Config::Uint(0)},
+        {"cookie", Config::Uint(0)},
+        {"beta", Config::Str("", 0, 32)},
+        {"release", Config::Str("", 0, 32)},
+        {"stable", Config::Str("", 0, 32)},
+    });
+}
+
 void FirmwareUpdate::setup()
 {
+    if (!api.restorePersistentConfig("firmware_update/config", &config)) {
+        config.get("update_url")->updateString(BUILD_FIRMWARE_UPDATE_URL);
+    }
+
+    update_url = config.get("update_url")->asString();
+
+    if (update_url.length() > 0) {
+        if (!update_url.endsWith("/")) {
+            update_url += "/";
+        }
+
+        update_url += BUILD_NAME;
+        update_url += "_firmware.txt";
+    }
+
     initialized = true;
 }
 
@@ -117,15 +150,28 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
             return "{\"error\":\"firmware_update.script.wrong_firmware_type\"}";
         }
 
-        if (detect_downgrade && compare_version(info.fw_version[0], info.fw_version[1], info.fw_version[2],
-                                                BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH) < 0) {
+        if (detect_downgrade && compare_version(info.fw_version[0], info.fw_version[1], info.fw_version[2], info.fw_version_beta, info.fw_build_time,
+                                                BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()) < 0) {
             if (log) {
                 logger.printfln("Failed to update: Firmware is a downgrade!");
             }
-            char buf[128];
-            snprintf(buf, sizeof(buf)/sizeof(buf[0]), "{\"error\":\"firmware_update.script.downgrade\", \"fw\":\"%u.%u.%u\", \"installed\":\"%i.%i.%i\"}",
-                     info.fw_version[0], info.fw_version[1], info.fw_version[2],
-                     BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH);
+
+            char buf[256];
+            char info_beta[12] = "";
+            char build_beta[12] = "";
+
+            if (info.fw_version_beta != 255) {
+                snprintf(info_beta, ARRAY_SIZE(info_beta), "-beta.%u", info.fw_version_beta);
+            }
+
+            if (BUILD_VERSION_BETA != 255) {
+                snprintf(build_beta, ARRAY_SIZE(build_beta), "-beta.%i", BUILD_VERSION_BETA);
+            }
+
+            snprintf(buf, ARRAY_SIZE(buf), "{\"error\":\"firmware_update.script.downgrade\",\"fw\":\"%u.%u.%u%s+%x\",\"installed\":\"%i.%i.%i%s+%x\"}",
+                     info.fw_version[0], info.fw_version[1], info.fw_version[2], info_beta, info.fw_build_time,
+                     BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, build_beta, build_timestamp());
+
             return String(buf);
         }
     }
@@ -207,6 +253,13 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
 
 void FirmwareUpdate::register_urls()
 {
+    api.addPersistentConfig("firmware_update/config", &config);
+    api.addState("firmware_update/available_updates", &available_updates);
+
+    api.addCommand("firmware_update/check_for_updates", Config::Null(), {}, [this]() {
+        check_for_updates();
+    }, true);
+
     server.on("/firmware_update/check_firmware", HTTP_POST, [this](WebServerRequest request){
         if (!this->info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
             return request.send(400, "application/json", "{\"error\":\"firmware_update.script.no_info_page\"}");
@@ -260,4 +313,222 @@ void FirmwareUpdate::register_urls()
         this->firmware_update_running = true;
         return handle_update_chunk(U_FLASH, request, index, data, len, final, request.contentLength());
     });
+}
+
+struct Version {
+    uint8_t major = 255;
+    uint8_t minor = 255;
+    uint8_t patch = 255;
+    uint8_t beta = 255;
+    uint32_t timestamp = 0;
+};
+
+// <major:int>_<minor:int>_<patch:int>_[beta_<beta:int>_]<timestamp:hex>
+static bool parse_version(const char *p, Version *version)
+{
+    char *end;
+
+    // major
+    uint32_t major = strtoul(p, &end, 10);
+
+    if (p == end || *end != '_' || major > 254) {
+        return false;
+    }
+
+    version->major = major;
+    p = end + 1;
+
+    // minor
+    uint32_t minor = strtoul(p, &end, 10);
+
+    if (p == end || *end != '_' || minor > 254) {
+        return false;
+    }
+
+    version->minor = minor;
+    p = end + 1;
+
+    // patch
+    uint32_t patch = strtoul(p, &end, 10);
+
+    if (p == end || *end != '_' || patch > 254) {
+        return false;
+    }
+
+    version->patch = patch;
+    p = end + 1;
+
+    // beta
+    if (strncmp(p, "beta_", 5) != 0) {
+        version->beta = 255;
+    }
+    else {
+        p += 5;
+
+        uint32_t beta = strtoul(p, &end, 10);
+
+        if (p == end || *end != '_' || beta > 254) {
+            return false;
+        }
+
+        version->beta = beta;
+        p = end + 1;
+    }
+
+    version->timestamp = strtoul(p, &end, 16);
+
+    if (p == end || *end != '\0') {
+        return false;
+    }
+
+    return true;
+}
+
+static String format_version(Version *version)
+{
+    char buf[64];
+
+    if (version->beta != 255) {
+        snprintf(buf, sizeof(buf), "%u.%u.%u-beta.%u+%x", version->major, version->minor, version->patch, version->beta, version->timestamp);
+    }
+    else {
+        snprintf(buf, sizeof(buf), "%u.%u.%u+%x", version->major, version->minor, version->patch, version->timestamp);
+    }
+
+    return String(buf);
+}
+
+// list files are not signed to allow customer fleet update managment, firmwares are signed
+void FirmwareUpdate::check_for_updates()
+{
+    ++update_cookie;
+
+    available_updates.get("cookie")->updateUint(update_cookie);
+
+    if (update_url.length() == 0) {
+        logger.printfln("No update URL configured");
+        return;
+    }
+
+    esp_http_client_config_t config;
+    memset(&config, 0, sizeof(config));
+
+    config.url = update_url.c_str();
+    // FIXME: allow custom certificate
+    config.crt_bundle_attach = esp_crt_bundle_attach;
+    config.transport_type = HTTP_TRANSPORT_OVER_SSL;
+
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_err_t err = esp_http_client_open(client, 0);
+
+    if (err != ESP_OK) {
+        logger.printfln("Error while opening firmware list: %s", esp_err_to_name(err));
+        available_updates.get("cookie")->updateUint(update_cookie);
+        return;
+    }
+
+    int content_length = esp_http_client_fetch_headers(client);
+
+    if (content_length < 0) {
+        logger.printfln("Error while reading firmware list HTTP headers: %s", esp_err_to_name(content_length));
+        esp_http_client_close(client);
+        esp_http_client_cleanup(client);
+        return;
+    }
+
+    char buf[64 + 1];
+    size_t buf_used = 0;
+    int total_read_len = 0;
+    char *p;
+    Version beta_update;
+    Version normal_update;
+
+    while (total_read_len < content_length) {
+        size_t buf_free = sizeof(buf) - buf_used - 1;
+
+        if (buf_free == 0) {
+            logger.printfln("Firmware list is malformed");
+            esp_http_client_close(client);
+            esp_http_client_cleanup(client);
+            return;
+        }
+
+        int read_len = esp_http_client_read(client, buf + buf_used, buf_free);
+
+        if (read_len < 0) {
+            logger.printfln("Error while reading firmware list content: %s", esp_err_to_name(read_len));
+            esp_http_client_close(client);
+            esp_http_client_cleanup(client);
+            return;
+        }
+
+        total_read_len += read_len;
+        buf_used += read_len;
+        buf[buf_used] = '\0';
+        p = strchr(buf, '\n');
+
+        if (p == nullptr && total_read_len >= content_length) {
+            p = buf + buf_used;
+        }
+
+        while (p != nullptr) {
+            *p = '\0';
+
+            Version version;
+
+            if (!parse_version(buf, &version)) {
+                logger.printfln("Firmware list entry is malformed: %s", buf);
+                esp_http_client_close(client);
+                esp_http_client_cleanup(client);
+                return;
+            }
+
+            if (compare_version(version.major, version.minor, version.patch, version.beta, version.timestamp,
+                                BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()) > 0) {
+                if (version.beta != 255) {
+                    beta_update = version;
+                }
+                else {
+                    normal_update = version;
+                }
+            }
+
+            if (p == buf + buf_used) {
+                break;
+            }
+
+            size_t buf_consumed = p + 1 - buf;
+
+            memmove(buf, p + 1, buf_used - buf_consumed);
+
+            buf_used -= buf_consumed;
+            buf[buf_used] = '\0';
+
+            p = strchr(buf, '\n');
+        }
+    }
+
+    esp_http_client_close(client);
+    esp_http_client_cleanup(client);
+
+    String beta_update_str = "";
+    String release_update_str = "";
+    String stable_update_str = "";
+
+    if (beta_update.major != 255) {
+        beta_update_str = format_version(&beta_update);
+    }
+
+    if (normal_update.major != 255) {
+        release_update_str = format_version(&normal_update);
+
+        if (normal_update.timestamp + (7 * 24 * 60 * 60) < time(nullptr)) {
+            stable_update_str = format_version(&normal_update);
+        }
+    }
+
+    available_updates.get("timestamp")->updateUint(time(nullptr));
+    available_updates.get("beta")->updateString(beta_update_str);
+    available_updates.get("release")->updateString(release_update_str);
+    available_updates.get("stable")->updateString(stable_update_str);
 }

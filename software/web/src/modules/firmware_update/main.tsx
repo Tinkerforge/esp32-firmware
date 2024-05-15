@@ -35,7 +35,14 @@ export function FirmwareUpdateNavbar() {
 }
 
 interface FirmwareUpdateState {
-    version: API.getType["info/version"],
+    current_version: API.getType["info/version"],
+    update_url: string;
+    show_spinner: boolean,
+    available_updates_timestamp: number,
+    available_updates_cookie: number,
+    available_beta_update: string,
+    available_release_update: string,
+    available_stable_update: string,
 };
 
 export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
@@ -43,17 +50,49 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
         super();
 
         this.state = {
-            version: null,
+            current_version: null,
+            update_url: null,
+            show_spinner: false,
+            available_updates_timestamp: 0,
+            available_updates_cookie: null,
+            available_beta_update: null,
+            available_release_update: null,
+            available_stable_update: null,
         } as any;
 
         util.addApiEventListener('info/version', () => {
             let version = API.get('info/version');
 
-            if (this.state.version != null && this.state.version.firmware != null && this.state.version.firmware != version.firmware) {
+            // FIXME: this doesn't work
+            if (this.state.current_version != null && this.state.current_version.firmware != null && this.state.current_version.firmware != version.firmware) {
                 window.location.reload();
             }
 
-            this.setState({version: API.get('info/version')});
+            this.setState({current_version: version});
+        });
+
+        util.addApiEventListener('firmware_update/config', () => {
+            let config = API.get('firmware_update/config');
+
+            this.setState({
+                update_url: config.update_url,
+            });
+        });
+
+        util.addApiEventListener('firmware_update/available_updates', () => {
+            let available_updates = API.get('firmware_update/available_updates');
+
+            if (this.state.available_updates_cookie != available_updates.cookie) {
+                this.setState({show_spinner: false});
+            }
+
+            this.setState({
+                available_updates_timestamp: available_updates.timestamp,
+                available_updates_cookie: available_updates.cookie,
+                available_beta_update: available_updates.beta,
+                available_release_update: available_updates.release,
+                available_stable_update: available_updates.stable,
+            });
         });
     }
 
@@ -102,37 +141,38 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
         return true;
     }
 
-    render() {
-        if (!util.render_allowed())
-            return <SubPage name="firmware_update" />;
-
-        let build_time: string = '';
-
+    format_build_time(version: string) {
         try {
-            let timestamp = parseInt(this.state.version.firmware.split('-')[1], 16);
+            let timestamp = parseInt(version.split('+')[1], 16);
 
             if (util.hasValue(timestamp) && !isNaN(timestamp)) {
-                build_time = __("firmware_update.script.build_time_prefix") + util.timestamp_sec_to_date(timestamp) + __("firmware_update.script.build_time_suffix");
+                return __("firmware_update.script.build_time")(util.timestamp_sec_to_date(timestamp));
             }
         } catch {
         }
+
+        return ""
+    }
+
+    render() {
+        if (!util.render_allowed())
+            return <SubPage name="firmware_update" />;
 
         return (
             <SubPage name="firmware_update">
                 <PageHeader title={__("firmware_update.content.firmware_update")} />
 
-                <FormRow label={__("firmware_update.content.current_firmware")}>
-                    <InputText value={this.state.version.firmware + build_time}/>
+                <FormRow label={__("firmware_update.content.current_version")}>
+                    <InputText value={this.state.current_version.firmware + this.format_build_time(this.state.current_version.firmware)}/>
                 </FormRow>
 
-                <FormRow label={__("firmware_update.content.firmware_update_label")} label_muted={__("firmware_update.content.firmware_update_desc")}>
+                <FormRow label={__("firmware_update.content.manual_update")} label_muted={__("firmware_update.content.manual_update_muted")}>
                     <InputFile
                         browse={__("firmware_update.content.browse")}
                         select_file={__("firmware_update.content.select_file")}
                         upload={__("firmware_update.content.update")}
                         url="/firmware_update/flash_firmware"
                         accept=".bin"
-
                         timeout_ms={120 * 1000}
                         onUploadStart={async (f) => this.checkFirmware(f)}
                         onUploadSuccess={() => util.postReboot(__("firmware_update.script.update_success"), __("util.reboot_text"))}
@@ -153,6 +193,49 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                         }}
                     />
                 </FormRow>
+
+                {this.state.update_url ?
+                    <>
+                        <FormRow label={__("firmware_update.content.check_for_updates")}>
+                            <Button variant="primary" className="form-control" onClick={() => this.setState({show_spinner: true}, () => API.call("firmware_update/check_for_updates", null, ""))}>
+                                {__("firmware_update.content.check_for_updates")}
+                                <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.show_spinner}></span>
+                            </Button>
+                        </FormRow>
+
+                        <FormRow label={__("firmware_update.content.check_for_updates_timestamp")}>
+                            <InputText value={util.timestamp_sec_to_date(this.state.available_updates_timestamp, "")}/>
+                        </FormRow>
+
+                        <FormRow label={__("firmware_update.content.available_beta_update")}>
+                            <InputText value={
+                                this.state.available_updates_timestamp == 0
+                                ? ""
+                                : (this.state.available_beta_update.length > 0
+                                    ? this.state.available_beta_update + this.format_build_time(this.state.available_beta_update)
+                                    : __("firmware_update.content.no_update"))}/>
+                        </FormRow>
+
+                        <FormRow label={__("firmware_update.content.available_release_update")}>
+                            <InputText value={
+                                this.state.available_updates_timestamp == 0
+                                ? ""
+                                : (this.state.available_release_update.length > 0
+                                    ? this.state.available_release_update + this.format_build_time(this.state.available_release_update)
+                                    : __("firmware_update.content.no_update"))}/>
+                        </FormRow>
+
+                        <FormRow label={__("firmware_update.content.available_stable_update")}>
+                            <InputText value={
+                                this.state.available_updates_timestamp == 0
+                                ? ""
+                                : (this.state.available_stable_update.length > 0
+                                    ? this.state.available_stable_update + this.format_build_time(this.state.available_stable_update)
+                                    : __("firmware_update.content.no_update"))}/>
+                        </FormRow>
+                    </>
+                    : undefined
+                }
             </SubPage>
         );
     }

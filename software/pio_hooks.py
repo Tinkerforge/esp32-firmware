@@ -52,17 +52,17 @@ def get_changelog_version(name):
             if re.match(r'^(?:- [A-Z0-9\(]|  ([A-Za-z0-9\(\"]|--hide-payload)).*$', line) != None:
                 continue
 
-            m = re.match(r'^(?:<unknown>|20[0-9]{2}-[0-9]{2}-[0-9]{2}): ([0-9]+)\.([0-9]+)\.([0-9]+) \((?:<unknown>|[a-f0-9]+)\)$', line)
+            m = re.match(r'^(?:<unknown>|20[0-9]{2}-[0-9]{2}-[0-9]{2}): ([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta\.([0-9]+))? \((?:<unknown>|[a-f0-9]+)\)$', line)
 
             if m == None:
                 raise Exception('Invalid line {} in {}: {}'.format(i + 1, path, line))
 
-            version = (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+            version = (int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4)) if m.group(4) != None else 255)
 
             if version[0] not in [0, 1, 2]:
                 raise Exception('Invalid major version in {}: {}'.format(path, version))
 
-            if len(versions) > 0 and (version[2] < 90 and versions[-1][2] < 90) or  (version[2] >= 90 and versions[-1][2] >= 90):
+            if len(versions) > 0 and (version[2] < 90 and versions[-1][2] < 90) or (version[2] >= 90 and versions[-1][2] >= 90):
                 if versions[-1] >= version:
                     raise Exception('Invalid version order in {}: {} -> {}'.format(path, versions[-1], version))
 
@@ -78,22 +78,24 @@ def get_changelog_version(name):
                 if versions[-1][0] != version[0] and (version[1] != 0 or version[2] != 0):
                     raise Exception('Invalid version jump in {}: {} -> {}'.format(path, versions[-1], version))
 
+                # FIXME: validate optional beta part
+
             versions.append(version)
 
     if len(versions) == 0:
         raise Exception('No version found in {}'.format(path))
 
-    oldest_version = (str(versions[0][0]), str(versions[0][1]), str(versions[0][2]))
-    version = (str(versions[-1][0]), str(versions[-1][1]), str(versions[-1][2]))
+    oldest_version = (str(versions[0][0]), str(versions[0][1]), str(versions[0][2]), str(versions[0][3]))
+    version = (str(versions[-1][0]), str(versions[-1][1]), str(versions[-1][2]), str(versions[-1][3]))
     return oldest_version, version
 
-def write_firmware_info(display_name, major, minor, patch, build_time):
+def write_firmware_info(display_name, major, minor, patch, beta, build_time):
     buf = bytearray([0xFF] * 4096)
 
     # 7121CE12F0126E
     # tink er for ge
     buf[0:7] = bytearray.fromhex("7121CE12F0126E") # magic
-    buf[7] = 0x01 #firmware_info_version, note: a new version has to be backwards compatible
+    buf[7] = 0x02 # firmware_info_version, note: a new version has to be backwards compatible
 
     name_bytes = display_name.encode("utf-8") # firmware name, max 60 chars
     buf[8:8 + len(name_bytes)] = name_bytes
@@ -103,6 +105,7 @@ def write_firmware_info(display_name, major, minor, patch, build_time):
     buf[70] = int(minor)
     buf[71] = int(patch)
     buf[72:76] = build_time.to_bytes(4, byteorder='little')
+    buf[76] = int(beta)
     buf[4092:4096] = crc32(buf[0:4092]).to_bytes(4, byteorder='little')
 
     with open(os.path.join(env.subst("$BUILD_DIR"), "firmware_info.bin"), "wb") as f:
@@ -475,6 +478,7 @@ def main():
     manual_url = env.GetProjectOption("custom_manual_url")
     apidoc_url = env.GetProjectOption("custom_apidoc_url")
     firmware_url = env.GetProjectOption("custom_firmware_url")
+    firmware_update_url = env.GetProjectOption("custom_firmware_update_url")
     require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
     build_flags = env.GetProjectOption("build_flags")
     frontend_debug = env.GetProjectOption("custom_frontend_debug") == "true"
@@ -576,9 +580,11 @@ def main():
     build_lines.append('#define OLDEST_VERSION_MAJOR {}'.format(oldest_version[0]))
     build_lines.append('#define OLDEST_VERSION_MINOR {}'.format(oldest_version[1]))
     build_lines.append('#define OLDEST_VERSION_PATCH {}'.format(oldest_version[2]))
+    build_lines.append('#define OLDEST_VERSION_BETA {}'.format(oldest_version[3]))
     build_lines.append('#define BUILD_VERSION_MAJOR {}'.format(version[0]))
     build_lines.append('#define BUILD_VERSION_MINOR {}'.format(version[1]))
     build_lines.append('#define BUILD_VERSION_PATCH {}'.format(version[2]))
+    build_lines.append('#define BUILD_VERSION_BETA {}'.format(version[3]))
     build_lines.append('#define BUILD_VERSION_STRING "{}.{}.{}"'.format(*version))
     build_lines.append('#define BUILD_HOST_PREFIX "{}"'.format(host_prefix))
 
@@ -586,13 +592,16 @@ def main():
         build_lines.append('#define BUILD_IS_{}() {}'.format(firmware, 1 if firmware == name.upper() else 0))
 
     build_lines.append('#define BUILD_CONFIG_TYPE "{}"'.format(config_type))
+    build_lines.append('#define BUILD_NAME "{}"'.format(name))
     build_lines.append('#define BUILD_DISPLAY_NAME "{}"'.format(display_name))
     build_lines.append('#define BUILD_DISPLAY_NAME_UPPER "{}"'.format(display_name.upper()))
     build_lines.append('#define BUILD_REQUIRE_FIRMWARE_INFO {}'.format(require_firmware_info))
     build_lines.append('#define BUILD_MONITOR_SPEED {}'.format(monitor_speed))
+    build_lines.append('#define BUILD_FIRMWARE_UPDATE_URL "{}"'.format(firmware_update_url))
     build_lines.append('uint32_t build_timestamp(void);')
     build_lines.append('const char *build_timestamp_hex_str(void);')
     build_lines.append('const char *build_version_full_str(void);')
+    build_lines.append('const char *build_version_full_str_upper(void);')
     build_lines.append('const char *build_info_str(void);')
     build_lines.append('const char *build_filename_str(void);')
     build_lines.append('const char *build_commit_id_str(void);')
@@ -602,16 +611,19 @@ def main():
         name,
         "-NIGHTLY" if nightly else "",
         "-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE" if not_for_distribution else "",
-        '_'.join(version),
+        "{}_{}_{}{}".format(*version[:3], f"_beta_{version[3]}" if version[3] != "255" else ""),
         timestamp,
         dirty_suffix,
     )
+
+    version_full_str = "{}.{}.{}{}+{:x}".format(*version[:3], f"-beta.{version[3]}" if version[3] != "255" else "", timestamp)
 
     build_lines = []
     build_lines.append('#include "build.h"')
     build_lines.append('uint32_t build_timestamp(void) {{ return {}; }}'.format(timestamp))
     build_lines.append('const char *build_timestamp_hex_str(void) {{ return "{:x}"; }}'.format(timestamp))
-    build_lines.append('const char *build_version_full_str(void) {{ return "{}.{}.{}-{:x}"; }}'.format(*version, timestamp))
+    build_lines.append('const char *build_version_full_str(void) {{ return "{}"; }}'.format(version_full_str))
+    build_lines.append('const char *build_version_full_str_upper(void) {{ return "{}"; }}'.format(version_full_str.upper()))
     build_lines.append('const char *build_info_str(void) {{ return "git url: {}, git branch: {}, git commit id: {}"; }}'.format(git_url, branch_name, git_commit_id))
     build_lines.append('const char *build_filename_str(void) {{ return "{}"; }}'.format(firmware_basename))
     build_lines.append('const char *build_commit_id_str(void) {{ return "{}"; }}'.format(git_commit_id))
