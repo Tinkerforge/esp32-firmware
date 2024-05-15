@@ -29,7 +29,7 @@ let x = {
             "scan_log": "Log",
 
             "model_no_supported": "Nicht unterstützt",
-            "model_other_preferred": /*SFN*/(slot: number|"?") => "Model " + slot + " bevorzugt"/*NF*/,
+            "model_other_preferred": /*SFN*/(slot: number|"?") => "Modell " + slot + " bevorzugt"/*NF*/,
             {{{models}}}
         },
         "script": {

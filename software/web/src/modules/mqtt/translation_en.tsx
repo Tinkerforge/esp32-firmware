@@ -27,7 +27,7 @@ let x = {
             "use_cert_bundle": "Embedded certificate bundle",
             "no_cert": "Not used",
             "path": "Broker path",
-            "path_muted": "optional; Part of the MQTT over WS url behind the hostname. Must start with /.",
+            "path_muted": "optional; Part of the MQTT-over-WS-URL behind the hostname. Must start with /.",
             "path_invalid": "Must start with /.",
             "broker_host": "Broker hostname or IP address",
             "port": "Broker port",

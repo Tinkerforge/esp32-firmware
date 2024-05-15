@@ -10,7 +10,7 @@ let x = {
             "error_config": "Incomplete configuration",
             "error_internal": "Internal error",
 
-            "no_bricklet": "Internal error, bricklet not found"
+            "no_bricklet": "Internal error, Bricklet not found"
         },
         "automation": {
             "contactor_monitoring": "Contactor error",
@@ -52,7 +52,7 @@ let x = {
             }/*NF*/,
 
             "switch_relay": "Switch relay",
-            "relay_state": "Swtich to",
+            "relay_state": "Switch to",
             "relay_state_open": "Open",
             "relay_state_closed": "Closed",
             "relay_action_text": /*FFN*/(state: boolean) => {

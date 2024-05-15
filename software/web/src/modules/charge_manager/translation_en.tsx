@@ -62,8 +62,8 @@ let x = {
             "edit_charger_name": "Display name",
             "edit_charger_host": "IP address or hostname",
 
-            "multi_broadcast_modal_title": "Reserved, multi- or broadcast ip addresses found",
-            "multi_broadcast_modal_body": "These reserved, multi- or broadcast ip addresses were detected: ",
+            "multi_broadcast_modal_title": "Reserved, multi- or broadcast IP address(es) found",
+            "multi_broadcast_modal_body": "These reserved, multi- or broadcast IP addresses were detected: ",
             "multi_broadcast_modal_body_end": "Are you sure that you want to save the settings?",
             "multi_broadcast_modal_save": "Yes",
             "multi_broadcast_modal_cancel": "Cancel",
@@ -83,7 +83,7 @@ let x = {
             "charge_manager_chargers_reset_modal_text": "Resetting the charge manager configuration also deletes the list of controlled chargers. Continue?",
 
             "header_load_management": "Dynamic load management",
-            "load_management_explainer": "Adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the building's mains connection. (Coming soon: This feature is currently in development.)",
+            "load_management_explainer": "Adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the grid connection. (Coming soon: This feature is currently in development.)",
 
             "managed_disabled": "Charge management settings will be ignored: Charger only controls itself or is controlled externally."
         },

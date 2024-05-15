@@ -24,7 +24,7 @@ let x = {
             "unchanged": "Unchanged",
             "required": "Required",
             "not_set": "Unset",
-            "capslock_enabled": "Capslock is enabled"
+            "capslock_enabled": "Caps lock is enabled"
         },
         "ip_configuration": {
             "ip_configuration": "IP configuration",

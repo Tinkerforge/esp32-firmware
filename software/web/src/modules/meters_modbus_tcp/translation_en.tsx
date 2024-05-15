@@ -66,7 +66,7 @@ let x = {
             "registers_value_type_f64le": "Four registers, 64-bit, float, little-endian",
             "registers_offset": "Offset",
             "registers_scale_factor": "Scale factor",
-            "registers_value_id": "Wert"
+            "registers_value_id": "Value"
         },
         "script": {
         }
