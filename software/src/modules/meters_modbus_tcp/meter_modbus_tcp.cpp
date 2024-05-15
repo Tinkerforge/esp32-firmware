@@ -482,23 +482,23 @@ void MeterModbusTCP::read_done_callback()
      && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
         if (deye_hybrid_inverter_device_type < 0) {
             switch (register_buffer[register_buffer_index]) {
-            case 0x200:
-            case 0x300:
-            case 0x400:
-                logger.printfln("%s has unsupported Device Type: %u", get_table_name(table_id), register_buffer[0]);
+            case 0x0002:
+            case 0x0003:
+            case 0x0004:
+                logger.printfln("%s has unsupported Device Type: 0x%04x", get_table_name(table_id), register_buffer[0]);
                 return;
 
-            case 0x500:
+            case 0x0005:
                 table = &deye_hybrid_inverter_low_voltage_battery_table;
                 break;
 
-            case 0x600:
-            case 0x601:
+            case 0x0006:
+            case 0x0106:
                 table = &deye_hybrid_inverter_high_voltage_battery_table;
                 break;
 
             default:
-                logger.printfln("%s has unknown Device Type: %u", get_table_name(table_id), register_buffer[0]);
+                logger.printfln("%s has unknown Device Type: 0x%04x", get_table_name(table_id), register_buffer[0]);
                 return;
             }
 
