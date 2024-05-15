@@ -52,7 +52,7 @@ struct [[gnu::packed]] cm_packet_header {
 };
 
 #define CM_PACKET_HEADER_LENGTH (sizeof(cm_packet_header))
-static_assert(CM_PACKET_HEADER_LENGTH == 8);
+static_assert(CM_PACKET_HEADER_LENGTH == 8, "Unexpected CM_PACKET_HEADER_LENGTH");
 
 #define CM_COMMAND_FLAGS_CPPDISC_BIT_POS 6
 #define CM_COMMAND_FLAGS_CPPDISC_MASK (1 << CM_COMMAND_FLAGS_CPPDISC_BIT_POS)
@@ -69,7 +69,7 @@ struct [[gnu::packed]] cm_command_v1 {
 };
 
 #define CM_COMMAND_V1_LENGTH (sizeof(cm_command_v1))
-static_assert(CM_COMMAND_V1_LENGTH == 4);
+static_assert(CM_COMMAND_V1_LENGTH == 4, "Unexpected CM_COMMAND_V1_LENGTH");
 
 struct [[gnu::packed]] cm_command_packet {
     cm_packet_header header;
@@ -77,7 +77,7 @@ struct [[gnu::packed]] cm_command_packet {
 };
 
 #define CM_COMMAND_PACKET_LENGTH (sizeof(cm_command_packet))
-static_assert(CM_COMMAND_PACKET_LENGTH == 12);
+static_assert(CM_COMMAND_PACKET_LENGTH == 12, "Unexpected CM_COMMAND_PACKET_LENGTH");
 
 #define CM_FEATURE_FLAGS_CP_DISCONNECT_BIT_POS 6
 #define CM_FEATURE_FLAGS_CP_DISCONNECT_MASK (1 << CM_FEATURE_FLAGS_CP_DISCONNECT_BIT_POS)
