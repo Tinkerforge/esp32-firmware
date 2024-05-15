@@ -20,6 +20,7 @@
 #pragma once
 
 #include "config.h"
+#include "cm_networking_defs.h"
 
 #include <lwip/err.h>
 #include <lwip/sockets.h>
@@ -31,12 +32,6 @@
 #include "TFJson.h"
 
 #include <functional>
-
-#if defined(BOARD_HAS_PSRAM)
-#define MAX_CONTROLLED_CHARGERS 32
-#else
-#define MAX_CONTROLLED_CHARGERS 10
-#endif
 
 struct cm_state_v1;
 struct cm_state_v2;

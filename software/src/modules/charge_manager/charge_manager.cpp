@@ -34,8 +34,6 @@
 #include "task_scheduler.h"
 #include "tools.h"
 
-#include "modules/cm_networking/cm_networking_defs.h"
-
 // This is a hack to allow the validator of available_current
 // to access config["maximum_available_current"]
 // It is necessary, because configs only take a function pointer as
@@ -373,12 +371,8 @@ void ChargeManager::setup()
     }
 
     default_available_current = config.get("default_available_current")->asUint();
-    ca_config.minimum_current_3p = config.get("minimum_current")->asUint();
-    ca_config.minimum_current_1p = config.get("minimum_current_1p")->asUint();
     requested_current_threshold = config.get("requested_current_threshold")->asUint();
     requested_current_margin = config.get("requested_current_margin")->asUint();
-    ca_config.requested_current_margin = requested_current_margin;
-
     max_avail_current = config.get("maximum_available_current")->asUint();
 
     if (!config.get("enable_charge_manager")->asBool() || config.get("chargers")->count() == 0) {
@@ -386,6 +380,12 @@ void ChargeManager::setup()
         return;
     }
     state.get("state")->updateUint(1);
+
+    this->ca_config = new CurrentAllocatorConfig();
+    this->ca_state = new CurrentAllocatorState();
+    ca_config->minimum_current_3p = config.get("minimum_current")->asUint();
+    ca_config->minimum_current_1p = config.get("minimum_current_1p")->asUint();
+    ca_config->requested_current_margin = requested_current_margin;
 
     available_current.get("current")->updateUint(config.get("default_available_current")->asUint());
     for (int i = 0; i < config.get("chargers")->count(); ++i) {
@@ -411,18 +411,19 @@ void ChargeManager::setup()
     }
 
     this->charger_count = config.get("chargers")->count();
-    ca_config.charger_count = this->charger_count;
+    ca_config->charger_count = this->charger_count;
     this->charger_state = (ChargerState*) heap_caps_calloc_prefer(this->charger_count, sizeof(ChargerState), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
     this->charger_allocation_state = (ChargerAllocationState*) heap_caps_calloc_prefer(this->charger_count, sizeof(ChargerAllocationState), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
     start_manager_task();
 
     auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
+    auto clear_dns_cache_entry_fn = [this](uint8_t i){ return cm_networking.clear_dns_cache_entry(i);};
 
-    task_scheduler.scheduleWithFixedDelay([this, get_charger_name_fn](){
+    task_scheduler.scheduleWithFixedDelay([this, get_charger_name_fn, clear_dns_cache_entry_fn](){
             uint32_t allocated_current = 0;
             int result = allocate_current(
-                &this->ca_config,
+                this->ca_config,
                 this->seen_all_chargers(),
                 this->available_current.get("current")->asUint(),
                 this->available_phases.get("phases")->asUint(),
@@ -430,8 +431,9 @@ void ChargeManager::setup()
                 this->charger_state,
                 this->hosts.get(),
                 get_charger_name_fn,
+                clear_dns_cache_entry_fn,
 
-                &this->ca_state,
+                this->ca_state,
                 this->charger_allocation_state,
                 &allocated_current
             );
@@ -459,11 +461,11 @@ void ChargeManager::setup()
     }
 
     if (config.get("verbose")->asBool()) {
-        ca_config.distribution_log = heap_alloc_array<char>(DISTRIBUTION_LOG_LEN);
-        ca_config.distribution_log_len = DISTRIBUTION_LOG_LEN;
+        ca_config->distribution_log = heap_alloc_array<char>(DISTRIBUTION_LOG_LEN);
+        ca_config->distribution_log_len = DISTRIBUTION_LOG_LEN;
     } else {
-        ca_config.distribution_log = nullptr;
-        ca_config.distribution_log_len = 0;
+        ca_config->distribution_log = nullptr;
+        ca_config->distribution_log_len = 0;
     }
 
     initialized = true;

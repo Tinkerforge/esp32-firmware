@@ -19,7 +19,11 @@
 
 #pragma once
 
-#include "config.h"
+#if defined(BOARD_HAS_PSRAM)
+#define MAX_CONTROLLED_CHARGERS 32
+#else
+#define MAX_CONTROLLED_CHARGERS 10
+#endif
 
 #define CHARGE_MANAGER_PORT 34127
 #define CHARGE_MANAGEMENT_PORT (CHARGE_MANAGER_PORT + 1)

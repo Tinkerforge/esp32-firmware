@@ -27,6 +27,8 @@
 #include "event_log.h"
 #include "task_scheduler.h"
 
+#include "modules/charge_manager/charge_manager_private.h"
+
 #define MAX_DATA_AGE 30000 // milliseconds
 #define DATA_INTERVAL_5MIN 5 // minutes
 #define MAX_PENDING_DATA_POINTS 250
