@@ -14,7 +14,7 @@ let x = {
             "factory_reset_desc": "removes all configuration",
             "config_reset_desc": ""
         }
-    }
+    },
     "firmware_update": {
         "script": {
             "no_info_page": "Firmware file corrupted (info page missing)",

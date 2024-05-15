@@ -19,7 +19,7 @@ let x = {
             "factory_reset_desc": "löscht die gesamte Konfiguration",
             "config_reset_desc": ""
         }
-    }
+    },
     "firmware_update": {
         "script": {
             "no_info_page": "Firmware-Datei ist beschädigt (Firmware-Info-Seite fehlt)",
