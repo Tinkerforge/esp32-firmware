@@ -6,14 +6,16 @@ let x = {
             "charge_manager": "Charge Manager"
         }
     },
-    "firmware_update": {
+    "system": {
         "content": {
             "factory_reset_modal_text": <>A factory reset will reset all configuration to their default values. All tracked charges are lost. <b>This action cannot be undone!</b> The charger will re-open the WiFi access point with the default SSID and passphrase from the manual. Continue?</>,
             "config_reset_modal_text": <>Resets only the configuration to default values. Tracked charges will be preserved. <b>This action cannot be undone!</b> The charger will re-open the WiFi access point with the default SSID and passphrase from the manual. Continue?</>,
             "reboot_desc": "charging will not be interrupted",
             "factory_reset_desc": "removes the configuration and all tracked charges",
             "config_reset_desc": "tracked charges will be preserved"
-        },
+        }
+    },
+    "firmware_update": {
         "script": {
             "no_info_page": "Firmware file corrupted or for WARP 1 (info page missing)",
             "wrong_firmware_type": "Firmware file does not match the type of this charger"

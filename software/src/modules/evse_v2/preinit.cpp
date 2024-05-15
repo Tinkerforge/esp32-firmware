@@ -170,10 +170,10 @@ void evse_v2_button_recovery_handler()
             break;
         // Stage 2 - ESP still crashed. Format data partition. (This also removes tracked charges and the username file)
         case 2:
-#if MODULE_FIRMWARE_UPDATE_AVAILABLE()
+#if MODULE_SYSTEM_AVAILABLE()
             logger.printfln("Running stage 2: Formatting data partition");
             mount_or_format_spiffs();
-            factory_reset(false);
+            system_.factory_reset(false);
             logger.printfln("Stage 2 done");
 #endif
             break;

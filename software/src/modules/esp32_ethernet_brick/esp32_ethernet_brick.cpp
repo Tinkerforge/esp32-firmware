@@ -67,7 +67,7 @@ static TF_Local local;
 #define WEM_FACTORY_RESET_WAIT_TIME 8
 #endif
 
-#if BUILD_IS_ENERGY_MANAGER() && MODULE_FIRMWARE_UPDATE_AVAILABLE()
+#if BUILD_IS_ENERGY_MANAGER() && MODULE_SYSTEM_AVAILABLE()
 static void check_for_factory_reset()
 {
     // A factory reset will leave the green LED on, even across a restart. Switch it off here.
@@ -118,7 +118,7 @@ static void check_for_factory_reset()
             if (button_pressed) {
                 // Perform factory reset, switch on blue LED to show success.
                 digitalWrite(blue_led_pin, false);
-                factory_reset();
+                system_.factory_reset();
             } else {
                 // Factory reset aborted, switch off blue LED.
                 blue_led_off = true;
@@ -171,7 +171,7 @@ void ESP32EthernetBrick::setup()
     logger.printfln("ESP32 Ethernet Brick UID: %s", local_uid_str);
 #endif
 
-#if BUILD_IS_ENERGY_MANAGER() && MODULE_FIRMWARE_UPDATE_AVAILABLE()
+#if BUILD_IS_ENERGY_MANAGER() && MODULE_SYSTEM_AVAILABLE()
     check_for_factory_reset();
 #endif
 

@@ -20,10 +20,7 @@
 #include "firmware_update.h"
 #include "module_dependencies.h"
 
-#include <Arduino.h>
-
 #include <Update.h>
-#include <LittleFS.h>
 
 #include "api.h"
 #include "event_log.h"
@@ -33,57 +30,10 @@
 #include "web_server.h"
 
 #include "./crc32.h"
-#include "./recovery_html.embedded.h"
-
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-
-extern bool firmware_update_allowed;
-extern int8_t green_led_pin;
 
 // Newer firmwares contain a firmware info page.
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
-
-static TaskHandle_t xTaskBuffer;
-
-void blinky(void *arg)
-{
-    for (;;) {
-        digitalWrite(green_led_pin, true);
-        delay(200);
-        digitalWrite(green_led_pin, false);
-        delay(200);
-    }
-}
-
-static bool factory_reset_running = false;
-
-void factory_reset(bool restart_esp)
-{
-    if (factory_reset_running)
-        return;
-    factory_reset_running = true;
-
-    logger.printfln("Starting factory reset");
-
-    if (green_led_pin >= 0)
-        xTaskCreate(blinky,
-            "fctyrst_blink",
-            2048,
-            nullptr,
-            tskIDLE_PRIORITY,
-            &xTaskBuffer);
-
-#if MODULE_EVSE_COMMON_AVAILABLE()
-    evse_common.factory_reset();
-#endif
-
-    LittleFS.end();
-    LittleFS.format();
-    if (restart_esp)
-        ESP.restart();
-}
 
 void FirmwareUpdate::setup()
 {
@@ -257,15 +207,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
 
 void FirmwareUpdate::register_urls()
 {
-    server.on_HTTPThread("/recovery", HTTP_GET, [](WebServerRequest req) {
-        req.addResponseHeader("Content-Encoding", "gzip");
-        req.addResponseHeader("ETag", "dontcachemeplease");
-        // Intentionally don't handle the If-None-Match header:
-        // This makes sure that a cached version is never used.
-        return req.send(200, "text/html; charset=utf-8", recovery_html_data, recovery_html_length);
-    });
-
-    server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request){
+    server.on("/firmware_update/check_firmware", HTTP_POST, [this](WebServerRequest request){
         if (!this->info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
             return request.send(400, "application/json", "{\"error\":\"firmware_update.script.no_info_page\"}");
         }
@@ -301,7 +243,7 @@ void FirmwareUpdate::register_urls()
         return true;
     });
 
-    server.on_HTTPThread("/flash_firmware", HTTP_POST, [this](WebServerRequest request){
+    server.on_HTTPThread("/firmware_update/flash_firmware", HTTP_POST, [this](WebServerRequest request){
         if (update_aborted)
             return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
 
@@ -318,59 +260,4 @@ void FirmwareUpdate::register_urls()
         this->firmware_update_running = true;
         return handle_update_chunk(U_FLASH, request, index, data, len, final, request.contentLength());
     });
-
-    // Was never used, as far as we know, but if someone complains, we could reenable this (maybe only in ESP, not WARP firmwares)
-    // Remove completely when we implement signature checks for the flashed firmware.
-    // server.on_HTTPThread("/flash_spiffs", HTTP_POST, [this](WebServerRequest request){
-    //     if(!Update.hasError()) {
-    //         logger.printfln("SPFFS flashed successfully! Rebooting in one second.");
-    //         task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);
-    //     }
-
-    //     return request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
-    // },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-    //     return handle_update_chunk(U_SPIFFS, request, index, data, len, final, request.contentLength());
-    // });
-
-    api.addCommand("factory_reset", Config::Confirm(), {Config::ConfirmKey()}, [this](String &result) {
-        if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
-            result = "Factory reset NOT requested";
-            return;
-        }
-
-        logger.printfln("Factory reset requested");
-
-        task_scheduler.scheduleOnce([](){
-            factory_reset();
-        }, 3000);
-    }, true);
-
-    api.addCommand("config_reset", Config::Confirm(), {Config::ConfirmKey()}, [this](String &result) {
-        if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
-            result = "Config reset NOT requested";
-            return;
-        }
-
-        logger.printfln("Config reset requested");
-
-        task_scheduler.scheduleOnce([](){
-#if MODULE_EVSE_COMMON_AVAILABLE()
-        evse_common.factory_reset();
-#endif
-
-#if MODULE_USERS_AVAILABLE() && MODULE_CHARGE_TRACKER_AVAILABLE()
-            for(int i = 0; i < users.config.get("users")->count(); ++i) {
-                uint8_t id = users.config.get("users")->get(i)->get("id")->asUint();
-                if (id == 0) // skip anonymous user
-                    continue;
-                if (!charge_tracker.is_user_tracked(id)) {
-                    users.rename_user(id, "", "");
-                }
-            }
-#endif
-
-            API::removeAllConfig();
-            ESP.restart();
-        }, 3000);
-    }, true);
 }

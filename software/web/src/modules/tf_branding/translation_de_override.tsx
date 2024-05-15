@@ -11,14 +11,16 @@ let x = {
             "enable_desc": "Der Brick verbindet sich automatisch beim Start oder wenn ein Kabel eingesteckt wird"
         }
     },
-    "firmware_update": {
+    "system": {
         "content": {
             "factory_reset_modal_text": <>Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Brick öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus dem Etikett auf der Rückseite des Bricks. Fortfahren?</>,
             "reboot_desc": "",
             "config_reset_modal_text": "",
             "factory_reset_desc": "löscht die gesamte Konfiguration",
             "config_reset_desc": ""
-        },
+        }
+    }
+    "firmware_update": {
         "script": {
             "no_info_page": "Firmware-Datei ist beschädigt (Firmware-Info-Seite fehlt)",
             "wrong_firmware_type": "Firmware-Datei passt nicht zu diesem Brick-Typ"

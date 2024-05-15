@@ -1,6 +1,6 @@
 #include "current_allocator.h"
 
-#include "module_available.h"
+#include "module_dependencies.h"
 
 #include "event_log.h"
 
@@ -14,8 +14,6 @@
 #define LOCAL_LOG(fmt, ...) if(local_log) local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
 
 #define TIMEOUT_MS 32000
-
-extern bool firmware_update_allowed;
 
 int allocate_current(
     const CurrentAllocatorConfig *cfg,
@@ -406,8 +404,8 @@ int allocate_current(
         *allocated_current += charger_alloc.allocated_current;
     }
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
-    firmware_update_allowed = !any_charger_blocking_firmware_update;
+#if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
+    firmware_update.firmware_update_allowed = !any_charger_blocking_firmware_update;
 #else
     (void)any_charger_blocking_firmware_update;
 #endif

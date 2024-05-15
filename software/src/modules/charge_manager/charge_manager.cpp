@@ -46,7 +46,6 @@ static uint32_t max_avail_current = 0;
 // double it to react faster if more current is available.
 #define REQUESTED_CURRENT_MARGIN_DEFAULT 3000
 
-extern bool firmware_update_allowed;
 extern ChargeManager charge_manager;
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
@@ -258,10 +257,10 @@ void ChargeManager::start_manager_task()
             target.uid = v1->esp32_uid;
             target.uptime = v1->evse_uptime;
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
+#if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
             // Immediately block firmware updates if this charger reports a connected vehicle.
             if (v1->charger_state != 0)
-                firmware_update_allowed = false;
+                firmware_update.firmware_update_allowed = false;
 #endif
 
             // A charger wants to charge if:

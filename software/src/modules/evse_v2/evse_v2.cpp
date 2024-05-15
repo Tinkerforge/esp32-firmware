@@ -32,8 +32,6 @@
 
 extern EVSEV2 evse_v2;
 
-extern bool firmware_update_allowed;
-
 extern void evse_v2_button_recovery_handler();
 
 static void energy_meter_values_callback(struct TF_EVSEV2 * evse_v2, float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data);
@@ -975,7 +973,9 @@ void EVSEV2::update_all_data()
     // then the EVSE could potentially start to charge, which is okay,
     // as the ESP firmware is already running, so we can for example
     // track the charge.
-    firmware_update_allowed = charger_state == 0 || charger_state == 4;
+#if MODULE_FIRMWARE_UPDATE_AVAILABLE()
+    firmware_update.firmware_update_allowed = charger_state == 0 || charger_state == 4;
+#endif
 
     // get_state
 

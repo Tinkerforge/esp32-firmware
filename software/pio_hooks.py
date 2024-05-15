@@ -234,10 +234,11 @@ def generate_module_dependencies_header(info_path, header_path_prefix, backend_m
 
             dep_mods = required_mods + available_optional_mods
             backend_mods_upper = [x.upper for x in backend_modules]
+            identifier_backlist = ["system"]
 
             defines  = ''.join(['#define MODULE_{}_AVAILABLE() {}\n'.format(x, "1" if x in backend_mods_upper else "0") for x in all_optional_mods_upper])
             includes = ''.join([f'#include "modules/{x.under}/{x.under}.h"\n' for x in dep_mods])
-            decls    = ''.join([f'extern {x.camel} {x.under};\n' for x in dep_mods])
+            decls    = ''.join([f'extern {x.camel} {x.under}{"_" if x.under in identifier_backlist else ""};\n' for x in dep_mods])
 
             available_h_content  = '// WARNING: This file is generated.\n\n'
             available_h_content += '#pragma once\n'
@@ -767,18 +768,19 @@ def main():
         all_mods.append(existing_backend_module.upper())
 
     backend_mods_upper = [x.upper for x in backend_modules]
+    identifier_backlist = ["system"]
 
     util.specialize_template("modules.h.template", os.path.join("src", "modules.h"), {
         '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
         '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE() {}'.format(x, "1" if x in backend_mods_upper else "0") for x in all_mods]),
-        '{{{module_extern_decls}}}': '\n'.join(['extern {} {};'.format(x.camel, x.under) for x in backend_modules]),
+        '{{{module_extern_decls}}}': '\n'.join([f'extern {x.camel} {x.under}{"_" if x.under in identifier_backlist else ""};' for x in backend_modules]),
     })
 
     util.specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
-        '{{{module_decls}}}': '\n'.join(['{} {};'.format(x.camel, x.under) for x in backend_modules]),
+        '{{{module_decls}}}': '\n'.join([f'{x.camel} {x.under}{"_" if x.under in identifier_backlist else ""};' for x in backend_modules]),
         '{{{imodule_count}}}': str(len(backend_modules)),
-        '{{{imodule_vector}}}': '\n    '.join(['imodules->push_back(&{});'.format(x.under) for x in backend_modules]),
-        '{{{module_init_config}}}': ',\n        '.join('{{"{0}", Config::Bool({0}.initialized)}}'.format(x.under) for x in backend_modules if not x.under.startswith("hidden_")),
+        '{{{imodule_vector}}}': '\n    '.join([f'imodules->push_back(&{x.under}{"_" if x.under in identifier_backlist else ""});' for x in backend_modules]),
+        '{{{module_init_config}}}': ',\n        '.join(f'{{"{x.under}", Config::Bool({x.under}{"_" if x.under in identifier_backlist else ""}.initialized)}}' for x in backend_modules if not x.under.startswith("hidden_")),
     })
 
     util.log("Generating module_dependencies.h from module.ini", flush=True)

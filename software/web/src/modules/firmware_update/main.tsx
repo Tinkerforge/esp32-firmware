@@ -34,23 +34,32 @@ export function FirmwareUpdateNavbar() {
     return <NavbarItem name="firmware_update" module="firmware_update" title={__("firmware_update.navbar.firmware_update")} symbol={<Upload />} />;
 }
 
-type FirmwareUpdateConfig = API.getType["info/version"];
+interface FirmwareUpdateState {
+    version: API.getType["info/version"],
+};
 
-export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
+export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
     constructor() {
         super();
-        util.addApiEventListener('info/version', () => {
-            let newState = API.get('info/version');
-            if (this.state != null && this.state.firmware != null && this.state.firmware != newState.firmware)
-                window.location.reload();
 
-            this.setState(API.get('info/version'));
+        this.state = {
+            version: null,
+        } as any;
+
+        util.addApiEventListener('info/version', () => {
+            let version = API.get('info/version');
+
+            if (this.state.version != null && this.state.version.firmware != null && this.state.version.firmware != version.firmware) {
+                window.location.reload();
+            }
+
+            this.setState({version: API.get('info/version')});
         });
     }
 
     async checkFirmware(f: File) {
         try {
-            await util.upload(f.slice(0xd000 - 0x1000, 0xd000), "check_firmware", () => {})
+            await util.upload(f.slice(0xd000 - 0x1000, 0xd000), "firmware_update/check_firmware", () => {})
         } catch (error) {
             if (typeof error === "string") {
                 util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), error);
@@ -93,19 +102,14 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
         return true;
     }
 
-    render(props: {}, state: Readonly<FirmwareUpdateConfig>) {
+    render() {
         if (!util.render_allowed())
             return <SubPage name="firmware_update" />;
-
-        // TODO: why not use the charge tracker module here?
-        let show_config_reset = false;
-        if (API.hasModule("users"))
-            show_config_reset = true;
 
         let build_time: string = '';
 
         try {
-            let timestamp = parseInt(state.firmware.split('-')[1], 16);
+            let timestamp = parseInt(this.state.version.firmware.split('-')[1], 16);
 
             if (util.hasValue(timestamp) && !isNaN(timestamp)) {
                 build_time = __("firmware_update.script.build_time_prefix") + util.timestamp_sec_to_date(timestamp) + __("firmware_update.script.build_time_suffix");
@@ -118,7 +122,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                 <PageHeader title={__("firmware_update.content.firmware_update")} />
 
                 <FormRow label={__("firmware_update.content.current_firmware")}>
-                    <InputText value={state.firmware + build_time}/>
+                    <InputText value={this.state.version.firmware + build_time}/>
                 </FormRow>
 
                 <FormRow label={__("firmware_update.content.firmware_update_label")} label_muted={__("firmware_update.content.firmware_update_desc")}>
@@ -126,7 +130,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                         browse={__("firmware_update.content.browse")}
                         select_file={__("firmware_update.content.select_file")}
                         upload={__("firmware_update.content.update")}
-                        url="/flash_firmware"
+                        url="/firmware_update/flash_firmware"
                         accept=".bin"
 
                         timeout_ms={120 * 1000}
@@ -148,61 +152,6 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateConfig> {
                             util.resumeWebSockets();
                         }}
                     />
-                </FormRow>
-
-                <FormRow label={__("firmware_update.content.reboot")} label_muted={__("firmware_update.content.reboot_desc")}>
-                    <Button variant="primary" className="form-control" onClick={util.reboot}>{__("firmware_update.content.reboot")}</Button>
-                </FormRow>
-
-                <FormRow label={__("firmware_update.content.current_spiffs")}>
-                    <InputText value={state.config + " (" + state.config_type + ")"}/>
-                </FormRow>
-
-                {show_config_reset ?
-                    <FormRow label={__("firmware_update.content.config_reset")} label_muted={__("firmware_update.content.config_reset_desc")}>
-                        <Button variant="danger" className="form-control" onClick={async () => {
-                                const modal = util.async_modal_ref.current;
-                                if (!await modal.show({
-                                        title: __("firmware_update.content.config_reset"),
-                                        body: __("firmware_update.content.config_reset_modal_text"),
-                                        no_text: __("firmware_update.content.abort_reset"),
-                                        yes_text: __("firmware_update.content.confirm_config_reset"),
-                                        no_variant: "secondary",
-                                        yes_variant: "danger"
-                                    }))
-                                    return;
-
-                                try {
-                                    await util.put("/config_reset", {"do_i_know_what_i_am_doing": true});
-                                    util.postReboot(__("firmware_update.script.config_reset_init"), __("util.reboot_text"));
-                                } catch (error) {
-                                    util.add_alert("config_reset_failed", "danger", __("firmware_update.script.config_reset_error"), error);
-                                }
-                            }}>{__("firmware_update.content.config_reset")}</Button>
-                    </FormRow>
-                    : ""
-                }
-
-                <FormRow label={__("firmware_update.content.factory_reset")} label_muted={__("firmware_update.content.factory_reset_desc")}>
-                    <Button variant="danger" className="form-control" onClick={async () => {
-                        const modal = util.async_modal_ref.current;
-                        if (!await modal.show({
-                                title: __("firmware_update.content.factory_reset"),
-                                body: __("firmware_update.content.factory_reset_modal_text"),
-                                no_text: __("firmware_update.content.abort_reset"),
-                                yes_text: __("firmware_update.content.confirm_factory_reset"),
-                                no_variant: "secondary",
-                                yes_variant: "danger"
-                            }))
-                            return;
-
-                        try {
-                            await util.put("/factory_reset", {"do_i_know_what_i_am_doing": true});
-                            util.postReboot(__("firmware_update.script.factory_reset_init"), __("util.reboot_text"));
-                        } catch (error) {
-                            util.add_alert("factory_reset_failed", "danger", __("firmware_update.script.factory_reset_error"), error);
-                        }
-                    }}>{__("firmware_update.content.factory_reset")}</Button>
                 </FormRow>
             </SubPage>
         );

@@ -11,14 +11,16 @@ let x = {
             "enable_desc": "Der Energy Manager verbindet sich beim Start automatisch zum konfigurierten Netzwerk"
         }
     },
-    "firmware_update": {
+    "system": {
         "content": {
             "factory_reset_modal_text": <>Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Energy Manager öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?</>,
             "reboot_desc": "",
             "config_reset_modal_text": "",
             "factory_reset_desc": "löscht die gesamte Konfiguration",
             "config_reset_desc": ""
-        },
+        }
+    },
+    "firmware_update": {
         "script": {
             "no_info_page": "Firmware-Datei ist beschädigt oder für WARP Charger (Firmware-Info-Seite fehlt)",
             "wrong_firmware_type": "Firmware-Datei passt nicht zum Energy Manager"

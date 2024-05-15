@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2024 Matthias Bolte <matthias@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,17 +17,21 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { __ } from "../../ts/translation";
-import { h, ComponentChildren, RefObject } from "preact";
-import { NavbarGroup } from "../../ts/components/navbar_group";
-import { Box } from "react-feather";
+#pragma once
 
-export function SystemGroupNavbar(props: {children: ComponentChildren, group_ref: RefObject<NavbarGroup>}) {
-    return (
-        <NavbarGroup ref={props.group_ref} title={__("system_group.navbar.system_group")} symbol={<Box />} hidden={false}>
-            {props.children}
-        </NavbarGroup>);
-}
+#include "config.h"
 
-export function init() {
-}
+#include "module.h"
+
+class System final : public IModule
+{
+public:
+    System(){}
+    void setup() override;
+    void register_urls() override;
+
+    void factory_reset(bool restart_esp = true);
+
+private:
+    bool factory_reset_running = false;
+};

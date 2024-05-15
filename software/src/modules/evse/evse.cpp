@@ -29,8 +29,6 @@
 #include "web_server.h"
 #include "string_builder.h"
 
-extern bool firmware_update_allowed;
-
 EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", [](){evse_common.setup_evse();}) {}
 
 void EVSE::pre_setup()
@@ -530,7 +528,9 @@ void EVSE::update_all_data()
     // then the EVSE could potentially start to charge, which is okay,
     // as the ESP firmware is already running, so we can for example
     // track the charge.
-    firmware_update_allowed = charger_state == 0 || charger_state == 4;
+#if MODULE_FIRMWARE_UPDATE_AVAILABLE()
+    firmware_update.firmware_update_allowed = charger_state == 0 || charger_state == 4;
+#endif
 
     // get_state
 

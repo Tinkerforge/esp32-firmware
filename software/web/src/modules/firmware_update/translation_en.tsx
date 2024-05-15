@@ -15,21 +15,6 @@ let x = {
             "browse": "Browse",
             "select_file": "Select firmware file...",
             "update": "Upload",
-            "current_spiffs": "Configuration version",
-            "factory_reset_desc": null,
-            "factory_reset": "Factory reset",
-            "factory_reset_modal_text": null,
-
-            "config_reset_desc": null,
-            "config_reset": "Reset configuration",
-
-            "config_reset_modal_text": null,
-            "confirm_config_reset": "Reset configuration",
-
-            "abort_reset": "Abort",
-            "confirm_factory_reset": "Reset to factory defaults",
-            "reboot": "Reboot",
-            "reboot_desc": null,
             "downgrade": "Firmware downgrade",
             "abort_downgrade": "Abort",
             "confirm_downgrade": "Downgrade firmware"
@@ -37,10 +22,6 @@ let x = {
         "script": {
             "update_success": "Successfully updated; restarting...",
             "update_fail": "Failed to update",
-            "factory_reset_init": "Formatting configuration partition and restarting...",
-            "factory_reset_error": "Initiating factory reset failed",
-            "config_reset_init": "Resetting configuration and restarting...",
-            "config_reset_error": "Failed to reset configuration",
             "vehicle_connected": "Can't update the firmware while a vehicle is connected.",
             "no_info_page": null,
             "info_page_corrupted": "Firmware file corrupted (checksum error)",

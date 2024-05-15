@@ -77,8 +77,6 @@ int8_t button_pin = -1;
 
 ConfigRoot modules;
 
-bool firmware_update_allowed = true;
-
 static bool is_safari(const String &user_agent) {
     return user_agent.indexOf("Safari/") >= 0 &&
            user_agent.indexOf("Version/") >= 0 &&

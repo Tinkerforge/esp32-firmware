@@ -26,8 +26,6 @@
 #include "module.h"
 #include "web_server.h"
 
-void factory_reset(bool restart_esp = true);
-
 class FirmwareUpdate final : public IModule
 {
 public:
@@ -35,6 +33,7 @@ public:
     void setup() override;
     void register_urls() override;
 
+    bool firmware_update_allowed = true;
     bool firmware_update_running = false;
 
 private:
@@ -42,6 +41,7 @@ private:
     void reset_firmware_info();
     bool handle_firmware_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length);
     String check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log);
+
     struct firmware_info_t {
         uint32_t magic[2] = {0};
         char firmware_name[61] = {0};
