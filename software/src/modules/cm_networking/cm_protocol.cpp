@@ -268,7 +268,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
         static bool initialized = false;
         if (!initialized) {
             memset(last_seen_seq_num, 255, sizeof(last_seen_seq_num));
-            initialized = true;
+            initialized = true; // FIXME: delayed initialization doesn't show in frontend
         }
 
         ManagerQueueItem item;

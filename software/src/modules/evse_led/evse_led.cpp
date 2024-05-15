@@ -57,6 +57,7 @@ void EvseLed::setup()
 {
     api.restorePersistentConfig("evse/led_configuration", &config);
     enable_api = config.get("enable_api")->asBool();
+    initialized = true;
 }
 
 void EvseLed::register_urls()

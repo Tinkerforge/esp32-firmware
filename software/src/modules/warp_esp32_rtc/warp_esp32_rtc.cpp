@@ -86,7 +86,7 @@ void WarpEsp32Rtc::setup()
         if (!initialized)
             rtc.register_backend(this);
 
-        initialized = true;
+        initialized = true; // FIXME: delayed initialization doesn't show in frontend
     }, 0, 60 * 1000);
 }
 

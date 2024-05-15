@@ -73,6 +73,8 @@ void Rtc::pre_setup()
 void Rtc::setup()
 {
     api.restorePersistentConfig("rtc/config", &config);
+
+    initialized = true;
 }
 
 void Rtc::register_backend(IRtcBackend *_backend)
