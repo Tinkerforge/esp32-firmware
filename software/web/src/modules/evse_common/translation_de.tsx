@@ -21,7 +21,7 @@ let x = {
         },
         "content": {
             "status": "Ladestatus",
-            "settings": "Einstellungen",
+            "evse_settings": "Wallbox",
             "iec_state": "IEC-61851-Zustand",
             "iec_state_a": "A (getrennt)",
             "iec_state_b": "B (verbunden)",

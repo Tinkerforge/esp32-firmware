@@ -222,7 +222,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                     </FormRow>;
 
         return <SubPage name="evse_settings">
-                <ConfigForm id="evse_settings" title={__("evse.content.settings")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                <ConfigForm id="evse_settings" title={__("evse.content.evse_settings")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
                         <Switch desc={__("evse.content.auto_start_enable")}
                                 checked={!auto_start_charging.auto_start_charging}
