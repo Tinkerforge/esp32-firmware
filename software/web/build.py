@@ -63,6 +63,7 @@ def main():
         '--metafile={}'.format(os.path.join(BUILD_DIR, 'meta.json')),
         '--bundle',
         '--target=es6',
+        '--alias:argon2-browser=./node_modules/argon2-browser/dist/argon2-bundled.min.js',
         '--alias:jquery=./node_modules/jquery/dist/jquery.slim.min',
         '--outfile={0}'.format(os.path.join(BUILD_DIR, 'bundle.min.js'))
     ]
