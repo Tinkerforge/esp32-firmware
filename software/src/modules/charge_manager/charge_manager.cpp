@@ -374,7 +374,7 @@ void ChargeManager::setup()
 
     default_available_current = config.get("default_available_current")->asUint();
     ca_config.minimum_current_3p = config.get("minimum_current")->asUint();
-    ca_config.minimum_current_3p = config.get("minimum_current_1p")->asUint();
+    ca_config.minimum_current_1p = config.get("minimum_current_1p")->asUint();
     requested_current_threshold = config.get("requested_current_threshold")->asUint();
     requested_current_margin = config.get("requested_current_margin")->asUint();
     ca_config.requested_current_margin = requested_current_margin;
