@@ -91,7 +91,7 @@ int allocate_current(
                 charger_alloc.state = 5;
                 if (state_was_not_five || charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
                     charger_alloc.error = CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE;
-                    cm_networking.clear_cached_hostname(i);
+                    cm_networking.clear_dns_cache_entry(i);
 
                     print_local_log = !ca_state->last_print_local_log_was_error;
                     ca_state->last_print_local_log_was_error = true;

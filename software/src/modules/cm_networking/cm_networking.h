@@ -74,7 +74,7 @@ public:
 
     void resolve_hostname(uint8_t charger_idx);
     bool is_resolved(uint8_t charger_idx);
-    void clear_cached_hostname(uint8_t charger_idx);
+    void clear_dns_cache_entry(uint8_t charger_idx);
 
     void check_results();
 

@@ -132,7 +132,7 @@ bool CMNetworking::is_resolved(uint8_t charger_idx)
     return resolve_state[charger_idx] == RESOLVE_STATE_RESOLVED;
 }
 
-void CMNetworking::clear_cached_hostname(uint8_t charger_idx)
+void CMNetworking::clear_dns_cache_entry(uint8_t charger_idx)
 {
     auto err = dns_removehost(this->hosts[charger_idx], nullptr);
     if (err != ESP_OK)
