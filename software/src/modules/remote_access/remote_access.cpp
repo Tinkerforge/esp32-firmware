@@ -321,9 +321,6 @@ void RemoteAccess::register_urls() {
             serializer.addMemberString("charger_public", key.get("charger_public")->asEphemeralCStr());
             serializer.addMemberNumber("connection_no", key.get("connection_no")->asUint());
             serializer.addMemberString("web_address", key.get("web_address")->asEphemeralCStr());
-            mbedtls_aes_context aes;
-            mbedtls_aes_init(&aes);
-            mbedtls_aes_setkey_enc(&aes, (unsigned char *)secret, 256);
             CoolString wg_key = key.get("web_private")->asString();
 
             std::unique_ptr<char[]> output = heap_alloc_array<char>(crypto_box_SEALBYTES + wg_key.length());
