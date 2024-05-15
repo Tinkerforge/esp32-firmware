@@ -56,7 +56,7 @@ void EvseLed::pre_setup()
 void EvseLed::setup()
 {
     api.restorePersistentConfig("evse/led_configuration", &config);
-    config_in_use = config;
+    enable_api = config.get("enable_api")->asBool();
 }
 
 void EvseLed::register_urls()
@@ -157,7 +157,7 @@ bool EvseLed::set_module(Blink state, uint16_t duration_ms, uint16_t h, uint8_t 
     // Allow modules to override API only if module reports an error and API does not.
     // Don't allow modules to set non-error states.
     // Don't allow modules to override error states with other error states.
-    if (!config_in_use.get("enable_api")->asBool() || (is_error(state) && !is_error(current_state)))
+    if (!enable_api || (is_error(state) && !is_error(current_state)))
         return set(state, duration_ms, h, s, v, false);
 
     return false;
@@ -165,7 +165,7 @@ bool EvseLed::set_module(Blink state, uint16_t duration_ms, uint16_t h, uint8_t 
 
 bool EvseLed::set_api(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint8_t v)
 {
-    if (!config_in_use.get("enable_api")->asBool())
+    if (!enable_api)
         return false;
 
     // Don't allow API to override non-API error states.

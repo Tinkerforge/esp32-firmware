@@ -50,7 +50,8 @@ public:
     // If v is 0 the EVSE selects the color of the indication/state
     bool set_api(Blink state, uint16_t duration_ms, uint16_t h = 0, uint8_t s = 0, uint8_t v = 0);
 
-    ConfigRoot config, config_in_use;
+    bool enable_api = false;
+    ConfigRoot config;
     ConfigRoot led;
 
 private:
