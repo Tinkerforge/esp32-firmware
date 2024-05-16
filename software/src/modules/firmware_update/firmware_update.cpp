@@ -323,7 +323,7 @@ struct Version {
     uint32_t timestamp = 0;
 };
 
-// <major:int>_<minor:int>_<patch:int>_[beta_<beta:int>_]<timestamp:hex>
+// <major:int>.<minor:int>.<patch:int>[-beta.<beta:int>]+<timestamp:hex>
 static bool parse_version(const char *p, Version *version)
 {
     char *end;
@@ -331,7 +331,7 @@ static bool parse_version(const char *p, Version *version)
     // major
     uint32_t major = strtoul(p, &end, 10);
 
-    if (p == end || *end != '_' || major > 254) {
+    if (p == end || *end != '.' || major > 254) {
         return false;
     }
 
@@ -341,7 +341,7 @@ static bool parse_version(const char *p, Version *version)
     // minor
     uint32_t minor = strtoul(p, &end, 10);
 
-    if (p == end || *end != '_' || minor > 254) {
+    if (p == end || *end != '.' || minor > 254) {
         return false;
     }
 
@@ -351,23 +351,23 @@ static bool parse_version(const char *p, Version *version)
     // patch
     uint32_t patch = strtoul(p, &end, 10);
 
-    if (p == end || *end != '_' || patch > 254) {
+    if (p == end || (strncmp(end, "-beta.", 6) && *end != '+') || patch > 254) {
         return false;
     }
 
     version->patch = patch;
-    p = end + 1;
 
     // beta
-    if (strncmp(p, "beta_", 5) != 0) {
+    if (*end == '+') {
+        p = end + 1;
         version->beta = 255;
     }
     else {
-        p += 5;
+        p = end + 6;
 
         uint32_t beta = strtoul(p, &end, 10);
 
-        if (p == end || *end != '_' || beta > 254) {
+        if (p == end || *end != '+' || beta > 254) {
             return false;
         }
 
@@ -375,6 +375,7 @@ static bool parse_version(const char *p, Version *version)
         p = end + 1;
     }
 
+    // timestamp
     version->timestamp = strtoul(p, &end, 16);
 
     if (p == end || *end != '\0') {
@@ -441,9 +442,12 @@ void FirmwareUpdate::check_for_updates()
     int total_read_len = 0;
     char *p;
     Version beta_update;
-    Version normal_update;
+    Version release_update;
+    Version stable_update;
+    uint8_t updates_mask = 0;
+    uint32_t last_non_beta_timestamp = time(nullptr);
 
-    while (total_read_len < content_length) {
+    while (total_read_len < content_length && updates_mask != 111) {
         size_t buf_free = sizeof(buf) - buf_used - 1;
 
         if (buf_free == 0) {
@@ -471,7 +475,7 @@ void FirmwareUpdate::check_for_updates()
             p = buf + buf_used;
         }
 
-        while (p != nullptr) {
+        while (p != nullptr && updates_mask != 111) {
             *p = '\0';
 
             Version version;
@@ -483,14 +487,37 @@ void FirmwareUpdate::check_for_updates()
                 return;
             }
 
+            // ignore all versions that are older than the current version
             if (compare_version(version.major, version.minor, version.patch, version.beta, version.timestamp,
-                                BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()) > 0) {
-                if (version.beta != 255) {
+                                BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()) <= 0) {
+                updates_mask = 111;
+                break;
+            }
+
+            if (version.beta != 255) {
+                // the beta update is the newest beta version that is newer than any non-beta version
+                if ((updates_mask & 100) == 0) {
                     beta_update = version;
+                    updates_mask |= 100;
                 }
-                else {
-                    normal_update = version;
+            }
+            else {
+                updates_mask |= 100; // ignore beta versions older than the newest non-beta version
+
+                // the release update is the newest non-beta version
+                if ((updates_mask & 10) == 0) {
+                    release_update = version;
+                    updates_mask |= 10;
                 }
+
+                // the stable update is the newest non-beta version that was
+                // released more than 7 days before the next non-beta version
+                if ((updates_mask & 1) == 0 && version.timestamp + (7 * 24 * 60 * 60) < last_non_beta_timestamp) {
+                    stable_update = version;
+                    updates_mask |= 1;
+                }
+
+                last_non_beta_timestamp = version.timestamp;
             }
 
             if (p == buf + buf_used) {
@@ -519,12 +546,12 @@ void FirmwareUpdate::check_for_updates()
         beta_update_str = format_version(&beta_update);
     }
 
-    if (normal_update.major != 255) {
-        release_update_str = format_version(&normal_update);
+    if (release_update.major != 255) {
+        release_update_str = format_version(&release_update);
+    }
 
-        if (normal_update.timestamp + (7 * 24 * 60 * 60) < time(nullptr)) {
-            stable_update_str = format_version(&normal_update);
-        }
+    if (stable_update.major != 255) {
+        stable_update_str = format_version(&stable_update);
     }
 
     available_updates.get("timestamp")->updateUint(time(nullptr));
