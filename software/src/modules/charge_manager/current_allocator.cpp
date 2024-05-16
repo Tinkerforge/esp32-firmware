@@ -18,7 +18,7 @@
  */
 
 #include "current_allocator.h"
-#include "module_available.h"
+#include "module_dependencies.h"
 
 #include "event_log.h"
 
