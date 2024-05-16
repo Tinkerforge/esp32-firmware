@@ -156,14 +156,14 @@ bool Ocpp::start_client()
     }
 
     if (!pass_is_hex) {
-        return cp->start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), (const uint8_t *)pass.c_str(), pass.length());
+        return cp->start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), (const uint8_t *)pass.c_str(), pass.length());
     }
 
     uint8_t pass_bytes[20] = {};
     for (size_t i = 0; i < 20; ++i) {
         pass_bytes[i] = hex_digit_to_byte(pass[2 * i]) << 4 | hex_digit_to_byte(pass[2 * i + 1]);
     }
-    return cp->start(config.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes, 20);
+    return cp->start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), pass_bytes, 20);
 }
 
 void Ocpp::setup()

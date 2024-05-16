@@ -68,7 +68,7 @@ void *platform_init(const char *websocket_url, const char *basic_auth_user, cons
     tf_websocket_client_config_t websocket_cfg = {};
     websocket_cfg.uri = websocket_url;
     websocket_cfg.subprotocol = "ocpp1.6";
-    int8_t cert_id = ocpp.config.get("cert_id")->asInt();
+    int8_t cert_id = ocpp.config_in_use.get("cert_id")->asInt();
     if (cert_id == -1)
         websocket_cfg.crt_bundle_attach = esp_crt_bundle_attach;
     else {
