@@ -170,10 +170,10 @@ void Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained 
 
     if (add_prefix == AddPrefix::No) {
         topic = &path;
-        starts_with_global_topic_prefix = path.startsWith(prefix);
+        starts_with_global_topic_prefix = path.startsWith(global_topic_prefix);
     } else {
         local_topic.reserve(128);
-        local_topic.concat(prefix);
+        local_topic.concat(global_topic_prefix);
         local_topic.concat('/');
         local_topic.concat(path);
 
@@ -214,7 +214,7 @@ void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)
 
 bool Mqtt::publish_with_prefix(const String &path, const String &payload, bool retain)
 {
-    String topic = prefix + "/" + path;
+    String topic = global_topic_prefix + "/" + path;
     return publish(topic, payload, retain);
 }
 
@@ -237,7 +237,7 @@ bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String 
 {
     auto &state = this->states[stateIdx];
 
-    if (!deadline_elapsed(state.last_send_ms + config_in_use.get("interval")->asUint() * 1000))
+    if (!deadline_elapsed(state.last_send_ms + this->send_interval_ms))
         return false;
 
     bool success = this->publish_with_prefix(path, payload);
@@ -266,7 +266,7 @@ void Mqtt::resubscribe()
         return;
 
     if (!global_topic_prefix_subscribed) {
-        String topic = prefix + "/#";
+        String topic = global_topic_prefix + "/#";
         global_topic_prefix_subscribed = esp_mqtt_client_subscribe(client, topic.c_str(), 0) >= 0;
     }
 
@@ -378,15 +378,15 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         return;
     }
 
-    if (topic_len < prefix.length() + 1) // + 1 because we will check for the / between the prefix and the topic.
+    if (topic_len < global_topic_prefix.length() + 1) // + 1 because we will check for the / between the prefix and the topic.
         return;
-    if (memcmp(topic, prefix.c_str(), prefix.length()) != 0)
+    if (memcmp(topic, global_topic_prefix.c_str(), global_topic_prefix.length()) != 0)
         return;
-    if (topic[prefix.length()] != '/')
+    if (topic[global_topic_prefix.length()] != '/')
         return;
 
-    topic += prefix.length() + 1;
-    topic_len -= prefix.length() + 1;
+    topic += global_topic_prefix.length() + 1;
+    topic_len -= global_topic_prefix.length() + 1;
 
     for (auto &reg : api.commands) {
         if (topic_len != reg.path_len || memcmp(topic, reg.path, topic_len) != 0)
@@ -568,8 +568,10 @@ void Mqtt::setup()
 #endif
     }
 
-    config_in_use = config;
-    prefix = this->config_in_use.get("global_topic_prefix")->asString();
+    global_topic_prefix = this->config.get("global_topic_prefix")->asString();
+    send_interval_ms = this->config.get("interval")->asUint() * 1000;
+    client_name = this->config.get("client_name")->asString();
+    global_topic_prefix = this->config.get("global_topic_prefix")->asString();
 
     if (!config.get("enable_mqtt")->asBool()) {
         return;
@@ -590,26 +592,26 @@ void Mqtt::setup()
 
     esp_mqtt_client_config_t mqtt_cfg = {};
 
-    mqtt_cfg.host = config_in_use.get("broker_host")->asEphemeralCStr();
-    mqtt_cfg.port = config_in_use.get("broker_port")->asUint();
-    mqtt_cfg.client_id = config_in_use.get("client_name")->asEphemeralCStr();
-    mqtt_cfg.username = config_in_use.get("broker_username")->asEphemeralCStr();
-    mqtt_cfg.password = config_in_use.get("broker_password")->asEphemeralCStr();
+    mqtt_cfg.host = config.get("broker_host")->asEphemeralCStr();
+    mqtt_cfg.port = config.get("broker_port")->asUint();
+    mqtt_cfg.client_id = config.get("client_name")->asEphemeralCStr();
+    mqtt_cfg.username = config.get("broker_username")->asEphemeralCStr();
+    mqtt_cfg.password = config.get("broker_password")->asEphemeralCStr();
     mqtt_cfg.task_stack = MQTT_TASK_STACK_SIZE;
     mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE;
     mqtt_cfg.out_buffer_size = MQTT_SEND_BUFFER_SIZE;
     mqtt_cfg.network_timeout_ms = 1000;
     mqtt_cfg.message_retransmit_timeout = 400;
     // + 1 to undo the -1 in the config's definition.
-    mqtt_cfg.transport = (esp_mqtt_transport_t)(config_in_use.get("protocol")->asUint() + 1);
+    mqtt_cfg.transport = (esp_mqtt_transport_t)(config.get("protocol")->asUint() + 1);
     bool encrypted = mqtt_cfg.transport == MQTT_TRANSPORT_OVER_SSL || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS;
 
-    if (encrypted && config_in_use.get("cert_id")->asInt() != -1) {
+    if (encrypted && config.get("cert_id")->asInt() != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t)config_in_use.get("cert_id")->asInt(), &cert_len);
+        auto cert = certs.get_cert((uint8_t)config.get("cert_id")->asInt(), &cert_len);
         if (cert == nullptr) {
-            logger.printfln("Failed to get certificate with ID %d", config_in_use.get("cert_id")->asInt());
+            logger.printfln("Failed to get certificate with ID %d", config.get("cert_id")->asInt());
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
@@ -623,12 +625,12 @@ void Mqtt::setup()
         mqtt_cfg.crt_bundle_attach = esp_crt_bundle_attach;
     }
 
-    if (encrypted && config_in_use.get("client_cert_id")->asInt() != -1) {
+    if (encrypted && config.get("client_cert_id")->asInt() != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t)config_in_use.get("client_cert_id")->asInt(), &cert_len);
+        auto cert = certs.get_cert((uint8_t)config.get("client_cert_id")->asInt(), &cert_len);
         if (cert == nullptr) {
-            logger.printfln("Failed to get client certificate with ID %d", config_in_use.get("client_cert_id")->asInt());
+            logger.printfln("Failed to get client certificate with ID %d", config.get("client_cert_id")->asInt());
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
@@ -639,12 +641,12 @@ void Mqtt::setup()
 #endif
     }
 
-    if (encrypted && config_in_use.get("client_key_id")->asInt() != -1) {
+    if (encrypted && config.get("client_key_id")->asInt() != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t)config_in_use.get("client_key_id")->asInt(), &cert_len);
+        auto cert = certs.get_cert((uint8_t)config.get("client_key_id")->asInt(), &cert_len);
         if (cert == nullptr) {
-            logger.printfln("Failed to get client certificate with ID %d", config_in_use.get("client_key_id")->asInt());
+            logger.printfln("Failed to get client certificate with ID %d", config.get("client_key_id")->asInt());
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
@@ -655,8 +657,8 @@ void Mqtt::setup()
 #endif
     }
 
-    if ((mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WS || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS) && config_in_use.get("path")->asString().length() > 0) {
-        mqtt_cfg.path = config_in_use.get("path")->asEphemeralCStr();
+    if ((mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WS || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS) && config.get("path")->asString().length() > 0) {
+        mqtt_cfg.path = config.get("path")->asEphemeralCStr();
         logger.printfln("Using path %s", mqtt_cfg.path);
     }
 

@@ -36,7 +36,7 @@ void MqttAutoDiscovery::pre_setup()
         {"auto_discovery_mode", Config::Uint(MQTT_AUTO_DISCOVERY_MODE_MIN, MQTT_AUTO_DISCOVERY_MODE_MIN, MQTT_AUTO_DISCOVERY_MODE_MAX)},
         {"auto_discovery_prefix", Config::Str("homeassistant", 1, 64)}
     }),  [](Config &cfg, ConfigSource source) -> String {
-        const String &global_topic_prefix = mqtt.config.get("global_topic_prefix")->asString();
+        const String &global_topic_prefix = mqtt.global_topic_prefix;
         const String &auto_discovery_prefix = cfg.get("auto_discovery_prefix")->asString();
 
         if (global_topic_prefix == auto_discovery_prefix)
@@ -70,7 +70,7 @@ void MqttAutoDiscovery::setup()
 
     discovery_topic.concat(config_in_use.get("auto_discovery_prefix")->asString());
     discovery_topic.concat("/+/");
-    discovery_topic.concat(mqtt.config_in_use.get("client_name")->asString());
+    discovery_topic.concat(mqtt.client_name);
     discovery_topic.concat("/+/config");
 
     mqtt.subscribe(discovery_topic, [this](const char *topic, size_t topic_len, char *data, size_t data_len) {
@@ -86,7 +86,7 @@ void MqttAutoDiscovery::register_urls()
 void MqttAutoDiscovery::prepare_topics()
 {
     const String &auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
-    const String &client_name = mqtt.config_in_use.get("client_name")->asString();
+    const String &client_name = mqtt.client_name;
     const MqttAutoDiscoveryMode mode = config_in_use.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>();
     unsigned int topic_length;
 
@@ -175,8 +175,8 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
         if (api.hasFeature(mqtt_discovery_topic_infos[topic_num].feature)) {
             const char *static_info = mqtt_discovery_topic_infos[topic_num].static_infos[config_in_use.get("auto_discovery_mode")->asUint() - 1];
             if (static_info) { // No static info? Skip topic.
-                const String &client_name = mqtt.config_in_use.get("client_name")->asString();
-                const String &topic_prefix = mqtt.config_in_use.get("global_topic_prefix")->asString();
+                const String &client_name = mqtt.client_name;
+                const String &topic_prefix = mqtt.global_topic_prefix;
                 const char *name = mqtt_discovery_topic_infos[topic_num].name_de;
 
                 // FIXME: convert to StringBuilder and TFJson

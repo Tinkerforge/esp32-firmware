@@ -96,7 +96,10 @@ public:
     ConfigRoot config;
     ConfigRoot state;
 
-    ConfigRoot config_in_use;
+    // Both strings are read by mqtt_auto_discovery.
+    String client_name;
+    // Copy prefix to not access config in MQTT thread.
+    String global_topic_prefix;
 
 private:
     struct MqttCommand {
@@ -125,8 +128,7 @@ private:
     size_t backend_idx;
 
     esp_mqtt_client_handle_t client;
-    // Copy prefix to not access config in MQTT thread.
-    String prefix;
+    uint32_t send_interval_ms;
 
     uint32_t last_connected_ms = 0;
     bool was_connected = false;
