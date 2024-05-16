@@ -60,6 +60,8 @@ public:
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 
+    void update_charger_state_config(uint8_t idx);
+
     ConfigRoot config;
 
     ConfigRoot state;

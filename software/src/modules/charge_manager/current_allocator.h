@@ -23,6 +23,9 @@
 
 #include "charge_manager_private.h"
 
+struct cm_state_v1;
+struct cm_state_v2;
+
 int allocate_current(
         const CurrentAllocatorConfig *cfg,
         const bool seen_all_chargers,
@@ -37,3 +40,14 @@ int allocate_current(
         CurrentAllocatorState *ca_state,
         ChargerAllocationState *charger_allocation_state,
         uint32_t *allocated_current);
+
+bool update_from_client_packet(
+    uint8_t client_id,
+    cm_state_v1 *v1,
+    cm_state_v2 *v2,
+    uint16_t requested_current_threshold,
+    uint16_t requested_current_margin,
+    ChargerState *charger_state,
+    ChargerAllocationState *charger_allocation_state,
+    const char * const *hosts,
+    const std::function<const char *(uint8_t)> get_charger_name);
