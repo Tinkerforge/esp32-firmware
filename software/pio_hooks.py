@@ -419,6 +419,15 @@ def repair_rtc_dir():
     except:
         pass
 
+def repair_firmware_update_dir():
+    path = os.path.abspath("src/modules/firmware_update")
+    try:
+        os.remove(path + "/recovery_html.digest")
+        os.remove(path + "/recovery_html.embedded.cpp")
+        os.remove(path + "/recovery_html.embedded.h")
+    except:
+        pass
+
 def find_backend_module_space(backend_modules, name_space):
     index = 0
     for backend_module in backend_modules:
@@ -467,6 +476,8 @@ def main():
         return
 
     repair_rtc_dir()
+    repair_firmware_update_dir()
+
     subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
 
     # Add build flags
