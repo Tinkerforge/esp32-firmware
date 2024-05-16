@@ -11,6 +11,7 @@ let x = {
             "mode_diff": "Difference (A - B)",
             "mode_add": "Addition (A + constant)",
             "mode_mul": "Multiplication (A * constant)",
+            "mode_pf2current": "Directional current based on power factor",
             "source_meter_a": "Source meter A",
             "source_meter_b": "Source meter B",
             "constant": "Constant"

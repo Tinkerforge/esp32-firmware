@@ -11,6 +11,7 @@ let x = {
             "mode_diff": "Differenz (A - B)",
             "mode_add": "Addition (A + Konstante)",
             "mode_mul": "Multiplikation (A * Konstante)",
+            "mode_pf2current": "Gerichteter Strom abhänging vom Leistungsfaktor",
             "source_meter_a": "Quell-Zähler A",
             "source_meter_b": "Quell-Zähler B",
             "constant": "Konstante"

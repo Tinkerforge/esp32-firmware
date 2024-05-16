@@ -29,6 +29,15 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
+#define METER_META_PF_INDEX_POWER       0
+#define METER_META_PF_INDEX_CURRENT_L1  1
+#define METER_META_PF_INDEX_CURRENT_L2  2
+#define METER_META_PF_INDEX_CURRENT_L3  3
+#define METER_META_PF_INDEX_PF_L1       4
+#define METER_META_PF_INDEX_PF_L2       5
+#define METER_META_PF_INDEX_PF_L3       6
+#define METER_META_PF_INDEX_COUNT       7
+
 class MeterMeta final : public IMeter
 {
 public:
@@ -37,6 +46,13 @@ public:
         Diff = 1,
         Add  = 2,
         Mul  = 3,
+        Pf2Current = 4,
+    };
+
+    enum class SourceMode {
+        Unknown = 0,
+        Single = 1,
+        Double = 2,
     };
 
     MeterMeta(uint32_t slot_) : slot(slot_) {}
@@ -53,14 +69,16 @@ public:
     void register_events();
 
     EventResult on_value_ids_change(const Config *value_ids);
-    void on_values_change();
-    void on_values_change_task();
+    void on_values_change_single(const Config *source_values);
+    void on_values_change_double();
+    void on_values_change_task_double();
 
 private:
     uint32_t slot;
 
     // Cached config
     ConfigMode mode;
+    SourceMode source_mode;
     uint32_t source_meter_a;
     uint32_t source_meter_b;
     int32_t  constant;

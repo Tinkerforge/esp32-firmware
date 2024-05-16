@@ -42,10 +42,23 @@ void MeterMeta::setup(const Config &ephemeral_config)
     source_meter_a = ephemeral_config.get("source_meter_a")->asUint();
     source_meter_b = ephemeral_config.get("source_meter_b")->asUint();
     constant       = ephemeral_config.get("constant")->asInt();
+
+    if (mode == ConfigMode::Sum || mode == ConfigMode::Diff) {
+        source_mode = SourceMode::Double;
+    } else if (mode == ConfigMode::Add || mode == ConfigMode::Mul || mode == ConfigMode::Pf2Current) {
+        source_mode = SourceMode::Single;
+    } else {
+        source_mode = SourceMode::Unknown;
+    }
 }
 
 void MeterMeta::register_events()
 {
+    if (source_meter_a == slot || (source_mode == SourceMode::Double && source_meter_b == slot)) {
+        logger.printfln("Invalid source meter. Meta meter cannot listen to itself in slot %u. Slot A is %u, slot b is %u.", slot, source_meter_a, source_meter_b);
+        return;
+    }
+
     uint32_t value_ids_missing = 2;
 
     // Meter A
@@ -60,7 +73,7 @@ void MeterMeta::register_events()
         });
     }
 
-    if (mode == ConfigMode::Sum || mode == ConfigMode::Diff) {
+    if (source_mode == SourceMode::Double) {
         // Meter B
         value_ids_path = meters.get_path(source_meter_b, Meters::PathType::ValueIDs);
 
@@ -112,75 +125,160 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
         return EventResult::OK;
     }
 
-    const Config *value_ids_b = api.getState(meters.get_path(source_meter_b, Meters::PathType::ValueIDs));
-    size_t value_count_b = value_ids_b->count();
-    if (value_count_b == 0) {
-        logger.printfln("Meter B value IDs not available yet.");
-        return EventResult::OK;
+    const Config *value_ids_b = nullptr;
+    size_t value_count_b;
+    if (source_mode == SourceMode::Double) {
+        value_ids_b = api.getState(meters.get_path(source_meter_b, Meters::PathType::ValueIDs));
+        value_count_b = value_ids_b->count();
+
+        if (value_count_b == 0) {
+            logger.printfln("Meter B value IDs not available yet.");
+            return EventResult::OK;
+        }
     }
 
     if (mode == ConfigMode::Add || mode == ConfigMode::Mul) {
         logger.printfln("Mode %u not supported yet.", static_cast<uint32_t>(mode));
         return EventResult::Deregister;
-    }
+    } else if (mode == ConfigMode::Sum || mode == ConfigMode::Diff) {
+        std::vector<struct value_id_pair> value_id_pairs;
+        value_id_pairs.reserve(min(value_count_a, value_count_b));
 
-    std::vector<struct value_id_pair> value_id_pairs;
-    value_id_pairs.reserve(min(value_count_a, value_count_b));
+        for (uint16_t i_a = 0; i_a < value_count_a; i_a++) {
+            uint32_t value_id_a = value_ids_a->get(i_a)->asUint();
 
-    for (uint16_t i_a = 0; i_a < value_count_a; i_a++) {
-        uint32_t value_id_a = value_ids_a->get(i_a)->asUint();
+            for (uint16_t i_b = 0; i_b < value_count_b; i_b++) {
+                uint32_t value_id_b = value_ids_b->get(i_b)->asUint();
 
-        for (uint16_t i_b = 0; i_b < value_count_b; i_b++) {
-            uint32_t value_id_b = value_ids_b->get(i_b)->asUint();
-
-            if (value_id_a == value_id_b) {
-                value_id_pairs.push_back({value_id_a, i_a, i_b});
+                if (value_id_a == value_id_b) {
+                    value_id_pairs.push_back({value_id_a, i_a, i_b});
+                }
             }
         }
+
+        value_count = value_id_pairs.size();
+
+        value_indices = static_cast<uint8_t(*)[][2]>(malloc(sizeof((*value_indices)[0][0]) * 2 * value_count));
+
+        for (size_t i = 0; i < value_count; i++) {
+            struct value_id_pair &value_id_pair = value_id_pairs[i];
+            uint8_t *pair_indices = (*value_indices)[i];
+            pair_indices[0] = static_cast<uint8_t>(value_id_pair.index_a);
+            pair_indices[1] = static_cast<uint8_t>(value_id_pair.index_b);
+        }
+        declare_value_ids(slot, value_id_pairs);
+    } else if (mode == ConfigMode::Pf2Current) {
+        MeterValueID value_ids_pf2current[7] = {
+            MeterValueID::PowerActiveLSumImExDiff,
+            MeterValueID::CurrentL1ImExSum,
+            MeterValueID::CurrentL2ImExSum,
+            MeterValueID::CurrentL3ImExSum,
+            MeterValueID::PowerFactorL1Directional,
+            MeterValueID::PowerFactorL2Directional,
+            MeterValueID::PowerFactorL3Directional,
+        };
+
+        uint32_t index_cache[ARRAY_SIZE(value_ids_pf2current)];
+        meters.fill_index_cache(source_meter_a, ARRAY_SIZE(value_ids_pf2current), value_ids_pf2current, index_cache);
+
+        for (size_t i = 0; i < ARRAY_SIZE(index_cache); i++) {
+            if (index_cache[i] == UINT32_MAX) {
+                logger.printfln("Value ID %u in position %u not provided by meter", static_cast<uint32_t>(value_ids_pf2current[i]), i);
+                return EventResult::OK; // Try again, if possible.
+            }
+            if (index_cache[i] > UINT8_MAX) {
+                logger.printfln("Index %u of value ID %u in position %u is out of range", index_cache[i], static_cast<uint32_t>(value_ids_pf2current[i]), i);
+                return EventResult::OK; // Try again, if possible.
+            }
+        }
+
+        value_indices = static_cast<uint8_t(*)[][2]>(malloc(sizeof((*value_indices)[0][0]) * 2 * ARRAY_SIZE(value_ids_pf2current)));
+        if (!value_indices) {
+            logger.printfln("Not enough memory for value_indices");
+            return EventResult::OK; // Try again, if possible.
+        }
+
+        for (size_t i = 0; i < ARRAY_SIZE(index_cache); i++) {
+            (*value_indices)[i][0] = static_cast<uint8_t>(index_cache[i]);
+        }
+
+        value_ids_pf2current[1] = MeterValueID::CurrentL1ImExDiff;
+        value_ids_pf2current[2] = MeterValueID::CurrentL2ImExDiff;
+        value_ids_pf2current[3] = MeterValueID::CurrentL3ImExDiff;
+
+        meters.declare_value_ids(slot, value_ids_pf2current, ARRAY_SIZE(value_ids_pf2current));
     }
-
-    value_count = value_id_pairs.size();
-
-    value_indices = static_cast<uint8_t(*)[][2]>(malloc(sizeof((*value_indices)[0][0]) * 2 * value_count));
-
-    for (size_t i = 0; i < value_count; i++) {
-        struct value_id_pair &value_id_pair = value_id_pairs[i];
-        uint8_t *pair_indices = (*value_indices)[i];
-        pair_indices[0] = static_cast<uint8_t>(value_id_pair.index_a);
-        pair_indices[1] = static_cast<uint8_t>(value_id_pair.index_b);
-    }
-    declare_value_ids(slot, value_id_pairs);
 
     String values_path_a = meters.get_path(source_meter_a, Meters::PathType::Values);
-    String values_path_b = meters.get_path(source_meter_b, Meters::PathType::Values);
 
-    event.registerEvent(values_path_a, {}, [this](const Config */*event_values*/) {
-        this->on_values_change();
-        return EventResult::OK;
-    });
+    if (source_mode == SourceMode::Single) {
+        event.registerEvent(values_path_a, {}, [this](const Config *event_values) {
+            this->on_values_change_single(event_values);
+            return EventResult::OK;
+        });
 
-    event.registerEvent(values_path_b, {}, [this](const Config */*event_values*/) {
-        this->on_values_change();
-        return EventResult::OK;
-    });
+        const Config *values;
+        if (meters.get_values(source_meter_a, &values, 0_usec) == MeterValueAvailability::Fresh) {
+            on_values_change_single(values);
+        }
+    } else if (source_mode == SourceMode::Double) {
+        event.registerEvent(values_path_a, {}, [this](const Config */*event_values*/) {
+            this->on_values_change_double();
+            return EventResult::OK;
+        });
 
-    on_values_change_task();
+        String values_path_b = meters.get_path(source_meter_b, Meters::PathType::Values);
+        event.registerEvent(values_path_b, {}, [this](const Config */*event_values*/) {
+            this->on_values_change_double();
+            return EventResult::OK;
+        });
+
+        on_values_change_task_double();
+    }
 
     return EventResult::Deregister;
 }
 
-void MeterMeta::on_values_change()
+void MeterMeta::on_values_change_single(const Config *source_values)
+{
+    if (mode == ConfigMode::Pf2Current) {
+        float values[METER_META_PF_INDEX_COUNT];
+        values[METER_META_PF_INDEX_POWER] = source_values->get((*value_indices)[METER_META_PF_INDEX_POWER][0])->asFloat();
+
+        for (size_t i = 0; i < 3; i++) {
+            union {
+                float    f;
+                uint32_t u32;
+            } current, pf;
+
+            current.f = source_values->get((*value_indices)[METER_META_PF_INDEX_CURRENT_L1 + i][0])->asFloat();
+            pf.f      = source_values->get((*value_indices)[METER_META_PF_INDEX_PF_L1      + i][0])->asFloat();
+
+            // Replace current value's sign with power factor value's sign.
+            current.u32 ^= (current.u32 ^ pf.u32) & 0x80000000u;
+
+            values[METER_META_PF_INDEX_CURRENT_L1 + i] = current.f;
+            values[METER_META_PF_INDEX_PF_L1      + i] = pf.f;
+        }
+
+        meters.update_all_values(slot, values);
+    } else {
+        logger.printfln("Unsupported single values mode %u", static_cast<uint32_t>(mode));
+    }
+}
+
+void MeterMeta::on_values_change_double()
 {
     if (!update_pending) {
         update_pending = true;
         task_scheduler.scheduleOnce([this]() {
-            this->on_values_change_task();
+            this->on_values_change_task_double();
             this->update_pending = false;
         }, 0);
     }
 }
 
-void MeterMeta::on_values_change_task()
+void MeterMeta::on_values_change_task_double()
 {
     const Config *values_a;
     const Config *values_b;

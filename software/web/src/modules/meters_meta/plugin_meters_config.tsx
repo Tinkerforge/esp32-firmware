@@ -74,6 +74,7 @@ export function init() {
                                 ["1", __("meters_meta.content.mode_diff")],
                                 ["2", __("meters_meta.content.mode_add")],
                                 ["3", __("meters_meta.content.mode_mul")],
+                                ["4", __("meters_meta.content.mode_pf2current")],
                             ]}
                             value={config[1].mode}
                             onValue={(v) => {on_config(util.get_updated_union(config, {mode: parseInt(v)}));}}
@@ -86,7 +87,7 @@ export function init() {
                             onValue={(v) => {on_config(util.get_updated_union(config, {source_meter_a: parseInt(v)}));}}
                         />
                     </FormRow>,
-                    <Collapse in={config[1].mode <= 1}>
+                    <Collapse in={config[1].mode == 0 || config[1].mode == 1}>
                         <div>
                             <FormRow label={__("meters_meta.content.source_meter_b")}>
                                 <InputSelect
@@ -97,7 +98,7 @@ export function init() {
                             </FormRow>
                         </div>
                     </Collapse>,
-                    <Collapse in={config[1].mode >= 2}>
+                    <Collapse in={config[1].mode == 2 || config[1].mode == 3}>
                         <div>
                             <FormRow label={__("meters_meta.content.constant")}>
                                 <InputNumber

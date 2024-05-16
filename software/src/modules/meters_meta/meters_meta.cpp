@@ -26,7 +26,7 @@ void MetersMeta::pre_setup()
 {
     config_prototype = ConfigRoot{Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
-        {"mode",           Config::Uint(0, 0, 3)},
+        {"mode",           Config::Uint(0, 0, 4)},
         {"source_meter_a", Config::Uint(0, 0, METERS_SLOTS - 1)},
         {"source_meter_b", Config::Uint(1, 0, METERS_SLOTS - 1)},
         {"constant",       Config::Int32(0)},
