@@ -18,16 +18,20 @@
  */
 
 #include "current_allocator.h"
-#include "module_dependencies.h"
+#include "module_available.h"
 
 #include "event_log.h"
 
-// Only for snprintf_u
+// Only for snprintf_u and deadline_elapsed
 #include "tools.h"
 
 #include "modules/cm_networking/cm_networking_defs.h"
 
 //#include "gcc_warnings.h"
+
+#include "assert.h"
+// For strlen
+#include "string.h"
 
 #define LOCAL_LOG(fmt, ...) if(local_log) local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
 
@@ -246,7 +250,7 @@ int allocate_current(
                     continue;
 
                 auto &charger = charger_state[idx_array[i]];
-                uint16_t current_per_charger = MIN(32000, available / (chargers_allocated_current_to - chargers_reallocated));
+                uint16_t current_per_charger = std::min(32000u, available / (chargers_allocated_current_to - chargers_reallocated));
 
                 uint16_t requested_current = charger.requested_current;
 
@@ -261,7 +265,7 @@ int allocate_current(
                 if (requested_current < current_array[idx_array[i]])
                     continue;
 
-                uint16_t current_to_add = MIN(requested_current - current_array[idx_array[i]], current_per_charger);
+                uint16_t current_to_add = std::min(requested_current - current_array[idx_array[i]], (uint32_t)current_per_charger);
 
                 ++chargers_reallocated;
 
