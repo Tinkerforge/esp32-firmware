@@ -35,8 +35,8 @@ export function FirmwareUpdateNavbar() {
 }
 
 interface FirmwareUpdateState {
-    current_version: API.getType["info/version"],
-    update_url: string;
+    current_firmware: string,
+    update_url: string,
     show_spinner: boolean,
     available_updates_timestamp: number,
     available_updates_cookie: number,
@@ -50,7 +50,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
         super();
 
         this.state = {
-            current_version: null,
+            current_firmware: null,
             update_url: null,
             show_spinner: false,
             available_updates_timestamp: 0,
@@ -63,20 +63,17 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
         util.addApiEventListener('info/version', () => {
             let version = API.get('info/version');
 
-            // FIXME: this doesn't work
-            if (this.state.current_version != null && this.state.current_version.firmware != null && this.state.current_version.firmware != version.firmware) {
+            if (this.state.current_firmware != null && this.state.current_firmware != version.firmware) {
                 window.location.reload();
             }
 
-            this.setState({current_version: version});
+            this.setState({current_firmware: version.firmware});
         });
 
         util.addApiEventListener('firmware_update/config', () => {
             let config = API.get('firmware_update/config');
 
-            this.setState({
-                update_url: config.update_url,
-            });
+            this.setState({update_url: config.update_url});
         });
 
         util.addApiEventListener('firmware_update/available_updates', () => {
@@ -163,7 +160,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                 <PageHeader title={__("firmware_update.content.firmware_update")} />
 
                 <FormRow label={__("firmware_update.content.current_version")}>
-                    <InputText value={this.state.current_version.firmware + this.format_build_time(this.state.current_version.firmware)}/>
+                    <InputText value={this.state.current_firmware + this.format_build_time(this.state.current_firmware)}/>
                 </FormRow>
 
                 <FormRow label={__("firmware_update.content.manual_update")} label_muted={__("firmware_update.content.manual_update_muted")}>
