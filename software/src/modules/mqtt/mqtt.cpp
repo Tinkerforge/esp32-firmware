@@ -70,7 +70,7 @@ void Mqtt::pre_setup()
         {"broker_password", Config::Str("", 0, 64)},
         {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + "/" + "ABC", 0, 64)},
         {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + "-" + "ABC", 1, 64)},
-        {"interval", Config::Uint32(1)},
+        {"interval", Config::Uint(1, 0, 24 * 60 * 60)},
         // esp_mqtt_transport_t. -1 because we don't allow MQTT_TRANSPORT_UNKNOWN.
         {"protocol", Config::Uint(MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_WSS - 1)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},

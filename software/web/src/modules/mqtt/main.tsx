@@ -215,7 +215,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                         <InputNumber required
                                      step={1}
                                      min={1}
-                                     max={4294967296}
+                                     max={24*60*60}
                                      value={state.interval}
                                      unit="s"
                                      onValue={this.set("interval")}/>
