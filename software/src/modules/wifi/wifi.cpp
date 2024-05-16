@@ -87,7 +87,7 @@ void Wifi::pre_setup()
         {"ap_bssid", Config::Str("", 0, 20)},
         {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
         {"sta_subnet", Config::Str("0.0.0.0", 7, 15)},
-        {"sta_rssi", Config::Int8(0)},
+        {"sta_rssi", Config::Int8(-100)},
         {"sta_bssid", Config::Str("", 0, 20)}
     });
 
@@ -640,8 +640,8 @@ void Wifi::setup()
             WifiState connection_state = get_connection_state();
             state.get("connection_state")->updateInt((int)connection_state);
 
-            int rssi = 0;
-            esp_wifi_sta_get_rssi(&rssi); // Ignore failure, rssi is still 0.
+            int rssi = -100;
+            esp_wifi_sta_get_rssi(&rssi); // Ignore failure, rssi is still -100.
             state.get("sta_rssi")->updateInt(rssi);
 
             static int tries = 0;
