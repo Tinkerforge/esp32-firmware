@@ -172,7 +172,10 @@ def embed_data_internal(data, cpp_path, h_path, var_name, var_type):
 
     with open(h_path + '.tmp', 'w', encoding='utf-8') as f:
         f.write('// WARNING: This file is generated\n\n')
-        f.write('#include <stdint.h>\n\n')
+
+        if 'int' in var_type and var_type.endswith('_t'):
+            f.write('#include <stdint.h>\n\n')
+
         f.write('extern const {0} {1}_data[];\n\n'.format(var_type, var_name))
         f.write('#define {0}_length {1}\n'.format(var_name, written))
 
