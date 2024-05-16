@@ -235,7 +235,8 @@ int main() {
         .distribution_log = std::unique_ptr<char[]>(new char[DISTRIBUTION_LOG_LEN]()),
         .distribution_log_len = DISTRIBUTION_LOG_LEN,
         .charger_count = CHARGER_COUNT,
-        .requested_current_margin = 3000
+        .requested_current_margin = 3000,
+        .requested_current_threshold = 60000
     };
 
     bool seen_all_chargers = true;
@@ -276,8 +277,7 @@ int main() {
                     client_id,
                     v1,
                     v2,
-                    60000,  //TODO add variable
-                    cfg.requested_current_margin,
+                    &cfg,
                     charger_state,
                     charger_allocation_state,
                     hosts,

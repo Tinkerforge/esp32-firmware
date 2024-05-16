@@ -467,8 +467,7 @@ bool update_from_client_packet(
     uint8_t client_id,
     cm_state_v1 *v1,
     cm_state_v2 *v2,
-    uint16_t requested_current_threshold,
-    uint16_t requested_current_margin,
+    const CurrentAllocatorConfig *cfg,
     ChargerState *charger_state,
     ChargerAllocationState *charger_allocation_state,
     const char * const *hosts,
@@ -527,7 +526,7 @@ bool update_from_client_packet(
 
     uint16_t requested_current = v1->supported_current;
 
-    if (v2 != nullptr && v1->charger_state == 3 && v2->time_since_state_change >= requested_current_threshold * 1000) {
+    if (v2 != nullptr && v1->charger_state == 3 && v2->time_since_state_change >= cfg->requested_current_threshold * 1000) {
         int32_t max_phase_current = -1;
 
         for (int i = 0; i < 3; i++) {
@@ -543,7 +542,7 @@ bool update_from_client_packet(
         if (max_phase_current == 0)
             max_phase_current = 32000;
 
-        max_phase_current += requested_current_margin;
+        max_phase_current += cfg->requested_current_margin;
 
         max_phase_current = std::max(6000, std::min(32000, max_phase_current));
         requested_current = std::min(requested_current, (uint16_t)max_phase_current);

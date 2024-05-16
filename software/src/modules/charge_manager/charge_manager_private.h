@@ -16,6 +16,7 @@ struct CurrentAllocatorConfig {
     size_t distribution_log_len;
     size_t charger_count;
     uint16_t requested_current_margin;
+    uint16_t requested_current_threshold;
 };
 
 // R+W _only_ by current_allocator.cpp
