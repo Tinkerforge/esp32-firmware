@@ -173,10 +173,10 @@ void Ocpp::setup()
         config.get("identity")->updateString(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
     }
 
-    config_in_use = config;
-
     if (!config.get("enable")->asBool() || config.get("url")->asString().length() == 0)
         return;
+
+    config_in_use = config;
 
     cp = std::unique_ptr<OcppChargePoint>(new OcppChargePoint());
 
