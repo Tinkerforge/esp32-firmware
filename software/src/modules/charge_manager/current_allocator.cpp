@@ -33,6 +33,9 @@
 // For strlen
 #include "string.h"
 
+// For isnan
+#include "math.h"
+
 #define LOCAL_LOG(fmt, ...) if(local_log) local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
 
 #define TIMEOUT_MS 32000
@@ -534,7 +537,7 @@ bool update_from_client_packet(
                 break;
             }
 
-            max_phase_current = max(max_phase_current, (int32_t)(v1->line_currents[i] * 1000.0f));
+            max_phase_current = std::max(max_phase_current, (int32_t)(v1->line_currents[i] * 1000.0f));
         }
         // The CM protocol sends 0 instead of nan.
         if (max_phase_current == 0)
@@ -542,8 +545,8 @@ bool update_from_client_packet(
 
         max_phase_current += requested_current_margin;
 
-        max_phase_current = max(6000, min(32000, max_phase_current));
-        requested_current = min(requested_current, (uint16_t)max_phase_current);
+        max_phase_current = std::max(6000, std::min(32000, max_phase_current));
+        requested_current = std::min(requested_current, (uint16_t)max_phase_current);
     }
     target.requested_current = requested_current;
 
