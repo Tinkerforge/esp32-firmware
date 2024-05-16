@@ -360,7 +360,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     command_pkt.header.version = CM_COMMAND_VERSION;
 
     command_pkt.v1.allocated_current = allocated_current;
-    command_pkt.v1.command_flags = cp_disconnect_requested << CM_COMMAND_FLAGS_CPPDISC_BIT_POS;
+    command_pkt.v1.command_flags = cp_disconnect_requested << CM_COMMAND_FLAGS_CPDISC_BIT_POS;
 
     int err = sendto(manager_sock, &command_pkt, sizeof(command_pkt), MSG_DONTWAIT, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
@@ -442,7 +442,7 @@ void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_ca
         manager_addr = temp_addr;
         manager_addr_valid = true;
 
-        client_callback(command_pkt.v1.allocated_current, CM_COMMAND_FLAGS_CPPDISC_IS_SET(command_pkt.v1.command_flags));
+        client_callback(command_pkt.v1.allocated_current, CM_COMMAND_FLAGS_CPDISC_IS_SET(command_pkt.v1.command_flags));
         //logger.printfln("Received command packet. Allocated current is %u", command_pkt.v1.allocated_current);
     }, 100, 100);
 }
