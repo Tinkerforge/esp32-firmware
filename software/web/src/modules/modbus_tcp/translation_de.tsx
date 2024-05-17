@@ -147,9 +147,9 @@ let x = {
                             der Stromgrenzen aller Ladeslots.</td>
                     </tr>
                     <tr>
-                        <td>1012 bis 1052</td>
+                        <td>1012 bis 1050</td>
                         <td>Ladestromgrenzen (mA)</td>
-                        <td>uint32 (x20)</td>
+                        <td>uint32 (20x)</td>
                         <td>evse</td>
                         <td>Aktueller Wert der Ladestromgrenzen in Milliampere. 0xFFFFFFFF falls eine Stromgrenze nicht aktiv
                             ist. 0 falls eine Stromgrenze blockiert. Sonst zwischen 6000 (6A) und 32000 (32A).</td>
@@ -201,9 +201,9 @@ let x = {
                         <td>Die während des laufenden Ladevorgangs geladene Energie</td>
                     </tr>
                     <tr>
-                        <td>2100 bis 2270</td>
+                        <td>2100 bis 2268</td>
                         <td>weitere Stromzähler-Werte</td>
-                        <td>float32 (x85)</td>
+                        <td>float32 (85x)</td>
                         <td>all_values</td>
                         <td>Siehe <a href="https://www.warp-charger.com/api.html#meter_all_values">API-Dokumentation</a></td>
                     </tr>
@@ -215,9 +215,9 @@ let x = {
                         <td>Noch nicht implementiert!</td>
                     </tr>
                     <tr>
-                        <td>4000</td>
+                        <td>4000 bis 4008</td>
                         <td>ID des letzten NFC-Tags</td>
-                        <td>uint32 (x5)</td>
+                        <td>uint32 (5x)</td>
                         <td>nfc</td>
                         <td>Die ID des zuletzt erkannten NFC-Tags als ASCII-kodierter Hex-String.</td>
                     </tr>

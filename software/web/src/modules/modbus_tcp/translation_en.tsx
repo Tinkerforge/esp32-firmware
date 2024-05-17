@@ -145,9 +145,9 @@ let x = {
                         <td>Maximum allowed current that a vehicle is allowed to draw. Minimum of all active charging slots.</td>
                     </tr>
                     <tr>
-                        <td>1012</td>
+                        <td>1012 to 1050</td>
                         <td>Charging slots (mA)</td>
-                        <td>uint32 (x20)</td>
+                        <td>uint32 (20x)</td>
                         <td>evse</td>
                         <td>Value of all charging slots in milliampere. 0xFFFFFFFF if a slot is not active. 0 if a slot blocks. Else
                             between 6000 (6 A) and 32000 (32 A).</td>
@@ -199,9 +199,9 @@ let x = {
                         <td>The charged energy since the start of the current charge.</td>
                     </tr>
                     <tr>
-                        <td>2100</td>
+                        <td>2100 to 2268</td>
                         <td>More meter values</td>
-                        <td>float32 (x85)</td>
+                        <td>float32 (85x)</td>
                         <td>all_values</td>
                         <td>See <a href="https://www.warp-charger.com/api.html#meter_all_values">API Documentation</a></td>
                     </tr>
@@ -213,14 +213,14 @@ let x = {
                         <td>Not implemented yet!</td>
                     </tr>
                     <tr>
-                        <td>4000</td>
+                        <td>4000 to 4008</td>
                         <td>ID of the last NFC tag</td>
-                        <td>uint32 (x5)</td>
+                        <td>uint32 (5x)</td>
                         <td>nfc</td>
                         <td>ID of the last seen NFC tag as ASCII coded hex string.</td>
                     </tr>
                     <tr>
-                        <td>4011</td>
+                        <td>4010</td>
                         <td>Age of the last NFC tag</td>
                         <td>uint32</td>
                         <td>nfc</td>
