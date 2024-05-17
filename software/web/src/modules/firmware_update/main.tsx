@@ -95,7 +95,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
 
     async checkFirmware(f: File) {
         try {
-            await util.upload(f.slice(0xd000 - 0x1000, 0xd000), "firmware_update/check_firmware", () => {})
+            await util.upload(f.slice(0xd000 - 0x1000, 0xd000), "check_firmware", () => {})
         } catch (error) {
             if (typeof error === "string") {
                 util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), error);
@@ -168,7 +168,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                         browse={__("firmware_update.content.browse")}
                         select_file={__("firmware_update.content.select_file")}
                         upload={__("firmware_update.content.update")}
-                        url="/firmware_update/flash_firmware"
+                        url="/flash_firmware"
                         accept=".bin"
                         timeout_ms={120 * 1000}
                         onUploadStart={async (f) => this.checkFirmware(f)}

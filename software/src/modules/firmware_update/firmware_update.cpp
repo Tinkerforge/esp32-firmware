@@ -260,7 +260,7 @@ void FirmwareUpdate::register_urls()
         check_for_updates();
     }, true);
 
-    server.on("/firmware_update/check_firmware", HTTP_POST, [this](WebServerRequest request){
+    server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request){
         if (!this->info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
             return request.send(400, "application/json", "{\"error\":\"firmware_update.script.no_info_page\"}");
         }
@@ -296,7 +296,7 @@ void FirmwareUpdate::register_urls()
         return true;
     });
 
-    server.on_HTTPThread("/firmware_update/flash_firmware", HTTP_POST, [this](WebServerRequest request){
+    server.on_HTTPThread("/flash_firmware", HTTP_POST, [this](WebServerRequest request){
         if (update_aborted)
             return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
 
