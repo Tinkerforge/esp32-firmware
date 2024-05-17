@@ -38,9 +38,9 @@ public:
     bool firmware_update_running = false;
 
 private:
-    bool handle_update_chunk(int command, std::function<void(const char *, const char *)> result_cb, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length);
+    bool handle_update_chunk(int command, std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_length, size_t remaining, size_t complete_len);
     void reset_firmware_info();
-    bool handle_firmware_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length);
+    bool handle_firmware_info_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len);
     String check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log);
     void check_for_updates();
 

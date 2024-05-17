@@ -93,7 +93,7 @@ private:
 };
 
 using wshCallback = std::function<WebServerRequestReturnProtect(WebServerRequest)>;
-using wshUploadCallback = std::function<bool(WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final)>;
+using wshUploadCallback = std::function<bool(WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining)>;
 
 struct WebServerHandler {
     WebServerHandler(bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback) : /*uri(uri), method(method),*/ callbackInMainThread(callbackInMainThread), callback(std::forward<wshCallback>(callback)), uploadCallback(std::forward<wshUploadCallback>(uploadCallback)) {}

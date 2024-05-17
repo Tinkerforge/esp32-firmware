@@ -83,42 +83,42 @@ void FirmwareUpdate::reset_firmware_info()
     info_found = false;
 }
 
-bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_index, uint8_t *data, size_t chunk_length)
+bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len)
 {
-    uint8_t *start = data;
-    size_t length = chunk_length;
+    uint8_t *start = chunk_data;
+    size_t len = chunk_len;
 
-    if (chunk_index < FIRMWARE_INFO_OFFSET) {
-        size_t to_skip = FIRMWARE_INFO_OFFSET - chunk_index;
+    if (chunk_offset < FIRMWARE_INFO_OFFSET) {
+        size_t to_skip = FIRMWARE_INFO_OFFSET - chunk_offset;
         start += to_skip;
-        length -= to_skip;
+        len -= to_skip;
     }
 
-    length = MIN(length, (FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) - chunk_index - 4); // -4 to not calculate the CRC of itself
+    len = MIN(len, (FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) - chunk_offset - 4); // -4 to not calculate the CRC of itself
 
     if (info_offset < sizeof(info)) {
-        size_t to_write = MIN(length, sizeof(info) - info_offset);
+        size_t to_write = MIN(len, sizeof(info) - info_offset);
         memcpy(((uint8_t *)&info) + info_offset, start, to_write);
         info_offset += to_write;
     }
 
-    crc32_ieee_802_3_recalculate(start, length, &calculated_checksum);
+    crc32_ieee_802_3_recalculate(start, len, &calculated_checksum);
 
     const size_t checksum_start = FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH - 4;
 
-    if (chunk_index + chunk_length < checksum_start)
+    if (chunk_offset + chunk_len < checksum_start)
         return false;
 
-    if (chunk_index < checksum_start) {
-        size_t to_skip = checksum_start - chunk_index;
-        start = data + to_skip;
-        length = chunk_length - to_skip;
+    if (chunk_offset < checksum_start) {
+        size_t to_skip = checksum_start - chunk_offset;
+        start = chunk_data + to_skip;
+        len = chunk_len - to_skip;
     }
 
-    length = MIN(length, 4);
+    len = MIN(len, 4);
 
     if (checksum_offset < sizeof(checksum)) {
-        size_t to_write = MIN(length, sizeof(checksum) - checksum_offset);
+        size_t to_write = MIN(len, sizeof(checksum) - checksum_offset);
         memcpy((uint8_t *)&checksum + checksum_offset, start, to_write);
         checksum_offset += to_write;
     }
@@ -178,7 +178,7 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
     return "";
 }
 
-bool FirmwareUpdate::handle_update_chunk(int command, std::function<void(const char *, const char *)> result_cb, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length) {
+bool FirmwareUpdate::handle_update_chunk(int command, std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len, size_t remaining, size_t complete_len) {
     // The firmware files are merged with the bootloader, partition table, firmware_info and slot configuration bins.
     // The bootloader starts at offset 0x1000, which is the first byte in the firmware file.
     // The first firmware slot (i.e. the one that is flashed over USB) starts at 0x10000.
@@ -187,7 +187,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, std::function<void(const c
     const size_t firmware_offset = command == U_FLASH ? 0x10000 - 0x1000 : 0;
     static bool firmware_info_found = false;
 
-    if (chunk_index == 0 && !Update.begin(complete_length - firmware_offset, command)) {
+    if (chunk_offset == 0 && !Update.begin(complete_len - firmware_offset, command)) {
         logger.printfln("Failed to start update: %s", Update.errorString());
         result_cb("text/plain", Update.errorString());
         Update.abort();
@@ -195,7 +195,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, std::function<void(const c
         return true;
     }
 
-    if (chunk_index == 0) {
+    if (chunk_offset == 0) {
         reset_firmware_info();
         firmware_info_found = false;
     }
@@ -204,11 +204,11 @@ bool FirmwareUpdate::handle_update_chunk(int command, std::function<void(const c
         return true;
     }
 
-    if (chunk_index + chunk_length >= FIRMWARE_INFO_OFFSET && chunk_index < FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
-        firmware_info_found = handle_firmware_info_chunk(chunk_index, data, chunk_length);
+    if (chunk_offset + chunk_len >= FIRMWARE_INFO_OFFSET && chunk_offset < FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
+        firmware_info_found = handle_firmware_info_chunk(chunk_offset, chunk_data, chunk_len);
     }
 
-    if (chunk_index + chunk_length >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
+    if (chunk_offset + chunk_len >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
         String error = this->check_firmware_info(firmware_info_found, false, true);
         if (!error.isEmpty()) {
             result_cb("application/json", error.c_str());
@@ -218,29 +218,29 @@ bool FirmwareUpdate::handle_update_chunk(int command, std::function<void(const c
         }
     }
 
-    if (chunk_index + chunk_length < firmware_offset) {
+    if (chunk_offset + chunk_len < firmware_offset) {
         return true;
     }
 
-    uint8_t *start = data;
-    size_t length = chunk_length;
+    uint8_t *start = chunk_data;
+    size_t len = chunk_len;
 
-    if (chunk_index < firmware_offset) {
-        size_t to_skip = firmware_offset - chunk_index;
+    if (chunk_offset < firmware_offset) {
+        size_t to_skip = firmware_offset - chunk_offset;
         start += to_skip;
-        length -= to_skip;
+        len -= to_skip;
     }
 
-    auto written = Update.write(start, length);
-    if (written != length) {
-        logger.printfln("Failed to write update chunk with length %u; written %u, error: %s", length, written, Update.errorString());
+    auto written = Update.write(start, len);
+    if (written != len) {
+        logger.printfln("Failed to write update chunk with length %u; written %u, error: %s", len, written, Update.errorString());
         result_cb("text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
         this->firmware_update_running = false;
         Update.abort();
         return false;
     }
 
-    if (final && !Update.end(true)) {
+    if (remaining == 0 && !Update.end(true)) {
         logger.printfln("Failed to apply update: %s", Update.errorString());
         result_cb("text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str());
         this->firmware_update_running = false;
@@ -260,13 +260,14 @@ void FirmwareUpdate::register_urls()
         check_for_updates();
     }, true);
 
-    server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request){
+    server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request) {
         if (!this->info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
             return request.send(400, "application/json", "{\"error\":\"firmware_update.script.no_info_page\"}");
         }
         return request.send(200);
-    },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-        if (index == 0) {
+    },
+    [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
+        if (offset == 0) {
             this->reset_firmware_info();
         }
 
@@ -279,14 +280,14 @@ void FirmwareUpdate::register_urls()
             return false;
         }
 
-        if (index > FIRMWARE_INFO_LENGTH) {
+        if (offset > FIRMWARE_INFO_LENGTH) {
             request.send(400, "text/plain", "Too long!");
             return false;
         }
 
-        bool firmware_info_found = handle_firmware_info_chunk(index + FIRMWARE_INFO_OFFSET, data, len);
+        bool firmware_info_found = handle_firmware_info_chunk(offset + FIRMWARE_INFO_OFFSET, data, len);
 
-        if (index + len >= FIRMWARE_INFO_LENGTH) {
+        if (offset + len >= FIRMWARE_INFO_LENGTH) {
             String error = this->check_firmware_info(firmware_info_found, true, false);
             if (!error.isEmpty()) {
                 request.send(400, "application/json", error.c_str());
@@ -309,14 +310,14 @@ void FirmwareUpdate::register_urls()
 
         return request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
     },
-    [this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+    [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
         this->firmware_update_running = true;
 
         WebServerRequest *request_ptr = &request;
 
         return handle_update_chunk(U_FLASH, [request_ptr](const char *mimetype, const char *message) {
             request_ptr->send(400, mimetype, message);
-        }, index, data, len, final, request.contentLength());
+        }, offset, data, len, remaining, request.contentLength());
     });
 }
 

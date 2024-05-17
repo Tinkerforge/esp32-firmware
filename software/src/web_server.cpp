@@ -126,7 +126,7 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
     }
 
     size_t remaining = req->content_len;
-    size_t index = 0;
+    size_t offset = 0;
 
     auto scratch_buf = heap_alloc_array<uint8_t>(SCRATCH_BUFSIZE);
 
@@ -149,16 +149,16 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         bool result = false;
         if (ctx->handler->callbackInMainThread) {
             auto scratch_ptr = scratch_buf.get();
-            task_scheduler.await([ctx, request, index, scratch_ptr, received, remaining, &result]{result = ctx->handler->uploadCallback(request, "not implemented", index, scratch_ptr, received, remaining == 0);});
+            task_scheduler.await([ctx, request, offset, scratch_ptr, received, remaining, &result]{result = ctx->handler->uploadCallback(request, "not implemented", offset, scratch_ptr, received, remaining);});
         } else {
-            result = ctx->handler->uploadCallback(request, "not implemented", index, scratch_buf.get(), received, remaining == 0);
+            result = ctx->handler->uploadCallback(request, "not implemented", offset, scratch_buf.get(), received, remaining);
         }
 
         if (!result) {
             return ESP_FAIL;
         }
 
-        index += received;
+        offset += received;
     }
 
     if (ctx->handler->callbackInMainThread)
