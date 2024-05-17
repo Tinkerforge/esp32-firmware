@@ -424,16 +424,19 @@ void FirmwareUpdate::check_for_updates()
 
     if (err != ESP_OK) {
         logger.printfln("Error while opening firmware list: %s", esp_err_to_name(err));
-        available_updates.get("cookie")->updateUint(update_cookie);
+        esp_http_client_cleanup(client);
         return;
     }
+
+    defer {
+        esp_http_client_close(client);
+        esp_http_client_cleanup(client);
+    };
 
     int content_length = esp_http_client_fetch_headers(client);
 
     if (content_length < 0) {
         logger.printfln("Error while reading firmware list HTTP headers: %s", esp_err_to_name(content_length));
-        esp_http_client_close(client);
-        esp_http_client_cleanup(client);
         return;
     }
 
@@ -452,8 +455,6 @@ void FirmwareUpdate::check_for_updates()
 
         if (buf_free == 0) {
             logger.printfln("Firmware list is malformed");
-            esp_http_client_close(client);
-            esp_http_client_cleanup(client);
             return;
         }
 
@@ -461,8 +462,6 @@ void FirmwareUpdate::check_for_updates()
 
         if (read_len < 0) {
             logger.printfln("Error while reading firmware list content: %s", esp_err_to_name(read_len));
-            esp_http_client_close(client);
-            esp_http_client_cleanup(client);
             return;
         }
 
@@ -482,8 +481,6 @@ void FirmwareUpdate::check_for_updates()
 
             if (!parse_version(buf, &version)) {
                 logger.printfln("Firmware list entry is malformed: %s", buf);
-                esp_http_client_close(client);
-                esp_http_client_cleanup(client);
                 return;
             }
 
@@ -534,9 +531,6 @@ void FirmwareUpdate::check_for_updates()
             p = strchr(buf, '\n');
         }
     }
-
-    esp_http_client_close(client);
-    esp_http_client_cleanup(client);
 
     String beta_update_str = "";
     String release_update_str = "";
