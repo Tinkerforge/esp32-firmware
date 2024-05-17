@@ -178,7 +178,7 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
     return "";
 }
 
-bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length) {
+bool FirmwareUpdate::handle_update_chunk(int command, std::function<void(const char *, const char *)> result_cb, size_t chunk_index, uint8_t *data, size_t chunk_length, bool final, size_t complete_length) {
     // The firmware files are merged with the bootloader, partition table, firmware_info and slot configuration bins.
     // The bootloader starts at offset 0x1000, which is the first byte in the firmware file.
     // The first firmware slot (i.e. the one that is flashed over USB) starts at 0x10000.
@@ -189,7 +189,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
 
     if (chunk_index == 0 && !Update.begin(complete_length - firmware_offset, command)) {
         logger.printfln("Failed to start update: %s", Update.errorString());
-        request.send(400, "text/plain", Update.errorString());
+        result_cb("text/plain", Update.errorString());
         Update.abort();
         update_aborted = true;
         return true;
@@ -211,7 +211,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
     if (chunk_index + chunk_length >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
         String error = this->check_firmware_info(firmware_info_found, false, true);
         if (!error.isEmpty()) {
-            request.send(400, "application/json", error.c_str());
+            result_cb("application/json", error.c_str());
             Update.abort();
             update_aborted = true;
             return true;
@@ -234,7 +234,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
     auto written = Update.write(start, length);
     if (written != length) {
         logger.printfln("Failed to write update chunk with length %u; written %u, error: %s", length, written, Update.errorString());
-        request.send(400, "text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
+        result_cb("text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
         this->firmware_update_running = false;
         Update.abort();
         return false;
@@ -242,7 +242,7 @@ bool FirmwareUpdate::handle_update_chunk(int command, WebServerRequest request, 
 
     if (final && !Update.end(true)) {
         logger.printfln("Failed to apply update: %s", Update.errorString());
-        request.send(400, "text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str());
+        result_cb("text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str());
         this->firmware_update_running = false;
         Update.abort();
         return false;
@@ -311,7 +311,12 @@ void FirmwareUpdate::register_urls()
     },
     [this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
         this->firmware_update_running = true;
-        return handle_update_chunk(U_FLASH, request, index, data, len, final, request.contentLength());
+
+        WebServerRequest *request_ptr = &request;
+
+        return handle_update_chunk(U_FLASH, [request_ptr](const char *mimetype, const char *message) {
+            request_ptr->send(400, mimetype, message);
+        }, index, data, len, final, request.contentLength());
     });
 }
 
