@@ -296,7 +296,7 @@ void FirmwareUpdate::register_urls()
         return true;
     });
 
-    server.on_HTTPThread("/flash_firmware", HTTP_POST, [this](WebServerRequest request){
+    server.on_HTTPThread("/flash_firmware", HTTP_POST, [this](WebServerRequest request) {
         if (update_aborted)
             return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
 
@@ -308,8 +308,8 @@ void FirmwareUpdate::register_urls()
         }
 
         return request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
-    },[this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-
+    },
+    [this](WebServerRequest request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
         this->firmware_update_running = true;
         return handle_update_chunk(U_FLASH, request, index, data, len, final, request.contentLength());
     });

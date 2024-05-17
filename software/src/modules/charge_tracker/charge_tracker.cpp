@@ -809,7 +809,6 @@ void ChargeTracker::register_urls()
                             //50 "Gesamtbetrag 99999.99€ (Strompreis 123.45 ct/kWh)" + \0
                             //= 314
 
-
         double charged_sum = 0;
         uint32_t charged_cost_sum = 0;
         bool seen_charges_without_meter = false;
@@ -963,11 +962,9 @@ search_done:
                       + 8) /* cost max 9999.99\0 else truncated to >10000*/
 
         char table_lines_buffer[8 * TABLE_LINE_LEN];
-
         File f;
 
         request.beginChunkedResponse(200, "application/pdf");
-
 
         const char * table_header_de = "Startzeit\0"
                                        "Benutzer\0"
@@ -982,7 +979,6 @@ search_done:
                                        "Duration\0"
                                        "Meter start\0"
                                        "Cost (€)";
-
 
         init_pdf_generator(&request,
                            "Title",
@@ -1058,8 +1054,6 @@ search_done:
             }
             if (!f)
                 f.close();
-
-
 
             *table_lines = table_lines_buffer;
             return lines_generated;
