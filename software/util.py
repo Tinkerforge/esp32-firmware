@@ -223,7 +223,7 @@ def embed_bricklet_firmware_bin(env=None):
         sys.exit(-1)
 
     firmware = firmwares[0]
-    m = re.fullmatch('bricklet_(.*)_firmware_\d+_\d+_\d+(?:_beta(\d+))?.zbin', firmware)
+    m = re.fullmatch(r'bricklet_(.*)_firmware_\d+_\d+_\d+(?:_beta(\d+))?.zbin', firmware)
 
     if m == None:
         print('Firmware {} did not match naming schema'.format(firmware))
@@ -269,8 +269,8 @@ def parse_ts_file(path, name, used_placeholders, template_literals):
     with open(path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    placeholders = [x.strip() for x in re.findall('__\(([^\)]*)', content)]
-    placeholders_unchecked = [x.strip() for x in re.findall('translate_unchecked\(([^\)]*)', content)]
+    placeholders = [x.strip() for x in re.findall(r'__\(([^\)]*)', content)]
+    placeholders_unchecked = [x.strip() for x in re.findall(r'translate_unchecked\(([^\)]*)', content)]
 
     template_literal_keys = [x for x in placeholders_unchecked if x[0] == '`' and x[-1] == '`' and '${' in x and '}' in x]
     placeholders = [x for x in placeholders if x not in template_literal_keys]
