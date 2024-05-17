@@ -203,7 +203,7 @@ let x = {
                         <td>More meter values</td>
                         <td>float32 (85x)</td>
                         <td>all_values</td>
-                        <td>See <a href="https://www.warp-charger.com/api.html#meter_all_values">API Documentation</a></td>
+                        <td>See <a href="https://docs.warp-charger.com/docs/mqtt_http/api_reference/meter/#meter_all_values_any">API Documentation</a></td>
                     </tr>
                     <tr>
                         <td>3000</td>
@@ -412,7 +412,6 @@ let x = {
                             web interface, the API or (depending on the button configuration) the button.</td>
                     </tr>
                 </tbody>
-
             </>
         },
         "script": {

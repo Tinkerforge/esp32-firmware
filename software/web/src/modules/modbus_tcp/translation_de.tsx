@@ -205,7 +205,7 @@ let x = {
                         <td>weitere Stromzähler-Werte</td>
                         <td>float32 (85x)</td>
                         <td>all_values</td>
-                        <td>Siehe <a href="https://www.warp-charger.com/api.html#meter_all_values">API-Dokumentation</a></td>
+                        <td>Siehe <a href="https://docs.warp-charger.com/docs/mqtt_http/api_reference/meter/#meter_all_values_any">API-Dokumentation</a></td>
                     </tr>
                     <tr>
                         <td>3000</td>
@@ -416,7 +416,6 @@ let x = {
                             und der evse/[start/stop]_charging-API verwendet wird.</td>
                     </tr>
                 </tbody>
-
             </>
         },
         "script": {
