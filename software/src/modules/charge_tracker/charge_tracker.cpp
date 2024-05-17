@@ -833,8 +833,10 @@ void ChargeTracker::register_urls()
             if (device_name.display_name.get("display_name")->asString() != device_name.name.get("name")->asString())
                 dev_name += " (" + device_name.name.get("name")->asString() + ")";
         });
-        if (await_result == TaskScheduler::AwaitResult::Timeout)
+
+        if (await_result == TaskScheduler::AwaitResult::Timeout) {
             return request.send(500, "text/plain", "Failed to generate PDF: Task timed out");
+        }
 
         {
             char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
