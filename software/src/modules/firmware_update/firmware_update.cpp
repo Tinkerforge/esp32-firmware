@@ -47,6 +47,7 @@ void FirmwareUpdate::pre_setup()
     available_updates = Config::Object({
         {"timestamp", Config::Uint(0)},
         {"cookie", Config::Uint(0)},
+        {"error", Config::Str("", 0, 16)},
         {"beta", Config::Str("", 0, 32)},
         {"release", Config::Str("", 0, 32)},
         {"stable", Config::Str("", 0, 32)},
@@ -133,21 +134,21 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
         if (log) {
             logger.printfln("Failed to update: Firmware update has no info page!");
         }
-        return "{\"error\":\"firmware_update.script.no_info_page\"}";
+        return "{\"error\":\"no_info_page\"}";
     }
     if (firmware_info_found) {
         if (checksum != calculated_checksum) {
             if (log) {
                 logger.printfln("Failed to update: Firmware info page corrupted! Embedded checksum %x calculated checksum %x", checksum, calculated_checksum);
             }
-            return "{\"error\":\"firmware_update.script.info_page_corrupted\"}";
+            return "{\"error\":\"info_page_corrupted\"}";
         }
 
         if (strncmp(BUILD_DISPLAY_NAME, info.firmware_name, ARRAY_SIZE(info.firmware_name)) != 0) {
             if (log) {
                 logger.printfln("Failed to update: Firmware is for a %.*s but this is a %s!", static_cast<int>(ARRAY_SIZE(info.firmware_name)), info.firmware_name, BUILD_DISPLAY_NAME);
             }
-            return "{\"error\":\"firmware_update.script.wrong_firmware_type\"}";
+            return "{\"error\":\"wrong_firmware_type\"}";
         }
 
         if (detect_downgrade && compare_version(info.fw_version[0], info.fw_version[1], info.fw_version[2], info.fw_version_beta, info.fw_build_time,
@@ -168,7 +169,7 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
                 snprintf(build_beta, ARRAY_SIZE(build_beta), "-beta.%i", BUILD_VERSION_BETA);
             }
 
-            snprintf(buf, ARRAY_SIZE(buf), "{\"error\":\"firmware_update.script.downgrade\",\"fw\":\"%u.%u.%u%s+%x\",\"installed\":\"%i.%i.%i%s+%x\"}",
+            snprintf(buf, ARRAY_SIZE(buf), "{\"error\":\"downgrade\",\"firmware\":\"%u.%u.%u%s+%x\",\"installed\":\"%i.%i.%i%s+%x\"}",
                      info.fw_version[0], info.fw_version[1], info.fw_version[2], info_beta, info.fw_build_time,
                      BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, build_beta, build_timestamp());
 
@@ -410,10 +411,13 @@ void FirmwareUpdate::check_for_updates()
 {
     ++update_cookie;
 
+    available_updates.get("timestamp")->updateUint(time(nullptr));
     available_updates.get("cookie")->updateUint(update_cookie);
+    available_updates.get("error")->updateString("pending");
 
     if (update_url.length() == 0) {
         logger.printfln("No update URL configured");
+        available_updates.get("error")->updateString("no_update_url");
         return;
     }
 
@@ -430,6 +434,7 @@ void FirmwareUpdate::check_for_updates()
 
     if (err != ESP_OK) {
         logger.printfln("Error while opening firmware list: %s", esp_err_to_name(err));
+        available_updates.get("error")->updateString("download_error");
         esp_http_client_cleanup(client);
         return;
     }
@@ -443,6 +448,7 @@ void FirmwareUpdate::check_for_updates()
 
     if (content_length < 0) {
         logger.printfln("Error while reading firmware list HTTP headers: %s", esp_err_to_name(content_length));
+        available_updates.get("error")->updateString("download_error");
         return;
     }
 
@@ -461,6 +467,7 @@ void FirmwareUpdate::check_for_updates()
 
         if (buf_free == 0) {
             logger.printfln("Firmware list is malformed");
+            available_updates.get("error")->updateString("list_malformed");
             return;
         }
 
@@ -468,6 +475,7 @@ void FirmwareUpdate::check_for_updates()
 
         if (read_len < 0) {
             logger.printfln("Error while reading firmware list content: %s", esp_err_to_name(read_len));
+            available_updates.get("error")->updateString("download_error");
             return;
         }
 
@@ -487,6 +495,7 @@ void FirmwareUpdate::check_for_updates()
 
             if (!parse_version(buf, &version)) {
                 logger.printfln("Firmware list entry is malformed: %s", buf);
+                available_updates.get("error")->updateString("list_malformed");
                 return;
             }
 
@@ -554,7 +563,7 @@ void FirmwareUpdate::check_for_updates()
         stable_update_str = format_version(&stable_update);
     }
 
-    available_updates.get("timestamp")->updateUint(time(nullptr));
+    available_updates.get("error")->updateString("");
     available_updates.get("beta")->updateString(beta_update_str);
     available_updates.get("release")->updateString(release_update_str);
     available_updates.get("stable")->updateString(stable_update_str);

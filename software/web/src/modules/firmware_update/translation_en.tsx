@@ -20,6 +20,7 @@ let x = {
             "confirm_downgrade": "Downgrade firmware",
             "check_for_updates": "Check for updates",
             "check_for_updates_timestamp": "Last update check",
+            "check_for_updates_error": "Last error",
             "available_beta_update": "Available beta update",
             "available_release_update": "Available release update",
             "available_stable_update": "Available stable update",
@@ -32,7 +33,10 @@ let x = {
             "no_info_page": null,
             "info_page_corrupted": "Firmware file corrupted (checksum error)",
             "wrong_firmware_type": null,
-            "downgrade": "Firmware file contains a downgrade to version %fw%. Installed is version %installed%.",
+            "downgrade": "Firmware file contains a downgrade to version %firmware%. Installed is version %installed%.",
+            "no_update_url": "No update URL configured",
+            "download_error": "Error occurred during download",
+            "list_malformed": "Update list is malformed",
             "build_time": /*SFN*/ (build_time: string) => ` (created ${build_time})`/*NF*/
         }
     }

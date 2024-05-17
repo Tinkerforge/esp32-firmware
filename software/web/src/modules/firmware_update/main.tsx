@@ -40,6 +40,7 @@ interface FirmwareUpdateState {
     show_spinner: boolean,
     available_updates_timestamp: number,
     available_updates_cookie: number,
+    available_updates_error: string,
     available_beta_update: string,
     available_release_update: string,
     available_stable_update: string,
@@ -55,6 +56,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             show_spinner: false,
             available_updates_timestamp: 0,
             available_updates_cookie: null,
+            available_updates_error: null,
             available_beta_update: null,
             available_release_update: null,
             available_stable_update: null,
@@ -86,6 +88,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             this.setState({
                 available_updates_timestamp: available_updates.timestamp,
                 available_updates_cookie: available_updates.cookie,
+                available_updates_error: available_updates.error,
                 available_beta_update: available_updates.beta,
                 available_release_update: available_updates.release,
                 available_stable_update: available_updates.stable,
@@ -109,9 +112,9 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
 
                 try {
                     let e = JSON.parse(xhr.responseText)
-                    let error_message = translate_unchecked(e["error"])
-                    if (e["error"] == "firmware_update.script.downgrade") {
-                        error_message = error_message.replace("%fw%", e["fw"]).replace("%installed%", e["installed"]);
+                    let error_message = translate_unchecked("firmware_update.script." + e["error"])
+                    if (e["error"] == "downgrade") {
+                        error_message = error_message.replace("%firmware%", e["firmware"]).replace("%installed%", e["installed"]);
 
                         const modal = util.async_modal_ref.current;
                         if(!await modal.show({
@@ -200,36 +203,38 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                             </Button>
                         </FormRow>
 
-                        <FormRow label={__("firmware_update.content.check_for_updates_timestamp")}>
-                            <InputText value={util.timestamp_sec_to_date(this.state.available_updates_timestamp, "")}/>
-                        </FormRow>
+                        {this.state.available_updates_timestamp == 0 || this.state.available_updates_error == "pending" || this.state.show_spinner ? undefined : <>
+                            <FormRow label={__("firmware_update.content.check_for_updates_timestamp")}>
+                                <InputText value={util.timestamp_sec_to_date(this.state.available_updates_timestamp, "")} />
+                            </FormRow>
 
-                        <FormRow label={__("firmware_update.content.available_beta_update")}>
-                            <InputText value={
-                                this.state.available_updates_timestamp == 0
-                                ? ""
-                                : (this.state.available_beta_update.length > 0
-                                    ? this.state.available_beta_update + this.format_build_time(this.state.available_beta_update)
-                                    : __("firmware_update.content.no_update"))}/>
-                        </FormRow>
+                            {this.state.available_updates_error != null && this.state.available_updates_error.length > 0 ?
+                                <FormRow label={__("firmware_update.content.check_for_updates_error")}>
+                                    <InputText value={translate_unchecked("firmware_update.script." + this.state.available_updates_error)} />
+                                </FormRow>
+                                : <>
+                                <FormRow label={__("firmware_update.content.available_beta_update")}>
+                                    <InputText value={
+                                        this.state.available_beta_update.length > 0
+                                            ? this.state.available_beta_update + this.format_build_time(this.state.available_beta_update)
+                                            : __("firmware_update.content.no_update")} />
+                                </FormRow>
 
-                        <FormRow label={__("firmware_update.content.available_release_update")}>
-                            <InputText value={
-                                this.state.available_updates_timestamp == 0
-                                ? ""
-                                : (this.state.available_release_update.length > 0
-                                    ? this.state.available_release_update + this.format_build_time(this.state.available_release_update)
-                                    : __("firmware_update.content.no_update"))}/>
-                        </FormRow>
+                                <FormRow label={__("firmware_update.content.available_release_update")}>
+                                    <InputText value={
+                                        this.state.available_release_update.length > 0
+                                            ? this.state.available_release_update + this.format_build_time(this.state.available_release_update)
+                                            : __("firmware_update.content.no_update")} />
+                                </FormRow>
 
-                        <FormRow label={__("firmware_update.content.available_stable_update")}>
-                            <InputText value={
-                                this.state.available_updates_timestamp == 0
-                                ? ""
-                                : (this.state.available_stable_update.length > 0
-                                    ? this.state.available_stable_update + this.format_build_time(this.state.available_stable_update)
-                                    : __("firmware_update.content.no_update"))}/>
-                        </FormRow>
+                                <FormRow label={__("firmware_update.content.available_stable_update")}>
+                                    <InputText value={
+                                        this.state.available_stable_update.length > 0
+                                            ? this.state.available_stable_update + this.format_build_time(this.state.available_stable_update)
+                                            : __("firmware_update.content.no_update")} />
+                                </FormRow>
+                            </>}
+                        </>}
                     </>
                     : undefined
                 }

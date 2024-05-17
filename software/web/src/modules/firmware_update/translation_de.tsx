@@ -20,6 +20,7 @@ let x = {
             "confirm_downgrade": "Downgrade durchführen",
             "check_for_updates": "Nach Aktualisierungen suchen",
             "check_for_updates_timestamp": "Letzte Aktualisierungsuche",
+            "check_for_updates_error": "Letzter Fehler",
             "available_beta_update": "Verfügbare Beta-Aktualisierung",
             "available_release_update": "Verfügbare Release-Aktualisierung",
             "available_stable_update": "Verfügbare Stable-Aktualisierung",
@@ -32,7 +33,10 @@ let x = {
             "no_info_page": null,
             "info_page_corrupted": "Firmware-Datei ist beschädigt (Checksummenfehler)",
             "wrong_firmware_type": null,
-            "downgrade": "Firmware-Datei beinhaltet ein Downgrade auf Version %fw%. Installiert ist Version %installed%.",
+            "downgrade": "Firmware-Datei beinhaltet ein Downgrade auf Version %firmware%. Installiert ist Version %installed%.",
+            "no_update_url": "Kein Aktualisierungs-URL konfiguriert",
+            "download_error": "Fehler beim Download aufgetreten",
+            "list_malformed": "Aktualisierungsliste ist beschädigt",
             "build_time": /*SFN*/ (build_time: string) => ` (erstellt ${build_time})`/*NF*/
         }
     }
