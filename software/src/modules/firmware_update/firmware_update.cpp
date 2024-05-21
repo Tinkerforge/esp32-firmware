@@ -21,7 +21,6 @@
 #include "module_dependencies.h"
 
 #include <Update.h>
-#include <esp_http_client.h>
 
 #include "api.h"
 #include "event_log.h"
@@ -41,8 +40,10 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 void FirmwareUpdate::pre_setup()
 {
     config = Config::Object({
+        {"update_mode", Config::Uint8(static_cast<uint8_t>(UpdateMode::Auto))},
+        {"update_track", Config::Uint8(static_cast<uint8_t>(UpdateTrack::Stable))},
         {"update_url", Config::Str("", 0, 128)},
-    });
+    }); // FIXME: add validator to only accept https:// update URLs
 
     available_updates = Config::Object({
         {"timestamp", Config::Uint(0)},
@@ -179,7 +180,7 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
     return "";
 }
 
-bool FirmwareUpdate::handle_update_chunk(int command, std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len, size_t remaining, size_t complete_len) {
+bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len, size_t remaining, size_t complete_len) {
     // The firmware files are merged with the bootloader, partition table, firmware_info and slot configuration bins.
     // The bootloader starts at offset 0x1000, which is the first byte in the firmware file.
     // The first firmware slot (i.e. the one that is flashed over USB) starts at 0x10000.
@@ -316,22 +317,14 @@ void FirmwareUpdate::register_urls()
 
         WebServerRequest *request_ptr = &request;
 
-        return handle_update_chunk(U_FLASH, [request_ptr](const char *mimetype, const char *message) {
+        return handle_firmware_chunk(U_FLASH, [request_ptr](const char *mimetype, const char *message) {
             request_ptr->send(400, mimetype, message);
         }, offset, data, len, remaining, request.contentLength());
     });
 }
 
-struct Version {
-    uint8_t major = 255;
-    uint8_t minor = 255;
-    uint8_t patch = 255;
-    uint8_t beta = 255;
-    uint32_t timestamp = 0;
-};
-
 // <major:int>.<minor:int>.<patch:int>[-beta.<beta:int>]+<timestamp:hex>
-static bool parse_version(const char *p, Version *version)
+static bool parse_version(const char *p, SemanticVersion *version)
 {
     char *end;
 
@@ -392,7 +385,7 @@ static bool parse_version(const char *p, Version *version)
     return true;
 }
 
-static String format_version(Version *version)
+static String format_version(SemanticVersion *version)
 {
     char buf[64];
 
@@ -406,20 +399,56 @@ static String format_version(Version *version)
     return String(buf);
 }
 
+static esp_err_t update_event_handler(esp_http_client_event_t *event)
+{
+    FirmwareUpdate *that = static_cast<FirmwareUpdate *>(event->user_data);
+
+    switch (event->event_id) {
+    case HTTP_EVENT_ON_DATA:
+        that->handle_update_data(event->data, event->data_len);
+        break;
+
+    case HTTP_EVENT_ON_FINISH:
+        that->handle_update_data("\n", 1);
+        break;
+
+    default:
+        break;
+    }
+
+    return ESP_OK;
+}
+
 // list files are not signed to allow customer fleet update managment, firmwares are signed
 void FirmwareUpdate::check_for_updates()
 {
+    if (http_client != nullptr) {
+        logger.printfln("Already checking for updates");
+        return;
+    }
+
     ++update_cookie;
 
     available_updates.get("timestamp")->updateUint(time(nullptr));
     available_updates.get("cookie")->updateUint(update_cookie);
     available_updates.get("error")->updateString("pending");
+    available_updates.get("beta")->updateString("");
+    available_updates.get("release")->updateString("");
+    available_updates.get("stable")->updateString("");
 
     if (update_url.length() == 0) {
         logger.printfln("No update URL configured");
         available_updates.get("error")->updateString("no_update_url");
         return;
     }
+
+    update_buf_used = 0;
+    beta_update.major = 255;
+    release_update.major = 255;
+    stable_update.major = 255;
+    update_mask = 0;
+    update_complete = false;
+    last_non_beta_timestamp = time(nullptr);
 
     esp_http_client_config_t config;
     memset(&config, 0, sizeof(config));
@@ -428,143 +457,155 @@ void FirmwareUpdate::check_for_updates()
     // FIXME: allow custom certificate
     config.crt_bundle_attach = esp_crt_bundle_attach;
     config.transport_type = HTTP_TRANSPORT_OVER_SSL;
+    config.event_handler = update_event_handler;
+    config.user_data = this;
+    config.is_async = true;
 
-    esp_http_client_handle_t client = esp_http_client_init(&config);
-    esp_err_t err = esp_http_client_open(client, 0);
+    http_client = esp_http_client_init(&config);
 
-    if (err != ESP_OK) {
-        logger.printfln("Error while opening firmware list: %s", esp_err_to_name(err));
-        available_updates.get("error")->updateString("download_error");
-        esp_http_client_cleanup(client);
+    if (http_client == nullptr) {
+        logger.printfln("Error while creating HTTP client");
         return;
     }
 
-    defer {
-        esp_http_client_close(client);
-        esp_http_client_cleanup(client);
-    };
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        if (update_complete) {
+            esp_http_client_close(http_client);
+        }
+        else {
+            esp_err_t err = esp_http_client_perform(http_client);
 
-    int content_length = esp_http_client_fetch_headers(client);
+            if (err == ESP_ERR_HTTP_EAGAIN) {
+                return;
+            }
+            else if (err != ESP_OK) {
+                logger.printfln("Error while downloading firmware list: %s", esp_err_to_name(err));
+                available_updates.get("error")->updateString("download_error");
+            }
+            else {
+                String beta_update_str = "";
+                String release_update_str = "";
+                String stable_update_str = "";
 
-    if (content_length < 0) {
-        logger.printfln("Error while reading firmware list HTTP headers: %s", esp_err_to_name(content_length));
-        available_updates.get("error")->updateString("download_error");
+                if (beta_update.major != 255) {
+                    beta_update_str = format_version(&beta_update);
+                }
+
+                if (release_update.major != 255) {
+                    release_update_str = format_version(&release_update);
+                }
+
+                if (stable_update.major != 255) {
+                    stable_update_str = format_version(&stable_update);
+                }
+
+                available_updates.get("error")->updateString("");
+                available_updates.get("beta")->updateString(beta_update_str);
+                available_updates.get("release")->updateString(release_update_str);
+                available_updates.get("stable")->updateString(stable_update_str);
+            }
+        }
+
+        esp_http_client_cleanup(http_client);
+        http_client = nullptr;
+
+        task_scheduler.cancel(task_scheduler.currentTaskId());
+    }, 100, 100);
+}
+
+void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
+{
+    if (update_complete) {
         return;
     }
 
-    char buf[64 + 1];
-    size_t buf_used = 0;
-    int total_read_len = 0;
-    char *p;
-    Version beta_update;
-    Version release_update;
-    Version stable_update;
-    uint8_t updates_mask = 0;
-    uint32_t last_non_beta_timestamp = time(nullptr);
+    const char *data_start = static_cast<const char *>(data);
+    const char *data_end = data_start + data_len;
 
-    while (total_read_len < content_length && updates_mask != 111) {
-        size_t buf_free = sizeof(buf) - buf_used - 1;
+    while (data_start < data_end) {
+        // fill buffer with new data
+        char *update_buf_free_start = update_buf + update_buf_used;
+        char *update_buf_free_end = update_buf + sizeof(update_buf) - 1;
 
-        if (buf_free == 0) {
+        if (update_buf_free_start == update_buf_free_end) {
             logger.printfln("Firmware list is malformed");
             available_updates.get("error")->updateString("list_malformed");
+            update_complete = true;
             return;
         }
 
-        int read_len = esp_http_client_read(client, buf + buf_used, buf_free);
+        while (update_buf_free_start < update_buf_free_end && data_start < data_end) {
+            if (*data_start != ' ' && *data_start != '\t' && *data_start != '\r') {
+                *update_buf_free_start++ = *data_start;
+            }
 
-        if (read_len < 0) {
-            logger.printfln("Error while reading firmware list content: %s", esp_err_to_name(read_len));
-            available_updates.get("error")->updateString("download_error");
-            return;
+            ++data_start;
         }
 
-        total_read_len += read_len;
-        buf_used += read_len;
-        buf[buf_used] = '\0';
-        p = strchr(buf, '\n');
+        *update_buf_free_start = '\0';
+        update_buf_used = update_buf_free_start - update_buf;
 
-        if (p == nullptr && total_read_len >= content_length) {
-            p = buf + buf_used;
-        }
+        // parse version
+        char *p = strchr(update_buf, '\n');
 
-        while (p != nullptr && updates_mask != 111) {
+        while (p != nullptr && update_mask != 111) {
             *p = '\0';
 
-            Version version;
+            SemanticVersion version;
 
-            if (!parse_version(buf, &version)) {
-                logger.printfln("Firmware list entry is malformed: %s", buf);
+            if (!parse_version(update_buf, &version)) {
+                logger.printfln("Firmware list entry is malformed: %s", update_buf);
                 available_updates.get("error")->updateString("list_malformed");
+                update_complete = true;
                 return;
             }
 
             // ignore all versions that are older than the current version
             if (compare_version(version.major, version.minor, version.patch, version.beta, version.timestamp,
                                 BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()) <= 0) {
-                updates_mask = 111;
+                update_mask = 111;
                 break;
             }
 
             if (version.beta != 255) {
                 // the beta update is the newest beta version that is newer than any non-beta version
-                if ((updates_mask & 100) == 0) {
+                if ((update_mask & 100) == 0) {
                     beta_update = version;
-                    updates_mask |= 100;
+                    update_mask |= 100;
                 }
             }
             else {
-                updates_mask |= 100; // ignore beta versions older than the newest non-beta version
+                update_mask |= 100; // ignore beta versions older than the newest non-beta version
 
                 // the release update is the newest non-beta version
-                if ((updates_mask & 10) == 0) {
+                if ((update_mask & 10) == 0) {
                     release_update = version;
-                    updates_mask |= 10;
+                    update_mask |= 10;
                 }
 
                 // the stable update is the newest non-beta version that was
                 // released more than 7 days before the next non-beta version
-                if ((updates_mask & 1) == 0 && version.timestamp + (7 * 24 * 60 * 60) < last_non_beta_timestamp) {
+                if ((update_mask & 1) == 0 && version.timestamp + (7 * 24 * 60 * 60) < last_non_beta_timestamp) {
                     stable_update = version;
-                    updates_mask |= 1;
+                    update_mask |= 1;
                 }
 
                 last_non_beta_timestamp = version.timestamp;
             }
 
-            if (p == buf + buf_used) {
-                break;
-            }
+            size_t update_buf_consumed = p + 1 - update_buf;
 
-            size_t buf_consumed = p + 1 - buf;
+            memmove(update_buf, p + 1, update_buf_used - update_buf_consumed);
 
-            memmove(buf, p + 1, buf_used - buf_consumed);
+            update_buf_used -= update_buf_consumed;
+            update_buf[update_buf_used] = '\0';
 
-            buf_used -= buf_consumed;
-            buf[buf_used] = '\0';
+            p = strchr(update_buf, '\n');
+        }
 
-            p = strchr(buf, '\n');
+        if (update_mask == 111) {
+            update_complete = true;
+            return;
         }
     }
-
-    String beta_update_str = "";
-    String release_update_str = "";
-    String stable_update_str = "";
-
-    if (beta_update.major != 255) {
-        beta_update_str = format_version(&beta_update);
-    }
-
-    if (release_update.major != 255) {
-        release_update_str = format_version(&release_update);
-    }
-
-    if (stable_update.major != 255) {
-        stable_update_str = format_version(&stable_update);
-    }
-
-    available_updates.get("error")->updateString("");
-    available_updates.get("beta")->updateString(beta_update_str);
-    available_updates.get("release")->updateString(release_update_str);
-    available_updates.get("stable")->updateString(stable_update_str);
 }
