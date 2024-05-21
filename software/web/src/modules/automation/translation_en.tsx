@@ -137,6 +137,10 @@ let x = {
             "trigger_disabled": "Disabled",
             "action_disabled": "Disabled",
             "preview": "Preview"
+        },
+        "script": {
+            "save_failed": "Failed to save connection settings.",
+            "reboot_content_changed": "connection settings"
         }
     }
 }

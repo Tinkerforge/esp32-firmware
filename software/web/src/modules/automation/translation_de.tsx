@@ -134,6 +134,10 @@ let x = {
             "trigger_disabled": "Deaktiviert",
             "action_disabled": "Deaktiviert",
             "preview": "Vorschau"
+        },
+        "script": {
+            "save_failed": "Speichern der Automatisierungs-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "Automatisierungs-Einstellungen"
         }
     }
 }
