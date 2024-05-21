@@ -84,6 +84,7 @@ protected:
     //End IEvseBackend implementation
 
     // PhaseSwitcherBackend implementation
+    uint32_t get_phase_switcher_priority()                           override {return 4;}
     bool phase_switching_capable()                                   override {return false;}
     bool can_switch_phases_now(bool wants_3phase)                    override {return false;}
     bool requires_cp_disconnect()                                    override {return false;}

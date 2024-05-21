@@ -79,6 +79,7 @@ public:
     void register_events() override;
 
     // for PhaseSwitcherBackend
+    uint32_t get_phase_switcher_priority() override {return 8;}
     bool phase_switching_capable() override;
     bool can_switch_phases_now(bool wants_3phase) override;
     bool requires_cp_disconnect() override {return true;}

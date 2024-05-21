@@ -101,6 +101,7 @@ protected:
     void get_debug_line(StringBuilder *sb) override;
 
     // PhaseSwitcherBackend implementation
+    uint32_t get_phase_switcher_priority() override {return 12;}
     bool phase_switching_capable() override;
     bool can_switch_phases_now(bool wants_3phase) override;
     bool requires_cp_disconnect() override {return false;}

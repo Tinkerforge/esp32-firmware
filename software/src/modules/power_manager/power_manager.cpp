@@ -492,7 +492,9 @@ void PowerManager::register_urls()
 
 void PowerManager::register_phase_switcher_backend(PhaseSwitcherBackend *backend)
 {
-    phase_switcher_backend = backend;
+    if (backend->get_phase_switcher_priority() > phase_switcher_backend->get_phase_switcher_priority()) {
+        phase_switcher_backend = backend;
+    }
 }
 
 void PowerManager::set_available_current(uint32_t current)
