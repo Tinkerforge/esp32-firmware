@@ -482,6 +482,12 @@ void PowerManager::register_urls()
             logger.printfln("External control phase change request: switching from %u to %u", old_phases, new_phases);
         }, true);
     }
+
+    // If the PM is enabled, make sure to override the CM's default current.
+    // Cannot be run during setup because the CM's URLs aren't registered yet.
+    if (config.get("enabled")->asBool()) {
+        set_available_current(0);
+    }
 }
 
 void PowerManager::register_phase_switcher_backend(PhaseSwitcherBackend *backend)
