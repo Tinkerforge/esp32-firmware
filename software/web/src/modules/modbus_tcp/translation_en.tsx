@@ -75,14 +75,14 @@ let x = {
                         <td>Box ID</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Decoded form of the base58 UID used for the default hostname, SSID, etc.. For example 185460 for X8A</td>
+                        <td>Decoded form of the base58 UID used for the default hostname, SSID, etc. For example 185460 for X8A.</td>
                     </tr>
                     <tr>
                         <td>12</td>
                         <td>Uptime (s)</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Time in seconds since the boot-up of the charger firmware</td>
+                        <td>Time in seconds since the boot-up of the charger firmware.</td>
                     </tr>
                     <tr>
                         <td>1000</td>
@@ -120,7 +120,7 @@ let x = {
                         <td>uint32</td>
                         <td>evse</td>
                         <td>ID of the user who started a charge. 0 if the charge is not assigned to a user. 0xFFFFFFFF if no charge is
-                            running</td>
+                            running.</td>
                     </tr>
                     <tr>
                         <td>1006</td>
@@ -175,21 +175,21 @@ let x = {
                         <td>Power (W)</td>
                         <td>float32</td>
                         <td>meter</td>
-                        <td>The current charging power in watt</td>
+                        <td>The current charging power in watt.</td>
                     </tr>
                     <tr>
                         <td>2004</td>
                         <td>Absolute energy (kWh)</td>
                         <td>float32</td>
                         <td>meter</td>
-                        <td>The charged energy since manufacturing of the energy meter</td>
+                        <td>The charged energy since manufacturing of the energy meter.</td>
                     </tr>
                     <tr>
                         <td>2006</td>
                         <td>Relative energy (kWh)</td>
                         <td>float32</td>
                         <td>meter</td>
-                        <td>The charged energy since the last reset (see Holding Reg 2000)</td>
+                        <td>The charged energy since the last reset (see holding register 2000).</td>
                     </tr>
                     <tr>
                         <td>2008</td>
@@ -213,9 +213,9 @@ let x = {
                         <td>Not implemented yet!</td>
                     </tr>
                     <tr>
-                        <td>4000 to 4008</td>
+                        <td>4000 to 4009</td>
                         <td>ID of the last NFC tag</td>
-                        <td>uint32 (5x)</td>
+                        <td>uint8 (20x)</td>
                         <td>nfc</td>
                         <td>ID of the last seen NFC tag as ASCII coded hex string.</td>
                     </tr>
@@ -239,7 +239,7 @@ let x = {
                         <td>Reboot</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Reboots the charger (in other words the ESP Brick) to for example apply configuration changes. Password
+                        <td>Reboots the charger (in other words the ESP Brick) to for example apply configuration changes. Password:
                             0x012EB007</td>
                     </tr>
                     <tr>
@@ -248,7 +248,7 @@ let x = {
                         <td>uint32</td>
                         <td>evse</td>
                         <td><strong>Deprecated. Use coil 1000 instead!</strong> 0 to block charging; a value not equal to 0 to allow
-                            charging</td>
+                            charging.</td>
                     </tr>
                     <tr>
                         <td>1002</td>
@@ -287,7 +287,7 @@ let x = {
                         <td>Reset relative energy</td>
                         <td>uint32</td>
                         <td>meter</td>
-                        <td>Resets the relative energy value (Input register 2006). Password 0x3E12E5E7</td>
+                        <td>Resets the relative energy value (input register 2006). Password: 0x3E12E5E7</td>
                     </tr>
                     <tr>
                         <td>3000</td>
@@ -324,14 +324,14 @@ let x = {
                         <td>Feature "phases" available</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>The detected energy meter supports phase-wise measurements</td>
+                        <td>The detected energy meter supports phase-wise measurements.</td>
                     </tr>
                     <tr>
                         <td>3</td>
                         <td>Feature "all_values" available</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>The detected energy meter supports more measurements</td>
+                        <td>The detected energy meter supports more measurements.</td>
                     </tr>
                     <tr>
                         <td>4</td>
@@ -345,7 +345,7 @@ let x = {
                         <td>Feature "nfc" available</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>A NFC-Bricklet is connected and active.</td>
+                        <td>A NFC Bricklet is connected and active.</td>
                     </tr>
                     <tr>
                         <td>2100</td>
@@ -401,7 +401,7 @@ let x = {
                         <td>Charge release</td>
                         <td>bool</td>
                         <td>evse</td>
-                        <td>false or 0 to block charging. true or 1 to allow charging. (Identical to holding register 1000)</td>
+                        <td>false or 0 to block charging. true or 1 to allow charging. Identical to holding register 1000.</td>
                     </tr>
                     <tr>
                         <td>1001</td>

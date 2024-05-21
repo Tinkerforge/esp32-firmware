@@ -76,7 +76,7 @@ let x = {
                         <td>uint32</td>
                         <td>---</td>
                         <td>Dekodierte Form der Base58-UID, die für Standard-Hostnamen, -SSID usw. genutzt wird. Zum Beispiel
-                            185460 für X8A</td>
+                            185460 für X8A.</td>
                     </tr>
                     <tr>
                         <td>12</td>
@@ -136,7 +136,7 @@ let x = {
                         <td>Ladedauer (s)</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Dauer des laufenden Ladevorgangs in Sekunden. Auch ohne Zeitsynchronisierung verfügbar</td>
+                        <td>Dauer des laufenden Ladevorgangs in Sekunden. Auch ohne Zeitsynchronisierung verfügbar.</td>
                     </tr>
                     <tr>
                         <td>1010</td>
@@ -177,7 +177,7 @@ let x = {
                         <td>Ladeleistung (W)</td>
                         <td>float32</td>
                         <td>meter</td>
-                        <td>Die aktuelle Ladeleistung in Watt</td>
+                        <td>Die aktuelle Ladeleistung in Watt.</td>
                     </tr>
                     <tr>
                         <td>2004</td>
@@ -191,14 +191,14 @@ let x = {
                         <td>relative Energie (kWh)</td>
                         <td>float32</td>
                         <td>meter</td>
-                        <td>Die geladene Energie seit dem letzten Reset. (siehe Holding Register 2000)</td>
+                        <td>Die geladene Energie seit dem letzten Reset (siehe Holding Register 2000).</td>
                     </tr>
                     <tr>
                         <td>2008</td>
                         <td>Energie des Ladevorgangs</td>
                         <td>float32</td>
                         <td>meter</td>
-                        <td>Die während des laufenden Ladevorgangs geladene Energie</td>
+                        <td>Die während des laufenden Ladevorgangs geladene Energie.</td>
                     </tr>
                     <tr>
                         <td>2100 bis 2268</td>
@@ -215,9 +215,9 @@ let x = {
                         <td>Noch nicht implementiert!</td>
                     </tr>
                     <tr>
-                        <td>4000 bis 4008</td>
+                        <td>4000 bis 4009</td>
                         <td>ID des letzten NFC-Tags</td>
-                        <td>uint32 (5x)</td>
+                        <td>uint8 (20x)</td>
                         <td>nfc</td>
                         <td>Die ID des zuletzt erkannten NFC-Tags als ASCII-kodierter Hex-String.</td>
                     </tr>
@@ -242,7 +242,7 @@ let x = {
                         <td>uint32</td>
                         <td>---</td>
                         <td>Startet die Wallbox (bzw. den ESP-Brick) neu, um beispielsweise Konfigurationsänderungen
-                            anzuwenden. Password 0x012EB007</td>
+                            anzuwenden. Passwort: 0x012EB007</td>
                     </tr>
                     <tr>
                         <td>1000</td>
@@ -250,7 +250,7 @@ let x = {
                         <td>uint32</td>
                         <td>evse</td>
                         <td><strong>Veraltet. Stattdessen Coil 1000 verwenden!</strong> 0 zum Blockieren des Ladevorgangs; ein
-                            Wert ungleich 0 zum Freigeben</td>
+                            Wert ungleich 0 zum Freigeben.</td>
                     </tr>
                     <tr>
                         <td>1002</td>
@@ -289,7 +289,7 @@ let x = {
                         <td>Relative Energie zurücksetzen</td>
                         <td>uint32</td>
                         <td>meter</td>
-                        <td>Setzt den relativen Energiewert zurück (Input Register 2006). Password 0x3E12E5E7</td>
+                        <td>Setzt den relativen Energiewert zurück (Input Register 2006). Passwort: 0x3E12E5E7</td>
                     </tr>
                     <tr>
                         <td>3000</td>
@@ -333,7 +333,7 @@ let x = {
                         <td>Feature "all_values" verfügbar</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>Der verbaute Stromzähler kann weitere Messwerte auslesen. </td>
+                        <td>Der verbaute Stromzähler kann weitere Messwerte auslesen.</td>
                     </tr>
                     <tr>
                         <td>4</td>
@@ -347,7 +347,7 @@ let x = {
                         <td>Feature "nfc" verfügbar</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>Ein NFC-Bricklet ist verbaut und aktiv.</td>
+                        <td>Ein NFC Bricklet ist verbaut und aktiv.</td>
                     </tr>
                     <tr>
                         <td>2100</td>
@@ -403,8 +403,8 @@ let x = {
                         <td>Ladefreigabe</td>
                         <td>bool</td>
                         <td>evse</td>
-                        <td>false bzw. 0 zum Blockieren des Ladevorgangs. true bzw. 1 zum Freigeben. (Identisch zu Holding
-                            Register 1000)</td>
+                        <td>false bzw. 0 zum Blockieren des Ladevorgangs. true bzw. 1 zum Freigeben. Identisch zu Holding
+                            Register 1000.</td>
                     </tr>
                     <tr>
                         <td>1001</td>
