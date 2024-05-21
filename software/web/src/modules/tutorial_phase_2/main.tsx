@@ -40,7 +40,7 @@ export class TutorialPhase2 extends Component<{}, TutorialPhase2State> {
         super();
 
         this.state = {
-            color: '#00000',
+            color: '#000000',
         } as any;
 
         // Create event listener for state "tutorial_phase_2/config" to
