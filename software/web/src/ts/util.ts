@@ -618,3 +618,115 @@ export function toIsoString(date: Date) {
         ':' + leftPad(date.getMinutes(), 0, 2) +
         ':' + leftPad(date.getSeconds(), 0, 2);
 }
+
+export function rgbToHex(r: number, g: number, b: number, a?: number) {
+    return '#' + leftPad(r.toString(16), '0', 2)
+               + leftPad(g.toString(16), '0', 2)
+               + leftPad(b.toString(16), '0', 2)
+               + (a !== undefined ? leftPad(a.toString(16), '0', 2) : "");
+}
+
+export function hexToRgb(hex: string): {r: number, g: number, b: number, a?: number} {
+    if (hex.startsWith("#"))
+        hex = hex.slice(1);
+
+    if (hex.length == 3) {
+        return {
+            r: parseInt(hex[0], 16),
+            g: parseInt(hex[1], 16),
+            b: parseInt(hex[2], 16)
+        };
+    }
+
+    if (hex.length == 4) {
+        return {
+            r: parseInt(hex[0], 16),
+            g: parseInt(hex[1], 16),
+            b: parseInt(hex[2], 16),
+            a: parseInt(hex[3], 16)
+        };
+    }
+
+    if (hex.length == 6) {
+        return {
+            r: parseInt(hex.slice(0, 2), 16),
+            g: parseInt(hex.slice(2, 4), 16),
+            b: parseInt(hex.slice(4, 6), 16)
+        };
+    }
+
+    if (hex.length == 8) {
+        return {
+            r: parseInt(hex.slice(0, 2), 16),
+            g: parseInt(hex.slice(2, 4), 16),
+            b: parseInt(hex.slice(4, 6), 16),
+            a: parseInt(hex.slice(6, 8), 16)
+        };
+    }
+}
+
+// From https://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c
+/**
+ * Converts an RGB color value to HSV. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
+ * Assumes r, g, and b are contained in the set [0, 255] and
+ * returns h, s, and v in the set [0, 1].
+ *
+ * @param   Number  r       The red color value
+ * @param   Number  g       The green color value
+ * @param   Number  b       The blue color value
+ * @return  Array           The HSV representation
+ */
+export function rgbToHsv(r: number, g: number, b: number): [number, number, number]{
+    r = r/255, g = g/255, b = b/255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, v = max;
+
+    var d = max - min;
+    s = max == 0 ? 0 : d / max;
+
+    if(max == min){
+        h = 0; // achromatic
+    }else{
+        switch(max){
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    return [h, s, v];
+}
+
+/**
+ * Converts an HSV color value to RGB. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
+ * Assumes h, s, and v are contained in the set [0, 1] and
+ * returns r, g, and b in the set [0, 255].
+ *
+ * @param   Number  h       The hue
+ * @param   Number  s       The saturation
+ * @param   Number  v       The value
+ * @return  Array           The RGB representation
+ */
+export function hsvToRgb(h: number, s: number, v: number): [number, number, number]{
+    var r, g, b;
+
+    var i = Math.floor(h * 6);
+    var f = h * 6 - i;
+    var p = v * (1 - s);
+    var q = v * (1 - f * s);
+    var t = v * (1 - (1 - f) * s);
+
+    switch(i % 6){
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}

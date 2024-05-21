@@ -243,6 +243,7 @@ let x = {
             "state_change": "Charge status changed",
             "led_duration": "Duration",
             "indication": "Indication",
+            "color": "Color",
             "led_indication": "Show on status LED",
             "led_indication_off": "Off",
             "led_indication_on": "On",
@@ -270,7 +271,14 @@ let x = {
                 }
                 return <>limit the allowed charging current to <b>{current} A</b>.</>
             }/*NF*/,
-            "automation_led_action_text": /*FFN*/(state: string, duration: number) => state == "An" || state == "Aus" ? <>turn the status LED <b>{state}</b> for <b>{duration} seconds</b>.</> : <>show <b>{state}</b> for <b>{duration / 1000} seconds</b> on the status LED.</>/*NF*/
+            "automation_led_action_text": /*FFN*/(indication_number: number, indication_text: string, duration: number, color: string) => {
+                let c = <>in <span class="px-2 mr-1" style={"background-color: " + color + "; border: 1px solid black;"}></span></>
+                if (indication_number == 0)
+                    return <>turn the status LED <b>{indication_text}</b> for <b>{duration} seconds</b>.</>
+                if (indication_number == 255)
+                    return <>turn the status LED <b>{indication_text}</b> {c} for <b>{duration} seconds</b>.</>
+                return<>show <b>{indication_text}</b> {c} for <b>{duration / 1000} seconds</b> on the status LED.</>
+            }/*NF*/
         },
         "script": {
             "set_charging_current_failed": "Failed to set charging current",

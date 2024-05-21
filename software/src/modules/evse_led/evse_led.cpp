@@ -42,12 +42,16 @@ void EvseLed::pre_setup()
         Config::Object({
             {"indication", Config::Int(-1)},
             {"duration", Config::Uint16(0)},
-            {"h", Config::Uint(0, 0, 360)},
-            {"s", Config::Uint8(0)},
-            {"v", Config::Uint8(0)},
+            {"color_h", Config::Uint(0, 0, 360)},
+            {"color_s", Config::Uint8(0)},
+            {"color_v", Config::Uint8(0)},
         }),
         [this](const Config *config) {
-            set_module(config->get("indication")->asEnum<Blink>(), config->get("duration")->asUint());
+            set_module(config->get("indication")->asEnum<Blink>(),
+                       config->get("duration")->asUint(),
+                       config->get("color_h")->asUint(),
+                       config->get("color_s")->asUint(),
+                       config->get("color_v")->asUint());
         }
     );
 #endif

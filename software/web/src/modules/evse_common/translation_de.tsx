@@ -243,7 +243,8 @@ let x = {
             "external_current_wd_trigger": <>Wenn der <b>Watchdog</b> der <b>externen</b> Steuerung auslöst, </>,
             "state_change": "Ladestatus gewechselt",
             "led_duration": "Dauer",
-            "indication": "LED-Zustand",
+            "indication": "Blinkmuster",
+            "color": "Farbe",
             "led_indication": "Zeige auf Status-LED an",
             "led_indication_off": "Aus",
             "led_indication_on": "An",
@@ -270,7 +271,14 @@ let x = {
                 }
                 return <>limitiere den erlaubten Ladestrom auf <b>{current} A</b>.</>
             }/*NF*/,
-            "automation_led_action_text": /*FFN*/(state: string, duration: number) => (state == "An" || state == "Aus") ? <>schalte die Status-LED für <b>{duration / 1000} Sekunden</b> <b>{state}</b>.</> : <>zeige <b>{state}</b> für <b>{duration / 1000} Sekunden</b> auf der Status-LED.</>/*NF*/
+            "automation_led_action_text": /*FFN*/(indication_number: number, indication_text: string, duration: number, color: string) => {
+                let c = <>in <span class="px-2 mr-1" style={"background-color: " + color + "; border: 1px solid black;"}></span></>;
+                if (indication_number == 0)
+                    return <>schalte die Status-LED für <b>{duration / 1000} Sekunden</b> <b>{indication_text}</b>.</>;
+                if (indication_number == 255)
+                    return <>schalte die Status-LED für <b>{duration / 1000} Sekunden</b> {c} <b>{indication_text}</b>.</>;
+                return <>zeige <b>{indication_text}</b> {c} für <b>{duration / 1000} Sekunden</b> auf der Status-LED.</>;
+            }/*NF*/
         },
         "script": {
             "set_charging_current_failed": "Konnte Ladestrom nicht setzen",
