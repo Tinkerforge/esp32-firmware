@@ -121,7 +121,7 @@ void RemoteAccess::pre_setup() {
         {"password", Config::Str("", 0, 32)},
         {"relay_host", Config::Str("fernzugriff.warp-charger.com", 0, 64)},
         {"relay_host_port", Config::Uint16(443)},
-        {"self_signed_cert_id", Config::Int8(-1)}
+        {"cert_id", Config::Int8(-1)}
     })};
 
     management_connection = ConfigRoot{Config::Object({
@@ -455,10 +455,10 @@ static String parse_cookie(const String &cookie) {
 String RemoteAccess::make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error) {
     esp_err_t err = ESP_OK;
     size_t cert_len = 0;
-    int self_signed_cert_id = config.get("self_signed_cert_id")->asInt();
+    int cert_id = config.get("cert_id")->asInt();
     std::unique_ptr<unsigned char[]> cert = nullptr;
-    if (self_signed_cert_id >= 0) {
-        cert = certs.get_cert(static_cast<uint8_t>(self_signed_cert_id), &cert_len);
+    if (cert_id >= 0) {
+        cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
         if (cert == nullptr) {
             logger.printfln("Management: Failed to get self signed cert");
             *ret_error = ESP_FAIL;
@@ -557,10 +557,10 @@ void RemoteAccess::login() {
 
 void RemoteAccess::resolve_management() {
     size_t cert_len = 0;
-    int self_signed_cert_id = config.get("self_signed_cert_id")->asInt();
+    int cert_id = config.get("cert_id")->asInt();
     std::unique_ptr<unsigned char[]> cert = nullptr;
-    if (self_signed_cert_id >= 0) {
-        cert = certs.get_cert(static_cast<uint8_t>(self_signed_cert_id), &cert_len);
+    if (cert_id >= 0) {
+        cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
         if (cert == nullptr) {
             logger.printfln("Management: Failed to get self signed cert");
             return;

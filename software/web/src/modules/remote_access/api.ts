@@ -5,7 +5,7 @@ export interface config {
     password: string,
     relay_host: string,
     relay_host_port: number,
-    self_signed_cert_id: number,
+    cert_id: number,
 }
 
 export interface management_connection {
