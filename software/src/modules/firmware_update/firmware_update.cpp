@@ -262,7 +262,7 @@ void FirmwareUpdate::register_urls()
 
     server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request) {
         if (!this->info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
-            return request.send(400, "application/json", "{\"error\":\"firmware_update.script.no_info_page\"}");
+            return request.send(400, "application/json", "{\"error\":\"no_info_page\"}");
         }
         return request.send(200);
     },
@@ -276,7 +276,7 @@ void FirmwareUpdate::register_urls()
         firmware_update_allowed_check_required = energy_manager.disallow_fw_update_with_vehicle_connected();
 #endif
         if (firmware_update_allowed_check_required && !firmware_update_allowed) {
-            request.send(400, "application/json", "{\"error\":\"firmware_update.script.vehicle_connected\"}");
+            request.send(400, "application/json", "{\"error\":\"vehicle_connected\"}");
             return false;
         }
 
