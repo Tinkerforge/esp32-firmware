@@ -1,5 +1,6 @@
 export interface config {
     update_url: string,
+    cert_id: number,
 }
 
 export interface available_updates {

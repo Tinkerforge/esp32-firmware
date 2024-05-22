@@ -35,6 +35,7 @@ let x = {
             "wrong_firmware_type": null,
             "downgrade": "Firmware-Datei beinhaltet ein Downgrade auf Version %firmware%. Installiert ist Version %installed%.",
             "no_update_url": "Kein Aktualisierungs-URL konfiguriert",
+            "no_cert": "HTTPS-Zertifikat nicht vorhanden",
             "download_error": "Fehler beim Download aufgetreten",
             "list_malformed": "Aktualisierungsliste ist beschädigt",
             "build_time": /*SFN*/ (build_time: string) => ` (erstellt ${build_time})`/*NF*/

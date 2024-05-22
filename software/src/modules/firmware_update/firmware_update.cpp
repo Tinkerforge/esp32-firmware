@@ -37,10 +37,15 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
 
+#if !MODULE_CERTS_AVAILABLE()
+#define MAX_CERT_ID -1
+#endif
+
 void FirmwareUpdate::pre_setup()
 {
     config = Config::Object({
         {"update_url", Config::Str("", 0, 128)},
+        {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }); // FIXME: add validator to only accept https:// update URLs
 
     available_updates = Config::Object({
@@ -69,6 +74,7 @@ void FirmwareUpdate::setup()
         update_url += "_firmware.txt";
     }
 
+    cert_id = config.get("cert_id")->asInt();
     initialized = true;
 }
 
@@ -444,21 +450,42 @@ void FirmwareUpdate::check_for_updates()
     update_complete = false;
     last_non_beta_timestamp = time(nullptr);
 
-    esp_http_client_config_t config;
-    memset(&config, 0, sizeof(config));
+    esp_http_client_config_t http_config = {};
 
-    config.url = update_url.c_str();
-    // FIXME: allow custom certificate
-    config.crt_bundle_attach = esp_crt_bundle_attach;
-    config.transport_type = HTTP_TRANSPORT_OVER_SSL;
-    config.event_handler = update_event_handler;
-    config.user_data = this;
-    config.is_async = true;
+    http_config.url = update_url.c_str();
+    http_config.event_handler = update_event_handler;
+    http_config.user_data = this;
+    http_config.is_async = true;
 
-    http_client = esp_http_client_init(&config);
+    size_t cert_len = 0;
+
+    if (cert_id < 0) {
+        http_config.crt_bundle_attach = esp_crt_bundle_attach;
+    }
+    else {
+#if MODULE_CERTS_AVAILABLE()
+        cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
+
+        if (cert == nullptr) {
+            logger.printfln("Certificate with ID %d is not available", cert_id);
+            available_updates.get("error")->updateString("no_cert");
+            return;
+        }
+
+        http_config.cert_pem = (const char *)cert.get();
+#else
+        // defense in depth: it should not be possible to arrive here because in case
+        // that the certs module is not available the cert_id should always be -1
+        logger.printfln("Can't use custom certitifate: certs module is not built into this firmware!");
+        return;
+#endif
+    }
+
+    http_client = esp_http_client_init(&http_config);
 
     if (http_client == nullptr) {
         logger.printfln("Error while creating HTTP client");
+        cert.reset();
         return;
     }
 
@@ -502,6 +529,7 @@ void FirmwareUpdate::check_for_updates()
 
         esp_http_client_cleanup(http_client);
         http_client = nullptr;
+        cert.reset();
 
         task_scheduler.cancel(task_scheduler.currentTaskId());
     }, 100, 100);

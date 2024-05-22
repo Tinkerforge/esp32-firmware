@@ -75,6 +75,8 @@ private:
     bool info_found = false;
 
     String update_url;
+    int cert_id = -1;
+    std::unique_ptr<unsigned char[]> cert = nullptr;
     esp_http_client_handle_t http_client = nullptr;
     char update_buf[64 + 1];
     size_t update_buf_used;
