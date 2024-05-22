@@ -17,6 +17,7 @@ export interface management_connection {
     remote_port: number,
     local_port: number,
     private_key: string,
+    psk: string,
     remote_public_key: string,
 }
 
@@ -26,7 +27,7 @@ interface KeyObject {
     connection_no: number,
     web_address: string,
     web_private: string,
-    web_private_nonce: string,
+    psk: string,
 }
 
 export interface register {
@@ -34,6 +35,7 @@ export interface register {
     remote_host: string,
     remote_port: number,
     charger_pub: string,
+    psk: string,
     id: string,
     name: string,
     wg_charger_ip: string,
