@@ -47,12 +47,7 @@ class NFC : public DeviceModule<TF_NFC,
                                 tf_nfc_get_bootloader_mode,
                                 tf_nfc_reset,
                                 tf_nfc_destroy,
-#if BUILD_IS_WARP2()
-                                true
-#else
-                                false
-#endif
-
+                                BUILD_IS_WARP2() | BUILD_IS_WARP3()
                                 >
 #if MODULE_AUTOMATION_AVAILABLE()
           , public IAutomationBackend
