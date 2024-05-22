@@ -139,8 +139,8 @@ let x = {
             "preview": "Preview"
         },
         "script": {
-            "save_failed": "Failed to save connection settings.",
-            "reboot_content_changed": "connection settings"
+            "save_failed": "Failed to save automation settings.",
+            "reboot_content_changed": "automation settings"
         }
     }
 }
