@@ -136,6 +136,7 @@ void RemoteAccess::pre_setup() {
         {"local_port", Config::Uint16(51820)},
 
         {"private_key",       Config::Str("", 0, 44)},
+        {"psk", Config::Str("", 0, 44)},
         {"remote_public_key", Config::Str("", 0, 44)},
         }), [](Config &cfg, ConfigSource source) -> String {
             IPAddress unused;
@@ -182,6 +183,7 @@ void RemoteAccess::pre_setup() {
                         {"local_port", Config::Uint16(51820)},
 
                         {"private_key",       Config::Str("", 0, 44)},
+                        {"psk", Config::Str("", 0, 44)},
                         {"remote_public_key", Config::Str("", 0, 44)},
                     })
                 }, 5, 5, Config::type_id<Config::ConfObject>())
@@ -223,6 +225,7 @@ void RemoteAccess::pre_setup() {
             {"remote_host", Config::Str("", 0, 64)},
             {"remote_port", Config::Uint16(0)},
             {"charger_pub", Config::Str("", 0, 44)},
+            {"psk", Config::Str("", 0, 44)},
             {"id", Config::Str("", 0, 6)},
             {"name", Config::Str("", 0, 32)},
             {"wg_charger_ip", Config::Str("", 0, 15)},
@@ -238,7 +241,7 @@ void RemoteAccess::pre_setup() {
                     {"connection_no", Config::Uint8(0)},
                     {"web_address", Config::Str("", 0, 15)},
                     {"web_private", Config::Str("", 0, 44)},
-                    {"web_private_nonce", Config::Str("", 0, 32)},
+                    {"psk", Config::Str("", 0, 44)},
                 })
             },
             5, 5, Config::type_id<Config::ConfObject>())}
@@ -273,11 +276,13 @@ void RemoteAccess::register_urls() {
     });
     api.addPersistentConfig("remote_access/management_connection", &management_connection, {
         "private_key",
+        "psk",
         "remote_public_key",
     });
 
     api.addPersistentConfig("remote_access/remote_connection_config", &remote_connection_config, {
-        "private_key"
+        "private_key",
+        "psk",
     });
 
     api.addState("remote_access/state", &connection_state);
@@ -292,7 +297,7 @@ void RemoteAccess::register_urls() {
         if (!err_string.isEmpty()) {
             return request.send(400, "text/plain", err_string.c_str(), err_string.length());
         }
-        std::unique_ptr<char[]> ptr = heap_alloc_array<char>(3500);
+        std::unique_ptr<char[]> ptr = heap_alloc_array<char>(5000);
 
         Config *tmp_cfg = (Config *)register_config.get("config");
         config = *tmp_cfg;
@@ -312,7 +317,7 @@ void RemoteAccess::register_urls() {
             return request.send(500);
         }
 
-        TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), 3500);
+        TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), 5000);
         serializer.addObject();
         serializer.addMemberArray("keys");
         for (auto &key : register_config.get("keys")) {
@@ -324,15 +329,6 @@ void RemoteAccess::register_urls() {
             CoolString wg_key = key.get("web_private")->asString();
 
             std::unique_ptr<char[]> output = heap_alloc_array<char>(crypto_box_SEALBYTES + wg_key.length());
-
-            CoolString  nonce_string = key.get("web_private_nonce")->asString();
-            std::unique_ptr<char[]> nonce = decode_bas64(nonce_string, 16, &outlen);
-
-            serializer.addMemberArray("web_private_nonce");
-            for (size_t i = 0; i < 16; i++) {
-                serializer.addNumber(nonce[i]);
-            }
-            serializer.endArray();
 
             if (sodium_init() < 0) {
                 return request.send(500);
@@ -354,6 +350,20 @@ void RemoteAccess::register_urls() {
                 serializer.addNumber(output[i]);
             }
             serializer.endArray();
+
+            CoolString psk = key.get("psk")->asString();
+            std::unique_ptr<char[]> encrypted_psk = heap_alloc_array<char>(crypto_box_SEALBYTES + psk.length());
+            ret = crypto_box_seal((unsigned char*)encrypted_psk.get(), (unsigned char*)psk.c_str(), psk.length(), pk);
+            if (ret <0 ) {
+                return request.send(500);
+            }
+
+            serializer.addMemberArray("psk");
+            for (size_t i = 0; i < crypto_box_SEALBYTES + psk.length(); i++) {
+                serializer.addNumber(encrypted_psk[i]);
+            }
+            serializer.endArray();
+
             serializer.endObject();
         }
         serializer.endArray();
@@ -365,6 +375,7 @@ void RemoteAccess::register_urls() {
         serializer.addMemberString("name", register_config.get("name")->asEphemeralCStr());
         serializer.addMemberString("wg_charger_ip", register_config.get("wg_charger_ip")->asEphemeralCStr());
         serializer.addMemberString("wg_server_ip", register_config.get("wg_server_ip")->asEphemeralCStr());
+        serializer.addMemberString("psk", register_config.get("psk")->asEphemeralCStr());
 
         serializer.endObject();
         serializer.endObject();
@@ -659,7 +670,7 @@ void RemoteAccess::connect_management() {
              allowed_ip,
              allowed_subnet,
              false,
-             nullptr,
+             management_connection.get("psk")->asEphemeralCStr(),
              &management_filter_in,
              &management_filter_out);
 
@@ -711,7 +722,6 @@ void RemoteAccess::connect_remote_access(uint8_t i) {
     String private_key = conf->get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
     String remote_host = conf->get("remote_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
 
-
     remote_connections[i].begin(internal_ip,
              internal_subnet,
              local_port,
@@ -723,7 +733,7 @@ void RemoteAccess::connect_remote_access(uint8_t i) {
              allowed_ip,
              allowed_subnet,
              false,
-             nullptr);
+             conf->get("psk")->asEphemeralCStr());
 
     task_scheduler.scheduleWithFixedDelay([this, i]() {
         bool up = remote_connections[i].is_peer_up(nullptr, nullptr);

@@ -43,7 +43,7 @@ export function RemoteAccessNavbar() {
 interface RemoteAccessState {
     email: string,
     login_key: string,
-    password: string
+    password: string,
 }
 
 export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, RemoteAccessState> {
@@ -95,17 +95,14 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             const web_address = "10.123." + i + ".3";
             const port = 51825 + i;
 
-            const nonce = new Uint8Array(16);
-            crypto.getRandomValues(nonce);
-            const nonce_blob = new Blob([nonce]);
-            const nonce_string = await util.blobToBase64(nonce_blob);
+            const psk: string = (window as any).wireguard.generatePresharedKey();
 
             keys.push({
                 charger_address: charger_address,
                 web_address: web_address,
                 charger_public: charger_keypair.publicKey,
                 web_private: web_keypair.privateKey,
-                web_private_nonce: nonce_string.replace("data:application/octet-stream;base64,", ""),
+                psk: psk,
                 connection_no: i
             });
 
@@ -118,6 +115,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 remote_port: 51820,
                 local_port: port,
                 private_key: charger_keypair.privateKey,
+                psk: psk,
                 remote_public_key: web_keypair.publicKey,
             }
             connections.push(connection);
@@ -147,9 +145,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         const secret_nonce_blob = new Blob([new Uint8Array(secret_nonce)]);
         const secret_nonce_string = await util.blobToBase64(secret_nonce_blob);
 
+        const psk: string = (window as any).wireguard.generatePresharedKey();
+
         const registration_data = {
             login_key: this.state.login_key,
             charger_pub: mg_charger_keypair.publicKey,
+            psk: psk,
             id: charger_id,
             name: charger_name,
             wg_charger_ip: mg_charger_address,
@@ -175,6 +176,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             charger_private: mg_charger_keypair.privateKey,
             remote_public: json.management_pub,
             password: json.charger_password,
+            psk: psk,
         }
 
         return ret;
@@ -232,6 +234,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             remote_port: 51820,
             local_port: 51820,
             private_key: info.charger_private,
+            psk: info.psk,
             remote_public_key: info.remote_public
         }, __("remote_access.script.save_failed"));
         await super.sendSave(t, cfg);
