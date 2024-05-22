@@ -23,8 +23,9 @@ def get_latest_fw(fw_type=''):
 if args.firmware is None:
     firmware = get_latest_fw()
 else:
-    if ".elf" in args.firmware:
+    if os.path.exists(args.firmware):
         firmware = args.firmware
     else:
         firmware = get_latest_fw(args.firmware)
+
 os.system("pio pkg exec xtensa-esp32-elf-addr2line -- -pfiaC -e {} {}".format(firmware, " ".join(args.backtrace)))

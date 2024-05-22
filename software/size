@@ -24,10 +24,11 @@ def get_latest_fw(fw_type=''):
 if args.firmware is None:
     firmware = get_latest_fw()
 else:
-    if ".elf" in args.firmware:
-        firmware = args.firmware
-    if "_merged.bin" in args.firmware:
-        firmware = args.firmware.replace("_merged.bin", ".elf")
+    if os.path.exists(args.firmware):
+        if ".elf" in args.firmware:
+            firmware = args.firmware
+        if "_merged.bin" in args.firmware:
+            firmware = args.firmware.replace("_merged.bin", ".elf")
     else:
         firmware = get_latest_fw(args.firmware)
 

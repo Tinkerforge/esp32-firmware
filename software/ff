@@ -36,8 +36,6 @@ def get_latest_fw(fw_type=''):
     files = [x for x in files if x.endswith("_merged.bin") and (fw_type == '' or x.startswith(fw_type + "_firmware"))]
     latest = max(files, key=lambda x: int(x.replace("-NIGHTLY", "").replace("-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE", "").split("_firmware_")[1].split("_")[3], 16), default=None)
     if latest is None:
-        if os.path.exists(fw_type):
-            return fw_type
         print("Failed to find a firmware containing the string {}".format(fw_type))
         sys.exit(0)
     return os.path.join("build", latest)
@@ -45,7 +43,7 @@ def get_latest_fw(fw_type=''):
 if args.firmware is None:
     firmware = get_latest_fw()
 else:
-    if ".bin" in args.firmware:
+    if os.path.exists(args.firmware):
         firmware = args.firmware
     else:
         firmware = get_latest_fw(args.firmware)
