@@ -19,7 +19,7 @@ let x = {
             "abort_downgrade": "Abbrechen",
             "confirm_downgrade": "Downgrade durchführen",
             "check_for_updates": "Nach Aktualisierungen suchen",
-            "check_for_updates_timestamp": "Letzte Aktualisierungsuche",
+            "check_for_updates_timestamp": "Letzte Aktualisierungssuche",
             "check_for_updates_error": "Letzter Fehler",
             "available_beta_update": "Verfügbare Beta-Aktualisierung",
             "available_release_update": "Verfügbare Release-Aktualisierung",
