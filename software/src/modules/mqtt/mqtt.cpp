@@ -55,7 +55,7 @@ extern char local_uid_str[32];
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
-#if not MODULE_CERTS_AVAILABLE()
+#if !MODULE_CERTS_AVAILABLE()
 #define MAX_CERT_ID -1
 #endif
 
