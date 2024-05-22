@@ -40,8 +40,6 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 void FirmwareUpdate::pre_setup()
 {
     config = Config::Object({
-        {"update_mode", Config::Uint8(static_cast<uint8_t>(UpdateMode::Auto))},
-        {"update_track", Config::Uint8(static_cast<uint8_t>(UpdateTrack::Stable))},
         {"update_url", Config::Str("", 0, 128)},
     }); // FIXME: add validator to only accept https:// update URLs
 
