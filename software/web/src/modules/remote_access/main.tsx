@@ -296,9 +296,9 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                          value={this.state.relay_host_port}
                                          onValue={v => this.setState({relay_host_port: v})} />
                         </FormRow>
-                        <FormRow label={__("remote_access.content.self_signed_cert")}>
-                            <InputSelect items={cert_items} value={this.state.self_signed_cert_id} onValue={(v) => {
-                                this.setState({self_signed_cert_id: parseInt(v)});
+                        <FormRow label={__("remote_access.content.cert")}>
+                            <InputSelect items={cert_items} value={this.state.cert_id} onValue={(v) => {
+                                this.setState({cert_id: parseInt(v)});
                             }}/>
                         </FormRow>
                     </ConfigForm>
