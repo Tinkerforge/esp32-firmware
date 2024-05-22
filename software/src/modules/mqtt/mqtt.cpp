@@ -605,18 +605,21 @@ void Mqtt::setup()
     // + 1 to undo the -1 in the config's definition.
     mqtt_cfg.transport = (esp_mqtt_transport_t)(config.get("protocol")->asUint() + 1);
     bool encrypted = mqtt_cfg.transport == MQTT_TRANSPORT_OVER_SSL || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS;
+    int cert_id = config.get("cert_id")->asInt();
 
-    if (encrypted && config.get("cert_id")->asInt() != -1) {
+    if (encrypted && cert_id != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t)config.get("cert_id")->asInt(), &cert_len);
+        auto cert = certs.get_cert((uint8_t)cert_id, &cert_len);
         if (cert == nullptr) {
-            logger.printfln("Failed to get certificate with ID %d", config.get("cert_id")->asInt());
+            logger.printfln("Certificate with ID %d is not available", cert_id);
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
         mqtt_cfg.cert_pem = (const char *)cert.release();
 #else
+        // defense in depth: it should not be possible to arrive here because in case
+        // that the certs module is not available the cert_id should always be -1
         logger.printfln("Can't use custom certitifate: certs module is not built into this firmware!");
         return;
 #endif
@@ -625,33 +628,41 @@ void Mqtt::setup()
         mqtt_cfg.crt_bundle_attach = esp_crt_bundle_attach;
     }
 
-    if (encrypted && config.get("client_cert_id")->asInt() != -1) {
+    int client_cert_id = config.get("client_cert_id")->asInt();
+
+    if (encrypted && client_cert_id != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t)config.get("client_cert_id")->asInt(), &cert_len);
+        auto cert = certs.get_cert((uint8_t)client_cert_id, &cert_len);
         if (cert == nullptr) {
-            logger.printfln("Failed to get client certificate with ID %d", config.get("client_cert_id")->asInt());
+            logger.printfln("Client certificate with ID %d is not available", client_cert_id);
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
         mqtt_cfg.client_cert_pem = (const char *)cert.release();
 #else
+        // defense in depth: it should not be possible to arrive here because in case
+        // that the certs module is not available the cert_id should always be -1
         logger.printfln("Can't use custom client certitifate: certs module is not built into this firmware!");
         return;
 #endif
     }
 
-    if (encrypted && config.get("client_key_id")->asInt() != -1) {
+    int client_key_id = config.get("client_key_id")->asInt();
+
+    if (encrypted && client_key_id != -1) {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-        auto cert = certs.get_cert((uint8_t)config.get("client_key_id")->asInt(), &cert_len);
+        auto cert = certs.get_cert((uint8_t)client_key_id, &cert_len);
         if (cert == nullptr) {
-            logger.printfln("Failed to get client certificate with ID %d", config.get("client_key_id")->asInt());
+            logger.printfln("Client key with ID %d is not available", client_key_id);
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
         mqtt_cfg.client_key_pem = (const char *)cert.release();
 #else
+        // defense in depth: it should not be possible to arrive here because in case
+        // that the certs module is not available the cert_id should always be -1
         logger.printfln("Can't use custom client key: certs module is not built into this firmware!");
         return;
 #endif
