@@ -76,7 +76,6 @@ private:
 
     String update_url;
     esp_http_client_handle_t http_client = nullptr;
-    uint32_t update_cookie = 0;
     char update_buf[64 + 1];
     size_t update_buf_used;
     SemanticVersion beta_update;

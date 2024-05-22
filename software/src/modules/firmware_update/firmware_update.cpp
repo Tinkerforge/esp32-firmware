@@ -45,7 +45,6 @@ void FirmwareUpdate::pre_setup()
 
     available_updates = Config::Object({
         {"timestamp", Config::Uint(0)},
-        {"cookie", Config::Uint(0)},
         {"error", Config::Str("", 0, 16)},
         {"beta", Config::Str("", 0, 32)},
         {"release", Config::Str("", 0, 32)},
@@ -425,10 +424,7 @@ void FirmwareUpdate::check_for_updates()
         return;
     }
 
-    ++update_cookie;
-
     available_updates.get("timestamp")->updateUint(time(nullptr));
-    available_updates.get("cookie")->updateUint(update_cookie);
     available_updates.get("error")->updateString("pending");
     available_updates.get("beta")->updateString("");
     available_updates.get("release")->updateString("");

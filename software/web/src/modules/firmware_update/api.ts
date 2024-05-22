@@ -4,7 +4,6 @@ export interface config {
 
 export interface available_updates {
     timestamp: number,
-    cookie: number,
     error: string,
     beta: string,
     release: string,

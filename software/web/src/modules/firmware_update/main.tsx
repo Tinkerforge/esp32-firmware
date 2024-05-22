@@ -39,7 +39,6 @@ interface FirmwareUpdateState {
     update_url: string,
     show_spinner: boolean,
     available_updates_timestamp: number,
-    available_updates_cookie: number,
     available_updates_error: string,
     available_beta_update: string,
     available_release_update: string,
@@ -55,7 +54,6 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             update_url: null,
             show_spinner: false,
             available_updates_timestamp: 0,
-            available_updates_cookie: null,
             available_updates_error: null,
             available_beta_update: null,
             available_release_update: null,
@@ -80,14 +78,15 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
 
         util.addApiEventListener('firmware_update/available_updates', () => {
             let available_updates = API.get('firmware_update/available_updates');
+            let show_spinner = this.state.show_spinner;
 
-            if (this.state.available_updates_cookie != available_updates.cookie) {
-                this.setState({show_spinner: false});
+            if (available_updates.error != "pending") {
+                show_spinner = false;
             }
 
             this.setState({
+                show_spinner: show_spinner,
                 available_updates_timestamp: available_updates.timestamp,
-                available_updates_cookie: available_updates.cookie,
                 available_updates_error: available_updates.error,
                 available_beta_update: available_updates.beta,
                 available_release_update: available_updates.release,
