@@ -476,7 +476,7 @@ void FirmwareUpdate::check_for_updates()
                 logger.printfln("Error while downloading firmware list: %s", esp_err_to_name(err));
                 available_updates.get("error")->updateString("download_error");
             }
-            else {
+            else if (available_updates.get("error")->asString() == "pending") {
                 String beta_update_str = "";
                 String release_update_str = "";
                 String stable_update_str = "";
