@@ -43,10 +43,17 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 void FirmwareUpdate::pre_setup()
 {
-    config = Config::Object({
+    config = ConfigRoot{Config::Object({
         {"update_url", Config::Str("", 0, 128)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
-    }); // FIXME: add validator to only accept https:// update URLs
+    }), [this](Config &update, ConfigSource source) -> String {
+        String update_url = update.get("update_url")->asString();
+
+        if (update_url.length() > 0 && !update_url.startsWith("https://"))
+            return "HTTPS required for update URL";
+
+        return "";
+    }};
 
     available_updates = Config::Object({
         {"timestamp", Config::Uint(0)},
