@@ -14,7 +14,7 @@ let x = {
             "relay_host_muted": "Hostname des Relay Servers",
             "relay_host_port": "Relay Host Http Port",
             "enable": "Fernzugriff aktivieren",
-            "self_signed_cert": "Selbstsigniertes Zertifikat",
+            "cert": "Selbstsigniertes Zertifikat",
             "not_used": "Nicht benutzt"
         },
         "script": {
