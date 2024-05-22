@@ -24,6 +24,16 @@ struct CurrentAllocatorState {
     bool last_print_local_log_was_error = false;
 };
 
+enum class PhaseRotation {
+    NotApplicable = -1, // Only for OCPP compat. Maybe also for fixed three phase chargers?
+    Unknown = 0, // Make unknown 0 so that memsetting the ChargerState struct sets this as expected.
+    RST, //Standard Reference Phasing
+    RTS, //Reversed Reference Phasing
+    SRT, //Reversed 240 degree rotation
+    STR, //Standard 120 degree rotation
+    TRS, //Standard 240 degree rotation
+    TSR  //Reversed 120 degree rotation
+};
 
 struct ChargerState {
     uint32_t last_update;
@@ -59,6 +69,13 @@ struct ChargerState {
     bool cp_disconnect_state;
 
     bool meter_supported;
+
+    bool phase_switch_supported;
+
+    // Phases that are currently used or will be used if current is allocated.
+    uint8_t phases;
+
+    PhaseRotation phase_rotation;
 };
 
 struct ChargerAllocationState {
