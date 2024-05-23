@@ -26,6 +26,7 @@
 
 #include "event_log.h"
 #include "tools.h"
+#include "modbus_register_address_mode.enum.h"
 
 #include "gcc_warnings.h"
 

@@ -26,146 +26,30 @@ def make_modbus_value_type(register_count, is_signed, is_float, register_order_i
     return register_count | ((1 if is_signed else 0) << 3) | ((1 if is_float else 0) << 4) | ((1 if register_order_is_le else 0) << 5)
 
 
-# NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-tables = [
-    ('None', 0),
-    ('Custom', 1),
-    ('Sungrow Hybrid Inverter', 2),
-    ('Sungrow String Inverter', 3),
-    ('Solarmax Max Storage', 4),
-    ('Victron Energy GX', 5),
-    ('Deye Hybrid Inverter', 6),
+modbus_value_type = [
+    ('None',  0),
+    ('U16',   make_modbus_value_type(1, False, False, False)),
+    ('S16',   make_modbus_value_type(1, True,  False, False)),
+    ('U32BE', make_modbus_value_type(2, False, False, False)),
+    ('U32LE', make_modbus_value_type(2, False, False, True)),
+    ('S32BE', make_modbus_value_type(2, True,  False, False)),
+    ('S32LE', make_modbus_value_type(2, True,  False, True)),
+    ('F32BE', make_modbus_value_type(2, True,  True,  False)),
+    ('F32LE', make_modbus_value_type(2, True,  True,  True)),
+    ('U64BE', make_modbus_value_type(4, False, False, False)),
+    ('U64LE', make_modbus_value_type(4, False, False, True)),
+    ('S64BE', make_modbus_value_type(4, True,  False, False)),
+    ('S64LE', make_modbus_value_type(4, True,  False, True)),
+    ('F64BE', make_modbus_value_type(4, True,  True,  False)),
+    ('F64LE', make_modbus_value_type(4, True,  True,  True)),
 ]
 
-enums = [
-    {
-        'name': 'Modbus Register Type',
-        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-        'values': [
-            ('Holding Register', 0),
-            ('Input Register', 1),
-        ],
-    },
-    {
-        'name': 'Modbus Register Address Mode',
-        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-        'values': [
-            ('Address', 0),
-            ('Number', 1),
-        ],
-    },
-    {
-        'name': 'Modbus Value Type',
-        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-        'values': [
-            ('None',  0),
-            ('U16',   make_modbus_value_type(1, False, False, False)),
-            ('S16',   make_modbus_value_type(1, True,  False, False)),
-            ('U32BE', make_modbus_value_type(2, False, False, False)),
-            ('U32LE', make_modbus_value_type(2, False, False, True)),
-            ('S32BE', make_modbus_value_type(2, True,  False, False)),
-            ('S32LE', make_modbus_value_type(2, True,  False, True)),
-            ('F32BE', make_modbus_value_type(2, True,  True,  False)),
-            ('F32LE', make_modbus_value_type(2, True,  True,  True)),
-            ('U64BE', make_modbus_value_type(4, False, False, False)),
-            ('U64LE', make_modbus_value_type(4, False, False, True)),
-            ('S64BE', make_modbus_value_type(4, True,  False, False)),
-            ('S64LE', make_modbus_value_type(4, True,  False, True)),
-            ('F64BE', make_modbus_value_type(4, True,  True,  False)),
-            ('F64LE', make_modbus_value_type(4, True,  True,  True)),
-        ],
-    },
-    {
-        'name': 'Sungrow Hybrid Inverter Virtual Meter ID',
-        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-        'values': [
-            ('None', 0),
-            ('Inverter', 1),
-            ('Grid', 2),
-            ('Battery', 3),
-            ('Load', 4),
-        ],
-    },
-    {
-        'name': 'Sungrow String Inverter Virtual Meter ID',
-        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-        'values': [
-            ('None', 0),
-            ('Inverter', 1),
-            ('Grid', 2),
-            ('Load', 3),
-        ],
-    },
-    {
-        'name': 'Solarmax Max Storage Virtual Meter ID',
-        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-        'values': [
-            ('None', 0),
-            ('Inverter', 1),
-            ('Grid', 2),
-            ('Battery', 3),
-        ],
-    },
-    {
-        'name': 'Victron Energy GX Virtual Meter ID',
-        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-        'values': [
-            ('None', 0),
-            ('Inverter', 1),
-            ('Grid', 2),
-            ('Battery', 3),
-            ('Load', 4),
-        ],
-    },
-    {
-        'name': 'Deye Hybrid Inverter Virtual Meter ID',
-        # NEVER EVER EDIT OR REMOVE IDS. Only append new ones. Changing or removing IDs is a breaking API and config change!
-        'values': [
-            ('None', 0),
-            ('Inverter', 1),
-            ('Grid', 2),
-            ('Battery', 3),
-            ('Load', 4),
-        ],
-    },
-]
+with open('Modbus Value Type.uint8.enum', 'w', encoding='utf-8') as f:
+    f.write('# WARNING: This file is generated\n')
 
-table_values = []
-table_names = []
+    for name_and_value in modbus_value_type:
+        f.write(f'{name_and_value[0]} = {name_and_value[1]}\n')
 
-for table in tables:
-    table_values.append('    {0} = {1},\n'.format(util.FlavoredName(table[0]).get().camel, table[1]))
-    table_names.append('    case MeterModbusTCPTableID::{0}: return "{1}";\n'.format(util.FlavoredName(table[0]).get().camel, table[0]))
-
-with open('meters_modbus_tcp_defs.h', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated.\n\n')
-    f.write('#include <stdint.h>\n\n')
-    f.write('#pragma once\n\n')
-    f.write('enum class MeterModbusTCPTableID : uint8_t {\n')
-    f.write(''.join(table_values))
-    f.write('};\n')
-
-    for enum in enums:
-        f.write(f'\nenum class {util.FlavoredName(enum["name"]).get().camel} : uint8_t {{\n')
-
-        for value in enum['values']:
-            f.write('    {0} = {1},\n'.format(util.FlavoredName(value[0]).get().camel, value[1]))
-
-        f.write('};\n')
-
-with open('../../../web/src/modules/meters_modbus_tcp/meters_modbus_tcp_defs.ts', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated.\n\n')
-    f.write('export const enum MeterModbusTCPTableID {\n')
-    f.write(''.join(table_values))
-    f.write('}\n')
-
-    for enum in enums:
-        f.write(f'\nexport const enum {util.FlavoredName(enum["name"]).get().camel} {{\n')
-
-        for value in enum['values']:
-            f.write('    {0} = {1},\n'.format(util.FlavoredName(value[0]).get().camel, value[1]))
-
-        f.write('}\n')
 
 VALUE_ID_META  = 0xFFFFFFFF - 1
 VALUE_ID_DEBUG = 0xFFFFFFFF - 2
@@ -1420,11 +1304,4 @@ with open('meters_modbus_tcp_defs.inc', 'w', encoding='utf-8') as f:
     f.write(f'#define VALUE_INDEX_META  {VALUE_ID_META}u\n')
     f.write(f'#define VALUE_INDEX_DEBUG {VALUE_ID_DEBUG}u\n\n')
     f.write(f'#define START_ADDRESS_VIRTUAL {START_ADDRESS_VIRTUAL}u\n\n')
-    f.write('\n\n'.join(spec_values).replace('\r\n', '') + '\n\n')
-    f.write('static const char *get_table_name(MeterModbusTCPTableID table)\n')
-    f.write('{\n')
-    f.write('    switch (table) {\n')
-    f.write(''.join(table_names))
-    f.write('    default: return "Unknown table";\n')
-    f.write('    }\n')
-    f.write('}\n')
+    f.write('\n\n'.join(spec_values).replace('\r\n', '') + '\n')

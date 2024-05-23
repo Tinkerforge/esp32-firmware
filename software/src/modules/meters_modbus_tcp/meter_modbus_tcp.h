@@ -27,7 +27,14 @@
 #include "config.h"
 #include "modules/meters/imeter.h"
 #include "meters_modbus_tcp.h"
-#include "meters_modbus_tcp_defs.h"
+#include "modbus_register_type.enum.h"
+#include "modbus_value_type.enum.h"
+#include "meter_modbus_tcp_table_id.enum.h"
+#include "sungrow_hybrid_inverter_virtual_meter_id.enum.h"
+#include "sungrow_string_inverter_virtual_meter_id.enum.h"
+#include "solarmax_max_storage_virtual_meter_id.enum.h"
+#include "victron_energy_gx_virtual_meter_id.enum.h"
+#include "deye_hybrid_inverter_virtual_meter_id.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

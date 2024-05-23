@@ -1,0 +1,19 @@
+None
+Cron
+Charger State
+MQTT
+EVSE Button
+NFC
+Charge Limits
+EVSE Shutdown Input
+EVSE GP Input
+EVSE External Current Wd
+Require Meter
+Charge Manager Wd
+EM Input Three
+EM Input Four
+EM Phase Switch
+EM Contactor Monitoring
+PM Power Available
+PM Grid Power Draw
+HTTP

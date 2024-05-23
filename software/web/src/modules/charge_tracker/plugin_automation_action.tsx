@@ -20,8 +20,7 @@
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationAction, InitResult } from "../automation/types";
-import { AutomationActionID } from "../automation/automation_defs";
-
+import { AutomationActionID } from "../automation/automation_action_id.enum";
 
 export type ChargeTrackerResetAutomationAction = [
     AutomationActionID.ChargeTrackerReset,

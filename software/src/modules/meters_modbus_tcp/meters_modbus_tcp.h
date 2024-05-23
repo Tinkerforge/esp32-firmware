@@ -27,7 +27,7 @@
 #include "modules/meters/imeter.h"
 #include "modules/meters/meter_generator.h"
 #include "modules/meters/meter_value_id.h"
-#include "meters_modbus_tcp_defs.h"
+#include "meter_modbus_tcp_table_id.enum.h"
 #include "module.h"
 
 #if defined(__GNUC__)

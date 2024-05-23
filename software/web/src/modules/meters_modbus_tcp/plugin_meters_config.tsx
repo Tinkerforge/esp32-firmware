@@ -23,15 +23,15 @@ import { __ } from "../../ts/translation";
 import { MeterClassID } from "../meters/meters_defs";
 import { MeterConfig } from "../meters/types";
 import { MeterValueIDSelector, get_meter_value_id_name } from "../meters_api/plugin_meters_config";
-import { MeterModbusTCPTableID,
-         ModbusRegisterType,
-         ModbusRegisterAddressMode,
-         ModbusValueType,
-         SungrowHybridInverterVirtualMeterID,
-         SungrowStringInverterVirtualMeterID,
-         SolarmaxMaxStorageVirtualMeterID,
-         VictronEnergyGXVirtualMeterID,
-         DeyeHybridInverterVirtualMeterID } from "./meters_modbus_tcp_defs";
+import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";
+import { ModbusRegisterType } from "./modbus_register_type.enum";
+import { ModbusRegisterAddressMode } from "./modbus_register_address_mode.enum";
+import { ModbusValueType } from "./modbus_value_type.enum";
+import { SungrowHybridInverterVirtualMeterID } from "./sungrow_hybrid_inverter_virtual_meter_id.enum";
+import { SungrowStringInverterVirtualMeterID } from "./sungrow_string_inverter_virtual_meter_id.enum";
+import { SolarmaxMaxStorageVirtualMeterID } from "./solarmax_max_storage_virtual_meter_id.enum";
+import { VictronEnergyGXVirtualMeterID } from "./victron_energy_gx_virtual_meter_id.enum";
+import { DeyeHybridInverterVirtualMeterID } from "./deye_hybrid_inverter_virtual_meter_id.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";

@@ -29,6 +29,7 @@
 
 #include "gcc_warnings.h"
 
+#include "modbus_register_address_mode.enum.h"
 #include "meters_modbus_tcp_defs.inc"
 
 //#define DEBUG_LOG_ALL_VALUES
@@ -406,7 +407,7 @@ void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
         logger.printfln("Error reading %s / %s (%zu): %s [%d]",
-                        get_table_name(table_id),
+                        get_meter_modbus_tcp_table_id_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         get_modbus_result_code_name(generic_read_request.result_code),
@@ -453,7 +454,7 @@ void MeterModbusTCP::read_done_callback()
                 break;
 
             default:
-                logger.printfln("%s has unknown Output Type: %u", get_table_name(table_id), register_buffer[0]);
+                logger.printfln("%s has unknown Output Type: %u", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[0]);
                 return;
             }
 
@@ -461,7 +462,7 @@ void MeterModbusTCP::read_done_callback()
 
 #ifdef DEBUG_LOG_ALL_VALUES
             logger.printfln("%s / Output Type (%u): %d",
-                            get_table_name(table_id),
+                            get_meter_modbus_tcp_table_id_name(table_id),
                             SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS,
                             sungrow_inverter_output_type);
 #endif
@@ -485,7 +486,7 @@ void MeterModbusTCP::read_done_callback()
             case 0x0002:
             case 0x0003:
             case 0x0004:
-                logger.printfln("%s has unsupported Device Type: 0x%04x", get_table_name(table_id), register_buffer[0]);
+                logger.printfln("%s has unsupported Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[0]);
                 return;
 
             case 0x0005:
@@ -498,7 +499,7 @@ void MeterModbusTCP::read_done_callback()
                 break;
 
             default:
-                logger.printfln("%s has unknown Device Type: 0x%04x", get_table_name(table_id), register_buffer[0]);
+                logger.printfln("%s has unknown Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[0]);
                 return;
             }
 
@@ -506,7 +507,7 @@ void MeterModbusTCP::read_done_callback()
 
 #ifdef DEBUG_LOG_ALL_VALUES
             logger.printfln("%s / Device Type (%u): %d",
-                            get_table_name(table_id),
+                            get_meter_modbus_tcp_table_id_name(table_id),
                             DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS,
                             deye_hybrid_inverter_device_type);
 #endif
@@ -572,7 +573,7 @@ void MeterModbusTCP::read_done_callback()
         break;
 
     default:
-        logger.printfln("%s / %s has unsupported register count: %u", get_table_name(table_id), table->specs[read_index].name, register_count);
+        logger.printfln("%s / %s has unsupported register count: %u", get_meter_modbus_tcp_table_id_name(table_id), table->specs[read_index].name, register_count);
         return;
     }
 
@@ -583,7 +584,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::U16:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %u",
-                        get_table_name(table_id),
+                        get_meter_modbus_tcp_table_id_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         register_buffer[register_buffer_index]);
@@ -595,7 +596,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::S16:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %d",
-                        get_table_name(table_id),
+                        get_meter_modbus_tcp_table_id_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         static_cast<int16_t>(register_buffer[register_buffer_index]));
@@ -608,7 +609,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::U32LE:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %u (%u %u)",
-                        get_table_name(table_id),
+                        get_meter_modbus_tcp_table_id_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         c32.u,
@@ -623,7 +624,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::S32LE:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %d (%u %u)",
-                        get_table_name(table_id),
+                        get_meter_modbus_tcp_table_id_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         static_cast<int32_t>(c32.u),
@@ -638,7 +639,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::F32LE:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %f (%u %u)",
-                        get_table_name(table_id),
+                        get_meter_modbus_tcp_table_id_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         static_cast<double>(c32.f),
@@ -653,7 +654,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::U64LE:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %llu (%u %u %u %u)",
-                        get_table_name(table_id),
+                        get_meter_modbus_tcp_table_id_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         c64.u,
@@ -670,7 +671,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::S64LE:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %lld (%u %u %u %u)",
-                        get_table_name(table_id),
+                        get_meter_modbus_tcp_table_id_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         static_cast<int64_t>(c64.u),
@@ -687,7 +688,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::F64LE:
 #ifdef DEBUG_LOG_ALL_VALUES
         logger.printfln("%s / %s (%zu): %f (%u %u %u %u)",
-                        get_table_name(table_id),
+                        get_meter_modbus_tcp_table_id_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         c64.f,

@@ -20,7 +20,7 @@
 import { h } from "preact";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
-import { AutomationActionID } from "../automation/automation_defs";
+import { AutomationActionID } from "../automation/automation_action_id.enum";
 import { AutomationAction, InitResult } from "../automation/types";
 import { InputFloat } from "../../ts/components/input_float";
 import { FormRow } from "../../ts/components/form_row";

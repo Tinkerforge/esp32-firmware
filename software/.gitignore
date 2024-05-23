@@ -11,6 +11,8 @@ src/**/*.embedded.h
 src/**/*.embedded.cpp
 src/modules/*/module_available.h
 src/modules/*/module_dependencies.h
+src/modules/*/*.enum.h
+src/modules/*/*.enum.cpp
 src/modules.h
 src/modules.cpp
 src/build.h
@@ -32,6 +34,7 @@ web/src/ts/api_defs.ts
 web/src/ts/branding.ts
 web/src/ts/translation.tsx
 web/src/ts/translation.json
+web/src/modules/*/*.enum.ts
 web/**/*.embedded.ts
 coredump_py_gdb_cmds
 api_info.json

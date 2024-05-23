@@ -745,7 +745,7 @@ def main():
         mod_path = os.path.join('src', 'modules', backend_module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
-            print("Backend module {} not found.".format(backend_module.space, mod_path))
+            print("Backend module {} not found.".format(backend_module.space))
 
         for root, dirs, files in os.walk(mod_path):
             for name in files:
@@ -1075,6 +1075,84 @@ def main():
 
     with ChangedDirectory('web'):
         subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
+
+    # Generate enums
+    for backend_module in backend_modules:
+        mod_path = os.path.join('src', 'modules', backend_module.under)
+
+        if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
+            print("Backend module {} not found.".format(backend_module.space))
+        else:
+            for name in os.listdir(mod_path):
+                if not name.endswith(".enum"):
+                    continue
+
+                name_parts = name.split('.')
+
+                if len(name_parts) != 3:
+                    print('Error: Invalid enum file "{}" in backend {}'.format(name, mod_path))
+                    sys.exit(1)
+
+                enum_name = util.FlavoredName(name_parts[0]).get()
+                enum_values = []
+                enum_cases = []
+                value_number = -1
+                value_count = 0
+
+                with open(os.path.join(mod_path, name), 'r', encoding='utf-8') as f:
+                    for line in f.readlines():
+                        line = line.strip()
+
+                        if len(line) == 0 or line.startswith('#'):
+                            continue
+
+                        line_parts = line.split('=', 1)
+                        value_name = util.FlavoredName(line_parts[0].strip()).get()
+
+                        if len(line_parts) > 1:
+                            value_number = int(line_parts[1].strip())
+                            value_count = None
+                        else:
+                            value_number += 1
+
+                            if value_count != None:
+                                value_count += 1
+
+                        enum_values.append('    {0} = {1},\n'.format(value_name.camel, value_number))
+                        enum_cases.append('    case {0}::{1}: return "{2}";\n'.format(enum_name.camel, value_name.camel, value_name.space))
+
+                with open(os.path.join(mod_path, enum_name.under + '.enum.h'), 'w', encoding='utf-8') as f:
+                    f.write(f'// WARNING: This file is generated from "{name}"\n\n')
+                    f.write('#include <stdint.h>\n\n')
+                    f.write('#pragma once\n\n')
+                    f.write(f'enum class {enum_name.camel} : {name_parts[1]}_t {{\n')
+                    f.write(''.join(enum_values))
+                    f.write('};\n\n')
+
+                    if value_count != None:
+                        f.write(f'#define {enum_name.upper}_COUNT {value_count}\n\n')
+
+                    f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value);\n')
+
+                with open(os.path.join(mod_path, enum_name.under + '.enum.cpp'), 'w', encoding='utf-8') as f:
+                    f.write(f'// WARNING: This file is generated from {name}.\n\n')
+                    f.write(f'#include "{enum_name.under}.enum.h"\n\n')
+                    f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value)\n')
+                    f.write('{\n')
+                    f.write('    switch (value) {\n')
+                    f.write(''.join(enum_cases))
+                    f.write('    default: return "Unknown";\n')
+                    f.write('    }\n')
+                    f.write('}\n')
+
+                frontend_mod_path = os.path.join('web', 'src', 'modules', backend_module.under)
+
+                if os.path.exists(frontend_mod_path) and os.path.isdir(frontend_mod_path):
+                    with open(os.path.join(frontend_mod_path, enum_name.under + '.enum.ts'), 'w', encoding='utf-8') as f:
+                        f.write(f'// WARNING: This file is generated from "{name}"\n\n')
+                        f.write(f'export const enum {enum_name.camel} {{\n')
+                        f.write(''.join(enum_values))
+                        f.write('}\n')
 
     # Generate web interface
     util.log('Checking web interface dependencies')

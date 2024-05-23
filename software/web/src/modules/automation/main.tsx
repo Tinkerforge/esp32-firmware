@@ -19,14 +19,15 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment, ComponentChild, toChildArray } from "preact";
+import { h, Fragment, ComponentChild } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { Table, TableRow } from "../../ts/components/table";
 import { ConfigForm } from "../../ts/components/config_form";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { __ } from "../../ts/translation";
-import { AutomationTriggerID, AutomationActionID } from "./automation_defs";
+import { AutomationTriggerID } from "./automation_trigger_id.enum";
+import { AutomationActionID } from "./automation_action_id.enum";
 import { Task, AutomationTriggerComponents, AutomationActionComponents } from "./types";
 import { plugins_init } from "./plugins";
 import { SubPage } from "../../ts/components/sub_page";

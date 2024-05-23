@@ -23,14 +23,15 @@
 #include "config.h"
 #include <map>
 #include <vector>
-#include "automation_defs.h"
+#include "automation_trigger_id.enum.h"
+#include "automation_action_id.enum.h"
 #include "automation_backend.h"
 
 class Automation : public IModule, public IAutomationBackend
 {
 public:
     typedef std::function<void(const Config *)>    ActionCb;
-    typedef std::function<String (const Config *)> ValidatorCb;
+    typedef std::function<String(const Config *)> ValidatorCb;
 
     struct ActionValue {
         ActionCb callback;

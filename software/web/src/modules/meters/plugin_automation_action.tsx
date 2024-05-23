@@ -20,7 +20,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationAction, InitResult } from "../automation/types";
-import { AutomationActionID } from "../automation/automation_defs";
+import { AutomationActionID } from "../automation/automation_action_id.enum";
 import { ComponentChildren } from "preact";
 import { FormRow } from "../../ts/components/form_row";
 import { METERS_SLOTS } from "../../build";

@@ -19,7 +19,7 @@
 
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
-import { AutomationTriggerID } from "../automation/automation_defs";
+import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
 import { AutomationTrigger, InitResult } from "../automation/types";
 
 export type RequireMeterAutomationTrigger = [

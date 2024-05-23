@@ -29,7 +29,7 @@
 #include "ModbusTCP.h"
 
 #include "tools.h"
-#include "meters_modbus_tcp_defs.h"
+#include "modbus_register_type.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
