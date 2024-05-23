@@ -64,7 +64,7 @@ void Meters::pre_setup()
         init_uint32_array(meter_slot.index_cache_currents,      INDEX_CACHE_CURRENT_COUNT,       UINT32_MAX);
     }
 
-    generators.reserve(METER_CLASSES);
+    generators.reserve(METER_CLASS_ID_COUNT);
     register_meter_generator(MeterClassID::None, &meter_generator_none);
 
     last_reset_prototype = Config::Object({

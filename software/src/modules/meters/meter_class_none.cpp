@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meters_defs.h"
+#include "meter_class_id.enum.h"
 #include "meter_class_none.h"
 
 #include "gcc_warnings.h"

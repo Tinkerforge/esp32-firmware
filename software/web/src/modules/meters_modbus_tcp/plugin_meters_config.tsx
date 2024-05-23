@@ -20,7 +20,7 @@
 import * as util from "../../ts/util";
 import { h, Fragment, Component, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
-import { MeterClassID } from "../meters/meters_defs";
+import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterConfig } from "../meters/types";
 import { MeterValueIDSelector, get_meter_value_id_name } from "../meters_api/plugin_meters_config";
 import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";

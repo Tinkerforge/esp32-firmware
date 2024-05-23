@@ -657,7 +657,7 @@ void Wifi::setup()
             bool connected = (WifiState)state.get("connection_state")->asInt() == WifiState::CONNECTED;
 
 #if MODULE_ETHERNET_AVAILABLE()
-            connected = connected || ethernet.get_connection_state() == EthernetState::CONNECTED;
+            connected = connected || ethernet.get_connection_state() == EthernetState::Connected;
 #endif
 
             static int stop_soft_ap_runs = 0;
@@ -682,7 +682,7 @@ void Wifi::setup()
         },
         enable_sta
 #if MODULE_ETHERNET_AVAILABLE()
-        || (ethernet.is_enabled() && ethernet.get_connection_state() != EthernetState::NOT_CONNECTED)
+        || (ethernet.is_enabled() && ethernet.get_connection_state() != EthernetState::NotConnected)
 #endif
         ? 30 * 1000 : 1000, 10 * 1000);
     }

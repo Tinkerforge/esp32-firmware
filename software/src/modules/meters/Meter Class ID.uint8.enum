@@ -1,0 +1,13 @@
+None
+RS485 Bricklet
+EVSE V2
+Energy Manager
+API
+Sun Spec
+Modbus TCP
+SMA Speedwire
+
+# Unofficial meter classes
+Mqtt Mirror = 200
+Pv Faker = 201
+Meta = 202

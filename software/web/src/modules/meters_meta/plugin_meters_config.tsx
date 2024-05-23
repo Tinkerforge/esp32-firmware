@@ -22,7 +22,7 @@ import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 import { METERS_SLOTS } from "../../build";
 
-import { MeterClassID } from "../meters/meters_defs";
+import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterConfig  } from "../meters/types";
 
 import { h, ComponentChildren } from "preact";

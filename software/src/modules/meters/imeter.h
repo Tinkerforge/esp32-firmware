@@ -21,7 +21,7 @@
 
 #include <stdint.h>
 #include "WString.h"
-#include "meters_defs.h"
+#include "meter_class_id.enum.h"
 #include "config.h"
 
 class IMeter

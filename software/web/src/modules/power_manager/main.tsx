@@ -34,7 +34,7 @@ import { InputSelect     } from "../../ts/components/input_select";
 import { Switch          } from "../../ts/components/switch";
 import { SubPage         } from "../../ts/components/sub_page";
 import { MeterConfig     } from "../meters/types";
-import { MeterClassID    } from "../meters/meters_defs";
+import { MeterClassID    } from "../meters/meter_class_id.enum";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, Settings, Sun } from "react-feather";

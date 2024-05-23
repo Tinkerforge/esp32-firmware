@@ -732,7 +732,7 @@ void Mqtt::register_events()
     // Wait 20 secs to not spam the event log with a failed connection attempt.
     bool start_immediately = false;
 #if MODULE_ETHERNET_AVAILABLE()
-    start_immediately = ethernet.get_connection_state() == EthernetState::CONNECTED;
+    start_immediately = ethernet.get_connection_state() == EthernetState::Connected;
 #endif
     if (start_immediately) {
         esp_mqtt_client_start(client);

@@ -1111,12 +1111,10 @@ def main():
 
                         if len(line_parts) > 1:
                             value_number = int(line_parts[1].strip())
-                            value_count = None
                         else:
                             value_number += 1
 
-                            if value_count != None:
-                                value_count += 1
+                        value_count += 1
 
                         enum_values.append('    {0} = {1},\n'.format(value_name.camel, value_number))
                         enum_cases.append('    case {0}::{1}: return "{2}";\n'.format(enum_name.camel, value_name.camel, value_name.space))
@@ -1128,14 +1126,11 @@ def main():
                     f.write(f'enum class {enum_name.camel} : {name_parts[1]}_t {{\n')
                     f.write(''.join(enum_values))
                     f.write('};\n\n')
-
-                    if value_count != None:
-                        f.write(f'#define {enum_name.upper}_COUNT {value_count}\n\n')
-
+                    f.write(f'#define {enum_name.upper}_COUNT {value_count}\n\n')
                     f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value);\n')
 
                 with open(os.path.join(mod_path, enum_name.under + '.enum.cpp'), 'w', encoding='utf-8') as f:
-                    f.write(f'// WARNING: This file is generated from {name}.\n\n')
+                    f.write(f'// WARNING: This file is generated from "{name}"\n\n')
                     f.write(f'#include "{enum_name.under}.enum.h"\n\n')
                     f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value)\n')
                     f.write('{\n')

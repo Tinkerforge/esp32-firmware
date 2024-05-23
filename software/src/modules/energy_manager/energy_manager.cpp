@@ -475,7 +475,7 @@ void EnergyManager::start_network_check_task()
         bool disconnected;
         do {
 #if MODULE_ETHERNET_AVAILABLE()
-            if (ethernet.get_connection_state() == EthernetState::CONNECTED) {
+            if (ethernet.get_connection_state() == EthernetState::Connected) {
                 disconnected = false;
                 break;
             }

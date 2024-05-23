@@ -20,7 +20,7 @@
 import { h, Fragment, Component, ComponentChildren } from 'preact'
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
-import { MeterClassID } from "../meters/meters_defs";
+import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterValueID, MeterValueTreeType, METER_VALUE_INFOS, METER_VALUE_TREE } from "../meters/meter_value_id";
 import { MeterConfig } from "../meters/types";
 import { Table, TableRow } from "../../ts/components/table";

@@ -26,7 +26,7 @@ def make_modbus_value_type(register_count, is_signed, is_float, register_order_i
     return register_count | ((1 if is_signed else 0) << 3) | ((1 if is_float else 0) << 4) | ((1 if register_order_is_le else 0) << 5)
 
 
-modbus_value_type = [
+modbus_value_types = [
     ('None',  0),
     ('U16',   make_modbus_value_type(1, False, False, False)),
     ('S16',   make_modbus_value_type(1, True,  False, False)),
@@ -47,8 +47,8 @@ modbus_value_type = [
 with open('Modbus Value Type.uint8.enum', 'w', encoding='utf-8') as f:
     f.write('# WARNING: This file is generated\n')
 
-    for name_and_value in modbus_value_type:
-        f.write(f'{name_and_value[0]} = {name_and_value[1]}\n')
+    for item in modbus_value_types:
+        f.write(f'{item[0]} = {item[1]}\n')
 
 
 VALUE_ID_META  = 0xFFFFFFFF - 1
