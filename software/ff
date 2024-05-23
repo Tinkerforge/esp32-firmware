@@ -29,6 +29,7 @@ parser.add_argument("firmware", nargs='?', default=None)
 parser.add_argument("-S", "--no-serial", action="store_true")
 parser.add_argument("-s", "--serial-only", action="store_true")
 parser.add_argument("-e", "--erase", action="store_true")
+parser.add_argument("-r", "--reboot", action="store_true")
 args = parser.parse_args()
 
 def get_build_timestamp(version):
@@ -70,6 +71,9 @@ if not args.serial_only:
     print(green("Flashing firmware {} to port {}".format(firmware, port)))
 
     os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 --before default_reset --after hard_reset write_flash 0x1000 {}".format(port, firmware))
+
+if args.reboot:
+    os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 run".format(port))
 
 if not args.no_serial:
     while True:
