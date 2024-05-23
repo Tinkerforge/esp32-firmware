@@ -236,7 +236,9 @@ void PowerManager::setup()
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
         api.addFeature("phase_switch");
+#if MODULE_AUTOMATION_AVAILABLE()
         automation.set_enabled(AutomationActionID::PMPhaseSwitch, true);
+#endif
     }
 
     // Set up meter power filter.
@@ -412,7 +414,9 @@ void PowerManager::register_urls()
         logger.printfln("Disabled but phase switching backend can switch autonomously. Enabling external control API.");
 
         api.addFeature("phase_switch");
+#if MODULE_AUTOMATION_AVAILABLE()
         automation.set_enabled(AutomationActionID::PMPhaseSwitch, true);
+#endif
 
         api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this]() {
             switch (phase_switcher_backend->get_phase_switching_state()) {

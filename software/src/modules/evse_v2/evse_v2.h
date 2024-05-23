@@ -114,7 +114,9 @@ public:
     void update_all_data() override;
     // End IEvseBackend implementation
 
+#if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;
+#endif
     uint16_t get_all_energy_meter_values(float *ret_values);
     bool reset_energy_meter_relative_energy();
     uint8_t get_energy_meter_type();
