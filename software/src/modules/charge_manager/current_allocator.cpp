@@ -36,6 +36,8 @@
 // For isnan
 #include "math.h"
 
+#include <algorithm>
+
 #define LOCAL_LOG(fmt, ...) if(local_log) local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
 
 #define TIMEOUT_MS 32000
