@@ -37,7 +37,7 @@ export function FirmwareUpdateNavbar() {
 interface FirmwareUpdateState {
     current_firmware: string,
     update_url: string,
-    show_spinner: boolean,
+    check_is_pending: boolean,
     available_updates_timestamp: number,
     available_updates_error: string,
     available_beta_update: string,
@@ -52,7 +52,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
         this.state = {
             current_firmware: null,
             update_url: null,
-            show_spinner: false,
+            check_is_pending: false,
             available_updates_timestamp: 0,
             available_updates_error: null,
             available_beta_update: null,
@@ -78,14 +78,9 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
 
         util.addApiEventListener('firmware_update/available_updates', () => {
             let available_updates = API.get('firmware_update/available_updates');
-            let show_spinner = this.state.show_spinner;
-
-            if (available_updates.error != "pending") {
-                show_spinner = false;
-            }
 
             this.setState({
-                show_spinner: show_spinner,
+                check_is_pending: available_updates.error == "pending",
                 available_updates_timestamp: available_updates.timestamp,
                 available_updates_error: available_updates.error,
                 available_beta_update: available_updates.beta,
@@ -196,13 +191,13 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                 {this.state.update_url ?
                     <>
                         <FormRow label={__("firmware_update.content.check_for_updates")}>
-                            <Button variant="primary" className="form-control" onClick={() => this.setState({show_spinner: true}, () => API.call("firmware_update/check_for_updates", null, ""))}>
+                            <Button variant="primary" className="form-control" onClick={() => this.setState({check_is_pending: true}, () => API.call("firmware_update/check_for_updates", null, ""))} disabled={this.state.check_is_pending}>
                                 {__("firmware_update.content.check_for_updates")}
-                                <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.show_spinner}></span>
+                                <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.check_is_pending}></span>
                             </Button>
                         </FormRow>
 
-                        {this.state.available_updates_timestamp == 0 || this.state.available_updates_error == "pending" || this.state.show_spinner ? undefined : <>
+                        {this.state.available_updates_timestamp == 0 || this.state.check_is_pending ? undefined : <>
                             <FormRow label={__("firmware_update.content.check_for_updates_timestamp")}>
                                 <InputText value={util.timestamp_sec_to_date(this.state.available_updates_timestamp, "")} />
                             </FormRow>
