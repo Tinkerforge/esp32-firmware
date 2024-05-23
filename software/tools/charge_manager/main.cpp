@@ -7,6 +7,8 @@
 
 #include <string.h>
 
+#include "tests.h"
+
 
 #pragma region Copied over from cm_networking/cm_protocol.cpp
 
@@ -226,7 +228,13 @@ void send_to_clients(size_t charger_count, ChargerAllocationState *charger_alloc
 
 #define CHARGER_COUNT (sizeof(dest_addrs)/sizeof(dest_addrs[0]))
 
-int main() {
+int main(int argc, char **argv) {
+    if (argc == 2 && strcmp(argv[1], "--run-tests") == 0) {
+        run_tests();
+        return 0;
+    }
+
+
     start_manager();
 
     CurrentAllocatorConfig cfg {

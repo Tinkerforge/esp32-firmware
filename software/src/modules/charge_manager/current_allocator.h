@@ -50,3 +50,7 @@ bool update_from_client_packet(
     ChargerAllocationState *charger_allocation_state,
     const char * const *hosts,
     const std::function<const char *(uint8_t)> get_charger_name);
+
+typedef bool(*filter_fn)(uint32_t /*allocated_current*/, uint8_t /*allocated_phases*/, const ChargerState */*state*/);
+
+int filter_chargers(filter_fn filter, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count);

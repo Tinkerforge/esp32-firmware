@@ -34,6 +34,20 @@
 
 #define TIMEOUT_MS 32000
 
+int filter_chargers(filter_fn filter, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
+    int matches = 0;
+    for(int i = 0; i < charger_count; ++i) {
+        if (!filter(current_allocation[idx_array[i]], phase_allocation[idx_array[i]], &charger_state[idx_array[i]]))
+            continue;
+
+        int tmp = idx_array[matches];
+        idx_array[matches] = idx_array[i];
+        idx_array[i] = tmp;
+        ++matches;
+    }
+    return matches;
+}
+
 int allocate_current(
     const CurrentAllocatorConfig *cfg,
     const bool seen_all_chargers,
