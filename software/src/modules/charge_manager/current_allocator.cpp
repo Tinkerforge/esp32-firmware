@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <string.h> // For strlen
 #include <math.h> // For isnan
+#include <algorithm>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
