@@ -27,12 +27,12 @@ struct CurrentAllocatorState {
 enum class PhaseRotation {
     NotApplicable = -1, // Only for OCPP compat. Maybe also for fixed three phase chargers?
     Unknown = 0, // Make unknown 0 so that memsetting the ChargerState struct sets this as expected.
-    RST, //Standard Reference Phasing
-    RTS, //Reversed Reference Phasing
-    SRT, //Reversed 240 degree rotation
-    STR, //Standard 120 degree rotation
-    TRS, //Standard 240 degree rotation
-    TSR  //Reversed 120 degree rotation
+    L123, // Standard Reference Phasing (= RST in OCPP)
+    L132, // Reversed Reference Phasing (= RTS in OCPP)
+    L213, // Reversed 240 degree rotation (= SRT in OCPP)
+    L231, // Standard 120 degree rotation (= STR in OCPP)
+    L312, // Standard 240 degree rotation (= TRS in OCPP)
+    L321  // Reversed 120 degree rotation (= TSR in OCPP)
 };
 
 struct ChargerState {
