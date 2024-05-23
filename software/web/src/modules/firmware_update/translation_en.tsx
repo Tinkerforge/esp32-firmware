@@ -37,6 +37,7 @@ let x = {
             "no_update_url": "No update URL configured",
             "no_cert": "HTTPS certificate not available",
             "download_error": "Error occurred during download",
+            "no_response": "Update server did not respond",
             "list_malformed": "Update list is malformed",
             "build_time": /*SFN*/ (build_time: string) => ` (created ${build_time})`/*NF*/
         }

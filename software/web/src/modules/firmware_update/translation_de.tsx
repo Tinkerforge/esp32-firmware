@@ -37,6 +37,7 @@ let x = {
             "no_update_url": "Kein Aktualisierungs-URL konfiguriert",
             "no_cert": "HTTPS-Zertifikat nicht vorhanden",
             "download_error": "Fehler beim Download aufgetreten",
+            "no_response": "Keine Antwort vom Aktualisierungs-Server",
             "list_malformed": "Aktualisierungsliste ist beschädigt",
             "build_time": /*SFN*/ (build_time: string) => ` (erstellt ${build_time})`/*NF*/
         }

@@ -37,6 +37,8 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
 
+#define CHECK_FOR_UPDATES_TIMEOUT 15000
+
 #if !MODULE_CERTS_AVAILABLE()
 #define MAX_CERT_ID -1
 #endif
@@ -463,6 +465,7 @@ void FirmwareUpdate::check_for_updates()
     http_config.event_handler = update_event_handler;
     http_config.user_data = this;
     http_config.is_async = true;
+    http_config.timeout_ms = 50;
 
     size_t cert_len = 0;
 
@@ -496,7 +499,15 @@ void FirmwareUpdate::check_for_updates()
         return;
     }
 
+    last_update_begin = millis();
+
     task_scheduler.scheduleWithFixedDelay([this]() {
+        if (deadline_elapsed(last_update_begin + CHECK_FOR_UPDATES_TIMEOUT)) {
+            logger.printfln("Update server %s did not respond", update_url.c_str());
+            available_updates.get("error")->updateString("no_response");
+            update_complete = true;
+        }
+
         if (update_complete) {
             esp_http_client_close(http_client);
         }
