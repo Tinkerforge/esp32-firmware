@@ -1,30 +1,75 @@
-From 5a010d3a67ce5cbb67c058480e6bad13204ea2fc Mon Sep 17 00:00:00 2001
+From ae2270cb8d16c9cb3b63707ef67b03255943d160 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
-Date: Wed, 22 Mar 2023 15:03:30 +0100
-Subject: [PATCH] WiFi: Disable 11b rates.
+Date: Thu, 23 May 2024 17:13:04 +0200
+Subject: [PATCH] WiFi: Disable 11b rates
 
-802.11b is obsolete for about 20 years. Keeping compatibility around
+802.11b has been obsolete for about 20 years. Keeping compatibility around
 slows down devices not 20 years old.
 ---
- libraries/WiFi/src/WiFiGeneric.cpp | 5 +++++
- 1 file changed, 5 insertions(+)
+ libraries/WiFi/src/WiFiGeneric.cpp | 15 +++++++++++++++
+ libraries/WiFi/src/WiFiGeneric.h   |  2 ++
+ 2 files changed, 17 insertions(+)
 
 diff --git a/libraries/WiFi/src/WiFiGeneric.cpp b/libraries/WiFi/src/WiFiGeneric.cpp
-index a94b1419..cf35234c 100644
+index 98fb6e60..d7328f8d 100644
 --- a/libraries/WiFi/src/WiFiGeneric.cpp
 +++ b/libraries/WiFi/src/WiFiGeneric.cpp
-@@ -1179,6 +1179,11 @@ bool WiFiGenericClass::mode(wifi_mode_t m)
+@@ -766,6 +766,7 @@ static std::vector<WiFiEventCbList_t> cbEventList;
+ 
+ bool WiFiGenericClass::_persistent = true;
+ bool WiFiGenericClass::_long_range = false;
++bool WiFiGenericClass::_disable_sta_11b = true;
+ wifi_mode_t WiFiGenericClass::_forceSleepLastMode = WIFI_MODE_NULL;
+ #if CONFIG_IDF_TARGET_ESP32S2
+ wifi_ps_type_t WiFiGenericClass::_sleepEnabled = WIFI_PS_NONE;
+@@ -1238,6 +1239,14 @@ void WiFiGenericClass::enableLongRange(bool enable)
+     _long_range = enable;
+ }
+ 
++/**
++ * disable 11b rates
++ * @param disable
++ */
++void WiFiGenericClass::disableSTA11b(bool disable)
++{
++    _disable_sta_11b = disable;
++}
+ 
+ /**
+  * set new mode
+@@ -1286,6 +1295,12 @@ bool WiFiGenericClass::mode(wifi_mode_t m)
              }
          }
      }
 +    // 11b is long obsolete. true = disable. Don't care if it can't be disabled.
-+    // Unconditionally disable both because neither can be changed when trying to switch mode later.
-+    esp_wifi_config_11b_rate(WIFI_IF_STA, true);
-+    esp_wifi_config_11b_rate(WIFI_IF_AP , true);
++    // Disable both because neither can be changed when trying to switch mode later.
++    // Always disable 11b on AP because beacons are sent at minimum rate.
++    esp_wifi_config_11b_rate(WIFI_IF_STA, _disable_sta_11b);
++    esp_wifi_config_11b_rate(WIFI_IF_AP, true);
 +
      if(!espWiFiStart()){
          return false;
      }
+diff --git a/libraries/WiFi/src/WiFiGeneric.h b/libraries/WiFi/src/WiFiGeneric.h
+index 894c1346..e5d04100 100644
+--- a/libraries/WiFi/src/WiFiGeneric.h
++++ b/libraries/WiFi/src/WiFiGeneric.h
+@@ -173,6 +173,7 @@ class WiFiGenericClass
+ 
+     void persistent(bool persistent);
+     void enableLongRange(bool enable);
++    void disableSTA11b(bool disable);
+ 
+     static bool mode(wifi_mode_t);
+     static wifi_mode_t getMode();
+@@ -205,6 +206,7 @@ class WiFiGenericClass
+   protected:
+     static bool _persistent;
+     static bool _long_range;
++    static bool _disable_sta_11b;
+     static wifi_mode_t _forceSleepLastMode;
+     static wifi_ps_type_t _sleepEnabled;
+     static bool _wifiUseStaticBuffers;
 -- 
-2.30.2
+2.39.2
 
