@@ -72,6 +72,8 @@ static bool seq_num_invalid(uint16_t received_sn, uint16_t last_seen_sn)
 
 #pragma endregion
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc99-designator"
 static struct sockaddr_in dest_addrs[] = {
     {
         .sin_family = AF_INET,
@@ -84,6 +86,8 @@ static struct sockaddr_in dest_addrs[] = {
         .sin_addr.s_addr = inet_addr("192.168.1.129")
     }
 };
+#pragma clang diagnostic pop
+
 static int manager_sock;
 
 static const char *get_charger_name(uint8_t idx) {
