@@ -188,6 +188,63 @@ void test_filter_chargers() {
     phase_allocation[5] = 3;
 }
 
+void test_sort_chargers() {
+    size_t charger_count = 8;
+    uint32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    uint8_t phase_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    int idx_array[MAX_CONTROLLED_CHARGERS] = {};
+    for(int i = 0; i < charger_count; ++i)
+        idx_array[i] = i;
+
+#define sort(group, filter) do {\
+    sort_chargers( \
+        [](uint32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
+            return (group); \
+        }, \
+        [](CompareInfo left, CompareInfo right) { \
+            return (filter); \
+        }, \
+        idx_array, \
+        current_allocation, \
+        phase_allocation, \
+        charger_state, \
+        charger_count); \
+    } while (0)
+
+    // Test sort stablility
+    for(int i = 0; i < charger_count; ++i) {
+        current_allocation[i] = 1234;
+    }
+
+    sort(
+        (int)allocated_current,
+        left.allocated_current < right.allocated_current
+    );
+
+    _assert(idx_array[0], ==, 0);
+    _assert(idx_array[1], ==, 1);
+    _assert(idx_array[2], ==, 2);
+    _assert(idx_array[3], ==, 3);
+    _assert(idx_array[4], ==, 4);
+    _assert(idx_array[5], ==, 5);
+    _assert(idx_array[6], ==, 6);
+    _assert(idx_array[7], ==, 7);
+
+    memset(current_allocation, 0, sizeof(current_allocation));
+
+    // Test sort stage 1
+    sort(
+          (state->phases == 1 && state->phase_rotation == PhaseRotation::Unknown) ? 0
+        : (state->phases == 3 && !state->phase_switch_supported) ? 1
+        : (state->phases == 3 && state->phase_switch_supported && state->phase_rotation == PhaseRotation::Unknown) ? 2
+        : (state->phases == 3 && state->phase_switch_supported && state->phase_rotation != PhaseRotation::Unknown) ? 3
+        : (state->phases == 1 && state->phase_rotation != PhaseRotation::Unknown) ? 4
+        : 999,
+        true // TODO
+    );
+}
+
 void run_tests() {
     test_filter_chargers();
+    test_sort_chargers();
 }
