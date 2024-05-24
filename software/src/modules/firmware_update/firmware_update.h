@@ -46,14 +46,14 @@ public:
     bool firmware_update_allowed = true;
     bool firmware_update_running = false;
 
-    void handle_update_data(const void *data, size_t data_len);
+    //void handle_update_data(const void *data, size_t data_len);
 
 private:
     bool handle_firmware_chunk(int command, std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_length, size_t remaining, size_t complete_len);
     void reset_firmware_info();
     bool handle_firmware_info_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len);
     String check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log);
-    void check_for_updates();
+    //void check_for_updates();
 
     struct firmware_info_t {
         uint32_t magic[2] = {0};
@@ -63,8 +63,8 @@ private:
         uint8_t fw_version_beta = {0};
     };
 
-    ConfigRoot config;
-    ConfigRoot available_updates;
+    /*ConfigRoot config;
+    ConfigRoot available_updates;*/
 
     firmware_info_t info;
     uint32_t info_offset = 0;
@@ -74,7 +74,7 @@ private:
     bool update_aborted = false;
     bool info_found = false;
 
-    String update_url;
+    /*String update_url;
     int cert_id = -1;
     std::unique_ptr<unsigned char[]> cert = nullptr;
     esp_http_client_handle_t http_client = nullptr;
@@ -86,5 +86,5 @@ private:
     SemanticVersion stable_update;
     uint8_t update_mask;
     bool update_complete;
-    uint32_t last_non_beta_timestamp;
+    uint32_t last_non_beta_timestamp;*/
 };
