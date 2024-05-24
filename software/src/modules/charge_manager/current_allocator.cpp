@@ -49,6 +49,25 @@ int filter_chargers(filter_fn filter, int *idx_array, const uint32_t *current_al
     return matches;
 }
 
+void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
+    int groups[MAX_CONTROLLED_CHARGERS] = {};
+
+    for(int i = 0; i < charger_count; ++i)
+        groups[idx_array[i]] = group(current_allocation[idx_array[i]], phase_allocation[idx_array[i]], &charger_state[idx_array[i]]);
+
+    std::stable_sort(
+        idx_array,
+        idx_array + charger_count,
+        [&groups, &compare, &current_allocation, &phase_allocation, &charger_state] (int left, int right) {
+            if (groups[left] != groups[right])
+                return groups[left] < groups[right];
+
+            return compare({current_allocation[left], phase_allocation[left], &charger_state[left]},
+                           {current_allocation[right], phase_allocation[right], &charger_state[right]});
+        }
+    );
+}
+
 int allocate_current(
     const CurrentAllocatorConfig *cfg,
     const bool seen_all_chargers,
