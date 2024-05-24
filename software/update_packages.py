@@ -29,13 +29,16 @@ for name in sorted(os.listdir('packages')):
     if name == 'config.json':
         continue
 
+    package_path = os.path.join('packages', name)
+
+    if not os.path.exists(package_path):
+        continue  # directory content changed while listing the directory
+
     if name.endswith('-dev'):
         util.log('Ignoring {0}'.format(name))
         continue
 
     if name not in config:
-        package_path = os.path.join('packages', name)
-
         if not os.path.isdir(package_path):
             print('Removing {0}'.format(name))
             os.remove(package_path)
@@ -80,8 +83,10 @@ for name in sorted(os.listdir('packages')):
 
     zip_path = os.path.join('packages', '{0}.zip'.format(name))
 
-    if os.path.exists(zip_path):
+    try:
         os.remove(zip_path)
+    except FileNotFoundError:
+        pass
 
     print('Downloading {0}'.format(name))
 
