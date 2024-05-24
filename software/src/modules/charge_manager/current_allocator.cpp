@@ -68,6 +68,93 @@ void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const uin
     );
 }
 
+/*
+
+struct CurrentLimits {
+    uint32_t pv_excess;
+    uint32_t grid_l1;
+    uint32_t grid_l2;
+    uint32_t grid_l3;
+
+    uint32_t pv_excess_filtered;
+    uint32_t grid_l1_filtered;
+    uint32_t grid_l2_filtered;
+    uint32_t grid_l3_filtered;
+
+    uint32_t supply_cable_l1;
+    uint32_t supply_cable_l2;
+    uint32_t supply_cable_l3;
+};
+
+Accumulate (allocation cycle time * allocated current * allocated phases) per charger -> allocated charge
+
+Charger types
+3P  = currently connected phases 0 = 1p 1 = 3p
+SPS = Supports phase switch
+ROT = Phase rotation known
+
+|   | 3P|SPS|ROT|
+|---|---|---|---|
+| 0 | 0 | 0 | 0 |
+| 1 | 0 | 0 | 1 |
+| 2 | 0 | 1 | 0 |
+| 3 | 0 | 1 | 1 |
+| 4 | 1 | 0 | 0 |
+| 5 | 1 | 0 | 1 |
+| 6 | 1 | 1 | 0 |
+| 7 | 1 | 1 | 1 |
+
+Filter
+
+1. charger_state.is_charging
+2. current_array[i] > 0  && 6,7 (charger_state.supports_phase_switch && charger_state.phases == 3)
+3. current_array[i] > 0  && 0,2,4,5,6,7 (charger_state.phases == 3 || charger_state.phase_rotation == UNKNOWN)
+4. current_array[i] > 0  && 1,3 (charger_state.phases == 1 && charger_state.phase_rotation != UNKNOWN)
+5. current_array[i] == 0 && charger_state.wants_to_charge // TODO: current_array[i] == 0 should not be necessary. We've only allocated current to already charging chargers before this stage.
+6. current_array[i] > 0  && charger_state.wants_to_charge && 2,3 (charger_state.supports_phase_switch && charger_state.phases == 1)
+7. current_array[i] > 0
+8. current_array[i] > 0
+9. current_array[i] > 0  && charger_state.is_charging && 2,3 (charger_state.supports_phase_switch && charger_state.phases == 1)
+10. charger_state.wants_to_charge_low_priority
+
+Sort
+
+1.
+    Groups
+    - 0,2: charger_state.phases == 1 && charger_state.phase_rotation == UNKNOWN
+    - 4,5: charger_state.phases == 3 && !charger_state.supports_phase_switch
+    - 6: charger_state.phases == 3 && charger_state.supports_phase_switch && charger_state.phase_rotation == UNKNOWN
+    - 7: charger_state.phases == 3 && charger_state.supports_phase_switch && charger_state.phase_rotation != UNKNOWN
+    - 1,3: charger_state.phases == 1 && charger_state.phase_rotation != UNKNOWN
+    in groups: lowest allocated charge first
+
+2. lowest allocated charge first
+3. unsorted because every charger gets a "fair" part of the left-over current?
+4. unsorted because every charger gets a "fair" part of the left-over current?
+5.
+    Groups
+    - 4,5: charger_state.phases == 3 && !charger_state.supports_phase_switch
+    - 0:   charger_state.phases == 1 && !charger_state.supports_phase_switch && charger_state.phase_rotation == UNKNOWN
+    - 2,6: charger_state.supports_phase_switch && charger_state.phase_rotation == UNKNOWN
+    - 1:   charger_state.phases == 1 && !charger_state.supports_phase_switch && charger_state.phase_rotation != UNKNOWN
+    - 3,7  charger_state.supports_phase_switch && charger_state.phase_rotation != UNKNOWN
+    in groups: lowest allocated charge first
+
+6. lowest allocated charge first
+7.
+    Groups
+    - 4,5,6,7
+    - 0,1,2,3
+    in groups: lowest allocated charge first
+8.
+    Groups
+    - 4,5,6,7
+    - 0,1,2,3
+    in groups: (supported current - allocated current) - (lowest phase limit) (same as old charge management but with phase information)
+9. lowest allocated charge first
+10. TODO
+*/
+
 int allocate_current(
     const CurrentAllocatorConfig *cfg,
     const bool seen_all_chargers,
