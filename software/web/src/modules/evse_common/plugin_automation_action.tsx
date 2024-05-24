@@ -26,6 +26,7 @@ import { InputFloat } from "../../ts/components/input_float";
 import { InputNumber } from "../../ts/components/input_number";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
+import * as API from "../../ts/api";
 import { Collapse } from "react-bootstrap";
 
 export type EvseAutomationAction = [
@@ -133,7 +134,7 @@ function get_led_table_children(action: EvseLedAutomationAction) {
         indication_text = __("evse.automation.led_indication_error")(action[1].indication - 2000);
     }
 
-    return __("evse.automation.automation_led_action_text")(action[1].indication, indication_text, action[1].duration, hsvToHex(action[1]));
+    return __("evse.automation.automation_led_action_text")(action[1].indication, indication_text, action[1].duration, API.hasFeature("rgb_led") ? hsvToHex(action[1]) : "");
 }
 
 function get_led_edit_children(action: EvseLedAutomationAction, on_action: (action: AutomationAction) => void) {
@@ -149,7 +150,7 @@ function get_led_edit_children(action: EvseLedAutomationAction, on_action: (acti
         items.push([String(2000 + i), __("evse.automation.led_indication_error")(i)]);
     }
 
-    return [
+    let result = [
         <FormRow label={__("evse.automation.indication")}>
             <InputSelect
                 items={items}
@@ -167,16 +168,23 @@ function get_led_edit_children(action: EvseLedAutomationAction, on_action: (acti
                 onValue={(v) => {
                     on_action(util.get_updated_union(action, {duration: v * 1000}));
                 }} />
-        </FormRow>,
-        <FormRow label={__("evse.automation.color")}>
-            <input class="form-control" type="color" value={hsvToHex(action[1])} onInput={(event) => {
-                // Get current color value from the HTML element and create new config
-                //let hsv_scaled = {color_h: hsv[0] * 359, color_s: hsv[1] * 255, color_v: hsv[2] * 255};
-                let hsv = hexToHsv((event.target as HTMLInputElement).value.toString())
-                on_action(util.get_updated_union(action, hsv));
-            }} />
-        </FormRow>,
+        </FormRow>
     ];
+
+    if (API.hasFeature("rgb_led")) {
+        result.push(
+            <FormRow label={__("evse.automation.color")}>
+                <input class="form-control" type="color" value={hsvToHex(action[1])} onInput={(event) => {
+                    // Get current color value from the HTML element and create new config
+                    //let hsv_scaled = {color_h: hsv[0] * 359, color_s: hsv[1] * 255, color_v: hsv[2] * 255};
+                    let hsv = hexToHsv((event.target as HTMLInputElement).value.toString())
+                    on_action(util.get_updated_union(action, hsv));
+                }} />
+            </FormRow>
+        )
+    }
+
+    return result;
 }
 
 function new_led_config(): AutomationAction {

@@ -61,6 +61,10 @@ void EvseLed::setup()
 {
     api.restorePersistentConfig("evse/led_configuration", &config);
     enable_api = config.get("enable_api")->asBool();
+
+    if (evse_common.get_evse_version() >= 30)
+        api.addFeature("rgb_led");
+
     initialized = true;
 }
 

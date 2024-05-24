@@ -272,7 +272,7 @@ let x = {
                 return <>limit the allowed charging current to <b>{current} A</b>.</>
             }/*NF*/,
             "automation_led_action_text": /*FFN*/(indication_number: number, indication_text: string, duration: number, color: string) => {
-                let c = <>in <span class="px-2 mr-1" style={"background-color: " + color + "; border: 1px solid black;"}></span></>
+                let c = color == "" ? "" : <>in <span class="px-2 mr-1" style={"background-color: " + color + "; border: 1px solid black;"}></span></>
                 if (indication_number == 0)
                     return <>turn the status LED <b>{indication_text}</b> for <b>{duration} seconds</b>.</>
                 if (indication_number == 255)
