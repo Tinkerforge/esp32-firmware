@@ -134,6 +134,7 @@ void Wifi::pre_setup()
             )
         },
         {"bssid_lock", Config::Bool(false)},
+        {"enable_11b", Config::Bool(false)},
         {"passphrase", Config::Str("", 0, 64)},
         {"ip", Config::Str("0.0.0.0", 7, 15)},
         {"gateway", Config::Str("0.0.0.0", 7, 15)},
@@ -489,6 +490,7 @@ void Wifi::setup()
     sta_config_in_use = sta_config.get_owned_copy();
 
     WiFi.persistent(false);
+    WiFi.disableSTA11b(!sta_config_in_use.get("enable_11b")->asBool());
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             uint8_t reason_code = info.wifi_sta_disconnected.reason;

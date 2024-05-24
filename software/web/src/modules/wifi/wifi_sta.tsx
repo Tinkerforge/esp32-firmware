@@ -419,6 +419,13 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         />
                     </FormRow>
 
+                    <FormRow label={__("wifi.content.sta_enable_11b")}>
+                        <Switch desc={__("wifi.content.sta_enable_11b_desc")}
+                                checked={state.enable_11b}
+                                onClick={this.toggle("enable_11b")}
+                        />
+                    </FormRow>
+
                     <FormRow label={__("wifi.content.wpa_auth_type")}>
                         <InputSelect
                             items={[

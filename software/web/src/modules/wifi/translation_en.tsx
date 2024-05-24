@@ -28,6 +28,8 @@ let x = {
             "sta_bssid_invalid": "The BSSID must have six groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
             "sta_bssid_lock": "BSSID lock",
             "sta_bssid_lock_desc": "Connects only to the network with the configured BSSID. Leave disabled if you use multiple access points or repeaters with with the same network name.",
+            "sta_enable_11b": "Slow mode",
+            "sta_enable_11b_desc": "Enable slow B WiFi (11b) for sightly higher WiFi range.",
             "sta_passphrase": "Passphrase",
 
             "ap_settings": "WiFi Access Point",

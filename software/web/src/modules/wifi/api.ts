@@ -46,6 +46,7 @@ export interface sta_config {
     ssid: string;
     bssid: number[];
     bssid_lock: boolean;
+    enable_11b: boolean;
     passphrase: string;
     ip: string;
     gateway: string;
