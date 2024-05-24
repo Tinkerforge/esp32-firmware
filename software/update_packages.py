@@ -7,6 +7,7 @@ if sys.hexversion < 0x3060000:
 import os
 import json
 import shutil
+import shlex
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 
@@ -95,7 +96,16 @@ for name in sorted(os.listdir('packages')):
         urlretrieve(zip_url, zip_path + '.tmp')
     except Exception as e:
         print('Error while downloading {0}: {1}'.format(zip_url, e))
-        sys.exit(1)
+        print('Retrying with curl')
+
+        command = shlex.join(['curl', '-s', '-L', zip_url, '-o', zip_path + '.tmp'])
+
+        if sys.platform == 'win32':
+            command = 'powershell.exe ' + command
+
+        if os.system(command) != 0:
+            print('Error while downloading {0} with curl'.format(zip_url))
+            sys.exit(1)
 
     os.rename(zip_path + '.tmp', zip_path)
 
