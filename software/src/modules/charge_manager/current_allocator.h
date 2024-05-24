@@ -54,3 +54,14 @@ bool update_from_client_packet(
 typedef bool(*filter_fn)(uint32_t /*allocated_current*/, uint8_t /*allocated_phases*/, const ChargerState */*state*/);
 
 int filter_chargers(filter_fn filter, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count);
+
+typedef int(*group_fn)(uint32_t /*allocated_current*/, uint8_t /*allocated_phases*/, const ChargerState */*state*/);
+
+struct CompareInfo {
+    uint32_t allocated_current;
+    uint8_t allocated_phases;
+    const ChargerState *state;
+};
+typedef bool(*compare_fn)(CompareInfo /*left*/, CompareInfo /*right*/);
+
+void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count);
