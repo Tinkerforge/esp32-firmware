@@ -591,7 +591,33 @@ de_hyph = [
     "kon-trol-lierte",
     "kon-trol-lierten",
     "Pass-wörter",
-    "fremd-gesteuert"
+    "fremd-gesteuert",
+    "Adress-modus",
+    "Ak-tu-a-li-sie-rung-en",
+    "Ak-tu-a-li-sie-rungs",
+    "Ak-tu-a-li-sie-rungs-liste",
+    "Ak-tu-a-li-sie-rungs-suche",
+    "Au-to-ma-ti-sie-rungs",
+    "Be-nutzer-de-fi-niert",
+    "Empfangs-opti-mierung",
+    "Extra-werte",
+    "Gleit-komma-zahl",
+    "In-stal-lie-rte",
+    "Netz-an-schluss-es",
+    "Re-gis-ter-nummer",
+    "Re-gis-ter-typ",
+    "Reich-weite",
+    "Skalier-faktor",
+    "Spei-cher-ka-pa-zi-tät",
+    "Start-adresse",
+    "Start-nummer",
+    "Ver-füg-bare",
+    "Ver-schie-bung",
+    "Vir-tu-eller",
+    "auf-ge-treten",
+    "ver-al-te-ten",
+    "vor-zeichen-be-haftet",
+    "vor-zeichen-los"
 ]
 
 en_hyph = [
@@ -749,7 +775,10 @@ en_hyph = [
     "over-ridden",
     "reset-table",
     "manu-fac-turer",
-    "ex-ter-nal-ly"
+    "ex-ter-nal-ly",
+    "back-ground",
+    "de-pre-ca-ted",
+
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
@@ -847,5 +876,13 @@ allowed_missing = set([
     "ConcurrentTx",
     "last_tag_reason",
     "default_port",
-    "payload_str"
+    "payload_str",
+    "api_reference",
+    "build_time",
+    "indication_number",
+    "indication_text",
+    "meter_all_values_any",
+    "return___START_FRAGMENT___show",
+    "start_address",
+    "value_id_name"
 ])
