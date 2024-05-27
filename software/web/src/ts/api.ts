@@ -195,8 +195,10 @@ export async function call_unchecked(topic: string, payload: any, error_string?:
         }
         return blob;
     } catch (e) {
-        if (error_string)
-            util.add_alert(topic.replace("/", "_") + '_failed', 'danger', error_string, e);
+        if (error_string) {
+            let text = e instanceof Error ? e.message : e;
+            util.add_alert(topic.replace("/", "_") + '_failed', 'danger', error_string, text);
+        }
         throw e;
     }
 }
