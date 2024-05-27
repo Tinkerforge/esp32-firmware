@@ -49,7 +49,6 @@ class GenericModbusTCPClient
 protected:
     struct read_request {
         ModbusRegisterType register_type;
-        size_t start_address_offset; // 0 for register address mode, 1 for register number mode
         size_t start_address;
         size_t register_count;
         uint16_t *data[2] = { nullptr, nullptr };

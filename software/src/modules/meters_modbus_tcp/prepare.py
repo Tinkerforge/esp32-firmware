@@ -332,6 +332,7 @@ specs = [
         'name': 'Sungrow {variant} Inverter Output Type',
         'variants': ['Hybrid', 'String'],
         'register_type': 'InputRegister',
+        'start_address_offset': 1,
         'values': [
             {
                 'name': 'Output Type',
@@ -345,24 +346,28 @@ specs = [
         'name': 'Sungrow {variant} Inverter 1P2L',  # output type 1
         'variants': ['Hybrid', 'String'],
         'register_type': 'InputRegister',
+        'start_address_offset': 1,
         'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_phase_voltages[:1] + sungrow_hybrid_inverter_phase_currents[:1],
     },
     {
         'name': 'Sungrow {variant} Inverter 3P4L',  # output type 2
         'variants': ['Hybrid', 'String'],
         'register_type': 'InputRegister',
+        'start_address_offset': 1,
         'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_phase_voltages + sungrow_hybrid_inverter_phase_currents,
     },
     {
         'name': 'Sungrow {variant} Inverter 3P3L',  # output type 3
         'variants': ['Hybrid', 'String'],
         'register_type': 'InputRegister',
+        'start_address_offset': 1,
         'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_line_voltages + sungrow_hybrid_inverter_phase_currents,
     },
     {
         'name': 'Sungrow {variant} Inverter Grid',
         'variants': ['Hybrid', 'String'],
         'register_type': 'InputRegister',
+        'start_address_offset': 1,
         'values': [
             {
                 'name': 'Grid Frequency [0.1 Hz]',
@@ -456,6 +461,7 @@ specs = [
     {
         'name': 'Sungrow Hybrid Inverter Battery',
         'register_type': 'InputRegister',
+        'start_address_offset': 1,
         'values': [
             {
                 'name': 'Running State',
@@ -532,6 +538,7 @@ specs = [
         'name': 'Sungrow {variant} Inverter Load',
         'variants': ['Hybrid', 'String'],
         'register_type': 'InputRegister',
+        'start_address_offset': 1,
         'values': [
             {
                 'name': 'Load Power [W]',  # FIXME: not available for all device types
@@ -1257,11 +1264,13 @@ for spec in specs:
             if variant_value != None and variant_value not in variant_spec:
                 continue
 
+            start_address_offset = value.get("start_address_offset", spec.get("start_address_offset", 0))
+
             value_specs.append(
                 '    {\n'
                 f'        "{value["name"]}",\n'
                 f'        ModbusRegisterType::{value.get("register_type", spec["register_type"])},\n'
-                f'        {value["start_address"] if value["start_address"] != START_ADDRESS_VIRTUAL else "START_ADDRESS_VIRTUAL"},\n'
+                f'        {value["start_address"] - start_address_offset if value["start_address"] != START_ADDRESS_VIRTUAL else "START_ADDRESS_VIRTUAL"},\n'
                 f'        ModbusValueType::{value.get("value_type", "None")},\n'
                 f'        {value.get("offset", 0.0)}f,\n'
                 f'        {value.get("scale_factor", 1.0)}f,\n'

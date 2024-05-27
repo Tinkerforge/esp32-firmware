@@ -133,7 +133,7 @@ void GenericModbusTCPClient::read_next()
     // Return value doesn't matter. The caller discards it.
     cbTransaction read_done_cb = [this](Modbus::ResultCode result_code, uint16_t /*transaction_id*/, void * /*data*/)->bool {
         if (result_code != Modbus::ResultCode::EX_SUCCESS) {
-            logger.printfln("read%creg failed: %s (0x%02x) host=%s port=%u device_address=%u start_address=%u start_address_offset=%u register_count=%u",
+            logger.printfln("read%creg failed: %s (0x%02x) host=%s port=%u device_address=%u start_address=%u register_count=%u",
                             generic_read_request.register_type == ModbusRegisterType::HoldingRegister ? 'H' : 'I',
                             get_modbus_result_code_name(result_code),
                             static_cast<uint32_t>(result_code),
@@ -141,7 +141,6 @@ void GenericModbusTCPClient::read_next()
                             port,
                             device_address,
                             generic_read_request.start_address,
-                            generic_read_request.start_address_offset,
                             generic_read_request.register_count);
 
             generic_read_request.result_code = result_code;
@@ -172,7 +171,7 @@ void GenericModbusTCPClient::read_next()
     };
 
     uint16_t *target_buffer = generic_read_request.data[read_buffer_num] + registers_done_count;
-    uint16_t read_start_address = static_cast<uint16_t>(generic_read_request.start_address - generic_read_request.start_address_offset + registers_done_count);
+    uint16_t read_start_address = static_cast<uint16_t>(generic_read_request.start_address + registers_done_count);
     uint16_t registers_remaining = static_cast<uint16_t>(generic_read_request.register_count - registers_done_count);
     uint16_t read_count = registers_remaining < read_block_size ? registers_remaining : read_block_size;
 
