@@ -224,7 +224,7 @@
 - Preserve external phase request across reboots
 
 <unknown>: 2.1.0 (<unknown>)
-- Last changed 2024-05-04 9b7cc88c
+- Last changed 2024-05-27 96f5d28e
 - Add MQTTS and MQTT over WS(S) support
 - Add HTTP automation trigger
 - Add modal for WiFi scan results
@@ -249,3 +249,31 @@
 - Show placeholder if RTC time is not set
 - Show disabled automation actions
 - Improve translations
+- Add bricklet reflash and reboot buttons
+- Fix visibility of empty power plot
+- Fix energy analysis graph colors changing on reload
+- Add SMA Speedwire as new meter type
+- Add Modbus TCP as new meter type
+- Add more meter history plot zoom levels
+- SunSpec: Add support for DER models 701, 713 and 714
+- SunSpec: Add quirk for inverted SolarEdge power values
+- SunSpec: Improve Sungrow compatibility
+- SunSpec: Remove misleading phase information from model names
+- SunSpec: Improve discovery robustness
+- Allow to re-enable 802.11b mode to improve WiFi reception
+- Fix NTP server configuration via DHCP
+- Fix showing 0 W on status page if no data is available
+- Fix MQTT showing as deactivated before first connection attempt
+- Fix WiFi scan showing as completed if no WiFi was found
+- Fix automatic web interface reload on firmware version change
+- Fix reported WiFi reception quality when not connected
+- Don't require login before sending main page to Safari
+- Update default NTP servers
+- Improve NTP sync speed
+- Don't overwrite fresh NTP synced time with probably older RTC time
+- Improve web server robustness
+- Disable gratuitous ARP
+- Disable trusting sender of IP packets for ARP
+- Disable TLS elliptic curves smaller than the required default of 256
+- Improve translations
+- Allow up to 2K of HTTP request headers

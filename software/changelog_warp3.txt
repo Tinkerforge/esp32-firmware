@@ -1,2 +1,44 @@
 2024-04-05: 2.3.0 (a2116460)
 - Initial release
+
+2024-05-27: 2.4.0 (<unknown>)
+- Add SMA Speedwire as new meter type
+- Add Modbus TCP as new meter type
+- Support up to 5 configured energy meters
+- Add more meter history plot zoom levels
+- Add EVSE LED automation action color selection
+- SunSpec: Add support for DER models 701, 713 and 714
+- SunSpec: Add quirk for inverted SolarEdge power values
+- SunSpec: Improve Sungrow compatibility
+- SunSpec: Remove misleading phase information from model names
+- SunSpec: Improve discovery robustness
+- Allow to re-enable 802.11b mode to improve WiFi reception
+- Fix NTP server configuration via DHCP
+- Fix showing 0 W on status page if no data is available
+- Fix duplicated charge mode switching not immediately allowing charge start
+- Fix EVSE LED API names
+- Fix MQTT showing as deactivated before first connection attempt
+- Fix reported WARP3 device type
+- Fix missing Modbus TCP discrete input for (unimplemented!) cp_disconnect
+- Fix WiFi scan showing as completed if no WiFi was found
+- Fix network config reset via front button not resetting web interface listen port and hostname
+- Fix automatic web interface reload on firmware version change
+- Fix reported WiFi reception quality when not connected
+- Fix EVSE LED automation action
+- Fix contactor state error codes being inverted (through EVSE 2.0 Bricklet firmware 2.2.4)
+- Fix charge stop via web interface and front button not blocking charge when in state "ready to charge" (through EVSE 2.0 Bricklet firmware 2.2.4)
+- Fix immediately switching back to three phase charging when EVSE has just switched to one phase charging because the vehicle only uses one phase (through EVSE 2.0 Bricklet firmware 2.2.4)
+- OCPP: Fix MeterValue timestamps
+- Don't require login before sending main page to Safari
+- Reset charge limit targets if overridden with "unlimited"
+- Update default NTP servers
+- Improve NTP sync speed
+- Don't overwrite fresh NTP synced time with probably older RTC time
+- Improve web server robustness
+- Disable gratuitous ARP
+- Disable trusting sender of IP packets for ARP
+- Disable TLS elliptic curves smaller than the required default of 256
+- Improve translations
+- Document new meter types used in Modbus TCP input register 2000
+- Improve Modbus TCP documented register ranges and types
+- Allow up to 2K of HTTP request headers
