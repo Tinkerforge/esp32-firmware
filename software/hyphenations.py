@@ -617,7 +617,11 @@ de_hyph = [
     "auf-ge-treten",
     "ver-al-te-ten",
     "vor-zeichen-be-haftet",
-    "vor-zeichen-los"
+    "vor-zeichen-los",
+    "Em-pfangs-qua-li-tät",
+    "Ro-bust-heit",
+    "ver-bes-sern",
+    "ver-lang-samt"
 ]
 
 en_hyph = [
@@ -778,6 +782,7 @@ en_hyph = [
     "ex-ter-nal-ly",
     "back-ground",
     "de-pre-ca-ted",
+    "ro-bust-ness"
 
 ]
 
