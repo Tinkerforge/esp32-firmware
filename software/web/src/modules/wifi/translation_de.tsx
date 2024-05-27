@@ -28,8 +28,8 @@ let x = {
             "sta_bssid_lock": "BSSID-Sperre",
             "sta_bssid_invalid": "Die BSSID muss aus sechs Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",
             "sta_bssid_lock_desc": "Verbindet sich nur zur konfigurierten BSSID. Bei Einsatz mehrerer Access Points und/oder Repeater mit demselben Netzwerknamen wird so immer derselbe AP oder Repeater verwendet.",
-            "sta_enable_11b": "Langsamer Modus",
-            "sta_enable_11b_desc": "Aktiviert langsames B WLAN (11b) für etwas höhere Reichweite.",
+            "sta_enable_11b": "Empfangsoptimierung",
+            "sta_enable_11b_desc": "Verwendet den veralteten, langsamen 802.11b-Modus für etwas höhere Reichweite.",
             "sta_passphrase": "Passphrase",
 
             "ap_settings": "WLAN-Access-Point",
