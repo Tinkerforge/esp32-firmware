@@ -65,7 +65,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
 
     override async sendReset(t: "mqtt/config") {
         if (API.hasModule('mqtt_auto_discovery'))
-            await API.reset('mqtt/auto_discovery_config', super.error_string, super.reboot_string);
+            await API.reset('mqtt/auto_discovery_config', this.error_string, this.reboot_string);
 
         await super.sendReset(t);
     }

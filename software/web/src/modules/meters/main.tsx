@@ -539,7 +539,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
     override async sendReset(t: "meters/0/config") {
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            await API.reset_unchecked(`meters/${meter_slot}/config`, super.error_string, super.reboot_string);
+            await API.reset_unchecked(`meters/${meter_slot}/config`, this.error_string, this.reboot_string);
         }
     }
 

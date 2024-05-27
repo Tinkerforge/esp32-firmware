@@ -202,7 +202,7 @@ export class PowerManagerSettings extends ConfigComponent<'power_manager/config'
             await API.save_unchecked('energy_manager/config', {
                 ...API.get_unchecked('energy_manager/config'),
                 contactor_installed: this.state.em_contactor_installed,
-            }, super.error_string);
+            }, this.error_string);
         }
 
         let new_cfg: API.getType['power_manager/config'] = {...API.get("power_manager/config"), enabled: false};
@@ -283,7 +283,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
 
     override async sendReset(t: "power_manager/config") {
         if (API.hasModule("debug")) {
-            await API.reset('power_manager/debug_config', super.error_string, super.reboot_string);
+            await API.reset('power_manager/debug_config', this.error_string, this.reboot_string);
         }
 
         await super.sendReset(t);
