@@ -39,7 +39,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Table, TableRow } from "../../ts/components/table";
 
-const MAX_CUSTOM_REGISTERS = 10;
+const MAX_CUSTOM_REGISTERS = 36;
 
 type TableConfigNone = [
     MeterModbusTCPTableID.None,
@@ -47,12 +47,12 @@ type TableConfigNone = [
 ];
 
 type Register = {
-    register_type: number; // ModbusRegisterType
-    start_address: number;
-    value_type: number; // ModbusValueType
-    offset: number;
-    scale_factor: number;
-    value_id: number; // MeterValueID
+    rtype: number; // ModbusRegisterType
+    addr: number;
+    vtype: number; // ModbusValueType
+    off: number;
+    scale: number;
+    id: number; // MeterValueID
 };
 
 type TableConfigCustom = [
@@ -162,7 +162,7 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
 
         this.state = {
             register: {
-                register_type: null,
+                rtype: null,
                 start_address: props.table[1].register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1,
                 value_type: null,
                 offset: 0.0,
@@ -182,9 +182,9 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
                         [ModbusRegisterType.InputRegister.toString(), __("meters_modbus_tcp.content.registers_register_type_input_register")],
                     ]}
                     placeholder={__("meters_modbus_tcp.content.registers_register_type_select")}
-                    value={util.hasValue(this.state.register.register_type) ? this.state.register.register_type.toString() : undefined}
+                    value={util.hasValue(this.state.register.rtype) ? this.state.register.rtype.toString() : undefined}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, register_type: parseInt(v)}});
+                        this.setState({register: {...this.state.register, rtype: parseInt(v)}});
                     }} />
             </FormRow>,
             <FormRow
@@ -202,9 +202,9 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
                     required
                     min={this.props.table[1].register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1}
                     max={(this.props.table[1].register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1) + 65535}
-                    value={this.state.register.start_address}
+                    value={this.state.register.addr}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, start_address: v}});
+                        this.setState({register: {...this.state.register, addr: v}});
                     }} />
             </FormRow>,
             <FormRow label={__("meters_modbus_tcp.content.registers_value_type")}>
@@ -227,30 +227,30 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
                         [ModbusValueType.F64LE.toString(), __("meters_modbus_tcp.content.registers_value_type_f64le")],
                     ]}
                     placeholder={__("meters_modbus_tcp.content.registers_value_type_select")}
-                    value={util.hasValue(this.state.register.value_type) ? this.state.register.value_type.toString() : undefined}
+                    value={util.hasValue(this.state.register.vtype) ? this.state.register.vtype.toString() : undefined}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, value_type: parseInt(v)}});
+                        this.setState({register: {...this.state.register, vtype: parseInt(v)}});
                     }} />
             </FormRow>,
             <FormRow label={__("meters_modbus_tcp.content.registers_offset")}>
                 <InputAnyFloat
                     required
-                    value={this.state.register.offset}
+                    value={this.state.register.off}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, offset: v}});
+                        this.setState({register: {...this.state.register, off: v}});
                     }} />
             </FormRow>,
             <FormRow label={__("meters_modbus_tcp.content.registers_scale_factor")}>
                 <InputAnyFloat
                     required
-                    value={this.state.register.scale_factor}
+                    value={this.state.register.scale}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, scale_factor: v}});
+                        this.setState({register: {...this.state.register, scale: v}});
                     }} />
             </FormRow>,
             <FormRow label={__("meters_modbus_tcp.content.registers_value_id")}>
-                <MeterValueIDSelector value_id={this.state.register.value_id} value_ids={[]} on_value_id={
-                    (v) => this.setState({register: {...this.state.register, value_id: v}})
+                <MeterValueIDSelector value_id={this.state.register.id} value_ids={[]} on_value_id={
+                    (v) => this.setState({register: {...this.state.register, id: v}})
                 } />
             </FormRow>,
         ];
@@ -261,7 +261,7 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
             nestingDepth={1}
             rows={this.props.table[1].registers.map((register, i) => {
                 const row: TableRow = {
-                    columnValues: [__("meters_modbus_tcp.content.registers_register")(register.start_address, get_meter_value_id_name(register.value_id))],
+                    columnValues: [__("meters_modbus_tcp.content.registers_register")(register.addr, get_meter_value_id_name(register.id))],
                     onRemoveClick: async () => {
                         this.props.on_table(util.get_updated_union(this.props.table, {registers: this.props.table[1].registers.filter((r, k) => k !== i)}));
                     },
@@ -289,12 +289,12 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
             onAddShow={async () => {
                 this.setState({
                     register: {
-                        register_type: null,
-                        start_address: this.props.table[1].register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1,
-                        value_type: null,
-                        offset: 0.0,
-                        scale_factor: 1.0,
-                        value_id: null,
+                        rtype: null,
+                        addr: this.props.table[1].register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1,
+                        vtype: null,
+                        off: 0.0,
+                        scale: 1.0,
+                        id: null,
                     },
                 });
             }}

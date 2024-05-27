@@ -86,13 +86,13 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
             for (uint16_t i = 0; i < registers_count; ++i) {
                 customs_specs[i].name = "Custom";
-                customs_specs[i].register_type = registers->get(i)->get("register_type")->asEnum<ModbusRegisterType>();
-                customs_specs[i].start_address = registers->get(i)->get("start_address")->asUint();
-                customs_specs[i].value_type = registers->get(i)->get("value_type")->asEnum<ModbusValueType>();
-                customs_specs[i].offset = registers->get(i)->get("offset")->asFloat();
-                customs_specs[i].scale_factor = registers->get(i)->get("scale_factor")->asFloat();
+                customs_specs[i].register_type = registers->get(i)->get("rtype")->asEnum<ModbusRegisterType>();
+                customs_specs[i].start_address = registers->get(i)->get("addr")->asUint();
+                customs_specs[i].value_type = registers->get(i)->get("vtype")->asEnum<ModbusValueType>();
+                customs_specs[i].offset = registers->get(i)->get("off")->asFloat();
+                customs_specs[i].scale_factor = registers->get(i)->get("scale")->asFloat();
 
-                customs_ids[i] = registers->get(i)->get("value_id")->asEnum<MeterValueID>();
+                customs_ids[i] = registers->get(i)->get("id")->asEnum<MeterValueID>();
 
                 customs_index[i] = i;
             }
