@@ -205,7 +205,7 @@ export class PowerManagerSettings extends ConfigComponent<'power_manager/config'
             }, this.error_string);
         }
 
-        let new_cfg: API.getType['power_manager/config'] = {...API.get("power_manager/config"), enabled: false};
+        let new_cfg: API.getType['power_manager/config'] = {...API.get("power_manager/config"), enabled: API.hasModule("energy_manager")};
 
         await super.sendSave(t, new_cfg);
     }
