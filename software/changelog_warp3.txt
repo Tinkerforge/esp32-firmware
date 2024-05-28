@@ -1,7 +1,7 @@
 2024-04-05: 2.3.0 (a2116460)
 - Initial release
 
-2024-05-27: 2.4.0 (<unknown>)
+2024-05-28: 2.4.0 (<unknown>)
 - Add SMA Speedwire as new meter type
 - Add Modbus TCP as new meter type
 - Support up to 5 configured energy meters
