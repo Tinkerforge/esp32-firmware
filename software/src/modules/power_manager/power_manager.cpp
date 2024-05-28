@@ -639,35 +639,37 @@ void PowerManager::update_energy()
             p_error_filtered_w = 0;
         } else {
             if (power_at_meter_smooth_w == INT32_MAX) {
+                p_error_w          = INT32_MAX;
+                p_error_filtered_w = INT32_MAX;
+
                 if (!printed_skipping_energy_update) {
-                    logger.printfln("Pausing energy updates because power value is not available yet.");
+                    logger.printfln("PV excess charging unavailable because power values are not available yet.");
                     printed_skipping_energy_update = true;
                 }
-                return;
             } else {
+                if (power_at_meter_filtered_w == INT32_MAX) {
+                    logger.printfln("Uninitialized power_at_meter_filtered_w leaked");
+                    return;
+                }
+
+                p_error_w          = target_power_from_grid_w - power_at_meter_smooth_w;
+                p_error_filtered_w = target_power_from_grid_w - power_at_meter_filtered_w;
+
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
+                if (p_error_w > 200) {
+                    energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Export);
+                } else if (p_error_w < -200) {
+                    energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Import);
+                } else {
+                    energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Balanced);
+                }
+#endif
+
                 if (printed_skipping_energy_update) {
-                    logger.printfln("Resuming energy updates because power value is now available.");
+                    logger.printfln("PV excess charging available because power values are now available.");
                     printed_skipping_energy_update = false;
                 }
             }
-
-            if (power_at_meter_filtered_w == INT32_MAX) {
-                logger.printfln("power_manager: Uninitialized power_at_meter_filtered_w leaked");
-                return;
-            }
-
-            p_error_w          = target_power_from_grid_w - power_at_meter_smooth_w;
-            p_error_filtered_w = target_power_from_grid_w - power_at_meter_filtered_w;
-
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
-            if (p_error_w > 200) {
-                energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Export);
-            } else if (p_error_w < -200) {
-                energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Import);
-            } else {
-                energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Balanced);
-            }
-#endif
         }
 
         switch (mode) {
@@ -682,6 +684,11 @@ void PowerManager::update_energy()
                 break;
             case MODE_PV:
             case MODE_MIN_PV:
+                if (p_error_w == INT32_MAX) {
+                    set_available_current(0);
+                    return;
+                }
+
                 // Excess charging enabled; use a simple P controller to adjust available power.
                 int32_t p_adjust_w;
                 int32_t p_adjust_filtered_w;
