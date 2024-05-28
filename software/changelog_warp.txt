@@ -377,11 +377,10 @@
 - Improve WiFi reception by disabling HT40 mode and 11b
 - Make energy meter initialization more robust
 - Fix charge manager distribution log access if verbose not requested
-- Make static IP configuration of Ethernet interface more reliable
 - Fix removal of controlled charger in charge manager sub-page
 - Improve translations
 - Update timezone database
-- Log connection duration when Ethernet, WiFi, MQTT or WireGuard connection is lost
+- Log connection duration when WiFi, MQTT or WireGuard connection is lost
 - Reset energy meter only once if requested via Modbus TCP
 - Make sure action requests are never ignored if requested via Modbus TCP
 - Fix broken status page links if charge manager config is changed but not applied
@@ -492,7 +491,6 @@
 - Use import energy for charge tracker etc. Switch over when factory resetting or removing all tracked charges
 - Add API to restart charge limits
 - Add event log message when meter becomes stuck or unreachable
-- Add warning to event log if Ethernet and WiFi station are used at the same time
 - Improve translations
 - Improve charge manager packet burst robustness
 - Improve performance when sending lots of data over MQTT
