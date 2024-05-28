@@ -558,7 +558,7 @@
 - Show disabled automation actions
 - Improve translations
 
-2024-05-28: 2.4.0 (<unknown>)
+2024-05-28: 2.4.0 (4c292c70)
 - Add PV excess charging
 - Add SMA Speedwire as new meter type
 - Add Modbus TCP as new meter type
@@ -575,7 +575,7 @@
 - Fix EVSE LED API names
 - Fix MQTT showing as deactivated before first connection attempt
 - Fix missing Modbus TCP discrete input for (unimplemented!) cp_disconnect
-- Fix WiFi scan showing as completed if no WiFi was found
+- Fix WiFi scan not showing as completed if no WiFi was found
 - Fix automatic web interface reload on firmware version change
 - Fix reported WiFi reception quality when not connected
 - Fix EVSE LED automation action

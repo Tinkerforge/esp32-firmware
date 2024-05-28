@@ -264,7 +264,7 @@
 - Fix NTP server configuration via DHCP
 - Fix showing 0 W on status page if no data is available
 - Fix MQTT showing as deactivated before first connection attempt
-- Fix WiFi scan showing as completed if no WiFi was found
+- Fix WiFi scan not showing as completed if no WiFi was found
 - Fix automatic web interface reload on firmware version change
 - Fix reported WiFi reception quality when not connected
 - Don't require login before sending main page to Safari
