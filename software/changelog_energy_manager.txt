@@ -223,16 +223,24 @@
 - Update timezone database
 - Preserve external phase request across reboots
 
-<unknown>: 2.1.0 (<unknown>)
-- Last changed 2024-05-27 96f5d28e
+2024-05-28: 2.1.0 (<unknown>)
+- Add SMA Speedwire as new meter type
+- Add Modbus TCP as new meter type
 - Add MQTTS and MQTT over WS(S) support
 - Add HTTP automation trigger
-- Add modal for WiFi scan results
+- Add more meter history plot zoom levels
 - Add phase switch buttons to status page if external control is enabled
+- Add modal for WiFi scan results
+- Add bricklet reflash and reboot buttons
 - SunSpec: Support multiple devices in one register set
 - SunSpec: Support multiple instances of the same model in one device
 - SunSpec: Improve boot scan robustness
 - SunSpec: Fix power factor scaling
+- SunSpec: Add support for DER models 701, 713 and 714
+- SunSpec: Add quirk for inverted SolarEdge power values
+- SunSpec: Improve Sungrow compatibility
+- SunSpec: Remove misleading phase information from model names
+- SunSpec: Improve discovery robustness
 - WiFi Enterprise: Fix EAP-TLS connections with client key
 - Fix low entropy of boot ID
 - Fix DSZ15DZMOD support of legacy API
@@ -248,18 +256,8 @@
 - Unify label/content split of status and other subpages
 - Show placeholder if RTC time is not set
 - Show disabled automation actions
-- Improve translations
-- Add bricklet reflash and reboot buttons
 - Fix visibility of empty power plot
 - Fix energy analysis graph colors changing on reload
-- Add SMA Speedwire as new meter type
-- Add Modbus TCP as new meter type
-- Add more meter history plot zoom levels
-- SunSpec: Add support for DER models 701, 713 and 714
-- SunSpec: Add quirk for inverted SolarEdge power values
-- SunSpec: Improve Sungrow compatibility
-- SunSpec: Remove misleading phase information from model names
-- SunSpec: Improve discovery robustness
 - Allow to re-enable 802.11b mode to improve WiFi reception
 - Fix NTP server configuration via DHCP
 - Fix showing 0 W on status page if no data is available
@@ -275,5 +273,4 @@
 - Disable gratuitous ARP
 - Disable trusting sender of IP packets for ARP
 - Disable TLS elliptic curves smaller than the required default of 256
-- Improve translations
 - Allow up to 2K of HTTP request headers
