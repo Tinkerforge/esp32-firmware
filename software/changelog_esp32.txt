@@ -54,7 +54,6 @@
 - Fix WiFi not allowing configuration to be saved if only the selected network has changed
 - Fix float configuration values being dropped if configuration is saved by pressing enter in float input
 - Fix status page label widths
-- Fix RTC time handling
 - Fix error feedback of text inputs
 - Fix WiFi station passphrase placeholder text
 - Fix deletion of WiFi station passphrase
@@ -64,7 +63,6 @@
 - Fix race condition in web server initialization
 - Fix ESP crash when accessing API concurrently
 - Fix web interface errors caused by wrong web socket message order
-- Fix loading of RTC time on Sundays
 - Fix recovery API call payloads
 - Fix invalid feedback if no subnet mask is selected
 - Fix potential deadlock when calling API commands
@@ -114,7 +112,6 @@
 - Work around Firefox table width calculation bug
 - Check that entered IP addresses are not network or broadcast addresses
 - Improve WebSocket connection establishment reliability and performance
-- Don't draw zero line outside plot area
 - Improve WiFi softAP performance while connecting to WiFi network
 - Improve error feedback in web interface forms
 - Show hint if capslock is enabled when entering passwords
@@ -127,12 +124,10 @@
 - WiFi Enterprise: Fix EAP-TLS connections with client key
 - Print module in event log messages
 - Unify label/content split of status and other subpages
-- Show placeholder if RTC time is not set
 - Allow to re-enable 802.11b mode to improve WiFi reception
 - Don't require login before sending main page to Safari
 - Update default NTP servers
 - Improve NTP sync speed
-- Don't overwrite fresh NTP synced time with probably older RTC time
 - Improve web server robustness
 - Disable gratuitous ARP
 - Disable trusting sender of IP packets for ARP
