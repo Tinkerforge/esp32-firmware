@@ -262,7 +262,9 @@ let x = {
                         <td>Front LED blink pattern</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Controls the LED in the charger's front button. <ul>
+                        <td>
+                            Controls the LED in the charger's front button.
+                            <ul>
                                 <li>-1: EVSE controls LED</li>
                                 <li>0: LED off</li>
                                 <li>1-254: LED dimmed</li>
