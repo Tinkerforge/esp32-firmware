@@ -39,9 +39,6 @@ function get_print_table_children(action: PrintAutomationAction) {
 }
 
 function get_print_edit_children(action: PrintAutomationAction, on_action: (action: AutomationAction) => void) {
-    const mqtt_config = API.get("mqtt/config");
-    const [isInvalid, isInvalidSetter] = useState(false);
-
     return [
         <FormRow label={__("automation.automation.print_action_message")}>
              <InputText
@@ -55,7 +52,7 @@ function get_print_edit_children(action: PrintAutomationAction, on_action: (acti
     ]
 }
 
-function new_mqtt_config(): AutomationAction {
+function new_print_config(): AutomationAction {
     return [
         AutomationActionID.Print,
         {
@@ -69,7 +66,7 @@ export function init(): InitResult {
         action_components: {
             [AutomationActionID.Print]: {
                 name: __("automation.automation.print_action"),
-                new_config: new_mqtt_config,
+                new_config: new_print_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_print_edit_children,
                 get_table_children: get_print_table_children,
