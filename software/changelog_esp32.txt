@@ -36,7 +36,7 @@
 - Improve network timeout handing in web interface
 - Fix firmware hanging after 2^32 ms (~ 49 days 17 hours)
 
-2024-05-28: 2.0.3 (<unknown>)
+2024-05-28: 2.0.3 (e99886bf)
 - Add watchdog protecting against WebSocket failure
 - Add API to retrieve core dump
 - Add watchdog protecting against firmware lock-ups
