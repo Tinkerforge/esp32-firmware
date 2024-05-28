@@ -1,18 +1,17 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3 -u
 
 import sys
 import os
 import argparse
 from flask import Flask, Response, request
 from flask_sock import Sock  # pip install flask-sock
-from simple_websocket import ws as WS
 import websocket  # pip install websocket-client
 from urllib.request import urlopen, Request
+from urllib.error import HTTPError
 import queue
 import json
 import threading
 import time
-import traceback
 
 app = Flask(__name__)
 sock = Sock(app)
@@ -22,6 +21,7 @@ ws_cache_lock = threading.RLock()
 ws_cache = {}
 ws_queues = []
 ws_thread_queue = queue.Queue()
+
 
 def ws_thread_fn(q: queue.Queue):
     while True:
@@ -55,7 +55,7 @@ def ws_thread_fn(q: queue.Queue):
 
                     for ws_queue in ws_queues:
                         ws_queue.put(text)
-            except Exception as e:
+            except:
                 break
 
 
@@ -71,9 +71,12 @@ def index():
 
 @app.route('/<path:path>', methods=['GET', 'PUT'])
 def forward_html(path):
-    with urlopen(Request(f'http://{host}/{path}', data=request.data, method=request.method)) as f:
-        # Exclude Transfer-Encoding: chunked header.  The chunked response is already reassembled.
-        return Response(f.read(), headers={x: f.headers[x] for x in f.headers if x != "Transfer-Encoding"})
+    try:
+        with urlopen(Request(f'http://{host}/{path}', data=request.data, method=request.method)) as f:
+            # Exclude Transfer-Encoding: chunked header.  The chunked response is already reassembled.
+            return Response(f.read(), headers={x: f.headers[x] for x in f.headers if x != "Transfer-Encoding"})
+    except HTTPError as e:
+        return Response(e.fp.read(), e.code)
 
 
 @sock.route('/ws')
@@ -101,12 +104,12 @@ def forward_ws(sock):
         with ws_cache_lock:
             ws_queues.remove(q)
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('host')
+
 args = parser.parse_args(sys.argv[1:])
 host = args.host
-
-
 
 thread = threading.Thread(target=ws_thread_fn, args=[ws_thread_queue])
 thread.start()
