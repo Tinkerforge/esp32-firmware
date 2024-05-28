@@ -46,29 +46,29 @@ let x = {
                         <td>Firmware-Version Major</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Beispielsweise 2 für Firmware 2.0.8-​63218f23</td>
+                        <td>Beispielsweise 2 für Firmware 2.0.8-​63218F23</td>
                     </tr>
                     <tr>
                         <td>4</td>
                         <td>Firmware-Version Minor</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Beispielsweise 0 für Firmware 2.0.8-​63218f23</td>
+                        <td>Beispielsweise 0 für Firmware 2.0.8-​63218F23</td>
                     </tr>
                     <tr>
                         <td>6</td>
                         <td>Firmware-Version Patch</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Beispielsweise 8 für Firmware 2.0.8-​63218f23</td>
+                        <td>Beispielsweise 8 für Firmware 2.0.8-​63218F23</td>
                     </tr>
                     <tr>
                         <td>8</td>
                         <td>Zeitstempel der Firmware</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Unix-Timestamp des Zeitpunktes an dem eine Firmware gebaut wurde. Beispielsweise 0x63218f23 für
-                            Firmware 2.0.8-​63218f23 (in Dezimal 1663143715), entspricht dem 14. September 2022 08:21:55 UTC.</td>
+                        <td>Unix-Timestamp des Zeitpunktes an dem eine Firmware gebaut wurde. Beispielsweise 0x63218F23 für
+                            Firmware 2.0.8-​63218F23 (in Dezimal 1663143715), entspricht dem 14. September 2022 08:21:55 UTC.</td>
                     </tr>
                     <tr>
                         <td>10</td>
@@ -269,12 +269,12 @@ let x = {
                             <ul>
                                 <li>-1: EVSE kontrolliert LED</li>
                                 <li>0: LED aus</li>
-                                <li>1-254: LED gedimmt</li>
+                                <li>1 bis 254: LED gedimmt</li>
                                 <li>255: LED an</li>
                                 <li>1001: bekanntes NFC-Tag erkannt</li>
                                 <li>1002: unbekanntes NFC-Tag erkannt</li>
                                 <li>1003: NFC-Tag notwendig</li>
-                                <li>2001-2010: Fehlerblinken 1-10</li>
+                                <li>2001 bis 2010: Fehlerblinken 1 bis 10 mal</li>
                             </ul>
                         </td>
                     </tr>
@@ -284,7 +284,7 @@ let x = {
                         <td>uint32</td>
                         <td>evse</td>
                         <td>Die Dauer in Millisekunden für die das in Register 1004 gesetzte Blinkmuster angezeigt werden soll.
-                            Maximal 65535ms werden unterstützt.</td>
+                            Maximal 65535 ms werden unterstützt.</td>
                     </tr>
                     <tr>
                         <td>2000</td>

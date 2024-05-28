@@ -46,29 +46,29 @@ let x = {
                         <td>Firmware Version Major</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>For example 2 for firmware 2.0.8-​63218f23</td>
+                        <td>For example 2 for firmware 2.0.8-​63218F23</td>
                     </tr>
                     <tr>
                         <td>4</td>
                         <td>Firmware Version Minor</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>For example 0 for firmware 2.0.8-​63218f23</td>
+                        <td>For example 0 for firmware 2.0.8-​63218F23</td>
                     </tr>
                     <tr>
                         <td>6</td>
                         <td>Firmware Version Patch</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>For example 8 for firmware 2.0.8-​63218f23</td>
+                        <td>For example 8 for firmware 2.0.8-​63218F23</td>
                     </tr>
                     <tr>
                         <td>8</td>
                         <td>Firmware build timestamp</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Unix timestamp of the point in time when the firmware was built. For example 0x63218f23 for firmware
-                            2.0.8-​63218f23 (1663143715 in decimal), i.e. 09/14/2022 08:21:55 UTC.</td>
+                        <td>Unix timestamp of the point in time when the firmware was built. For example 0x63218F23 for firmware
+                            2.0.8-​63218F23 (1663143715 in decimal), i.e. 09/14/2022 08:21:55 UTC.</td>
                     </tr>
                     <tr>
                         <td>10</td>
@@ -267,12 +267,12 @@ let x = {
                             <ul>
                                 <li>-1: EVSE controls LED</li>
                                 <li>0: LED off</li>
-                                <li>1-254: LED dimmed</li>
+                                <li>1 to 254: LED dimmed</li>
                                 <li>255: LED on</li>
                                 <li>1001: known NFC tag seen</li>
                                 <li>1002: unknown NFC tag seen</li>
                                 <li>1003: NFC tag required</li>
-                                <li>2001-2010: blink 1-10x</li>
+                                <li>2001 to 2010: blink 1 to 10 times</li>
                             </ul>
                         </td>
                     </tr>
