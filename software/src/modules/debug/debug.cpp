@@ -475,10 +475,24 @@ void Debug::register_events()
     register_task("wpsT",            0, ExpectMissing);
 }
 
+#if defined(BOARD_HAS_PSRAM) && BOARD_HAS_PSRAM == 1
+#define CHECK_PSRAM 1
+#else
+#define CHECK_PSRAM 0
+#endif
+
 void Debug::loop()
 {
     micros_t start = now_us();
-    bool check_ok = heap_caps_check_integrity_all(integrity_check_print_errors);
+    if (CHECK_PSRAM && check_psram_next) {
+        psram_heap_valid = heap_caps_check_integrity(MALLOC_CAP_SPIRAM, integrity_check_print_errors);
+        check_psram_next = false;
+    } else {
+        internal_heap_valid = heap_caps_check_integrity(MALLOC_CAP_INTERNAL, integrity_check_print_errors);
+        if (CHECK_PSRAM) {
+            check_psram_next = true;
+        }
+    }
     uint32_t runtime = static_cast<uint32_t>(static_cast<int64_t>(now_us() - start));
 
     integrity_check_runs++;
@@ -488,7 +502,7 @@ void Debug::loop()
         integrity_check_runtime_max = runtime;
     }
 
-    if (!check_ok) {
+    if (!(internal_heap_valid & psram_heap_valid)) {
         state_slow.get("heap_integrity_ok")->updateBool(false);
         integrity_check_print_errors = false;
     }
