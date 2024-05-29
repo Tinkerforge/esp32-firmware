@@ -85,6 +85,13 @@ void PowerManager::pre_setup()
         return "";
     }};
 
+    dynamic_load_config = Config::Object({
+        {"enabled", Config::Bool(false)},
+        {"current_limit", Config::Uint(0, 16, 9999999)}, // < 10kA
+        {"largest_consumer_current", Config::Uint(40, 0, 999999)}, // < 1kA
+        {"safety_margin_pct", Config::Uint(5, 0, 50)},
+    });
+
     debug_config = Config::Object({
         {"hysteresis_time", Config::Uint(HYSTERESIS_MIN_TIME_MINUTES, 0, 60)}, // in minutes
     });
@@ -194,6 +201,7 @@ void PowerManager::setup()
     initialized = true;
 
     api.restorePersistentConfig("power_manager/config", &config);
+    api.restorePersistentConfig("power_manager/dynamic_load_config", &dynamic_load_config);
 
 #if MODULE_DEBUG_AVAILABLE()
     api.restorePersistentConfig("power_manager/debug_config", &debug_config);
@@ -386,6 +394,7 @@ void PowerManager::register_urls()
     api.addState("power_manager/state", &state);
 
     api.addPersistentConfig("power_manager/config", &config);
+    api.addPersistentConfig("power_manager/dynamic_load_config", &dynamic_load_config);
 #if MODULE_DEBUG_AVAILABLE()
     api.addPersistentConfig("power_manager/debug_config", &debug_config);
 #endif

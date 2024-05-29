@@ -27,6 +27,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { Button, Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
+import { OutputFloat } from "src/ts/components/output_float";
 import { Switch } from "../../ts/components/switch";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
@@ -38,6 +39,7 @@ type ChargeManagerConfig = API.getType["charge_manager/config"];
 
 interface ChargeManagerState {
     showExpert: boolean
+    dynamicLoadConfig: API.getType['power_manager/dynamic_load_config']
 }
 
 export class ChargeManagerSettings extends ConfigComponent<'charge_manager/config', {status_ref?: RefObject<ChargeManagerStatus>}, ChargeManagerState> {
@@ -49,11 +51,25 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
               __("charge_manager.script.reboot_content_changed"), {
                   showExpert: false
               });
+
+        util.addApiEventListener('power_manager/dynamic_load_config', (ev) => {
+            this.setState({dynamicLoadConfig: ev.data});
+        });
     }
 
     override async sendSave(t: "charge_manager/config", cfg: ChargeManagerConfig) {
-        let {enable_charge_manager, chargers, maximum_available_current, ...new_values} = cfg;
+        try {
+            await API.save('power_manager/dynamic_load_config', {
+                enabled: this.state.dynamicLoadConfig.enabled,
+                current_limit: this.state.dynamicLoadConfig.current_limit,
+                largest_consumer_current: this.state.dynamicLoadConfig.largest_consumer_current,
+                safety_margin_pct: this.state.dynamicLoadConfig.safety_margin_pct,
+            }, __("power_manager.script.save_failed"));
+        } catch (e) {
+            console.log("charge_manager save failed", e);
+        }
 
+        let {enable_charge_manager, chargers, maximum_available_current, ...new_values} = cfg;
         let new_cfg: ChargeManagerConfig = {...API.get("charge_manager/config"), ...new_values};
 
         await super.sendSave(t, new_cfg);
@@ -230,13 +246,80 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                             </Collapse>
                         </>
                     }
-                    <FormSeparator heading={__("charge_manager.content.header_load_management")} />
-                    <FormRow label="">
-                        <div>
-                            {__("charge_manager.content.load_management_explainer")}
-                        </div>
-                    </FormRow>
-                </ConfigForm>
+                    {API.hasModule("power_manager") ?
+                        <>
+                            <FormSeparator heading={__("charge_manager.content.header_load_management")} />
+
+                            <FormRow label="">
+                                <div>
+                                    {__("charge_manager.content.load_management_explainer")}
+                                </div>
+                            </FormRow>
+
+                            <FormRow label={__("charge_manager.content.dlm_enabled")}>
+                                <Switch desc={__("charge_manager.content.dlm_enabled_desc")}
+                                    checked={state.dynamicLoadConfig.enabled}
+                                    onClick={() => this.setState({dynamicLoadConfig: {...state.dynamicLoadConfig, enabled: !state.dynamicLoadConfig.enabled}})}
+                                />
+                            </FormRow>
+
+                            <FormRow label={__("charge_manager.content.dlm_current_limit")} label_muted={__("charge_manager.content.dlm_current_limit_muted")}>
+                                <InputFloat
+                                    unit="A"
+                                    value={state.dynamicLoadConfig.current_limit / 1000}
+                                    onValue={(v) => this.setState({dynamicLoadConfig: {...state.dynamicLoadConfig, current_limit: v * 1000}})}
+                                    digits={0}
+                                    min={32}
+                                    max={9999}
+                                />
+                            </FormRow>
+
+                            <FormRow label={__("charge_manager.content.dlm_largest_consumer_current")} label_muted={__("charge_manager.content.dlm_largest_consumer_current_muted")}>
+                                <InputFloat
+                                    unit="A"
+                                    value={state.dynamicLoadConfig.largest_consumer_current / 1000}
+                                    onValue={(v) => this.setState({dynamicLoadConfig: {...state.dynamicLoadConfig, largest_consumer_current: v * 1000}})}
+                                    digits={0}
+                                    min={16}
+                                    max={state.dynamicLoadConfig.current_limit / 1000}
+                                />
+                            </FormRow>
+
+                            <FormRow label={__("charge_manager.content.dlm_safety_margin_pct")} label_muted={__("charge_manager.content.dlm_safety_margin_pct_muted")}>
+                                <InputFloat
+                                    unit="%"
+                                    value={state.dynamicLoadConfig.safety_margin_pct}
+                                    onValue={(v) => this.setState({dynamicLoadConfig: {...state.dynamicLoadConfig, safety_margin_pct: v}})}
+                                    digits={0}
+                                    min={0}
+                                    max={50}
+                                />
+                            </FormRow>
+
+                            <FormRow label="Target constant current" label_muted="for debugging">
+                                <OutputFloat
+                                    unit="A"
+                                    value={Math.min((state.dynamicLoadConfig.current_limit * 1.5) - state.dynamicLoadConfig.largest_consumer_current, state.dynamicLoadConfig.current_limit)
+                                        * (100 - state.dynamicLoadConfig.safety_margin_pct) / 100}
+                                    digits={3}
+                                    scale={3}
+                                />
+                            </FormRow>
+
+                            <FormRow label="Expected peak current" label_muted="for debugging">
+                                <OutputFloat
+                                    unit="A"
+                                    value={Math.min((state.dynamicLoadConfig.current_limit * 1.5) - state.dynamicLoadConfig.largest_consumer_current, state.dynamicLoadConfig.current_limit)
+                                        * (100 - state.dynamicLoadConfig.safety_margin_pct) / 100 + state.dynamicLoadConfig.largest_consumer_current}
+                                    digits={3}
+                                    scale={3}
+                                />
+                            </FormRow>
+                        </>
+                    :
+                        null
+                    }
+                    </ConfigForm>
             </SubPage>
         )
     }
