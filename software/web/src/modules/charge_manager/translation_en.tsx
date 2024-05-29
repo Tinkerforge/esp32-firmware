@@ -83,7 +83,15 @@ let x = {
             "charge_manager_chargers_reset_modal_text": "Resetting the charge manager configuration also deletes the list of controlled chargers. Continue?",
 
             "header_load_management": "Dynamic load management",
-            "load_management_explainer": "Adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the grid connection. (Coming soon: This feature is currently in development.)",
+            "load_management_explainer": "filler",
+            "dlm_enabled": "Enable dynamic load management",
+            "dlm_enabled_desc": "Adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the grid connection.",
+            "dlm_current_limit": "Grid current limit",
+            "dlm_current_limit_muted": "connection's fuse rating",
+            "dlm_largest_consumer_current": "Largest consumer current",
+            "dlm_largest_consumer_current_muted": "per phase",
+            "dlm_safety_margin_pct": "Safety margin",
+            "dlm_safety_margin_pct_muted": "",
 
             "managed_disabled": "Charge management settings will be ignored: Charger only controls itself or is controlled externally."
         },

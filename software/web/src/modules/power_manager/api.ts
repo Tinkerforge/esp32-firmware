@@ -39,6 +39,13 @@ export interface config {
     cloud_filter_mode: number;
 }
 
+export interface dynamic_load_config {
+    enabled: boolean;
+    current_limit: number;
+    largest_consumer_current: number;
+    safety_margin_pct: number;
+}
+
 export interface debug_config {
     hysteresis_time: number;
 }

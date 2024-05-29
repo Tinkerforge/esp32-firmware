@@ -83,7 +83,15 @@ let x = {
             "charge_manager_settings_reset_modal_text": "Zurücksetzen der Lastmanagement-Konfiguration löscht auch die Liste der kontrollierten Wallboxen. Fortfahren?",
 
             "header_load_management": "Dynamisches Lastmanagement",
-            "load_management_explainer": "Regelt die kontrollierten Wallboxen so, dass der maximal zulässige Strom des Netzanschlusses auf keiner Phase überschritten wird. (Bald verfügbar: Diese Funktion befindet sich aktuell noch in der Entwicklung.)",
+            "load_management_explainer": "filler",
+            "dlm_enabled": "Dynamisches Lastmanagement aktiviert",
+            "dlm_enabled_desc": "Regelt die kontrollierten Wallboxen so, dass der maximal zulässige Strom des Netzanschlusses auf keiner Phase überschritten wird.",
+            "dlm_current_limit": "Maximaler Strom am Netzanschluss",
+            "dlm_current_limit_muted": "Nennwert der Absicherung",
+            "dlm_largest_consumer_current": "Strombedarf des größten Einzelverbrauchers",
+            "dlm_largest_consumer_current_muted": "pro Phase",
+            "dlm_safety_margin_pct": "Sicherheitsmarge",
+            "dlm_safety_margin_pct_muted": "",
 
             "managed_disabled": "Lastmanagement-Einstellungen werden ignoriert: Wallbox steuert nur sich selbst oder ist fremdgesteuert."
         },
