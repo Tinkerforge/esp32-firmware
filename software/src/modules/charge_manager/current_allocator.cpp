@@ -68,23 +68,133 @@ void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const uin
     );
 }
 
+
+GridPhase get_phase(PhaseRotation rot, ChargerPhase phase) {
+    return (GridPhase)(((int)rot >> (6 - 2 * (int)phase)) & 0x3);
+}
+
+Cost get_cost(uint32_t current_to_allocate,
+              ChargerPhase phases_to_allocate,
+              PhaseRotation rot,
+              uint32_t allocated_current,
+              ChargerPhase allocated_phases)
+{
+    Cost cost{};
+
+    // Reclaim allocated current before reallocating
+    if (allocated_current != 0) {
+        cost = get_cost(allocated_current, allocated_phases, rot, 0, (ChargerPhase) 0);
+        for(int i = 0; i < 4; ++i)
+            cost[i] = -cost[i];
+    }
+
+    if (rot == PhaseRotation::Unknown) {
+        // Phase rotation unknown. We have to assume that each phase could be used
+        cost.pv += (int)phases_to_allocate * current_to_allocate;
+        cost.l1 += current_to_allocate;
+        cost.l2 += current_to_allocate;
+        cost.l3 += current_to_allocate;
+    } else {
+        cost.pv += (int)phases_to_allocate * current_to_allocate;
+
+        for (int i = 1; i <= (int)phases_to_allocate; ++i) {
+            cost[get_phase(rot, (ChargerPhase)i)] += current_to_allocate;
+        }
+    }
+
+    return cost;
+}
+
+#define filter(x) do { \
+    matched = filter_chargers([](uint32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
+            return (x); \
+        }, \
+        idx_array, \
+        current_allocation, \
+        phase_allocation, \
+        charger_state, \
+        charger_count); \
+    } while(0)
+
+#define sort(group, filter) do {\
+    sort_chargers( \
+        [](uint32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
+            return (group); \
+        }, \
+        [](CompareInfo left, CompareInfo right) { \
+            return (filter); \
+        }, \
+        idx_array, \
+        current_allocation, \
+        phase_allocation, \
+        charger_state, \
+        matched); \
+    } while (0)
+
+
+void apply_cost(Cost cost, CurrentLimits* limits) {
+    limits->pv_excess -= cost.pv;
+    limits->pv_excess_filtered -= cost.pv;
+    limits->grid_l1 -= cost.l1;
+    limits->grid_l2 -= cost.l2;
+    limits->grid_l3 -= cost.l3;
+    limits->grid_l1_filtered -= cost.l1;
+    limits->grid_l2_filtered -= cost.l2;
+    limits->grid_l3_filtered -= cost.l3;
+}
+
+void stage_1(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, const CurrentAllocatorState *ca_state) {
+    int matched = 0;
+
+    filter(state->is_charging);
+
+    sort(
+          (state->phases == 1 && state->phase_rotation == PhaseRotation::Unknown) ? 0
+        : (state->phases == 3 && !state->phase_switch_supported) ? 1
+        : (state->phases == 3 && state->phase_switch_supported && state->phase_rotation == PhaseRotation::Unknown) ? 2
+        : (state->phases == 3 && state->phase_switch_supported && state->phase_rotation != PhaseRotation::Unknown) ? 3
+        : (state->phases == 1 && state->phase_rotation != PhaseRotation::Unknown) ? 4
+        : 999,
+        true // TODO
+    );
+
+    auto min_1p = cfg->minimum_current_1p;
+    auto min_3p = cfg->minimum_current_3p;
+
+    if (min_1p > min_3p)
+        min_1p = min_3p;
+
+    for (int i = 0; i < matched; ++i) {
+        const auto *state = &charger_state[idx_array[i]];
+        // Give one phase minimum current to all chargers that are 1p or can be switched to 1p.
+        // Only give three phase current to fixed 3p chargers.
+        bool activate_3p = state->phases != 1 && !state->phase_switch_supported;
+
+        auto current = activate_3p ? min_1p : min_3p;
+        if (state->supported_current < current) {
+            logger.printfln("Charger %d does not support %s phase minimum current. Skipping", activate_3p ? "three" : "one", idx_array[i]);
+            // TODO: reset global hysteresis here?
+            // This charger was active (because inactive chargers are filtered out)
+            // so we've just now decided to shut it down.
+            continue;
+        }
+
+        auto cost = get_cost(current, activate_3p ? ChargerPhase::P3 : ChargerPhase::P1, state->phase_rotation, 0, (ChargerPhase) 0);
+
+        bool pv_excess_exceeded = ca_state->global_hysteresis_elapsed && limits->pv_excess < cost.pv && limits->pv_excess_filtered < cost.pv;
+        bool phases_exceeded = limits->grid_l1 < cost.l1 || limits->grid_l2 < cost.l2 || limits->grid_l3 < cost.l3;
+
+        if (pv_excess_exceeded || phases_exceeded)
+            // TODO: reset global hysteresis here
+            continue;
+
+        apply_cost(cost, limits);
+        current_allocation[idx_array[i]] = current;
+        phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
+    }
+}
+
 /*
-
-struct CurrentLimits {
-    uint32_t pv_excess;
-    uint32_t grid_l1;
-    uint32_t grid_l2;
-    uint32_t grid_l3;
-
-    uint32_t pv_excess_filtered;
-    uint32_t grid_l1_filtered;
-    uint32_t grid_l2_filtered;
-    uint32_t grid_l3_filtered;
-
-    uint32_t supply_cable_l1;
-    uint32_t supply_cable_l2;
-    uint32_t supply_cable_l3;
-};
 
 Accumulate (allocation cycle time * allocated current * allocated phases) per charger -> allocated charge
 

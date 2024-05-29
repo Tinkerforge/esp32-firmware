@@ -65,3 +65,44 @@ struct CompareInfo {
 typedef bool(*compare_fn)(CompareInfo /*left*/, CompareInfo /*right*/);
 
 void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count);
+
+struct Cost {
+    int pv;
+    int l1;
+    int l2;
+    int l3;
+
+    int& operator[](size_t idx) { return *(&pv + idx); }
+    const int& operator[](size_t idx) const { return *(&pv + idx); }
+
+    int& operator[](GridPhase p) { return *(&pv + (int)p); }
+    const int& operator[](GridPhase p) const { return *(&pv + (int)p); }
+};
+static_assert(sizeof(Cost) == 4 * sizeof(int), "Unexpected size of Cost");
+
+GridPhase get_phase(PhaseRotation rot, ChargerPhase phase);
+
+Cost get_cost(uint32_t current_to_allocate,
+              ChargerPhase phases_to_allocate,
+              PhaseRotation rot,
+              uint32_t allocated_current,
+              ChargerPhase allocated_phases);
+
+struct CurrentLimits {
+    uint32_t grid_l1;
+    uint32_t grid_l2;
+    uint32_t grid_l3;
+
+    uint32_t grid_l1_filtered;
+    uint32_t grid_l2_filtered;
+    uint32_t grid_l3_filtered;
+
+    uint32_t pv_excess;
+    uint32_t pv_excess_filtered;
+
+    uint32_t supply_cable_l1;
+    uint32_t supply_cable_l2;
+    uint32_t supply_cable_l3;
+};
+
+void stage_1(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, const CurrentAllocatorState *ca_state);

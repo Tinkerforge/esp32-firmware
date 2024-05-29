@@ -22,17 +22,34 @@ struct CurrentAllocatorConfig {
 // R+W _only_ by current_allocator.cpp
 struct CurrentAllocatorState {
     bool last_print_local_log_was_error = false;
+    bool global_hysteresis_elapsed = false;
+};
+
+#define PHASE_ROTATION(x, y, z) (0 << 6) | (((int)x << 4) | ((int)y << 2) | (int)z)
+
+enum class ChargerPhase {
+    PV,
+    P1, // L1 if rotation is L123
+    P2,
+    P3
+};
+
+enum class GridPhase {
+    PV,
+    L1,
+    L2,
+    L3
 };
 
 enum class PhaseRotation {
-    NotApplicable = -1, // Only for OCPP compat. Maybe also for fixed three phase chargers?
     Unknown = 0, // Make unknown 0 so that memsetting the ChargerState struct sets this as expected.
-    L123, // Standard Reference Phasing (= RST in OCPP)
-    L132, // Reversed Reference Phasing (= RTS in OCPP)
-    L213, // Reversed 240 degree rotation (= SRT in OCPP)
-    L231, // Standard 120 degree rotation (= STR in OCPP)
-    L312, // Standard 240 degree rotation (= TRS in OCPP)
-    L321  // Reversed 120 degree rotation (= TSR in OCPP)
+    NotApplicable = 1, // Put this here so that enum >> 1 is the number of the first phase and enum & 1 is is the rotation
+    L123 = PHASE_ROTATION(GridPhase::L1,GridPhase::L2,GridPhase::L3), // Standard Reference Phasing (= RST in OCPP)
+    L132 = PHASE_ROTATION(GridPhase::L1,GridPhase::L3,GridPhase::L2), // Reversed Reference Phasing (= RTS in OCPP)
+    L231 = PHASE_ROTATION(GridPhase::L2,GridPhase::L3,GridPhase::L1), // Standard 120 degree rotation (= STR in OCPP)
+    L213 = PHASE_ROTATION(GridPhase::L2,GridPhase::L1,GridPhase::L3), // Reversed 240 degree rotation (= SRT in OCPP)
+    L321 = PHASE_ROTATION(GridPhase::L3,GridPhase::L2,GridPhase::L1), // Reversed 120 degree rotation (= TSR in OCPP)
+    L312 = PHASE_ROTATION(GridPhase::L3,GridPhase::L1,GridPhase::L2), // Standard 240 degree rotation (= TRS in OCPP)
 };
 
 struct ChargerState {

@@ -9,6 +9,8 @@
 
 #define _assert(x, eq, y) do {auto _x = (x); auto _y = (y); if (!(_x eq _y)){ std::cout << __FILE__ << ':' << __LINE__ << ' ' << __func__ << " Assertion \x1b[31m" << #x << ' ' << #eq << ' ' << #y "\x1b[00m failed: !(" << _x << ' ' << #eq << ' ' << _y << ")\n";return;}} while(0)
 
+#define _assert_true(x) _assert(x, ==, true)
+
 #define MINIMUM_CURRENT 6000
 #define ENABLE_CURRENT 9000
 
@@ -20,11 +22,26 @@ const ChargerState charger_state[] = {
 /* 2 */ {.phases = 1, .phase_switch_supported = true,  .phase_rotation = PhaseRotation::Unknown, .wants_to_charge = true,              .supported_current = 12000,                           .charger_state = 1 },
 /* 3 */ {.phases = 1, .phase_switch_supported = true,  .phase_rotation = PhaseRotation::L231,    .is_charging = true,                  .supported_current = 13000, .allowed_current = 13000, .charger_state = 3 },
 /* 4 */ {.phases = 3, .phase_switch_supported = false, .phase_rotation = PhaseRotation::Unknown, .wants_to_charge = true,              .supported_current = 14000,                           .charger_state = 1 },
-/* 5 */ {.phases = 3, .phase_switch_supported = false, .phase_rotation = PhaseRotation::L123,    .wants_to_charge_low_priority = true, .supported_current = 15000,                           .charger_state = 1 },
+/* 5 */ {.phases = 3, .phase_switch_supported = false, .phase_rotation = PhaseRotation::L132,    .wants_to_charge_low_priority = true, .supported_current = 15000,                           .charger_state = 1 },
 /* 6 */ {.phases = 3, .phase_switch_supported = true,  .phase_rotation = PhaseRotation::Unknown, .is_charging = true,                  .supported_current = 16000, .allowed_current = 16000, .charger_state = 3 },
 /* 7 */ {.phases = 3, .phase_switch_supported = true,  .phase_rotation = PhaseRotation::L312,    }
 };
 #pragma clang diagnostic pop
+
+bool range_is(std::initializer_list<int> needles, int *haystack, int start = 0) {
+    for (const int n : needles) {
+        bool found = false;
+        for(int i = start; i < start + needles.size(); ++i) {
+            if (haystack[i] == n) {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+            return false;
+    }
+    return true;
+}
 
 void test_filter_chargers() {
     size_t charger_count = 8;
@@ -242,9 +259,235 @@ void test_sort_chargers() {
         : 999,
         true // TODO
     );
+
+    _assert_true(range_is({0, 2}, idx_array, 0));
+    _assert_true(range_is({4, 5}, idx_array, 2));
+    _assert_true(range_is({6},    idx_array, 4));
+    _assert_true(range_is({7},    idx_array, 5));
+    _assert_true(range_is({1, 3}, idx_array, 6));
+
+    // Test sort stage 5
+    sort(
+          (state->phases == 3 && !state->phase_switch_supported) ? 0
+        : (state->phases == 1 && !state->phase_switch_supported && state->phase_rotation == PhaseRotation::Unknown) ? 1
+        : (state->phase_switch_supported && state->phase_rotation == PhaseRotation::Unknown) ? 2
+        : (state->phases == 1 && !state->phase_switch_supported && state->phase_rotation != PhaseRotation::Unknown) ? 3
+        : (state->phase_switch_supported && state->phase_rotation != PhaseRotation::Unknown) ? 4
+        : 999,
+        true // TODO
+    );
+
+    _assert_true(range_is({4, 5}, idx_array, 0));
+    _assert_true(range_is({0}, idx_array, 2));
+    _assert_true(range_is({2, 6},    idx_array, 3));
+    _assert_true(range_is({1},    idx_array, 5));
+    _assert_true(range_is({3, 7}, idx_array, 6));
+
+    // Test sort stage 7
+    sort(
+        state->phases == 3 ? 0 : 1,
+        true // TODO
+    );
+
+    _assert_true(range_is({4, 5, 6, 7}, idx_array, 0));
+    _assert_true(range_is({0, 1, 2, 3}, idx_array, 4));
+
+    // Test sort stage 8
+    sort(
+        state->phases == 3 ? 0 : 1,
+        true // TODO
+    );
+
+    _assert_true(range_is({4, 5, 6, 7}, idx_array, 0));
+    _assert_true(range_is({0, 1, 2, 3}, idx_array, 4));
+
+}
+
+void test_get_phase() {
+    _assert((int)get_phase(PhaseRotation::L123, ChargerPhase::P1), ==, (int)GridPhase::L1);
+    _assert((int)get_phase(PhaseRotation::L123, ChargerPhase::P2), ==, (int)GridPhase::L2);
+    _assert((int)get_phase(PhaseRotation::L123, ChargerPhase::P3), ==, (int)GridPhase::L3);
+    _assert((int)get_phase(PhaseRotation::L123, ChargerPhase::PV), ==, (int)GridPhase::PV);
+
+    _assert((int)get_phase(PhaseRotation::L132, ChargerPhase::P1), ==, (int)GridPhase::L1);
+    _assert((int)get_phase(PhaseRotation::L132, ChargerPhase::P2), ==, (int)GridPhase::L3);
+    _assert((int)get_phase(PhaseRotation::L132, ChargerPhase::P3), ==, (int)GridPhase::L2);
+    _assert((int)get_phase(PhaseRotation::L132, ChargerPhase::PV), ==, (int)GridPhase::PV);
+
+    _assert((int)get_phase(PhaseRotation::L213, ChargerPhase::P1), ==, (int)GridPhase::L2);
+    _assert((int)get_phase(PhaseRotation::L213, ChargerPhase::P2), ==, (int)GridPhase::L1);
+    _assert((int)get_phase(PhaseRotation::L213, ChargerPhase::P3), ==, (int)GridPhase::L3);
+    _assert((int)get_phase(PhaseRotation::L213, ChargerPhase::PV), ==, (int)GridPhase::PV);
+
+    _assert((int)get_phase(PhaseRotation::L231, ChargerPhase::P1), ==, (int)GridPhase::L2);
+    _assert((int)get_phase(PhaseRotation::L231, ChargerPhase::P2), ==, (int)GridPhase::L3);
+    _assert((int)get_phase(PhaseRotation::L231, ChargerPhase::P3), ==, (int)GridPhase::L1);
+    _assert((int)get_phase(PhaseRotation::L231, ChargerPhase::PV), ==, (int)GridPhase::PV);
+
+    _assert((int)get_phase(PhaseRotation::L312, ChargerPhase::P1), ==, (int)GridPhase::L3);
+    _assert((int)get_phase(PhaseRotation::L312, ChargerPhase::P2), ==, (int)GridPhase::L1);
+    _assert((int)get_phase(PhaseRotation::L312, ChargerPhase::P3), ==, (int)GridPhase::L2);
+    _assert((int)get_phase(PhaseRotation::L312, ChargerPhase::PV), ==, (int)GridPhase::PV);
+
+    _assert((int)get_phase(PhaseRotation::L321, ChargerPhase::P1), ==, (int)GridPhase::L3);
+    _assert((int)get_phase(PhaseRotation::L321, ChargerPhase::P2), ==, (int)GridPhase::L2);
+    _assert((int)get_phase(PhaseRotation::L321, ChargerPhase::P3), ==, (int)GridPhase::L1);
+    _assert((int)get_phase(PhaseRotation::L321, ChargerPhase::PV), ==, (int)GridPhase::PV);
+
+    Cost foobar{1,2,3,4};
+    _assert(foobar[0], ==, 1);
+    _assert(foobar[1], ==, 2);
+    _assert(foobar[2], ==, 3);
+    _assert(foobar[3], ==, 4);
+
+    foobar[2] = 123;
+    _assert(foobar[0], ==, 1);
+    _assert(foobar[1], ==, 2);
+    _assert(foobar[2], ==, 123);
+    _assert(foobar[3], ==, 4);
+
+    foobar[GridPhase::L1] = 456;
+    foobar.pv = 789;
+
+    _assert(foobar[0], ==, 789);
+    _assert(foobar[1], ==, 456);
+    _assert(foobar[2], ==, 123);
+    _assert(foobar[3], ==, 4);
+}
+
+void test_get_cost() {
+    auto cost = get_cost(6000, ChargerPhase::P1, PhaseRotation::L123, 0, ChargerPhase::PV);
+    _assert(cost.pv, ==, 6000);
+    _assert(cost.l1, ==, 6000);
+    _assert(cost.l2, ==, 0);
+    _assert(cost.l3, ==, 0);
+
+    cost = get_cost(6000, ChargerPhase::P1, PhaseRotation::L321, 0, ChargerPhase::PV);
+    _assert(cost.pv, ==, 6000);
+    _assert(cost.l1, ==, 0);
+    _assert(cost.l2, ==, 0);
+    _assert(cost.l3, ==, 6000);
+
+    cost = get_cost(6000, ChargerPhase::P2, PhaseRotation::L321, 0, ChargerPhase::PV);
+    _assert(cost.pv, ==, 12000);
+    _assert(cost.l1, ==, 0);
+    _assert(cost.l2, ==, 6000);
+    _assert(cost.l3, ==, 6000);
+
+    cost = get_cost(6000, ChargerPhase::P3, PhaseRotation::L321, 8000, ChargerPhase::P1);
+    _assert(cost.pv, ==, 10000);
+    _assert(cost.l1, ==, 6000);
+    _assert(cost.l2, ==, 6000);
+    _assert(cost.l3, ==, -2000);
+
+    cost = get_cost(12000, ChargerPhase::P3, PhaseRotation::L312, 6000, ChargerPhase::P2);
+    _assert(cost.pv, ==, 24000);
+    _assert(cost.l1, ==, 6000);
+    _assert(cost.l2, ==, 12000);
+    _assert(cost.l3, ==, 6000);
+
+    cost = get_cost(6000, ChargerPhase::P2, PhaseRotation::L312, 12000, ChargerPhase::P3);
+    _assert(cost.pv, ==, -24000);
+    _assert(cost.l1, ==, -6000);
+    _assert(cost.l2, ==, -12000);
+    _assert(cost.l3, ==, -6000);
+
+
+    cost = get_cost(6000, ChargerPhase::P1, PhaseRotation::Unknown, 0, ChargerPhase::PV);
+    _assert(cost.pv, ==, 6000);
+    _assert(cost.l1, ==, 6000);
+    _assert(cost.l2, ==, 6000);
+    _assert(cost.l3, ==, 6000);
+
+    cost = get_cost(6000, ChargerPhase::P3, PhaseRotation::Unknown, 0, ChargerPhase::PV);
+    _assert(cost.pv, ==, 18000);
+    _assert(cost.l1, ==, 6000);
+    _assert(cost.l2, ==, 6000);
+    _assert(cost.l3, ==, 6000);
+
+    cost = get_cost(12000, ChargerPhase::P2, PhaseRotation::Unknown, 8000, ChargerPhase::P3);
+    _assert(cost.pv, ==, 0);
+    _assert(cost.l1, ==, 4000);
+    _assert(cost.l2, ==, 4000);
+    _assert(cost.l3, ==, 4000);
+}
+
+void test_stage_1() {
+    size_t charger_count = 8;
+    uint32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    uint8_t phase_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    int idx_array[MAX_CONTROLLED_CHARGERS] = {};
+    for(int i = 0; i < charger_count; ++i)
+        idx_array[i] = i;
+
+    CurrentLimits limits {
+        .grid_l1 = 14000,
+        .grid_l2 = 16000,
+        .grid_l3 = 8000,
+        .grid_l1_filtered = 14000,
+        .grid_l2_filtered = 16000,
+        .grid_l3_filtered = 8000,
+
+        .pv_excess = 30000,
+        .pv_excess_filtered = 30000,
+
+        .supply_cable_l1 = 32000,
+        .supply_cable_l2 = 32000,
+        .supply_cable_l3 = 32000,
+    };
+
+    CurrentAllocatorConfig cfg;
+    cfg.minimum_current_1p = 6000;
+    cfg.minimum_current_3p = 6000;
+
+    CurrentAllocatorState state;
+    state.global_hysteresis_elapsed = false;
+
+    stage_1(idx_array, current_allocation, phase_allocation, &limits, charger_state, charger_count, &cfg, &state);
+
+    _assert(current_allocation[0], ==, 6000);
+    _assert(current_allocation[1], ==, 0);
+    _assert(current_allocation[2], ==, 0);
+    _assert(current_allocation[3], ==, 6000);
+    _assert(current_allocation[4], ==, 0);
+    _assert(current_allocation[5], ==, 0);
+    _assert(current_allocation[6], ==, 0);
+    _assert(current_allocation[7], ==, 0);
+
+    limits = {
+        .grid_l1 = 14000,
+        .grid_l2 = 13000,
+        .grid_l3 = 18000,
+        .grid_l1_filtered = 14000,
+        .grid_l2_filtered = 13000,
+        .grid_l3_filtered = 18000,
+
+        .pv_excess = 30000,
+        .pv_excess_filtered = 30000,
+
+        .supply_cable_l1 = 32000,
+        .supply_cable_l2 = 32000,
+        .supply_cable_l3 = 32000,
+    };
+    memset(current_allocation, 0, sizeof(current_allocation));
+    memset(phase_allocation, 0, sizeof(phase_allocation));
+
+    stage_1(idx_array, current_allocation, phase_allocation, &limits, charger_state, charger_count, &cfg, &state);
+
+    _assert(current_allocation[0], ==, 6000);
+    _assert(current_allocation[1], ==, 0);
+    _assert(current_allocation[2], ==, 0);
+    _assert(current_allocation[3], ==, 0);
+    _assert(current_allocation[4], ==, 0);
+    _assert(current_allocation[5], ==, 0);
+    _assert(current_allocation[6], ==, 6000);
+    _assert(current_allocation[7], ==, 0);
 }
 
 void run_tests() {
     test_filter_chargers();
     test_sort_chargers();
+    test_get_phase();
+    test_get_cost();
+    test_stage_1();
 }
