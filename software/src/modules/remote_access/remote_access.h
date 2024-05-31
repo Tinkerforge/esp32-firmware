@@ -52,3 +52,36 @@ private:
     ConfigRoot connection_state;
     ConfigRoot register_config;
 };
+
+enum management_command_id {
+    Connect,
+    Disconnect,
+};
+
+struct [[gnu::packed]] management_command {
+    management_command_id command_id;
+    int32_t connection_no;
+    uint8_t connection_uuid[16];
+};
+
+struct [[gnu::packed]] port_discovery_packet {
+    uint32_t charger_id;
+    int32_t connection_no;
+    uint8_t connection_uuid[16];
+};
+
+struct [[gnu::packed]] management_packet_header {
+    uint16_t magic;
+    uint16_t length;
+    uint16_t seq_num;
+    uint8_t version;
+    /*
+        0x00 - Management command
+    */
+    uint8_t type;
+};
+
+struct [[gnu::packed]] management_command_packet {
+    struct management_packet_header header;
+    struct management_command command;
+};

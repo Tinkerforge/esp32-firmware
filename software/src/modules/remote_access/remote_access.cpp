@@ -43,23 +43,6 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 extern char local_uid_str[32];
 extern uint32_t local_uid_num;
 
-enum ManagementCommandId {
-    Connect,
-    Disconnect,
-};
-
-struct ManagementCommand {
-    ManagementCommandId command_id;
-    int32_t connection_no;
-    uint8_t connection_uuid[16];
-};
-
-struct PortDiscoveryPacket {
-    uint32_t charger_id;
-    int32_t connection_no;
-    uint8_t connection_uuid[16];
-};
-
 struct HttpResponse {
     char *cookie = nullptr;
     String body;
@@ -474,6 +457,8 @@ String RemoteAccess::make_http_request(const char *url, esp_http_client_method_t
     http_config.event_handler = http_event_handle;
     http_config.method = method;
     http_config.user_data = &response;
+    http_config.is_async = true;
+    http_config.timeout_ms = 15000;
 
     if (cert == nullptr) {
         http_config.crt_bundle_attach = esp_crt_bundle_attach;
@@ -506,7 +491,10 @@ String RemoteAccess::make_http_request(const char *url, esp_http_client_method_t
         }
     }
 
-    err = esp_http_client_perform(client);
+    do {
+        err = esp_http_client_perform(client);
+    } while (err == ESP_ERR_HTTP_EAGAIN);
+    // err = esp_http_client_perform(client);
     if (err != ESP_OK) {
         logger.printfln("Failed to send request: %i", err);
     }
@@ -600,7 +588,7 @@ static int management_filter_in(struct pbuf* packet) {
     }
 
     int header_len = (payload[0] & 0xF) * 4;
-    if (packet->len - (header_len + 8) != sizeof(ManagementCommand)) {
+    if (packet->len - (header_len + 8) != sizeof(management_command_packet)) {
         logger.printfln("Management blocked invalid incoming packet of size: %i", (packet->len - (header_len + 8)));
         return -1;
     }
@@ -785,10 +773,10 @@ void RemoteAccess::run_management() {
         return;
     }
 
-    uint8_t buf[sizeof(ManagementCommand)];
+    uint8_t buf[sizeof(management_command_packet)];
     struct sockaddr from;
     socklen_t from_len = sizeof(sockaddr);
-    int ret = recvfrom(inner_socket, &buf, sizeof(ManagementCommand), 0, &from, &from_len);
+    int ret = recvfrom(inner_socket, &buf, sizeof(management_command_packet), 0, &from, &from_len);
 
     if (ret == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -797,12 +785,17 @@ void RemoteAccess::run_management() {
         close(inner_socket);
         inner_socket = -1;
         return;
-    } if (ret != sizeof(ManagementCommand)) {
+    } if (ret != sizeof(management_command_packet)) {
         logger.printfln("Didnt receive Management command.");
         return;
     }
 
-    ManagementCommand *command = reinterpret_cast<ManagementCommand *>(buf);
+    management_command_packet *command_packet = reinterpret_cast<management_command_packet *>(buf);
+    if (command_packet->header.magic != 0x1234 || command_packet->header.length != sizeof(management_command)) {
+        return;
+    }
+
+    management_command *command = &command_packet->command;
     if (static_cast<uint32_t>(command->connection_no) > 5) {
         return;
     }
@@ -810,10 +803,10 @@ void RemoteAccess::run_management() {
     logger.printfln("Got command: %i, %i", command->command_id, command->connection_no);
 
     switch (command->command_id) {
-        case ManagementCommandId::Connect:
+        case management_command_id::Connect:
             {
                 uint32_t local_port = remote_connection_config.get("connections")->get(command->connection_no)->get("local_port")->asUint();
-                PortDiscoveryPacket response;
+                port_discovery_packet response;
                 response.charger_id = local_uid_num;
                 response.connection_no = command->connection_no;
                 memcpy(&response.connection_uuid, &command->connection_uuid, 16);
@@ -824,7 +817,7 @@ void RemoteAccess::run_management() {
             connect_remote_access(command->connection_no);
             break;
 
-        case ManagementCommandId::Disconnect:
+        case management_command_id::Disconnect:
             remote_connections[command->connection_no].end();
             break;
     }
