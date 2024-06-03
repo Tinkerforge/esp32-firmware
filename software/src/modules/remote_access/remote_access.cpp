@@ -675,6 +675,7 @@ void RemoteAccess::connect_management() {
             } else {
                 close(this->inner_socket);
                 this->inner_socket = -1;
+                this->in_seq_number = 0;
                 logger.printfln("Management connection disconnected");
             }
         }
@@ -800,12 +801,16 @@ void RemoteAccess::run_management() {
         return;
     }
 
+    if ((int16_t)(command_packet->header.seq_num - in_seq_number) > 0) {
+        in_seq_number = command_packet->header.seq_num;
+    } else {
+        return;
+    }
+
     management_command *command = &command_packet->command;
     if (static_cast<uint32_t>(command->connection_no) > 5) {
         return;
     }
-
-    logger.printfln("Got command: %i, %i", command->command_id, command->connection_no);
 
     switch (command->command_id) {
         case management_command_id::Connect:
