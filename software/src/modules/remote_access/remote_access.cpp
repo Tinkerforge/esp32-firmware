@@ -696,6 +696,8 @@ void RemoteAccess::connect_remote_access(uint8_t i) {
         return;
     }
 
+    remote_connections[i].end();
+
     IPAddress internal_ip;
     IPAddress internal_subnet;
     IPAddress internal_gateway;
