@@ -43,12 +43,6 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 extern char local_uid_str[32];
 extern uint32_t local_uid_num;
 
-struct HttpResponse {
-    char *cookie = nullptr;
-    String body;
-    uint64_t data_read = 0;
-};
-
 static int create_sock_and_send_to(const void *payload, size_t payload_len, const char *dest_host, uint16_t port, uint16_t *local_port) {
     struct sockaddr_in dest_addr;
     bzero(&dest_addr, sizeof(dest_addr));
@@ -381,12 +375,14 @@ void RemoteAccess::register_urls() {
         headers.push_back(std::pair<CoolString, CoolString>(CoolString("Cookie"), access_token));
         headers.push_back(std::pair<CoolString, CoolString>(CoolString("Content-Type"), CoolString("application/json")));
         esp_err_t err;
-        String response = make_http_request(url.c_str(), HTTP_METHOD_PUT, ptr.get(), size, &headers, &err);
+        HttpResponse response = make_http_request(url.c_str(), HTTP_METHOD_PUT, ptr.get(), size, &headers, &err);
         if (err != ESP_OK) {
             return request.send(500);
+        } else if (response.status != 200) {
+            return request.send(response.status, "text/plain", response.body.c_str(), response.body.length());
         }
 
-        return request.send(200, "application/json", response.c_str(), response.length());
+        return request.send(200, "application/json", response.body.c_str(), response.body.length());
     });
 
     if (!config.get("enable")->asBool()) {
@@ -435,21 +431,23 @@ static String parse_cookie(const String &cookie) {
     return cookie.substring(start, end);
 }
 
-String RemoteAccess::make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error) {
+HttpResponse RemoteAccess::make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error) {
     esp_err_t err = ESP_OK;
     size_t cert_len = 0;
     int cert_id = config.get("cert_id")->asInt();
     std::unique_ptr<unsigned char[]> cert = nullptr;
+
+    HttpResponse response;
     if (cert_id >= 0) {
         cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
         if (cert == nullptr) {
             logger.printfln("Management: Failed to get self signed cert");
             *ret_error = ESP_FAIL;
-            return "";
+            response.body = "Failed to get self signed cert";
+            response.status = 500;
+            return response;
         }
     }
-
-    HttpResponse response;
     esp_http_client_config_t http_config;
     bzero(&http_config, sizeof(esp_http_client_config_t));
 
@@ -476,7 +474,9 @@ String RemoteAccess::make_http_request(const char *url, esp_http_client_method_t
             logger.printfln("Failed to set post data: %i", err);
             esp_http_client_cleanup(client);
             *ret_error = err;
-            return "";
+            response.body = "Failed to set post data";
+            response.status = 500;
+            return response;
         }
     }
 
@@ -486,7 +486,9 @@ String RemoteAccess::make_http_request(const char *url, esp_http_client_method_t
             if (err != ESP_OK) {
                 logger.printfln("Failed to set header");
                 *ret_error = err;
-                return "";
+                response.body = "Failed to set header";
+                response.status = 500;
+                return response;
             }
         }
     }
@@ -494,7 +496,7 @@ String RemoteAccess::make_http_request(const char *url, esp_http_client_method_t
     do {
         err = esp_http_client_perform(client);
     } while (err == ESP_ERR_HTTP_EAGAIN);
-    // err = esp_http_client_perform(client);
+
     if (err != ESP_OK) {
         logger.printfln("Failed to send request: %i", err);
     }
@@ -509,10 +511,11 @@ String RemoteAccess::make_http_request(const char *url, esp_http_client_method_t
     if (status < 200 || status > 299) {
         logger.printfln("Request to %s failed with code %i: %s", url, status, response.body.c_str());
     }
+    response.status = status;
 
     esp_http_client_cleanup(client);
     *ret_error = err;
-    return response.body;
+    return response;
 }
 
 void RemoteAccess::login() {
