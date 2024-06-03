@@ -58,7 +58,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             method: "GET"
         });
         if (resp.status !== 200) {
-            throw `Failed to get login_salt for user ${email}: ${await resp.text()}`;
+            throw new Error(`Failed to get login_salt for user ${email}: ${await resp.text()}`);
         }
         const json = await resp.text();
         const data = JSON.parse(json);
@@ -72,7 +72,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             credentials: "include",
         });
         if (resp.status !== 200) {
-            throw `Failed to get secret: ${await resp.text()}`;
+            throw new Error(`Failed to get secret: ${await resp.text()}`);
         }
         const json = await resp.text();
         const data = JSON.parse(json);
@@ -209,6 +209,10 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             }
         });
 
+        if (resp.status !== 200) {
+            throw new Error(`Failed to login at remote access server: ${await resp.text()}`);
+        }
+
         const login_blob = new Blob([login_key]);
         const login_string = await util.blobToBase64(login_blob);
 
@@ -218,25 +222,36 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     override async isSaveAllowed(cfg: config): Promise<boolean> {
-        return await this.login();
+        if (!cfg.enable) {
+            return true;
+        }
+        let allowed = false;
+        try {
+            allowed = await this.login();
+        } catch (e) {
+            util.add_alert("login_failed", "danger", __("remote_access.script.save_failed"), e.message);
+        }
+        return allowed;
     }
 
     override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
-        const info = await this.registerCharger(cfg);
-        cfg.password = info.password;
+        if (cfg.enable) {
+            const info = await this.registerCharger(cfg);
+            cfg.password = info.password;
+            await API.save("remote_access/management_connection", {
+                internal_ip: info.wg_charger_ip,
+                internal_gateway: "10.123.123.1",
+                internal_subnet: "255.255.255.0",
+                remote_internal_ip: info.wg_server_ip,
+                remote_host: this.state.relay_host,
+                remote_port: 51820,
+                local_port: 51820,
+                private_key: info.charger_private,
+                psk: info.psk,
+                remote_public_key: info.remote_public
+            }, __("remote_access.script.save_failed"));
+        }
 
-        await API.save("remote_access/management_connection", {
-            internal_ip: info.wg_charger_ip,
-            internal_gateway: "10.123.123.1",
-            internal_subnet: "255.255.255.0",
-            remote_internal_ip: info.wg_server_ip,
-            remote_host: this.state.relay_host,
-            remote_port: 51820,
-            local_port: 51820,
-            private_key: info.charger_private,
-            psk: info.psk,
-            remote_public_key: info.remote_public
-        }, __("remote_access.script.save_failed"));
         await super.sendSave(t, cfg);
     }
 
@@ -273,7 +288,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                        }} />
                         </FormRow>
                         <FormRow label={__("remote_access.content.password")}>
-                            <InputPassword required
+                            <InputPassword required={this.state.enable}
                                            maxLength={64}
                                            value={this.state.password}
                                            onValue={(v) => {
