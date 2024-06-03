@@ -23,6 +23,13 @@
 #include <WireGuard-ESP32.h>
 #include "esp_http_client.h"
 
+struct HttpResponse {
+    int status;
+    char *cookie = nullptr;
+    String body;
+    uint64_t data_read = 0;
+};
+
 class RemoteAccess final : public IModule {
 public:
     RemoteAccess() {};
@@ -38,7 +45,7 @@ private:
     void connect_remote_access(uint8_t i);
     void run_management();
     int setup_inner_socket();
-    String make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error);
+    HttpResponse make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error);
 
     WireGuard management;
     WireGuard remote_connections[5];
