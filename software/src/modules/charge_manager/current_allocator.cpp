@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "current_allocator.h"
 #include "module_dependencies.h"
 
 #include "event_log.h"
@@ -38,14 +37,16 @@
 
 #include <algorithm>
 
+#include "current_allocator_private.h"
+
 #define LOCAL_LOG(fmt, ...) if(local_log) local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
 
 #define TIMEOUT_MS 32000
 
-int filter_chargers(filter_fn filter, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
+int filter_chargers(filter_fn filter_, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
     int matches = 0;
     for(int i = 0; i < charger_count; ++i) {
-        if (!filter(current_allocation[idx_array[i]], phase_allocation[idx_array[i]], &charger_state[idx_array[i]]))
+        if (!filter_(current_allocation[idx_array[i]], phase_allocation[idx_array[i]], &charger_state[idx_array[i]]))
             continue;
 
         int tmp = idx_array[matches];
@@ -56,7 +57,7 @@ int filter_chargers(filter_fn filter, int *idx_array, const uint32_t *current_al
     return matches;
 }
 
-void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
+void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits) {
     int groups[MAX_CONTROLLED_CHARGERS] = {};
 
     for(int i = 0; i < charger_count; ++i)
@@ -65,12 +66,13 @@ void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const uin
     std::stable_sort(
         idx_array,
         idx_array + charger_count,
-        [&groups, &compare, &current_allocation, &phase_allocation, &charger_state] (int left, int right) {
+        [&groups, &compare, &current_allocation, &phase_allocation, &charger_state, &limits] (int left, int right) {
             if (groups[left] != groups[right])
                 return groups[left] < groups[right];
 
             return compare({current_allocation[left], phase_allocation[left], &charger_state[left]},
-                           {current_allocation[right], phase_allocation[right], &charger_state[right]});
+                           {current_allocation[right], phase_allocation[right], &charger_state[right]},
+                           limits);
         }
     );
 }
@@ -111,32 +113,6 @@ Cost get_cost(uint32_t current_to_allocate,
 
     return cost;
 }
-
-#define filter(x) do { \
-    matched = filter_chargers([](uint32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
-            return (x); \
-        }, \
-        idx_array, \
-        current_allocation, \
-        phase_allocation, \
-        charger_state, \
-        charger_count); \
-    } while(0)
-
-#define sort(group, filter) do {\
-    sort_chargers( \
-        [](uint32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
-            return (group); \
-        }, \
-        [](CompareInfo left, CompareInfo right) { \
-            return (filter); \
-        }, \
-        idx_array, \
-        current_allocation, \
-        phase_allocation, \
-        charger_state, \
-        matched); \
-    } while (0)
 
 
 void apply_cost(Cost cost, CurrentLimits* limits) {

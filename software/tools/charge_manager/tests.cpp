@@ -1,6 +1,6 @@
 #include "tests.h"
 
-#include "current_allocator.h"
+#include "current_allocator_private.h"
 #include "string.h"
 
 #include "modules/cm_networking/cm_networking_defs.h"
@@ -65,16 +65,6 @@ void test_filter_chargers() {
         idx_array[i] = i;
 
     int matched = 0;
-#define filter(x) do { \
-    matched = filter_chargers([](uint32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
-            return (x); \
-        }, \
-        idx_array, \
-        current_allocation, \
-        phase_allocation, \
-        charger_state, \
-        charger_count); \
-    } while(0)
 
     // Return 0 matches if filter rejects all. Don't swap any.
     filter(false);
@@ -226,25 +216,14 @@ void test_sort_chargers() {
     for(int i = 0; i < charger_count; ++i)
         idx_array[i] = i;
 
-#define sort(group, filter) do {\
-    sort_chargers( \
-        [](uint32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
-            return (group); \
-        }, \
-        [](CompareInfo left, CompareInfo right) { \
-            return (filter); \
-        }, \
-        idx_array, \
-        current_allocation, \
-        phase_allocation, \
-        charger_state, \
-        charger_count); \
-    } while (0)
-
     // Test sort stablility
     for(int i = 0; i < charger_count; ++i) {
         current_allocation[i] = 1234;
     }
+
+    int matched = charger_count;
+    CurrentLimits _l;
+    CurrentLimits *limits = &_l;
 
     sort(
         (int)allocated_current,
