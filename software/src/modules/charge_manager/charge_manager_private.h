@@ -23,6 +23,7 @@ struct CurrentAllocatorConfig {
 struct CurrentAllocatorState {
     bool last_print_local_log_was_error = false;
     bool global_hysteresis_elapsed = false;
+    int allocated_minimum_current_packets[4] = {};
 };
 
 #define PHASE_ROTATION(x, y, z) (0 << 6) | (((int)x << 4) | ((int)y << 2) | (int)z)

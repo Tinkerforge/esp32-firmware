@@ -107,6 +107,37 @@ Cost get_cost(uint32_t current_to_allocate,
     return cost;
 }
 
+bool cost_exceeds_limits(Cost cost, CurrentLimits* limits, int stage, bool global_hysteresis_elapsed) {
+    bool phases_exceeded = limits->grid_l1 < cost.l1
+                        || limits->grid_l2 < cost.l2
+                        || limits->grid_l3 < cost.l3;
+
+    bool phases_filtered_exceeded = limits->grid_l1_filtered < cost.l1
+                                 || limits->grid_l2_filtered < cost.l2
+                                 || limits->grid_l3_filtered < cost.l3;
+
+    bool pv_excess_exceeded = limits->pv_excess < cost.pv;
+    bool pv_excess_filtered_exceeded = limits->pv_excess_filtered < cost.pv;
+
+    switch(stage) {
+        case 1:
+        case 2:
+            return phases_exceeded || (global_hysteresis_elapsed && pv_excess_exceeded && pv_excess_filtered_exceeded);
+        case 3:
+        case 4:
+        case 7:
+        case 8:
+            return phases_exceeded || pv_excess_exceeded;
+        case 5:
+            return global_hysteresis_elapsed && (phases_exceeded || phases_filtered_exceeded || pv_excess_exceeded || pv_excess_filtered_exceeded);
+        case 6:
+            return phases_exceeded || phases_filtered_exceeded || pv_excess_exceeded || pv_excess_filtered_exceeded;
+        case 9:
+            return global_hysteresis_elapsed && (phases_exceeded || pv_excess_exceeded);
+        default:
+            assert(false);
+    }
+}
 
 void apply_cost(Cost cost, CurrentLimits* limits) {
     limits->pv_excess -= cost.pv;
@@ -119,7 +150,9 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
     limits->grid_l3_filtered -= cost.l3;
 }
 
-void stage_1(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, const CurrentAllocatorState *ca_state) {
+// Stage 1: Allocate minimum current on the minimal number of phases to all already active (i.e. charging) chargers.
+//          Every charger gets only one phase allocated except if it is a three phase charger without phase switch support.
+void stage_1(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
     filter(state->is_charging);
@@ -131,14 +164,13 @@ void stage_1(int *idx_array, uint32_t *current_allocation, uint8_t *phase_alloca
         : (state->phases == 3 && state->phase_switch_supported && state->phase_rotation != PhaseRotation::Unknown) ? 3
         : (state->phases == 1 && state->phase_rotation != PhaseRotation::Unknown) ? 4
         : 999,
-        true // TODO
+        true // TODO lowest allocated charge (not charge current!) first
     );
 
     auto min_1p = cfg->minimum_current_1p;
     auto min_3p = cfg->minimum_current_3p;
 
-    if (min_1p > min_3p)
-        min_1p = min_3p;
+    assert(min_1p <= min_3p);
 
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
@@ -157,16 +189,21 @@ void stage_1(int *idx_array, uint32_t *current_allocation, uint8_t *phase_alloca
 
         auto cost = get_cost(current, activate_3p ? ChargerPhase::P3 : ChargerPhase::P1, state->phase_rotation, 0, (ChargerPhase) 0);
 
-        bool pv_excess_exceeded = ca_state->global_hysteresis_elapsed && limits->pv_excess < cost.pv && limits->pv_excess_filtered < cost.pv;
-        bool phases_exceeded = limits->grid_l1 < cost.l1 || limits->grid_l2 < cost.l2 || limits->grid_l3 < cost.l3;
-
-        if (pv_excess_exceeded || phases_exceeded)
+        if (cost_exceeds_limits(cost, limits, 1, ca_state->global_hysteresis_elapsed))
             // TODO: reset global hysteresis here
             continue;
 
         apply_cost(cost, limits);
         current_allocation[idx_array[i]] = current;
         phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
+
+        if (state->phase_rotation != PhaseRotation::Unknown && !activate_3p) {
+            ++ca_state->allocated_minimum_current_packets[(size_t)get_phase(state->phase_rotation, ChargerPhase::P1)];
+        } else {
+            ++ca_state->allocated_minimum_current_packets[(size_t)GridPhase::L1];
+            ++ca_state->allocated_minimum_current_packets[(size_t)GridPhase::L2];
+            ++ca_state->allocated_minimum_current_packets[(size_t)GridPhase::L3];
+        }
     }
 }
 
