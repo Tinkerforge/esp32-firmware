@@ -58,7 +58,7 @@ bool range_is(std::initializer_list<int> needles, int *haystack, int start = 0) 
 
 void test_filter_chargers() {
     size_t charger_count = 8;
-    uint32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    int32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
     uint8_t phase_allocation[MAX_CONTROLLED_CHARGERS] = {};
     int idx_array[MAX_CONTROLLED_CHARGERS] = {};
     for(int i = 0; i < charger_count; ++i)
@@ -94,7 +94,7 @@ void test_filter_chargers() {
     current_allocation[1] = 0;
 
     // Handle 0 chargers
-    matched = filter_chargers([](uint32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) {
+    matched = filter_chargers([](int32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) {
             return allocated_current >= MINIMUM_CURRENT;
         },
         nullptr,
@@ -210,7 +210,7 @@ void test_filter_chargers() {
 
 void test_sort_chargers() {
     size_t charger_count = 8;
-    uint32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    int32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
     uint8_t phase_allocation[MAX_CONTROLLED_CHARGERS] = {};
     int idx_array[MAX_CONTROLLED_CHARGERS] = {};
     for(int i = 0; i < charger_count; ++i)
@@ -397,9 +397,51 @@ void test_get_cost() {
     _assert(cost.l3, ==, 4000);
 }
 
+void verify_allocation(
+    CurrentLimits *limits,
+    ChargerState *charger_state,
+    int32_t *current_allocation,
+    uint8_t *phase_allocation,
+    int *idx_array,
+    size_t charger_count)
+{
+
+    for (int i = 0; i < charger_count; ++i) {
+        if (phase_allocation[i] == 0)
+            _assert(current_allocation[i], ==, 0);
+        if (current_allocation[i] == 0)
+            _assert(phase_allocation[i], ==, 0);
+
+        limits->pv_excess -= current_allocation[i] * phase_allocation[i];
+        limits->pv_excess_filtered -= current_allocation[i] * phase_allocation[i];
+
+        if (charger_state[i].phase_rotation == PhaseRotation::Unknown) {
+            // Phase rotation unknown. We have to assume that each phase could be used
+            limits->grid_l1 -= current_allocation[i];
+            limits->grid_l2 -= current_allocation[i];
+            limits->grid_l3 -= current_allocation[i];
+        } else {
+            for (int i = 1; i <= (int)phase_allocation[i]; ++i) {
+                switch(get_phase(charger_state[i].phase_rotation, (ChargerPhase)i)) {
+                    case GridPhase::L1:
+                        limits->grid_l1 -= current_allocation[i];
+                        break;
+                    case GridPhase::L2:
+                        limits->grid_l2 -= current_allocation[i];
+                        break;
+                    case GridPhase::L3:
+                        limits->grid_l3 -= current_allocation[i];
+                        break;
+                }
+            }
+        }
+    }
+
+}
+
 void test_stage_1() {
     size_t charger_count = 8;
-    uint32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    int32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
     uint8_t phase_allocation[MAX_CONTROLLED_CHARGERS] = {};
     int idx_array[MAX_CONTROLLED_CHARGERS] = {};
     for(int i = 0; i < charger_count; ++i)
@@ -507,7 +549,7 @@ void test_stage_1() {
 
 void test_stage_2() {
     size_t charger_count = 8;
-    uint32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    int32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
     uint8_t phase_allocation[MAX_CONTROLLED_CHARGERS] = {};
     int idx_array[MAX_CONTROLLED_CHARGERS] = {};
     for(int i = 0; i < charger_count; ++i)

@@ -36,7 +36,7 @@
 
 #define TIMEOUT_MS 32000
 
-int filter_chargers(filter_fn filter_, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
+int filter_chargers(filter_fn filter_, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
     int matches = 0;
     for(int i = 0; i < charger_count; ++i) {
         if (!filter_(current_allocation[idx_array[i]], phase_allocation[idx_array[i]], &charger_state[idx_array[i]]))
@@ -50,7 +50,7 @@ int filter_chargers(filter_fn filter_, int *idx_array, const uint32_t *current_a
     return matches;
 }
 
-void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const uint32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits) {
+void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits) {
     int groups[MAX_CONTROLLED_CHARGERS] = {};
 
     for(int i = 0; i < charger_count; ++i)
@@ -75,10 +75,10 @@ GridPhase get_phase(PhaseRotation rot, ChargerPhase phase) {
     return (GridPhase)(((int)rot >> (6 - 2 * (int)phase)) & 0x3);
 }
 
-Cost get_cost(uint32_t current_to_allocate,
+Cost get_cost(int32_t current_to_allocate,
               ChargerPhase phases_to_allocate,
               PhaseRotation rot,
-              uint32_t allocated_current,
+              int32_t allocated_current,
               ChargerPhase allocated_phases)
 {
     Cost cost{};
@@ -90,15 +90,14 @@ Cost get_cost(uint32_t current_to_allocate,
             cost[i] = -cost[i];
     }
 
+    cost.pv += (int)phases_to_allocate * current_to_allocate;
+
     if (rot == PhaseRotation::Unknown) {
         // Phase rotation unknown. We have to assume that each phase could be used
-        cost.pv += (int)phases_to_allocate * current_to_allocate;
         cost.l1 += current_to_allocate;
         cost.l2 += current_to_allocate;
         cost.l3 += current_to_allocate;
     } else {
-        cost.pv += (int)phases_to_allocate * current_to_allocate;
-
         for (int i = 1; i <= (int)phases_to_allocate; ++i) {
             cost[get_phase(rot, (ChargerPhase)i)] += current_to_allocate;
         }
@@ -152,7 +151,7 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
 
 // Stage 1: Allocate minimum current on the minimal number of phases to all already active (i.e. charging) chargers.
 //          Every charger gets only one phase allocated except if it is a three phase charger without phase switch support.
-void stage_1(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
     filter(state->is_charging);
@@ -210,7 +209,7 @@ void stage_1(int *idx_array, uint32_t *current_allocation, uint8_t *phase_alloca
 // Stage 2: Allocate minimum current on three phases to already active chargers
 //          that are currently charging on three phases and are phase switchable.
 //          Three phase chargers that can't switch phases were allocated three phases in stage 1.
-void stage_2(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
     filter(allocated_current > 0 && state->phase_switch_supported && state->phases == 3);
@@ -252,7 +251,7 @@ void stage_2(int *idx_array, uint32_t *current_allocation, uint8_t *phase_alloca
 
 
 // Stage 3: Allocate fair current <= enable_current to active 3p and (1p with unknown rotation) chargers.
-void stage_3(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
     filter(allocated_current > 0 && (state->phases == 3 || state->phase_rotation == PhaseRotation::Unknown));
@@ -272,7 +271,7 @@ void stage_3(int *idx_array, uint32_t *current_allocation, uint8_t *phase_alloca
         current = std::min(current, limits->grid_l2 / ca_state->allocated_minimum_current_packets[(size_t)GridPhase::L2]);
         current = std::min(current, limits->grid_l3 / ca_state->allocated_minimum_current_packets[(size_t)GridPhase::L3]);
         current += allocated_current;
-        current = std::min(current, (uint32_t)state->supported_current);
+        current = std::min(current, (int32_t)state->supported_current);
 
         auto charger_phases = allocated_phases == 3 ? ChargerPhase::P3 : ChargerPhase::P1;
 
@@ -291,7 +290,7 @@ void stage_3(int *idx_array, uint32_t *current_allocation, uint8_t *phase_alloca
 }
 
 // Stage 4: Allocate fair current <= enable_current to 1p with known rotation chargers.
-void stage_4(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
     filter(allocated_current > 0 && (state->phases == 1 && state->phase_rotation != PhaseRotation::Unknown));
@@ -322,7 +321,7 @@ void stage_4(int *idx_array, uint32_t *current_allocation, uint8_t *phase_alloca
         }
 
         current += allocated_current;
-        current = std::min(current, (uint32_t)state->supported_current);
+        current = std::min(current, (int32_t)state->supported_current);
 
         auto cost = get_cost(current,  ChargerPhase::P1, state->phase_rotation, allocated_current,  ChargerPhase::P1);
 
@@ -337,7 +336,7 @@ void stage_4(int *idx_array, uint32_t *current_allocation, uint8_t *phase_alloca
 }
 
 // Stage 5: Enable chargers that want to charge
-void stage_5(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     if (!ca_state->global_hysteresis_elapsed)
         return;
 
@@ -383,15 +382,15 @@ void stage_5(int *idx_array, uint32_t *current_allocation, uint8_t *phase_alloca
 }
 
 // Stage 6: Immediately switch to 3p on newly activated chargers
-void stage_6(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     return;
 }
 
-void stage_7(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     return;
 }
 
-uint32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, uint32_t allocated_current, uint8_t allocated_phases) {
+int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases) {
     if (allocated_phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
         return 3 * std::min({state->supported_current - allocated_current, limits->grid_l1, limits->grid_l2, limits->grid_l3});
     }
@@ -416,7 +415,7 @@ uint32_t current_capacity(const CurrentLimits *limits, const ChargerState *state
     return allocated_phases * capacity;
 }
 
-void stage_8(int *idx_array, uint32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
     filter(allocated_current > 0);
