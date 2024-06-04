@@ -10,9 +10,9 @@
 
 // Initialized by charge_manager.cpp; never changed
 struct CurrentAllocatorConfig {
-    uint32_t minimum_current_3p;
-    uint32_t minimum_current_1p;
-    uint32_t enable_current;
+    int32_t minimum_current_3p;
+    int32_t minimum_current_1p;
+    int32_t enable_current;
     std::unique_ptr<char[]> distribution_log;
     size_t distribution_log_len;
     size_t charger_count;
