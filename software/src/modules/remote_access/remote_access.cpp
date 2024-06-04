@@ -683,7 +683,7 @@ void RemoteAccess::connect_management() {
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->run_management();
-    }, 1000, 250);
+    }, 0, 250);
 }
 
 void RemoteAccess::connect_remote_access(uint8_t i) {
