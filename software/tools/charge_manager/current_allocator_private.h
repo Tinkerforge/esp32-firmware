@@ -1,0 +1,1 @@
+../../src/modules/charge_manager/current_allocator_private.h
