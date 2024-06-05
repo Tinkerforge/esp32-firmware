@@ -64,7 +64,7 @@ struct Cost {
 static_assert(sizeof(Cost) == 4 * sizeof(int), "Unexpected size of Cost");
 
 struct CurrentLimits {
-    Cost unfiltered;
+    Cost raw;
     Cost filtered;
     Cost supply; // supply.pv / supply[0] is unused!
 };
