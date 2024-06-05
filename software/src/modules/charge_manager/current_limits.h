@@ -20,20 +20,51 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
+
+#define PHASE_ROTATION(x, y, z) (0 << 6) | (((int)x << 4) | ((int)y << 2) | (int)z)
+
+enum class ChargerPhase {
+    PV,
+    P1, // L1 if rotation is L123
+    P2,
+    P3
+};
+
+enum class GridPhase {
+    PV,
+    L1,
+    L2,
+    L3
+};
+
+enum class PhaseRotation {
+    Unknown = 0, // Make unknown 0 so that memsetting the ChargerState struct sets this as expected.
+    NotApplicable = 1, // Put this here so that enum >> 1 is the number of the first phase and enum & 1 is is the rotation
+    L123 = PHASE_ROTATION(GridPhase::L1,GridPhase::L2,GridPhase::L3), // Standard Reference Phasing (= RST in OCPP)
+    L132 = PHASE_ROTATION(GridPhase::L1,GridPhase::L3,GridPhase::L2), // Reversed Reference Phasing (= RTS in OCPP)
+    L231 = PHASE_ROTATION(GridPhase::L2,GridPhase::L3,GridPhase::L1), // Standard 120 degree rotation (= STR in OCPP)
+    L213 = PHASE_ROTATION(GridPhase::L2,GridPhase::L1,GridPhase::L3), // Reversed 240 degree rotation (= SRT in OCPP)
+    L321 = PHASE_ROTATION(GridPhase::L3,GridPhase::L2,GridPhase::L1), // Reversed 120 degree rotation (= TSR in OCPP)
+    L312 = PHASE_ROTATION(GridPhase::L3,GridPhase::L1,GridPhase::L2), // Standard 240 degree rotation (= TRS in OCPP)
+};
+
+struct Cost {
+    int pv;
+    int l1;
+    int l2;
+    int l3;
+
+    int& operator[](size_t idx) { return *(&pv + idx); }
+    const int& operator[](size_t idx) const { return *(&pv + idx); }
+
+    int& operator[](GridPhase p) { return *(&pv + (int)p); }
+    const int& operator[](GridPhase p) const { return *(&pv + (int)p); }
+};
+static_assert(sizeof(Cost) == 4 * sizeof(int), "Unexpected size of Cost");
 
 struct CurrentLimits {
-    int32_t grid_l1;
-    int32_t grid_l2;
-    int32_t grid_l3;
-
-    int32_t grid_l1_filtered;
-    int32_t grid_l2_filtered;
-    int32_t grid_l3_filtered;
-
-    int32_t pv_excess;
-    int32_t pv_excess_filtered;
-
-    int32_t supply_cable_l1;
-    int32_t supply_cable_l2;
-    int32_t supply_cable_l3;
+    Cost unfiltered;
+    Cost filtered;
+    Cost supply; // supply.pv / supply[0] is unused!
 };
