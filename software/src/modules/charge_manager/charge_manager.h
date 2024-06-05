@@ -27,6 +27,8 @@
 #include "modules/automation/automation_backend.h"
 #endif
 
+#include "current_limits.h"
+
 struct CurrentAllocatorConfig;
 struct CurrentAllocatorState;
 struct ChargerState;
@@ -77,7 +79,12 @@ public:
     size_t charger_count = 0;
     ChargerState *charger_state = nullptr;
 
+    CurrentLimits *get_limits() {return &limits;}
+    const CurrentLimits *get_limits_post_allocation() {return &limits_post_allocation;}
+
 private:
+    CurrentLimits limits, limits_post_allocation;
+
     bool all_chargers_seen = false;
     std::function<void(uint32_t)> allocated_current_callback;
 

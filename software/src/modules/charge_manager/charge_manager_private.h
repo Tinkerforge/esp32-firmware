@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <memory>
 
+#include "current_limits.h"
+
 #define DISTRIBUTION_LOG_LEN 2048
 
 #define CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE 128
