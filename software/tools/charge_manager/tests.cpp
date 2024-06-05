@@ -507,16 +507,8 @@ void test_stage_1() {
     cfg.minimum_current_3p = 6000;
 
     limits = {
-        .grid_l1 = 14000,
-        .grid_l2 = 16000,
-        .grid_l3 = 8000,
-
-        .pv_excess = 30000,
-        .pv_excess_filtered = 30000,
-
-        .supply_cable_l1 = 32000,
-        .supply_cable_l2 = 32000,
-        .supply_cable_l3 = 32000,
+        .unfiltered = {30000, 14000, 16000, 8000},
+        .supply = {0, 32000, 32000, 32000}
     };
 
     {
@@ -529,8 +521,8 @@ void test_stage_1() {
     }
 
     {
-        limits.grid_l2 = 13000;
-        limits.grid_l3 = 18000;
+        limits.unfiltered.l2 = 13000;
+        limits.unfiltered.l3 = 18000;
 
         setup();
         run_stage(1);
@@ -572,20 +564,9 @@ void test_stage_2() {
     ca_state.global_hysteresis_elapsed = false;
 
     limits = {
-            .grid_l1 = 14000,
-            .grid_l2 = 13000,
-            .grid_l3 = 18000,
-            .grid_l1_filtered = 14000,
-            .grid_l2_filtered = 13000,
-            .grid_l3_filtered = 18000,
-
-            .pv_excess = 30000,
-            .pv_excess_filtered = 30000,
-
-            .supply_cable_l1 = 32000,
-            .supply_cable_l2 = 32000,
-            .supply_cable_l3 = 32000,
-        };
+        .unfiltered = {30000, 14000, 13000, 18000},
+        .supply = {0, 32000, 32000, 32000}
+    };
 
     {
         setup();
@@ -599,7 +580,7 @@ void test_stage_2() {
         _assert_array(phase_allocation, {1, 0, 0, 0, 0, 0, 3, 0});
         _assert_array(ca_state.allocated_minimum_current_packets + 1, {2, 2, 2});
 
-        _assert(limits_cpy.pv_excess, ==, 6000);
+        _assert(limits_cpy.unfiltered.pv, ==, 6000);
     }
 }
 

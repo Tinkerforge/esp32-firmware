@@ -109,24 +109,24 @@ Cost get_cost(int32_t current_to_allocate,
 bool cost_exceeds_limits(Cost cost, CurrentLimits* limits, int stage, bool global_hysteresis_elapsed) {
     {
         // Immediately return if supply cable would be overloaded.
-        bool supply_exceeded = limits->supply_cable_l1 < cost.l1
-                            || limits->supply_cable_l2 < cost.l2
-                            || limits->supply_cable_l3 < cost.l3;
+        bool supply_exceeded = false;
+        for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
+            supply_exceeded |= limits->supply[i] < cost[i];
+        }
 
         if (supply_exceeded)
             return true;
     }
 
-    bool phases_exceeded = limits->grid_l1 < cost.l1
-                        || limits->grid_l2 < cost.l2
-                        || limits->grid_l3 < cost.l3;
+    bool phases_exceeded;
+    bool phases_filtered_exceeded;
+    for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
+        phases_exceeded |= limits->unfiltered[i] < cost[i];
+        phases_filtered_exceeded |= limits->filtered[i] < cost[i];
+    }
 
-    bool phases_filtered_exceeded = limits->grid_l1_filtered < cost.l1
-                                 || limits->grid_l2_filtered < cost.l2
-                                 || limits->grid_l3_filtered < cost.l3;
-
-    bool pv_excess_exceeded = limits->pv_excess < cost.pv;
-    bool pv_excess_filtered_exceeded = limits->pv_excess_filtered < cost.pv;
+    bool pv_excess_exceeded = limits->unfiltered.pv < cost.pv;
+    bool pv_excess_filtered_exceeded = limits->filtered.pv < cost.pv;
 
     switch(stage) {
         case 1:
@@ -149,17 +149,11 @@ bool cost_exceeds_limits(Cost cost, CurrentLimits* limits, int stage, bool globa
 }
 
 void apply_cost(Cost cost, CurrentLimits* limits) {
-    limits->pv_excess -= cost.pv;
-    limits->pv_excess_filtered -= cost.pv;
-    limits->grid_l1 -= cost.l1;
-    limits->grid_l2 -= cost.l2;
-    limits->grid_l3 -= cost.l3;
-    limits->grid_l1_filtered -= cost.l1;
-    limits->grid_l2_filtered -= cost.l2;
-    limits->grid_l3_filtered -= cost.l3;
-    limits->supply_cable_l1 -= cost.l1;
-    limits->supply_cable_l2 -= cost.l2;
-    limits->supply_cable_l3 -= cost.l3;
+    for (size_t i = (size_t)GridPhase::PV; i <= (size_t)GridPhase::L3; ++i) {
+        limits->unfiltered[i] -= cost[i];
+        limits->filtered[i] -= cost[i];
+        limits->supply[i] -= cost[i];
+    }
 }
 
 // Stage 1: Allocate minimum current on the minimal number of phases to all already active (i.e. charging) chargers.
@@ -280,9 +274,9 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto allocated_phases = phase_allocation[idx_array[i]];
 
         auto current = cfg->enable_current - allocated_current;
-        current = std::min(current, limits->grid_l1 / ca_state->allocated_minimum_current_packets[(size_t)GridPhase::L1]);
-        current = std::min(current, limits->grid_l2 / ca_state->allocated_minimum_current_packets[(size_t)GridPhase::L2]);
-        current = std::min(current, limits->grid_l3 / ca_state->allocated_minimum_current_packets[(size_t)GridPhase::L3]);
+        for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i)
+            current = std::min(current, limits->unfiltered[i] / ca_state->allocated_minimum_current_packets[i]);
+
         current += allocated_current;
         current = std::min(current, (int32_t)state->supported_current);
 
@@ -319,19 +313,8 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto allocated_phases = phase_allocation[idx_array[i]];
 
         auto current = cfg->enable_current - allocated_current;
-        switch (get_phase(state->phase_rotation, ChargerPhase::P1)) {
-            case GridPhase::L1:
-                current = std::min(current, limits->grid_l1 / ca_state->allocated_minimum_current_packets[(size_t)GridPhase::L1]);
-                break;
-            case GridPhase::L2:
-                current = std::min(current, limits->grid_l2 / ca_state->allocated_minimum_current_packets[(size_t)GridPhase::L2]);
-                break;
-            case GridPhase::L3:
-                current = std::min(current, limits->grid_l3 / ca_state->allocated_minimum_current_packets[(size_t)GridPhase::L3]);
-                break;
-            case GridPhase::PV:
-                break;
-        }
+        auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
+        current = std::min(current, limits->unfiltered[phase] / ca_state->allocated_minimum_current_packets[(size_t)phase]);
 
         current += allocated_current;
         current = std::min(current, (int32_t)state->supported_current);
@@ -405,26 +388,15 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
 int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases) {
     if (allocated_phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
-        return 3 * std::min({state->supported_current - allocated_current, limits->grid_l1, limits->grid_l2, limits->grid_l3});
+        return 3 * std::min({state->supported_current - allocated_current, limits->unfiltered.l1, limits->unfiltered.l2, limits->unfiltered.l3});
     }
 
     auto capacity = state->supported_current - allocated_current;
-    for(int i = 0; i < allocated_phases; ++i) {
-        switch(get_phase(state->phase_rotation, (ChargerPhase)((size_t)ChargerPhase::P1 + i))) {
-            case GridPhase::L1:
-                capacity = std::min(capacity, limits->grid_l1);
-                break;
-            case GridPhase::L2:
-                capacity = std::min(capacity, limits->grid_l2);
-                break;
-            case GridPhase::L3:
-                capacity = std::min(capacity, limits->grid_l3);
-                break;
-            case GridPhase::PV:
-                assert(false);
-                break;
-        }
+    for (size_t i = (size_t)ChargerPhase::P1; i < (size_t)ChargerPhase::P1 + allocated_phases; ++i) {
+        auto phase = get_phase(state->phase_rotation, (ChargerPhase)((size_t)ChargerPhase::P1 + i));
+        capacity = std::min(capacity, limits->unfiltered[phase]);
     }
+
     return allocated_phases * capacity;
 }
 
@@ -444,7 +416,7 @@ void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto allocated_current = current_allocation[idx_array[i]];
         auto allocated_phases = phase_allocation[idx_array[i]];
 
-        auto current = std::min(limits->pv_excess, current_capacity(limits, state, allocated_current, allocated_phases));
+        auto current = std::min(limits->unfiltered.pv, current_capacity(limits, state, allocated_current, allocated_phases));
 
         auto cost = get_cost(current, allocated_phases == 3 ? ChargerPhase::P3 : ChargerPhase::P1, state->phase_rotation, allocated_current, allocated_phases == 3 ? ChargerPhase::P3 : ChargerPhase::P1);
 
