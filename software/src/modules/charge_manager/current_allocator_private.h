@@ -34,20 +34,6 @@ typedef bool(*compare_fn)(CompareInfo /*left*/, CompareInfo /*right*/, CurrentLi
 
 void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits);
 
-struct Cost {
-    int pv;
-    int l1;
-    int l2;
-    int l3;
-
-    int& operator[](size_t idx) { return *(&pv + idx); }
-    const int& operator[](size_t idx) const { return *(&pv + idx); }
-
-    int& operator[](GridPhase p) { return *(&pv + (int)p); }
-    const int& operator[](GridPhase p) const { return *(&pv + (int)p); }
-};
-static_assert(sizeof(Cost) == 4 * sizeof(int), "Unexpected size of Cost");
-
 GridPhase get_phase(PhaseRotation rot, ChargerPhase phase);
 
 Cost get_cost(int32_t current_to_allocate,
