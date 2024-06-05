@@ -19,24 +19,6 @@
 
 #include "current_allocator.h"
 
-struct CurrentLimits {
-    int32_t grid_l1;
-    int32_t grid_l2;
-    int32_t grid_l3;
-
-    int32_t grid_l1_filtered;
-    int32_t grid_l2_filtered;
-    int32_t grid_l3_filtered;
-
-    int32_t pv_excess;
-    int32_t pv_excess_filtered;
-
-    int32_t supply_cable_l1;
-    int32_t supply_cable_l2;
-    int32_t supply_cable_l3;
-};
-
-
 typedef bool(*filter_fn)(int32_t /*allocated_current*/, uint8_t /*allocated_phases*/, const ChargerState */*state*/);
 
 int filter_chargers(filter_fn filter, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count);
