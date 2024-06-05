@@ -1,5 +1,8 @@
 #include "tests.h"
 
+#define BACKWARD_HAS_DW 1
+#include "backward.hpp"
+
 #include "current_allocator_private.h"
 #include "string.h"
 
@@ -7,20 +10,46 @@
 
 #include <iostream>
 #include <vector>
+#include <assert.h>
+
+#define FATAL_ASSERTS false
 
 // Don't print uint8_t as char
-typedef std::basic_ostream<char, std::char_traits<char>> basicOstream;
-basicOstream &operator<<(basicOstream &stream, uint8_t c) {
-    return stream.operator<<(+c);
+std::ostream &operator<<(std::ostream &out, uint8_t c) {
+    return out << +c;
 }
-#define _assert(x, eq, y) do {auto _x = (x); auto _y = (y); if (!(_x eq _y)){ std::cout << __FILE__ << ':' << __LINE__ << ' ' << __func__ << " Assertion \x1b[31m" << #x << ' ' << #eq << ' ' << #y "\x1b[00m failed: !(" << _x << ' ' << #eq << ' ' << _y << ")\n";return;}} while(0)
+
+// Overload comma operator to pass __VA_ARGS__ into stdout
+template <typename T>
+std::ostream& operator,(std::ostream& out, const T& t) {
+    return out << t << " ";
+}
+
+#define _assert_extra(x, eq, y, ...) do { \
+    auto _x = (x); \
+    auto _y = (y); \
+    if (!(_x eq _y)) { \
+        std::cout << __FILE__ << ':' << __LINE__ << ' ' << __func__ \
+            << " Assertion \x1b[31m" << #x << ' ' << #eq << ' ' << #y \
+            << "\x1b[00m failed: (" << _x << ' ' << #eq << ' ' << _y << " is false) " \
+            << "" #__VA_ARGS__ " : " , __VA_ARGS__ , "\n"; \
+        backward::StackTrace st; st.load_here(32); st.skip_n_firsts(2); \
+        backward::StackTrace st2; st2.load_here(st.size() - 2); st2.skip_n_firsts(2); \
+        backward::Printer p; p.reverse = false; p.trace_context_size = 1; p.print(st2); \
+        assert(!FATAL_ASSERTS || (_x eq _y)); \
+        std::cout << "\n"; \
+        return; \
+    } \
+} while(0)
+
+#define _assert(x, eq, y) _assert_extra(x, eq, y, "")
 
 #define _assert_true(x) _assert(x, ==, true)
 
 template<typename T>
 void _assert_array(T left[], std::vector<T> right) {
     for(int i = 0; i < right.size(); ++i) {
-        _assert(left[i], ==, right.begin()[i]);
+        _assert_extra(left[i], ==, right.begin()[i], i);
     }
 }
 
@@ -29,7 +58,7 @@ void _assert_array(T left[], std::vector<T> right) {
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreorder-init-list"
-const ChargerState charger_state[] = {
+ChargerState charger_state[] = {
 /* 0 */ {.phases = 1, .phase_switch_supported = false, .phase_rotation = PhaseRotation::Unknown, .is_charging = true,                  .supported_current = 10000, .allowed_current = 10000, .charger_state = 3 },
 /* 1 */ {.phases = 1, .phase_switch_supported = false, .phase_rotation = PhaseRotation::L123,    },
 /* 2 */ {.phases = 1, .phase_switch_supported = true,  .phase_rotation = PhaseRotation::Unknown, .wants_to_charge = true,              .supported_current = 12000,                           .charger_state = 1 },
@@ -398,48 +427,72 @@ void test_get_cost() {
 }
 
 void verify_allocation(
-    CurrentLimits *limits,
-    ChargerState *charger_state,
-    int32_t *current_allocation,
-    uint8_t *phase_allocation,
-    int *idx_array,
+    int stage,
+    bool global_hysteresis_elapsed,
+    const CurrentLimits *limits,
+    const ChargerState *charger_state,
+    const int32_t *current_allocation,
+    const uint8_t *phase_allocation,
     size_t charger_count)
 {
+    Cost cost{};
 
     for (int i = 0; i < charger_count; ++i) {
         if (phase_allocation[i] == 0)
-            _assert(current_allocation[i], ==, 0);
+            _assert_extra(current_allocation[i], ==, 0, i);
         if (current_allocation[i] == 0)
-            _assert(phase_allocation[i], ==, 0);
+            _assert_extra(phase_allocation[i], ==, 0, i);
 
-        limits->pv_excess -= current_allocation[i] * phase_allocation[i];
-        limits->pv_excess_filtered -= current_allocation[i] * phase_allocation[i];
+        cost.pv += current_allocation[i] * phase_allocation[i];
 
         if (charger_state[i].phase_rotation == PhaseRotation::Unknown) {
             // Phase rotation unknown. We have to assume that each phase could be used
-            limits->grid_l1 -= current_allocation[i];
-            limits->grid_l2 -= current_allocation[i];
-            limits->grid_l3 -= current_allocation[i];
+            cost.l1 += current_allocation[i];
+            cost.l2 += current_allocation[i];
+            cost.l3 += current_allocation[i];
         } else {
             for (int i = 1; i <= (int)phase_allocation[i]; ++i) {
-                switch(get_phase(charger_state[i].phase_rotation, (ChargerPhase)i)) {
-                    case GridPhase::L1:
-                        limits->grid_l1 -= current_allocation[i];
-                        break;
-                    case GridPhase::L2:
-                        limits->grid_l2 -= current_allocation[i];
-                        break;
-                    case GridPhase::L3:
-                        limits->grid_l3 -= current_allocation[i];
-                        break;
-                }
+                cost[get_phase(charger_state[i].phase_rotation, (ChargerPhase)i)] += current_allocation[i];
             }
         }
     }
 
+    _assert_true(!cost_exceeds_limits(cost, limits, stage, global_hysteresis_elapsed));
 }
 
+void setup_test(CurrentLimits *limits, CurrentLimits *limits_cpy, int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentAllocatorState *ca_state, size_t charger_count) {
+    *limits_cpy = *limits;
+    for(int i = 0; i < charger_count; ++i)
+        idx_array[i] = i;
+
+    memset(current_allocation, 0, sizeof(*current_allocation) * charger_count);
+    memset(phase_allocation, 0, sizeof(*phase_allocation) * charger_count);
+    memset(ca_state, 0, sizeof(*ca_state));
+}
+
+#define setup() setup_test(&limits, &limits_cpy, idx_array, current_allocation, phase_allocation, &ca_state, charger_count)
+
+using stage_fn = decltype(stage_1);
+stage_fn *stages[] = {
+    stage_1,
+    stage_2,
+    stage_3,
+    stage_4,
+    stage_5,
+    stage_6,
+    stage_7,
+    stage_8
+};
+
+void run_stage_fn(int stage, int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, CurrentLimits *limits_cpy, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+    stages[stage - 1](idx_array, current_allocation, phase_allocation, limits_cpy, charger_state, charger_count, cfg, ca_state);
+    verify_allocation(stage, ca_state->global_hysteresis_elapsed, limits, charger_state, current_allocation, phase_allocation, charger_count);
+}
+
+#define run_stage(i) run_stage_fn(i, idx_array, current_allocation, phase_allocation, &limits, &limits_cpy, charger_state, charger_count, &cfg, &ca_state);
+
 void test_stage_1() {
+    CurrentAllocatorState ca_state;
     size_t charger_count = 8;
     int32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
     uint8_t phase_allocation[MAX_CONTROLLED_CHARGERS] = {};
@@ -447,103 +500,57 @@ void test_stage_1() {
     for(int i = 0; i < charger_count; ++i)
         idx_array[i] = i;
 
-    CurrentLimits limits;
+    CurrentLimits limits, limits_cpy;
 
     CurrentAllocatorConfig cfg;
     cfg.minimum_current_1p = 6000;
     cfg.minimum_current_3p = 6000;
 
-    CurrentAllocatorState state;
-    state.global_hysteresis_elapsed = false;
+    limits = {
+        .grid_l1 = 14000,
+        .grid_l2 = 16000,
+        .grid_l3 = 8000,
+
+        .pv_excess = 30000,
+        .pv_excess_filtered = 30000,
+
+        .supply_cable_l1 = 32000,
+        .supply_cable_l2 = 32000,
+        .supply_cable_l3 = 32000,
+    };
 
     {
-        limits = {
-            .grid_l1 = 14000,
-            .grid_l2 = 16000,
-            .grid_l3 = 8000,
-            .grid_l1_filtered = 14000,
-            .grid_l2_filtered = 16000,
-            .grid_l3_filtered = 8000,
-
-            .pv_excess = 30000,
-            .pv_excess_filtered = 30000,
-
-            .supply_cable_l1 = 32000,
-            .supply_cable_l2 = 32000,
-            .supply_cable_l3 = 32000,
-        };
-
-        memset(current_allocation, 0, sizeof(current_allocation));
-        memset(phase_allocation, 0, sizeof(phase_allocation));
-        memset(&state, 0, sizeof(state));
-
-        stage_1(idx_array, current_allocation, phase_allocation, &limits, charger_state, charger_count, &cfg, &state);
+        setup();
+        run_stage(1);
 
         _assert_array(current_allocation, {6000, 0, 0, 6000, 0, 0, 0, 0});
         _assert_array(phase_allocation, {1, 0, 0, 1, 0, 0, 0, 0});
-        _assert_array(state.allocated_minimum_current_packets + 1, {1, 2, 1});
+        _assert_array(ca_state.allocated_minimum_current_packets + 1, {1, 2, 1});
     }
 
     {
-        limits = {
-            .grid_l1 = 14000,
-            .grid_l2 = 13000,
-            .grid_l3 = 18000,
-            .grid_l1_filtered = 14000,
-            .grid_l2_filtered = 13000,
-            .grid_l3_filtered = 18000,
+        limits.grid_l2 = 13000;
+        limits.grid_l3 = 18000;
 
-            .pv_excess = 30000,
-            .pv_excess_filtered = 30000,
-
-            .supply_cable_l1 = 32000,
-            .supply_cable_l2 = 32000,
-            .supply_cable_l3 = 32000,
-        };
-
-        memset(current_allocation, 0, sizeof(current_allocation));
-        memset(phase_allocation, 0, sizeof(phase_allocation));
-        memset(&state, 0, sizeof(state));
-
-
-        stage_1(idx_array, current_allocation, phase_allocation, &limits, charger_state, charger_count, &cfg, &state);
+        setup();
+        run_stage(1);
 
         _assert_array(current_allocation, {6000, 0, 0, 0, 0, 0, 6000, 0});
         _assert_array(phase_allocation, {1, 0, 0, 0, 0, 0, 1, 0});
-        _assert_array(state.allocated_minimum_current_packets + 1, {2, 2, 2});
+        _assert_array(ca_state.allocated_minimum_current_packets + 1, {2, 2, 2});
     }
 
     {
-        memset(current_allocation, 0, sizeof(current_allocation));
-        memset(phase_allocation, 0, sizeof(phase_allocation));
-        memset(&state, 0, sizeof(state));
+        charger_state[6].phase_switch_supported = false;
 
-        ChargerState cpy[sizeof(charger_state)/sizeof(charger_state[0])];
-        memcpy(cpy, charger_state, sizeof(cpy));
-        cpy[6].phase_switch_supported = false;
-
-        limits = {
-            .grid_l1 = 14000,
-            .grid_l2 = 13000,
-            .grid_l3 = 18000,
-            .grid_l1_filtered = 14000,
-            .grid_l2_filtered = 13000,
-            .grid_l3_filtered = 18000,
-
-            .pv_excess = 30000,
-            .pv_excess_filtered = 30000,
-
-            .supply_cable_l1 = 32000,
-            .supply_cable_l2 = 32000,
-            .supply_cable_l3 = 32000,
-        };
-
-
-        stage_1(idx_array, current_allocation, phase_allocation, &limits, cpy, charger_count, &cfg, &state);
+        setup();
+        run_stage(1);
 
         _assert_array(current_allocation, {6000, 0, 0, 0, 0, 0, 6000, 0});
         _assert_array(phase_allocation, {1, 0, 0, 0, 0, 0, 3, 0});
-        _assert_array(state.allocated_minimum_current_packets + 1, {2, 2, 2});
+        _assert_array(ca_state.allocated_minimum_current_packets + 1, {2, 2, 2});
+
+        charger_state[6].phase_switch_supported = true;
     }
 }
 
@@ -555,17 +562,16 @@ void test_stage_2() {
     for(int i = 0; i < charger_count; ++i)
         idx_array[i] = i;
 
-    CurrentLimits limits;
+    CurrentLimits limits, limits_cpy;
 
     CurrentAllocatorConfig cfg;
     cfg.minimum_current_1p = 6000;
     cfg.minimum_current_3p = 6000;
 
-    CurrentAllocatorState state;
-    state.global_hysteresis_elapsed = false;
+    CurrentAllocatorState ca_state;
+    ca_state.global_hysteresis_elapsed = false;
 
-    {
-        limits = {
+    limits = {
             .grid_l1 = 14000,
             .grid_l2 = 13000,
             .grid_l3 = 18000,
@@ -581,21 +587,19 @@ void test_stage_2() {
             .supply_cable_l3 = 32000,
         };
 
-        memset(current_allocation, 0, sizeof(current_allocation));
-        memset(phase_allocation, 0, sizeof(phase_allocation));
-        memset(&state, 0, sizeof(state));
+    {
+        setup();
 
-
-        stage_1(idx_array, current_allocation, phase_allocation, &limits, charger_state, charger_count, &cfg, &state);
+        run_stage(1);
         _assert(phase_allocation[6], ==, 1);
 
-        stage_2(idx_array, current_allocation, phase_allocation, &limits, charger_state, charger_count, &cfg, &state);
+        run_stage(2);
 
         _assert_array(current_allocation, {6000, 0, 0, 0, 0, 0, 6000, 0});
         _assert_array(phase_allocation, {1, 0, 0, 0, 0, 0, 3, 0});
-        _assert_array(state.allocated_minimum_current_packets + 1, {2, 2, 2});
+        _assert_array(ca_state.allocated_minimum_current_packets + 1, {2, 2, 2});
 
-        _assert(limits.pv_excess, ==, 6000);
+        _assert(limits_cpy.pv_excess, ==, 6000);
     }
 }
 
