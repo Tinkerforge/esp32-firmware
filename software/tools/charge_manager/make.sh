@@ -1,2 +1,2 @@
 #!/bin/sh
-clang -ggdb -lstdc++ -- *.cpp
+clang++ -g -ldw -- *.cpp
