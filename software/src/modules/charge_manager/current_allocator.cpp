@@ -106,7 +106,8 @@ Cost get_cost(int32_t current_to_allocate,
     return cost;
 }
 
-bool cost_exceeds_limits(Cost cost, CurrentLimits* limits, int stage, bool global_hysteresis_elapsed) {
+bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool stage_1_2_hysteresis_elapsed)
+{
     {
         // Immediately return if supply cable would be overloaded.
         bool supply_exceeded = false;
@@ -131,18 +132,16 @@ bool cost_exceeds_limits(Cost cost, CurrentLimits* limits, int stage, bool globa
     switch(stage) {
         case 1:
         case 2:
-            return phases_exceeded || (global_hysteresis_elapsed && pv_excess_exceeded && pv_excess_filtered_exceeded);
+            return phases_exceeded || (stage_1_2_hysteresis_elapsed && pv_excess_exceeded && pv_excess_filtered_exceeded);
         case 3:
         case 4:
         case 7:
         case 8:
             return phases_exceeded || pv_excess_exceeded;
         case 5:
-            return global_hysteresis_elapsed && (phases_exceeded || phases_filtered_exceeded || pv_excess_exceeded || pv_excess_filtered_exceeded);
         case 6:
-            return phases_exceeded || phases_filtered_exceeded || pv_excess_exceeded || pv_excess_filtered_exceeded;
         case 9:
-            return global_hysteresis_elapsed && (phases_exceeded || pv_excess_exceeded);
+            return phases_exceeded || phases_filtered_exceeded || pv_excess_exceeded || pv_excess_filtered_exceeded;
         default:
             assert(false);
     }
@@ -284,7 +283,7 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         auto cost = get_cost(current, charger_phases, state->phase_rotation, allocated_current, charger_phases);
 
-        if (cost_exceeds_limits(cost, limits, 3, ca_state->global_hysteresis_elapsed))
+        if (cost_exceeds_limits(cost, limits, 3))
             continue;
 
         apply_cost(cost, limits);
@@ -321,7 +320,7 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         auto cost = get_cost(current,  ChargerPhase::P1, state->phase_rotation, allocated_current,  ChargerPhase::P1);
 
-        if (cost_exceeds_limits(cost, limits, 4, ca_state->global_hysteresis_elapsed))
+        if (cost_exceeds_limits(cost, limits, 4))
             continue;
 
         apply_cost(cost, limits);
@@ -366,7 +365,7 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         auto cost = get_cost(current, activate_3p ? ChargerPhase::P3 : ChargerPhase::P1, state->phase_rotation, 0, (ChargerPhase) 0);
 
-        if (cost_exceeds_limits(cost, limits, 5, ca_state->global_hysteresis_elapsed))
+        if (cost_exceeds_limits(cost, limits, 5))
             continue;
 
         // TODO: reset global hysteresis here
