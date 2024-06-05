@@ -107,6 +107,16 @@ Cost get_cost(int32_t current_to_allocate,
 }
 
 bool cost_exceeds_limits(Cost cost, CurrentLimits* limits, int stage, bool global_hysteresis_elapsed) {
+    {
+        // Immediately return if supply cable would be overloaded.
+        bool supply_exceeded = limits->supply_cable_l1 < cost.l1
+                            || limits->supply_cable_l2 < cost.l2
+                            || limits->supply_cable_l3 < cost.l3;
+
+        if (supply_exceeded)
+            return true;
+    }
+
     bool phases_exceeded = limits->grid_l1 < cost.l1
                         || limits->grid_l2 < cost.l2
                         || limits->grid_l3 < cost.l3;
@@ -147,6 +157,9 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
     limits->grid_l1_filtered -= cost.l1;
     limits->grid_l2_filtered -= cost.l2;
     limits->grid_l3_filtered -= cost.l3;
+    limits->supply_cable_l1 -= cost.l1;
+    limits->supply_cable_l2 -= cost.l2;
+    limits->supply_cable_l3 -= cost.l3;
 }
 
 // Stage 1: Allocate minimum current on the minimal number of phases to all already active (i.e. charging) chargers.
