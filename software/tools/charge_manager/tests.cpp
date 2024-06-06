@@ -589,6 +589,119 @@ void test_stage_2() {
     }
 }
 
+void test_stage_3() {
+    size_t charger_count = 8;
+    int32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    uint8_t phase_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    int idx_array[MAX_CONTROLLED_CHARGERS] = {};
+    for(int i = 0; i < charger_count; ++i)
+        idx_array[i] = i;
+
+    CurrentLimits limits, limits_cpy;
+
+    CurrentAllocatorConfig cfg;
+    cfg.minimum_current_1p = 6000;
+    cfg.minimum_current_3p = 6000;
+    cfg.enable_current = 9000;
+
+    CurrentAllocatorState ca_state;
+    ca_state.global_hysteresis_elapsed = false;
+
+    limits = {
+        .raw = {30000, 14000, 13000, 18000},
+        .supply = {0, 32000, 32000, 32000}
+    };
+
+    {
+        setup();
+
+        run_stage(1);
+        run_stage(2);
+        run_stage(3);
+
+        _assert_array(current_allocation, {6500, 0, 0, 0, 0, 0, 6500, 0});
+        _assert_array(phase_allocation, {1, 0, 0, 0, 0, 0, 3, 0});
+        _assert_array(ca_state.allocated_minimum_current_packets, {0, 0, 0, 0});
+
+        _assert(limits_cpy.raw.pv, ==, 4000);
+    }
+}
+
+void test_foobar() {
+    size_t charger_count = 4;
+    int32_t current_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    uint8_t phase_allocation[MAX_CONTROLLED_CHARGERS] = {};
+    int idx_array[MAX_CONTROLLED_CHARGERS] = {};
+    for(int i = 0; i < charger_count; ++i)
+        idx_array[i] = i;
+
+    CurrentLimits limits, limits_cpy;
+
+    CurrentAllocatorConfig cfg;
+    cfg.minimum_current_1p = 6000;
+    cfg.minimum_current_3p = 6000;
+    cfg.enable_current = 9000;
+
+    CurrentAllocatorState ca_state;
+    ca_state.global_hysteresis_elapsed = false;
+
+    limits = {
+        .raw = {80000, 40000, 40000, 40000},
+        .filtered = {80000, 40000, 40000, 40000},
+        .supply = {0, 100000, 100000, 100000}
+    };
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreorder-init-list"
+    ChargerState charger_state[] = {
+/* 0 */ {.phases = 1, .phase_switch_supported = false, .phase_rotation = PhaseRotation::L123,    .is_charging = true, .supported_current = 20000, .allowed_current = 10000, .charger_state = 3 },
+/* 1 */ {.phases = 1, .phase_switch_supported = false, .phase_rotation = PhaseRotation::Unknown, .is_charging = true, .supported_current = 20000, .allowed_current = 10000, .charger_state = 3 },
+/* 2 */ {.phases = 3, .phase_switch_supported = true,  .phase_rotation = PhaseRotation::L231,    .is_charging = true, .supported_current = 20000, .allowed_current = 10000, .charger_state = 3 },
+/* 3 */ {.phases = 3, .phase_switch_supported = false, .phase_rotation = PhaseRotation::L312,    .is_charging = true, .supported_current = 20000, .allowed_current = 10000, .charger_state = 3 },
+};
+#pragma clang diagnostic pop
+
+    {
+        setup();
+
+        run_stage(1);
+
+        _assert_array(current_allocation, {6000, 6000, 6000, 6000});
+        _assert_array(phase_allocation, {1, 1, 1, 3});
+        _assert_array(ca_state.allocated_minimum_current_packets, {0, 3, 3, 2});
+        _assert_array(limits_cpy.raw, {44000, 22000, 22000, 28000});
+        _assert_array(limits_cpy.filtered, {44000, 22000, 22000, 28000});
+        _assert_array(limits_cpy.supply, {-36000, 82000, 82000, 88000});
+
+        run_stage(2);
+
+        _assert_array(current_allocation, {6000, 6000, 6000, 6000});
+        _assert_array(phase_allocation, {1, 1, 3, 3});
+        _assert_array(ca_state.allocated_minimum_current_packets, {0, 4, 3, 3});
+        _assert_array(limits_cpy.raw, {32000, 16000, 22000, 22000});
+        _assert_array(limits_cpy.filtered, {32000, 16000, 22000, 22000});
+        _assert_array(limits_cpy.supply, {-48000, 76000, 82000, 82000});
+
+        run_stage(3);
+
+        _assert_array(current_allocation, {6000, 9000, 9000, 9000});
+        _assert_array(phase_allocation, {1, 1, 3, 3});
+        _assert_array(ca_state.allocated_minimum_current_packets, {0, 1, 0, 0});
+
+        run_stage(4);
+
+        _assert_array(current_allocation, {9000, 9000, 9000, 9000});
+        _assert_array(phase_allocation, {1, 1, 3, 3});
+        _assert_array(ca_state.allocated_minimum_current_packets, {0, 0, 0, 0});
+
+        run_stage(7);
+
+        _assert_array(current_allocation, {9000, 9000, 11000, 11000});
+        _assert_array(phase_allocation, {1, 1, 3, 3});
+        _assert_array(ca_state.allocated_minimum_current_packets, {0, 0, 0, 0});
+    }
+}
+
 void run_tests() {
     test_filter_chargers();
     test_sort_chargers();
@@ -596,4 +709,6 @@ void run_tests() {
     test_get_cost();
     test_stage_1();
     test_stage_2();
+    test_stage_3();
+    test_foobar();
 }
