@@ -650,6 +650,7 @@ void RemoteAccess::connect_management() {
 
     logger.printfln("Connecting to Management WireGuard peer %s:%u", remote_host.c_str(), management_connection.get("remote_port")->asUint());
 
+    this->setup_inner_socket();
     management.begin(internal_ip,
              internal_subnet,
              local_port,
@@ -670,12 +671,9 @@ void RemoteAccess::connect_management() {
 
         if (this->connection_state.get("management_connection_state")->updateUint(up ? 2 : 1)) {
             if (up) {
-                this->setup_inner_socket();
                 logger.printfln("Management connection connected");
+
             } else {
-                close(this->inner_socket);
-                this->inner_socket = -1;
-                this->in_seq_number = 0;
                 logger.printfln("Management connection disconnected");
             }
         }
@@ -745,10 +743,13 @@ void RemoteAccess::connect_remote_access(uint8_t i) {
 int RemoteAccess::setup_inner_socket() {
     if (inner_socket < 0) {
         close(inner_socket);
+    } else if (inner_socket > 0) {
+        return 0;
     }
 
     inner_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (inner_socket < 0) {
+        logger.printfln("Failed to create inner socket: (%i)%s", errno, strerror_r(errno, nullptr, 0));
         return inner_socket;
     }
 
@@ -789,7 +790,8 @@ void RemoteAccess::run_management() {
             return;
         }
         close(inner_socket);
-        inner_socket = -1;
+        inner_socket = 0;
+        setup_inner_socket();
         return;
     } if (ret != sizeof(management_command_packet)) {
         logger.printfln("Didnt receive Management command.");
@@ -815,6 +817,7 @@ void RemoteAccess::run_management() {
     switch (command->command_id) {
         case management_command_id::Connect:
             {
+                logger.printfln("Opening connection %u", command->connection_no);
                 uint32_t local_port = remote_connection_config.get("connections")->get(command->connection_no)->get("local_port")->asUint();
                 port_discovery_packet response;
                 response.charger_id = local_uid_num;
@@ -828,6 +831,7 @@ void RemoteAccess::run_management() {
             break;
 
         case management_command_id::Disconnect:
+            logger.printfln("Closing connection %u", command->connection_no);
             remote_connections[command->connection_no].end();
             break;
     }
