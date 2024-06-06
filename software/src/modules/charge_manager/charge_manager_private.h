@@ -25,8 +25,10 @@ struct CurrentAllocatorConfig {
 // R+W _only_ by current_allocator.cpp
 struct CurrentAllocatorState {
     bool last_print_local_log_was_error = false;
+
     bool global_hysteresis_elapsed = false;
-    int allocated_minimum_current_packets[4] = {};
+    bool reset_global_hysteresis = false;
+    Cost allocated_minimum_current_packets;
 };
 
 struct ChargerState {
