@@ -38,7 +38,6 @@ std::ostream& operator,(std::ostream& out, const T& t) {
         backward::Printer p; p.reverse = false; p.trace_context_size = 1; p.print(st2); \
         assert(!FATAL_ASSERTS || (_x eq _y)); \
         std::cout << "\n"; \
-        return; \
     } \
 } while(0)
 
@@ -48,6 +47,12 @@ std::ostream& operator,(std::ostream& out, const T& t) {
 
 template<typename T>
 void _assert_array(T left[], std::vector<T> right) {
+    for(int i = 0; i < right.size(); ++i) {
+        _assert_extra(left[i], ==, right.begin()[i], i);
+    }
+}
+
+void _assert_array(Cost left, std::vector<decltype(Cost::l1)> right) {
     for(int i = 0; i < right.size(); ++i) {
         _assert_extra(left[i], ==, right.begin()[i], i);
     }
@@ -451,8 +456,8 @@ void verify_allocation(
             cost.l2 += current_allocation[i];
             cost.l3 += current_allocation[i];
         } else {
-            for (int i = 1; i <= (int)phase_allocation[i]; ++i) {
-                cost[get_phase(charger_state[i].phase_rotation, (ChargerPhase)i)] += current_allocation[i];
+            for (int phase = 1; phase <= (int)phase_allocation[i]; ++phase) {
+                cost[get_phase(charger_state[i].phase_rotation, (ChargerPhase)phase)] += current_allocation[i];
             }
         }
     }
@@ -517,7 +522,7 @@ void test_stage_1() {
 
         _assert_array(current_allocation, {6000, 0, 0, 6000, 0, 0, 0, 0});
         _assert_array(phase_allocation, {1, 0, 0, 1, 0, 0, 0, 0});
-        _assert_array(ca_state.allocated_minimum_current_packets + 1, {1, 2, 1});
+        _assert_array(ca_state.allocated_minimum_current_packets, {0, 1, 2, 1});
     }
 
     {
@@ -529,7 +534,7 @@ void test_stage_1() {
 
         _assert_array(current_allocation, {6000, 0, 0, 0, 0, 0, 6000, 0});
         _assert_array(phase_allocation, {1, 0, 0, 0, 0, 0, 1, 0});
-        _assert_array(ca_state.allocated_minimum_current_packets + 1, {2, 2, 2});
+        _assert_array(ca_state.allocated_minimum_current_packets, {0, 2, 2, 2});
     }
 
     {
@@ -540,7 +545,7 @@ void test_stage_1() {
 
         _assert_array(current_allocation, {6000, 0, 0, 0, 0, 0, 6000, 0});
         _assert_array(phase_allocation, {1, 0, 0, 0, 0, 0, 3, 0});
-        _assert_array(ca_state.allocated_minimum_current_packets + 1, {2, 2, 2});
+        _assert_array(ca_state.allocated_minimum_current_packets, {0, 2, 2, 2});
 
         charger_state[6].phase_switch_supported = true;
     }
@@ -578,7 +583,7 @@ void test_stage_2() {
 
         _assert_array(current_allocation, {6000, 0, 0, 0, 0, 0, 6000, 0});
         _assert_array(phase_allocation, {1, 0, 0, 0, 0, 0, 3, 0});
-        _assert_array(ca_state.allocated_minimum_current_packets + 1, {2, 2, 2});
+        _assert_array(ca_state.allocated_minimum_current_packets, {0, 2, 2, 2});
 
         _assert(limits_cpy.raw.pv, ==, 6000);
     }
