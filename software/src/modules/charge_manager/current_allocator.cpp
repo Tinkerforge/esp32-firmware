@@ -289,9 +289,11 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         apply_cost(cost, limits);
         current_allocation[idx_array[i]] = current;
 
-        --ca_state->allocated_minimum_current_packets[(size_t)get_phase(state->phase_rotation, ChargerPhase::P1)];
-        --ca_state->allocated_minimum_current_packets[(size_t)get_phase(state->phase_rotation, ChargerPhase::P2)];
-        --ca_state->allocated_minimum_current_packets[(size_t)get_phase(state->phase_rotation, ChargerPhase::P3)];
+        // For both a 3p and a (1p with unknown rotation) charger,
+        // we've counted a min current packet on each phase in stage 1
+        --ca_state->allocated_minimum_current_packets[GridPhase::L1];
+        --ca_state->allocated_minimum_current_packets[GridPhase::L2];
+        --ca_state->allocated_minimum_current_packets[GridPhase::L3];
     }
 }
 
