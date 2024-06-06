@@ -34,7 +34,7 @@ std::ostream& operator,(std::ostream& out, const T& t) {
             << "\x1b[00m failed: (" << _x << ' ' << #eq << ' ' << _y << " is false) " \
             << "" #__VA_ARGS__ " : " , __VA_ARGS__ , "\n"; \
         backward::StackTrace st; st.load_here(32); st.skip_n_firsts(2); \
-        backward::StackTrace st2; st2.load_here(st.size() - 2); st2.skip_n_firsts(2); \
+        backward::StackTrace st2; st2.load_here(st.size() - 3); st2.skip_n_firsts(2); \
         backward::Printer p; p.reverse = false; p.trace_context_size = 1; p.print(st2); \
         assert(!FATAL_ASSERTS || (_x eq _y)); \
         std::cout << "\n"; \
