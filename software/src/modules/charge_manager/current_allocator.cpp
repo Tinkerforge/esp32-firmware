@@ -385,9 +385,6 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     return;
 }
 
-void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
-    return;
-}
 
 int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases) {
     if (allocated_phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
@@ -401,6 +398,37 @@ int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state,
     }
 
     return allocated_phases * capacity;
+}
+
+void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+    int matched = 0;
+
+    filter(allocated_current > 0);
+
+    sort(
+        3 - allocated_phases,
+        true // TODO lowest allocated charge (not charge current!) first
+    );
+
+    auto fair_current = limits->raw.pv / matched;
+
+    for (int i = 0; i < matched; ++i) {
+        const auto *state = &charger_state[idx_array[i]];
+
+        auto allocated_current = current_allocation[idx_array[i]];
+        auto allocated_phases = phase_allocation[idx_array[i]];
+
+        auto current = std::min(fair_current / allocated_phases, current_capacity(limits, state, allocated_current, allocated_phases));
+        current += allocated_current;
+
+        auto cost = get_cost(current, allocated_phases == 3 ? ChargerPhase::P3 : ChargerPhase::P1, state->phase_rotation, allocated_current, allocated_phases == 3 ? ChargerPhase::P3 : ChargerPhase::P1);
+
+        if (cost_exceeds_limits(cost, limits, 8))
+            continue;
+
+        apply_cost(cost, limits);
+        current_allocation[idx_array[i]] = current;
+    }
 }
 
 void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
