@@ -201,9 +201,10 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         auto cost = get_cost(current, activate_3p ? ChargerPhase::P3 : ChargerPhase::P1, state->phase_rotation, 0, (ChargerPhase) 0);
 
-        if (cost_exceeds_limits(cost, limits, 1, ca_state->global_hysteresis_elapsed))
-            // TODO: reset global hysteresis here
+        if (cost_exceeds_limits(cost, limits, 1, ca_state->global_hysteresis_elapsed)) {
+            ca_state->reset_global_hysteresis = true;
             continue;
+        }
 
         apply_cost(cost, limits);
         current_allocation[idx_array[i]] = current;
@@ -245,9 +246,10 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         auto cost = get_cost(current, ChargerPhase::P3, state->phase_rotation, current_allocation[idx_array[i]], phase_allocation[idx_array[i]] == 3 ? ChargerPhase::P3 : ChargerPhase::P1);
 
-        if (cost_exceeds_limits(cost, limits, 2, ca_state->global_hysteresis_elapsed))
-            // TODO: reset global hysteresis here
+        if (cost_exceeds_limits(cost, limits, 2, ca_state->global_hysteresis_elapsed)) {
+            ca_state->reset_global_hysteresis = true;
             continue;
+        }
 
         apply_cost(cost, limits);
         current_allocation[idx_array[i]] = current;
@@ -377,7 +379,7 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         if (cost_exceeds_limits(cost, limits, 5))
             continue;
 
-        // TODO: reset global hysteresis here
+        ca_state->reset_global_hysteresis = true;
 
         apply_cost(cost, limits);
         current_allocation[idx_array[i]] = current;
@@ -429,7 +431,7 @@ void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto cost = get_cost(current, allocated_phases == 3 ? ChargerPhase::P3 : ChargerPhase::P1, state->phase_rotation, allocated_current, allocated_phases == 3 ? ChargerPhase::P3 : ChargerPhase::P1);
 
         // TODO: This should never be true
-        if (cost_exceeds_limits(cost, limits, 8, ca_state->global_hysteresis_elapsed))
+        if (cost_exceeds_limits(cost, limits, 8))
             continue;
 
         apply_cost(cost, limits);
