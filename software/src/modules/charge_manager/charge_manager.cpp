@@ -321,8 +321,10 @@ void ChargeManager::setup()
                 this->charger_allocation_state,
                 &allocated_current
             );
-            if (this->allocated_current_callback)
-                allocated_current_callback(allocated_current);
+
+            for (size_t i = 0; i < 4; i++) {
+                allocated_currents[i] = limits.raw[i] - limits_post_allocation.raw[i];
+            }
 
             for (int i = 0; i < this->charger_count; ++i) {
                 update_charger_state_config(i);
@@ -447,11 +449,6 @@ bool ChargeManager::is_control_pilot_disconnect_supported(uint32_t last_update_c
 const char *ChargeManager::get_charger_name(uint8_t idx)
 {
     return this->state.get("chargers")->get(idx)->get("name")->asEphemeralCStr();
-}
-
-void ChargeManager::set_allocated_current_callback(std::function<void(uint32_t)> &&callback)
-{
-    allocated_current_callback = std::forward<std::function<void(uint32_t)>>(callback);
 }
 
 void ChargeManager::register_urls()
