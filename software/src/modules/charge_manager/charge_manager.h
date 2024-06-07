@@ -80,13 +80,13 @@ public:
     ChargerState *charger_state = nullptr;
 
     CurrentLimits *get_limits() {return &limits;}
-    const CurrentLimits *get_limits_post_allocation() {return &limits_post_allocation;}
+    const Cost *get_allocated_currents() {return &allocated_currents;}
 
 private:
     CurrentLimits limits, limits_post_allocation;
+    Cost allocated_currents;
 
     bool all_chargers_seen = false;
-    std::function<void(uint32_t)> allocated_current_callback;
 
     std::unique_ptr<char[]> distribution_log;
 
