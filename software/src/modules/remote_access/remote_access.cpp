@@ -571,7 +571,18 @@ void RemoteAccess::resolve_management() {
     serializer.addObject();
     serializer.addMemberNumber("id", local_uid_num);
     serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
-    serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
+        serializer.addMemberObject("data");
+            serializer.addMemberObject("V1");
+                serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
+                serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
+                //TODO: Adapt this once we support more than one user.
+                serializer.addMemberArray("configured_connections");
+                    for (int i = 0; i < 5; i++) {
+                        serializer.addNumber(i);
+                    }
+                serializer.endArray();
+            serializer.endObject();
+        serializer.endObject();
     serializer.endObject();
     size_t len = serializer.end();
 
