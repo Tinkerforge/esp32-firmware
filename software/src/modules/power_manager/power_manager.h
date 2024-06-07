@@ -24,6 +24,7 @@
 #include "config.h"
 #include "phase_switcher_back-end.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
+#include "modules/charge_manager/current_limits.h"
 #include "module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -120,7 +121,7 @@ private:
         Undefined = 2,
     };
 
-    void set_available_current(uint32_t current);
+    void set_available_current(int32_t current_pv, int32_t current_L1, int32_t current_L2, int32_t current_L3);
     void set_available_phases(uint32_t phases);
     void update_data();
     void update_energy();
@@ -157,7 +158,7 @@ private:
     SwitchingState switching_state_prev          = switching_state;
     uint32_t switching_start                     = 0;
     uint32_t mode                                = 0;
-    uint32_t have_phases                         = 0;
+    int32_t have_phases                          = 0;
     bool     is_3phase                           = false;
     bool     wants_3phase                        = false;
     bool     wants_3phase_last                   = false;
@@ -167,9 +168,7 @@ private:
     bool     just_switched_mode                  = false;
     uint32_t phase_state_change_blocked_until    = 0;
     uint32_t on_state_change_blocked_until       = 0;
-    uint32_t charge_manager_available_current_ma = 0;
-    uint32_t charge_manager_allocated_current_ma = 0;
-    uint32_t max_current_limited_ma              = 0;
+    int32_t max_current_limited_ma               = 0;
 
     union {
         uint32_t combined;
@@ -192,6 +191,10 @@ private:
     int32_t  power_at_meter_mavg_values_count    = 0;
     int32_t  power_at_meter_mavg_position        = 0;
 
+    // CM data
+    CurrentLimits *cm_limits;
+    const Cost *cm_allocated_currents;
+
     // Config cache
     uint32_t default_mode             = 0;
     bool     excess_charging_enable   = false;
@@ -201,15 +204,15 @@ private:
     uint32_t phase_switching_mode     = 0;
     uint32_t switching_hysteresis_ms  = 0;
     bool     hysteresis_wear_ok       = false;
-    uint32_t max_current_unlimited_ma = 0;
-    uint32_t min_current_1p_ma        = 0;
-    uint32_t min_current_3p_ma        = 0;
+    int32_t  supply_cable_max_current_ma = 0;
+    int32_t min_current_1p_ma         = 0;
+    int32_t min_current_3p_ma         = 0;
 
     // Pre-calculated limits
     int32_t  overall_min_power_w = 0;
     int32_t  threshold_3to1_w    = 0;
     int32_t  threshold_1to3_w    = 0;
-    uint32_t max_phases          = 0;
+    int32_t max_phases           = 0;
 
     // Automation
     TristateBool automation_drawing_power_last   = TristateBool::Undefined;
