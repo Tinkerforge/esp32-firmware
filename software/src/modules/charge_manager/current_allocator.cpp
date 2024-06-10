@@ -448,6 +448,7 @@ void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto allocated_phases = phase_allocation[idx_array[i]];
 
         auto current = std::min(limits->raw.pv, current_capacity(limits, state, allocated_current, allocated_phases));
+        current += allocated_current;
 
         auto cost = get_cost(current, allocated_phases == 3 ? ChargerPhase::P3 : ChargerPhase::P1, state->phase_rotation, allocated_current, allocated_phases == 3 ? ChargerPhase::P3 : ChargerPhase::P1);
 
