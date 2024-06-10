@@ -119,8 +119,8 @@ bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool
             return true;
     }
 
-    bool phases_exceeded;
-    bool phases_filtered_exceeded;
+    bool phases_exceeded = false;
+    bool phases_filtered_exceeded = false;
     for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
         phases_exceeded |= limits->raw[i] < cost[i];
         phases_filtered_exceeded |= limits->filtered[i] < cost[i];
