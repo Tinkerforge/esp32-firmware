@@ -330,7 +330,7 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         apply_cost(cost, limits);
         current_allocation[idx_array[i]] = current;
 
-        --ca_state->allocated_minimum_current_packets[(size_t)get_phase(state->phase_rotation, ChargerPhase::P1)];
+        --ca_state->allocated_minimum_current_packets[(size_t)phase];
     }
 }
 
