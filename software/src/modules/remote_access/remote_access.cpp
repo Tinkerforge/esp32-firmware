@@ -48,7 +48,7 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     bzero(&dest_addr, sizeof(dest_addr));
 
     ip_addr_t ip;
-    int ret = dns_gethostbyname_addrtype(dest_host, &ip, nullptr, nullptr, LWIP_DNS_ADDRTYPE_IPV4);
+    int ret = dns_gethostbyname_addrtype_lwip_ctx(dest_host, &ip, nullptr, nullptr, LWIP_DNS_ADDRTYPE_IPV4);
     if (ret == ERR_VAL) {
         logger.printfln("No DNS server is configured!");
     }
