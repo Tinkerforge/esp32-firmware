@@ -51,6 +51,8 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     int ret = dns_gethostbyname_addrtype_lwip_ctx(dest_host, &ip, nullptr, nullptr, LWIP_DNS_ADDRTYPE_IPV4);
     if (ret == ERR_VAL) {
         logger.printfln("No DNS server is configured!");
+    } else if (ret != ERR_OK) {
+        logger.printfln("Error during DNS resolve!");
     }
 
     if (ret != ESP_OK || ip.type != IPADDR_TYPE_V4) {
@@ -706,8 +708,6 @@ void RemoteAccess::connect_remote_access(uint8_t i) {
         return;
     }
 
-    remote_connections[i].end();
-
     IPAddress internal_ip;
     IPAddress internal_subnet;
     IPAddress internal_gateway;
@@ -828,6 +828,10 @@ void RemoteAccess::run_management() {
     switch (command->command_id) {
         case management_command_id::Connect:
             {
+                if (remote_connections[command->connection_no].is_peer_up(nullptr, nullptr)) {
+                    return;
+                }
+
                 logger.printfln("Opening connection %u", command->connection_no);
                 uint32_t local_port = remote_connection_config.get("connections")->get(command->connection_no)->get("local_port")->asUint();
                 port_discovery_packet response;
@@ -836,6 +840,7 @@ void RemoteAccess::run_management() {
                 memcpy(&response.connection_uuid, &command->connection_uuid, 16);
 
                 CoolString remote_host = config.get("relay_host")->asString();
+                remote_connections[command->connection_no].end();
                 create_sock_and_send_to(&response, sizeof(response), remote_host.c_str(), 51820, (uint16_t *)&local_port);
             }
             connect_remote_access(command->connection_no);
