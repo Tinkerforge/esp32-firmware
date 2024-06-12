@@ -64,7 +64,7 @@ def main():
         req = urllib.request.Request("http://10.0.0.1/info/version")
         try:
             with urllib.request.urlopen(req, timeout=10) as f:
-                fw_version = json.loads(f.read().decode("utf-8"))["firmware"].split("-")[0]
+                fw_version = json.loads(f.read().decode("utf-8"))["firmware"].split("-")[0].split("+")[0]
         except Exception as e:
             fatal_error("Failed to connect via wifi!")
 

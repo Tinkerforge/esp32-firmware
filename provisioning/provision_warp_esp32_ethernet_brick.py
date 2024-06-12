@@ -242,7 +242,7 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
     req = urllib.request.Request(f"http://{ethernet_ip}/info/version")
     try:
         with urllib.request.urlopen(req, timeout=10) as f:
-            fw_version = json.loads(f.read().decode("utf-8"))["firmware"].split("-")[0]
+            fw_version = json.loads(f.read().decode("utf-8"))["firmware"].split("-")[0].split("+")[0]
     except Exception as e:
         traceback.print_exc()
         fatal_error("Failed to read firmware version!")
