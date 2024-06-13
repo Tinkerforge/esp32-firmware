@@ -894,19 +894,19 @@ def update_chargers(charger_state: list[ChargerState]):
 #                        supply=Cost(0, 42000, 42000, 42000))
 
 ca_state = CurrentAllocatorState(False, False, Cost(0, 0, 0, 0))
-# charger_state = [
-#     ChargerState(name="Charger 0", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L123, wants_to_charge=True, supported_current=32000),
-#     ChargerState(name="Charger 1", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L231, _car=None),#wants_to_charge=True, supported_current=32000),
-#     ChargerState(name="Charger 2", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L312, _car=None),#wants_to_charge=True, supported_current=32000),
-#     ChargerState(name="Charger 3", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L123, _car=None),
-#     ChargerState(name="Charger 4", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L231, _car=None),
-#     ChargerState(name="Charger 5", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L312, _car=None)
-# ]
-
 charger_state = [
-    ChargerState(name="Charger 1", phases=3, phase_switch_supported=True,  phase_rotation=PhaseRotation.L123, wants_to_charge=True, supported_current=32000),
-    ChargerState(name="Charger 2", phases=3, phase_switch_supported=True,  phase_rotation=PhaseRotation.L231, _car=None),
+    ChargerState(name="Charger 0", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L123, wants_to_charge=True, supported_current=32000),
+    ChargerState(name="Charger 1", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L231, _car=None),#wants_to_charge=True, supported_current=32000),
+    ChargerState(name="Charger 2", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L312, _car=None),#wants_to_charge=True, supported_current=32000),
+    ChargerState(name="Charger 3", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L123, _car=None),
+    ChargerState(name="Charger 4", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L231, _car=None),
+    ChargerState(name="Charger 5", phases=3, phase_switch_supported=True, phase_rotation=PhaseRotation.L312, _car=None)
 ]
+
+# charger_state = [
+#     ChargerState(name="Charger 1", phases=3, phase_switch_supported=True,  phase_rotation=PhaseRotation.L123, wants_to_charge=True, supported_current=32000),
+#     ChargerState(name="Charger 2", phases=3, phase_switch_supported=True,  phase_rotation=PhaseRotation.L231, _car=None),
+# ]
 
 
 cfg = CurrentAllocatorConfig(6000, 6000, 9000)
@@ -916,9 +916,8 @@ limits = CurrentLimits(raw=Cost(1e7, 1e7, 1e7, 1e7),
 limits_cpy = CurrentLimits()
 
 car_queue = [
-    Car(32000, 1, 30),
     Car(16000, 3, 30),
-
+    Car(32000, 1, 30),
     Car(),
     Car(32000, 1, 30),
     Car(),
