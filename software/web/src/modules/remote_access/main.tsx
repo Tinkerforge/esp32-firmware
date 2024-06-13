@@ -164,7 +164,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             keys: keys
         };
 
-        const resp = await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"));
+        const resp = await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"), 10000);
         await API.save("remote_access/remote_connection_config", {
             connections: connections
         }, __("remote_access.script.save_failed"));
