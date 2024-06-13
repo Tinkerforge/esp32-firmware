@@ -98,7 +98,7 @@ void RemoteAccess::pre_setup() {
         {"enable", Config::Bool(false)},
         {"email", Config::Str("", 0, 64)},
         {"password", Config::Str("", 0, 32)},
-        {"relay_host", Config::Str("fernzugriff.warp-charger.com", 0, 64)},
+        {"relay_host", Config::Str("my.warp-charger.com", 0, 64)},
         {"relay_host_port", Config::Uint16(443)},
         {"cert_id", Config::Int8(-1)}
     })};
