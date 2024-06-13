@@ -191,319 +191,6 @@ def sort(cs: list[ChargerState], group_fn: Callable[[ChargerState], int], key_fn
 #endregion
 
 #region Stages
-def stage_1(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
-    cs = [x for x in charger_state if x.is_charging and x._allocated_energy_this_rotation < ALLOCATED_ENERGY_ROTATION_THRESHOLD]
-
-    cs = sort(cs,
-              lambda x:  0 if x.phases == 1 and x.phase_rotation == PhaseRotation.Unknown
-                    else 1 if x.phases == 3 and not x.phase_switch_supported
-                    else 2 if x.phases == 3 and x.phase_switch_supported and x.phase_rotation == PhaseRotation.Unknown
-                    else 3 if x.phases == 3 and x.phase_switch_supported and x.phase_rotation != PhaseRotation.Unknown
-                    else 4 if x.phases == 1 and x.phase_rotation != PhaseRotation.Unknown
-                    else 999,
-              lambda x: x._allocated_energy)
-
-    min_1p = cfg.minimum_current_1p
-    min_3p = cfg.minimum_current_3p
-
-    for state in cs:
-        activate_3p = state.phases != 1 and not state.phase_switch_supported
-
-        current = min_3p if activate_3p else min_1p
-        if state.supported_current < current:
-            print("Charger ", state, " does not support ", 3 if activate_3p else 1, " phase minimum current. Skipping")
-            continue
-
-        cost = get_cost(current, ChargerPhase.P3 if activate_3p else ChargerPhase.P1, state.phase_rotation, 0, ChargerPhase(0))
-
-        if cost_exceeds_limits(cost, limits, 1, ca_state.global_hysteresis_elapsed):
-            ca_state.reset_global_hysteresis = True
-            continue
-
-        limits = apply_cost(cost, limits)
-        state._current_allocation = current
-        state._phase_allocation = 3 if activate_3p else 1
-
-        if state.phase_rotation != PhaseRotation.Unknown and not activate_3p:
-            ca_state.allocated_minimum_current_packets[get_phase(state.phase_rotation, ChargerPhase.P1)] += 1
-        else:
-            ca_state.allocated_minimum_current_packets[GridPhase.L1] += 1
-            ca_state.allocated_minimum_current_packets[GridPhase.L2] += 1
-            ca_state.allocated_minimum_current_packets[GridPhase.L3] += 1
-
-def stage_2(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
-    cs = [x for x in charger_state if x._current_allocation > 0 and x.phase_switch_supported and x.phases == 3]
-
-    cs = sort(cs,
-              lambda x: 0,
-              lambda x: x._allocated_energy)
-
-    for state in cs:
-
-        current = cfg.minimum_current_3p
-        if state.supported_current < current:
-            print("Charger ", state, " does not support 3 phase minimum current. Skipping")
-            continue
-
-        cost = get_cost(current, ChargerPhase.P3, state.phase_rotation, state._current_allocation, ChargerPhase(state._phase_allocation))
-
-        if cost_exceeds_limits(cost, limits, 2, ca_state.global_hysteresis_elapsed):
-            ca_state.reset_global_hysteresis = True
-            continue
-
-        limits = apply_cost(cost, limits)
-        state._current_allocation = current
-        state._phase_allocation = 3
-
-        if state.phase_rotation != PhaseRotation.Unknown:
-            ca_state.allocated_minimum_current_packets[get_phase(state.phase_rotation, ChargerPhase.P2)] += 1
-            ca_state.allocated_minimum_current_packets[get_phase(state.phase_rotation, ChargerPhase.P3)] += 1
-
-def stage_3(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
-    cs = [x for x in charger_state if x._current_allocation > 0 and (x.phases == 3 or x.phase_rotation == PhaseRotation.Unknown)]
-
-    cs = sort(cs,
-              lambda x: 0,
-              lambda x: x.supported_current)
-
-    for state in cs:
-        current = cfg.enable_current - state._current_allocation
-
-        for i in range(1, 4):
-            current = min(current, limits.raw[i] / ca_state.allocated_minimum_current_packets[i])
-
-        current += state._current_allocation
-        current = min(current, state.supported_current)
-
-        cost = get_cost(current, ChargerPhase(state._phase_allocation), state.phase_rotation, state._current_allocation, ChargerPhase(state._phase_allocation))
-
-        if cost_exceeds_limits(cost, limits, 3):
-            continue
-
-        limits = apply_cost(cost, limits)
-        state._current_allocation = current
-
-        ca_state.allocated_minimum_current_packets[GridPhase.L1] -= 1
-        ca_state.allocated_minimum_current_packets[GridPhase.L2] -= 1
-        ca_state.allocated_minimum_current_packets[GridPhase.L3] -= 1
-
-def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
-    cs = [x for x in charger_state if x._current_allocation > 0 and x.phases == 1 and x.phase_rotation != PhaseRotation.Unknown]
-
-    cs = sort(cs,
-              lambda x: 0,
-              lambda x: x.supported_current)
-
-    for state in cs:
-        current = cfg.enable_current - state._current_allocation
-        phase = get_phase(state.phase_rotation, ChargerPhase.P1)
-
-        current = min(current, limits.raw[phase] / ca_state.allocated_minimum_current_packets[phase])
-
-        current += state._current_allocation
-        current = min(current, state.supported_current)
-
-        cost = get_cost(current, ChargerPhase.P1, state.phase_rotation, state._current_allocation, ChargerPhase.P1)
-
-        if cost_exceeds_limits(cost, limits, 4):
-            continue
-
-        limits = apply_cost(cost, limits)
-        state._current_allocation = current
-
-        ca_state.allocated_minimum_current_packets[phase] -= 1
-
-def stage_5(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
-    if not ca_state.global_hysteresis_elapsed:
-        return
-
-    cs = [x for x in charger_state if x._current_allocation == 0 and x.wants_to_charge]
-
-    cs = sort(cs,
-              lambda x:  0 if x.phases == 3 and not x.phase_switch_supported
-                    else 1 if x.phases == 1 and not x.phase_switch_supported and x.phase_rotation == PhaseRotation.Unknown
-                    else 2 if x.phase_switch_supported and x.phase_rotation == PhaseRotation.Unknown
-                    else 3 if x.phases == 1 and x.phase_rotation != PhaseRotation.Unknown
-                    else 4 if x.phase_switch_supported and x.phase_rotation != PhaseRotation.Unknown
-                    else 999,
-              lambda x: x._allocated_energy)
-
-    for state in cs:
-        current = cfg.enable_current
-
-        activate_3p = state.phases != 1 and not state.phase_switch_supported
-
-        if state.supported_current < current:
-            print("Charger ", state, " does not support ", 3 if activate_3p else 1, " phase minimum current. Skipping")
-            continue
-
-        cost = get_cost(current, ChargerPhase.P3 if activate_3p else ChargerPhase.P1, state.phase_rotation, 0, ChargerPhase(0))
-
-        if cost_exceeds_limits(cost, limits, 5):
-            continue
-
-        global force_print
-        force_print = True
-        ca_state.reset_global_hysteresis = True
-
-        limits = apply_cost(cost, limits)
-        state._current_allocation = current
-        state._phase_allocation = 3 if activate_3p else 1
-
-def stage_6(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
-    pass
-
-def current_capacity(limits: CurrentLimits, state: ChargerState):
-    capacity = state.supported_current - state._current_allocation
-
-    if state._phase_allocation == 3 or state.phase_rotation == PhaseRotation.Unknown:
-        return min(capacity, limits.raw.l1, limits.raw.l2, limits.raw.l3)
-
-    for i in range(1, 1 + state._phase_allocation):
-        phase = get_phase(state.phase_rotation, ChargerPhase(i))
-        capacity = min(capacity, limits.raw[phase])
-
-    return state._phase_allocation * capacity
-
-def stage_7(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
-    cs = [x for x in charger_state if x._current_allocation > 0 ]
-    if len(cs) == 0:
-        return
-
-    cs = sort(cs,
-              lambda x: 3 - x._phase_allocation,
-              lambda x: 0)
-
-    active_on_phase = Cost(pv=len(cs))
-    for state in cs:
-        if state._phase_allocation == 3 or state.phase_rotation == PhaseRotation.Unknown:
-            active_on_phase.l1 += 1
-            active_on_phase.l2 += 1
-            active_on_phase.l3 += 1
-        else:
-            for i in range(1, 1 + state._phase_allocation):
-                phase = get_phase(state.phase_rotation, ChargerPhase(i))
-                active_on_phase[phase] += 1
-
-    fair_current = floor(min([(limits.raw[i] / active_on_phase[i]) if active_on_phase[i] != 0 else 1e7 for i in range(1, 4)]))
-
-    for state in cs:
-        current = min(fair_current, current_capacity(limits, state))
-        current += state._current_allocation
-
-        cost = get_cost(current, ChargerPhase(state._phase_allocation), state.phase_rotation, state._current_allocation, ChargerPhase(state._phase_allocation))
-
-        if cost_exceeds_limits(cost, limits, 7):
-            continue
-
-        limits = apply_cost(cost, limits)
-        state._current_allocation = current
-
-
-def stage_8(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
-    cs = [x for x in charger_state if x._current_allocation > 0 ]
-
-    cs = sort(cs,
-              lambda x: 3 - x._phase_allocation,
-              lambda x: current_capacity(limits, x))
-
-
-    for state in cs:
-        current = min(limits.raw.pv, current_capacity(limits, state))
-        current += state._current_allocation
-
-        cost = get_cost(current, ChargerPhase(state._phase_allocation), state.phase_rotation, state._current_allocation, ChargerPhase(state._phase_allocation))
-
-        if cost_exceeds_limits(cost, limits, 8):
-            continue
-
-        limits = apply_cost(cost, limits)
-        state._current_allocation = current
-
-def stage_9(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
-    cs = [x for x in charger_state if x._current_allocation > 0 and (x._phase_allocation == 1 and x.phase_switch_supported)]
-
-    cs = sort(cs,
-              lambda x: 1 if x.is_charging else 0,
-              lambda x: x._allocated_energy)
-
-    for state in cs:
-        cost = get_cost(state._current_allocation, 3, state.phase_rotation, state._current_allocation, state._phase_allocation)
-
-        if cost_exceeds_limits(cost, limits, 9):
-            continue
-
-        limits = apply_cost(cost, limits)
-        state._phase_allocation = 3
-
-def print_allocation(t: int, charger_state: list[ChargerState], stage:int = None):
-    if t % PRINT_NTH and not force_print != 0:
-        return
-
-    if stage is not None:
-        print(f"Stage {stage}", end="  ")
-    for state in charger_state:
-        if state._phase_allocation == 0:
-            print(" " * 11, end = " | ")
-        else:
-            print(f"{state._current_allocation/1000:>6.3f} @ {state._phase_allocation}p", end=" | ")
-    print("")
-
-def allocate_current(t: int, limits: CurrentLimits, limits_cpy: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
-    setup(limits, limits_cpy, charger_state, ca_state)
-
-    ca_state.global_hysteresis_elapsed = t >= (ca_state._last_global_hysteresis_reset + GLOBAL_HYSTERESIS)
-    ca_state.reset_global_hysteresis = False
-
-    stage_1(limits_cpy, charger_state, cfg, ca_state)
-    print_allocation(t, charger_state, 1)
-    stage_2(limits_cpy, charger_state, cfg, ca_state)
-    print_allocation(t, charger_state, 2)
-    stage_3(limits_cpy, charger_state, cfg, ca_state)
-    print_allocation(t, charger_state, 3)
-    stage_4(limits_cpy, charger_state, cfg, ca_state)
-    print_allocation(t, charger_state, 4)
-    stage_5(limits_cpy, charger_state, cfg, ca_state)
-    print_allocation(t, charger_state, 5)
-    stage_6(limits_cpy, charger_state, cfg, ca_state)
-    print_allocation(t, charger_state, 6)
-    stage_7(limits_cpy, charger_state, cfg, ca_state)
-    print_allocation(t, charger_state, 7)
-    stage_8(limits_cpy, charger_state, cfg, ca_state)
-    print_allocation(t, charger_state, 8)
-    stage_9(limits_cpy, charger_state, cfg, ca_state)
-    print_allocation(t, charger_state, 9)
-
-    if ca_state.reset_global_hysteresis:
-        ca_state._last_global_hysteresis_reset = t
-
-    for state in charger_state:
-        amps = state._current_allocation / 1000 * state._phase_allocation # mA / 1000 * phases = A
-        charge = amps * ALLOCATION_TIMEOUT_S # A * s = As
-        charge /= 3600 # Ah
-        energy = 230 * charge # V * Ah = Wh
-        energy /= 1000 # kWh
-
-        state._allocated_energy += energy
-        if state._current_allocation != 0:
-            state._allocated_energy_this_rotation += energy
-        else:
-            state._allocated_energy_this_rotation = 0
-
-    global force_print
-    if t % PRINT_NTH and not force_print != 0:
-        return
-    print(t, [x._allocated_energy for x in charger_state])
-    print("")
-
-    #if force_print:
-    #    breakpoint()
-
-    if i < 10:
-        force_print = False
-#endregion
-
-#region Stages Plan D
 
 def is_active(cs: ChargerState):
     return cs._phase_allocation > 0 or cs.is_charging
@@ -638,22 +325,6 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
     ena_1p = min_1p * cfg.enable_current_factor
     ena_3p = min_3p * cfg.enable_current_factor
 
-    # active_on_phase_1p = Cost(pv=len([x for x in charger_state if x._phase_allocation == 1]))
-    # active_on_phase_3p = Cost(pv=len([x for x in charger_state if x._phase_allocation == 3]))
-    # for state in charger_state:
-    #     if state._phase_allocation == 3:
-    #         active_on_phase_3p.l1 += ena_3p
-    #         active_on_phase_3p.l2 += ena_3p
-    #         active_on_phase_3p.l3 += ena_3p
-    #     elif state.phase_rotation == PhaseRotation.Unknown:
-    #         active_on_phase_1p.l1 += ena_1p
-    #         active_on_phase_1p.l2 += ena_1p
-    #         active_on_phase_1p.l3 += ena_1p
-    #     else:
-    #         for i in range(1, 1 + state._phase_allocation):
-    #             phase = get_phase(state.phase_rotation, ChargerPhase(i))
-    #             active_on_phase_1p[phase] += ena_1p
-
     for state in cs:
         new_cost = Cost()
         new_enable_cost = Cost()
@@ -761,19 +432,93 @@ def stage_5(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         state._current_allocation = cfg.minimum_current_3p if state._phase_allocation == 3 else cfg.minimum_current_1p
         apply_cost(cost, limits)
 
+def current_capacity(limits: CurrentLimits, state: ChargerState):
+    capacity = state.supported_current - state._current_allocation
 
-    print_allocation(ca_state._t, charger_state, 5)
-    stage_7(limits, charger_state, cfg, ca_state)
-    print_allocation(ca_state._t, charger_state, 6)
-    stage_8(limits, charger_state, cfg, ca_state)
+    if state._phase_allocation == 3 or state.phase_rotation == PhaseRotation.Unknown:
+        return min(capacity, limits.raw.l1, limits.raw.l2, limits.raw.l3)
+
+    for i in range(1, 1 + state._phase_allocation):
+        phase = get_phase(state.phase_rotation, ChargerPhase(i))
+        capacity = min(capacity, limits.raw[phase])
+
+    return state._phase_allocation * capacity
+
+def stage_6(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
+    cs = [x for x in charger_state if x._current_allocation > 0 ]
+    if len(cs) == 0:
+        return
+
+    cs = sort(cs,
+              lambda x: 3 - x._phase_allocation,
+              lambda x: 0)
+
+    active_on_phase = Cost(pv=len(cs))
+    for state in cs:
+        if state._phase_allocation == 3 or state.phase_rotation == PhaseRotation.Unknown:
+            active_on_phase.l1 += 1
+            active_on_phase.l2 += 1
+            active_on_phase.l3 += 1
+        else:
+            for i in range(1, 1 + state._phase_allocation):
+                phase = get_phase(state.phase_rotation, ChargerPhase(i))
+                active_on_phase[phase] += 1
+
+    fair_current = floor(min([(limits.raw[i] / active_on_phase[i]) if active_on_phase[i] != 0 else 1e7 for i in range(1, 4)]))
+
+    for state in cs:
+        current = min(fair_current, current_capacity(limits, state))
+        current += state._current_allocation
+
+        cost = get_cost(current, ChargerPhase(state._phase_allocation), state.phase_rotation, state._current_allocation, ChargerPhase(state._phase_allocation))
+
+        if cost_exceeds_limits(cost, limits, 7):
+            continue
+
+        apply_cost(cost, limits)
+        state._current_allocation = current
+
+
+def stage_7(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
+    cs = [x for x in charger_state if x._current_allocation > 0 ]
+
+    cs = sort(cs,
+              lambda x: 3 - x._phase_allocation,
+              lambda x: current_capacity(limits, x))
+
+
+    for state in cs:
+        current = min(limits.raw.pv, current_capacity(limits, state))
+        current += state._current_allocation
+
+        cost = get_cost(current, ChargerPhase(state._phase_allocation), state.phase_rotation, state._current_allocation, ChargerPhase(state._phase_allocation))
+
+        if cost_exceeds_limits(cost, limits, 8):
+            continue
+
+        apply_cost(cost, limits)
+        state._current_allocation = current
+
+
+def print_allocation(t: int, charger_state: list[ChargerState], stage:int = None):
+    if t % PRINT_NTH and not force_print != 0:
+        return
+
+    if stage is not None:
+        print(f"Stage {stage}", end="  ")
+    for state in charger_state:
+        if state._phase_allocation == 0:
+            print(" " * 11, end = " | ")
+        else:
+            print(f"{state._current_allocation/1000:>6.3f} @ {state._phase_allocation}p", end=" | ")
+    print("")
 
 def allocate_current(t: int, limits: CurrentLimits, limits_cpy: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
     global force_print
-    #force_print = True
 
-    if t == 816:
-        force_print = True
-        breakpoint()
+    #if t == 816:
+    #    force_print = True
+    #    breakpoint()
 
     setup(limits, limits_cpy, charger_state, ca_state)
     ca_state._t = t
@@ -790,6 +535,11 @@ def allocate_current(t: int, limits: CurrentLimits, limits_cpy: CurrentLimits, c
     stage_4(limits_cpy, charger_state, cfg, ca_state)
     print_allocation(t, charger_state, 4)
     stage_5(limits_cpy, charger_state, cfg, ca_state)
+    print_allocation(ca_state._t, charger_state, 5)
+    stage_6(limits_cpy, charger_state, cfg, ca_state)
+    print_allocation(ca_state._t, charger_state, 6)
+    stage_7(limits_cpy, charger_state, cfg, ca_state)
+
     print_allocation(t, charger_state, 7)
 
     if ca_state.reset_global_hysteresis:
@@ -823,9 +573,6 @@ def allocate_current(t: int, limits: CurrentLimits, limits_cpy: CurrentLimits, c
 
     #if force_print:
     #    breakpoint()
-
-    if i < 10:
-        force_print = False
 
 #region Test
 
