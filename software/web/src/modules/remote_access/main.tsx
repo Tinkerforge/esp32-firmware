@@ -275,6 +275,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                 onDirtyChange={this.setDirty}>
                         <FormRow label={__("remote_access.content.enable")}>
                             <Switch checked={this.state.enable}
+                                    desc={__("remote_access.content.enable_desc")}
                                     onClick={() => {
                                         this.setState({enable: !this.state.enable});
                                     }} />
@@ -295,8 +296,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                                 this.setState({password: v});
                                            }} />
                         </FormRow>
-                        <FormRow label={__("remote_access.content.relay_host")}
-                                 label_muted={__("remote_access.content.relay_host_muted")}>
+                        <FormRow label={__("remote_access.content.relay_host")}>
                             <InputText required
                                        maxLength={64}
                                        value={this.state.relay_host}
