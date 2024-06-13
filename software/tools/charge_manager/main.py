@@ -117,12 +117,8 @@ def get_cost(current_to_allocate: int, phases_to_allocate: ChargerPhase, rot: Ph
 class CurrentLimits:
     raw: Cost = field(default_factory=Cost)
     filtered: Cost = field(default_factory=Cost)
-    supply: Cost = field(default_factory=Cost)
 
 def cost_exceeds_limits(cost: Cost, limits: CurrentLimits, stage: int, stage_1_2_hysteresis_elapsed: bool = False) -> bool:
-    if any([limits.supply[x] < cost[x] for x in range(1, 4)]):
-        return True
-
     phases_exceeded = any([limits.raw[x] < cost[x] for x in range(1, 4)])
     phases_filtered_exceeded = any([limits.filtered[x] < cost[x] for x in range(1, 4)])
     pv_excess_exceeded = limits.raw.pv < cost.pv
@@ -141,7 +137,6 @@ def apply_cost(cost: Cost, limits: CurrentLimits) -> CurrentLimits:
     for i in range(4):
         limits.raw[i] -= cost[i]
         limits.filtered[i] -= cost[i]
-        limits.supply[i] -= cost[i]
 
     return limits
 
@@ -390,7 +385,7 @@ def stage_7(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
                 phase = get_phase(state.phase_rotation, ChargerPhase(i))
                 active_on_phase[phase] += 1
 
-    fair_current = floor(min([min(limits.raw[i], limits.supply[i] if i != 0 else 1e7) / active_on_phase[i] if active_on_phase[i] != 0 else 1e7 for i in range(1, 4)]))
+    fair_current = floor(min([(limits.raw[i] / active_on_phase[i]) if active_on_phase[i] != 0 else 1e7 for i in range(1, 4)]))
 
     for state in cs:
         current = min(fair_current, current_capacity(limits, state))
@@ -558,7 +553,7 @@ def stage_2(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         wnd_max += Cost(0, state.supported_current, state.supported_current, state.supported_current)
 
         for i in range(1, 4):
-            l = min(limits.raw[i], limits.filtered[i], limits.supply[i]) - wnd_min_1p[i]
+            l = min(limits.raw[i], limits.filtered[i]) - wnd_min_1p[i]
             if wnd_max[i] > l:
                 wnd_max[1:4] = 3 * [l]
                 break
@@ -578,8 +573,8 @@ def stage_2(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
             phase = get_phase(state.phase_rotation, ChargerPhase.P1)
             wnd_max[phase] = state.supported_current
 
-            if wnd_max[phase] > limits.raw[phase] or wnd_max[phase] > limits.filtered[phase] or wnd_max[phase] > limits.supply[phase]:
-                wnd_max[phase] = min(limits.raw[phase], limits.filtered[phase], limits.supply[phase])
+            if wnd_max[phase] > limits.raw[phase] or wnd_max[phase] > limits.filtered[phase]:
+                wnd_max[phase] = min(limits.raw[phase], limits.filtered[phase])
 
 
     wnd_max.pv = sum(wnd_max[1:])
@@ -679,11 +674,12 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         else:
             raise Exception("not implemented")
 
-        for i in range(4):
-            if new_cost[i] > 0 and wnd_max[i] < limits.raw[i] and wnd_max[i] < limits.filtered[i] and wnd_max[i] < limits.supply[i]:
+        for i in range(1, 4):
+            if new_cost[i] > 0 and wnd_max[i] < limits.raw[i] and wnd_max[i] < limits.filtered[i]:
                 break
         else:
-            continue
+            if new_cost.pv == 0 or all(wnd_max[i] == limits.raw[i] and wnd_max[i] == limits.filtered[i] for i in range(1, 4) if new_cost[i] > 0):
+                continue
 
 
         limit_exceeded = False
@@ -694,8 +690,6 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
 
             limit_exceeded |= limits.raw[i] < required
             limit_exceeded |= limits.filtered[i] < required
-            if i > 0:
-                limit_exceeded |= limits.supply[i] < required
         if limit_exceeded:
             continue
 
@@ -719,12 +713,13 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         else:
             raise Exception("not implemented")
 
-        for i in range(4):
+        for i in range(1, 4):
             # TODO enable current
-            if new_cost[i] > 0 and wnd_max[i] < limits.raw[i] and wnd_max[i] < limits.filtered[i] and wnd_max[i] < limits.supply[i]:
+            if new_cost[i] > 0 and wnd_max[i] < limits.raw[i] and wnd_max[i] < limits.filtered[i]:
                 break
         else:
-            continue
+            if new_cost.pv == 0 or all(wnd_max[i] == limits.raw[i] and wnd_max[i] == limits.filtered[i] for i in range(1, 4) if new_cost[i] > 0):
+                continue
 
         limit_exceeded = False
         for i in range(4):
@@ -735,8 +730,6 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
 
             limit_exceeded |= limits.raw[i] < required
             limit_exceeded |= limits.filtered[i] < required
-            if i > 0:
-                limit_exceeded |= limits.supply[i] < required
         if limit_exceeded:
             continue
 
@@ -841,7 +834,6 @@ def allocate_current(t: int, limits: CurrentLimits, limits_cpy: CurrentLimits, c
 def setup(limits: CurrentLimits, limits_cpy: CurrentLimits, charger_state: ChargerState, ca_state: CurrentAllocatorState):
     limits_cpy.raw = deepcopy(limits.raw)
     limits_cpy.filtered = deepcopy(limits.filtered)
-    limits_cpy.supply = deepcopy(limits.supply)
 
     for x in charger_state:
         x._current_allocation = 0
@@ -910,9 +902,8 @@ charger_state = [
 
 
 cfg = CurrentAllocatorConfig(6000, 6000, 9000)
-limits = CurrentLimits(raw=Cost(1e7, 1e7, 1e7, 1e7),
-                       filtered=Cost(1e7, 1e7, 1e7, 1e7),
-                       supply=Cost(0, 32000, 32000, 32000))
+limits = CurrentLimits(raw=Cost(1e7, 32000, 32000, 32000),
+                       filtered=Cost(1e7, 32000, 32000, 32000))
 limits_cpy = CurrentLimits()
 
 car_queue = [
