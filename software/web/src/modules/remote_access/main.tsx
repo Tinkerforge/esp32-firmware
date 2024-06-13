@@ -20,7 +20,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment } from "preact";
-import { Watch } from "react-feather";
+import { Smartphone } from "react-feather";
 import { ConfigComponent } from "src/ts/components/config_component";
 import { ConfigForm } from "src/ts/components/config_form";
 import { FormRow } from "src/ts/components/form_row";
@@ -37,7 +37,7 @@ import { InputSelect } from "src/ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
 
 export function RemoteAccessNavbar() {
-    return <NavbarItem name="remote_access" module="remote_access" title={__("remote_access.navbar.remote_access")} symbol={<Watch />} />;
+    return <NavbarItem name="remote_access" module="remote_access" title={__("remote_access.navbar.remote_access")} symbol={<Smartphone />} />;
 }
 
 interface RemoteAccessState {
