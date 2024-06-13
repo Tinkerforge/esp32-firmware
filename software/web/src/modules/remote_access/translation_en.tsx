@@ -19,7 +19,7 @@ let x = {
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",
-            "reboot_content_changed": "Fernzugriffs-Einstellungen"
+            "reboot_content_changed": "remote-access settings"
         }
     }
 }
