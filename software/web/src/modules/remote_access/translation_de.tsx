@@ -19,7 +19,7 @@ let x = {
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "real-time clock settings"
+            "reboot_content_changed": "Fernzugriffs-Einstellungen"
         }
     }
 }
