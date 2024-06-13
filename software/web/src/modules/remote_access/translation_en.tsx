@@ -10,12 +10,12 @@ let x = {
             "remote_access": "Remote Access",
             "email": "Email",
             "password": "Password",
-            "relay_host": "Relay Host",
-            "relay_host_muted": "Hostname of the Relay Server",
-            "relay_host_port": "Relay Host Http Port",
+            "relay_host": "Relay-Server-Hostname",
+            "relay_host_port": "Relay-Server-Port",
             "enable": "Remote access enabled",
-            "cert": "Self signed certificate",
-            "not_used": "Not used"
+            "enable_desc": <>To be able to use the remote access you must create an <a href="https://my.warp-charger.com/">account</a> first</>,
+            "cert": "TLS-Certificate",
+            "not_used": "Embedded certificate-bundle"
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",
