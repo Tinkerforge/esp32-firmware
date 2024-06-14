@@ -281,10 +281,14 @@ def stage_3(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
     min_1p = cfg.minimum_current_1p
     min_3p = cfg.minimum_current_3p
 
+    any_charger_shut_down = False
+
     for p in range(1, 4):
         for state in cs:
             if limits.raw[p] >= wnd_min[p]:
                 break
+
+            any_charger_shut_down = True
 
             if state.phases == 3:
                 state._phase_allocation = 0
@@ -304,6 +308,8 @@ def stage_3(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         if limits.raw.pv >= wnd_min.pv or limits.filtered.pv >= wnd_min.pv or not ca_state.global_hysteresis_elapsed:
             break
 
+        any_charger_shut_down = True
+
         if state.phases == 3:
             state._phase_allocation = 0
             wnd_min += Cost(-3*min_3p, -min_3p, -min_3p, -min_3p)
@@ -315,6 +321,9 @@ def stage_3(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
 
             wnd_min.pv -= min_1p
             wnd_min[p] -= min_1p
+
+    if any_charger_shut_down:
+        stage_2(limits, charger_state, cfg, ca_state)
 
 def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: CurrentAllocatorConfig, ca_state: CurrentAllocatorState):
     wnd_min = ca_state._control_window_min
