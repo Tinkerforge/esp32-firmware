@@ -48,6 +48,8 @@ class PhaseRotation(IntEnum):
     L312 = phase_rotation(GridPhase.L3,GridPhase.L1,GridPhase.L2)
 
 def get_phase(rot: PhaseRotation, phase: ChargerPhase) -> GridPhase:
+    assert(rot != PhaseRotation.Unknown)
+
     return GridPhase((rot >> (6 - 2 * phase)) & 0x3)
 
 @dataclass
@@ -211,21 +213,27 @@ def stage_2(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
     min_3p = cfg.minimum_current_3p
 
     wnd_min = Cost()
-    wnd_min_1p = Cost()
+    wnd_min_1p = Cost() # .pv is not used
     wnd_max = Cost()
 
     cs = [x for x in charger_state if x._phase_allocation > 0]
 
     for state in cs:
         if state.phase_rotation == PhaseRotation.Unknown:
-            wnd_min.pv += min_1p if state._phase_allocation == 1 else (3 * min_3p)
-            wnd_min.l1 += min_1p
-            wnd_min.l2 += min_1p
-            wnd_min.l3 += min_1p
+            if state._phase_allocation == 1:
+                wnd_min.pv += min_1p
+                wnd_min.l1 += min_1p
+                wnd_min.l2 += min_1p
+                wnd_min.l3 += min_1p
 
-            wnd_min_1p.l1 += min_1p
-            wnd_min_1p.l2 += min_1p
-            wnd_min_1p.l3 += min_1p
+                wnd_min_1p.l1 += min_1p
+                wnd_min_1p.l2 += min_1p
+                wnd_min_1p.l3 += min_1p
+            else:
+                wnd_min.pv += 3 * min_3p
+                wnd_min.l1 += min_3p
+                wnd_min.l2 += min_3p
+                wnd_min.l3 += min_3p
         else:
             for i in range(1, 1 + state._phase_allocation):
                 phase = get_phase(state.phase_rotation, ChargerPhase(i))
@@ -239,7 +247,7 @@ def stage_2(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         current_avail_for_3p = min(current_avail_for_3p, avail_on_phase)
 
     for state in cs:
-        if state._phase_allocation != 3 and state.phase_rotation != PhaseRotation.Unknown:
+        if state._phase_allocation != 3:
             continue
 
         wnd_max += Cost(0,
@@ -255,6 +263,21 @@ def stage_2(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
             break
 
         wnd_max.pv += state.supported_current * state._phase_allocation
+
+    for state in cs:
+        if state._phase_allocation == 3 or state.phase_rotation != PhaseRotation.Unknown:
+            continue
+
+        # only 1p unknown rotated chargers left
+
+        for i in range(1, 4):
+            avail_on_phase = min(limits.raw[i], limits.filtered[i]) - wnd_max[i]
+        current = min(state.supported_current, avail_on_phase)
+
+        wnd_max += Cost(current,
+                        current,
+                        current,
+                        current)
 
     for state in cs:
         if state._phase_allocation == 3 or state.phase_rotation == PhaseRotation.Unknown:
@@ -364,7 +387,7 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         limit_exceeded = False
         for i in range(4):
             if new_cost[i] <= 0:
-                return False
+                continue
             required = wnd_min[i] * cfg.enable_current_factor + new_enable_cost[i]
 
             limit_exceeded |= limits.raw[i] < required
@@ -713,6 +736,16 @@ for i in range(SIM_LENGTH):
         if car_queue[i].phases == 1:
             charger_state[i + 1].phases = 1
             charger_state[i + 1].phase_switch_supported = False
+
+    # if len(car_queue) > 0 and i > 700 and i % 100 == 0:
+    #     cs = next(x for x in charger_state if x._car is None)
+    #     cs.wants_to_charge = True
+    #     cs._car = car_queue[0]
+    #     cs.supported_current = car_queue[0].current
+    #     if car_queue[0].phases == 1:
+    #         cs.phases = 1
+    #         cs.phase_switch_supported = False
+    #     car_queue.pop(0)
 
     #sleep(1 / SIM_SPEED_UP)
 
