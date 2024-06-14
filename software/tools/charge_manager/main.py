@@ -218,53 +218,55 @@ def stage_2(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
 
     for state in cs:
         if state.phase_rotation == PhaseRotation.Unknown:
+            wnd_min.pv += min_1p if state._phase_allocation == 1 else (3 * min_3p)
             wnd_min.l1 += min_1p
             wnd_min.l2 += min_1p
             wnd_min.l3 += min_1p
+
             wnd_min_1p.l1 += min_1p
             wnd_min_1p.l2 += min_1p
             wnd_min_1p.l3 += min_1p
         else:
             for i in range(1, 1 + state._phase_allocation):
                 phase = get_phase(state.phase_rotation, ChargerPhase(i))
+                wnd_min.pv += min_1p if state._phase_allocation == 1 else min_3p
                 wnd_min[phase] += min_1p if state._phase_allocation == 1 else min_3p
                 wnd_min_1p[phase] += min_1p if state._phase_allocation == 1 else 0
-
-    wnd_min.pv = sum(wnd_min[1:])
 
     current_avail_for_3p = 1e7
     for i in range(1, 4):
         avail_on_phase = min(limits.raw[i], limits.filtered[i]) - wnd_min_1p[i]
         current_avail_for_3p = min(current_avail_for_3p, avail_on_phase)
 
-    avail_for_3p = Cost(0, current_avail_for_3p, current_avail_for_3p, current_avail_for_3p)
-
     for state in cs:
-        if state._phase_allocation != 3:
+        if state._phase_allocation != 3 and state.phase_rotation != PhaseRotation.Unknown:
             continue
 
-        wnd_max += Cost(0, state.supported_current, state.supported_current, state.supported_current)
+        wnd_max += Cost(0,
+                        state.supported_current,
+                        state.supported_current,
+                        state.supported_current)
         # It is sufficient to check one phase here, wnd_max should have the same value on every phase because only three phase chargers are included yet
         if wnd_max.l1 > current_avail_for_3p:
-            wnd_max = avail_for_3p
+            wnd_max = Cost(wnd_max.l1 + (current_avail_for_3p - wnd_max.l1) * state._phase_allocation,
+                           current_avail_for_3p,
+                           current_avail_for_3p,
+                           current_avail_for_3p)
             break
 
+        wnd_max.pv += state.supported_current * state._phase_allocation
+
     for state in cs:
-        if state._phase_allocation == 3:
+        if state._phase_allocation == 3 or state.phase_rotation == PhaseRotation.Unknown:
             continue
 
-        if state.phase_rotation == PhaseRotation.Unknown:
-            # TODO
-            raise Exception("Not implemented")
-        else:
-            phase = get_phase(state.phase_rotation, ChargerPhase.P1)
-            wnd_max[phase] = state.supported_current
+        phase = get_phase(state.phase_rotation, ChargerPhase.P1)
 
-            if wnd_max[phase] > limits.raw[phase] or wnd_max[phase] > limits.filtered[phase]:
-                wnd_max[phase] = min(limits.raw[phase], limits.filtered[phase])
+        l = min(limits.raw[phase], limits.filtered[phase])
+        current = min(l - wnd_max[phase], state.supported_current)
 
-
-    wnd_max.pv = sum(wnd_max[1:])
+        wnd_max[phase] += current
+        wnd_max.pv += current
 
     ca_state._control_window_min = wnd_min
     ca_state._control_window_max = wnd_max
@@ -283,19 +285,25 @@ def stage_3(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
 
     any_charger_shut_down = False
 
+    # Maybe try to be more clever here:
+    # - Shut down 1p chargers first if only one or two phase limits are below wnd_min
+    # - Shut down 1p unknown rotated chargers last
     for p in range(1, 4):
         for state in cs:
             if limits.raw[p] >= wnd_min[p]:
                 break
 
+            if state._phase_allocation == 0:
+                continue
+
             any_charger_shut_down = True
 
             if state.phases == 3:
                 state._phase_allocation = 0
-                wnd_min += Cost(-3*min_3p, -min_3p, -min_3p, -min_3p)
+                wnd_min -= Cost(3*min_3p, min_3p, min_3p, min_3p)
             elif state.phase_rotation == PhaseRotation.Unknown:
-                #TODO
-                raise Exception("Not implemented")
+                state._phase_allocation = 0
+                wnd_min -= Cost(min_1p, min_1p, min_1p, min_1p)
             elif get_phase(state.phase_rotation, ChargerPhase.P1) == GridPhase(p):
                 state._phase_allocation = 0
 
@@ -308,20 +316,25 @@ def stage_3(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         if limits.raw.pv >= wnd_min.pv or limits.filtered.pv >= wnd_min.pv or not ca_state.global_hysteresis_elapsed:
             break
 
+        if state._phase_allocation == 0:
+            continue
+
         any_charger_shut_down = True
 
         if state.phases == 3:
             state._phase_allocation = 0
-            wnd_min += Cost(-3*min_3p, -min_3p, -min_3p, -min_3p)
+            wnd_min -= Cost(3*min_3p, min_3p, min_3p, min_3p)
         elif state.phase_rotation == PhaseRotation.Unknown:
-            #TODO
-            raise Exception("Not implemented")
-        elif get_phase(state.phase_rotation, ChargerPhase.P1) == GridPhase(p):
             state._phase_allocation = 0
-
+            wnd_min -= Cost(min_1p, min_1p, min_1p, min_1p)
+        else:
+            state._phase_allocation = 0
             wnd_min.pv -= min_1p
-            wnd_min[p] -= min_1p
 
+            phase = get_phase(state.phase_rotation, ChargerPhase.P1)
+            wnd_min[phase] -= min_1p
+
+    # Recalculating the window once is enough: We don't need an up to date max window in this stage. We could also skip recalculating wnd_min
     if any_charger_shut_down:
         stage_2(limits, charger_state, cfg, ca_state)
 
@@ -340,6 +353,27 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
     ena_1p = min_1p * cfg.enable_current_factor
     ena_3p = min_3p * cfg.enable_current_factor
 
+    def can_activate(new_cost, new_enable_cost):
+        for i in range(1, 4):
+            if new_cost[i] > 0 and wnd_max[i] < limits.raw[i] and wnd_max[i] < limits.filtered[i]:
+                break
+        else:
+            if new_cost.pv == 0 or all(wnd_max[i] == limits.raw[i] and wnd_max[i] == limits.filtered[i] for i in range(1, 4) if new_cost[i] > 0):
+                return False
+
+        limit_exceeded = False
+        for i in range(4):
+            if new_cost[i] <= 0:
+                return False
+            required = wnd_min[i] * cfg.enable_current_factor + new_enable_cost[i]
+
+            limit_exceeded |= limits.raw[i] < required
+            limit_exceeded |= limits.filtered[i] < required
+        if limit_exceeded:
+            return False
+
+        return True
+
     for state in cs:
         new_cost = Cost()
         new_enable_cost = Cost()
@@ -350,8 +384,15 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
             new_cost = Cost(3*min_3p, min_3p, min_3p, min_3p)
             new_enable_cost = Cost(3*ena_3p, ena_3p, ena_3p, ena_3p)
         elif state.phase_rotation == PhaseRotation.Unknown:
-            # TODO
-            raise Exception("Not implemented")
+            # Try to enable switchable unknown rotated chargers with three phases first.
+            if state.phase_switch_supported:
+                new_cost = Cost(3*min_3p, min_3p, min_3p, min_3p)
+                new_enable_cost = Cost(3*ena_3p, ena_3p, ena_3p, ena_3p)
+                activate_3p = True
+            if not state.phase_switch_supported or not can_activate(new_cost, new_enable_cost):
+                new_cost = Cost(min_1p, min_1p, min_1p, min_1p)
+                new_enable_cost = Cost(ena_1p, ena_1p, ena_1p, ena_1p)
+                activate_3p = False
         else:
             phase = get_phase(state.phase_rotation, ChargerPhase.P1)
 
@@ -361,23 +402,7 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
             new_enable_cost.pv += ena_1p
             new_enable_cost[phase] += ena_1p
 
-        for i in range(1, 4):
-            if new_cost[i] > 0 and wnd_max[i] < limits.raw[i] and wnd_max[i] < limits.filtered[i]:
-                break
-        else:
-            if new_cost.pv == 0 or all(wnd_max[i] == limits.raw[i] and wnd_max[i] == limits.filtered[i] for i in range(1, 4) if new_cost[i] > 0):
-                continue
-
-
-        limit_exceeded = False
-        for i in range(4):
-            if new_cost[i] <= 0:
-                continue
-            required = wnd_min[i] * cfg.enable_current_factor + new_enable_cost[i]
-
-            limit_exceeded |= limits.raw[i] < required
-            limit_exceeded |= limits.filtered[i] < required
-        if limit_exceeded:
+        if not can_activate(new_cost, new_enable_cost):
             continue
 
         state._phase_allocation = 3 if activate_3p else 1
@@ -393,32 +418,16 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         new_enable_cost = Cost(3*ena_3p-ena_1p, ena_3p, ena_3p, ena_3p)
 
         if state.phase_rotation == PhaseRotation.Unknown:
-            # TODO
-            raise Exception("Not implemented")
+            for i in range(1, 4):
+                new_cost[i] -= min_1p
+                new_enable_cost[i] -= ena_1p
         else:
             phase = get_phase(state.phase_rotation, ChargerPhase.P1)
             # P1 is already active
             new_cost[phase] -= min_1p
             new_enable_cost[phase] -= ena_1p
 
-        for i in range(1, 4):
-            # TODO enable current
-            if new_cost[i] > 0 and wnd_max[i] < limits.raw[i] and wnd_max[i] < limits.filtered[i]:
-                break
-        else:
-            if new_cost.pv == 0 or all(wnd_max[i] == limits.raw[i] and wnd_max[i] == limits.filtered[i] for i in range(1, 4) if new_cost[i] > 0):
-                continue
-
-        limit_exceeded = False
-        for i in range(4):
-            if new_cost[i] <= 0:
-                continue
-
-            required = wnd_min[i] * cfg.enable_current_factor + new_enable_cost[i]
-
-            limit_exceeded |= limits.raw[i] < required
-            limit_exceeded |= limits.filtered[i] < required
-        if limit_exceeded:
+        if not can_activate(new_cost, new_enable_cost):
             continue
 
         state._phase_allocation = 3
@@ -443,8 +452,8 @@ def stage_5(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         else:
             cost = Cost(min_1p, 0, 0, 0)
             if state.phase_rotation == PhaseRotation.Unknown:
-                # TODO
-                raise Exception("Not implemented")
+                for i in range(1, 4):
+                    cost[i] += min_1p
             else:
                 phase = get_phase(state.phase_rotation, ChargerPhase.P1)
                 cost[phase] += min_1p
