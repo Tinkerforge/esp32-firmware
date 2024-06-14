@@ -228,26 +228,26 @@ def stage_2(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
             for i in range(1, 1 + state._phase_allocation):
                 phase = get_phase(state.phase_rotation, ChargerPhase(i))
                 wnd_min[phase] += min_1p if state._phase_allocation == 1 else min_3p
-                if state._phase_allocation == 1:
-                    wnd_min_1p[phase] += min_1p
+                wnd_min_1p[phase] += min_1p if state._phase_allocation == 1 else 0
 
     wnd_min.pv = sum(wnd_min[1:])
+
+    current_avail_for_3p = 1e7
+    for i in range(1, 4):
+        avail_on_phase = min(limits.raw[i], limits.filtered[i]) - wnd_min_1p[i]
+        current_avail_for_3p = min(current_avail_for_3p, avail_on_phase)
+
+    avail_for_3p = Cost(0, current_avail_for_3p, current_avail_for_3p, current_avail_for_3p)
 
     for state in cs:
         if state._phase_allocation != 3:
             continue
 
         wnd_max += Cost(0, state.supported_current, state.supported_current, state.supported_current)
-
-        for i in range(1, 4):
-            l = min(limits.raw[i], limits.filtered[i]) - wnd_min_1p[i]
-            if wnd_max[i] > l:
-                wnd_max[1:4] = 3 * [l]
-                break
-        else:
-            continue
-        break
-
+        # It is sufficient to check one phase here, wnd_max should have the same value on every phase because only three phase chargers are included yet
+        if wnd_max.l1 > current_avail_for_3p:
+            wnd_max = avail_for_3p
+            break
 
     for state in cs:
         if state._phase_allocation == 3:
