@@ -32,6 +32,7 @@ import { SungrowStringInverterVirtualMeterID } from "./sungrow_string_inverter_v
 import { SolarmaxMaxStorageVirtualMeterID } from "./solarmax_max_storage_virtual_meter_id.enum";
 import { VictronEnergyGXVirtualMeterID } from "./victron_energy_gx_virtual_meter_id.enum";
 import { DeyeHybridInverterVirtualMeterID } from "./deye_hybrid_inverter_virtual_meter_id.enum";
+import { AlphaESSHybridInverterVirtualMeterID } from "./alpha_ess_hybrid_inverter_virtual_meter_id.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
@@ -104,13 +105,22 @@ type TableConfigDeyeHybridInverter = [
     },
 ];
 
+type TableConfigAlphaESSHybridInverter = [
+    MeterModbusTCPTableID.AlphaESSHybridInverter,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
                    TableConfigSungrowStringInverter |
                    TableConfigSolarmaxMaxStorage |
                    TableConfigVictronEnergyGX |
-                   TableConfigDeyeHybridInverter;
+                   TableConfigDeyeHybridInverter |
+                   TableConfigAlphaESSHybridInverter;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -141,6 +151,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.DeyeHybridInverter:
             return [MeterModbusTCPTableID.DeyeHybridInverter, {virtual_meter: null, device_address: 1}];
+
+        case MeterModbusTCPTableID.AlphaESSHybridInverter:
+            return [MeterModbusTCPTableID.AlphaESSHybridInverter, {virtual_meter: null, device_address: 85}];
 
         default:
             return [MeterModbusTCPTableID.None, {}];
@@ -357,6 +370,7 @@ export function init() {
                                 [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.table_solarmax_max_storage")],
                                 [MeterModbusTCPTableID.VictronEnergyGX.toString(), __("meters_modbus_tcp.content.table_victron_energy_gx")],
                                 [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
+                                [MeterModbusTCPTableID.AlphaESSHybridInverter.toString(), __("meters_modbus_tcp.content.table_alpha_ess_hybrid_inverter")],
                             ]}
                             placeholder={__("meters_modbus_tcp.content.table_select")}
                             value={util.hasValue(config[1].table) ? config[1].table[0].toString() : undefined}
@@ -371,7 +385,8 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage
                   || config[1].table[0] == MeterModbusTCPTableID.VictronEnergyGX
-                  || config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.AlphaESSHybridInverter)) {
                     let items: [string, string][] = [];
                     let device_address_default: number = 1;
 
@@ -414,6 +429,15 @@ export function init() {
                             [DeyeHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                             [DeyeHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.AlphaESSHybridInverter) {
+                        items = [
+                            [AlphaESSHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [AlphaESSHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [AlphaESSHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                        ];
+
+                        device_address_default = 85;
                     }
 
                     edit_children.push(

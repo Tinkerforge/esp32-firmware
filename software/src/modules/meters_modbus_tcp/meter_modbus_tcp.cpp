@@ -260,6 +260,34 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::AlphaESSHybridInverter:
+        alpha_ess_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<AlphaESSHybridInverterVirtualMeterID>();
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+
+        switch (alpha_ess_hybrid_inverter_virtual_meter) {
+        case AlphaESSHybridInverterVirtualMeterID::None:
+            logger.printfln("No Alpha ESS Hybrid Inverter Virtual Meter selected");
+            return;
+
+        case AlphaESSHybridInverterVirtualMeterID::Inverter:
+            table = &alpha_ess_hybrid_inverter_table;
+            break;
+
+        case AlphaESSHybridInverterVirtualMeterID::Grid:
+            table = &alpha_ess_hybrid_inverter_grid_table;
+            break;
+
+        case AlphaESSHybridInverterVirtualMeterID::Battery:
+            table = &alpha_ess_hybrid_inverter_battery_table;
+            break;
+
+        default:
+            logger.printfln("Unknown Alpha ESS Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(alpha_ess_hybrid_inverter_virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;

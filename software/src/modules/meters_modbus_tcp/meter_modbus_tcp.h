@@ -35,6 +35,7 @@
 #include "solarmax_max_storage_virtual_meter_id.enum.h"
 #include "victron_energy_gx_virtual_meter_id.enum.h"
 #include "deye_hybrid_inverter_virtual_meter_id.enum.h"
+#include "alpha_ess_hybrid_inverter_virtual_meter_id.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -132,6 +133,9 @@ private:
     // Deye
     DeyeHybridInverterVirtualMeterID deye_hybrid_inverter_virtual_meter;
     int deye_hybrid_inverter_device_type = -1;
+
+    // Alpha ESS
+    AlphaESSHybridInverterVirtualMeterID alpha_ess_hybrid_inverter_virtual_meter;
 };
 
 #if defined(__GNUC__)

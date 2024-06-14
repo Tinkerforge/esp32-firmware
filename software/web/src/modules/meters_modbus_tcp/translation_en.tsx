@@ -22,6 +22,7 @@ let x = {
             "table_solarmax_max_storage": "Solarmax Max.Storage",
             "table_victron_energy_gx": "Victron Energy GX",
             "table_deye_hybrid_inverter": "Deye Hybrid Inverter",
+            "table_alpha_ess_hybrid_inverter": "Alpha ESS Hybrid Inverter",
             "virtual_meter": "Virtual meter",
             "virtual_meter_select": "Select...",
             "virtual_meter_inverter": "Inverter",
