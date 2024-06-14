@@ -462,9 +462,11 @@ def main(stage3):
         qr_stand_wiring = '0'
         qr_supply_cable = 0.0
         qr_cee = False
+        qr_custom_front_panel = False
+        qr_custom_type2_cable = False
     else:
-        # S:1;W:1;E:2.5;C:1;;;
-        pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?E:(\d+\.\d+);C:(0|1);;;*$'
+        # S:1;W:1;E:2.5;C:1;CFP:1;CT2:1;;;
+        pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?E:(\d+\.\d+);C:(0|1);(?:CFP:(0|1);)?(?:CT2:(0|1);)?;;*$'
         qr_code = my_input("Scan the accessories QR code")
         match = re.match(pattern, qr_code)
 
@@ -476,12 +478,16 @@ def main(stage3):
         qr_stand_wiring = match.group(2) if match.group(2) != None else '0'
         qr_supply_cable = float(match.group(3))
         qr_cee = bool(int(match.group(4)))
+        qr_custom_front_panel = bool(int(match.group(5) if match.group(5) != None else '0'))
+        qr_custom_type2_cable = bool(int(match.group(6) if match.group(6) != None else '0'))
 
         print("Accessories QR code data:")
         print("    Stand: {}".format(qr_stand))
         print("    Stand Wiring: {}".format(qr_stand_wiring))
         print("    Supply Cable: {} m".format(qr_supply_cable))
         print("    CEE: {}".format(qr_cee))
+        print("    Custom Front Panel: {}".format(qr_custom_front_panel))
+        print("    Custom Type 2 Cable: {}".format(qr_custom_type2_cable))
 
         result["accessories_qr_code"] = match.group(0)
 
