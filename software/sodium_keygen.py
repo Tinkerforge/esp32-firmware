@@ -20,11 +20,19 @@ def main():
 
     libsodium_path = ctypes.util.find_library('sodium')
 
-    if libsodium_path == None:
-        print('error: cannot find libsodium')
-        return
+    if libsodium_path != None:
+        libsodium = ctypes.cdll.LoadLibrary(libsodium_path)
+    else:
+        for extension in ['so', 'dll', 'dylib']:
+            try:
+                libsodium = ctypes.cdll.LoadLibrary(os.path.join(directory, f'libsodium.{extension}'))
+            except:
+                continue
 
-    libsodium = ctypes.cdll.LoadLibrary(libsodium_path)
+            break
+        else:
+            print('error: cannot find libsodium')
+            return
 
     if libsodium.sodium_init() < 0:
         print('error: sodium_init failed')
