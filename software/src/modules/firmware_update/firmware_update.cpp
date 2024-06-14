@@ -45,7 +45,7 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 void FirmwareUpdate::pre_setup()
 {
-    /*config = ConfigRoot{Config::Object({
+    config = ConfigRoot{Config::Object({
         {"update_url", Config::Str("", 0, 128)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
@@ -63,12 +63,12 @@ void FirmwareUpdate::pre_setup()
         {"beta", Config::Str("", 0, 32)},
         {"release", Config::Str("", 0, 32)},
         {"stable", Config::Str("", 0, 32)},
-    });*/
+    });
 }
 
 void FirmwareUpdate::setup()
 {
-    /*if (!api.restorePersistentConfig("firmware_update/config", &config)) {
+    if (!api.restorePersistentConfig("firmware_update/config", &config)) {
         config.get("update_url")->updateString(BUILD_FIRMWARE_UPDATE_URL);
     }
 
@@ -83,7 +83,7 @@ void FirmwareUpdate::setup()
         update_url += "_firmware.txt";
     }
 
-    cert_id = config.get("cert_id")->asInt();*/
+    cert_id = config.get("cert_id")->asInt();
     initialized = true;
 }
 
@@ -267,12 +267,12 @@ bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const
 
 void FirmwareUpdate::register_urls()
 {
-    /*api.addPersistentConfig("firmware_update/config", &config);
+    api.addPersistentConfig("firmware_update/config", &config);
     api.addState("firmware_update/available_updates", &available_updates);
 
     api.addCommand("firmware_update/check_for_updates", Config::Null(), {}, [this]() {
         check_for_updates();
-    }, true);*/
+    }, true);
 
     server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request) {
         if (!this->info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
@@ -336,7 +336,7 @@ void FirmwareUpdate::register_urls()
 }
 
 // <major:int>.<minor:int>.<patch:int>[-beta.<beta:int>]+<timestamp:hex>
-/*static bool parse_version(const char *p, SemanticVersion *version)
+static bool parse_version(const char *p, SemanticVersion *version)
 {
     char *end;
 
@@ -648,4 +648,4 @@ void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
             return;
         }
     }
-}*/
+}

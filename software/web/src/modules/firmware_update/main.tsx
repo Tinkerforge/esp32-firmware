@@ -36,13 +36,13 @@ export function FirmwareUpdateNavbar() {
 
 interface FirmwareUpdateState {
     current_firmware: string,
-    /*update_url: string,
+    update_url: string,
     check_is_pending: boolean,
     available_updates_timestamp: number,
     available_updates_error: string,
     available_beta_update: string,
     available_release_update: string,
-    available_stable_update: string,*/
+    available_stable_update: string,
 };
 
 export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
@@ -51,13 +51,13 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
 
         this.state = {
             current_firmware: null,
-            /*update_url: null,
+            update_url: null,
             check_is_pending: false,
             available_updates_timestamp: 0,
             available_updates_error: null,
             available_beta_update: null,
             available_release_update: null,
-            available_stable_update: null,*/
+            available_stable_update: null,
         } as any;
 
         util.addApiEventListener('info/version', () => {
@@ -70,7 +70,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             this.setState({current_firmware: version.firmware});
         });
 
-        /*util.addApiEventListener('firmware_update/config', () => {
+        util.addApiEventListener('firmware_update/config', () => {
             let config = API.get('firmware_update/config');
 
             this.setState({update_url: config.update_url});
@@ -87,7 +87,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                 available_release_update: available_updates.release,
                 available_stable_update: available_updates.stable,
             });
-        });*/
+        });
     }
 
     async checkFirmware(f: File) {
@@ -188,7 +188,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                     />
                 </FormRow>
 
-                {/*this.state.update_url ?
+                {this.state.update_url ?
                     <>
                         <FormRow label={__("firmware_update.content.check_for_updates")}>
                             <Button variant="primary" className="form-control" onClick={() => this.setState({check_is_pending: true}, () => API.call("firmware_update/check_for_updates", null, ""))} disabled={this.state.check_is_pending}>
@@ -230,7 +230,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                             </>}
                         </>}
                     </>
-                    : undefined*/
+                    : undefined
                 }
             </SubPage>
         );
