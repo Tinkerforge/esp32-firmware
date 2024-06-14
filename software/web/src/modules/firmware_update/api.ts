@@ -3,13 +3,17 @@ export interface config {
     cert_id: number,
 }
 
-export interface available_updates {
-    timestamp: number,
-    error: string,
-    beta: string,
-    release: string,
-    stable: string,
+export interface state {
+    check_timestamp: number,
+    check_error: string,
+    beta_update: string,
+    release_update: string,
+    stable_update: string,
 }
 
-export interface check_for_updates {
+export interface check_for_update {
+}
+
+export interface install_firmware {
+    version: string,
 }

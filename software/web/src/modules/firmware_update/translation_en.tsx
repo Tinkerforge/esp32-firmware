@@ -18,13 +18,14 @@ let x = {
             "downgrade": "Firmware downgrade",
             "abort_downgrade": "Abort",
             "confirm_downgrade": "Downgrade firmware",
-            "check_for_updates": "Check for updates",
-            "check_for_updates_timestamp": "Last update check",
-            "check_for_updates_error": "Last error",
-            "available_beta_update": "Available beta update",
-            "available_release_update": "Available release update",
-            "available_stable_update": "Available stable update",
-            "no_update": "No update available"
+            "check_for_update": "Check for update",
+            "check_for_update_timestamp": "Last update check",
+            "check_for_update_error": "Last error",
+            "beta_update": "Available beta update",
+            "release_update": "Available release update",
+            "stable_update": "Available stable update",
+            "no_update": "No update available",
+            "install_update": "Install"
         },
         "script": {
             "update_success": "Successfully updated; restarting...",
@@ -39,7 +40,8 @@ let x = {
             "download_error": "Error occurred during download",
             "no_response": "Update server did not respond",
             "list_malformed": "Update list is malformed",
-            "build_time": /*SFN*/ (build_time: string) => ` (created ${build_time})`/*NF*/
+            "build_time": /*SFN*/ (build_time: string) => ` (created ${build_time})`/*NF*/,
+            "install_failed": "Install failed"
         }
     }
 }

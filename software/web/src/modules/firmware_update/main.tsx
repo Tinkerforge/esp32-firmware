@@ -36,13 +36,13 @@ export function FirmwareUpdateNavbar() {
 
 interface FirmwareUpdateState {
     current_firmware: string,
-    update_url: string,
     check_is_pending: boolean,
-    available_updates_timestamp: number,
-    available_updates_error: string,
-    available_beta_update: string,
-    available_release_update: string,
-    available_stable_update: string,
+    update_url: string,
+    check_timestamp: number,
+    check_error: string,
+    beta_update: string,
+    release_update: string,
+    stable_update: string,
 };
 
 export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
@@ -51,13 +51,13 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
 
         this.state = {
             current_firmware: null,
-            update_url: null,
             check_is_pending: false,
-            available_updates_timestamp: 0,
-            available_updates_error: null,
-            available_beta_update: null,
-            available_release_update: null,
-            available_stable_update: null,
+            update_url: null,
+            check_timestamp: 0,
+            check_error: null,
+            beta_update: null,
+            release_update: null,
+            stable_update: null,
         } as any;
 
         util.addApiEventListener('info/version', () => {
@@ -76,16 +76,16 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             this.setState({update_url: config.update_url});
         });
 
-        util.addApiEventListener('firmware_update/available_updates', () => {
-            let available_updates = API.get('firmware_update/available_updates');
+        util.addApiEventListener('firmware_update/state', () => {
+            let state = API.get('firmware_update/state');
 
             this.setState({
-                check_is_pending: available_updates.error == "pending",
-                available_updates_timestamp: available_updates.timestamp,
-                available_updates_error: available_updates.error,
-                available_beta_update: available_updates.beta,
-                available_release_update: available_updates.release,
-                available_stable_update: available_updates.stable,
+                check_is_pending: state.check_error == "pending",
+                check_timestamp: state.check_timestamp,
+                check_error: state.check_error,
+                beta_update: state.beta_update,
+                release_update: state.release_update,
+                stable_update: state.stable_update,
             });
         });
     }
@@ -148,6 +148,20 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
         return ""
     }
 
+    get_update_component(version: string) {
+        return <InputText value={
+                version.length > 0
+                    ? version + this.format_build_time(version)
+                    : __("firmware_update.content.no_update")}>
+                {version.length > 0
+                    ? <div class="input-group-append">
+                        <Button variant="primary" type="button" onClick={() => API.call("firmware_update/install_firmware", {version: version}, __("firmware_update.script.install_failed"))}>{__("firmware_update.content.install_update")}</Button>
+                    </div>
+                    : undefined
+                }
+            </InputText>;
+    }
+
     render() {
         if (!util.render_allowed())
             return <SubPage name="firmware_update" />;
@@ -190,42 +204,33 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
 
                 {this.state.update_url ?
                     <>
-                        <FormRow label={__("firmware_update.content.check_for_updates")}>
-                            <Button variant="primary" className="form-control" onClick={() => this.setState({check_is_pending: true}, () => API.call("firmware_update/check_for_updates", null, ""))} disabled={this.state.check_is_pending}>
-                                {__("firmware_update.content.check_for_updates")}
+                        <FormRow label={__("firmware_update.content.check_for_update")}>
+                            <Button variant="primary" className="form-control" onClick={() => this.setState({check_is_pending: true}, () => API.call("firmware_update/check_for_update", null, ""))} disabled={this.state.check_is_pending}>
+                                {__("firmware_update.content.check_for_update")}
                                 <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.check_is_pending}></span>
                             </Button>
                         </FormRow>
 
-                        {this.state.available_updates_timestamp == 0 || this.state.check_is_pending ? undefined : <>
-                            <FormRow label={__("firmware_update.content.check_for_updates_timestamp")}>
-                                <InputText value={util.timestamp_sec_to_date(this.state.available_updates_timestamp, "")} />
+                        {this.state.check_timestamp == 0 || this.state.check_is_pending ? undefined : <>
+                            <FormRow label={__("firmware_update.content.check_for_update_timestamp")}>
+                                <InputText value={util.timestamp_sec_to_date(this.state.check_timestamp, "")} />
                             </FormRow>
 
-                            {this.state.available_updates_error != null && this.state.available_updates_error.length > 0 ?
-                                <FormRow label={__("firmware_update.content.check_for_updates_error")}>
-                                    <InputText value={translate_unchecked("firmware_update.script." + this.state.available_updates_error)} />
+                            {this.state.check_error != null && this.state.check_error.length > 0 ?
+                                <FormRow label={__("firmware_update.content.check_for_update_error")}>
+                                    <InputText value={translate_unchecked("firmware_update.script." + this.state.check_error)} />
                                 </FormRow>
                                 : <>
-                                <FormRow label={__("firmware_update.content.available_beta_update")}>
-                                    <InputText value={
-                                        this.state.available_beta_update.length > 0
-                                            ? this.state.available_beta_update + this.format_build_time(this.state.available_beta_update)
-                                            : __("firmware_update.content.no_update")} />
+                                <FormRow label={__("firmware_update.content.beta_update")}>
+                                    {this.get_update_component(this.state.beta_update)}
                                 </FormRow>
 
-                                <FormRow label={__("firmware_update.content.available_release_update")}>
-                                    <InputText value={
-                                        this.state.available_release_update.length > 0
-                                            ? this.state.available_release_update + this.format_build_time(this.state.available_release_update)
-                                            : __("firmware_update.content.no_update")} />
+                                <FormRow label={__("firmware_update.content.release_update")}>
+                                    {this.get_update_component(this.state.release_update)}
                                 </FormRow>
 
-                                <FormRow label={__("firmware_update.content.available_stable_update")}>
-                                    <InputText value={
-                                        this.state.available_stable_update.length > 0
-                                            ? this.state.available_stable_update + this.format_build_time(this.state.available_stable_update)
-                                            : __("firmware_update.content.no_update")} />
+                                <FormRow label={__("firmware_update.content.stable_update")}>
+                                    {this.get_update_component(this.state.stable_update)}
                                 </FormRow>
                             </>}
                         </>}

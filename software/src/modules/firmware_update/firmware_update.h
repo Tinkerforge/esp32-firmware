@@ -53,7 +53,9 @@ private:
     void reset_firmware_info();
     bool handle_firmware_info_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len);
     String check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log);
-    void check_for_updates();
+    void check_for_update();
+    bool parse_version(const char *p, SemanticVersion *version) const;
+    String format_version(SemanticVersion *version) const;
 
     struct firmware_info_t {
         uint32_t magic[2] = {0};
@@ -64,7 +66,8 @@ private:
     };
 
     ConfigRoot config;
-    ConfigRoot available_updates;
+    ConfigRoot state;
+    ConfigRoot install_firmware;
 
     firmware_info_t info;
     uint32_t info_offset = 0;

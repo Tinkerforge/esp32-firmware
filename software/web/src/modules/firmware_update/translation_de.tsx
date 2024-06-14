@@ -18,13 +18,14 @@ let x = {
             "downgrade": "Firmware-Downgrade",
             "abort_downgrade": "Abbrechen",
             "confirm_downgrade": "Downgrade durchführen",
-            "check_for_updates": "Nach Aktualisierungen suchen",
-            "check_for_updates_timestamp": "Letzte Aktualisierungssuche",
-            "check_for_updates_error": "Letzter Fehler",
-            "available_beta_update": "Verfügbare Beta-Aktualisierung",
-            "available_release_update": "Verfügbare Release-Aktualisierung",
-            "available_stable_update": "Verfügbare Stable-Aktualisierung",
-            "no_update": "Keine Aktualisierung verfügbar"
+            "check_for_update": "Nach Aktualisierung suchen",
+            "check_for_update_timestamp": "Letzte Aktualisierungssuche",
+            "check_for_update_error": "Letzter Fehler",
+            "beta_update": "Verfügbare Beta-Aktualisierung",
+            "release_update": "Verfügbare Release-Aktualisierung",
+            "stable_update": "Verfügbare Stable-Aktualisierung",
+            "no_update": "Keine Aktualisierung verfügbar",
+            "install_update": "Installieren"
         },
         "script": {
             "update_success": "Erfolgreich aktualisiert; starte neu...",
@@ -39,7 +40,8 @@ let x = {
             "download_error": "Fehler beim Download aufgetreten",
             "no_response": "Keine Antwort vom Aktualisierungs-Server",
             "list_malformed": "Aktualisierungsliste ist beschädigt",
-            "build_time": /*SFN*/ (build_time: string) => ` (erstellt ${build_time})`/*NF*/
+            "build_time": /*SFN*/ (build_time: string) => ` (erstellt ${build_time})`/*NF*/,
+            "install_failed": "Installation fehlgeschlagen"
         }
     }
 }

@@ -37,7 +37,7 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
 
-#define CHECK_FOR_UPDATES_TIMEOUT 15000
+#define CHECK_FOR_UPDATE_TIMEOUT 15000
 
 #if !MODULE_CERTS_AVAILABLE()
 #define MAX_CERT_ID -1
@@ -57,13 +57,25 @@ void FirmwareUpdate::pre_setup()
         return "";
     }};
 
-    available_updates = Config::Object({
-        {"timestamp", Config::Uint(0)},
-        {"error", Config::Str("", 0, 16)},
-        {"beta", Config::Str("", 0, 32)},
-        {"release", Config::Str("", 0, 32)},
-        {"stable", Config::Str("", 0, 32)},
+    state = Config::Object({
+        {"check_timestamp", Config::Uint(0)},
+        {"check_error", Config::Str("", 0, 16)},
+        {"beta_update", Config::Str("", 0, 32)},
+        {"release_update", Config::Str("", 0, 32)},
+        {"stable_update", Config::Str("", 0, 32)},
     });
+
+    install_firmware = ConfigRoot{Config::Object({
+        {"version", Config::Str("", 0, 32)},
+    }), [this](Config &update, ConfigSource source) -> String {
+        SemanticVersion p;
+
+        if (!parse_version(update.get("version")->asString().c_str(), &p)) {
+            return "Version is malformed";
+        }
+
+        return "";
+    }};
 }
 
 void FirmwareUpdate::setup()
@@ -268,10 +280,16 @@ bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const
 void FirmwareUpdate::register_urls()
 {
     api.addPersistentConfig("firmware_update/config", &config);
-    api.addState("firmware_update/available_updates", &available_updates);
+    api.addState("firmware_update/state", &state);
 
-    api.addCommand("firmware_update/check_for_updates", Config::Null(), {}, [this]() {
-        check_for_updates();
+    api.addCommand("firmware_update/check_for_update", Config::Null(), {}, [this]() {
+        check_for_update();
+    }, true);
+
+    api.addCommand("firmware_update/install_firmware", &install_firmware, {}, [this]() {
+        String version = install_firmware.get("version")->asString();
+
+        logger.printfln("Install %s", version.c_str());
     }, true);
 
     server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request) {
@@ -336,7 +354,7 @@ void FirmwareUpdate::register_urls()
 }
 
 // <major:int>.<minor:int>.<patch:int>[-beta.<beta:int>]+<timestamp:hex>
-static bool parse_version(const char *p, SemanticVersion *version)
+bool FirmwareUpdate::parse_version(const char *p, SemanticVersion *version) const
 {
     char *end;
 
@@ -397,7 +415,7 @@ static bool parse_version(const char *p, SemanticVersion *version)
     return true;
 }
 
-static String format_version(SemanticVersion *version)
+String FirmwareUpdate::format_version(SemanticVersion *version) const
 {
     char buf[64];
 
@@ -432,22 +450,22 @@ static esp_err_t update_event_handler(esp_http_client_event_t *event)
 }
 
 // list files are not signed to allow customer fleet update managment, firmwares are signed
-void FirmwareUpdate::check_for_updates()
+void FirmwareUpdate::check_for_update()
 {
     if (http_client != nullptr) {
-        logger.printfln("Already checking for updates");
+        logger.printfln("Already checking for update");
         return;
     }
 
-    available_updates.get("timestamp")->updateUint(time(nullptr));
-    available_updates.get("error")->updateString("pending");
-    available_updates.get("beta")->updateString("");
-    available_updates.get("release")->updateString("");
-    available_updates.get("stable")->updateString("");
+    state.get("check_timestamp")->updateUint(time(nullptr));
+    state.get("check_error")->updateString("pending");
+    state.get("beta_update")->updateString("");
+    state.get("release_update")->updateString("");
+    state.get("stable_update")->updateString("");
 
     if (update_url.length() == 0) {
         logger.printfln("No update URL configured");
-        available_updates.get("error")->updateString("no_update_url");
+        state.get("check_error")->updateString("no_update_url");
         return;
     }
 
@@ -478,7 +496,7 @@ void FirmwareUpdate::check_for_updates()
 
         if (cert == nullptr) {
             logger.printfln("Certificate with ID %d is not available", cert_id);
-            available_updates.get("error")->updateString("no_cert");
+            state.get("check_error")->updateString("no_cert");
             return;
         }
 
@@ -502,9 +520,9 @@ void FirmwareUpdate::check_for_updates()
     last_update_begin = millis();
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        if (deadline_elapsed(last_update_begin + CHECK_FOR_UPDATES_TIMEOUT)) {
+        if (deadline_elapsed(last_update_begin + CHECK_FOR_UPDATE_TIMEOUT)) {
             logger.printfln("Update server %s did not respond", update_url.c_str());
-            available_updates.get("error")->updateString("no_response");
+            state.get("check_error")->updateString("no_response");
             update_complete = true;
         }
 
@@ -519,9 +537,9 @@ void FirmwareUpdate::check_for_updates()
             }
             else if (err != ESP_OK) {
                 logger.printfln("Error while downloading firmware list: %s", esp_err_to_name(err));
-                available_updates.get("error")->updateString("download_error");
+                state.get("check_error")->updateString("download_error");
             }
-            else if (available_updates.get("error")->asString() == "pending") {
+            else if (state.get("check_error")->asString() == "pending") {
                 String beta_update_str = "";
                 String release_update_str = "";
                 String stable_update_str = "";
@@ -538,10 +556,10 @@ void FirmwareUpdate::check_for_updates()
                     stable_update_str = format_version(&stable_update);
                 }
 
-                available_updates.get("error")->updateString("");
-                available_updates.get("beta")->updateString(beta_update_str);
-                available_updates.get("release")->updateString(release_update_str);
-                available_updates.get("stable")->updateString(stable_update_str);
+                state.get("check_error")->updateString("");
+                state.get("beta_update")->updateString(beta_update_str);
+                state.get("release_update")->updateString(release_update_str);
+                state.get("stable_update")->updateString(stable_update_str);
             }
         }
 
@@ -569,7 +587,7 @@ void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
 
         if (update_buf_free_start == update_buf_free_end) {
             logger.printfln("Firmware list is malformed");
-            available_updates.get("error")->updateString("list_malformed");
+            state.get("check_error")->updateString("list_malformed");
             update_complete = true;
             return;
         }
@@ -595,7 +613,7 @@ void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
 
             if (!parse_version(update_buf, &version)) {
                 logger.printfln("Firmware list entry is malformed: %s", update_buf);
-                available_updates.get("error")->updateString("list_malformed");
+                state.get("check_error")->updateString("list_malformed");
                 update_complete = true;
                 return;
             }
