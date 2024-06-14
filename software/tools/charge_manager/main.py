@@ -289,7 +289,10 @@ def stage_3(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
             if state.phases == 3:
                 state._phase_allocation = 0
                 wnd_min += Cost(-3*min_3p, -min_3p, -min_3p, -min_3p)
-            elif state.phase_rotation != PhaseRotation.Unknown and get_phase(state.phase_rotation, ChargerPhase.P1) == GridPhase(p):
+            elif state.phase_rotation == PhaseRotation.Unknown:
+                #TODO
+                raise Exception("Not implemented")
+            elif get_phase(state.phase_rotation, ChargerPhase.P1) == GridPhase(p):
                 state._phase_allocation = 0
 
                 wnd_min.pv -= min_1p
@@ -304,7 +307,10 @@ def stage_3(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         if state.phases == 3:
             state._phase_allocation = 0
             wnd_min += Cost(-3*min_3p, -min_3p, -min_3p, -min_3p)
-        elif state.phase_rotation != PhaseRotation.Unknown and get_phase(state.phase_rotation, ChargerPhase.P1) == GridPhase(p):
+        elif state.phase_rotation == PhaseRotation.Unknown:
+            #TODO
+            raise Exception("Not implemented")
+        elif get_phase(state.phase_rotation, ChargerPhase.P1) == GridPhase(p):
             state._phase_allocation = 0
 
             wnd_min.pv -= min_1p
@@ -334,7 +340,10 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         if activate_3p:
             new_cost = Cost(3*min_3p, min_3p, min_3p, min_3p)
             new_enable_cost = Cost(3*ena_3p, ena_3p, ena_3p, ena_3p)
-        elif state.phase_rotation != PhaseRotation.Unknown:
+        elif state.phase_rotation == PhaseRotation.Unknown:
+            # TODO
+            raise Exception("Not implemented")
+        else:
             phase = get_phase(state.phase_rotation, ChargerPhase.P1)
 
             new_cost.pv += min_1p
@@ -342,8 +351,6 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
 
             new_enable_cost.pv += ena_1p
             new_enable_cost[phase] += ena_1p
-        else:
-            raise Exception("not implemented")
 
         for i in range(1, 4):
             if new_cost[i] > 0 and wnd_max[i] < limits.raw[i] and wnd_max[i] < limits.filtered[i]:
@@ -376,13 +383,14 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         new_cost = Cost(3*min_3p-min_1p, min_3p, min_3p, min_3p)
         new_enable_cost = Cost(3*ena_3p-ena_1p, ena_3p, ena_3p, ena_3p)
 
-        if state.phase_rotation != PhaseRotation.Unknown:
+        if state.phase_rotation == PhaseRotation.Unknown:
+            # TODO
+            raise Exception("Not implemented")
+        else:
             phase = get_phase(state.phase_rotation, ChargerPhase.P1)
             # P1 is already active
             new_cost[phase] -= min_1p
             new_enable_cost[phase] -= ena_1p
-        else:
-            raise Exception("not implemented")
 
         for i in range(1, 4):
             # TODO enable current
@@ -425,7 +433,10 @@ def stage_5(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
             cost = Cost(3*min_3p, min_3p, min_3p, min_3p)
         else:
             cost = Cost(min_1p, 0, 0, 0)
-            if state.phase_rotation != PhaseRotation.Unknown:
+            if state.phase_rotation == PhaseRotation.Unknown:
+                # TODO
+                raise Exception("Not implemented")
+            else:
                 phase = get_phase(state.phase_rotation, ChargerPhase.P1)
                 cost[phase] += min_1p
 
