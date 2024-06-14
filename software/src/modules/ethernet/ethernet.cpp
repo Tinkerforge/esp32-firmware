@@ -108,7 +108,7 @@ void Ethernet::setup()
     config_in_use = config.get_owned_copy();
 
     connection_state = EthernetState::NotConfigured;
-    state.get("connection_state")->updateUint((uint)connection_state);
+    state.get("connection_state")->updateEnum(connection_state);
 
     initialized = true;
 
@@ -122,7 +122,7 @@ void Ethernet::setup()
 #endif
 
     connection_state = EthernetState::NotConnected;
-    state.get("connection_state")->updateUint((uint)connection_state);
+    state.get("connection_state")->updateEnum(connection_state);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             logger.printfln("Started");
@@ -131,7 +131,7 @@ void Ethernet::setup()
             connection_state = EthernetState::NotConnected;
 
             task_scheduler.scheduleOnce([this](){
-                state.get("connection_state")->updateUint((uint)connection_state);
+                state.get("connection_state")->updateEnum(connection_state);
             }, 0);
         },
         ARDUINO_EVENT_ETH_START);
@@ -160,7 +160,7 @@ void Ethernet::setup()
             connection_state = EthernetState::Connecting;
 
             task_scheduler.scheduleOnce([this, link_speed, full_duplex](){
-                state.get("connection_state")->updateUint((uint)connection_state);
+                state.get("connection_state")->updateEnum(connection_state);
                 state.get("link_speed" )->updateUint(link_speed);
                 state.get("full_duplex")->updateBool(full_duplex);
 
@@ -186,7 +186,7 @@ void Ethernet::setup()
             connection_state = EthernetState::Connected;
 
             task_scheduler.scheduleOnce([this, now, ip, subnet](){
-                state.get("connection_state")->updateUint((uint)connection_state);
+                state.get("connection_state")->updateEnum(connection_state);
                 state.get("ip")->updateString(ip);
                 state.get("subnet")->updateString(subnet.toString());
                 state.get("connection_start")->updateUint(now);
@@ -208,7 +208,7 @@ void Ethernet::setup()
             connection_state = EthernetState::Connecting;
 
             task_scheduler.scheduleOnce([this, now](){
-                state.get("connection_state")->updateUint((uint)connection_state);
+                state.get("connection_state")->updateEnum(connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
                 state.get("connection_end")->updateUint(now);
@@ -225,7 +225,7 @@ void Ethernet::setup()
             connection_state = EthernetState::NotConnected;
 
             task_scheduler.scheduleOnce([this, now](){
-                state.get("connection_state")->updateUint((uint)connection_state);
+                state.get("connection_state")->updateEnum(connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
                 state.get("connection_end")->updateUint(now);
@@ -242,7 +242,7 @@ void Ethernet::setup()
             connection_state = EthernetState::NotConnected;
 
             task_scheduler.scheduleOnce([this, now](){
-                state.get("connection_state")->updateUint((uint)connection_state);
+                state.get("connection_state")->updateEnum(connection_state);
                 state.get("connection_end")->updateUint(now);
             }, 0);
         },

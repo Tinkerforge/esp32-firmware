@@ -22,13 +22,7 @@
 #include "config.h"
 
 #include "module.h"
-
-enum class WifiState {
-    NOT_CONFIGURED,
-    NOT_CONNECTED,
-    CONNECTING,
-    CONNECTED
-};
+#include "wifi_state.enum.h"
 
 enum class EapConfigID: uint8_t {
     None,

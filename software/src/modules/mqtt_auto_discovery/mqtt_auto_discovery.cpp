@@ -167,7 +167,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 {
     uint32_t delay_ms = 0;
 
-    if (mqtt.state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED) {
+    if (mqtt.state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected) {
         topic_num = 0;
         delay_ms = 5 * 1000;
     } else {

@@ -481,7 +481,7 @@ void EnergyManager::start_network_check_task()
             }
 #endif
 #if MODULE_WIFI_AVAILABLE()
-            if (wifi.get_connection_state() == WifiState::CONNECTED) {
+            if (wifi.get_connection_state() == WifiState::Connected) {
                 disconnected = false;
                 break;
             }

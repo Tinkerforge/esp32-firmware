@@ -80,9 +80,9 @@ void Wifi::pre_setup()
         return "";
     }};
     state = Config::Object({
-        {"connection_state", Config::Int((int32_t)WifiState::NOT_CONFIGURED)},
-        {"connection_start", Config::Uint32(0)},
-        {"connection_end", Config::Uint32(0)},
+        {"connection_state", Config::Uint((uint)WifiState::NotConfigured)},
+        {"connection_start", Config::Uint(0)},
+        {"connection_end", Config::Uint(0)},
         {"ap_state", Config::Int(0)},
         {"ap_bssid", Config::Str("", 0, 20)},
         {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
@@ -311,7 +311,7 @@ bool Wifi::apply_sta_config_and_connect()
 
 bool Wifi::apply_sta_config_and_connect(WifiState current_state)
 {
-    if (current_state == WifiState::CONNECTED) {
+    if (current_state == WifiState::Connected) {
         return false;
     }
 
@@ -640,7 +640,7 @@ void Wifi::setup()
     if (enable_sta) {
         task_scheduler.scheduleWithFixedDelay([this]() {
             WifiState connection_state = get_connection_state();
-            state.get("connection_state")->updateInt((int)connection_state);
+            state.get("connection_state")->updateEnum(connection_state);
 
             int rssi = -127;
             esp_wifi_sta_get_rssi(&rssi); // Ignore failure, rssi is still -127.
@@ -656,7 +656,7 @@ void Wifi::setup()
 
     if (ap_fallback_only) {
         task_scheduler.scheduleWithFixedDelay([this]() {
-            bool connected = (WifiState)state.get("connection_state")->asInt() == WifiState::CONNECTED;
+            bool connected = state.get("connection_state")->asEnum<WifiState>() == WifiState::Connected;
 
 #if MODULE_ETHERNET_AVAILABLE()
             connected = connected || ethernet.get_connection_state() == EthernetState::Connected;
@@ -852,23 +852,23 @@ void Wifi::register_urls()
 WifiState Wifi::get_connection_state() const
 {
     if (!sta_config_in_use.get("enable_sta")->asBool())
-        return WifiState::NOT_CONFIGURED;
+        return WifiState::NotConfigured;
 
     switch (WiFi.status()) {
         case WL_CONNECT_FAILED:
         case WL_CONNECTION_LOST:
         case WL_DISCONNECTED:
         case WL_NO_SSID_AVAIL:
-            return WifiState::NOT_CONNECTED;
+            return WifiState::NotConnected;
         case WL_CONNECTED:
-            return WifiState::CONNECTED;
+            return WifiState::Connected;
         case WL_NO_SHIELD:
-            return WifiState::NOT_CONFIGURED;
+            return WifiState::NotConfigured;
         case WL_IDLE_STATUS:
-            return WifiState::CONNECTING;
+            return WifiState::Connecting;
         default:
             // this will only be reached with WL_SCAN_COMPLETED, but this value is never set
-            return WifiState::CONNECTED;
+            return WifiState::Connected;
     }
 }
 

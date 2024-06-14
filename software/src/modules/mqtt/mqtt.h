@@ -30,12 +30,7 @@
 #include "modules/automation/automation_backend.h"
 #endif
 
-enum class MqttConnectionState {
-    NOT_CONFIGURED,
-    NOT_CONNECTED,
-    CONNECTED,
-    ERROR
-};
+#include "mqtt_connection_state.enum.h"
 
 class Mqtt final : public IAPIBackend
 #if MODULE_AUTOMATION_AVAILABLE()

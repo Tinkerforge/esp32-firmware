@@ -89,9 +89,9 @@ void Mqtt::pre_setup()
     }};
 
     state = Config::Object({
-        {"connection_state", Config::Int(0)},
+        {"connection_state", Config::Uint((uint)MqttConnectionState::NotConfigured)},
         {"connection_start", Config::Uint(0)},
-        {"connection_end", Config::Uint32(0)},
+        {"connection_end", Config::Uint(0)},
         {"last_error", Config::Int(0)}
     });
 
@@ -223,7 +223,7 @@ bool Mqtt::publish(const String &topic, const String &payload, bool retain)
     // ESP-MQTT does this check but we only want to allow publishing after
     // onMqttConnect was called (in the main thread!)
     // ESP-MQTT's check can asynchronously flip to connected.
-    if (this->state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
+    if (this->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected)
         return false;
 
 #if defined(BOARD_HAS_PSRAM)
@@ -255,14 +255,14 @@ bool Mqtt::pushRawStateUpdate(const String &payload, const String &path)
 }
 
 IAPIBackend::WantsStateUpdate Mqtt::wantsStateUpdate(size_t stateIdx) {
-    return this->state.get("connection_state")->asInt() == (int)MqttConnectionState::CONNECTED ?
+    return this->state.get("connection_state")->asEnum<MqttConnectionState>() == MqttConnectionState::Connected ?
            IAPIBackend::WantsStateUpdate::AsString :
            IAPIBackend::WantsStateUpdate::No;
 }
 
 void Mqtt::resubscribe()
 {
-    if (this->state.get("connection_state")->asInt() != (int)MqttConnectionState::CONNECTED)
+    if (this->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected)
         return;
 
     if (!global_topic_prefix_subscribed) {
@@ -287,7 +287,7 @@ void Mqtt::onMqttConnect()
     state.get("connection_start")->updateUint(last_connected_ms);
     was_connected = true;
     logger.printfln("Connected to broker.");
-    this->state.get("connection_state")->updateInt((int)MqttConnectionState::CONNECTED);
+    this->state.get("connection_state")->updateEnum(MqttConnectionState::Connected);
 
     for (size_t i = 0; i < api.commands.size(); ++i) {
         auto &reg = api.commands[i];
@@ -314,12 +314,12 @@ void Mqtt::onMqttConnect()
 
 void Mqtt::onMqttDisconnect()
 {
-    if (this->state.get("connection_state")->asEnum<MqttConnectionState>() == MqttConnectionState::NOT_CONNECTED)
+    if (this->state.get("connection_state")->asEnum<MqttConnectionState>() == MqttConnectionState::NotConnected)
         logger.printfln("Failed to connect to broker.");
     else
         logger.printfln("Disconnected from broker.");
 
-    this->state.get("connection_state")->updateInt((int)MqttConnectionState::NOT_CONNECTED);
+    this->state.get("connection_state")->updateEnum(MqttConnectionState::NotConnected);
     if (was_connected) {
         was_connected = false;
         uint32_t now = millis();
@@ -509,7 +509,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         case MQTT_EVENT_ERROR: {
                 auto eh = *event->error_handle;
                 task_scheduler.scheduleOnce([mqtt, eh](){
-                    bool was_connected = mqtt->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::NOT_CONNECTED;
+                    bool was_connected = mqtt->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::NotConnected;
 
                     if (eh.error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
                         if (was_connected && eh.esp_tls_last_esp_err != ESP_OK) {
@@ -674,7 +674,7 @@ void Mqtt::setup()
     }
 
     // Set connection state here. Otherwise, it will stay stay "not configured" until the first connection attempt.
-    state.get("connection_state")->updateInt((int)MqttConnectionState::NOT_CONNECTED);
+    state.get("connection_state")->updateEnum(MqttConnectionState::NotConnected);
 
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
