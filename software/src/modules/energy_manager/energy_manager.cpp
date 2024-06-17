@@ -287,7 +287,12 @@ bool EnergyManager::get_is_3phase()
 
 PhaseSwitcherBackend::SwitchingState EnergyManager::get_phase_switching_state()
 {
-    if (!contactor_installed || contactor_check_tripped || !bricklet_reachable) {
+    if (!contactor_installed) {
+        // Don't report an error when phase_switching_capable() is false.
+        return PhaseSwitcherBackend::SwitchingState::Ready;
+    }
+
+    if (contactor_check_tripped || !bricklet_reachable) {
         return PhaseSwitcherBackend::SwitchingState::Error;
     }
 

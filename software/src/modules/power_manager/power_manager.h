@@ -110,7 +110,7 @@ private:
         bool can_switch_phases_now(bool wants_3phase) override {return false;}
         bool requires_cp_disconnect()                override {return true;}
         bool get_is_3phase()                         override {return false;}
-        SwitchingState get_phase_switching_state()   override {return SwitchingState::Error;}
+        SwitchingState get_phase_switching_state()   override {return SwitchingState::Ready;} // Don't report an error when phase_switching_capable() is false.
         bool switch_phases_3phase(bool wants_3phase) override {return false;}
     };
 
