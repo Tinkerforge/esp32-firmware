@@ -82,13 +82,13 @@ env.AddPostAction(
     ), "Merging firmware.bin")
 )
 
-if os.path.exists(env.subst("$PROJECT_DIR/sodium_secret_key.bin")):
+if os.path.exists(env.subst("$PROJECT_DIR/signature_secret_key.bin")):
     env.AddPostAction(
         "$BUILD_DIR/${PROGNAME}.bin",
         env.VerboseAction(lambda env, **kwargs: check_call(
             env.subst('$PYTHONEXE'),
             "-u",
-            env.subst("$PROJECT_DIR/sodium_sign.py"),
+            env.subst("$PROJECT_DIR/signature_sign.py"),
             "build/{}_merged.bin".format(firmware_basename),
             "build/{}_merged.bin".format(firmware_basename.replace('-UNSIGNED', ''))
         ), "Signing merged firmware.bin")

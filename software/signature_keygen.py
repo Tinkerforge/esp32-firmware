@@ -39,8 +39,8 @@ def main():
         return 1
 
     directory = os.path.dirname(__file__)
-    public_key_filename = os.path.relpath(os.path.join(directory, 'sodium_public_key.bin'))
-    secret_key_filename = os.path.relpath(os.path.join(directory, 'sodium_secret_key.bin'))
+    public_key_filename = os.path.relpath(os.path.join(directory, 'signature_public_key.bin'))
+    secret_key_filename = os.path.relpath(os.path.join(directory, 'signature_secret_key.bin'))
 
     if os.path.exists(public_key_filename):
         print(f'error: public key {public_key_filename} already exists')

@@ -53,7 +53,7 @@ def main():
 
     args = parser.parse_args()
     directory = os.path.dirname(__file__)
-    public_key_filename = os.path.relpath(os.path.join(directory, 'sodium_public_key.bin'))
+    public_key_filename = os.path.relpath(os.path.join(directory, 'signature_public_key.bin'))
 
     try:
         with open(public_key_filename, 'rb') as f:

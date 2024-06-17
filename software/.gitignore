@@ -38,4 +38,4 @@ web/src/modules/*/*.enum.ts
 web/**/*.embedded.ts
 coredump_py_gdb_cmds
 api_info.json
-sodium_secret_key.bin
+signature_secret_key.bin

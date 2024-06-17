@@ -59,7 +59,7 @@ def main():
         return 1
 
     directory = os.path.dirname(__file__)
-    secret_key_filename = os.path.relpath(os.path.join(directory, 'sodium_secret_key.bin'))
+    secret_key_filename = os.path.relpath(os.path.join(directory, 'signature_secret_key.bin'))
 
     try:
         with open(secret_key_filename, 'rb') as f:
