@@ -23,9 +23,11 @@
 
 #include <stdint.h>
 #include <esp_http_client.h>
+#include <sodium.h>
 
 #include "module.h"
 #include "web_server.h"
+#include "signature_public_key.embedded.h"
 
 struct SemanticVersion {
     uint8_t major = 255;
@@ -50,6 +52,9 @@ public:
 
 private:
     bool handle_firmware_chunk(int command, std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_length, size_t remaining, size_t complete_len);
+#if signature_public_key_length != 0
+    void handle_signature_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len);
+#endif
     void reset_firmware_info();
     bool handle_firmware_info_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len);
     String check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log);
@@ -76,6 +81,11 @@ private:
     uint32_t checksum_offset = 0;
     bool update_aborted = false;
     bool info_found = false;
+
+#if signature_public_key_length != 0
+    crypto_sign_state signature_state;
+    unsigned char signature_data[crypto_sign_BYTES];
+#endif
 
     String update_url;
     int cert_id = -1;

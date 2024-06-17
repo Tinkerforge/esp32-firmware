@@ -37,10 +37,17 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
 
+#define SIGNATURE_LENGTH crypto_sign_BYTES
+#define SIGNATURE_OFFSET (FIRMWARE_INFO_OFFSET - SIGNATURE_LENGTH)
+
 #define CHECK_FOR_UPDATE_TIMEOUT 15000
 
 #if !MODULE_CERTS_AVAILABLE()
 #define MAX_CERT_ID -1
+#endif
+
+#if signature_public_key_length != 0
+static_assert(signature_public_key_length == crypto_sign_PUBLICKEYBYTES);
 #endif
 
 void FirmwareUpdate::pre_setup()
@@ -98,6 +105,20 @@ void FirmwareUpdate::setup()
     cert_id = config.get("cert_id")->asInt();
     initialized = true;
 }
+
+#if signature_public_key_length != 0
+void FirmwareUpdate::handle_signature_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len)
+{
+    for (size_t i = 0; i < chunk_len; ++i) {
+        size_t k = chunk_offset + i;
+
+        if (k >= SIGNATURE_OFFSET && k < SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
+            signature_data[k - SIGNATURE_OFFSET] = chunk_data[i];
+            chunk_data[i] = 0xFF;
+        }
+    }
+}
+#endif
 
 void FirmwareUpdate::reset_firmware_info()
 {
@@ -213,22 +234,50 @@ bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const
     const size_t firmware_offset = command == U_FLASH ? 0x10000 - 0x1000 : 0;
     static bool firmware_info_found = false;
 
-    if (chunk_offset == 0 && !Update.begin(complete_len - firmware_offset, command)) {
-        logger.printfln("Failed to start update: %s", Update.errorString());
-        result_cb("text/plain", Update.errorString());
-        Update.abort();
-        update_aborted = true;
-        return true;
-    }
-
     if (chunk_offset == 0) {
+        if (!Update.begin(complete_len - firmware_offset, command)) {
+            logger.printfln("Failed to start update: %s", Update.errorString());
+            result_cb("text/plain", Update.errorString());
+            Update.abort();
+            update_aborted = true;
+            return true;
+        }
+
         reset_firmware_info();
         firmware_info_found = false;
+
+#if signature_public_key_length != 0
+        if (sodium_init() < 0 || crypto_sign_init(&signature_state) < 0) {
+            const char *message = "Failed to initialize signature verification";
+            logger.printfln(message);
+            result_cb("text/plain", message);
+            Update.abort();
+            update_aborted = true;
+            return true;
+        }
+
+        memset(signature_data, 0xFF, SIGNATURE_LENGTH);
+#endif
     }
 
     if (update_aborted) {
         return true;
     }
+
+#if signature_public_key_length != 0
+    if (chunk_offset + chunk_len >= SIGNATURE_OFFSET && chunk_offset < SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
+        handle_signature_chunk(chunk_offset, chunk_data, chunk_len);
+    }
+
+    if (crypto_sign_update(&signature_state, chunk_data, chunk_len) < 0) {
+        const char *message = "Failed to process signature verification";
+        logger.printfln(message);
+        result_cb("text/plain", message);
+        Update.abort();
+        update_aborted = true;
+        return true;
+    }
+#endif
 
     if (chunk_offset + chunk_len >= FIRMWARE_INFO_OFFSET && chunk_offset < FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
         firmware_info_found = handle_firmware_info_chunk(chunk_offset, chunk_data, chunk_len);
@@ -266,12 +315,24 @@ bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const
         return false;
     }
 
-    if (remaining == 0 && !Update.end(true)) {
-        logger.printfln("Failed to apply update: %s", Update.errorString());
-        result_cb("text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str());
-        this->firmware_update_running = false;
-        Update.abort();
-        return false;
+    if (remaining == 0) {
+#if signature_public_key_length != 0
+        if (crypto_sign_final_verify(&signature_state, signature_data, signature_public_key_data) < 0) {
+            const char *message = "Failed to verify signature";
+            logger.printfln(message);
+            result_cb("text/plain", message);
+            Update.abort();
+            return false;
+        }
+#endif
+
+        if (!Update.end(true)) {
+            logger.printfln("Failed to apply update: %s", Update.errorString());
+            result_cb("text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str());
+            this->firmware_update_running = false;
+            Update.abort();
+            return false;
+        }
     }
 
     return true;
