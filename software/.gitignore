@@ -38,4 +38,5 @@ web/src/modules/*/*.enum.ts
 web/**/*.embedded.ts
 coredump_py_gdb_cmds
 api_info.json
+signature_public_key.bin
 signature_secret_key.bin
