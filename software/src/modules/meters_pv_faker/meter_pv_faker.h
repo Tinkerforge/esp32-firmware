@@ -57,7 +57,7 @@ private:
     uint32_t peak_at_lux;
     int64_t  peak_at_lux_shifted;
 
-    float values[8];
+    float values[8] = {0};
 };
 
 #if defined(__GNUC__)
