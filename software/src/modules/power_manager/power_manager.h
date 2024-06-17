@@ -69,16 +69,6 @@
 #define PM_CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS   0
 #define PM_CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK      (1 << PM_CONFIG_ERROR_FLAGS_PHASE_SWITCHING_BIT_POS)
 
-enum class SwitchingState
-{
-    Monitoring = 0,
-    StartSwitching,
-    Stopping,
-    DisconnectingCP,
-    TogglingContactor,
-    WaitUntilSwitched,
-};
-
 class PowerManager final : public IModule,
                            public IDebugProtocolBackend
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -125,6 +115,7 @@ private:
     void set_available_phases(uint32_t phases);
     void update_data();
     void update_energy();
+    void update_phase_switcher();
     void limit_max_current(uint32_t limit_ma);
     void reset_limit_max_current();
     void set_config_error(uint32_t config_error_mask);
@@ -149,25 +140,12 @@ private:
     PhaseSwitcherBackendDummy phase_switcher_dummy = PhaseSwitcherBackendDummy();
     PhaseSwitcherBackend *phase_switcher_backend = &phase_switcher_dummy;
 
-    bool     printed_not_seen_all_chargers       = false;
-    bool     printed_seen_all_chargers           = false;
     bool     printed_skipping_energy_update      = false;
-    bool     uptime_past_hysteresis              = false;
 
-    SwitchingState switching_state               = SwitchingState::Monitoring;
-    SwitchingState switching_state_prev          = switching_state;
-    uint32_t switching_start                     = 0;
     uint32_t mode                                = 0;
     int32_t have_phases                          = 0;
     bool     is_3phase                           = false;
-    bool     wants_3phase                        = false;
-    bool     wants_3phase_last                   = false;
-    bool     is_on_last                          = false;
-    bool     wants_on_last                       = false;
-    bool     just_switched_phases                = false;
     bool     just_switched_mode                  = false;
-    uint32_t phase_state_change_blocked_until    = 0;
-    uint32_t on_state_change_blocked_until       = 0;
     int32_t max_current_limited_ma               = 0;
 
     union {
@@ -210,9 +188,6 @@ private:
 
     // Pre-calculated limits
     int32_t  overall_min_power_w = 0;
-    int32_t  threshold_3to1_w    = 0;
-    int32_t  threshold_1to3_w    = 0;
-    int32_t max_phases           = 0;
 
     // Automation
     TristateBool automation_drawing_power_last   = TristateBool::Undefined;
