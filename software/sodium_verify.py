@@ -50,7 +50,6 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('input_filename')
-    parser.add_argument('signature_filename')
 
     args = parser.parse_args()
     directory = os.path.dirname(__file__)
@@ -70,17 +69,18 @@ def main():
         return 1
 
     try:
-        with open(args.signature_filename, 'rb') as f:
-            signature = f.read()
+        with open(args.input_filename, 'rb') as f:
+            input_data = bytearray(f.read())
     except Exception as e:
-        print(f'error: could not read signature {args.signature_filename}: {e}')
+        print(f'error: could not read input {args.input_filename}: {e}')
         return
 
     crypto_sign_BYTES = libsodium.crypto_sign_bytes()
+    assert(crypto_sign_BYTES == 64)
 
-    if len(signature) != crypto_sign_BYTES:
-        print('error: signature has wrong size')
-        return 1
+    firmware_info_offset = 0xd000 - 0x1000
+    signature = bytes(input_data[firmware_info_offset - crypto_sign_BYTES:firmware_info_offset])
+    input_data[firmware_info_offset - crypto_sign_BYTES:firmware_info_offset] = bytes([0xff] * crypto_sign_BYTES)
 
     state = CryptoSignState()
 
@@ -88,14 +88,7 @@ def main():
         print('error: crypto_sign_init failed')
         return 1
 
-    try:
-        with open(args.input_filename, 'rb') as f:
-            input_data = f.read()
-    except Exception as e:
-        print(f'error: could not read input {args.input_filename}: {e}')
-        return 1
-
-    if libsodium.crypto_sign_update(ctypes.byref(state), input_data, len(input_data)) < 0:
+    if libsodium.crypto_sign_update(ctypes.byref(state), bytes(input_data), len(input_data)) < 0:
         print('error: crypto_sign_update failed')
         return 1
 

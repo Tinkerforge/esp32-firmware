@@ -50,12 +50,12 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('input_filename')
-    parser.add_argument('signature_filename')
+    parser.add_argument('output_filename')
 
     args = parser.parse_args()
 
-    if os.path.exists(args.signature_filename):
-        print(f'error: signature {args.signature_filename} already exists')
+    if os.path.exists(args.output_filename):
+        print(f'error: output {args.output_filename} already exists')
         return 1
 
     directory = os.path.dirname(__file__)
@@ -82,16 +82,17 @@ def main():
 
     try:
         with open(args.input_filename, 'rb') as f:
-            input_data = f.read()
+            input_data = bytearray(f.read())
     except Exception as e:
         print(f'error: could not read input {args.input_filename}: {e}')
         return 1
 
-    if libsodium.crypto_sign_update(ctypes.byref(state), input_data, len(input_data)) < 0:
+    if libsodium.crypto_sign_update(ctypes.byref(state), bytes(input_data), len(input_data)) < 0:
         print('error: crypto_sign_update failed')
         return 1
 
     crypto_sign_BYTES = libsodium.crypto_sign_bytes()
+    assert(crypto_sign_BYTES == 64)
 
     signature_buffer = ctypes.create_string_buffer(crypto_sign_BYTES)
 
@@ -99,11 +100,14 @@ def main():
         print('error: crypto_sign_final_create failed')
         return 1
 
+    firmware_info_offset = 0xd000 - 0x1000
+    input_data[firmware_info_offset - crypto_sign_BYTES:firmware_info_offset] = signature_buffer.raw
+
     try:
-        with open(args.signature_filename, 'wb') as f:
-            f.write(signature_buffer.raw)
+        with open(args.output_filename, 'wb') as f:
+            f.write(input_data)
     except Exception as e:
-        print(f'error: could not write signature {args.signature_filename}: {e}')
+        print(f'error: could not write output {args.output_filename}: {e}')
         return 1
 
     return 0

@@ -105,7 +105,7 @@ def write_firmware_info(display_name, major, minor, patch, beta, build_time):
     buf[70] = int(minor)
     buf[71] = int(patch)
     buf[72:76] = build_time.to_bytes(4, byteorder='little')
-    buf[76] = int(beta)
+    buf[76] = int(beta) # since version 2
     buf[4092:4096] = crc32(buf[0:4092]).to_bytes(4, byteorder='little')
 
     with open(os.path.join(env.subst("$BUILD_DIR"), "firmware_info.bin"), "wb") as f:
@@ -618,7 +618,7 @@ def main():
     build_lines.append('const char *build_commit_id_str(void);')
     util.write_file_if_different(os.path.join('src', 'build.h'), '\n'.join(build_lines))
 
-    firmware_basename = '{}_firmware{}{}_{}_{:x}{}'.format(
+    firmware_basename = '{}_firmware-UNSIGNED{}{}_{}_{:x}{}'.format(
         name,
         "-NIGHTLY" if nightly else "",
         "-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE" if not_for_distribution else "",
