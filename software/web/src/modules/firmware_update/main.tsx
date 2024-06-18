@@ -97,15 +97,8 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             if (typeof error === "string") {
                 util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), error);
             } else if (error instanceof XMLHttpRequest) {
-                let xhr = error;
-
-                if (xhr.status == 423) {
-                    util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), __("firmware_update.script.vehicle_connected"));
-                    return false;
-                }
-
                 try {
-                    let e = JSON.parse(xhr.responseText)
+                    let e = JSON.parse(error.responseText)
                     let error_message = translate_unchecked("firmware_update.script." + e["error"])
                     if (e["error"] == "downgrade") {
                         error_message = error_message.replace("%firmware%", e["firmware"]).replace("%installed%", e["installed"]);
@@ -125,7 +118,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                         return false;
                     }
                 } catch {
-                    util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), xhr.responseText);
+                    util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), error.responseText);
                     return false;
                 }
             }
@@ -188,14 +181,8 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                             if (typeof error === "string") {
                                 util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), error);
                             } else if (error instanceof XMLHttpRequest) {
-                                let xhr = error;
-
-                                if (xhr.status == 423)
-                                    util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), __("firmware_update.script.vehicle_connected"));
-                                else {
-                                    let txt = xhr.responseText.startsWith("firmware_update.") ? translate_unchecked(xhr.responseText) : (xhr.responseText ?? xhr.response);
-                                    util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), txt);
-                                }
+                                let txt = error.responseText.startsWith("firmware_update.") ? translate_unchecked(error.responseText) : (error.responseText ?? error.response);
+                                util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), txt);
                             }
                             util.resumeWebSockets();
                         }}
