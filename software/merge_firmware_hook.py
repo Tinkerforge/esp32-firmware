@@ -79,10 +79,12 @@ env.AddPostAction(
         "0xd000", env.subst("$BUILD_DIR/firmware_info.bin"),
         "0xe000", "boot_app0.bin",
         "0x10000", env.subst("$BUILD_DIR/${PROGNAME}.bin")
-    ), "Merging firmware.bin")
+    ), f"Merging firmware.bin -> build/{firmware_basename}_merged.bin")
 )
 
 if os.path.exists(env.subst("$PROJECT_DIR/signature_secret_key.bin")):
+    signed_firmware_basename = firmware_basename.replace('-UNSIGNED', '')
+
     env.AddPostAction(
         "$BUILD_DIR/${PROGNAME}.bin",
         env.VerboseAction(lambda env, **kwargs: check_call(
@@ -90,6 +92,6 @@ if os.path.exists(env.subst("$PROJECT_DIR/signature_secret_key.bin")):
             "-u",
             env.subst("$PROJECT_DIR/signature_sign.py"),
             "build/{}_merged.bin".format(firmware_basename),
-            "build/{}_merged.bin".format(firmware_basename.replace('-UNSIGNED', ''))
-        ), "Signing merged firmware.bin")
+            "build/{}_merged.bin".format(signed_firmware_basename)
+        ), f"Signing merged firmware.bin -> build/{signed_firmware_basename}_merged.bin")
     )
