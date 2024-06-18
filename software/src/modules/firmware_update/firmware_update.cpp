@@ -126,7 +126,6 @@ void FirmwareUpdate::reset_firmware_info()
     info = firmware_info_t{};
     info_offset = 0;
     checksum_offset = 0;
-    update_aborted = false;
     info_found = false;
 }
 
@@ -239,8 +238,7 @@ bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const
             logger.printfln("Failed to start update: %s", Update.errorString());
             result_cb("text/plain", Update.errorString());
             Update.abort();
-            update_aborted = true;
-            return true;
+            return false;
         }
 
         reset_firmware_info();
@@ -252,16 +250,11 @@ bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const
             logger.printfln(message);
             result_cb("text/plain", message);
             Update.abort();
-            update_aborted = true;
-            return true;
+            return false;
         }
 
         memset(signature_data, 0xFF, SIGNATURE_LENGTH);
 #endif
-    }
-
-    if (update_aborted) {
-        return true;
     }
 
 #if signature_public_key_length != 0
@@ -274,8 +267,7 @@ bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const
         logger.printfln(message);
         result_cb("text/plain", message);
         Update.abort();
-        update_aborted = true;
-        return true;
+        return false;
     }
 #endif
 
@@ -288,8 +280,7 @@ bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const
         if (!error.isEmpty()) {
             result_cb("application/json", error.c_str());
             Update.abort();
-            update_aborted = true;
-            return true;
+            return false;
         }
     }
 
@@ -389,9 +380,6 @@ void FirmwareUpdate::register_urls()
     });
 
     server.on_HTTPThread("/flash_firmware", HTTP_POST, [this](WebServerRequest request) {
-        if (update_aborted)
-            return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
-
         if(!Update.hasError()) {
             logger.printfln("Firmware flashed successfully! Rebooting in one second.");
             task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);
