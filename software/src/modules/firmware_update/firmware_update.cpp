@@ -40,6 +40,12 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define SIGNATURE_LENGTH crypto_sign_BYTES
 #define SIGNATURE_OFFSET (FIRMWARE_INFO_OFFSET - SIGNATURE_LENGTH)
 
+// The firmware files are merged with the bootloader, partition table, firmware_info and slot configuration bins.
+// The bootloader starts at offset 0x1000, which is the first byte in the firmware file.
+// The first firmware slot (i.e. the one that is flashed over USB) starts at 0x10000.
+// So we have to skip the first 0x10000 - 0x1000 bytes, after them the actual firmware starts.
+#define FIRMWARE_OFFSET (0x10000 - 0x1000)
+
 #define CHECK_FOR_UPDATE_TIMEOUT 15000
 
 #if !MODULE_CERTS_AVAILABLE()
@@ -224,17 +230,11 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
     return "";
 }
 
-bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len, size_t remaining, size_t complete_len) {
-    // The firmware files are merged with the bootloader, partition table, firmware_info and slot configuration bins.
-    // The bootloader starts at offset 0x1000, which is the first byte in the firmware file.
-    // The first firmware slot (i.e. the one that is flashed over USB) starts at 0x10000.
-    // So we have to skip the first 0x10000 - 0x1000 bytes, after them the actual firmware starts.
-    // Don't skip anything if we flash the LittleFS.
-    const size_t firmware_offset = command == U_FLASH ? 0x10000 - 0x1000 : 0;
+bool FirmwareUpdate::handle_firmware_chunk(std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len, size_t remaining, size_t complete_len) {
     static bool firmware_info_found = false;
 
     if (chunk_offset == 0) {
-        if (!Update.begin(complete_len - firmware_offset, command)) {
+        if (!Update.begin(complete_len - FIRMWARE_OFFSET, U_FLASH)) {
             logger.printfln("Failed to start update: %s", Update.errorString());
             result_cb("text/plain", Update.errorString());
             Update.abort();
@@ -284,15 +284,15 @@ bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const
         }
     }
 
-    if (chunk_offset + chunk_len < firmware_offset) {
+    if (chunk_offset + chunk_len < FIRMWARE_OFFSET) {
         return true;
     }
 
     uint8_t *start = chunk_data;
     size_t len = chunk_len;
 
-    if (chunk_offset < firmware_offset) {
-        size_t to_skip = firmware_offset - chunk_offset;
+    if (chunk_offset < FIRMWARE_OFFSET) {
+        size_t to_skip = FIRMWARE_OFFSET - chunk_offset;
         start += to_skip;
         len -= to_skip;
     }
@@ -390,7 +390,7 @@ void FirmwareUpdate::register_urls()
     [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
         WebServerRequest *request_ptr = &request;
 
-        return handle_firmware_chunk(U_FLASH, [request_ptr](const char *mimetype, const char *message) {
+        return handle_firmware_chunk([request_ptr](const char *mimetype, const char *message) {
             request_ptr->send(400, mimetype, message);
         }, offset, data, len, remaining, request.contentLength());
     });

@@ -50,7 +50,7 @@ public:
     void handle_update_data(const void *data, size_t data_len);
 
 private:
-    bool handle_firmware_chunk(int command, std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_length, size_t remaining, size_t complete_len);
+    bool handle_firmware_chunk(std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_length, size_t remaining, size_t complete_len);
 #if signature_public_key_length != 0
     void handle_signature_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len);
 #endif
