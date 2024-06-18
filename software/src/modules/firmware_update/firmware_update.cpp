@@ -135,7 +135,7 @@ void FirmwareUpdate::reset_firmware_info()
     info_found = false;
 }
 
-bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len)
+void FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len)
 {
     uint8_t *start = chunk_data;
     size_t len = chunk_len;
@@ -159,7 +159,7 @@ bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_offset, uint8_t *ch
     const size_t checksum_start = FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH - 4;
 
     if (chunk_offset + chunk_len < checksum_start)
-        return false;
+        return;
 
     if (chunk_offset < checksum_start) {
         size_t to_skip = checksum_start - chunk_offset;
@@ -176,18 +176,17 @@ bool FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_offset, uint8_t *ch
     }
 
     info_found = checksum_offset == sizeof(checksum) && info.magic[0] == 0x12CE2171 && (info.magic[1] & 0x00FFFFFF) == 0x6E12F0;
-    return info_found;
 }
 
-String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect_downgrade, bool log)
+String FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log)
 {
-    if (!firmware_info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
+    if (!info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
         if (log) {
             logger.printfln("Failed to update: Firmware update has no info page!");
         }
         return "{\"error\":\"no_info_page\"}";
     }
-    if (firmware_info_found) {
+    if (info_found) {
         if (checksum != calculated_checksum) {
             if (log) {
                 logger.printfln("Failed to update: Firmware info page corrupted! Embedded checksum %x calculated checksum %x", checksum, calculated_checksum);
@@ -231,8 +230,6 @@ String FirmwareUpdate::check_firmware_info(bool firmware_info_found, bool detect
 }
 
 bool FirmwareUpdate::handle_firmware_chunk(std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len, size_t remaining, size_t complete_len) {
-    static bool firmware_info_found = false;
-
     if (chunk_offset == 0) {
         if (!Update.begin(complete_len - FIRMWARE_OFFSET, U_FLASH)) {
             logger.printfln("Failed to start update: %s", Update.errorString());
@@ -242,7 +239,6 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(const char *, cons
         }
 
         reset_firmware_info();
-        firmware_info_found = false;
 
 #if signature_public_key_length != 0
         if (sodium_init() < 0 || crypto_sign_init(&signature_state) < 0) {
@@ -272,11 +268,11 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(const char *, cons
 #endif
 
     if (chunk_offset + chunk_len >= FIRMWARE_INFO_OFFSET && chunk_offset < FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
-        firmware_info_found = handle_firmware_info_chunk(chunk_offset, chunk_data, chunk_len);
+        handle_firmware_info_chunk(chunk_offset, chunk_data, chunk_len);
     }
 
     if (chunk_offset + chunk_len >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
-        String error = this->check_firmware_info(firmware_info_found, false, true);
+        String error = this->check_firmware_info(false, true);
         if (!error.isEmpty()) {
             result_cb("application/json", error.c_str());
             Update.abort();
@@ -367,10 +363,10 @@ void FirmwareUpdate::register_urls()
             return false;
         }
 
-        bool firmware_info_found = handle_firmware_info_chunk(offset + FIRMWARE_INFO_OFFSET, data, len);
+        handle_firmware_info_chunk(offset + FIRMWARE_INFO_OFFSET, data, len);
 
         if (offset + len >= FIRMWARE_INFO_LENGTH) {
-            String error = this->check_firmware_info(firmware_info_found, true, false);
+            String error = this->check_firmware_info(true, false);
             if (!error.isEmpty()) {
                 request.send(400, "application/json", error.c_str());
             }
