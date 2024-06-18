@@ -275,5 +275,5 @@
 - Disable TLS elliptic curves smaller than the required default of 256
 - Allow up to 2K of HTTP request headers
 
-2024-06-18: 2.1.1 (<unknown>)
+2024-06-18: 2.1.1 (a72824a4)
 - Fix all charges being blocked if no contactor is installed
