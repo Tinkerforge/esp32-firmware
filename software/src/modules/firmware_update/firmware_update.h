@@ -46,7 +46,6 @@ public:
     void register_urls() override;
 
     bool firmware_update_allowed = true;
-    bool firmware_update_running = false;
 
     void handle_update_data(const void *data, size_t data_len);
 

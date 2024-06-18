@@ -310,7 +310,6 @@ bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const
     if (written != len) {
         logger.printfln("Failed to write update chunk with length %u; written %u, error: %s", len, written, Update.errorString());
         result_cb("text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
-        this->firmware_update_running = false;
         Update.abort();
         return false;
     }
@@ -329,7 +328,6 @@ bool FirmwareUpdate::handle_firmware_chunk(int command, std::function<void(const
         if (!Update.end(true)) {
             logger.printfln("Failed to apply update: %s", Update.errorString());
             result_cb("text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str());
-            this->firmware_update_running = false;
             Update.abort();
             return false;
         }
@@ -394,8 +392,6 @@ void FirmwareUpdate::register_urls()
         if (update_aborted)
             return request.unsafe_ResponseAlreadySent(); // Already sent in upload callback.
 
-        this->firmware_update_running = false;
-
         if(!Update.hasError()) {
             logger.printfln("Firmware flashed successfully! Rebooting in one second.");
             task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);
@@ -404,8 +400,6 @@ void FirmwareUpdate::register_urls()
         return request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
     },
     [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
-        this->firmware_update_running = true;
-
         WebServerRequest *request_ptr = &request;
 
         return handle_firmware_chunk(U_FLASH, [request_ptr](const char *mimetype, const char *message) {
