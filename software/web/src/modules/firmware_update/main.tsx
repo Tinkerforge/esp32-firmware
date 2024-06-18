@@ -124,7 +124,6 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             }
         }
 
-        util.pauseWebSockets();
         return true;
     }
 
@@ -175,15 +174,27 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                         url="/flash_firmware"
                         accept=".bin"
                         timeout_ms={120 * 1000}
-                        onUploadStart={async (f) => this.checkFirmware(f)}
+                        onUploadStart={async (f) => {
+                            util.remove_alert("firmware_update_failed");
+
+                            if (!await this.checkFirmware(f)) {
+                                return false;
+                            }
+
+                            util.pauseWebSockets();
+                            return true;
+                        }}
                         onUploadSuccess={() => util.postReboot(__("firmware_update.script.update_success"), __("util.reboot_text"))}
                         onUploadError={error => {
+                            let message = "<unknown>";
+
                             if (typeof error === "string") {
-                                util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), error);
+                                message = error;
                             } else if (error instanceof XMLHttpRequest) {
-                                let txt = error.responseText.startsWith("firmware_update.") ? translate_unchecked(error.responseText) : (error.responseText ?? error.response);
-                                util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), txt);
+                                message = error.responseText.startsWith("firmware_update.") ? translate_unchecked(error.responseText) : (error.responseText ?? error.response);
                             }
+
+                            util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), message);
                             util.resumeWebSockets();
                         }}
                     />
