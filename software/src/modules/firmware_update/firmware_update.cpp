@@ -115,14 +115,23 @@ void FirmwareUpdate::setup()
 #if signature_public_key_length != 0
 void FirmwareUpdate::handle_signature_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len)
 {
-    for (size_t i = 0; i < chunk_len; ++i) {
-        size_t k = chunk_offset + i;
-
-        if (k >= SIGNATURE_OFFSET && k < SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
-            signature_data[k - SIGNATURE_OFFSET] = chunk_data[i];
-            chunk_data[i] = 0xFF;
-        }
+    if (chunk_offset + chunk_len < SIGNATURE_OFFSET || chunk_offset >= SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
+        return;
     }
+
+    uint8_t *start = chunk_data;
+    size_t len = chunk_len;
+
+    if (chunk_offset < SIGNATURE_OFFSET) {
+        size_t to_skip = SIGNATURE_OFFSET - chunk_offset;
+        start += to_skip;
+        len -= to_skip;
+    }
+
+    len = MIN(len, (SIGNATURE_OFFSET + SIGNATURE_LENGTH) - chunk_offset);
+
+    memcpy(signature_data + MAX(chunk_offset, SIGNATURE_OFFSET) - SIGNATURE_OFFSET, start, len);
+    memset(start, 0xFF, len);
 }
 #endif
 
@@ -137,6 +146,10 @@ void FirmwareUpdate::reset_firmware_info()
 
 void FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len)
 {
+    if (chunk_offset + chunk_len < FIRMWARE_INFO_OFFSET || chunk_offset >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
+        return;
+    }
+
     uint8_t *start = chunk_data;
     size_t len = chunk_len;
 
@@ -254,9 +267,7 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(const char *, cons
     }
 
 #if signature_public_key_length != 0
-    if (chunk_offset + chunk_len >= SIGNATURE_OFFSET && chunk_offset < SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
-        handle_signature_chunk(chunk_offset, chunk_data, chunk_len);
-    }
+    handle_signature_chunk(chunk_offset, chunk_data, chunk_len);
 
     if (crypto_sign_update(&signature_state, chunk_data, chunk_len) < 0) {
         const char *message = "Failed to process signature verification";
@@ -267,9 +278,7 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(const char *, cons
     }
 #endif
 
-    if (chunk_offset + chunk_len >= FIRMWARE_INFO_OFFSET && chunk_offset < FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
-        handle_firmware_info_chunk(chunk_offset, chunk_data, chunk_len);
-    }
+    handle_firmware_info_chunk(chunk_offset, chunk_data, chunk_len);
 
     if (chunk_offset + chunk_len >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
         String error = this->check_firmware_info(false, true);
