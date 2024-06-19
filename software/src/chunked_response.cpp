@@ -40,6 +40,14 @@ bool QueuedChunkedResponse::write_impl(const char *buf, size_t buf_size)
 
 void QueuedChunkedResponse::end(String error)
 {
+    {
+        std::lock_guard<std::mutex> guard(mutex);
+
+        if (has_ended) {
+            return;
+        }
+    }
+
     call([this, &error]{internal->end(error); is_running = false; return true;});
 
     {
@@ -54,15 +62,23 @@ void QueuedChunkedResponse::end(String error)
 
 String QueuedChunkedResponse::wait()
 {
-    std::unique_lock<std::mutex> lock(mutex, std::defer_lock_t());
+    std::unique_lock<std::mutex> lock(mutex, std::defer_lock_t()); // don't lock immediatly
 
     while (is_running) {
         lock.lock();
 
         if (!condition.wait_for(lock, std::chrono::milliseconds(timeout_ms), [this]{return have_function;})) {
-            lock.unlock();
+            String error = "condition timeout";
 
-            return "timeout";
+            internal->end(error);
+
+            end_error = error;
+            has_ended = true;
+
+            lock.unlock();
+            condition.notify_one();
+
+            return end_error;
         }
 
         result = function();
@@ -85,7 +101,13 @@ String QueuedChunkedResponse::wait()
 bool QueuedChunkedResponse::call(std::function<bool(void)> local_function)
 {
     std::unique_lock<std::mutex> lock(mutex);
-    condition.wait(lock, [this]{return !have_result;});
+    condition.wait(lock, [this]{return !have_result || has_ended;});
+
+    if (has_ended) {
+        lock.unlock();
+
+        return false;
+    }
 
     function = local_function;
     have_function = true;
@@ -94,7 +116,13 @@ bool QueuedChunkedResponse::call(std::function<bool(void)> local_function)
     condition.notify_one();
 
     lock.lock();
-    condition.wait(lock, [this]{return have_result;});
+    condition.wait(lock, [this]{return have_result || has_ended;});
+
+    if (has_ended) {
+        lock.unlock();
+
+        return false;
+    }
 
     bool local_result = result;
     have_result = false;
