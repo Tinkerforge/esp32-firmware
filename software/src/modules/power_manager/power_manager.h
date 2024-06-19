@@ -93,6 +93,14 @@ public:
     [[gnu::const]] size_t get_debug_line_length() const override;
     void get_debug_line(StringBuilder *sb) override;
 
+    struct mavg_filter {
+        int32_t  filtered_val       = INT32_MAX;
+        int32_t *mavg_values        = nullptr;
+        int32_t  mavg_total         = 0;
+        int32_t  mavg_values_count  = 0;
+        int32_t  mavg_position      = 0;
+    };
+
 private:
     class PhaseSwitcherBackendDummy final : public PhaseSwitcherBackend
     {
@@ -158,16 +166,20 @@ private:
 
     float    power_at_meter_raw_w                = NAN;
 
-    int32_t  power_at_meter_smooth_w             = INT32_MAX;
-    int32_t  power_at_meter_smooth_values_w[CURRENT_POWER_SMOOTHING_SAMPLES];
-    int32_t  power_at_meter_smooth_total         = 0;
-    int32_t  power_at_meter_smooth_position      = 0;
+    mavg_filter power_at_meter_smooth_w;
+    mavg_filter power_at_meter_filtered_w;
+    mavg_filter currents_at_meter_filtered_ma[3];
 
-    int32_t  power_at_meter_filtered_w           = INT32_MAX;
-    int32_t *power_at_meter_mavg_values_w        = nullptr;
-    int32_t  power_at_meter_mavg_total           = 0;
-    int32_t  power_at_meter_mavg_values_count    = 0;
-    int32_t  power_at_meter_mavg_position        = 0;
+    //int32_t  power_at_meter_smooth_w             = INT32_MAX;
+    //int32_t  power_at_meter_smooth_values_w[CURRENT_POWER_SMOOTHING_SAMPLES];
+    //int32_t  power_at_meter_smooth_total         = 0;
+    //int32_t  power_at_meter_smooth_position      = 0;
+
+    //int32_t  power_at_meter_filtered_w           = INT32_MAX;
+    //int32_t *power_at_meter_mavg_values_w        = nullptr;
+    //int32_t  power_at_meter_mavg_total           = 0;
+    //int32_t  power_at_meter_mavg_values_count    = 0;
+    //int32_t  power_at_meter_mavg_position        = 0;
 
     // CM data
     CurrentLimits *cm_limits;
@@ -175,13 +187,14 @@ private:
 
     // Config cache
     uint32_t default_mode             = 0;
-    bool     excess_charging_enable   = false;
+    bool     excess_charging_enabled  = false;
     uint32_t meter_slot_power         = UINT32_MAX;
     int32_t  target_power_from_grid_w = 0;
     uint32_t guaranteed_power_w       = 0;
     uint32_t phase_switching_mode     = 0;
     uint32_t switching_hysteresis_ms  = 0;
     bool     hysteresis_wear_ok       = false;
+    bool     dynamic_load_enabled     = false;
     int32_t  supply_cable_max_current_ma = 0;
     int32_t min_current_1p_ma         = 0;
     int32_t min_current_3p_ma         = 0;

@@ -228,12 +228,13 @@ void PowerManager::setup()
 
     // Cache config for energy update
     default_mode                = config.get("default_mode")->asUint();
-    excess_charging_enable      = config.get("excess_charging_enable")->asBool();
+    excess_charging_enabled     = config.get("excess_charging_enable")->asBool();
     meter_slot_power            = config.get("meter_slot_grid_power")->asUint();
     target_power_from_grid_w    = config.get("target_power_from_grid")->asInt();    // watt
     guaranteed_power_w          = config.get("guaranteed_power")->asUint();         // watt
     phase_switching_mode        = config.get("phase_switching_mode")->asUint();
     switching_hysteresis_ms     = debug_config.get("hysteresis_time")->asUint() * 60 * 1000;        // milliseconds (from minutes)
+    dynamic_load_enabled        = dynamic_load_config.get("enabled")->asBool();
     supply_cable_max_current_ma = static_cast<int32_t>(charge_manager.config.get("maximum_available_current")->asUint()); // milliampere
     min_current_1p_ma           = static_cast<int32_t>(charge_manager.config.get("minimum_current_1p")->asUint());        // milliampere
     min_current_3p_ma           = static_cast<int32_t>(charge_manager.config.get("minimum_current")->asUint());           // milliampere
@@ -249,8 +250,8 @@ void PowerManager::setup()
 #endif
     }
 
-    // Set up meter power filter.
-    uint32_t power_mavg_span_s;
+    // Prepare value count for mavg filters
+    size_t power_mavg_span_s;
     switch (config.get("cloud_filter_mode")->asUint()) {
         default:
         case CLOUD_FILTER_OFF:    power_mavg_span_s =   0; break;
@@ -258,12 +259,31 @@ void PowerManager::setup()
         case CLOUD_FILTER_MEDIUM: power_mavg_span_s = 240; break;
         case CLOUD_FILTER_STRONG: power_mavg_span_s = 480; break;
     }
+
+    size_t values_count;
     if (power_mavg_span_s <= 0) {
-        power_at_meter_mavg_values_count = 1;
+        values_count = 1;
     } else {
-        power_at_meter_mavg_values_count = static_cast<int32_t>(power_mavg_span_s * 1000 / PM_TASK_DELAY_MS);
+        values_count = power_mavg_span_s * 1000 / PM_TASK_DELAY_MS;
     }
-    power_at_meter_mavg_values_w = static_cast<int32_t *>(heap_caps_malloc_prefer(static_cast<size_t>(power_at_meter_mavg_values_count) * sizeof(power_at_meter_mavg_values_w[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT));
+
+    // Set up meter power filters if excess charging is enabled
+    if (excess_charging_enabled) {
+        power_at_meter_smooth_w.mavg_values_count = CURRENT_POWER_SMOOTHING_SAMPLES;
+        power_at_meter_smooth_w.mavg_values = static_cast<int32_t *>(heap_caps_malloc_prefer(CURRENT_POWER_SMOOTHING_SAMPLES * sizeof(power_at_meter_smooth_w.mavg_values[0]), 1, MALLOC_CAP_32BIT));
+
+        power_at_meter_filtered_w.mavg_values_count = static_cast<int32_t>(values_count);
+        power_at_meter_filtered_w.mavg_values = static_cast<int32_t *>(heap_caps_malloc_prefer(values_count * sizeof(power_at_meter_filtered_w.mavg_values[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT));
+    }
+
+    // Set up meter current filters if dynamic load management is enabled
+    if (dynamic_load_enabled) {
+        for (size_t i = 0; i < ARRAY_SIZE(currents_at_meter_filtered_ma); i++) {
+            mavg_filter *filter = currents_at_meter_filtered_ma + i;
+            filter->mavg_values_count = static_cast<int32_t>(values_count);
+            filter->mavg_values = static_cast<int32_t *>(heap_caps_malloc_prefer(values_count * sizeof(filter->mavg_values[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT));
+        }
+    }
 
     // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
     uint32_t hysteresis_min_ms = 10 * 1000;  // milliseconds
@@ -296,7 +316,7 @@ void PowerManager::setup()
         power_meter_available = true;
     }
 #endif
-    if (excess_charging_enable && !power_meter_available) {
+    if (excess_charging_enabled && !power_meter_available) {
         set_config_error(PM_CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK);
         logger.printfln("Excess charging enabled but configured meter can't provide power values.");
     }
@@ -493,6 +513,46 @@ void PowerManager::set_available_phases(uint32_t phases)
         logger.printfln("set_available_phases failed: %s", err.c_str());
 }
 
+static int32_t update_mavg_filter(int32_t filter_input, PowerManager::mavg_filter *filter)
+{
+    // Check if filter values need to be initialized
+    if (filter->filtered_val == INT32_MAX) {
+        int32_t values_count = filter->mavg_values_count;
+
+        filter->filtered_val = filter_input;
+        filter->mavg_total = filter_input * values_count;
+
+        int32_t *values = filter->mavg_values;
+        int32_t *values_end = values + values_count;
+        while (values < values_end) {
+            *values = filter_input;
+            values++;
+        }
+
+        return filter_input;
+    }
+
+    int32_t mavg_position = filter->mavg_position;
+
+    int32_t mavg_total = filter->mavg_total - filter->mavg_values[mavg_position] + filter_input;
+    filter->mavg_values[mavg_position] = filter_input;
+    filter->mavg_total = mavg_total;
+
+    mavg_position++;
+    if (mavg_position >= filter->mavg_values_count) {
+        mavg_position = 0;
+    }
+    filter->mavg_position = mavg_position;
+
+    // Signed division requires both numbers to be signed
+    static_assert(std::is_same<int32_t, decltype(filter->mavg_total       )>::value, "filter's mavg_total must be signed");
+    static_assert(std::is_same<int32_t, decltype(filter->mavg_values_count)>::value, "filter's mavg_values_count must be signed");
+
+    filter->filtered_val = mavg_total / filter->mavg_values_count;
+
+    return filter->filtered_val;
+}
+
 void PowerManager::update_data()
 {
     // Update states from back-end
@@ -509,67 +569,55 @@ void PowerManager::update_data()
 
     if (!isnan(power_at_meter_raw_w)) {
         low_level_state.get("power_at_meter")->updateFloat(power_at_meter_raw_w);
-        int32_t raw_power_w = static_cast<int32_t>(power_at_meter_raw_w);
 
-        // Filtered/smoothed values must not be modified anywhere else.
+        // Filter power value only when excess charging is enabled
+        if (excess_charging_enabled) {
+            int32_t raw_power_w = static_cast<int32_t>(power_at_meter_raw_w);
 
-        // Check if smooth values need to be initialized.
-        if (power_at_meter_smooth_w == INT32_MAX) {
-            for (int32_t i = 0; i < CURRENT_POWER_SMOOTHING_SAMPLES; i++) {
-                power_at_meter_smooth_values_w[i] = raw_power_w;
-            }
-            power_at_meter_smooth_total = raw_power_w * CURRENT_POWER_SMOOTHING_SAMPLES;
-        } else {
-            power_at_meter_smooth_total = power_at_meter_smooth_total - power_at_meter_smooth_values_w[power_at_meter_smooth_position] + raw_power_w;
-            power_at_meter_smooth_values_w[power_at_meter_smooth_position] = raw_power_w;
-            power_at_meter_smooth_position++;
-            if (power_at_meter_smooth_position >= CURRENT_POWER_SMOOTHING_SAMPLES)
-                power_at_meter_smooth_position = 0;
+            // Filtered/smoothed values must not be modified anywhere else
+
+            update_mavg_filter(raw_power_w, &power_at_meter_smooth_w);
+            int32_t filtered_w = update_mavg_filter(raw_power_w, &power_at_meter_filtered_w);
+
+            low_level_state.get("power_at_meter_filtered")->updateFloat(static_cast<float>(filtered_w));
         }
-
-        // Signed division requires both numbers to be signed.
-        static_assert(std::is_same<int32_t, decltype(power_at_meter_smooth_total)>::value, "power_at_meter_smooth_total must be signed");
-        power_at_meter_smooth_w = power_at_meter_smooth_total / CURRENT_POWER_SMOOTHING_SAMPLES;
-
-        // Check if filter values need to be initialized.
-        if (power_at_meter_filtered_w == INT32_MAX) {
-            for (int32_t i = 0; i < power_at_meter_mavg_values_count; i++) {
-                power_at_meter_mavg_values_w[i] = raw_power_w;
-            }
-            power_at_meter_mavg_total = raw_power_w * power_at_meter_mavg_values_count;
-        } else {
-            power_at_meter_mavg_total = power_at_meter_mavg_total - power_at_meter_mavg_values_w[power_at_meter_mavg_position] + raw_power_w;
-            power_at_meter_mavg_values_w[power_at_meter_mavg_position] = raw_power_w;
-            power_at_meter_mavg_position++;
-            if (power_at_meter_mavg_position >= power_at_meter_mavg_values_count)
-                power_at_meter_mavg_position = 0;
-        }
-
-        // Signed division requires both numbers to be signed.
-        static_assert(std::is_same<int32_t, decltype(power_at_meter_mavg_total       )>::value, "power_at_meter_mavg_total must be signed");
-        static_assert(std::is_same<int32_t, decltype(power_at_meter_mavg_values_count)>::value, "power_at_meter_mavg_values_count must be signed");
-        power_at_meter_filtered_w = power_at_meter_mavg_total / power_at_meter_mavg_values_count;
-
-        low_level_state.get("power_at_meter_filtered")->updateFloat(static_cast<float>(power_at_meter_filtered_w));
-    }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    TristateBool drawing_power = static_cast<TristateBool>(power_at_meter_raw_w > 0);
-    if (drawing_power != automation_drawing_power_last && boot_stage > BootStage::SETUP) {
-        automation.trigger(AutomationTriggerID::PMGridPowerDraw, nullptr, this);
-        automation_drawing_power_last = drawing_power;
-    }
-#endif
-
-    float currents[INDEX_CACHE_CURRENT_COUNT];
-    MeterValueAvailability ret = meters.get_currents(meter_slot_power, currents);
-    if (ret != MeterValueAvailability::Fresh) {
-        for (size_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
-            currents[i] = NAN;
+        TristateBool drawing_power = static_cast<TristateBool>(power_at_meter_raw_w > 0);
+        if (drawing_power != automation_drawing_power_last && boot_stage > BootStage::SETUP) {
+            automation.trigger(AutomationTriggerID::PMGridPowerDraw, nullptr, this);
+            automation_drawing_power_last = drawing_power;
         }
-        logger.printfln("currents from meter not fresh: %i", static_cast<int32_t>(ret));
-    } else {
-        logger.printfln("got currents %f %f %f", static_cast<double>(currents[0]), static_cast<double>(currents[1]), static_cast<double>(currents[2]));
+#endif
+    }
+
+    float meter_currents[INDEX_CACHE_CURRENT_COUNT];
+#if MODULE_METERS_AVAILABLE()
+    MeterValueAvailability ret = meters.get_currents(meter_slot_power, meter_currents);
+    if (ret != MeterValueAvailability::Fresh) {
+#else
+    if (true) {
+#endif
+        for (size_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
+            meter_currents[i] = NAN;
+        }
+    }
+
+    for (size_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
+        float meter_current_a = meter_currents[i];
+        if (!isnan(meter_current_a)) {
+            // TODO Store in low_level_state
+
+            if (dynamic_load_enabled) {
+                int32_t raw_current_ma = static_cast<int32_t>(meter_current_a * 1000);
+
+                // Filtered values must not be modified anywhere else
+
+                /*int32_t filtered_current_ma =*/ update_mavg_filter(raw_current_ma, &currents_at_meter_filtered_ma[i]);
+
+                // TODO Store in low_level_state
+            }
+        }
     }
 }
 
@@ -604,11 +652,14 @@ void PowerManager::update_energy()
     }
 
     int32_t p_error_w, p_error_filtered_w;
-    if (!excess_charging_enable) {
+    if (!excess_charging_enabled) {
         p_error_w          = 0;
         p_error_filtered_w = 0;
     } else {
-        if (power_at_meter_smooth_w == INT32_MAX) {
+        int32_t power_smooth_w   = power_at_meter_smooth_w.filtered_val;
+        int32_t power_filtered_w = power_at_meter_filtered_w.filtered_val;
+
+        if (power_smooth_w == INT32_MAX) {
             p_error_w          = INT32_MAX;
             p_error_filtered_w = INT32_MAX;
 
@@ -617,13 +668,13 @@ void PowerManager::update_energy()
                 printed_skipping_energy_update = true;
             }
         } else {
-            if (power_at_meter_filtered_w == INT32_MAX) {
+            if (power_filtered_w == INT32_MAX) {
                 logger.printfln("Uninitialized power_at_meter_filtered_w leaked");
                 return;
             }
 
-            p_error_w          = target_power_from_grid_w - power_at_meter_smooth_w;
-            p_error_filtered_w = target_power_from_grid_w - power_at_meter_filtered_w;
+            p_error_w          = target_power_from_grid_w - power_smooth_w;
+            p_error_filtered_w = target_power_from_grid_w - power_filtered_w;
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
             if (p_error_w > 200) {
