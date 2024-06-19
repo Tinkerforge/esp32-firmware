@@ -5,6 +5,7 @@ import sys
 import ctypes
 import ctypes.util
 import argparse
+import json
 
 
 class CryptoSignState(ctypes.Structure):
@@ -53,15 +54,16 @@ def main():
 
     args = parser.parse_args()
     directory = os.path.dirname(__file__)
-    public_key_filename = os.path.relpath(os.path.join(directory, 'signature_public_key.bin'))
+    public_key_filename = os.path.relpath(os.path.join(directory, 'signature_public_key.json'))
 
     try:
         with open(public_key_filename, 'rb') as f:
-            public_key = f.read()
+            public_key_json = json.loads(f.read())
     except Exception as e:
-        print(f'error: could not read public key {public_key_filename}: {e}')
+        print(f'error: could not read public key from {public_key_filename}: {e}')
         return 1
 
+    public_key = bytes.fromhex(public_key_json['public_key'])
     crypto_sign_PUBLICKEYBYTES = libsodium.crypto_sign_publickeybytes()
 
     if len(public_key) != crypto_sign_PUBLICKEYBYTES:
@@ -72,13 +74,20 @@ def main():
         with open(args.input_filename, 'rb') as f:
             input_data = bytearray(f.read())
     except Exception as e:
-        print(f'error: could not read input {args.input_filename}: {e}')
-        return
+        print(f'error: could not read input from {args.input_filename}: {e}')
+        return 1
 
     crypto_sign_BYTES = libsodium.crypto_sign_bytes()
     assert(crypto_sign_BYTES == 64)
 
     firmware_info_offset = 0xd000 - 0x1000
+    publisher_bytes = bytes(input_data[firmware_info_offset - crypto_sign_BYTES - 64:firmware_info_offset - crypto_sign_BYTES])
+
+    if publisher_bytes[0] == 0xff:
+        print('error: input file is not signed')
+        return 1
+
+    publisher = publisher_bytes.decode('utf-8').rstrip('\0')
     signature = bytes(input_data[firmware_info_offset - crypto_sign_BYTES:firmware_info_offset])
     input_data[firmware_info_offset - crypto_sign_BYTES:firmware_info_offset] = bytes([0xff] * crypto_sign_BYTES)
 
@@ -93,9 +102,10 @@ def main():
         return 1
 
     if libsodium.crypto_sign_final_verify(ctypes.byref(state), signature, public_key) < 0:
-        print('error: crypto_sign_final_verify failed')
+        print(f'error: signature is invalid, signed by {publisher}')
         return 1
 
+    print(f'success: signature is valid, signed by {publisher}')
     return 0
 
 

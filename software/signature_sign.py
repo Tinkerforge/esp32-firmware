@@ -5,6 +5,7 @@ import sys
 import ctypes
 import ctypes.util
 import argparse
+import json
 
 
 class CryptoSignState(ctypes.Structure):
@@ -49,24 +50,42 @@ def main():
         return 1
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--force', action='store_true')
     parser.add_argument('input_filename')
     parser.add_argument('output_filename')
 
     args = parser.parse_args()
 
     if os.path.exists(args.output_filename):
-        print(f'error: output {args.output_filename} already exists')
-        return 1
+        if args.force:
+            try:
+                os.remove(args.output_filename)
+            except Exception as e:
+                print(f'error: could not remove old output file {args.output_filename}: {e}')
+                return 1
+        else:
+            print(f'error: output file {args.output_filename} already exists')
+            return 1
 
     directory = os.path.dirname(__file__)
-    secret_key_filename = os.path.relpath(os.path.join(directory, 'signature_secret_key.bin'))
+    secret_key_filename = os.path.relpath(os.path.join(directory, 'signature_secret_key.json'))
 
     try:
         with open(secret_key_filename, 'rb') as f:
-            secret_key = f.read()
+            secret_key_json = json.loads(f.read())
     except Exception as e:
-        print(f'error: could not read secret key {secret_key_filename}: {e}')
+        print(f'error: could not read secret key from {secret_key_filename}: {e}')
         return 1
+
+    publisher = secret_key_json['publisher']
+    publisher_bytes = publisher.encode('utf-8')
+
+    if len(publisher_bytes) > 63:
+        print('error: publisher is too long')
+        return 1
+
+    publisher_bytes = publisher_bytes.ljust(64, b'\0')
+    secret_key = bytes.fromhex(secret_key_json['secret_key'])
 
     crypto_sign_SECRETKEYBYTES = libsodium.crypto_sign_secretkeybytes()
 
@@ -84,15 +103,18 @@ def main():
         with open(args.input_filename, 'rb') as f:
             input_data = bytearray(f.read())
     except Exception as e:
-        print(f'error: could not read input {args.input_filename}: {e}')
-        return 1
-
-    if libsodium.crypto_sign_update(ctypes.byref(state), bytes(input_data), len(input_data)) < 0:
-        print('error: crypto_sign_update failed')
+        print(f'error: could not read input from {args.input_filename}: {e}')
         return 1
 
     crypto_sign_BYTES = libsodium.crypto_sign_bytes()
     assert(crypto_sign_BYTES == 64)
+
+    firmware_info_offset = 0xd000 - 0x1000
+    input_data[firmware_info_offset - crypto_sign_BYTES - len(publisher_bytes):firmware_info_offset - crypto_sign_BYTES] = publisher_bytes
+
+    if libsodium.crypto_sign_update(ctypes.byref(state), bytes(input_data), len(input_data)) < 0:
+        print('error: crypto_sign_update failed')
+        return 1
 
     signature_buffer = ctypes.create_string_buffer(crypto_sign_BYTES)
 
@@ -100,16 +122,22 @@ def main():
         print('error: crypto_sign_final_create failed')
         return 1
 
-    firmware_info_offset = 0xd000 - 0x1000
     input_data[firmware_info_offset - crypto_sign_BYTES:firmware_info_offset] = signature_buffer.raw
 
     try:
-        with open(args.output_filename, 'wb') as f:
+        with open(args.output_filename + '.tmp', 'wb') as f:
             f.write(input_data)
     except Exception as e:
-        print(f'error: could not write output {args.output_filename}: {e}')
+        print(f'error: could not write output to {args.output_filename}.tmp: {e}')
         return 1
 
+    try:
+        os.replace(args.output_filename + '.tmp', args.output_filename)
+    except Exception as e:
+        print(f'error: could not rename output from {args.output_filename}.tmp to {args.output_filename}: {e}')
+        return 1
+
+    print(f'success: signed by {publisher}')
     return 0
 
 

@@ -185,16 +185,46 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                             return true;
                         }}
                         onUploadSuccess={() => util.postReboot(__("firmware_update.script.update_success"), __("util.reboot_text"))}
-                        onUploadError={error => {
-                            let message = "<unknown>";
+                        onUploadError={async (error) => {
+                            let message = null;
 
                             if (typeof error === "string") {
                                 message = error;
                             } else if (error instanceof XMLHttpRequest) {
-                                message = error.responseText.startsWith("firmware_update.") ? translate_unchecked(error.responseText) : (error.responseText ?? error.response);
+                                if (error.status == 406) {
+                                    let response = JSON.parse(error.responseText);
+                                    const modal = util.async_modal_ref.current;
+
+                                    if (!await modal.show({
+                                            title: __("firmware_update.content.wrong_signature_title"),
+                                            body: __("firmware_update.content.wrong_signature_body")(response.actual_publisher, response.expected_publisher),
+                                            no_text: __("firmware_update.content.abort_update"),
+                                            yes_text: __("firmware_update.content.confirm_override"),
+                                            no_variant: "secondary",
+                                            yes_variant: "danger",
+                                        })) {
+                                        return;
+                                    }
+
+                                    try {
+                                        await API.call("firmware_update/override_signature", {cookie: response.cookie}, __("firmware_update.script.update_fail"));
+                                    }
+                                    catch {
+                                        return;
+                                    }
+
+                                    util.postReboot(__("firmware_update.script.update_success"), __("util.reboot_text"));
+                                    return;
+                                }
+                                else {
+                                    message = error.responseText.startsWith("firmware_update.") ? translate_unchecked(error.responseText) : (error.responseText ?? error.response);
+                                }
                             }
 
-                            util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), message);
+                            if (message != null) {
+                                util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), message);
+                            }
+
                             util.resumeWebSockets();
                         }}
                     />

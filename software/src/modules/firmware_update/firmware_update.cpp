@@ -28,6 +28,8 @@
 #include "tools.h"
 #include "build.h"
 #include "web_server.h"
+#include "TFJson.h"
+#include "signature_publisher.embedded.h"
 
 #include "./crc32.h"
 
@@ -37,7 +39,13 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
 
-#define SIGNATURE_LENGTH crypto_sign_BYTES
+#define SIGNATURE_DATA_LENGTH crypto_sign_BYTES
+#define SIGNATURE_DATA_OFFSET (FIRMWARE_INFO_OFFSET - SIGNATURE_DATA_LENGTH)
+
+#define SIGNATURE_PUBLISHER_LENGTH 64
+#define SIGNATURE_PUBLISHER_OFFSET (FIRMWARE_INFO_OFFSET - SIGNATURE_DATA_OFFSET - SIGNATURE_PUBLISHER_LENGTH)
+
+#define SIGNATURE_LENGTH (SIGNATURE_PUBLISHER_LENGTH + SIGNATURE_DATA_LENGTH)
 #define SIGNATURE_OFFSET (FIRMWARE_INFO_OFFSET - SIGNATURE_LENGTH)
 
 // The firmware files are merged with the bootloader, partition table, firmware_info and slot configuration bins.
@@ -89,6 +97,10 @@ void FirmwareUpdate::pre_setup()
 
         return "";
     }};
+
+    override_signature = ConfigRoot{Config::Object({
+        {"cookie", Config::Uint32(0)},
+    })};
 }
 
 void FirmwareUpdate::setup()
@@ -115,6 +127,7 @@ void FirmwareUpdate::setup()
 #if signature_public_key_length != 0
 void FirmwareUpdate::handle_signature_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len)
 {
+    // cache signature name an data
     if (chunk_offset + chunk_len < SIGNATURE_OFFSET || chunk_offset >= SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
         return;
     }
@@ -129,9 +142,23 @@ void FirmwareUpdate::handle_signature_chunk(size_t chunk_offset, uint8_t *chunk_
     }
 
     len = MIN(len, (SIGNATURE_OFFSET + SIGNATURE_LENGTH) - chunk_offset);
+    size_t offset = MAX(chunk_offset, SIGNATURE_OFFSET) - SIGNATURE_OFFSET;
 
-    memcpy(signature_data + MAX(chunk_offset, SIGNATURE_OFFSET) - SIGNATURE_OFFSET, start, len);
-    memset(start, 0xFF, len);
+    memcpy(((uint8_t *)&signature) + offset, start, len);
+
+    // clear signature data
+    if (chunk_offset + chunk_len >= SIGNATURE_DATA_OFFSET && chunk_offset < SIGNATURE_DATA_OFFSET + SIGNATURE_DATA_LENGTH) {
+        start = chunk_data;
+        len = chunk_len;
+
+        if (chunk_offset < SIGNATURE_DATA_OFFSET) {
+            size_t to_skip = SIGNATURE_DATA_OFFSET - chunk_offset;
+            start += to_skip;
+            len -= to_skip;
+        }
+
+        memset(start, 0xFF, len);
+    }
 }
 #endif
 
@@ -242,11 +269,18 @@ String FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log)
     return "";
 }
 
-bool FirmwareUpdate::handle_firmware_chunk(std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len, size_t remaining, size_t complete_len) {
+bool FirmwareUpdate::handle_firmware_chunk(std::function<void(uint16_t code, const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len, size_t remaining, size_t complete_len) {
     if (chunk_offset == 0) {
+#if signature_public_key_length != 0
+        if (signature_override_cookie != 0) {
+            signature_override_cookie = 0;
+            Update.abort();
+        }
+#endif
+
         if (!Update.begin(complete_len - FIRMWARE_OFFSET, U_FLASH)) {
             logger.printfln("Failed to start update: %s", Update.errorString());
-            result_cb("text/plain", Update.errorString());
+            result_cb(400, "text/plain", Update.errorString());
             Update.abort();
             return false;
         }
@@ -257,12 +291,13 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(const char *, cons
         if (sodium_init() < 0 || crypto_sign_init(&signature_state) < 0) {
             const char *message = "Failed to initialize signature verification";
             logger.printfln(message);
-            result_cb("text/plain", message);
+            result_cb(400, "text/plain", message);
             Update.abort();
             return false;
         }
 
-        memset(signature_data, 0xFF, SIGNATURE_LENGTH);
+        memset(signature.publisher, 0x00, sizeof(signature.publisher));
+        memset(signature.data, 0xFF, sizeof(signature.data));
 #endif
     }
 
@@ -272,7 +307,7 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(const char *, cons
     if (crypto_sign_update(&signature_state, chunk_data, chunk_len) < 0) {
         const char *message = "Failed to process signature verification";
         logger.printfln(message);
-        result_cb("text/plain", message);
+        result_cb(400, "text/plain", message);
         Update.abort();
         return false;
     }
@@ -283,7 +318,7 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(const char *, cons
     if (chunk_offset + chunk_len >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
         String error = this->check_firmware_info(false, true);
         if (!error.isEmpty()) {
-            result_cb("application/json", error.c_str());
+            result_cb(400, "application/json", error.c_str());
             Update.abort();
             return false;
         }
@@ -305,25 +340,50 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(const char *, cons
     auto written = Update.write(start, len);
     if (written != len) {
         logger.printfln("Failed to write update chunk with length %u; written %u, error: %s", len, written, Update.errorString());
-        result_cb("text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
+        result_cb(400, "text/plain", (String("Failed to write update: ") + Update.errorString()).c_str());
         Update.abort();
         return false;
     }
 
     if (remaining == 0) {
 #if signature_public_key_length != 0
-        if (crypto_sign_final_verify(&signature_state, signature_data, signature_public_key_data) < 0) {
-            const char *message = "Failed to verify signature";
-            logger.printfln(message);
-            result_cb("text/plain", message);
-            Update.abort();
+        signature.publisher[SIGNATURE_PUBLISHER_LENGTH - 1] = '\0';
+
+        if (crypto_sign_final_verify(&signature_state, signature.data, signature_public_key_data) < 0) {
+            signature_override_cookie = esp_random();
+
+            if (signature_override_cookie == 0) {
+                signature_override_cookie = 1;
+            }
+
+            char buf[128];
+            TFJsonSerializer json{buf, sizeof(buf)};
+
+            json.addObject();
+
+            if (signature.publisher[0] == 0xff) {
+                json.addMemberNull("actual_publisher");
+            }
+            else {
+                json.addMemberString("actual_publisher", signature.publisher);
+            }
+
+            json.addMemberString("expected_publisher", signature_publisher_data);
+            json.addMemberNumber("cookie", signature_override_cookie);
+            json.endObject();
+            json.end();
+
+            logger.printfln("Failed to verify signature");
+            result_cb(406, "application/json", buf);
             return false;
         }
+
+        logger.printfln("Update signed by %s", signature.publisher);
 #endif
 
         if (!Update.end(true)) {
             logger.printfln("Failed to apply update: %s", Update.errorString());
-            result_cb("text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str());
+            result_cb(400, "text/plain", (String("Failed to apply update: ") + Update.errorString()).c_str());
             Update.abort();
             return false;
         }
@@ -345,6 +405,40 @@ void FirmwareUpdate::register_urls()
         String version = install_firmware.get("version")->asString();
 
         logger.printfln("Install %s", version.c_str());
+    }, true);
+
+    api.addCommand("firmware_update/override_signature", &override_signature, {}, [this](String &result) {
+#if signature_public_key_length != 0
+        if (signature_override_cookie == 0) {
+            result = "No update pending";
+            return;
+        }
+
+        uint32_t cookie = override_signature.get("cookie")->asUint();
+
+        if (signature_override_cookie != cookie) {
+            result = "Wrong signature override cookie";
+            return;
+        }
+
+        logger.printfln("Overriding failed signature verification");
+
+        signature_override_cookie = 0;
+
+        if (!Update.end(true)) {
+            logger.printfln("Failed to apply update: %s", Update.errorString());
+            result = String("Failed to apply update: ") + Update.errorString();
+            Update.abort();
+            return;
+        }
+
+        if(!Update.hasError()) {
+            logger.printfln("Firmware flashed successfully! Rebooting in one second.");
+            task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);
+        }
+#else
+        result = "Signature verification is disabled";
+#endif
     }, true);
 
     server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request) {
@@ -390,13 +484,13 @@ void FirmwareUpdate::register_urls()
             task_scheduler.scheduleOnce([](){ESP.restart();}, 1000);
         }
 
-        return request.send(Update.hasError() ? 400: 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
+        return request.send(Update.hasError() ? 400 : 200, "text/plain", Update.hasError() ? Update.errorString() : "Update OK");
     },
     [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
         WebServerRequest *request_ptr = &request;
 
-        return handle_firmware_chunk([request_ptr](const char *mimetype, const char *message) {
-            request_ptr->send(400, mimetype, message);
+        return handle_firmware_chunk([request_ptr](uint16_t code, const char *mimetype, const char *message) {
+            request_ptr->send(code, mimetype, message);
         }, offset, data, len, remaining, request.contentLength());
     });
 }

@@ -17,3 +17,7 @@ export interface check_for_update {
 export interface install_firmware {
     version: string,
 }
+
+export interface override_signature {
+    cookie: number,
+}

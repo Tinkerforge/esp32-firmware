@@ -50,7 +50,7 @@ public:
     void handle_update_data(const void *data, size_t data_len);
 
 private:
-    bool handle_firmware_chunk(std::function<void(const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_length, size_t remaining, size_t complete_len);
+    bool handle_firmware_chunk(std::function<void(uint16_t, const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_length, size_t remaining, size_t complete_len);
 #if signature_public_key_length != 0
     void handle_signature_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len);
 #endif
@@ -72,6 +72,7 @@ private:
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot install_firmware;
+    ConfigRoot override_signature;
 
     firmware_info_t info;
     uint32_t info_offset = 0;
@@ -81,8 +82,14 @@ private:
     bool info_found = false;
 
 #if signature_public_key_length != 0
+    struct signature_t {
+        char publisher[64] = {0};
+        unsigned char data[crypto_sign_BYTES] = {0};
+    };
+
     crypto_sign_state signature_state;
-    unsigned char signature_data[crypto_sign_BYTES];
+    signature_t signature;
+    uint32_t signature_override_cookie = 0;
 #endif
 
     String update_url;
