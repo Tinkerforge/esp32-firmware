@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "event_log.h"
+
 void QueuedChunkedResponse::begin(bool success)
 {
     call([this, success]{internal->begin(success); return true;});
@@ -68,7 +70,7 @@ String QueuedChunkedResponse::wait()
         lock.lock();
 
         if (!condition.wait_for(lock, std::chrono::milliseconds(timeout_ms), [this]{return have_function;})) {
-            String error = "condition timeout";
+            String error = "condition timeout, no function";
 
             internal->end(error);
 
@@ -92,7 +94,11 @@ String QueuedChunkedResponse::wait()
     }
 
     lock.lock();
-    condition.wait(lock, [this]{return has_ended;});
+
+    if (!condition.wait_for(lock, std::chrono::seconds(10), [this]{return has_ended;})) {
+        end_error = "condition timeout, not ended";
+    }
+
     lock.unlock();
 
     return end_error;
@@ -101,7 +107,13 @@ String QueuedChunkedResponse::wait()
 bool QueuedChunkedResponse::call(std::function<bool(void)> local_function)
 {
     std::unique_lock<std::mutex> lock(mutex);
-    condition.wait(lock, [this]{return !have_result || has_ended;});
+
+    if (!condition.wait_for(lock, std::chrono::seconds(10), [this]{return !have_result || has_ended;})) {
+        lock.unlock();
+        logger.printfln("Condition timeout, has result or not ended");
+
+        return false;
+    }
 
     if (has_ended) {
         lock.unlock();
@@ -116,7 +128,13 @@ bool QueuedChunkedResponse::call(std::function<bool(void)> local_function)
     condition.notify_one();
 
     lock.lock();
-    condition.wait(lock, [this]{return have_result || has_ended;});
+
+    if (!condition.wait_for(lock, std::chrono::seconds(10), [this]{return have_result || has_ended;})) {
+        lock.unlock();
+        logger.printfln("Condition timeout, no result or did not ended");
+
+        return false;
+    }
 
     if (has_ended) {
         lock.unlock();
