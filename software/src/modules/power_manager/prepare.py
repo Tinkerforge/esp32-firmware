@@ -21,8 +21,8 @@ from software import util
 import re
 
 debug_log_variables = [
-    "power_at_meter_smooth_w",
-    "power_at_meter_filtered_w",
+    "power_at_meter_smooth_w.filtered_val",
+    "power_at_meter_filtered_w.filtered_val",
     "power_available_w",
     "power_available_filtered_w",
     #"charge_manager_available_current_ma",
@@ -40,7 +40,7 @@ debug_log_variables = [
     ##"wants_on_last",
     "",
     "charging_blocked.combined",
-    "excess_charging_enable",
+    "excess_charging_enabled",
     ##"just_switched_phases",
     ##"uptime_past_hysteresis",
     ##"switching_state",
