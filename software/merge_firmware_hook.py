@@ -82,7 +82,7 @@ env.AddPostAction(
     ), f"Merging firmware.bin -> build/{firmware_basename}_merged.bin")
 )
 
-if os.path.exists(env.subst("$PROJECT_DIR/signature_secret_key.bin")):
+if os.path.exists(env.subst("$PROJECT_DIR/signature_secret_key.json")):
     signed_firmware_basename = firmware_basename.replace('-UNSIGNED', '')
 
     env.AddPostAction(
