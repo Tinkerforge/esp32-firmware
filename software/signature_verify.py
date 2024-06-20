@@ -102,10 +102,10 @@ def main():
         return 1
 
     if libsodium.crypto_sign_final_verify(ctypes.byref(state), signature, public_key) < 0:
-        print(f'error: signature is invalid, signed by {publisher}')
+        print(f'error: signature is NOT valid, signed by {repr(publisher)}')
         return 1
 
-    print(f'success: signature is valid, signed by {publisher}')
+    print(f'success: signature is valid, signed by {repr(publisher)}')
     return 0
 
 

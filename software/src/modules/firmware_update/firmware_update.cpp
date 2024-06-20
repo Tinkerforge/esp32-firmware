@@ -29,7 +29,6 @@
 #include "build.h"
 #include "web_server.h"
 #include "TFJson.h"
-#include "signature_publisher.embedded.h"
 
 #include "./crc32.h"
 
@@ -368,7 +367,7 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(uint16_t code, con
                 json.addMemberString("actual_publisher", signature.publisher);
             }
 
-            json.addMemberString("expected_publisher", signature_publisher_data);
+            json.addMemberString("expected_publisher", signature_publisher);
             json.addMemberNumber("cookie", signature_override_cookie);
             json.endObject();
             json.end();

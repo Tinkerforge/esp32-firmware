@@ -137,7 +137,7 @@ def main():
         print(f'error: could not rename output from {args.output_filename}.tmp to {args.output_filename}: {e}')
         return 1
 
-    print(f'success: signed by {publisher}')
+    print(f'success: signed by {repr(publisher)}')
     return 0
 
 

@@ -37,8 +37,8 @@ def load_libsodium():
 
 def publisher_type(value):
     # limit to 63 to ensure NUL-termination
-    if re.match(r'^[A-Za-z0-9,\. _-]{1,63}$', value) == None:
-        raise argparse.ArgumentTypeError('publisher is malformed')
+    if len(value.encode('utf-8')) > 63:
+        raise argparse.ArgumentTypeError('publisher is too long')
 
     return value
 
@@ -121,7 +121,7 @@ def main():
         print(f'error: could not rename secret key from {secret_key_filename}.tmp to {secret_key_filename}: {e}')
         return 1
 
-    print(f'success: signature keys created for {args.publisher}')
+    print(f'success: signature keys created for {repr(args.publisher)}')
     return 0
 
 
