@@ -25,12 +25,12 @@
 
 struct cm_state_v1;
 struct cm_state_v2;
+struct cm_state_v3;
 
 int allocate_current(
         const CurrentAllocatorConfig *cfg,
         const bool seen_all_chargers,
-        const uint32_t pv_excess_current,
-        const int phases_available,
+        CurrentLimits *limits,
         const bool cp_disconnect_requested,
         const ChargerState *charger_state,
         const char * const *hosts,
@@ -45,6 +45,7 @@ bool update_from_client_packet(
     uint8_t client_id,
     cm_state_v1 *v1,
     cm_state_v2 *v2,
+    cm_state_v3 *v3,
     const CurrentAllocatorConfig *cfg,
     ChargerState *charger_state,
     ChargerAllocationState *charger_allocation_state,

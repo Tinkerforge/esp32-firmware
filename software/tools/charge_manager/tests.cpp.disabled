@@ -485,8 +485,7 @@ stage_fn *stages[] = {
     stage_4,
     stage_5,
     stage_6,
-    stage_7,
-    stage_8
+    stage_7
 };
 
 void run_stage_fn(int stage, int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, CurrentLimits *limits_cpy, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {

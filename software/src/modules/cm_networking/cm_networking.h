@@ -34,6 +34,7 @@
 
 struct cm_state_v1;
 struct cm_state_v2;
+struct cm_state_v3;
 
 class CMNetworking final : public IModule
 {
@@ -46,12 +47,12 @@ public:
 
     void register_manager(const char *const *const hosts,
                           int charger_count,
-                          std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *)> manager_callback,
+                          std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *)> manager_callback,
                           std::function<void(uint8_t, uint8_t)> manager_error_callback);
 
-    bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested);
+    bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases);
 
-    void register_client(std::function<void(uint16_t, bool)> client_callback);
+    void register_client(std::function<void(uint16_t, bool, int8_t)> client_callback);
     bool send_client_update(uint32_t esp32_uid,
                             uint8_t iec61851_state,
                             uint8_t charger_state,

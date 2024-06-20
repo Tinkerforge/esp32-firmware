@@ -29,8 +29,8 @@
 #define CHARGE_MANAGEMENT_PORT (CHARGE_MANAGER_PORT + 1)
 
 // Increment when changing packet structs
-#define CM_COMMAND_VERSION 1
-#define CM_STATE_VERSION 2
+#define CM_COMMAND_VERSION 2
+#define CM_STATE_VERSION 3
 
 // Minimum protocol version supported
 #define CM_COMMAND_VERSION_MIN 1
@@ -61,24 +61,40 @@ static_assert(CM_PACKET_HEADER_LENGTH == 8, "Unexpected CM_PACKET_HEADER_LENGTH"
 struct cm_command_v1 {
     uint16_t allocated_current;
     /* command_flags
-    bit 6 - control pilot permanently disconnected
-    Other bits must be sent unset and ignored on reception.
+    bit 6    - control pilot permanently disconnected
     */
     uint8_t command_flags;
-    uint8_t padding;
+    uint8_t _padding;
+};
+
+struct cm_command_v2 {
+    uint16_t _padding_0;
+    uint8_t _padding_1;
+    int8_t allocated_phases; // Was padding in CM_COMMAND_VERSION 1
 };
 
 #define CM_COMMAND_V1_LENGTH (sizeof(cm_command_v1))
 static_assert(CM_COMMAND_V1_LENGTH == 4, "Unexpected CM_COMMAND_V1_LENGTH");
 
+#define CM_COMMAND_V2_LENGTH (sizeof(cm_command_v2))
+static_assert(CM_COMMAND_V2_LENGTH == 4, "Unexpected CM_COMMAND_V2_LENGTH");
+static_assert(sizeof(cm_command_v1::_padding) == sizeof(cm_command_v2::allocated_phases), "Unexpected size of cm_command_v2.phases");
+static_assert(offsetof(cm_command_v1, _padding) == offsetof(cm_command_v2, allocated_phases), "Unexpected offset of cm_command_v2.phases");
+
 struct cm_command_packet {
     cm_packet_header header;
-    cm_command_v1 v1;
+    union {
+        cm_command_v1 v1;
+        cm_command_v2 v2;
+    };
 };
 
 #define CM_COMMAND_PACKET_LENGTH (sizeof(cm_command_packet))
 static_assert(CM_COMMAND_PACKET_LENGTH == 12, "Unexpected CM_COMMAND_PACKET_LENGTH");
 
+#define CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS 7
+#define CM_FEATURE_FLAGS_PHASE_SWITCH_MASK (1 << CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS)
+#define CM_FEATURE_FLAGS_PHASE_SWITCH_IS_SET(FLAGS) (((FLAGS) & CM_FEATURE_FLAGS_PHASE_SWITCH_MASK) != 0)
 #define CM_FEATURE_FLAGS_CP_DISCONNECT_BIT_POS 6
 #define CM_FEATURE_FLAGS_CP_DISCONNECT_MASK (1 << CM_FEATURE_FLAGS_CP_DISCONNECT_BIT_POS)
 #define CM_FEATURE_FLAGS_CP_DISCONNECT_IS_SET(FLAGS) (((FLAGS) & CM_FEATURE_FLAGS_CP_DISCONNECT_MASK) != 0)
@@ -134,6 +150,7 @@ static_assert(CM_COMMAND_PACKET_LENGTH == 12, "Unexpected CM_COMMAND_PACKET_LENG
 
 struct cm_state_v1 {
     /* feature_flags
+    bit 7 - has phase_switch
     bit 6 - has cp_disconnect
     bit 5 - has evse
     bit 4 - has nfc
@@ -182,11 +199,28 @@ struct cm_state_v2 {
 #define CM_STATE_V2_LENGTH (sizeof(cm_state_v2))
 static_assert(CM_STATE_V2_LENGTH == 4, "Unexpected CM_STATE_V2_LENGTH");
 
+struct cm_state_v3 {
+    // bit 2: can switch phases now
+    // bit 0-1: phases "connected"
+    uint8_t phases;
+    uint8_t padding[3];
+};
+
+#define CM_STATE_V3_CAN_PHASE_SWITCH_BIT_POS 2
+#define CM_STATE_V3_CAN_PHASE_SWITCH_MASK (1 << CM_STATE_V3_CAN_PHASE_SWITCH_BIT_POS)
+#define CM_STATE_V3_CAN_PHASE_SWITCH_IS_SET(PHASES) (((PHASES) & CM_STATE_FLAGS_L3_ACTIVE_MASK) != 0)
+#define CM_STATE_V3_PHASES_CONNECTED_MASK 0x03
+#define CM_STATE_V3_PHASES_CONNECTED_GET(PHASES) ((PHASES) & CM_STATE_V3_PHASES_CONNECTED_MASK)
+
+#define CM_STATE_V3_LENGTH (sizeof(cm_state_v3))
+static_assert(CM_STATE_V3_LENGTH == 4, "Unexpected CM_STATE_V3_LENGTH");
+
 struct cm_state_packet {
     cm_packet_header header;
     cm_state_v1 v1;
     cm_state_v2 v2;
+    cm_state_v3 v3;
 };
 
 #define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
-static_assert(CM_STATE_PACKET_LENGTH == 84, "Unexpected CM_STATE_PACKET_LENGTH");
+static_assert(CM_STATE_PACKET_LENGTH == 88, "Unexpected CM_STATE_PACKET_LENGTH");

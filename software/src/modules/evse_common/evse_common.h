@@ -124,8 +124,9 @@ class EvseCommon final : public IModule
     friend class EVSE;
     friend class EVSEV2;
 
-private:
+public: // We need to access the backend in cm_networking for the phase switch. FIXME: Let EvseCommon implement PhaseSwitcherBackend instead.
     IEvseBackend *backend = nullptr;
+private:
     unsigned long last_external_update = 0;
 
 public:
