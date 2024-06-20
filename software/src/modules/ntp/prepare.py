@@ -1,15 +1,10 @@
-#!/usr/bin/env python3
-
 import sys
-import argparse
+import importlib.util
+import importlib.machinery
 import json
 import os
 import datetime
 from collections import OrderedDict
-
-import sys
-import importlib.util
-import importlib.machinery
 
 software_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
