@@ -19,7 +19,10 @@ let x = {
             "abort_downgrade": "Abort",
             "confirm_downgrade": "Downgrade firmware",
             "wrong_signature_title": "Signature mismatch",
-            "wrong_signature_body": /*FFN*/(actual_publisher: string, expected_publisher: string) => actual_publisher == null ? <>Firmware file was <strong>not</strong> provided by <span style="font-style: italic;">{expected_publisher}</span> and is <strong>not</strong> to be trusted!</> : <>Unexpectedly, the firmware file was provided by <span style="font-style: italic;">{actual_publisher}</span>, instead of <span style="font-style: italic;">{expected_publisher}</span>!</>/*NF*/,
+            "wrong_signature_body": /*FFN*/(actual_publisher: string, expected_publisher: string) =>
+                <>The firmware file was <strong>not</strong> published by <span class="text-success">{expected_publisher}</span>
+                {actual_publisher == null ? <> and is <strong>not</strong>to be trusted</> : <>, but supposedly by <span class="text-danger">{actual_publisher}</span> instead</>}!
+                The publisher <span class="text-success">{expected_publisher}</span> does not <strong>warrant</strong> the security and functionality of this unknown firmware!</>/*NF*/,
             "abort_update": "Abort",
             "confirm_override": "Install firmware anyway",
             "check_for_update": "Check for update",
