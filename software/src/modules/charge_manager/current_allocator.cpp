@@ -174,6 +174,10 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
 
     int matched = 0;
 
+    // Work on copy of idx_array so that this function can be called in stages without destroying their sort order.
+    int idx_array[MAX_CONTROLLED_CHARGERS];
+    memcpy(idx_array, idx_array_const, sizeof(idx_array));
+
     filter(allocated_phases > 0);
 
     for (int i = 0; i < matched; ++i) {
@@ -511,7 +515,6 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         const auto *state = &charger_state[idx_array[i]];
         auto allocated_phases = phase_allocation[idx_array[i]];
 
-
         Cost new_cost = Cost{3 * min_3p - min_1p, min_3p, min_3p, min_3p};
         Cost new_enable_cost = Cost{3 * ena_3p - ena_1p, ena_3p, ena_3p, ena_3p};
 
@@ -531,7 +534,6 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
             continue;
 
         phase_allocation[idx_array[i]] = 3;
-        // FIXME: this will resort the idx_array!
         calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
         wnd_min = ca_state->control_window_min;
         wnd_max = ca_state->control_window_max;
