@@ -71,7 +71,7 @@ def main():
     secret_key_filename = os.path.relpath(os.path.join(directory, 'signature_secret_key.json'))
 
     try:
-        with open(secret_key_filename, 'rb') as f:
+        with open(secret_key_filename, 'r', encoding='utf-8') as f:
             secret_key_json = json.loads(f.read())
     except Exception as e:
         print(f'error: could not read secret key from {secret_key_filename}: {e}')

@@ -94,7 +94,7 @@ def main():
     public_key_json = json.dumps({'publisher': args.publisher, 'public_key': public_key_buffer.raw.hex()})
 
     try:
-        with open(public_key_filename + '.tmp', 'w') as f:
+        with open(public_key_filename + '.tmp', 'w', encoding='utf-8') as f:
             f.write(public_key_json + '\n')
     except Exception as e:
         print(f'error: could not write public key to {public_key_filename}.tmp: {e}')
@@ -109,7 +109,7 @@ def main():
     secret_key_json = json.dumps({'publisher': args.publisher, 'secret_key': secret_key_buffer.raw.hex()})
 
     try:
-        with open(secret_key_filename + '.tmp', 'w') as f:
+        with open(secret_key_filename + '.tmp', 'w', encoding='utf-8') as f:
             f.write(secret_key_json + '\n')
     except Exception as e:
         print(f'error: could not write secret key to {secret_key_filename}.tmp: {e}')

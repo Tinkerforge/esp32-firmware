@@ -57,7 +57,7 @@ def main():
     public_key_filename = os.path.relpath(os.path.join(directory, 'signature_public_key.json'))
 
     try:
-        with open(public_key_filename, 'rb') as f:
+        with open(public_key_filename, 'r', encoding='utf-8') as f:
             public_key_json = json.loads(f.read())
     except Exception as e:
         print(f'error: could not read public key from {public_key_filename}: {e}')
