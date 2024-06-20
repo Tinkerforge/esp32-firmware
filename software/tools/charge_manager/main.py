@@ -120,18 +120,14 @@ class CurrentLimits:
     raw: Cost = field(default_factory=Cost)
     filtered: Cost = field(default_factory=Cost)
 
-def cost_exceeds_limits(cost: Cost, limits: CurrentLimits, stage: int, stage_1_2_hysteresis_elapsed: bool = False) -> bool:
+def cost_exceeds_limits(cost: Cost, limits: CurrentLimits, stage: int) -> bool:
     phases_exceeded = any([limits.raw[x] < cost[x] for x in range(1, 4)])
     phases_filtered_exceeded = any([limits.filtered[x] < cost[x] for x in range(1, 4)])
     pv_excess_exceeded = limits.raw.pv < cost.pv
     pv_excess_filtered_exceeded = limits.filtered.pv < cost.pv
 
-    if stage in (1, 2):
-        return phases_exceeded or (stage_1_2_hysteresis_elapsed and pv_excess_exceeded and pv_excess_filtered_exceeded)
-    if stage in (3, 4, 7, 8):
+    if stage in (6, 7):
         return phases_exceeded or pv_excess_exceeded
-    if stage in (5, 6, 9):
-        return phases_exceeded or phases_filtered_exceeded or pv_excess_exceeded or pv_excess_filtered_exceeded
 
     raise Exception("unknown stage")
 
@@ -163,14 +159,12 @@ class ChargerState:
 class CurrentAllocatorConfig:
     minimum_current_3p: int
     minimum_current_1p: int
-    enable_current: int
     enable_current_factor: float = 1.5
 
 @dataclass
 class CurrentAllocatorState:
     global_hysteresis_elapsed: bool
     reset_global_hysteresis: bool
-    allocated_minimum_current_packets: Cost
 
     _last_global_hysteresis_reset: int = -GLOBAL_HYSTERESIS - 1
     _control_window_min: Cost = field(default_factory=Cost)
@@ -270,9 +264,10 @@ def stage_2(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
 
         # only 1p unknown rotated chargers left
 
+        current = state.supported_current
         for i in range(1, 4):
             avail_on_phase = min(limits.raw[i], limits.filtered[i]) - wnd_max[i]
-        current = min(state.supported_current, avail_on_phase)
+            current = min(current, avail_on_phase)
 
         wnd_max += Cost(current,
                         current,
@@ -376,12 +371,14 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
     ena_1p = min_1p * cfg.enable_current_factor
     ena_3p = min_3p * cfg.enable_current_factor
 
-    def can_activate(new_cost, new_enable_cost):
+    def can_activate(new_cost, new_enable_cost, is_unknown_rotated_1p_3p_switch=False):
         for i in range(1, 4):
             if new_cost[i] > 0 and wnd_max[i] < limits.raw[i] and wnd_max[i] < limits.filtered[i]:
                 break
         else:
-            if new_cost.pv == 0 or all(wnd_max[i] == limits.raw[i] and wnd_max[i] == limits.filtered[i] for i in range(1, 4) if new_cost[i] > 0):
+            # if new_cost.pv <= 0 or all(wnd_max[i] == limits.raw[i] and wnd_max[i] == limits.filtered[i] for i in range(1, 4) if new_cost[i] > 0):
+            enable = is_unknown_rotated_1p_3p_switch and new_cost.pv >= 0 and wnd_max.pv < limits.raw.pv and wnd_max.pv < limits.filtered.pv
+            if not enable:
                 return False
 
         limit_exceeded = False
@@ -433,6 +430,7 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
         wnd_min = ca_state._control_window_min
         wnd_max = ca_state._control_window_max
 
+    # FIXME: This will _only_ switch chargers to three-phase that were not active before!
     for state in cs:
         if state._phase_allocation != 1 or not state.phase_switch_supported:
             continue
@@ -450,7 +448,7 @@ def stage_4(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
             new_cost[phase] -= min_1p
             new_enable_cost[phase] -= ena_1p
 
-        if not can_activate(new_cost, new_enable_cost):
+        if not can_activate(new_cost, new_enable_cost, is_unknown_rotated_1p_3p_switch=True):
             continue
 
         state._phase_allocation = 3
@@ -481,7 +479,7 @@ def stage_5(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
                 phase = get_phase(state.phase_rotation, ChargerPhase.P1)
                 cost[phase] += min_1p
 
-        state._current_allocation = cfg.minimum_current_3p if state._phase_allocation == 3 else cfg.minimum_current_1p
+        state._current_allocation = min_3p if state._phase_allocation == 3 else min_1p
         apply_cost(cost, limits)
 
 def current_capacity(limits: CurrentLimits, state: ChargerState):
@@ -516,7 +514,7 @@ def stage_6(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
                 phase = get_phase(state.phase_rotation, ChargerPhase(i))
                 active_on_phase[phase] += 1
 
-    fair_current = floor(min([(limits.raw[i] / active_on_phase[i]) if active_on_phase[i] != 0 else 1e7 for i in range(1, 4)]))
+    fair_current = floor(min([(limits.raw[i] / active_on_phase[i]) if active_on_phase[i] != 0 else 1e7 for i in range(0, 4)]))
 
     for state in cs:
         current = min(fair_current, current_capacity(limits, state))
@@ -524,7 +522,7 @@ def stage_6(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
 
         cost = get_cost(current, ChargerPhase(state._phase_allocation), state.phase_rotation, state._current_allocation, ChargerPhase(state._phase_allocation))
 
-        if cost_exceeds_limits(cost, limits, 7):
+        if cost_exceeds_limits(cost, limits, 6):
             continue
 
         apply_cost(cost, limits)
@@ -545,7 +543,7 @@ def stage_7(limits: CurrentLimits, charger_state: list[ChargerState], cfg: Curre
 
         cost = get_cost(current, ChargerPhase(state._phase_allocation), state.phase_rotation, state._current_allocation, ChargerPhase(state._phase_allocation))
 
-        if cost_exceeds_limits(cost, limits, 8):
+        if cost_exceeds_limits(cost, limits, 7):
             continue
 
         apply_cost(cost, limits)
@@ -637,7 +635,6 @@ def setup(limits: CurrentLimits, limits_cpy: CurrentLimits, charger_state: Charg
     for x in charger_state:
         x._current_allocation = 0
         x._phase_allocation = 0
-    ca_state.allocated_minimum_current_packets = Cost(0, 0, 0, 0)
 
 def update_chargers(charger_state: list[ChargerState]):
     for c in charger_state:

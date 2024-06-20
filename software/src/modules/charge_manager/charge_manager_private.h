@@ -14,7 +14,7 @@
 struct CurrentAllocatorConfig {
     int32_t minimum_current_3p;
     int32_t minimum_current_1p;
-    int32_t enable_current;
+    float enable_current_factor;
     std::unique_ptr<char[]> distribution_log;
     size_t distribution_log_len;
     size_t charger_count;
@@ -28,7 +28,9 @@ struct CurrentAllocatorState {
 
     bool global_hysteresis_elapsed = false;
     bool reset_global_hysteresis = false;
-    Cost allocated_minimum_current_packets;
+
+    Cost control_window_min = {0, 0, 0, 0};
+    Cost control_window_max = {0, 0, 0, 0};
 };
 
 struct ChargerState {
@@ -72,6 +74,9 @@ struct ChargerState {
     uint8_t phases;
 
     PhaseRotation phase_rotation;
+
+    float allocated_energy;
+    float allocated_energy_this_rotation;
 };
 
 struct ChargerAllocationState {
@@ -79,6 +84,9 @@ struct ChargerAllocationState {
 
     // last current limit send to the charger
     uint16_t allocated_current;
+
+    int8_t allocated_phases;
+
     // last CP disconnect request sent to charger: false - automatic/don't care, true - disconnect
     bool cp_disconnect;
 

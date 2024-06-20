@@ -7,7 +7,7 @@
 
 #include <string.h>
 
-#include "tests.h"
+//#include "tests.h"
 
 
 #pragma region Copied over from cm_networking/cm_protocol.cpp
@@ -78,7 +78,7 @@ static struct sockaddr_in dest_addrs[] = {
     {
         .sin_family = AF_INET,
         .sin_port = htons(CHARGE_MANAGEMENT_PORT),
-        .sin_addr.s_addr = inet_addr("192.168.1.132")
+        .sin_addr.s_addr = inet_addr("192.168.1.115")
     },
     {
         .sin_family = AF_INET,
@@ -102,7 +102,7 @@ static void start_manager() {
 void receive_packets(
     size_t charger_count,
     const char *const *hosts,
-    std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *)> manager_callback,
+    std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *)> manager_callback,
     std::function<void(uint8_t, uint8_t)> manager_error_callback
     )
 {
@@ -176,11 +176,11 @@ void receive_packets(
             return;
         }
 
-        manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr);
+        manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr);
     }
 }
 
-bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested)
+bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases)
 {
     static uint16_t next_seq_num = 1;
 
@@ -188,6 +188,7 @@ bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_
         return true;
 
     struct cm_command_packet command_pkt;
+    memset(&command_pkt, 0, sizeof(command_pkt));
     command_pkt.header.magic = CM_PACKET_MAGIC;
     command_pkt.header.length = CM_COMMAND_PACKET_LENGTH;
     command_pkt.header.seq_num = next_seq_num;
@@ -196,6 +197,8 @@ bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_
 
     command_pkt.v1.allocated_current = allocated_current;
     command_pkt.v1.command_flags = cp_disconnect_requested << CM_COMMAND_FLAGS_CPDISC_BIT_POS;
+
+    command_pkt.v2.allocated_phases = allocated_phases;
 
     int err = sendto(manager_sock, &command_pkt, sizeof(command_pkt), MSG_DONTWAIT, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
@@ -226,40 +229,46 @@ void send_to_clients(size_t charger_count, ChargerAllocationState *charger_alloc
         i = 0;
 
     auto &charger_alloc = charger_allocation_state[i];
-    if(send_manager_update(i, charger_alloc.allocated_current, charger_alloc.cp_disconnect))
+    if(send_manager_update(i, charger_alloc.allocated_current, charger_alloc.cp_disconnect, charger_alloc.allocated_phases))
         ++i;
 }
 
 #define CHARGER_COUNT (sizeof(dest_addrs)/sizeof(dest_addrs[0]))
 
 int main(int argc, char **argv) {
-    if (argc == 2 && strcmp(argv[1], "--run-tests") == 0) {
+    /*if (argc == 2 && strcmp(argv[1], "--run-tests") == 0) {
         run_tests();
         return 0;
-    }
+    }*/
 
 
     start_manager();
 
     CurrentAllocatorConfig cfg {
-        .minimum_current_3p = 6000,
-        .minimum_current_1p = 9200,
+        .minimum_current_3p = 9200,
+        .minimum_current_1p = 6000,
+        .enable_current_factor = 1.5f,
         .distribution_log = std::unique_ptr<char[]>(new char[DISTRIBUTION_LOG_LEN]()),
         .distribution_log_len = DISTRIBUTION_LOG_LEN,
         .charger_count = CHARGER_COUNT,
         .requested_current_margin = 3000,
-        .requested_current_threshold = 60000
+        .requested_current_threshold = 60000,
+
     };
 
     bool seen_all_chargers = true;
-    uint32_t pv_excess_current = 24000;
-    int phases_available = 3;
+    CurrentLimits limits {
+        .raw = {96000, 32000, 32000, 32000},
+        .filtered = {96000, 32000, 32000, 32000},
+    };
+
     bool cp_disconnect_requested = false;
 
-    ChargerState charger_state[CHARGER_COUNT];
+    ChargerState charger_state[CHARGER_COUNT]{};
+    charger_state[0].phase_rotation = PhaseRotation::L123;
 
     const char * const hosts[CHARGER_COUNT] = {
-        "warp-222i.localdomain",
+        "warp3-29fk.localdomain",
         "warp2-22oH.localdomain"
     };
 
@@ -269,7 +278,7 @@ int main(int argc, char **argv) {
         .last_print_local_log_was_error = false
     };
 
-    ChargerAllocationState charger_allocation_state[CHARGER_COUNT];
+    ChargerAllocationState charger_allocation_state[CHARGER_COUNT]{};
 
     uint32_t allocated_current = 0;
 
@@ -284,11 +293,12 @@ int main(int argc, char **argv) {
             &charger_state,
             &charger_allocation_state,
             hosts
-            ] (uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2) mutable {
+            ] (uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3) mutable {
                 update_from_client_packet(
                     client_id,
                     v1,
                     v2,
+                    v3,
                     &cfg,
                     charger_state,
                     charger_allocation_state,
@@ -298,10 +308,10 @@ int main(int argc, char **argv) {
             [](uint8_t, uint8_t){logger.printfln("packet receive error");});
 
         if (deadline_elapsed(last_alloc + 5000)) {
+            CurrentLimits limits_post_alloc = limits;
             allocate_current(&cfg,
                             seen_all_chargers,
-                            pv_excess_current,
-                            phases_available,
+                            &limits_post_alloc,
                             cp_disconnect_requested,
                             charger_state,
                             hosts,
