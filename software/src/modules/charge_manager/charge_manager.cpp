@@ -210,11 +210,12 @@ void ChargeManager::start_manager_task()
 
     auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
 
-    cm_networking.register_manager(this->hosts.get(), config.get("chargers")->count(), [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2) mutable {
+    cm_networking.register_manager(this->hosts.get(), config.get("chargers")->count(), [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3) mutable {
             if (update_from_client_packet(
                     client_id,
                     v1,
                     v2,
+                    v3,
                     this->ca_config,
                     this->charger_state,
                     this->charger_allocation_state,
@@ -239,7 +240,7 @@ void ChargeManager::start_manager_task()
             i = 0;
 
         auto &charger_alloc = this->charger_allocation_state[i];
-        if(cm_networking.send_manager_update(i, charger_alloc.allocated_current, charger_alloc.cp_disconnect))
+        if(cm_networking.send_manager_update(i, charger_alloc.allocated_current, charger_alloc.cp_disconnect, charger_alloc.allocated_phases))
             ++i;
 
     }, 0, cm_send_delay);
@@ -268,6 +269,8 @@ void ChargeManager::setup()
     this->ca_state = new CurrentAllocatorState();
     ca_config->minimum_current_3p = config.get("minimum_current")->asUint();
     ca_config->minimum_current_1p = config.get("minimum_current_1p")->asUint();
+    // TODO: Add config
+    ca_config->enable_current_factor = 1.5f;
     ca_config->requested_current_margin = requested_current_margin;
     ca_config->requested_current_threshold = requested_current_threshold;
 
@@ -306,11 +309,13 @@ void ChargeManager::setup()
 
     task_scheduler.scheduleWithFixedDelay([this, get_charger_name_fn, clear_dns_cache_entry_fn](){
             uint32_t allocated_current = 0;
+
+            this->limits_post_allocation = this->limits;
+
             int result = allocate_current(
                 this->ca_config,
                 this->seen_all_chargers(),
-                this->available_current.get("current")->asUint(),
-                this->available_phases.get("phases")->asUint(),
+                &this->limits_post_allocation,
                 this->control_pilot_disconnect.get("disconnect")->asBool(),
                 this->charger_state,
                 this->hosts.get(),

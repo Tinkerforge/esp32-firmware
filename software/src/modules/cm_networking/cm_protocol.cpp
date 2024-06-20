@@ -73,6 +73,7 @@ int CMNetworking::create_socket(uint16_t port, bool blocking)
 static const uint8_t cm_command_packet_length_versions[] = {
     sizeof(struct cm_packet_header),
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v1),
+    sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2), // cm_command_v2 redefined v1._padding to v2.allocated_phases. Size is still the same and cm_command_packet holds a union of v1 or v2.
 };
 static_assert(ARRAY_SIZE(cm_command_packet_length_versions) == (CM_COMMAND_VERSION + 1), "Unexpected amount of command packet length versions.");
 
@@ -80,6 +81,7 @@ static const uint8_t cm_state_packet_length_versions[] = {
     sizeof(struct cm_packet_header),
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1),
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2),
+    sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3),
 };
 static_assert(ARRAY_SIZE(cm_state_packet_length_versions) == (CM_STATE_VERSION + 1), "Unexpected amount of state packet length versions.");
 
@@ -195,7 +197,7 @@ static void manager_task(void *arg)
 
 void CMNetworking::register_manager(const char *const *const hosts,
                                     int charger_count,
-                                    std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *)> manager_callback,
+                                    std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *)> manager_callback,
                                     std::function<void(uint8_t, uint8_t)> manager_error_callback)
 {
     this->hosts = hosts;
@@ -333,12 +335,12 @@ void CMNetworking::register_manager(const char *const *const hosts,
                 return;
             }
 
-            manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr);
+            manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr);
         }
     }, 100, 100);
 }
 
-bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested)
+bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases)
 {
     static uint16_t next_seq_num = 1;
 
@@ -358,6 +360,8 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
 
     command_pkt.v1.allocated_current = allocated_current;
     command_pkt.v1.command_flags = cp_disconnect_requested << CM_COMMAND_FLAGS_CPDISC_BIT_POS;
+
+    command_pkt.v2.allocated_phases = allocated_phases;
 
     int err = sendto(manager_sock, &command_pkt, sizeof(command_pkt), MSG_DONTWAIT, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
@@ -380,7 +384,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     return true;
 }
 
-void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_callback)
+void CMNetworking::register_client(std::function<void(uint16_t, bool, int8_t)> client_callback)
 {
     client_sock = create_socket(CHARGE_MANAGEMENT_PORT, false);
 
@@ -439,7 +443,9 @@ void CMNetworking::register_client(std::function<void(uint16_t, bool)> client_ca
         manager_addr = temp_addr;
         manager_addr_valid = true;
 
-        client_callback(command_pkt.v1.allocated_current, CM_COMMAND_FLAGS_CPDISC_IS_SET(command_pkt.v1.command_flags));
+        client_callback(command_pkt.v1.allocated_current,
+                        CM_COMMAND_FLAGS_CPDISC_IS_SET(command_pkt.v1.command_flags),
+                        command_pkt.header.version >= 2 ? command_pkt.v2.allocated_phases : 0);
         //logger.printfln("Received command packet. Allocated current is %u", command_pkt.v1.allocated_current);
     }, 100, 100);
 }
@@ -471,11 +477,13 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     ++next_seq_num;
     state_pkt.header.version = CM_STATE_VERSION;
 
+    bool has_phase_switch = api.hasFeature("phase_switch");
     bool has_meter_values = api.hasFeature("meter_all_values");
     bool has_meter_phases = api.hasFeature("meter_phases");
     bool has_meter        = api.hasFeature("meter");
 
     state_pkt.v1.feature_flags = 0
+        | has_phase_switch                          << CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS
         | api.hasFeature("cp_disconnect")           << CM_FEATURE_FLAGS_CP_DISCONNECT_BIT_POS
         | api.hasFeature("evse")                    << CM_FEATURE_FLAGS_EVSE_BIT_POS
         | api.hasFeature("nfc")                     << CM_FEATURE_FLAGS_NFC_BIT_POS
@@ -534,6 +542,9 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     }
 
     state_pkt.v2.time_since_state_change = time_since_state_change;
+
+    state_pkt.v3.phases = evse_common.backend->get_is_3phase() ? 3 : 1;
+    state_pkt.v3.phases |= (has_phase_switch && evse_common.backend->can_switch_phases_now(state_pkt.v3.phases == 1)) << 2;
 
     int err = sendto(client_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&manager_addr, sizeof(manager_addr));
     if (err < 0) {
