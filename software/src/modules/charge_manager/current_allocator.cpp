@@ -36,7 +36,31 @@
 
 #define TIMEOUT_MS 32000
 
-#define PRINT_COST(x) logger.tf_dbg("%s %d %d %d %d", #x, x[0], x[1], x[2], x[3])
+#define PRINT_COST(x) logger.printfln("%s %d %d %d %d", #x, x[0], x[1], x[2], x[3])
+
+#include <stdio.h>
+
+static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count) {
+    char buf[300] = {};
+    logger.printfln("%d LIMITS (%6.3f,%6.3f,%6.3f,%6.3f)/(%6.3f,%6.3f,%6.3f,%6.3f)",
+           stage,
+           limits->raw[0] / 1000.0f,
+           limits->raw[1] / 1000.0f,
+           limits->raw[2] / 1000.0f,
+           limits->raw[3] / 1000.0f,
+
+           limits->filtered[0] / 1000.0f,
+           limits->filtered[1] / 1000.0f,
+           limits->filtered[2] / 1000.0f,
+           limits->filtered[3] / 1000.0f);
+
+    char *ptr = buf;
+    ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "  ALLOC");
+    for(size_t i = 0; i < charger_count; ++i) {
+        ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), " %6.3f@%dp", current_array[i] / 1000.0f, phases_array[i]);
+    }
+    logger.printfln(buf);
+}
 
 int filter_chargers(filter_fn filter_, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
     int matches = 0;
@@ -640,9 +664,15 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
 
-        // TODO: This should never happen?
-        if (cost_exceeds_limits(cost, limits, 6))
+        // This should never happen.
+        if (cost_exceeds_limits(cost, limits, 6)) {
+            logger.printfln("stage 6: Cost exceeded limits!");
+            print_alloc(6, limits, current_allocation, phase_allocation, charger_count);
+            PRINT_COST(cost);
+            PRINT_COST(ca_state->control_window_min);
+            PRINT_COST(ca_state->control_window_max);
             continue;
+        }
 
         apply_cost(cost, limits);
         current_allocation[idx_array[i]] = current;
@@ -675,9 +705,15 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
 
-        // TODO: This should never happen?
-        if (cost_exceeds_limits(cost, limits, 7))
+        // This should never happen.
+        if (cost_exceeds_limits(cost, limits, 7)) {
+            logger.printfln("stage 7: Cost exceeded limits!");
+            print_alloc(7, limits, current_allocation, phase_allocation, charger_count);
+            PRINT_COST(cost);
+            PRINT_COST(ca_state->control_window_min);
+            PRINT_COST(ca_state->control_window_max);
             continue;
+        }
 
         apply_cost(cost, limits);
         current_allocation[idx_array[i]] = current;
