@@ -329,9 +329,6 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
             if (alloc_phases == 0)
                 continue;
 
-            // TODO: check whether this charger uses this phase!
-            any_charger_shut_down = true;
-
             if (state->phases == 3) {
                 phase_allocation[idx_array[i]] = 0;
                 wnd_min -= Cost {3 * min_3p, min_3p, min_3p, min_3p};
@@ -342,7 +339,13 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
                 phase_allocation[idx_array[i]] = 0;
                 wnd_min.pv -= min_1p;
                 wnd_min[p] -= min_1p;
+            } else {
+                // This is a 1p charger with known rotation that is not active on this phase.
+                // Disabling it will not improve the situation.
+                continue;
             }
+
+            any_charger_shut_down = true;
         }
     }
 
