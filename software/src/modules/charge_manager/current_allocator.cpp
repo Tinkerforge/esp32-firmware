@@ -601,11 +601,7 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     if (matched == 0)
         return;
 
-    // TODO: do we have to sort here? Each charger will get the fair current if able to.
-    sort(
-        3 - allocated_phases,
-        left.state->allocated_energy < right.state->allocated_energy
-    );
+    // No need to sort here: Each charger gets the same current
 
     Cost active_on_phase{matched, 0, 0, 0};
     for (int i = 0; i < matched; ++i) {
@@ -651,6 +647,9 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 }
 
 // Stage 7: Allocate left-over current.
+// - Group by phases. Makes sure that we allocate current to three phase chargers first.
+//   If there is current left after this, we've probably hit one of the phase limits.
+//   One phase chargers on other phases will take the rest if possible.
 // - Sort by current_capacity ascending. This makes sure that one pass is enough to allocate the possible maximum.
 void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
@@ -673,7 +672,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
 
-        // TODO: This should never be true
+        // TODO: This should never happen?
         if (cost_exceeds_limits(cost, limits, 7))
             continue;
 
