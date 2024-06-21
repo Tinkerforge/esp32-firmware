@@ -296,7 +296,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
 //   shut down chargers until at least one of the minima is less than the PV limit.
 // - If any charger was shut down recalculate the window. The minima should already be correct, but updating the maxima is too complicated
 void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
-    calculate_window(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
+    calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, cfg->charger_count, cfg, ca_state);
 
     Cost wnd_min = ca_state->control_window_min;
     auto min_1p = cfg->minimum_current_1p;
