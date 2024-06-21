@@ -166,10 +166,8 @@ static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
     // Maybe also handle global hysteresis here? (ignore ALLOCATED_ENERGY_ROTATION_THRESHOLD if it is not elapsed)
 }
 
-#define GLOBAL_HYSTERESIS 1
-#define ALLOCATION_TIMEOUT_S 1
-#define ALLOCATED_ENERGY_ROTATION_THRESHOLD 5 /*kWh*/
-static constexpr int32_t UNLIMITED = 1000 * 1000 * 10;
+static constexpr int32_t ALLOCATED_ENERGY_ROTATION_THRESHOLD = 5; /*kWh*/
+static constexpr int32_t UNLIMITED = 1000 * 1000 * 10; /* mA */
 
 // Stage 1: Rotate chargers
 // If there is any charger that wants to charge but doesn't have current allocated,
