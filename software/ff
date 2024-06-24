@@ -32,6 +32,12 @@ parser.add_argument("-e", "--erase", action="store_true")
 parser.add_argument("-r", "--reboot", action="store_true")
 args = parser.parse_args()
 
+def skip_to_version(filename):
+    for marker in ['-UNSIGNED', '-NONVERIFYING', '-NIGHTLY', '-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE']:
+        filename = filename.replace(marker, '')
+
+    return filename.split('_firmware_')[1]
+
 def get_build_timestamp(version):
     if '_beta_' in version:
         return version.split('_')[5]
@@ -41,7 +47,7 @@ def get_build_timestamp(version):
 def get_latest_fw(fw_type=''):
     files = os.listdir("build")
     files = [x for x in files if x.endswith("_merged.bin") and (fw_type == '' or x.startswith(fw_type + "_firmware"))]
-    latest = max(files, key=lambda x: int(get_build_timestamp(x.replace("-NIGHTLY", "").replace("-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE", "").split("_firmware_")[1]), 16), default=None)
+    latest = max(files, key=lambda x: int(get_build_timestamp(skip_to_version(x)), 16), default=None)
     if latest is None:
         print("Failed to find a firmware containing the string {}".format(fw_type))
         sys.exit(0)
