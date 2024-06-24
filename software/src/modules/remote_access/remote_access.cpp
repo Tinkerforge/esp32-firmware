@@ -685,8 +685,8 @@ void RemoteAccess::connect_management() {
         if (this->connection_state.get("management_connection_state")->updateUint(up ? 2 : 1)) {
             if (up) {
                 logger.printfln("Management connection connected");
-
             } else {
+                in_seq_number = 0;
                 logger.printfln("Management connection disconnected");
             }
         }
