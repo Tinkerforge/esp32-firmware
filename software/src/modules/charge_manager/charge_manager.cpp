@@ -492,7 +492,8 @@ void ChargeManager::register_urls()
     api.addCommand("charge_manager/debug_limits_update", &limits_cfg, {}, [this](){
         for(size_t i = 0; i < 4; ++i) {
             this->limits.raw[i] = limits_cfg.get(i)->asInt();
-            this->limits.filtered[i] = limits_cfg.get(i)->asInt();
+            this->limits.min[i] = limits_cfg.get(i)->asInt();
+            this->limits.max[i] = limits_cfg.get(i)->asInt();
         }
     }, true);
 }

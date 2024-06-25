@@ -32,7 +32,7 @@ int allocate_current(
         const bool seen_all_chargers,
         CurrentLimits *limits,
         const bool cp_disconnect_requested,
-        const ChargerState *charger_state,
+        /*const TODO: move allocated_energy into charger allocation state so that charger_state can be const once again*/ ChargerState *charger_state,
         const char * const *hosts,
         const std::function<const char *(uint8_t)> get_charger_name,
         const std::function<void (uint8_t)> clear_dns_cache_entry,

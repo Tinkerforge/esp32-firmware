@@ -3,6 +3,8 @@
 
 #include "current_limits.h"
 
+#include "tools.h"
+
 #define DISTRIBUTION_LOG_LEN 2048
 
 #define CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE 128
@@ -27,7 +29,7 @@ struct CurrentAllocatorState {
     bool last_print_local_log_was_error = false;
 
     bool global_hysteresis_elapsed = false;
-    bool reset_global_hysteresis = false;
+    micros_t last_hysteresis_reset = 0_usec;
 
     Cost control_window_min = {0, 0, 0, 0};
     Cost control_window_max = {0, 0, 0, 0};
