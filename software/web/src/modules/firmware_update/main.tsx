@@ -195,7 +195,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                                     let response = JSON.parse(error.responseText);
                                     const modal = util.async_modal_ref.current;
 
-                                    if (!await modal.show({
+                                    if (await modal.show({
                                             title: __("firmware_update.content.wrong_signature_title"),
                                             body: __("firmware_update.content.wrong_signature_body")(response.actual_publisher, response.expected_publisher),
                                             no_text: __("firmware_update.content.abort_update"),
@@ -203,18 +203,16 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                                             no_variant: "secondary",
                                             yes_variant: "danger",
                                         })) {
+                                        try {
+                                            await API.call("firmware_update/override_signature", {cookie: response.cookie}, __("firmware_update.script.update_fail"));
+                                        }
+                                        catch {
+                                            return;
+                                        }
+
+                                        util.postReboot(__("firmware_update.script.update_success"), __("util.reboot_text"));
                                         return;
                                     }
-
-                                    try {
-                                        await API.call("firmware_update/override_signature", {cookie: response.cookie}, __("firmware_update.script.update_fail"));
-                                    }
-                                    catch {
-                                        return;
-                                    }
-
-                                    util.postReboot(__("firmware_update.script.update_success"), __("util.reboot_text"));
-                                    return;
                                 }
                                 else {
                                     message = error.responseText.startsWith("firmware_update.") ? translate_unchecked(error.responseText) : (error.responseText ?? error.response);
