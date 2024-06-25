@@ -54,7 +54,7 @@ def main():
 
     args = parser.parse_args()
     directory = os.path.dirname(__file__)
-    public_key_filename = os.path.relpath(os.path.join(directory, 'signature_public_key.json'))
+    public_key_filename = os.path.relpath(os.path.join(directory, 'signature_public_key_v1.json'))
 
     try:
         with open(public_key_filename, 'r', encoding='utf-8') as f:

@@ -56,8 +56,8 @@ def main():
     args = parser.parse_args()
 
     directory = os.path.dirname(__file__)
-    public_key_filename = os.path.relpath(os.path.join(directory, 'signature_public_key.json'))
-    secret_key_filename = os.path.relpath(os.path.join(directory, 'signature_secret_key.json'))
+    public_key_filename = os.path.relpath(os.path.join(directory, 'signature_public_key_v1.json'))
+    secret_key_filename = os.path.relpath(os.path.join(directory, 'signature_secret_key_v1.json'))
 
     if os.path.exists(public_key_filename):
         if args.force:

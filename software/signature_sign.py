@@ -68,7 +68,7 @@ def main():
             return 1
 
     directory = os.path.dirname(__file__)
-    secret_key_filename = os.path.relpath(os.path.join(directory, 'signature_secret_key.json'))
+    secret_key_filename = os.path.relpath(os.path.join(directory, 'signature_secret_key_v1.json'))
 
     try:
         with open(secret_key_filename, 'r', encoding='utf-8') as f:

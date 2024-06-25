@@ -116,7 +116,7 @@ void FirmwareUpdate::setup()
         }
 
         update_url += BUILD_NAME;
-        update_url += "_firmware.txt";
+        update_url += "_firmware_v1.txt";
     }
 
     cert_id = config.get("cert_id")->asInt();
