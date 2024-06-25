@@ -6,6 +6,7 @@ import ctypes
 import ctypes.util
 import argparse
 import json
+from zlib import crc32
 
 
 class CryptoSignState(ctypes.Structure):
@@ -63,7 +64,30 @@ def main():
         print(f'error: could not read public key from {public_key_filename}: {e}')
         return 1
 
-    public_key = bytes.fromhex(public_key_json['public_key'])
+    expected_publisher = public_key_json['publisher']
+
+    if not isinstance(expected_publisher, str):
+        print('error: publisher is not a string')
+        return 1
+
+    expected_publisher_bytes = expected_publisher.encode('utf-8')
+
+    if len(expected_publisher_bytes) < 1 or len(expected_publisher_bytes) > 61:
+        print('error: publisher UTF-8 length is out of range')
+        return 1
+
+    public_key_hex = public_key_json['public_key']
+
+    if not isinstance(public_key_hex, str):
+        print('error: public key is not a string')
+        return 1
+
+    try:
+        public_key = bytes.fromhex(public_key_hex)
+    except:
+        print('error: public key is malformed')
+        return 1
+
     crypto_sign_PUBLICKEYBYTES = libsodium.crypto_sign_publickeybytes()
 
     if len(public_key) != crypto_sign_PUBLICKEYBYTES:
@@ -81,15 +105,31 @@ def main():
     assert(crypto_sign_BYTES == 64)
 
     firmware_info_offset = 0xd000 - 0x1000
-    publisher_bytes = bytes(input_data[firmware_info_offset - crypto_sign_BYTES - 64:firmware_info_offset - crypto_sign_BYTES])
+    signature_info_offset = firmware_info_offset - 0x1000
 
-    if publisher_bytes[0] == 0xff:
+    signature_info = bytearray(input_data[signature_info_offset:signature_info_offset + 0x1000])
+
+    if signature_info[0:7] == bytes([0xff] * 7):
         print('error: input file is not signed')
         return 1
 
-    publisher = publisher_bytes.decode('utf-8').rstrip('\0')
-    signature = bytes(input_data[firmware_info_offset - crypto_sign_BYTES:firmware_info_offset])
-    input_data[firmware_info_offset - crypto_sign_BYTES:firmware_info_offset] = bytes([0xff] * crypto_sign_BYTES)
+    signature = bytes(signature_info[72:72 + crypto_sign_BYTES])
+    signature_info[72:72 + crypto_sign_BYTES] = bytes([0x55] * crypto_sign_BYTES)
+
+    if signature_info[4092:4096] != crc32(signature_info[0:4092]).to_bytes(4, byteorder='little'):
+        print('error: signature info is malformed')
+        return 1
+
+    if signature_info[0:7] != bytes.fromhex('E6210F21EC1217'):
+        print('error: signature info is malformed')
+        return 1
+
+    actual_publisher = signature_info[8:72].decode('utf-8').rstrip('\0')
+
+    if actual_publisher != expected_publisher:
+        print(f'warning: publisher mismatch: {repr(actual_publisher)} != {repr(expected_publisher)}')
+
+    input_data[signature_info_offset + 72:signature_info_offset + 72 + crypto_sign_BYTES] = bytes([0x55] * crypto_sign_BYTES)
 
     state = CryptoSignState()
 
@@ -102,10 +142,10 @@ def main():
         return 1
 
     if libsodium.crypto_sign_final_verify(ctypes.byref(state), signature, public_key) < 0:
-        print(f'error: signature is NOT valid, signed by {repr(publisher)}')
+        print(f'error: signature is NOT valid, published by {repr(actual_publisher)}')
         return 1
 
-    print(f'success: signature is valid, signed by {repr(publisher)}')
+    print(f'success: signature is valid, published by {repr(actual_publisher)}')
     return 0
 
 

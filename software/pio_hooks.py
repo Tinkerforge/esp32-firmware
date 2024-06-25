@@ -94,7 +94,7 @@ def write_firmware_info(display_name, major, minor, patch, beta, build_time):
 
     # 7121CE12F0126E
     # tink er for ge
-    buf[0:7] = bytearray.fromhex("7121CE12F0126E") # magic
+    buf[0:7] = bytes.fromhex("7121CE12F0126E") # magic
     buf[7] = 0x02 # firmware_info_version, note: a new version has to be backwards compatible
 
     name_bytes = display_name.encode("utf-8") # firmware name, max 60 chars

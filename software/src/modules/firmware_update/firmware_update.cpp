@@ -37,15 +37,17 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 // Newer firmwares contain a firmware info page.
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
+#define FIRMWARE_INFO_MAGIC_0 0x12CE2171
+#define FIRMWARE_INFO_MAGIC_1 0x6E12F0
 
-#define SIGNATURE_DATA_LENGTH crypto_sign_BYTES
-#define SIGNATURE_DATA_OFFSET (FIRMWARE_INFO_OFFSET - SIGNATURE_DATA_LENGTH)
+// Signed firmwares contain a signature info page.
+#define SIGNATURE_INFO_OFFSET (0xc000 - 0x1000)
+#define SIGNATURE_INFO_LENGTH 0x1000
+#define SIGNATURE_INFO_MAGIC_0 0xE6210F21
+#define SIGNATURE_INFO_MAGIC_1 0xEC1217
 
-#define SIGNATURE_PUBLISHER_LENGTH 64
-#define SIGNATURE_PUBLISHER_OFFSET (FIRMWARE_INFO_OFFSET - SIGNATURE_DATA_OFFSET - SIGNATURE_PUBLISHER_LENGTH)
-
-#define SIGNATURE_LENGTH (SIGNATURE_PUBLISHER_LENGTH + SIGNATURE_DATA_LENGTH)
-#define SIGNATURE_OFFSET (FIRMWARE_INFO_OFFSET - SIGNATURE_LENGTH)
+#define SIGNATURE_INFO_SIGNATURE_OFFSET (SIGNATURE_INFO_OFFSET + offsetof(signature_info_t, signature))
+#define SIGNATURE_INFO_SIGNATURE_LENGTH crypto_sign_BYTES
 
 // The firmware files are merged with the bootloader, partition table, firmware_info and slot configuration bins.
 // The bootloader starts at offset 0x1000, which is the first byte in the firmware file.
@@ -62,6 +64,78 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #if signature_public_key_length != 0
 static_assert(signature_public_key_length == crypto_sign_PUBLICKEYBYTES);
 #endif
+
+template <typename T>
+void BlockReader<T>::reset()
+{
+    block = T{};
+    read_block_len = 0;
+    block_found = false;
+    actual_checksum = 0;
+    expected_checksum = 0;
+    read_expected_checksum_len = 0;
+}
+
+template <typename T>
+bool BlockReader<T>::handle_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len)
+{
+    if (chunk_offset + chunk_len >= block_offset && chunk_offset < block_offset + block_len) {
+        uint8_t *start = chunk_data;
+        size_t len = chunk_len;
+
+        if (chunk_offset < block_offset) {
+            size_t to_skip = block_offset - chunk_offset;
+            start += to_skip;
+            len -= to_skip;
+        }
+
+        if (chunk_offset + chunk_len > block_offset + block_len - 4) {
+            len -= (chunk_offset + chunk_len) - (block_offset + block_len - 4); // -4 to not calculate the CRC of itself
+        }
+
+        if (read_block_len < sizeof(block)) {
+            size_t to_read = std::min(len, sizeof(block) - read_block_len);
+            memcpy(((uint8_t *)&block) + read_block_len, start, to_read);
+            read_block_len += to_read;
+        }
+
+        crc32_ieee_802_3_recalculate(start, len, &actual_checksum);
+
+        const size_t expected_checksum_offset = block_offset + block_len - 4;
+
+        if (chunk_offset + chunk_len < expected_checksum_offset) {
+            return false;
+        }
+
+        if (chunk_offset < expected_checksum_offset) {
+            size_t to_skip = expected_checksum_offset - chunk_offset;
+            start = chunk_data + to_skip;
+            len = chunk_len - to_skip;
+        }
+
+        if (chunk_offset + chunk_len > expected_checksum_offset + 4) {
+            len -= (chunk_offset + chunk_len) - (expected_checksum_offset + 4);
+        }
+
+        if (read_expected_checksum_len < sizeof(expected_checksum)) {
+            size_t to_read = std::min(len, sizeof(expected_checksum) - read_expected_checksum_len);
+            memcpy((uint8_t *)&expected_checksum + read_expected_checksum_len, start, to_read);
+            read_expected_checksum_len += to_read;
+        }
+
+        block_found = read_expected_checksum_len == sizeof(expected_checksum) && actual_magic_0 == expected_magic_0 && (actual_magic_1 & 0x00FFFFFF) == expected_magic_1;
+    }
+
+    return chunk_offset + chunk_len >= block_offset + block_len;
+}
+
+FirmwareUpdate::FirmwareUpdate() :
+    firmware_info(FIRMWARE_INFO_OFFSET, FIRMWARE_INFO_LENGTH, FIRMWARE_INFO_MAGIC_0, FIRMWARE_INFO_MAGIC_1)
+#if signature_public_key_length != 0
+    , signature_info(SIGNATURE_INFO_OFFSET, SIGNATURE_INFO_LENGTH, SIGNATURE_INFO_MAGIC_0, SIGNATURE_INFO_MAGIC_1)
+#endif
+{
+}
 
 void FirmwareUpdate::pre_setup()
 {
@@ -123,125 +197,41 @@ void FirmwareUpdate::setup()
     initialized = true;
 }
 
-#if signature_public_key_length != 0
-void FirmwareUpdate::handle_signature_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len)
-{
-    // cache signature name an data
-    if (chunk_offset + chunk_len < SIGNATURE_OFFSET || chunk_offset >= SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
-        return;
-    }
-
-    uint8_t *start = chunk_data;
-    size_t len = chunk_len;
-
-    if (chunk_offset < SIGNATURE_OFFSET) {
-        size_t to_skip = SIGNATURE_OFFSET - chunk_offset;
-        start += to_skip;
-        len -= to_skip;
-    }
-
-    len = MIN(len, (SIGNATURE_OFFSET + SIGNATURE_LENGTH) - chunk_offset);
-    size_t offset = MAX(chunk_offset, SIGNATURE_OFFSET) - SIGNATURE_OFFSET;
-
-    memcpy(((uint8_t *)&signature) + offset, start, len);
-
-    // clear signature data
-    if (chunk_offset + chunk_len >= SIGNATURE_DATA_OFFSET && chunk_offset < SIGNATURE_DATA_OFFSET + SIGNATURE_DATA_LENGTH) {
-        start = chunk_data;
-        len = chunk_len;
-
-        if (chunk_offset < SIGNATURE_DATA_OFFSET) {
-            size_t to_skip = SIGNATURE_DATA_OFFSET - chunk_offset;
-            start += to_skip;
-            len -= to_skip;
-        }
-
-        memset(start, 0xFF, len);
-    }
-}
-#endif
-
-void FirmwareUpdate::reset_firmware_info()
-{
-    calculated_checksum = 0;
-    info = firmware_info_t{};
-    info_offset = 0;
-    checksum_offset = 0;
-    info_found = false;
-}
-
-void FirmwareUpdate::handle_firmware_info_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len)
-{
-    if (chunk_offset + chunk_len < FIRMWARE_INFO_OFFSET || chunk_offset >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
-        return;
-    }
-
-    uint8_t *start = chunk_data;
-    size_t len = chunk_len;
-
-    if (chunk_offset < FIRMWARE_INFO_OFFSET) {
-        size_t to_skip = FIRMWARE_INFO_OFFSET - chunk_offset;
-        start += to_skip;
-        len -= to_skip;
-    }
-
-    len = MIN(len, (FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) - chunk_offset - 4); // -4 to not calculate the CRC of itself
-
-    if (info_offset < sizeof(info)) {
-        size_t to_write = MIN(len, sizeof(info) - info_offset);
-        memcpy(((uint8_t *)&info) + info_offset, start, to_write);
-        info_offset += to_write;
-    }
-
-    crc32_ieee_802_3_recalculate(start, len, &calculated_checksum);
-
-    const size_t checksum_start = FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH - 4;
-
-    if (chunk_offset + chunk_len < checksum_start)
-        return;
-
-    if (chunk_offset < checksum_start) {
-        size_t to_skip = checksum_start - chunk_offset;
-        start = chunk_data + to_skip;
-        len = chunk_len - to_skip;
-    }
-
-    len = MIN(len, 4);
-
-    if (checksum_offset < sizeof(checksum)) {
-        size_t to_write = MIN(len, sizeof(checksum) - checksum_offset);
-        memcpy((uint8_t *)&checksum + checksum_offset, start, to_write);
-        checksum_offset += to_write;
-    }
-
-    info_found = checksum_offset == sizeof(checksum) && info.magic[0] == 0x12CE2171 && (info.magic[1] & 0x00FFFFFF) == 0x6E12F0;
-}
-
 String FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log)
 {
-    if (!info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
+    if (!firmware_info.block_found && BUILD_REQUIRE_FIRMWARE_INFO) {
         if (log) {
-            logger.printfln("Failed to update: Firmware update has no info page!");
+            logger.printfln("Failed to update: Firmware has no info page!");
         }
+
         return "{\"error\":\"no_info_page\"}";
     }
-    if (info_found) {
-        if (checksum != calculated_checksum) {
+
+    if (firmware_info.block_found) {
+        if (firmware_info.expected_checksum != firmware_info.actual_checksum) {
             if (log) {
-                logger.printfln("Failed to update: Firmware info page corrupted! Embedded checksum %x calculated checksum %x", checksum, calculated_checksum);
+                logger.printfln("Failed to update: Firmware info page corrupted! Expected checksum %x, actual checksum %x",
+                                firmware_info.expected_checksum, firmware_info.actual_checksum);
             }
+
             return "{\"error\":\"info_page_corrupted\"}";
         }
 
-        if (strncmp(BUILD_DISPLAY_NAME, info.firmware_name, ARRAY_SIZE(info.firmware_name)) != 0) {
+        firmware_info.block.firmware_name[ARRAY_SIZE(firmware_info.block.firmware_name) - 1] = '\0';
+
+        if (strcmp(BUILD_DISPLAY_NAME, firmware_info.block.firmware_name) != 0) {
             if (log) {
-                logger.printfln("Failed to update: Firmware is for a %.*s but this is a %s!", static_cast<int>(ARRAY_SIZE(info.firmware_name)), info.firmware_name, BUILD_DISPLAY_NAME);
+                logger.printfln("Failed to update: Firmware is for a %s but this is a %s!",
+                                firmware_info.block.firmware_name, BUILD_DISPLAY_NAME);
             }
+
             return "{\"error\":\"wrong_firmware_type\"}";
         }
 
-        if (detect_downgrade && compare_version(info.fw_version[0], info.fw_version[1], info.fw_version[2], info.fw_version_beta, info.fw_build_time,
-                                                BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()) < 0) {
+        if (detect_downgrade && compare_version(firmware_info.block.fw_version[0], firmware_info.block.fw_version[1], firmware_info.block.fw_version[2],
+                                                firmware_info.block.fw_version_beta, firmware_info.block.fw_build_time,
+                                                BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH,
+                                                BUILD_VERSION_BETA, build_timestamp()) < 0) {
             if (log) {
                 logger.printfln("Failed to update: Firmware is a downgrade!");
             }
@@ -250,8 +240,8 @@ String FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log)
             char info_beta[12] = "";
             char build_beta[12] = "";
 
-            if (info.fw_version_beta != 255) {
-                snprintf(info_beta, ARRAY_SIZE(info_beta), "-beta.%u", info.fw_version_beta);
+            if (firmware_info.block.fw_version_beta != 255) {
+                snprintf(info_beta, ARRAY_SIZE(info_beta), "-beta.%u", firmware_info.block.fw_version_beta);
             }
 
             if (BUILD_VERSION_BETA != 255) {
@@ -259,12 +249,13 @@ String FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log)
             }
 
             snprintf(buf, ARRAY_SIZE(buf), "{\"error\":\"downgrade\",\"firmware\":\"%u.%u.%u%s+%x\",\"installed\":\"%i.%i.%i%s+%x\"}",
-                     info.fw_version[0], info.fw_version[1], info.fw_version[2], info_beta, info.fw_build_time,
+                     firmware_info.block.fw_version[0], firmware_info.block.fw_version[1], firmware_info.block.fw_version[2], info_beta, firmware_info.block.fw_build_time,
                      BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, build_beta, build_timestamp());
 
             return String(buf);
         }
     }
+
     return "";
 }
 
@@ -284,7 +275,7 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(uint16_t code, con
             return false;
         }
 
-        reset_firmware_info();
+        firmware_info.reset();
 
 #if signature_public_key_length != 0
         if (sodium_init() < 0 || crypto_sign_init(&signature_state) < 0) {
@@ -295,13 +286,30 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(uint16_t code, con
             return false;
         }
 
-        memset(signature.publisher, 0x00, sizeof(signature.publisher));
-        memset(signature.data, 0xFF, sizeof(signature.data));
+        signature_info.reset();
 #endif
     }
 
 #if signature_public_key_length != 0
-    handle_signature_chunk(chunk_offset, chunk_data, chunk_len);
+    signature_info.handle_chunk(chunk_offset, chunk_data, chunk_len);
+
+    if (chunk_offset + chunk_len >= SIGNATURE_INFO_SIGNATURE_OFFSET && chunk_offset < SIGNATURE_INFO_SIGNATURE_OFFSET + SIGNATURE_INFO_SIGNATURE_LENGTH) {
+        uint8_t *start = chunk_data;
+        size_t len = chunk_len;
+        size_t to_skip = 0;
+
+        if (chunk_offset < SIGNATURE_INFO_SIGNATURE_OFFSET) {
+            to_skip = SIGNATURE_INFO_SIGNATURE_OFFSET - chunk_offset;
+            start += to_skip;
+            len -= to_skip;
+        }
+
+        if (chunk_offset + chunk_len > SIGNATURE_INFO_SIGNATURE_OFFSET + SIGNATURE_INFO_SIGNATURE_LENGTH) {
+            len -= (chunk_offset + chunk_len) - (SIGNATURE_INFO_SIGNATURE_OFFSET + SIGNATURE_INFO_SIGNATURE_LENGTH);
+        }
+
+        memset(start, 0x55, len);
+    }
 
     if (crypto_sign_update(&signature_state, chunk_data, chunk_len) < 0) {
         const char *message = "Failed to process signature verification";
@@ -312,10 +320,9 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(uint16_t code, con
     }
 #endif
 
-    handle_firmware_info_chunk(chunk_offset, chunk_data, chunk_len);
-
-    if (chunk_offset + chunk_len >= FIRMWARE_INFO_OFFSET + FIRMWARE_INFO_LENGTH) {
+    if (firmware_info.handle_chunk(chunk_offset, chunk_data, chunk_len)) {
         String error = this->check_firmware_info(false, true);
+
         if (!error.isEmpty()) {
             result_cb(400, "application/json", error.c_str());
             Update.abort();
@@ -346,9 +353,9 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(uint16_t code, con
 
     if (remaining == 0) {
 #if signature_public_key_length != 0
-        signature.publisher[SIGNATURE_PUBLISHER_LENGTH - 1] = '\0';
+        signature_info.block.publisher[ARRAY_SIZE(signature_info.block.publisher) - 1] = '\0';
 
-        if (crypto_sign_final_verify(&signature_state, signature.data, signature_public_key_data) < 0) {
+        if (crypto_sign_final_verify(&signature_state, signature_info.block.signature, signature_public_key_data) < 0) {
             signature_override_cookie = esp_random();
 
             if (signature_override_cookie == 0) {
@@ -360,11 +367,11 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(uint16_t code, con
 
             json.addObject();
 
-            if (signature.publisher[0] == 0xff) {
+            if (signature_info.block.publisher[0] == 0xff) {
                 json.addMemberNull("actual_publisher");
             }
             else {
-                json.addMemberString("actual_publisher", signature.publisher);
+                json.addMemberString("actual_publisher", signature_info.block.publisher);
             }
 
             json.addMemberString("expected_publisher", signature_publisher);
@@ -377,7 +384,7 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(uint16_t code, con
             return false;
         }
 
-        logger.printfln("Update signed by %s", signature.publisher);
+        logger.printfln("Update signature is valid, published by %s", signature_info.block.publisher);
 #endif
 
         if (!Update.end(true)) {
@@ -441,14 +448,17 @@ void FirmwareUpdate::register_urls()
     }, true);
 
     server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request) {
-        if (!this->info_found && BUILD_REQUIRE_FIRMWARE_INFO) {
-            return request.send(400, "application/json", "{\"error\":\"no_info_page\"}");
+        String error = this->check_firmware_info(true, false);
+
+        if (!error.isEmpty()) {
+            return request.send(400, "application/json", error.c_str());
         }
+
         return request.send(200);
     },
     [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
         if (offset == 0) {
-            this->reset_firmware_info();
+            this->firmware_info.reset();
         }
 
         bool firmware_update_allowed_check_required = true;
@@ -460,20 +470,12 @@ void FirmwareUpdate::register_urls()
             return false;
         }
 
-        if (offset > FIRMWARE_INFO_LENGTH) {
+        if (offset + len > FIRMWARE_INFO_LENGTH) {
             request.send(400, "text/plain", "Too long!");
             return false;
         }
 
-        handle_firmware_info_chunk(offset + FIRMWARE_INFO_OFFSET, data, len);
-
-        if (offset + len >= FIRMWARE_INFO_LENGTH) {
-            String error = this->check_firmware_info(true, false);
-            if (!error.isEmpty()) {
-                request.send(400, "application/json", error.c_str());
-            }
-        }
-
+        firmware_info.handle_chunk(FIRMWARE_INFO_OFFSET + offset, data, len);
         return true;
     });
 

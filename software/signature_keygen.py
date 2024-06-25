@@ -5,7 +5,6 @@ import sys
 import ctypes
 import ctypes.util
 import argparse
-import re
 import json
 
 
@@ -36,9 +35,10 @@ def load_libsodium():
 
 
 def publisher_type(value):
-    # limit to 63 to ensure NUL-termination
-    if len(value.encode('utf-8')) > 63:
-        raise argparse.ArgumentTypeError('publisher is too long')
+    length = len(value.encode('utf-8'))
+
+    if length < 1 or length > 63:
+        raise argparse.ArgumentTypeError('publisher UTF-8 length is out of range')
 
     return value
 

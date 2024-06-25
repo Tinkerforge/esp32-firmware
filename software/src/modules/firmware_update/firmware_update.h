@@ -37,10 +37,42 @@ struct SemanticVersion {
     uint32_t timestamp = 0;
 };
 
+template <typename T>
+class BlockReader
+{
+public:
+    BlockReader(size_t block_offset, size_t block_len, uint32_t expected_magic_0, uint32_t expected_magic_1) :
+        block_offset(block_offset), block_len(block_len), expected_magic_0(expected_magic_0), expected_magic_1(expected_magic_1) {}
+
+    void reset();
+    bool handle_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len);
+
+    size_t block_offset;
+    size_t block_len;
+
+    uint32_t expected_magic_0;
+    uint32_t expected_magic_1;
+
+    union {
+        T block;
+        struct {
+            uint32_t actual_magic_0;
+            uint32_t actual_magic_1;
+        };
+    };
+
+    size_t read_block_len = 0;
+    bool block_found = false;
+
+    uint32_t actual_checksum = 0;
+    uint32_t expected_checksum = 0;
+    size_t read_expected_checksum_len = 0;
+};
+
 class FirmwareUpdate final : public IModule
 {
 public:
-    FirmwareUpdate(){}
+    FirmwareUpdate();
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
@@ -51,44 +83,35 @@ public:
 
 private:
     bool handle_firmware_chunk(std::function<void(uint16_t, const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_length, size_t remaining, size_t complete_len);
-#if signature_public_key_length != 0
-    void handle_signature_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len);
-#endif
-    void reset_firmware_info();
-    void handle_firmware_info_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len);
     String check_firmware_info(bool detect_downgrade, bool log);
     void check_for_update();
     bool parse_version(const char *p, SemanticVersion *version) const;
     String format_version(SemanticVersion *version) const;
-
-    struct firmware_info_t {
-        uint32_t magic[2] = {0};
-        char firmware_name[61] = {0};
-        uint8_t fw_version[3] = {0};
-        uint32_t fw_build_time = {0};
-        uint8_t fw_version_beta = {0};
-    };
 
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot install_firmware;
     ConfigRoot override_signature;
 
-    firmware_info_t info;
-    uint32_t info_offset = 0;
-    uint32_t calculated_checksum = 0;
-    uint32_t checksum = 0;
-    uint32_t checksum_offset = 0;
-    bool info_found = false;
-
-#if signature_public_key_length != 0
-    struct signature_t {
-        char publisher[64] = {0};
-        unsigned char data[crypto_sign_BYTES] = {0};
+    struct firmware_info_t {
+        uint32_t magic[2] = {0};
+        char firmware_name[61] = {0};
+        uint8_t fw_version[3] = {0};
+        uint32_t fw_build_time = 0;
+        uint8_t fw_version_beta = 0;
     };
 
+    BlockReader<firmware_info_t> firmware_info;
+
+#if signature_public_key_length != 0
+    struct signature_info_t {
+        uint32_t magic[2] = {0};
+        char publisher[64] = {0};
+        unsigned char signature[crypto_sign_BYTES] = {0};
+    };
+
+    BlockReader<signature_info_t> signature_info;
     crypto_sign_state signature_state;
-    signature_t signature;
     uint32_t signature_override_cookie = 0;
 #endif
 

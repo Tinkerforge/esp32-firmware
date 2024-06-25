@@ -6,6 +6,7 @@ import ctypes
 import ctypes.util
 import argparse
 import json
+from zlib import crc32
 
 
 class CryptoSignState(ctypes.Structure):
@@ -78,14 +79,28 @@ def main():
         return 1
 
     publisher = secret_key_json['publisher']
-    publisher_bytes = publisher.encode('utf-8')
 
-    if len(publisher_bytes) > 63:
-        print('error: publisher is too long')
+    if not isinstance(publisher, str):
+        print('error: publisher is not a string')
         return 1
 
-    publisher_bytes = publisher_bytes.ljust(64, b'\0')
-    secret_key = bytes.fromhex(secret_key_json['secret_key'])
+    publisher_bytes = publisher.encode('utf-8')
+
+    if len(publisher_bytes) < 1 or len(publisher_bytes) > 63:
+        print('error: publisher UTF-8 length is out of range')
+        return 1
+
+    secret_key_hex = secret_key_json['secret_key']
+
+    if not isinstance(secret_key_hex, str):
+        print('error: secret key is not a string')
+        return 1
+
+    try:
+        secret_key = bytes.fromhex(secret_key_hex)
+    except:
+        print('error: secret key is malformed')
+        return 1
 
     crypto_sign_SECRETKEYBYTES = libsodium.crypto_sign_secretkeybytes()
 
@@ -110,7 +125,18 @@ def main():
     assert(crypto_sign_BYTES == 64)
 
     firmware_info_offset = 0xd000 - 0x1000
-    input_data[firmware_info_offset - crypto_sign_BYTES - len(publisher_bytes):firmware_info_offset - crypto_sign_BYTES] = publisher_bytes
+    signature_info_offset = firmware_info_offset - 0x1000
+
+    signature_info = bytearray([0xff] * 4096)
+    signature_info[0:7] = bytes.fromhex('E6210F21EC1217')  # firmware info magic in reverse
+    signature_info[7] = 0x01  # signature info version, note: a new version has to be backwards compatible
+    signature_info[8:8 + len(publisher_bytes)] = publisher_bytes
+    signature_info[8 + len(publisher_bytes):71] = bytes(63 - len(publisher_bytes))
+    signature_info[71] = 0x00  # 0 byte to make sure string is terminated
+    signature_info[72:72 + crypto_sign_BYTES] = bytes([0x55] * crypto_sign_BYTES)  # signature, will be inserted later
+    signature_info[4092:4096] = crc32(signature_info[0:4092]).to_bytes(4, byteorder='little')
+
+    input_data[signature_info_offset:signature_info_offset + len(signature_info)] = signature_info
 
     if libsodium.crypto_sign_update(ctypes.byref(state), bytes(input_data), len(input_data)) < 0:
         print('error: crypto_sign_update failed')
@@ -122,7 +148,7 @@ def main():
         print('error: crypto_sign_final_create failed')
         return 1
 
-    input_data[firmware_info_offset - crypto_sign_BYTES:firmware_info_offset] = signature_buffer.raw
+    input_data[signature_info_offset + 72:signature_info_offset + 72 + crypto_sign_BYTES] = signature_buffer.raw
 
     try:
         with open(args.output_filename + '.tmp', 'wb') as f:
@@ -137,7 +163,7 @@ def main():
         print(f'error: could not rename output from {args.output_filename}.tmp to {args.output_filename}: {e}')
         return 1
 
-    print(f'success: signed by {repr(publisher)}')
+    print(f'success: published by {repr(publisher)}')
     return 0
 
 
