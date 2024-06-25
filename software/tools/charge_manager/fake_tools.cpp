@@ -30,3 +30,20 @@ uint32_t millis() {
     clock_gettime(CLOCK_MONOTONIC, &ts );
     return (ts.tv_sec * 1000 + ts.tv_nsec / 1000000L);
 }
+
+micros_t operator""_usec(unsigned long long int i)
+{
+    return micros_t{(int64_t)i};
+}
+
+micros_t now_us()
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts );
+    return (micros_t)(ts.tv_sec * 1000000 + ts.tv_nsec / 1000L);
+}
+
+bool deadline_elapsed(micros_t deadline_us)
+{
+    return deadline_us == 0_usec || deadline_us < now_us();
+}
