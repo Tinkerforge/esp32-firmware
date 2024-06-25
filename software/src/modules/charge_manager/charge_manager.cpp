@@ -82,7 +82,7 @@ void ChargeManager::pre_setup()
         {"verbose", Config::Bool(false)},
         // Line currents are used to calculate the "requested current"
         // if a charger is in state C for at least
-        // "requested_current_threshold" ms.
+        // "requested_current_threshold" s.
         // Otherwise the "requested current" is the "supported current"
         // to allow the car to ramp up fast.
         {"requested_current_threshold", Config::Uint16(60)},
