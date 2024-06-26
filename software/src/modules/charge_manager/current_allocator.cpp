@@ -721,7 +721,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     sort(
         3 - allocated_phases,
-        current_capacity(limits, left.state, left.allocated_current, left.allocated_phases) < current_capacity(limits, right.state, right.allocated_current, right.allocated_phases)
+        current_capacity(_limits, left.state, left.allocated_current, left.allocated_phases) < current_capacity(_limits, right.state, right.allocated_current, right.allocated_phases)
     );
 
     for (int i = 0; i < matched; ++i) {
