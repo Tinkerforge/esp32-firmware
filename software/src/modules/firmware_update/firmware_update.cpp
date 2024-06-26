@@ -140,7 +140,7 @@ FirmwareUpdate::FirmwareUpdate() :
 void FirmwareUpdate::pre_setup()
 {
     config = ConfigRoot{Config::Object({
-        {"update_url", Config::Str("", 0, 128)},
+        {"update_url", Config::Str(BUILD_FIRMWARE_UPDATE_URL, 0, 128)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
         String update_url = update.get("update_url")->asString();
@@ -178,9 +178,7 @@ void FirmwareUpdate::pre_setup()
 
 void FirmwareUpdate::setup()
 {
-    if (!api.restorePersistentConfig("firmware_update/config", &config)) {
-        config.get("update_url")->updateString(BUILD_FIRMWARE_UPDATE_URL);
-    }
+    api.restorePersistentConfig("firmware_update/config", &config);
 
     update_url = config.get("update_url")->asString();
 
