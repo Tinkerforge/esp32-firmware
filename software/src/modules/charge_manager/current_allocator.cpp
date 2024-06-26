@@ -164,7 +164,7 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
 }
 
 static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
-    return allocated_phases > 0 || state->is_charging;
+    return allocated_phases > 0 && (state->wants_to_charge || state->is_charging);
     // TODO: implement other checks such as "Einschaltzeit > 0 < 1 min und State == B1 oder B2" here
     // Maybe also handle global hysteresis here? (ignore ALLOCATED_ENERGY_ROTATION_THRESHOLD if it is not elapsed)
 }
@@ -184,8 +184,17 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     for (int i = 0; i < charger_count; ++i) {
         const auto *state = &charger_state[i];
-        if (is_active(phase_allocation[i], state) && (!have_b1 || state->allocated_energy_this_rotation < ALLOCATED_ENERGY_ROTATION_THRESHOLD))
+
+        bool keep_active = is_active(phase_allocation[i], state) && (!have_b1 || !ca_state->global_hysteresis_elapsed || state->allocated_energy_this_rotation < ALLOCATED_ENERGY_ROTATION_THRESHOLD);
+        if (!keep_active) {
+            phase_allocation[i] = 0;
+            continue;
+        }
+
+        if (!state->phase_switch_supported) {
             phase_allocation[i] = state->phases;
+            continue;
+        }
     }
 }
 
@@ -471,7 +480,8 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     int matched = 0;
 
-    filter(allocated_phases == 0 && (state->wants_to_charge || is_active(allocated_phases, state)));
+    // A charger that was rotated has 0 allocated phases but is still charging.
+    filter(allocated_phases == 0 && (state->wants_to_charge || state->is_charging));
 
     sort(0,
         left.state->allocated_energy < right.state->allocated_energy
@@ -748,7 +758,7 @@ int allocate_current(
     const bool seen_all_chargers,
     CurrentLimits *limits,
     const bool cp_disconnect_requested,
-    /*const TODO: move allocated_energy into charger allocation state so that charger_state can be const once again*/ ChargerState *charger_state,
+    /*const TODO: move allocated_energy into charger allocation state so that this can be const once again*/ ChargerState *charger_state,
     const char * const *hosts,
     const std::function<const char *(uint8_t)> get_charger_name,
     const std::function<void(uint8_t)> clear_dns_cache_entry,
