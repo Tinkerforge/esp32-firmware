@@ -577,6 +577,10 @@ static esp_err_t update_event_handler(esp_http_client_event_t *event)
     FirmwareUpdate *that = static_cast<FirmwareUpdate *>(event->user_data);
 
     switch (event->event_id) {
+    case HTTP_EVENT_ERROR:
+        that->handle_update_data(nullptr, 0);
+        break;
+
     case HTTP_EVENT_ON_DATA:
         that->handle_update_data(event->data, event->data_len);
         break;
@@ -717,6 +721,22 @@ void FirmwareUpdate::check_for_update()
 void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
 {
     if (update_complete) {
+        return;
+    }
+
+    if (data == nullptr) {
+        logger.printfln("HTTP error while downloading firmware list");
+        state.get("check_error")->updateString("download_error");
+        update_complete = true;
+        return;
+    }
+
+    int code = esp_http_client_get_status_code(http_client);
+
+    if (code != 200) {
+        logger.printfln("HTTP error while downloading firmware list: %d", code);
+        state.get("check_error")->updateString("download_error");
+        update_complete = true;
         return;
     }
 
