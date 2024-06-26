@@ -177,9 +177,10 @@ static constexpr int32_t UNLIMITED = 1000 * 1000 * 10; /* mA */
 // temporarily disable chargers that are currently active (see is_active) but have been allocated
 // ALLOCATED_ENERGY_ROTATION_THRESHOLD energy since being activated.
 void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+    // Only rotate if there is at least one charger that does want to charge but doesn't have current allocated.
     bool have_b1 = false;
     for (int i = 0; i < charger_count; ++i) {
-        have_b1 |= charger_state[i].wants_to_charge;
+        have_b1 |= charger_state[i].wants_to_charge && phase_allocation[i] == 0;
     }
 
     for (int i = 0; i < charger_count; ++i) {
