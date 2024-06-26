@@ -548,8 +548,8 @@ void Mqtt::setup()
     initialized = true;
 
     if (!api.restorePersistentConfig("mqtt/config", &config)) {
-        config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + String("/") + String(local_uid_str));
-        config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + String("-") + String(local_uid_str));
+        config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + "/" + local_uid_str);
+        config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
 
 #ifdef DEFAULT_MQTT_ENABLE
         config.get("enable_mqtt")->updateBool(DEFAULT_MQTT_ENABLE);
