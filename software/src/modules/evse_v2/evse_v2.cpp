@@ -1034,16 +1034,16 @@ void EVSEV2::update_all_data()
     evse_common.low_level_state.get("led_state")->updateUint(led_state);
     evse_common.low_level_state.get("cp_pwm_duty_cycle")->updateUint(cp_pwm_duty_cycle);
 
-    for (int i = 0; i < sizeof(adc_values) / sizeof(adc_values[0]); ++i)
+    for (int i = 0; i < ARRAY_SIZE(adc_values); ++i)
         evse_common.low_level_state.get("adc_values")->get(i)->updateUint(adc_values[i]);
 
-    for (int i = 0; i < sizeof(voltages) / sizeof(voltages[0]); ++i)
+    for (int i = 0; i < ARRAY_SIZE(voltages); ++i)
         evse_common.low_level_state.get("voltages")->get(i)->updateInt(voltages[i]);
 
-    for (int i = 0; i < sizeof(resistances) / sizeof(resistances[0]); ++i)
+    for (int i = 0; i < ARRAY_SIZE(resistances); ++i)
         evse_common.low_level_state.get("resistances")->get(i)->updateUint(resistances[i]);
 
-    for (int i = 0; i < sizeof(gpio) / sizeof(gpio[0]); ++i)
+    for (int i = 0; i < ARRAY_SIZE(gpio); ++i)
         evse_common.low_level_state.get("gpio")->get(i)->updateBool(gpio[i]);
 
 #if MODULE_AUTOMATION_AVAILABLE()

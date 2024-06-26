@@ -35,7 +35,7 @@ static const uint16_t sdm630_registers_fast_to_read[] = {
 static void sdm630_fast_read_done(const uint16_t *all_regs, uint32_t meter_slot, uint32_t idx_power, uint32_t idx_energy_rel, uint32_t idx_energy_abs, uint32_t idx_current_l1, uint32_t idx_voltage_l1)
 {
     float fast_values[7];
-    convert_to_float(all_regs, fast_values, sdm630_registers_fast_to_read, sizeof(sdm630_registers_fast_to_read) / sizeof(sdm630_registers_fast_to_read[0]));
+    convert_to_float(all_regs, fast_values, sdm630_registers_fast_to_read, ARRAY_SIZE(sdm630_registers_fast_to_read));
 
     meters.update_value(meter_slot, idx_power,          fast_values[Power]);
     meters.update_value(meter_slot, idx_current_l1,     fast_values[CurrentPhase0]);
@@ -52,7 +52,7 @@ static void sdm630_slow_read_done(const uint16_t *all_regs, uint32_t meter_slot,
     }
 
     float all_values[METER_ALL_VALUES_RESETTABLE_COUNT];
-    convert_to_float(all_regs, all_values, sdm630_registers_to_read, sizeof(sdm630_registers_to_read) / sizeof(sdm630_registers_to_read[0]));
+    convert_to_float(all_regs, all_values, sdm630_registers_to_read, ARRAY_SIZE(sdm630_registers_to_read));
     all_values[METER_ALL_VALUES_RESETTABLE_COUNT - 3] = all_values[METER_ALL_VALUES_TOTAL_KWH_SUM] - reset->get("energy_total")->asFloat();
     all_values[METER_ALL_VALUES_RESETTABLE_COUNT - 2] = all_values[METER_ALL_VALUES_TOTAL_IMPORT_KWH] - reset->get("energy_import")->asFloat();
     all_values[METER_ALL_VALUES_RESETTABLE_COUNT - 1] = all_values[METER_ALL_VALUES_TOTAL_EXPORT_KWH] - reset->get("energy_export")->asFloat();
@@ -66,9 +66,9 @@ MeterInfo sdm630 {
     0x0070,
     2,
     sdm630_slow,
-    sizeof(sdm630_slow) / sizeof(sdm630_slow[0]),
+    ARRAY_SIZE(sdm630_slow),
     sdm630_fast,
-    sizeof(sdm630_fast) / sizeof(sdm630_fast[0]),
+    ARRAY_SIZE(sdm630_fast),
     sdm630_slow_read_done,
     sdm630_fast_read_done,
     "SDM630",

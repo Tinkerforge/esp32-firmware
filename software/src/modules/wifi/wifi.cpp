@@ -249,7 +249,7 @@ void Wifi::apply_soft_ap_config_and_start()
                     }
                 }
 
-                memcpy(channels_smeared, channels, sizeof(channels_smeared) / sizeof(channels_smeared[0]));
+                memcpy(channels_smeared, channels, ARRAY_SIZE(channels_smeared));
 
                 for (int i = 1; i <= 13; ++i) {
                     if (i > 1)

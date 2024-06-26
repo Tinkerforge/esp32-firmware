@@ -30,8 +30,8 @@ static const uint16_t sdm72dmv2_registers_fast_to_read[] = {
 
 static void sdm72dmv2_fast_read_done(const uint16_t *all_regs, uint32_t meter_slot, uint32_t idx_power, uint32_t idx_energy_rel, uint32_t idx_energy_abs, uint32_t idx_current_l1, uint32_t idx_voltage_l1)
 {
-    float fast_values[sizeof(sdm72dmv2_registers_fast_to_read)/sizeof(sdm72dmv2_registers_fast_to_read[0])];
-    convert_to_float(all_regs, fast_values, sdm72dmv2_registers_fast_to_read, sizeof(sdm72dmv2_registers_fast_to_read) / sizeof(sdm72dmv2_registers_fast_to_read[0]));
+    float fast_values[ARRAY_SIZE(sdm72dmv2_registers_fast_to_read)];
+    convert_to_float(all_regs, fast_values, sdm72dmv2_registers_fast_to_read, ARRAY_SIZE(sdm72dmv2_registers_fast_to_read));
 
     meters.update_value(meter_slot, idx_power,          fast_values[Power]);
     meters.update_value(meter_slot, idx_current_l1,     fast_values[CurrentPhase0]);
@@ -50,9 +50,9 @@ MeterInfo sdm72dmv2 {
     0x0089,
     3,
     sdm72dmv2_slow,
-    sizeof(sdm72dmv2_slow) / sizeof(sdm72dmv2_slow[0]),
+    ARRAY_SIZE(sdm72dmv2_slow),
     sdm72dmv2_fast,
-    sizeof(sdm72dmv2_fast) / sizeof(sdm72dmv2_fast[0]),
+    ARRAY_SIZE(sdm72dmv2_fast),
     sdm72dmv2_slow_read_done,
     sdm72dmv2_fast_read_done,
     "SDM72DM-V2",

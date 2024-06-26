@@ -95,7 +95,7 @@ void MeterRS485Bricklet::cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id,
 
     uint16_t meter_id = *callback_data.value_to_write;
 
-    for (size_t i = 0; i < sizeof(supported_meters) / sizeof(supported_meters[0]); ++i) {
+    for (size_t i = 0; i < ARRAY_SIZE(supported_meters); ++i) {
         if (meter_id != supported_meters[i]->meter_id)
             continue;
 

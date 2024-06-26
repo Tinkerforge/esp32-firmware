@@ -513,12 +513,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
                     if (eh.error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
                         if (was_connected && eh.esp_tls_last_esp_err != ESP_OK) {
-                            const char *e = esp_err_to_name_r(eh.esp_tls_last_esp_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
+                            const char *e = esp_err_to_name_r(eh.esp_tls_last_esp_err, err_buf, ARRAY_SIZE(err_buf));
                             logger.printfln("Transport error: %s (esp_tls_last_esp_err)", e);
                             mqtt->state.get("last_error")->updateInt(eh.esp_tls_last_esp_err);
                         }
                         if (was_connected && eh.esp_tls_stack_err != 0) {
-                            const char *e = esp_err_to_name_r(eh.esp_tls_stack_err, err_buf, sizeof(err_buf) / sizeof(err_buf[0]));
+                            const char *e = esp_err_to_name_r(eh.esp_tls_stack_err, err_buf, ARRAY_SIZE(err_buf));
                             logger.printfln("Transport error: %s (esp_tls_stack_err)", e);
                             mqtt->state.get("last_error")->updateInt(eh.esp_tls_stack_err);
                         }

@@ -215,7 +215,7 @@ void EventLog::write(const char *buf, size_t len)
 int EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
 {
     char buf[256];
-    auto buf_size = sizeof(buf) / sizeof(buf[0]);
+    auto buf_size = ARRAY_SIZE(buf);
     auto written = 0;
 
     *(buf + written) = '|';

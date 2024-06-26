@@ -749,7 +749,7 @@ bool prepare_migrations()
 
         File target = LittleFS.open(String("/migration/") + name, "w");
         while (source->available()) {
-            size_t read = source->read(buf, sizeof(buf) / sizeof(buf[0]));
+            size_t read = source->read(buf, ARRAY_SIZE(buf));
             size_t written = target.write(buf, read);
 
             if (written != read) {
@@ -763,7 +763,7 @@ bool prepare_migrations()
 
 void migrate_config()
 {
-    size_t migration_count = sizeof(migrations) / sizeof(migrations[0]);
+    size_t migration_count = ARRAY_SIZE(migrations);
 
     if (!LittleFS.exists("/config") && LittleFS.exists("/migration/version")) {
         // The migration is done, we were interrupted while moving over the migrated files to /config.

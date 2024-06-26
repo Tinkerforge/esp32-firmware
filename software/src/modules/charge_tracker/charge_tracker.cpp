@@ -320,7 +320,7 @@ bool ChargeTracker::setupRecords()
     File f;
 
     uint32_t found_blobs[32] = {0};
-    size_t found_blobs_size = sizeof(found_blobs) / sizeof(found_blobs[0]);
+    size_t found_blobs_size = ARRAY_SIZE(found_blobs);
     int found_blob_counter = 0;
 
     while (f = folder.openNextFile()) {

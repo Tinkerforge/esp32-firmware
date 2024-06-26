@@ -165,7 +165,7 @@ void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
 
         tf_base58_encode(passphrase[i], buf);
 
-        if (strnlen(buf, sizeof(buf) / sizeof(buf[0])) != 4) {
+        if (strnlen(buf, ARRAY_SIZE(buf)) != 4) {
             logger.printfln("efuse error: malformed passphrase!");
         } else {
             memcpy(ret_passphrase + i * 5, buf, 4);
