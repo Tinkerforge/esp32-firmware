@@ -6,9 +6,7 @@ export interface config {
 export interface state {
     check_timestamp: number,
     check_error: string,
-    beta_update: string,
-    release_update: string,
-    stable_update: string,
+    update_version: string,
 }
 
 export interface check_for_update {

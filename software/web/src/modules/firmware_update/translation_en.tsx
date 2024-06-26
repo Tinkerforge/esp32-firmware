@@ -28,9 +28,7 @@ let x = {
             "check_for_update": "Check for update",
             "check_for_update_timestamp": "Last update check",
             "check_for_update_error": "Last error",
-            "beta_update": "Available beta update",
-            "release_update": "Available release update",
-            "stable_update": "Available stable update",
+            "available_update": "Available update",
             "no_update": "No update available",
             "install_update": "Install"
         },

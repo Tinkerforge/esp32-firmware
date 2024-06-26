@@ -122,10 +122,7 @@ private:
     uint32_t last_update_begin;
     char update_buf[64 + 1];
     size_t update_buf_used;
-    SemanticVersion beta_update;
-    SemanticVersion release_update;
-    SemanticVersion stable_update;
-    uint8_t update_mask;
-    bool update_complete;
-    uint32_t last_non_beta_timestamp;
+    SemanticVersion update_version;
+    //uint32_t last_version_timestamp;
+    bool check_complete;
 };

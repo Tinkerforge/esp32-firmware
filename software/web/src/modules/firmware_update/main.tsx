@@ -40,9 +40,7 @@ interface FirmwareUpdateState {
     update_url: string,
     check_timestamp: number,
     check_error: string,
-    beta_update: string,
-    release_update: string,
-    stable_update: string,
+    update_version: string,
 };
 
 export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
@@ -55,9 +53,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             update_url: null,
             check_timestamp: 0,
             check_error: null,
-            beta_update: null,
-            release_update: null,
-            stable_update: null,
+            update_version: null,
         } as any;
 
         util.addApiEventListener('info/version', () => {
@@ -83,9 +79,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                 check_is_pending: state.check_error == "pending",
                 check_timestamp: state.check_timestamp,
                 check_error: state.check_error,
-                beta_update: state.beta_update,
-                release_update: state.release_update,
-                stable_update: state.stable_update,
+                update_version: state.update_version,
             });
         });
     }
@@ -138,20 +132,6 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
         }
 
         return ""
-    }
-
-    get_update_component(version: string) {
-        return <InputText value={
-                version.length > 0
-                    ? version + this.format_build_time(version)
-                    : __("firmware_update.content.no_update")}>
-                {version.length > 0
-                    ? <div class="input-group-append">
-                        <Button variant="primary" type="button" onClick={() => API.call("firmware_update/install_firmware", {version: version}, __("firmware_update.script.install_failed"))}>{__("firmware_update.content.install_update")}</Button>
-                    </div>
-                    : undefined
-                }
-            </InputText>;
     }
 
     render() {
@@ -247,16 +227,18 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                                     <InputText value={translate_unchecked("firmware_update.script." + this.state.check_error)} />
                                 </FormRow>
                                 : <>
-                                <FormRow label={__("firmware_update.content.beta_update")}>
-                                    {this.get_update_component(this.state.beta_update)}
-                                </FormRow>
-
-                                <FormRow label={__("firmware_update.content.release_update")}>
-                                    {this.get_update_component(this.state.release_update)}
-                                </FormRow>
-
-                                <FormRow label={__("firmware_update.content.stable_update")}>
-                                    {this.get_update_component(this.state.stable_update)}
+                                <FormRow label={__("firmware_update.content.available_update")}>
+                                    <InputText value={
+                                        this.state.update_version.length > 0
+                                            ? this.state.update_version + this.format_build_time(this.state.update_version)
+                                            : __("firmware_update.content.no_update")}>
+                                        {this.state.update_version.length > 0
+                                            ? <div class="input-group-append">
+                                                <Button variant="primary" type="button" onClick={() => API.call("firmware_update/install_firmware", {version: this.state.update_version}, __("firmware_update.script.install_failed"))}>{__("firmware_update.content.install_update")}</Button>
+                                            </div>
+                                            : undefined
+                                        }
+                                    </InputText>
                                 </FormRow>
                             </>}
                         </>}

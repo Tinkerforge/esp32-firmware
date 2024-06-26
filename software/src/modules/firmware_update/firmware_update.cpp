@@ -154,9 +154,7 @@ void FirmwareUpdate::pre_setup()
     state = Config::Object({
         {"check_timestamp", Config::Uint(0)},
         {"check_error", Config::Str("", 0, 16)},
-        {"beta_update", Config::Str("", 0, 32)},
-        {"release_update", Config::Str("", 0, 32)},
-        {"stable_update", Config::Str("", 0, 32)},
+        {"update_version", Config::Str("", 0, 32)},
     });
 
     install_firmware = ConfigRoot{Config::Object({
@@ -604,9 +602,7 @@ void FirmwareUpdate::check_for_update()
 
     state.get("check_timestamp")->updateUint(time(nullptr));
     state.get("check_error")->updateString("pending");
-    state.get("beta_update")->updateString("");
-    state.get("release_update")->updateString("");
-    state.get("stable_update")->updateString("");
+    state.get("update_version")->updateString("");
 
     if (update_url.length() == 0) {
         logger.printfln("No update URL configured");
@@ -615,12 +611,9 @@ void FirmwareUpdate::check_for_update()
     }
 
     update_buf_used = 0;
-    beta_update.major = 255;
-    release_update.major = 255;
-    stable_update.major = 255;
-    update_mask = 0;
-    update_complete = false;
-    last_non_beta_timestamp = time(nullptr);
+    update_version.major = 255;
+    //last_version_timestamp = time(nullptr);
+    check_complete = false;
 
     esp_http_client_config_t http_config = {};
 
@@ -668,10 +661,10 @@ void FirmwareUpdate::check_for_update()
         if (deadline_elapsed(last_update_begin + CHECK_FOR_UPDATE_TIMEOUT)) {
             logger.printfln("Update server %s did not respond", update_url.c_str());
             state.get("check_error")->updateString("no_response");
-            update_complete = true;
+            check_complete = true;
         }
 
-        if (update_complete) {
+        if (check_complete) {
             esp_http_client_close(http_client);
         }
         else {
@@ -685,26 +678,14 @@ void FirmwareUpdate::check_for_update()
                 state.get("check_error")->updateString("download_error");
             }
             else if (state.get("check_error")->asString() == "pending") {
-                String beta_update_str = "";
-                String release_update_str = "";
-                String stable_update_str = "";
+                String update_version_str = "";
 
-                if (beta_update.major != 255) {
-                    beta_update_str = format_version(&beta_update);
-                }
-
-                if (release_update.major != 255) {
-                    release_update_str = format_version(&release_update);
-                }
-
-                if (stable_update.major != 255) {
-                    stable_update_str = format_version(&stable_update);
+                if (update_version.major != 255) {
+                    update_version_str = format_version(&update_version);
                 }
 
                 state.get("check_error")->updateString("");
-                state.get("beta_update")->updateString(beta_update_str);
-                state.get("release_update")->updateString(release_update_str);
-                state.get("stable_update")->updateString(stable_update_str);
+                state.get("update_version")->updateString(update_version_str);
             }
         }
 
@@ -718,14 +699,14 @@ void FirmwareUpdate::check_for_update()
 
 void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
 {
-    if (update_complete) {
+    if (check_complete) {
         return;
     }
 
     if (data == nullptr) {
         logger.printfln("HTTP error while downloading firmware list");
         state.get("check_error")->updateString("download_error");
-        update_complete = true;
+        check_complete = true;
         return;
     }
 
@@ -734,7 +715,7 @@ void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
     if (code != 200) {
         logger.printfln("HTTP error while downloading firmware list: %d", code);
         state.get("check_error")->updateString("download_error");
-        update_complete = true;
+        check_complete = true;
         return;
     }
 
@@ -749,7 +730,7 @@ void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
         if (update_buf_free_start == update_buf_free_end) {
             logger.printfln("Firmware list is malformed");
             state.get("check_error")->updateString("list_malformed");
-            update_complete = true;
+            check_complete = true;
             return;
         }
 
@@ -767,7 +748,7 @@ void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
         // parse version
         char *p = strchr(update_buf, '\n');
 
-        while (p != nullptr && update_mask != 111) {
+        while (p != nullptr) {
             *p = '\0';
 
             SemanticVersion version;
@@ -775,41 +756,32 @@ void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
             if (!parse_version(update_buf, &version)) {
                 logger.printfln("Firmware list entry is malformed: %s", update_buf);
                 state.get("check_error")->updateString("list_malformed");
-                update_complete = true;
+                check_complete = true;
                 return;
             }
 
             // ignore all versions that are older than the current version
             if (compare_version(version.major, version.minor, version.patch, version.beta, version.timestamp,
                                 BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()) <= 0) {
-                update_mask = 111;
-                break;
+                check_complete = true;
+                return;
             }
 
-            if (version.beta != 255) {
-                // the beta update is the newest beta version that is newer than any non-beta version
-                if ((update_mask & 100) == 0) {
-                    beta_update = version;
-                    update_mask |= 100;
-                }
-            }
-            else {
-                update_mask |= 100; // ignore beta versions older than the newest non-beta version
-
-                // the release update is the newest non-beta version
-                if ((update_mask & 10) == 0) {
-                    release_update = version;
-                    update_mask |= 10;
+//          if (/* all updates */) {
+                update_version = version;
+                check_complete = true;
+                return;
+/*          }
+            else { // only stable updates
+                // the stable update is the newest version that was
+                // released more than 7 days before the next version
+                if (version.timestamp + (7 * 24 * 60 * 60) < last_version_timestamp) {
+                    update_version = version;
+                    check_complete = true;
+                    return;
                 }
 
-                // the stable update is the newest non-beta version that was
-                // released more than 7 days before the next non-beta version
-                if ((update_mask & 1) == 0 && version.timestamp + (7 * 24 * 60 * 60) < last_non_beta_timestamp) {
-                    stable_update = version;
-                    update_mask |= 1;
-                }
-
-                last_non_beta_timestamp = version.timestamp;
+                last_version_timestamp = version.timestamp;
             }
 
             size_t update_buf_consumed = p + 1 - update_buf;
@@ -819,12 +791,7 @@ void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
             update_buf_used -= update_buf_consumed;
             update_buf[update_buf_used] = '\0';
 
-            p = strchr(update_buf, '\n');
-        }
-
-        if (update_mask == 111) {
-            update_complete = true;
-            return;
+            p = strchr(update_buf, '\n');*/
         }
     }
 }
