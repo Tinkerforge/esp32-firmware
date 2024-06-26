@@ -920,13 +920,14 @@ int allocate_current(
                       hosts[i],
                       current_to_set);
 
-            bool change = charger_alloc.allocated_current != current_to_set || charger_alloc.allocated_phases != phases_to_set;
-            charger_alloc.allocated_current = current_to_set;
-            charger_alloc.allocated_phases = phases_to_set;
 
             // Don't reset hysteresis if a charger is shut down. Re-activating a charger is (always?) fine.
             if (phases_to_set != 0 && charger_alloc.allocated_phases != phases_to_set)
                 ca_state->last_hysteresis_reset = now_us();
+
+            bool change = charger_alloc.allocated_current != current_to_set || charger_alloc.allocated_phases != phases_to_set;
+            charger_alloc.allocated_current = current_to_set;
+            charger_alloc.allocated_phases = phases_to_set;
 
             if (phases_to_set == 0) {
                 charger.allocated_energy_this_rotation = 0;
