@@ -14,7 +14,8 @@ let x = {
             "manual_update_muted": <><a href="{{{firmware_url}}}">manueller Download</a></>,
             "browse": "Durchsuchen",
             "select_file": "Firmware-Datei auswählen...",
-            "update": "Hochladen",
+            "install_update": "Installieren",
+            "installing_update": "wird installiert..",
             "downgrade": "Firmware-Downgrade",
             "abort_downgrade": "Abbrechen",
             "confirm_downgrade": "Downgrade durchführen",
@@ -29,8 +30,7 @@ let x = {
             "check_for_update_timestamp": "Letzte Aktualisierungssuche",
             "check_for_update_error": "Letzter Fehler",
             "available_update": "Verfügbare Aktualisierung",
-            "no_update": "Keine Aktualisierung verfügbar",
-            "install_update": "Installieren"
+            "no_update": "Keine Aktualisierung verfügbar"
         },
         "script": {
             "update_success": "Erfolgreich aktualisiert; starte neu...",

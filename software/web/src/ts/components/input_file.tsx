@@ -33,6 +33,7 @@ interface InputFileProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
     browse: string
     select_file: string
     upload: string,
+    uploading?: string,
     url: string,
     contentType?: string
     timeout_ms?: number
@@ -86,7 +87,7 @@ export function InputFile(props: InputFileProps) {
                     role="progressbar" style={"padding: 0; width: " + (progress * 100) + "%"} aria-valuenow={progress * 100} aria-valuemin={0}
                     aria-valuemax={100}>{Math.round(progress * 100) + "%"}</div>
             </div>
-            <label>{__("component.input_file.uploading")}</label>
+            <label>{props.uploading ? props.uploading : __("component.input_file.uploading")}</label>
         </div>
         </>
     );

@@ -14,7 +14,8 @@ let x = {
             "manual_update_muted": <><a href="{{{firmware_url}}}">manual download</a></>,
             "browse": "Browse",
             "select_file": "Select firmware file...",
-            "update": "Upload",
+            "install_update": "Install",
+            "installing_update": "installing...",
             "downgrade": "Firmware downgrade",
             "abort_downgrade": "Abort",
             "confirm_downgrade": "Downgrade firmware",
@@ -29,8 +30,7 @@ let x = {
             "check_for_update_timestamp": "Last update check",
             "check_for_update_error": "Last error",
             "available_update": "Available update",
-            "no_update": "No update available",
-            "install_update": "Install"
+            "no_update": "No update available"
         },
         "script": {
             "update_success": "Successfully updated; restarting...",
