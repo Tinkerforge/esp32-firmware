@@ -11,7 +11,7 @@ let x = {
             "firmware_update": "Firmware Update",
             "current_version": "Installed version",
             "manual_update": "Manual update",
-            "manual_update_muted": <><a href="{{{firmware_url}}}">manual download</a></>,
+            "manual_update_muted": <><a href="{{{firmware_url}}}">recent firmwares</a></>,
             "browse": "Browse",
             "select_file": "Select firmware file...",
             "install_update": "Install",

@@ -11,7 +11,7 @@ let x = {
             "firmware_update": "Firmware-Aktualisierung",
             "current_version": "Installierte Version",
             "manual_update": "Manuelle Aktualisierung",
-            "manual_update_muted": <><a href="{{{firmware_url}}}">manueller Download</a></>,
+            "manual_update_muted": <><a href="{{{firmware_url}}}">neueste Firmwares</a></>,
             "browse": "Durchsuchen",
             "select_file": "Firmware-Datei auswählen...",
             "install_update": "Installieren",
