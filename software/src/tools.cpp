@@ -92,11 +92,6 @@ bool deadline_elapsed(uint32_t deadline_ms)
     return a_after_b(millis(), deadline_ms);
 }
 
-micros_t operator""_usec(unsigned long long int i)
-{
-    return micros_t{(int64_t)i};
-}
-
 micros_t now_us()
 {
     return micros_t{esp_timer_get_time()};
