@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2020-2024 Erik Fleckstein <erik@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@
 #include <string.h> // For strlen
 #include <math.h> // For isnan
 #include <algorithm>
+#include <stdio.h> // For snprintf
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -38,7 +39,18 @@
 
 #define PRINT_COST(x) logger.printfln("%s %d %d %d %d", #x, x[0], x[1], x[2], x[3])
 
-#include <stdio.h>
+#define ALLOCATION_TIMEOUT_S 5
+
+// Only switch phases, start or stop chargers if this is elapsed.
+// Don't reset hysteresis when stopping chargers:
+// Stopping and immediately starting again is fine, see phase switch.
+static constexpr micros_t GLOBAL_HYSTERESIS = 3_usec * 60_usec * 1000_usec * 1000_usec;
+// Only consider charger for rotation if it has charged at least this amount of energy.
+static constexpr int32_t ALLOCATED_ENERGY_ROTATION_THRESHOLD = 5; /*kWh*/
+// Only consider charger for rotation after its phase allocation was stable for this time.
+static constexpr micros_t ALLOW_ROTATION_TIMEOUT_MS = 15_usec * 60_usec * 1000_usec;
+
+static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
 
 static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
     char buf[300] = {};
@@ -169,9 +181,6 @@ static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
     // Maybe also handle global hysteresis here? (ignore ALLOCATED_ENERGY_ROTATION_THRESHOLD if it is not elapsed)
 }
 
-static constexpr int32_t ALLOCATED_ENERGY_ROTATION_THRESHOLD = 5; /*kWh*/
-static constexpr int32_t UNLIMITED = 1000 * 1000 * 10; /* mA */
-
 // Stage 1: Rotate chargers
 // If there is any charger that wants to charge but doesn't have current allocated,
 // temporarily disable chargers that are currently active (see is_active) but have been allocated
@@ -186,7 +195,9 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     for (int i = 0; i < charger_count; ++i) {
         const auto *state = &charger_state[i];
 
-        bool keep_active = is_active(phase_allocation[i], state) && (!have_b1 || !ca_state->global_hysteresis_elapsed || state->allocated_energy_this_rotation < ALLOCATED_ENERGY_ROTATION_THRESHOLD);
+        bool dont_rotate = state->allocated_energy_this_rotation < ALLOCATED_ENERGY_ROTATION_THRESHOLD || !deadline_elapsed(state->last_switch + ALLOW_ROTATION_TIMEOUT_MS);
+        bool keep_active = is_active(phase_allocation[i], state) && (!have_b1 || !ca_state->global_hysteresis_elapsed || dont_rotate);
+
         if (!keep_active) {
             phase_allocation[i] = 0;
             continue;
@@ -341,10 +352,8 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     filter(allocated_phases > 0);
 
     // Reverse sort. Charger with most energy allocated first.
-    // TODO: Don't sort descending, loop backwards instead
-    // so that stage 4 and 5 don't have to sort.
     sort(0,
-        left.state->allocated_energy_this_rotation >= right.state->allocated_energy_this_rotation // TODO: use rotation time when implemented
+        left.state->last_switch >= right.state->last_switch
     );
 
     bool any_charger_shut_down = false;
@@ -755,9 +764,6 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     }
 }
 
-#define GLOBAL_HYSTERESIS_US 1000_usec * 1000_usec * 60_usec * 3_usec
-#define ALLOCATION_TIMEOUT_S 5
-
 int allocate_current(
     const CurrentAllocatorConfig *cfg,
     const bool seen_all_chargers,
@@ -799,7 +805,7 @@ int allocate_current(
     }
 
 
-    ca_state->global_hysteresis_elapsed = ca_state->last_hysteresis_reset == 0_usec || deadline_elapsed(ca_state->last_hysteresis_reset + GLOBAL_HYSTERESIS_US);
+    ca_state->global_hysteresis_elapsed = ca_state->last_hysteresis_reset == 0_usec || deadline_elapsed(ca_state->last_hysteresis_reset + GLOBAL_HYSTERESIS);
 
     logger.printfln("Hysteresis %selapsed. Last hyst reset %lld", ca_state->global_hysteresis_elapsed ? "" : "not ", (int64_t)(ca_state->last_hysteresis_reset / 1000_usec));
 
@@ -920,10 +926,12 @@ int allocate_current(
                       hosts[i],
                       current_to_set);
 
-
             // Don't reset hysteresis if a charger is shut down. Re-activating a charger is (always?) fine.
-            if (phases_to_set != 0 && charger_alloc.allocated_phases != phases_to_set)
+            if (charger_alloc.allocated_phases != phases_to_set && phases_to_set != 0) {
+                // TODO use same timestamp everywhere
+                charger.last_switch = now_us();
                 ca_state->last_hysteresis_reset = now_us();
+            }
 
             bool change = charger_alloc.allocated_current != current_to_set || charger_alloc.allocated_phases != phases_to_set;
             charger_alloc.allocated_current = current_to_set;
