@@ -31,11 +31,6 @@ uint32_t millis() {
     return (ts.tv_sec * 1000 + ts.tv_nsec / 1000000L);
 }
 
-micros_t operator""_usec(unsigned long long int i)
-{
-    return micros_t{(int64_t)i};
-}
-
 micros_t now_us()
 {
     struct timespec ts;

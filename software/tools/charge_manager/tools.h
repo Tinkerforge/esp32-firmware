@@ -16,7 +16,7 @@ uint32_t millis();
 
 STRONG_INTEGER_TYPEDEF(int64_t, micros_t)
 
-micros_t operator""_usec(unsigned long long int i);
+constexpr micros_t operator""_usec(unsigned long long int i) { return micros_t{(int64_t)i}; }
 
 micros_t now_us();
 bool deadline_elapsed(micros_t deadline_us);
