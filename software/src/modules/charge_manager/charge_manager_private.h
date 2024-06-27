@@ -79,6 +79,7 @@ struct ChargerState {
 
     float allocated_energy;
     float allocated_energy_this_rotation;
+    micros_t last_switch;
 };
 
 struct ChargerAllocationState {
