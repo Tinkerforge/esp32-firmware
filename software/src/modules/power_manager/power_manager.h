@@ -168,6 +168,8 @@ private:
 
     mavg_filter power_at_meter_smooth_w;
     mavg_filter power_at_meter_filtered_w;
+
+    int32_t currents_at_meter_raw_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
     mavg_filter currents_at_meter_filtered_ma[3];
 
     //int32_t  power_at_meter_smooth_w             = INT32_MAX;
@@ -201,6 +203,8 @@ private:
 
     // Pre-calculated limits
     int32_t  overall_min_power_w = 0;
+    int32_t  target_phase_current_ma = 0;
+    int32_t  phase_current_max_increase_ma = 0;
 
     // Automation
     TristateBool automation_drawing_power_last   = TristateBool::Undefined;
