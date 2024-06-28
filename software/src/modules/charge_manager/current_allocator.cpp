@@ -162,6 +162,15 @@ bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage)
         case 6:
         case 7:
             return phases_exceeded || pv_excess_exceeded;
+        case 8: {
+            bool phases_min_exceeded = false;
+            for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
+                phases_min_exceeded |= limits->min[i] < cost[i];
+            }
+
+            bool pv_excess_min_exceeded = limits->min.pv < cost.pv;
+            return phases_exceeded || pv_excess_exceeded || phases_min_exceeded || pv_excess_min_exceeded;
+        }
         default:
             assert(false && "Unknown charge management stage!");
     }
@@ -351,7 +360,7 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     filter(allocated_phases > 0);
 
-    // Reverse sort. Charger with most energy allocated first.
+    // Reverse sort. Charger that was active for the longest time first.
     sort(0,
         left.state->last_switch >= right.state->last_switch
     );
@@ -464,6 +473,54 @@ static bool can_activate(const Cost new_cost, const Cost new_enable_cost, const 
     return true;
 }
 
+static void get_enable_cost(const ChargerState *state, bool activate_3p, Cost *minimum, Cost *enable, const CurrentAllocatorConfig *cfg) {
+    auto min_1p = cfg->minimum_current_1p;
+    auto min_3p = cfg->minimum_current_3p;
+
+    // TODO: Add to cfg? Will not change while the firmware is running.
+    int ena_1p = min_1p * cfg->enable_current_factor;
+    int ena_3p = min_3p * cfg->enable_current_factor;
+
+    Cost new_cost;
+    Cost new_enable_cost;
+
+    if (activate_3p) {
+        new_cost = Cost{3 * min_3p, min_3p, min_3p, min_3p};
+        new_enable_cost = Cost{3 * ena_3p, ena_3p, ena_3p, ena_3p};
+    } else if (state->phase_rotation == PhaseRotation::Unknown) {
+        new_cost = Cost{min_1p, min_1p, min_1p, min_1p};
+        new_enable_cost = Cost{ena_1p, ena_1p, ena_1p, ena_1p};
+    } else {
+        auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
+
+        new_cost.pv += min_1p;
+        new_cost[phase] += min_1p;
+
+        new_enable_cost.pv += ena_1p;
+        new_enable_cost[phase] += ena_1p;
+    }
+
+    if (minimum != nullptr)
+        *minimum = new_cost;
+    if (enable != nullptr)
+        *enable = new_enable_cost;
+}
+
+static bool try_activate(const ChargerState *state, bool activate_3p, Cost *spent, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg,const CurrentAllocatorState *ca_state) {
+    Cost wnd_min = ca_state->control_window_min;
+    Cost wnd_max = ca_state->control_window_max;
+
+    Cost new_cost;
+    Cost new_enable_cost;
+
+    get_enable_cost(state, activate_3p, &new_cost, &new_enable_cost, cfg);
+
+    bool result = can_activate(new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg);
+    if (result && spent != nullptr)
+        *spent = new_enable_cost;
+    return result;
+}
+
 // Stage 3: Activate chargers if current is available
 // - Only work with chargers that don't already have one or more phase allocated
 // - Sort chargers by allocated energy (overall) ascending.
@@ -479,14 +536,6 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     if (!ca_state->global_hysteresis_elapsed)
         return;
 
-    Cost wnd_min = ca_state->control_window_min;
-    Cost wnd_max = ca_state->control_window_max;
-
-    auto min_1p = cfg->minimum_current_1p;
-    auto min_3p = cfg->minimum_current_3p;
-
-    int ena_1p = min_1p * cfg->enable_current_factor;
-    int ena_3p = min_3p * cfg->enable_current_factor;
 
     int matched = 0;
 
@@ -500,51 +549,21 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
 
-        bool activate_3p = state->phases == 3 && !state->phase_switch_supported;
+        bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
+        bool is_unknown_rot_switchable = state->phase_rotation == PhaseRotation::Unknown && state->phase_switch_supported;
+        bool activate_3p = is_fixed_3p || is_unknown_rot_switchable;
 
-        Cost new_cost;
-        Cost new_enable_cost;
-
-        if (activate_3p) {
-            new_cost = Cost{3 * min_3p, min_3p, min_3p, min_3p};
-            new_enable_cost = Cost{3 * ena_3p, ena_3p, ena_3p, ena_3p};
-        } else if (state->phase_rotation == PhaseRotation::Unknown) {
-            // Try to enable switchable unknown rotated chargers with three phases first.
-            if (state->phase_switch_supported) {
-                new_cost = Cost{3 * min_3p, min_3p, min_3p, min_3p};
-                new_enable_cost = Cost{3 * ena_3p, ena_3p, ena_3p, ena_3p};
-                activate_3p = true;
-            }
-            if (!state->phase_switch_supported || !can_activate(new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg)) {
-                new_cost = Cost{min_1p, min_1p, min_1p, min_1p};
-                new_enable_cost = Cost{ena_1p, ena_1p, ena_1p, ena_1p};
-                activate_3p = false;
-            }
-        } else {
-            auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-
-            new_cost.pv += min_1p;
-            new_cost[phase] += min_1p;
-
-            new_enable_cost.pv += ena_1p;
-            new_enable_cost[phase] += ena_1p;
-        }
-
-        if (!can_activate(new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg)) {
-            /*logger.tf_dbg("skip %d", idx_array[i]);
-            PRINT_COST(new_cost);
-            PRINT_COST(new_enable_cost);
-            PRINT_COST(wnd_min);
-            PRINT_COST(wnd_max);
-            PRINT_COST(limits->raw);
-            PRINT_COST(limits->filtered);*/
-            continue;
+        if (!try_activate(state, activate_3p, nullptr, limits, cfg, ca_state)) {
+            if (!is_unknown_rot_switchable)
+                continue;
+            // Retry enabling unknown_rot_switchable charger with one phase only
+            activate_3p = false;
+            if (!try_activate(state, activate_3p, nullptr, limits, cfg, ca_state))
+                continue;
         }
 
         phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
         calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
-        wnd_min = ca_state->control_window_min;
-        wnd_max = ca_state->control_window_max;
     }
 }
 
@@ -761,6 +780,54 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         apply_cost(cost, limits);
         current_allocation[idx_array[i]] = current;
+    }
+}
+
+// Stage 8: Wake up chargers.
+// If there is still current left, attempt to wake up one charger with a probably fully charged car.
+// Activating the charger will automatically change it from low to normal priority for at least 3 minutes,
+// giving the car time to request current.
+void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+    if (!ca_state->global_hysteresis_elapsed)
+        return;
+
+    int matched = 0;
+
+    filter(allocated_phases == 0 && state->wants_to_charge_low_priority);
+
+    if (matched == 0)
+        return;
+
+    // Reverse sort. Charger that was inactive for the longest time first.
+    sort(0,
+        left.state->last_switch >= right.state->last_switch
+    );
+
+    for (int i = 0; i < matched; ++i) {
+        const auto *state = &charger_state[idx_array[i]];
+
+        bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
+        bool is_unknown_rot_switchable = state->phase_rotation == PhaseRotation::Unknown && state->phase_switch_supported;
+        bool activate_3p = is_fixed_3p || is_unknown_rot_switchable;
+
+        Cost enable_cost;
+        get_enable_cost(state, activate_3p, nullptr, &enable_cost, cfg);
+
+        if (cost_exceeds_limits(enable_cost, limits, 8)) {
+            if (!is_unknown_rot_switchable)
+                continue;
+            // Retry enabling unknown_rot_switchable charger with one phase only
+            activate_3p = false;
+            get_enable_cost(state, activate_3p, nullptr, &enable_cost, cfg);
+            if (cost_exceeds_limits(enable_cost, limits, 8))
+                continue;
+        }
+
+        phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
+        // This assumes that every enable cost is the same on all phases.
+        current_allocation[idx_array[i]] = enable_cost.l1;
+        //calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
+        return;
     }
 }
 
