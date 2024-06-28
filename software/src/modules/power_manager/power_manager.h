@@ -92,12 +92,14 @@ public:
     [[gnu::const]] size_t get_debug_line_length() const override;
     void get_debug_line(StringBuilder *sb) override;
 
-    struct mavg_filter {
-        int32_t  filtered_val       = INT32_MAX;
-        int32_t *mavg_values        = nullptr;
-        int32_t  mavg_total         = 0;
-        int32_t  mavg_values_count  = 0;
-        int32_t  mavg_position      = 0;
+    struct minmax_filter {
+        int32_t  min             = INT32_MAX;
+        int32_t  max             = INT32_MAX;
+        int32_t *history_values  = nullptr;
+        int32_t  history_length  = 0;
+        int32_t  history_pos     = 0;
+        int32_t  history_min_pos = 0;
+        int32_t  history_max_pos = 0;
     };
 
 private:
@@ -160,13 +162,13 @@ private:
         uint8_t  pin[4];
     } charging_blocked               = {0};
 
-    int32_t  power_available_w                   = 0;
+    int32_t  power_available_w = 0;
 
-    float    power_at_meter_raw_w                = NAN;
-    mavg_filter power_at_meter_filtered_w;
+    float    power_at_meter_raw_w = NAN;
+    minmax_filter current_pv_minmax_w;
 
     int32_t currents_at_meter_raw_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
-    mavg_filter currents_at_meter_filtered_ma[3];
+    minmax_filter currents_phase_minmax_w[3];
 
     // CM data
     CurrentLimits *cm_limits;
