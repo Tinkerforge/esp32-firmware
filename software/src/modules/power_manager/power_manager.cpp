@@ -40,7 +40,7 @@ void PowerManager::pre_setup()
 
     low_level_state = Config::Object({
         {"power_at_meter", Config::Float(0)},
-        {"power_at_meter_filtered", Config::Float(0)}, //TODO make this int?
+        {"power_at_meter_filtered", Config::Float(0)}, // obsolete
         {"power_available", Config::Int32(0)},
         {"power_available_filtered", Config::Int32(0)}, // obsolete
         {"overall_min_power", Config::Int32(0)},
@@ -269,16 +269,16 @@ void PowerManager::setup()
 
     // Set up meter power filters if excess charging is enabled
     if (excess_charging_enabled) {
-        power_at_meter_filtered_w.mavg_values_count = static_cast<int32_t>(values_count);
-        power_at_meter_filtered_w.mavg_values = static_cast<int32_t *>(heap_caps_malloc_prefer(values_count * sizeof(power_at_meter_filtered_w.mavg_values[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT));
+        current_pv_minmax_w.history_length = static_cast<int32_t>(values_count);
+        current_pv_minmax_w.history_values = static_cast<int32_t *>(heap_caps_malloc_prefer(values_count * sizeof(current_pv_minmax_w.history_values[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM));
     }
 
     // Set up meter current filters if dynamic load management is enabled
     if (dynamic_load_enabled) {
-        for (size_t i = 0; i < ARRAY_SIZE(currents_at_meter_filtered_ma); i++) {
-            mavg_filter *filter = currents_at_meter_filtered_ma + i;
-            filter->mavg_values_count = static_cast<int32_t>(values_count);
-            filter->mavg_values = static_cast<int32_t *>(heap_caps_malloc_prefer(values_count * sizeof(filter->mavg_values[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT));
+        for (size_t i = 0; i < ARRAY_SIZE(currents_phase_minmax_w); i++) {
+            minmax_filter *filter = currents_phase_minmax_w + i;
+            filter->history_length = static_cast<int32_t>(values_count);
+            filter->history_values = static_cast<int32_t *>(heap_caps_malloc_prefer(values_count * sizeof(filter->history_values[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM));
         }
     }
 
@@ -524,44 +524,93 @@ void PowerManager::set_available_phases(uint32_t phases)
         logger.printfln("set_available_phases failed: %s", err.c_str());
 }
 
-static int32_t update_mavg_filter(int32_t filter_input, PowerManager::mavg_filter *filter)
+static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter *filter)
 {
-    // Check if filter values need to be initialized
-    if (filter->filtered_val == INT32_MAX) {
-        int32_t values_count = filter->mavg_values_count;
+    // Check if filter history needs to be initialized
+    if (filter->min == INT32_MAX) {
+        filter->min = new_value;
+        filter->max = new_value;
 
-        filter->filtered_val = filter_input;
-        filter->mavg_total = filter_input * values_count;
+        filter->history_pos     = 1; // Position for next value
+        filter->history_min_pos = 0;
+        filter->history_max_pos = 0;
 
-        int32_t *values = filter->mavg_values;
-        int32_t *values_end = values + values_count;
-        while (values < values_end) {
-            *values = filter_input;
-            values++;
+        filter->history_values[0] = new_value;
+        // Other values don't need to be initialized because they won't be read before the first value is removed,
+        // at which point all values must have been written.
+
+        return;
+    }
+
+    int32_t history_pos = filter->history_pos;
+
+    filter->history_values[history_pos] = new_value;
+
+    if (new_value <= filter->min) {
+        filter->min = new_value;
+        filter->history_min_pos = history_pos;
+    } else {
+        if (filter->history_min_pos == history_pos) {
+            // Current minimum was just replaced, need to find new minimum.
+            int32_t *values = filter->history_values;
+            int32_t min = INT32_MAX;
+            int32_t min_pos = 0;
+
+            // Search older data after current position in history
+            for (int32_t i = history_pos + 1; i < filter->history_length; i++) {
+                if (values[i] <= min) {
+                    min = values[i];
+                    min_pos = i;
+                }
+            }
+            // Search newer data before current position in history
+            for (int32_t i = 0; i <= history_pos; i++) {
+                if (values[i] <= min) {
+                    min = values[i];
+                    min_pos = i;
+                }
+            }
+
+            filter->min = min;
+            filter->history_min_pos = min_pos;
         }
-
-        return filter_input;
     }
 
-    int32_t mavg_position = filter->mavg_position;
+    if (new_value >= filter->max) {
+        filter->max = new_value;
+        filter->history_max_pos = history_pos;
+    } else {
+        if (filter->history_max_pos == history_pos) {
+            // Current maximum was just replaced, need to find new maximum.
+            int32_t *values = filter->history_values;
+            int32_t max = INT32_MIN;
+            int32_t max_pos = 0;
 
-    int32_t mavg_total = filter->mavg_total - filter->mavg_values[mavg_position] + filter_input;
-    filter->mavg_values[mavg_position] = filter_input;
-    filter->mavg_total = mavg_total;
+            // Search older data after current position in history
+            for (int32_t i = history_pos + 1; i < filter->history_length; i++) {
+                if (values[i] >= max) {
+                    max = values[i];
+                    max_pos = i;
+                }
+            }
+            // Search newer data before current position in history
+            for (int32_t i = 0; i <= history_pos; i++) {
+                if (values[i] >= max) {
+                    max = values[i];
+                    max_pos = i;
+                }
+            }
 
-    mavg_position++;
-    if (mavg_position >= filter->mavg_values_count) {
-        mavg_position = 0;
+            filter->max = max;
+            filter->history_max_pos = max_pos;
+        }
     }
-    filter->mavg_position = mavg_position;
 
-    // Signed division requires both numbers to be signed
-    static_assert(std::is_same<int32_t, decltype(filter->mavg_total       )>::value, "filter's mavg_total must be signed");
-    static_assert(std::is_same<int32_t, decltype(filter->mavg_values_count)>::value, "filter's mavg_values_count must be signed");
-
-    filter->filtered_val = mavg_total / filter->mavg_values_count;
-
-    return filter->filtered_val;
+    history_pos++;
+    if (history_pos >= filter->history_length) {
+        history_pos = 0;
+    }
+    filter->history_pos = history_pos;
 }
 
 void PowerManager::update_data()
@@ -581,17 +630,6 @@ void PowerManager::update_data()
 
     if (!isnan(power_at_meter_raw_w)) {
         low_level_state.get("power_at_meter")->updateFloat(power_at_meter_raw_w);
-
-        // Filter power value only when excess charging is enabled
-        if (excess_charging_enabled) {
-            int32_t raw_power_w = static_cast<int32_t>(power_at_meter_raw_w);
-
-            // Filtered values must not be modified anywhere else
-
-            int32_t filtered_w = update_mavg_filter(raw_power_w, &power_at_meter_filtered_w);
-
-            low_level_state.get("power_at_meter_filtered")->updateFloat(static_cast<float>(filtered_w));
-        }
 
 #if MODULE_AUTOMATION_AVAILABLE()
         TristateBool drawing_power = static_cast<TristateBool>(power_at_meter_raw_w > 0);
@@ -623,12 +661,6 @@ void PowerManager::update_data()
             if (dynamic_load_enabled) {
                 int32_t raw_current_ma = static_cast<int32_t>(meter_current_a * 1000);
                 currents_at_meter_raw_ma[i] = raw_current_ma;
-
-                // Filtered values must not be modified anywhere else
-
-                /*int32_t filtered_current_ma =*/ update_mavg_filter(raw_current_ma, &currents_at_meter_filtered_ma[i]);
-
-                // TODO Store in low_level_state
             }
         }
     }
@@ -652,8 +684,6 @@ void PowerManager::update_energy()
     if (!excess_charging_enabled) {
         power_available_w = INT32_MAX;
     } else {
-        int32_t power_filtered_w = power_at_meter_filtered_w.filtered_val;
-
         if (isnan(power_at_meter_raw_w)) {
             if (!printed_skipping_energy_update) {
                 logger.printfln("PV excess charging unavailable because power values are not available yet.");
@@ -662,11 +692,6 @@ void PowerManager::update_energy()
 
             power_available_w = 0;
         } else {
-            if (power_filtered_w == INT32_MAX) {
-                logger.printfln("Uninitialized power_at_meter_filtered_w leaked");
-                return;
-            }
-
             if (printed_skipping_energy_update) {
                 logger.printfln("PV excess charging available because power values are now available.");
                 printed_skipping_energy_update = false;
@@ -733,9 +758,18 @@ void PowerManager::update_energy()
 
     low_level_state.get("power_available")->updateInt(power_available_w);
 
-    cm_limits->raw.pv = power_available_w == INT32_MAX ? INT32_MAX : power_available_w * 1000 / 230;
-    cm_limits->min.pv = cm_limits->raw.pv;
-    cm_limits->max.pv = cm_limits->raw.pv;
+    if (power_available_w == INT32_MAX) {
+        cm_limits->raw.pv = INT32_MAX;
+        cm_limits->min.pv = INT32_MAX;
+        cm_limits->max.pv = INT32_MAX;
+    } else {
+        int32_t pv_raw_ma = power_available_w * 1000 / 230;
+        update_minmax_filter(pv_raw_ma, &current_pv_minmax_w);
+
+        cm_limits->raw.pv = pv_raw_ma;
+        cm_limits->min.pv = current_pv_minmax_w.min;
+        cm_limits->max.pv = current_pv_minmax_w.max;
+    }
 
 #if MODULE_AUTOMATION_AVAILABLE()
     bool wants_on = power_available_filtered_w >= overall_min_power_w; // TODO FIXME Doesn't exist anymore
@@ -784,11 +818,14 @@ void PowerManager::update_energy()
 
                 phase_limit_raw_ma = min(phase_limit_raw_ma, supply_cable_max_current_ma);
 
-                cm_limits->raw[i] = phase_limit_raw_ma;
-                cm_limits->min[i] = phase_limit_raw_ma;
-                cm_limits->max[i] = phase_limit_raw_ma;
+                minmax_filter *phase_minmax_ma = currents_phase_minmax_w + i - 1;
+                update_minmax_filter(phase_limit_raw_ma, phase_minmax_ma);
 
-                //logger.printfln("L%u  meter=%i err=%i adj=%i limit=%i", i, phase_current_raw_ma, current_error_ma, current_adjust_ma, phase_limit_raw_ma);
+                cm_limits->raw[i] = phase_limit_raw_ma;
+                cm_limits->min[i] = phase_minmax_ma->min;
+                cm_limits->max[i] = phase_minmax_ma->max;
+
+                //logger.printfln("L%u  meter=%5i  err=%5i  adj=%5i  limit=%5i  min=%5i  max=%5i", i, phase_current_raw_ma, current_error_ma, current_adjust_ma, phase_limit_raw_ma, phase_minmax_ma->min, phase_minmax_ma->max);
             }
         }
     }
