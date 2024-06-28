@@ -762,7 +762,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto current = std::min(limits->raw.pv / allocated_phases, current_capacity(limits, state, allocated_current, allocated_phases));
         for (size_t p = 1; p < 4; ++p) {
             // TODO check charger phases!
-            current = std::min(current, limits->raw[i]);
+            current = std::min(current, limits->raw[p]);
         }
         current += allocated_current;
 
@@ -770,7 +770,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         // This should never happen.
         if (cost_exceeds_limits(cost, limits, 7)) {
-            logger.printfln("stage 7: Cost exceeded limits!");
+            logger.printfln("stage 7: Cost exceeded limits! Charger %d Current %u", idx_array[i], current);
             print_alloc(7, limits, current_allocation, phase_allocation, charger_count, charger_state);
             PRINT_COST(cost);
             PRINT_COST(ca_state->control_window_min);
