@@ -32,7 +32,6 @@
 #endif
 
 #define PM_TASK_DELAY_MS                    500
-#define CURRENT_POWER_SMOOTHING_SAMPLES     4
 
 #define MODE_FAST                           0
 #define MODE_OFF                            1
@@ -165,17 +164,10 @@ private:
     int32_t  power_available_filtered_w          = 0;
 
     float    power_at_meter_raw_w                = NAN;
-
-    mavg_filter power_at_meter_smooth_w;
     mavg_filter power_at_meter_filtered_w;
 
     int32_t currents_at_meter_raw_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
     mavg_filter currents_at_meter_filtered_ma[3];
-
-    //int32_t  power_at_meter_smooth_w             = INT32_MAX;
-    //int32_t  power_at_meter_smooth_values_w[CURRENT_POWER_SMOOTHING_SAMPLES];
-    //int32_t  power_at_meter_smooth_total         = 0;
-    //int32_t  power_at_meter_smooth_position      = 0;
 
     //int32_t  power_at_meter_filtered_w           = INT32_MAX;
     //int32_t *power_at_meter_mavg_values_w        = nullptr;

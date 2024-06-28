@@ -6,7 +6,7 @@ tfutil.create_parent_module(__file__, 'software')
 from software import util
 
 debug_log_variables = [
-    "power_at_meter_smooth_w.filtered_val",
+    "power_at_meter_raw_w",
     "power_at_meter_filtered_w.filtered_val",
     "power_available_w",
     "power_available_filtered_w",

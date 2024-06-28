@@ -269,9 +269,6 @@ void PowerManager::setup()
 
     // Set up meter power filters if excess charging is enabled
     if (excess_charging_enabled) {
-        power_at_meter_smooth_w.mavg_values_count = CURRENT_POWER_SMOOTHING_SAMPLES;
-        power_at_meter_smooth_w.mavg_values = static_cast<int32_t *>(heap_caps_malloc_prefer(CURRENT_POWER_SMOOTHING_SAMPLES * sizeof(power_at_meter_smooth_w.mavg_values[0]), 1, MALLOC_CAP_32BIT));
-
         power_at_meter_filtered_w.mavg_values_count = static_cast<int32_t>(values_count);
         power_at_meter_filtered_w.mavg_values = static_cast<int32_t *>(heap_caps_malloc_prefer(values_count * sizeof(power_at_meter_filtered_w.mavg_values[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT));
     }
@@ -589,9 +586,8 @@ void PowerManager::update_data()
         if (excess_charging_enabled) {
             int32_t raw_power_w = static_cast<int32_t>(power_at_meter_raw_w);
 
-            // Filtered/smoothed values must not be modified anywhere else
+            // Filtered values must not be modified anywhere else
 
-            update_mavg_filter(raw_power_w, &power_at_meter_smooth_w);
             int32_t filtered_w = update_mavg_filter(raw_power_w, &power_at_meter_filtered_w);
 
             low_level_state.get("power_at_meter_filtered")->updateFloat(static_cast<float>(filtered_w));
@@ -656,10 +652,9 @@ void PowerManager::update_energy()
         power_available_w          = INT32_MAX;
         power_available_filtered_w = INT32_MAX;
     } else {
-        int32_t power_smooth_w   = power_at_meter_smooth_w.filtered_val;
         int32_t power_filtered_w = power_at_meter_filtered_w.filtered_val;
 
-        if (power_smooth_w == INT32_MAX) {
+        if (isnan(power_at_meter_raw_w)) {
             if (!printed_skipping_energy_update) {
                 logger.printfln("PV excess charging unavailable because power values are not available yet.");
                 printed_skipping_energy_update = true;
@@ -678,7 +673,7 @@ void PowerManager::update_energy()
                 printed_skipping_energy_update = false;
             }
 
-            int32_t p_error_w          = target_power_from_grid_w - power_smooth_w;
+            int32_t p_error_w          = target_power_from_grid_w - static_cast<int32_t>(power_at_meter_raw_w);
             int32_t p_error_filtered_w = target_power_from_grid_w - power_filtered_w;
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
