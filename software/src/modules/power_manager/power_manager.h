@@ -31,7 +31,7 @@
 #include "modules/automation/automation_backend.h"
 #endif
 
-#define PM_TASK_DELAY_MS                    250
+#define PM_TASK_DELAY_MS                    500
 #define CURRENT_POWER_SMOOTHING_SAMPLES     4
 
 #define MODE_FAST                           0
