@@ -874,7 +874,7 @@ int allocate_current(
 
     ca_state->global_hysteresis_elapsed = ca_state->last_hysteresis_reset == 0_usec || deadline_elapsed(ca_state->last_hysteresis_reset + GLOBAL_HYSTERESIS);
 
-    logger.printfln("Hysteresis %selapsed. Last hyst reset %lld", ca_state->global_hysteresis_elapsed ? "" : "not ", (int64_t)(ca_state->last_hysteresis_reset / 1000_usec));
+    logger.printfln("Hysteresis %selapsed. Last hyst reset %lld. Now %lld", ca_state->global_hysteresis_elapsed ? "" : "not ", (int64_t)(ca_state->last_hysteresis_reset / 1000000_usec), (int64_t)(now_us() / 1000000_usec));
 
     // Update control pilot disconnect
     {
@@ -963,21 +963,25 @@ int allocate_current(
         }
     }
 
-    //print_alloc(0, limits, current_array, phases_array, cfg->charger_count);
+    //auto start = micros();
+    //print_alloc(0, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_1(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
-    //print_alloc(1, limits, current_array, phases_array, cfg->charger_count);
+    //print_alloc(1, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_2(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
-    //print_alloc(2, limits, current_array, phases_array, cfg->charger_count);
+    //print_alloc(2, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_3(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
-    //print_alloc(3, limits, current_array, phases_array, cfg->charger_count);
+    //print_alloc(3, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_4(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
-    //print_alloc(4, limits, current_array, phases_array, cfg->charger_count);
+    //print_alloc(4, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_5(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
-    //print_alloc(5, limits, current_array, phases_array, cfg->charger_count);
+    //print_alloc(5, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_6(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
-    //print_alloc(6, limits, current_array, phases_array, cfg->charger_count);
+    //print_alloc(6, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_7(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
-    //print_alloc(7, limits, current_array, phases_array, cfg->charger_count);
+    //print_alloc(7, limits, current_array, phases_array, cfg->charger_count, charger_state);
+    //logger.printfln("\n");
+    //auto end = micros();
+    //logger.printfln("Took %u µs", end - start);
 
     // Apply current limits.
     {
