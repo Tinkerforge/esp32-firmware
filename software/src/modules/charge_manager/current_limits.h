@@ -98,8 +98,6 @@ static_assert(sizeof(Cost) == 4 * sizeof(int), "Unexpected size of Cost");
 
 struct CurrentLimits {
     Cost raw;
-    // TODO: remove
-    Cost filtered;
     Cost min;
     Cost max;
 };
