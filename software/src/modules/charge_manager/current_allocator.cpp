@@ -48,7 +48,7 @@ static constexpr micros_t GLOBAL_HYSTERESIS = 3_usec * 60_usec * 1000_usec * 100
 // Only consider charger for rotation if it has charged at least this amount of energy.
 static constexpr int32_t ALLOCATED_ENERGY_ROTATION_THRESHOLD = 5; /*kWh*/
 // Only consider charger for rotation after its phase allocation was stable for this time.
-static constexpr micros_t ALLOW_ROTATION_TIMEOUT_MS = 15_usec * 60_usec * 1000_usec;
+static constexpr micros_t ALLOW_ROTATION_TIMEOUT = 15_usec * 60_usec * 1000_usec * 1000_usec;
 
 static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
 
@@ -204,7 +204,7 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     for (int i = 0; i < charger_count; ++i) {
         const auto *state = &charger_state[i];
 
-        bool dont_rotate = state->allocated_energy_this_rotation < ALLOCATED_ENERGY_ROTATION_THRESHOLD || !deadline_elapsed(state->last_switch + ALLOW_ROTATION_TIMEOUT_MS);
+        bool dont_rotate = state->allocated_energy_this_rotation < ALLOCATED_ENERGY_ROTATION_THRESHOLD || !deadline_elapsed(state->last_switch + ALLOW_ROTATION_TIMEOUT);
         bool keep_active = is_active(phase_allocation[i], state) && (!have_b1 || !ca_state->global_hysteresis_elapsed || dont_rotate);
 
         if (!keep_active) {
