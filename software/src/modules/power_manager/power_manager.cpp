@@ -605,10 +605,11 @@ void PowerManager::update_data()
     float meter_currents[INDEX_CACHE_CURRENT_COUNT];
 #if MODULE_METERS_AVAILABLE()
     MeterValueAvailability ret = meters.get_currents(meter_slot_power, meter_currents);
-    if (ret != MeterValueAvailability::Fresh) {
+    if (ret != MeterValueAvailability::Fresh)
 #else
-    if (true) {
+    // Unconditionally execute block
 #endif
+    { // Don't place bracket in sections removed by precompiler to make VSCode happy
         for (size_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
             meter_currents[i] = NAN;
         }
