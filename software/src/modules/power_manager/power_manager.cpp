@@ -298,6 +298,20 @@ void PowerManager::setup()
         logger.printfln("Raising guaranteed power to %u based on minimum charge current set in charge manager.", guaranteed_power_w);
     }
 
+    if (dynamic_load_enabled) {
+        int32_t current_limit_ma            = static_cast<int32_t>(dynamic_load_config.get("current_limit")->asUint());
+        int32_t largest_consumer_current_ma = static_cast<int32_t>(dynamic_load_config.get("largest_consumer_current")->asUint());
+        int32_t safety_margin_pct           = static_cast<int32_t>(dynamic_load_config.get("safety_margin_pct")->asUint());
+
+        int32_t circuit_breaker_trip_point_ma = current_limit_ma + current_limit_ma / 2; // equal to *1.5
+        int32_t max_possible_ma = circuit_breaker_trip_point_ma - largest_consumer_current_ma;
+        target_phase_current_ma = std::min(max_possible_ma, current_limit_ma) * (100 - safety_margin_pct) / 100;
+
+        phase_current_max_increase_ma = target_phase_current_ma / 4;
+
+        //logger.printfln("cb trip %i  max %i  target phase current %i  max inc %i", circuit_breaker_trip_point_ma, max_possible_ma, target_phase_current_ma, phase_current_max_increase_ma); // TODO store in state instead
+    }
+
     low_level_state.get("overall_min_power")->updateInt(overall_min_power_w);
     low_level_state.get("threshold_3to1")->updateInt(0); // TODO dead code
     low_level_state.get("threshold_1to3")->updateInt(0); // TODO dead code
@@ -555,6 +569,7 @@ static int32_t update_mavg_filter(int32_t filter_input, PowerManager::mavg_filte
 
 void PowerManager::update_data()
 {
+    // TODO remove have_phases and is_3phase
     // Update states from back-end
     is_3phase = phase_switcher_backend->phase_switching_capable() ? phase_switcher_backend->get_is_3phase() : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
     have_phases = 1 + static_cast<int32_t>(is_3phase) * 2;
@@ -610,6 +625,7 @@ void PowerManager::update_data()
 
             if (dynamic_load_enabled) {
                 int32_t raw_current_ma = static_cast<int32_t>(meter_current_a * 1000);
+                currents_at_meter_raw_ma[i] = raw_current_ma;
 
                 // Filtered values must not be modified anywhere else
 
@@ -623,58 +639,47 @@ void PowerManager::update_data()
 
 void PowerManager::update_energy()
 {
-    int32_t charge_manager_allocated_current_ma = 0;
+    int32_t cm_total_allocated_current_ma = 0;
 
     for (size_t i = 1; i <= 3; i++) {
         int32_t allocated_current = (*cm_allocated_currents)[i];
         if (allocated_current < 0) {
             logger.printfln("CM allocated current on L%u negative: %i", i, allocated_current);
         } else {
-            charge_manager_allocated_current_ma += allocated_current;
+            cm_total_allocated_current_ma += allocated_current;
         }
     }
-    charge_manager_allocated_current_ma /= 3;
 
-    const int32_t charge_manager_allocated_power_w = 230 * have_phases * charge_manager_allocated_current_ma / 1000; // watt
+    low_level_state.get("charge_manager_allocated_current")->updateInt(cm_total_allocated_current_ma);
 
-    low_level_state.get("charge_manager_allocated_current")->updateInt(charge_manager_allocated_current_ma);
-    low_level_state.get("max_current_limited")->updateInt(max_current_limited_ma);
-    low_level_state.get("charging_blocked")->updateUint(charging_blocked.combined);
-
-    // TODO check this
-    if (charging_blocked.combined) {
-        set_available_current(0, 0, 0, 0);
-
-        if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
-            state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
-
-        return;
-    }
-
-    int32_t p_error_w, p_error_filtered_w;
     if (!excess_charging_enabled) {
-        p_error_w          = 0;
-        p_error_filtered_w = 0;
+        power_available_w          = INT32_MAX;
+        power_available_filtered_w = INT32_MAX;
     } else {
         int32_t power_smooth_w   = power_at_meter_smooth_w.filtered_val;
         int32_t power_filtered_w = power_at_meter_filtered_w.filtered_val;
 
         if (power_smooth_w == INT32_MAX) {
-            p_error_w          = INT32_MAX;
-            p_error_filtered_w = INT32_MAX;
-
             if (!printed_skipping_energy_update) {
                 logger.printfln("PV excess charging unavailable because power values are not available yet.");
                 printed_skipping_energy_update = true;
             }
+
+            power_available_w          = 0;
+            power_available_filtered_w = 0;
         } else {
             if (power_filtered_w == INT32_MAX) {
                 logger.printfln("Uninitialized power_at_meter_filtered_w leaked");
                 return;
             }
 
-            p_error_w          = target_power_from_grid_w - power_smooth_w;
-            p_error_filtered_w = target_power_from_grid_w - power_filtered_w;
+            if (printed_skipping_energy_update) {
+                logger.printfln("PV excess charging available because power values are now available.");
+                printed_skipping_energy_update = false;
+            }
+
+            int32_t p_error_w          = target_power_from_grid_w - power_smooth_w;
+            int32_t p_error_filtered_w = target_power_from_grid_w - power_filtered_w;
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
             if (p_error_w > 200) {
@@ -686,83 +691,73 @@ void PowerManager::update_energy()
             }
 #endif
 
-            if (printed_skipping_energy_update) {
-                logger.printfln("PV excess charging available because power values are now available.");
-                printed_skipping_energy_update = false;
+            switch (mode) {
+                case MODE_FAST:
+                    power_available_w          = INT32_MAX;
+                    power_available_filtered_w = INT32_MAX;
+                    break;
+                case MODE_OFF:
+                default:
+                    power_available_w          = 0;
+                    power_available_filtered_w = 0;
+                    break;
+                case MODE_PV:
+                case MODE_MIN_PV:
+                    // Excess charging uses an adaptive P controller to adjust available power.
+                    int32_t p_adjust_w;
+                    int32_t p_adjust_filtered_w;
+                    const int32_t cm_allocated_power_w = cm_total_allocated_current_ma * 230 / 1000; // ma -> watt
+
+                    if (cm_allocated_power_w == 0) {
+                        // When no power was allocated to any charger, use p=1 so that the threshold for switching on can be reached properly.
+                        p_adjust_w          = p_error_w;
+                        p_adjust_filtered_w = p_error_filtered_w;
+                    } else {
+                        // Some EVs may only be able to adjust their charge power in steps of 1500W,
+                        // so smaller factors are required for smaller errors.
+                        int32_t p_error_abs_w = abs(p_error_w);
+                        if (p_error_abs_w < 1000) {
+                            // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
+                            p_adjust_w          = p_error_w          / 2;
+                            p_adjust_filtered_w = p_error_filtered_w / 2;
+                        } else if (p_error_abs_w < 1500) {
+                            // Use p=0.75 for medium differences so that the controller can converge reasonably fast while still avoiding too many oscillations.
+                            p_adjust_w          = p_error_w          * 3 / 4;
+                            p_adjust_filtered_w = p_error_filtered_w * 3 / 4;
+                        } else {
+                            // Use p=0.875 for large differences so that the controller can converge faster.
+                            p_adjust_w          = p_error_w          * 7 / 8;
+                            p_adjust_filtered_w = p_error_filtered_w * 7 / 8;
+                        }
+                    }
+
+                    power_available_w          = cm_allocated_power_w + p_adjust_w;
+                    power_available_filtered_w = cm_allocated_power_w + p_adjust_filtered_w;
+
+                    if (mode != MODE_MIN_PV)
+                        break;
+
+                    // Check against guaranteed power only in MIN_PV mode.
+                    if (power_available_w          < static_cast<int32_t>(guaranteed_power_w))
+                        power_available_w          = static_cast<int32_t>(guaranteed_power_w);
+                    if (power_available_filtered_w < static_cast<int32_t>(guaranteed_power_w))
+                        power_available_filtered_w = static_cast<int32_t>(guaranteed_power_w);
+
+                    break;
             }
         }
-    }
-
-    switch (mode) {
-        case MODE_FAST:
-            power_available_w          = 230 * 3 * max_current_limited_ma / 1000;
-            power_available_filtered_w = power_available_w;
-            break;
-        case MODE_OFF:
-        default:
-            power_available_w          = 0;
-            power_available_filtered_w = 0;
-            break;
-        case MODE_PV:
-        case MODE_MIN_PV:
-            if (p_error_w == INT32_MAX) {
-                set_available_current(0, 0, 0, 0);
-                return;
-            }
-
-            // Excess charging enabled; use a simple P controller to adjust available power.
-            int32_t p_adjust_w;
-            int32_t p_adjust_filtered_w;
-            if (false /*!is_on*/) { // TODO check this
-                // When the power is not on, use p=1 so that the switch-on threshold can be reached properly.
-                p_adjust_w          = p_error_w;
-                p_adjust_filtered_w = p_error_filtered_w;
-            } else {
-                // Some EVs may only be able to adjust their charge power in steps of 1500W,
-                // so smaller factors are required for smaller errors.
-                int32_t p_error_abs_w = abs(p_error_w);
-                if (p_error_abs_w < 1000) {
-                    // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
-                    p_adjust_w          = p_error_w          / 2;
-                    p_adjust_filtered_w = p_error_filtered_w / 2;
-                } else if (p_error_abs_w < 1500) {
-                    // Use p=0.75 for medium differences so that the controller can converge reasonably fast while still avoiding too many oscillations.
-                    p_adjust_w          = p_error_w          * 3 / 4;
-                    p_adjust_filtered_w = p_error_filtered_w * 3 / 4;
-                } else {
-                    // Use p=0.875 for large differences so that the controller can converge faster.
-                    p_adjust_w          = p_error_w          * 7 / 8;
-                    p_adjust_filtered_w = p_error_filtered_w * 7 / 8;
-                }
-            }
-
-            power_available_w          = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_w;
-            power_available_filtered_w = static_cast<int32_t>(charge_manager_allocated_power_w) + p_adjust_filtered_w;
-
-            if (mode != MODE_MIN_PV)
-                break;
-
-            // Check against guaranteed power only in MIN_PV mode.
-            if (power_available_w          < static_cast<int32_t>(guaranteed_power_w))
-                power_available_w          = static_cast<int32_t>(guaranteed_power_w);
-            if (power_available_filtered_w < static_cast<int32_t>(guaranteed_power_w))
-                power_available_filtered_w = static_cast<int32_t>(guaranteed_power_w);
-
-            break;
-    }
-
-    if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && external_control.get("phases_wanted")->asUint() == 0) {
-        power_available_w          = 0;
-        power_available_filtered_w = 0;
     }
 
     low_level_state.get("power_available")->updateInt(power_available_w);
     low_level_state.get("power_available_filtered")->updateInt(power_available_filtered_w);
 
-    // Check against overall minimum power, to avoid wanting to switch off when available power is below 3-phase minimum but switch to 1-phase is possible.
-    bool wants_on = power_available_filtered_w >= overall_min_power_w;
+    cm_limits->raw.pv      = power_available_w          == INT32_MAX ? INT32_MAX : power_available_w          * 1000 / 230;
+    cm_limits->filtered.pv = power_available_filtered_w == INT32_MAX ? INT32_MAX : power_available_filtered_w * 1000 / 230;
+    cm_limits->min.pv = cm_limits->raw.pv;
+    cm_limits->max.pv = cm_limits->raw.pv;
 
 #if MODULE_AUTOMATION_AVAILABLE()
+    bool wants_on = power_available_filtered_w >= overall_min_power_w;
     TristateBool automation_power_available = static_cast<TristateBool>(wants_on);
     if (automation_power_available != automation_power_available_last) {
         automation.trigger(AutomationTriggerID::PMPowerAvailable, &wants_on, this);
@@ -770,26 +765,84 @@ void PowerManager::update_energy()
     }
 #endif
 
-    int32_t min_current_now_ma = is_3phase ? min_current_3p_ma : min_current_1p_ma;
+    for (size_t i = 1; i < 4; i++) {
+        if (!dynamic_load_enabled) {
+            cm_limits->raw[i]      = supply_cable_max_current_ma;
+            cm_limits->filtered[i] = supply_cable_max_current_ma;
+            cm_limits->min[i]      = supply_cable_max_current_ma;
+            cm_limits->max[i]      = supply_cable_max_current_ma;
+        } else {
+            int32_t phase_current_raw_ma      = currents_at_meter_raw_ma[i - 1]; // No PV phase at 0
+            int32_t phase_current_filtered_ma = currents_at_meter_filtered_ma[i - 1].filtered_val;
 
-    int32_t current_available_ma;
-    if (!wants_on) {
-        current_available_ma = 0;
-    } else if (power_available_w <= 0) {
-        current_available_ma = 0;
-    } else {
-        current_available_ma = (power_available_w * 1000) / (230 * have_phases);
+            if (phase_current_raw_ma == INT32_MAX) {
+                cm_limits->raw[i]      = 0;
+                cm_limits->filtered[i] = 0;
+                cm_limits->min[i]      = 0;
+                cm_limits->max[i]      = 0;
+            } else {
+                int32_t current_error_ma          = target_phase_current_ma - phase_current_raw_ma;
+                int32_t current_error_filtered_ma = target_phase_current_ma - phase_current_filtered_ma;
+
+                int32_t current_adjust_ma;
+                int32_t current_adjust_filtered_ma;
+
+                if (cm_total_allocated_current_ma == 0) {
+                    // When no current was allocated to any charger, use p=1 so that the threshold for switching on can be reached properly.
+                    current_adjust_ma          = current_error_ma;
+                    current_adjust_filtered_ma = current_error_filtered_ma;
+                } else {
+                    if (current_error_ma < 0) {
+                        // Negative error = over limit, reduce by 93.75% of error
+                        current_adjust_ma          = current_error_ma          - current_error_ma          / 16;
+                        current_adjust_filtered_ma = current_error_filtered_ma - current_error_filtered_ma / 16;
+                    } else {
+                        // Positive error = below limit, increase by 50% of error
+                        current_adjust_ma          = current_error_ma / 2;
+                        current_adjust_filtered_ma = current_error_filtered_ma / 2;
+
+                        // Cap to maximum allowed increase
+                        current_adjust_ma          = std::min(current_adjust_ma,          phase_current_max_increase_ma);
+                        current_adjust_filtered_ma = std::min(current_adjust_filtered_ma, phase_current_max_increase_ma);
+                    }
+                }
+
+                int32_t cm_allocated_phase_current_ma = (*cm_allocated_currents)[i];
+                int32_t phase_limit_raw_ma      = cm_allocated_phase_current_ma + current_adjust_ma;
+                int32_t phase_limit_filtered_ma = cm_allocated_phase_current_ma + current_adjust_filtered_ma;
+
+                phase_limit_raw_ma      = min(phase_limit_raw_ma,      supply_cable_max_current_ma);
+                phase_limit_filtered_ma = min(phase_limit_filtered_ma, supply_cable_max_current_ma);
+
+                cm_limits->raw[i]      = phase_limit_raw_ma;
+                cm_limits->filtered[i] = phase_limit_filtered_ma;
+
+                cm_limits->min[i] = phase_limit_raw_ma;
+                cm_limits->max[i] = phase_limit_raw_ma;
+
+                //logger.printfln("L%u  meter=%i err=%i adj=%i limit=%i", i, phase_current_raw_ma, current_error_ma, current_adjust_ma, phase_limit_raw_ma);
+            }
+        }
     }
 
-    // Apply minimum/maximum current limits.
-    if (current_available_ma < min_current_now_ma) {
-        if (current_available_ma != 0)
-            current_available_ma = min_current_now_ma;
-    } else if (current_available_ma > max_current_limited_ma) {
-        current_available_ma = max_current_limited_ma;
+    low_level_state.get("max_current_limited")->updateInt(max_current_limited_ma); // TODO Calculate/use this?
+    low_level_state.get("charging_blocked")->updateUint(charging_blocked.combined);
+
+    if ((mode == MODE_OFF) ||
+        (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && external_control.get("phases_wanted")->asUint() == 0)) {
+        set_available_current(0, 0, 0, 0);
     }
 
-    set_available_current(current_available_ma * 3, current_available_ma, current_available_ma, current_available_ma);
+    // TODO check this
+    if (charging_blocked.combined) {
+        set_available_current(0, 0, 0, 0);
+
+        if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
+            state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
+
+        return;
+    }
+
     just_switched_mode = false;
 }
 
