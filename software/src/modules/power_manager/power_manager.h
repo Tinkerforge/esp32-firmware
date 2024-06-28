@@ -161,19 +161,12 @@ private:
     } charging_blocked               = {0};
 
     int32_t  power_available_w                   = 0;
-    int32_t  power_available_filtered_w          = 0;
 
     float    power_at_meter_raw_w                = NAN;
     mavg_filter power_at_meter_filtered_w;
 
     int32_t currents_at_meter_raw_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
     mavg_filter currents_at_meter_filtered_ma[3];
-
-    //int32_t  power_at_meter_filtered_w           = INT32_MAX;
-    //int32_t *power_at_meter_mavg_values_w        = nullptr;
-    //int32_t  power_at_meter_mavg_total           = 0;
-    //int32_t  power_at_meter_mavg_values_count    = 0;
-    //int32_t  power_at_meter_mavg_position        = 0;
 
     // CM data
     CurrentLimits *cm_limits;
