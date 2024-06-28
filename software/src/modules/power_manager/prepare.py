@@ -7,9 +7,7 @@ from software import util
 
 debug_log_variables = [
     "power_at_meter_raw_w",
-    "power_at_meter_filtered_w.filtered_val",
     "power_available_w",
-    "power_available_filtered_w",
     #"charge_manager_available_current_ma",
     #"charge_manager_allocated_current_ma",
     "cm_allocated_currents->l1",
