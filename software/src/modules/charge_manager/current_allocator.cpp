@@ -718,7 +718,16 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto allocated_current = current_allocation[idx_array[i]];
         auto allocated_phases = phase_allocation[idx_array[i]];
 
-        auto current = std::min(fair_current, current_capacity(limits, state, allocated_current, allocated_phases));
+        auto current = fair_current;
+
+        // Don't allocate more than the enable current to a charger that does not charge.
+        if (!state->is_charging) {
+            Cost enable_cost;
+            get_enable_cost(state, allocated_phases == 3, nullptr, &enable_cost, cfg);
+            current = std::min(current, std::max(0, enable_cost.l1 - allocated_current));
+        }
+
+        current = std::min(current, current_capacity(limits, state, allocated_current, allocated_phases));
         current += allocated_current;
 
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
@@ -746,7 +755,8 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
-    filter(allocated_current > 0);
+    // Chargers that are currently not charging already have the enable current allocated (if available) by stage 6.
+    filter(allocated_current > 0 && state->is_charging);
 
     sort(
         3 - allocated_phases,
