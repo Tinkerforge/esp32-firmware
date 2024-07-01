@@ -171,7 +171,7 @@ struct to_json {
                 obj.createNestedObject(key);
             } else if (child.is<Config::ConfArray>() || child.is<Config::ConfUnion>()) {
                 obj.createNestedArray(key);
-            } else if (!obj.containsKey(key)) {
+            } else {
                 obj[key] = nullptr;
             }
 
