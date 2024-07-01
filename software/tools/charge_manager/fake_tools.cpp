@@ -40,5 +40,5 @@ micros_t now_us()
 
 bool deadline_elapsed(micros_t deadline_us)
 {
-    return deadline_us == 0_usec || deadline_us < now_us();
+    return deadline_us < now_us();
 }
