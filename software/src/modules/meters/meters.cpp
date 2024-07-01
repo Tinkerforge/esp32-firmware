@@ -581,12 +581,12 @@ MeterClassID Meters::get_meter_class(uint32_t slot)
 
 bool Meters::meter_is_fresh(uint32_t slot, micros_t max_age_us)
 {
-    return max_age_us != 0_usec && meter_slots[slot].values_last_updated_at != 0_usec && !deadline_elapsed(meter_slots[slot].values_last_updated_at + max_age_us);
+    return max_age_us == 0_usec || !deadline_elapsed(meter_slots[slot].values_last_updated_at + max_age_us);
 }
 
 bool Meters::meter_has_value_changed(uint32_t slot, micros_t max_age_us)
 {
-    return max_age_us != 0_usec && meter_slots[slot].values_last_changed_at != 0_usec && !deadline_elapsed(meter_slots[slot].values_last_changed_at + max_age_us);
+    return max_age_us == 0_usec || !deadline_elapsed(meter_slots[slot].values_last_changed_at + max_age_us);
 }
 
 MeterValueAvailability Meters::get_values(uint32_t slot, const Config **values, micros_t max_age)
