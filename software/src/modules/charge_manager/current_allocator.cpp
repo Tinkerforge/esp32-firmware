@@ -770,10 +770,16 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto allocated_phases = phase_allocation[idx_array[i]];
 
         auto current = std::min(limits->raw.pv / allocated_phases, current_capacity(limits, state, allocated_current, allocated_phases));
-        for (size_t p = 1; p < 4; ++p) {
-            // TODO check charger phases!
-            current = std::min(current, limits->raw[p]);
+
+        if (state->phase_rotation == PhaseRotation::Unknown) {
+            // Phase rotation unknown. We have to assume that each phase could be used
+            current = std::min({current, limits->raw[GridPhase::L1], limits->raw[GridPhase::L2], limits->raw[GridPhase::L3]});
+        } else {
+            for (int p = 1; p <= (int)allocated_phases; ++p) {
+                current = std::min(current, limits->raw[get_phase(state->phase_rotation, (ChargerPhase)p)]);
+            }
         }
+
         current += allocated_current;
 
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
