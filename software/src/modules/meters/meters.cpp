@@ -450,12 +450,12 @@ MeterClassID Meters::get_meter_class(uint32_t slot)
 
 bool Meters::meter_is_fresh(uint32_t slot, micros_t max_age_us)
 {
-    return !deadline_elapsed(meter_slots[slot].values_last_updated_at + max_age_us);
+    return max_age_us != 0_usec && meter_slots[slot].values_last_updated_at != 0_usec && !deadline_elapsed(meter_slots[slot].values_last_updated_at + max_age_us);
 }
 
 bool Meters::meter_has_value_changed(uint32_t slot, micros_t max_age_us)
 {
-    return !deadline_elapsed(meter_slots[slot].values_last_changed_at + max_age_us);
+    return max_age_us != 0_usec && meter_slots[slot].values_last_changed_at != 0_usec && !deadline_elapsed(meter_slots[slot].values_last_changed_at + max_age_us);
 }
 
 MeterValueAvailability Meters::get_values(uint32_t slot, const Config **values, micros_t max_age)
@@ -469,7 +469,7 @@ MeterValueAvailability Meters::get_values(uint32_t slot, const Config **values, 
 
     *values = &meter_slot.values;
 
-    if (max_age != 0_usec && deadline_elapsed(meter_slot.values_last_updated_at + max_age)) {
+    if (!this->meter_is_fresh(slot, max_age)) {
         return MeterValueAvailability::Stale;
     } else {
         return MeterValueAvailability::Fresh;
@@ -487,7 +487,7 @@ MeterValueAvailability Meters::get_value_by_index(uint32_t slot, uint32_t index,
 
     *value_out = meter_slot.values.get(static_cast<uint16_t>(index))->asFloat();
 
-    if (max_age != 0_usec && deadline_elapsed(meter_slot.values_last_updated_at + max_age)) {
+    if (!this->meter_is_fresh(slot, max_age)) {
         return MeterValueAvailability::Stale;
     } else {
         return MeterValueAvailability::Fresh;
@@ -530,7 +530,7 @@ MeterValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, fl
 
     *value_out = meter_slot.values.get(static_cast<uint16_t>(cached_index))->asFloat();
 
-    if (max_age != 0_usec && deadline_elapsed(meter_slot.values_last_updated_at + max_age)) {
+    if (!this->meter_is_fresh(slot, max_age)) {
         return MeterValueAvailability::Stale;
     } else {
         return MeterValueAvailability::Fresh;
@@ -591,7 +591,7 @@ MeterValueAvailability Meters::get_currents(uint32_t slot, float currents[INDEX_
         }
     }
 
-    if (max_age != 0_usec && deadline_elapsed(meter_slot.values_last_updated_at + max_age)) {
+    if (!this->meter_is_fresh(slot, max_age)) {
         return MeterValueAvailability::Stale;
     } else {
         return MeterValueAvailability::Fresh;
