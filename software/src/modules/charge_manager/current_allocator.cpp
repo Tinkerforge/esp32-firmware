@@ -347,9 +347,6 @@ static bool was_just_plugged_in(const ChargerState *state) {
 
 // Stage 2: Immediately activate chargers were a vehicle was just plugged in.
 void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
-    auto min_1p = cfg->minimum_current_1p;
-    auto min_3p = cfg->minimum_current_3p;
-
     int matched = 0;
 
     filter(was_just_plugged_in(state));
@@ -631,7 +628,6 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
-        auto allocated_phases = phase_allocation[idx_array[i]];
 
         Cost new_cost = Cost{3 * min_3p - min_1p, min_3p, min_3p, min_3p};
         Cost new_enable_cost = Cost{3 * ena_3p - ena_1p, ena_3p, ena_3p, ena_3p};
