@@ -341,7 +341,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
     ca_state->control_window_max = wnd_max;
 }
 
-static bool was_just_plugged_in(ChargerState *state) {
+static bool was_just_plugged_in(const ChargerState *state) {
     return state->last_plug_in != 0_usec && state->wants_to_charge;
 }
 
