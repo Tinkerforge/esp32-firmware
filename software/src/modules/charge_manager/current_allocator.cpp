@@ -189,8 +189,6 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
 
 static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
     return allocated_phases > 0 && (state->wants_to_charge || state->is_charging);
-    // TODO: implement other checks such as "Einschaltzeit > 0 < 1 min und State == B1 oder B2" here
-    // Maybe also handle global hysteresis here? (ignore ALLOCATED_ENERGY_ROTATION_THRESHOLD if it is not elapsed)
 }
 
 // Stage 1: Rotate chargers
@@ -360,6 +358,7 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         const auto *state = &charger_state[idx_array[i]];
 
         bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
+        // TODO: should we activate unknown rotated switchable chargers with 3 phases here?
         bool activate_3p = is_fixed_3p;
 
         phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
@@ -738,6 +737,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         }
     }
 
+    // TODO: calculate fair current per phase. Use min fair current of phases used per charger?
     auto fair_current = std::max(0, limits->raw.pv / active_on_phase.pv);
     for (size_t p = 1; p < 4; ++p) {
         if (active_on_phase[p] == 0)
