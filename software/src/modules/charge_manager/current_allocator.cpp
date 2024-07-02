@@ -537,7 +537,7 @@ static void get_enable_cost(const ChargerState *state, bool activate_3p, Cost *m
         *enable = new_enable_cost;
 }
 
-static bool try_activate(const ChargerState *state, bool activate_3p, Cost *spent, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg,const CurrentAllocatorState *ca_state) {
+static bool try_activate(const ChargerState *state, bool activate_3p, bool have_active_chargers, Cost *spent, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg,const CurrentAllocatorState *ca_state) {
     Cost wnd_min = ca_state->control_window_min;
     Cost wnd_max = ca_state->control_window_max;
 
@@ -546,7 +546,8 @@ static bool try_activate(const ChargerState *state, bool activate_3p, Cost *spen
 
     get_enable_cost(state, activate_3p, &new_cost, &new_enable_cost, cfg);
 
-    bool result = can_activate(new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg);
+    // If there are no chargers active, don't require the enable cost.
+    bool result = can_activate(new_cost, have_active_chargers ? new_enable_cost : new_cost, wnd_min, wnd_max, limits, cfg);
     if (result && spent != nullptr)
         *spent = new_enable_cost;
     return result;
@@ -567,8 +568,9 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     if (!ca_state->global_hysteresis_elapsed)
         return;
 
-
     int matched = 0;
+
+    bool have_active_chargers = ca_state->control_window_min.pv != 0;
 
     // A charger that was rotated has 0 allocated phases but is still charging.
     filter(allocated_phases == 0 && (state->wants_to_charge || state->is_charging));
@@ -584,12 +586,12 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         bool is_unknown_rot_switchable = state->phase_rotation == PhaseRotation::Unknown && state->phase_switch_supported;
         bool activate_3p = is_fixed_3p || is_unknown_rot_switchable;
 
-        if (!try_activate(state, activate_3p, nullptr, limits, cfg, ca_state)) {
+        if (!try_activate(state, activate_3p, have_active_chargers, nullptr, limits, cfg, ca_state)) {
             if (!is_unknown_rot_switchable)
                 continue;
             // Retry enabling unknown_rot_switchable charger with one phase only
             activate_3p = false;
-            if (!try_activate(state, activate_3p, nullptr, limits, cfg, ca_state))
+            if (!try_activate(state, activate_3p, have_active_chargers, nullptr, limits, cfg, ca_state))
                 continue;
         }
 
