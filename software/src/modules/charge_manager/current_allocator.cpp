@@ -162,10 +162,10 @@ bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage)
     bool pv_excess_exceeded = limits->raw.pv < cost.pv;
 
     switch(stage) {
-        case 6:
         case 7:
+        case 8:
             return phases_exceeded || pv_excess_exceeded;
-        case 8: {
+        case 9: {
             bool phases_min_exceeded = false;
             for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
                 phases_min_exceeded |= limits->min[i] < cost[i];
@@ -341,7 +341,35 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
     ca_state->control_window_max = wnd_max;
 }
 
-// Stage 2: Shut down chargers if over limit
+static bool was_just_plugged_in(ChargerState *state) {
+    return state->last_plug_in != 0_usec && state->wants_to_charge;
+}
+
+// Stage 2: Immediately activate chargers were a vehicle was just plugged in.
+void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+    auto min_1p = cfg->minimum_current_1p;
+    auto min_3p = cfg->minimum_current_3p;
+
+    int matched = 0;
+
+    filter(was_just_plugged_in(state));
+
+    // Reverse sort. Charger that is plugged in for the longest time first.
+    sort(0,
+        left.state->last_plug_in >= right.state->last_plug_in
+    );
+
+    for (int i = 0; i < matched; ++i) {
+        const auto *state = &charger_state[idx_array[i]];
+
+        bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
+        bool activate_3p = is_fixed_3p;
+
+        phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
+    }
+}
+
+// Stage 3: Shut down chargers if over limit
 // - Calculate window
 // - Only work with chargers that currently have phases allocated (i.e. those that were active in stage 1)
 // - Sort those so that chargers that have received the most energy (overall, not only since rotating) will be shut down first
@@ -352,7 +380,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
 // - If the PV limit is less than the raw _AND_ filtered PV window minima and the global hysteresis is elapsed,
 //   shut down chargers until at least one of the minima is less than the PV limit.
 // - If any charger was shut down recalculate the window. The minima should already be correct, but updating the maxima is too complicated
-void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, cfg->charger_count, cfg, ca_state);
 
     Cost wnd_min = ca_state->control_window_min;
@@ -364,7 +392,9 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     filter(allocated_phases > 0);
 
     // Reverse sort. Charger that was active for the longest time first.
-    sort(0,
+    // Group chargers that were activated in stage 2 (because a vehicle was just plugged in) behind others.
+    sort(
+        was_just_plugged_in(state) ? 1 : 0,
         left.state->last_switch >= right.state->last_switch
     );
 
@@ -416,7 +446,7 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         const auto *state = &charger_state[idx_array[i]];
         const auto alloc_phases = phase_allocation[idx_array[i]];
 
-        if (alloc_phases == 0)
+        if (alloc_phases == 0 || was_just_plugged_in(state))
             continue;
 
         if (state->phases == 3) {
@@ -524,7 +554,7 @@ static bool try_activate(const ChargerState *state, bool activate_3p, Cost *spen
     return result;
 }
 
-// Stage 3: Activate chargers if current is available
+// Stage 4: Activate chargers if current is available
 // - Only work with chargers that don't already have one or more phase allocated
 // - Sort chargers by allocated energy (overall) ascending.
 //   We want to enable chargers that have received the least amount of energy first for fairness.
@@ -535,7 +565,7 @@ static bool try_activate(const ChargerState *state, bool activate_3p, Cost *spen
 // - Prefer to activate chargers with one phase.
 //   Only immediately activate all three phases if this is a non-phase-switchable three-phase charger or one with an unknown phase rotation.
 // - Recalculate the window each time a charger is activated
-void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     if (!ca_state->global_hysteresis_elapsed)
         return;
 
@@ -570,7 +600,7 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     }
 }
 
-// Stage 4: Switch 1p -> 3p if possible
+// Stage 5: Switch 1p -> 3p if possible
 // - This is conceptionally similar to stage 3 except that chargers already have one phase allocated
 // - If there are still phases with a limit greater than the window maximum,
 //   switch chargers that have 1 phase allocated to 3 phases if possible
@@ -578,7 +608,7 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 // - Sort by allocated energy ascending as in stage 3
 // - Enable conditions are similar to stage 3:
 //   The enable cost is the cost to enable a charger with three phases minus the cost (that already was subtracted in stage 3) to enable it with one phase.
-void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     if (!ca_state->global_hysteresis_elapsed)
         return;
 
@@ -628,8 +658,8 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     }
 }
 
-// Stage 5: Allocate minimum current to chargers with at least one allocated phase
-void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+// Stage 6: Allocate minimum current to chargers with at least one allocated phase
+void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
     filter(allocated_phases > 0);
@@ -679,9 +709,9 @@ int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state,
     return allocated_phases * capacity;
 }
 
-// Stage 6: Allocate fair current to chargers with at least one allocated phase
+// Stage 7: Allocate fair current to chargers with at least one allocated phase
 // - All those chargers already have their minimum current allocated
-void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
     filter(allocated_current > 0);
@@ -708,7 +738,7 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         }
     }
 
-    auto fair_current = limits->raw.pv / active_on_phase.pv;
+    auto fair_current = std::max(0, limits->raw.pv / active_on_phase.pv);
     for (size_t p = 1; p < 4; ++p) {
         if (active_on_phase[p] == 0)
             continue;
@@ -736,9 +766,9 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
 
         // This should never happen.
-        if (cost_exceeds_limits(cost, limits, 6)) {
-            logger.printfln("stage 6: Cost exceeded limits!");
-            print_alloc(6, limits, current_allocation, phase_allocation, charger_count, charger_state);
+        if (cost_exceeds_limits(cost, limits, 7)) {
+            logger.printfln("stage 7: Cost exceeded limits!");
+            print_alloc(7, limits, current_allocation, phase_allocation, charger_count, charger_state);
             PRINT_COST(cost);
             PRINT_COST(ca_state->control_window_min);
             PRINT_COST(ca_state->control_window_max);
@@ -750,12 +780,12 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     }
 }
 
-// Stage 7: Allocate left-over current.
+// Stage 8: Allocate left-over current.
 // - Group by phases. Makes sure that we allocate current to three phase chargers first.
 //   If there is current left after this, we've probably hit one of the phase limits.
 //   One phase chargers on other phases will take the rest if possible.
 // - Sort by current_capacity ascending. This makes sure that one pass is enough to allocate the possible maximum.
-void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
     // Chargers that are currently not charging already have the enable current allocated (if available) by stage 6.
@@ -772,7 +802,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto allocated_current = current_allocation[idx_array[i]];
         auto allocated_phases = phase_allocation[idx_array[i]];
 
-        auto current = std::min(limits->raw.pv / allocated_phases, current_capacity(limits, state, allocated_current, allocated_phases));
+        auto current = std::min(std::max(0, limits->raw.pv / allocated_phases), current_capacity(limits, state, allocated_current, allocated_phases));
 
         if (state->phase_rotation == PhaseRotation::Unknown) {
             // Phase rotation unknown. We have to assume that each phase could be used
@@ -788,9 +818,9 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
 
         // This should never happen.
-        if (cost_exceeds_limits(cost, limits, 7)) {
-            logger.printfln("stage 7: Cost exceeded limits! Charger %d Current %u", idx_array[i], current);
-            print_alloc(7, limits, current_allocation, phase_allocation, charger_count, charger_state);
+        if (cost_exceeds_limits(cost, limits, 8)) {
+            logger.printfln("stage 8: Cost exceeded limits! Charger %d Current %u", idx_array[i], current);
+            print_alloc(8, limits, current_allocation, phase_allocation, charger_count, charger_state);
             PRINT_COST(cost);
             PRINT_COST(ca_state->control_window_min);
             PRINT_COST(ca_state->control_window_max);
@@ -802,11 +832,11 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     }
 }
 
-// Stage 8: Wake up chargers.
+// Stage 9: Wake up chargers.
 // If there is still current left, attempt to wake up one charger with a probably fully charged car.
 // Activating the charger will automatically change it from low to normal priority for at least 3 minutes,
 // giving the car time to request current.
-void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     if (!ca_state->global_hysteresis_elapsed)
         return;
 
@@ -832,13 +862,13 @@ void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         Cost enable_cost;
         get_enable_cost(state, activate_3p, nullptr, &enable_cost, cfg);
 
-        if (cost_exceeds_limits(enable_cost, limits, 8)) {
+        if (cost_exceeds_limits(enable_cost, limits, 9)) {
             if (!is_unknown_rot_switchable)
                 continue;
             // Retry enabling unknown_rot_switchable charger with one phase only
             activate_3p = false;
             get_enable_cost(state, activate_3p, nullptr, &enable_cost, cfg);
-            if (cost_exceeds_limits(enable_cost, limits, 8))
+            if (cost_exceeds_limits(enable_cost, limits, 9))
                 continue;
         }
 
@@ -1032,6 +1062,8 @@ int allocate_current(
             if (phases_to_set == 0) {
                 charger.allocated_energy_this_rotation = 0;
             } else {
+                charger.last_plug_in = 0_usec;
+
                 auto allocated_energy = (float)current_to_set / 1000.0f * phases_to_set * ALLOCATION_TIMEOUT_S / 3600.0f * 230.0f / 1000.0f;
                 charger.allocated_energy_this_rotation += allocated_energy;
                 charger.allocated_energy += allocated_energy;
@@ -1158,8 +1190,13 @@ bool update_from_client_packet(
     target.supported_current = v1->supported_current;
     target.cp_disconnect_supported = CM_FEATURE_FLAGS_CP_DISCONNECT_IS_SET(v1->feature_flags);
     target.cp_disconnect_state = CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(v1->state_flags);
-    target.last_update = millis();
+
+    // Wait for A -> non-A transitions, but ignore chargers that are already in a non-A state in their first packet.
+    if (target.last_update != 0 && target.charger_state == 0 && v1->charger_state != 0)
+        target.last_plug_in = now_us();
+
     target.charger_state = v1->charger_state;
+    target.last_update = millis();
 
     uint16_t requested_current = v1->supported_current;
 
