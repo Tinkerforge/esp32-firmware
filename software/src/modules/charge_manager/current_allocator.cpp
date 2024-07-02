@@ -695,14 +695,14 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 }
 
 // The current capacity of a charger is the maximum amount of current that can be allocated to the charger additionally to the already allocated current on the allocated phases.
-int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases) {
+static int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases) {
     if (allocated_phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
         return std::min({std::max(state->supported_current - allocated_current, 0), limits->raw.l1, limits->raw.l2, limits->raw.l3});
     }
 
     auto capacity = std::max(state->supported_current - allocated_current, 0);
     for (size_t i = (size_t)ChargerPhase::P1; i < (size_t)ChargerPhase::P1 + allocated_phases; ++i) {
-        auto phase = get_phase(state->phase_rotation, (ChargerPhase)((size_t)ChargerPhase::P1 + i));
+        auto phase = get_phase(state->phase_rotation, (ChargerPhase)i);
         capacity = std::min(capacity, limits->raw[phase]);
     }
 
