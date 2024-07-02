@@ -1026,6 +1026,8 @@ int allocate_current(
     //print_alloc(7, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_8(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
     //print_alloc(8, limits, current_array, phases_array, cfg->charger_count, charger_state);
+    stage_9(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
+    //print_alloc(9, limits, current_array, phases_array, cfg->charger_count, charger_state);
     //logger.printfln("\n");
     //auto end = micros();
     //logger.printfln("Took %u µs", end - start);
