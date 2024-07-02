@@ -80,6 +80,12 @@ struct ChargerState {
     float allocated_energy;
     float allocated_energy_this_rotation;
     micros_t last_switch;
+
+    // The last time a vehicle was plugged in.
+    // If this is not 0, this charger has to be allocated current to as fast as possible,
+    // or else the vehicle could power down its charge controller.
+    // Is set to 0 the first time a charger gets current allocated.
+    micros_t last_plug_in;
 };
 
 struct ChargerAllocationState {
