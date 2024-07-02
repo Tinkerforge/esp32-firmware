@@ -34,12 +34,14 @@
 
 //#define DEBUG_LOG_ALL_VALUES
 
-#define SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS                 5002u
-#define SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS              5036u
-#define SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS        13001u
-#define SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS      13021u
-#define SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS        13022u
-#define SUNGROW_STRING_INVERTER_TOTAL_ACTVE_POWER_ADDRESS    5031u
+#define NUMBER_TO_ADDRESS(number) ((number) - 1u)
+
+#define SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS                 NUMBER_TO_ADDRESS(5002u)
+#define SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS              NUMBER_TO_ADDRESS(5036u)
+#define SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS        NUMBER_TO_ADDRESS(13001u)
+#define SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS      NUMBER_TO_ADDRESS(13021u)
+#define SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS        NUMBER_TO_ADDRESS(13022u)
+#define SUNGROW_STRING_INVERTER_TOTAL_ACTVE_POWER_ADDRESS    NUMBER_TO_ADDRESS(5031u)
 
 #define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L1_ADDRESS 808u
 #define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L2_ADDRESS 809u
@@ -428,10 +430,11 @@ bool MeterModbusTCP::is_deye_hybrid_inverter_battery_meter() const
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
-        logger.printfln("Error reading %s / %s (%zu): %s [%d]",
+        logger.printfln("Error reading %s / %s (address: %zu, number: %zu): %s [%d]",
                         get_meter_modbus_tcp_table_id_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
+                        table->specs[read_index].start_address + 1,
                         get_modbus_result_code_name(generic_read_request.result_code),
                         generic_read_request.result_code);
 
