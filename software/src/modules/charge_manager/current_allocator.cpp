@@ -47,8 +47,8 @@
 static constexpr micros_t GLOBAL_HYSTERESIS = 3_usec * 60_usec * 1000_usec * 1000_usec;
 // Only consider charger for rotation if it has charged at least this amount of energy.
 static constexpr int32_t ALLOCATED_ENERGY_ROTATION_THRESHOLD = 5; /*kWh*/
-// Only consider charger for rotation after its phase allocation was stable for this time.
-static constexpr micros_t ALLOW_ROTATION_TIMEOUT = 15_usec * 60_usec * 1000_usec * 1000_usec;
+// Amount of time a charger should stay activated before considering it for rotation or phase switch.
+static constexpr micros_t MINIMUM_ACTIVE_TIME = 15_usec * 60_usec * 1000_usec * 1000_usec;
 
 static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
 
@@ -207,7 +207,7 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     for (int i = 0; i < charger_count; ++i) {
         const auto *state = &charger_state[i];
 
-        bool dont_rotate = state->allocated_energy_this_rotation < ALLOCATED_ENERGY_ROTATION_THRESHOLD || !deadline_elapsed(state->last_switch + ALLOW_ROTATION_TIMEOUT);
+        bool dont_rotate = state->allocated_energy_this_rotation < ALLOCATED_ENERGY_ROTATION_THRESHOLD || !deadline_elapsed(state->last_switch + MINIMUM_ACTIVE_TIME);
         bool keep_active = is_active(phase_allocation[i], state) && (!have_b1 || !ca_state->global_hysteresis_elapsed || dont_rotate);
 
         if (!keep_active) {
@@ -439,6 +439,7 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     for (int i = 0; i < matched; ++i) {
         if (limits->max.pv >= wnd_min.pv || !ca_state->global_hysteresis_elapsed)
             break;
+        // TODO: Check state->last_switch here?
 
         const auto *state = &charger_state[idx_array[i]];
         const auto alloc_phases = phase_allocation[idx_array[i]];
@@ -620,7 +621,8 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     int matched = 0;
 
-    filter(allocated_phases == 1 && state->phase_switch_supported);
+    // Have to check state->last_switch here: Global hysteresis is probably less than the minimum amount of time a charger should stay on.
+    filter(allocated_phases == 1 && state->phase_switch_supported && !deadline_elapsed(state->last_switch + MINIMUM_ACTIVE_TIME));
 
     sort(0,
         left.state->allocated_energy < right.state->allocated_energy
