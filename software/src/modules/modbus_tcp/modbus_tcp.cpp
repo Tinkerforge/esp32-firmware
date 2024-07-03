@@ -61,10 +61,15 @@ struct floatswapped_t {
     operator float() {return swapReg(val);}
 
     static inline float swapReg(float x) {
-        uint32_t a = *(uint32_t *) &x;
-        a = (a << 16) | (a >> 16);
-        x = *(float *)&a;
-        return x;
+        union {
+            float f;
+            uint32_t u;
+        } u;
+
+        u.f = x;
+        u.u = (u.u << 16) | (u.u >> 16);
+
+        return u.f;
     }
     float val;
 };
