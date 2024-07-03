@@ -11,6 +11,7 @@ src/**/*.embedded.h
 src/**/*.embedded.cpp
 src/modules/*/module_available.h
 src/modules/*/module_dependencies.h
+src/modules/*/module.cpp
 src/modules/*/*.enum.h
 src/modules/*/*.enum.cpp
 src/modules.h
