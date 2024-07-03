@@ -108,17 +108,19 @@ void Watchdog::setup()
 #endif
 }
 
-int Watchdog::add(const char *name, const char *message, uint32_t timeout_ms, uint32_t initial_deadline_ms)
+int Watchdog::add(const char *name, const char *message, uint32_t timeout_ms, uint32_t initial_deadline_ms, bool force)
 {
     // This makes sure that we don't reboot too often, giving the user a chance to connect
     // to the web interface to diagnose and potentially fix the issue that will trigger the watchdog.
-    if (initial_deadline_ms < 30 * 60 * 1000) {
+    if (!force && initial_deadline_ms < 30 * 60 * 1000) {
         logger.printfln("Can't register %s to watchdog: Initial deadline %u not allowed as it is less than 30 minutes", name, timeout_ms);
+        return -1;
     }
 
     // Some tasks (for example firmware updates via a crappy WiFi connection) can take quite some time.
-    if (timeout_ms < 5 * 60 * 1000) {
+    if (!force && timeout_ms < 5 * 60 * 1000) {
         logger.printfln("Can't register %s to watchdog: Timeout %u not allowed as it is less than 5 minutes", name, timeout_ms);
+        return -1;
     }
 
     std::lock_guard<std::mutex> l{regs_mutex};
