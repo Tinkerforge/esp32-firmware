@@ -686,45 +686,19 @@ void Meters::update_all_values(uint32_t slot, const Config *new_values)
         return;
     }
 
-    MeterSlot &meter_slot = meter_slots[slot];
-
-    Config &values = meter_slot.values;
-    auto value_count = values.count();
-    bool updated_any_value = false;
-    bool changed_any_value = false;
+    auto value_count = meter_slots[slot].values.count();
 
     if (new_values->count() != value_count) {
         logger.printfln("Update all values element count mismatch: %u != %u", new_values->count(), value_count);
         return;
     }
 
+    float float_values[METERS_MAX_VALUES_PER_METER];
     for (uint16_t i = 0; i < value_count; i++) {
-        float new_value = new_values->get(i)->asFloat();
-        if (!isnan(new_value)) {
-            Config *conf_val = static_cast<Config *>(values.get(i));
-
-            // Think about ordering and short-circuting issues before changing this!
-            float old_value = conf_val->asFloat();
-            if (conf_val->updateFloat(new_value) && !isnan(old_value))
-                changed_any_value = true;
-
-            updated_any_value = true;
-        }
+        float_values[i] = new_values->get(i)->asFloat();
     }
 
-    micros_t t_now = now_us();
-
-    if (changed_any_value)
-        meter_slot.values_last_changed_at = t_now;
-
-    if (updated_any_value) {
-        meter_slot.values_last_updated_at = t_now;
-
-        float power;
-        if (get_power_real(slot, &power) == MeterValueAvailability::Fresh) {
-            meter_slot.power_history.add_sample(power);
-        }
-    }
+    update_all_values(slot, float_values);
 }
 
 void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[], uint32_t value_id_count)
