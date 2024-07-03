@@ -164,6 +164,10 @@ void Mqtt::pre_setup()
 
 void Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained retained, CallbackInThread callback_in_thread, AddPrefix add_prefix)
 {
+    if (client == nullptr) {
+        return;
+    }
+
     const String *topic;
     bool starts_with_global_topic_prefix;
     String local_topic(static_cast<const char *>(nullptr));
@@ -223,7 +227,7 @@ bool Mqtt::publish(const String &topic, const String &payload, bool retain)
     // ESP-MQTT does this check but we only want to allow publishing after
     // onMqttConnect was called (in the main thread!)
     // ESP-MQTT's check can asynchronously flip to connected.
-    if (this->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected)
+    if (client == nullptr || this->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected)
         return false;
 
 #if defined(BOARD_HAS_PSRAM)
@@ -262,7 +266,7 @@ IAPIBackend::WantsStateUpdate Mqtt::wantsStateUpdate(size_t stateIdx) {
 
 void Mqtt::resubscribe()
 {
-    if (this->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected)
+    if (client == nullptr || this->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected)
         return;
 
     if (!global_topic_prefix_subscribed) {
@@ -345,6 +349,10 @@ static bool filter_mqtt_log(const char *topic, size_t topic_len)
 
 void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
 {
+    if (client == nullptr) {
+        return;
+    }
+
     for (auto &c : commands) {
         if (!matchTopicFilter(topic, topic_len, c.topic.c_str(), c.topic.length()))
             continue;
@@ -463,6 +471,7 @@ static const char *get_mqtt_error(esp_mqtt_connect_return_code_t rc)
     switch (rc) {
         case MQTT_CONNECTION_ACCEPTED:
             return "Connection accepted";
+
         case MQTT_CONNECTION_REFUSE_PROTOCOL:
             return "Wrong protocol";
 
@@ -677,6 +686,12 @@ void Mqtt::setup()
     state.get("connection_state")->updateEnum(MqttConnectionState::NotConnected);
 
     client = esp_mqtt_client_init(&mqtt_cfg);
+
+    if (client == nullptr) {
+        logger.printfln("Could not create MQTT client");
+        return;
+    }
+
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
 
     task_scheduler.scheduleWithFixedDelay([this](){
@@ -722,7 +737,7 @@ void Mqtt::register_urls()
 
 void Mqtt::register_events()
 {
-    if (!config.get("enable_mqtt")->asBool()) {
+    if (client == nullptr || !config.get("enable_mqtt")->asBool()) {
         return;
     }
 

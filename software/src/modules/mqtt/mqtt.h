@@ -122,7 +122,7 @@ private:
 
     size_t backend_idx;
 
-    esp_mqtt_client_handle_t client;
+    esp_mqtt_client_handle_t client = nullptr;
     uint32_t send_interval_ms;
 
     uint32_t last_connected_ms = 0;
