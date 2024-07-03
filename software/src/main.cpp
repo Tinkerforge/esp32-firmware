@@ -33,7 +33,17 @@
 #include "modules.h"
 #include "tools.h"
 
-#include "gcc_warnings.h"
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #include "gcc_warnings.h"
+    #pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
+
+#if MODULE_WATCHDOG_AVAILABLE()
+#include "modules/watchdog/watchdog.h"
+
+extern Watchdog watchdog;
+#endif
 
 BootStage boot_stage = BootStage::STATIC_INITIALIZATION;
 
@@ -141,7 +151,65 @@ static void register_default_urls(void) {
     api.registerDebugUrl();
 }
 
-void setup(void) {
+#define PRE_REBOOT_MAX_DURATION (5 * 60 * 1000)
+
+static const char *pre_reboot_message = "Pre-reboot stage lasted longer than five minutes";
+
+#if !MODULE_WATCHDOG_AVAILABLE()
+
+#define PRE_REBOOT_STACK_SIZE 512
+
+static StaticTask_t pre_reboot_task_buffer;
+static StackType_t pre_reboot_stack[PRE_REBOOT_STACK_SIZE];
+
+static void pre_reboot_task(void *arg)
+{
+    vTaskDelay(PRE_REBOOT_MAX_DURATION / portTICK_PERIOD_MS);
+    esp_system_abort(pre_reboot_message);
+}
+
+#endif
+
+static void pre_reboot_helper(void)
+{
+    std::vector<IModule *> imodules;
+    modules_get_imodules(&imodules);
+
+    for (IModule *imodule : imodules) {
+        imodule->pre_reboot();
+    }
+}
+
+static void pre_reboot(void)
+{
+    boot_stage = BootStage::PRE_REBOOT;
+
+    if (running_in_main_task()) {
+#if MODULE_WATCHDOG_AVAILABLE()
+        watchdog.add("pre_reboot", pre_reboot_message, PRE_REBOOT_MAX_DURATION, 0, true);
+#else
+        xTaskCreateStaticPinnedToCore(
+            pre_reboot_task,
+            "pre_reboot_task",
+            PRE_REBOOT_STACK_SIZE,
+            nullptr,
+            ESP_TASK_PRIO_MAX,
+            pre_reboot_stack,
+            &pre_reboot_task_buffer,
+            1);
+#endif
+
+        pre_reboot_helper();
+    }
+    else {
+        if (task_scheduler.await(pre_reboot_helper, PRE_REBOOT_MAX_DURATION) == TaskScheduler::AwaitResult::Timeout) {
+            esp_system_abort(pre_reboot_message);
+        }
+    }
+}
+
+void setup(void)
+{
     set_main_task_handle();
 
     boot_stage = BootStage::PRE_INIT;
@@ -165,6 +233,10 @@ void setup(void) {
 
     for (IModule *imodule : imodules) {
         imodule->pre_init();
+    }
+
+    if (esp_register_shutdown_handler(pre_reboot) != ESP_OK) {
+        logger.printfln("Failed to register reboot handler");
     }
 
     if (!mount_or_format_spiffs()) {

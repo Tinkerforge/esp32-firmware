@@ -764,6 +764,13 @@ void Mqtt::register_events()
     }
 }
 
+void Mqtt::pre_reboot()
+{
+    if (client != nullptr) {
+        esp_mqtt_client_stop(client);
+    }
+}
+
 #if MODULE_AUTOMATION_AVAILABLE()
 bool Mqtt::has_triggered(const Config *conf, void *data)
 {

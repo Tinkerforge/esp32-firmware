@@ -30,6 +30,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void pre_reboot() override;
 
 private:
     void update_regs();
@@ -37,4 +38,6 @@ private:
     void update_keba_regs();
 
     ConfigRoot config;
+
+    bool started = false;
 };

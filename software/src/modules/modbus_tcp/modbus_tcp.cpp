@@ -498,6 +498,7 @@ void ModbusTcp::setup()
 
     ESP_ERROR_CHECK(mbc_slave_start());
 
+    started = true;
     initialized = true;
 }
 
@@ -1061,5 +1062,12 @@ void ModbusTcp::register_urls()
         task_scheduler.scheduleWithFixedDelay([this]() {
             this->update_keba_regs();
         }, 0, 500);
+    }
+}
+
+void ModbusTcp::pre_reboot()
+{
+    if (started) {
+        ESP_ERROR_CHECK(mbc_slave_destroy());
     }
 }

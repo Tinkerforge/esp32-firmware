@@ -61,6 +61,7 @@ protected:
     virtual ~GenericModbusTCPClient() = default;
 
     void start_connection();
+    void stop_connection();
     void start_generic_read();
 
     ModbusTCP *const mb;

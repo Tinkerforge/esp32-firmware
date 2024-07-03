@@ -312,6 +312,11 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
     }, 2000, 1000);
 }
 
+void MeterModbusTCP::pre_reboot()
+{
+    stop_connection();
+}
+
 void MeterModbusTCP::connect_callback()
 {
     generic_read_request.data[0] = register_buffer;

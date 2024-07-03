@@ -72,6 +72,11 @@ void MeterSunSpec::setup(const Config &ephemeral_config)
     }, 2000, 1000);
 }
 
+void MeterSunSpec::pre_reboot()
+{
+    stop_connection();
+}
+
 void MeterSunSpec::connect_callback()
 {
     scan_start();

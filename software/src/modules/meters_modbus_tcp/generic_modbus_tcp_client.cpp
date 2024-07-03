@@ -34,6 +34,17 @@ void GenericModbusTCPClient::start_connection()
 {
     host_data.user = this;
 
+    stop_connection();
+
+    dns_gethostbyname_addrtype_lwip_ctx_async(host_name.c_str(), [](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+        GenericModbusTCPClient *gmbtc = static_cast<GenericModbusTCPClient *>(data->user);
+
+        gmbtc->check_ip(data->addr_ptr, data->err);
+    }, &host_data, LWIP_DNS_ADDRTYPE_IPV4);
+}
+
+void GenericModbusTCPClient::stop_connection()
+{
     if (mb->isConnected(host_ip) && mb->disconnect(host_ip)) {
         logger.printfln("Disconnecting from '%s'", host_name.c_str());
         disconnect_callback();
@@ -41,12 +52,6 @@ void GenericModbusTCPClient::start_connection()
 
     host_ip = IPAddress(0u);
     last_successful_read = 0_usec;
-
-    dns_gethostbyname_addrtype_lwip_ctx_async(host_name.c_str(), [](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
-        GenericModbusTCPClient *gmbtc = static_cast<GenericModbusTCPClient *>(data->user);
-
-        gmbtc->check_ip(data->addr_ptr, data->err);
-    }, &host_data, LWIP_DNS_ADDRTYPE_IPV4);
 }
 
 void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)

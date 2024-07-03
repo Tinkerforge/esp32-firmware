@@ -257,7 +257,8 @@ enum class BootStage {
     SETUP,
     REGISTER_URLS,
     REGISTER_EVENTS,
-    LOOP
+    LOOP,
+    PRE_REBOOT
 };
 
 extern BootStage boot_stage;

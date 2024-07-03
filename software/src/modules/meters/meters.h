@@ -67,6 +67,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void pre_reboot() override;
 
     void register_meter_generator(MeterClassID meter_class, MeterGenerator *generator);
     IMeter *get_meter(uint32_t slot);

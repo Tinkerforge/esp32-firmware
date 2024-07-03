@@ -61,6 +61,7 @@ public:
     void setup() override;
     void register_urls() override;
     void register_events() override;
+    void pre_reboot() override;
     void connect();
 
     // Retain messages by default because we only send on change.

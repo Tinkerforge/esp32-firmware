@@ -33,6 +33,7 @@ public:
     virtual void register_urls() {}
     virtual void register_events() {}
     virtual void loop() {}
+    virtual void pre_reboot() {}
 
     bool initialized = false;
 };

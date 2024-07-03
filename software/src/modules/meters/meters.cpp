@@ -376,6 +376,13 @@ void Meters::register_urls()
 #endif
 }
 
+void Meters::pre_reboot()
+{
+    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+        meter_slots[slot].meter->pre_reboot();
+    }
+}
+
 void Meters::register_meter_generator(MeterClassID meter_class, MeterGenerator *generator)
 {
     for (const auto &generator_tuple : generators) {
