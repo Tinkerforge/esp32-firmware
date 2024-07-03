@@ -25,7 +25,6 @@
 #include "event_log.h"
 #include "tools.h"
 #include "task_scheduler.h"
-#include "modules.h"
 
 #include "bindings/bricklet_rotary_poti_v2.h"
 #include "bindings/bricklet_rgb_led_v2.h"

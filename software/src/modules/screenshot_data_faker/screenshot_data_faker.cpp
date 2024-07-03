@@ -18,8 +18,10 @@
  */
 
 #include "screenshot_data_faker.h"
-#include "modules.h"
+#include "api.h"
+#include "module_dependencies.h"
 #include "build.h"
+#include <LittleFS.h>
 
 struct [[gnu::packed]] ChargeStart {
     uint32_t timestamp_minutes = 0;
@@ -129,7 +131,7 @@ void ScreenshotDataFaker::register_urls()
         {"enabled", true}
     }});
 
-#if SCREENSHOT_DATA_FAKER_PRO
+#ifdef SCREENSHOT_DATA_FAKER_PRO
     meters.meter_slots[0].power_history.history.clear();
     for (int i = 0; i < ARRAY_SIZE(meter_history); ++i)
         meters.meter_slots[0].power_history.history.push(meter_history[i]);

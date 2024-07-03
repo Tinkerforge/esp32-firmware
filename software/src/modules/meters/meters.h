@@ -156,7 +156,7 @@ private:
     uint32_t end_last_interval = 0;
 
     // For reproducable screenshots, the ScreenshotDataFaker injects values into the power_history of the first meter.
-#if SCREENSHOT_DATA_FAKER_PRO
+#ifdef SCREENSHOT_DATA_FAKER_PRO
     friend class ScreenshotDataFaker;
 #endif
 };
