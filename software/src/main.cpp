@@ -30,8 +30,7 @@
 #include "task_scheduler.h"
 #include "web_server.h"
 #include "build.h"
-#include "module.h"
-#include "modules_main.h"
+#include "modules.h"
 #include "tools.h"
 
 #include "gcc_warnings.h"

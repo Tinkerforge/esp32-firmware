@@ -795,26 +795,43 @@ def main():
     identifier_backlist = ["system"]
 
     util.specialize_template("modules.h.template", os.path.join("src", "modules.h"), {
-        '{{{module_includes}}}': '\n'.join(['#include "modules/{0}/{0}.h"'.format(x.under) for x in backend_modules]),
         '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE() {}'.format(x, "1" if x in backend_mods_upper else "0") for x in all_mods]),
-        '{{{module_extern_decls}}}': '\n'.join([f'extern {x.camel} {x.under}{"_" if x.under in identifier_backlist else ""};' for x in backend_modules]),
     })
 
     util.specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
-        '{{{module_decls}}}': '\n'.join([f'{x.camel} {x.under}{"_" if x.under in identifier_backlist else ""};' for x in backend_modules]),
+        '{{{imodule_extern_decls}}}': '\n'.join([f'extern IModule *{x.under}_imodule;' for x in backend_modules]),
         '{{{imodule_count}}}': str(len(backend_modules)),
-        '{{{imodule_vector}}}': '\n    '.join([f'imodules->push_back(&{x.under}{"_" if x.under in identifier_backlist else ""});' for x in backend_modules]),
-        '{{{module_init_config}}}': ',\n        '.join(f'{{"{x.under}", Config::Bool({x.under}{"_" if x.under in identifier_backlist else ""}.initialized)}}' for x in backend_modules if not x.under.startswith("hidden_")),
+        '{{{imodule_vector}}}': '\n    '.join([f'imodules->push_back({x.under}_imodule);' for x in backend_modules]),
+        '{{{module_init_config}}}': ',\n        '.join(f'{{"{x.under}", Config::Bool({x.under}_imodule->initialized)}}' for x in backend_modules if not x.under.startswith("hidden_")),
     })
 
     util.log("Generating module_dependencies.h from module.ini", flush=True)
     generate_module_dependencies_header('src/event_log_dependencies.ini', 'src/event_log_', None, backend_modules, all_mods)
     generate_module_dependencies_header('src/web_dependencies.ini', 'src/web_', None, backend_modules, all_mods)
+
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
         info_path = os.path.join(mod_path, 'module.ini')
         header_path_prefix = os.path.join(mod_path, 'module_')
+
         generate_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_mods)
+
+        with open(os.path.join(mod_path, 'module.cpp'), 'w', encoding='utf-8') as f:
+            identifier = backend_module.under
+
+            if identifier in identifier_backlist:
+                identifier += '_'
+
+            f.write('// WARNING: This file is generated.\n\n')
+            f.write(f'#include "{backend_module.under}.h"\n\n')
+            f.write(f'{backend_module.camel} {identifier};\n\n')
+            f.write('// Enforce that all back-end modules implement the IModule interface. If you receive\n')
+            f.write("// an error like \"cannot convert 'MyModule*' to 'IModule*' in initialization\", you\n")
+            f.write('// have to add the IModule interface to your back-end module\'s class declaration:\n')
+            f.write('// class MyModule final : public IModule {\n')
+            f.write('//     // content here\n')
+            f.write('// }\n')
+            f.write(f'IModule *{backend_module.under}_imodule = &{identifier};\n')
 
     # Handle frontend modules
     main_ts_entries = []

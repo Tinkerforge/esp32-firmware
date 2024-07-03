@@ -2,10 +2,12 @@
 
 #pragma once
 
-{{{module_includes}}}
+#include <vector>
+
+#include "config.h"
+#include "module.h"
 
 {{{module_defines}}}
 
-{{{module_extern_decls}}}
-
-extern Config modules;
+void       modules_get_imodules(std::vector<IModule*> *imodules);
+ConfigRoot modules_get_init_config();
