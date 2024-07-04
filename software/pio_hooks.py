@@ -799,7 +799,7 @@ def main():
     })
 
     util.specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
-        '{{{imodule_extern_decls}}}': '\n'.join([f'extern IModule *{x.under}_imodule;' for x in backend_modules]),
+        '{{{imodule_extern_decls}}}': '\n'.join([f'extern IModule *const {x.under}_imodule;' for x in backend_modules]),
         '{{{imodule_count}}}': str(len(backend_modules)),
         '{{{imodule_vector}}}': '\n    '.join([f'imodules->push_back({x.under}_imodule);' for x in backend_modules]),
         '{{{module_init_config}}}': ',\n        '.join(f'{{"{x.under}", Config::Bool({x.under}_imodule->initialized)}}' for x in backend_modules if not x.under.startswith("hidden_")),
@@ -828,10 +828,13 @@ def main():
             f.write('// Enforce that all back-end modules implement the IModule interface. If you receive\n')
             f.write("// an error like \"cannot convert 'MyModule*' to 'IModule*' in initialization\", you\n")
             f.write('// have to add the IModule interface to your back-end module\'s class declaration:\n')
-            f.write('// class MyModule final : public IModule {\n')
+            f.write('//\n')
+            f.write('// class MyModule final : public IModule\n')
+            f.write('// {\n')
             f.write('//     // content here\n')
             f.write('// }\n')
-            f.write(f'IModule *{backend_module.under}_imodule = &{identifier};\n')
+            # To get global constants that are usable in other compilation units, they must be declared extern. Otherwise, they will be optimized away before reaching the linker.
+            f.write(f'extern IModule *const {backend_module.under}_imodule = &{identifier};\n')
 
     # Handle frontend modules
     main_ts_entries = []
