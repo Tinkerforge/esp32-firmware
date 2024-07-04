@@ -20,6 +20,7 @@
 #include "meters_pv_faker.h"
 
 #include "module_dependencies.h"
+#include "meter_pv_faker.h"
 
 #include "gcc_warnings.h"
 

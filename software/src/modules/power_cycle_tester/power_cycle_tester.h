@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include "module.h"
 
 enum class POTI_POS {

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "modules/meters/imeter.h"
+#include "modules/event/event.h"
 #include "config.h"
 
 #if defined(__GNUC__)
