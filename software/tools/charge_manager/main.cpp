@@ -2,7 +2,7 @@
 #include <memory>
 
 #include "tools.h"
-#include "event_log.h"
+#include "event_log_prefix.h"
 #include "modules/cm_networking/cm_networking_defs.h"
 
 #include <string.h>
