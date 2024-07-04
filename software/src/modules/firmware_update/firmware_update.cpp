@@ -619,13 +619,13 @@ void FirmwareUpdate::check_for_update()
     http_config.is_async = true;
     http_config.timeout_ms = 50;
 
-    size_t cert_len = 0;
-
     if (cert_id < 0) {
         http_config.crt_bundle_attach = esp_crt_bundle_attach;
     }
     else {
 #if MODULE_CERTS_AVAILABLE()
+        size_t cert_len = 0;
+
         cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
 
         if (cert == nullptr) {
