@@ -144,7 +144,7 @@ void ChargeLimits::register_urls()
     api.addCommand("charge_limits/override_energy", &override_energy, {}, [this]() {
         was_triggered = false;
         config_in_use.get("energy_wh")->updateUint(override_energy.get("energy_wh")->asUint());
-        if (override_duration.get("duration")->asUint() == 0)
+        if (override_energy.get("energy_wh")->asUint() == 0)
             state.get("target_energy_kwh")->updateFloat(NAN);
         else
             state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + override_energy.get("energy_wh")->asUint() / 1000.0);
