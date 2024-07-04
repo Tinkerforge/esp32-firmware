@@ -829,7 +829,7 @@ def main():
                     print(f"Module error: '{backend_module.under}/module.ini contains unknown keys {unknown_keys}  ", file=sys.stderr)
                     sys.exit(1)
 
-                instance_name = config['Common'].get('InstanceName', '')
+                instance_name = config['Common'].get('InstanceName', instance_name)
 
         if instance_name in identifier_backlist:
             instance_name += '_'
