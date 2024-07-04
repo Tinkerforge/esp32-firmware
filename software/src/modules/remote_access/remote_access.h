@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <WireGuard-ESP32.h>
+#include <esp_http_client.h>
+
 #include "module.h"
 #include "config.h"
-
-#include <WireGuard-ESP32.h>
-#include "esp_http_client.h"
 
 struct HttpResponse {
     int status;

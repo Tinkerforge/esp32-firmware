@@ -17,27 +17,24 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "module_dependencies.h"
-
 #include "remote_access.h"
-#include "api.h"
-#include "event_log.h"
 
-#include "lwip/err.h"
-#include "lwip/sockets.h"
-#include "lwip/sys.h"
-#include "lwip/pbuf.h"
+#include <lwip/err.h>
+#include <lwip/sockets.h>
+#include <lwip/sys.h>
+#include <lwip/pbuf.h>
 #include <lwip/netdb.h>
-
-#include "build.h"
-#include "esp_http_client.h"
-#include "task_scheduler.h"
-#include "TFJson.h"
-#include "tools.h"
-#include "mbedtls/aes.h"
-#include "mbedtls/base64.h"
-#include "sodium.h"
 #include <WiFi.h>
+#include <mbedtls/aes.h>
+#include <mbedtls/base64.h>
+#include <sodium.h>
+#include <esp_http_client.h>
+#include <TFJson.h>
+
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "build.h"
+#include "tools.h"
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 extern char local_uid_str[32];
