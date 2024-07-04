@@ -20,22 +20,19 @@
 #define EVENT_LOG_PREFIX "esp32_eth_brick"
 
 #include "esp32_ethernet_brick.h"
-#include "module_dependencies.h"
 
 #include <Arduino.h>
-#include "driver/i2c.h"
+#include <driver/i2c.h>
 
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "build.h"
 #include "tools.h"
 #include "hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"
 #include "bindings/errors.h"
-#include "event_log.h"
-#include "task_scheduler.h"
-
 
 #if TF_LOCAL_ENABLE != 0
 
-#include "build.h"
 #include "bindings/local.h"
 // FIXME: for now hardcode DEVICE_IDENTIFIER define here until bindings are ready
 //#include "bindings/brick_esp32_ethernet.h"

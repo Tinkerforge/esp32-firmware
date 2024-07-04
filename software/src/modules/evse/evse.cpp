@@ -18,18 +18,20 @@
  */
 
 #include "evse.h"
+
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
-
 #include "bindings/errors.h"
-
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
 #include "tools.h"
-#include "web_server.h"
 #include "string_builder.h"
+#include "evse_bricklet_firmware_bin.embedded.h"
 
-EVSE::EVSE() : DeviceModule("evse", "EVSE", "EVSE", [](){evse_common.setup_evse();}) {}
+EVSE::EVSE() : DeviceModule(evse_bricklet_firmware_bin_data,
+                            evse_bricklet_firmware_bin_length,
+                            "evse",
+                            "EVSE",
+                            "EVSE",
+                            [](){evse_common.setup_evse();}) {}
 
 void EVSE::pre_setup()
 {

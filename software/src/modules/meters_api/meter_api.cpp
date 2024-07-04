@@ -18,9 +18,8 @@
  */
 
 #include "meter_api.h"
-#include "module_dependencies.h"
 
-#include "api.h"
+#include "module_dependencies.h"
 #include "modules/meters/meter_value_id.h"
 
 #include "gcc_warnings.h"

@@ -19,12 +19,11 @@
 
 #include "meter_evse_v2.h"
 
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "modules/meters/meter_value_id.h"
 #include "modules/meters/sdm_helpers.h"
-#include "task_scheduler.h"
 #include "tools.h"
-#include "event_log.h"
 
 #include "gcc_warnings.h"
 

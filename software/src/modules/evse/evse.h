@@ -19,20 +19,18 @@
 
 #pragma once
 
-#include "bindings/bricklet_evse.h"
-
-#include "config.h"
 #include "device_module.h"
-#include "evse_bricklet_firmware_bin.embedded.h"
-#include "../evse_common/evse_common.h"
+#include "config.h"
+#include "bindings/bricklet_evse.h"
+#include "modules/evse_common/evse_common.h"
 
 class EVSE final : public DeviceModule<TF_EVSE,
-                                       evse_bricklet_firmware_bin_data,
-                                       evse_bricklet_firmware_bin_length,
                                        tf_evse_create,
                                        tf_evse_get_bootloader_mode,
                                        tf_evse_reset,
-                                       tf_evse_destroy>, public IEvseBackend {
+                                       tf_evse_destroy>,
+                   public IEvseBackend
+{
 public:
     EVSE();
 
@@ -44,6 +42,9 @@ public:
 
 protected:
     // IEvseBackend implementation
+    bool is_initialized() override { return initialized; }
+    void set_initialized(bool initialized) override { this->initialized = initialized; }
+
     void post_setup() override {};
     void post_register_urls() override;
 

@@ -19,21 +19,17 @@
 
 #include "power_cycle_tester.h"
 
-#include "bindings/errors.h"
+#include <string.h>
 
-#include "api.h"
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "tools.h"
-#include "task_scheduler.h"
-
+#include "bindings/errors.h"
 #include "bindings/bricklet_rotary_poti_v2.h"
 #include "bindings/bricklet_rgb_led_v2.h"
-
 #include "bindings/base58.h"
 #include "bindings/endian_convert.h"
 #include "bindings/errors.h"
-
-#include <string.h>
 
 extern TF_HAL hal;
 

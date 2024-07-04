@@ -111,7 +111,7 @@ def write_firmware_info(display_name, major, minor, patch, beta, build_time):
     with open(os.path.join(env.subst("$BUILD_DIR"), "firmware_info.bin"), "wb") as f:
         f.write(buf)
 
-def generate_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_mods_upper):
+def generate_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_mods_upper, backend_module_instance_names):
     if backend_module:
         module_name = backend_module.space
     else:
@@ -241,11 +241,10 @@ def generate_module_dependencies_header(info_path, header_path_prefix, backend_m
 
             dep_mods = required_mods + available_optional_mods
             backend_mods_upper = [x.upper for x in backend_modules]
-            identifier_backlist = ["system"]
 
             defines  = ''.join(['#define MODULE_{}_AVAILABLE() {}\n'.format(x, "1" if x in backend_mods_upper else "0") for x in all_optional_mods_upper])
             includes = ''.join([f'#include "modules/{x.under}/{x.under}.h"\n' for x in dep_mods])
-            decls    = ''.join([f'extern {x.camel} {x.under}{"_" if x.under in identifier_backlist else ""};\n' for x in dep_mods])
+            decls    = ''.join([f'extern {x.camel} {backend_module_instance_names[x.space]};\n' for x in dep_mods])
 
             available_h_content  = '// WARNING: This file is generated.\n\n'
             available_h_content += '#pragma once\n'
@@ -716,7 +715,7 @@ def main():
 
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
-    backend_modules = [util.FlavoredName(x).get() for x in env.GetProjectOption("custom_backend_modules").splitlines()]
+    backend_modules = [util.FlavoredName(x).get() for x in ['Task Scheduler', 'Event Log', 'API', 'Web Server'] + env.GetProjectOption("custom_backend_modules").splitlines()]
 
     if nightly:
         backend_modules.append(util.FlavoredName("Debug").get())
@@ -798,10 +797,6 @@ def main():
     backend_mods_upper = [x.upper for x in backend_modules]
     identifier_backlist = ["system"]
 
-    util.specialize_template("modules.h.template", os.path.join("src", "modules.h"), {
-        '{{{module_defines}}}': '\n'.join(['#define MODULE_{}_AVAILABLE() {}'.format(x, "1" if x in backend_mods_upper else "0") for x in all_mods]),
-    })
-
     util.specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
         '{{{imodule_extern_decls}}}': '\n'.join([f'extern IModule *const {x.under}_imodule;' for x in backend_modules]),
         '{{{imodule_count}}}': str(len(backend_modules)),
@@ -810,25 +805,41 @@ def main():
     })
 
     util.log("Generating module_dependencies.h from module.ini", flush=True)
-    generate_module_dependencies_header('src/event_log_dependencies.ini', 'src/event_log_', None, backend_modules, all_mods)
-    generate_module_dependencies_header('src/web_dependencies.ini', 'src/web_', None, backend_modules, all_mods)
+
+    backend_module_instance_names = {}
 
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
         info_path = os.path.join(mod_path, 'module.ini')
-        header_path_prefix = os.path.join(mod_path, 'module_')
+        instance_name = backend_module.under
 
-        generate_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_mods)
+        backend_module_instance_names[backend_module.space] = backend_module.under
+
+        if not os.path.exists(info_path):
+            print(f'Warning: {backend_module.under} has no module.ini file')
+        else:
+            config = configparser.ConfigParser()
+            config.read(info_path)
+
+            if config.has_section('Common'):
+                known_keys = set(['instancename'])
+                unknown_keys = set(config['Common'].keys()).difference(known_keys)
+
+                if len(unknown_keys) > 0:
+                    print(f"Module error: '{backend_module.under}/module.ini contains unknown keys {unknown_keys}  ", file=sys.stderr)
+                    sys.exit(1)
+
+                instance_name = config['Common'].get('InstanceName', '')
+
+        if instance_name in identifier_backlist:
+            instance_name += '_'
+
+        backend_module_instance_names[backend_module.space] = instance_name
 
         with open(os.path.join(mod_path, 'module.cpp'), 'w', encoding='utf-8') as f:
-            identifier = backend_module.under
-
-            if identifier in identifier_backlist:
-                identifier += '_'
-
             f.write('// WARNING: This file is generated.\n\n')
             f.write(f'#include "{backend_module.under}.h"\n\n')
-            f.write(f'{backend_module.camel} {identifier};\n\n')
+            f.write(f'{backend_module.camel} {instance_name};\n\n')
             f.write('// Enforce that all back-end modules implement the IModule interface. If you receive\n')
             f.write("// an error like \"cannot convert 'MyModule*' to 'IModule*' in initialization\", you\n")
             f.write('// have to add the IModule interface to your back-end module\'s class declaration:\n')
@@ -837,8 +848,18 @@ def main():
             f.write('// {\n')
             f.write('//     // content here\n')
             f.write('// }\n')
-            # To get global constants that are usable in other compilation units, they must be declared extern. Otherwise, they will be optimized away before reaching the linker.
-            f.write(f'extern IModule *const {backend_module.under}_imodule = &{identifier};\n')
+            # To get global constants that are usable in other compilation units, they must be
+            # declared extern. Otherwise, they will be optimized away before reaching the linker.
+            f.write(f'extern IModule *const {backend_module.under}_imodule = &{instance_name};\n')
+
+    for backend_module in backend_modules:
+        mod_path = os.path.join('src', 'modules', backend_module.under)
+        info_path = os.path.join(mod_path, 'module.ini')
+        header_path_prefix = os.path.join(mod_path, 'module_')
+
+        generate_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_mods, backend_module_instance_names)
+
+    generate_module_dependencies_header('src/main_dependencies.ini', 'src/main_', None, backend_modules, all_mods, backend_module_instance_names)
 
     # Handle frontend modules
     main_ts_entries = []

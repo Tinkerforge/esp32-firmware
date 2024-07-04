@@ -21,8 +21,6 @@
 
 #include "crc32.h"
 
-//#include "configs/config.h"
-
 typedef unsigned int word_t;
 
 // Polynomial for 32-bit CRC in IEEE 802.3.

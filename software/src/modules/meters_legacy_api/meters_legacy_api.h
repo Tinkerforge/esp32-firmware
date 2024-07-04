@@ -21,10 +21,10 @@
 
 #include <stdint.h>
 
-#include "config.h"
-#include "modules/meters/meter_defs.h"
 #include "module.h"
+#include "config.h"
 #include "modules/event/event.h"
+#include "modules/meters/meter_defs.h"
 
 #define PHASE_CONNECTED_VOLTAGE_THRES 180.0f // V
 #define PHASE_ACTIVE_CURRENT_THRES      0.3f // A

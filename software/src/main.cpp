@@ -22,28 +22,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "index_html.embedded.h"
-
-#include "bindings/hal_common.h"
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
-#include "web_server.h"
-#include "build.h"
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
 #include "modules.h"
+#include "index_html.embedded.h"
+#include "bindings/hal_common.h"
+#include "build.h"
 #include "tools.h"
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #include "gcc_warnings.h"
-    #pragma GCC diagnostic ignored "-Wold-style-cast"
-#endif
-
-#if MODULE_WATCHDOG_AVAILABLE()
-#include "modules/watchdog/watchdog.h"
-
-extern Watchdog watchdog;
-#endif
+#include "gcc_warnings.h"
 
 BootStage boot_stage = BootStage::STATIC_INITIALIZATION;
 
@@ -147,8 +134,6 @@ static void register_default_urls(void) {
     server.on_HTTPThread("/login_state", HTTP_GET, [](WebServerRequest request) {
         return request.send(200, "text/plain", "Logged in");
     });
-
-    api.registerDebugUrl();
 }
 
 #define PRE_REBOOT_MAX_DURATION (5 * 60 * 1000)
@@ -164,7 +149,12 @@ static StackType_t pre_reboot_stack[PRE_REBOOT_STACK_SIZE];
 
 static void pre_reboot_task(void *arg)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+    // portTICK_PERIOD_MS expands to an old style cast.
     vTaskDelay(PRE_REBOOT_MAX_DURATION / portTICK_PERIOD_MS);
+#pragma GCC diagnostic pop
+
     esp_system_abort(pre_reboot_message);
 }
 
@@ -218,18 +208,10 @@ void setup(void)
     // However if BUILD_MONITOR_SPEED is not the ROM bootloader's preferred speed, this call will change the speed.
     Serial.begin(BUILD_MONITOR_SPEED);
 
-    logger.pre_init();
-
-    logger.printfln_plain("    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
-    logger.printfln_plain("         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
-    logger.printfln_plain("READY.");
-
-    logger.printfln("Last reset reason was: %s", tf_reset_reason());
+    config_pre_init();
 
     std::vector<IModule *> imodules;
     modules_get_imodules(&imodules);
-
-    config_pre_init();
 
     for (IModule *imodule : imodules) {
         imodule->pre_init();
@@ -245,19 +227,11 @@ void setup(void)
 
     boot_stage = BootStage::PRE_SETUP;
 
-    task_scheduler.pre_setup();
-    api.pre_setup();
-    logger.pre_setup();
-
     for (IModule *imodule : imodules) {
         imodule->pre_setup();
     }
 
     boot_stage = BootStage::SETUP;
-
-    // Setup task scheduler before API: The API setup can run migrations that want to start tasks.
-    task_scheduler.setup();
-    api.setup();
 
     for (IModule *imodule : imodules) {
         imodule->setup();
@@ -266,16 +240,12 @@ void setup(void)
     modules = modules_get_init_config();
 
     logger.post_setup();
-
     config_post_setup();
-
-    server.start();
+    server.post_setup();
 
     boot_stage = BootStage::REGISTER_URLS;
 
     register_default_urls();
-    logger.register_urls();
-    task_scheduler.register_urls();
 
     for (IModule *imodule : imodules) {
         imodule->register_urls();
@@ -311,7 +281,7 @@ void setup(void)
 
 void loop(void) {
     tf_hal_tick(&hal, 0);
-    task_scheduler.loop();
+    task_scheduler.custom_loop();
 
     // Round-robin for modules' loop functions, to prioritize HAL ticks and scheduler.
     if (loop_chain != nullptr) {

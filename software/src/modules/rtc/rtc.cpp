@@ -19,13 +19,12 @@
 
 #include "rtc.h"
 
-#include "api.h"
-#include "build.h"
-#include "task_scheduler.h"
-#include "time.h"
+#include <time.h>
+
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "build.h"
 #include "musl_libc_timegm.h"
-#include "event_log.h"
 
 void IRtcBackend::set_time(const timeval &time)
 {

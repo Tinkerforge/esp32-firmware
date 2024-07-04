@@ -20,7 +20,7 @@
 #include <stdint.h>
 #include <algorithm>
 
-#include "web_server.h"
+#include "modules/web_server/web_server.h"
 
 int init_pdf_generator(WebServerRequest *request,
                        const char *title,

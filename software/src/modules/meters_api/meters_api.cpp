@@ -17,9 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meter_api.h"
 #include "meters_api.h"
+
 #include "module_dependencies.h"
+#include "meter_api.h"
 
 #include "gcc_warnings.h"
 

@@ -19,10 +19,6 @@
 
 #pragma once
 
-#include "bindings/bricklet_industrial_dual_relay.h"
-
-#include "config.h"
-
 #include "module.h"
 
 enum class POTI_POS {

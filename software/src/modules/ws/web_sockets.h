@@ -20,9 +20,7 @@
 #pragma once
 
 #include <Arduino.h>
-
 #include <esp_http_server.h>
-
 #include <functional>
 #include <atomic>
 #include <mutex>
@@ -58,12 +56,9 @@ void clear_ws_work_item(ws_work_item *wi);
 class WebSockets
 {
 public:
-    WebSockets() : worker_active(WEBSOCKET_WORKER_DONE)
-    {
-    }
+    WebSockets() : worker_active(WEBSOCKET_WORKER_DONE) {}
 
     void pre_setup();
-
     void start(const char *uri);
 
     bool sendToClient(const char *payload, size_t payload_len, int sock);

@@ -18,15 +18,13 @@
  */
 
 #include "energy_manager.h"
-#include "module_dependencies.h"
 
 #include <Arduino.h>
 #include <sys/time.h>
 #include <time.h>
 
-#include "event_log.h"
-#include "task_scheduler.h"
-
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "modules/charge_manager/charge_manager_private.h"
 
 #define MAX_DATA_AGE 30000 // milliseconds

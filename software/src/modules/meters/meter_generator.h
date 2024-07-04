@@ -19,11 +19,9 @@
 
 #pragma once
 
-#include "imeter.h"
-
 #include <stdint.h>
 
-#include "config.h"
+#include "imeter.h"
 
 class MeterGenerator
 {

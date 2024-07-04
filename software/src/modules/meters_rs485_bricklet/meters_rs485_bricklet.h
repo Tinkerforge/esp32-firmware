@@ -19,19 +19,13 @@
 
 #pragma once
 
-#include "meter_rs485_bricklet.h"
-
 #include <stdint.h>
 
-#include "config.h"
-#include "modules/meters/imeter.h"
-#include "modules/meters/meter_generator.h"
-#include "module.h"
-
-#include "bindings/bricklet_rs485.h"
-
 #include "device_module.h"
-#include "rs485_bricklet_firmware_bin.embedded.h"
+#include "config.h"
+#include "modules/meters/meter_generator.h"
+#include "meter_rs485_bricklet.h"
+#include "bindings/bricklet_rs485.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -40,8 +34,6 @@
 #endif
 
 class MetersRS485Bricklet final : public DeviceModule<TF_RS485,
-                                                      rs485_bricklet_firmware_bin_data,
-                                                      rs485_bricklet_firmware_bin_length,
                                                       tf_rs485_create,
                                                       tf_rs485_get_bootloader_mode,
                                                       tf_rs485_reset,
@@ -50,7 +42,7 @@ class MetersRS485Bricklet final : public DeviceModule<TF_RS485,
                                   public MeterGenerator
 {
 public:
-    MetersRS485Bricklet() : DeviceModule("rs485", "RS485", "Modbus Meter", [this](){this->setupRS485();}) {}
+    MetersRS485Bricklet();
 
     // for DeviceModule
     void pre_setup() override;

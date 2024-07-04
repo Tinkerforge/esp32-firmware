@@ -1,8 +1,8 @@
 // WARNING: Edit only energy_manager_debug.cpp.template. Do not edit energy_manager_debug.cpp.
 
 #include "energy_manager.h"
-#include "module_dependencies.h"
 
+#include "module_dependencies.h"
 #include "tools.h"
 #include "string_builder.h"
 

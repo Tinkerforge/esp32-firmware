@@ -17,20 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <Arduino.h>
-
-#include "esp_modbus_common.h"
-#include "esp_modbus_slave.h"
-#include "esp_netif.h"
-
-#include "api.h"
-#include "task_scheduler.h"
-#include "module_dependencies.h"
-#include "event_log.h"
-
 #include "modbus_tcp.h"
+
+#include <Arduino.h>
+#include <esp_modbus_common.h>
+#include <esp_modbus_slave.h>
+#include <esp_netif.h>
+#include <math.h>
+
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "build.h"
-#include "math.h"
 
 extern uint32_t local_uid_num;
 

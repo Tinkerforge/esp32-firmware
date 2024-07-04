@@ -18,10 +18,9 @@
  */
 #include "device_name.h"
 
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "build.h"
-#include "api.h"
-#include "task_scheduler.h"
-#include "event_log.h"
 
 extern char local_uid_str[32];
 

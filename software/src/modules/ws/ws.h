@@ -22,11 +22,12 @@
 #include <functional>
 #include <vector>
 
-#include "api.h"
+#include "module.h"
+#include "modules/api/api.h"
 #include "web_sockets.h"
 #include "string_builder.h"
 
-class WS final : public IAPIBackend
+class WS final : public IModule, public IAPIBackend
 {
 public:
     WS() : web_sockets() {}

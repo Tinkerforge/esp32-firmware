@@ -18,18 +18,14 @@
  */
 
 #include "firmware_update.h"
-#include "module_dependencies.h"
 
 #include <Update.h>
+#include <TFJson.h>
 
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "tools.h"
 #include "build.h"
-#include "web_server.h"
-#include "TFJson.h"
-
 #include "./crc32.h"
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);

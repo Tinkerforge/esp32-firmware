@@ -19,9 +19,8 @@
 
 #pragma once
 
-#include "config.h"
-#include "modules/event/event.h"
 #include "modules/meters/imeter.h"
+#include "config.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

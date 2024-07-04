@@ -22,7 +22,8 @@
 #include <atomic>
 #include <vector>
 
-#include "api.h"
+#include "module.h"
+#include "modules/api/api.h"
 
 enum class EventResult {
     OK = 0,
@@ -36,7 +37,7 @@ struct StateUpdateRegistration {
     std::function<EventResult(const Config *)> callback;
 };
 
-class Event final : public IAPIBackend
+class Event final : public IModule, public IAPIBackend
 {
 public:
     Event() {}

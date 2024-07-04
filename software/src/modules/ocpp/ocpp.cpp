@@ -19,16 +19,12 @@
 
 #include "ocpp.h"
 
-#include "build.h"
-#include "api.h"
-#include "task_scheduler.h"
-#include "event_log.h"
-#include "module_dependencies.h"
-
-#include "modules/certs/certs.h"
-
 #include <ctype.h>
 #include <string.h>
+
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "build.h"
 
 extern char local_uid_str[32];
 

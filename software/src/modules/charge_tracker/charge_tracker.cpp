@@ -20,15 +20,12 @@
 #include "charge_tracker.h"
 
 #include <memory>
+#include <LittleFS.h>
 
-#include "api.h"
-#include "task_scheduler.h"
-#include "tools.h"
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
-
+#include "tools.h"
 #include "pdf_charge_log.h"
-
-#include "event_log.h"
 
 struct [[gnu::packed]] ChargeStart {
     uint32_t timestamp_minutes = 0;

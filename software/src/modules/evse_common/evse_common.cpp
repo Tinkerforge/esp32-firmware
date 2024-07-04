@@ -18,9 +18,11 @@
  */
 
 #include "evse_common.h"
-#include "module_dependencies.h"
 
-#include "event_log.h"
+#include <LittleFS.h>
+
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 
 extern EvseCommon evse_common;
 extern uint32_t local_uid_num;
@@ -276,7 +278,7 @@ void EvseCommon::setup()
 
     setup_evse();
 
-    if (!backend->initialized)
+    if (!backend->is_initialized())
         return;
 
     // Get all data once before announcing the EVSE feature.
@@ -339,7 +341,7 @@ void EvseCommon::setup_evse()
     }
 
     this->apply_defaults();
-    backend->initialized = true;
+    backend->set_initialized(true);
 }
 
 void EvseCommon::register_urls()

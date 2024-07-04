@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include "config.h"
+#include <ocpp/ChargePoint.h>
 
 #include "module.h"
-#include "ocpp/ChargePoint.h"
+#include "config.h"
 
 class Ocpp final : public IModule
 {
@@ -44,6 +44,7 @@ public:
     ConfigRoot state;
     ConfigRoot configuration;
     ConfigRoot change_configuration;
+
 private:
     bool start_client();
 };

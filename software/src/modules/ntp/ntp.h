@@ -19,11 +19,10 @@
 
 #pragma once
 
-#include "config.h"
-
 #include <mutex>
 
 #include "module.h"
+#include "config.h"
 
 class NTP final : public IModule
 {

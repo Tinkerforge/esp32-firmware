@@ -22,22 +22,19 @@
 #include <math.h>
 #include <list>
 
-#include "config.h"
-
 #include "device_module.h"
+#include "config.h"
+#include "bindings/bricklet_warp_energy_manager.h"
+#include "modules/api/api.h"
+#include "modules/power_manager/phase_switcher_back-end.h"
+#include "modules/debug_protocol/debug_protocol_backend.h"
+#include "em_rgb_led.h"
+#include "structs.h"
 #include "module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
-
-#include "bindings/bricklet_warp_energy_manager.h"
-#include "modules/power_manager/phase_switcher_back-end.h"
-#include "modules/debug_protocol/debug_protocol_backend.h"
-
-#include "em_rgb_led.h"
-#include "structs.h"
-#include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
 #define EM_TASK_DELAY_MS                    250
 
@@ -56,21 +53,19 @@
 #define ERROR_FLAGS_ALL_ERRORS_MASK         (0x7FFF0000)
 #define ERROR_FLAGS_ALL_WARNINGS_MASK       (0x0000FFFF)
 
-class EnergyManager final : public PhaseSwitcherBackend,
-                            public DeviceModule<TF_WARPEnergyManager,
-                                                warp_energy_manager_bricklet_firmware_bin_data,
-                                                warp_energy_manager_bricklet_firmware_bin_length,
+class EnergyManager final : public DeviceModule<TF_WARPEnergyManager,
                                                 tf_warp_energy_manager_create,
                                                 tf_warp_energy_manager_get_bootloader_mode,
                                                 tf_warp_energy_manager_reset,
                                                 tf_warp_energy_manager_destroy>,
+                            public PhaseSwitcherBackend,
                             public IDebugProtocolBackend
 #if MODULE_AUTOMATION_AVAILABLE()
                           , public IAutomationBackend
 #endif
 {
 public:
-    EnergyManager() : DeviceModule("energy_manager", "WARP Energy Manager", "Energy Manager", [this](){this->setup_energy_manager();}) {}
+    EnergyManager();
 
     // for IModule
     void pre_setup() override;

@@ -17,21 +17,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "backtrace.h"
 #include "debug.h"
 
 #include <Arduino.h>
-#include "esp_debug_helpers.h"
-#include "esp_system.h"
-#include "esp_task.h"
-#include "LittleFS.h"
-#include "lwipopts.h"
-#include "soc/rtc.h"
-#include "soc/spi_reg.h"
+#include <esp_debug_helpers.h>
+#include <esp_system.h>
+#include <esp_task.h>
+#include <LittleFS.h>
+#include <lwipopts.h>
+#include <soc/rtc.h>
+#include <soc/spi_reg.h>
 
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "backtrace.h"
 #include "string_builder.h"
 
 #include "gcc_warnings.h"

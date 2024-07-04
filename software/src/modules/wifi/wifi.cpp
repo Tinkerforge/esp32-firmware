@@ -18,20 +18,15 @@
  */
 
 #include "wifi.h"
-#include "module_dependencies.h"
 
 #include <WiFi.h>
 #include <esp_wifi.h>
 #include <esp_wpa2.h>
 
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "tools.h"
-#include "api.h"
-#include "event_log.h"
-#include "web_server.h"
-
 #include "build.h"
-#include "tools.h"
 #include "string_builder.h"
 
 // result line: {"ssid":"%s","bssid":"%s","rssi":%d,"channel":%d,"encryption":%d}

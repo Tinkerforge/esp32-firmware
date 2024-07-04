@@ -19,12 +19,10 @@
 
 #include "co2ampel.h"
 
-#include "bindings/errors.h"
-
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "tools.h"
+#include "bindings/errors.h"
 
 #include "gcc_warnings.h"
 

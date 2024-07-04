@@ -19,20 +19,20 @@
 
 #pragma once
 
-#include "mqtt_client.h"
+#include <mqtt_client.h>
 
-#include "api.h"
+#include "module.h"
 #include "config.h"
-
+#include "modules/api/api.h"
+#include "mqtt_connection_state.enum.h"
 #include "module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
 
-#include "mqtt_connection_state.enum.h"
-
-class Mqtt final : public IAPIBackend
+class Mqtt final : public IModule,
+                   public IAPIBackend
 #if MODULE_AUTOMATION_AVAILABLE()
                  , public IAutomationBackend
 #endif

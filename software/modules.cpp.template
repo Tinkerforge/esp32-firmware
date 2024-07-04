@@ -1,7 +1,5 @@
 // WARNING: Edit only modules.cpp.template. Do not edit modules.cpp.
 
-#include "config.h"
-#include "module.h"
 #include "modules.h"
 
 {{{imodule_extern_decls}}}
@@ -16,8 +14,6 @@ void modules_get_imodules(std::vector<IModule*> *imodules)
 ConfigRoot modules_get_init_config()
 {
     return Config::Object({
-        // Fake that the event_log is a module for now.
-        {"event_log", Config::Bool(true)},
         {{{module_init_config}}}
     });
 }

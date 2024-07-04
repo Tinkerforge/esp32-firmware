@@ -19,21 +19,20 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
+#include "config.h"
+#include "modules/api/api.h"
+#include "tools.h"
 #include "module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
 
-#include "api.h"
-#include "tools.h"
-
 bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len);
 
-class Http final : public IAPIBackend
+class Http final : public IModule,
+                   public IAPIBackend
 #if MODULE_AUTOMATION_AVAILABLE()
                  , public IAutomationBackend
 #endif

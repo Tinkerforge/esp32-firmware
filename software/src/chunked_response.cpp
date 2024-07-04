@@ -23,7 +23,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
 
 void QueuedChunkedResponse::begin(bool success)
 {

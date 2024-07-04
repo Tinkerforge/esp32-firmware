@@ -19,14 +19,13 @@
 
 #pragma once
 
-#include "config.h"
-
 #include <stdint.h>
+#include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
 #include <esp_http_client.h>
 #include <sodium.h>
 
 #include "module.h"
-#include "web_server.h"
+#include "config.h"
 #include "signature_public_key.embedded.h"
 
 struct SemanticVersion {

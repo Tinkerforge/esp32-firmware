@@ -18,21 +18,18 @@
  */
 
 #include "ethernet.h"
-#include "module_dependencies.h"
 
 #define ETH_ADDR        0
 #define ETH_POWER_PIN   5
 #define ETH_TYPE        ETH_PHY_KSZ8081
 
 #include <ETH.h>
-
 #include <esp_eth.h>
 
-#include "api.h"
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "build.h"
 #include "tools.h"
-#include "event_log.h"
 
 extern char local_uid_str[32];
 

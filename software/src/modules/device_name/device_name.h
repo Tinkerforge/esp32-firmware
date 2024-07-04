@@ -19,9 +19,8 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
+#include "config.h"
 
 class DeviceName final : public IModule
 {

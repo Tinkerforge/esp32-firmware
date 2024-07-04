@@ -18,10 +18,11 @@
  */
 
 #include "require_meter.h"
-#include "tools.h"
+
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "tools.h"
 #include "modules/meters/meter_value_availability.h"
-#include "event_log.h"
 
 extern RequireMeter require_meter;
 

@@ -21,10 +21,8 @@
 
 #include <Arduino.h>
 
-#include "api.h"
-#include "event_log.h"
-#include "web_server.h"
-
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "digest_auth.h"
 
 void Authentication::pre_setup()

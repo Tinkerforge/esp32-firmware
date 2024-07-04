@@ -19,19 +19,17 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
+#include "config.h"
+#include "modules/meters/meter_value_availability.h"
+#include "modules/power_manager/phase_switcher_back-end.h"
+#include "modules/debug_protocol/debug_protocol_backend.h"
+#include "tools.h"
 #include "module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
-
-#include "modules/meters/meter_value_availability.h"
-#include "modules/power_manager/phase_switcher_back-end.h"
-#include "modules/debug_protocol/debug_protocol_backend.h"
-#include "tools.h"
 
 #define CHARGING_SLOT_COUNT 15
 #define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
@@ -72,13 +70,16 @@
 
 #define EXTERNAL_TIMEOUT 30
 
-class IEvseBackend : virtual public IModule, public PhaseSwitcherBackend, public IDebugProtocolBackend
+class IEvseBackend : public PhaseSwitcherBackend, public IDebugProtocolBackend
 {
     friend class EvseCommon;
 
 protected:
     IEvseBackend() {}
     virtual ~IEvseBackend() {}
+
+    virtual bool is_initialized() = 0;
+    virtual void set_initialized(bool initialized) = 0;
 
     virtual void post_setup() = 0;
     virtual void post_register_urls() = 0;

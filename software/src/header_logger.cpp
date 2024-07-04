@@ -19,7 +19,8 @@
 
 #include "header_logger.h"
 
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
 
 int header_printfln(const char *prefix, const char *fmt, va_list args)
 {

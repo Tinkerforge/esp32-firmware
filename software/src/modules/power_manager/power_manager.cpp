@@ -18,10 +18,9 @@
  */
 
 #include "power_manager.h"
-#include "module_dependencies.h"
 
-#include "api.h"
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 
 #include "gcc_warnings.h"
 

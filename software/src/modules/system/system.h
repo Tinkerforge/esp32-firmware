@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
 
 class System final : public IModule

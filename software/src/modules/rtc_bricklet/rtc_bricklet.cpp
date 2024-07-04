@@ -18,13 +18,22 @@
  */
 
 #include "rtc_bricklet.h"
-#include "module_dependencies.h"
 
-#include "build.h"
 #include <ctime>
 
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "build.h"
+#include "real_time_clock_v2_bricklet_firmware_bin.embedded.h"
+
 #include "gcc_warnings.h"
+
+RtcBricklet::RtcBricklet(): DeviceModule(real_time_clock_v2_bricklet_firmware_bin_data,
+                                         real_time_clock_v2_bricklet_firmware_bin_length,
+                                         "rtc",
+                                         "Real Time Clock 2.0",
+                                         "RTC",
+                                         [this](){this->setup_rtc();}) {}
 
 void RtcBricklet::setup()
 {

@@ -20,14 +20,12 @@
 #define EVENT_LOG_PREFIX "meters_legacy"
 
 #include "meters_legacy_api.h"
-#include "module_dependencies.h"
 
 #include <math.h>
 
-#include "api.h"
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "modules/meters/sdm_helpers.h"
-#include "task_scheduler.h"
 #include "tools.h"
 
 #include "gcc_warnings.h"

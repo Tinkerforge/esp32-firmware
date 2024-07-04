@@ -20,12 +20,12 @@
 
 #pragma once
 
-#include "generic_modbus_tcp_client.h"
-
 #include <stdint.h>
 
-#include "config.h"
+#include "generic_modbus_tcp_client.h"
 #include "modules/meters/imeter.h"
+#include "modules/meters/meter_value_id.h"
+#include "config.h"
 #include "meters_modbus_tcp.h"
 #include "modbus_register_type.enum.h"
 #include "modbus_value_type.enum.h"

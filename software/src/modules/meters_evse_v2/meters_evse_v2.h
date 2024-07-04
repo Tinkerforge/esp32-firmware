@@ -19,14 +19,10 @@
 
 #pragma once
 
-#include "meter_evse_v2.h"
-
-#include <stdint.h>
-
-#include "config.h"
-#include "modules/meters/imeter.h"
-#include "modules/meters/meter_generator.h"
 #include "module.h"
+#include "modules/meters/meter_generator.h"
+#include "config.h"
+#include "meter_evse_v2.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

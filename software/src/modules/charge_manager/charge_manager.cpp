@@ -18,20 +18,18 @@
  */
 
 #include "charge_manager.h"
-#include "current_allocator.h"
-#include "module_dependencies.h"
 
 #include <algorithm>
 #include <Arduino.h>
-#include "esp_http_client.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "time.h"
+#include <esp_http_client.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <time.h>
 
-#include "api.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "current_allocator.h"
 #include "build.h"
-#include "event_log.h"
-#include "task_scheduler.h"
 #include "tools.h"
 
 // This is a hack to allow the validator of available_current

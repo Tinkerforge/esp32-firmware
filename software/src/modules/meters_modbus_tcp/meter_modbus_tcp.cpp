@@ -21,16 +21,14 @@
 #define EVENT_LOG_PREFIX "meters_mbtcp"
 
 #include "meter_modbus_tcp.h"
-#include "modbus_tcp_tools.h"
+
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
-
-#include "event_log.h"
-#include "task_scheduler.h"
-
-#include "gcc_warnings.h"
-
+#include "modbus_tcp_tools.h"
 #include "modbus_register_address_mode.enum.h"
 #include "meters_modbus_tcp_defs.inc"
+
+#include "gcc_warnings.h"
 
 //#define DEBUG_LOG_ALL_VALUES
 

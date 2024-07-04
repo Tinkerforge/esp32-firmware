@@ -19,18 +19,15 @@
 
 #pragma once
 
-#include "bindings/bricklet_evse_v2.h"
-
-#include "config.h"
 #include "device_module.h"
+#include "config.h"
+#include "modules/evse_common/evse_common.h"
+#include "bindings/bricklet_evse_v2.h"
 #include "module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
-
-#include "evse_v2_bricklet_firmware_bin.embedded.h"
-#include "modules/evse_common/evse_common.h"
 
 #define EVSEV2_PHASES_INFO_1P_CAR_MASK (1 << 0)
 
@@ -44,8 +41,6 @@ struct EVSEV2MeterData {
 };
 
 class EVSEV2 final : public DeviceModule<TF_EVSEV2,
-                                         evse_v2_bricklet_firmware_bin_data,
-                                         evse_v2_bricklet_firmware_bin_length,
                                          tf_evse_v2_create,
                                          tf_evse_v2_get_bootloader_mode,
                                          tf_evse_v2_reset,
@@ -68,6 +63,9 @@ public:
 
 protected:
     // IEvseBackend implementation
+    bool is_initialized() override { return initialized; }
+    void set_initialized(bool initialized) override { this->initialized = initialized; }
+
     void post_setup() override;
     void post_register_urls() override;
 

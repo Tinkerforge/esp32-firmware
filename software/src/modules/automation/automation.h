@@ -19,10 +19,11 @@
 
 #pragma once
 
-#include "module.h"
-#include "config.h"
 #include <map>
 #include <vector>
+
+#include "module.h"
+#include "config.h"
 #include "automation_trigger_id.enum.h"
 #include "automation_action_id.enum.h"
 #include "automation_backend.h"

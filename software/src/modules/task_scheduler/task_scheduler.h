@@ -20,15 +20,14 @@
 #pragma once
 
 #include <Arduino.h>
-
 #include <vector>
 #include <queue>
 #include <functional>
 #include <mutex>
-
 #include <time.h>
 #include <iostream>
 
+#include "module.h"
 #include "tools.h"
 
 struct Task {
@@ -62,19 +61,13 @@ public:
     }
 };
 
-class TaskScheduler
+class TaskScheduler final : public IModule
 {
 public:
-    TaskScheduler() : tasks(&compare)
-    {
-    }
-    void pre_setup();
-    void setup();
-    void register_urls();
-    void loop();
-    uint64_t currentTaskId();
+    TaskScheduler() : tasks(&compare) {}
 
-    bool initialized = false;
+    void custom_loop();
+    uint64_t currentTaskId();
 
     enum class CancelResult {
         // Task not found in task queue
@@ -107,7 +100,3 @@ private:
     TaskQueue tasks;
     std::unique_ptr<Task> currentTask = nullptr;
 };
-
-// Make global variable available everywhere because it is not declared in modules.h.
-// Definition is in task_scheduler.cpp.
-extern TaskScheduler task_scheduler;

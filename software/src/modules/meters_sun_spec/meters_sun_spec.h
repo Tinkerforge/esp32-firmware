@@ -21,14 +21,13 @@
 
 #include <stdint.h>
 #include <unordered_map>
+#include <ModbusTCP.h>
+#include <lwip/ip_addr.h>
 
-#include "ModbusTCP.h"
-
-#include "config.h"
+#include "module.h"
 #include "modules/meters/meter_generator.h"
 #include "modules/meters_modbus_tcp/modbus_tcp_tools.h"
-#include "module.h"
-#include "lwip/ip_addr.h"
+#include "config.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

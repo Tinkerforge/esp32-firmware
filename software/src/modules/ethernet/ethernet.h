@@ -19,9 +19,8 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
+#include "config.h"
 #include "ethernet_state.enum.h"
 
 class Ethernet final : public IModule

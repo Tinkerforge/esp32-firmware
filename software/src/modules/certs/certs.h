@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include "config.h"
-#include "module.h"
-
 #include <memory>
+
+#include "module.h"
+#include "config.h"
 
 #define MAX_CERTS 8
 #define MAX_CERT_ID (MAX_CERTS - 1)

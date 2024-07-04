@@ -18,21 +18,18 @@
  */
 
 #include "cm_networking.h"
-#include "module_dependencies.h"
 
 #include <Arduino.h>
+#include <ESPmDNS.h>
+#include <lwip/ip_addr.h>
+#include <lwip/opt.h>
+#include <lwip/dns.h>
+#include <cstring>
 
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "tools.h"
 #include "modules/meters/meter_defs.h"
-
-#include <ESPmDNS.h>
-#include "lwip/ip_addr.h"
-#include "lwip/opt.h"
-#include "lwip/dns.h"
-#include <cstring>
 
 int CMNetworking::create_socket(uint16_t port, bool blocking)
 {

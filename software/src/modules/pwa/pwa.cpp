@@ -18,10 +18,9 @@
  */
 
 #include "pwa.h"
-#include "manifest.embedded.h"
-#include "module_dependencies.h"
 
-#include "web_server.h"
+#include "module_dependencies.h"
+#include "manifest.embedded.h"
 
 void Pwa::register_urls()
 {

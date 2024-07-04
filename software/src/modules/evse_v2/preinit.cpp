@@ -17,22 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "Arduino.h"
-
+#include <Arduino.h>
 #include <stdint.h>
 #include <string.h>
+#include <LittleFS.h>
 
-#include "LittleFS.h"
-
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "bindings/hal_common.h"
 #include "bindings/bricklet_evse_v2.h"
 #include "modules/esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"
-
 #include "tools.h"
-#include "api.h"
-#include "event_log.h"
-
-#include "module_dependencies.h"
 
 #define BUTTON_MIN_PRESS_THRES 10000
 #define BUTTON_MAX_PRESS_THRES 30000

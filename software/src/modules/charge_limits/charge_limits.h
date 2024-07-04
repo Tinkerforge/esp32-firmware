@@ -19,9 +19,8 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
+#include "config.h"
 #include "module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()

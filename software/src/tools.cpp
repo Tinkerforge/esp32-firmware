@@ -19,29 +19,26 @@
 
 #include "tools.h"
 
-#include "bindings/errors.h"
-
 #include <Arduino.h>
-
-#include "SPIFFS.h"
-#include "esp_spiffs.h"
-#include "LittleFS.h"
-#include "esp_littlefs.h"
-#include "esp_netif.h"
-#include "esp_system.h"
-#include "esp_timer.h"
-#include "freertos/task.h"
-#include "lwip/udp.h"
-
+#include <SPIFFS.h>
+#include <esp_spiffs.h>
+#include <LittleFS.h>
+#include <esp_littlefs.h>
+#include <esp_netif.h>
+#include <esp_system.h>
+#include <esp_timer.h>
+#include <freertos/task.h>
+#include <lwip/udp.h>
+#include <esp_log.h>
 #include <soc/efuse_reg.h>
+#include <arpa/inet.h>
+
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
+#include "bindings/errors.h"
 #include "bindings/base58.h"
 #include "bindings/bricklet_unknown.h"
-#include "event_log.h"
-#include "esp_log.h"
 #include "build.h"
-#include "task_scheduler.h"
-
-#include <arpa/inet.h>
 
 extern TF_HAL hal;
 

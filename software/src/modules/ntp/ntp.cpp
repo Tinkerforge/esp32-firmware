@@ -17,17 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 #include "ntp.h"
-#include "module_dependencies.h"
-
-#include "api.h"
-#include "task_scheduler.h"
-#include "event_log.h"
 
 #include <time.h>
 #include <esp_sntp.h>
 #include <lwip/inet.h>
 #include <esp_netif.h>
 
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "timezone_translation.h"
 #include "build.h"
 

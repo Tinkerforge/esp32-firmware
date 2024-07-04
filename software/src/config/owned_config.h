@@ -21,13 +21,13 @@
 
 #include <vector>
 #include <memory>
-
-#include "cool_string.h"
-#include "esp_system.h"
+#include <esp_system.h>
 
 #define STRICT_VARIANT_ASSUME_MOVE_NOTHROW true
-#include "strict_variant/variant.hpp"
-#include "strict_variant/mpl/find_with.hpp"
+#include <strict_variant/variant.hpp>
+#include <strict_variant/mpl/find_with.hpp>
+
+#include "cool_string.h"
 
 struct OwnedConfig {
     struct OwnedConfigArray;

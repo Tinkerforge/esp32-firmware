@@ -21,12 +21,11 @@
 
 #include <IPAddress.h>
 #include <stdint.h>
-#include "lwip/ip_addr.h"
+#include <lwip/ip_addr.h>
 
 // Connect attempts are blocking. Use a low timeout that should usually work and just try again if it doesn't.
 #define MODBUSIP_CONNECT_TIMEOUT 500
-
-#include "ModbusTCP.h"
+#include <ModbusTCP.h>
 
 #include "tools.h"
 #include "modbus_register_type.enum.h"

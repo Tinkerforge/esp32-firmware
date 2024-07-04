@@ -20,13 +20,12 @@
 #define EVENT_LOG_PREFIX "meters_mqtt_mirr"
 
 #include "meter_mqtt_mirror.h"
-#include "module_dependencies.h"
 
 #include <ArduinoJson.h>
 
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "modules/meters/meter_value_id.h"
-//#include "tools.h"
 
 #include "gcc_warnings.h"
 

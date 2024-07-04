@@ -19,15 +19,13 @@
 
 #pragma once
 
-#include "meter_meta.h"
-
 #include <stdint.h>
 #include <vector>
 
-#include "config.h"
-#include "modules/meters/imeter.h"
-#include "modules/meters/meter_generator.h"
 #include "module.h"
+#include "modules/meters/meter_generator.h"
+#include "config.h"
+#include "meter_meta.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

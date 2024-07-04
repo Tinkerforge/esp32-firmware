@@ -21,8 +21,8 @@
 
 #include <Arduino.h>
 
-#include "api.h"
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 
 void TutorialPhase3::pre_setup()
 {

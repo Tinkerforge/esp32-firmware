@@ -19,12 +19,20 @@
 
 #define EVENT_LOG_PREFIX "meters_rs485_brk"
 
-#include "event_log.h"
-#include "module_dependencies.h"
-
 #include "meters_rs485_bricklet.h"
 
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "rs485_bricklet_firmware_bin.embedded.h"
+
 //#include "gcc_warnings.h"
+
+MetersRS485Bricklet::MetersRS485Bricklet() : DeviceModule(rs485_bricklet_firmware_bin_data,
+                                                          rs485_bricklet_firmware_bin_length,
+                                                          "rs485",
+                                                          "RS485",
+                                                          "Modbus Meter",
+                                                          [this](){this->setupRS485();}) {}
 
 void MetersRS485Bricklet::pre_setup()
 {

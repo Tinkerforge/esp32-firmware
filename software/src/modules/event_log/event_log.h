@@ -19,15 +19,12 @@
 
 #pragma once
 
-#if __INCLUDE_LEVEL__ > 1
-#error "Don't include event_log.h in headers, only in sources!"
-#endif
-
 #include <stdarg.h>
 #include <mutex>
-
 #include <Arduino.h>
 
+#include "module.h"
+#include "config.h"
 #include "ringbuffer.h"
 #include "malloc_tools.h"
 
@@ -35,22 +32,7 @@
 // Also change in frontend when changing here!
 #define TIMESTAMP_LEN 24
 
-const char *get_module_offset_and_length(const char *path, size_t *out_length);
-size_t strlen_with_log_alignment(const char *c);
-
-#ifdef EVENT_LOG_PREFIX
-static const char *logger_prefix = EVENT_LOG_PREFIX;
-static size_t logger_prefix_len = strlen_with_log_alignment(logger_prefix);
-#else
-static size_t logger_prefix_len = 0;
-static const char *logger_prefix = get_module_offset_and_length(__BASE_FILE__, &logger_prefix_len);
-#endif
-
-#define printfln(...) printfln_prefixed(logger_prefix, logger_prefix_len, __VA_ARGS__)
-
-#define printfln_plain(...) printfln_prefixed(nullptr, 0, __VA_ARGS__)
-
-class EventLog
+class EventLog final : public IModule
 {
 public:
     std::mutex event_buf_mutex;
@@ -64,8 +46,10 @@ public:
 #endif
                   heap_caps_free> event_buf;
 
-    void pre_init();
-    void pre_setup();
+    void pre_init() override;
+    void pre_setup() override;
+    void register_urls() override;
+
     void post_setup();
 
     void write(const char *buf, size_t len);
@@ -77,16 +61,13 @@ public:
 
     void drop(size_t count);
 
-    void register_urls();
-
     void get_timestamp(char buf[TIMESTAMP_LEN + 1]);
 
     bool sending_response = false;
-};
 
-// Make global variable available everywhere because it is not declared in modules.h.
-// Definition is in event_log.cpp.
-extern EventLog logger;
+private:
+    ConfigRoot boot_id;
+};
 
 // To capture ESP-IDF log messages, use
 // esp_log_set_vprintf(tf_event_log_vprintfln);

@@ -18,14 +18,10 @@
  */
 
 #include "web_sockets.h"
-#include "web_dependencies.h"
 
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
 #include "tools.h"
-#include "web_server.h"
-
 #include "esp_httpd_priv.h"
 
 #define KEEP_ALIVE_TIMEOUT_MS 10000

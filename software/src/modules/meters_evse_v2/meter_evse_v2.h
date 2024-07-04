@@ -19,11 +19,11 @@
 
 #pragma once
 
-#include <math.h>
+#include <stdint.h>
 
+#include "modules/meters/imeter.h"
 #include "config.h"
 #include "modules/meters/meter_defs.h"
-#include "modules/meters/imeter.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

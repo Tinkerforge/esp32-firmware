@@ -21,11 +21,9 @@
 
 #include <esp_http_server.h>
 
-#include "api.h"
-#include "task_scheduler.h"
-#include "web_server.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "cool_string.h"
-#include "event_log.h"
 
 static const char *prefix = "{\"topic\":\"";
 static const char *infix = "\",\"payload\":";

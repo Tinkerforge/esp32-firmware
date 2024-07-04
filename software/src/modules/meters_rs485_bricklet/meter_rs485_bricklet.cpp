@@ -21,14 +21,12 @@
 
 #include "meter_rs485_bricklet.h"
 
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "meters_rs485_bricklet.h"
 #include "modules/meters/meter_value_id.h"
 #include "modules/meters/sdm_helpers.h"
-#include "task_scheduler.h"
 #include "tools.h"
-#include "event_log.h"
-
 #include "sdm630_defs.h"
 #include "sdm72dmv2_defs.h"
 #include "sdm72dm_defs.h"

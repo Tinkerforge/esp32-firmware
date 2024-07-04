@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include "config.h"
 #include "module.h"
+#include "config.h"
 
 #define I2C_MASTER_PORT 0
 

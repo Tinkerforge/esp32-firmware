@@ -19,19 +19,18 @@
 
 #pragma once
 
-#include "config.h"
-#include "cm_networking_defs.h"
-
+#include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
+#include <functional>
 #include <lwip/err.h>
 #include <lwip/sockets.h>
 #include <lwip/sys.h>
 #include <lwip/netdb.h>
+#include <mdns.h>
+#include <TFJson.h>
 
 #include "module.h"
-#include "mdns.h"
-#include "TFJson.h"
-
-#include <functional>
+#include "config.h"
+#include "cm_networking_defs.h"
 
 struct cm_state_v1;
 struct cm_state_v2;

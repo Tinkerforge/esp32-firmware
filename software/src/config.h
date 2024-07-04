@@ -20,17 +20,15 @@
 #pragma once
 
 #include <vector>
+#include <ArduinoJson.h>
+#include <FS.h>
 
-#include "ArduinoJson.h"
-#include "FS.h"
+#define STRICT_VARIANT_ASSUME_MOVE_NOTHROW true
+#include <strict_variant/variant.hpp>
+#include <strict_variant/mpl/find_with.hpp>
 
 #include "cool_string.h"
 #include "tools.h"
-
-#define STRICT_VARIANT_ASSUME_MOVE_NOTHROW true
-#include "strict_variant/variant.hpp"
-#include "strict_variant/mpl/find_with.hpp"
-
 #include "config/owned_config.h"
 
 #ifdef DEBUG_FS_ENABLE

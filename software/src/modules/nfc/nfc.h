@@ -19,19 +19,15 @@
 
 #pragma once
 
+#include "device_module.h"
 #include "config.h"
 #include "build.h"
-
-#include "device_module.h"
+#include "bindings/bricklet_nfc.h"
 #include "module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
-
-#include "nfc_bricklet_firmware_bin.embedded.h"
-
-#include "bindings/bricklet_nfc.h"
 
 // in bytes
 #define NFC_TAG_ID_LENGTH 10
@@ -41,8 +37,6 @@
 #define TAG_LIST_LENGTH 9
 
 class NFC : public DeviceModule<TF_NFC,
-                                nfc_bricklet_firmware_bin_data,
-                                nfc_bricklet_firmware_bin_length,
                                 tf_nfc_create,
                                 tf_nfc_get_bootloader_mode,
                                 tf_nfc_reset,
@@ -54,7 +48,8 @@ class NFC : public DeviceModule<TF_NFC,
 #endif
 {
 public:
-    NFC() : DeviceModule("nfc", "NFC", "NFC", [this](){this->setup_nfc();}) {}
+    NFC();
+
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

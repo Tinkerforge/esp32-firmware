@@ -19,11 +19,10 @@
 
 #pragma once
 
-#include "imeter.h"
-#include "meter_generator.h"
-
 #include <stdint.h>
 
+#include "imeter.h"
+#include "meter_generator.h"
 #include "config.h"
 
 #if defined(__GNUC__)

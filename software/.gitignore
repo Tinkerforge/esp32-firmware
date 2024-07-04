@@ -14,15 +14,12 @@ src/modules/*/module_dependencies.h
 src/modules/*/module.cpp
 src/modules/*/*.enum.h
 src/modules/*/*.enum.cpp
-src/modules.h
 src/modules.cpp
 src/build.h
 src/build.cpp
-src/event_log_available.h
-src/event_log_dependencies.h
+src/main_available.h
+src/main_dependencies.h
 src/modules/pwa/manifest.json
-src/web_available.h
-src/web_dependencies.h
 web/**/*.digest
 web/node_modules/
 web/build/

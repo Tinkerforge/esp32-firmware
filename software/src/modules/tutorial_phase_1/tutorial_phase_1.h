@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "config.h"
 #include "module.h"
 
 class TutorialPhase1 final : public IModule

@@ -19,9 +19,8 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
+#include "config.h"
 #include "tools.h"
 
 class EvseLed final : public IModule

@@ -19,13 +19,11 @@
 
 #include "nfc.h"
 
-#include "bindings/errors.h"
-
-#include "api.h"
-#include "event_log.h"
-#include "tools.h"
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "bindings/errors.h"
+#include "tools.h"
+#include "nfc_bricklet_firmware_bin.embedded.h"
 
 extern NFC nfc;
 
@@ -36,6 +34,13 @@ extern NFC nfc;
 #endif
 
 #define DETECTION_THRESHOLD_MS 2000
+
+NFC::NFC() : DeviceModule(nfc_bricklet_firmware_bin_data,
+                          nfc_bricklet_firmware_bin_length,
+                          "nfc",
+                          "NFC",
+                          "NFC",
+                          [this](){this->setup_nfc();}) {}
 
 void NFC::pre_setup()
 {

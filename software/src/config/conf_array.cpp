@@ -19,7 +19,8 @@
 
 #include "config/private.h"
 
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
 
 bool Config::ConfArray::slotEmpty(size_t i)
 {

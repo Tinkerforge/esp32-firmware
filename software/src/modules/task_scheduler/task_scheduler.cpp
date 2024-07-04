@@ -19,11 +19,8 @@
 
 #include "task_scheduler.h"
 
-#include "web_server.h"
-#include "event_log.h"
-
-// Global definition here to match the declaration in task_scheduler.h.
-TaskScheduler task_scheduler;
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
 
 static uint64_t last_task_id = 0;
 
@@ -35,7 +32,6 @@ Task::Task(std::function<void(void)> &&fn, uint64_t task_id, uint32_t first_run_
           awaited_by(nullptr),
           once(once),
           cancelled(false) {
-
 }
 
 /*
@@ -99,20 +95,7 @@ Task *TaskQueue::findByTaskID(uint64_t task_id)
     return it->get();
 }
 
-void TaskScheduler::pre_setup()
-{
-}
-
-void TaskScheduler::setup()
-{
-    initialized = true;
-}
-
-void TaskScheduler::register_urls()
-{
-}
-
-void TaskScheduler::loop()
+void TaskScheduler::custom_loop()
 {
     // We can't use defer to clean up currentTask on function level,
     // because we have to make sure currentTask is only written
@@ -278,5 +261,5 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t milli
 
 TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, uint32_t millis_to_wait)
 {
-    return task_scheduler.await(task_scheduler.scheduleOnce(std::forward<std::function<void(void)>>(fn), 0), millis_to_wait);
+    return await(scheduleOnce(std::forward<std::function<void(void)>>(fn), 0), millis_to_wait);
 }

@@ -20,11 +20,11 @@
 #pragma once
 
 #include <esp_http_server.h>
-
 #include <forward_list>
 #include <functional>
-
 #include <Arduino.h>
+
+#include "module.h"
 
 // This struct is used to make sure a registered handler always calls
 // one of the WebServerRequest methods that send a reponse.
@@ -109,13 +109,12 @@ struct WebServerHandler {
 #endif
 };
 
-class WebServer
+class WebServer final : public IModule
 {
 public:
-    WebServer() : httpd(nullptr), handlers()
-    {
-    }
-    void start();
+    WebServer() : httpd(nullptr), handlers() {}
+
+    void post_setup();
 
     void runInHTTPThread(void (*fn)(void *arg), void *arg);
 
@@ -128,18 +127,13 @@ public:
         this->auth_fn = auth_fn;
     }
 
-    bool initialized = false;
-
     httpd_handle_t httpd;
     std::forward_list<WebServerHandler> handlers;
     int handler_count = 0;
     wshCallback on_not_authorized;
 
     std::function<bool(WebServerRequest)> auth_fn;
+
 private:
     WebServerHandler *addHandler(const char *uri, httpd_method_t method, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback);
 };
-
-// Make global variable available everywhere because it is not declared in modules.h.
-// Definition is in web_server.cpp.
-extern WebServer server;

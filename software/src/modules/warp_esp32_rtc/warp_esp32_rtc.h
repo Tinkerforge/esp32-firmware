@@ -19,7 +19,8 @@
 
 #pragma once
 
-#include "../rtc/rtc.h"
+#include "module.h"
+#include "modules/rtc/rtc.h"
 
 class WarpEsp32Rtc final : public IModule, public IRtcBackend
 {

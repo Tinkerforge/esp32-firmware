@@ -17,16 +17,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meter_sun_spec.h"
 #include "meters_sun_spec.h"
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
-#include "tools.h"
+
+#include <esp_random.h>
+#include <TFJson.h>
+
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "TFJson.h"
+#include "meter_sun_spec.h"
+#include "tools.h"
 #include "sun_spec_model_id.h"
-#include "esp_random.h"
 
 #include "gcc_warnings.h"
 

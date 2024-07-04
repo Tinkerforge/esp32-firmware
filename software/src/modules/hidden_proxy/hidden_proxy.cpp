@@ -19,17 +19,15 @@
 
 #include "hidden_proxy.h"
 
-#include "bindings/hal_common.h"
-#include "event_log.h"
-#include "web_server.h"
-
-extern TF_HAL hal;
-
-extern int8_t green_led_pin;
-
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "bindings/hal_common.h"
+
+extern TF_HAL hal;
+extern int8_t green_led_pin;
 static TaskHandle_t xTaskBuffer;
 
 // setting PWM properties

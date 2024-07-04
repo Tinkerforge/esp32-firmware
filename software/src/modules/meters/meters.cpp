@@ -18,11 +18,10 @@
  */
 
 #include "meters.h"
-#include "meter_class_none.h"
-#include "module_dependencies.h"
 
-#include "api.h"
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "meter_class_none.h"
 #include "tools.h"
 #include "string_builder.h"
 

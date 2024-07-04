@@ -19,11 +19,8 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
-
-#include "../rtc/rtc.h"
+#include "modules/rtc/rtc.h"
 
 class EmRtc final : public IModule, public IRtcBackend
 {

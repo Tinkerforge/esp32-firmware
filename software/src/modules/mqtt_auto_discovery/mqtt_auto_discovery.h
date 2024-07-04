@@ -19,9 +19,8 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
+#include "config.h"
 #include "mqtt_discovery_topics.h"
 #include "cool_string.h"
 

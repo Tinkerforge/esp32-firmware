@@ -19,18 +19,16 @@
 
 #pragma once
 
-#include "config.h"
-
 #include <Arduino.h>
-
 #include <functional>
 #include <initializer_list>
 #include <vector>
 
 #include "module.h"
-#include "web_server.h"
+#include "config.h"
 #include "chunked_response.h"
 #include "tools.h"
+#include "modules/web_server/web_server.h"
 
 struct StateRegistration {
     const char *const path;
@@ -71,7 +69,7 @@ struct ResponseRegistration {
     const uint8_t keys_to_censor_in_debug_report_len;
 };
 
-class IAPIBackend : public IModule
+class IAPIBackend
 {
 public:
     virtual void addCommand(size_t commandIdx, const CommandRegistration &reg) = 0;
@@ -88,13 +86,14 @@ public:
     virtual WantsStateUpdate wantsStateUpdate(size_t stateIdx);
 };
 
-class API
+class API final : public IModule
 {
 public:
     API();
 
-    void pre_setup();
-    void setup();
+    void pre_setup() override;
+    void setup() override;
+    void register_urls() override;
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
     String callCommand(CommandRegistration &reg, char *payload, size_t len);
@@ -146,8 +145,6 @@ public:
 
     static String getLittleFSConfigPath(const String &path, bool tmp = false);
 
-    void registerDebugUrl();
-
     size_t registerBackend(IAPIBackend *backend);
 
     std::vector<StateRegistration> states;
@@ -168,7 +165,3 @@ private:
 
     void executeCommand(const CommandRegistration &reg, Config::ConfUpdate payload);
 };
-
-// Make global variable available everywhere because it is not declared in modules.h.
-// Definition is in api.cpp.
-extern API api;

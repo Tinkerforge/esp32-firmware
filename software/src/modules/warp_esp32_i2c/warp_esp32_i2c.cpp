@@ -19,8 +19,7 @@
 
 #include "warp_esp32_i2c.h"
 
-#include "api.h"
-#include "task_scheduler.h"
+#include "module_dependencies.h"
 
 #include "gcc_warnings.h"
 

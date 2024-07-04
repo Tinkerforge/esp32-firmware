@@ -18,6 +18,7 @@
  */
 
 #include "em_rtc.h"
+
 #include "module_dependencies.h"
 
 void EmRtc::setup()

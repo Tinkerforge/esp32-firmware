@@ -20,15 +20,13 @@
 #define EVENT_LOG_PREFIX "mqtt_disco"
 
 #include "mqtt_auto_discovery.h"
-#include "module_dependencies.h"
 
 #include <string.h>
-#include "mqtt_client.h"
+#include <mqtt_client.h>
 
-#include "api.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "build.h"
-#include "task_scheduler.h"
-#include "event_log.h"
 
 void MqttAutoDiscovery::pre_setup()
 {

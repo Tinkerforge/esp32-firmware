@@ -19,13 +19,13 @@
 
 #include "config/private.h"
 
-#include "config/visitors.h"
+#include <math.h>
 
-#include "math.h"
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
+#include "config/visitors.h"
 #include "tools.h"
 #include "string_builder.h"
-
-#include "event_log.h"
 
 #define UINT_SLOTS 512
 Config::ConfUint::Slot *uint_buf = nullptr;

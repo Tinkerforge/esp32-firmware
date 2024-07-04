@@ -18,20 +18,14 @@
  */
 #include "users.h"
 
-#include "LittleFS.h"
-
-#include "task_scheduler.h"
-
-#include "api.h"
-#include "task_scheduler.h"
-#include "tools.h"
-#include "module_dependencies.h"
-#include "event_log.h"
-
-#include "digest_auth.h"
 #include <cmath>
-
 #include <memory>
+#include <LittleFS.h>
+
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "tools.h"
+#include "digest_auth.h"
 
 #define USERNAME_FILE "/users/all_usernames"
 

@@ -18,18 +18,17 @@
  */
 
 #include "esp32_brick.h"
-#include "module_dependencies.h"
 
 #include <Arduino.h>
 
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "tools.h"
+#include "build.h"
 #include "hal_arduino_esp32_brick/hal_arduino_esp32_brick.h"
-#include "event_log.h"
-#include "task_scheduler.h"
 
 #if TF_LOCAL_ENABLE != 0
 
-#include "build.h"
 #include "bindings/local.h"
 // FIXME: for now hardcode DEVICE_IDENTIFIER define here until bindings are ready
 //#include "bindings/brick_esp32.h"

@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "config.h"
+#include <stdint.h>
 
 // full green
 #define HUE_OK          120

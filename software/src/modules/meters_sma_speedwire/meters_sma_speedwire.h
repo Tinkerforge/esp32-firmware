@@ -21,9 +21,9 @@
 
 #include <stdint.h>
 
-#include "config.h"
-#include "modules/meters/meter_generator.h"
 #include "module.h"
+#include "modules/meters/meter_generator.h"
+#include "config.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

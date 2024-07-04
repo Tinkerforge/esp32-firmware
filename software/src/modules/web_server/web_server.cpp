@@ -18,28 +18,21 @@
  */
 
 #include "web_server.h"
-#include "web_available.h"
-#include "web_dependencies.h"
 
-#include "esp_log.h"
-#include "esp_httpd_priv.h"
-
-#include "task_scheduler.h"
-#include "digest_auth.h"
-#include "event_log.h"
-
-#include "cool_string.h"
-
+#include <esp_log.h>
 #include <memory>
+
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "digest_auth.h"
+#include "cool_string.h"
+#include "esp_httpd_priv.h"
 
 #define MAX_URI_HANDLERS 128
 
-// Global definition here to match the declaration in web_server.h.
-WebServer server;
-
 #define HTTPD_STACK_SIZE 6144
 
-void WebServer::start()
+void WebServer::post_setup()
 {
     if (this->httpd != nullptr) {
         return;
@@ -80,7 +73,7 @@ void WebServer::start()
 
 void WebServer::runInHTTPThread(void (*fn)(void *arg), void *arg)
 {
-    httpd_queue_work(server.httpd, fn, arg);
+    httpd_queue_work(httpd, fn, arg);
 }
 
 struct UserCtx {

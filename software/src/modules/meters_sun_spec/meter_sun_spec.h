@@ -19,14 +19,13 @@
 
 #pragma once
 
-#include "model_parser.h"
-
 #include <stdint.h>
 
-#include "config.h"
 #include "modules/meters/imeter.h"
 #include "modules/meters_modbus_tcp/generic_modbus_tcp_client.h"
 #include "modules/meters_modbus_tcp/modbus_tcp_tools.h"
+#include "config.h"
+#include "model_parser.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

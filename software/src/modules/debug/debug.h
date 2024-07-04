@@ -19,12 +19,11 @@
 
 #pragma once
 
-#include "config.h"
-
 #include <stdint.h>
 #include <vector>
 
 #include "module.h"
+#include "config.h"
 #include "tools.h"
 
 class Debug final : public IModule

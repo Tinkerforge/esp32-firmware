@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include "phase_switcher_back-end.h"
 
-#include "config.h"
 #include "module.h"
+#include "config.h"
+#include "phase_switcher_back-end.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
 #include "module_available.h"
 

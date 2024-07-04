@@ -19,12 +19,11 @@
 
 #pragma once
 
-#include "config.h"
-
 #include <Arduino.h>
 #include <vector>
 
 #include "module.h"
+#include "config.h"
 
 class IDebugProtocolBackend;
 

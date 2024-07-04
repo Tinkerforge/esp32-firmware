@@ -18,6 +18,7 @@
  */
 
 #include "meters_meta.h"
+
 #include "module_dependencies.h"
 
 #include "gcc_warnings.h"

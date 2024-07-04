@@ -18,12 +18,11 @@
  */
 
 #include "meter_sun_spec.h"
-#include "modules/meters_modbus_tcp/modbus_tcp_tools.h"
-#include "module_dependencies.h"
 
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "modules/meters_modbus_tcp/modbus_tcp_tools.h"
 #include "modules/meters_sun_spec/models/model_001.h"
-#include "task_scheduler.h"
 
 #include "gcc_warnings.h"
 

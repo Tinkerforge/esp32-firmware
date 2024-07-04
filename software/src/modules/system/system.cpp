@@ -18,18 +18,14 @@
  */
 
 #include "system.h"
-#include "module_dependencies.h"
 
 #include <Arduino.h>
 #include <LittleFS.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-#include "api.h"
-#include "task_scheduler.h"
-#include "event_log.h"
-#include "web_server.h"
-
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "./recovery_html.embedded.h"
 
 extern int8_t green_led_pin;

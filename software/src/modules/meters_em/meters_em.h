@@ -19,15 +19,11 @@
 
 #pragma once
 
-#include "meter_em.h"
-
-#include <stdint.h>
-
+#include "module.h"
+#include "modules/meters/meter_generator.h"
 #include "config.h"
 #include "modules/energy_manager/structs.h"
-#include "modules/meters/imeter.h"
-#include "modules/meters/meter_generator.h"
-#include "module.h"
+#include "meter_em.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

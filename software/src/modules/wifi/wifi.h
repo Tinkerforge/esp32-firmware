@@ -19,9 +19,8 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
+#include "config.h"
 #include "wifi_state.enum.h"
 
 enum class EapConfigID: uint8_t {

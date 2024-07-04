@@ -23,19 +23,15 @@
 
 #include <vector>
 #include <unistd.h>
-
 #include <LittleFS.h>
-
 #include <ArduinoJson.h>
 
-#include "api.h"
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
 #include "build.h"
 #include "config.h"
 #include "digest_auth.h"
-#include "task_scheduler.h"
 #include "tools.h"
-
-#include "event_log.h"
 
 struct ConfigMigration {
     const int major, minor, patch;

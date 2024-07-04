@@ -20,12 +20,11 @@
 #define EVENT_LOG_PREFIX "meters_sma_swire"
 
 #include "meter_sma_speedwire.h"
-#include "module_dependencies.h"
 
 #include <math.h>
 
-#include "event_log.h"
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "tools.h"
 
 #include "gcc_warnings.h"

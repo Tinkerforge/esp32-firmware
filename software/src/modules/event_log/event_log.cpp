@@ -19,91 +19,23 @@
 
 #include "event_log.h"
 
+#include <Arduino.h>
 #include <time.h>
+#include <TFJson.h>
 
-#include "config.h"
-#include "event_log_dependencies.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "build.h"
 #include "tools.h"
-#include "web_server.h"
-#include "TFJson.h"
-
-// Global definition here to match the declaration in event_log.h.
-EventLog logger;
-
-// event_log.h can't include config.h because config.h includes event_log.h
-static ConfigRoot boot_id;
-
-static size_t log_alignment = 0;
-
-#define LOG_ALIGNMENT_WARN_THRESHOLD 16
-
-size_t strlen_with_log_alignment(const char *c)
-{
-    auto result = strlen(c);
-
-    if (result > LOG_ALIGNMENT_WARN_THRESHOLD) {
-        printf("(1) Log prefix %.*s is longer than threshold (%u > %u)\n", result, c, result, LOG_ALIGNMENT_WARN_THRESHOLD);
-    }
-
-    log_alignment = MAX(log_alignment, result);
-
-    return result;
-}
-
-const char *get_module_offset_and_length(const char *path, size_t *out_length)
-{
-    auto len = strlen(path);
-    auto needle = "src/modules/";
-    auto needle_len = strlen(needle);
-
-    // Path is shorter or does not start with src/modules/
-    if (len < needle_len || memcmp(path, needle, needle_len) != 0) {
-        auto last_slash = strrchr(path, '/');
-
-        if (last_slash == nullptr) {
-            *out_length = 0;
-            return nullptr;
-        }
-
-        auto last_dot = strrchr(last_slash, '.');
-        if (last_dot == nullptr) {
-            *out_length = 0;
-            return nullptr;
-        }
-
-        *out_length = last_dot - last_slash - 1;
-
-        if (*out_length > LOG_ALIGNMENT_WARN_THRESHOLD) {
-            printf("(2) Log prefix %.*s is longer than threshold (%u > %u) in %s\n", *out_length,  last_slash + 1, *out_length, LOG_ALIGNMENT_WARN_THRESHOLD, path);
-        }
-
-        log_alignment = MAX(log_alignment, *out_length);
-
-        return last_slash + 1;
-    }
-
-    const auto *result = path + needle_len;
-
-    auto *ptr = strchr(result, '/');
-    if (ptr == nullptr) {
-        *out_length = 0;
-        return nullptr;
-    }
-
-    *out_length = (size_t)(ptr - result);
-
-    if (*out_length > LOG_ALIGNMENT_WARN_THRESHOLD) {
-        printf("(3) Log prefix %.*s is longer than threshold (%u > %u) in %s\n", *out_length, result, *out_length, LOG_ALIGNMENT_WARN_THRESHOLD, path);
-    }
-
-    log_alignment = MAX(log_alignment, *out_length);
-
-    return result;
-}
 
 void EventLog::pre_init()
 {
     event_buf.setup();
+
+    printfln_plain("    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
+    printfln_plain("         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
+    printfln_plain("READY.");
+    printfln("Last reset reason was: %s", tf_reset_reason());
 }
 
 void EventLog::pre_setup()
@@ -229,7 +161,7 @@ int EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const cha
         written += prefix_len;
     }
 
-    while (written < log_alignment + 2) {
+    while (written < event_log_alignment + 2) {
         *(buf + written) = ' ';
         ++written;
     }
@@ -303,14 +235,14 @@ void EventLog::register_urls()
 
 int tf_event_log_vprintfln(const char *fmt, va_list args)
 {
-    return logger.printfln_prefixed("external code", 13, fmt, args);
+    return 0;//logger.printfln_prefixed("external code", 13, fmt, args);
 }
 
 int tf_event_log_printfln(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    int result = logger.printfln_prefixed("external code", 13, fmt, args);
+    int result = 0;//logger.printfln_prefixed("external code", 13, fmt, args);
     va_end(args);
 
     return result;

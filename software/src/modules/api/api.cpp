@@ -19,19 +19,16 @@
 
 #include "api.h"
 
-#include "LittleFS.h"
+#include <LittleFS.h>
+
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
-
 #include "build.h"
 #include "config_migrations.h"
-#include "event_log.h"
-#include "task_scheduler.h"
 
 extern TF_HAL hal;
-
-// Global definition here to match the declaration in api.h.
-API api;
 
 API::API()
 {
@@ -138,6 +135,8 @@ void API::setup()
             reg.config->clear_updated(sent);
         }
     }, 250, 250);
+
+    initialized = true;
 }
 
 String API::getLittleFSConfigPath(const String &path, bool tmp) {
@@ -433,9 +432,9 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config)
     return error.isEmpty();
 }
 
-void API::registerDebugUrl()
+void API::register_urls()
 {
-    #ifdef DEBUG_FS_ENABLE
+#ifdef DEBUG_FS_ENABLE
     server.on("/api_info", HTTP_GET, [this](WebServerRequest request) {
         task_scheduler.scheduleOnce([this](){
             auto len = strlen("api_info");
@@ -492,7 +491,7 @@ void API::registerDebugUrl()
 
         return request.send(200);
     });
-    #endif
+#endif
 
     server.on("/debug_report", HTTP_GET, [this](WebServerRequest request) {
         String result = "{\"uptime\": ";

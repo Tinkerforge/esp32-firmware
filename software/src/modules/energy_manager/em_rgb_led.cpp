@@ -18,6 +18,7 @@
  */
 
 #include "em_rgb_led.h"
+
 #include "module_dependencies.h"
 #include "energy_manager.h"
 

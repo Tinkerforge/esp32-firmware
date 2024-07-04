@@ -17,16 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "module_dependencies.h"
 #include "network.h"
 
-#include "api.h"
-#include "build.h"
-#include "sdkconfig.h"
-#include "task_scheduler.h"
-#include "event_log.h"
-
+#include <sdkconfig.h>
 #include <ESPmDNS.h>
+
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "build.h"
 
 extern char local_uid_str[32];
 

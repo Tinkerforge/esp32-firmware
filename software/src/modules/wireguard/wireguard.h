@@ -19,11 +19,10 @@
 
 #pragma once
 
-#include "config.h"
-
 #include <WireGuard-ESP32.h>
 
 #include "module.h"
+#include "config.h"
 
 class Wireguard final : public IModule
 {

@@ -18,8 +18,8 @@
  */
 
 #include "value_history.h"
-#include "module_dependencies.h"
 
+#include "module_dependencies.h"
 #include "tools.h"
 #include "string_builder.h"
 

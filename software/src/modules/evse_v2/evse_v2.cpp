@@ -18,17 +18,14 @@
  */
 
 #include "evse_v2.h"
+
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
-
 #include "bindings/errors.h"
-
 #include "build.h"
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
 #include "tools.h"
-#include "web_server.h"
 #include "string_builder.h"
+#include "evse_v2_bricklet_firmware_bin.embedded.h"
 
 extern EVSEV2 evse_v2;
 
@@ -36,7 +33,12 @@ extern void evse_v2_button_recovery_handler();
 
 static void energy_meter_values_callback(struct TF_EVSEV2 * evse_v2, float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data);
 
-EVSEV2::EVSEV2() : DeviceModule("evse", "EVSE 2.0", "EVSE", [](){evse_common.setup_evse();}) {}
+EVSEV2::EVSEV2() : DeviceModule(evse_v2_bricklet_firmware_bin_data,
+                                evse_v2_bricklet_firmware_bin_length,
+                                "evse",
+                                "EVSE 2.0",
+                                "EVSE",
+                                [](){evse_common.setup_evse();}) {}
 
 void EVSEV2::pre_init()
 {

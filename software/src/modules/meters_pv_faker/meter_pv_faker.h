@@ -22,7 +22,6 @@
 #include <math.h>
 
 #include "config.h"
-#include "modules/energy_manager/structs.h"
 #include "modules/meters/meter_defs.h"
 #include "modules/meters/imeter.h"
 

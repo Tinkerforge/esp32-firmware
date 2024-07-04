@@ -1,8 +1,8 @@
 // WARNING: Edit only power_manager_debug.cpp.template. Do not edit power_manager_debug.cpp.
 
 #include "power_manager.h"
-#include "module_dependencies.h"
 
+#include "module_dependencies.h"
 #include "tools.h"
 #include "string_builder.h"
 

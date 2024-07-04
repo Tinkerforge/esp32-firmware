@@ -18,23 +18,17 @@
  */
 
 #include "current_allocator.h"
+
+#include <assert.h>
+#include <string.h> // For strlen
+#include <math.h> // For isnan
+
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
-
-#include "event_log.h"
-
-// Only for snprintf_u and deadline_elapsed
-#include "tools.h"
-
+#include "tools.h" // Only for snprintf_u and deadline_elapsed
 #include "modules/cm_networking/cm_networking_defs.h"
 
 //#include "gcc_warnings.h"
-
-#include "assert.h"
-// For strlen
-#include "string.h"
-
-// For isnan
-#include "math.h"
 
 #define LOCAL_LOG(fmt, ...) if(local_log) local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
 

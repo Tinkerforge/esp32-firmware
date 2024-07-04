@@ -19,14 +19,13 @@
 
 #pragma once
 
+#include <stdint.h>
+
+#include "module.h"
+#include "config.h"
 #include "imeter.h"
 #include "meter_generator.h"
 #include "meter_value_availability.h"
-
-#include <stdint.h>
-
-#include "config.h"
-#include "module.h"
 #include "value_history.h"
 #include "meter_value_id.h"
 #include "tools.h"

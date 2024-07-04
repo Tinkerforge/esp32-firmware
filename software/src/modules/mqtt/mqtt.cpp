@@ -18,18 +18,14 @@
  */
 
 #include "mqtt.h"
-#include "module_dependencies.h"
 
 #include <Arduino.h>
+#include <esp_crt_bundle.h>
 
-#include "esp_crt_bundle.h"
-
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "tools.h"
-#include "api.h"
-#include "event_log.h"
 #include "build.h"
-
 #include "matchTopicFilter.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()

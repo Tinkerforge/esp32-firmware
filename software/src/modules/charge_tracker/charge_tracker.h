@@ -19,14 +19,10 @@
 
 #pragma once
 
-#include <LittleFS.h>
-
+#include "module.h"
 #include "config.h"
 
-#include "module.h"
-
 #define CHARGE_TRACKER_MAX_REPAIR 200
-
 #define CHARGE_RECORD_FOLDER "/charge-records"
 
 class ChargeTracker final : public IModule

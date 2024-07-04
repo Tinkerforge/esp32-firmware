@@ -18,8 +18,10 @@
  */
 
 #include "event.h"
+
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "tools.h"
-#include "event_log.h"
 
 void Event::pre_setup()
 {

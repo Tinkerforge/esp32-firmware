@@ -20,11 +20,11 @@
 #include "debug_protocol.h"
 
 #include <Arduino.h>
+
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "task_scheduler.h"
 #include "debug_protocol_backend.h"
 #include "string_builder.h"
-#include "event_log.h"
 
 #include "gcc_warnings.h"
 

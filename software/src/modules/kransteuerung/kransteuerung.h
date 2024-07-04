@@ -19,12 +19,9 @@
 
 #pragma once
 
+#include "module.h"
 #include "bindings/bricklet_dual_button_v2.h"
 #include "bindings/bricklet_industrial_quad_relay_v2.h"
-
-#include "config.h"
-
-#include "module.h"
 
 class Kransteuerung final : public IModule
 {

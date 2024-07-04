@@ -17,15 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "module_dependencies.h"
 #include "watchdog.h"
 
 #include <esp_task.h>
 #include <esp_task_wdt.h>
 #include <mutex>
 
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "tools.h"
-#include "event_log.h"
 
 #define WATCHDOG_MAX_REGS 10
 // Highest observed stack usage was 616.

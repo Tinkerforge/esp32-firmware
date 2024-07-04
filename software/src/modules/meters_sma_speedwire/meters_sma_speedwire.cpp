@@ -17,9 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meter_sma_speedwire.h"
 #include "meters_sma_speedwire.h"
+
 #include "module_dependencies.h"
+#include "meter_sma_speedwire.h"
 
 #include "gcc_warnings.h"
 

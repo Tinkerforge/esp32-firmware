@@ -19,11 +19,7 @@
 
 #include "http.h"
 
-#include "api.h"
-#include "task_scheduler.h"
-#include "web_server.h"
-#include "event_log.h"
-
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
 
 #if defined(BOARD_HAS_PSRAM)

@@ -17,22 +17,35 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "energy_manager.h"
+
 #include <type_traits>
 
-#include "energy_manager.h"
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "musl_libc_timegm.h"
-
 #include "bindings/errors.h"
-
-#include "api.h"
 #include "build.h"
-#include "event_log.h"
-#include "task_scheduler.h"
 #include "tools.h"
-#include "web_server.h"
+#include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
 #include "gcc_warnings.h"
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Weffc++"
+#endif
+
+EnergyManager::EnergyManager() : DeviceModule(warp_energy_manager_bricklet_firmware_bin_data,
+                                              warp_energy_manager_bricklet_firmware_bin_length,
+                                              "energy_manager",
+                                              "WARP Energy Manager",
+                                              "Energy Manager",
+                                              [this](){this->setup_energy_manager();}) {}
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
 
 void EnergyManager::pre_setup()
 {

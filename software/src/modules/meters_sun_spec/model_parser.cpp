@@ -18,9 +18,10 @@
  */
 
 #include "model_parser.h"
-#include "module_dependencies.h"
 
 #include <stdlib.h>
+
+#include "module_dependencies.h"
 
 #include "gcc_warnings.h"
 

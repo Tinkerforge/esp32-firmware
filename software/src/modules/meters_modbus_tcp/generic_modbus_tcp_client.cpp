@@ -20,13 +20,13 @@
 #define EVENT_LOG_PREFIX "gen_mbtcp_client"
 
 #include "generic_modbus_tcp_client.h"
-#include "modbus_tcp_tools.h"
 
 #include <errno.h>
 #include <string.h>
 
-#include "event_log.h"
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "modbus_tcp_tools.h"
 
 #include "gcc_warnings.h"
 

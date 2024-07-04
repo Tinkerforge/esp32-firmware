@@ -19,15 +19,13 @@
 
 #include "coredump.h"
 
+#include <LittleFS.h>
+#include <esp_core_dump.h>
+
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "build.h"
-#include "api.h"
 #include "tools.h"
-#include "task_scheduler.h"
-#include "event_log.h"
-
-#include "LittleFS.h"
-
-#include "esp_core_dump.h"
 
 // Pre- and postfix take up 54 characters.
 COREDUMP_DRAM_ATTR char tf_coredump_info[512];

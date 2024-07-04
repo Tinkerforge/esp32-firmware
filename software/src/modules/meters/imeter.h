@@ -20,9 +20,10 @@
 #pragma once
 
 #include <stdint.h>
-#include "WString.h"
-#include "meter_class_id.enum.h"
+#include <WString.h>
+
 #include "config.h"
+#include "meter_class_id.enum.h"
 
 class IMeter
 {

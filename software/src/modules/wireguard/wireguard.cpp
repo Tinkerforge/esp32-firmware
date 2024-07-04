@@ -18,13 +18,11 @@
  */
 #include "wireguard.h"
 
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
-
 #include <WiFi.h>
+#include <mbedtls/base64.h>
 
-#include "mbedtls/base64.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 
 String check_key(const String &key, bool enable)
 {

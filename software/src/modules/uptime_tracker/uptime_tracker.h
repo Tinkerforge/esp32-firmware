@@ -19,9 +19,8 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
+#include "config.h"
 
 typedef struct uptime_data_s {
     uint16_t overflow_count;

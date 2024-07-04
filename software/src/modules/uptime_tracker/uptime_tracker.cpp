@@ -19,9 +19,8 @@
 
 #include "uptime_tracker.h"
 
-#include "api.h"
-#include "event_log.h"
-#include "task_scheduler.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 
 #define MAX_UPTIMES 10
 

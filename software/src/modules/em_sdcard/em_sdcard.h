@@ -19,11 +19,10 @@
 
 #pragma once
 
-#include "config.h"
-
 #include <stdint.h>
 
 #include "module.h"
+#include "config.h"
 
 class EMSDcard final : public IModule
 {

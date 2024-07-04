@@ -19,18 +19,18 @@
 
 #pragma once
 
+#include <Arduino.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <esp_heap_caps.h>
+#include <limits>
 
 #include "ringbuffer.h"
 #include "malloc_tools.h"
-#include "esp_heap_caps.h"
-
-#include "task_scheduler.h"
-#include "web_server.h"
 
 // How many hours to keep the coarse history for
 #define HISTORY_HOURS 48
+
 // How many minutes to keep the fine history for.
 // This also controls the coarseness of the coarse history.
 // For example 4 means that we accumulate 4 minutes of samples

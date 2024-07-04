@@ -21,8 +21,8 @@
 
 #include <Arduino.h>
 
-#include "api.h"
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
 

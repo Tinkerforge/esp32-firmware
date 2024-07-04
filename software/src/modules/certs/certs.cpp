@@ -18,13 +18,11 @@
  */
 #include "certs.h"
 
-#include "api.h"
-#include "task_scheduler.h"
-
-#include "LittleFS.h"
-
+#include <LittleFS.h>
 #include <mbedtls/pem.h>
 #include <mbedtls/error.h>
+
+#include "module_dependencies.h"
 
 void Certs::pre_setup()
 {

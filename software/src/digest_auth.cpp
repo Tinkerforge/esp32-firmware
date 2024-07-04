@@ -24,8 +24,10 @@
 */
 #include "digest_auth.h"
 
-#include "mbedtls/md5.h"
-#include "event_log.h"
+#include <mbedtls/md5.h>
+
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
 #include "build.h"
 #include "cool_string.h"
 

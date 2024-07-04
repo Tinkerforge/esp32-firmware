@@ -19,12 +19,12 @@
 
 #define EVENT_LOG_PREFIX "meters_mbtcp"
 
-#include "meter_modbus_tcp.h"
 #include "meters_modbus_tcp.h"
-#include "module_dependencies.h"
-#include "../meters/meter_value_id.h"
 
-#include "event_log.h"
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "meter_modbus_tcp.h"
+#include "modules/meters/meter_value_id.h"
 #include "tools.h"
 #include "modbus_register_address_mode.enum.h"
 

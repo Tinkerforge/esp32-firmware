@@ -19,14 +19,12 @@
 
 #pragma once
 
+#include "module.h"
+#include "config.h"
 #include "bindings/bricklet_co2_v2.h"
 #include "bindings/bricklet_lcd_128x64.h"
 #include "bindings/bricklet_rgb_led_button.h"
 #include "bindings/bricklet_rgb_led_v2.h"
-
-#include "config.h"
-
-#include "module.h"
 
 class Co2Ampel final : public IModule
 {

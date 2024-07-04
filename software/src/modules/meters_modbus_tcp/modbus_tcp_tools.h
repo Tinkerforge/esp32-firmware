@@ -21,7 +21,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include "ModbusTCP.h"
+#include <ModbusTCP.h>
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

@@ -19,11 +19,9 @@
 
 #pragma once
 
-#include "net_arduino_esp32/net_arduino_esp32.h"
-
-#include "config.h"
-
 #include "module.h"
+#include "config.h"
+#include "net_arduino_esp32/net_arduino_esp32.h"
 
 class Proxy final : public IModule
 {

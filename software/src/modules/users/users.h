@@ -19,9 +19,8 @@
 
 #pragma once
 
-#include "config.h"
-
 #include "module.h"
+#include "config.h"
 
 #define USERS_AUTH_TYPE_NONE 0
 #define USERS_AUTH_TYPE_LOST 1

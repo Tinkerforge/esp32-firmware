@@ -18,15 +18,14 @@
  */
 
 #include "warp_esp32_rtc.h"
-#include "module_dependencies.h"
-#include "musl_libc_timegm.h"
 
-#include "api.h"
-#include "task_scheduler.h"
+#include <ctime>
+
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
 #include "build.h"
 #include "tools.h"
-#include "event_log.h"
-#include <ctime>
+#include "musl_libc_timegm.h"
 
 #include "gcc_warnings.h"
 
