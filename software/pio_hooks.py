@@ -187,8 +187,12 @@ def generate_module_dependencies_header(info_path, header_path_prefix, backend_m
                     if conflict_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot list itself as conflicting.", file=sys.stderr)
                         sys.exit(1)
-                    conflict_module, _ = find_backend_module_space(backend_modules, conflict_name)
-                    if conflict_module:
+                    conflict_module, index = find_backend_module_space(backend_modules, conflict_name)
+                    if index < 0:
+                        if not allow_nonexist and '_'.join(conflict_name.split(' ')).upper() not in all_mods_upper:
+                            print(f"Dependency error: Module '{conflict_name}' in 'Conflicts' list of module '{module_name}' does not exist.", file=sys.stderr)
+                            sys.exit(1)
+                    elif conflict_module:
                         print(f"Dependency error: Module '{module_name}' conflicts with module '{conflict_name}'.", file=sys.stderr)
                         sys.exit(1)
 
