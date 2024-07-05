@@ -626,8 +626,7 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     int matched = 0;
 
-    // Have to check state->last_switch here: Global hysteresis is probably less than the minimum amount of time a charger should stay on.
-    filter(allocated_phases == 1 && state->phase_switch_supported && !deadline_elapsed(state->last_switch + MINIMUM_ACTIVE_TIME));
+    filter(allocated_phases == 1 && state->phase_switch_supported);
 
     sort(0,
         left.state->allocated_energy < right.state->allocated_energy
