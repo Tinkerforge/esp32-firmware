@@ -977,7 +977,7 @@ int allocate_current(
             }
 
             // Charger did not update the charging current in time
-            if (charger_alloc.allocated_current < charger.allowed_current && deadline_elapsed(charger_alloc.last_sent_config + TIMEOUT_MS)) {
+            if (charger_alloc.allocated_current < charger.allowed_current && deadline_elapsed(charger_alloc.last_sent_config + 1000_usec * (micros_t)TIMEOUT_MS)) {
                 unreachable_evse_found = true;
                 LOCAL_LOG("stage 0: EVSE of %s (%s) did not react in time.", get_charger_name(i), hosts[i]);
 
@@ -1077,7 +1077,7 @@ int allocate_current(
             if (change) {
                 print_local_log = true;
                 if (charger_alloc.error != CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE)
-                    charger_alloc.last_sent_config = millis();
+                    charger_alloc.last_sent_config = now_us();
             }
         }
     }

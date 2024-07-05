@@ -89,7 +89,7 @@ struct ChargerState {
 };
 
 struct ChargerAllocationState {
-    uint32_t last_sent_config;
+    micros_t last_sent_config;
 
     // last current limit send to the charger
     uint16_t allocated_current;
