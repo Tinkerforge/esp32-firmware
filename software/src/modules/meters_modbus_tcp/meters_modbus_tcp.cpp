@@ -80,6 +80,19 @@ void MetersModbusTCP::pre_setup()
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
+    table_prototypes.push_back({MeterModbusTCPTableID::ShellyProEM, Config::Object({
+        {"device_address", Config::Uint(1, 1, 247)},
+        {"monophase_channel", Config::Uint8(static_cast<uint8_t>(ShellyEMMonophaseChannel::None))},
+        {"monophase_mapping", Config::Uint8(static_cast<uint8_t>(ShellyEMMonophaseMapping::None))},
+    })});
+
+    table_prototypes.push_back({MeterModbusTCPTableID::ShellyPro3EM, Config::Object({
+        {"device_address", Config::Uint(1, 1, 247)},
+        {"device_profile", Config::Uint8(static_cast<uint8_t>(ShellyPro3EMDeviceProfile::Triphase))},
+        {"monophase_channel", Config::Uint8(static_cast<uint8_t>(ShellyEMMonophaseChannel::None))},
+        {"monophase_mapping", Config::Uint8(static_cast<uint8_t>(ShellyEMMonophaseMapping::None))},
+    })});
+
     Config table_union = Config::Union<MeterModbusTCPTableID>(
         *Config::Null(),
         MeterModbusTCPTableID::None,

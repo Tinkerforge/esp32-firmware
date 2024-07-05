@@ -33,6 +33,9 @@ import { SolarmaxMaxStorageVirtualMeter } from "./solarmax_max_storage_virtual_m
 import { VictronEnergyGXVirtualMeter } from "./victron_energy_gx_virtual_meter.enum";
 import { DeyeHybridInverterVirtualMeter } from "./deye_hybrid_inverter_virtual_meter.enum";
 import { AlphaESSHybridInverterVirtualMeter } from "./alpha_ess_hybrid_inverter_virtual_meter.enum";
+import { ShellyPro3EMDeviceProfile } from "./shelly_pro_3em_device_profile.enum";
+import { ShellyEMMonophaseChannel } from "./shelly_em_monophase_channel.enum";
+import { ShellyEMMonophaseMapping } from "./shelly_em_monophase_mapping.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
@@ -113,6 +116,25 @@ type TableConfigAlphaESSHybridInverter = [
     },
 ];
 
+type TableConfigShellyProEM = [
+    MeterModbusTCPTableID.ShellyProEM,
+    {
+        device_address: number;
+        monophase_channel: number;
+        monophase_mapping: number;
+    },
+];
+
+type TableConfigShellyPro3EM = [
+    MeterModbusTCPTableID.ShellyPro3EM,
+    {
+        device_address: number;
+        device_profile: number;
+        monophase_channel: number;
+        monophase_mapping: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -120,7 +142,9 @@ type TableConfig = TableConfigNone |
                    TableConfigSolarmaxMaxStorage |
                    TableConfigVictronEnergyGX |
                    TableConfigDeyeHybridInverter |
-                   TableConfigAlphaESSHybridInverter;
+                   TableConfigAlphaESSHybridInverter |
+                   TableConfigShellyProEM |
+                   TableConfigShellyPro3EM;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -154,6 +178,12 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.AlphaESSHybridInverter:
             return [MeterModbusTCPTableID.AlphaESSHybridInverter, {virtual_meter: null, device_address: 85}];
+
+        case MeterModbusTCPTableID.ShellyProEM:
+            return [MeterModbusTCPTableID.ShellyProEM, {device_address: 1, monophase_channel: null, monophase_mapping: null}];
+
+        case MeterModbusTCPTableID.ShellyPro3EM:
+            return [MeterModbusTCPTableID.ShellyPro3EM, {device_address: 1, device_profile: ShellyPro3EMDeviceProfile.Triphase, monophase_channel: ShellyEMMonophaseChannel.None, monophase_mapping: ShellyEMMonophaseMapping.None}];
 
         default:
             return [MeterModbusTCPTableID.None, {}];
@@ -371,6 +401,8 @@ export function init() {
                                 [MeterModbusTCPTableID.VictronEnergyGX.toString(), __("meters_modbus_tcp.content.table_victron_energy_gx")],
                                 [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
                                 [MeterModbusTCPTableID.AlphaESSHybridInverter.toString(), __("meters_modbus_tcp.content.table_alpha_ess_hybrid_inverter")],
+                                [MeterModbusTCPTableID.ShellyProEM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_em")],
+                                [MeterModbusTCPTableID.ShellyPro3EM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_3em")],
                             ]}
                             placeholder={__("meters_modbus_tcp.content.table_select")}
                             value={util.hasValue(config[1].table) ? config[1].table[0].toString() : undefined}
@@ -386,12 +418,14 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage
                   || config[1].table[0] == MeterModbusTCPTableID.VictronEnergyGX
                   || config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.AlphaESSHybridInverter)) {
-                    let items: [string, string][] = [];
+                  || config[1].table[0] == MeterModbusTCPTableID.AlphaESSHybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.ShellyProEM
+                  || config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM)) {
+                    let virtual_meter_items: [string, string][] = [];
                     let device_address_default: number = 1;
 
                     if (config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter) {
-                        items = [
+                        virtual_meter_items = [
                             [SungrowHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [SungrowHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [SungrowHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
@@ -399,21 +433,21 @@ export function init() {
                         ];
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter) {
-                        items = [
+                        virtual_meter_items = [
                             [SungrowStringInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [SungrowStringInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [SungrowStringInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage) {
-                        items = [
+                        virtual_meter_items = [
                             [SolarmaxMaxStorageVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [SolarmaxMaxStorageVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [SolarmaxMaxStorageVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                         ];
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.VictronEnergyGX) {
-                        items = [
+                        virtual_meter_items = [
                             [VictronEnergyGXVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [VictronEnergyGXVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [VictronEnergyGXVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
@@ -423,7 +457,7 @@ export function init() {
                         device_address_default = 100;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter) {
-                        items = [
+                        virtual_meter_items = [
                             [DeyeHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [DeyeHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [DeyeHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
@@ -431,7 +465,7 @@ export function init() {
                         ];
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.AlphaESSHybridInverter) {
-                        items = [
+                        virtual_meter_items = [
                             [AlphaESSHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [AlphaESSHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [AlphaESSHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
@@ -440,17 +474,21 @@ export function init() {
                         device_address_default = 85;
                     }
 
+                    if (virtual_meter_items.length > 0) {
+                        edit_children.push(
+                            <FormRow label={__("meters_modbus_tcp.content.virtual_meter")}>
+                                <InputSelect
+                                    required
+                                    items={virtual_meter_items}
+                                    placeholder={__("meters_modbus_tcp.content.virtual_meter_select")}
+                                    value={util.hasValue(config[1].table[1]) && util.hasValue((config[1].table[1] as any).virtual_meter) ? (config[1].table[1] as any).virtual_meter.toString() : undefined}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
+                                    }} />
+                            </FormRow>);
+                    }
+
                     edit_children.push(
-                        <FormRow label={__("meters_modbus_tcp.content.virtual_meter")}>
-                            <InputSelect
-                                required
-                                items={items}
-                                placeholder={__("meters_modbus_tcp.content.virtual_meter_select")}
-                                value={util.hasValue(config[1].table[1]) && util.hasValue(config[1].table[1].virtual_meter) ? config[1].table[1].virtual_meter.toString() : undefined}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
-                                }} />
-                        </FormRow>,
                         <FormRow label={__("meters_modbus_tcp.content.device_address")} label_muted={__("meters_modbus_tcp.content.device_address_muted")(device_address_default)}>
                             <InputNumber
                                 required
@@ -462,6 +500,69 @@ export function init() {
                                 }} />
                         </FormRow>);
 
+                    if (config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM) {
+                        edit_children.push(
+                            <FormRow label={__("meters_modbus_tcp.content.shelly_pro_3em_device_profile")}>
+                                <InputSelect
+                                    required
+                                    items={[
+                                        [ShellyPro3EMDeviceProfile.Triphase.toString(), __("meters_modbus_tcp.content.shelly_pro_3em_device_profile_triphase")],
+                                        [ShellyPro3EMDeviceProfile.Monophase.toString(), __("meters_modbus_tcp.content.shelly_pro_3em_device_profile_monophase")],
+                                    ]}
+                                    value={util.hasValue(config[1].table[1]) && util.hasValue((config[1].table[1] as any).device_profile) ? (config[1].table[1] as any).device_profile.toString() : undefined}
+                                    onValue={(v) => {
+                                        let device_profile = parseInt(v);
+                                        let monophase_channel = (config[1].table[1] as any).monophase_channel;
+                                        let monophase_mapping = (config[1].table[1] as any).monophase_mapping;
+
+                                        if (device_profile == ShellyPro3EMDeviceProfile.Triphase) {
+                                            monophase_channel = ShellyEMMonophaseChannel.None;
+                                            monophase_mapping = ShellyEMMonophaseMapping.None;
+                                        }
+
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_profile: device_profile, monophase_channel: monophase_channel, monophase_mapping: monophase_mapping})}));
+                                    }} />
+                            </FormRow>);
+                    }
+
+                    if (config[1].table[0] == MeterModbusTCPTableID.ShellyProEM
+                     || (config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM
+                      && (config[1].table[1] as any).device_profile == ShellyPro3EMDeviceProfile.Monophase)) {
+                        let monophase_channel_items: [string, string][] = [
+                            [ShellyEMMonophaseChannel.First.toString(), __("meters_modbus_tcp.content.shelly_em_monophase_channel_1")],
+                            [ShellyEMMonophaseChannel.Second.toString(), __("meters_modbus_tcp.content.shelly_em_monophase_channel_2")],
+                        ];
+
+                        if (config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM) {
+                            monophase_channel_items.push([ShellyEMMonophaseChannel.Third.toString(), __("meters_modbus_tcp.content.shelly_em_monophase_channel_3")]);
+                        }
+
+                        edit_children.push(
+                            <FormRow label={__("meters_modbus_tcp.content.shelly_em_monophase_channel")}>
+                                <InputSelect
+                                    required
+                                    items={monophase_channel_items}
+                                    placeholder={__("meters_modbus_tcp.content.shelly_em_monophase_channel_select")}
+                                    value={util.hasValue(config[1].table[1]) && util.hasValue((config[1].table[1] as any).monophase_channel) ? (config[1].table[1] as any).monophase_channel.toString() : undefined}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {monophase_channel: parseInt(v)})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("meters_modbus_tcp.content.shelly_em_monophase_mapping")}>
+                                <InputSelect
+                                    required
+                                    items={[
+                                        [ShellyEMMonophaseMapping.L1.toString(), __("meters_modbus_tcp.content.shelly_em_monophase_mapping_l1")],
+                                        [ShellyEMMonophaseMapping.L2.toString(), __("meters_modbus_tcp.content.shelly_em_monophase_mapping_l2")],
+                                        [ShellyEMMonophaseMapping.L3.toString(), __("meters_modbus_tcp.content.shelly_em_monophase_mapping_l3")],
+                                    ]}
+                                    placeholder={__("meters_modbus_tcp.content.shelly_em_monophase_mapping_select")}
+                                    value={util.hasValue(config[1].table[1]) && util.hasValue((config[1].table[1] as any).monophase_mapping) ? (config[1].table[1] as any).monophase_mapping.toString() : undefined}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {monophase_mapping: parseInt(v)})}));
+                                    }} />
+                            </FormRow>);
+                    }
                 }
                 else if (util.hasValue(config[1].table)
                       && config[1].table[0] == MeterModbusTCPTableID.Custom) {

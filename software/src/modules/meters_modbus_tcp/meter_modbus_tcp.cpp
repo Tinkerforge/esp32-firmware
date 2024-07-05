@@ -288,6 +288,183 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::ShellyProEM:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        shelly_pro_em_monophase_channel = ephemeral_config.get("table")->get()->get("monophase_channel")->asEnum<ShellyEMMonophaseChannel>();
+        shelly_pro_em_monophase_mapping = ephemeral_config.get("table")->get()->get("monophase_mapping")->asEnum<ShellyEMMonophaseMapping>();
+
+        switch (shelly_pro_em_monophase_channel) {
+        case ShellyEMMonophaseChannel::None:
+            logger.printfln("No Shelly Pro EM Monophase Channel selected");
+            return;
+
+        case ShellyEMMonophaseChannel::First:
+            switch (shelly_pro_em_monophase_mapping) {
+            case ShellyEMMonophaseMapping::None:
+                logger.printfln("No Shelly Pro EM Monophase Mapping selected");
+                return;
+
+            case ShellyEMMonophaseMapping::L1:
+                table = &shelly_em_monophase_channel_1_as_l1_table;
+                break;
+
+            case ShellyEMMonophaseMapping::L2:
+                table = &shelly_em_monophase_channel_1_as_l2_table;
+                break;
+
+            case ShellyEMMonophaseMapping::L3:
+                table = &shelly_em_monophase_channel_1_as_l3_table;
+                break;
+
+            default:
+                logger.printfln("Unknown Shelly Pro EM Monophase Mapping: %u", static_cast<uint8_t>(shelly_pro_em_monophase_mapping));
+                return;
+            }
+
+            break;
+
+        case ShellyEMMonophaseChannel::Second:
+            switch (shelly_pro_em_monophase_mapping) {
+            case ShellyEMMonophaseMapping::None:
+                logger.printfln("No Shelly Pro EM Monophase Mapping selected");
+                return;
+
+            case ShellyEMMonophaseMapping::L1:
+                table = &shelly_em_monophase_channel_2_as_l1_table;
+                break;
+
+            case ShellyEMMonophaseMapping::L2:
+                table = &shelly_em_monophase_channel_2_as_l2_table;
+                break;
+
+            case ShellyEMMonophaseMapping::L3:
+                table = &shelly_em_monophase_channel_2_as_l3_table;
+                break;
+
+            default:
+                logger.printfln("Unknown Shelly Pro EM Monophase Mapping: %u", static_cast<uint8_t>(shelly_pro_em_monophase_mapping));
+                return;
+            }
+
+            break;
+
+        case ShellyEMMonophaseChannel::Third:
+            logger.printfln("Impossible Shelly Pro EM Monophase Channel selected: Third");
+            return;
+
+        default:
+            logger.printfln("Unknown Shelly Pro EM Monophase Channel: %u", static_cast<uint8_t>(shelly_pro_em_monophase_channel));
+            return;
+        }
+
+        break;
+
+    case MeterModbusTCPTableID::ShellyPro3EM:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        shelly_pro_3em_device_profile = ephemeral_config.get("table")->get()->get("device_profile")->asEnum<ShellyPro3EMDeviceProfile>();
+        shelly_pro_3em_monophase_channel = ephemeral_config.get("table")->get()->get("monophase_channel")->asEnum<ShellyEMMonophaseChannel>();
+        shelly_pro_3em_monophase_mapping = ephemeral_config.get("table")->get()->get("monophase_mapping")->asEnum<ShellyEMMonophaseMapping>();
+
+        switch (shelly_pro_3em_device_profile) {
+        case ShellyPro3EMDeviceProfile::Triphase:
+            table = &shelly_em_triphase_table;
+            break;
+
+        case ShellyPro3EMDeviceProfile::Monophase:
+            switch (shelly_pro_3em_monophase_channel) {
+            case ShellyEMMonophaseChannel::None:
+                logger.printfln("No Shelly Pro 3EM Monophase Channel selected");
+                return;
+
+            case ShellyEMMonophaseChannel::First:
+                switch (shelly_pro_3em_monophase_mapping) {
+                case ShellyEMMonophaseMapping::None:
+                    logger.printfln("No Shelly Pro 3EM Monophase Mapping selected");
+                    return;
+
+                case ShellyEMMonophaseMapping::L1:
+                    table = &shelly_em_monophase_channel_1_as_l1_table;
+                    break;
+
+                case ShellyEMMonophaseMapping::L2:
+                    table = &shelly_em_monophase_channel_1_as_l2_table;
+                    break;
+
+                case ShellyEMMonophaseMapping::L3:
+                    table = &shelly_em_monophase_channel_1_as_l3_table;
+                    break;
+
+                default:
+                    logger.printfln("Unknown Shelly Pro 3EM Monophase Mapping: %u", static_cast<uint8_t>(shelly_pro_3em_monophase_mapping));
+                    return;
+                }
+
+                break;
+
+            case ShellyEMMonophaseChannel::Second:
+                switch (shelly_pro_3em_monophase_mapping) {
+                case ShellyEMMonophaseMapping::None:
+                    logger.printfln("No Shelly Pro 3EM Monophase Mapping selected");
+                    return;
+
+                case ShellyEMMonophaseMapping::L1:
+                    table = &shelly_em_monophase_channel_2_as_l1_table;
+                    break;
+
+                case ShellyEMMonophaseMapping::L2:
+                    table = &shelly_em_monophase_channel_2_as_l2_table;
+                    break;
+
+                case ShellyEMMonophaseMapping::L3:
+                    table = &shelly_em_monophase_channel_2_as_l3_table;
+                    break;
+
+                default:
+                    logger.printfln("Unknown Shelly Pro 3EM Monophase Mapping: %u", static_cast<uint8_t>(shelly_pro_3em_monophase_mapping));
+                    return;
+                }
+
+                break;
+
+            case ShellyEMMonophaseChannel::Third:
+                switch (shelly_pro_3em_monophase_mapping) {
+                case ShellyEMMonophaseMapping::None:
+                    logger.printfln("No Shelly Pro 3EM Monophase Mapping selected");
+                    return;
+
+                case ShellyEMMonophaseMapping::L1:
+                    table = &shelly_em_monophase_channel_3_as_l1_table;
+                    break;
+
+                case ShellyEMMonophaseMapping::L2:
+                    table = &shelly_em_monophase_channel_3_as_l2_table;
+                    break;
+
+                case ShellyEMMonophaseMapping::L3:
+                    table = &shelly_em_monophase_channel_3_as_l3_table;
+                    break;
+
+                default:
+                    logger.printfln("Unknown Shelly Pro 3EM Monophase Mapping: %u", static_cast<uint8_t>(shelly_pro_3em_monophase_mapping));
+                    return;
+                }
+
+                break;
+
+            default:
+                logger.printfln("Unknown Shelly Pro 3EM Monophase Channel: %u", static_cast<uint8_t>(shelly_pro_3em_monophase_channel));
+                return;
+            }
+
+            break;
+
+        default:
+            logger.printfln("Unknown Shelly Pro 3EM Device Profile: %u", static_cast<uint8_t>(shelly_pro_3em_device_profile));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;

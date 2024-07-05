@@ -36,6 +36,9 @@
 #include "victron_energy_gx_virtual_meter.enum.h"
 #include "deye_hybrid_inverter_virtual_meter.enum.h"
 #include "alpha_ess_hybrid_inverter_virtual_meter.enum.h"
+#include "shelly_pro_3em_device_profile.enum.h"
+#include "shelly_em_monophase_channel.enum.h"
+#include "shelly_em_monophase_mapping.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -137,6 +140,15 @@ private:
 
     // Alpha ESS
     AlphaESSHybridInverterVirtualMeter alpha_ess_hybrid_inverter_virtual_meter;
+
+    // Shelly Pro EM
+    ShellyEMMonophaseChannel shelly_pro_em_monophase_channel;
+    ShellyEMMonophaseMapping shelly_pro_em_monophase_mapping;
+
+    // Shelly Pro 3EM
+    ShellyPro3EMDeviceProfile shelly_pro_3em_device_profile;
+    ShellyEMMonophaseChannel shelly_pro_3em_monophase_channel;
+    ShellyEMMonophaseMapping shelly_pro_3em_monophase_mapping;
 };
 
 #if defined(__GNUC__)
