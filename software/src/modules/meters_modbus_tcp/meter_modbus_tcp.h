@@ -30,12 +30,12 @@
 #include "modbus_register_type.enum.h"
 #include "modbus_value_type.enum.h"
 #include "meter_modbus_tcp_table_id.enum.h"
-#include "sungrow_hybrid_inverter_virtual_meter_id.enum.h"
-#include "sungrow_string_inverter_virtual_meter_id.enum.h"
-#include "solarmax_max_storage_virtual_meter_id.enum.h"
-#include "victron_energy_gx_virtual_meter_id.enum.h"
-#include "deye_hybrid_inverter_virtual_meter_id.enum.h"
-#include "alpha_ess_hybrid_inverter_virtual_meter_id.enum.h"
+#include "sungrow_hybrid_inverter_virtual_meter.enum.h"
+#include "sungrow_string_inverter_virtual_meter.enum.h"
+#include "solarmax_max_storage_virtual_meter.enum.h"
+#include "victron_energy_gx_virtual_meter.enum.h"
+#include "deye_hybrid_inverter_virtual_meter.enum.h"
+#include "alpha_ess_hybrid_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -111,16 +111,16 @@ private:
     ValueTable *custom_table;
 
     // Sungrow
-    SungrowHybridInverterVirtualMeterID sungrow_hybrid_inverter_virtual_meter;
-    SungrowStringInverterVirtualMeterID sungrow_string_inverter_virtual_meter;
+    SungrowHybridInverterVirtualMeter sungrow_hybrid_inverter_virtual_meter;
+    SungrowStringInverterVirtualMeter sungrow_string_inverter_virtual_meter;
     int sungrow_inverter_output_type = -1;
     uint16_t sungrow_hybrid_inverter_running_state;
 
     // Solarmax
-    SolarmaxMaxStorageVirtualMeterID solarmax_max_storage_virtual_meter;
+    SolarmaxMaxStorageVirtualMeter solarmax_max_storage_virtual_meter;
 
     // Victron Energy
-    VictronEnergyGXVirtualMeterID victron_energy_gx_virtual_meter;
+    VictronEnergyGXVirtualMeter victron_energy_gx_virtual_meter;
     float victron_energy_gx_ac_coupled_pv_on_output_l1_power;
     float victron_energy_gx_ac_coupled_pv_on_output_l2_power;
     float victron_energy_gx_ac_coupled_pv_on_output_l3_power;
@@ -132,11 +132,11 @@ private:
     float victron_energy_gx_ac_consumption_l3_power;
 
     // Deye
-    DeyeHybridInverterVirtualMeterID deye_hybrid_inverter_virtual_meter;
+    DeyeHybridInverterVirtualMeter deye_hybrid_inverter_virtual_meter;
     int deye_hybrid_inverter_device_type = -1;
 
     // Alpha ESS
-    AlphaESSHybridInverterVirtualMeterID alpha_ess_hybrid_inverter_virtual_meter;
+    AlphaESSHybridInverterVirtualMeter alpha_ess_hybrid_inverter_virtual_meter;
 };
 
 #if defined(__GNUC__)

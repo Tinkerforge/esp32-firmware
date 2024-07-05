@@ -27,12 +27,12 @@ import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";
 import { ModbusRegisterType } from "./modbus_register_type.enum";
 import { ModbusRegisterAddressMode } from "./modbus_register_address_mode.enum";
 import { ModbusValueType } from "./modbus_value_type.enum";
-import { SungrowHybridInverterVirtualMeterID } from "./sungrow_hybrid_inverter_virtual_meter_id.enum";
-import { SungrowStringInverterVirtualMeterID } from "./sungrow_string_inverter_virtual_meter_id.enum";
-import { SolarmaxMaxStorageVirtualMeterID } from "./solarmax_max_storage_virtual_meter_id.enum";
-import { VictronEnergyGXVirtualMeterID } from "./victron_energy_gx_virtual_meter_id.enum";
-import { DeyeHybridInverterVirtualMeterID } from "./deye_hybrid_inverter_virtual_meter_id.enum";
-import { AlphaESSHybridInverterVirtualMeterID } from "./alpha_ess_hybrid_inverter_virtual_meter_id.enum";
+import { SungrowHybridInverterVirtualMeter } from "./sungrow_hybrid_inverter_virtual_meter.enum";
+import { SungrowStringInverterVirtualMeter } from "./sungrow_string_inverter_virtual_meter.enum";
+import { SolarmaxMaxStorageVirtualMeter } from "./solarmax_max_storage_virtual_meter.enum";
+import { VictronEnergyGXVirtualMeter } from "./victron_energy_gx_virtual_meter.enum";
+import { DeyeHybridInverterVirtualMeter } from "./deye_hybrid_inverter_virtual_meter.enum";
+import { AlphaESSHybridInverterVirtualMeter } from "./alpha_ess_hybrid_inverter_virtual_meter.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
@@ -392,49 +392,49 @@ export function init() {
 
                     if (config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter) {
                         items = [
-                            [SungrowHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [SungrowHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [SungrowHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [SungrowHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [SungrowHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [SungrowHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [SungrowHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [SungrowHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter) {
                         items = [
-                            [SungrowStringInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [SungrowStringInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [SungrowStringInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [SungrowStringInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [SungrowStringInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [SungrowStringInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage) {
                         items = [
-                            [SolarmaxMaxStorageVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [SolarmaxMaxStorageVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [SolarmaxMaxStorageVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [SolarmaxMaxStorageVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [SolarmaxMaxStorageVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [SolarmaxMaxStorageVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                         ];
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.VictronEnergyGX) {
                         items = [
-                            [VictronEnergyGXVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [VictronEnergyGXVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [VictronEnergyGXVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [VictronEnergyGXVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [VictronEnergyGXVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [VictronEnergyGXVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [VictronEnergyGXVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [VictronEnergyGXVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
 
                         device_address_default = 100;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter) {
                         items = [
-                            [DeyeHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [DeyeHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [DeyeHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [DeyeHybridInverterVirtualMeterID.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [DeyeHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [DeyeHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [DeyeHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [DeyeHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                         ];
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.AlphaESSHybridInverter) {
                         items = [
-                            [AlphaESSHybridInverterVirtualMeterID.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [AlphaESSHybridInverterVirtualMeterID.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [AlphaESSHybridInverterVirtualMeterID.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [AlphaESSHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [AlphaESSHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [AlphaESSHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                         ];
 
                         device_address_default = 85;

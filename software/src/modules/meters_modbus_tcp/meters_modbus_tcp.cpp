@@ -51,32 +51,32 @@ void MetersModbusTCP::pre_setup()
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SungrowHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowHybridInverterVirtualMeterID::None))},
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowHybridInverterVirtualMeter::None))},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SungrowStringInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowStringInverterVirtualMeterID::None))},
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowStringInverterVirtualMeter::None))},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SolarmaxMaxStorage, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SolarmaxMaxStorageVirtualMeterID::None))},
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SolarmaxMaxStorageVirtualMeter::None))},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::VictronEnergyGX, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(VictronEnergyGXVirtualMeterID::None))},
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(VictronEnergyGXVirtualMeter::None))},
         {"device_address", Config::Uint(100, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::DeyeHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(DeyeHybridInverterVirtualMeterID::None))},
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(DeyeHybridInverterVirtualMeter::None))},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::AlphaESSHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(AlphaESSHybridInverterVirtualMeterID::None))},
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(AlphaESSHybridInverterVirtualMeter::None))},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 

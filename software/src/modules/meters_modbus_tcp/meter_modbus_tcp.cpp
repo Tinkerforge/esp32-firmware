@@ -109,27 +109,27 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SungrowHybridInverter:
-        sungrow_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowHybridInverterVirtualMeterID>();
+        sungrow_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowHybridInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
 
         switch (sungrow_hybrid_inverter_virtual_meter) {
-        case SungrowHybridInverterVirtualMeterID::None:
+        case SungrowHybridInverterVirtualMeter::None:
             logger.printfln("No Sungrow Hybrid Inverter Virtual Meter selected");
             return;
 
-        case SungrowHybridInverterVirtualMeterID::Inverter:
+        case SungrowHybridInverterVirtualMeter::Inverter:
             table = &sungrow_hybrid_inverter_output_type_table;
             break;
 
-        case SungrowHybridInverterVirtualMeterID::Grid:
+        case SungrowHybridInverterVirtualMeter::Grid:
             table = &sungrow_hybrid_inverter_grid_table;
             break;
 
-        case SungrowHybridInverterVirtualMeterID::Battery:
+        case SungrowHybridInverterVirtualMeter::Battery:
             table = &sungrow_hybrid_inverter_battery_table;
             break;
 
-        case SungrowHybridInverterVirtualMeterID::Load:
+        case SungrowHybridInverterVirtualMeter::Load:
             table = &sungrow_hybrid_inverter_load_table;
             break;
 
@@ -141,23 +141,23 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SungrowStringInverter:
-        sungrow_string_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowStringInverterVirtualMeterID>();
+        sungrow_string_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowStringInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
 
         switch (sungrow_string_inverter_virtual_meter) {
-        case SungrowStringInverterVirtualMeterID::None:
+        case SungrowStringInverterVirtualMeter::None:
             logger.printfln("No Sungrow String Inverter Virtual Meter selected");
             return;
 
-        case SungrowStringInverterVirtualMeterID::Inverter:
+        case SungrowStringInverterVirtualMeter::Inverter:
             table = &sungrow_string_inverter_output_type_table;
             break;
 
-        case SungrowStringInverterVirtualMeterID::Grid:
+        case SungrowStringInverterVirtualMeter::Grid:
             table = &sungrow_string_inverter_grid_table;
             break;
 
-        case SungrowStringInverterVirtualMeterID::Load:
+        case SungrowStringInverterVirtualMeter::Load:
             table = &sungrow_string_inverter_load_table;
             break;
 
@@ -169,23 +169,23 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SolarmaxMaxStorage:
-        solarmax_max_storage_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SolarmaxMaxStorageVirtualMeterID>();
+        solarmax_max_storage_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SolarmaxMaxStorageVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
 
         switch (solarmax_max_storage_virtual_meter) {
-        case SolarmaxMaxStorageVirtualMeterID::None:
+        case SolarmaxMaxStorageVirtualMeter::None:
             logger.printfln("No Solarmax Max Storage Virtual Meter selected");
             return;
 
-        case SolarmaxMaxStorageVirtualMeterID::Inverter:
+        case SolarmaxMaxStorageVirtualMeter::Inverter:
             table = &solarmax_max_storage_inverter_table;
             break;
 
-        case SolarmaxMaxStorageVirtualMeterID::Grid:
+        case SolarmaxMaxStorageVirtualMeter::Grid:
             table = &solarmax_max_storage_grid_table;
             break;
 
-        case SolarmaxMaxStorageVirtualMeterID::Battery:
+        case SolarmaxMaxStorageVirtualMeter::Battery:
             table = &solarmax_max_storage_battery_table;
             break;
 
@@ -197,27 +197,27 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::VictronEnergyGX:
-        victron_energy_gx_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<VictronEnergyGXVirtualMeterID>();
+        victron_energy_gx_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<VictronEnergyGXVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
 
         switch (victron_energy_gx_virtual_meter) {
-        case VictronEnergyGXVirtualMeterID::None:
+        case VictronEnergyGXVirtualMeter::None:
             logger.printfln("No Victron Energy GX Virtual Meter selected");
             return;
 
-        case VictronEnergyGXVirtualMeterID::Inverter:
+        case VictronEnergyGXVirtualMeter::Inverter:
             table = &victron_energy_gx_inverter_table;
             break;
 
-        case VictronEnergyGXVirtualMeterID::Grid:
+        case VictronEnergyGXVirtualMeter::Grid:
             table = &victron_energy_gx_grid_table;
             break;
 
-        case VictronEnergyGXVirtualMeterID::Battery:
+        case VictronEnergyGXVirtualMeter::Battery:
             table = &victron_energy_gx_battery_table;
             break;
 
-        case VictronEnergyGXVirtualMeterID::Load:
+        case VictronEnergyGXVirtualMeter::Load:
             table = &victron_energy_gx_load_table;
             break;
 
@@ -229,27 +229,27 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::DeyeHybridInverter:
-        deye_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<DeyeHybridInverterVirtualMeterID>();
+        deye_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<DeyeHybridInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
 
         switch (deye_hybrid_inverter_virtual_meter) {
-        case DeyeHybridInverterVirtualMeterID::None:
+        case DeyeHybridInverterVirtualMeter::None:
             logger.printfln("No Deye Hybrid Inverter Virtual Meter selected");
             return;
 
-        case DeyeHybridInverterVirtualMeterID::Inverter:
+        case DeyeHybridInverterVirtualMeter::Inverter:
             table = &deye_hybrid_inverter_table;
             break;
 
-        case DeyeHybridInverterVirtualMeterID::Grid:
+        case DeyeHybridInverterVirtualMeter::Grid:
             table = &deye_hybrid_inverter_grid_table;
             break;
 
-        case DeyeHybridInverterVirtualMeterID::Battery:
+        case DeyeHybridInverterVirtualMeter::Battery:
             table = &deye_hybrid_inverter_device_type_table;
             break;
 
-        case DeyeHybridInverterVirtualMeterID::Load:
+        case DeyeHybridInverterVirtualMeter::Load:
             table = &deye_hybrid_inverter_load_table;
             break;
 
@@ -261,23 +261,23 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::AlphaESSHybridInverter:
-        alpha_ess_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<AlphaESSHybridInverterVirtualMeterID>();
+        alpha_ess_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<AlphaESSHybridInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
 
         switch (alpha_ess_hybrid_inverter_virtual_meter) {
-        case AlphaESSHybridInverterVirtualMeterID::None:
+        case AlphaESSHybridInverterVirtualMeter::None:
             logger.printfln("No Alpha ESS Hybrid Inverter Virtual Meter selected");
             return;
 
-        case AlphaESSHybridInverterVirtualMeterID::Inverter:
+        case AlphaESSHybridInverterVirtualMeter::Inverter:
             table = &alpha_ess_hybrid_inverter_table;
             break;
 
-        case AlphaESSHybridInverterVirtualMeterID::Grid:
+        case AlphaESSHybridInverterVirtualMeter::Grid:
             table = &alpha_ess_hybrid_inverter_grid_table;
             break;
 
-        case AlphaESSHybridInverterVirtualMeterID::Battery:
+        case AlphaESSHybridInverterVirtualMeter::Battery:
             table = &alpha_ess_hybrid_inverter_battery_table;
             break;
 
@@ -387,47 +387,47 @@ void MeterModbusTCP::read_next()
 bool MeterModbusTCP::is_sungrow_inverter_meter() const
 {
     return (table_id == MeterModbusTCPTableID::SungrowHybridInverter
-         && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Inverter)
+         && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeter::Inverter)
         || (table_id == MeterModbusTCPTableID::SungrowStringInverter
-         && sungrow_string_inverter_virtual_meter == SungrowStringInverterVirtualMeterID::Inverter);
+         && sungrow_string_inverter_virtual_meter == SungrowStringInverterVirtualMeter::Inverter);
 }
 
 bool MeterModbusTCP::is_sungrow_grid_meter() const
 {
     return (table_id == MeterModbusTCPTableID::SungrowHybridInverter
-         && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Grid)
+         && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeter::Grid)
         || (table_id == MeterModbusTCPTableID::SungrowStringInverter
-         && sungrow_string_inverter_virtual_meter == SungrowStringInverterVirtualMeterID::Grid);
+         && sungrow_string_inverter_virtual_meter == SungrowStringInverterVirtualMeter::Grid);
 }
 
 bool MeterModbusTCP::is_sungrow_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::SungrowHybridInverter
-        && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeterID::Battery;
+        && sungrow_hybrid_inverter_virtual_meter == SungrowHybridInverterVirtualMeter::Battery;
 }
 
 bool MeterModbusTCP::is_victron_energy_gx_inverter_meter() const
 {
     return table_id == MeterModbusTCPTableID::VictronEnergyGX
-        && victron_energy_gx_virtual_meter == VictronEnergyGXVirtualMeterID::Inverter;
+        && victron_energy_gx_virtual_meter == VictronEnergyGXVirtualMeter::Inverter;
 }
 
 bool MeterModbusTCP::is_victron_energy_gx_grid_meter() const
 {
     return table_id == MeterModbusTCPTableID::VictronEnergyGX
-        && victron_energy_gx_virtual_meter == VictronEnergyGXVirtualMeterID::Grid;
+        && victron_energy_gx_virtual_meter == VictronEnergyGXVirtualMeter::Grid;
 }
 
 bool MeterModbusTCP::is_victron_energy_gx_load_meter() const
 {
     return table_id == MeterModbusTCPTableID::VictronEnergyGX
-        && victron_energy_gx_virtual_meter == VictronEnergyGXVirtualMeterID::Load;
+        && victron_energy_gx_virtual_meter == VictronEnergyGXVirtualMeter::Load;
 }
 
 bool MeterModbusTCP::is_deye_hybrid_inverter_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::DeyeHybridInverter
-        && deye_hybrid_inverter_virtual_meter == DeyeHybridInverterVirtualMeterID::Battery;
+        && deye_hybrid_inverter_virtual_meter == DeyeHybridInverterVirtualMeter::Battery;
 }
 
 void MeterModbusTCP::read_done_callback()
