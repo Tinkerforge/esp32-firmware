@@ -357,7 +357,6 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         const auto *state = &charger_state[idx_array[i]];
 
         bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
-        // TODO: should we activate unknown rotated switchable chargers with 3 phases here?
         bool activate_3p = is_fixed_3p;
 
         phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
@@ -437,7 +436,6 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     for (int i = 0; i < matched; ++i) {
         if (limits->max.pv >= wnd_min.pv || !ca_state->global_hysteresis_elapsed)
             break;
-        // TODO: Check state->last_switch here?
 
         const auto *state = &charger_state[idx_array[i]];
         const auto alloc_phases = phase_allocation[idx_array[i]];
