@@ -491,7 +491,7 @@ static bool can_activate(const Cost new_cost, const Cost new_enable_cost, const 
         // TODO pass to this function: bool is_1p_3p_switch
         // if true, use new_cost if required == ena_1p
         auto required = wnd_min[p] * cfg->enable_current_factor;
-        required += (required == 0 && (GridPhase)p == GridPhase::PV) ? new_cost[p] : new_enable_cost[p];
+        required += new_enable_cost[p];
 
         if (limits->min[p] < required)
             return false;
