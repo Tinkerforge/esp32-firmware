@@ -35,6 +35,8 @@
 // The MQTT send buffer is 2K on a WARP1 -> 2048/21 ~ 97,5.
 #define METERS_MAX_VALUES_PER_METER 96
 
+#define METERS_MAX_FILTER_VALUES 7
+
 #define INDEX_CACHE_POWER_REAL     0
 #define INDEX_CACHE_POWER_VIRTUAL  1
 #define INDEX_CACHE_ENERGY_IMPORT  2
@@ -61,6 +63,19 @@ public:
         LastReset   = 7,
         _max        = 7,
     };
+
+    struct value_combiner_filter_data {
+        uint8_t input_pos[METERS_MAX_FILTER_VALUES];
+        uint8_t output_pos;
+    };
+
+    struct value_combiner_filter {
+        void (*fn)(const value_combiner_filter_data *filter_data, size_t base_values_length, const float *base_values, float *extra_values);
+        const char *name;
+        MeterValueID input_ids[METERS_MAX_FILTER_VALUES];
+        MeterValueID output_ids[METERS_MAX_FILTER_VALUES];
+    };
+    static_assert(METERS_MAX_VALUES_PER_METER <= 256, "Increase size of input_id_count and output_id_count");
 
     Meters(){}
     void pre_setup() override;
@@ -112,6 +127,10 @@ private:
 
         IMeter *meter;
 
+        size_t base_value_count;
+        uint32_t value_combiner_filters_bitmask;
+        const value_combiner_filter_data *value_combiner_filters_data;
+
         // Caches must be initialized to UINT32_MAX in setup().
         uint32_t index_cache_single_values[INDEX_CACHE_SINGLE_VALUES_COUNT];
         uint32_t index_cache_currents[INDEX_CACHE_CURRENT_COUNT];
@@ -128,6 +147,7 @@ private:
     IMeter *new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *errors);
 
     MeterValueAvailability get_single_value(uint32_t slot, uint32_t kind, float *value, micros_t max_age_us);
+    void apply_filters(MeterSlot &meter_slot, size_t base_value_count, const float *base_values);
 
     float live_samples_per_second();
 

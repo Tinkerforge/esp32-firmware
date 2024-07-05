@@ -33,6 +33,106 @@
 
 static MeterGeneratorNone meter_generator_none;
 
+static inline float get_value_from_concat_values(size_t index, size_t base_values_length, const float *base_values, float *extra_values)
+{
+    if (index < base_values_length) {
+        return base_values[index];
+    } else {
+        return extra_values[index - base_values_length];
+    }
+}
+
+// Takes three import values and three export values and will calculate their ImExDiff values.
+static void filter_im_ex2imexdiff(const Meters::value_combiner_filter_data *filter_data, size_t base_values_length, const float *base_values, float *extra_values)
+{
+    const uint8_t *input_pos = filter_data->input_pos;
+    const size_t output_pos = filter_data->output_pos - base_values_length;
+
+    for (size_t i = 0; i < 3; i++) {
+        float im = get_value_from_concat_values(input_pos[i    ], base_values_length, base_values, extra_values);
+        float ex = get_value_from_concat_values(input_pos[i + 3], base_values_length, base_values, extra_values);
+
+        extra_values[output_pos + i] = im - ex;
+    }
+}
+
+// Takes 2x3 inputs and will copy the signs from the latter three values to the former three values
+static void filter_sign2sign(const Meters::value_combiner_filter_data *filter_data, size_t base_values_length, const float *base_values, float *extra_values)
+{
+    const uint8_t *input_pos = filter_data->input_pos;
+    const size_t output_pos = filter_data->output_pos - base_values_length;
+
+    for (size_t i = 0; i < 3; i++) {
+        union {
+            float    f;
+            uint32_t u32;
+        } receiver, donor;
+
+        receiver.f = get_value_from_concat_values(input_pos[i    ], base_values_length, base_values, extra_values);
+        donor.f    = get_value_from_concat_values(input_pos[i + 3], base_values_length, base_values, extra_values);
+
+        // Replace receiver value's sign with donor value's sign.
+        receiver.u32 ^= (receiver.u32 ^ donor.u32) & 0x80000000u;
+
+        extra_values[output_pos + i] = receiver.f;
+    }
+}
+
+// Filters will be run in array order
+static const Meters::value_combiner_filter value_combiner_filters[] = {
+    {
+        &filter_im_ex2imexdiff,
+        "Power import and export to ImExDiff",
+        {
+            MeterValueID::PowerActiveL1Import,
+            MeterValueID::PowerActiveL2Import,
+            MeterValueID::PowerActiveL3Import,
+            MeterValueID::PowerActiveL1Export,
+            MeterValueID::PowerActiveL2Export,
+            MeterValueID::PowerActiveL3Export,
+        },
+        {
+            MeterValueID::PowerActiveL1ImExDiff,
+            MeterValueID::PowerActiveL2ImExDiff,
+            MeterValueID::PowerActiveL3ImExDiff,
+        },
+    },
+    {   // Prefer directional currents from power factors over power
+        &filter_sign2sign,
+        "Directional currents from power factors",
+        {
+            MeterValueID::CurrentL1ImExSum,
+            MeterValueID::CurrentL2ImExSum,
+            MeterValueID::CurrentL3ImExSum,
+            MeterValueID::PowerFactorL1Directional,
+            MeterValueID::PowerFactorL2Directional,
+            MeterValueID::PowerFactorL3Directional,
+        },
+        {
+            MeterValueID::CurrentL1ImExDiff,
+            MeterValueID::CurrentL2ImExDiff,
+            MeterValueID::CurrentL3ImExDiff,
+        },
+    },
+    {
+        &filter_sign2sign,
+        "Directional currents from power",
+        {
+            MeterValueID::CurrentL1ImExSum,
+            MeterValueID::CurrentL2ImExSum,
+            MeterValueID::CurrentL3ImExSum,
+            MeterValueID::PowerActiveL1ImExDiff,
+            MeterValueID::PowerActiveL2ImExDiff,
+            MeterValueID::PowerActiveL3ImExDiff,
+        },
+        {
+            MeterValueID::CurrentL1ImExDiff,
+            MeterValueID::CurrentL2ImExDiff,
+            MeterValueID::CurrentL3ImExDiff,
+        },
+    },
+};
+
 static void init_uint32_array(uint32_t *arr, size_t len, uint32_t val)
 {
     if (len <= 0)
@@ -604,6 +704,37 @@ MeterValueAvailability Meters::get_currents(uint32_t slot, float currents[INDEX_
     }
 }
 
+void Meters::apply_filters(MeterSlot &meter_slot, size_t base_value_count, const float *base_values)
+{
+    Config &values = meter_slot.values;
+    float extra_values[METERS_MAX_VALUES_PER_METER];
+    size_t filter_count = 0;
+    uint32_t value_combiner_filter_bitmask = meter_slot.value_combiner_filters_bitmask;
+
+    // Can use do-while because function is only called if the filter bitmask is non-zero.
+    do {
+        int32_t filter_num = __builtin_clz(value_combiner_filter_bitmask);
+        const value_combiner_filter *filter = value_combiner_filters + filter_num;
+
+        const value_combiner_filter_data *filter_data = meter_slot.value_combiner_filters_data + filter_count;
+        filter->fn(filter_data, base_value_count, base_values, extra_values);
+
+        //logger.printfln("Applying filter %s for slot %u", filter->name, slot);
+
+        value_combiner_filter_bitmask &= ~(1u << 31 >> filter_num);
+        filter_count++;
+    } while (value_combiner_filter_bitmask);
+
+    size_t extra_value_count = values.count() - base_value_count;
+    for (size_t i = 0; i < extra_value_count; i++) {
+        float value = extra_values[i];
+        if (!isnan(value)) {
+            values.get(static_cast<uint16_t>(base_value_count + i))->updateFloat(value);
+        }
+    }
+
+}
+
 void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 {
     if (isnan(new_value))
@@ -621,7 +752,8 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 
     MeterSlot &meter_slot = meter_slots[slot];
 
-    Config *conf_val = static_cast<Config *>(meter_slot.values.get(static_cast<uint16_t>(index)));
+    Config &values = meter_slot.values;
+    Config *conf_val = static_cast<Config *>(values.get(static_cast<uint16_t>(index)));
     micros_t t_now = now_us();
 
     // Think about ordering and short-circuting issues before changing this!
@@ -630,6 +762,17 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
         meter_slot.values_last_changed_at = t_now;
 
     meter_slot.values_last_updated_at = t_now;
+
+    if (meter_slot.value_combiner_filters_bitmask) {
+        float base_values[METERS_MAX_VALUES_PER_METER];
+        size_t base_value_count = meter_slot.base_value_count;
+
+        for (uint16_t i = 0; i < base_value_count; i++) {
+            base_values[i] = values.get(i)->asFloat();
+        }
+
+        apply_filters(meter_slot, base_value_count, base_values);
+    }
 
     if (index == meter_slot.index_cache_single_values[INDEX_CACHE_POWER_REAL]) {
         meter_slot.power_history.add_sample(new_value);
@@ -646,11 +789,11 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
     MeterSlot &meter_slot = meter_slots[slot];
 
     Config &values = meter_slot.values;
-    auto value_count = values.count();
+    auto base_value_count = meter_slot.base_value_count;
     bool updated_any_value = false;
     bool changed_any_value = false;
 
-    for (uint16_t i = 0; i < value_count; i++) {
+    for (uint16_t i = 0; i < base_value_count; i++) {
         float new_value = new_values[i];
         if (!isnan(new_value)) {
             Config *conf_val = static_cast<Config *>(values.get(i));
@@ -662,6 +805,10 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
 
             updated_any_value = true;
         }
+    }
+
+    if (meter_slot.value_combiner_filters_bitmask) {
+        apply_filters(meter_slot, base_value_count, new_values);
     }
 
     micros_t t_now = now_us();
@@ -686,7 +833,7 @@ void Meters::update_all_values(uint32_t slot, const Config *new_values)
         return;
     }
 
-    auto value_count = meter_slots[slot].values.count();
+    auto value_count = meter_slots[slot].base_value_count;
 
     if (new_values->count() != value_count) {
         logger.printfln("Update all values element count mismatch: %u != %u", new_values->count(), value_count);
@@ -723,39 +870,125 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         return;
     }
 
-    for (uint16_t i = 0; i < static_cast<uint16_t>(value_id_count); i++) {
+    MeterValueID total_value_ids[METERS_MAX_VALUES_PER_METER];
+    mempcpy(total_value_ids, new_value_ids, sizeof(MeterValueID) * value_id_count);
+
+    uint32_t total_value_id_count = value_id_count;
+    meter_slot.base_value_count = value_id_count;
+    std::vector<value_combiner_filter_data> all_filter_data;
+
+    for (size_t i_f = 0; i_f < ARRAY_SIZE(value_combiner_filters); i_f++) {
+        const value_combiner_filter *filter = value_combiner_filters + i_f;
+        const MeterValueID *output_ids = filter->output_ids;
+
+        bool filter_not_applicable = false;
+        uint32_t filter_output_id_count = 0;
+
+        for (size_t i_oi = 0; i_oi < METERS_MAX_FILTER_VALUES; i_oi++) {
+            MeterValueID vid = output_ids[i_oi];
+            if (vid == MeterValueID::NotSupported) {
+                break;
+            }
+
+            if (meters_find_id_index(total_value_ids, total_value_id_count, vid) != UINT32_MAX) {
+                filter_not_applicable = true;
+                break;
+            }
+
+            uint32_t pos = total_value_id_count + filter_output_id_count;
+            if (pos >= ARRAY_SIZE(total_value_ids)) {
+                logger.printfln("Too many values (>%u) after applying filter '%s'", ARRAY_SIZE(total_value_ids), filter->name);
+                filter_not_applicable = true;
+                break;
+            }
+            total_value_ids[pos] = vid;
+            filter_output_id_count++;
+        }
+
+        if (filter_not_applicable) {
+            //logger.printfln("Found output ID for slot %u", slot);
+            continue;
+        }
+
+        const MeterValueID *input_ids = filter->input_ids;
+        all_filter_data.resize(all_filter_data.size() + 1);
+        Meters::value_combiner_filter_data &filter_data = all_filter_data.back();
+        filter_data.output_pos = static_cast<uint8_t>(total_value_id_count);
+
+        for (size_t i_ii = 0; i_ii < METERS_MAX_FILTER_VALUES; i_ii++) {
+            MeterValueID vid = input_ids[i_ii];
+            if (vid == MeterValueID::NotSupported) {
+                break;
+            }
+
+            uint32_t pos = meters_find_id_index(total_value_ids, total_value_id_count, vid);
+            if (pos == UINT32_MAX) {
+                filter_not_applicable = true;
+                break;
+            }
+
+            filter_data.input_pos[i_ii] = static_cast<uint8_t>(pos);
+        }
+
+        if (filter_not_applicable) {
+            //logger.printfln("Input ID for slot %u not found", slot);
+            all_filter_data.pop_back();
+            continue;
+        }
+
+        total_value_id_count += filter_output_id_count;
+
+        uint32_t filter_bitmask = 1u << 31 >> i_f;
+        meter_slot.value_combiner_filters_bitmask |= filter_bitmask;
+        //logger.printfln("Applying filter %s for slot %u", filter->name, slot);
+    }
+
+    size_t filter_count = all_filter_data.size();
+    value_combiner_filter_data *filter_data_compact = static_cast<value_combiner_filter_data *>(malloc(sizeof(value_combiner_filter_data) * filter_count));
+    for (size_t i = 0; i < filter_count; i++) {
+        const value_combiner_filter_data &filter_data = all_filter_data[i];
+        memcpy(filter_data_compact + i, &filter_data, sizeof(value_combiner_filter_data));
+    }
+    meter_slot.value_combiner_filters_data = filter_data_compact;
+
+    for (uint16_t i = 0; i < static_cast<uint16_t>(total_value_id_count); i++) {
         auto val = value_ids.add();
-        val->updateUint(static_cast<uint32_t>(new_value_ids[i]));
+        val->updateUint(static_cast<uint32_t>(total_value_ids[i]));
 
         values.add();
     }
 
-    uint32_t index_power_ac            = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiff);
-    uint32_t index_power_dc            = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerDCImExDiff);
-    uint32_t index_power_dc_battery    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerDCChaDisDiff);
+    uint32_t index_power_ac            = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::PowerActiveLSumImExDiff);
+    uint32_t index_power_dc            = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::PowerDCImExDiff);
+    uint32_t index_power_dc_battery    = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::PowerDCChaDisDiff);
     uint32_t index_power_real          = std::min({index_power_ac, index_power_dc, index_power_dc_battery});
-    uint32_t index_power_virtual       = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::PowerActiveLSumImExDiffVirtual);
-    uint32_t index_energy_ac_import    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImport);
-    uint32_t index_energy_ac_imexsum   = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumImExSum);
-    uint32_t index_energy_ac_export    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyActiveLSumExport);
-    uint32_t index_energy_dc_import    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCImport);
-    uint32_t index_energy_dc_imexsum   = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCImExSum);
-    uint32_t index_energy_dc_export    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCExport);
-    uint32_t index_energy_dc_charge    = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCCharge);
-    uint32_t index_energy_dc_chadissum = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCChaDisSum);
-    uint32_t index_energy_dc_discharge = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::EnergyDCDischarge);
+    uint32_t index_power_virtual       = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::PowerActiveLSumImExDiffVirtual);
+    uint32_t index_energy_ac_import    = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyActiveLSumImport);
+    uint32_t index_energy_ac_imexsum   = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyActiveLSumImExSum);
+    uint32_t index_energy_ac_export    = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyActiveLSumExport);
+    uint32_t index_energy_dc_import    = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyDCImport);
+    uint32_t index_energy_dc_imexsum   = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyDCImExSum);
+    uint32_t index_energy_dc_export    = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyDCExport);
+    uint32_t index_energy_dc_charge    = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyDCCharge);
+    uint32_t index_energy_dc_chadissum = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyDCChaDisSum);
+    uint32_t index_energy_dc_discharge = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyDCDischarge);
 
     meter_slot.index_cache_single_values[INDEX_CACHE_POWER_REAL]     = index_power_real;
     meter_slot.index_cache_single_values[INDEX_CACHE_POWER_VIRTUAL]  = index_power_virtual != UINT32_MAX ? index_power_virtual : index_power_real;
     meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMPORT]  = std::min({index_energy_ac_import,  index_energy_dc_import,  index_energy_dc_charge});
     meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMEXSUM] = std::min({index_energy_ac_imexsum, index_energy_dc_imexsum, index_energy_dc_chadissum});
     meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_EXPORT]  = std::min({index_energy_ac_export,  index_energy_dc_export,  index_energy_dc_discharge});
-    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L1]          = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL1ImExDiff);
-    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L2]          = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL2ImExDiff);
-    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L3]          = meters_find_id_index(new_value_ids, value_id_count, MeterValueID::CurrentL3ImExDiff);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L1]          = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::CurrentL1ImExDiff);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L2]          = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::CurrentL2ImExDiff);
+    meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L3]          = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::CurrentL3ImExDiff);
 
     meter_slot.values_declared = true;
-    logger.printfln("Meter in slot %u declared %u values.", slot, value_id_count);
+
+    if (total_value_id_count == value_id_count) {
+        logger.printfln("Meter in slot %u declared %u values.", slot, total_value_id_count);
+    } else {
+        logger.printfln("Meter in slot %u declared %u (%u) values.", slot, total_value_id_count, value_id_count);
+    }
 
     if (!meters_feature_declared) {
         api.addFeature("meters");
