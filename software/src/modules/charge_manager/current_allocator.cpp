@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "current_allocator.h"
 
 #include <assert.h>
 #include <string.h> // For strlen
