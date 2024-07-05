@@ -100,7 +100,7 @@ private:
     Config *errors;
 
     MeterModbusTCPTableID table_id;
-    const ValueTable *table;
+    const ValueTable *table = nullptr;
 
     bool read_allowed = false;
     bool values_declared = false;
