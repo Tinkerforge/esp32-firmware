@@ -115,6 +115,7 @@ public:
     WebServer() : httpd(nullptr), handlers() {}
 
     void post_setup();
+    void pre_reboot();
 
     void runInHTTPThread(void (*fn)(void *arg), void *arg);
 

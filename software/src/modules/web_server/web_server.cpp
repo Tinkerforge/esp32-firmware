@@ -43,10 +43,12 @@ void WebServer::post_setup()
     config.stack_size = HTTPD_STACK_SIZE;
     config.max_uri_handlers = MAX_URI_HANDLERS;
     config.global_user_ctx = this;
+    // httpd_stop calls free on the pointer passed as global_user_ctx if we don't override the free_fn.
+    config.global_user_ctx_free_fn = [](void *foo){};
     config.max_open_sockets = 10;
 
     config.enable_so_linger = true;
-    config.linger_timeout = 0;
+    config.linger_timeout = 100;
 #if MODULE_NETWORK_AVAILABLE()
     config.server_port = network.config.get("web_server_port")->asUint();
 #endif
@@ -69,6 +71,13 @@ void WebServer::post_setup()
 #if MODULE_DEBUG_AVAILABLE()
     debug.register_task("httpd", HTTPD_STACK_SIZE);
 #endif
+}
+
+void WebServer::pre_reboot() {
+    if (this->httpd == nullptr)
+        return;
+
+    httpd_stop(this->httpd);
 }
 
 void WebServer::runInHTTPThread(void (*fn)(void *arg), void *arg)
