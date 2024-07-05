@@ -86,6 +86,9 @@ struct ChargerState {
     // or else the vehicle could power down its charge controller.
     // Is set to 0 the first time a charger gets current allocated.
     micros_t last_plug_in;
+
+    micros_t last_wakeup;
+};
 };
 
 struct ChargerAllocationState {

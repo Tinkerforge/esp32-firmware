@@ -49,6 +49,8 @@ static constexpr int32_t ALLOCATED_ENERGY_ROTATION_THRESHOLD = 5; /*kWh*/
 // Amount of time a charger should stay activated before considering it for rotation or phase switch.
 static constexpr micros_t MINIMUM_ACTIVE_TIME = 15_usec * 60_usec * 1000_usec * 1000_usec;
 
+static constexpr micros_t WAKEUP_TIME = 3_usec * 60_usec * 1000_usec * 1000_usec;
+
 static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
 
 static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
@@ -187,7 +189,7 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
 }
 
 static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
-    return allocated_phases > 0 && (state->wants_to_charge || state->is_charging);
+    return allocated_phases > 0 && (state->wants_to_charge || state->is_charging) && state->last_wakeup == 0_usec;
 }
 
 // Stage 1: Rotate chargers
@@ -835,28 +837,58 @@ void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     }
 }
 
+static constexpr int CURRENTLY_WAKING_UP_CAR = 0;
+static constexpr int NEVER_ATTEMPTED_TO_WAKE_UP = 1;
+static constexpr int CAR_DID_NOT_WAKE_UP = 2;
+
+static int stage_9_group(const ChargerState *state) {
+    if (state->last_wakeup != 0_usec) {
+        if (deadline_elapsed(state->last_wakeup + WAKEUP_TIME))
+            return CAR_DID_NOT_WAKE_UP;
+
+        return CURRENTLY_WAKING_UP_CAR;
+    }
+
+    return NEVER_ATTEMPTED_TO_WAKE_UP;
+}
+
+static bool stage_9_sort(const ChargerState *left_state, const ChargerState *right_state) {
+    switch(stage_9_group(left_state)) {
+        case CURRENTLY_WAKING_UP_CAR:
+            // Prefer newer timestamps, i.e. cars that we have just now allocated current to.
+            return left_state->last_wakeup >= right_state->last_wakeup;
+        case NEVER_ATTEMPTED_TO_WAKE_UP:
+            // Prefer older timestamps, i.e. cars that have been switched off longer.
+            return left_state->last_switch < right_state->last_switch;
+        case CAR_DID_NOT_WAKE_UP:
+            // Prefer older timestamps, i.e. cars that we longer did not attempt to wake up.
+            return left_state->last_wakeup < right_state->last_wakeup;
+    }
+    return false;
+}
+
 // Stage 9: Wake up chargers.
 // If there is still current left, attempt to wake up one charger with a probably fully charged car.
 // Activating the charger will automatically change it from low to normal priority for at least 3 minutes,
 // giving the car time to request current.
 void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
-    if (!ca_state->global_hysteresis_elapsed)
-        return;
-
     int matched = 0;
 
-    filter(allocated_phases == 0 && state->wants_to_charge_low_priority);
+    filter(allocated_phases == 0 && (state->wants_to_charge_low_priority || (state->wants_to_charge && state->last_wakeup != 0_usec)));
 
     if (matched == 0)
         return;
 
-    // Reverse sort. Charger that was inactive for the longest time first.
-    sort(0,
-        left.state->last_switch >= right.state->last_switch
+    sort(
+        stage_9_group(state),
+        stage_9_sort(left.state, right.state)
     );
 
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
+
+        if (!ca_state->global_hysteresis_elapsed && state->allowed_current == 0)
+            continue;
 
         bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
         bool is_unknown_rot_switchable = state->phase_rotation == PhaseRotation::Unknown && state->phase_switch_supported;
@@ -875,10 +907,11 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
                 continue;
         }
 
+        apply_cost(enable_cost, limits);
+
         phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
         current_allocation[idx_array[i]] = enable_current;
-        //calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
-        return;
+        calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
     }
 }
 
@@ -1059,6 +1092,10 @@ int allocate_current(
                 ca_state->last_hysteresis_reset = now_us();
             }
 
+            if (charger.wants_to_charge_low_priority && phases_to_set != 0) {
+                charger.last_wakeup = now_us();
+            }
+
             bool change = charger_alloc.allocated_current != current_to_set || charger_alloc.allocated_phases != phases_to_set;
             charger_alloc.allocated_current = current_to_set;
             charger_alloc.allocated_phases = phases_to_set;
@@ -1190,6 +1227,9 @@ bool update_from_client_packet(
     target.wants_to_charge_low_priority = low_prio;
 
     target.is_charging = v1->charger_state == 3;
+    if (v1->charger_state != 1 && v1->charger_state != 2)
+        target.last_wakeup = 0;
+
     target.allowed_current = v1->allowed_charging_current;
     target.supported_current = v1->supported_current;
     target.cp_disconnect_supported = CM_FEATURE_FLAGS_CP_DISCONNECT_IS_SET(v1->feature_flags);
