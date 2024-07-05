@@ -350,9 +350,9 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     filter(was_just_plugged_in(state));
 
-    // Reverse sort. Charger that is plugged in for the longest time first.
+    // Charger that is plugged in for the longest time first.
     sort(0,
-        left.state->last_plug_in >= right.state->last_plug_in
+        left.state->last_plug_in < right.state->last_plug_in
     );
 
     for (int i = 0; i < matched; ++i) {
@@ -391,7 +391,7 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // Group chargers that were activated in stage 2 (because a vehicle was just plugged in) behind others.
     sort(
         was_just_plugged_in(state) ? 1 : 0,
-        left.state->last_switch >= right.state->last_switch
+        left.state->last_switch < right.state->last_switch
     );
 
     bool any_charger_shut_down = false;
