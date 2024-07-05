@@ -1,4 +1,4 @@
-sungrow_hybrid_string_inverter_base_values = [
+inverter_values = [
     {
         'name': 'Device Type',
         'value_id': 'VALUE_ID_DEBUG',
@@ -194,7 +194,7 @@ sungrow_hybrid_string_inverter_base_values = [
     },
 ]
 
-sungrow_hybrid_string_inverter_phase_voltages = [
+inverter_phase_voltage_values = [
     {
         'name': 'A-N Voltage [0.1 V]',  # FIXME: not available for all string device types
         'value_id': 'VoltageL1N',
@@ -218,7 +218,7 @@ sungrow_hybrid_string_inverter_phase_voltages = [
     },
 ]
 
-sungrow_hybrid_string_inverter_line_voltages = [
+inverter_line_voltage_values = [
     {
         'name': 'A-B Voltage [0.1 V]',  # FIXME: not available for all string device types
         'value_id': 'VoltageL1L2',
@@ -242,7 +242,7 @@ sungrow_hybrid_string_inverter_line_voltages = [
     },
 ]
 
-sungrow_hybrid_inverter_phase_currents = [
+hybrid_inverter_phase_current_values = [
     {
         'name': 'Phase A Current [0.1 A]',
         'value_id': 'CurrentL1ImExDiff',
@@ -289,21 +289,21 @@ specs = [
         'variants': ['Hybrid', 'String'],
         'register_type': 'InputRegister',
         'start_address_offset': 1,
-        'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_phase_voltages[:1] + sungrow_hybrid_inverter_phase_currents[:1],
+        'values': inverter_values + inverter_phase_voltage_values[:1] + hybrid_inverter_phase_current_values[:1],
     },
     {
         'name': 'Sungrow {variant} Inverter 3P4L',  # output type 2
         'variants': ['Hybrid', 'String'],
         'register_type': 'InputRegister',
         'start_address_offset': 1,
-        'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_phase_voltages + sungrow_hybrid_inverter_phase_currents,
+        'values': inverter_values + inverter_phase_voltage_values + hybrid_inverter_phase_current_values,
     },
     {
         'name': 'Sungrow {variant} Inverter 3P3L',  # output type 3
         'variants': ['Hybrid', 'String'],
         'register_type': 'InputRegister',
         'start_address_offset': 1,
-        'values': sungrow_hybrid_string_inverter_base_values + sungrow_hybrid_string_inverter_line_voltages + sungrow_hybrid_inverter_phase_currents,
+        'values': inverter_values + inverter_line_voltage_values + hybrid_inverter_phase_current_values,
     },
     {
         'name': 'Sungrow {variant} Inverter Grid',
