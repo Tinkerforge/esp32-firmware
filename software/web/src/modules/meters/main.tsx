@@ -780,23 +780,23 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                         phases[2] = voltage_L3 > PHASE_CONNECTED_VOLTAGE_THRESHOLD ? "c" : "d";
                                     }
 
-                                    if ((util.hasValue(current_L1_import) && Math.abs(current_L1_import) > PHASE_ACTIVE_CURRENT_THRESHOLD)
-                                        || (util.hasValue(current_L1_export) && Math.abs(current_L1_export) > PHASE_ACTIVE_CURRENT_THRESHOLD)
-                                        || (util.hasValue(current_L1_im_ex_sum) && Math.abs(current_L1_im_ex_sum) > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                    if ((util.hasValue(current_L1_import) && current_L1_import > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L1_export) && current_L1_export > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L1_im_ex_sum) && current_L1_im_ex_sum > PHASE_ACTIVE_CURRENT_THRESHOLD)
                                         || (util.hasValue(current_L1_im_ex_diff) && Math.abs(current_L1_im_ex_diff) > PHASE_ACTIVE_CURRENT_THRESHOLD)) {
                                         phases[0] = "a";
                                     }
 
-                                    if ((util.hasValue(current_L2_import) && Math.abs(current_L2_import) > PHASE_ACTIVE_CURRENT_THRESHOLD)
-                                        || (util.hasValue(current_L2_export) && Math.abs(current_L2_export) > PHASE_ACTIVE_CURRENT_THRESHOLD)
-                                        || (util.hasValue(current_L2_im_ex_sum) && Math.abs(current_L2_im_ex_sum) > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                    if ((util.hasValue(current_L2_import) && current_L2_import > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L2_export) && current_L2_export > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L2_im_ex_sum) && current_L2_im_ex_sum > PHASE_ACTIVE_CURRENT_THRESHOLD)
                                         || (util.hasValue(current_L2_im_ex_diff) && Math.abs(current_L2_im_ex_diff) > PHASE_ACTIVE_CURRENT_THRESHOLD)) {
                                         phases[1] = "a";
                                     }
 
-                                    if ((util.hasValue(current_L3_import) && Math.abs(current_L3_import) > PHASE_ACTIVE_CURRENT_THRESHOLD)
-                                        || (util.hasValue(current_L3_export) && Math.abs(current_L3_export) > PHASE_ACTIVE_CURRENT_THRESHOLD)
-                                        || (util.hasValue(current_L3_im_ex_sum) && Math.abs(current_L3_im_ex_sum) > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                    if ((util.hasValue(current_L3_import) && current_L3_import > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L3_export) && current_L3_export > PHASE_ACTIVE_CURRENT_THRESHOLD)
+                                        || (util.hasValue(current_L3_im_ex_sum) && current_L3_im_ex_sum > PHASE_ACTIVE_CURRENT_THRESHOLD)
                                         || (util.hasValue(current_L3_im_ex_diff) && Math.abs(current_L3_im_ex_diff) > PHASE_ACTIVE_CURRENT_THRESHOLD)) {
                                         phases[2] = "a";
                                     }
