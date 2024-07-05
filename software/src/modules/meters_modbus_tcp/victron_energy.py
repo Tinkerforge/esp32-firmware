@@ -50,11 +50,6 @@ specs = [
                 'start_address': 822,
                 'value_type': 'S16',
             },
-            {
-                'name': 'Grid L1+L2+L3 [W]',
-                'value_id': 'PowerActiveLSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
-            },
         ],
     },
     {

@@ -78,6 +78,19 @@ static void filter_sign2sign(const Meters::value_combiner_filter_data *filter_da
     }
 }
 
+// Takes three phase values and will calculate their phase sum value.
+static void filter_phase2sum(const Meters::value_combiner_filter_data *filter_data, size_t base_values_length, const float *base_values, float *extra_values)
+{
+    const uint8_t *input_pos = filter_data->input_pos;
+    const size_t output_pos = filter_data->output_pos - base_values_length;
+
+    float l1 = get_value_from_concat_values(input_pos[0], base_values_length, base_values, extra_values);
+    float l2 = get_value_from_concat_values(input_pos[1], base_values_length, base_values, extra_values);
+    float l3 = get_value_from_concat_values(input_pos[2], base_values_length, base_values, extra_values);
+
+    extra_values[output_pos] = l1 + l2 + l3;
+}
+
 // Filters will be run in array order
 static const Meters::value_combiner_filter value_combiner_filters[] = {
     {
@@ -129,6 +142,18 @@ static const Meters::value_combiner_filter value_combiner_filters[] = {
             MeterValueID::CurrentL1ImExDiff,
             MeterValueID::CurrentL2ImExDiff,
             MeterValueID::CurrentL3ImExDiff,
+        },
+    },
+    {
+        &filter_phase2sum,
+        "Phase sum from phases",
+        {
+            MeterValueID::PowerActiveL1ImExDiff,
+            MeterValueID::PowerActiveL2ImExDiff,
+            MeterValueID::PowerActiveL3ImExDiff,
+        },
+        {
+            MeterValueID::PowerActiveLSumImExDiff,
         },
     },
 };

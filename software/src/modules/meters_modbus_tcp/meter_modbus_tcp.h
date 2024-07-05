@@ -91,7 +91,6 @@ private:
     bool is_sungrow_grid_meter() const;
     bool is_sungrow_battery_meter() const;
     bool is_victron_energy_gx_inverter_meter() const;
-    bool is_victron_energy_gx_grid_meter() const;
     bool is_victron_energy_gx_load_meter() const;
     bool is_deye_hybrid_inverter_battery_meter() const;
 
@@ -127,9 +126,6 @@ private:
     float victron_energy_gx_ac_coupled_pv_on_output_l1_power;
     float victron_energy_gx_ac_coupled_pv_on_output_l2_power;
     float victron_energy_gx_ac_coupled_pv_on_output_l3_power;
-    float victron_energy_gx_grid_l1_power;
-    float victron_energy_gx_grid_l2_power;
-    float victron_energy_gx_grid_l3_power;
     float victron_energy_gx_ac_consumption_l1_power;
     float victron_energy_gx_ac_consumption_l2_power;
     float victron_energy_gx_ac_consumption_l3_power;

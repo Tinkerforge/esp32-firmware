@@ -44,9 +44,6 @@
 #define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L1_ADDRESS 808u
 #define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L2_ADDRESS 809u
 #define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L3_ADDRESS 810u
-#define VICTRON_ENERGY_GX_GRID_L1_ADDRESS                    820u
-#define VICTRON_ENERGY_GX_GRID_L2_ADDRESS                    821u
-#define VICTRON_ENERGY_GX_GRID_L3_ADDRESS                    822u
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L1_ADDRESS          817u
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L2_ADDRESS          818u
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS          819u
@@ -589,12 +586,6 @@ bool MeterModbusTCP::is_victron_energy_gx_inverter_meter() const
         && victron_energy_gx_virtual_meter == VictronEnergyGXVirtualMeter::Inverter;
 }
 
-bool MeterModbusTCP::is_victron_energy_gx_grid_meter() const
-{
-    return table_id == MeterModbusTCPTableID::VictronEnergyGX
-        && victron_energy_gx_virtual_meter == VictronEnergyGXVirtualMeter::Grid;
-}
-
 bool MeterModbusTCP::is_victron_energy_gx_load_meter() const
 {
     return table_id == MeterModbusTCPTableID::VictronEnergyGX
@@ -956,23 +947,6 @@ void MeterModbusTCP::read_done_callback()
                         + victron_energy_gx_ac_coupled_pv_on_output_l3_power;
 
             meters.update_value(slot, table->index[read_index + 1], -power);
-        }
-    }
-    else if (is_victron_energy_gx_grid_meter()) {
-        if (register_start_address == VICTRON_ENERGY_GX_GRID_L1_ADDRESS) {
-            victron_energy_gx_grid_l1_power = value;
-        }
-        else if (register_start_address == VICTRON_ENERGY_GX_GRID_L2_ADDRESS) {
-            victron_energy_gx_grid_l2_power = value;
-        }
-        else if (register_start_address == VICTRON_ENERGY_GX_GRID_L3_ADDRESS) {
-            victron_energy_gx_grid_l3_power = value;
-
-            float power = victron_energy_gx_grid_l1_power
-                        + victron_energy_gx_grid_l2_power
-                        + victron_energy_gx_grid_l3_power;
-
-            meters.update_value(slot, table->index[read_index + 1], power);
         }
     }
     else if (is_victron_energy_gx_load_meter()) {
