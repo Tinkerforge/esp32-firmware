@@ -32,7 +32,7 @@ let x = {
             "virtual_meter_battery": "Battery",
             "virtual_meter_load": "Load",
             "device_address": "Device address",
-            "device_address_muted": /*SFN*/(port: number) => "typically " + port/*NF*/,
+            "device_address_muted": /*SFN*/(device_address: number) => "typically " + device_address/*NF*/,
             "shelly_pro_3em_device_profile": "Device profile",
             "shelly_pro_3em_device_profile_triphase": "Triphase",
             "shelly_pro_3em_device_profile_monophase": "Monophase",
