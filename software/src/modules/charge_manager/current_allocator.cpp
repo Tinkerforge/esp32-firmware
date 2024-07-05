@@ -500,7 +500,7 @@ static bool can_activate(const Cost new_cost, const Cost new_enable_cost, const 
     return true;
 }
 
-static void get_enable_cost(const ChargerState *state, bool activate_3p, Cost *minimum, Cost *enable, const CurrentAllocatorConfig *cfg) {
+static int get_enable_cost(const ChargerState *state, bool activate_3p, Cost *minimum, Cost *enable, const CurrentAllocatorConfig *cfg) {
     auto min_1p = cfg->minimum_current_1p;
     auto min_3p = cfg->minimum_current_3p;
 
@@ -510,14 +510,19 @@ static void get_enable_cost(const ChargerState *state, bool activate_3p, Cost *m
 
     Cost new_cost;
     Cost new_enable_cost;
+    int enable_current;
 
     if (activate_3p) {
+        enable_current = ena_3p;
         new_cost = Cost{3 * min_3p, min_3p, min_3p, min_3p};
         new_enable_cost = Cost{3 * ena_3p, ena_3p, ena_3p, ena_3p};
     } else if (state->phase_rotation == PhaseRotation::Unknown) {
+        enable_current = ena_1p;
         new_cost = Cost{min_1p, min_1p, min_1p, min_1p};
         new_enable_cost = Cost{ena_1p, ena_1p, ena_1p, ena_1p};
     } else {
+        enable_current = ena_1p;
+
         auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
 
         new_cost.pv += min_1p;
@@ -531,6 +536,8 @@ static void get_enable_cost(const ChargerState *state, bool activate_3p, Cost *m
         *minimum = new_cost;
     if (enable != nullptr)
         *enable = new_enable_cost;
+
+    return enable_current;
 }
 
 static bool try_activate(const ChargerState *state, bool activate_3p, bool have_active_chargers, Cost *spent, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg,const CurrentAllocatorState *ca_state) {
@@ -753,8 +760,8 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         // Don't allocate more than the enable current to a charger that does not charge.
         if (!state->is_charging) {
             Cost enable_cost;
-            get_enable_cost(state, allocated_phases == 3, nullptr, &enable_cost, cfg);
-            current = std::min(current, std::max(0, enable_cost.l1 - allocated_current));
+            auto enable_current = get_enable_cost(state, allocated_phases == 3, nullptr, &enable_cost, cfg);
+            current = std::min(current, std::max(0, enable_current - allocated_current));
         }
 
         current = std::min(current, current_capacity(limits, state, allocated_current, allocated_phases));
@@ -857,21 +864,20 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         bool activate_3p = is_fixed_3p || is_unknown_rot_switchable;
 
         Cost enable_cost;
-        get_enable_cost(state, activate_3p, nullptr, &enable_cost, cfg);
+        auto enable_current = get_enable_cost(state, activate_3p, nullptr, &enable_cost, cfg);
 
         if (cost_exceeds_limits(enable_cost, limits, 9)) {
             if (!is_unknown_rot_switchable)
                 continue;
             // Retry enabling unknown_rot_switchable charger with one phase only
             activate_3p = false;
-            get_enable_cost(state, activate_3p, nullptr, &enable_cost, cfg);
+            enable_current = get_enable_cost(state, activate_3p, nullptr, &enable_cost, cfg);
             if (cost_exceeds_limits(enable_cost, limits, 9))
                 continue;
         }
 
         phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
-        // This assumes that every enable cost is the same on all phases.
-        current_allocation[idx_array[i]] = enable_cost.l1;
+        current_allocation[idx_array[i]] = enable_current;
         //calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
         return;
     }
