@@ -142,7 +142,7 @@ static const char *pre_reboot_message = "Pre-reboot stage lasted longer than fiv
 
 #if !MODULE_WATCHDOG_AVAILABLE()
 
-#define PRE_REBOOT_STACK_SIZE 512
+#define PRE_REBOOT_STACK_SIZE 768
 
 static StaticTask_t pre_reboot_task_buffer;
 static StackType_t pre_reboot_stack[PRE_REBOOT_STACK_SIZE];
