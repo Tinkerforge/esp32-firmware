@@ -18,6 +18,7 @@ if 'software' not in sys.modules:
 
 from software import util
 from collections import namedtuple
+import tinkerforge_util as tfutil
 
 ModelSpec = namedtuple('ModelSpec', 'model_name display_name_en display_name_de model_id is_meter_like is_supported')
 
@@ -175,7 +176,7 @@ with open('sun_spec_model_id.cpp', 'w', encoding='utf-8') as f:
     f.write(f'const size_t sun_spec_model_specs_length = {len(model_specs)};\n')
 
 for lang in translation_values:
-    util.specialize_template(f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx.template', f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx', {
+    tfutil.specialize_template(f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx.template', f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx', {
         '{{{models}}}': ',\n            '.join(translation_values[lang]),
     })
 

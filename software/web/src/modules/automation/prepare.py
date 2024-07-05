@@ -18,6 +18,7 @@ if 'software' not in sys.modules:
     create_software_module()
 
 from software import util
+import tinkerforge_util as tfutil
 
 imports = []
 already_imported = set({})
@@ -47,13 +48,13 @@ for plugin in util.find_frontend_plugins('Automation', 'Action'):
     for interface_name in plugin.interface_names:
         actions.append('{0}_action.{1}'.format(plugin.module_name, interface_name))
 
-util.specialize_template("api.ts.template", "api.ts", {
+tfutil.specialize_template("api.ts.template", "api.ts", {
     "{{{imports}}}": '\n'.join(imports),
     "{{{triggers}}}": ('\n    | ' if len(triggers) > 0 else '') + '\n    | '.join(triggers),
     "{{{actions}}}": ('\n    | ' if len(actions) > 0 else '') + '\n    | '.join(actions),
 })
 
-util.specialize_template("plugins.tsx.template", "plugins.tsx", {
+tfutil.specialize_template("plugins.tsx.template", "plugins.tsx", {
     "{{{imports}}}": '\n'.join(imports),
     "{{{inits}}}": '\n    '.join(inits),
 })

@@ -18,6 +18,7 @@ if 'software' not in sys.modules:
 
 from software import util
 import base64
+import tinkerforge_util as tfutil
 
 dir = sys.argv[1]
 
@@ -39,7 +40,7 @@ with open('manifest.json', 'w', encoding='utf-8') as f:
     f.write(content)
 
 
-util.specialize_template('manifest.json', 'manifest.json', {
+tfutil.specialize_template('manifest.json', 'manifest.json', {
     '{{{theme_color}}}': color,
     '{{{small_icon}}}': 'data:image/png;base64, ' + icon_small,
     '{{{big_icon}}}': 'data:image/png;base64, ' +  icon_big

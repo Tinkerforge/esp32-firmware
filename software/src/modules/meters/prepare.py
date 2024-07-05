@@ -20,6 +20,7 @@ if 'software' not in sys.modules:
 
 from software import util
 from collections import OrderedDict
+import tinkerforge_util as tfutil
 
 def escape(s):
     return json.dumps(s)
@@ -267,7 +268,7 @@ with open('../../../web/src/modules/meters/meter_value_id.ts', 'w', encoding='ut
     f.write('}\n')
 
 for lang in translation_values:
-    util.specialize_template(f'../../../web/src/modules/meters/translation_{lang}.tsx.template', f'../../../web/src/modules/meters/translation_{lang}.tsx', {
+    tfutil.specialize_template(f'../../../web/src/modules/meters/translation_{lang}.tsx.template', f'../../../web/src/modules/meters/translation_{lang}.tsx', {
         '{{{values}}}': ',\n            '.join(translation_values[lang]),
         '{{{groups}}}': ',\n            '.join(translation_groups[lang]),
         '{{{fragments}}}': ',\n            '.join(translation_fragments[lang]),

@@ -19,6 +19,7 @@ if 'software' not in sys.modules:
     create_software_module()
 
 from software import util
+import tinkerforge_util as tfutil
 
 with open(os.path.join(software_dir, "web", "src", "build.ts"), "r", encoding='utf-8') as f:
     content = f.read()
@@ -42,17 +43,17 @@ for plugin in util.find_frontend_plugins('Meters', 'Config'):
         configs.append('{0}_config.{1}'.format(plugin.module_name, interface_name))
 
 with open('api.ts', 'w', encoding='utf-8') as f:
-    f.write(util.specialize_template('api.ts.template_header', None, {
+    f.write(tfutil.specialize_template('api.ts.template_header', None, {
         "{{{imports}}}": '\n'.join(imports),
         "{{{configs}}}": ('\n    | ' if len(configs) > 0 else '') + '\n    | '.join(configs),
     }) + '\n')
 
     for i in range(meter_count):
-        f.write(util.specialize_template('api.ts.template_fragment', None, {
+        f.write(tfutil.specialize_template('api.ts.template_fragment', None, {
             "{{{meter_id}}}": str(i),
         }) + '\n')
 
-util.specialize_template("plugins.tsx.template", "plugins.tsx", {
+tfutil.specialize_template("plugins.tsx.template", "plugins.tsx", {
     "{{{imports}}}": '\n'.join(imports),
     "{{{inits}}}": '\n    '.join(inits),
 })

@@ -17,8 +17,8 @@ if 'software' not in sys.modules:
     create_software_module()
 
 from software import util
-
 import re
+import tinkerforge_util as tfutil
 
 debug_log_variables = [
     "power_at_meter_smooth_w",
@@ -50,7 +50,7 @@ formats = 'fmt(' + '),\n        fmt('.join(debug_log_variables) + '),'
 header  = '    "' + ',"\n    "'.join([re.sub(r'[^.]+\.', '', v).replace('[', '_').replace(']', '') for v in debug_log_variables]) + '"'
 data    = ',\n               '.join(filter(None, debug_log_variables))
 
-util.specialize_template("power_manager_debug.cpp.template", "power_manager_debug.cpp", {
+tfutil.specialize_template("power_manager_debug.cpp.template", "power_manager_debug.cpp", {
     "{{{varcount}}}": str(len(debug_log_variables)),
     "{{{formats}}}": formats,
     "{{{header}}}": header,

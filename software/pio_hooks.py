@@ -18,25 +18,12 @@ from pathlib import PurePath
 from base64 import b64encode
 from zlib import crc32
 from collections import namedtuple
+import tinkerforge_util as tfutil
 import util
 from hyphenations import hyphenations, allowed_missing
 
 FrontendComponent = namedtuple('FrontendComponent', 'module component mode')
 FrontendStatusComponent = namedtuple('FrontendStatusComponent', 'module component')
-
-# use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
-class ChangedDirectory(object):
-    def __init__(self, path):
-        self.path = path
-        self.previous_path = None
-
-    def __enter__(self):
-        self.previous_path = os.getcwd()
-        os.chdir(self.path)
-
-    def __exit__(self, type_, value, traceback):
-        os.chdir(self.previous_path)
-
 
 def get_changelog_version(name):
     path = os.path.join('changelog_{}.txt'.format(name))
@@ -268,8 +255,8 @@ def generate_module_dependencies_header(info_path, header_path_prefix, backend_m
                 dependencies_h_content += '#include "config.h"\n'
                 dependencies_h_content += 'extern Config modules;\n'
 
-            util.write_file_if_different(header_path_prefix + 'available.h', available_h_content)
-            util.write_file_if_different(header_path_prefix + 'dependencies.h', dependencies_h_content)
+            tfutil.write_file_if_different(header_path_prefix + 'available.h', available_h_content)
+            tfutil.write_file_if_different(header_path_prefix + 'dependencies.h', dependencies_h_content)
 
     if not has_dependencies:
         try:
@@ -619,7 +606,7 @@ def main():
     build_lines.append('const char *build_info_str(void);')
     build_lines.append('const char *build_filename_str(void);')
     build_lines.append('const char *build_commit_id_str(void);')
-    util.write_file_if_different(os.path.join('src', 'build.h'), '\n'.join(build_lines))
+    tfutil.write_file_if_different(os.path.join('src', 'build.h'), '\n'.join(build_lines))
 
     firmware_basename = '{}_firmware-UNSIGNED{}{}{}_{}_{:x}{}'.format(
         name,
@@ -642,7 +629,7 @@ def main():
     build_lines.append('const char *build_info_str(void) {{ return "git url: {}, git branch: {}, git commit id: {}"; }}'.format(git_url, branch_name, git_commit_id))
     build_lines.append('const char *build_filename_str(void) {{ return "{}"; }}'.format(firmware_basename))
     build_lines.append('const char *build_commit_id_str(void) {{ return "{}"; }}'.format(git_commit_id))
-    util.write_file_if_different(os.path.join('src', 'build.cpp'), '\n'.join(build_lines))
+    tfutil.write_file_if_different(os.path.join('src', 'build.cpp'), '\n'.join(build_lines))
     del build_lines
 
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
@@ -711,7 +698,7 @@ def main():
     for web_build_flag in web_build_flags.split('\n'):
         web_build_lines.append(f'export const {web_build_flag};')
 
-    util.write_file_if_different(os.path.join('web', 'src', 'build.ts'), '\n'.join(web_build_lines))
+    tfutil.write_file_if_different(os.path.join('web', 'src', 'build.ts'), '\n'.join(web_build_lines))
 
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
@@ -720,7 +707,7 @@ def main():
     if nightly:
         backend_modules.append(util.FlavoredName("Debug").get())
 
-    with ChangedDirectory('src'):
+    with tfutil.ChangedDirectory('src'):
         excluded_bindings = [PurePath(x).as_posix() for x in glob.glob('bindings/brick_*') + glob.glob('bindings/bricklet_*')]
 
     excluded_bindings.remove('bindings/bricklet_unknown.h')
@@ -766,7 +753,7 @@ def main():
             environ['PLATFORMIO_METADATA'] = metadata
 
             abs_branding_module = os.path.abspath(branding_module)
-            with ChangedDirectory(mod_path):
+            with tfutil.ChangedDirectory(mod_path):
                 subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
 
     for root, dirs, files in os.walk('src'):
@@ -797,7 +784,7 @@ def main():
     backend_mods_upper = [x.upper for x in backend_modules]
     identifier_backlist = ["system"]
 
-    util.specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
+    tfutil.specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
         '{{{imodule_extern_decls}}}': '\n'.join([f'extern IModule *const {x.under}_imodule;' for x in backend_modules]),
         '{{{imodule_count}}}': str(len(backend_modules)),
         '{{{imodule_vector}}}': '\n    '.join([f'imodules->push_back({x.under}_imodule);' for x in backend_modules]),
@@ -888,7 +875,7 @@ def main():
             environ['PLATFORMIO_METADATA'] = metadata
 
             abs_branding_module = os.path.abspath(branding_module)
-            with ChangedDirectory(mod_path):
+            with tfutil.ChangedDirectory(mod_path):
                 subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
 
         if os.path.exists(os.path.join(mod_path, 'main.ts')) or os.path.exists(os.path.join(mod_path, 'main.tsx')):
@@ -961,7 +948,7 @@ def main():
     translation_data = translation_data.replace('{{{manual_url}}}', manual_url)
     translation_data = translation_data.replace('{{{apidoc_url}}}', apidoc_url)
     translation_data = translation_data.replace('{{{firmware_url}}}', firmware_url)
-    util.write_file_if_different(os.path.join('web', 'src', 'ts', 'translation.json'), translation_data)
+    tfutil.write_file_if_different(os.path.join('web', 'src', 'ts', 'translation.json'), translation_data)
     del translation_data
 
     with open(os.path.join(branding_module, 'favicon.png'), 'rb') as f:
@@ -978,7 +965,7 @@ def main():
         if color.endswith(';'):
             color = color[:-1]
 
-    util.specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
+    tfutil.specialize_template(os.path.join("web", "index.html.template"), os.path.join("web", "src", "index.html"), {
         '{{{favicon}}}': favicon,
         '{{{theme_color}}}': color
     })
@@ -1003,7 +990,7 @@ def main():
             if navbar_group != None:
                 navbar_mapping.append((frontend_component[1].under, f'{navbar_group[1].under}_ref'))
 
-    util.specialize_template(os.path.join("web", "app.tsx.template"), os.path.join("web", "src", "app.tsx"), {
+    tfutil.specialize_template(os.path.join("web", "app.tsx.template"), os.path.join("web", "src", "app.tsx"), {
         '{{{logo_base64}}}': logo_base64,
         '{{{navbar_imports}}}': '\n'.join([f'import {{ {x.component.camel}Navbar }} from "./modules/{x.module.under}/main";' for x in frontend_components if x.mode != 'Close']),
         '{{{navbar}}}': '\n                                    '.join(navbar),
@@ -1016,25 +1003,25 @@ def main():
         '{{{status_refs}}}': '\n    '.join([f'{x.component.under}_ref = createRef();' for x in frontend_status_components]),
     })
 
-    util.specialize_template(os.path.join("web", "main.tsx.template"), os.path.join("web", "src", "main.tsx"), {
+    tfutil.specialize_template(os.path.join("web", "main.tsx.template"), os.path.join("web", "src", "main.tsx"), {
         '{{{module_imports}}}': '\n'.join(['import * as {0} from "./modules/{0}/main";'.format(x) for x in main_ts_entries]),
         '{{{modules}}}': ', '.join([x for x in main_ts_entries]),
         '{{{preact_debug}}}': 'import "preact/debug";' if frontend_debug else ''
     })
 
-    util.specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
+    tfutil.specialize_template(os.path.join("web", "main.scss.template"), os.path.join("web", "src", "main.scss"), {
         '{{{module_pre_imports}}}': '\n'.join(['@import "{0}";'.format(x.replace('\\', '/')) for x in pre_scss_paths]),
         '{{{module_post_imports}}}': '\n'.join(['@import "{0}";'.format(x.replace('\\', '/')) for x in post_scss_paths])
     })
 
-    util.specialize_template(os.path.join("web", "api_defs.ts.template"), os.path.join("web", "src", "ts", "api_defs.ts"), {
+    tfutil.specialize_template(os.path.join("web", "api_defs.ts.template"), os.path.join("web", "src", "ts", "api_defs.ts"), {
         '{{{imports}}}': '\n'.join(api_imports),
         '{{{module_interface}}}': ',\n    '.join('{}: boolean'.format(x.under) for x in backend_modules),
         '{{{config_map_entries}}}': '\n    '.join(api_config_map_entries),
         '{{{api_cache_entries}}}': '\n    '.join(api_cache_entries),
     })
 
-    util.specialize_template(os.path.join("web", "branding.ts.template"), os.path.join("web", "src", "ts", "branding.ts"), {
+    tfutil.specialize_template(os.path.join("web", "branding.ts.template"), os.path.join("web", "src", "ts", "branding.ts"), {
         '{{{logo_base64}}}': logo_base64,
         '{{{branding}}}': branding,
     })
@@ -1106,20 +1093,20 @@ def main():
 
     translation_str += '} as const\n'
 
-    util.specialize_template(os.path.join("web", "translation.tsx.template"), os.path.join("web", "src", "ts", "translation.tsx"), {
+    tfutil.specialize_template(os.path.join("web", "translation.tsx.template"), os.path.join("web", "src", "ts", "translation.tsx"), {
         '{{{translation}}}': translation_str,
     })
 
     # Check translation completeness
     util.log('Checking translation completeness')
 
-    with ChangedDirectory('web'):
+    with tfutil.ChangedDirectory('web'):
         subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"] + [x.under for x in frontend_modules])
 
     # Check translation override completeness
     util.log('Checking translation override completeness')
 
-    with ChangedDirectory('web'):
+    with tfutil.ChangedDirectory('web'):
         subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
 
     # Generate enums
@@ -1249,7 +1236,7 @@ def main():
                 if i == attempts - 1:
                     raise
 
-        with ChangedDirectory('web'):
+        with tfutil.ChangedDirectory('web'):
             npm_version = subprocess.check_output(['npm', '--version'], shell=sys.platform == 'win32', encoding='utf-8').strip()
 
             m = re.fullmatch(r'(\d+)\.\d+\.\d+', npm_version)
@@ -1309,7 +1296,7 @@ def main():
         except FileNotFoundError:
             pass
 
-        with ChangedDirectory('web'):
+        with tfutil.ChangedDirectory('web'):
             try:
                 subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "build.py"] + ([] if not frontend_debug else ['--js-source-map', '--css-source-map', '--no-minify']))
             except subprocess.CalledProcessError as e:

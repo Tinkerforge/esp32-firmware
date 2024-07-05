@@ -20,6 +20,7 @@ if 'software' not in sys.modules:
     create_software_module()
 
 from software import util
+import tinkerforge_util as tfutil
 
 ZONES_DIR = "/usr/share/zoneinfo/"
 
@@ -120,13 +121,13 @@ for name, tz in timezones.items():
 
 generate("global", nested_dict)
 
-util.specialize_template("timezones.c.template", "timezones.c", {
+tfutil.specialize_template("timezones.c.template", "timezones.c", {
     '{{{generated_comment}}}': "/*\n{};{}\n*/".format(installed_db_version, datetime.datetime.utcnow().isoformat()),
     '{{{table_inits}}}': "\n\n".join(inits)
 })
 
 
-util.specialize_template("../../../web/src/modules/ntp/timezones.ts.template", "../../../web/src/modules/ntp/timezones.ts", {
+tfutil.specialize_template("../../../web/src/modules/ntp/timezones.ts.template", "../../../web/src/modules/ntp/timezones.ts", {
     '{{{generated_comment}}}': "/*\n{};{}\n*/".format(installed_db_version, datetime.datetime.utcnow().isoformat()),
     '{{{json}}}': json.dumps(empty_nested_dict, indent=4)
 })

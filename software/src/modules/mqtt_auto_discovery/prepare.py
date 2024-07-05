@@ -17,10 +17,10 @@ if 'software' not in sys.modules:
     create_software_module()
 
 from software import util
-
 from enum import Enum
 from dataclasses import dataclass
 import json
+import tinkerforge_util as tfutil
 
 class DiscoveryType(Enum):
     STATE_ONLY = "STATE_ONLY"
@@ -195,11 +195,11 @@ topics = [topic_template.format(
             )
           for x in entities]
 
-util.specialize_template("mqtt_discovery_topics.cpp.template", "mqtt_discovery_topics.cpp", {
+tfutil.specialize_template("mqtt_discovery_topics.cpp.template", "mqtt_discovery_topics.cpp", {
     "{{{topics}}}": ",\n".join(topics),
     })
 
-util.specialize_template("mqtt_discovery_topics.h.template", "mqtt_discovery_topics.h", {
+tfutil.specialize_template("mqtt_discovery_topics.h.template", "mqtt_discovery_topics.h", {
     "{{{topic_count}}}": str(len(topics)),
     "{{{max_json_len}}}": str(max([x.get_json_len() for x in entities]))
     })
