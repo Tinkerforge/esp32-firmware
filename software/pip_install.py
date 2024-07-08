@@ -1,15 +1,15 @@
 Import("env")
 
 version = '1.1.0'
-needs_install = False
+install = False
 
 try:
     import tinkerforge_util
+
+    if tinkerforge_util.__version__ != version:
+        install = True
 except ImportError:
-    needs_install = True
+    install = True
 
-if tinkerforge_util.__version__ != version:
-    needs_install = True
-
-if needs_install:
+if install:
     env.Execute(f"$PYTHONEXE -m pip install tinkerforge_util=={version}")
