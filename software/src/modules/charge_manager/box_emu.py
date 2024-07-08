@@ -20,20 +20,39 @@ from dataclasses import dataclass, field
     struct cm_command_v1 {
         uint16_t allocated_current;
         /* command_flags
-        bit 6 - control pilot permanently disconnected
-        Other bits must be sent unset and ignored on reception.
+        bit 6    - control pilot permanently disconnected
         */
         uint8_t command_flags;
-        uint8_t padding;
-    } __attribute__((packed));
+        uint8_t _padding;
+    };
+
+    struct cm_command_v2 {
+        uint16_t _padding_0;
+        uint8_t _padding_1;
+        int8_t allocated_phases; // Was padding in CM_COMMAND_VERSION 1
+    };
 
     struct cm_command_packet {
         cm_packet_header header;
-        cm_command_v1 v1;
-    } __attribute__((packed));
+        union {
+            cm_command_v1 v1;
+            cm_command_v2 v2;
+        };
+    };
 
     struct cm_state_v1 {
-        uint32_t feature_flags; /* unused */
+        /* feature_flags
+        bit 7 - has phase_switch
+        bit 6 - has cp_disconnect
+        bit 5 - has evse
+        bit 4 - has nfc
+        bit 3 - has meter_all_values
+        bit 2 - has meter_phases
+        bit 1 - has meter
+        bit 0 - has button_configuration
+        Other bits must be sent unset and ignored on reception.
+        */
+        uint32_t feature_flags;
         uint32_t esp32_uid;
         uint32_t evse_uptime;
         uint32_t charging_time;
@@ -66,21 +85,32 @@ from dataclasses import dataclass, field
         uint32_t time_since_state_change;
     } __attribute__((packed));
 
+    struct cm_state_v3 {
+        // bit 2: can switch phases now
+        // bit 0-1: phases "connected"
+        uint8_t phases;
+        uint8_t padding[3];
+    };
+
     struct cm_state_packet {
         cm_packet_header header;
         cm_state_v1 v1;
         cm_state_v2 v2;
+        cm_state_v3 v3;
     } __attribute__((packed));
 """
 
 header_format = "<HHHBx"
-command_format = header_format + "HBx"
-COMMAND_VERSION = 1
-state_format = header_format + "IIIIHHBBBBffffffffffff" + "I"
-STATE_VERSION = 2
+command_format = header_format + "HBb"
+COMMAND_VERSION = 2
+state_format = header_format + "IIIIHHBBBBffffffffffff" + "I" + "Bxxx"
+STATE_VERSION = 3
 
 command_len = struct.calcsize(command_format)
 state_len = struct.calcsize(state_format)
+
+assert(command_len == 12)
+assert(state_len == 88)
 
 @dataclass
 class Charger:
@@ -113,6 +143,7 @@ class Charger:
     # API if not auto_mode, automatic otherwise
     iec61851_state: int = 0
     allowed_charging_current: int = 0
+    allocated_phases: int = 0
     cp_disconnect: bool = False
     charger_state: int = 0
 
@@ -126,6 +157,7 @@ class Charger:
     req_seq_num: int = 0
     req_version: int = 0
     req_allocated_current: int = 0
+    req_allocated_phases: int = 0
     req_should_disconnect_cp: bool = False
 
     # Internal
@@ -145,6 +177,7 @@ class Charger:
         if self.auto_mode:
             # Apply last seen request info
             self.allowed_charging_current = self.req_allocated_current
+            self.allocated_phases = self.req_allocated_phases
             self.cp_disconnect = self.req_should_disconnect_cp
 
             if self.req_allocated_current == 0 and self.iec61851_state == 2:
@@ -192,7 +225,7 @@ class Charger:
                         state_len,
                         self.next_seq_num,
                         self.state_version,
-                        0x7F,  # features
+                        0xFF,  # features
                         self.uid,
                         self.uptime,
                         self.charging_time,
@@ -208,7 +241,8 @@ class Charger:
                         sum(u * i for u, i in zip(self.line_voltages, self.line_currents)), # power total
                         self.energy_rel,  # energy_rel
                         self.energy_abs,  # energy_abs
-                        int(1000 * (time.time() - self.time_since_state_change))
+                        int(1000 * (time.time() - self.time_since_state_change)),
+                        self.allocated_phases
         )
 
         if not self.seq_num_blocked:
@@ -225,7 +259,7 @@ class Charger:
         if len(data) != command_len:
             return
 
-        magic, length, seq_num, version, allocated_current, command_flags = struct.unpack(command_format, data)
+        magic, length, seq_num, version, allocated_current, command_flags, allocated_phases = struct.unpack(command_format, data)
 
         if version != self.expected_command_version:
             return
@@ -234,6 +268,7 @@ class Charger:
         self.req_version = version
         self.req_allocated_current = allocated_current
         self.req_should_disconnect_cp = ((command_flags & 0x40) >> 6) == 1
+        self.req_allocated_phases = allocated_phases
 
 if __name__ == "__main__":
     from PyQt5.QtWidgets import *
@@ -300,6 +335,9 @@ if __name__ == "__main__":
 
             self.req_allocated_current = QLabel("no packet received yet")
             self.addRow("Req Allocated current", self.req_allocated_current)
+
+            self.req_allocated_phases = QLabel("no packet received yet")
+            self.addRow("Req Allocated phases", self.req_allocated_phases)
 
             self.req_cp_disconnect = QLabel("no packet received yet")
             self.addRow("Req CP disconnect", self.req_cp_disconnect)
@@ -400,6 +438,7 @@ if __name__ == "__main__":
             self.req_seq_num.setText(str(self.state.req_seq_num))
             self.req_version.setText(str(self.state.req_version))
             self.req_allocated_current.setText("{:2.3f} A".format(self.state.req_allocated_current / 1000.0))
+            self.req_allocated_phases.setText(str(self.state.req_allocated_phases))
 
             self.req_cp_disconnect.setText(str(self.state.req_should_disconnect_cp))
             self.resp_iec61851_state.setCurrentIndex(self.state.iec61851_state)
