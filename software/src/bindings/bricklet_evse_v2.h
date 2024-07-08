@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-03-22.      *
+ * This file was automatically generated on 2024-07-08.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -584,12 +584,12 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_SHUTDOWN_INPUT_4300_WATT_ON_OPEN 3
+#define TF_EVSE_V2_SHUTDOWN_INPUT_4200_WATT_ON_OPEN 3
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_SHUTDOWN_INPUT_4300_WATT_ON_CLOSE 4
+#define TF_EVSE_V2_SHUTDOWN_INPUT_4200_WATT_ON_CLOSE 4
 
 /**
  * \ingroup TF_EVSEV2
