@@ -1,27 +1,13 @@
-import os
 import sys
 import re
-import importlib.util
-import importlib.machinery
 from pathlib import PurePath
-
-software_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
-
-def create_software_module():
-    software_spec = importlib.util.spec_from_file_location('software', os.path.join(software_dir, '__init__.py'))
-    software_module = importlib.util.module_from_spec(software_spec)
-
-    software_spec.loader.exec_module(software_module)
-
-    sys.modules['software'] = software_module
-
-if 'software' not in sys.modules:
-    create_software_module()
-
-from software import util
 import tinkerforge_util as tfutil
 
-with open(os.path.join(software_dir, "web", "src", "build.ts"), "r", encoding='utf-8') as f:
+tfutil.create_parent_module(__file__, 'software')
+
+from software import util
+
+with open('../../build.ts', 'r', encoding='utf-8') as f:
     content = f.read()
     match = re.search(r"export const METERS_SLOTS = (\d+);", content)
     if match is None:

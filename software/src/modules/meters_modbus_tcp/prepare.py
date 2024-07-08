@@ -1,22 +1,4 @@
-import os
-import sys
-import importlib.util
-import importlib.machinery
-
-software_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-
-def create_software_module():
-    software_spec = importlib.util.spec_from_file_location('software', os.path.join(software_dir, '__init__.py'))
-    software_module = importlib.util.module_from_spec(software_spec)
-
-    software_spec.loader.exec_module(software_module)
-
-    sys.modules['software'] = software_module
-
-if 'software' not in sys.modules:
-    create_software_module()
-
-from software import util
+import tinkerforge_util as tfutil
 import sungrow
 import solarmax
 import victron_energy
@@ -24,6 +6,9 @@ import deye
 import alpha_ess
 import shelly
 
+tfutil.create_parent_module(__file__, 'software')
+
+from software import util
 
 def make_modbus_value_type(register_count, is_signed, is_float, register_order_is_le):
     assert 1 <= register_count <= 4, register_count
