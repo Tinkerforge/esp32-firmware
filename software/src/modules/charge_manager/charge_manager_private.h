@@ -89,7 +89,6 @@ struct ChargerState {
 
     micros_t last_wakeup;
 };
-};
 
 struct ChargerAllocationState {
     micros_t last_sent_config;
