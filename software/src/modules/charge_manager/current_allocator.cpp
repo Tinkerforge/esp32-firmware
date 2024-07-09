@@ -161,7 +161,7 @@ Cost get_cost(int32_t current_to_allocate,
     return cost;
 }
 
-// Checks phase-specific limits.
+// Checks stage-specific limits.
 bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage)
 {
     bool phases_exceeded = false;
@@ -362,7 +362,6 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
 
         wnd_max[phase] += current;
         wnd_max.pv += current;
-        //PRINT_COST(wnd_max);
     }
 
     ca_state->control_window_min = wnd_min;
