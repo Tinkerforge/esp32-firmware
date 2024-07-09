@@ -466,20 +466,40 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 }
 
 // A charger can be activated if
-// - wnd_max is less than the raw and filtered limit of one phase and activating the charger moves wnd_max closer to the limit (i.e. its cost on this phase is positive)
-// - the enable cost does not exceed the raw or filtered limits on any phase or PV
-
-static bool can_activate(const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch=false) {
-    bool improves_pv = new_cost.pv > 0 && wnd_max.pv < limits->min.pv;
+// - wnd_max.pv is less than the min PV limit (if CHECK_IMPROVEMENT or CHECK_IMPROVEMENT_ALL_PHASE is set for the PV phase)
+// - wnd_max is less than the min limit of
+//      - at least one phase that the charger is active on (if CHECK_IMPROVEMENT is set for that phase)
+//      - or all phases that the charger is active on (if CHECK_IMPROVEMENT_ALL_PHASE is set for that phase)
+//   and activating the charger moves wnd_max closer to the limit (i.e. its cost on this phase is positive)
+// - the
+//      - enable cost (if CHECK_MIN_WINDOW_ENABLE is set for that phase)
+//      - cost  (if CHECK_MIN_WINDOW_MIN is set for that phase)
+//   does not exceed the min on any phase or PV that the charger is active on
+static constexpr int CHECK_MIN_WINDOW_MIN = 1;
+static constexpr int CHECK_MIN_WINDOW_ENABLE = 2;
+static constexpr int CHECK_IMPROVEMENT = 4;
+static constexpr int CHECK_IMPROVEMENT_ALL_PHASE = 8;
+static bool can_activate(const Cost check_phase, const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch=false) {
+    bool improves_pv = (check_phase.pv & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || (new_cost.pv > 0 && wnd_max.pv < limits->min.pv);
     if (!improves_pv)
         return false;
 
+    bool check_all_phases = ((check_phase.l1 | check_phase.l2 | check_phase.l3) & CHECK_IMPROVEMENT_ALL_PHASE) != 0;
     bool improves_any_phase = false;
+    bool improves_all_phases = true;
 
     for (size_t p = 1; p < 4; ++p) {
-        improves_any_phase |= new_cost[p] > 0 && wnd_max[p] < limits->min[p];
+        if ((check_phase[p] & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || new_cost[p] <= 0)
+            continue;
+
+        // More efficient than |= or &= on the Xtensa.
+        if (wnd_max[p] < limits->min[p]) {
+            improves_any_phase = true;
+        } else {
+            improves_all_phases = false;
+        }
     }
-    if (!improves_any_phase) {
+    if ((check_all_phases && !improves_all_phases) || (!check_all_phases && !improves_any_phase)) {
         // PV is already checked above.
         bool enable = is_unknown_rotated_1p_3p_switch;
         if (!enable)
@@ -487,13 +507,14 @@ static bool can_activate(const Cost new_cost, const Cost new_enable_cost, const 
     }
 
     for (size_t p = 0; p < 4; ++p) {
-        if (new_cost[p] <= 0)
+        if ((check_phase[p] & (CHECK_MIN_WINDOW_MIN | CHECK_MIN_WINDOW_ENABLE)) == 0 || new_cost[p] <= 0)
             continue;
 
-        // TODO pass to this function: bool is_1p_3p_switch
-        // if true, use new_cost if required == ena_1p
-        auto required = wnd_min[p] * cfg->enable_current_factor;
-        required += new_enable_cost[p];
+        auto required = 0;
+        if ((check_phase[p] & CHECK_MIN_WINDOW_ENABLE) != 0)
+            required = wnd_min[p] * cfg->enable_current_factor + new_enable_cost[p];
+        else if ((check_phase[p] & CHECK_MIN_WINDOW_MIN) != 0)
+            required = wnd_min[p] + new_cost[p];
 
         if (limits->min[p] < required)
             return false;
@@ -552,7 +573,16 @@ static bool try_activate(const ChargerState *state, bool activate_3p, bool have_
     get_enable_cost(state, activate_3p, &new_cost, &new_enable_cost, cfg);
 
     // If there are no chargers active, don't require the enable cost.
-    bool result = can_activate(new_cost, have_active_chargers ? new_enable_cost : new_cost, wnd_min, wnd_max, limits, cfg);
+    auto check_min = have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN;
+
+    Cost check_phase{
+        CHECK_IMPROVEMENT | check_min,
+        CHECK_IMPROVEMENT | check_min,
+        CHECK_IMPROVEMENT | check_min,
+        CHECK_IMPROVEMENT | check_min
+    };
+
+    bool result = can_activate(check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg);
     if (result && spent != nullptr)
         *spent = new_enable_cost;
     return result;
@@ -628,6 +658,11 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     int matched = 0;
 
+    // If there is exactly one charger active, the window minimum should be the charger's 1p minimum current,
+    // or it is already active with three phases in which case this stage will do nothing.
+    bool have_active_chargers = ca_state->control_window_min.pv != min_1p;
+    auto check_min = have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN;
+
     filter(allocated_phases == 1 && state->phase_switch_supported);
 
     sort(0,
@@ -640,19 +675,28 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         Cost new_cost = Cost{3 * min_3p - min_1p, min_3p, min_3p, min_3p};
         Cost new_enable_cost = Cost{3 * ena_3p - ena_1p, ena_3p, ena_3p, ena_3p};
 
+        // P1 is already active
+        auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
+
         if (state->phase_rotation == PhaseRotation::Unknown) {
             for (size_t p = 1; p < 4; ++p) {
                 new_cost[p] -= min_1p;
                 new_enable_cost[p] -= min_1p;
             }
         } else {
-            auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-            // P1 is already active
             new_cost[phase] -= min_1p;
             new_enable_cost[phase] -= ena_1p;
         }
 
-        if (!can_activate(new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg))
+        // Only switch from one to three phase if there is still current available on **all** phases.
+        Cost check_phase{
+            CHECK_IMPROVEMENT_ALL_PHASE | check_min,
+            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L1 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | check_min,
+            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L2 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | check_min,
+            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L3 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | check_min
+        };
+
+        if (!can_activate(check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg))
             continue;
 
         phase_allocation[idx_array[i]] = 3;
