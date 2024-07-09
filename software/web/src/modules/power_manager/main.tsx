@@ -49,6 +49,30 @@ export function PVExcessSettingsNavbar() {
 
 type StringStringTuple = [string, string];
 
+export function get_noninternal_meter_slots() {
+    let meter_slots: StringStringTuple[] = [];
+
+    for (let i = 0; i < METERS_SLOTS; i++) {
+        let name;
+
+        let cfg = API.get_unchecked(`meters/${i}/config`) as API.getType["meters/0/config"]
+        if (cfg[0] == MeterClassID.None) {
+            name = null;
+        } else if (cfg[0] as any == MeterClassID.RS485Bricklet || cfg[0] as any == MeterClassID.EVSEV2) {
+            // Disallow selecting the charger-internal meter for PM
+            name = null;
+        } else {
+            name = cfg[1]?.display_name;
+        }
+
+        if (name !== null) {
+            meter_slots.push([i.toString(), name]);
+        }
+    }
+
+    return meter_slots;
+}
+
 export class PowerManagerStatus extends Component {
     change_mode(mode: number) {
         API.save('power_manager/charge_mode', {"mode": mode}, __("power_manager.script.mode_change_failed"));
@@ -297,18 +321,6 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         return super.getIsModified(t);
     }
 
-    get_meter_name(meter_slot: number) {
-        let cfg = API.get_unchecked(`meters/${meter_slot}/config`) as API.getType["meters/0/config"]
-        if (cfg[0] == MeterClassID.None)
-            return null;
-
-        // Disallow selecting the charger-internal meter for PM
-        if (cfg[0] as any == MeterClassID.RS485Bricklet || cfg[0] as any == MeterClassID.EVSEV2)
-            return null;
-
-        return cfg[1]?.display_name;
-    }
-
     render(props: {}, s: Readonly<API.getType['power_manager/config'] & API.getType['power_manager/debug_config']>) {
         if (!util.render_allowed())
             return <SubPage name="pv_excess_settings" />;
@@ -320,13 +332,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         mode_list.push([s.excess_charging_enable ? "3" : "3-disabled", __("power_manager.status.mode_min_pv")]);
         mode_list.push(["0", __("power_manager.status.mode_fast")]);
 
-        let meter_slots: StringStringTuple[] = [];
-        for (let i = 0; i < METERS_SLOTS; i++) {
-            let name = this.get_meter_name(i);
-            if (name !== null) {
-                meter_slots.push([i.toString(), name]);
-            }
-        }
+        let meter_slots = get_noninternal_meter_slots();
 
         let cm_config = API.get_unchecked("charge_manager/config");
         let cm_ok = cm_config?.enable_charge_manager && cm_config?.chargers.length >= 1;
