@@ -311,9 +311,9 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
             continue;
 
         wnd_max += Cost{0,
-                        state->supported_current,
-                        state->supported_current,
-                        state->supported_current};
+                        state->requested_current,
+                        state->requested_current,
+                        state->requested_current};
 
         // It is sufficient to check one phase here, wnd_max should have the same value on every phase because only three phase chargers are included yet
         if (wnd_max.l1 > current_avail_for_3p) {
@@ -324,7 +324,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
             break;
         }
 
-        wnd_max.pv += state->supported_current * alloc_phases;
+        wnd_max.pv += state->requested_current * alloc_phases;
     }
 
     // Calculate maximum window of 1p chargers with known rotation.
@@ -337,7 +337,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
 
         // 1p unknown rotated chargers
 
-        auto current = (int32_t)state->supported_current;
+        auto current = (int32_t)state->requested_current;
         for (size_t p = 1; p < 4; ++p) {
             auto avail_on_phase = limits->raw[p] - wnd_max[p];
             current = std::min(current, avail_on_phase);
@@ -358,7 +358,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
             continue;
 
         const auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-        const auto current = std::min(limits->raw[phase] - wnd_max[phase], (int)state->supported_current);
+        const auto current = std::min(limits->raw[phase] - wnd_max[phase], (int)state->requested_current);
 
         wnd_max[phase] += current;
         wnd_max.pv += current;
@@ -778,11 +778,15 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
 // The current capacity of a charger is the maximum amount of current that can be allocated to the charger additionally to the already allocated current on the allocated phases.
 static int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases) {
+    auto requested_current = state->requested_current;
+
+    // TODO: add margin again if exactly one charger is active and requested_current > 6000. Also add in calculate_window?
+
     if (allocated_phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
-        return std::min({std::max(state->supported_current - allocated_current, 0), limits->raw.l1, limits->raw.l2, limits->raw.l3});
+        return std::min({std::max(requested_current - allocated_current, 0), limits->raw.l1, limits->raw.l2, limits->raw.l3});
     }
 
-    auto capacity = std::max(state->supported_current - allocated_current, 0);
+    auto capacity = std::max(requested_current - allocated_current, 0);
     for (size_t i = (size_t)ChargerPhase::P1; i < (size_t)ChargerPhase::P1 + allocated_phases; ++i) {
         auto phase = get_phase(state->phase_rotation, (ChargerPhase)i);
         capacity = std::min(capacity, limits->raw[phase]);
@@ -1044,7 +1048,7 @@ int allocate_current(
 
     ca_state->global_hysteresis_elapsed = ca_state->last_hysteresis_reset == 0_usec || deadline_elapsed(ca_state->last_hysteresis_reset + GLOBAL_HYSTERESIS);
 
-    logger.printfln("Hysteresis %selapsed. Last hyst reset %lld. Now %lld", ca_state->global_hysteresis_elapsed ? "" : "not ", (int64_t)(ca_state->last_hysteresis_reset / 1000000_usec), (int64_t)(now_us() / 1000000_usec));
+    //logger.printfln("Hysteresis %selapsed. Last hyst reset %lld. Now %lld", ca_state->global_hysteresis_elapsed ? "" : "not ", (int64_t)(ca_state->last_hysteresis_reset / 1000000_usec), (int64_t)(now_us() / 1000000_usec));
 
     // Update control pilot disconnect
     {
