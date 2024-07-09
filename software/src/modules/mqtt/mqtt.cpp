@@ -517,20 +517,26 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                     bool was_connected = mqtt->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::NotConnected;
 
                     if (eh.error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
-                        if (was_connected && eh.esp_tls_last_esp_err != ESP_OK) {
-                            const char *e = esp_err_to_name_r(eh.esp_tls_last_esp_err, err_buf, ARRAY_SIZE(err_buf));
-                            logger.printfln("Transport error: %s (esp_tls_last_esp_err)", e);
-                            mqtt->state.get("last_error")->updateInt(eh.esp_tls_last_esp_err);
-                        }
-                        if (was_connected && eh.esp_tls_stack_err != 0) {
-                            const char *e = esp_err_to_name_r(eh.esp_tls_stack_err, err_buf, ARRAY_SIZE(err_buf));
-                            logger.printfln("Transport error: %s (esp_tls_stack_err)", e);
-                            mqtt->state.get("last_error")->updateInt(eh.esp_tls_stack_err);
-                        }
-                        if (eh.esp_transport_sock_errno != 0) {
+                        if (was_connected) {
+                            if (eh.esp_tls_last_esp_err != ESP_OK) {
+                                const char *e = esp_err_to_name_r(eh.esp_tls_last_esp_err, err_buf, ARRAY_SIZE(err_buf));
+                                logger.printfln("Transport error: %s (esp_tls_last_esp_err)", e);
+                                mqtt->state.get("last_error")->updateInt(eh.esp_tls_last_esp_err);
+                            } else if (eh.esp_tls_stack_err != 0) {
+                                const char *e = esp_err_to_name_r(eh.esp_tls_stack_err, err_buf, ARRAY_SIZE(err_buf));
+                                logger.printfln("Transport error: %s (esp_tls_stack_err)", e);
+                                mqtt->state.get("last_error")->updateInt(eh.esp_tls_stack_err);
+                            } else {
+                                logger.printfln("Unknown transport error after initial connect");
+                                mqtt->state.get("last_error")->updateInt(0xFFFFFFFD);
+                            }
+                        } else if (eh.esp_transport_sock_errno != 0) {
                             const char *e = strerror(eh.esp_transport_sock_errno);
                             logger.printfln("Transport error: %s", e);
                             mqtt->state.get("last_error")->updateInt(eh.esp_transport_sock_errno);
+                        } else {
+                            logger.printfln("Unknown transport error");
+                            mqtt->state.get("last_error")->updateInt(0xFFFFFFFE);
                         }
                     } else if (eh.error_type == MQTT_ERROR_TYPE_CONNECTION_REFUSED) {
                         logger.printfln("Connection refused: %s", get_mqtt_error(eh.connect_return_code));
