@@ -44,11 +44,15 @@
 // Don't reset hysteresis when stopping chargers:
 // Stopping and immediately starting again is fine, see phase switch.
 static constexpr micros_t GLOBAL_HYSTERESIS = 3_usec * 60_usec * 1000_usec * 1000_usec;
+
 // Only consider charger for rotation if it has charged at least this amount of energy.
 static constexpr int32_t ALLOCATED_ENERGY_ROTATION_THRESHOLD = 5; /*kWh*/
+
 // Amount of time a charger should stay activated before considering it for rotation or phase switch.
 static constexpr micros_t MINIMUM_ACTIVE_TIME = 15_usec * 60_usec * 1000_usec * 1000_usec;
 
+// Allow charging for this time to attempt to wake-up a "full" vehicle,
+// i.e. one that triggered a C -> B2 transition and/or waited in B2 for too long
 static constexpr micros_t WAKEUP_TIME = 3_usec * 60_usec * 1000_usec * 1000_usec;
 
 static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
@@ -122,6 +126,10 @@ GridPhase get_phase(PhaseRotation rot, ChargerPhase phase) {
     return (GridPhase)(((int)rot >> (6 - 2 * (int)phase)) & 0x3);
 }
 
+// Returns how much current would be used
+// if the allocation of a charger was changed from
+// [allocated_current]@[allocated_phases]
+// to [current_to_allocate]@{phases_to_allocate].
 Cost get_cost(int32_t current_to_allocate,
               ChargerPhase phases_to_allocate,
               PhaseRotation rot,
@@ -130,7 +138,7 @@ Cost get_cost(int32_t current_to_allocate,
 {
     Cost cost{};
 
-    // Reclaim allocated current before reallocating
+    // Reclaim old allocation before reallocating
     if (allocated_current != 0) {
         cost = get_cost(allocated_current, allocated_phases, rot, 0, (ChargerPhase) 0);
         for(int i = 0; i < 4; ++i)
@@ -153,6 +161,7 @@ Cost get_cost(int32_t current_to_allocate,
     return cost;
 }
 
+// Checks phase-specific limits.
 bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage)
 {
     bool phases_exceeded = false;
@@ -188,6 +197,10 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
     }
 }
 
+// A charger is active if
+// - we have allocated current to it or will in the future (thus checking the allocated phases)
+// - it wants to charge (i.e. a vehicle is plugged in and no other slot blocks) or is charging (i.e. is in state C)
+// - we are not currently attempting to wake up a "full" vehicle
 static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
     return allocated_phases > 0 && (state->wants_to_charge || state->is_charging) && state->last_wakeup == 0_usec;
 }
@@ -196,6 +209,10 @@ static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
 // If there is any charger that wants to charge but doesn't have current allocated,
 // temporarily disable chargers that are currently active (see is_active) but have been allocated
 // ALLOCATED_ENERGY_ROTATION_THRESHOLD energy since being activated.
+//
+// Also deallocate phases if the charger is not active anymore.
+// We want to dealloc a charger if the connected vehicle is currently being woken up.
+// If there is current left over at the end, we will reallocate some to this charger.
 void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     // Only rotate if there is at least one charger that does want to charge but doesn't have current allocated.
     bool have_b1 = false;
@@ -214,6 +231,8 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
             continue;
         }
 
+        // If a charger does not support phase switching (anymore),
+        // the connected number of phases wins against the allocated number of phases.
         if (!state->phase_switch_supported) {
             phase_allocation[i] = state->phases;
             continue;
@@ -221,6 +240,15 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     }
 }
 
+// Calculates the control window.
+// The window is the range of current that could be allocated between
+// throttling all chargers to their minimum current
+// and unthrottling all chargers to their maximum
+// The maximum of three phase chargers depends on the number of active one phase chargers
+// because have to allocate at least the 1p minimum current to those
+// before unthrottling the three phase chargers (both without exceeding the raw limit).
+// Only check the raw limit because this is a current allocation decision,
+// not a enable/disable/phase switch decision.
 void calculate_window(const int *idx_array_const, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     auto min_1p = cfg->minimum_current_1p;
     auto min_3p = cfg->minimum_current_3p;
@@ -237,6 +265,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
 
     filter(allocated_phases > 0);
 
+    // Calculate minimum window
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
         const auto alloc_phases = phase_allocation[idx_array[i]];
@@ -266,6 +295,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
         }
     }
 
+    // Calculate left over current for 3p chargers after allocating the 1p minimum to 1p chargers
     auto current_avail_for_3p = UNLIMITED;
 
     for (size_t i = 0; i < 4; ++i) {
@@ -291,14 +321,13 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
                            current_avail_for_3p,
                            current_avail_for_3p,
                            current_avail_for_3p};
-            //PRINT_COST(wnd_max);
             break;
         }
 
         wnd_max.pv += state->supported_current * alloc_phases;
-        //PRINT_COST(wnd_max);
     }
 
+    // Calculate maximum window of 1p chargers with known rotation.
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
         const auto alloc_phases = phase_allocation[idx_array[i]];
@@ -318,9 +347,9 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
                         current,
                         current,
                         current};
-        //PRINT_COST(wnd_max);
     }
 
+    // Add maximum window of 3p chargers and chargers with unknown rotation.
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
         const auto alloc_phases = phase_allocation[idx_array[i]];
@@ -345,6 +374,7 @@ static bool was_just_plugged_in(const ChargerState *state) {
 }
 
 // Stage 2: Immediately activate chargers were a vehicle was just plugged in.
+// Do this before calculating the initial control window and ignore limits.
 void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
