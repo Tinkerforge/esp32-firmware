@@ -644,9 +644,6 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 // - Enable conditions are similar to stage 3:
 //   The enable cost is the cost to enable a charger with three phases minus the cost (that already was subtracted in stage 3) to enable it with one phase.
 void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
-    if (!ca_state->global_hysteresis_elapsed)
-        return;
-
     Cost wnd_min = ca_state->control_window_min;
     Cost wnd_max = ca_state->control_window_max;
 
@@ -671,6 +668,13 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
+
+        // If the hysteresis is not elapsed yet, still allow 1p->3p switch for chargers
+        // that were activated in this iteration. Those ignored the hysteresis anyway
+        // and we can skip the phase switch by immediately allocating three phases.
+        // Note that this is **not** the same check as the one in stage 9 (waking up chargers)
+        if (!ca_state->global_hysteresis_elapsed && state->allowed_current != 0)
+            continue;
 
         Cost new_cost = Cost{3 * min_3p - min_1p, min_3p, min_3p, min_3p};
         Cost new_enable_cost = Cost{3 * ena_3p - ena_1p, ena_3p, ena_3p, ena_3p};
@@ -931,6 +935,14 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
 
+        // If the hysteresis is not elapsed yet, still allow waking up
+        // chargers that had current allocated in the last iteration.
+        // A charger that is being woken up is not regarded as active
+        // and its current/phases are deallocated in stage 1 to
+        // free up the current in case it is needed for "normal" charging.
+        // Only if the current is still left over in this iteration, the
+        // charger that is being woken up is reallocated the current.
+        // Note that this is **not** the same check as the one in stage 5 (1p->3p switch)
         if (!ca_state->global_hysteresis_elapsed && state->allowed_current == 0)
             continue;
 
