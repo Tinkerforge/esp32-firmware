@@ -177,8 +177,8 @@ export class EventLog extends Component<{}, EventLogState> {
         let timeout = window.setTimeout(() => this.setState({show_spinner: true}), 1000);
 
         try {
-            let t = (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-");
-            let debug_log = t + "\nScroll down for event log!\n\n";
+            let timestamp = new Date();
+            let debug_log = util.iso8601ButLocal(timestamp) + "\nScroll down for event log!\n\n";
 
             debug_log += await util.download("/debug_report").then(blob => blob.text());
             debug_log += "\n\n";
@@ -195,7 +195,7 @@ export class EventLog extends Component<{}, EventLogState> {
                     debug_log += "\n\nNo core dump recorded.";
             }
 
-            util.downloadToFile(debug_log, "debug-report", "txt", "text/plain");
+            util.downloadToFile(debug_log, "debug-report", "txt", "text/plain", timestamp);
         } catch (e) {
             util.add_alert("debug_report_load_failed", "danger", __("event_log.script.load_debug_report_error"), e.message)
         } finally {

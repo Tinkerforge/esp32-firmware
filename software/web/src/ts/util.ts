@@ -315,7 +315,7 @@ export function whenLoggedInElseReload(continuation: () => void) {
     ifLoggedInElseReload(() => {clearTimeout(loginReconnectTimeout); continuation();});
 }
 
-function iso8601ButLocal(date: Date) {
+export function iso8601ButLocal(date: Date) {
     const offset = date.getTimezoneOffset() * 60 * 1000;
     const local =  date.getTime() - offset;
     const dateLocal = new Date(local);
@@ -394,14 +394,18 @@ export function unparseIP(ip: number) {
 }
 
 
-export function downloadToFile(content: BlobPart, filename_prefix: string, extension: string, contentType: string) {
+export function downloadToFile(content: BlobPart, filename_prefix: string, extension: string, contentType: string, timestamp?: Date) {
+    if (timestamp === undefined) {
+        timestamp = new Date();
+    }
+
     const a = document.createElement('a');
     const file = new Blob([content], {type: contentType});
-    let t = iso8601ButLocal(new Date()).replace(/:/gi, "-").replace(/\./gi, "-");
+    let timestamp_str = iso8601ButLocal(timestamp).replace(/:/gi, "-").replace(/\./gi, "-");
     let name = API.get_unchecked('info/name')?.name ?? "unknown_uid";
 
     a.href= URL.createObjectURL(file);
-    a.download = filename_prefix + "-" + name + "-" + t + "." + extension;
+    a.download = filename_prefix + "-" + name + "-" + timestamp_str + "." + extension;
     a.click();
 
     URL.revokeObjectURL(a.href);
