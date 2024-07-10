@@ -96,8 +96,6 @@ public:
     uint32_t last_tag_injection = 0;
     int tag_injection_action = 0;
 
-    tag_info_t old_tag_buffer[TAG_LIST_LENGTH] = {};
-    tag_info_t new_tag_buffer[TAG_LIST_LENGTH] = {};
-    tag_info_t *old_tags = old_tag_buffer;
-    tag_info_t *new_tags = new_tag_buffer;
+    tag_info_t *old_tags = nullptr;
+    tag_info_t *new_tags = nullptr;
 };
