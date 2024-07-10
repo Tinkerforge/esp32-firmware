@@ -473,6 +473,7 @@ def main():
     # Add build flags
     timestamp = int(time.time())
     name = env.GetProjectOption("custom_name")
+    manufacturer = env.GetProjectOption("custom_manufacturer")
     config_type = env.GetProjectOption("custom_config_type")
     host_prefix = env.GetProjectOption("custom_host_prefix")
     display_name = env.GetProjectOption("custom_display_name")
@@ -530,12 +531,16 @@ def main():
 
     if 'mqtt_enable' in custom_wifi:
         build_flags.append('-DDEFAULT_MQTT_ENABLE={0}'.format(custom_wifi['mqtt_enable']))
+
     if 'mqtt_broker_host' in custom_wifi:
         build_flags.append('-DDEFAULT_MQTT_BROKER_HOST=\\"{0}\\"'.format(custom_wifi['mqtt_broker_host']))
+
     if 'mqtt_broker_port' in custom_wifi:
         build_flags.append('-DDEFAULT_MQTT_BROKER_PORT={0}'.format(custom_wifi['mqtt_broker_port']))
+
     if 'mqtt_broker_username' in custom_wifi:
         build_flags.append('-DDEFAULT_MQTT_BROKER_USERNAME=\\"{0}\\"'.format(custom_wifi['mqtt_broker_username']))
+
     if 'mqtt_broker_password' in custom_wifi:
         build_flags.append('-DDEFAULT_MQTT_BROKER_PASSWORD=\\"{0}\\"'.format(custom_wifi['mqtt_broker_password']))
 
@@ -594,6 +599,7 @@ def main():
 
     build_lines.append('#define BUILD_CONFIG_TYPE "{}"'.format(config_type))
     build_lines.append('#define BUILD_NAME "{}"'.format(name))
+    build_lines.append('#define BUILD_MANUFACTURER "{}"'.format(manufacturer))
     build_lines.append('#define BUILD_DISPLAY_NAME "{}"'.format(display_name))
     build_lines.append('#define BUILD_DISPLAY_NAME_UPPER "{}"'.format(display_name.upper()))
     build_lines.append('#define BUILD_REQUIRE_FIRMWARE_INFO {}'.format(require_firmware_info))
