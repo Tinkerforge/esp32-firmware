@@ -31,13 +31,15 @@ interface InputTimeProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
     onDate?: (value: Date) => void
     children?: ComponentChildren
     style?: string
+    showSeconds?: boolean
 }
 
 export function InputTime(props: InputTimeProps) {
     const input = useRef<HTMLInputElement>();
     const id = !props.idContext ? useId() : useContext(props.idContext);
 
-    const dateToValue = (date: Date) => util.toIsoString(date).split("T")[1];
+    const dateToHourMinSecValue = (date: Date) => util.toIsoString(date).split("T")[1];
+    const dateToHourMinValue    = (date: Date) => util.leftPad(date.getHours(), 0, 2) + ':' + util.leftPad(date.getMinutes(), 0, 2);
 
     const valueToDate = (value: string) => {
         let [h, m, s] = value.split(/:/g).map(x => parseInt(x));
@@ -63,7 +65,8 @@ export function InputTime(props: InputTimeProps) {
                        } : undefined
                    }
                    disabled={!props.onDate}
-                   value={dateToValue(props.date)} />
+                   // Show seconds if showSeconds is true or undefined (i.e. default is true)
+                   value={props.showSeconds === false ? dateToHourMinValue(props.date) : dateToHourMinSecValue(props.date)} />
         </>;
 
     return inner;
