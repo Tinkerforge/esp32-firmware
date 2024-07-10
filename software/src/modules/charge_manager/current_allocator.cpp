@@ -79,7 +79,7 @@ static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array
     char *ptr = buf;
     ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "  ALLOC");
     for(size_t i = 0; i < charger_count; ++i) {
-        if (phases_array[i] == 0 && current_array[i] == 0)
+        if (phases_array[i] == 0 && current_array[i] == 0 && stage != 0)
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "|        %zu        |", i);
         else
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), " %6.3f@%dp;%.3fkWh", current_array[i] / 1000.0f, phases_array[i], charger_state[i].allocated_energy_this_rotation);
