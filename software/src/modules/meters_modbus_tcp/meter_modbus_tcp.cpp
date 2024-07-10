@@ -81,14 +81,16 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             uint32_t *customs_index = new uint32_t[registers_count];
 
             for (uint16_t i = 0; i < registers_count; ++i) {
-                customs_specs[i].name = "Custom";
+                MeterValueID value_id = registers->get(i)->get("id")->asEnum<MeterValueID>();
+
+                customs_specs[i].name = getMeterValueName(value_id);
                 customs_specs[i].register_type = registers->get(i)->get("rtype")->asEnum<ModbusRegisterType>();
                 customs_specs[i].start_address = registers->get(i)->get("addr")->asUint();
                 customs_specs[i].value_type = registers->get(i)->get("vtype")->asEnum<ModbusValueType>();
                 customs_specs[i].offset = registers->get(i)->get("off")->asFloat();
                 customs_specs[i].scale_factor = registers->get(i)->get("scale")->asFloat();
 
-                customs_ids[i] = registers->get(i)->get("id")->asEnum<MeterValueID>();
+                customs_ids[i] = value_id;
 
                 customs_index[i] = i;
             }
