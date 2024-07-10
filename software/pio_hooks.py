@@ -593,6 +593,7 @@ def main():
     build_lines.append('#define BUILD_VERSION_BETA {}'.format(version[3]))
     build_lines.append('#define BUILD_VERSION_STRING "{}.{}.{}"'.format(*version))
     build_lines.append('#define BUILD_HOST_PREFIX "{}"'.format(host_prefix))
+    build_lines.append('#define BUILD_HOST_PREFIX_LENGTH {}'.format(len(host_prefix)))
 
     for firmware in ['WARP', 'WARP2', 'WARP3', 'ENERGY_MANAGER']:
         build_lines.append('#define BUILD_IS_{}() {}'.format(firmware, 1 if firmware == name.upper() else 0))

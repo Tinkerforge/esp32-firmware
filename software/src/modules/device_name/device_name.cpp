@@ -27,8 +27,8 @@ extern char local_uid_str[32];
 void DeviceName::pre_setup()
 {
     name = Config::Object({
-        {"name", Config::Str("", 0, strlen(BUILD_HOST_PREFIX) + 1 + ARRAY_SIZE(local_uid_str))},
-        {"type", Config::Str(BUILD_HOST_PREFIX, 0, strlen(BUILD_HOST_PREFIX))},
+        {"name", Config::Str("", 0, BUILD_HOST_PREFIX_LENGTH + 1 + ARRAY_SIZE(local_uid_str))},
+        {"type", Config::Str(BUILD_HOST_PREFIX, 0, BUILD_HOST_PREFIX_LENGTH)},
         {"display_type", Config::Str("", 0, 64)},
         {"uid", Config::Str("", 0, 32)}
     });
