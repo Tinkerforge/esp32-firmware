@@ -215,9 +215,12 @@ static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
 // If there is current left over at the end, we will reallocate some to this charger.
 void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     // Only rotate if there is at least one charger that does want to charge but doesn't have current allocated.
+    // This charger also has to be plugged in for at least one allocation iteration, to make sure
+    // we don't rotate chargers out immediately if a new charger is plugged in. Maybe there is
+    // enough current available to activate both of them.
     bool have_b1 = false;
     for (int i = 0; i < charger_count; ++i) {
-        have_b1 |= charger_state[i].wants_to_charge && phase_allocation[i] == 0;
+        have_b1 |= charger_state[i].wants_to_charge && phase_allocation[i] == 0 && deadline_elapsed(charger_state[i].last_plug_in + micros_t{ALLOCATION_TIMEOUT_S} * 1000_usec * 1000_usec);
     }
 
     for (int i = 0; i < charger_count; ++i) {
