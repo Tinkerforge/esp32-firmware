@@ -449,10 +449,6 @@ void FirmwareUpdate::register_urls()
         return request.send(200);
     },
     [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
-        if (offset == 0) {
-            this->firmware_info.reset();
-        }
-
         bool firmware_update_allowed_check_required = true;
 #if MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
         firmware_update_allowed_check_required = energy_manager.disallow_fw_update_with_vehicle_connected();
@@ -465,6 +461,10 @@ void FirmwareUpdate::register_urls()
         if (offset + len > FIRMWARE_INFO_LENGTH) {
             request.send(400, "text/plain", "Too long!");
             return false;
+        }
+
+        if (offset == 0) {
+            this->firmware_info.reset();
         }
 
         firmware_info.handle_chunk(FIRMWARE_INFO_OFFSET + offset, data, len);
