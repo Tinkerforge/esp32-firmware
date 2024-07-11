@@ -285,14 +285,14 @@ void PowerManager::setup()
 
     // Set up meter power filters if excess charging is enabled
     if (excess_charging_enabled) {
-        init_minmax_filter(&current_pv_minmax_w,    values_count,          FilterType::MinMax);
+        init_minmax_filter(&current_pv_minmax_ma,   values_count,          FilterType::MinMax);
         init_minmax_filter(&current_pv_long_min_ma, values_count_long_min, FilterType::MinOnly);
     }
 
     // Set up meter current filters if dynamic load management is enabled
     if (dynamic_load_enabled) {
-        for (size_t i = 0; i < ARRAY_SIZE(currents_phase_min_w); i++) {
-            init_minmax_filter(currents_phase_min_w + i,       values_count,          FilterType::MinOnly);
+        for (size_t i = 0; i < ARRAY_SIZE(currents_phase_min_ma); i++) {
+            init_minmax_filter(currents_phase_min_ma + i,      values_count,          FilterType::MinOnly);
             init_minmax_filter(currents_phase_long_min_ma + i, values_count_long_min, FilterType::MinOnly);
         }
     }
@@ -781,7 +781,7 @@ void PowerManager::update_energy()
         cm_limits->max.pv = INT32_MAX;
     } else {
         int32_t pv_raw_ma = power_available_w * 1000 / 230;
-        update_minmax_filter(pv_raw_ma, &current_pv_minmax_w);
+        update_minmax_filter(pv_raw_ma, &current_pv_minmax_ma);
 
         if (current_long_min_iterations == 0) {
             update_minmax_filter(current_pv_floating_min_ma, &current_pv_long_min_ma);
@@ -796,8 +796,8 @@ void PowerManager::update_energy()
         int32_t pv_long_min_ma = std::min(current_pv_floating_min_ma, current_pv_long_min_ma.min);
 
         cm_limits->raw.pv = pv_raw_ma;
-        cm_limits->min.pv = current_pv_minmax_w.min;
-        cm_limits->max.pv = current_pv_minmax_w.max;
+        cm_limits->min.pv = current_pv_minmax_ma.min;
+        cm_limits->max.pv = current_pv_minmax_ma.max;
         (void)pv_long_min_ma; // TODO Set long min to phase_long_min_ma
 
         //logger.printfln("PV  meter=%f  limit=%5i  min=%5i  max=%5i  long min=%5i", static_cast<double>(power_at_meter_raw_w), pv_raw_ma, current_pv_minmax_ma.min, current_pv_minmax_ma.max, pv_long_min_ma);
@@ -812,16 +812,18 @@ void PowerManager::update_energy()
     }
 #endif
 
-    for (size_t i = 1; i < 4; i++) {
+    for (size_t cm_phase = 1; cm_phase < 4; cm_phase++) {
         if (!dynamic_load_enabled) {
-            cm_limits->raw[i] = supply_cable_max_current_ma;
-            cm_limits->min[i] = supply_cable_max_current_ma;
+            cm_limits->raw[cm_phase] = supply_cable_max_current_ma;
+            cm_limits->min[cm_phase] = supply_cable_max_current_ma;
         } else {
-            int32_t phase_current_raw_ma = currents_at_meter_raw_ma[i - 1]; // No PV phase at 0
+            size_t pm_phase = cm_phase - 1; // PM is 0-based but CM is 1-based because of PV@0
+
+            int32_t phase_current_raw_ma = currents_at_meter_raw_ma[pm_phase];
 
             if (phase_current_raw_ma == INT32_MAX) {
-                cm_limits->raw[i] = 0;
-                cm_limits->min[i] = 0;
+                cm_limits->raw[cm_phase] = 0;
+                cm_limits->min[cm_phase] = 0;
             } else {
                 int32_t current_error_ma = target_phase_current_ma - phase_current_raw_ma;
 
@@ -843,31 +845,31 @@ void PowerManager::update_energy()
                     }
                 }
 
-                int32_t cm_allocated_phase_current_ma = (*cm_allocated_currents)[i];
+                int32_t cm_allocated_phase_current_ma = (*cm_allocated_currents)[cm_phase];
                 int32_t phase_limit_raw_ma = cm_allocated_phase_current_ma + current_adjust_ma;
 
                 phase_limit_raw_ma = min(phase_limit_raw_ma, supply_cable_max_current_ma);
 
-                minmax_filter *phase_min_ma = currents_phase_min_w + i - 1;
+                minmax_filter *phase_min_ma = currents_phase_min_ma + pm_phase;
                 update_minmax_filter(phase_limit_raw_ma, phase_min_ma);
 
                 if (current_long_min_iterations == 0) {
-                    update_minmax_filter(currents_phase_floating_min_ma[i - 1], currents_phase_long_min_ma + i - 1);
+                    update_minmax_filter(currents_phase_floating_min_ma[pm_phase], currents_phase_long_min_ma + pm_phase);
 
-                    currents_phase_floating_min_ma[i - 1] = phase_limit_raw_ma;
+                    currents_phase_floating_min_ma[pm_phase] = phase_limit_raw_ma;
                 } else {
-                    if (phase_limit_raw_ma < currents_phase_floating_min_ma[i - 1]) {
-                        currents_phase_floating_min_ma[i - 1] = phase_limit_raw_ma;
+                    if (phase_limit_raw_ma < currents_phase_floating_min_ma[pm_phase]) {
+                        currents_phase_floating_min_ma[pm_phase] = phase_limit_raw_ma;
                     }
                 }
 
-                int32_t phase_long_min_ma = std::min(currents_phase_floating_min_ma[i - 1], currents_phase_long_min_ma[i - 1].min);
+                int32_t phase_long_min_ma = std::min(currents_phase_floating_min_ma[pm_phase], currents_phase_long_min_ma[pm_phase].min);
 
-                cm_limits->raw[i] = phase_limit_raw_ma;
-                cm_limits->min[i] = phase_min_ma->min;
+                cm_limits->raw[cm_phase] = phase_limit_raw_ma;
+                cm_limits->min[cm_phase] = phase_min_ma->min;
                 (void)phase_long_min_ma; // TODO Set long min to phase_long_min_ma
 
-                //logger.printfln("L%u  meter=%5i  err=%5i  adj=%5i  limit=%5i  min=%5i  max=%5i  long min=%5i", i, phase_current_raw_ma, current_error_ma, current_adjust_ma, phase_limit_raw_ma, phase_min_ma->min, phase_min_ma->max, phase_long_min_ma);
+                //logger.printfln("L%u  meter=%5i  err=%5i  adj=%5i  limit=%5i  min=%5i  max=%5i  long min=%5i", cm_phase, phase_current_raw_ma, current_error_ma, current_adjust_ma, phase_limit_raw_ma, phase_min_ma->min, phase_min_ma->max, phase_long_min_ma);
             }
         }
     }
