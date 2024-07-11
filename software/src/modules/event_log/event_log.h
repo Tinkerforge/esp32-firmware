@@ -63,8 +63,6 @@ public:
 
     void get_timestamp(char buf[TIMESTAMP_LEN + 1]);
 
-    bool sending_response = false;
-
 private:
     ConfigRoot boot_id;
 };
