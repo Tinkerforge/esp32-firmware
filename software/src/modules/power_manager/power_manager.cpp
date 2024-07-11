@@ -197,6 +197,13 @@ void PowerManager::pre_setup()
 #endif
 }
 
+static void init_minmax_filter(PowerManager::minmax_filter *filter, size_t values_count, PowerManager::FilterType filter_type)
+{
+    filter->history_length = static_cast<decltype(filter->history_length)>(values_count);
+    filter->history_values = static_cast<decltype(filter->history_values)>(heap_caps_malloc_prefer(values_count * sizeof(filter->history_values[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM));
+    filter->type = filter_type;
+}
+
 void PowerManager::setup()
 {
     initialized = true;
@@ -274,20 +281,19 @@ void PowerManager::setup()
         values_count = power_mavg_span_s * 1000 / PM_TASK_DELAY_MS;
     }
 
+    const size_t values_count_long_min = 60; // 1 hour @ 1 sample per minute
+
     // Set up meter power filters if excess charging is enabled
     if (excess_charging_enabled) {
-        current_pv_minmax_w.history_length = static_cast<int32_t>(values_count);
-        current_pv_minmax_w.history_values = static_cast<int32_t *>(heap_caps_malloc_prefer(values_count * sizeof(current_pv_minmax_w.history_values[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM));
-        current_pv_minmax_w.type = FilterType::MinMax;
+        init_minmax_filter(&current_pv_minmax_w,    values_count,          FilterType::MinMax);
+        init_minmax_filter(&current_pv_long_min_ma, values_count_long_min, FilterType::MinOnly);
     }
 
     // Set up meter current filters if dynamic load management is enabled
     if (dynamic_load_enabled) {
         for (size_t i = 0; i < ARRAY_SIZE(currents_phase_min_w); i++) {
-            minmax_filter *filter = currents_phase_min_w + i;
-            filter->history_length = static_cast<int32_t>(values_count);
-            filter->history_values = static_cast<int32_t *>(heap_caps_malloc_prefer(values_count * sizeof(filter->history_values[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM));
-            filter->type = FilterType::MinOnly;
+            init_minmax_filter(currents_phase_min_w + i,       values_count,          FilterType::MinOnly);
+            init_minmax_filter(currents_phase_long_min_ma + i, values_count_long_min, FilterType::MinOnly);
         }
     }
 
@@ -777,9 +783,24 @@ void PowerManager::update_energy()
         int32_t pv_raw_ma = power_available_w * 1000 / 230;
         update_minmax_filter(pv_raw_ma, &current_pv_minmax_w);
 
+        if (current_long_min_iterations == 0) {
+            update_minmax_filter(current_pv_floating_min_ma, &current_pv_long_min_ma);
+
+            current_pv_floating_min_ma = pv_raw_ma;
+        } else {
+            if (pv_raw_ma < current_pv_floating_min_ma) {
+                current_pv_floating_min_ma = pv_raw_ma;
+            }
+        }
+
+        int32_t pv_long_min_ma = std::min(current_pv_floating_min_ma, current_pv_long_min_ma.min);
+
         cm_limits->raw.pv = pv_raw_ma;
         cm_limits->min.pv = current_pv_minmax_w.min;
         cm_limits->max.pv = current_pv_minmax_w.max;
+        (void)pv_long_min_ma; // TODO Set long min to phase_long_min_ma
+
+        //logger.printfln("PV  meter=%f  limit=%5i  min=%5i  max=%5i  long min=%5i", static_cast<double>(power_at_meter_raw_w), pv_raw_ma, current_pv_minmax_ma.min, current_pv_minmax_ma.max, pv_long_min_ma);
     }
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -830,12 +851,30 @@ void PowerManager::update_energy()
                 minmax_filter *phase_min_ma = currents_phase_min_w + i - 1;
                 update_minmax_filter(phase_limit_raw_ma, phase_min_ma);
 
+                if (current_long_min_iterations == 0) {
+                    update_minmax_filter(currents_phase_floating_min_ma[i - 1], currents_phase_long_min_ma + i - 1);
+
+                    currents_phase_floating_min_ma[i - 1] = phase_limit_raw_ma;
+                } else {
+                    if (phase_limit_raw_ma < currents_phase_floating_min_ma[i - 1]) {
+                        currents_phase_floating_min_ma[i - 1] = phase_limit_raw_ma;
+                    }
+                }
+
+                int32_t phase_long_min_ma = std::min(currents_phase_floating_min_ma[i - 1], currents_phase_long_min_ma[i - 1].min);
+
                 cm_limits->raw[i] = phase_limit_raw_ma;
                 cm_limits->min[i] = phase_min_ma->min;
+                (void)phase_long_min_ma; // TODO Set long min to phase_long_min_ma
 
-                //logger.printfln("L%u  meter=%5i  err=%5i  adj=%5i  limit=%5i  min=%5i  max=%5i", i, phase_current_raw_ma, current_error_ma, current_adjust_ma, phase_limit_raw_ma, phase_minmax_ma->min, phase_minmax_ma->max);
+                //logger.printfln("L%u  meter=%5i  err=%5i  adj=%5i  limit=%5i  min=%5i  max=%5i  long min=%5i", i, phase_current_raw_ma, current_error_ma, current_adjust_ma, phase_limit_raw_ma, phase_min_ma->min, phase_min_ma->max, phase_long_min_ma);
             }
         }
+    }
+
+    // Calculate long-term minimum over one-minute blocks
+    if (++current_long_min_iterations > 60 * (1000 / PM_TASK_DELAY_MS)) {
+        current_long_min_iterations = 0;
     }
 
     low_level_state.get("max_current_limited")->updateInt(max_current_limited_ma); // TODO Calculate/use this?

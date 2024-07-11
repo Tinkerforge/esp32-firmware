@@ -170,11 +170,17 @@ private:
 
     int32_t  power_available_w = 0;
 
+    size_t current_long_min_iterations = 0;
+
     float    power_at_meter_raw_w = NAN;
+    int32_t  current_pv_floating_min_ma = INT32_MAX;
     minmax_filter current_pv_minmax_w;
+    minmax_filter current_pv_long_min_ma;
 
     int32_t currents_at_meter_raw_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
+    int32_t currents_phase_floating_min_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
     minmax_filter currents_phase_min_w[3];
+    minmax_filter currents_phase_long_min_ma[3];
 
     // CM data
     CurrentLimits *cm_limits;
