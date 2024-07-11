@@ -1350,6 +1350,7 @@ int allocate_current(
             }
 
             if (charger.wants_to_charge_low_priority && phases_to_set != 0) {
+                logger.tracefln("charger %d: waking up", i);
                 charger.last_wakeup = now;
             }
 
@@ -1362,6 +1363,7 @@ int allocate_current(
             // The charger was just plugged in. If we've allocated phases to it for PLUG_IN_TIME, clear the timestamp
             // to reduce its priority.
             if (charger.last_plug_in != 0_usec && phases_to_set > 0 && deadline_elapsed(charger.last_plug_in + PLUG_IN_TIME)) {
+                logger.tracefln("charger %d: clearing last_plug_in after deadline elapsed", i);
                 charger.last_plug_in = 0_usec;
             }
 
@@ -1370,6 +1372,7 @@ int allocate_current(
             // the sort order is stable, so we've just hit a phase limit that was not as restrictive in the last iteration.
             // Clear the timestamp to make sure
             if (charger.last_plug_in != 0_usec && charger_alloc.allocated_phases > 0 && phases_to_set == 0) {
+                logger.tracefln("charger %d: clearing last_plug_in; phases overloaded?", i);
                 charger.last_plug_in = 0_usec;
             }
 
