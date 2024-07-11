@@ -82,7 +82,7 @@ env.AddPostAction(
     ), f"Merging firmware.bin -> build/{firmware_basename}_merged.bin")
 )
 
-if os.path.exists(env.subst("$PROJECT_DIR/signature_secret_key_v1.json")):
+if os.path.exists(env.subst("$PROJECT_DIR/signature/secret_key_v1.json")):
     signed_firmware_basename = firmware_basename.replace('-UNSIGNED', '')
 
     env.AddPostAction(
@@ -90,7 +90,7 @@ if os.path.exists(env.subst("$PROJECT_DIR/signature_secret_key_v1.json")):
         env.VerboseAction(lambda env, **kwargs: check_call(
             env.subst('$PYTHONEXE'),
             "-u",
-            env.subst("$PROJECT_DIR/signature_sign.py"),
+            env.subst("$PROJECT_DIR/signature/sign.py"),
             "build/{}_merged.bin".format(firmware_basename),
             "build/{}_merged.bin".format(signed_firmware_basename)
         ), f"Signing merged firmware.bin -> build/{signed_firmware_basename}_merged.bin")

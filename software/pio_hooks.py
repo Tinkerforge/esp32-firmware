@@ -617,7 +617,7 @@ def main():
 
     firmware_basename = '{}_firmware-UNSIGNED{}{}{}_{}_{:x}{}'.format(
         name,
-        "-NONVERIFYING" if not os.path.exists("signature_public_key_v1.json") else "",
+        "-NONVERIFYING" if not os.path.exists("signature/public_key_v1.json") else "",
         "-NIGHTLY" if nightly else "",
         "-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE" if not_for_distribution else "",
         "{}_{}_{}{}".format(*version[:3], f"_beta_{version[3]}" if version[3] != "255" else ""),

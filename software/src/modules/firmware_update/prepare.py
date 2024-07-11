@@ -8,7 +8,7 @@ tfutil.create_parent_module(__file__, 'software')
 from software import util
 
 try:
-    with open('../../../signature_public_key_v1.json', 'r', encoding='utf-8') as f:
+    with open('../../../signature/public_key_v1.json', 'r', encoding='utf-8') as f:
         signature_public_key_json = json.loads(f.read())
 
     signature_publisher = repr(signature_public_key_json['publisher'].encode('utf-8'))[2:-1].replace('"', '\\"')
