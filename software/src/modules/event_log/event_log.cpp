@@ -31,6 +31,9 @@
 void EventLog::pre_init()
 {
     event_buf.setup();
+#if defined(BOARD_HAS_PSRAM)
+    trace_buf.setup();
+#endif
 
     printfln_plain("    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
     printfln_plain("         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
@@ -78,11 +81,128 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
     buf[TIMESTAMP_LEN] = '\0';
 }
 
+void EventLog::trace_timestamp() {
+#if defined(BOARD_HAS_PSRAM)
+    size_t to_write = TIMESTAMP_LEN + 1; // + 1 for the \n
+    char timestamp_buf[TIMESTAMP_LEN + 1] = {0};
+    this->get_timestamp(timestamp_buf);
+
+    if (trace_buf.free() < to_write) {
+        trace_drop(to_write - trace_buf.free());
+    }
+
+    for (int i = 0; i < TIMESTAMP_LEN; ++i) {
+        trace_buf.push(timestamp_buf[i]);
+    }
+    trace_buf.push('\n');
+#endif
+}
+
+void EventLog::trace_write(const char *buf) {
+#if defined(BOARD_HAS_PSRAM)
+    this->trace_write(buf, strlen(buf));
+#endif
+}
+
+void EventLog::trace_write(const char *buf, size_t len)
+{
+#if defined(BOARD_HAS_PSRAM)
+    size_t to_write = len + 1; // 1 for the \n
+
+    if (len >= 2 && buf[len - 2] == '\r' && buf[len - 1] == '\n') {
+        len -= 2;
+    }
+
+    if (trace_buf.free() < to_write) {
+        trace_drop(to_write - trace_buf.free());
+    }
+
+    for (int i = 0; i < len; ++i) {
+        trace_buf.push(buf[i]);
+    }
+    if (buf[len - 1] != '\n') {
+        trace_buf.push('\n');
+    }
+#endif
+}
+
+int EventLog::tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
+{
+#if defined(BOARD_HAS_PSRAM)
+    char buf[256];
+    auto buf_size = ARRAY_SIZE(buf);
+    auto written = 0;
+
+    *(buf + written) = '|';
+    ++written;
+
+    *(buf + written) = ' ';
+    ++written;
+
+    if (prefix != nullptr && prefix_len < buf_size) {
+        memcpy(buf + written, prefix, prefix_len);
+        written += prefix_len;
+    }
+
+    while (written < event_log_alignment + 2) {
+        *(buf + written) = ' ';
+        ++written;
+    }
+
+    *(buf + written) = ' ';
+    ++written;
+
+    *(buf + written) = '|';
+    ++written;
+
+    *(buf + written) = ' ';
+    ++written;
+
+    written += vsnprintf_u(buf + written, buf_size - written, fmt, args);
+    if (written >= buf_size) {
+        trace_write("Next log message was truncated. Bump EventLog::printfln buffer size!", 68); // Don't include termination in write request.
+        written = buf_size - 1; // Don't include termination, which vsnprintf always leaves in.
+    }
+
+    trace_write(buf, written);
+
+    return written;
+#else
+    return 0;
+#endif
+}
+
+int EventLog::tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...)
+{
+#if defined(BOARD_HAS_PSRAM)
+    va_list args;
+    va_start(args, fmt);
+    int result = tracefln_prefixed(prefix, prefix_len, fmt, args);
+    va_end(args);
+
+    return result;
+#else
+    return 0;
+#endif
+}
+
+void EventLog::trace_drop(size_t count)
+{
+#if defined(BOARD_HAS_PSRAM)
+    char c = '\n';
+    for (int i = 0; i < count; ++i)
+        trace_buf.pop(&c);
+
+    while (trace_buf.used() > 0 && c != '\n')
+        trace_buf.pop(&c);
+#endif
+}
+
 void EventLog::write(const char *buf, size_t len)
 {
     std::lock_guard<std::mutex> lock{event_buf_mutex};
 
-    size_t to_write = TIMESTAMP_LEN + len + 1; // 12 for the longest timestamp (-2^31) and a space; 1 for the \n
+    size_t to_write = TIMESTAMP_LEN + len + 1; // 24 for an ISO-8601 timestamp and a space; 1 for the \n
 
     char timestamp_buf[TIMESTAMP_LEN + 1] = {0};
     this->get_timestamp(timestamp_buf);
@@ -230,19 +350,41 @@ void EventLog::register_urls()
         return request.endChunkedResponse();
     });
 
+    server.on_HTTPThread("/trace_log", HTTP_GET, [this](WebServerRequest request) {
+        //std::lock_guard<std::mutex> lock{event_buf_mutex};
+        auto chunk_buf = heap_alloc_array<char>(CHUNK_SIZE);
+        auto used = trace_buf.used();
+
+        request.beginChunkedResponse(200);
+
+        for (int index = 0; index < used; index += CHUNK_SIZE) {
+            size_t to_write = MIN(CHUNK_SIZE, used - index);
+
+            for (int i = 0; i < to_write; ++i) {
+                trace_buf.peek_offset((char *)(chunk_buf.get() + i), index + i);
+            }
+
+            request.sendChunk(chunk_buf.get(), to_write);
+        }
+
+        return request.endChunkedResponse();
+    });
+
     api.addState("event_log/boot_id", &boot_id);
 }
 
+extern EventLog logger;
+
 int tf_event_log_vprintfln(const char *fmt, va_list args)
 {
-    return 0;//logger.printfln_prefixed("external code", 13, fmt, args);
+    return logger.printfln_prefixed("external code", 13, fmt, args);
 }
 
 int tf_event_log_printfln(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    int result = 0;//logger.printfln_prefixed("external code", 13, fmt, args);
+    int result = logger.printfln_prefixed("external code", 13, fmt, args);
     va_end(args);
 
     return result;

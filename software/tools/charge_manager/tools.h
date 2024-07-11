@@ -20,3 +20,5 @@ constexpr micros_t operator""_usec(unsigned long long int i) { return micros_t{(
 
 micros_t now_us();
 bool deadline_elapsed(micros_t deadline_us);
+
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
