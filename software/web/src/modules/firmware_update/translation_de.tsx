@@ -15,7 +15,7 @@ let x = {
             "browse": "Durchsuchen",
             "select_file": "Firmware-Datei auswählen...",
             "install_update": "Installieren",
-            "installing_update": "wird installiert..",
+            "installing_update": "wird installiert...",
             "downgrade": "Firmware-Downgrade",
             "abort_downgrade": "Abbrechen",
             "confirm_downgrade": "Downgrade durchführen",
