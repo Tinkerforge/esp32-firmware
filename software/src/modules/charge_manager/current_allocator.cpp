@@ -1326,6 +1326,8 @@ int allocate_current(
     //auto end = micros();
     //logger.printfln("Took %u µs", end - start);
 
+    auto now = now_us();
+
     // Apply current limits.
     {
         for (int i = 0; i < cfg->charger_count; ++i) {
@@ -1343,17 +1345,17 @@ int allocate_current(
             // Don't reset hysteresis if a charger is shut down. Re-activating a charger is (always?) fine.
             if (charger_alloc.allocated_phases != phases_to_set && phases_to_set != 0) {
                 // TODO use same timestamp everywhere
-                charger.last_switch = now_us();
-                ca_state->last_hysteresis_reset = now_us();
+                charger.last_switch = now;
+                ca_state->last_hysteresis_reset = now;
             }
 
             if (charger.wants_to_charge_low_priority && phases_to_set != 0) {
-                charger.last_wakeup = now_us();
+                charger.last_wakeup = now;
             }
 
             if (!charger.last_alloc_fulfilled_reqd && current_to_set >= charger.requested_current) {
                 logger.tracefln("charger %d: requested current fulfilled. Will use supported current for 1 min.", i);
-                charger.ignore_phase_currents = now_us();
+                charger.ignore_phase_currents = now;
             }
             charger.last_alloc_fulfilled_reqd = current_to_set >= charger.requested_current;
 
@@ -1386,7 +1388,7 @@ int allocate_current(
             if (change) {
                 print_local_log = true;
                 if (charger_alloc.error != CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE)
-                    charger_alloc.last_sent_config = now_us();
+                    charger_alloc.last_sent_config = now;
             }
         }
     }
