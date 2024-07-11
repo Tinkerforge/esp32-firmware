@@ -352,6 +352,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
 
     logger.tracefln("    current_avail_for_3p %d", current_avail_for_3p);
 
+    // Add maximum window of 3p chargers.
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
         const auto alloc_phases = phase_allocation[idx_array[i]];
@@ -379,7 +380,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
         logger.tracefln("    charger %d (3p) increased wnd_max to %d %d %d %d", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
     }
 
-    // Calculate maximum window of 1p chargers with known rotation.
+    // Calculate maximum window of 1p chargers with unknown rotation.
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
         const auto alloc_phases = phase_allocation[idx_array[i]];
@@ -403,7 +404,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
         logger.tracefln("    charger %d (1p unknown rot) increased wnd_max to %d %d %d %d", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
     }
 
-    // Add maximum window of 3p chargers and chargers with unknown rotation.
+    // Add maximum window of 1p chargers with known rotation.
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
         const auto alloc_phases = phase_allocation[idx_array[i]];
