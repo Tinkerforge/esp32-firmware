@@ -46,6 +46,27 @@ public:
 #endif
                   heap_caps_free> event_buf;
 
+#if defined(BOARD_HAS_PSRAM)
+    std::mutex trace_buf_mutex;
+    TF_Ringbuffer<char,
+                  1 << 20,
+                  char,
+                  malloc_psram,
+                  heap_caps_free> trace_buf;
+#endif
+
+    void trace_write(const char *buf);
+    void trace_write(const char *buf, size_t len);
+
+    int tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
+    [[gnu::format(__printf__, 4, 5)]] int tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...);
+
+    #define tf_trace(fmt, ...) tracefln("[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
+
+    void trace_timestamp();
+    void trace_drop(size_t count);
+
+
     void pre_init() override;
     void pre_setup() override;
     void register_urls() override;

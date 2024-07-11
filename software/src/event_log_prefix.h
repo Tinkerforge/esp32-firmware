@@ -40,4 +40,8 @@ static const char *event_log_prefix = get_module_offset_and_length(__BASE_FILE__
 
 #define printfln_plain(...) printfln_prefixed(nullptr, 0, __VA_ARGS__)
 
+#define tracefln(...) tracefln_prefixed(event_log_prefix, event_log_prefix_len, __VA_ARGS__)
+
+#define tracefln_plain(...) tracefln_prefixed(nullptr, 0, __VA_ARGS__)
+
 extern size_t event_log_alignment;
