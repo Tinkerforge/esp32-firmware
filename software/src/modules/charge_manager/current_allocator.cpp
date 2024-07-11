@@ -287,6 +287,13 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     }
 }
 
+static int32_t get_requested_current(const ChargerState *state) {
+    if (state->last_alloc_fulfilled_reqd && !deadline_elapsed(state->ignore_phase_currents + micros_t{requested_current_threshold} * 1000_usec * 1000_usec))
+        return state->supported_current;
+
+    return state->requested_current;
+}
+
 // Calculates the control window.
 // The window is the range of current that could be allocated between
 // throttling all chargers to their minimum current
@@ -363,10 +370,12 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
         if (alloc_phases != 3)
             continue;
 
+        auto requested_current = get_requested_current(state);
+
         wnd_max += Cost{0,
-                        state->requested_current,
-                        state->requested_current,
-                        state->requested_current};
+                        requested_current,
+                        requested_current,
+                        requested_current};
 
         // It is sufficient to check one phase here, wnd_max should have the same value on every phase because only three phase chargers are included yet
         if (wnd_max.l1 > current_avail_for_3p) {
@@ -378,7 +387,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
             break;
         }
 
-        wnd_max.pv += state->requested_current * alloc_phases;
+        wnd_max.pv += requested_current * alloc_phases;
 
         logger.tracefln("    charger %d (3p) increased wnd_max to %d %d %d %d", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
     }
@@ -393,7 +402,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
 
         // 1p unknown rotated chargers
 
-        auto current = (int32_t)state->requested_current;
+        auto current = get_requested_current(state);
         for (size_t p = 1; p < 4; ++p) {
             auto avail_on_phase = limits->raw[p] - wnd_max[p];
             current = std::min(current, avail_on_phase);
@@ -416,7 +425,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
             continue;
 
         const auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-        const auto current = std::min(limits->raw[phase] - wnd_max[phase], (int)state->requested_current);
+        const auto current = std::min(limits->raw[phase] - wnd_max[phase], get_requested_current(state));
 
         wnd_max[phase] += current;
         wnd_max.pv += current;
@@ -918,7 +927,7 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
 // The current capacity of a charger is the maximum amount of current that can be allocated to the charger additionally to the already allocated current on the allocated phases.
 static int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases) {
-    auto requested_current = state->requested_current;
+    auto requested_current = get_requested_current(state);
 
     // TODO: add margin again if exactly one charger is active and requested_current > 6000. Also add in calculate_window?
 
@@ -1341,6 +1350,12 @@ int allocate_current(
             if (charger.wants_to_charge_low_priority && phases_to_set != 0) {
                 charger.last_wakeup = now_us();
             }
+
+            if (!charger.last_alloc_fulfilled_reqd && current_to_set >= charger.requested_current) {
+                logger.tracefln("charger %d: requested current fulfilled. Will use supported current for 1 min.", i);
+                charger.ignore_phase_currents = now_us();
+            }
+            charger.last_alloc_fulfilled_reqd = current_to_set >= charger.requested_current;
 
             // The charger was just plugged in. If we've allocated phases to it for PLUG_IN_TIME, clear the timestamp
             // to reduce its priority.

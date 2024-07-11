@@ -72,6 +72,10 @@ struct ChargerState {
 
     bool phase_switch_supported;
 
+    // True if the last allocation was >= the requested current at that time.
+    // On a false -> true transition, ignore_phase_currents will be set to now_us().
+    bool last_alloc_fulfilled_reqd;
+
     // Phases that are currently used or will be used if current is allocated.
     uint8_t phases;
 
@@ -88,6 +92,11 @@ struct ChargerState {
     micros_t last_plug_in;
 
     micros_t last_wakeup;
+
+    // If set, the last allocation was >= the requested current, but the one before it was not.
+    // (see last_alloc_fulfilled_reqd)
+    // Ignore phase currents in this case to give the charger time to react.
+    micros_t ignore_phase_currents;
 };
 
 struct ChargerAllocationState {
