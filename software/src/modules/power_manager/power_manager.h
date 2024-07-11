@@ -92,6 +92,11 @@ public:
     [[gnu::const]] size_t get_debug_line_length() const override;
     void get_debug_line(StringBuilder *sb) override;
 
+    enum class FilterType : uint8_t {
+        MinOnly = 0,
+        MinMax  = 1,
+    };
+
     struct minmax_filter {
         int32_t  min             = INT32_MAX;
         int32_t  max             = INT32_MAX;
@@ -100,6 +105,7 @@ public:
         int32_t  history_pos     = 0;
         int32_t  history_min_pos = 0;
         int32_t  history_max_pos = 0;
+        FilterType type          = FilterType::MinOnly;
     };
 
 private:
@@ -168,7 +174,7 @@ private:
     minmax_filter current_pv_minmax_w;
 
     int32_t currents_at_meter_raw_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
-    minmax_filter currents_phase_minmax_w[3];
+    minmax_filter currents_phase_min_w[3];
 
     // CM data
     CurrentLimits *cm_limits;
