@@ -55,6 +55,9 @@ static constexpr micros_t MINIMUM_ACTIVE_TIME = 15_usec * 60_usec * 1000_usec * 
 // i.e. one that triggered a C -> B2 transition and/or waited in B2 for too long
 static constexpr micros_t WAKEUP_TIME = 3_usec * 60_usec * 1000_usec * 1000_usec;
 
+// Require a charger to be active this long before clearing last_plug_in.
+static constexpr micros_t PLUG_IN_TIME = 3_usec * 60_usec * 1000_usec * 1000_usec;
+
 static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
 
 static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
@@ -495,10 +498,12 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     filter(allocated_phases > 0);
 
     // Reverse sort. Charger that was active for the longest time first.
-    // Group chargers that were activated in stage 2 (because a vehicle was just plugged in) behind others.
+    // Group chargers that were activated in stage 2 (because a vehicle was just plugged in)
+    // behind others and sort those by the plug in timestamp to make sure the same chargers are shut down
+    // if phases are overloaded in every iteration.
     sort(
         was_just_plugged_in(state) ? 1 : 0,
-        left.state->last_switch < right.state->last_switch
+        was_just_plugged_in(left.state) ? (left.state->last_plug_in < right.state->last_plug_in) : (left.state->last_switch < right.state->last_switch)
     );
 
     trace_sort(3);
@@ -1337,6 +1342,20 @@ int allocate_current(
                 charger.last_wakeup = now_us();
             }
 
+            // The charger was just plugged in. If we've allocated phases to it for PLUG_IN_TIME, clear the timestamp
+            // to reduce its priority.
+            if (charger.last_plug_in != 0_usec && phases_to_set > 0 && deadline_elapsed(charger.last_plug_in + PLUG_IN_TIME)) {
+                charger.last_plug_in = 0_usec;
+            }
+
+            // The charger was just plugged in, we've allocated phases to it in the last iteration but no phases to it in this iteration.
+            // As stage 3 (switching chargers off if phases are overloaded) sorts chargers by last_plug_in ascending if it is not 0,
+            // the sort order is stable, so we've just hit a phase limit that was not as restrictive in the last iteration.
+            // Clear the timestamp to make sure
+            if (charger.last_plug_in != 0_usec && charger_alloc.allocated_phases > 0 && phases_to_set == 0) {
+                charger.last_plug_in = 0_usec;
+            }
+
             bool change = charger_alloc.allocated_current != current_to_set || charger_alloc.allocated_phases != phases_to_set;
             charger_alloc.allocated_current = current_to_set;
             charger_alloc.allocated_phases = phases_to_set;
@@ -1344,8 +1363,6 @@ int allocate_current(
             if (phases_to_set == 0) {
                 charger.allocated_energy_this_rotation = 0;
             } else {
-                charger.last_plug_in = 0_usec;
-
                 auto allocated_energy = (float)current_to_set / 1000.0f * phases_to_set * ALLOCATION_TIMEOUT_S / 3600.0f * 230.0f / 1000.0f;
                 charger.allocated_energy_this_rotation += allocated_energy;
                 charger.allocated_energy += allocated_energy;
