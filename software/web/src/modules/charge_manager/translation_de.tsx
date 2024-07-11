@@ -83,9 +83,11 @@ let x = {
             "charge_manager_settings_reset_modal_text": "Zurücksetzen der Lastmanagement-Konfiguration löscht auch die Liste der kontrollierten Wallboxen. Fortfahren?",
 
             "header_load_management": "Dynamisches Lastmanagement",
-            "load_management_explainer": "filler",
             "dlm_enabled": "Dynamisches Lastmanagement aktiviert",
             "dlm_enabled_desc": "Regelt die kontrollierten Wallboxen so, dass der maximal zulässige Strom des Netzanschlusses auf keiner Phase überschritten wird.",
+            "dlm_meter_slot_grid_currents": "Stromzähler",
+            "dlm_meter_slot_grid_currents_select": "Auswählen...",
+            "dlm_meter_slot_grid_currents_none": "Kein Stromzähler konfiguriert",
             "dlm_current_limit": "Maximaler Strom am Netzanschluss",
             "dlm_current_limit_muted": "Nennwert der Absicherung",
             "dlm_largest_consumer_current": "Strombedarf des größten Einzelverbrauchers",

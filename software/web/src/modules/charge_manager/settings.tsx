@@ -32,6 +32,7 @@ import { Switch } from "../../ts/components/switch";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 
+import { get_noninternal_meter_slots } from "../power_manager/main";
 import type { ChargeManagerStatus } from "./main"
 import { FormSeparator } from "src/ts/components/form_separator";
 
@@ -61,6 +62,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         try {
             await API.save('power_manager/dynamic_load_config', {
                 enabled: this.state.dynamicLoadConfig.enabled,
+                meter_slot_grid_currents: this.state.dynamicLoadConfig.meter_slot_grid_currents,
                 current_limit: this.state.dynamicLoadConfig.current_limit,
                 largest_consumer_current: this.state.dynamicLoadConfig.largest_consumer_current,
                 safety_margin_pct: this.state.dynamicLoadConfig.safety_margin_pct,
@@ -109,6 +111,8 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         let warpUltimateMode  = API.hasModule("energy_manager") &&  (API.hasModule("evse_v2") || API.hasModule("evse"));
         let is_warp3          = API.get_unchecked("evse/hardware_configuration")?.evse_version >= 30;
         let show_1p_current   = energyManagerMode || warpUltimateMode || is_warp3 || API.hasFeature("phase_switch");
+
+        const meter_slots = get_noninternal_meter_slots();
 
         let verbose = <FormRow label={__("charge_manager.content.verbose")}>
                 <Switch desc={__("charge_manager.content.verbose_desc")}
@@ -250,12 +254,6 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                         <>
                             <FormSeparator heading={__("charge_manager.content.header_load_management")} />
 
-                            <FormRow label="">
-                                <div>
-                                    {__("charge_manager.content.load_management_explainer")}
-                                </div>
-                            </FormRow>
-
                             <FormRow label={__("charge_manager.content.dlm_enabled")}>
                                 <Switch desc={__("charge_manager.content.dlm_enabled_desc")}
                                     checked={state.dynamicLoadConfig.enabled}
@@ -263,8 +261,19 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                 />
                             </FormRow>
 
+                            <FormRow label={__("charge_manager.content.dlm_meter_slot_grid_currents")}>
+                                <InputSelect
+                                    required={state.dynamicLoadConfig.enabled}
+                                    placeholder={meter_slots.length > 0 ? __("charge_manager.content.dlm_meter_slot_grid_currents_select") : __("charge_manager.content.dlm_meter_slot_grid_currents_none")}
+                                    items={meter_slots}
+                                    value={state.dynamicLoadConfig.meter_slot_grid_currents}
+                                    onValue={(v) => this.setState({dynamicLoadConfig: {...state.dynamicLoadConfig, meter_slot_grid_currents: parseInt(v)}})}
+                                />
+                            </FormRow>
+
                             <FormRow label={__("charge_manager.content.dlm_current_limit")} label_muted={__("charge_manager.content.dlm_current_limit_muted")}>
                                 <InputFloat
+                                    required={state.dynamicLoadConfig.enabled}
                                     unit="A"
                                     value={state.dynamicLoadConfig.current_limit / 1000}
                                     onValue={(v) => this.setState({dynamicLoadConfig: {...state.dynamicLoadConfig, current_limit: v * 1000}})}
@@ -276,6 +285,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
 
                             <FormRow label={__("charge_manager.content.dlm_largest_consumer_current")} label_muted={__("charge_manager.content.dlm_largest_consumer_current_muted")}>
                                 <InputFloat
+                                    required={state.dynamicLoadConfig.enabled}
                                     unit="A"
                                     value={state.dynamicLoadConfig.largest_consumer_current / 1000}
                                     onValue={(v) => this.setState({dynamicLoadConfig: {...state.dynamicLoadConfig, largest_consumer_current: v * 1000}})}
@@ -287,6 +297,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
 
                             <FormRow label={__("charge_manager.content.dlm_safety_margin_pct")} label_muted={__("charge_manager.content.dlm_safety_margin_pct_muted")}>
                                 <InputFloat
+                                    required={state.dynamicLoadConfig.enabled}
                                     unit="%"
                                     value={state.dynamicLoadConfig.safety_margin_pct}
                                     onValue={(v) => this.setState({dynamicLoadConfig: {...state.dynamicLoadConfig, safety_margin_pct: v}})}
@@ -296,25 +307,31 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                 />
                             </FormRow>
 
-                            <FormRow label="Target constant current" label_muted="for debugging">
-                                <OutputFloat
-                                    unit="A"
-                                    value={Math.min((state.dynamicLoadConfig.current_limit * 1.5) - state.dynamicLoadConfig.largest_consumer_current, state.dynamicLoadConfig.current_limit)
-                                        * (100 - state.dynamicLoadConfig.safety_margin_pct) / 100}
-                                    digits={3}
-                                    scale={3}
-                                />
-                            </FormRow>
+                            {API.hasModule("debug") ?
+                                <>
+                                    <FormRow label="Target constant current" label_muted="for debugging">
+                                        <OutputFloat
+                                            unit="A"
+                                            value={Math.min((state.dynamicLoadConfig.current_limit * 1.5) - state.dynamicLoadConfig.largest_consumer_current, state.dynamicLoadConfig.current_limit)
+                                                * (100 - state.dynamicLoadConfig.safety_margin_pct) / 100}
+                                            digits={3}
+                                            scale={3}
+                                        />
+                                    </FormRow>
 
-                            <FormRow label="Expected peak current" label_muted="for debugging">
-                                <OutputFloat
-                                    unit="A"
-                                    value={Math.min((state.dynamicLoadConfig.current_limit * 1.5) - state.dynamicLoadConfig.largest_consumer_current, state.dynamicLoadConfig.current_limit)
-                                        * (100 - state.dynamicLoadConfig.safety_margin_pct) / 100 + state.dynamicLoadConfig.largest_consumer_current}
-                                    digits={3}
-                                    scale={3}
-                                />
-                            </FormRow>
+                                    <FormRow label="Expected peak current" label_muted="for debugging">
+                                        <OutputFloat
+                                            unit="A"
+                                            value={Math.min((state.dynamicLoadConfig.current_limit * 1.5) - state.dynamicLoadConfig.largest_consumer_current, state.dynamicLoadConfig.current_limit)
+                                                * (100 - state.dynamicLoadConfig.safety_margin_pct) / 100 + state.dynamicLoadConfig.largest_consumer_current}
+                                            digits={3}
+                                            scale={3}
+                                        />
+                                    </FormRow>
+                                </>
+                            :
+                                null
+                            }
                         </>
                     :
                         null
