@@ -1344,7 +1344,6 @@ int allocate_current(
 
             // Don't reset hysteresis if a charger is shut down. Re-activating a charger is (always?) fine.
             if (charger_alloc.allocated_phases != phases_to_set && phases_to_set != 0) {
-                // TODO use same timestamp everywhere
                 charger.last_switch = now;
                 ca_state->last_hysteresis_reset = now;
             }
