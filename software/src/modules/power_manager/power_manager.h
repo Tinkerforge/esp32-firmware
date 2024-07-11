@@ -184,6 +184,7 @@ private:
     uint32_t switching_hysteresis_ms  = 0;
     bool     hysteresis_wear_ok       = false;
     bool     dynamic_load_enabled     = false;
+    uint32_t meter_slot_currents      = UINT32_MAX;
     int32_t  supply_cable_max_current_ma = 0;
     int32_t min_current_1p_ma         = 0;
     int32_t min_current_3p_ma         = 0;

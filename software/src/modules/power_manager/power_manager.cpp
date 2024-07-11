@@ -87,9 +87,10 @@ void PowerManager::pre_setup()
 
     dynamic_load_config = Config::Object({
         {"enabled", Config::Bool(false)},
+        {"meter_slot_grid_currents", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
         {"current_limit", Config::Uint(0, 16, 9999999)}, // < 10kA
-        {"largest_consumer_current", Config::Uint(40, 0, 999999)}, // < 1kA
-        {"safety_margin_pct", Config::Uint(5, 0, 50)},
+        {"largest_consumer_current", Config::Uint(32, 0, 999999)}, // < 1kA
+        {"safety_margin_pct", Config::Uint(0, 0, 50)},
     });
 
     debug_config = Config::Object({
@@ -235,6 +236,7 @@ void PowerManager::setup()
     phase_switching_mode        = config.get("phase_switching_mode")->asUint();
     switching_hysteresis_ms     = debug_config.get("hysteresis_time")->asUint() * 60 * 1000;        // milliseconds (from minutes)
     dynamic_load_enabled        = dynamic_load_config.get("enabled")->asBool();
+    meter_slot_currents         = dynamic_load_config.get("meter_slot_grid_currents")->asUint();
     supply_cable_max_current_ma = static_cast<int32_t>(charge_manager.config.get("maximum_available_current")->asUint()); // milliampere
     min_current_1p_ma           = static_cast<int32_t>(charge_manager.config.get("minimum_current_1p")->asUint());        // milliampere
     min_current_3p_ma           = static_cast<int32_t>(charge_manager.config.get("minimum_current")->asUint());           // milliampere
@@ -642,7 +644,7 @@ void PowerManager::update_data()
 
     float meter_currents[INDEX_CACHE_CURRENT_COUNT];
 #if MODULE_METERS_AVAILABLE()
-    MeterValueAvailability ret = meters.get_currents(meter_slot_power, meter_currents);
+    MeterValueAvailability ret = meters.get_currents(meter_slot_currents, meter_currents);
     if (ret != MeterValueAvailability::Fresh)
 #else
     // Unconditionally execute block

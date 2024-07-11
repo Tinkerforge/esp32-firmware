@@ -41,6 +41,7 @@ export interface config {
 
 export interface dynamic_load_config {
     enabled: boolean;
+    meter_slot_grid_currents: number;
     current_limit: number;
     largest_consumer_current: number;
     safety_margin_pct: number;
