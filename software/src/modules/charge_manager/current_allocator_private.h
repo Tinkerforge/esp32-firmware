@@ -30,9 +30,9 @@ struct CompareInfo {
     uint8_t allocated_phases;
     const ChargerState *state;
 };
-typedef bool(*compare_fn)(CompareInfo /*left*/, CompareInfo /*right*/, CurrentLimits * /*limits*/);
+typedef bool(*compare_fn)(CompareInfo /*left*/, CompareInfo /*right*/, CurrentLimits * /*limits*/, const CurrentAllocatorConfig * /*cfg*/);
 
-void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits);
+void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits, const CurrentAllocatorConfig *cfg);
 
 GridPhase get_phase(PhaseRotation rot, ChargerPhase phase);
 
@@ -68,7 +68,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         [](int32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
             return (group); \
         }, \
-        [](CompareInfo left, CompareInfo right, CurrentLimits *_limits) { \
+        [](CompareInfo left, CompareInfo right, CurrentLimits *_limits, const CurrentAllocatorConfig *cfg) { \
             return (filter); \
         }, \
         idx_array, \
@@ -76,5 +76,6 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         phase_allocation, \
         charger_state, \
         matched, \
-        limits); \
+        limits, \
+        cfg); \
     } while (0)
