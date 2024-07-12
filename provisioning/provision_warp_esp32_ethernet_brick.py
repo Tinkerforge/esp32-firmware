@@ -396,6 +396,8 @@ def main():
     iqr.set_value([True, True, True, True])
     time.sleep(SERIAL_SETTLE_DELAY)
 
+    print(green(f"Flashing {len(relay_to_serial)} ESPs..."))
+
     #fixme does capturing v work here?
     threads = []
     for k, v in relay_to_serial.items():
@@ -418,6 +420,8 @@ def main():
             relay_to_serial.pop(k)
 
     threads.clear()
+
+    print(green(f"{len(relay_to_serial)} ESPs flashed successfully"))
 
     def get_esp_ssid_fn(serial_port, result):
         return lambda: get_esp_ssid(serial_port, result)
