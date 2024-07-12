@@ -220,8 +220,8 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
     for (size_t i = (size_t)GridPhase::PV; i <= (size_t)GridPhase::L3; ++i) {
         limits->raw[i] -= cost[i];
         limits->min[i] -= cost[i];
-        limits->max_pv -= cost[i];
     }
+    limits->max_pv -= cost.pv;
 }
 
 // A charger is active if
