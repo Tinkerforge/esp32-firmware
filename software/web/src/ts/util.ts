@@ -195,6 +195,7 @@ export function initCapsLockCheck() {
 }
 
 export const iframeMode = window.top !== window.self;
+const path = location.pathname.substring(0, location.pathname.length - 1);
 
 window.addEventListener("message", (e) => {
     const msg = e.data as string;
@@ -533,7 +534,7 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
     let error_message: string = null;
 
     if (iframeMode) {
-        url = "/wg" + (url.startsWith("/") ? "" : "/") + url;
+        url = path + (url.startsWith("/") ? "" : "/") + url;
     }
 
     return new Promise<void>((resolve, reject) => {
@@ -578,7 +579,7 @@ export async function download(url: string, timeout_ms: number = 5000) {
     let response = null;
     try {
         if (iframeMode) {
-            url = "/wg" + (url.startsWith("/") ? "" : "/") + url;
+            url = path + (url.startsWith("/") ? "" : "/") + url;
         }
         response = await fetch(url, {signal: abort.signal})
     } catch (e) {
@@ -600,7 +601,7 @@ export async function put(url: string, payload: any, timeout_ms: number = 5000) 
     let response = null;
     try {
         if (iframeMode) {
-            url = "/wg" + (url.startsWith("/") ? "" : "/") + url;
+            url = path + (url.startsWith("/") ? "" : "/") + url;
         }
         response = await fetch(url, {
             signal: abort.signal,
