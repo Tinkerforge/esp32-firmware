@@ -544,7 +544,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     state_pkt.v2.time_since_state_change = time_since_state_change;
 
     state_pkt.v3.phases = evse_common.backend->get_is_3phase() ? 3 : 1;
-    state_pkt.v3.phases |= (has_phase_switch && evse_common.backend->can_switch_phases_now(state_pkt.v3.phases == 1)) << 2;
+    state_pkt.v3.phases |= (has_phase_switch && evse_common.backend->phase_switching_capable() && evse_common.backend->can_switch_phases_now(state_pkt.v3.phases == 1)) << CM_STATE_V3_CAN_PHASE_SWITCH_BIT_POS;
 
     int err = sendto(client_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&manager_addr, sizeof(manager_addr));
     if (err < 0) {
