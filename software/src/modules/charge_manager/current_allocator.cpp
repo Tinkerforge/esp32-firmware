@@ -62,7 +62,7 @@ static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
 
 static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
     char buf[300] = {};
-    logger.printfln("%d LIMITS raw(%6.3f,%6.3f,%6.3f,%6.3f) min(%6.3f,%6.3f,%6.3f,%6.3f) max_pv %6.3f",
+    logger.printfln("%d LIMITS raw(%6.3f,%6.3f,%6.3f,%6.3f) min(%6.3f,%6.3f,%6.3f,%6.3f) spread(%6.3f,%6.3f,%6.3f,%6.3f) max_pv %6.3f",
            stage,
            limits->raw[0] / 1000.0f,
            limits->raw[1] / 1000.0f,
@@ -73,6 +73,11 @@ static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array
            limits->min[1] / 1000.0f,
            limits->min[2] / 1000.0f,
            limits->min[3] / 1000.0f,
+
+           limits->spread[0] / 1000.0f,
+           limits->spread[1] / 1000.0f,
+           limits->spread[2] / 1000.0f,
+           limits->spread[3] / 1000.0f,
 
            limits->max_pv / 1000.0f);
 
@@ -89,7 +94,7 @@ static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array
 
 static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
     char buf[300] = {};
-    logger.tracefln("stage_%d: LIMITS raw(%6.3f,%6.3f,%6.3f,%6.3f) min(%6.3f,%6.3f,%6.3f,%6.3f) max_pv %6.3f",
+    logger.tracefln("stage_%d: LIMITS raw(%6.3f,%6.3f,%6.3f,%6.3f) min(%6.3f,%6.3f,%6.3f,%6.3f) spread(%6.3f,%6.3f,%6.3f,%6.3f) max_pv %6.3f",
            stage,
            limits->raw[0] / 1000.0f,
            limits->raw[1] / 1000.0f,
@@ -100,6 +105,11 @@ static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array
            limits->min[1] / 1000.0f,
            limits->min[2] / 1000.0f,
            limits->min[3] / 1000.0f,
+
+           limits->spread[0] / 1000.0f,
+           limits->spread[1] / 1000.0f,
+           limits->spread[2] / 1000.0f,
+           limits->spread[3] / 1000.0f,
 
            limits->max_pv / 1000.0f);
 
@@ -220,6 +230,7 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
     for (size_t i = (size_t)GridPhase::PV; i <= (size_t)GridPhase::L3; ++i) {
         limits->raw[i] -= cost[i];
         limits->min[i] -= cost[i];
+        limits->spread[i] -= cost[i];
     }
     limits->max_pv -= cost.pv;
 }

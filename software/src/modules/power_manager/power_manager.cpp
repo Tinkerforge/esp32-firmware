@@ -793,7 +793,7 @@ void PowerManager::update_energy()
         cm_limits->raw.pv = pv_raw_ma;
         cm_limits->min.pv = current_pv_minmax_ma.min;
         cm_limits->max_pv = current_pv_minmax_ma.max;
-        (void)pv_long_min_ma; // TODO Set long min to phase_long_min_ma
+        cm_limits->spread.pv = pv_long_min_ma;
 
         //logger.printfln("PV  meter=%f  limit=%5i  min=%5i  max=%5i  long min=%5i", static_cast<double>(power_at_meter_raw_w), pv_raw_ma, current_pv_minmax_ma.min, current_pv_minmax_ma.max, pv_long_min_ma);
     }
@@ -862,7 +862,7 @@ void PowerManager::update_energy()
 
                 cm_limits->raw[cm_phase] = phase_limit_raw_ma;
                 cm_limits->min[cm_phase] = phase_min_ma->min;
-                (void)phase_long_min_ma; // TODO Set long min to phase_long_min_ma
+                cm_limits->spread[cm_phase] = phase_long_min_ma;
 
                 //logger.printfln("L%u  meter=%5i  err=%5i  adj=%5i  limit=%5i  min=%5i  max=%5i  long min=%5i", cm_phase, phase_current_raw_ma, current_error_ma, current_adjust_ma, phase_limit_raw_ma, phase_min_ma->min, phase_min_ma->max, phase_long_min_ma);
             }
