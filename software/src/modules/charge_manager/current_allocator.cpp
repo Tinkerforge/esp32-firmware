@@ -733,14 +733,12 @@ static bool try_activate(const ChargerState *state, bool activate_3p, bool have_
 
     get_enable_cost(state, activate_3p, &new_cost, &new_enable_cost, cfg);
 
-    // If there are no chargers active, don't require the enable cost.
-    auto check_min = have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN;
-
+    // If there are no chargers active, don't require the enable cost on PV.
     Cost check_phase{
-        CHECK_IMPROVEMENT | check_min,
-        CHECK_IMPROVEMENT | check_min,
-        CHECK_IMPROVEMENT | check_min,
-        CHECK_IMPROVEMENT | check_min
+        CHECK_IMPROVEMENT | have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN;,
+        CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
+        CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
+        CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE
     };
 
     bool result = can_activate(check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg);
@@ -872,9 +870,9 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         // Only switch from one to three phase if there is still current available on **all** phases.
         Cost check_phase{
             CHECK_IMPROVEMENT_ALL_PHASE | check_min,
-            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L1 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | check_min,
-            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L2 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | check_min,
-            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L3 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | check_min
+            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L1 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
+            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L2 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
+            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L3 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE
         };
 
         logger.tracefln("stage_5: Checking if charger %d can be 1p->3p switched", idx_array[i]);
