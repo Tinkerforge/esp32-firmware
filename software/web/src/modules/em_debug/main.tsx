@@ -71,23 +71,11 @@ export class EMDebug extends Component {
                 <FormRow label="power at meter smooth">
                     <OutputFloat value={pm_ll_state.power_at_meter} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
-                <FormRow label="power at meter filtered">
-                    <OutputFloat value={pm_ll_state.power_at_meter_filtered} digits={3} scale={3} unit={'kW'} />
-                </FormRow>
                 <FormRow label="power available">
                     <OutputFloat value={pm_ll_state.power_available} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
-                <FormRow label="power available filtered">
-                    <OutputFloat value={pm_ll_state.power_available_filtered} digits={3} scale={3} unit={'kW'} />
-                </FormRow>
                 <FormRow label="overall min power">
                     <OutputFloat value={pm_ll_state.overall_min_power} digits={3} scale={3} unit={'kW'} />
-                </FormRow>
-                <FormRow label="threshold 3to1">
-                    <OutputFloat value={pm_ll_state.threshold_3to1} digits={3} scale={3} unit={'kW'} />
-                </FormRow>
-                <FormRow label="threshold 1to3">
-                    <OutputFloat value={pm_ll_state.threshold_1to3} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
                 <FormRow label="CM available current">
                     <OutputFloat value={pm_ll_state.charge_manager_available_current} digits={3} scale={3} unit={'A'} />
@@ -98,14 +86,6 @@ export class EMDebug extends Component {
                 <FormRow label="max current limited">
                     <OutputFloat value={pm_ll_state.max_current_limited} digits={3} scale={3} unit={'A'} />
                 </FormRow>
-                <FormRow label="uptime past hysteresis">
-                    <IndicatorGroup
-                        value={pm_ll_state.uptime_past_hysteresis ? 1 : 0}
-                        items={[
-                            ["secondary", "false"],
-                            ["primary",   "true" ],
-                        ]} />
-                </FormRow>
                 <FormRow label="is 3phase">
                     <IndicatorGroup
                         value={pm_ll_state.is_3phase ? 1 : 0}
@@ -114,65 +94,8 @@ export class EMDebug extends Component {
                             ["primary",   "true" ],
                         ]} />
                 </FormRow>
-                <FormRow label="wants 3phase">
-                    <IndicatorGroup
-                        value={pm_ll_state.wants_3phase ? 1 : 0}
-                        items={[
-                            ["secondary", "false"],
-                            ["primary",   "true" ],
-                        ]} />
-                </FormRow>
-                <FormRow label="wants 3phase last">
-                    <IndicatorGroup
-                        value={pm_ll_state.wants_3phase_last ? 1 : 0}
-                        items={[
-                            ["secondary", "false"],
-                            ["primary",   "true" ],
-                        ]} />
-                </FormRow>
-                <FormRow label="is on last">
-                    <IndicatorGroup
-                        value={pm_ll_state.is_on_last ? 1 : 0}
-                        items={[
-                            ["secondary", "false"],
-                            ["primary",   "true" ],
-                        ]} />
-                </FormRow>
-                <FormRow label="wants on last">
-                    <IndicatorGroup
-                        value={pm_ll_state.wants_on_last ? 1 : 0}
-                        items={[
-                            ["secondary", "false"],
-                            ["primary",   "true" ],
-                        ]} />
-                </FormRow>
-                <FormRow label="phase state change blocked">
-                    <IndicatorGroup
-                        value={pm_ll_state.phase_state_change_blocked ? 1 : 0}
-                        items={[
-                            ["secondary", "false"],
-                            ["primary",   "true" ],
-                        ]} />
-                </FormRow>
-                <FormRow label="phase state change delay">
-                    <InputText value={this.ms2time(pm_ll_state.phase_state_change_delay)}/>
-                </FormRow>
-                <FormRow label="on state change blocked">
-                    <IndicatorGroup
-                        value={pm_ll_state.on_state_change_blocked ? 1 : 0}
-                        items={[
-                            ["secondary", "false"],
-                            ["primary",   "true" ],
-                        ]} />
-                </FormRow>
-                <FormRow label="on state change delay">
-                    <InputText value={this.ms2time(pm_ll_state.on_state_change_delay)}/>
-                </FormRow>
                 <FormRow label="charging blocked">
                     <InputText value={"0x" + pm_ll_state.charging_blocked.toString(16)}/>
-                </FormRow>
-                <FormRow label="switching state">
-                    <InputText value={pm_ll_state.switching_state}/>
                 </FormRow>
                 <FormRow label="consecutive bricklet errors">
                     <InputText value={ll_state.consecutive_bricklet_errors}/>
