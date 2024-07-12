@@ -498,6 +498,9 @@ HttpResponse RemoteAccess::make_http_request(const char *url, esp_http_client_me
 
     if (err != ESP_OK) {
         logger.printfln("Failed to send request: %i", err);
+        esp_http_client_cleanup(client);
+        *ret_error = err;
+        return response;
     }
     response.body += "\0";
 
