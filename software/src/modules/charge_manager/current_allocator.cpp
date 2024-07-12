@@ -124,6 +124,21 @@ static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array
     logger.tracefln(buf);
 }
 
+static void trace_sort_fn(int stage, int matched, int *idx_array, size_t charger_count) {
+    char buf[200];
+    memset(buf, 0, sizeof(buf));
+    char *ptr = buf;
+    ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "stage_%d: filtered %d to %d, sorted to ", stage, charger_count, matched);
+    if (matched == 0)
+        ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "| ");
+
+    for(int i = 0; i < charger_count; ++i)
+        ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "%d %s", idx_array[i], i == (matched - 1) ? "| " : "");
+    logger.tracefln("%s", buf);
+}
+
+#define trace_sort(x) trace_sort_fn(x, matched, idx_array, charger_count)
+
 int filter_chargers(filter_fn filter_, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
     int matches = 0;
     for(int i = 0; i < charger_count; ++i) {
@@ -292,6 +307,36 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     }
 }
 
+static bool was_just_plugged_in(const ChargerState *state) {
+    return state->last_plug_in != 0_usec && state->wants_to_charge;
+}
+
+// Stage 2: Immediately activate chargers were a vehicle was just plugged in.
+// Do this before calculating the initial control window and ignore limits.
+void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+    int matched = 0;
+
+    filter(was_just_plugged_in(state));
+
+    // Charger that is plugged in for the longest time first.
+    sort(0,
+        left.state->last_plug_in < right.state->last_plug_in
+    );
+
+    trace_sort(2);
+
+    for (int i = 0; i < matched; ++i) {
+        const auto *state = &charger_state[idx_array[i]];
+
+        bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
+        bool activate_3p = is_fixed_3p;
+
+        phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
+
+        logger.tracefln("stage_2: charger %d just plugged in. Allocating %d phases", idx_array[i], phase_allocation[idx_array[i]]);
+    }
+}
+
 static int32_t get_requested_current(const ChargerState *state, const CurrentAllocatorConfig *cfg) {
     if (state->last_alloc_fulfilled_reqd && !deadline_elapsed(state->ignore_phase_currents + micros_t{cfg->requested_current_threshold} * 1000_usec * 1000_usec))
         return state->supported_current;
@@ -442,51 +487,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
     ca_state->control_window_max = wnd_max;
 
     logger.tracefln("Window now (%d %d %d %d)->(%d %d %d %d)", wnd_min.pv, wnd_min.l1, wnd_min.l2, wnd_min.l3, wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
-}
 
-static bool was_just_plugged_in(const ChargerState *state) {
-    return state->last_plug_in != 0_usec && state->wants_to_charge;
-}
-
-static void trace_sort_fn(int stage, int matched, int *idx_array, size_t charger_count) {
-    char buf[200];
-    memset(buf, 0, sizeof(buf));
-    char *ptr = buf;
-    ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "stage_%d: filtered %d to %d, sorted to ", stage, charger_count, matched);
-    if (matched == 0)
-        ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "| ");
-
-    for(int i = 0; i < charger_count; ++i)
-        ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "%d %s", idx_array[i], i == (matched - 1) ? "| " : "");
-    logger.tracefln("%s", buf);
-}
-
-#define trace_sort(x) trace_sort_fn(x, matched, idx_array, charger_count)
-
-// Stage 2: Immediately activate chargers were a vehicle was just plugged in.
-// Do this before calculating the initial control window and ignore limits.
-void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
-    int matched = 0;
-
-    filter(was_just_plugged_in(state));
-
-    // Charger that is plugged in for the longest time first.
-    sort(0,
-        left.state->last_plug_in < right.state->last_plug_in
-    );
-
-    trace_sort(2);
-
-    for (int i = 0; i < matched; ++i) {
-        const auto *state = &charger_state[idx_array[i]];
-
-        bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
-        bool activate_3p = is_fixed_3p;
-
-        phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
-
-        logger.tracefln("stage_2: charger %d just plugged in. Allocating %d phases", idx_array[i], phase_allocation[idx_array[i]]);
-    }
 }
 
 // Stage 3: Shut down chargers if over limit
