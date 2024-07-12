@@ -497,7 +497,8 @@ def main():
                 next_brick = k
                 while next_brick is not None and len(relay_to_rgb_led) > 0:
                     print(green(f"Removed {next_brick}"))
-                    relay_to_rgb_led.pop(next_brick)
+                    rgb_led = relay_to_rgb_led.pop(next_brick)
+                    rgb_led.ipcon.disconnect()
                     next_brick = print_label(relay_to_ssid[next_brick], relay_to_passphrase[next_brick], test_reports[next_brick], lambda: brick_removed(relay_to_rgb_led))
             else:
                 raise
