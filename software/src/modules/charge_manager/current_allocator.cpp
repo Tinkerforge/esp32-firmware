@@ -128,7 +128,7 @@ int filter_chargers(filter_fn filter_, int *idx_array, const int32_t *current_al
     return matches;
 }
 
-void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits) {
+void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits, const CurrentAllocatorConfig *cfg) {
     int groups[MAX_CONTROLLED_CHARGERS] = {};
 
     for(int i = 0; i < charger_count; ++i)
@@ -137,13 +137,13 @@ void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const int
     std::stable_sort(
         idx_array,
         idx_array + charger_count,
-        [&groups, &compare, &current_allocation, &phase_allocation, &charger_state, &limits] (int left, int right) {
+        [&groups, &compare, &current_allocation, &phase_allocation, &charger_state, &limits, &cfg] (int left, int right) {
             if (groups[left] != groups[right])
                 return groups[left] < groups[right];
 
             return compare({current_allocation[left], phase_allocation[left], &charger_state[left]},
                            {current_allocation[right], phase_allocation[right], &charger_state[right]},
-                           limits);
+                           limits, cfg);
         }
     );
 }
@@ -281,8 +281,8 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     }
 }
 
-static int32_t get_requested_current(const ChargerState *state) {
-    if (state->last_alloc_fulfilled_reqd && !deadline_elapsed(state->ignore_phase_currents + micros_t{requested_current_threshold} * 1000_usec * 1000_usec))
+static int32_t get_requested_current(const ChargerState *state, const CurrentAllocatorConfig *cfg) {
+    if (state->last_alloc_fulfilled_reqd && !deadline_elapsed(state->ignore_phase_currents + micros_t{cfg->requested_current_threshold} * 1000_usec * 1000_usec))
         return state->supported_current;
 
     return state->requested_current;
@@ -364,7 +364,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
         if (alloc_phases != 3)
             continue;
 
-        auto requested_current = get_requested_current(state);
+        auto requested_current = get_requested_current(state, cfg);
 
         wnd_max += Cost{0,
                         requested_current,
@@ -396,7 +396,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
 
         // 1p unknown rotated chargers
 
-        auto current = get_requested_current(state);
+        auto current = get_requested_current(state, cfg);
         for (size_t p = 1; p < 4; ++p) {
             auto avail_on_phase = limits->raw[p] - wnd_max[p];
             current = std::min(current, avail_on_phase);
@@ -419,7 +419,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
             continue;
 
         const auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-        const auto current = std::min(limits->raw[phase] - wnd_max[phase], get_requested_current(state));
+        const auto current = std::min(limits->raw[phase] - wnd_max[phase], get_requested_current(state, cfg));
 
         wnd_max[phase] += current;
         wnd_max.pv += current;
@@ -920,8 +920,8 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 }
 
 // The current capacity of a charger is the maximum amount of current that can be allocated to the charger additionally to the already allocated current on the allocated phases.
-static int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases) {
-    auto requested_current = get_requested_current(state);
+static int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *cfg) {
+    auto requested_current = get_requested_current(state, cfg);
 
     // TODO: add margin again if exactly one charger is active and requested_current > 6000. Also add in calculate_window?
 
@@ -995,7 +995,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
             current = std::min(current, std::max(0, enable_current - allocated_current));
         }
 
-        current = std::min(current, current_capacity(limits, state, allocated_current, allocated_phases));
+        current = std::min(current, current_capacity(limits, state, allocated_current, allocated_phases, cfg));
         current += allocated_current;
 
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
@@ -1029,7 +1029,7 @@ void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     sort(
         3 - allocated_phases,
-        current_capacity(_limits, left.state, left.allocated_current, left.allocated_phases) < current_capacity(_limits, right.state, right.allocated_current, right.allocated_phases)
+        current_capacity(_limits, left.state, left.allocated_current, left.allocated_phases, cfg) < current_capacity(_limits, right.state, right.allocated_current, right.allocated_phases, cfg)
     );
 
     trace_sort(8);
@@ -1040,7 +1040,7 @@ void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto allocated_current = current_allocation[idx_array[i]];
         auto allocated_phases = phase_allocation[idx_array[i]];
 
-        auto current = std::min(std::max(0, limits->raw.pv / allocated_phases), current_capacity(limits, state, allocated_current, allocated_phases));
+        auto current = std::min(std::max(0, limits->raw.pv / allocated_phases), current_capacity(limits, state, allocated_current, allocated_phases, cfg));
 
         if (state->phase_rotation == PhaseRotation::Unknown) {
             // Phase rotation unknown. We have to assume that each phase could be used
