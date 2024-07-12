@@ -62,7 +62,7 @@ static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
 
 static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
     char buf[300] = {};
-    logger.printfln("%d LIMITS raw(%6.3f,%6.3f,%6.3f,%6.3f) min(%6.3f,%6.3f,%6.3f,%6.3f) max(%6.3f,%6.3f,%6.3f,%6.3f)",
+    logger.printfln("%d LIMITS raw(%6.3f,%6.3f,%6.3f,%6.3f) min(%6.3f,%6.3f,%6.3f,%6.3f) max_pv %6.3f",
            stage,
            limits->raw[0] / 1000.0f,
            limits->raw[1] / 1000.0f,
@@ -74,10 +74,7 @@ static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array
            limits->min[2] / 1000.0f,
            limits->min[3] / 1000.0f,
 
-           limits->max[0] / 1000.0f,
-           limits->max[1] / 1000.0f,
-           limits->max[2] / 1000.0f,
-           limits->max[3] / 1000.0f);
+           limits->max_pv / 1000.0f);
 
     char *ptr = buf;
     ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "  ALLOC");
@@ -92,7 +89,7 @@ static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array
 
 static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
     char buf[300] = {};
-    logger.tracefln("stage_%d: LIMITS raw(%6.3f,%6.3f,%6.3f,%6.3f) min(%6.3f,%6.3f,%6.3f,%6.3f) max(%6.3f,%6.3f,%6.3f,%6.3f)",
+    logger.tracefln("stage_%d: LIMITS raw(%6.3f,%6.3f,%6.3f,%6.3f) min(%6.3f,%6.3f,%6.3f,%6.3f) max_pv %6.3f",
            stage,
            limits->raw[0] / 1000.0f,
            limits->raw[1] / 1000.0f,
@@ -104,10 +101,7 @@ static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array
            limits->min[2] / 1000.0f,
            limits->min[3] / 1000.0f,
 
-           limits->max[0] / 1000.0f,
-           limits->max[1] / 1000.0f,
-           limits->max[2] / 1000.0f,
-           limits->max[3] / 1000.0f);
+           limits->max_pv / 1000.0f);
 
     char *ptr = buf;
     ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "stage_%d: ALLOC", stage);
@@ -226,7 +220,7 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
     for (size_t i = (size_t)GridPhase::PV; i <= (size_t)GridPhase::L3; ++i) {
         limits->raw[i] -= cost[i];
         limits->min[i] -= cost[i];
-        limits->max[i] -= cost[i];
+        limits->max_pv -= cost[i];
     }
 }
 
@@ -566,13 +560,13 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // Also check the hysteresis to make sure the last switch on/off decisions
     // did propagate to the calculated limits.
     for (int i = 0; i < matched; ++i) {
-        if (wnd_min.pv < limits->max.pv || !ca_state->global_hysteresis_elapsed) {
+        if (wnd_min.pv < limits->max_pv || !ca_state->global_hysteresis_elapsed) {
             // Window minimum less than max pv limit -> PV not permanently overloaded
             // or hysteresis is not elapsed yet.
-            if (wnd_min.pv < limits->max.pv) {
-                logger.tracefln("stage_3: wnd_min %d less than PV max limit %d", wnd_min.pv, limits->max.pv);
+            if (wnd_min.pv < limits->max_pv) {
+                logger.tracefln("stage_3: wnd_min %d less than PV max limit %d", wnd_min.pv, limits->max_pv);
             } else {
-                logger.tracefln("stage_3: wnd_min %d exceeds PV max limit %d but hysteresis not elapsed", wnd_min.pv, limits->max.pv);
+                logger.tracefln("stage_3: wnd_min %d exceeds PV max limit %d but hysteresis not elapsed", wnd_min.pv, limits->max_pv);
             }
 
             break;
@@ -584,7 +578,7 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         if (alloc_phases == 0 || was_just_plugged_in(state))
             continue;
 
-        logger.tracefln("stage_3: wnd_min %d exceeds PV max limit %d", wnd_min.pv, limits->max.pv);
+        logger.tracefln("stage_3: wnd_min %d exceeds PV max limit %d", wnd_min.pv, limits->max_pv);
 
         if (state->phases == 3) {
             phase_allocation[idx_array[i]] = 0;
@@ -1191,7 +1185,7 @@ int allocate_current(
         logger.tracefln("Did not see all chargers yet!");
         limits->raw = Cost{0, 0, 0, 0};
         limits->min = Cost{0, 0, 0, 0};
-        limits->max = Cost{0, 0, 0, 0};
+        limits->max_pv = 0;
     }
 
     bool print_local_log = false;
@@ -1288,7 +1282,7 @@ int allocate_current(
             // Shut down everything.
             limits->raw = Cost{0, 0, 0, 0};
             limits->min = Cost{0, 0, 0, 0};
-            limits->max = Cost{0, 0, 0, 0};
+            limits->max_pv = 0;
             LOCAL_LOG("%s", "stage 0: Unreachable, unreactive or misconfigured EVSE(s) found. Setting available current to 0 mA.");
             result = 2;
 

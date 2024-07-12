@@ -493,8 +493,8 @@ void ChargeManager::register_urls()
         for(size_t i = 0; i < 4; ++i) {
             this->limits.raw[i] = limits_cfg.get(i)->asInt();
             this->limits.min[i] = limits_cfg.get(i)->asInt();
-            this->limits.max[i] = limits_cfg.get(i)->asInt();
         }
+        this->limits.max_pv = limits_cfg.get(0)->asInt();
     }, true);
 }
 
