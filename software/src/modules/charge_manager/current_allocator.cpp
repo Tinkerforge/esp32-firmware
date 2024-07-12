@@ -1316,7 +1316,6 @@ int allocate_current(
     trace_alloc(8, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_9(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
     trace_alloc(9, limits, current_array, phases_array, cfg->charger_count, charger_state);
-    logger.tracefln("\n\n");
     //auto end = micros();
     //logger.printfln("Took %u µs", end - start);
 
@@ -1414,6 +1413,8 @@ int allocate_current(
 #else
     (void)vehicle_connected;
 #endif
+
+    logger.tracefln("\n\n");
 
     return result;
 }
