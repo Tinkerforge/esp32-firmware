@@ -127,7 +127,6 @@ private:
     };
 
     void set_available_current(int32_t current_pv, int32_t current_L1, int32_t current_L2, int32_t current_L3);
-    void set_available_phases(uint32_t phases);
     void update_data();
     void update_energy();
     void update_phase_switcher();
@@ -144,7 +143,6 @@ private:
     ConfigRoot low_level_state;
     ConfigRoot config;
     ConfigRoot dynamic_load_config;
-    ConfigRoot debug_config;
     ConfigRoot charge_mode;
     ConfigRoot charge_mode_update;
     ConfigRoot external_control;
@@ -158,7 +156,6 @@ private:
     bool     printed_skipping_energy_update      = false;
 
     uint32_t mode                                = 0;
-    int32_t have_phases                          = 0;
     bool     is_3phase                           = false;
     bool     just_switched_mode                  = false;
     int32_t max_current_limited_ma               = 0;
@@ -191,9 +188,8 @@ private:
     bool     excess_charging_enabled  = false;
     uint32_t meter_slot_power         = UINT32_MAX;
     int32_t  target_power_from_grid_w = 0;
-    uint32_t guaranteed_power_w       = 0;
+    int32_t  guaranteed_power_w       = 0;
     uint32_t phase_switching_mode     = 0;
-    uint32_t switching_hysteresis_ms  = 0;
     bool     hysteresis_wear_ok       = false;
     bool     dynamic_load_enabled     = false;
     uint32_t meter_slot_currents      = UINT32_MAX;

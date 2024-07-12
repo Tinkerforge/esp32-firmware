@@ -40,27 +40,13 @@ void PowerManager::pre_setup()
 
     low_level_state = Config::Object({
         {"power_at_meter", Config::Float(0)},
-        {"power_at_meter_filtered", Config::Float(0)}, // obsolete
         {"power_available", Config::Int32(0)},
-        {"power_available_filtered", Config::Int32(0)}, // obsolete
         {"overall_min_power", Config::Int32(0)},
-        {"threshold_3to1", Config::Int32(0)},
-        {"threshold_1to3", Config::Int32(0)},
-        {"charge_manager_available_current", Config::Int32(0)},
-        {"charge_manager_allocated_current", Config::Int32(0)},
+        {"charge_manager_available_current", Config::Int32(0)}, // obsolete?
+        {"charge_manager_allocated_current", Config::Int32(0)}, // obsolete?
         {"max_current_limited", Config::Int32(0)},
-        {"uptime_past_hysteresis", Config::Bool(false)},
-        {"is_3phase", Config::Bool(false)},
-        {"wants_3phase", Config::Bool(false)}, // obsolete
-        {"wants_3phase_last", Config::Bool(false)}, // obsolete
-        {"is_on_last", Config::Bool(false)}, // obsolete
-        {"wants_on_last", Config::Bool(false)}, // obsolete
-        {"phase_state_change_blocked", Config::Bool(false)}, // obsolete
-        {"phase_state_change_delay", Config::Uint32(0)}, // obsolete
-        {"on_state_change_blocked", Config::Bool(false)}, // obsolete
-        {"on_state_change_delay", Config::Uint32(0)}, // obsolete
+        {"is_3phase", Config::Bool(false)}, // obsolete / phase switcher?
         {"charging_blocked", Config::Uint32(0)},
-        {"switching_state", Config::Uint32(0)},
     });
 
     config = ConfigRoot{Config::Object({
@@ -91,10 +77,6 @@ void PowerManager::pre_setup()
         {"current_limit", Config::Uint(0, 16, 9999999)}, // < 10kA
         {"largest_consumer_current", Config::Uint(32, 0, 999999)}, // < 1kA
         {"safety_margin_pct", Config::Uint(0, 0, 50)},
-    });
-
-    debug_config = Config::Object({
-        {"hysteresis_time", Config::Uint(HYSTERESIS_MIN_TIME_MINUTES, 0, 60)}, // in minutes
     });
 
     // Runtime config
@@ -211,10 +193,6 @@ void PowerManager::setup()
     api.restorePersistentConfig("power_manager/config", &config);
     api.restorePersistentConfig("power_manager/dynamic_load_config", &dynamic_load_config);
 
-#if MODULE_DEBUG_AVAILABLE()
-    api.restorePersistentConfig("power_manager/debug_config", &debug_config);
-#endif
-
     if (!config.get("enabled")->asBool()) {
         return;
     }
@@ -239,9 +217,8 @@ void PowerManager::setup()
     excess_charging_enabled     = config.get("excess_charging_enable")->asBool();
     meter_slot_power            = config.get("meter_slot_grid_power")->asUint();
     target_power_from_grid_w    = config.get("target_power_from_grid")->asInt();    // watt
-    guaranteed_power_w          = config.get("guaranteed_power")->asUint();         // watt
+    guaranteed_power_w          = static_cast<int32_t>(config.get("guaranteed_power")->asUint()); // watt
     phase_switching_mode        = config.get("phase_switching_mode")->asUint();
-    switching_hysteresis_ms     = debug_config.get("hysteresis_time")->asUint() * 60 * 1000;        // milliseconds (from minutes)
     dynamic_load_enabled        = dynamic_load_config.get("enabled")->asBool();
     meter_slot_currents         = dynamic_load_config.get("meter_slot_grid_currents")->asUint();
     supply_cable_max_current_ma = static_cast<int32_t>(charge_manager.config.get("maximum_available_current")->asUint()); // milliampere
@@ -292,17 +269,12 @@ void PowerManager::setup()
         }
     }
 
-    // If the user accepts the additional wear, the minimum hysteresis time is 10s. Less than that will cause the control algorithm to oscillate.
-    uint32_t hysteresis_min_ms = 10 * 1000;  // milliseconds
-    if (switching_hysteresis_ms < hysteresis_min_ms)
-        switching_hysteresis_ms = hysteresis_min_ms;
-
     // Pre-calculate various limits
     overall_min_power_w = 230 * 1 * min_current_1p_ma / 1000;
 
-    if (static_cast<int32_t>(guaranteed_power_w) < overall_min_power_w) { // Cast safeguards against overall_min_power_w being negative and guaranteed_power_w is unlikely to be larger than 2GW.
-        guaranteed_power_w = static_cast<uint32_t>(overall_min_power_w);  // This is now safe.
-        logger.printfln("Raising guaranteed power to %u based on minimum charge current set in charge manager.", guaranteed_power_w);
+    if (guaranteed_power_w < overall_min_power_w) {
+        guaranteed_power_w = overall_min_power_w;
+        logger.printfln("Raising guaranteed power to %i based on minimum charge current set in charge manager.", guaranteed_power_w);
     }
 
     if (dynamic_load_enabled) {
@@ -320,8 +292,6 @@ void PowerManager::setup()
     }
 
     low_level_state.get("overall_min_power")->updateInt(overall_min_power_w);
-    low_level_state.get("threshold_3to1")->updateInt(0); // TODO dead code
-    low_level_state.get("threshold_1to3")->updateInt(0); // TODO dead code
 
     // Update data from meter and phase switcher back-end, requires power filter to be set up.
     update_data();
@@ -343,10 +313,6 @@ void PowerManager::setup()
     }
 
     task_scheduler.scheduleOnce([this]() {
-        // Tell CM how many phases are available. is_3phase is updated in the previous call to update_all_data().
-        // set_available_phases() uses callCommand(), which is not available during setup phase, so schedule a task for it.
-        set_available_phases(is_3phase ? 3 : 1);
-
         // Can't check for chargers in setup() because CM's setup() hasn't run yet to load the charger configuration.
         if (charge_manager.get_charger_count() <= 0) {
             logger.printfln("No chargers configured. Won't try to distribute energy.");
@@ -406,9 +372,6 @@ void PowerManager::register_urls()
 
     api.addPersistentConfig("power_manager/config", &config);
     api.addPersistentConfig("power_manager/dynamic_load_config", &dynamic_load_config);
-#if MODULE_DEBUG_AVAILABLE()
-    api.addPersistentConfig("power_manager/debug_config", &debug_config);
-#endif
 
     api.addState("power_manager/low_level_state", &low_level_state);
 
@@ -524,16 +487,6 @@ void PowerManager::set_available_current(int32_t current_pv, int32_t current_L1,
     low_level_state.get("charge_manager_available_current")->updateInt(current_pv);
 }
 
-void PowerManager::set_available_phases(uint32_t phases)
-{
-    String err = api.callCommand("charge_manager/available_phases_update", Config::ConfUpdateObject{{
-        {"phases", phases},
-    }});
-
-    if (!err.isEmpty())
-        logger.printfln("set_available_phases failed: %s", err.c_str());
-}
-
 static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter *filter)
 {
     // Check if filter history needs to be initialized
@@ -630,7 +583,6 @@ void PowerManager::update_data()
     // TODO remove have_phases and is_3phase
     // Update states from back-end
     is_3phase = phase_switcher_backend->phase_switching_capable() ? phase_switcher_backend->get_is_3phase() : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
-    have_phases = 1 + static_cast<int32_t>(is_3phase) * 2;
     low_level_state.get("is_3phase")->updateBool(is_3phase);
 
 #if MODULE_METERS_AVAILABLE()
@@ -760,8 +712,8 @@ void PowerManager::update_energy()
                         break;
 
                     // Check against guaranteed power only in MIN_PV mode.
-                    if (power_available_w < static_cast<int32_t>(guaranteed_power_w))
-                        power_available_w = static_cast<int32_t>(guaranteed_power_w);
+                    if (power_available_w < guaranteed_power_w)
+                        power_available_w = guaranteed_power_w;
 
                     break;
             }
