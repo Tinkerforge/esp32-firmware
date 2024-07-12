@@ -68,7 +68,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         [](int32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
             return (group); \
         }, \
-        [](CompareInfo left, CompareInfo right, CurrentLimits *_limits, const CurrentAllocatorConfig *cfg) { \
+        [](CompareInfo left, CompareInfo right, CurrentLimits *_limits, const CurrentAllocatorConfig *_cfg) { \
             return (filter); \
         }, \
         idx_array, \
