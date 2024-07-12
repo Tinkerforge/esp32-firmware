@@ -234,11 +234,6 @@ void PowerManager::setup()
     // If the PM is enabled, make sure to override the CM's default current.
     set_available_current(0, 0, 0, 0);
 
-    // Fill unused max limits with dymmy value.
-    for (size_t i = 1; i <= 3; i++) {
-        cm_limits->max[i] = -1;
-    }
-
     // Cache config for energy update
     default_mode                = config.get("default_mode")->asUint();
     excess_charging_enabled     = config.get("excess_charging_enable")->asBool();
@@ -778,7 +773,7 @@ void PowerManager::update_energy()
     if (power_available_w == INT32_MAX) {
         cm_limits->raw.pv = INT32_MAX;
         cm_limits->min.pv = INT32_MAX;
-        cm_limits->max.pv = INT32_MAX;
+        cm_limits->max_pv = INT32_MAX;
     } else {
         int32_t pv_raw_ma = power_available_w * 1000 / 230;
         update_minmax_filter(pv_raw_ma, &current_pv_minmax_ma);
@@ -797,7 +792,7 @@ void PowerManager::update_energy()
 
         cm_limits->raw.pv = pv_raw_ma;
         cm_limits->min.pv = current_pv_minmax_ma.min;
-        cm_limits->max.pv = current_pv_minmax_ma.max;
+        cm_limits->max_pv = current_pv_minmax_ma.max;
         (void)pv_long_min_ma; // TODO Set long min to phase_long_min_ma
 
         //logger.printfln("PV  meter=%f  limit=%5i  min=%5i  max=%5i  long min=%5i", static_cast<double>(power_at_meter_raw_w), pv_raw_ma, current_pv_minmax_ma.min, current_pv_minmax_ma.max, pv_long_min_ma);

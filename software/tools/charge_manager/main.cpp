@@ -258,9 +258,9 @@ int main(int argc, char **argv) {
 
     bool seen_all_chargers = true;
     CurrentLimits limits {
-        .raw = {32000, 32000, 32000, 32000},
-        .min = {32000, 32000, 32000, 32000},
-        .max = {32000, 32000, 32000, 32000},
+        .raw = {96000, 32000, 32000, 32000},
+        .min = {96000, 32000, 32000, 32000},
+        .max_pv = 96000,
     };
 
     bool cp_disconnect_requested = false;
