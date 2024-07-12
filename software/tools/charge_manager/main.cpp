@@ -260,6 +260,7 @@ int main(int argc, char **argv) {
     CurrentLimits limits {
         .raw = {96000, 32000, 32000, 32000},
         .min = {96000, 32000, 32000, 32000},
+        .spread = {96000, 32000, 32000, 32000},
         .max_pv = 96000,
     };
 
