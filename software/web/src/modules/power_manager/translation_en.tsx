@@ -47,6 +47,7 @@ let x = {
             "default_mode": "Default charging mode",
             "default_mode_muted": "will be used after reboot",
             "meter_slot_grid_power": "Power meter",
+            "meter_slot_grid_power_muted": "typically at the grid connection",
             "meter_slot_grid_power_select": "Select...",
             "meter_slot_grid_power_none": "No power meter configured",
             "guaranteed_power": "Min + PV: Minimum charging power",

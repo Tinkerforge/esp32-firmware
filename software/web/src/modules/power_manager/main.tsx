@@ -449,7 +449,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
 
                     <Collapse in={s.excess_charging_enable || !is_em}>
                         <div>
-                            <FormRow label={__("power_manager.content.meter_slot_grid_power")}>
+                            <FormRow label={__("power_manager.content.meter_slot_grid_power")} label_muted={__("power_manager.content.meter_slot_grid_power_muted")}>
                                 <InputSelect
                                     required={enabled}
                                     placeholder={meter_slots.length > 0 ? __("power_manager.content.meter_slot_grid_power_select") : __("power_manager.content.meter_slot_grid_power_none")}

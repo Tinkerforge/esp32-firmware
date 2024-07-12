@@ -47,6 +47,7 @@ let x = {
             "default_mode": "Standardlademodus",
             "default_mode_muted": "wird nach Neustart verwendet",
             "meter_slot_grid_power": "Stromzähler",
+            "meter_slot_grid_power_muted": "typischerweise am Netzanschluss",
             "meter_slot_grid_power_select": "Auswählen...",
             "meter_slot_grid_power_none": "Kein Stromzähler konfiguriert",
             "guaranteed_power": "Min + PV: Mindestladeleistung",
