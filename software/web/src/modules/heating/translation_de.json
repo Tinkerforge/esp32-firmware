@@ -1,0 +1,15 @@
+{
+    "heating": {
+        "status": {},
+        "navbar": {
+            "heating": "Heizung"
+        },
+        "content": {
+            "heating": "Heizung"
+        },
+        "script": {
+            "save_failed": "Speichern der Hiezungseinstellungen fehlgeschlagen",
+            "reboot_content_changed": "Heizungseinstellungen"
+        }
+    }
+}

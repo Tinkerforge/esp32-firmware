@@ -1,0 +1,15 @@
+{
+    "heating": {
+        "status": {},
+        "navbar": {
+            "heating": "Heating"
+        },
+        "content": {
+            "heating": "Heating"
+        },
+        "script": {
+            "save_failed": "Failed to save the heating settings",
+            "reboot_content_changed": "heating settings"
+        }
+    }
+}
