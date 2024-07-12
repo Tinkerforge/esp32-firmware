@@ -8,7 +8,7 @@
             "heating": "Heizung"
         },
         "script": {
-            "save_failed": "Speichern der Hiezungseinstellungen fehlgeschlagen",
+            "save_failed": "Speichern der Heizungseinstellungen fehlgeschlagen",
             "reboot_content_changed": "Heizungseinstellungen"
         }
     }
