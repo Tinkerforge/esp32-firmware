@@ -290,6 +290,9 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     trace(have_b1 ? "1: have B1" : "1: don't have B1");
 
     for (int i = 0; i < charger_count; ++i) {
+        if (phase_allocation[i] == 0)
+            continue;
+
         const auto *state = &charger_state[i];
 
         bool alloc_energy_under_thres = state->allocated_energy_this_rotation < ALLOCATED_ENERGY_ROTATION_THRESHOLD;
