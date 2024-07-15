@@ -751,10 +751,10 @@ void PowerManager::update_energy()
     }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    bool wants_on = power_available_filtered_w >= overall_min_power_w; // TODO FIXME Doesn't exist anymore
-    TristateBool automation_power_available = static_cast<TristateBool>(wants_on);
+    bool power_above_min = current_pv_minmax_ma.min >= overall_min_power_w;
+    TristateBool automation_power_available = static_cast<TristateBool>(power_above_min);
     if (automation_power_available != automation_power_available_last) {
-        automation.trigger(AutomationTriggerID::PMPowerAvailable, &wants_on, this);
+        automation.trigger(AutomationTriggerID::PMPowerAvailable, &power_above_min, this);
         automation_power_available_last = automation_power_available;
     }
 #endif
