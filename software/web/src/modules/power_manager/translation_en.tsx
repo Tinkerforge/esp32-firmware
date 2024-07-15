@@ -50,6 +50,7 @@ let x = {
             "meter_slot_grid_power_muted": "typically at the grid connection",
             "meter_slot_grid_power_select": "Select...",
             "meter_slot_grid_power_none": "No power meter configured",
+            "meter_slot_grid_power_missing_value": "sum of directional active power is missing",
             "guaranteed_power": "Min + PV: Minimum charging power",
             "guaranteed_power_muted": "Charging power that is allowed to be drawn from the grid to charge vehicles.",
             "target_power_from_grid": "Target grid power draw",
@@ -164,7 +165,10 @@ let x = {
         "script": {
             "save_failed": "Failed to save power manager settings.",
             "reboot_content_changed": "power manager settings",
-            "mode_change_failed": "Failed to change charging mode."
+            "mode_change_failed": "Failed to change charging mode.",
+
+            "meter_slots_internal": "charger only",
+            "meter_slots_no_values": "no values yet"
         }
     }
 }

@@ -19,7 +19,7 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { __, translate_unchecked } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import { METERS_SLOTS } from "../../build";
 import { h, Fragment, Component, RefObject } from "preact";
 import { Button, ButtonGroup, Collapse, Spinner } from "react-bootstrap";
@@ -33,8 +33,8 @@ import { InputNumber     } from "../../ts/components/input_number";
 import { InputSelect     } from "../../ts/components/input_select";
 import { Switch          } from "../../ts/components/switch";
 import { SubPage         } from "../../ts/components/sub_page";
-import { MeterConfig     } from "../meters/types";
 import { MeterClassID    } from "../meters/meter_class_id.enum";
+import { MeterValueID    } from "../meters/meter_value_id";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, Settings, Sun } from "react-feather";
@@ -49,24 +49,41 @@ export function PVExcessSettingsNavbar() {
 
 type StringStringTuple = [string, string];
 
-export function get_noninternal_meter_slots() {
+export function get_noninternal_meter_slots(required_ids : Readonly<MeterValueID[]>, missing_values_message: string) {
     let meter_slots: StringStringTuple[] = [];
 
     for (let i = 0; i < METERS_SLOTS; i++) {
-        let name;
+        const cfg = API.get_unchecked(`meters/${i}/config`) as API.getType["meters/0/config"]
 
-        let cfg = API.get_unchecked(`meters/${i}/config`) as API.getType["meters/0/config"]
-        if (cfg[0] == MeterClassID.None) {
-            name = null;
+        if (cfg == null) {
+            console.log(`power_manager: meters/${i}/config missing`);
+            continue;
+        } else if (cfg[0] == MeterClassID.None) {
+            continue;
         } else if (cfg[0] as any == MeterClassID.RS485Bricklet || cfg[0] as any == MeterClassID.EVSEV2) {
             // Disallow selecting the charger-internal meter for PM
-            name = null;
+            meter_slots.push([i.toString() + "-disabled", `${cfg[1]?.display_name} (${__("power_manager.script.meter_slots_internal")})`]);
         } else {
-            name = cfg[1]?.display_name;
-        }
+            const value_ids = API.get_unchecked(`meters/${i}/value_ids`) as Readonly<number[]>;
 
-        if (name !== null) {
-            meter_slots.push([i.toString(), name]);
+            if (value_ids?.length <= 0) {
+                meter_slots.push([i.toString(), `${cfg[1]?.display_name} (${__("power_manager.script.meter_slots_no_values")})`]);
+            } else {
+                let missing_required_value = false;
+
+                for (const id of required_ids) {
+                    if (value_ids.indexOf(id) < 0) {
+                        missing_required_value = true;
+                        break;
+                    }
+                }
+
+                if (missing_required_value) {
+                    meter_slots.push([i.toString() + "-disabled", `${cfg[1]?.display_name} (${missing_values_message})`]);
+                } else {
+                    meter_slots.push([i.toString(), cfg[1]?.display_name]);
+                }
+            }
         }
     }
 
@@ -332,7 +349,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         mode_list.push([s.excess_charging_enable ? "3" : "3-disabled", __("power_manager.status.mode_min_pv")]);
         mode_list.push(["0", __("power_manager.status.mode_fast")]);
 
-        let meter_slots = get_noninternal_meter_slots();
+        const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], __("power_manager.content.meter_slot_grid_power_missing_value"));
 
         let cm_config = API.get_unchecked("charge_manager/config");
         let cm_ok = cm_config?.enable_charge_manager && cm_config?.chargers.length >= 1;

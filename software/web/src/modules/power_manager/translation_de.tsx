@@ -50,6 +50,7 @@ let x = {
             "meter_slot_grid_power_muted": "typischerweise am Netzanschluss",
             "meter_slot_grid_power_select": "Auswählen...",
             "meter_slot_grid_power_none": "Kein Stromzähler konfiguriert",
+            "meter_slot_grid_power_missing_value": "Summe der gerichteten Wirkleistung fehlt",
             "guaranteed_power": "Min + PV: Mindestladeleistung",
             "guaranteed_power_muted": "Leistung, die im Min + PV-Modus zum Laden von Fahrzeugen aus dem Netz bezogen werden darf.",
             "target_power_from_grid": "Soll-Netzbezug",
@@ -164,7 +165,10 @@ let x = {
         "script": {
             "save_failed": "Speichern der Power Manager-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "Power Manager-Einstellungen",
-            "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen."
+            "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen.",
+
+            "meter_slots_internal": "nur Wallbox",
+            "meter_slots_no_values": "noch keine Werte"
         }
     }
 }

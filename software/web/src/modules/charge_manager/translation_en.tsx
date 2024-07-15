@@ -88,6 +88,7 @@ let x = {
             "dlm_meter_slot_grid_currents": "Energy meter",
             "dlm_meter_slot_grid_currents_select": "Select...",
             "dlm_meter_slot_grid_currents_none": "No power meter configured",
+            "dlm_meter_slot_grid_currents_missing_values": "directional phase currents are missing",
             "dlm_current_limit": "Grid current limit",
             "dlm_current_limit_muted": "connection's fuse rating",
             "dlm_largest_consumer_current": "Largest consumer current",
