@@ -83,18 +83,11 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
 
 void EventLog::trace_timestamp() {
 #if defined(BOARD_HAS_PSRAM)
-    size_t to_write = TIMESTAMP_LEN + 1; // + 1 for the \n
     char timestamp_buf[TIMESTAMP_LEN + 1] = {0};
     this->get_timestamp(timestamp_buf);
 
-    if (trace_buf.free() < to_write) {
-        trace_drop(to_write - trace_buf.free());
-    }
-
-    for (int i = 0; i < TIMESTAMP_LEN; ++i) {
-        trace_buf.push(timestamp_buf[i]);
-    }
-    trace_buf.push('\n');
+    timestamp_buf[TIMESTAMP_LEN] = '\n';
+    this->trace_write(timestamp_buf, TIMESTAMP_LEN);
 #endif
 }
 
@@ -107,32 +100,29 @@ void EventLog::trace_write(const char *buf) {
 void EventLog::trace_write(const char *buf, size_t len)
 {
 #if defined(BOARD_HAS_PSRAM)
-    size_t to_write = len + 1; // 1 for the \n
-
     if (len >= 2 && buf[len - 2] == '\r' && buf[len - 1] == '\n') {
         len -= 2;
     }
 
-    if (trace_buf.free() < to_write) {
-        trace_drop(to_write - trace_buf.free());
-    }
+    bool drop_line = trace_buf.free() < (len + 1);
 
-    for (int i = 0; i < len; ++i) {
-        trace_buf.push(buf[i]);
-    }
+    trace_buf.push_n(buf, len);
     if (buf[len - 1] != '\n') {
         trace_buf.push('\n');
     }
+
+    if (drop_line)
+        trace_buf.pop_until('\n');
 #endif
 }
 
 int EventLog::tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
 {
 #if defined(BOARD_HAS_PSRAM)
-    char buf[256];
+    char buf[768];
     auto buf_size = ARRAY_SIZE(buf);
     auto written = 0;
-
+/*
     *(buf + written) = '|';
     ++written;
 
@@ -157,7 +147,7 @@ int EventLog::tracefln_prefixed(const char *prefix, size_t prefix_len, const cha
 
     *(buf + written) = ' ';
     ++written;
-
+*/
     written += vsnprintf_u(buf + written, buf_size - written, fmt, args);
     if (written >= buf_size) {
         trace_write("Next log message was truncated. Bump EventLog::printfln buffer size!", 68); // Don't include termination in write request.
