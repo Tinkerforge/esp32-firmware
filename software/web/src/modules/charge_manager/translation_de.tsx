@@ -88,6 +88,7 @@ let x = {
             "dlm_meter_slot_grid_currents": "Stromzähler",
             "dlm_meter_slot_grid_currents_select": "Auswählen...",
             "dlm_meter_slot_grid_currents_none": "Kein Stromzähler konfiguriert",
+            "dlm_meter_slot_grid_currents_missing_values": "gerichtete Phasenströme fehlen",
             "dlm_current_limit": "Maximaler Strom am Netzanschluss",
             "dlm_current_limit_muted": "Nennwert der Absicherung",
             "dlm_largest_consumer_current": "Strombedarf des größten Einzelverbrauchers",

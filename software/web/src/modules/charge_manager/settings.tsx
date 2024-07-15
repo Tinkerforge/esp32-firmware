@@ -32,6 +32,7 @@ import { Switch } from "../../ts/components/switch";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 
+import { MeterValueID } from "../meters/meter_value_id";
 import { get_noninternal_meter_slots } from "../power_manager/main";
 import type { ChargeManagerStatus } from "./main"
 import { FormSeparator } from "src/ts/components/form_separator";
@@ -112,7 +113,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         let is_warp3          = API.get_unchecked("evse/hardware_configuration")?.evse_version >= 30;
         let show_1p_current   = energyManagerMode || warpUltimateMode || is_warp3 || API.hasFeature("phase_switch");
 
-        const meter_slots = get_noninternal_meter_slots();
+        const meter_slots = get_noninternal_meter_slots([MeterValueID.CurrentL1ImExDiff, MeterValueID.CurrentL2ImExDiff, MeterValueID.CurrentL3ImExDiff], __("charge_manager.content.dlm_meter_slot_grid_currents_missing_values"));
 
         let verbose = <FormRow label={__("charge_manager.content.verbose")}>
                 <Switch desc={__("charge_manager.content.verbose_desc")}
