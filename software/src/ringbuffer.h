@@ -25,14 +25,14 @@
 #include <type_traits>
 
 template <typename T, size_t SIZE, typename AlignedT, void*(*malloc_fn)(size_t), void(*free_fn)(void*)>
-class TF_Ringbuffer {
-    static_assert(sizeof(AlignedT) % sizeof(T) == 0, "TF_Ringbuffer: Aligned type size must be divisible by target type size");
-    static_assert((sizeof(T) & (sizeof(T) - 1)) == 0, "TF_Ringbuffer: Target type must have a size that is a power of two");
-    static_assert((sizeof(AlignedT) & (sizeof(AlignedT) - 1)) == 0, "TF_Ringbuffer: Aligned type must have a size that is a power of two");
-    static_assert(std::is_unsigned<AlignedT>::value, "TF_Ringbuffer: Aligned type must be unsigned");
+class TF_PackedRingbuffer {
+    static_assert(sizeof(AlignedT) % sizeof(T) == 0, "TF_PackedRingbuffer: Aligned type size must be divisible by target type size");
+    static_assert((sizeof(T) & (sizeof(T) - 1)) == 0, "TF_PackedRingbuffer: Target type must have a size that is a power of two");
+    static_assert((sizeof(AlignedT) & (sizeof(AlignedT) - 1)) == 0, "TF_PackedRingbuffer: Aligned type must have a size that is a power of two");
+    static_assert(std::is_unsigned<AlignedT>::value, "TF_PackedRingbuffer: Aligned type must be unsigned");
 
 public:
-    TF_Ringbuffer() : start(0), end(0)
+    TF_PackedRingbuffer() : start(0), end(0)
     {
     }
 
@@ -171,4 +171,142 @@ public:
     // index of first invalid element
     size_t end;
     AlignedT *buffer;
+};
+
+
+template <typename T, size_t SIZE, void*(*malloc_fn)(size_t), void(*free_fn)(void*)>
+class TF_Ringbuffer {
+    static_assert((SIZE & (SIZE - 1)) == 0, "TF_Ringbuffer: SIZE must be power of two");
+
+public:
+    TF_Ringbuffer() : start(0), end(0)
+    {
+    }
+
+    void setup()
+    {
+        auto buf_size = sizeof(T) * SIZE;
+        buffer = (T *)malloc_fn(buf_size);
+    }
+
+    void clear()
+    {
+        start = 0;
+        end = 0;
+    }
+
+    inline bool empty() {
+        return start == end;
+    }
+
+    inline size_t size()
+    {
+        return SIZE - 1;
+    }
+
+    inline size_t used()
+    {
+        // SIZE is a power of two. The compiler will optimize this to & (SIZE - 1) or use extui (Extract Unsigned Immediate) if SIZE <= 16.
+        return (SIZE + end - start) % SIZE;
+    }
+
+    inline size_t free()
+    {
+        return size() - used();
+    }
+
+    void push(T val)
+    {
+        buffer[end] = val;
+        end = (end + 1) % SIZE;
+
+        // This is true if we've just overwritten the oldest item
+        if (end == start) {
+            start = (start + 1) % SIZE;
+        }
+    }
+
+    bool pop(T *val)
+    {
+        // Silence Wmaybe-uninitialized in the _read_[type] functions.
+        *val = 0;
+
+        if (empty()) {
+            return false;
+        }
+
+        *val = buffer[start];
+        start = (start + 1) % SIZE;
+
+        return true;
+    }
+
+    bool peek(T *val)
+    {
+        // Silence Wmaybe-uninitialized in the _read_[type] functions.
+        *val = 0;
+
+        if (empty()) {
+            return false;
+        }
+
+        *val = buffer[start];
+        return true;
+    }
+
+    bool peek_offset(T *val, size_t offset)
+    {
+        // Silence Wmaybe-uninitialized in the _read_[type] functions.
+        *val = 0;
+
+        if (used() <= offset) {
+            return false;
+        }
+
+        size_t idx = (SIZE + start + offset) % SIZE;
+        *val = buffer[idx];
+
+        return true;
+    }
+
+    void push_n(const T *val, size_t n) {
+        if (n > size())
+            return;
+
+        bool fits = n < free();
+
+        while (end + n > SIZE) {
+            size_t to_write = SIZE - end;
+            memcpy(buffer + end, val, to_write);
+            val += to_write;
+            n -= to_write;
+            end = 0;
+        }
+
+        memcpy(buffer + end, val, n);
+        end = (end + n) % SIZE;
+
+        if (!fits) {
+            start = (start + 1) % SIZE;
+        }
+    }
+
+    void pop_until(T needle)
+    {
+        while (!empty()) {
+            bool found = buffer[start] == needle;
+            start = (start + 1) % SIZE;
+
+            if (found) {
+                return;
+            }
+        }
+        return;
+    }
+
+    // index of first valid elemnt
+    size_t start;
+    // index of first invalid element
+    size_t end;
+    T *buffer;
 };

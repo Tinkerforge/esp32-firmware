@@ -98,7 +98,7 @@ public:
     METER_VALUE_HISTORY_VALUE_TYPE last_live_val;
     int last_live_val_valid = 0;
 
-    TF_Ringbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
+    TF_PackedRingbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
                   3 * 60 * HISTORY_MINUTE_INTERVAL,
                   uint32_t,
 #if defined(BOARD_HAS_PSRAM)
@@ -109,7 +109,7 @@ public:
                   heap_caps_free> live;
     uint32_t live_last_update = 0;
 
-    TF_Ringbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
+    TF_PackedRingbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
                   HISTORY_RING_BUF_SIZE,
                   uint32_t,
 #if defined(BOARD_HAS_PSRAM)

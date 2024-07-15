@@ -36,7 +36,7 @@ class EventLog final : public IModule
 {
 public:
     std::mutex event_buf_mutex;
-    TF_Ringbuffer<char,
+    TF_PackedRingbuffer<char,
                   10000,
                   uint32_t,
 #if defined(BOARD_HAS_PSRAM)
@@ -50,7 +50,6 @@ public:
     std::mutex trace_buf_mutex;
     TF_Ringbuffer<char,
                   1 << 20,
-                  char,
                   malloc_psram,
                   heap_caps_free> trace_buf;
 #endif
