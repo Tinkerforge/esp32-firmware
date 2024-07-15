@@ -735,7 +735,7 @@ static bool try_activate(const ChargerState *state, bool activate_3p, bool have_
 
     // If there are no chargers active, don't require the enable cost on PV.
     Cost check_phase{
-        CHECK_IMPROVEMENT | have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN,
+        CHECK_IMPROVEMENT | (have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN),
         CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
         CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
         CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE
