@@ -626,52 +626,75 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 }
 
 // A charger can be activated if
-// - wnd_max.pv is less than the min PV limit (if CHECK_IMPROVEMENT or CHECK_IMPROVEMENT_ALL_PHASE is set for the PV phase)
-// - wnd_max is less than the min limit of
-//      - at least one phase that the charger is active on (if CHECK_IMPROVEMENT is set for that phase)
-//      - or all phases that the charger is active on (if CHECK_IMPROVEMENT_ALL_PHASE is set for that phase)
-//   and activating the charger moves wnd_max closer to the limit (i.e. its cost on this phase is positive)
-// - the
+// - (1) the enable cost of all active and the new charger is less than the spread limit on all relevant phases
+//   OR (2) (
+//      - wnd_max.pv is less than the min PV limit (if CHECK_IMPROVEMENT or CHECK_IMPROVEMENT_ALL_PHASE is set for the PV phase)
+//      - wnd_max is less than the min limit of
+//          - at least one phase that the charger is active on (if CHECK_IMPROVEMENT is set for that phase)
+//          - or all phases that the charger is active on (if CHECK_IMPROVEMENT_ALL_PHASE is set for that phase)
+//        and activating the charger moves wnd_max closer to the limit (i.e. its cost on this phase is positive)
+//   )
+// - (3) the
 //      - enable cost (if CHECK_MIN_WINDOW_ENABLE is set for that phase)
 //      - cost  (if CHECK_MIN_WINDOW_MIN is set for that phase)
 //   does not exceed the min on any phase or PV that the charger is active on
+// tl;dr: A charger can be activated if (3) wouldn't have to shut it down in the last few minutes (minimum limit)
+//        and (2) there's current available on any/all relevant phase(s) even if all already active chargers are at their maximum (maximum limit)
+//        or (1) we wouldn't have to shut down the charger in the last few hours (spread limit)
 static constexpr int CHECK_MIN_WINDOW_MIN = 1;
 static constexpr int CHECK_MIN_WINDOW_ENABLE = 2;
 static constexpr int CHECK_IMPROVEMENT = 4;
 static constexpr int CHECK_IMPROVEMENT_ALL_PHASE = 8;
 static bool can_activate(const Cost check_phase, const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch=false) {
-    bool improves_pv = (check_phase.pv & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || (new_cost.pv > 0 && wnd_max.pv < limits->min.pv);
-    if (!improves_pv) {
-        logger.tracefln("    Can't activate: does not improve PV");
-        return false;
-    }
-
-    bool check_all_phases = ((check_phase.l1 | check_phase.l2 | check_phase.l3) & CHECK_IMPROVEMENT_ALL_PHASE) != 0;
-    bool improves_any_phase = false;
-    bool improves_all_phases = true;
-
-    for (size_t p = 1; p < 4; ++p) {
+    bool improves_all_spread = true;
+    for (size_t p = 0; p < 4; ++p) {
         if ((check_phase[p] & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || new_cost[p] <= 0)
             continue;
 
-        // More efficient than |= or &= on the Xtensa.
-        if (wnd_max[p] < limits->min[p]) {
-            improves_any_phase = true;
-        } else {
-            improves_all_phases = false;
+        auto required = wnd_min[p] * cfg->enable_current_factor + new_enable_cost[p];
+
+        if (limits->spread[p] < required) {
+            improves_all_spread = false;
         }
     }
-    if ((check_all_phases && !improves_all_phases) || (!check_all_phases && !improves_any_phase)) {
-        logger.tracefln("    Can't activate: check_all %s improves_all %s improves_any %s is_unknown_rotated_1p_3p_switch %s",
-                        check_all_phases ? "true" : "false",
-                        improves_all_phases ? "true" : "false",
-                        improves_any_phase ? "true" : "false",
-                        is_unknown_rotated_1p_3p_switch ? "true" : "false");
 
-        // PV is already checked above.
-        bool enable = is_unknown_rotated_1p_3p_switch;
-        if (!enable)
+    if (!improves_all_spread) {
+        trace("    Does not improve spread");
+        bool improves_pv = (check_phase.pv & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || (new_cost.pv > 0 && wnd_max.pv < limits->min.pv);
+        if (!improves_pv) {
+            trace("    Can't activate: does not improve PV");
             return false;
+        }
+
+        bool check_all_phases = ((check_phase.l1 | check_phase.l2 | check_phase.l3) & CHECK_IMPROVEMENT_ALL_PHASE) != 0;
+        bool improves_any_phase = false;
+        bool improves_all_phases = true;
+
+        for (size_t p = 1; p < 4; ++p) {
+            if ((check_phase[p] & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || new_cost[p] <= 0)
+                continue;
+
+            // More efficient than |= or &= on the Xtensa.
+            if (wnd_max[p] < limits->min[p]) {
+                improves_any_phase = true;
+            } else {
+                improves_all_phases = false;
+            }
+        }
+        if ((check_all_phases && !improves_all_phases) || (!check_all_phases && !improves_any_phase)) {
+            trace("    Can't activate: check_all %c improves_all %c improves_any %c is_unknown_rotated_1p_3p_switch %c",
+                            check_all_phases ? '1' : '0',
+                            improves_all_phases ? '1' : '0',
+                            improves_any_phase ? '1' : '0',
+                            is_unknown_rotated_1p_3p_switch ? '1' : '0');
+
+            // PV is already checked above.
+            bool enable = is_unknown_rotated_1p_3p_switch;
+            if (!enable)
+                return false;
+        }
+    } else {
+        trace("    Improves spread");
     }
 
     for (size_t p = 0; p < 4; ++p) {
