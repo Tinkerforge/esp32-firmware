@@ -83,7 +83,8 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
 
 void EventLog::trace_timestamp() {
 #if defined(BOARD_HAS_PSRAM)
-    char timestamp_buf[TIMESTAMP_LEN + 1] = {0};
+    // completely written in get_timestamp
+    char timestamp_buf[TIMESTAMP_LEN + 1];
     this->get_timestamp(timestamp_buf);
 
     timestamp_buf[TIMESTAMP_LEN] = '\n';
