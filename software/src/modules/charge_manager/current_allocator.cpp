@@ -345,7 +345,10 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
         bool activate_3p = is_fixed_3p;
 
-        phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
+        // Don't override existing allocation.
+        // This charger could be switched to 3p.
+        if (phase_allocation[idx_array[i]] == 0)
+            phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
 
         trace("2: %d: plugged in. alloc %dp", idx_array[i], phase_allocation[idx_array[i]]);
     }
