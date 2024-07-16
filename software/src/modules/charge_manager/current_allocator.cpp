@@ -1396,7 +1396,12 @@ int allocate_current(
                 charger.last_wakeup = now;
             }
 
-            if (!charger.last_alloc_fulfilled_reqd && current_to_set >= charger.requested_current) {
+            // If we could not allocate the charger its requested current the last time
+            // but we can do this now (note that the requested current now does not have to be the same it was the last time!)
+            // and we've just increased the allocation (as opposed to the requested current decreased),
+            // we probably have more current available.
+            // Ignore the phase currents for some time for a faster ramp up.
+            if (!charger.last_alloc_fulfilled_reqd && current_to_set >= charger.requested_current && current_to_set > charger_alloc.allocated_current) {
                 trace("charger %d: requested current fulfilled. Will use supported current for 1 min.", i);
                 charger.ignore_phase_currents = now;
             }
