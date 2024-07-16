@@ -513,18 +513,49 @@ static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp
     return sprintf_u(buf, "%2.2i.%2.2i.%4.4i %2.2i:%2.2i", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min);
 }
 
-static size_t get_display_name(uint8_t user_id, char *ret_buf)
+static_assert(DISPLAY_NAME_LENGTH == 32, "Unexpected display name length");
+struct display_name_entry {
+    uint32_t length;
+    uint32_t name[DISPLAY_NAME_LENGTH / sizeof(uint32_t)];
+};
+
+static size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache)
 {
-    size_t result = 0;
-    task_scheduler.await([&result, user_id, ret_buf](){result = users.get_display_name(user_id, ret_buf);});
-    return result;
+    if (display_name_cache[user_id].length > DISPLAY_NAME_LENGTH) {
+        size_t length = 0;
+        uint32_t buf[9] = {}; // Make sure that short names are zero-padded.
+        task_scheduler.await([&length, user_id, &buf]() {length = users.get_display_name(user_id, reinterpret_cast<char *>(buf));});
+        if (length > sizeof(display_name_cache[user_id].name)) {
+            logger.printfln("Returned user name too long: [%.*s]", length, reinterpret_cast<char *>(buf));
+            display_name_cache[user_id].length = 0;
+        } else {
+            // Ignore actual name length in order to copy zero-padding as well.
+            uint32_t *src = buf;
+            uint32_t *dst_start = display_name_cache[user_id].name;
+            uint32_t *dst_end = dst_start + ARRAY_SIZE(display_name_cache[user_id].name);
+            do {
+                *dst_start++ = *src++;
+            } while (dst_start < dst_end);
+
+            display_name_cache[user_id].length = length;
+        }
+    }
+
+    uint32_t *src_start = display_name_cache[user_id].name;
+    uint32_t *src_end = src_start + (display_name_cache[user_id].length + 3) / 4; // Round up; copies some buffer slack that must be zero-filled. See padding above.
+    uint32_t *dst = reinterpret_cast<uint32_t *>(ret_buf);
+    while (src_start < src_end) {
+        *dst++ = *src_start++;
+    }
+
+    return display_name_cache[user_id].length;
 }
 
-static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, bool english, uint32_t electricity_price)
+static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, bool english, uint32_t electricity_price, display_name_entry *display_name_cache)
 {
     buf += 1 + timestamp_min_to_date_time_string(buf, cs.timestamp_minutes, english);
 
-    size_t name_len = get_display_name(cs.user_id, buf);
+    size_t name_len = get_display_name(cs.user_id, buf, display_name_cache);
     buf += 1 + name_len;
 
     if (charged_invalid(cs, ce)) {
@@ -896,6 +927,15 @@ void ChargeTracker::register_urls()
         }
 search_done:
 
+        display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(heap_caps_malloc(MAX_PASSIVE_USERS * sizeof(display_name_cache[0]), MALLOC_CAP_32BIT));
+        if (!display_name_cache) {
+            return request.send(500, "text/plain", "Failed to generate PDF: No memory");;
+        }
+
+        for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
+            display_name_cache[i].length = UINT32_MAX;
+        }
+
         char *stats_head = stats_buf;
         stats_head += 1 + sprintf_u(stats_head, "%s: %s", english ? "Charger" : "Wallbox", dev_name.c_str());
 
@@ -908,7 +948,7 @@ search_done:
         else if (user_filter == -1)
             stats_head += sprintf_u(stats_head, "%s", english ? "deleted users" : "Gelöschte Benutzer");
         else
-            stats_head += get_display_name(user_filter, stats_head);
+            stats_head += get_display_name(user_filter, stats_head, display_name_cache);
         ++stats_head;
 
         stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported period" : "Exportierter Zeitraum");
@@ -997,7 +1037,8 @@ search_done:
                             &current_charge,
                             electricity_price,
                             english,
-                            configured_users]
+                            configured_users,
+                            &display_name_cache]
                            (const char * * table_lines) {
             memset(table_lines_buffer, 0, ARRAY_SIZE(table_lines_buffer));
 
@@ -1033,7 +1074,7 @@ search_done:
                         continue;
 
 
-                    table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, english, electricity_price);
+                    table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, english, electricity_price, display_name_cache);
                     ++lines_generated;
                 }
 
@@ -1057,6 +1098,7 @@ search_done:
             *table_lines = table_lines_buffer;
             return lines_generated;
         });
+        free(display_name_cache);
         logger.printfln("PDF generation done.");
         return request.endChunkedResponse();
     });
