@@ -385,11 +385,11 @@ void Users::search_next_free_user()
     config.get("next_user_id")->updateUint(user_id);
 }
 
-int Users::get_display_name(uint8_t user_id, char *ret_buf)
+size_t Users::get_display_name(uint8_t user_id, char *ret_buf)
 {
     for (auto &cfg : config.get("users")) {
         if (cfg.get("id")->asUint() == user_id) {
-            String s = cfg.get("display_name")->asString();
+            const String &s = cfg.get("display_name")->asString();
             strncpy(ret_buf, s.c_str(), 32);
             return min(s.length(), 32u);
         }

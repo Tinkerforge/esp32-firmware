@@ -24,7 +24,7 @@
 
 #include "pdfgen.h"
 
-const uint8_t logo_png[] = {
+static const uint8_t logo_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
   0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x01, 0x0d, 0x00, 0x00, 0x00, 0x23,
   0x01, 0x03, 0x00, 0x00, 0x00, 0xb4, 0x0d, 0xcd, 0xb9, 0x00, 0x00, 0x00,
@@ -40,7 +40,6 @@ const uint8_t logo_png[] = {
   0x00, 0xcd, 0xa5, 0xe8, 0x0e, 0xf6, 0x3c, 0x2d, 0x03, 0x00, 0x00, 0x00,
   0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
-unsigned int logo_png_len = 165;
 
 #define LEFT_MARGIN PDF_MM_TO_POINT(15)
 #define LETTERHEAD_LEFT_MARGIN PDF_MM_TO_POINT(25)
@@ -62,7 +61,7 @@ unsigned int logo_png_len = 165;
 
 #define TABLE_HEADER_COLS 6
 
-float table_column_offsets[] {
+static const float table_column_offsets[] {
     (0 * (LINE_WIDTH / TABLE_HEADER_COLS)),
     (0.8 * (LINE_WIDTH / TABLE_HEADER_COLS)),
     (3.4 * (LINE_WIDTH / TABLE_HEADER_COLS)),
@@ -77,7 +76,7 @@ float table_column_offsets[] {
 
 #define TABLE_LINES_PER_OBJECT 8
 
-int get_streams_per_page(bool first_page, int *table_lines_to_place)
+static int get_streams_per_page(bool first_page, int *table_lines_to_place)
 {
     int result = 0;
     if (first_page) {
@@ -146,9 +145,8 @@ int init_pdf_generator(WebServerRequest *request,
     });
 
     pdf_add_image_callback(pdf, [](struct pdf_doc *pdf_doc, uint32_t page_num, uint32_t image_num) -> int {
-        return pdf_add_png_image_data(pdf_doc, NULL, LEFT_MARGIN, PDF_A4_HEIGHT - 100 + 18, -1, 75 - 18 * 2, LOGO_BACKGROUND, logo_png, logo_png_len);
+        return pdf_add_png_image_data(pdf_doc, NULL, LEFT_MARGIN, PDF_A4_HEIGHT - 100 + 18, -1, 75 - 18 * 2, LOGO_BACKGROUND, logo_png, sizeof(logo_png));
     });
-
 
     pdf_add_stream_callback(pdf, [pages_to_be_created, table_lines_last_page, &table_content_placed, tracked_charges, table_lines_cb, stats, stats_lines, letterhead, letterhead_lines, table_header](struct pdf_doc *pdf_doc, uint32_t page_num, uint32_t stream_num) -> int {
         // Logo background

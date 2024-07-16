@@ -513,9 +513,9 @@ static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp
     return sprintf_u(buf, "%2.2i.%2.2i.%4.4i %2.2i:%2.2i", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min);
 }
 
-static int get_display_name(uint8_t user_id, char *ret_buf)
+static size_t get_display_name(uint8_t user_id, char *ret_buf)
 {
-    int result = 0;
+    size_t result = 0;
     task_scheduler.await([&result, user_id, ret_buf](){result = users.get_display_name(user_id, ret_buf);});
     return result;
 }
@@ -524,8 +524,8 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
 {
     buf += 1 + timestamp_min_to_date_time_string(buf, cs.timestamp_minutes, english);
 
-    get_display_name(cs.user_id, buf);
-    buf += 1 + strnlen(buf, DISPLAY_NAME_LENGTH);
+    size_t name_len = get_display_name(cs.user_id, buf);
+    buf += 1 + name_len;
 
     if (charged_invalid(cs, ce)) {
         memcpy(buf, "N/A", ARRAY_SIZE("N/A"));

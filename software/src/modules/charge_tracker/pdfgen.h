@@ -329,7 +329,7 @@ int pdf_add_text(struct pdf_doc *pdf, struct pdf_object *page,
 
 int pdf_add_multiple_text_spacing(struct pdf_doc *pdf, struct pdf_object *page,
                                 const char *text, size_t text_lines, size_t text_cols, float size, float xoff,
-                                float yoff, uint32_t colour, float spacing, float leading, float *col_offsets, bool truncate_cells = true);
+                                float yoff, uint32_t colour, float spacing, float leading, const float *col_offsets, bool truncate_cells = true);
 
 int pdf_add_horizontal_lines(struct pdf_doc *pdf, struct pdf_object *page, float x1,
                  float y1, float x2, float y2, float width, uint32_t colour, float spacing, int count, bool first_line_double_wide);

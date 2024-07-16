@@ -54,7 +54,7 @@ public:
     void rename_user(uint8_t user_id, const String &username, const String &display_name);
     void remove_from_username_file(uint8_t user_id);
     void search_next_free_user();
-    int get_display_name(uint8_t user_id, char *ret_buf);
+    size_t get_display_name(uint8_t user_id, char *ret_buf);
     bool is_user_configured(uint8_t user_id);
 
     #define TRIGGER_CHARGE_ANY 0

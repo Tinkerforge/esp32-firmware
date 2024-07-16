@@ -1274,7 +1274,7 @@ static int pdf_get_font_encoded_text_truncation_point(struct pdf_doc *pdf, const
 
 int pdf_add_multiple_text_spacing(struct pdf_doc *pdf, struct pdf_object *page,
                                 const char * text, size_t text_lines, size_t text_cols, float size, float xoff,
-                                float yoff, uint32_t colour, float spacing, float leading, float *col_offsets, bool truncate_cells)
+                                float yoff, uint32_t colour, float spacing, float leading, const float *col_offsets, bool truncate_cells)
 {
     int ret;
 
