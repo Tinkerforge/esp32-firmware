@@ -371,7 +371,7 @@ bool ChargeTracker::setupRecords()
 
         f = LittleFS.open(chargeRecordFilename(found_blobs[i]));
         if (f.size() != CHARGE_RECORD_MAX_FILE_SIZE) {
-            logger.printfln("Charge record %s is too long: %u bytes", f.name(), f.size());
+            logger.printfln("Charge record %s doesn't have max size: %u bytes", f.name(), f.size());
             return false;
         }
     }
@@ -980,7 +980,7 @@ search_done:
                                        "Cost (€)";
 
         init_pdf_generator(&request,
-                           "Title",
+                           english ? "WARP Charge Log" : "WARP Ladeprotokoll",
                            stats_buf, (electricity_price == 0) ? 5 : 6,
                            letterhead.get(), letterhead_lines,
                            english ? table_header_en : table_header_de,
