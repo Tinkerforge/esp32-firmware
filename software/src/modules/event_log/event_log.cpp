@@ -88,7 +88,7 @@ void EventLog::trace_timestamp() {
     this->get_timestamp(timestamp_buf);
 
     timestamp_buf[TIMESTAMP_LEN] = '\n';
-    this->trace_write(timestamp_buf, TIMESTAMP_LEN);
+    this->trace_write(timestamp_buf, TIMESTAMP_LEN + 1);
 #endif
 }
 
