@@ -80,12 +80,18 @@ public:
     size_t charger_count = 0;
     ChargerState *charger_state = nullptr;
 
-    CurrentLimits *get_limits() {return &limits;}
+    CurrentLimits *get_limits() {
+        // TODO: Maybe add separate function for this?
+        static_cm = false;
+        return &limits;
+    }
     const Cost *get_allocated_currents() {return &allocated_currents;}
 
 private:
     CurrentLimits limits, limits_post_allocation;
     Cost allocated_currents;
+
+    bool static_cm = true;
 
     bool all_chargers_seen = false;
 
