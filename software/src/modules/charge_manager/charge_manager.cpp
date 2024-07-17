@@ -179,13 +179,12 @@ void ChargeManager::pre_setup()
 
     available_current = ConfigRoot{Config::Object({
         {"current", Config::Uint32(0)},
-    }), [](const Config &conf, ConfigSource source) -> String {
-#if MODULE_POWER_MANAGER_AVAILABLE()
-        if (source == ConfigSource::API && power_manager.get_enabled()) {
+    }), [this](const Config &conf, ConfigSource source) -> String {
+        if (source == ConfigSource::API && !this->static_cm) {
             logger.printfln("Cannot set available_current via the API if the Power Manager is enabled.");
             return "Cannot set available_current if the Power Manager is enabled.";
         }
-#endif
+
         if (conf.get("current")->asUint() > max_avail_current)
             return "Current too large: maximum available current is configured to " + String(max_avail_current);
         return "";
@@ -215,7 +214,8 @@ void ChargeManager::pre_setup()
 #if MODULE_AUTOMATION_AVAILABLE() && !MODULE_ENERGY_MANAGER_AVAILABLE()
     automation.register_trigger(
         AutomationTriggerID::ChargeManagerWd,
-        *Config::Null()
+        *Config::Null(),
+        nullptr, false
     );
 
     automation.register_action(
@@ -231,7 +231,8 @@ void ChargeManager::pre_setup()
             if (config->get("current")->asUint() > max_avail_current)
                 return "Current too large: maximum available current is configured to " + String(max_avail_current);
             return "";
-        });
+        },
+        false);
 #endif
 }
 
@@ -502,8 +503,8 @@ const char *ChargeManager::get_charger_name(uint8_t idx)
 void ChargeManager::register_urls()
 {
 #if MODULE_AUTOMATION_AVAILABLE() && MODULE_POWER_MANAGER_AVAILABLE() && !MODULE_ENERGY_MANAGER_AVAILABLE()
-    automation.set_enabled(AutomationTriggerID::ChargeManagerWd, !power_manager.get_enabled());
-    automation.set_enabled(AutomationActionID::SetManagerCurrent, !power_manager.get_enabled());
+    automation.set_enabled(AutomationTriggerID::ChargeManagerWd, this->static_cm);
+    automation.set_enabled(AutomationActionID::SetManagerCurrent, this->static_cm);
 #endif
 
     api.addPersistentConfig("charge_manager/config", &config);
