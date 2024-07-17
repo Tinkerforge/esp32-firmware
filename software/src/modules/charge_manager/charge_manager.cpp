@@ -305,7 +305,8 @@ void ChargeManager::setup()
     ca_config->requested_current_margin = requested_current_margin;
     ca_config->requested_current_threshold = requested_current_threshold;
 
-    available_current.get("current")->updateUint(config.get("default_available_current")->asUint());
+    auto default_current = config.get("default_available_current")->asUint();
+    available_current.get("current")->updateUint(default_current);
     for (int i = 0; i < config.get("chargers")->count(); ++i) {
         state.get("chargers")->add();
         state.get("chargers")->get(i)->get("name")->updateString(config.get("chargers")->get(i)->get("name")->asString());
@@ -336,6 +337,13 @@ void ChargeManager::setup()
     for (int i = 0; i < config.get("chargers")->count(); ++i) {
         charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());
     }
+
+    // TODO: Change all currents everywhere to int32_t or int16_t.
+    int def_cur = (int) default_current;
+    this->limits.raw = {3 * def_cur, def_cur, def_cur, def_cur};
+    this->limits.min = {3 * def_cur, def_cur, def_cur, def_cur};
+    this->limits.spread = {3 * def_cur, def_cur, def_cur, def_cur};
+    this->limits.max_pv = 3 * def_cur;
 
     start_manager_task();
 
@@ -507,13 +515,14 @@ void ChargeManager::register_urls()
         this->available_current.get("current")->updateUint(current);
         this->last_available_current_update = millis();
         this->watchdog_triggered = false;
-    }, false);
 
-    api.addState("charge_manager/available_phases", &available_phases);
-    api.addCommand("charge_manager/available_phases_update", &available_phases_update, {}, [this](){
-        uint32_t phases = this->available_phases_update.get("phases")->asUint();
-        this->available_phases.get("phases")->updateUint(phases);
-        logger.printfln("Available phases: %u", phases);
+        for(size_t i = 1; i < 4; ++i) {
+            this->limits.raw[i] = current;
+            this->limits.min[i] = current;
+            this->limits.spread[i] = current;
+        }
+        this->limits.max_pv = 3 * current; //TODO: unlimited?
+
     }, false);
 
     api.addState("charge_manager/debug_limits", &limits_cfg);
@@ -521,6 +530,7 @@ void ChargeManager::register_urls()
         for(size_t i = 0; i < 4; ++i) {
             this->limits.raw[i] = limits_cfg.get(i)->asInt();
             this->limits.min[i] = limits_cfg.get(i)->asInt();
+            this->limits.spread[i] = limits_cfg.get(i)->asInt();
         }
         this->limits.max_pv = limits_cfg.get(0)->asInt();
     }, true);
