@@ -174,7 +174,7 @@ export class PowerManagerStatus extends Component {
                 </FormRow>
                 : null}
 
-            {API.hasFeature("phase_switch") ?
+            {API.hasFeature("phase_switch") && (API.get_unchecked("evse/management_enabled") == null || !API.get_unchecked("evse/management_enabled").enabled) ?
                 <FormRow label={__("power_manager.status.phase_switching")}>
                     <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                         <Button
@@ -195,7 +195,7 @@ export class PowerManagerStatus extends Component {
                         </Button>
                     </ButtonGroup>
                 </FormRow>
-            : (API.get('power_manager/config').enabled ?
+            : (API.get('power_manager/config').enabled || (API.hasFeature("phase_switch") && API.get_unchecked("evse/management_enabled")?.enabled) ?
                 <FormRow label={__("power_manager.status.phase_switching")}>
                     <IndicatorGroup
                         value={!ll_state.is_3phase ? 0 : 1}
