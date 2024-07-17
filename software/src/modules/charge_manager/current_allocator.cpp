@@ -40,7 +40,7 @@
 
 #define ALLOCATION_TIMEOUT_S 5
 
-#define ENABLE_CA_TRACE 0
+#define ENABLE_CA_TRACE 1
 #if ENABLE_CA_TRACE
 #define trace(...) logger.tracefln(__VA_ARGS__)
 #else
