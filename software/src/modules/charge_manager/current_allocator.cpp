@@ -1308,7 +1308,7 @@ int allocate_current(
             }
 
             // Charger did not update the charging current in time
-            if (charger_alloc.allocated_current < charger.allowed_current && deadline_elapsed(charger_alloc.last_sent_config + 1000_usec * (micros_t)TIMEOUT_MS)) {
+            if ((charger_alloc.allocated_current < charger.allowed_current || charger_alloc.allocated_phases < charger.phases) && deadline_elapsed(charger_alloc.last_sent_config + 1000_usec * (micros_t)TIMEOUT_MS)) {
                 unreachable_evse_found = true;
                 LOCAL_LOG("EVSE of %s (%s) did not react in time. Expected %d mA @ %dp but is %d mA @ %dp",
                           get_charger_name(i),
