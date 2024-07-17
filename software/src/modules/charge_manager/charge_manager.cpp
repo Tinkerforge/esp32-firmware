@@ -68,6 +68,29 @@ bool ChargeManager::has_triggered(const Config *conf, void *data)
 }
 #endif
 
+enum class CMPhaseRotation: uint8_t {
+    Unknown,
+    L123,
+    L132,
+    L231,
+    L213,
+    L321,
+    L312
+};
+
+static PhaseRotation convert_phase_rotation(CMPhaseRotation pr) {
+    switch (pr) {
+        case CMPhaseRotation::Unknown: return PhaseRotation::Unknown;
+        case CMPhaseRotation::L123:    return PhaseRotation::L123;
+        case CMPhaseRotation::L132:    return PhaseRotation::L132;
+        case CMPhaseRotation::L231:    return PhaseRotation::L231;
+        case CMPhaseRotation::L213:    return PhaseRotation::L213;
+        case CMPhaseRotation::L321:    return PhaseRotation::L321;
+        case CMPhaseRotation::L312:    return PhaseRotation::L312;
+        default: return PhaseRotation::Unknown;
+    }
+}
+
 void ChargeManager::pre_setup()
 {
     config = ConfigRoot{Config::Object({
@@ -94,7 +117,8 @@ void ChargeManager::pre_setup()
         {"chargers", Config::Array({},
             new Config{Config::Object({
                 {"host", Config::Str("", 0, 64)},
-                {"name", Config::Str("", 0, 32)}
+                {"name", Config::Str("", 0, 32)},
+                {"rot", Config::Uint((uint8_t)CMPhaseRotation::Unknown, (uint8_t)CMPhaseRotation::Unknown, (uint8_t)CMPhaseRotation::L312)}
             })},
             0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
         )}
@@ -308,6 +332,10 @@ void ChargeManager::setup()
     ca_config->charger_count = this->charger_count;
     this->charger_state = (ChargerState*) heap_caps_calloc_prefer(this->charger_count, sizeof(ChargerState), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
     this->charger_allocation_state = (ChargerAllocationState*) heap_caps_calloc_prefer(this->charger_count, sizeof(ChargerAllocationState), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+
+    for (int i = 0; i < config.get("chargers")->count(); ++i) {
+        charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());
+    }
 
     start_manager_task();
 

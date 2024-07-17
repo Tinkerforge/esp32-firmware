@@ -25,7 +25,8 @@ export interface state {
 
 interface ChargerConfig {
     host: string,
-    name: string
+    name: string,
+    rot: number
 }
 
 export interface config {
