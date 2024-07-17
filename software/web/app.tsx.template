@@ -67,36 +67,38 @@ function get_sub_page() {
     return sub_page;
 }
 
-function login(username: string, password: string) {
-    if (username.length == 0 && password.length == 0) {
-        return false;
-    }
+function login(username: string, password: string): Promise<boolean> {
+    return new Promise(function (resolve, reject) {
+        if (username.length == 0 && password.length == 0) {
+            resolve(false);
+        }
 
-    let xhr = new XMLHttpRequest();
-    let result = false;
+        let xhr = new XMLHttpRequest();
 
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            let status = xhr.status;
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                let status = xhr.status;
 
-            if (status == 200) {
-                window.location.reload();
-                result = true;
-            }
-            else if (status == 401) {
-                console.log("credentials incorrect?");
-            }
-            else {
-                console.log("error: got status ");
-                console.log(status);
+                if (status == 200) {
+                    window.location.reload();
+                    resolve(true);
+                    return;
+                }
+
+                if (status == 401) {
+                    console.log("credentials incorrect?");
+                }
+                else {
+                    console.log("error: got status ");
+                    console.log(status);
+                }
+                resolve(false);
             }
         }
-    }
 
-    xhr.open("GET", location.protocol + "//" + location.host + "/credential_check", false, username, password);
-    xhr.send();
-
-    return result;
+        xhr.open("GET", location.protocol + "//" + location.host + "/credential_check", true, username, password);
+        xhr.send();
+    });
 }
 
 export class App extends Component<AppProps, AppState> {
@@ -161,11 +163,12 @@ export class App extends Component<AppProps, AppState> {
 
         let form = document.getElementById('main_login_form') as HTMLFormElement;
 
-        form.addEventListener("submit", (event: Event) => {
+        form.addEventListener("submit", async (event: Event) => {
             event.preventDefault();
             event.stopPropagation();
 
-            if (!login(this.state.username, this.state.password)) {
+            let success = await login(this.state.username, this.state.password);
+            if (!success) {
                 (this.password_ref.current as InputPassword).shake();
             }
         }, false);
