@@ -51,16 +51,27 @@ let x = {
 
             "table_charger_name": "Anzeigename",
             "table_charger_host": "Host",
+            "table_charger_rotation": "Phasenrotation",
 
             "add_charger_title": "Wallbox hinzufügen",
             "add_charger_name": "Anzeigename",
             "add_charger_host": "IP-Adresse oder Hostname",
             "add_charger_found": "Gefundene Wallboxen",
             "add_charger_count": /*SFN*/(x: number, max: number) => x + " von " + max + " Wallboxen konfiguriert"/*NF*/,
+            "add_charger_rotation": "Phasenrotation",
+            "rotation_0": "Unbekannt",
+            "rotation_1": "L123",
+            "rotation_2": "L132",
+            "rotation_3": "L231",
+            "rotation_4": "L213",
+            "rotation_5": "L321",
+            "rotation_6": "L312",
+            "add_charger_rotation_select": "Auswählen...",
 
             "edit_charger_title": "Wallbox bearbeiten",
             "edit_charger_name": "Anzeigename",
             "edit_charger_host": "IP-Adresse oder Hostname",
+            "edit_charger_rotation": "Phasenrotation",
 
             "multi_broadcast_modal_title": "Reservierte, Multi- oder Broadcast IP-Adresse(n) gefunden",
             "multi_broadcast_modal_body": "Folgende reservierte, Multi- oder Broadcast-IP-Adressen wurden gefunden: ",

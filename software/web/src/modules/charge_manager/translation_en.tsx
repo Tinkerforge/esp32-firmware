@@ -51,16 +51,27 @@ let x = {
 
             "table_charger_name": "Display name",
             "table_charger_host": "Host",
+            "table_charger_rotation": "Phase rotation",
 
             "add_charger_title": "Add charger",
             "add_charger_name": "Display name",
             "add_charger_host": "IP address or hostname",
             "add_charger_found": "Discovered chargers",
             "add_charger_count": /*SFN*/(x: number, max: number) => x + " of " + max + " chargers configured"/*NF*/,
+            "add_charger_rotation": "Phase rotation",
+            "rotation_0": "Unknown",
+            "rotation_1": "L123",
+            "rotation_2": "L132",
+            "rotation_3": "L231",
+            "rotation_4": "L213",
+            "rotation_5": "L321",
+            "rotation_6": "L312",
+            "add_charger_rotation_select": "Select...",
 
             "edit_charger_title": "Edit charger",
             "edit_charger_name": "Display name",
             "edit_charger_host": "IP address or hostname",
+            "edit_charger_rotation": "Phase rotation",
 
             "multi_broadcast_modal_title": "Reserved, multi- or broadcast IP address(es) found",
             "multi_broadcast_modal_body": "These reserved, multi- or broadcast IP addresses were detected: ",

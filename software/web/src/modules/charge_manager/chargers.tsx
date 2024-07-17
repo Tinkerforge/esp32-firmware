@@ -52,8 +52,8 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         super('charge_manager/config',
               __("charge_manager.script.save_failed"),
               __("charge_manager.script.reboot_content_changed"), {
-                  addCharger: {host: "", name: ""},
-                  editCharger: {host: "", name: ""},
+                  addCharger: {host: "", name: "", rot: 0},
+                  editCharger: {host: "", name: "", rot: 0},
                   managementEnabled: false,
                   showExpert: false,
                   scanResult: []
@@ -184,6 +184,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         c.unshift({
             host: "127.0.0.1",
             name: name.display_name,
+            rot: 0
         });
         this.setState({chargers: c})
     }
@@ -287,15 +288,16 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
         let chargers = <FormRow label={__("charge_manager.content.managed_boxes")}>
                     <Table
-                        columnNames={[__("charge_manager.content.table_charger_name"), __("charge_manager.content.table_charger_host")]}
+                        columnNames={[__("charge_manager.content.table_charger_name"), __("charge_manager.content.table_charger_host"), __("charge_manager.content.table_charger_rotation")]}
                         rows={state.chargers.map((charger, i) =>
                             { return {
                                 columnValues: [
                                     charger.name,
-                                    <a target="_blank" rel="noopener noreferrer" href={(charger.host == '127.0.0.1' || charger.host == 'localhost') ? '/' : "http://" + charger.host}>{charger.host}</a>
+                                    <a target="_blank" rel="noopener noreferrer" href={(charger.host == '127.0.0.1' || charger.host == 'localhost') ? '/' : "http://" + charger.host}>{charger.host}</a>,
+                                    translate_unchecked(`charge_manager.content.rotation_${charger.rot}`)
                                 ],
                                 editTitle: __("charge_manager.content.edit_charger_title"),
-                                onEditShow: async () => this.setState({editCharger: {name: charger.name.trim(), host: charger.host.trim()}}),
+                                onEditShow: async () => this.setState({editCharger: charger}),
                                 onEditGetChildren: () => [<>
                                     <FormRow label={__("charge_manager.content.edit_charger_name")}>
                                         <InputText value={state.editCharger.name}
@@ -314,6 +316,20 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                             class={check_host(state.editCharger.host, i) != undefined ? "is-invalid" : ""}
                                             invalidFeedback={check_host(state.editCharger.host, i)}/>
                                     </FormRow>
+                                    <FormRow label={__("charge_manager.content.edit_charger_rotation")}>
+                                        <InputSelect items={[
+                                                ["0", __("charge_manager.content.rotation_0")],
+                                                ["1", __("charge_manager.content.rotation_1")],
+                                                ["2", __("charge_manager.content.rotation_2")],
+                                                ["3", __("charge_manager.content.rotation_3")],
+                                                ["4", __("charge_manager.content.rotation_4")],
+                                                ["5", __("charge_manager.content.rotation_5")],
+                                                ["6", __("charge_manager.content.rotation_6")],
+                                            ]}
+                                            value={state.editCharger.rot}
+                                            onValue={(v) => this.setState({editCharger: {...state.editCharger, rot: parseInt(v)}})}
+                                            />
+                                    </FormRow>
                                 </>],
                                 onEditSubmit: async () => {
                                     this.setState({chargers: state.chargers.map((charger, k) => i === k ? state.editCharger : charger)});
@@ -329,7 +345,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                         addTitle={__("charge_manager.content.add_charger_title")}
                         addMessage={__("charge_manager.content.add_charger_count")(state.chargers.length, MAX_CONTROLLED_CHARGERS)}
                         onAddShow={async () => {
-                            this.setState({addCharger: {name: "", host: ""}});
+                            this.setState({addCharger: {name: "", host: "", rot: -1}});
                             this.scan_services();
                             this.intervalID = window.setInterval(this.scan_services, 3000);
                         }}
@@ -357,7 +373,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                             <ListGroupItem key={c.hostname}
                                                         action type="button"
                                                         onClick={c.error != 0 ? undefined : () => {
-                                                            this.setState({addCharger: {host: c.hostname + ".local", name: c.display_name}})
+                                                            this.setState({addCharger: {host: c.hostname + ".local", name: c.display_name, rot: 0}})
                                                         }}
                                                         style={c.error == 0 ? "" : "cursor: default; background-color: #eeeeee !important;"}>
                                                 <div class="d-flex w-100 justify-content-between">
@@ -373,9 +389,24 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                             </ListGroupItem>))
                                 }</ListGroup>
                             </FormRow>
+                            <FormRow label={__("charge_manager.content.add_charger_rotation")}>
+                                    <InputSelect items={[
+                                            ["0", __("charge_manager.content.rotation_0")],
+                                            ["1", __("charge_manager.content.rotation_1")],
+                                            ["2", __("charge_manager.content.rotation_2")],
+                                            ["3", __("charge_manager.content.rotation_3")],
+                                            ["4", __("charge_manager.content.rotation_4")],
+                                            ["5", __("charge_manager.content.rotation_5")],
+                                            ["6", __("charge_manager.content.rotation_6")],
+                                        ]}
+                                        value={state.editCharger.rot}
+                                        onValue={(v) => this.setState({editCharger: {...state.editCharger, rot: parseInt(v)}})}
+                                        placeholder={__("charge_manager.content.add_charger_rotation_select")}
+                                        />
+                                </FormRow>
                         </>]}
                         onAddSubmit={async () => {
-                            this.setState({chargers: state.chargers.concat({name: state.addCharger.name.trim(), host: state.addCharger.host.trim()})});
+                            this.setState({chargers: state.chargers.concat(state.addCharger)});
                             this.setDirty(true);
                         }}
                         onAddHide={async () => {
