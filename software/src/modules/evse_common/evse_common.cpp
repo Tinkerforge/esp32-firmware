@@ -347,6 +347,9 @@ void EvseCommon::register_urls()
 {
 #if MODULE_CM_NETWORKING_AVAILABLE()
     cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested, int8_t phases_requested) {
+        if (!this->management_enabled.get("enabled")->asBool())
+            return;
+
         set_managed_current(current);
 
         backend->set_control_pilot_disconnect(cp_disconnect_requested, nullptr);
