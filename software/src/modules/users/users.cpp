@@ -545,16 +545,18 @@ void Users::register_urls()
             }
         }
 
-        char username[33] = {0};
-        File f = LittleFS.open(USERNAME_FILE, "r");
-        for(size_t i = 0; i < f.size(); i += USERNAME_ENTRY_LENGTH) {
-            if ((i / USERNAME_ENTRY_LENGTH) == id)
-                continue;
+        {
+            char username[33] = {0};
+            File f = LittleFS.open(USERNAME_FILE, "r");
+            for(size_t i = 0; i < f.size(); i += USERNAME_ENTRY_LENGTH) {
+                if ((i / USERNAME_ENTRY_LENGTH) == id)
+                    continue;
 
-            f.seek(i);
-            f.read((uint8_t *) username, USERNAME_LENGTH);
-            if (doc["username"].as<String>() == username)
-                return "Can't modify user. A user with this username already has tracked charges.";
+                f.seek(i);
+                f.read((uint8_t *) username, USERNAME_LENGTH);
+                if (doc["username"].as<String>() == username)
+                    return "Can't modify user. A user with this username already has tracked charges.";
+            }
         }
 
         if (doc["roles"] != nullptr)
@@ -658,9 +660,13 @@ void Users::register_urls()
             return request.send(507);
         }
 
-        File f = LittleFS.open(USERNAME_FILE, "r");
+        size_t read = 0;
 
-        size_t read = f.read((uint8_t *)buf.get(), len);
+        {
+            File f = LittleFS.open(USERNAME_FILE, "r");
+            read = f.read((uint8_t *)buf.get(), len);
+        }
+
         return request.send(200, "application/octet-stream", buf.get(), read);
     });
 
