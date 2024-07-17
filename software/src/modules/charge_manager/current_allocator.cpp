@@ -1283,7 +1283,7 @@ int allocate_current(
                 charger_error != CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE &&
                 charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
                 unreachable_evse_found = true;
-                LOCAL_LOG("stage 0: %s (%s) reports error %u.", get_charger_name(i), hosts[i], charger_error);
+                LOCAL_LOG("%s (%s) reports error %u.", get_charger_name(i), hosts[i], charger_error);
 
                 print_local_log = !ca_state->last_print_local_log_was_error;
                 ca_state->last_print_local_log_was_error = true;
@@ -1292,7 +1292,7 @@ int allocate_current(
             // Charger does not respond anymore
             if (deadline_elapsed(charger.last_update + TIMEOUT_MS)) {
                 unreachable_evse_found = true;
-                LOCAL_LOG("stage 0: Can't reach EVSE of %s (%s): last_update too old.", get_charger_name(i), hosts[i]);
+                LOCAL_LOG("Can't reach EVSE of %s (%s): last_update too old.", get_charger_name(i), hosts[i]);
 
                 bool state_was_not_five = charger_alloc.state != 5;
                 charger_alloc.state = 5;
@@ -1310,7 +1310,13 @@ int allocate_current(
             // Charger did not update the charging current in time
             if (charger_alloc.allocated_current < charger.allowed_current && deadline_elapsed(charger_alloc.last_sent_config + 1000_usec * (micros_t)TIMEOUT_MS)) {
                 unreachable_evse_found = true;
-                LOCAL_LOG("stage 0: EVSE of %s (%s) did not react in time.", get_charger_name(i), hosts[i]);
+                LOCAL_LOG("EVSE of %s (%s) did not react in time. Expected %d mA @ %dp but is %d mA @ %dp",
+                          get_charger_name(i),
+                          hosts[i],
+                          charger_alloc.allocated_current,
+                          charger_alloc.allocated_phases,
+                          charger.allowed_current,
+                          charger.phases);
 
                 bool state_was_not_five = charger_alloc.state != 5;
                 charger_alloc.state = 5;
@@ -1333,7 +1339,7 @@ int allocate_current(
             limits->raw = Cost{0, 0, 0, 0};
             limits->min = Cost{0, 0, 0, 0};
             limits->max_pv = 0;
-            LOCAL_LOG("%s", "stage 0: Unreachable, unreactive or misconfigured EVSE(s) found. Setting available current to 0 mA.");
+            LOCAL_LOG("%s", "Unreachable, unreactive or misconfigured EVSE(s) found. Setting available current to 0 mA.");
             result = 2;
 
             // Any unreachable EVSE will block a firmware update.
@@ -1380,11 +1386,6 @@ int allocate_current(
             uint16_t current_to_set = current_array[i];
             int8_t phases_to_set = phases_array[i];
 
-            LOCAL_LOG("stage 1: Throttled %s (%s) to %d mA.",
-                      get_charger_name(i),
-                      hosts[i],
-                      current_to_set);
-
             // Don't reset hysteresis if a charger is shut down. Re-activating a charger is (always?) fine.
             if (charger_alloc.allocated_phases != phases_to_set && phases_to_set != 0) {
                 charger.last_switch = now;
@@ -1392,6 +1393,10 @@ int allocate_current(
             }
 
             if (charger.wants_to_charge_low_priority && phases_to_set != 0) {
+                LOCAL_LOG("Waking up vehicle at %s (%s).",
+                          get_charger_name(i),
+                          hosts[i]);
+
                 trace("charger %d: waking up", i);
                 charger.last_wakeup = now;
             }
@@ -1436,6 +1441,12 @@ int allocate_current(
             }
 
             if (change) {
+                LOCAL_LOG("Allocated %d mA @ %dp to %s (%s).",
+                      current_to_set,
+                      phases_to_set,
+                      get_charger_name(i),
+                      hosts[i]);
+
                 print_local_log = true;
                 if (charger_alloc.error != CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE)
                     charger_alloc.last_sent_config = now;
@@ -1448,7 +1459,7 @@ int allocate_current(
         if (local_log) {
             size_t len = strlen(local_log);
             while (len > 0) {
-                logger.write(local_log, len);
+                logger.printfln("%.*s", len, local_log);
                 local_log += len + 1;
                 if ((local_log - cfg->distribution_log.get()) >= cfg->distribution_log_len)
                     break;
