@@ -481,6 +481,7 @@ def main():
     apidoc_url = env.GetProjectOption("custom_apidoc_url")
     firmware_url = env.GetProjectOption("custom_firmware_url")
     firmware_update_url = env.GetProjectOption("custom_firmware_update_url")
+    day_ahead_price_api_url = env.GetProjectOption("custom_day_ahead_price_api_url")
     require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
     build_flags = env.GetProjectOption("build_flags")
     frontend_debug = env.GetProjectOption("custom_frontend_debug") == "true"
@@ -606,6 +607,7 @@ def main():
     build_lines.append('#define BUILD_REQUIRE_FIRMWARE_INFO {}'.format(require_firmware_info))
     build_lines.append('#define BUILD_MONITOR_SPEED {}'.format(monitor_speed))
     build_lines.append('#define BUILD_FIRMWARE_UPDATE_URL "{}"'.format(firmware_update_url))
+    build_lines.append('#define BUILD_DAY_AHEAD_PRICE_API_URL "{}"'.format(day_ahead_price_api_url))
     build_lines.append('uint32_t build_timestamp(void);')
     build_lines.append('const char *build_timestamp_hex_str(void);')
     build_lines.append('const char *build_version_full_str(void);')
