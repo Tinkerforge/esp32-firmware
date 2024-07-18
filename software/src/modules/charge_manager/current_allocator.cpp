@@ -1307,8 +1307,14 @@ int allocate_current(
                 charger_alloc.error = CM_NETWORKING_ERROR_NO_ERROR;
             }
 
-            // Charger did not update the charging current in time
-            if ((charger_alloc.allocated_current < charger.allowed_current || charger_alloc.allocated_phases < charger.phases) && deadline_elapsed(charger_alloc.last_sent_config + 1000_usec * (micros_t)TIMEOUT_MS)) {
+            // Charger did not update the charging current or phases in time.
+            // It is not an error if the charger reports != 0 phases but 0 are allocated,
+            // because the charger reports the number of phases that would be active if
+            // it was charging. Check is_charging instead.
+            if ((charger_alloc.allocated_current < charger.allowed_current
+                    || (charger_alloc.allocated_phases != 0 && charger_alloc.allocated_phases < charger.phases)
+                    || (charger_alloc.allocated_phases == 0 && charger.is_charging))
+               && deadline_elapsed(charger_alloc.last_sent_config + 1000_usec * (micros_t)TIMEOUT_MS)) {
                 unreachable_evse_found = true;
                 LOCAL_LOG("EVSE of %s (%s) did not react in time. Expected %d mA @ %dp but is %d mA @ %dp",
                           get_charger_name(i),
