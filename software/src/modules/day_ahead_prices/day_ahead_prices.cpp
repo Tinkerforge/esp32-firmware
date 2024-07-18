@@ -183,6 +183,7 @@ void DayAheadPrices::update()
         return;
     }
 
+    if (config.get("enable")->asBool() == false) {
         return;
     }
 
