@@ -62,7 +62,6 @@ void DayAheadPrices::pre_setup()
         {"last_sync", Config::Uint32(0)}, // unix timestamp in minutes
         {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
         {"next_check", Config::Uint32(0)}, // unix timestamp in minutes
-        {"check_error", Config::Str("", 0, 16)},
     });
 }
 
@@ -111,7 +110,7 @@ esp_err_t DayAheadPrices::update_event_handler_impl(esp_http_client_event_t *eve
     switch (event->event_id) {
     case HTTP_EVENT_ERROR: {
         logger.printfln("HTTP error while downloading json");
-        state.get("check_error")->updateString("download_error");
+        download_state = DAP_DOWNLOAD_STATE_ERROR;
         download_complete = true;
         break;
     }
@@ -121,7 +120,7 @@ esp_err_t DayAheadPrices::update_event_handler_impl(esp_http_client_event_t *eve
         // Check status code
         if (code != 200) {
             logger.printfln("HTTP error while downloading json: %d", code);
-            state.get("check_error")->updateString("download_error");
+            download_state = DAP_DOWNLOAD_STATE_ERROR;
             download_complete = true;
             break;
         }
@@ -129,7 +128,7 @@ esp_err_t DayAheadPrices::update_event_handler_impl(esp_http_client_event_t *eve
         // Check length
         if((event->data_len + json_buffer_position) > (DAY_AHEAD_PRICE_MAX_JSON_LENGTH - 1)) {
             logger.printfln("JSON buffer too small");
-            state.get("check_error")->updateString("json_overflow");
+            download_state = DAP_DOWNLOAD_STATE_ERROR;
             download_complete = true;
             break;
         }
@@ -166,12 +165,12 @@ void DayAheadPrices::update()
         return;
     }
 
-    state.get("check_error")->updateString("pending");
+    download_state = DAP_DOWNLOAD_STATE_PENDING;
     state.get("last_check")->updateUint(timestamp_minutes());
 
     if (api_url.length() == 0) {
         logger.printfln("No day ahead price API server configured");
-        state.get("check_error")->updateString("no_server_url");
+        download_state = DAP_DOWNLOAD_STATE_ERROR;
         return;
     }
 
@@ -194,7 +193,7 @@ void DayAheadPrices::update()
 
         if (cert == nullptr) {
             logger.printfln("Certificate with ID %d is not available", cert_id);
-            state.get("check_error")->updateString("no_cert");
+            download_state = DAP_DOWNLOAD_STATE_ERROR;
             return;
         }
 
@@ -229,7 +228,7 @@ void DayAheadPrices::update()
         // Check for global timeout
         if (deadline_elapsed(last_update_begin + CHECK_FOR_DAP_TIMEOUT)) {
             logger.printfln("API server %s did not respond in time", api_url.c_str());
-            state.get("check_error")->updateString("timeout");
+            download_state = DAP_DOWNLOAD_STATE_ERROR;
             download_complete = true;
         // If download is not complete start a new download
         }
@@ -241,19 +240,19 @@ void DayAheadPrices::update()
                 // Nothing to do, just wait for more data
             } else if (err != ESP_OK) {
                 logger.printfln("Error while downloading json: %s", esp_err_to_name(err));
-                state.get("check_error")->updateString("download_error");
+                download_state = DAP_DOWNLOAD_STATE_ERROR;
                 download_complete = true;
-            } else if (state.get("check_error")->asString() == "pending") {
-                state.get("check_error")->updateString("");
+            } else if (download_state == DAP_DOWNLOAD_STATE_PENDING) {
+                download_state = DAP_DOWNLOAD_STATE_OK;
                 download_complete = true;
             }
         }
 
         if (download_complete) {
-            if(state.get("check_error")->asString() == "") {
+            if(download_state == DAP_DOWNLOAD_STATE_OK) {
                 DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
                 if (error) {
-                    state.get("check_error")->updateString("json_failed");
+                    download_state = DAP_DOWNLOAD_STATE_ERROR;
                 } else {
                     state.get("last_sync")->updateUint(timestamp_minutes());
 

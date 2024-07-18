@@ -28,6 +28,12 @@
 
 #define DAY_AHEAD_PRICE_MAX_JSON_LENGTH 2048
 
+enum DAPDownloadState {
+    DAP_DOWNLOAD_STATE_OK,
+    DAP_DOWNLOAD_STATE_PENDING,
+    DAP_DOWNLOAD_STATE_ERROR
+};
+
 class DayAheadPrices final : public IModule
 {
 private:
@@ -46,6 +52,7 @@ private:
     uint32_t json_buffer_position;
 
     DynamicJsonDocument json_doc{4096};
+    DAPDownloadState download_state = DAP_DOWNLOAD_STATE_OK;
 
 public:
     DayAheadPrices(){}
