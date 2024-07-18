@@ -151,8 +151,8 @@ let x = {
             "charge_state_blocked_by_other_box": "Blocked",
             "charge_state_blocked_by_other_box_details": "Error with another charger",
 
-            "ampere_allocated": "A allocated",
-            "ampere_supported": "A supported",
+            "ampere_allocated": "allocated",
+            "ampere_supported": "supported",
 
             "last_update_prefix": "Unavailable for",
             "last_update_suffix": "",
