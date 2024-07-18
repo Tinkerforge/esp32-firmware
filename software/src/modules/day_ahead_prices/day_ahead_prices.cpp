@@ -255,10 +255,10 @@ void DayAheadPrices::update()
             logger.printfln("API server %s did not respond in time", config.get("api_url")->asString().c_str());
             download_state = DAP_DOWNLOAD_STATE_ERROR;
             download_complete = true;
-        // If download is not complete start a new download
         }
 
         if (!download_complete) {
+            // If download is not complete start a new download
             esp_err_t err = esp_http_client_perform(http_client);
 
             if (err == ESP_ERR_HTTP_EAGAIN) {
@@ -278,6 +278,7 @@ void DayAheadPrices::update()
                 DynamicJsonDocument json_doc{4096};
                 DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
                 if (error) {
+                    logger.printfln("Error during JSON deserialization: %s", error.c_str());
                     download_state = DAP_DOWNLOAD_STATE_ERROR;
                 } else {
                     latest_first_date = json_doc["first_date"].as<int>();
