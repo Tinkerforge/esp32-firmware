@@ -30,6 +30,23 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define CHECK_FOR_DAP_TIMEOUT 15000
 #define CHECK_INTERVAL 60*1000 // TODO: Change to 15*60*1000
 
+enum Region {
+    REGION_DE,
+    REGION_AT,
+    REGION_LU
+};
+static const char * const region_str[] {
+    "de", "at", "lu"
+};
+
+enum Resolution {
+    RESOLUTION_15MIN,
+    RESOLUTION_60MIN
+};
+static const char * const resolution_str[] {
+    "15min", "60min"
+};
+
 extern DayAheadPrices dap;
 
 void DayAheadPrices::pre_setup()
@@ -37,21 +54,21 @@ void DayAheadPrices::pre_setup()
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(true)},
         {"api_url", Config::Str(BUILD_DAY_AHEAD_PRICE_API_URL, 0, 64)},
-        {"region", Config::Str("de", 2, 16)},
-        {"resolution", Config::Str("15min", 0, 16)},
+        {"region", Config::Uint(REGION_DE, REGION_AT, REGION_LU)},
+        {"resolution", Config::Uint(RESOLUTION_15MIN, RESOLUTION_60MIN)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
-        String api_url    = update.get("api_url")->asString();
-        String region     = update.get("region")->asString();
-        String resolution = update.get("resolution")->asString();
+        String   api_url    = update.get("api_url")->asString();
+        uint32_t region     = update.get("region")->asUint();
+        uint32_t resolution = update.get("resolution")->asUint();
 
         if ((api_url.length() > 0) && !api_url.startsWith("https://")) {
             return "HTTPS required for Day Ahead Price API URL";
         }
-        if ((region != "de") && (region != "at") && (region != "lu")) {
+        if (region > REGION_LU) {
             return "Region not supported";
         }
-        if ((resolution != "15min") && (resolution != "60min")) {
+        if (resolution > RESOLUTION_60MIN) {
             return "Resolution not supported";
         }
 
@@ -69,26 +86,27 @@ void DayAheadPrices::setup()
 {
     api.restorePersistentConfig("dap/config", &config);
 
-    api_url = config.get("api_url")->asString();
-
-    if (api_url.length() > 0) {
-        if (!api_url.endsWith("/")) {
-            api_url += "/";
-        }
-    }
-
-    cert_id = config.get("cert_id")->asInt();
-    region = config.get("region")->asString();
-    resolution = config.get("resolution")->asString();
-
-    // Here api_url needs to end with "/" and region and resolution need to be valid strings
-    // This should be ensured by the config validation in pre_setup
-    api_url_with_path = api_url + "v1/day_ahead_prices/" + region + "/" + resolution;
-
     json_buffer = nullptr;
     json_buffer_position = 0;
 
     initialized = true;
+}
+
+const char* DayAheadPrices::get_api_url_with_path()
+{
+    static String api_url_with_path;
+
+    String api_url = config.get("api_url")->asString();
+
+    if (!api_url.endsWith("/")) {
+        api_url += "/";
+    }
+
+    String region = region_str[config.get("region")->asUint()];
+    String resolution = resolution_str[config.get("resolution")->asUint()];
+
+    api_url_with_path = api_url + "v1/day_ahead_prices/" + region + "/" + resolution;
+    return api_url_with_path.c_str();
 }
 
 void DayAheadPrices::register_urls()
@@ -168,7 +186,7 @@ void DayAheadPrices::update()
     download_state = DAP_DOWNLOAD_STATE_PENDING;
     state.get("last_check")->updateUint(timestamp_minutes());
 
-    if (api_url.length() == 0) {
+    if (config.get("api_url")->asString().length() == 0) {
         logger.printfln("No day ahead price API server configured");
         download_state = DAP_DOWNLOAD_STATE_ERROR;
         return;
@@ -176,11 +194,13 @@ void DayAheadPrices::update()
 
     esp_http_client_config_t http_config = {};
 
-    http_config.url = api_url_with_path.c_str();
+    http_config.url = get_api_url_with_path();
     http_config.event_handler = update_event_handler;
     http_config.user_data = this;
     http_config.is_async = true;
     http_config.timeout_ms = 500;
+
+    const int cert_id = config.get("cert_id")->asInt();
 
     if (cert_id < 0) {
         http_config.crt_bundle_attach = esp_crt_bundle_attach;
@@ -227,7 +247,7 @@ void DayAheadPrices::update()
     task_scheduler.scheduleWithFixedDelay([this]() {
         // Check for global timeout
         if (deadline_elapsed(last_update_begin + CHECK_FOR_DAP_TIMEOUT)) {
-            logger.printfln("API server %s did not respond in time", api_url.c_str());
+            logger.printfln("API server %s did not respond in time", config.get("api_url")->asString().c_str());
             download_state = DAP_DOWNLOAD_STATE_ERROR;
             download_complete = true;
         // If download is not complete start a new download

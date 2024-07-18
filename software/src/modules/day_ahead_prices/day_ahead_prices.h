@@ -38,12 +38,8 @@ class DayAheadPrices final : public IModule
 {
 private:
     void update();
+    const char* get_api_url_with_path();
 
-    String api_url_with_path;
-    String api_url;
-    int cert_id = -1;
-    String region;
-    String resolution;
     std::unique_ptr<unsigned char[]> cert = nullptr;
     esp_http_client_handle_t http_client = nullptr;
     uint32_t last_update_begin;
@@ -52,7 +48,7 @@ private:
     uint32_t json_buffer_position;
 
     DynamicJsonDocument json_doc{4096};
-    DAPDownloadState download_state = DAP_DOWNLOAD_STATE_OK;
+    DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
 
 public:
     DayAheadPrices(){}
