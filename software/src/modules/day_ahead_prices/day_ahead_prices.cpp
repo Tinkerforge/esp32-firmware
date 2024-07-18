@@ -57,6 +57,9 @@ void DayAheadPrices::pre_setup()
         {"region", Config::Uint(REGION_DE, REGION_DE, REGION_LU)},
         {"resolution", Config::Uint(RESOLUTION_15MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
+        {"grid_costs_and_taxes", Config::Uint(0, 0, 99000)}, // in ct/1000 per kWh
+        {"supplier_markup", Config::Uint(0, 0, 99000)},      // in ct/1000 per kWh
+        {"supplier_base_fee", Config::Uint(0, 0, 99000)},    // in ct per month
     }), [this](Config &update, ConfigSource source) -> String {
         String   api_url    = update.get("api_url")->asString();
 
