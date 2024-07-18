@@ -24,6 +24,8 @@
 
 #include "gcc_warnings.h"
 
+#define ENABLE_PM_TRACE 0
+
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
 #define PM_ENABLED_DEFAULT (true)
 #else
@@ -632,6 +634,12 @@ void PowerManager::update_data()
 
 void PowerManager::update_energy()
 {
+#if ENABLE_PM_TRACE
+    char trace_log[336];
+    size_t trace_log_len = 0;
+    trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "PM");
+#endif
+
     int32_t cm_total_allocated_current_ma = 0;
 
     for (size_t i = 1; i <= 3; i++) {
@@ -747,7 +755,11 @@ void PowerManager::update_energy()
         cm_limits->max_pv = current_pv_minmax_ma.max;
         cm_limits->spread.pv = pv_long_min_ma;
 
-        //logger.printfln("PV  meter=%f  limit=%5i  min=%5i  max=%5i  long min=%5i", static_cast<double>(power_at_meter_raw_w), pv_raw_ma, current_pv_minmax_ma.min, current_pv_minmax_ma.max, pv_long_min_ma);
+#if ENABLE_PM_TRACE
+        trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, " PV m=%5iw avl=%5iw %5i<<%5i<%5i<%5i",
+            static_cast<int32_t>(power_at_meter_raw_w), power_available_w,
+            pv_long_min_ma, current_pv_minmax_ma.min, pv_raw_ma, current_pv_minmax_ma.max);
+#endif
     }
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -816,10 +828,18 @@ void PowerManager::update_energy()
                 cm_limits->min[cm_phase] = phase_min_ma->min;
                 cm_limits->spread[cm_phase] = phase_long_min_ma;
 
-                //logger.printfln("L%u  meter=%5i  err=%5i  adj=%5i  limit=%5i  min=%5i  max=%5i  long min=%5i", cm_phase, phase_current_raw_ma, current_error_ma, current_adjust_ma, phase_limit_raw_ma, phase_min_ma->min, phase_min_ma->max, phase_long_min_ma);
+#if ENABLE_PM_TRACE
+                trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "  L%u m=%5i err=%5i adj=%5i %5i<<%5i<%5i",
+                    cm_phase, phase_current_raw_ma, current_error_ma, current_adjust_ma,
+                    phase_long_min_ma, phase_min_ma->min, phase_limit_raw_ma);
+#endif
             }
         }
     }
+
+#if ENABLE_PM_TRACE
+    logger.trace_write(trace_log, trace_log_len);
+#endif
 
     // Calculate long-term minimum over one-minute blocks
     if (++current_long_min_iterations > 60 * (1000 / PM_TASK_DELAY_MS)) {
