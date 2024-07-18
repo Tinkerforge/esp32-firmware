@@ -59,17 +59,9 @@ void DayAheadPrices::pre_setup()
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
         String   api_url    = update.get("api_url")->asString();
-        uint32_t region     = update.get("region")->asUint();
-        uint32_t resolution = update.get("resolution")->asUint();
 
         if ((api_url.length() > 0) && !api_url.startsWith("https://")) {
             return "HTTPS required for Day Ahead Price API URL";
-        }
-        if (region > REGION_LU) {
-            return "Region not supported";
-        }
-        if (resolution > RESOLUTION_60MIN) {
-            return "Resolution not supported";
         }
 
         return "";
