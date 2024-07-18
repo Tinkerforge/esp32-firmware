@@ -244,6 +244,7 @@ void DayAheadPrices::update()
         json_buffer = (char *)heap_caps_calloc_prefer(DAY_AHEAD_PRICE_MAX_JSON_LENGTH, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
     } else {
         logger.printfln("JSON Buffer was potentially not freed correctly");
+        json_buffer_position = 0;
     }
 
     // Start async JSON download and check every 100ms
