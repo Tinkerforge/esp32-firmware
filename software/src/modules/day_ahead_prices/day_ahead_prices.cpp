@@ -76,7 +76,7 @@ void DayAheadPrices::pre_setup()
     }};
 
     state = Config::Object({
-        {"last_sync", Config::Uint32(0)}, // unix timestamp in minutes
+        {"last_sync", Config::Uint32(0)},  // unix timestamp in minutes
         {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
         {"next_check", Config::Uint32(0)}, // unix timestamp in minutes
     });
@@ -179,7 +179,10 @@ void DayAheadPrices::update()
         return;
     }
 
-    if(state.get("next_check")->asUint() > timestamp_minutes()) {
+    if (state.get("next_check")->asUint() > timestamp_minutes()) {
+        return;
+    }
+
         return;
     }
 
