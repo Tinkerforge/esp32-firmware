@@ -54,8 +54,8 @@ void DayAheadPrices::pre_setup()
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(true)},
         {"api_url", Config::Str(BUILD_DAY_AHEAD_PRICE_API_URL, 0, 64)},
-        {"region", Config::Uint(REGION_DE, REGION_AT, REGION_LU)},
-        {"resolution", Config::Uint(RESOLUTION_15MIN, RESOLUTION_60MIN)},
+        {"region", Config::Uint(REGION_DE, REGION_DE, REGION_LU)},
+        {"resolution", Config::Uint(RESOLUTION_15MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
         String   api_url    = update.get("api_url")->asString();
