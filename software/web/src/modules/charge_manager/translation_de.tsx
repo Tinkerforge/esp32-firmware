@@ -145,8 +145,8 @@ let x = {
             "charge_state_blocked_by_other_box": "Blockiert",
             "charge_state_blocked_by_other_box_details": "Fehler bei anderer Wallbox",
 
-            "ampere_allocated": "A zugeteilt",
-            "ampere_supported": "A unterstützt",
+            "ampere_allocated": "zugeteilt",
+            "ampere_supported": "unterstützt",
 
             "last_update_prefix": "Gestört seit ",
             "last_update_suffix": "",

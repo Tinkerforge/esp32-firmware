@@ -1,11 +1,13 @@
 interface ChargerState {
-    state: number,
-    error: number,
-    allocated_current: number,
-    supported_current: number,
-    last_update: number,
-    name: string,
-    uid: number
+    s: number,
+    e: number,
+    ac: number,
+    ap: number,
+    sc: number,
+    sp: number,
+    lu: number,
+    n: string,
+    u: number
 }
 
 interface ServCharger {
