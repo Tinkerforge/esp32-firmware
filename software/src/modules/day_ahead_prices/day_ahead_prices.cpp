@@ -30,8 +30,6 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define CHECK_FOR_DAP_TIMEOUT 15000
 #define CHECK_INTERVAL 60*1000 // TODO: Change to 15*60*1000
 
-static bool first = true;
-
 extern DayAheadPrices dap;
 
 void DayAheadPrices::pre_setup()
