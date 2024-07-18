@@ -47,8 +47,12 @@ private:
     char *json_buffer;
     uint32_t json_buffer_position;
 
-    DynamicJsonDocument json_doc{4096};
     DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
+
+    // Latest data received from day ahead price server
+    int64_t latest_first_date = 0;
+    int64_t latest_next_date = 0;
+    std::vector<int> latest_prices = {};
 
 public:
     DayAheadPrices(){}

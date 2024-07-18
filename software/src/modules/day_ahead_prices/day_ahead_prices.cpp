@@ -275,26 +275,31 @@ void DayAheadPrices::update()
 
         if (download_complete) {
             if(download_state == DAP_DOWNLOAD_STATE_OK) {
+                DynamicJsonDocument json_doc{4096};
                 DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
                 if (error) {
                     download_state = DAP_DOWNLOAD_STATE_ERROR;
                 } else {
-                    state.get("last_sync")->updateUint(timestamp_minutes());
-
-                    int first_date   = json_doc["first_date"].as<int>();
-                    int next_date    = json_doc["next_date"].as<int>();
-                    state.get("next_check")->updateUint(next_date/60);
+                    latest_first_date = json_doc["first_date"].as<int>();
+                    latest_next_date  = json_doc["next_date"].as<int>();
 
                     JsonArray prices = json_doc["prices"].as<JsonArray>();
+                    latest_prices.clear();
+                    for(JsonVariant v : prices) {
+                        latest_prices.push_back(v.as<int>());
+                    }
+
+                    const uint32_t current_minutes = timestamp_minutes();
+                    state.get("last_sync")->updateUint(current_minutes);
+                    state.get("last_check")->updateUint(current_minutes);
+                    state.get("next_check")->updateUint(latest_next_date/60);
 
                     // TODO: Remove this debug output
-                    int count = 0;
-                    for(JsonVariant v : prices) {
-                        logger.printfln("price %d: %dct", first_date + 15*60*count, v.as<int>()/1000);
-                        count++;
+                    for(int i = 0; i < latest_prices.size(); i++) {
+                        logger.printfln("price %lld: %dct", latest_first_date + 15*60*i, latest_prices[i]/1000);
                     }
-                    logger.printfln("first_date %d", first_date);
-                    logger.printfln("next_date %d", next_date);
+                    logger.printfln("first_date %lld", latest_first_date);
+                    logger.printfln("next_date %lld", latest_next_date);
                 }
             }
 
