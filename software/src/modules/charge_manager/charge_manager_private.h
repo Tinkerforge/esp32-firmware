@@ -14,6 +14,7 @@
 
 // Initialized by charge_manager.cpp; never changed
 struct CurrentAllocatorConfig {
+    micros_t allocation_interval;
     int32_t minimum_current_3p;
     int32_t minimum_current_1p;
     float enable_current_factor;

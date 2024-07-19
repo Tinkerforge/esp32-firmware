@@ -38,6 +38,9 @@
 // validator function, so lambda capture lists have to be empty.
 static uint32_t max_avail_current = 0;
 
+// How often to run the allocation algorithm
+static constexpr micros_t ALLOCATION_INTERVAL = 10_s;
+
 #define WATCHDOG_TIMEOUT_MS 30000
 
 // If this is an energy manager, we have exactly one charger and the margin is still the default,
@@ -321,6 +324,8 @@ void ChargeManager::setup()
     state.get("state")->updateUint(1);
 
     this->ca_config = new CurrentAllocatorConfig();
+    ca_config->allocation_interval = ALLOCATION_INTERVAL;
+
     this->ca_state = new CurrentAllocatorState();
     ca_config->minimum_current_3p = config.get("minimum_current")->asUint();
     ca_config->minimum_current_1p = config.get("minimum_current_1p")->asUint();
@@ -405,7 +410,7 @@ void ChargeManager::setup()
             }
 
             this->state.get("state")->updateUint(result);
-            }, 5000, 5000);
+        }, ca_config->allocation_interval, ca_config->allocation_interval);
 
     if (config.get("enable_watchdog")->asBool()) {
         task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1000, 1000);
