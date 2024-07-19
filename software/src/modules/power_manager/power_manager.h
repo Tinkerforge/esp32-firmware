@@ -154,6 +154,7 @@ private:
     PhaseSwitcherBackend *phase_switcher_backend = &phase_switcher_dummy;
 
     bool     printed_skipping_energy_update      = false;
+    bool     printed_skipping_currents_update    = false;
 
     uint32_t mode                                = 0;
     bool     is_3phase                           = false;
