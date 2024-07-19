@@ -35,6 +35,7 @@ struct CurrentAllocatorState {
     Cost control_window_max = {0, 0, 0, 0};
 };
 
+// Check alignment/padding when adding stuff.
 struct ChargerState {
     uint32_t last_update;
     uint32_t uid;
@@ -72,14 +73,16 @@ struct ChargerState {
 
     bool phase_switch_supported;
 
-    // True if the last allocation was >= the requested current at that time.
-    // On a false -> true transition, ignore_phase_currents will be set to now_us().
-    bool last_alloc_fulfilled_reqd;
+    // TODO move everything below into charger allocation state.
 
     // Phases that are currently used or will be used if current is allocated.
     uint8_t phases;
 
     PhaseRotation phase_rotation;
+
+    // True if the last allocation was >= the requested current at that time.
+    // On a false -> true transition, ignore_phase_currents will be set to now_us().
+    bool last_alloc_fulfilled_reqd;
 
     float allocated_energy;
     float allocated_energy_this_rotation;
