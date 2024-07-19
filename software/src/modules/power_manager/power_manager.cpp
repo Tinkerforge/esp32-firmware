@@ -195,7 +195,12 @@ void PowerManager::setup()
     api.restorePersistentConfig("power_manager/config", &config);
     api.restorePersistentConfig("power_manager/dynamic_load_config", &dynamic_load_config);
 
-    if (!config.get("enabled")->asBool()) {
+    // Force-enable PM if either PV excess charging or dynamic load management are enabled.
+    // Force-disable otherwise.
+    if (config.get("excess_charging_enable")->asBool() || dynamic_load_config.get("enabled")->asBool()) {
+        config.get("enabled")->updateBool(true);
+    } else {
+        config.get("enabled")->updateBool(false);
         return;
     }
 
