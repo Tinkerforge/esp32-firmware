@@ -1324,8 +1324,8 @@ int allocate_current(
             // because the charger reports the number of phases that would be active if
             // it was charging. Check is_charging instead.
             if ((charger_alloc.allocated_current < charger.allowed_current
-                    || (charger_alloc.allocated_phases != 0 && charger_alloc.allocated_phases < charger.phases)
-                    || (charger_alloc.allocated_phases == 0 && charger.is_charging))
+                || (charger_alloc.allocated_phases != 0 && charger_alloc.allocated_phases < charger.phases)
+                || (charger_alloc.allocated_phases == 0 && charger.is_charging))
                && deadline_elapsed(charger_alloc.last_sent_config + 1000_usec * (micros_t)TIMEOUT_MS)) {
                 unreachable_evse_found = true;
                 LOCAL_LOG("EVSE of %s (%s) did not react in time. Expected %d mA @ %dp but is %d mA @ %dp",
