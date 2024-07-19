@@ -309,7 +309,7 @@ PhaseSwitcherBackend::SwitchingState EnergyManager::get_phase_switching_state()
         return PhaseSwitcherBackend::SwitchingState::Error;
     }
 
-    if (phase_switch_deadtime_us == 0_usec) {
+    if (phase_switch_deadtime_us == 0_us) {
         return PhaseSwitcherBackend::SwitchingState::Ready;
     }
 
@@ -317,7 +317,7 @@ PhaseSwitcherBackend::SwitchingState EnergyManager::get_phase_switching_state()
         return PhaseSwitcherBackend::SwitchingState::Busy;
     }
 
-    phase_switch_deadtime_us = 0_usec;
+    phase_switch_deadtime_us = 0_us;
 
     return PhaseSwitcherBackend::SwitchingState::Ready;
 }

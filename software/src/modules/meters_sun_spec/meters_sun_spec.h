@@ -92,7 +92,7 @@ private:
     uint8_t scan_new_device_address_last;
     uint32_t scan_new_cookie;
 
-    micros_t scan_last_keep_alive = 0_usec;
+    micros_t scan_last_keep_alive = 0_us;
     bool scan_abort = false;
     ScanState scan_state = ScanState::Idle;
     String scan_host;
@@ -120,7 +120,7 @@ private:
     size_t scan_block_length;
     char scan_printfln_buffer[512] = "";
     size_t scan_printfln_buffer_used = 0;
-    micros_t scan_printfln_last_flush = 0_usec;
+    micros_t scan_printfln_last_flush = 0_us;
     char scan_common_manufacturer_name[32 + 1];
     char scan_common_model_name[32 + 1];
     char scan_common_serial_number[32 + 1];

@@ -90,14 +90,14 @@ public:
     bool meter_is_fresh(uint32_t slot, micros_t max_age_us);
     bool meter_has_value_changed(uint32_t slot, micros_t max_age_us);
 
-    MeterValueAvailability get_values(uint32_t slot, const Config **values, micros_t max_age = 0_usec);
-    MeterValueAvailability get_value_by_index(uint32_t slot, uint32_t index, float *value, micros_t max_age = 0_usec);
-    MeterValueAvailability get_power_real(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
-    MeterValueAvailability get_power_virtual(uint32_t slot, float *power_w, micros_t max_age = 0_usec);
-    MeterValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_usec);
-    MeterValueAvailability get_energy_imexsum(uint32_t slot, float *total_imexsum_kwh, micros_t max_age = 0_usec);
-    MeterValueAvailability get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age = 0_usec);
-    MeterValueAvailability get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age = 0_usec);
+    MeterValueAvailability get_values(uint32_t slot, const Config **values, micros_t max_age = 0_us);
+    MeterValueAvailability get_value_by_index(uint32_t slot, uint32_t index, float *value, micros_t max_age = 0_us);
+    MeterValueAvailability get_power_real(uint32_t slot, float *power_w, micros_t max_age = 0_us);
+    MeterValueAvailability get_power_virtual(uint32_t slot, float *power_w, micros_t max_age = 0_us);
+    MeterValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_us);
+    MeterValueAvailability get_energy_imexsum(uint32_t slot, float *total_imexsum_kwh, micros_t max_age = 0_us);
+    MeterValueAvailability get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age = 0_us);
+    MeterValueAvailability get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age = 0_us);
 
     void update_value(uint32_t slot, uint32_t index, float new_value);
     void update_all_values(uint32_t slot, const float new_values[]);

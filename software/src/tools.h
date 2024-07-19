@@ -44,7 +44,17 @@ bool deadline_elapsed(uint32_t deadline_ms);
 
 STRONG_INTEGER_TYPEDEF(int64_t, micros_t)
 
-constexpr micros_t operator""_usec(unsigned long long int i) { return micros_t{(int64_t)i}; }
+// These do not clash with the C++14 standard literals for durations:
+// https://en.cppreference.com/w/cpp/chrono/duration
+// because those don't start with a _
+// "ud-suffix must begin with the underscore _:
+// the suffixes that do not begin with the underscore
+// are reserved for the literal operators provided by the standard library."
+constexpr micros_t operator""_us  (unsigned long long int i) { return micros_t{(int64_t)i}; }
+constexpr micros_t operator""_ms  (unsigned long long int i) { return micros_t{(int64_t)i * 1000}; }
+constexpr micros_t operator""_s   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000}; }
+constexpr micros_t operator""_min (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60}; }
+constexpr micros_t operator""_h   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60 * 60}; }
 
 micros_t now_us();
 bool deadline_elapsed(micros_t deadline_us);

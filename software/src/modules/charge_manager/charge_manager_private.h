@@ -29,7 +29,7 @@ struct CurrentAllocatorState {
     bool last_print_local_log_was_error = false;
 
     bool global_hysteresis_elapsed = false;
-    micros_t last_hysteresis_reset = 0_usec;
+    micros_t last_hysteresis_reset = 0_us;
 
     Cost control_window_min = {0, 0, 0, 0};
     Cost control_window_max = {0, 0, 0, 0};

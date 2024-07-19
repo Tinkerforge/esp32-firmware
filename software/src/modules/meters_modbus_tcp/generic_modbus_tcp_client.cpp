@@ -51,7 +51,7 @@ void GenericModbusTCPClient::stop_connection()
     }
 
     host_ip = IPAddress(0u);
-    last_successful_read = 0_usec;
+    last_successful_read = 0_us;
 }
 
 void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)
@@ -111,7 +111,7 @@ void GenericModbusTCPClient::start_generic_read()
         return;
     }
 
-    if (last_successful_read != 0_usec && deadline_elapsed(last_successful_read + successful_read_timeout)) {
+    if (last_successful_read != 0_us && deadline_elapsed(last_successful_read + successful_read_timeout)) {
         logger.printfln("Last successful read occurred too long ago, reconnecting to '%s'", host_name.c_str());
         start_connection();
         return;
