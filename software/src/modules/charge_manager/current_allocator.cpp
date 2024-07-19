@@ -988,6 +988,9 @@ static int32_t current_capacity(const CurrentLimits *limits, const ChargerState 
 
 // Stage 7: Allocate fair current to chargers with at least one allocated phase
 // - All those chargers already have their minimum current allocated
+// - The fair current is the current left divided by the number of chargers active on that phase.
+//   On the PV "phase" include a charger n times were n is the number of phases this charger uses.
+//   A three-phase charger will use 18 A of PV current if it is allocated 6 A to each phase.
 void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
@@ -1004,28 +1007,28 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
         auto allocated_phases = phase_allocation[idx_array[i]];
-        active_on_phase.pv += allocated_phases;
+        ++active_on_phase.pv;
         if (allocated_phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
-            active_on_phase.l1 += 1;
-            active_on_phase.l2 += 1;
-            active_on_phase.l3 += 1;
+            ++active_on_phase.l1;
+            ++active_on_phase.l2;
+            ++active_on_phase.l3;
         } else {
             for (size_t p = 1; p < 1 + allocated_phases; ++p) {
                 auto phase = get_phase(state->phase_rotation, (ChargerPhase)p);
-                active_on_phase[phase] += 1;
+                ++active_on_phase[phase];
             }
         }
     }
 
-    // TODO: calculate fair current per phase. Use min fair current of phases used per charger?
-    auto fair_current = std::max(0, limits->raw.pv / active_on_phase.pv);
-    for (size_t p = 1; p < 4; ++p) {
+    Cost fair = {0, 0, 0, 0};
+
+    for (size_t p = 0; p < 4; ++p) {
         if (active_on_phase[p] == 0)
             continue;
-        fair_current = std::min(fair_current, limits->raw[p] / active_on_phase[p]);
+        fair[p] = limits->raw[p] / active_on_phase[p];
     }
 
-    trace("7: active (%d %d %d %d). fair %d", active_on_phase.pv, active_on_phase.l1, active_on_phase.l2, active_on_phase.l3, fair_current);
+    trace("7: active (%d %d %d %d). fair (%d %d %d %d)", active_on_phase.pv, active_on_phase.l1, active_on_phase.l2, active_on_phase.l3, fair.pv, fair.l1, fair.l2, fair.l3);
 
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
@@ -1033,7 +1036,16 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto allocated_current = current_allocation[idx_array[i]];
         auto allocated_phases = phase_allocation[idx_array[i]];
 
-        auto current = fair_current;
+        auto current = fair.pv / allocated_phases;
+
+        if (state->phase_rotation == PhaseRotation::Unknown) {
+            current = std::min({current, fair.l1, fair.l2, fair.l3});
+        } else {
+            for (size_t p = 0; p < allocated_phases; ++p) {
+                auto phase = get_phase(state->phase_rotation, (ChargerPhase)((size_t)ChargerPhase::P1 + p));
+                current = std::min(current, fair[phase]);
+            }
+        }
 
         // Don't allocate more than the enable current to a charger that does not charge.
         if (!state->is_charging) {
