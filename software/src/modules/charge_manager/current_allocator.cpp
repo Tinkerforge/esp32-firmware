@@ -971,7 +971,7 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 static int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *cfg) {
     auto requested_current = get_requested_current(state, cfg);
 
-    // TODO: add margin again if exactly one charger is active and requested_current > 6000. Also add in calculate_window?
+    // TODO: add margin again if exactly one charger is active and requested_current > 6000. Also add in calculate_window? -> Maybe not necessary any more?
 
     if (allocated_phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
         return std::min({std::max(requested_current - allocated_current, 0), limits->raw.l1, limits->raw.l2, limits->raw.l3});
@@ -1348,6 +1348,8 @@ int allocate_current(
             }
 
             // Block firmware update if charger has a vehicle connected.
+            // TODO: Don't block energy manager firmware updates if a charger can't be reached or is in an error state.
+            // Only block if state is in [1.4] or 6
             if (charger_alloc.state != 0)
                 vehicle_connected = true;
         }
