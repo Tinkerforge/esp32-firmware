@@ -38,8 +38,6 @@
 
 #define PRINT_COST(x) logger.printfln("%s %d %d %d %d", #x, x[0], x[1], x[2], x[3])
 
-#define ALLOCATION_TIMEOUT_S 5
-
 #define ENABLE_CA_TRACE 1
 #if ENABLE_CA_TRACE
 #define trace(...) logger.tracefln(__VA_ARGS__)
@@ -285,7 +283,7 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // enough current available to activate both of them.
     bool have_b1 = false;
     for (int i = 0; i < charger_count; ++i) {
-        have_b1 |= charger_state[i].wants_to_charge && phase_allocation[i] == 0 && deadline_elapsed(charger_state[i].last_plug_in + micros_t{ALLOCATION_TIMEOUT_S} * 1000_usec * 1000_usec);
+        have_b1 |= charger_state[i].wants_to_charge && phase_allocation[i] == 0 && deadline_elapsed(charger_state[i].last_plug_in + cfg->allocation_interval);
     }
     trace(have_b1 ? "1: have B1" : "1: don't have B1");
 
@@ -1455,7 +1453,10 @@ int allocate_current(
             if (phases_to_set == 0) {
                 charger.allocated_energy_this_rotation = 0;
             } else {
-                auto allocated_energy = (float)current_to_set / 1000.0f * phases_to_set * ALLOCATION_TIMEOUT_S / 3600.0f * 230.0f / 1000.0f;
+                auto amps = (float)current_to_set / 1000.0f * phases_to_set;
+                auto amp_hours = amps * (float)(int64_t)(cfg->allocation_interval / 1_h);
+                auto watt_hours = amp_hours * 230.0f;
+                auto allocated_energy = watt_hours / 1000;
                 charger.allocated_energy_this_rotation += allocated_energy;
                 charger.allocated_energy += allocated_energy;
             }
