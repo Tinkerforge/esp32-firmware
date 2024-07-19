@@ -23,6 +23,8 @@ export interface state {
     state: number,
     uptime: number,
     chargers: ChargerState[]
+    avail: number[],
+    alloc: number[]
 }
 
 interface ChargerConfig {

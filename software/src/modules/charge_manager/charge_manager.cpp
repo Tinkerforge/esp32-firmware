@@ -160,11 +160,29 @@ void ChargeManager::pre_setup()
         return "";
     }};
 
-    // This has to fit in the 4k WebSocket send buffer even with 32 chargers with long names. (Currently 3960 bytes)
+    // This has to fit in the 4k WebSocket send buffer even with 32 chargers with long names. (Currently 4076 bytes)
     // -> Be stingy with the key names. If we need more space we could switch to an array for all numbers.
     // This API only exists to communicate with the web interface and is not documented.
     state = Config::Object({
         {"state", Config::Uint8(0)}, // 0 - not configured, 1 - active, 2 - shutdown
+        {"avail", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0)
+            },
+            new Config{Config::Int32(0)},
+            4, 4, Config::type_id<Config::ConfInt>())
+        },
+        {"alloc", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0)
+            },
+            new Config{Config::Int32(0)},
+            4, 4, Config::type_id<Config::ConfInt>())
+        },
         {"chargers", Config::Array(
             {},
             new Config{Config::Object({
@@ -378,6 +396,8 @@ void ChargeManager::setup()
 
             for (size_t i = 0; i < 4; i++) {
                 allocated_currents[i] = limits.raw[i] - limits_post_allocation.raw[i];
+                this->state.get("avail")->get(i)->updateInt(limits.raw[i]);
+                this->state.get("alloc")->get(i)->updateInt(allocated_currents[i]);
             }
 
             for (int i = 0; i < this->charger_count; ++i) {
