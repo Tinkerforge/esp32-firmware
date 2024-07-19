@@ -529,7 +529,7 @@ void Debug::loop()
     }
 
     uint32_t run = static_cast<uint32_t>(static_cast<int64_t>(start - last_run));
-    if (run > run_max && last_run != 0_usec) {
+    if (run > run_max && last_run != 0_us) {
         run_max = run;
         state_slow.get("main_loop_max_runtime_us")->updateUint(run_max);
     }

@@ -85,7 +85,7 @@ private:
     ConfigRoot config;
     ConfigRoot auth_info;
 
-    micros_t deadtime_post_start = 0_usec;
+    micros_t deadtime_post_start = 0_us;
     size_t auth_tag_count = 0;
     std::unique_ptr<auth_tag_t[]> auth_tags = nullptr;
     void setup_auth_tags();

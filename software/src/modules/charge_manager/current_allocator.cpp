@@ -50,20 +50,20 @@
 // Only switch phases, start or stop chargers if this is elapsed.
 // Don't reset hysteresis when stopping chargers:
 // Stopping and immediately starting again is fine, see phase switch.
-static constexpr micros_t GLOBAL_HYSTERESIS = 3_usec * 60_usec * 1000_usec * 1000_usec;
+static constexpr micros_t GLOBAL_HYSTERESIS = 3_min;
 
 // Only consider charger for rotation if it has charged at least this amount of energy.
 static constexpr int32_t ALLOCATED_ENERGY_ROTATION_THRESHOLD = 5; /*kWh*/
 
 // Amount of time a charger should stay activated before considering it for rotation or phase switch.
-static constexpr micros_t MINIMUM_ACTIVE_TIME = 15_usec * 60_usec * 1000_usec * 1000_usec;
+static constexpr micros_t MINIMUM_ACTIVE_TIME = 15_min;
 
 // Allow charging for this time to attempt to wake-up a "full" vehicle,
 // i.e. one that triggered a C -> B2 transition and/or waited in B2 for too long
-static constexpr micros_t WAKEUP_TIME = 3_usec * 60_usec * 1000_usec * 1000_usec;
+static constexpr micros_t WAKEUP_TIME = 3_min;
 
 // Require a charger to be active this long before clearing last_plug_in.
-static constexpr micros_t PLUG_IN_TIME = 3_usec * 60_usec * 1000_usec * 1000_usec;
+static constexpr micros_t PLUG_IN_TIME = 3_min;
 
 static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
 
@@ -266,7 +266,7 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
 // - it wants to charge (i.e. a vehicle is plugged in and no other slot blocks) or is charging (i.e. is in state C)
 // - we are not currently attempting to wake up a "full" vehicle
 static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
-    return allocated_phases > 0 && (state->wants_to_charge || state->is_charging) && state->last_wakeup == 0_usec;
+    return allocated_phases > 0 && (state->wants_to_charge || state->is_charging) && state->last_wakeup == 0_us;
 }
 
 // Stage 1: Rotate chargers
@@ -322,7 +322,7 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 }
 
 static bool was_just_plugged_in(const ChargerState *state) {
-    return state->last_plug_in != 0_usec && state->wants_to_charge;
+    return state->last_plug_in != 0_us && state->wants_to_charge;
 }
 
 // Stage 2: Immediately activate chargers were a vehicle was just plugged in.
@@ -355,7 +355,7 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 }
 
 static int32_t get_requested_current(const ChargerState *state, const CurrentAllocatorConfig *cfg) {
-    if (state->last_alloc_fulfilled_reqd && !deadline_elapsed(state->ignore_phase_currents + micros_t{cfg->requested_current_threshold} * 1000_usec * 1000_usec))
+    if (state->last_alloc_fulfilled_reqd && !deadline_elapsed(state->ignore_phase_currents + micros_t{cfg->requested_current_threshold} * 1_s))
         return state->supported_current;
 
     return state->requested_current;
@@ -1136,7 +1136,7 @@ static constexpr int NEVER_ATTEMPTED_TO_WAKE_UP = 1;
 static constexpr int CAR_DID_NOT_WAKE_UP = 2;
 
 static int stage_9_group(const ChargerState *state) {
-    if (state->last_wakeup != 0_usec) {
+    if (state->last_wakeup != 0_us) {
         if (deadline_elapsed(state->last_wakeup + WAKEUP_TIME))
             return CAR_DID_NOT_WAKE_UP;
 
@@ -1168,7 +1168,7 @@ static bool stage_9_sort(const ChargerState *left_state, const ChargerState *rig
 void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
-    filter(allocated_phases == 0 && (state->wants_to_charge_low_priority || (state->wants_to_charge && state->last_wakeup != 0_usec)));
+    filter(allocated_phases == 0 && (state->wants_to_charge_low_priority || (state->wants_to_charge && state->last_wakeup != 0_us)));
 
     if (matched == 0)
         return;
@@ -1267,7 +1267,7 @@ int allocate_current(
     }
 
 
-    ca_state->global_hysteresis_elapsed = ca_state->last_hysteresis_reset == 0_usec || deadline_elapsed(ca_state->last_hysteresis_reset + GLOBAL_HYSTERESIS);
+    ca_state->global_hysteresis_elapsed = ca_state->last_hysteresis_reset == 0_us || deadline_elapsed(ca_state->last_hysteresis_reset + GLOBAL_HYSTERESIS);
 
     trace("Hysteresis %lld", (int64_t)(now_us() - ca_state->last_hysteresis_reset - GLOBAL_HYSTERESIS) / 1000000);
 
@@ -1326,7 +1326,7 @@ int allocate_current(
             if ((charger_alloc.allocated_current < charger.allowed_current
                 || (charger_alloc.allocated_phases != 0 && charger_alloc.allocated_phases < charger.phases)
                 || (charger_alloc.allocated_phases == 0 && charger.is_charging))
-               && deadline_elapsed(charger_alloc.last_sent_config + 1000_usec * (micros_t)TIMEOUT_MS)) {
+               && deadline_elapsed(charger_alloc.last_sent_config + 1_ms * (micros_t)TIMEOUT_MS)) {
                 unreachable_evse_found = true;
                 LOCAL_LOG("EVSE of %s (%s) did not react in time. Expected %d mA @ %dp but is %d mA @ %dp",
                           get_charger_name(i),
@@ -1434,18 +1434,18 @@ int allocate_current(
 
             // The charger was just plugged in. If we've allocated phases to it for PLUG_IN_TIME, clear the timestamp
             // to reduce its priority.
-            if (charger.last_plug_in != 0_usec && phases_to_set > 0 && deadline_elapsed(charger.last_plug_in + PLUG_IN_TIME)) {
+            if (charger.last_plug_in != 0_us && phases_to_set > 0 && deadline_elapsed(charger.last_plug_in + PLUG_IN_TIME)) {
                 trace("charger %d: clearing last_plug_in after deadline elapsed", i);
-                charger.last_plug_in = 0_usec;
+                charger.last_plug_in = 0_us;
             }
 
             // The charger was just plugged in, we've allocated phases to it in the last iteration but no phases to it in this iteration.
             // As stage 3 (switching chargers off if phases are overloaded) sorts chargers by last_plug_in ascending if it is not 0,
             // the sort order is stable, so we've just hit a phase limit that was not as restrictive in the last iteration.
             // Clear the timestamp to make sure
-            if (charger.last_plug_in != 0_usec && charger_alloc.allocated_phases > 0 && phases_to_set == 0) {
+            if (charger.last_plug_in != 0_us && charger_alloc.allocated_phases > 0 && phases_to_set == 0) {
                 trace("charger %d: clearing last_plug_in; phases overloaded?", i);
-                charger.last_plug_in = 0_usec;
+                charger.last_plug_in = 0_us;
             }
 
             bool change = charger_alloc.allocated_current != current_to_set || charger_alloc.allocated_phases != phases_to_set;

@@ -135,7 +135,7 @@ private:
     uint32_t config_error_flags = 0;
 
     bool     contactor_check_tripped             = false;
-    micros_t phase_switch_deadtime_us            = 0_usec;
+    micros_t phase_switch_deadtime_us            = 0_us;
     bool     bricklet_reachable                  = true;
     uint32_t consecutive_bricklet_errors         = 0;
 

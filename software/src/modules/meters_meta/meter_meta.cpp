@@ -217,7 +217,7 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
         });
 
         const Config *values;
-        if (meters.get_values(source_meter_a, &values, 0_usec) == MeterValueAvailability::Fresh) {
+        if (meters.get_values(source_meter_a, &values, 0_us) == MeterValueAvailability::Fresh) {
             on_values_change_single(values);
         }
     } else if (source_mode == SourceMode::Double) {

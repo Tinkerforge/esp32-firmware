@@ -140,11 +140,11 @@ void MetersSunSpec::register_urls()
 
 void MetersSunSpec::loop()
 {
-    if (scan_printfln_buffer_used > 0 && deadline_elapsed(scan_printfln_last_flush + 2000000_usec)) {
+    if (scan_printfln_buffer_used > 0 && deadline_elapsed(scan_printfln_last_flush + 2_s)) {
         scan_flush_log();
     }
 
-    if (scan_state != ScanState::Idle && !scan_abort && deadline_elapsed(scan_last_keep_alive + 10000000_usec)) {
+    if (scan_state != ScanState::Idle && !scan_abort && deadline_elapsed(scan_last_keep_alive + 10_s)) {
         const char *message = "Aborting scan because no continue call was received for more than 10 seconds";
 
         logger.printfln("%s", message);
@@ -388,7 +388,7 @@ void MetersSunSpec::loop()
                     scan_printfln("Reading timed out, retrying");
 
                     --scan_read_retries;
-                    scan_read_delay_deadline = now_us() + 100000_usec + static_cast<micros_t>(esp_random() % 2400000);
+                    scan_read_delay_deadline = now_us() + 100_ms + static_cast<micros_t>(esp_random() % 2400000);
                     scan_state = ScanState::ReadDelay;
 
                     return true;

@@ -273,7 +273,7 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
         auth_info.get("tag_id")->updateString(tag->tag_id);
 
         users.trigger_charge_action(user_id, injected ? USERS_AUTH_TYPE_NFC_INJECTION : USERS_AUTH_TYPE_NFC, auth_info.value,
-                injected ? tag_injection_action : TRIGGER_CHARGE_ANY, 3_usec * 1000_usec * 1000_usec, deadtime_post_start);
+                injected ? tag_injection_action : TRIGGER_CHARGE_ANY, 3_s, deadtime_post_start);
 
     } else {
         bool blink_handled = false;
@@ -413,7 +413,7 @@ void NFC::setup_auth_tags()
         tag->get("tag_id")->asString().toCharArray(auth_tags[i].tag_id, sizeof(auth_tags[i].tag_id));
     }
 
-    this->deadtime_post_start = micros_t{config.get("deadtime_post_start")->asUint()} * 1000_usec * 1000_usec;
+    this->deadtime_post_start = micros_t{config.get("deadtime_post_start")->asUint()} * 1_s;
 }
 
 void NFC::setup()

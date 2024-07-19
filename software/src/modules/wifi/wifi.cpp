@@ -668,7 +668,7 @@ void Wifi::setup()
 
             if (connected && soft_ap_running) {
                 ++stop_soft_ap_runs;
-                if (now_us() < 30_usec * 1000_usec * 1000_usec || stop_soft_ap_runs > 5 * 6) {
+                if (now_us() < 30_s || stop_soft_ap_runs > 5 * 6) {
                     logger.printfln("Network connected. Stopping soft AP");
                     WiFi.softAPdisconnect(true);
                     soft_ap_running = false;

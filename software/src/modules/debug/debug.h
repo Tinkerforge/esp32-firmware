@@ -63,6 +63,6 @@ private:
     bool     psram_heap_valid = true;
     bool     check_psram_next = false;
 
-    micros_t last_run = 0_usec;
+    micros_t last_run = 0_us;
     uint32_t run_max = 0;
 };

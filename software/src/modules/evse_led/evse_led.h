@@ -58,6 +58,6 @@ private:
     bool set(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint8_t v, bool via_api);
 
     Blink current_state = Blink::None;
-    micros_t current_duration_end_us = 0_usec;
+    micros_t current_duration_end_us = 0_us;
     bool current_state_via_api = false;
 };

@@ -100,7 +100,7 @@ static bool is_nfc(EvseLed::Blink state)
 bool EvseLed::accepts_new_state(Blink new_state)
 {
     // Always accept new state if old state duration is elapsed
-    if (this->current_duration_end_us == 0_usec || deadline_elapsed(this->current_duration_end_us))
+    if (this->current_duration_end_us == 0_us || deadline_elapsed(this->current_duration_end_us))
         return true;
 
     /*
