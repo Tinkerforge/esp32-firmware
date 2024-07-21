@@ -26,7 +26,8 @@
 #include "module.h"
 #include "config.h"
 
-#define DAY_AHEAD_PRICE_MAX_JSON_LENGTH 2048
+// TODO: We can reduce this again after reducing data on weekend on API server
+#define DAY_AHEAD_PRICE_MAX_JSON_LENGTH 4096*2
 
 enum DAPDownloadState {
     DAP_DOWNLOAD_STATE_OK,
@@ -39,6 +40,7 @@ class DayAheadPrices final : public IModule
 private:
     void update();
     const char* get_api_url_with_path();
+    int get_max_price_values();
 
     std::unique_ptr<unsigned char[]> cert = nullptr;
     esp_http_client_handle_t http_client = nullptr;
@@ -48,11 +50,6 @@ private:
     uint32_t json_buffer_position;
 
     DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
-
-    // Latest data received from day ahead price server
-    int64_t latest_first_date = 0;
-    int64_t latest_next_date = 0;
-    std::vector<int> latest_prices = {};
 
 public:
     DayAheadPrices(){}

@@ -28,7 +28,7 @@
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 #define CHECK_FOR_DAP_TIMEOUT 15000
-#define CHECK_INTERVAL 60*1000 // TODO: Change to 15*60*1000
+#define CHECK_INTERVAL 15*60*1000
 
 enum Region {
     REGION_DE,
@@ -61,25 +61,42 @@ void DayAheadPrices::pre_setup()
         {"supplier_markup", Config::Uint(0, 0, 99000)},      // in ct/1000 per kWh
         {"supplier_base_fee", Config::Uint(0, 0, 99000)},    // in ct per month
     }), [this](Config &update, ConfigSource source) -> String {
-        String   api_url    = update.get("api_url")->asString();
+        String api_url = update.get("api_url")->asString();
 
         if ((api_url.length() > 0) && !api_url.startsWith("https://")) {
             return "HTTPS required for Day Ahead Price API URL";
+        }
+
+        // If region or resolution changes we discard the current state
+        // and trigger a new update (with the new config).
+        if ((update.get("region")->asUint()     != config.get("region")->asUint()) ||
+            (update.get("resolution")->asUint() != config.get("resolution")->asUint()) ||
+            (update.get("enable")->asBool()     != config.get("enable")->asBool())) {
+            state.get("last_sync")->updateUint(0);
+            state.get("last_check")->updateUint(0);
+            state.get("next_check")->updateUint(0);
+            state.get("first_date")->updateUint(0);
+            state.get("prices")->removeAll();
+            task_scheduler.scheduleOnce([this]() {
+                this->update();
+            }, 10);
         }
 
         return "";
     }};
 
     state = Config::Object({
-        {"last_sync", Config::Uint32(0)},  // unix timestamp in minutes
+        {"last_sync",  Config::Uint32(0)}, // unix timestamp in minutes
         {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
         {"next_check", Config::Uint32(0)}, // unix timestamp in minutes
+        {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
+        {"prices",     Config::Array({}, new Config{Config::Int32(0)}, 0, 200, Config::type_id<Config::ConfInt>())}
     });
 }
 
 void DayAheadPrices::setup()
 {
-    api.restorePersistentConfig("dap/config", &config);
+    api.restorePersistentConfig("day_ahead_prices/config", &config);
 
     json_buffer = nullptr;
     json_buffer_position = 0;
@@ -87,27 +104,10 @@ void DayAheadPrices::setup()
     initialized = true;
 }
 
-const char* DayAheadPrices::get_api_url_with_path()
-{
-    static String api_url_with_path;
-
-    String api_url = config.get("api_url")->asString();
-
-    if (!api_url.endsWith("/")) {
-        api_url += "/";
-    }
-
-    String region = region_str[config.get("region")->asUint()];
-    String resolution = resolution_str[config.get("resolution")->asUint()];
-
-    api_url_with_path = api_url + "v1/day_ahead_prices/" + region + "/" + resolution;
-    return api_url_with_path.c_str();
-}
-
 void DayAheadPrices::register_urls()
 {
-    api.addPersistentConfig("dap/config", &config);
-    api.addState("dap/state", &state);
+    api.addPersistentConfig("day_ahead_prices/config", &config);
+    api.addState("day_ahead_prices/state", &state);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update();
@@ -164,7 +164,8 @@ esp_err_t DayAheadPrices::update_event_handler_impl(esp_http_client_event_t *eve
     return ESP_OK;
 }
 
-static esp_err_t update_event_handler(esp_http_client_event_t *event) {
+static esp_err_t update_event_handler(esp_http_client_event_t *event)
+{
     return static_cast<DayAheadPrices *>(event->user_data)->update_event_handler_impl(event);
 }
 
@@ -263,6 +264,7 @@ void DayAheadPrices::update()
                 download_state = DAP_DOWNLOAD_STATE_ERROR;
                 download_complete = true;
             } else if (download_state == DAP_DOWNLOAD_STATE_PENDING) {
+                // If we reach here the download finished and no error occurred during the download
                 download_state = DAP_DOWNLOAD_STATE_OK;
                 download_complete = true;
             }
@@ -270,36 +272,35 @@ void DayAheadPrices::update()
 
         if (download_complete) {
             if(download_state == DAP_DOWNLOAD_STATE_OK) {
-                DynamicJsonDocument json_doc{4096};
+                // Deserialize json received from API
+                DynamicJsonDocument json_doc{DAY_AHEAD_PRICE_MAX_JSON_LENGTH*2};
                 DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
                 if (error) {
                     logger.printfln("Error during JSON deserialization: %s", error.c_str());
                     download_state = DAP_DOWNLOAD_STATE_ERROR;
                 } else {
-                    latest_first_date = json_doc["first_date"].as<int>();
-                    latest_next_date  = json_doc["next_date"].as<int>();
-
+                    // Put data from json into day_ahead_prices/state object
                     JsonArray prices = json_doc["prices"].as<JsonArray>();
-                    latest_prices.clear();
+                    state.get("prices")->removeAll();
+                    int count = 0;
+                    int max_count = this->get_max_price_values();
                     for(JsonVariant v : prices) {
-                        latest_prices.push_back(v.as<int>());
+                        state.get("prices")->add()->updateInt(v.as<int>());
+                        count++;
+                        if(count >= max_count) {
+                            break;
+                        }
                     }
 
                     const uint32_t current_minutes = timestamp_minutes();
                     state.get("last_sync")->updateUint(current_minutes);
                     state.get("last_check")->updateUint(current_minutes);
-                    state.get("next_check")->updateUint(latest_next_date/60);
-
-                    // TODO: Remove this debug output
-                    for(int i = 0; i < latest_prices.size(); i++) {
-                        logger.printfln("price %lld: %dct", latest_first_date + 15*60*i, latest_prices[i]/1000);
-                    }
-                    logger.printfln("first_date %lld", latest_first_date);
-                    logger.printfln("next_date %lld", latest_next_date);
+                    state.get("next_check")->updateUint(json_doc["next_date"].as<int>()/60);
+                    state.get("first_date")->updateUint(json_doc["first_date"].as<int>()/60);
                 }
             }
 
-            // cleanup
+            // Cleanup
             esp_http_client_close(http_client);
             esp_http_client_cleanup(http_client);
             http_client = nullptr;
@@ -312,4 +313,29 @@ void DayAheadPrices::update()
         }
 
     }, 100, 100);
+}
+
+// Create API path that includes currently configured region and resolution
+const char* DayAheadPrices::get_api_url_with_path()
+{
+    static String api_url_with_path;
+
+    String api_url = config.get("api_url")->asString();
+
+    if (!api_url.endsWith("/")) {
+        api_url += "/";
+    }
+
+    String region = region_str[config.get("region")->asUint()];
+    String resolution = resolution_str[config.get("resolution")->asUint()];
+
+    api_url_with_path = api_url + "v1/day_ahead_prices/" + region + "/" + resolution;
+    return api_url_with_path.c_str();
+}
+
+int DayAheadPrices::get_max_price_values()
+{
+    // We save maximal 2 days with 24 hours each and one additional hour for daylight savings time switch.
+    // Depending on resoultion we have 4 or 1 data points per hour.
+    return (2*24 + 1) * (config.get("resolution")->asUint() == RESOLUTION_15MIN ? 4 : 1);
 }
