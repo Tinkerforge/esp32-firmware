@@ -73,6 +73,29 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
         });
     }
 
+    get_price_timeframe() {
+        let config = API.get("day_ahead_prices/config");
+        let time = new Date();
+        let s = ""
+        if(config.resolution == 0) {
+            time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
+            time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
+            time.setMinutes(Math.floor((time.getMinutes()) / 15) * 15);
+            s += time.toLocaleTimeString() + '-';
+            time.setMinutes(time.getMinutes() + 15);
+            s += time.toLocaleTimeString()
+        } else {
+            time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
+            time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
+            time.setMinutes(Math.floor((time.getMinutes()-30) / 60) * 60);
+            s += time.toLocaleTimeString() + '-';
+            time.setMinutes(time.getMinutes() + 60);
+            s += time.toLocaleTimeString()
+        }
+
+        return s
+    }
+
     update_uplot() {
         if (this.uplot_wrapper_ref.current == null) {
             return;
@@ -181,7 +204,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 </ConfigForm>
                 <FormSeparator heading={__("day_ahead_prices.content.day_ahead_market_prices_heading")}/>
                 <FormRow label={__("day_ahead_prices.content.current_price")}>
-                    <InputText value={dap.state.current_price/1000.0 + " ct/kWh"}/>
+                    <InputText value={(dap.state.current_price/1000.0).toLocaleString() + " ct/kWh (" + this.get_price_timeframe() + ")"}/>
                 </FormRow>
                 <div class="card pl-1 pb-1">
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
