@@ -68,6 +68,7 @@ interface UplotWrapperProps {
     y_sync_ref?: RefObject<UplotFlagsWrapper>;
     default_fill?: boolean;
     padding?: uPlot.Padding;
+    only_show_visible?: boolean
 }
 
 export class UplotWrapper extends Component<UplotWrapperProps, {}> {
@@ -445,23 +446,25 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             else {
                 let stacked_values: number[] = new Array(this.data.values[i].length);
 
-                for (let k = 0; k < this.data.values[i].length; ++k) {
-                    if (last_stacked_values[k] !== null
-                        && last_stacked_values[k] !== undefined
-                        && this.data.values[i][k] !== null
-                        && this.data.values[i][k] !== undefined) {
-                        stacked_values[k] = last_stacked_values[k] + this.data.values[i][k];
-                    } else {
-                        stacked_values[k] = this.data.values[i][k];
-                    }
-
-                    if (stacked_values[k] !== null) {
-                        if (stacked_values[k] < y_min) {
-                            y_min = stacked_values[k];
+                if ((this.props.only_show_visible !== true) || this.series_visibility[this.data.keys[i]]) {
+                    for (let k = 0; k < this.data.values[i].length; ++k) {
+                        if (last_stacked_values[k] !== null
+                            && last_stacked_values[k] !== undefined
+                            && this.data.values[i][k] !== null
+                            && this.data.values[i][k] !== undefined) {
+                            stacked_values[k] = last_stacked_values[k] + this.data.values[i][k];
+                        } else {
+                            stacked_values[k] = this.data.values[i][k];
                         }
 
-                        if (stacked_values[k] > y_max) {
-                            y_max = stacked_values[k];
+                        if (stacked_values[k] !== null) {
+                            if (stacked_values[k] < y_min) {
+                                y_min = stacked_values[k];
+                            }
+
+                            if (stacked_values[k] > y_max) {
+                                y_max = stacked_values[k];
+                            }
                         }
                     }
                 }
