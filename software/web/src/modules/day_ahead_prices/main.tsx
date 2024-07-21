@@ -80,14 +80,14 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
         if(config.resolution == 0) {
             time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
             time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
-            time.setMinutes(Math.floor((time.getMinutes()) / 15) * 15);
+            time.setMinutes(Math.floor(time.getMinutes() / 15) * 15);
             s += time.toLocaleTimeString() + '-';
             time.setMinutes(time.getMinutes() + 15);
             s += time.toLocaleTimeString()
         } else {
             time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
             time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
-            time.setMinutes(Math.floor((time.getMinutes()-30) / 60) * 60);
+            time.setMinutes(Math.floor(time.getMinutes() / 60) * 60);
             s += time.toLocaleTimeString() + '-';
             time.setMinutes(time.getMinutes() + 60);
             s += time.toLocaleTimeString()
