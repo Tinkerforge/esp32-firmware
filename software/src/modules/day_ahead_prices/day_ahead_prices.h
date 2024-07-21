@@ -39,6 +39,7 @@ class DayAheadPrices final : public IModule
 {
 private:
     void update();
+    void update_price();
     const char* get_api_url_with_path();
     int get_max_price_values();
 

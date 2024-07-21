@@ -54,7 +54,6 @@ type DayAheadPricesConfig = API.getType["day_ahead_prices/config"];
 
 interface DayAheadPricesState {
     state: API.getType["day_ahead_prices/state"];
-    time: {time: number};
 }
 
 export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {}, DayAheadPricesState> {
@@ -62,8 +61,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
     uplot_wrapper_ref       = createRef();
     uplot_legend_div_ref    = createRef();
     uplot_wrapper_flags_ref = createRef();
-    price_now               = 0;
-    price_clock             = 0;
 
     constructor() {
         super('day_ahead_prices/config',
@@ -71,19 +68,9 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
 
         // Update chart every time new price data comes in
         util.addApiEventListener("day_ahead_prices/state", () => {
+            this.setState({state: API.get("day_ahead_prices/state")});
             this.update_uplot();
         });
-    }
-
-    componentDidMount() {
-        this.price_clock = setInterval(() => {
-            this.setState({time: {...this.state.time, time: Date.now()}});
-            this.update_uplot();
-        }, 1000);
-    }
-
-    componentWillUnmount() {
-        clearInterval(this.price_clock);
     }
 
     update_uplot() {
@@ -106,7 +93,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 update_timestamp: 0,
                 use_timestamp: 0
             }
-            this.price_now = 0;
         // Else fill with time and the three different prices we want to show
         } else {
             data = {
@@ -128,11 +114,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 data.values[2].push(config.grid_costs_and_taxes/1000.0);
                 data.values[3].push(config.supplier_markup/1000.0);
             }
-
-            let now  = Date.now() / 1000;
-            let diff = now - state.first_date*60;
-            let index = Math.floor(diff/(60*resolution_multiplier));
-            this.price_now = data.values[1][index];
         }
 
         // Show loader or data depending on the availability of data
@@ -199,8 +180,8 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     </Collapse>
                 </ConfigForm>
                 <FormSeparator heading={__("day_ahead_prices.content.day_ahead_market_prices_heading")}/>
-                <FormRow label={__("day_ahead_prices.content.current_price") + " (" + new Date(this.state.time?.time).toLocaleTimeString() + ")"}>
-                    <InputText value={this.price_now + "ct/kWh"}/>
+                <FormRow label={__("day_ahead_prices.content.current_price")}>
+                    <InputText value={dap.state.current_price/1000.0 + " ct/kWh"}/>
                 </FormRow>
                 <div class="card pl-1 pb-1">
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}

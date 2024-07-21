@@ -15,4 +15,5 @@ export interface state {
     next_check: number;
     first_date: number;
     prices: number[];
+    current_price: number;
 }

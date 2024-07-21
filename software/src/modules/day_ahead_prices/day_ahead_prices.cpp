@@ -29,6 +29,7 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 #define CHECK_FOR_DAP_TIMEOUT 15000
 #define CHECK_INTERVAL 15*60*1000
+#define PRICE_UPDATE_INTERVAL 60*1000
 
 enum Region {
     REGION_DE,
@@ -90,7 +91,8 @@ void DayAheadPrices::pre_setup()
         {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
         {"next_check", Config::Uint32(0)}, // unix timestamp in minutes
         {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
-        {"prices",     Config::Array({}, new Config{Config::Int32(0)}, 0, 200, Config::type_id<Config::ConfInt>())}
+        {"prices",     Config::Array({}, new Config{Config::Int32(0)}, 0, 200, Config::type_id<Config::ConfInt>())},
+        {"current_price", Config::Int32(0)}
     });
 }
 
@@ -112,6 +114,11 @@ void DayAheadPrices::register_urls()
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update();
     }, 0, CHECK_INTERVAL);
+
+    // TODO: Can we run this at xx:00, xx:15, xx:30 and xx:45?
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        this->update_price();
+    }, 0, PRICE_UPDATE_INTERVAL);
 }
 
 esp_err_t DayAheadPrices::update_event_handler_impl(esp_http_client_event_t *event)
@@ -167,6 +174,18 @@ esp_err_t DayAheadPrices::update_event_handler_impl(esp_http_client_event_t *eve
 static esp_err_t update_event_handler(esp_http_client_event_t *event)
 {
     return static_cast<DayAheadPrices *>(event->user_data)->update_event_handler_impl(event);
+}
+
+void DayAheadPrices::update_price()
+{
+    const uint32_t resolution_divisor = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
+    const uint32_t diff = timestamp_minutes() - state.get("first_date")->asUint();
+    const uint32_t index = diff/resolution_divisor;
+    if (state.get("prices")->count() <= index) {
+        state.get("current_price")->updateInt(0);
+    } else {
+        state.get("current_price")->updateInt(state.get("prices")->get(index)->asInt());
+    }
 }
 
 void DayAheadPrices::update()
@@ -297,6 +316,7 @@ void DayAheadPrices::update()
                     state.get("last_check")->updateUint(current_minutes);
                     state.get("next_check")->updateUint(json_doc["next_date"].as<int>()/60);
                     state.get("first_date")->updateUint(json_doc["first_date"].as<int>()/60);
+                    this->update_price();
                 }
             }
 
