@@ -245,6 +245,13 @@ int main(int argc, char **argv) {
     start_manager();
 
     CurrentAllocatorConfig cfg {
+        .allocation_interval = 1000_s,
+        .global_hysteresis = 3_min,
+        .wakeup_time = 3_min,
+        .plug_in_time = 3_min,
+        .minimum_active_time = 15_min,
+        .allocated_energy_rotation_threshold = 5,
+
         .minimum_current_3p = 9200,
         .minimum_current_1p = 6000,
         .enable_current_factor = 1.5f,
@@ -252,7 +259,7 @@ int main(int argc, char **argv) {
         .distribution_log_len = DISTRIBUTION_LOG_LEN,
         .charger_count = CHARGER_COUNT,
         .requested_current_margin = 3000,
-        .requested_current_threshold = 60000,
+        .requested_current_threshold = 60,
 
     };
 

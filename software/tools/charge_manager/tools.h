@@ -14,9 +14,17 @@ bool deadline_elapsed(uint32_t deadline_ms);
 uint32_t millis();
 
 
-STRONG_INTEGER_TYPEDEF(int64_t, micros_t)
+STRONG_INTEGER_TYPEDEF(int64_t, micros_t,
+    inline uint32_t millis() const {return (uint32_t)(t / 1000); }
+    explicit operator float  () const { return (float) t; }
+    explicit operator double () const { return (double)t; }
+)
 
-constexpr micros_t operator""_usec(unsigned long long int i) { return micros_t{(int64_t)i}; }
+constexpr micros_t operator""_us  (unsigned long long int i) { return micros_t{(int64_t)i}; }
+constexpr micros_t operator""_ms  (unsigned long long int i) { return micros_t{(int64_t)i * 1000}; }
+constexpr micros_t operator""_s   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000}; }
+constexpr micros_t operator""_min (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60}; }
+constexpr micros_t operator""_h   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60 * 60}; }
 
 micros_t now_us();
 bool deadline_elapsed(micros_t deadline_us);
