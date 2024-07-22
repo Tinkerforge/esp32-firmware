@@ -88,6 +88,9 @@ public:
     }
     const Cost *get_allocated_currents() {return &allocated_currents;}
 
+    // Set to 0 to force an allocator run.
+    micros_t next_allocation = 0_us;
+
 private:
     CurrentLimits limits, limits_post_allocation;
     Cost allocated_currents;
