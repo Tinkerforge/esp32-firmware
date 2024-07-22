@@ -1679,7 +1679,7 @@ bool update_from_client_packet(
 
     if (v3 != nullptr) {
         target.phases = CM_STATE_V3_PHASES_CONNECTED_GET(v3->phases);
-        target.phase_switch_supported = CM_FEATURE_FLAGS_PHASE_SWITCH_IS_SET(v1->feature_flags) && CM_STATE_V3_CAN_PHASE_SWITCH_IS_SET(v3->phases);
+        target.phase_switch_supported = CM_STATE_V3_CAN_PHASE_SWITCH_IS_SET(v3->phases);
     } else {
         target.phases = 3;
         target.phase_switch_supported = false;
