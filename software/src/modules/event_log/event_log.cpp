@@ -341,6 +341,7 @@ void EventLog::register_urls()
         return request.endChunkedResponse();
     });
 
+#if defined(BOARD_HAS_PSRAM)
     server.on_HTTPThread("/trace_log", HTTP_GET, [this](WebServerRequest request) {
         //std::lock_guard<std::mutex> lock{event_buf_mutex};
         auto chunk_buf = heap_alloc_array<char>(CHUNK_SIZE);
@@ -360,6 +361,7 @@ void EventLog::register_urls()
 
         return request.endChunkedResponse();
     });
+#endif
 
     api.addState("event_log/boot_id", &boot_id);
 }
