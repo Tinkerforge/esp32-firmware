@@ -155,7 +155,7 @@ static const ConfigMigration migrations[] = {
             for_file_in("/migration", [](File *file){
                 String path = file->path();
                 file->close();
-                // Save to use LittleFS here: We already know the correct path of the file.
+                // Safe to use LittleFS here: We already know the correct path of the file.
                 if (path.endsWith(".tmp"))
                     LittleFS.remove(path);
 
