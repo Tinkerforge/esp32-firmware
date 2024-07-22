@@ -42,7 +42,11 @@ const char *tf_reset_reason();
 bool a_after_b(uint32_t a, uint32_t b);
 bool deadline_elapsed(uint32_t deadline_ms);
 
-STRONG_INTEGER_TYPEDEF(int64_t, micros_t)
+STRONG_INTEGER_TYPEDEF(int64_t, micros_t,
+    inline uint32_t millis() const {return (uint32_t)(t / 1000); }
+    explicit operator float  () const { return (float) t; }
+    explicit operator double () const { return (double)t; }
+)
 
 // These do not clash with the C++14 standard literals for durations:
 // https://en.cppreference.com/w/cpp/chrono/duration
@@ -50,6 +54,10 @@ STRONG_INTEGER_TYPEDEF(int64_t, micros_t)
 // "ud-suffix must begin with the underscore _:
 // the suffixes that do not begin with the underscore
 // are reserved for the literal operators provided by the standard library."
+// Param type has to be unsigned long long, because:
+// "if the overload set includes a literal operator with the parameter type unsigned long long,
+// the user-defined literal expression is treated as a function call operator ""X(n ULL),
+// where n is the literal without ud-suffix;"
 constexpr micros_t operator""_us  (unsigned long long int i) { return micros_t{(int64_t)i}; }
 constexpr micros_t operator""_ms  (unsigned long long int i) { return micros_t{(int64_t)i * 1000}; }
 constexpr micros_t operator""_s   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000}; }

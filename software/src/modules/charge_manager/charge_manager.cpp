@@ -423,7 +423,7 @@ void ChargeManager::setup()
             }
 
             this->state.get("state")->updateUint(result);
-        }, (uint32_t)(int64_t)(ca_config->allocation_interval / 1_ms), (uint32_t)(int64_t)(ca_config->allocation_interval / 1_ms));
+        }, ca_config->allocation_interval.millis(), ca_config->allocation_interval.millis());
 
     if (config.get("enable_watchdog")->asBool()) {
         task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1000, 1000);
