@@ -574,9 +574,9 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // - Shut down 1p unknown rotated chargers last
     for (size_t p = 1; p < 4; ++p) {
         for (int i = 0; i < matched; ++i) {
-            if (wnd_min[p] < limits->raw[p]) {
+            if (wnd_min[p] <= limits->raw[p]) {
                 // Window minimum less than raw phase limit -> phase not overloaded
-                trace("3: wnd_min %d < p%d raw %d", wnd_min[p], p, limits->raw[p]);
+                trace("3: wnd_min %d <= p%d raw %d", wnd_min[p], p, limits->raw[p]);
                 break;
             }
 
@@ -586,7 +586,7 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
             if (alloc_phases == 0)
                 continue;
 
-            trace("3: wnd_min %d >= p%d raw %d", wnd_min[p], p, limits->raw[p]);
+            trace("3: wnd_min %d > p%d raw %d", wnd_min[p], p, limits->raw[p]);
 
             if (state->phases == 3) {
                 phase_allocation[idx_array[i]] = 0;
@@ -615,13 +615,13 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // Also check the hysteresis to make sure the last switch on/off decisions
     // did propagate to the calculated limits.
     for (int i = 0; i < matched; ++i) {
-        if (wnd_min.pv < limits->max_pv || !ca_state->global_hysteresis_elapsed) {
+        if (wnd_min.pv <= limits->max_pv || !ca_state->global_hysteresis_elapsed) {
             // Window minimum less than max pv limit -> PV not permanently overloaded
             // or hysteresis is not elapsed yet.
-            if (wnd_min.pv < limits->max_pv) {
-                trace("3: wnd_min %d < max_pv %d", wnd_min.pv, limits->max_pv);
+            if (wnd_min.pv <= limits->max_pv) {
+                trace("3: wnd_min %d <= max_pv %d", wnd_min.pv, limits->max_pv);
             } else {
-                trace("3: wnd_min %d >= max_pv %d hyst not elapsed", wnd_min.pv, limits->max_pv);
+                trace("3: wnd_min %d > max_pv %d hyst not elapsed", wnd_min.pv, limits->max_pv);
             }
 
             break;
@@ -633,7 +633,7 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         if (alloc_phases == 0 || was_just_plugged_in(state))
             continue;
 
-        trace("3: wnd_min %d >= max_pv %d", wnd_min.pv, limits->max_pv);
+        trace("3: wnd_min %d > max_pv %d", wnd_min.pv, limits->max_pv);
 
         if (state->phases == 3) {
             phase_allocation[idx_array[i]] = 0;
