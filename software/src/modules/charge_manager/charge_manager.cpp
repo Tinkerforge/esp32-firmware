@@ -97,7 +97,7 @@ void ChargeManager::pre_setup()
         {"enable_charge_manager", Config::Bool(false)},
         {"enable_watchdog", Config::Bool(false)},
         {"default_available_current", Config::Uint32(0)},
-        {"maximum_available_current", Config::Uint(0, 0, 1000000)},
+        {"maximum_available_current", Config::Uint(0, 0, 32000 * MAX_CONTROLLED_CHARGERS)},
         {"minimum_current_auto", Config::Bool(true)},
         {"minimum_current", Config::Uint(6000, 6000, 32000)},
         {"minimum_current_1p", Config::Uint(6000, 6000, 32000)},
