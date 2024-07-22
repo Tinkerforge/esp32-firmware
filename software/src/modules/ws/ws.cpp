@@ -32,6 +32,13 @@ static size_t prefix_len = strlen(prefix);
 static size_t infix_len = strlen(infix);
 static size_t suffix_len = strlen(suffix);
 
+// Also change mqtt.cpp MQTT_RECV_BUFFER_SIZE when changing WS_SEND_BUFFER_SIZE here!
+#if defined(BOARD_HAS_PSRAM)
+#define WS_SEND_BUFFER_SIZE 6144U
+#else
+#define WS_SEND_BUFFER_SIZE 4096U
+#endif
+
 void WS::pre_setup()
 {
     api.registerBackend(this);
@@ -46,10 +53,10 @@ void WS::setup()
 void WS::register_urls()
 {
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient client) {
-        // Max payload size is 4k.
+        // Max payload size is WS_SEND_BUFFER_SIZE.
         // The framing needs 10 + 12 + 3 bytes (with the second \n to mark the end of the API dump)
         // API path lengths should probably fit in the 103 bytes left.
-        size_t buf_size = 4096 + 128;
+        size_t buf_size = WS_SEND_BUFFER_SIZE + 128;
         StringBuilder sb;
 
         if (!sb.setCapacity(buf_size)) {
