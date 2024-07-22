@@ -23,7 +23,7 @@ typedef bool(*filter_fn)(int32_t /*allocated_current*/, uint8_t /*allocated_phas
 
 int filter_chargers(filter_fn filter, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count);
 
-typedef int(*group_fn)(int32_t /*allocated_current*/, uint8_t /*allocated_phases*/, const ChargerState */*state*/);
+typedef int(*group_fn)(int32_t /*allocated_current*/, uint8_t /*allocated_phases*/, const ChargerState */*state*/, const CurrentAllocatorConfig * /*cfg*/);
 
 struct CompareInfo {
     int32_t allocated_current;
@@ -65,7 +65,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
 #define sort(group, filter) do {\
     sort_chargers( \
-        [](int32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
+        [](int32_t allocated_current, uint8_t allocated_phases, const ChargerState *state, const CurrentAllocatorConfig *_cfg) { \
             return (group); \
         }, \
         [](CompareInfo left, CompareInfo right, CurrentLimits *_limits, const CurrentAllocatorConfig *_cfg) { \

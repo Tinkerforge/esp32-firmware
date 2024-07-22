@@ -14,7 +14,27 @@
 
 // Initialized by charge_manager.cpp; never changed
 struct CurrentAllocatorConfig {
+    // How often to run the allocation algorithm
     micros_t allocation_interval;
+
+    // Only switch phases, start or stop chargers if this is elapsed.
+    // Don't reset hysteresis when stopping chargers:
+    // Stopping and immediately starting again is fine, see phase switch.
+    micros_t global_hysteresis;
+
+    // Allow charging for this time to attempt to wake-up a "full" vehicle,
+    // i.e. one that triggered a C -> B2 transition and/or waited in B2 for too long
+    micros_t wakeup_time;
+
+    // Require a charger to be active this long before clearing last_plug_in.
+    micros_t plug_in_time;
+
+    // Amount of time a charger should stay activated before considering it for rotation or phase switch.
+    micros_t minimum_active_time;
+
+    // Only consider charger for rotation if it has charged at least this amount of energy (kWh).
+    int32_t allocated_energy_rotation_threshold;
+
     int32_t minimum_current_3p;
     int32_t minimum_current_1p;
     float enable_current_factor;
