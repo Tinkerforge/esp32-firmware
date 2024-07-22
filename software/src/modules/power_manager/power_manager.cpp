@@ -198,8 +198,14 @@ void PowerManager::pre_setup()
 static void init_minmax_filter(PowerManager::minmax_filter *filter, size_t values_count, PowerManager::FilterType filter_type)
 {
     filter->history_length = static_cast<decltype(filter->history_length)>(values_count);
-    filter->history_values = static_cast<decltype(filter->history_values)>(heap_caps_malloc_prefer(values_count * sizeof(filter->history_values[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM));
+    filter->history_values = static_cast<decltype(filter->history_values)>(heap_caps_malloc_prefer(values_count * sizeof(filter->history_values[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM)); // Prefer IRAM
     filter->type = filter_type;
+}
+
+static void init_mavg_filter(PowerManager::mavg_filter *filter, size_t values_count)
+{
+    filter->mavg_values_count = static_cast<decltype(filter->mavg_values_count)>(values_count);
+    filter->mavg_values       = static_cast<decltype(filter->mavg_values)>(heap_caps_malloc_prefer(values_count * sizeof(filter->mavg_values[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT)); // Prefer SPIRAM
 }
 
 void PowerManager::setup()
@@ -282,14 +288,6 @@ void PowerManager::setup()
         init_minmax_filter(&current_pv_long_min_ma, values_count_long_min, FilterType::MinOnly);
     }
 
-    // Set up meter current filters if dynamic load management is enabled
-    if (dynamic_load_enabled) {
-        for (size_t i = 0; i < ARRAY_SIZE(currents_phase_min_ma); i++) {
-            init_minmax_filter(currents_phase_min_ma + i,      values_count,          FilterType::MinOnly);
-            init_minmax_filter(currents_phase_long_min_ma + i, values_count_long_min, FilterType::MinOnly);
-        }
-    }
-
     // Pre-calculate various limits
     overall_min_power_w = 230 * 1 * min_current_1p_ma / 1000;
 
@@ -298,6 +296,7 @@ void PowerManager::setup()
         logger.printfln("Raising guaranteed power to %i based on minimum charge current set in charge manager.", guaranteed_power_w);
     }
 
+    // Calculate constants and set up meter current filters if dynamic load management is enabled
     if (dynamic_load_enabled) {
         int32_t current_limit_ma            = static_cast<int32_t>(dynamic_load_config.get("current_limit")->asUint());
         int32_t largest_consumer_current_ma = static_cast<int32_t>(dynamic_load_config.get("largest_consumer_current")->asUint());
@@ -310,6 +309,20 @@ void PowerManager::setup()
         phase_current_max_increase_ma = target_phase_current_ma / 4;
 
         //logger.printfln("cb trip %i  max %i  target phase current %i  max inc %i", circuit_breaker_trip_point_ma, max_possible_ma, target_phase_current_ma, phase_current_max_increase_ma); // TODO store in state instead
+
+        constexpr size_t preproc_filter_length = 10 * 1000 / PM_TASK_DELAY_MS;
+
+        for (size_t i = 0; i < ARRAY_SIZE(currents_phase_min_ma); i++) {
+            init_minmax_filter(currents_phase_min_ma + i,      values_count,          FilterType::MinOnly);
+            init_minmax_filter(currents_phase_long_min_ma + i, values_count_long_min, FilterType::MinOnly);
+
+            init_minmax_filter(currents_phase_preproc_max_ma + i, preproc_filter_length, FilterType::MaxOnly);
+            init_mavg_filter(currents_phase_preproc_mavg_ma + i,  preproc_filter_length);
+        }
+
+        currents_phase_preproc_mavg_limit        = target_phase_current_ma + target_phase_current_ma / 8; // target + 12.5%
+        currents_phase_preproc_interpolate_limit = target_phase_current_ma + target_phase_current_ma / 4; // target + 25%
+        currents_phase_preproc_interpolate_interval_quantized = (currents_phase_preproc_interpolate_limit - currents_phase_preproc_mavg_limit) / currents_phase_preproc_interpolate_quantization_factor;
     }
 
     low_level_state.get("overall_min_power")->updateInt(overall_min_power_w);
@@ -530,6 +543,7 @@ static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter 
 
     filter->history_values[history_pos] = new_value;
 
+    if (filter->type != PowerManager::FilterType::MaxOnly) {
     if (new_value <= filter->min) {
         filter->min = new_value;
         filter->history_min_pos = history_pos;
@@ -557,6 +571,7 @@ static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter 
 
             filter->min = min;
             filter->history_min_pos = min_pos;
+            }
         }
     }
 
@@ -597,6 +612,46 @@ static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter 
         history_pos = 0;
     }
     filter->history_pos = history_pos;
+}
+
+static int32_t update_mavg_filter(int32_t filter_input, PowerManager::mavg_filter *filter)
+{
+    // Check if filter values need to be initialized
+    if (filter->filtered_val == INT32_MAX) {
+        int32_t values_count = filter->mavg_values_count;
+
+        filter->filtered_val = filter_input;
+        filter->mavg_total = filter_input * values_count;
+
+        int32_t *values = filter->mavg_values;
+        int32_t *values_end = values + values_count;
+        while (values < values_end) {
+            *values = filter_input;
+            values++;
+        }
+
+        return filter_input;
+    }
+
+    int32_t mavg_position = filter->mavg_position;
+
+    int32_t mavg_total = filter->mavg_total - filter->mavg_values[mavg_position] + filter_input;
+    filter->mavg_values[mavg_position] = filter_input;
+    filter->mavg_total = mavg_total;
+
+    mavg_position++;
+    if (mavg_position >= filter->mavg_values_count) {
+        mavg_position = 0;
+    }
+    filter->mavg_position = mavg_position;
+
+    // Signed division requires both numbers to be signed
+    static_assert(std::is_same<int32_t, decltype(filter->mavg_total       )>::value, "filter's mavg_total must be signed");
+    static_assert(std::is_same<int32_t, decltype(filter->mavg_values_count)>::value, "filter's mavg_values_count must be signed");
+
+    filter->filtered_val = mavg_total / filter->mavg_values_count;
+
+    return filter->filtered_val;
 }
 
 void PowerManager::update_data()
@@ -797,9 +852,9 @@ void PowerManager::update_energy()
         } else {
             size_t pm_phase = cm_phase - 1; // PM is 0-based but CM is 1-based because of PV@0
 
-            int32_t phase_current_raw_ma = currents_at_meter_raw_ma[pm_phase];
+            int32_t phase_current_meter_ma = currents_at_meter_raw_ma[pm_phase];
 
-            if (phase_current_raw_ma == INT32_MAX) {
+            if (phase_current_meter_ma == INT32_MAX) {
                 if (!printed_skipping_currents_update) {
                     logger.printfln("Dynamic load management unavailable because current values are not available yet.");
                     printed_skipping_currents_update = true;
@@ -813,7 +868,32 @@ void PowerManager::update_energy()
                     printed_skipping_currents_update = false;
                 }
 
-                int32_t current_error_ma = target_phase_current_ma - phase_current_raw_ma;
+                // Preprocess meter value for CM. Estimates a sensible current value for the past 10s interval.
+                minmax_filter *phase_preproc_max_ma = currents_phase_preproc_max_ma + pm_phase;
+                update_minmax_filter(phase_current_meter_ma, phase_preproc_max_ma);
+                mavg_filter *phase_preproc_mavg_ma = currents_phase_preproc_mavg_ma + pm_phase;
+                int32_t phase_preproc_mavg_val_ma = update_mavg_filter(phase_current_meter_ma, phase_preproc_mavg_ma);
+
+                int32_t phase_max_mavg_ma = (phase_preproc_max_ma->max + phase_preproc_mavg_val_ma) / 2;
+
+                int32_t phase_preproc_ma;
+                if (phase_current_meter_ma < currents_phase_preproc_mavg_limit) {
+                    // raw < limit+12.5% -> mavg
+                    phase_preproc_ma = phase_preproc_mavg_val_ma;
+                } else if (phase_current_meter_ma > currents_phase_preproc_interpolate_limit) {
+                    // raw > limit+25% -> (max+mavg)/2
+                    phase_preproc_ma = phase_max_mavg_ma;
+                } else {
+                    // else -> interpolate between mavg and (max+mavg)/2
+                    int32_t interval_max_quantized = (phase_current_meter_ma - currents_phase_preproc_mavg_limit) / currents_phase_preproc_interpolate_quantization_factor;
+                    int32_t interval_mavg_quantized = currents_phase_preproc_interpolate_interval_quantized - interval_max_quantized;
+                    int32_t part_max  = phase_max_mavg_ma         * interval_max_quantized  / currents_phase_preproc_interpolate_interval_quantized;
+                    int32_t part_mavg = phase_preproc_mavg_val_ma * interval_mavg_quantized / currents_phase_preproc_interpolate_interval_quantized;
+                    phase_preproc_ma = part_mavg + part_max;
+                }
+
+                // Current controller
+                int32_t current_error_ma = target_phase_current_ma - phase_preproc_ma;
 
                 int32_t current_adjust_ma;
 
@@ -838,9 +918,11 @@ void PowerManager::update_energy()
 
                 phase_limit_raw_ma = min(phase_limit_raw_ma, supply_cable_max_current_ma);
 
+                // Calculate min
                 minmax_filter *phase_min_ma = currents_phase_min_ma + pm_phase;
                 update_minmax_filter(phase_limit_raw_ma, phase_min_ma);
 
+                // Calculate long min
                 if (current_long_min_iterations == 0) {
                     update_minmax_filter(currents_phase_floating_min_ma[pm_phase], currents_phase_long_min_ma + pm_phase);
 
@@ -853,13 +935,14 @@ void PowerManager::update_energy()
 
                 int32_t phase_long_min_ma = std::min(currents_phase_floating_min_ma[pm_phase], currents_phase_long_min_ma[pm_phase].min);
 
+                // Store limits
                 cm_limits->raw[cm_phase] = phase_limit_raw_ma;
                 cm_limits->min[cm_phase] = phase_min_ma->min;
                 cm_limits->spread[cm_phase] = phase_long_min_ma;
 
 #if ENABLE_PM_TRACE
-                trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "  L%u m=%5i err=%5i adj=%5i %5i<<%5i<%5i",
-                    cm_phase, phase_current_raw_ma, current_error_ma, current_adjust_ma,
+                trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "  L%u m=%5i p=%5i err=%5i adj=%5i %5i<<%5i<%5i",
+                    cm_phase, phase_current_meter_ma, phase_preproc_ma, current_error_ma, current_adjust_ma,
                     phase_long_min_ma, phase_min_ma->min, phase_limit_raw_ma);
 #endif
             }

@@ -94,7 +94,8 @@ public:
 
     enum class FilterType : uint8_t {
         MinOnly = 0,
-        MinMax  = 1,
+        MaxOnly = 1,
+        MinMax  = 2,
     };
 
     struct minmax_filter {
@@ -106,6 +107,14 @@ public:
         int32_t  history_min_pos = 0;
         int32_t  history_max_pos = 0;
         FilterType type          = FilterType::MinOnly;
+    };
+
+    struct mavg_filter {
+        int32_t  filtered_val       = INT32_MAX;
+        int32_t *mavg_values        = nullptr;
+        int32_t  mavg_total         = 0;
+        int32_t  mavg_values_count  = 0;
+        int32_t  mavg_position      = 0;
     };
 
 private:
@@ -175,9 +184,19 @@ private:
     minmax_filter current_pv_minmax_ma;
     minmax_filter current_pv_long_min_ma;
 
+    // Raw currents measured by meter
     int32_t currents_at_meter_raw_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
-    int32_t currents_phase_floating_min_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
+    // Preprocessor for meter values
+    int32_t       currents_phase_preproc_mavg_limit;
+    int32_t       currents_phase_preproc_interpolate_limit;
+    int32_t       currents_phase_preproc_interpolate_interval_quantized;
+    const int32_t currents_phase_preproc_interpolate_quantization_factor = 128;
+    minmax_filter currents_phase_preproc_max_ma[3];
+    mavg_filter   currents_phase_preproc_mavg_ma[3];
+    // Short filter (4min)
     minmax_filter currents_phase_min_ma[3];
+    // Long filter (1h)
+    int32_t currents_phase_floating_min_ma[3] = {INT32_MAX, INT32_MAX, INT32_MAX};
     minmax_filter currents_phase_long_min_ma[3];
 
     // CM data
