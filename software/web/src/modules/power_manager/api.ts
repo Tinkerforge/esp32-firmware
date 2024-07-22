@@ -33,10 +33,6 @@ export interface dynamic_load_config {
     safety_margin_pct: number;
 }
 
-export interface debug_config {
-    hysteresis_time: number;
-}
-
 export interface charge_mode {
     mode: number;
 }
