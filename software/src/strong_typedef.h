@@ -13,20 +13,19 @@
 // macro used to implement a strong typedef.  strong typedef
 // guarentees that two types are distinguised even though the
 // share the same underlying implementation.  typedef does not create
-// a new type.  STRONG_INTEGER_TYPEDEF(T, D) creates a new type named D
-// that operates as a type T.
+// a new type.  STRONG_INTEGER_TYPEDEF(T, D, X) creates a new type named D
+// that operates as a type T. X is additional code to be implemented in this type.
 
-#define STRONG_INTEGER_TYPEDEF(T, D)                                            \
+#define STRONG_INTEGER_TYPEDEF(T, D, X)                                         \
 struct D                                                                        \
 {                                                                               \
     T t;                                                                        \
     constexpr explicit D(const T t_) : t(t_) {};                                \
-    D(){};                                                                      \
+    D() = default;                                                              \
     constexpr D(const D & t_) : t(t_.t){}                                       \
-    D & operator=(const D & rhs) { t = rhs.t; return *this;}                    \
     D & operator=(const T & rhs) { t = rhs; return *this;}                      \
-    explicit operator const T & () const { return t; }                          \
-    explicit operator T & () { return t; }                                      \
+    explicit operator T () const { return t; }                                  \
+    X                                                                           \
 };                                                                              \
 /* Assignment operators */                                                      \
 inline D& operator+=(D& x, const D& y) { x.t += y.t; return x;}                 \
