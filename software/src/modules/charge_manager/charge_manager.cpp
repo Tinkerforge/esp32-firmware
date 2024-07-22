@@ -392,7 +392,14 @@ void ChargeManager::setup()
     auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
     auto clear_dns_cache_entry_fn = [this](uint8_t i){ return cm_networking.clear_dns_cache_entry(i);};
 
+    this->next_allocation = now_us() + ca_config->allocation_interval;
+
     task_scheduler.scheduleWithFixedDelay([this, get_charger_name_fn, clear_dns_cache_entry_fn](){
+            if (!deadline_elapsed(this->next_allocation))
+                return;
+
+            this->next_allocation = now_us() + ca_config->allocation_interval;
+
             uint32_t allocated_current = 0;
 
             this->limits_post_allocation = this->limits;
@@ -423,7 +430,7 @@ void ChargeManager::setup()
             }
 
             this->state.get("state")->updateUint(result);
-        }, ca_config->allocation_interval.millis(), ca_config->allocation_interval.millis());
+        }, 0, 1000);
 
     if (config.get("enable_watchdog")->asBool()) {
         task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1000, 1000);
