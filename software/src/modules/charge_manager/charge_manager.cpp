@@ -323,8 +323,6 @@ void ChargeManager::setup()
     // the configured values in debug reports even if the charge manager is currently
     // disabled.
     api.restorePersistentConfig("charge_manager/low_level_config", &low_level_config);
-    default_available_current = config.get("default_available_current")->asUint();
-    max_avail_current = config.get("maximum_available_current")->asUint();
 
     if (!config.get("enable_charge_manager")->asBool() || config.get("chargers")->count() == 0) {
         initialized = true;
