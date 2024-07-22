@@ -73,13 +73,27 @@ void PowerManager::pre_setup()
         return "";
     }};
 
-    dynamic_load_config = Config::Object({
+    dynamic_load_config = ConfigRoot{Config::Object({
         {"enabled", Config::Bool(false)},
         {"meter_slot_grid_currents", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
-        {"current_limit", Config::Uint(0, 16, 9999999)}, // < 10kA
-        {"largest_consumer_current", Config::Uint(32, 0, 999999)}, // < 1kA
+        {"current_limit", Config::Uint(0, 0, 524287)}, // < 524 A
+        {"largest_consumer_current", Config::Uint(32, 0, 524287)}, // < 524 A
         {"safety_margin_pct", Config::Uint(0, 0, 50)},
-    });
+    }), [](const Config &cfg, ConfigSource source) -> String {
+        if (cfg.get("enabled")->asBool()) {
+            uint32_t current_limit            = cfg.get("current_limit")->asUint();
+            uint32_t largest_consumer_current = cfg.get("largest_consumer_current")->asUint();
+
+            if (current_limit < 16) {
+                return "Invalid current limit. Must be at least 16A.";
+            }
+            if (largest_consumer_current > current_limit) {
+                return "Largest consumer current cannot be above current limit.";
+            }
+        }
+
+        return "";
+    }};
 
     // Runtime config
     charge_mode = Config::Object({
