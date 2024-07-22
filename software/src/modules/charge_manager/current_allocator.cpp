@@ -659,10 +659,12 @@ static constexpr int CHECK_MIN_WINDOW_MIN = 1;
 static constexpr int CHECK_MIN_WINDOW_ENABLE = 2;
 static constexpr int CHECK_IMPROVEMENT = 4;
 static constexpr int CHECK_IMPROVEMENT_ALL_PHASE = 8;
+static constexpr int CHECK_SPREAD = 16;
 static bool can_activate(const Cost check_phase, const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch=false) {
+    bool check_spread = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & CHECK_SPREAD) != 0;
     bool improves_all_spread = true;
     for (size_t p = 0; p < 4; ++p) {
-        if ((check_phase[p] & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || new_cost[p] <= 0)
+        if ((check_phase[p] & CHECK_SPREAD) == 0 || new_cost[p] <= 0)
             continue;
 
         auto required = wnd_min[p] * cfg->enable_current_factor + new_enable_cost[p];
@@ -672,8 +674,10 @@ static bool can_activate(const Cost check_phase, const Cost new_cost, const Cost
         }
     }
 
-    if (!improves_all_spread) {
-        trace("    Does not improve spread");
+    if (!check_spread || !improves_all_spread) {
+        if (!improves_all_spread)
+            trace("    Does not improve spread");
+
         bool improves_pv = (check_phase.pv & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || (new_cost.pv > 0 && wnd_max.pv < limits->min.pv);
         if (!improves_pv) {
             trace("    Can't activate: does not improve PV");
@@ -783,10 +787,10 @@ static bool try_activate(const ChargerState *state, bool activate_3p, bool have_
     // Still require the enable cost on the phases:
     // Phase limits are hard limits. PV can be exceeded for some time.
     Cost check_phase{
-        CHECK_IMPROVEMENT | (have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN),
-        CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
-        CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
-        CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE
+        CHECK_SPREAD | CHECK_IMPROVEMENT | (have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN),
+        CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
+        CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
+        CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE
     };
 
     bool result = can_activate(check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg);
