@@ -38,9 +38,6 @@
 // validator function, so lambda capture lists have to be empty.
 static uint32_t max_avail_current = 0;
 
-// How often to run the allocation algorithm
-static constexpr micros_t ALLOCATION_INTERVAL = 10_s;
-
 #define WATCHDOG_TIMEOUT_MS 30000
 
 // If this is an energy manager, we have exactly one charger and the margin is still the default,
@@ -162,6 +159,16 @@ void ChargeManager::pre_setup()
 
         return "";
     }};
+
+    low_level_config = Config::Object({
+        {"global_hysteresis", Config::Uint(3 * 60, 0, 60 * 60)},
+        {"alloc_energy_rot_thres", Config::Uint(5, 0, 100)},
+        {"min_active_time", Config::Uint(15 * 60, 0, 24 * 60 * 60)},
+        {"wakeup_time", Config::Uint(3 * 60, 0, 60 * 60)},
+        {"plug_in_time", Config::Uint(3 * 60, 0, 60 * 60)},
+        {"enable_current_factor_pct", Config::Uint(150, 100, 300)},
+        {"allocation_interval", Config::Uint(10, 1, 60 * 60)},
+    });
 
     // This has to fit in the 4k WebSocket send buffer even with 32 chargers with long names. (Currently 4076 bytes)
     // -> Be stingy with the key names. If we need more space we could switch to an array for all numbers.
@@ -312,9 +319,11 @@ void ChargeManager::setup()
 #endif
     }
 
+    // We could move this below the enable_charge_manager check, but want to always see
+    // the configured values in debug reports even if the charge manager is currently
+    // disabled.
+    api.restorePersistentConfig("charge_manager/low_level_config", &low_level_config);
     default_available_current = config.get("default_available_current")->asUint();
-    requested_current_threshold = config.get("requested_current_threshold")->asUint();
-    requested_current_margin = config.get("requested_current_margin")->asUint();
     max_avail_current = config.get("maximum_available_current")->asUint();
 
     if (!config.get("enable_charge_manager")->asBool() || config.get("chargers")->count() == 0) {
@@ -324,15 +333,21 @@ void ChargeManager::setup()
     state.get("state")->updateUint(1);
 
     this->ca_config = new CurrentAllocatorConfig();
-    ca_config->allocation_interval = ALLOCATION_INTERVAL;
 
-    this->ca_state = new CurrentAllocatorState();
+    ca_config->global_hysteresis                    = micros_t{low_level_config.get("global_hysteresis")->asUint()}   * 1_s;
+    ca_config->minimum_active_time                  = micros_t{low_level_config.get("min_active_time")->asUint()}     * 1_s;
+    ca_config->wakeup_time                          = micros_t{low_level_config.get("wakeup_time")->asUint()}         * 1_s;
+    ca_config->plug_in_time                         = micros_t{low_level_config.get("plug_in_time")->asUint()}        * 1_s;
+    ca_config->allocation_interval                  = micros_t{low_level_config.get("allocation_interval")->asUint()} * 1_s;
+    ca_config->allocated_energy_rotation_threshold  = low_level_config.get("alloc_energy_rot_thres")->asUint();
+    ca_config->enable_current_factor                = low_level_config.get("enable_current_factor_pct")->asUint();
+
     ca_config->minimum_current_3p = config.get("minimum_current")->asUint();
     ca_config->minimum_current_1p = config.get("minimum_current_1p")->asUint();
-    // TODO: Add config
-    ca_config->enable_current_factor = 1.5f;
-    ca_config->requested_current_margin = requested_current_margin;
-    ca_config->requested_current_threshold = requested_current_threshold;
+    ca_config->requested_current_margin = config.get("requested_current_margin")->asUint();
+    ca_config->requested_current_threshold = config.get("requested_current_threshold")->asUint();
+
+    this->ca_state = new CurrentAllocatorState();
 
     auto default_current = config.get("default_available_current")->asUint();
     available_current.get("current")->updateUint(default_current);
@@ -538,6 +553,7 @@ void ChargeManager::register_urls()
 #endif
 
     api.addPersistentConfig("charge_manager/config", &config);
+    api.addPersistentConfig("charge_manager/low_level_config", &low_level_config);
     api.addState("charge_manager/state", &state);
 
     api.addState("charge_manager/available_current", &available_current);

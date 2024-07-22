@@ -64,6 +64,7 @@ public:
     void update_charger_state_config(uint8_t idx);
 
     ConfigRoot config;
+    ConfigRoot low_level_config;
 
     ConfigRoot state;
 

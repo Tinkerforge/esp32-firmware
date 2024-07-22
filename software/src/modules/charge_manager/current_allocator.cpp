@@ -45,24 +45,6 @@
 #define trace(...)
 #endif
 
-// Only switch phases, start or stop chargers if this is elapsed.
-// Don't reset hysteresis when stopping chargers:
-// Stopping and immediately starting again is fine, see phase switch.
-static constexpr micros_t GLOBAL_HYSTERESIS = 3_min;
-
-// Only consider charger for rotation if it has charged at least this amount of energy.
-static constexpr int32_t ALLOCATED_ENERGY_ROTATION_THRESHOLD = 5; /*kWh*/
-
-// Amount of time a charger should stay activated before considering it for rotation or phase switch.
-static constexpr micros_t MINIMUM_ACTIVE_TIME = 15_min;
-
-// Allow charging for this time to attempt to wake-up a "full" vehicle,
-// i.e. one that triggered a C -> B2 transition and/or waited in B2 for too long
-static constexpr micros_t WAKEUP_TIME = 3_min;
-
-// Require a charger to be active this long before clearing last_plug_in.
-static constexpr micros_t PLUG_IN_TIME = 3_min;
-
 static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
 
 static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
@@ -166,7 +148,7 @@ void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const int
     int groups[MAX_CONTROLLED_CHARGERS] = {};
 
     for(int i = 0; i < charger_count; ++i)
-        groups[idx_array[i]] = group(current_allocation[idx_array[i]], phase_allocation[idx_array[i]], &charger_state[idx_array[i]]);
+        groups[idx_array[i]] = group(current_allocation[idx_array[i]], phase_allocation[idx_array[i]], &charger_state[idx_array[i]], cfg);
 
     std::stable_sort(
         idx_array,
@@ -311,8 +293,8 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         const auto *state = &charger_state[i];
 
-        bool alloc_energy_over_thres = state->allocated_energy_this_rotation >= ALLOCATED_ENERGY_ROTATION_THRESHOLD;
-        bool min_active_elapsed = deadline_elapsed(state->last_switch + MINIMUM_ACTIVE_TIME);
+        bool alloc_energy_over_thres = state->allocated_energy_this_rotation >= cfg->allocated_energy_rotation_threshold;
+        bool min_active_elapsed = deadline_elapsed(state->last_switch + cfg->minimum_active_time);
 
         bool rotate = have_b1 && ca_state->global_hysteresis_elapsed && alloc_energy_over_thres && min_active_elapsed;
 
@@ -1161,9 +1143,9 @@ static constexpr int CURRENTLY_WAKING_UP_CAR = 0;
 static constexpr int NEVER_ATTEMPTED_TO_WAKE_UP = 1;
 static constexpr int CAR_DID_NOT_WAKE_UP = 2;
 
-static int stage_9_group(const ChargerState *state) {
+static int stage_9_group(const ChargerState *state, const CurrentAllocatorConfig *cfg) {
     if (state->last_wakeup != 0_us) {
-        if (deadline_elapsed(state->last_wakeup + WAKEUP_TIME))
+        if (deadline_elapsed(state->last_wakeup + cfg->wakeup_time))
             return CAR_DID_NOT_WAKE_UP;
 
         return CURRENTLY_WAKING_UP_CAR;
@@ -1172,8 +1154,8 @@ static int stage_9_group(const ChargerState *state) {
     return NEVER_ATTEMPTED_TO_WAKE_UP;
 }
 
-static bool stage_9_sort(const ChargerState *left_state, const ChargerState *right_state) {
-    switch(stage_9_group(left_state)) {
+static bool stage_9_sort(const ChargerState *left_state, const ChargerState *right_state, const CurrentAllocatorConfig *cfg) {
+    switch(stage_9_group(left_state, cfg)) {
         case CURRENTLY_WAKING_UP_CAR:
             // Prefer newer timestamps, i.e. cars that we have just now allocated current to.
             return left_state->last_wakeup >= right_state->last_wakeup;
@@ -1200,8 +1182,8 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         return;
 
     sort(
-        stage_9_group(state),
-        stage_9_sort(left.state, right.state)
+        stage_9_group(state, _cfg),
+        stage_9_sort(left.state, right.state, _cfg)
     );
 
     trace_sort(9);
@@ -1293,9 +1275,9 @@ int allocate_current(
     }
 
 
-    ca_state->global_hysteresis_elapsed = ca_state->last_hysteresis_reset == 0_us || deadline_elapsed(ca_state->last_hysteresis_reset + GLOBAL_HYSTERESIS);
+    ca_state->global_hysteresis_elapsed = ca_state->last_hysteresis_reset == 0_us || deadline_elapsed(ca_state->last_hysteresis_reset + cfg->global_hysteresis);
 
-    trace("Hysteresis %lld", (int64_t)(now_us() - ca_state->last_hysteresis_reset - GLOBAL_HYSTERESIS) / 1000000);
+    trace("Hysteresis %lld", (int64_t)(now_us() - ca_state->last_hysteresis_reset - cfg->global_hysteresis) / 1000000);
 
     // Update control pilot disconnect
     {
@@ -1460,7 +1442,7 @@ int allocate_current(
 
             // The charger was just plugged in. If we've allocated phases to it for PLUG_IN_TIME, clear the timestamp
             // to reduce its priority.
-            if (charger.last_plug_in != 0_us && phases_to_set > 0 && deadline_elapsed(charger.last_plug_in + PLUG_IN_TIME)) {
+            if (charger.last_plug_in != 0_us && phases_to_set > 0 && deadline_elapsed(charger.last_plug_in + cfg->plug_in_time)) {
                 trace("charger %d: clearing last_plug_in after deadline elapsed", i);
                 charger.last_plug_in = 0_us;
             }
