@@ -709,9 +709,8 @@ void PowerManager::update_data()
 void PowerManager::update_energy()
 {
 #if ENABLE_PM_TRACE
-    char trace_log[336];
-    size_t trace_log_len = 0;
-    trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "PM");
+    char trace_log[256];
+    size_t trace_log_len = snprintf_u(trace_log, sizeof(trace_log), "PM");
 #endif
 
     int32_t cm_total_allocated_current_ma = 0;

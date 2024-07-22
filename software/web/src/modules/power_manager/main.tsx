@@ -297,48 +297,14 @@ export class PowerManagerSettings extends ConfigComponent<'power_manager/config'
     }
 }
 
-export class PVExcessSettings extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, API.getType['power_manager/debug_config']> {
+export class PVExcessSettings extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}> {
     constructor() {
         super('power_manager/config',
             __("power_manager.script.save_failed"),
             __("power_manager.script.reboot_content_changed"));
-
-        util.addApiEventListener('power_manager/debug_config', () => {
-            this.setState({...API.get('power_manager/debug_config')});
-        });
     }
 
-    override async sendSave(t: "power_manager/config", cfg: API.getType['power_manager/config']) {
-        if (API.hasModule("debug")) {
-            await API.save('power_manager/debug_config', {
-                    hysteresis_time: this.state.hysteresis_time,
-                }, __("power_manager.script.save_failed"));
-        }
-
-        let is_em = API.hasModule("energy_manager");
-        if (is_em)
-            cfg = {...cfg, enabled: API.get("power_manager/config").enabled};
-
-        await super.sendSave(t, cfg);
-    }
-
-    override async sendReset(t: "power_manager/config") {
-        if (API.hasModule("debug")) {
-            await API.reset('power_manager/debug_config', this.error_string, this.reboot_string);
-        }
-
-        await super.sendReset(t);
-    }
-
-    override getIsModified(t: "power_manager/config"): boolean {
-        if (API.hasModule("debug") && API.is_modified('power_manager/debug_config')) {
-            return true;
-        }
-
-        return super.getIsModified(t);
-    }
-
-    render(props: {}, s: Readonly<API.getType['power_manager/config'] & API.getType['power_manager/debug_config']>) {
+    render(props: {}, s: Readonly<API.getType['power_manager/config']>) {
         if (!util.render_allowed())
             return <SubPage name="pv_excess_settings" />;
 
@@ -537,19 +503,6 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                             </FormRow>
                         </div>
                     </Collapse>
-
-                    {debug_mode ? <>
-                        <FormSeparator heading={__("power_manager.content.header_expert_settings")} />
-                        <FormRow label={__("power_manager.content.hysteresis_time")} label_muted={__("power_manager.content.hysteresis_time_muted")}>
-                            <InputNumber
-                                unit="min"
-                                value={s.hysteresis_time}
-                                onValue={this.set('hysteresis_time')}
-                                min={0}
-                                max={60}
-                            />
-                        </FormRow>
-                    </> : null }
                 </ConfigForm>
             </SubPage>
         );

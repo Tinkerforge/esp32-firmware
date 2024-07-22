@@ -57,8 +57,6 @@
 #define EXTERNAL_CONTROL_STATE_UNAVAILABLE  2
 #define EXTERNAL_CONTROL_STATE_SWITCHING    3
 
-#define HYSTERESIS_MIN_TIME_MINUTES         5
-
 #define PM_CONFIG_ERROR_FLAGS_EXCESS_NO_METER_BIT_POS   3
 #define PM_CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK      (1 << PM_CONFIG_ERROR_FLAGS_EXCESS_NO_METER_BIT_POS)
 #define PM_CONFIG_ERROR_FLAGS_NO_CHARGERS_BIT_POS       2
@@ -210,7 +208,6 @@ private:
     int32_t  target_power_from_grid_w = 0;
     int32_t  guaranteed_power_w       = 0;
     uint32_t phase_switching_mode     = 0;
-    bool     hysteresis_wear_ok       = false;
     bool     dynamic_load_enabled     = false;
     uint32_t meter_slot_currents      = UINT32_MAX;
     int32_t  supply_cable_max_current_ma = 0;
