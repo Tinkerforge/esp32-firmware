@@ -780,6 +780,8 @@ static bool try_activate(const ChargerState *state, bool activate_3p, bool have_
     get_enable_cost(state, activate_3p, &new_cost, &new_enable_cost, cfg);
 
     // If there are no chargers active, don't require the enable cost on PV.
+    // Still require the enable cost on the phases:
+    // Phase limits are hard limits. PV can be exceeded for some time.
     Cost check_phase{
         CHECK_IMPROVEMENT | (have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN),
         CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
