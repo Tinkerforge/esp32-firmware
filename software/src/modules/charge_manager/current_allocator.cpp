@@ -1054,7 +1054,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         fair[p] = limits->raw[p] / active_on_phase[p];
     }
 
-    trace("7: active (%d %d %d %d). fair (%d %d %d %d)", active_on_phase.pv, active_on_phase.l1, active_on_phase.l2, active_on_phase.l3, fair.pv, fair.l1, fair.l2, fair.l3);
+    trace("7: active (%d %d %d %d) fair (%d %d %d %d)", active_on_phase.pv, active_on_phase.l1, active_on_phase.l2, active_on_phase.l3, fair.pv, fair.l1, fair.l2, fair.l3);
 
     for (int i = 0; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
