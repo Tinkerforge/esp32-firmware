@@ -280,9 +280,28 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // This charger also has to be plugged in for at least one allocation iteration, to make sure
     // we don't rotate chargers out immediately if a new charger is plugged in. Maybe there is
     // enough current available to activate both of them.
+    //
+    // First get the phase(s) that we have to make some room for the B1 charger(s) on.
+    // We don't have to handle the PV "phase" because an active charger will draw the PV current on some of the phases.
     bool have_b1 = false;
+    Cost b1_on_phase= {0, 0, 0, 0};
     for (int i = 0; i < charger_count; ++i) {
-        have_b1 |= charger_state[i].wants_to_charge && phase_allocation[i] == 0 && deadline_elapsed(charger_state[i].last_plug_in + cfg->allocation_interval);
+        const auto *state = &charger_state[i];
+        bool is_b1 = state->wants_to_charge && phase_allocation[i] == 0 && deadline_elapsed(state->last_plug_in + cfg->allocation_interval);
+
+        if (is_b1) {
+            have_b1 = true;
+            if (state->phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
+                // We only care about the phases that are blocked, not about how many chargers are waiting.
+                b1_on_phase.l1 = 1;
+                b1_on_phase.l2 = 1;
+                b1_on_phase.l3 = 1;
+            } else {
+                // Not 2p safe!
+                auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
+                b1_on_phase[phase] = 1;
+            }
+        }
     }
     trace(have_b1 ? "1: have B1" : "1: don't have B1");
 
@@ -292,15 +311,25 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         const auto *state = &charger_state[i];
 
-        bool alloc_energy_under_thres = state->allocated_energy_this_rotation < ALLOCATED_ENERGY_ROTATION_THRESHOLD;
-        bool min_active_not_elapsed = !deadline_elapsed(state->last_switch + MINIMUM_ACTIVE_TIME);
-        bool dont_rotate = alloc_energy_under_thres || min_active_not_elapsed;
-        bool keep_active = is_active(phase_allocation[i], state) && (!have_b1 || !ca_state->global_hysteresis_elapsed || dont_rotate);
+        bool alloc_energy_over_thres = state->allocated_energy_this_rotation >= ALLOCATED_ENERGY_ROTATION_THRESHOLD;
+        bool min_active_elapsed = deadline_elapsed(state->last_switch + MINIMUM_ACTIVE_TIME);
 
-        trace("1: %d: alloc_lt_thres %c !min_active %c keep_active %c can p-switch %c",
+        bool rotate = have_b1 && ca_state->global_hysteresis_elapsed && alloc_energy_over_thres && min_active_elapsed;
+
+        // A 3p or unknown rotated charger is active on all phases -> can be rotated immediately.
+        if (rotate && (state->phases != 3 && state->phase_rotation == PhaseRotation::Unknown)) {
+            // Not 2p safe!
+            auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
+            rotate &= b1_on_phase[phase] == 1;
+        }
+
+        bool keep_active = is_active(phase_allocation[i], state) && !rotate;
+
+        trace("1: %d: alloc_ge_thres %c min_active %c rot %c keep_active %c can p-switch %c",
                         i,
-                        alloc_energy_under_thres ? '1' : '0',
-                        min_active_not_elapsed ? '1' : '0',
+                        alloc_energy_over_thres ? '1' : '0',
+                        min_active_elapsed ? '1' : '0',
+                        rotate ? '1' : '0',
                         keep_active ? '1' : '0',
                         state->phase_switch_supported ? '1' : '0');
 
