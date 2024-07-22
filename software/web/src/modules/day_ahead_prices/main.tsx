@@ -53,7 +53,8 @@ export function DayAheadPricesNavbar() {
 type DayAheadPricesConfig = API.getType["day_ahead_prices/config"];
 
 interface DayAheadPricesState {
-    state: API.getType["day_ahead_prices/state"];
+    state:  API.getType["day_ahead_prices/state"];
+    prices: API.getType["day_ahead_prices/prices"];
 }
 
 export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {}, DayAheadPricesState> {
@@ -66,9 +67,12 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
         super('day_ahead_prices/config',
               __("day_ahead_prices.script.save_failed"));
 
-        // Update chart every time new price data comes in
         util.addApiEventListener("day_ahead_prices/state", () => {
             this.setState({state: API.get("day_ahead_prices/state")});
+        });
+        util.addApiEventListener("day_ahead_prices/prices", () => {
+            this.setState({prices: API.get("day_ahead_prices/prices")});
+            // Update chart every time new price data comes in
             this.update_uplot();
         });
     }
@@ -101,12 +105,13 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             return;
         }
 
-        let state = API.get("day_ahead_prices/state");
+        let state  = API.get("day_ahead_prices/state");
+        let prices = API.get("day_ahead_prices/prices");
         let config = API.get("day_ahead_prices/config");
         let data: UplotData;
 
         // If we have not got any prices yet, use empty data
-        if (state.prices.length == 0) {
+        if (prices.prices.length == 0) {
             data = {
                 keys: [],
                 names: [],
@@ -130,10 +135,10 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 update_timestamp: 0,
                 use_timestamp: 0
             }
-            let resolution_multiplier = config.resolution == 0 ? 15 : 60
-            for (let i = 0; i < state.prices.length; i++) {
-                data.values[0].push(state.first_date*60 + i*60*resolution_multiplier);
-                data.values[1].push(state.prices[i]/1000.0);
+            let resolution_multiplier = prices.resolution == 0 ? 15 : 60
+            for (let i = 0; i < prices.prices.length; i++) {
+                data.values[0].push(prices.first_date*60 + i*60*resolution_multiplier);
+                data.values[1].push(prices.prices[i]/1000.0);
                 data.values[2].push(config.grid_costs_and_taxes/1000.0);
                 data.values[3].push(config.supplier_markup/1000.0);
             }

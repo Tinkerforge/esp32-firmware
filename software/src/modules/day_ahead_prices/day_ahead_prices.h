@@ -61,4 +61,5 @@ public:
 
     ConfigRoot config;
     ConfigRoot state;
+    ConfigRoot prices;
 };

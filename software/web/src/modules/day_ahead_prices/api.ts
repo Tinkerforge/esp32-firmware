@@ -13,7 +13,11 @@ export interface state {
     last_sync: number;
     last_check: number;
     next_check: number;
-    first_date: number;
-    prices: number[];
     current_price: number;
+}
+
+export interface prices {
+    first_date: number;
+    resolution: number;
+    prices: number[];
 }

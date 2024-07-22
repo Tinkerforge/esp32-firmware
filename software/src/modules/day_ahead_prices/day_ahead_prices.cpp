@@ -76,8 +76,10 @@ void DayAheadPrices::pre_setup()
             state.get("last_sync")->updateUint(0);
             state.get("last_check")->updateUint(0);
             state.get("next_check")->updateUint(0);
-            state.get("first_date")->updateUint(0);
-            state.get("prices")->removeAll();
+            state.get("current_price")->updateInt(0);
+            prices.get("first_date")->updateUint(0);
+            prices.get("prices")->removeAll();
+            prices.get("resolution")->updateUint(update.get("resolution")->asUint());
             task_scheduler.scheduleOnce([this]() {
                 this->update();
             }, 10);
@@ -90,15 +92,20 @@ void DayAheadPrices::pre_setup()
         {"last_sync",  Config::Uint32(0)}, // unix timestamp in minutes
         {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
         {"next_check", Config::Uint32(0)}, // unix timestamp in minutes
-        {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
-        {"prices",     Config::Array({}, new Config{Config::Int32(0)}, 0, 200, Config::type_id<Config::ConfInt>())},
         {"current_price", Config::Int32(0)}
+    });
+
+    prices = Config::Object({
+        {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
+        {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
+        {"prices",     Config::Array({}, new Config{Config::Int32(0)}, 0, 200, Config::type_id<Config::ConfInt>())}
     });
 }
 
 void DayAheadPrices::setup()
 {
     api.restorePersistentConfig("day_ahead_prices/config", &config);
+    prices.get("resolution")->updateUint(config.get("resolution")->asUint());
 
     json_buffer = nullptr;
     json_buffer_position = 0;
@@ -109,7 +116,8 @@ void DayAheadPrices::setup()
 void DayAheadPrices::register_urls()
 {
     api.addPersistentConfig("day_ahead_prices/config", &config);
-    api.addState("day_ahead_prices/state", &state);
+    api.addState("day_ahead_prices/state",             &state);
+    api.addState("day_ahead_prices/prices",            &prices);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update();
@@ -179,12 +187,12 @@ static esp_err_t update_event_handler(esp_http_client_event_t *event)
 void DayAheadPrices::update_price()
 {
     const uint32_t resolution_divisor = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
-    const uint32_t diff = timestamp_minutes() - state.get("first_date")->asUint();
+    const uint32_t diff = timestamp_minutes() - prices.get("first_date")->asUint();
     const uint32_t index = diff/resolution_divisor;
-    if (state.get("prices")->count() <= index) {
+    if (prices.get("prices")->count() <= index) {
         state.get("current_price")->updateInt(0);
     } else {
-        state.get("current_price")->updateInt(state.get("prices")->get(index)->asInt());
+        state.get("current_price")->updateInt(prices.get("prices")->get(index)->asInt());
     }
 }
 
@@ -299,12 +307,12 @@ void DayAheadPrices::update()
                     download_state = DAP_DOWNLOAD_STATE_ERROR;
                 } else {
                     // Put data from json into day_ahead_prices/state object
-                    JsonArray prices = json_doc["prices"].as<JsonArray>();
-                    state.get("prices")->removeAll();
+                    JsonArray js_prices = json_doc["prices"].as<JsonArray>();
+                    prices.get("prices")->removeAll();
                     int count = 0;
                     int max_count = this->get_max_price_values();
-                    for(JsonVariant v : prices) {
-                        state.get("prices")->add()->updateInt(v.as<int>());
+                    for(JsonVariant v : js_prices) {
+                        prices.get("prices")->add()->updateInt(v.as<int>());
                         count++;
                         if(count >= max_count) {
                             break;
@@ -315,7 +323,7 @@ void DayAheadPrices::update()
                     state.get("last_sync")->updateUint(current_minutes);
                     state.get("last_check")->updateUint(current_minutes);
                     state.get("next_check")->updateUint(json_doc["next_date"].as<int>()/60);
-                    state.get("first_date")->updateUint(json_doc["first_date"].as<int>()/60);
+                    prices.get("first_date")->updateUint(json_doc["first_date"].as<int>()/60);
                     this->update_price();
                 }
             }
