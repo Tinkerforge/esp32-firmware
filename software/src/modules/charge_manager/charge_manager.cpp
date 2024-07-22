@@ -545,6 +545,11 @@ const char *ChargeManager::get_charger_name(uint8_t idx)
 
 void ChargeManager::register_urls()
 {
+    if (this->static_cm) {
+        ca_config->global_hysteresis = 0_us;
+        ca_config->enable_current_factor = 1;
+    }
+
 #if MODULE_AUTOMATION_AVAILABLE() && MODULE_POWER_MANAGER_AVAILABLE() && !MODULE_ENERGY_MANAGER_AVAILABLE()
     automation.set_enabled(AutomationTriggerID::ChargeManagerWd, this->static_cm);
     automation.set_enabled(AutomationActionID::SetManagerCurrent, this->static_cm);
