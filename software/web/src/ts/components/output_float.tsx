@@ -64,11 +64,13 @@ export function OutputFloat(props: OutputFloatProps) {
                    type="text"
                    disabled
                    value={val}/>
-            <div class="input-group-append">
-                <div class={"form-control" + (props.small ? " form-control-sm" : "") + " input-group-text"} style={`width: ${maxUnitLength + 1.5}rem;`}>
-                    {this.props.unit}
+            {props.maxUnitLengthOnPage == 0 && props.unit == "" ? undefined :
+                <div class="input-group-append">
+                    <div class={"form-control" + (props.small ? " form-control-sm" : "") + " input-group-text"} style={`width: ${maxUnitLength + 1.5}rem;`}>
+                        {props.unit}
+                    </div>
                 </div>
-            </div>
+            }
         </div>
     );
 }
