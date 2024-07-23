@@ -71,8 +71,6 @@ public:
 
     ConfigRoot available_current;
     ConfigRoot available_current_update;
-    ConfigRoot available_phases;
-    ConfigRoot available_phases_update;
     ConfigRoot control_pilot_disconnect;
     ConfigRoot limits_cfg;
 

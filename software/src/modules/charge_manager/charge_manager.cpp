@@ -284,15 +284,6 @@ void ChargeManager::pre_setup()
     }};
     available_current_update = available_current;
 
-    available_phases = ConfigRoot{Config::Object({
-        {"phases", Config::Uint(3, 1, 3)},
-    }), [](const Config &conf, ConfigSource source) -> String {
-        if (conf.get("phases")->asUint() == 2)
-            return "Two phases not supported.";
-        return "";
-    }};
-    available_phases_update = available_phases;
-
     control_pilot_disconnect = Config::Object({
         {"disconnect", Config::Bool(false)},
     });
