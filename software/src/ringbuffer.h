@@ -287,7 +287,7 @@ public:
         end = (end + n) % SIZE;
 
         if (!fits) {
-            start = (start + 1) % SIZE;
+            start = (end + 1) % SIZE;
         }
     }
 
