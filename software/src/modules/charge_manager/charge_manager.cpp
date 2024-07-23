@@ -170,12 +170,12 @@ void ChargeManager::pre_setup()
         {"allocation_interval", Config::Uint(10, 1, 60 * 60)},
     });
 
-    // This has to fit in the 4k WebSocket send buffer even with 32 chargers with long names. (Currently 4076 bytes)
+    // This has to fit in the 6k WebSocket send buffer with 32 chargers with long names. (Currently 4076 bytes)
     // -> Be stingy with the key names. If we need more space we could switch to an array for all numbers.
     // This API only exists to communicate with the web interface and is not documented.
     state = Config::Object({
         {"state", Config::Uint8(0)}, // 0 - not configured, 1 - active, 2 - shutdown
-        {"avail", Config::Array({
+        {"l_raw", Config::Array({
                 Config::Int32(0),
                 Config::Int32(0),
                 Config::Int32(0),
@@ -184,6 +184,25 @@ void ChargeManager::pre_setup()
             new Config{Config::Int32(0)},
             4, 4, Config::type_id<Config::ConfInt>())
         },
+        {"l_min", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0)
+            },
+            new Config{Config::Int32(0)},
+            4, 4, Config::type_id<Config::ConfInt>())
+        },
+        {"l_spread", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0)
+            },
+            new Config{Config::Int32(0)},
+            4, 4, Config::type_id<Config::ConfInt>())
+        },
+        {"l_max_pv", Config::Int32(0)},
         {"alloc", Config::Array({
                 Config::Int32(0),
                 Config::Int32(0),
@@ -196,15 +215,56 @@ void ChargeManager::pre_setup()
         {"chargers", Config::Array(
             {},
             new Config{Config::Object({
-                {"s", Config::Uint8(0)},      // "state" - 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
-                {"e", Config::Uint8(0)},      // "error" - 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed
+                {"s", Config::Uint(0, 0, 6)},      // "state" - 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
+                {"e", Config::Uint8(0)},      // "error" - 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed, >= 192 client errors
                 {"ac", Config::Uint16(0)},    // "allocated_current" - last current limit send to the charger
-                {"ap",  Config::Uint8(0)},    // "allocated_phases" - last phase limit send to the charger
+                {"ap",  Config::Uint(0, 0, 3)},    // "allocated_phases" - last phase limit send to the charger
                 {"sc", Config::Uint16(0)},    // "supported_current" - maximum current supported by the charger
-                {"sp",  Config::Uint8(0)},    // "supported_phases" - maximum phases supported by the charger. Is 1 or 3 for a not phase-switchable charger. Bit 2 is set if it can be switched.
+                {"sp",  Config::Uint(0, 0, 3)},    // "supported_phases" - maximum phases supported by the charger. Is 1 or 3 for a not phase-switchable charger. Bit 2 is set if it can be switched.
                 {"lu", Config::Uint32(0)},    // "last_update" - The last time we've received a CM packet from this charger
                 {"n", Config::Str("", 0, 32)},// "name" - Configured display name. Has to be duplicated in case the config was written but we didn't reboot.
-                {"u", Config::Uint32(0)}      // "uid" - The ESPs UID
+                {"u", Config::Uint32(0)}     // "uid" - The ESPs UID
+            })},
+            0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
+        )}
+    });
+
+    low_level_state = Config::Object({
+        {"last_hyst_reset", Config::Uint32(0)},
+        {"wnd_min", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0)
+            },
+            new Config{Config::Int32(0)},
+            4, 4, Config::type_id<Config::ConfInt>())
+        },
+        {"wnd_max", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0)
+            },
+            new Config{Config::Int32(0)},
+            4, 4, Config::type_id<Config::ConfInt>())
+        },
+        {"chargers", Config::Array(
+            {},
+            new Config{Config::Object({
+                {"b", Config::Uint(0, 0, 0x3F)},   /* "bits"
+                                                       0 cp_disc_supported
+                                                       1 cp_disc_state
+                                                       2 phase_switch_supported
+                                                       3 phases (2)
+                                                       5 last_alloc_fulfilled_reqd*/
+                {"rc", Config::Uint16(0)},    // "requested_current" - either the supported current or (after requested_current_threshold is elapsed in state C) the max phase current + requested_current_margin
+                {"ae", Config::Uint(0, 9, 99999)}, // "allocated_energy" in Wh, values > 99999 Wh are truncated to 99999.
+                {"ar", Config::Uint(0, 9, 99999)}, // "allocated_energy_this_rotation" in Wh, values > 99999 Wh are truncated to 99999.
+                {"ls", Config::Uint32(0)},         // "last_switch" in millis
+                {"lp", Config::Uint32(0)},         // "last_plug_in" in millis
+                {"lw", Config::Uint32(0)},         // "last_wakeup" in millis
+                {"ip", Config::Uint32(0)},         // "ignore_phase_currents" in millis
             })},
             0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
         )}
@@ -351,6 +411,7 @@ void ChargeManager::setup()
     available_current.get("current")->updateUint(default_current);
     for (int i = 0; i < config.get("chargers")->count(); ++i) {
         state.get("chargers")->add();
+        low_level_state.get("chargers")->add();
         state.get("chargers")->get(i)->get("n")->updateString(config.get("chargers")->get(i)->get("name")->asString());
     }
 
@@ -421,9 +482,15 @@ void ChargeManager::setup()
 
             for (size_t i = 0; i < 4; i++) {
                 allocated_currents[i] = limits.raw[i] - limits_post_allocation.raw[i];
-                this->state.get("avail")->get(i)->updateInt(limits.raw[i]);
+                this->state.get("l_raw")->get(i)->updateInt(limits.raw[i]);
+                this->state.get("l_min")->get(i)->updateInt(limits.min[i]);
+                this->state.get("l_spread")->get(i)->updateInt(limits.spread[i]);
                 this->state.get("alloc")->get(i)->updateInt(allocated_currents[i]);
+                this->low_level_state.get("wnd_min")->get(i)->updateInt(this->ca_state->control_window_min[i]);
+                this->low_level_state.get("wnd_max")->get(i)->updateInt(this->ca_state->control_window_max[i]);
             }
+            this->state.get("l_max_pv")->updateInt(limits.max_pv);
+            this->low_level_state.get("last_hyst_reset")->updateUint(this->ca_state->last_hysteresis_reset.millis());
 
             for (int i = 0; i < this->charger_count; ++i) {
                 update_charger_state_config(i);
@@ -566,6 +633,7 @@ void ChargeManager::register_urls()
     api.addPersistentConfig("charge_manager/config", &config);
     api.addPersistentConfig("charge_manager/low_level_config", &low_level_config);
     api.addState("charge_manager/state", &state);
+    api.addState("charge_manager/low_level_state", &low_level_state);
 
     api.addState("charge_manager/available_current", &available_current);
     api.addCommand("charge_manager/available_current_update", &available_current_update, {}, [this](){
@@ -598,6 +666,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     auto &charger = charger_state[idx];
     auto &charger_alloc = charger_allocation_state[idx];
     auto *charger_cfg = (Config *)this->state.get("chargers")->get(idx);
+    auto *charger_ll_cfg = (Config *)this->low_level_state.get("chargers")->get(idx);
     charger_cfg->get("s")->updateUint(charger_alloc.state);
     charger_cfg->get("e")->updateUint(charger_alloc.error);
     charger_cfg->get("ac")->updateUint(charger_alloc.allocated_current);
@@ -606,4 +675,14 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     charger_cfg->get("sp")->updateUint((charger.phase_switch_supported ? 4 : 0) | (charger.phases));
     charger_cfg->get("lu")->updateUint(charger.last_update);
     charger_cfg->get("u")->updateUint(charger.uid);
+
+    uint8_t bits = (charger.last_alloc_fulfilled_reqd << 5) | (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;
+    charger_ll_cfg->get("b")->updateUint(bits);
+    charger_ll_cfg->get("rc")->updateUint(charger.requested_current);
+    charger_ll_cfg->get("ae")->updateUint(charger.allocated_energy * 1000);
+    charger_ll_cfg->get("ar")->updateUint(charger.allocated_energy_this_rotation * 1000);
+    charger_ll_cfg->get("ls")->updateUint(charger.last_switch.millis());
+    charger_ll_cfg->get("lp")->updateUint(charger.last_plug_in.millis());
+    charger_ll_cfg->get("lw")->updateUint(charger.last_wakeup.millis());
+    charger_ll_cfg->get("ip")->updateUint(charger.ignore_phase_currents.millis());
 }

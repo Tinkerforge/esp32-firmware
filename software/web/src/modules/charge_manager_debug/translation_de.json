@@ -1,0 +1,53 @@
+{
+    "charge_manager_debug": {
+        "status": {
+        },
+        "navbar": {
+            "charge_manager_debug": "Debug"
+        },
+        "content": {
+            "charge_manager_debug": "Lastmanagement-Debug",
+            "protocol": "Lastmanagement-Protokoll",
+            "debug_description": "Protokoll erstellen",
+            "debug_description_muted": "zur Diagnose bei Problemen",
+            "debug_start": "Start",
+            "debug_stop": "Stop + Download",
+
+            "internal_state": "Interner Zustand",
+
+            "hardware_state": "Hardwarezustände",
+            "contactor_control": "Schützsteuerung",
+            "contactor_off": "Schütz offen (eine Phase aktiv)",
+            "contactor_on": "Schütz geschlossen (drei Phasen aktiv)",
+            "contactor_check": "Schützüberwachung",
+            "contactor_check_ok": "Keine Störung erkannt",
+            "contactor_check_fail": "Störung erkannt",
+            "state_led": "LED",
+            "state_led_names": "rot, grün, blau",
+            "gpios": "Ein-/Ausgänge",
+            "gpio_names_0": "Eingang 3, Eingang 4, Ausgang",
+            "state_input_voltage": "Eingangsspannung",
+
+            "low": "Low",
+            "high": "High",
+
+            "reset_description": "Aktionen",
+            "reset_description_muted": "",
+            "reset_em": "Neu starten",
+            "reflash_em": "Neu flashen"
+        },
+        "script": {
+            "loading_debug_report": "Lade Debug-Report",
+            "loading_debug_report_failed": "Laden des Debug-Reports fehlgeschlagen",
+            "loading_event_log": "Lade Event-Log",
+            "loading_event_log_failed": "Laden des Event-Logs fehlgeschlagen",
+            "tab_close_warning": "Die Aufzeichnung des Event-Logs wird abgebrochen, wenn der Tab geschlossen wird.",
+            "starting_debug": "Aktiviere Aufzeichnung des Energy Manager-Logs.",
+            "starting_debug_failed": "Aktivierung der Aufzeichnung des Energy Manager-Logs fehlgeschlagen.",
+            "debug_running": "Aufzeichnung läuft. Tab nicht schließen!",
+            "debug_stop_failed": "Stoppen der Aufzeichnung des Energy Manager-Logs fehlgeschlagen.",
+            "debug_stopped": "Aufzeichnung des Energy Manager-Logs gestoppt.",
+            "debug_done": "Abgeschlossen."
+        }
+    }
+}

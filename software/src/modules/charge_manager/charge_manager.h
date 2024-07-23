@@ -67,6 +67,7 @@ public:
     ConfigRoot low_level_config;
 
     ConfigRoot state;
+    ConfigRoot low_level_state;
 
     ConfigRoot available_current;
     ConfigRoot available_current_update;
