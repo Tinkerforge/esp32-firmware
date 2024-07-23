@@ -6,9 +6,11 @@ export interface state {
 export interface low_level_state {
     power_at_meter: number;
     power_available: number;
+    i_meter: number[];
+    i_pp_max: number[];
+    i_pp_mavg: number[];
+    i_pp: number[];
     overall_min_power: number;
-    charge_manager_available_current: number;
-    charge_manager_allocated_current: number;
     max_current_limited: number;
     is_3phase: boolean;
     charging_blocked: number;

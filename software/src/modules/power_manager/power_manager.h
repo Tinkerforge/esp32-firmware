@@ -146,6 +146,9 @@ private:
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 
+    // Prototype used in low_level_state
+    Config config_int32_zero_prototype;
+
     ConfigRoot state;
     ConfigRoot low_level_state;
     ConfigRoot config;
