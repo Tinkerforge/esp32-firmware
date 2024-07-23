@@ -18,9 +18,10 @@
  */
 
 #include "power_manager.h"
+#include "module_dependencies.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "tools.h"
 
 #include "gcc_warnings.h"
 
@@ -919,6 +920,12 @@ void PowerManager::update_energy()
                 } else if (phase_current_meter_ma > currents_phase_preproc_interpolate_limit) {
                     // raw > limit+25% -> (max+mavg)/2
                     phase_preproc_ma = phase_max_mavg_ma;
+
+                    // Limit exceeded too much, trigger CM allocator run
+                    if (deadline_elapsed(cm_allocator_trigger_hysteresis)) {
+                        charge_manager.trigger_allocator_run();
+                        cm_allocator_trigger_hysteresis = now_us() + 5_s;
+                    }
                 } else {
                     // else -> interpolate between mavg and (max+mavg)/2
                     int32_t interval_max_quantized = (phase_current_meter_ma - currents_phase_preproc_mavg_limit) / currents_phase_preproc_interpolate_quantization_factor;
