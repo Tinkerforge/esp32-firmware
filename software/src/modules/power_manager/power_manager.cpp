@@ -40,9 +40,43 @@ void PowerManager::pre_setup()
         {"external_control", Config::Uint32(EXTERNAL_CONTROL_STATE_DISABLED)},
     });
 
+    config_int32_zero_prototype = Config::Int32(0);
+
     low_level_state = Config::Object({
         {"power_at_meter", Config::Float(0)},
         {"power_available", Config::Int32(0)},
+        {"i_meter", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+            },
+            &config_int32_zero_prototype,
+            3, 3, Config::type_id<Config::ConfInt>())
+        },
+        {"i_pp_max", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+            },
+            &config_int32_zero_prototype,
+            3, 3, Config::type_id<Config::ConfInt>())
+        },
+        {"i_pp_mavg", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+            },
+            &config_int32_zero_prototype,
+            3, 3, Config::type_id<Config::ConfInt>())
+        },
+        {"i_pp", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+            },
+            &config_int32_zero_prototype,
+            3, 3, Config::type_id<Config::ConfInt>())
+        },
         {"overall_min_power", Config::Int32(0)},
         {"max_current_limited", Config::Int32(0)},
         {"is_3phase", Config::Bool(false)}, // obsolete / phase switcher?
@@ -841,6 +875,12 @@ void PowerManager::update_energy()
     }
 #endif
 
+    // Cache low-level state configs
+    Config *state_i_meter   = static_cast<Config *>(low_level_state.get("i_meter"));
+    Config *state_i_pp_max  = static_cast<Config *>(low_level_state.get("i_pp_max"));
+    Config *state_i_pp_mavg = static_cast<Config *>(low_level_state.get("i_pp_mavg"));
+    Config *state_i_pp      = static_cast<Config *>(low_level_state.get("i_pp"));
+
     for (size_t cm_phase = 1; cm_phase < 4; cm_phase++) {
         if (!dynamic_load_enabled) {
             cm_limits->raw[cm_phase] = max_current_limited_ma;
@@ -887,6 +927,12 @@ void PowerManager::update_energy()
                     int32_t part_mavg = phase_preproc_mavg_val_ma * interval_mavg_quantized / currents_phase_preproc_interpolate_interval_quantized;
                     phase_preproc_ma = part_mavg + part_max;
                 }
+
+                // Update low-level state
+                state_i_meter  ->get(static_cast<uint16_t>(pm_phase))->updateInt(phase_current_meter_ma);
+                state_i_pp_max ->get(static_cast<uint16_t>(pm_phase))->updateInt(phase_preproc_max_ma->max);
+                state_i_pp_mavg->get(static_cast<uint16_t>(pm_phase))->updateInt(phase_preproc_mavg_val_ma);
+                state_i_pp     ->get(static_cast<uint16_t>(pm_phase))->updateInt(phase_preproc_ma);
 
                 // Current controller
                 int32_t current_error_ma = target_phase_current_ma - phase_preproc_ma;

@@ -160,10 +160,11 @@ export class ChargeManagerDebug extends Component {
             return <SubPage name="charge_manager_debug" />;
 
         // For some reason info/keep_alive can be missing even if render_allowed is true?
-        const uptime = API.get('info/keep_alive')?.uptime ?? 0;
-        const ll_cfg   = API.get('charge_manager/low_level_config');
+        const uptime      = API.get('info/keep_alive')?.uptime ?? 0;
+        const ll_cfg      = API.get('charge_manager/low_level_config');
         const state       = API.get('charge_manager/state');
-        const ll_state   = API.get('charge_manager/low_level_state');
+        const ll_state    = API.get('charge_manager/low_level_state');
+        const pm_ll_state = API.get_unchecked('power_manager/low_level_state');
 
         return (
             <SubPage name="charge_manager_debug" colClasses="col-xl-10">
@@ -258,6 +259,54 @@ export class ChargeManagerDebug extends Component {
                         </div>)}
                     </div>
                 </CMDFormRow>
+
+                {pm_ll_state ?
+                    <>
+                        <FormSeparator heading="Power Manager" />
+
+                        <CMDFormRow label="Meter">
+                            <div class="row">
+                                <div class="mb-1 col-12 col-lg-3">
+                                    <CMDOutFloat value={pm_ll_state.power_at_meter} digits={3} scale={3} unit="kW"/>
+                                </div>
+                                {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
+                                    <CMDOutFloat value={pm_ll_state.i_meter[i]} digits={3} scale={3} unit="A"/>
+                                </div>)}
+                            </div>
+                        </CMDFormRow>
+
+                        <CMDFormRow label="I_pp_max">
+                            <div class="row">
+                                <div class="mb-1 col-12 col-lg-3">
+                                </div>
+                                {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
+                                    <CMDOutFloat value={pm_ll_state.i_pp_max[i]} digits={3} scale={3} unit="A"/>
+                                </div>)}
+                            </div>
+                        </CMDFormRow>
+
+                        <CMDFormRow label="I_pp_mavg">
+                            <div class="row">
+                                <div class="mb-1 col-12 col-lg-3">
+                                </div>
+                                {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
+                                    <CMDOutFloat value={pm_ll_state.i_pp_mavg[i]} digits={3} scale={3} unit="A"/>
+                                </div>)}
+                            </div>
+                        </CMDFormRow>
+
+                        <CMDFormRow label="P_avl / I_pp">
+                            <div class="row">
+                                <div class="mb-1 col-12 col-lg-3">
+                                    <CMDOutFloat value={pm_ll_state.power_available} digits={3} scale={3} unit="kW"/>
+                                </div>
+                                {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
+                                    <CMDOutFloat value={pm_ll_state.i_pp[i]} digits={3} scale={3} unit="A"/>
+                                </div>)}
+                            </div>
+                        </CMDFormRow>
+                    </>
+                : null}
 
                 <FormSeparator heading="Chargers" />
 
