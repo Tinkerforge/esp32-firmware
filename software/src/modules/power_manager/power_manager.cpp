@@ -802,6 +802,7 @@ void PowerManager::update_energy()
     if (power_available_w == INT32_MAX) {
         cm_limits->raw.pv = INT32_MAX;
         cm_limits->min.pv = INT32_MAX;
+        cm_limits->spread.pv = INT32_MAX;
         cm_limits->max_pv = INT32_MAX;
     } else {
         int32_t pv_raw_ma = power_available_w * 1000 / 230;
