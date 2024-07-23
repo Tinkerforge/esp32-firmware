@@ -338,7 +338,7 @@ void ChargeManager::setup()
     ca_config->plug_in_time                         = micros_t{low_level_config.get("plug_in_time")->asUint()}        * 1_s;
     ca_config->allocation_interval                  = micros_t{low_level_config.get("allocation_interval")->asUint()} * 1_s;
     ca_config->allocated_energy_rotation_threshold  = low_level_config.get("alloc_energy_rot_thres")->asUint();
-    ca_config->enable_current_factor                = low_level_config.get("enable_current_factor_pct")->asUint();
+    ca_config->enable_current_factor                = low_level_config.get("enable_current_factor_pct")->asUint() / 100.0f;
 
     ca_config->minimum_current_3p = config.get("minimum_current")->asUint();
     ca_config->minimum_current_1p = config.get("minimum_current_1p")->asUint();
