@@ -306,12 +306,13 @@ void PowerManager::setup()
 
         phase_current_max_increase_ma = target_phase_current_ma / 4;
 
-        //logger.printfln("cb trip %i  max %i  target phase current %i  max inc %i", circuit_breaker_trip_point_ma, max_possible_ma, target_phase_current_ma, phase_current_max_increase_ma); // TODO store in state instead
+        //logger.printfln("cb trip %i  max %i  target phase current %i  max inc %i", circuit_breaker_trip_point_ma, max_possible_ma, target_phase_current_ma, phase_current_max_increase_ma);
 
-        constexpr size_t preproc_filter_length = 10 * 1000 / PM_TASK_DELAY_MS;
+        constexpr size_t min_filter_length = 4 * 60 * 1000 / PM_TASK_DELAY_MS; // 4min
+        constexpr size_t preproc_filter_length = 10 * 1000 / PM_TASK_DELAY_MS; // 10s
 
         for (size_t i = 0; i < ARRAY_SIZE(currents_phase_min_ma); i++) {
-            init_minmax_filter(currents_phase_min_ma + i,      values_count,          FilterType::MinOnly);
+            init_minmax_filter(currents_phase_min_ma + i,      min_filter_length,     FilterType::MinOnly);
             init_minmax_filter(currents_phase_long_min_ma + i, values_count_long_min, FilterType::MinOnly);
 
             init_minmax_filter(currents_phase_preproc_max_ma + i, preproc_filter_length, FilterType::MaxOnly);
