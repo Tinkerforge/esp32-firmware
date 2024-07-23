@@ -44,8 +44,6 @@ void PowerManager::pre_setup()
         {"power_at_meter", Config::Float(0)},
         {"power_available", Config::Int32(0)},
         {"overall_min_power", Config::Int32(0)},
-        {"charge_manager_available_current", Config::Int32(0)}, // obsolete?
-        {"charge_manager_allocated_current", Config::Int32(0)}, // obsolete?
         {"max_current_limited", Config::Int32(0)},
         {"is_3phase", Config::Bool(false)}, // obsolete / phase switcher?
         {"charging_blocked", Config::Uint32(0)},
@@ -155,9 +153,9 @@ void PowerManager::pre_setup()
         [this](const Config *cfg) {
             int32_t current = cfg->get("current")->asInt();
             if (current == -1) {
-                this->reset_limit_max_current();
+                this->reset_max_current_limit();
             } else {
-                this->limit_max_current(static_cast<uint32_t>(current));
+                this->set_max_current_limit(current);
             }
         },
         nullptr,
@@ -237,7 +235,7 @@ void PowerManager::setup()
     cm_allocated_currents = charge_manager.get_allocated_currents();
 
     // If the PM is enabled, make sure to override the CM's default current.
-    set_available_current(0, 0, 0, 0);
+    zero_limits();
 
     // Cache config for energy update
     default_mode                = config.get("default_mode")->asUint();
@@ -391,7 +389,8 @@ void PowerManager::setup()
         external_control.get("phases_wanted")->updateUint(phases_wanted);
     }
 
-    reset_limit_max_current();
+    // supply_cable_max_current_ma must be set before reset
+    reset_max_current_limit();
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update_data();
@@ -511,14 +510,12 @@ void PowerManager::register_phase_switcher_backend(PhaseSwitcherBackend *backend
     }
 }
 
-void PowerManager::set_available_current(int32_t current_pv, int32_t current_L1, int32_t current_L2, int32_t current_L3)
+void PowerManager::zero_limits()
 {
-    cm_limits->raw.pv = current_pv;
-    cm_limits->raw.l1 = current_L1;
-    cm_limits->raw.l2 = current_L2;
-    cm_limits->raw.l3 = current_L3;
-
-    low_level_state.get("charge_manager_available_current")->updateInt(current_pv);
+    cm_limits->raw.pv = 0;
+    cm_limits->raw.l1 = 0;
+    cm_limits->raw.l2 = 0;
+    cm_limits->raw.l3 = 0;
 }
 
 static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter *filter)
@@ -544,33 +541,33 @@ static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter 
     filter->history_values[history_pos] = new_value;
 
     if (filter->type != PowerManager::FilterType::MaxOnly) {
-    if (new_value <= filter->min) {
-        filter->min = new_value;
-        filter->history_min_pos = history_pos;
-    } else {
-        if (filter->history_min_pos == history_pos) {
-            // Current minimum was just replaced, need to find new minimum.
-            int32_t *values = filter->history_values;
-            int32_t min = INT32_MAX;
-            int32_t min_pos = 0;
+        if (new_value <= filter->min) {
+            filter->min = new_value;
+            filter->history_min_pos = history_pos;
+        } else {
+            if (filter->history_min_pos == history_pos) {
+                // Current minimum was just replaced, need to find new minimum.
+                int32_t *values = filter->history_values;
+                int32_t min = INT32_MAX;
+                int32_t min_pos = 0;
 
-            // Search older data after current position in history
-            for (int32_t i = history_pos + 1; i < filter->history_length; i++) {
-                if (values[i] <= min) {
-                    min = values[i];
-                    min_pos = i;
+                // Search older data after current position in history
+                for (int32_t i = history_pos + 1; i < filter->history_length; i++) {
+                    if (values[i] <= min) {
+                        min = values[i];
+                        min_pos = i;
+                    }
                 }
-            }
-            // Search newer data before current position in history
-            for (int32_t i = 0; i <= history_pos; i++) {
-                if (values[i] <= min) {
-                    min = values[i];
-                    min_pos = i;
+                // Search newer data before current position in history
+                for (int32_t i = 0; i <= history_pos; i++) {
+                    if (values[i] <= min) {
+                        min = values[i];
+                        min_pos = i;
+                    }
                 }
-            }
 
-            filter->min = min;
-            filter->history_min_pos = min_pos;
+                filter->min = min;
+                filter->history_min_pos = min_pos;
             }
         }
     }
@@ -724,8 +721,6 @@ void PowerManager::update_energy()
         }
     }
 
-    low_level_state.get("charge_manager_allocated_current")->updateInt(cm_total_allocated_current_ma);
-
     if (!excess_charging_enabled) {
         power_available_w = INT32_MAX;
     } else {
@@ -846,8 +841,8 @@ void PowerManager::update_energy()
 
     for (size_t cm_phase = 1; cm_phase < 4; cm_phase++) {
         if (!dynamic_load_enabled) {
-            cm_limits->raw[cm_phase] = supply_cable_max_current_ma;
-            cm_limits->min[cm_phase] = supply_cable_max_current_ma;
+            cm_limits->raw[cm_phase] = max_current_limited_ma;
+            cm_limits->min[cm_phase] = max_current_limited_ma;
         } else {
             size_t pm_phase = cm_phase - 1; // PM is 0-based but CM is 1-based because of PV@0
 
@@ -915,7 +910,7 @@ void PowerManager::update_energy()
                 int32_t cm_allocated_phase_current_ma = (*cm_allocated_currents)[cm_phase];
                 int32_t phase_limit_raw_ma = cm_allocated_phase_current_ma + current_adjust_ma;
 
-                phase_limit_raw_ma = min(phase_limit_raw_ma, supply_cable_max_current_ma);
+                phase_limit_raw_ma = min(phase_limit_raw_ma, max_current_limited_ma);
 
                 // Calculate min
                 minmax_filter *phase_min_ma = currents_phase_min_ma + pm_phase;
@@ -957,17 +952,16 @@ void PowerManager::update_energy()
         current_long_min_iterations = 0;
     }
 
-    low_level_state.get("max_current_limited")->updateInt(max_current_limited_ma); // TODO Calculate/use this?
     low_level_state.get("charging_blocked")->updateUint(charging_blocked.combined);
 
     if ((mode == MODE_OFF) ||
         (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && external_control.get("phases_wanted")->asUint() == 0)) {
-        set_available_current(0, 0, 0, 0);
+        zero_limits();
     }
 
     // TODO check this
     if (charging_blocked.combined) {
-        set_available_current(0, 0, 0, 0);
+        zero_limits();
 
         if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL)
             state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
@@ -990,15 +984,20 @@ void PowerManager::update_phase_switcher()
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
 }
 
-void PowerManager::limit_max_current(uint32_t limit_ma)
+void PowerManager::set_max_current_limit(int32_t limit_ma)
 {
-    if (max_current_limited_ma > static_cast<int32_t>(limit_ma))
-        max_current_limited_ma = static_cast<int32_t>(limit_ma);
+    if (limit_ma > supply_cable_max_current_ma) {
+        max_current_limited_ma = supply_cable_max_current_ma;
+    } else {
+        max_current_limited_ma = limit_ma;
+    }
+    low_level_state.get("max_current_limited")->updateInt(max_current_limited_ma);
 }
 
-void PowerManager::reset_limit_max_current()
+void PowerManager::reset_max_current_limit()
 {
-    max_current_limited_ma = supply_cable_max_current_ma;
+    // Reset to maximum. Setter limits to allowed maximum.
+    set_max_current_limit(INT32_MAX);
 }
 
 bool PowerManager::get_enabled() const
