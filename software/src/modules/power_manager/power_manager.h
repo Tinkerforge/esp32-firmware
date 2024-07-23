@@ -204,6 +204,7 @@ private:
     // CM data
     CurrentLimits *cm_limits;
     const Cost *cm_allocated_currents;
+    micros_t cm_allocator_trigger_hysteresis = 0_us;
 
     // Config cache
     uint32_t default_mode             = 0;
