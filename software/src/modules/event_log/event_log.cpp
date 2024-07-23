@@ -344,20 +344,16 @@ void EventLog::register_urls()
 #if defined(BOARD_HAS_PSRAM)
     server.on_HTTPThread("/trace_log", HTTP_GET, [this](WebServerRequest request) {
         //std::lock_guard<std::mutex> lock{event_buf_mutex};
-        auto chunk_buf = heap_alloc_array<char>(CHUNK_SIZE);
-        auto used = trace_buf.used();
 
         request.beginChunkedResponse(200);
 
-        for (int index = 0; index < used; index += CHUNK_SIZE) {
-            size_t to_write = MIN(CHUNK_SIZE, used - index);
+        char *first_chunk, *second_chunk;
+        size_t first_len, second_len;
+        trace_buf.get_chunks(&first_chunk, &first_len, &second_chunk, &second_len);
 
-            for (int i = 0; i < to_write; ++i) {
-                trace_buf.peek_offset((char *)(chunk_buf.get() + i), index + i);
-            }
-
-            request.sendChunk(chunk_buf.get(), to_write);
-        }
+        request.sendChunk(first_chunk, first_len);
+        if (second_len > 0)
+            request.sendChunk(second_chunk, second_len);
 
         return request.endChunkedResponse();
     });
