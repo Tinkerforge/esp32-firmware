@@ -133,12 +133,12 @@ private:
         Undefined = 2,
     };
 
-    void set_available_current(int32_t current_pv, int32_t current_L1, int32_t current_L2, int32_t current_L3);
+    void zero_limits();
     void update_data();
     void update_energy();
     void update_phase_switcher();
-    void limit_max_current(uint32_t limit_ma);
-    void reset_limit_max_current();
+    void set_max_current_limit(int32_t limit_ma);
+    void reset_max_current_limit();
     void set_config_error(uint32_t config_error_mask);
     const char *prepare_fmtstr();
 
@@ -188,6 +188,7 @@ private:
     int32_t       currents_phase_preproc_mavg_limit;
     int32_t       currents_phase_preproc_interpolate_limit;
     int32_t       currents_phase_preproc_interpolate_interval_quantized;
+    // 1kA = 20 bits; interval_*_quantized max 11 bits; max interval = 18 bits -> quantization factor must save 7 bits
     const int32_t currents_phase_preproc_interpolate_quantization_factor = 128;
     minmax_filter currents_phase_preproc_max_ma[3];
     mavg_filter   currents_phase_preproc_mavg_ma[3];

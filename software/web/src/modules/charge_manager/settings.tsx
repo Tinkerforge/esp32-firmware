@@ -280,7 +280,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                     onValue={(v) => this.setState({dynamicLoadConfig: {...state.dynamicLoadConfig, current_limit: v * 1000}})}
                                     digits={0}
                                     min={32}
-                                    max={9999}
+                                    max={524}
                                 />
                             </FormRow>
 
