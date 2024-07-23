@@ -304,6 +304,21 @@ public:
         return;
     }
 
+    void get_chunks(T **first, size_t *first_len, T** second, size_t *second_len) {
+        bool wrap = end < start;
+        if (!wrap) {
+            *first = buffer + start;
+            *first_len = end - start;
+            *second = nullptr;
+            *second_len = 0;
+        } else {
+            *first = buffer + start;
+            *first_len = SIZE - start;
+            *second = buffer;
+            *second_len = end;
+        }
+    }
+
     // index of first valid elemnt
     size_t start;
     // index of first invalid element
