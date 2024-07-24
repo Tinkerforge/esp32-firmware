@@ -903,7 +903,6 @@ void trigger_reboot(const char *initiator)
 {
     task_scheduler.scheduleOnce([initiator]() {
         logger.printfln("Reboot requested by %s.", initiator);
-        delay(1500);
         ESP.restart();
     }, 0);
 }

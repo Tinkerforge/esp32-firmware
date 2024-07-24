@@ -168,6 +168,8 @@ static void pre_reboot_helper(void)
     for (IModule *imodule : imodules) {
         imodule->pre_reboot();
     }
+
+    delay(1500);
 }
 
 static void pre_reboot(void)
