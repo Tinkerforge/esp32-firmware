@@ -790,10 +790,10 @@ hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph 
 
 allowed_missing = set([
     '0xFFFFFFFF',
-    '1663143715',
+    '1716882142',
     "0x012EB007",
     "0x3E12E5E7",
-    "0x63218f23",
+    "0x66558ADE",
     "Open_collector",
     "all_values",
     "apidoc_url",
