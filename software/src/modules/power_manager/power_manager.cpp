@@ -335,13 +335,11 @@ void PowerManager::setup()
         int32_t largest_consumer_current_ma = static_cast<int32_t>(dynamic_load_config.get("largest_consumer_current")->asUint());
         int32_t safety_margin_pct           = static_cast<int32_t>(dynamic_load_config.get("safety_margin_pct")->asUint());
 
-        int32_t circuit_breaker_trip_point_ma = current_limit_ma + current_limit_ma / 2; // equal to *1.5
+        int32_t circuit_breaker_trip_point_ma = current_limit_ma * 7 / 5; // limit + 40%
         int32_t max_possible_ma = circuit_breaker_trip_point_ma - largest_consumer_current_ma;
         target_phase_current_ma = std::min(max_possible_ma, current_limit_ma) * (100 - safety_margin_pct) / 100;
 
         phase_current_max_increase_ma = target_phase_current_ma / 4;
-
-        //logger.printfln("cb trip %i  max %i  target phase current %i  max inc %i", circuit_breaker_trip_point_ma, max_possible_ma, target_phase_current_ma, phase_current_max_increase_ma);
 
         constexpr size_t min_filter_length = 4 * 60 * 1000 / PM_TASK_DELAY_MS; // 4min
         constexpr size_t preproc_filter_length = 10 * 1000 / PM_TASK_DELAY_MS; // 10s
@@ -354,9 +352,11 @@ void PowerManager::setup()
             init_mavg_filter(currents_phase_preproc_mavg_ma + i,  preproc_filter_length);
         }
 
-        currents_phase_preproc_mavg_limit        = target_phase_current_ma + target_phase_current_ma / 8; // target + 12.5%
-        currents_phase_preproc_interpolate_limit = target_phase_current_ma + target_phase_current_ma / 4; // target + 25%
+        currents_phase_preproc_mavg_limit        = target_phase_current_ma * 11 / 10; // target + 10%
+        currents_phase_preproc_interpolate_limit = target_phase_current_ma *  6 /  5; // target + 20%
         currents_phase_preproc_interpolate_interval_quantized = (currents_phase_preproc_interpolate_limit - currents_phase_preproc_mavg_limit) / currents_phase_preproc_interpolate_quantization_factor;
+
+        //logger.printfln("cb trip %i  max %i  target phase current %i  max inc %i  pp mavg limit %i  pp int limit %i", circuit_breaker_trip_point_ma, max_possible_ma, target_phase_current_ma, phase_current_max_increase_ma, currents_phase_preproc_mavg_limit, currents_phase_preproc_interpolate_limit);
     }
 
     low_level_state.get("overall_min_power")->updateInt(overall_min_power_w);
@@ -915,10 +915,10 @@ void PowerManager::update_energy()
 
                 int32_t phase_preproc_ma;
                 if (phase_current_meter_ma < currents_phase_preproc_mavg_limit) {
-                    // raw < limit+12.5% -> mavg
+                    // raw < target + 10% -> mavg
                     phase_preproc_ma = phase_preproc_mavg_val_ma;
                 } else if (phase_current_meter_ma > currents_phase_preproc_interpolate_limit) {
-                    // raw > limit+25% -> (max+mavg)/2
+                    // raw > target + 20% -> (max+mavg)/2
                     phase_preproc_ma = phase_max_mavg_ma;
 
                     // Limit exceeded too much, trigger CM allocator run
