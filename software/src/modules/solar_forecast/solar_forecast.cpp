@@ -32,6 +32,11 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 extern SolarForecast dap;
 
+enum Resolution {
+    RESOLUTION_15MIN,
+    RESOLUTION_60MIN
+};
+
 void SolarForecast::pre_setup()
 {
     config = ConfigRoot{Config::Object({
@@ -42,25 +47,51 @@ void SolarForecast::pre_setup()
         String api_url = update.get("api_url")->asString();
 
         if ((api_url.length() > 0) && !api_url.startsWith("https://")) {
-            return "HTTPS required for Day Ahead Price API URL";
+            return "HTTPS required for Solar Forecast API URL";
         }
 
         return "";
     }};
 
     state = Config::Object({
-        {"last_sync",  Config::Uint32(0)}, // unix timestamp in minutes
-        {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
-        {"next_check", Config::Uint32(0)} // unix timestamp in minutes
+        {"rate_limit", Config::Uint8(0)},
+        {"rate_remaining", Config::Uint8(0)},
     });
 
-    forecast = Config::Object({
-    });
+    uint8_t index = 0;
+    for (SolarForecastPlane &plane : planes) {
+        plane.config = ConfigRoot{Config::Object({
+            {"active", Config::Bool(false)},
+            {"latitude", Config::Float(0)},
+            {"longitude", Config::Float(0)},
+            {"declination", Config::Int16(0)},
+            {"azimuth", Config::Int16(0)},
+            {"kwp", Config::Float(0)}
+        })};
+
+        plane.state = Config::Object({
+            {"last_sync",  Config::Uint32(0)}, // unix timestamp in minutes
+            {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
+            {"next_check", Config::Uint32(0)}, // unix timestamp in minutes
+            {"place", Config::Str("Unknown", 0, 128)}
+        });
+
+        plane.forecast = Config::Object({
+            {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
+            {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
+            {"forecast",   Config::Array({}, new Config{Config::Uint32(0)}, 0, 200, Config::type_id<Config::ConfInt>())}
+        });
+
+        plane.index = index++;
+    }
 }
 
 void SolarForecast::setup()
 {
     api.restorePersistentConfig("solar_forecast/config", &config);
+    for (SolarForecastPlane &plane : planes) {
+        api.restorePersistentConfig(get_path(plane, SolarForecast::PathType::Config), &plane.config);
+    }
 
     json_buffer = nullptr;
     json_buffer_position = 0;
@@ -71,8 +102,12 @@ void SolarForecast::setup()
 void SolarForecast::register_urls()
 {
     api.addPersistentConfig("solar_forecast/config", &config);
-    api.addState("solar_forecast/state",             &state);
-    api.addState("solar_forecast/forecast",          &forecast);
+    api.addState("solar_forecast/state", &state);
+    for (SolarForecastPlane &plane : planes) {
+        api.addPersistentConfig(get_path(plane, SolarForecast::PathType::Config), &plane.config);
+        api.addState(get_path(plane, SolarForecast::PathType::State),    &plane.state);
+        api.addState(get_path(plane, SolarForecast::PathType::Forecast), &plane.forecast);
+    }
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update();
@@ -140,11 +175,21 @@ void SolarForecast::update()
         return;
     }
 
-    if (state.get("next_check")->asUint() > timestamp_minutes()) {
+    if (config.get("enable")->asBool() == false) {
         return;
     }
 
-    if (config.get("enable")->asBool() == false) {
+    // Find plane that is due for update
+    plane_current = nullptr;
+    for (SolarForecastPlane &plane : planes) {
+        if (plane.state.get("active")->asBool() && (plane.state.get("next_check")->asUint() < timestamp_minutes())) {
+            plane_current = &plane;
+            break;
+        }
+    }
+
+    if(plane_current == nullptr) {
+        // No plane due for update found
         return;
     }
 
@@ -159,7 +204,7 @@ void SolarForecast::update()
 
     esp_http_client_config_t http_config = {};
 
-    http_config.url = get_api_url_with_path();
+    http_config.url = get_api_url_with_path(*plane_current);
     http_config.event_handler = update_event_handler;
     http_config.user_data = this;
     http_config.is_async = true;
@@ -258,7 +303,7 @@ void SolarForecast::update()
 }
 
 // Create API path including user configuration
-const char* SolarForecast::get_api_url_with_path()
+const char* SolarForecast::get_api_url_with_path(const SolarForecastPlane &plane)
 {
     static String api_url_with_path;
 
@@ -268,7 +313,24 @@ const char* SolarForecast::get_api_url_with_path()
         api_url += "/";
     }
 
-    // TODO
+    api_url_with_path = api_url + "estimate/"
+        + String(plane.config.get("latitude")->asFloat(),    4) + "/"
+        + String(plane.config.get("longitude")->asFloat(),   4) + "/"
+        + String(plane.config.get("declination")->asFloat(), 4) + "/"
+        + String(plane.config.get("azimuth")->asFloat(),     4) + "/"
+        + String(plane.config.get("kwp")->asFloat(),         4);
 
     return api_url_with_path.c_str();
+}
+
+static const char *solar_forecast_path_postfixes[] = {"", "config", "state", "forecast"};
+static_assert(ARRAY_SIZE(solar_forecast_path_postfixes) == static_cast<uint32_t>(SolarForecast::PathType::_max) + 1, "Path postfix length mismatch");
+String SolarForecast::get_path(const SolarForecastPlane &plane, const SolarForecast::PathType path_type)
+{
+    String path = "solar_forecast/planes";
+    path.concat(plane.index);
+    path.concat('/');
+    path.concat(solar_forecast_path_postfixes[static_cast<uint32_t>(path_type)]);
+
+    return path;
 }
