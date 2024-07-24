@@ -277,3 +277,13 @@
 
 2024-06-18: 2.1.1 (a72824a4)
 - Fix all charges being blocked if no contactor is installed
+
+2024-07-24: 2.1.2 (<unknown>)
+- Add support for more Modbus TCP devices: Alpha ESS SMILE, Shelly Pro (3)EM
+- Fix Sungrow register table
+- Allow charging in fast mode if PV excess meter values are not available
+- Fix charge manager ramp-up phase
+- Fix web server hanging forever if wait for energy analysis data timed out
+- Close network connections before reboot
+- Generate some meter values if energy meter does not report them
+- Fix MQTT errors sometimes not being reported to event log
