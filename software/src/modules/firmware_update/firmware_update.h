@@ -87,10 +87,10 @@ private:
     bool parse_version(const char *p, SemanticVersion *version) const;
     String format_version(SemanticVersion *version) const;
 
-    ConfigRoot config;
+    /*ConfigRoot config;
     ConfigRoot state;
     ConfigRoot install_firmware;
-    ConfigRoot override_signature;
+    ConfigRoot override_signature;*/
 
     struct firmware_info_t {
         uint32_t magic[2] = {0};
@@ -114,7 +114,7 @@ private:
     uint32_t signature_override_cookie = 0;
 #endif
 
-    String update_url;
+    /*String update_url;
     int cert_id = -1;
     std::unique_ptr<unsigned char[]> cert = nullptr;
     esp_http_client_handle_t http_client = nullptr;
@@ -123,5 +123,5 @@ private:
     size_t update_buf_used;
     SemanticVersion update_version;
     //uint32_t last_version_timestamp;
-    bool check_complete;
+    bool check_complete;*/
 };

@@ -135,7 +135,7 @@ FirmwareUpdate::FirmwareUpdate() :
 
 void FirmwareUpdate::pre_setup()
 {
-    config = ConfigRoot{Config::Object({
+    /*config = ConfigRoot{Config::Object({
         {"update_url", Config::Str(BUILD_FIRMWARE_UPDATE_URL, 0, 128)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
@@ -167,12 +167,12 @@ void FirmwareUpdate::pre_setup()
 
     override_signature = ConfigRoot{Config::Object({
         {"cookie", Config::Uint32(0)},
-    })};
+    })};*/
 }
 
 void FirmwareUpdate::setup()
 {
-    api.restorePersistentConfig("firmware_update/config", &config);
+    /*api.restorePersistentConfig("firmware_update/config", &config);
 
     update_url = config.get("update_url")->asString();
 
@@ -185,7 +185,7 @@ void FirmwareUpdate::setup()
         update_url += "_firmware_v1.txt";
     }
 
-    cert_id = config.get("cert_id")->asInt();
+    cert_id = config.get("cert_id")->asInt();*/
     initialized = true;
 }
 
@@ -392,7 +392,7 @@ bool FirmwareUpdate::handle_firmware_chunk(std::function<void(uint16_t code, con
 
 void FirmwareUpdate::register_urls()
 {
-    api.addPersistentConfig("firmware_update/config", &config);
+    /*api.addPersistentConfig("firmware_update/config", &config);
     api.addState("firmware_update/state", &state);
 
     api.addCommand("firmware_update/check_for_update", Config::Null(), {}, [this]() {
@@ -437,7 +437,7 @@ void FirmwareUpdate::register_urls()
 #else
         result = "Signature verification is disabled";
 #endif
-    }, true);
+    }, true);*/
 
     server.on("/check_firmware", HTTP_POST, [this](WebServerRequest request) {
         String error = this->check_firmware_info(true, false);
@@ -488,6 +488,7 @@ void FirmwareUpdate::register_urls()
     });
 }
 
+#if 0
 // <major:int>.<minor:int>.<patch:int>[-beta.<beta:int>]+<timestamp:hex>
 bool FirmwareUpdate::parse_version(const char *p, SemanticVersion *version) const
 {
@@ -791,3 +792,4 @@ void FirmwareUpdate::handle_update_data(const void *data, size_t data_len)
         }
     }
 }
+#endif
