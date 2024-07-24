@@ -612,8 +612,8 @@ void Mqtt::setup()
     mqtt_cfg.task_stack = MQTT_TASK_STACK_SIZE;
     mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE;
     mqtt_cfg.out_buffer_size = MQTT_SEND_BUFFER_SIZE;
-    mqtt_cfg.network_timeout_ms = 1000;
-    mqtt_cfg.message_retransmit_timeout = 400;
+    mqtt_cfg.network_timeout_ms = 3000;
+    mqtt_cfg.message_retransmit_timeout = 800;
     // + 1 to undo the -1 in the config's definition.
     mqtt_cfg.transport = (esp_mqtt_transport_t)(config.get("protocol")->asUint() + 1);
     bool encrypted = mqtt_cfg.transport == MQTT_TRANSPORT_OVER_SSL || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS;
