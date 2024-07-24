@@ -605,7 +605,7 @@
 - Improve Modbus TCP documented register ranges and types
 - Allow up to 2K of HTTP request headers
 
-2024-07-24: 2.4.1 (<unknown>)
+2024-07-24: 2.4.1 (2b99ba4c)
 - Add support for more Modbus TCP devices: Alpha ESS SMILE, Shelly Pro (3)EM
 - Fix Sungrow register table
 - Allow charging in fast mode if PV excess meter values are not available
