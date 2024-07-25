@@ -36,11 +36,11 @@ export function FirmwareUpdateNavbar() {
 
 interface FirmwareUpdateState {
     current_firmware: string,
-    /*check_is_pending: boolean,
+    check_is_pending: boolean,
     update_url: string,
     check_timestamp: number,
     check_error: string,
-    update_version: string,*/
+    update_version: string,
 };
 
 export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
@@ -66,7 +66,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             this.setState({current_firmware: version.firmware});
         });
 
-        /*util.addApiEventListener('firmware_update/config', () => {
+        util.addApiEventListener('firmware_update/config', () => {
             let config = API.get('firmware_update/config');
 
             this.setState({update_url: config.update_url});
@@ -81,7 +81,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                 check_error: state.check_error,
                 update_version: state.update_version,
             });
-        });*/
+        });
     }
 
     async checkFirmware(f: File) {
@@ -172,7 +172,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                             if (typeof error === "string") {
                                 message = error;
                             } else if (error instanceof XMLHttpRequest) {
-                                /*if (error.status == 406) {
+                                if (error.status == 406) {
                                     let response = JSON.parse(error.responseText);
                                     const modal = util.async_modal_ref.current;
 
@@ -195,7 +195,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                                         return;
                                     }
                                 }
-                                else*/ {
+                                else {
                                     message = error.responseText.startsWith("firmware_update.") ? translate_unchecked(error.responseText) : (error.responseText ?? error.response);
                                 }
                             }
@@ -209,7 +209,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                     />
                 </FormRow>
 
-                {/*this.state.update_url ?
+                {this.state.update_url ?
                     <>
                         <FormRow label={__("firmware_update.content.check_for_update")}>
                             <Button variant="primary" className="form-control" onClick={() => this.setState({check_is_pending: true}, () => API.call("firmware_update/check_for_update", null, ""))} disabled={this.state.check_is_pending}>
@@ -245,7 +245,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                         </>}
                     </>
                     : undefined
-                */}
+                }
             </SubPage>
         );
     }
