@@ -142,11 +142,6 @@ static const char *pre_reboot_message = "Pre-reboot stage lasted longer than fiv
 
 #if !MODULE_WATCHDOG_AVAILABLE()
 
-#define PRE_REBOOT_STACK_SIZE 768
-
-static StaticTask_t pre_reboot_task_buffer;
-static StackType_t pre_reboot_stack[PRE_REBOOT_STACK_SIZE];
-
 static void pre_reboot_task(void *arg)
 {
 #pragma GCC diagnostic push
@@ -180,14 +175,13 @@ static void pre_reboot(void)
 #if MODULE_WATCHDOG_AVAILABLE()
         watchdog.add("pre_reboot", pre_reboot_message, PRE_REBOOT_MAX_DURATION, 0, true);
 #else
-        xTaskCreateStaticPinnedToCore(
+        xTaskCreatePinnedToCore(
             pre_reboot_task,
             "pre_reboot_task",
-            PRE_REBOOT_STACK_SIZE,
+            640,
             nullptr,
             ESP_TASK_PRIO_MAX,
-            pre_reboot_stack,
-            &pre_reboot_task_buffer,
+            nullptr,
             1);
 #endif
 
