@@ -1611,7 +1611,8 @@ bool update_from_client_packet(
     target.cp_disconnect_state = CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(v1->state_flags);
 
     // Wait for A -> non-A transitions, but ignore chargers that are already in a non-A state in their first packet.
-    if (target.last_update != 0 && target.charger_state == 0 && v1->charger_state != 0)
+    // Only set the timestamp if plug_in_time is != 0: This feature is deactivated if the time is set to 0.
+    if (target.last_update != 0 && target.charger_state == 0 && v1->charger_state != 0 && cfg->plug_in_time != 0_us)
         target.last_plug_in = now_us();
 
     target.charger_state = v1->charger_state;
