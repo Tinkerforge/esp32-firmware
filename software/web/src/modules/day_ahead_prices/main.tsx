@@ -78,10 +78,9 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
     }
 
     get_price_timeframe() {
-        let config = API.get("day_ahead_prices/config");
         let time = new Date();
         let s = ""
-        if(config.resolution == 0) {
+        if(this.state.resolution == 0) {
             time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
             time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
             time.setMinutes(Math.floor(time.getMinutes() / 15) * 15);
@@ -105,13 +104,10 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             return;
         }
 
-        let state  = API.get("day_ahead_prices/state");
-        let prices = API.get("day_ahead_prices/prices");
-        let config = API.get("day_ahead_prices/config");
         let data: UplotData;
 
         // If we have not got any prices yet, use empty data
-        if (prices.prices.length == 0) {
+        if (this.state.prices.prices.length == 0) {
             data = {
                 keys: [],
                 names: [],
@@ -135,12 +131,12 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 update_timestamp: 0,
                 use_timestamp: 0
             }
-            let resolution_multiplier = prices.resolution == 0 ? 15 : 60
-            for (let i = 0; i < prices.prices.length; i++) {
-                data.values[0].push(prices.first_date*60 + i*60*resolution_multiplier);
-                data.values[1].push(prices.prices[i]/1000.0);
-                data.values[2].push(config.grid_costs_and_taxes/1000.0);
-                data.values[3].push(config.supplier_markup/1000.0);
+            let resolution_multiplier = this.state.prices.resolution == 0 ? 15 : 60
+            for (let i = 0; i < this.state.prices.prices.length; i++) {
+                data.values[0].push(this.state.prices.first_date*60 + i*60*resolution_multiplier);
+                data.values[1].push(this.state.prices.prices[i]/1000.0);
+                data.values[2].push(this.state.grid_costs_and_taxes/1000.0);
+                data.values[3].push(this.state.supplier_markup/1000.0);
             }
         }
 
@@ -193,11 +189,11 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 />
                             </FormRow>
                             <FormRow label={__("day_ahead_prices.content.grid_fees_and_taxes")} label_muted={__("day_ahead_prices.content.optional_muted")}>
-                                <InputFloat value={dap.grid_costs_and_taxes} onValue={this.set('grid_costs_and_taxes')} digits={3} unit={'ct/kWh'} max={99000} min={0}/>
+                                <InputFloat value={dap.grid_costs_and_taxes} onValue={(v) => {this.setState({grid_costs_and_taxes: v}, function() {this.update_uplot()})}} digits={3} unit={'ct/kWh'} max={99000} min={0}/>
                                 <div class="invalid-feedback">{__("day_ahead_prices.content.price_invalid")}</div>
                             </FormRow>
                             <FormRow label={__("day_ahead_prices.content.electricity_provider_surcharge")} label_muted={__("day_ahead_prices.content.optional_muted")}>
-                                <InputFloat value={dap.supplier_markup} onValue={this.set('supplier_markup')} digits={3} unit={'ct/kWh'} max={99000} min={0}/>
+                                <InputFloat value={dap.supplier_markup} onValue={(v) => {this.setState({supplier_markup: v}, function() {this.update_uplot()})}} digits={3} unit={'ct/kWh'} max={99000} min={0}/>
                                 <div class="invalid-feedback">{__("day_ahead_prices.content.price_invalid")}</div>
                             </FormRow>
                             <FormRow label={__("day_ahead_prices.content.electricity_provider_base_fee")} label_muted={__("day_ahead_prices.content.optional_muted")}>
