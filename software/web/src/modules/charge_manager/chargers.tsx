@@ -316,15 +316,17 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                             class={check_host(state.editCharger.host, i) != undefined ? "is-invalid" : ""}
                                             invalidFeedback={check_host(state.editCharger.host, i)}/>
                                     </FormRow>
-                                    <FormRow label={__("charge_manager.content.edit_charger_rotation")}>
+                                    <FormRow label={__("charge_manager.content.edit_charger_rotation")} help={__("charge_manager.content.charger_rotation_help")}>
                                         <InputSelect items={[
                                                 ["0", __("charge_manager.content.rotation_0")],
+                                                ["right-disabled", __("charge_manager.content.rotation_right")],
                                                 ["1", __("charge_manager.content.rotation_1")],
-                                                ["2", __("charge_manager.content.rotation_2")],
                                                 ["3", __("charge_manager.content.rotation_3")],
+                                                ["6", __("charge_manager.content.rotation_6")],
+                                                ["left-disabled", __("charge_manager.content.rotation_left")],
+                                                ["2", __("charge_manager.content.rotation_2")],
                                                 ["4", __("charge_manager.content.rotation_4")],
                                                 ["5", __("charge_manager.content.rotation_5")],
-                                                ["6", __("charge_manager.content.rotation_6")],
                                             ]}
                                             value={state.editCharger.rot}
                                             onValue={(v) => this.setState({editCharger: {...state.editCharger, rot: parseInt(v)}})}
@@ -389,15 +391,17 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                             </ListGroupItem>))
                                 }</ListGroup>
                             </FormRow>
-                            <FormRow label={__("charge_manager.content.add_charger_rotation")}>
+                            <FormRow label={__("charge_manager.content.add_charger_rotation")} help={__("charge_manager.content.charger_rotation_help")}>
                                     <InputSelect items={[
                                             ["0", __("charge_manager.content.rotation_0")],
+                                            ["right-disabled", __("charge_manager.content.rotation_right")],
                                             ["1", __("charge_manager.content.rotation_1")],
-                                            ["2", __("charge_manager.content.rotation_2")],
                                             ["3", __("charge_manager.content.rotation_3")],
+                                            ["6", __("charge_manager.content.rotation_6")],
+                                            ["left-disabled", __("charge_manager.content.rotation_left")],
+                                            ["2", __("charge_manager.content.rotation_2")],
                                             ["4", __("charge_manager.content.rotation_4")],
                                             ["5", __("charge_manager.content.rotation_5")],
-                                            ["6", __("charge_manager.content.rotation_6")],
                                         ]}
                                         value={state.editCharger.rot}
                                         onValue={(v) => this.setState({editCharger: {...state.editCharger, rot: parseInt(v)}})}
