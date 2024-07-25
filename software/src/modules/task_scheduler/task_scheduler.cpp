@@ -126,7 +126,7 @@ void TaskScheduler::custom_loop()
 
     // Run task without holding the lock.
     // This allows a task to schedule tasks (could also be done with a recursive mutex)
-    // and also allows other threads to schedule tasks while one is executed.
+    // but also allows other threads to schedule tasks while one is executed.
     if (!this->currentTask->fn) {
         logger.printfln("Invalid task");
     } else {
