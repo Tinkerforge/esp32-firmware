@@ -25,7 +25,7 @@ let x = {
             "verbose": "Current distribution log enabled",
             "verbose_desc": "Creates log entries whenever current is redistributed",
             "default_available_current": "Default available current",
-            "default_available_current_muted": "will be used after charge manager reboot",
+            "default_available_current_muted": "will be used after charge manager reboot if dynamic load management is not enabled",
             "default_available_current_invalid": "The default available current can at most be the maximum total current.",
             "maximum_available_current": "Maximum total current",
             "maximum_available_current_muted": "Maximum allowed current of all chargers in total. This is usually the rated current of the common supply line.",
