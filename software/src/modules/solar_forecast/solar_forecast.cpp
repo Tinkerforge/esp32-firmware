@@ -182,7 +182,7 @@ void SolarForecast::update()
     // Find plane that is due for update
     plane_current = nullptr;
     for (SolarForecastPlane &plane : planes) {
-        if (plane.state.get("active")->asBool() && (plane.state.get("next_check")->asUint() < timestamp_minutes())) {
+        if (plane.config.get("active")->asBool() && (plane.state.get("next_check")->asUint() < timestamp_minutes())) {
             plane_current = &plane;
             break;
         }
