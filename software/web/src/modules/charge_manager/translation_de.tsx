@@ -25,7 +25,7 @@ let x = {
             "verbose": "Stromverteilungsprotokoll aktiviert",
             "verbose_desc": "Erzeugt Einträge im Ereignis-Log, wenn Strom umverteilt wird",
             "default_available_current": "Voreingestellt verfügbarer Strom",
-            "default_available_current_muted": "wird nach Neustart des Lastmanagers verwendet",
+            "default_available_current_muted": "wird nach Neustart des Lastmanagers verwendet, falls dynamisches Lastmanagement nicht aktiviert ist",
             "default_available_current_invalid": "Der voreingestellt verfügbare Strom darf höchstens so groß sein wie der maximale Gesamtstrom.",
             "maximum_available_current": "Maximaler Gesamtstrom",
             "maximum_available_current_muted": "Maximal zulässiger Ladestrom aller Wallboxen in Summe; üblicherweise die Nennbelastbarkeit der gemeinsamen Zuleitung.",

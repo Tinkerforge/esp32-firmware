@@ -135,6 +135,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                     digits={3}
                     min={0}
                     max={state.maximum_available_current}
+                    disabled={state.dynamicLoadConfig.enabled}
                     />
                 <div class="invalid-feedback">{__("charge_manager.content.default_available_current_invalid")}</div>
             </FormRow>;
