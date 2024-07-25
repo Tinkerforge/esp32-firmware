@@ -19,28 +19,11 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
-#include <time.h>
-#include <new>
-#include <mutex>
-#include <esp_log.h>
-#include <FS.h>
-#include <driver/i2c.h>
-#include <lwip/dns.h>
-
-#include "bindings/hal_common.h"
 #include "strong_typedef.h"
 
-#define MACRO_NAME_TO_STRING(x) #x
-
-// Indirection expands macro. See https://gcc.gnu.org/onlinedocs/gcc-3.4.3/cpp/Stringification.html
-#define MACRO_VALUE_TO_STRING(x) MACRO_NAME_TO_STRING(x)
-
-const char *tf_reset_reason();
-
-bool a_after_b(uint32_t a, uint32_t b);
-bool deadline_elapsed(uint32_t deadline_ms);
+// We have to define operator""_min before including anything that includes Arduino.h,
+// because Arduino.h defines _min as macro and vscode gets confused.
 
 STRONG_INTEGER_TYPEDEF(int64_t, micros_t,
     inline uint32_t millis() const {return (uint32_t)(t / 1000); }
@@ -63,6 +46,27 @@ constexpr micros_t operator""_ms  (unsigned long long int i) { return micros_t{(
 constexpr micros_t operator""_s   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000}; }
 constexpr micros_t operator""_min (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60}; }
 constexpr micros_t operator""_h   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60 * 60}; }
+
+#include <stdbool.h>
+#include <time.h>
+#include <new>
+#include <mutex>
+#include <esp_log.h>
+#include <FS.h>
+#include <driver/i2c.h>
+#include <lwip/dns.h>
+
+#include "bindings/hal_common.h"
+
+#define MACRO_NAME_TO_STRING(x) #x
+
+// Indirection expands macro. See https://gcc.gnu.org/onlinedocs/gcc-3.4.3/cpp/Stringification.html
+#define MACRO_VALUE_TO_STRING(x) MACRO_NAME_TO_STRING(x)
+
+const char *tf_reset_reason();
+
+bool a_after_b(uint32_t a, uint32_t b);
+bool deadline_elapsed(uint32_t deadline_ms);
 
 micros_t now_us();
 bool deadline_elapsed(micros_t deadline_us);
