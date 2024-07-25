@@ -1448,7 +1448,7 @@ int allocate_current(
 
             // The charger was just plugged in. If we've allocated phases to it for PLUG_IN_TIME, clear the timestamp
             // to reduce its priority.
-            if (charger.last_plug_in != 0_us && phases_to_set > 0 && deadline_elapsed(charger.last_plug_in + cfg->plug_in_time)) {
+            if (charger.last_plug_in != 0_us && phases_to_set > 0 && deadline_elapsed(charger.last_switch + cfg->plug_in_time)) {
                 trace("charger %d: clearing last_plug_in after deadline elapsed", i);
                 charger.last_plug_in = 0_us;
             }
