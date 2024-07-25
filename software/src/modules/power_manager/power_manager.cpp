@@ -760,20 +760,22 @@ void PowerManager::update_energy()
     if (!excess_charging_enabled) {
         power_available_w = INT32_MAX;
     } else {
+        int32_t p_error_w;
+
         if (isnan(power_at_meter_raw_w)) {
             if (!printed_skipping_energy_update) {
                 logger.printfln("PV excess charging unavailable because power values are not available yet.");
                 printed_skipping_energy_update = true;
             }
 
-            power_available_w = 0;
+            p_error_w = INT32_MAX;
         } else {
             if (printed_skipping_energy_update) {
                 logger.printfln("PV excess charging available because power values are now available.");
                 printed_skipping_energy_update = false;
             }
 
-            int32_t p_error_w = target_power_from_grid_w - static_cast<int32_t>(power_at_meter_raw_w);
+            p_error_w = target_power_from_grid_w - static_cast<int32_t>(power_at_meter_raw_w);
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
             if (p_error_w > 200) {
@@ -784,17 +786,21 @@ void PowerManager::update_energy()
                 energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Balanced);
             }
 #endif
+        }
 
-            switch (mode) {
-                case MODE_FAST:
-                    power_available_w = INT32_MAX;
-                    break;
-                case MODE_OFF:
-                default:
+        switch (mode) {
+            case MODE_FAST:
+                power_available_w = INT32_MAX;
+                break;
+            case MODE_OFF:
+            default:
+                power_available_w = 0;
+                break;
+            case MODE_PV:
+            case MODE_MIN_PV:
+                if (p_error_w == INT32_MAX) {
                     power_available_w = 0;
-                    break;
-                case MODE_PV:
-                case MODE_MIN_PV:
+                } else {
                     // Excess charging uses an adaptive P controller to adjust available power.
                     int32_t p_adjust_w;
                     const int32_t cm_allocated_power_w = cm_total_allocated_current_ma * 230 / 1000; // ma -> watt
@@ -828,7 +834,7 @@ void PowerManager::update_energy()
                         power_available_w = guaranteed_power_w;
 
                     break;
-            }
+                }
         }
     }
 
