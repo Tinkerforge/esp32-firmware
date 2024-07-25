@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include <stdint.h>
+#include <stddef.h>
+
 #if defined(BOARD_HAS_PSRAM)
 #define MAX_CONTROLLED_CHARGERS 32
 #else
