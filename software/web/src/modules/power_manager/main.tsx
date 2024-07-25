@@ -319,7 +319,6 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
 
         let cm_config = API.get_unchecked("charge_manager/config");
         let cm_ok = cm_config?.enable_charge_manager && cm_config?.chargers.length >= 1;
-        let cm_multiple_chargers = cm_config.chargers.length > 1;
 
         let is_em = API.hasModule("energy_manager");
         let device_translation_suffix = is_em ? "em" : "wb";
@@ -362,15 +361,6 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                             <FormRow label="">
                                 <div style="color:red">
                                     {__("power_manager.content.cm_requirements_warning")}
-                                </div>
-                            </FormRow>
-                        </div>
-                    </Collapse>
-                    <Collapse in={enabled && !is_em && cm_multiple_chargers}>
-                        <div>
-                            <FormRow label="">
-                                <div style="color:red">
-                                    {__("power_manager.content.cm_multiple_chargers_warning")}
                                 </div>
                             </FormRow>
                         </div>
