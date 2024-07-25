@@ -216,6 +216,11 @@ bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage)
     bool pv_excess_exceeded = limits->raw.pv < cost.pv;
 
     switch(stage) {
+        case 6:
+            // Intentionally ignore the phase limit in stage 6:
+            // If we currently don't have the minimum current available
+            // on the PV "phase" we don't want to shut down the charger immediately.
+            return phases_exceeded;
         case 7:
         case 8:
             return phases_exceeded || pv_excess_exceeded;
@@ -1009,6 +1014,21 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
             }
         }
 
+        // This should never happen:
+        // We should never allocate more current than the raw phase limits,
+        // not even to allocate the minimum current to a charger. If there
+        // is a charger that was allocated phases to before stage 6, but we
+        // don't have the minimum current available, that is a bug in the
+        // previous stages.
+        if (cost_exceeds_limits(cost, limits, 6)) {
+            logger.printfln("stage 6: Cost exceeded limits!");
+            print_alloc(6, limits, current_allocation, phase_allocation, charger_count, charger_state);
+            PRINT_COST(cost);
+            PRINT_COST(ca_state->control_window_min);
+            PRINT_COST(ca_state->control_window_max);
+            continue;
+        }
+
         current_allocation[idx_array[i]] = allocated_phases == 3 ? min_3p : min_1p;
         trace("6: %d: %d@%dp", idx_array[i], current_allocation[idx_array[i]], allocated_phases);
         apply_cost(cost, limits);
@@ -1109,7 +1129,9 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
 
-        // This should never happen.
+        // This should never happen:
+        // We've just calculated how much current is still available.
+        // If this cost exceeds the limits, stage_7 is bugged.
         if (cost_exceeds_limits(cost, limits, 7)) {
             logger.printfln("stage 7: Cost exceeded limits!");
             print_alloc(7, limits, current_allocation, phase_allocation, charger_count, charger_state);
@@ -1164,7 +1186,9 @@ void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
 
-        // This should never happen.
+        // This should never happen:
+        // We've just calculated how much current is still available.
+        // If this cost exceeds the limits, stage_8 is bugged.
         if (cost_exceeds_limits(cost, limits, 8)) {
             logger.printfln("stage 8: Cost exceeded limits! Charger %d Current %u", idx_array[i], current);
             print_alloc(8, limits, current_allocation, phase_allocation, charger_count, charger_state);
