@@ -72,7 +72,6 @@ public:
     ConfigRoot available_current;
     ConfigRoot available_current_update;
     ConfigRoot control_pilot_disconnect;
-    ConfigRoot limits_cfg;
 
     uint32_t last_available_current_update = 0;
     bool watchdog_triggered = false;
