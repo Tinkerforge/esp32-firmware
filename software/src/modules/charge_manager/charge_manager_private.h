@@ -19,7 +19,7 @@ struct CurrentAllocatorConfig {
 
     // Only switch phases, start or stop chargers if this is elapsed.
     // Don't reset hysteresis when stopping chargers:
-    // Stopping and immediately starting again is fine, see phase switch.
+    // Stopping and immediately starting again is fine, as is done when switching phases.
     micros_t global_hysteresis;
 
     // Allow charging for this time to attempt to wake-up a "full" vehicle,
