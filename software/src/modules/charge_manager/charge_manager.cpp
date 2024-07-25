@@ -288,13 +288,6 @@ void ChargeManager::pre_setup()
         {"disconnect", Config::Bool(false)},
     });
 
-    limits_cfg = Config::Array({
-        Config::Int32(0),
-        Config::Int32(0),
-        Config::Int32(0),
-        Config::Int32(0)
-    }, new Config{Config::Int32(0)}, 4, 4, Config::type_id<Config::ConfInt>());
-
 #if MODULE_AUTOMATION_AVAILABLE() && !MODULE_ENERGY_MANAGER_AVAILABLE()
     automation.register_trigger(
         AutomationTriggerID::ChargeManagerWd,
@@ -641,16 +634,6 @@ void ChargeManager::register_urls()
         this->limits.max_pv = 3 * current; //TODO: unlimited?
 
     }, false);
-
-    api.addState("charge_manager/debug_limits", &limits_cfg);
-    api.addCommand("charge_manager/debug_limits_update", &limits_cfg, {}, [this](){
-        for(size_t i = 0; i < 4; ++i) {
-            this->limits.raw[i] = limits_cfg.get(i)->asInt();
-            this->limits.min[i] = limits_cfg.get(i)->asInt();
-            this->limits.spread[i] = limits_cfg.get(i)->asInt();
-        }
-        this->limits.max_pv = limits_cfg.get(0)->asInt();
-    }, true);
 }
 
 void ChargeManager::update_charger_state_config(uint8_t idx) {
