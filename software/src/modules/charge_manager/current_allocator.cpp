@@ -164,7 +164,6 @@ void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const int
     );
 }
 
-
 GridPhase get_phase(PhaseRotation rot, ChargerPhase phase) {
     return (GridPhase)(((int)rot >> (6 - 2 * (int)phase)) & 0x3);
 }
@@ -1267,7 +1266,7 @@ int allocate_current(
     bool print_local_log = false;
     char *local_log = cfg->distribution_log.get();
     if (local_log)
-        local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), "Redistributing current%c", '\0');
+        local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), "Allocating current%c", '\0');
 
     bool vehicle_connected = false;
 
@@ -1279,7 +1278,6 @@ int allocate_current(
         idx_array[i] = i;
         phases_array[i] = charger_allocation_state[i].allocated_phases;
     }
-
 
     ca_state->global_hysteresis_elapsed = ca_state->last_hysteresis_reset == 0_us || deadline_elapsed(ca_state->last_hysteresis_reset + cfg->global_hysteresis);
 
