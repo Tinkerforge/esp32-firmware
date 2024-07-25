@@ -1664,6 +1664,9 @@ bool update_from_client_packet(
         target.last_wakeup = 0;
 
     target.allowed_current = v1->allowed_charging_current;
+
+    if (target.supported_current != v1->supported_current)
+        trace("RECV %d: supported %u -> %umA", client_id, target.supported_current, v1->supported_current);
     target.supported_current = v1->supported_current;
     target.cp_disconnect_supported = CM_FEATURE_FLAGS_CP_DISCONNECT_IS_SET(v1->feature_flags);
     target.cp_disconnect_state = CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(v1->state_flags);
@@ -1699,6 +1702,10 @@ bool update_from_client_packet(
         max_phase_current = std::max(6000, std::min(32000, max_phase_current));
         requested_current = std::min(requested_current, (uint16_t)max_phase_current);
     }
+    if (abs((int)target.requested_current - (int)requested_current) > 1500) {
+        trace("RECV %d: requested %u -> %u mA (lines %.3f %.3f %.3f)", client_id, target.requested_current, requested_current, v1->line_currents[0], v1->line_currents[1], v1->line_currents[2]);
+    }
+
     target.requested_current = requested_current;
 
     target.meter_supported = CM_FEATURE_FLAGS_METER_IS_SET(v1->feature_flags);
@@ -1725,8 +1732,14 @@ bool update_from_client_packet(
                                               target_alloc.allocated_current);
 
     if (v3 != nullptr) {
-        target.phases = CM_STATE_V3_PHASES_CONNECTED_GET(v3->phases);
-        target.phase_switch_supported = CM_STATE_V3_CAN_PHASE_SWITCH_IS_SET(v3->phases);
+        uint8_t new_phases = CM_STATE_V3_PHASES_CONNECTED_GET(v3->phases);
+        uint8_t new_pss =  CM_STATE_V3_CAN_PHASE_SWITCH_IS_SET(v3->phases);
+        if (new_phases != target.phases)
+            trace("RECV %d: phases %u -> %u", client_id, target.phases, new_phases);
+        if (new_pss != target.phase_switch_supported)
+            trace("RECV %d: phase_switch_supported %u -> %u", client_id, target.phase_switch_supported, new_pss);
+        target.phases = new_phases;
+        target.phase_switch_supported = new_pss;
     } else {
         target.phases = 3;
         target.phase_switch_supported = false;
