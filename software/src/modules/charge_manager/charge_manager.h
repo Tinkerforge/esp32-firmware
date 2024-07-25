@@ -97,8 +97,6 @@ private:
 
     bool all_chargers_seen = false;
 
-    std::unique_ptr<char[]> distribution_log;
-
     std::unique_ptr<const char *[]> hosts;
     uint32_t default_available_current;
     uint16_t requested_current_threshold;
