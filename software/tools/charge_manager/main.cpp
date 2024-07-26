@@ -246,10 +246,10 @@ int main(int argc, char **argv) {
 
     CurrentAllocatorConfig cfg {
         .allocation_interval = 1000_s,
-        .global_hysteresis = 3_min,
-        .wakeup_time = 3_min,
-        .plug_in_time = 3_min,
-        .minimum_active_time = 15_min,
+        .global_hysteresis = 3_m,
+        .wakeup_time = 3_m,
+        .plug_in_time = 3_m,
+        .minimum_active_time = 15_m,
         .allocated_energy_rotation_threshold = 5,
 
         .minimum_current_3p = 9200,
@@ -283,9 +283,7 @@ int main(int argc, char **argv) {
 
     auto clear_dns_cache_entry = [](uint8_t idx){};
 
-    CurrentAllocatorState ca_state {
-        .last_print_local_log_was_error = false
-    };
+    CurrentAllocatorState ca_state;
 
     ChargerAllocationState charger_allocation_state[CHARGER_COUNT]{};
 

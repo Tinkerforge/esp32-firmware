@@ -20,10 +20,18 @@
 #pragma once
 
 #include <stdint.h>
-#include "strong_typedef.h"
+#include <stdbool.h>
+#include <time.h>
+#include <new>
+#include <mutex>
+#include <esp_log.h>
+#include <FS.h>
+#include <driver/i2c.h>
+#include <lwip/dns.h>
 
-// We have to define operator""_min before including anything that includes Arduino.h,
-// because Arduino.h defines _min as macro and vscode gets confused.
+#include "bindings/hal_common.h"
+
+#include "strong_typedef.h"
 
 STRONG_INTEGER_TYPEDEF(int64_t, micros_t,
     inline uint32_t millis() const {return (uint32_t)(t / 1000); }
@@ -44,19 +52,11 @@ STRONG_INTEGER_TYPEDEF(int64_t, micros_t,
 constexpr micros_t operator""_us  (unsigned long long int i) { return micros_t{(int64_t)i}; }
 constexpr micros_t operator""_ms  (unsigned long long int i) { return micros_t{(int64_t)i * 1000}; }
 constexpr micros_t operator""_s   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000}; }
-constexpr micros_t operator""_min (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60}; }
+// _min would be nicer but confuses vscode
+// because Arduino.h defines _min to not
+// collide with std::min in case someone uses "using namespace std;" m(
+constexpr micros_t operator""_m   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60}; }
 constexpr micros_t operator""_h   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60 * 60}; }
-
-#include <stdbool.h>
-#include <time.h>
-#include <new>
-#include <mutex>
-#include <esp_log.h>
-#include <FS.h>
-#include <driver/i2c.h>
-#include <lwip/dns.h>
-
-#include "bindings/hal_common.h"
 
 #define MACRO_NAME_TO_STRING(x) #x
 
