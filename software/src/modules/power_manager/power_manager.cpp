@@ -25,7 +25,7 @@
 
 #include "gcc_warnings.h"
 
-#define ENABLE_PM_TRACE 0
+#define ENABLE_PM_TRACE 1
 
 #if MODULE_ENERGY_MANAGER_AVAILABLE()
 #define PM_ENABLED_DEFAULT (true)
