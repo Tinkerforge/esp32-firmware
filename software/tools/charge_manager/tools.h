@@ -23,7 +23,7 @@ STRONG_INTEGER_TYPEDEF(int64_t, micros_t,
 constexpr micros_t operator""_us  (unsigned long long int i) { return micros_t{(int64_t)i}; }
 constexpr micros_t operator""_ms  (unsigned long long int i) { return micros_t{(int64_t)i * 1000}; }
 constexpr micros_t operator""_s   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000}; }
-constexpr micros_t operator""_min (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60}; }
+constexpr micros_t operator""_m   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60}; }
 constexpr micros_t operator""_h   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60 * 60}; }
 
 micros_t now_us();
