@@ -210,10 +210,10 @@ bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage)
 {
     bool phases_exceeded = false;
     for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
-        phases_exceeded |= limits->raw[i] < cost[i];
+        phases_exceeded |= cost[i] > 0 && limits->raw[i] < cost[i];
     }
 
-    bool pv_excess_exceeded = limits->raw.pv < cost.pv;
+    bool pv_excess_exceeded = cost.pv > 0 && limits->raw.pv < cost.pv;
 
     switch(stage) {
         case 6:
@@ -227,10 +227,10 @@ bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage)
         case 9: {
             bool phases_min_exceeded = false;
             for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
-                phases_min_exceeded |= limits->min[i] < cost[i];
+                phases_min_exceeded |= cost[i] > 0 && limits->min[i] < cost[i];
             }
 
-            bool pv_excess_min_exceeded = limits->min.pv < cost.pv;
+            bool pv_excess_min_exceeded = cost.pv > 0 && limits->min.pv < cost.pv;
             return phases_exceeded || pv_excess_exceeded || phases_min_exceeded || pv_excess_min_exceeded;
         }
         default:
