@@ -658,6 +658,8 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         }
 
         trace("3: shut down %d", idx_array[i]);
+
+        any_charger_shut_down = true;
     }
 
     // Recalculate the window once. wnd_min is already correct, but wnd_max needs to be fixed.
