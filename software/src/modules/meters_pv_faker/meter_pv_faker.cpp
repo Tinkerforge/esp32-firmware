@@ -27,22 +27,10 @@
 #include "gcc_warnings.h"
 
 #define INDEX_FAKE_POWER_TOTAL 0
-#define INDEX_FAKE_POWER_A 1
-#define INDEX_FAKE_POWER_B 2
-#define INDEX_FAKE_POWER_C 3
-#define INDEX_FAKE_CURRENT_A 4
-#define INDEX_FAKE_CURRENT_B 5
-#define INDEX_FAKE_CURRENT_C 6
-#define INDEX_FAKE_ILLUMINATION 7
+#define INDEX_FAKE_ILLUMINATION 1
 
-static const MeterValueID pv_faker_value_ids[8] = {
+static const MeterValueID pv_faker_value_ids[2] = {
     MeterValueID::PowerActiveLSumImExDiff,
-    MeterValueID::PowerActiveL1ImExDiff,
-    MeterValueID::PowerActiveL2ImExDiff,
-    MeterValueID::PowerActiveL3ImExDiff,
-    MeterValueID::CurrentL1ImExSum,
-    MeterValueID::CurrentL2ImExSum,
-    MeterValueID::CurrentL3ImExSum,
     MeterValueID::PowerDC,
 };
 
@@ -65,6 +53,7 @@ void MeterPvFaker::setup(const Config &ephemeral_config)
     }
 
     const String &illuminance_topic = ephemeral_config.get("topic")->asString();
+    const String &limiter_topic = ephemeral_config.get("limiter_topic")->asString();
     const String &global_topic_prefix = mqtt.config.get("global_topic_prefix")->asString();
 
     if (illuminance_topic.startsWith(global_topic_prefix)) {
@@ -89,6 +78,34 @@ void MeterPvFaker::setup(const Config &ephemeral_config)
         this->update_illuminance(illuminance);
     }, Mqtt::Retained::Accept);
 
+    if (limiter_topic.isEmpty()) {
+        limited_power = peak_power;
+    } else {
+        if (limiter_topic.startsWith(global_topic_prefix)) {
+            logger.printfln("Cannot listen to itself: Limiter topic cannot start with the topic prefix from the MQTT config.");
+            return;
+        }
+
+        if (limiter_topic.length() < 3) {
+            logger.printfln("Limter topic too short: %u", limiter_topic.length());
+            return;
+        }
+
+        limited_power = 0;
+
+        mqtt.subscribe(limiter_topic, [this](const char *_topic, size_t _topic_len, char *data, size_t data_len) {
+            StaticJsonDocument<JSON_OBJECT_SIZE(10)> doc;
+            DeserializationError error = deserializeJson(doc, data, data_len);
+            if (error) {
+                logger.printfln("Failed to deserialize MQTT payload: %s", error.c_str());
+                return;
+            }
+
+            uint32_t illuminance = doc["illuminance"].as<uint32_t>();
+            this->update_limit(illuminance);
+        }, Mqtt::Retained::Accept);
+    }
+
     meters.declare_value_ids(slot, pv_faker_value_ids, ARRAY_SIZE(pv_faker_value_ids));
 
     task_scheduler.scheduleWithFixedDelay([this]() {
@@ -106,18 +123,21 @@ void MeterPvFaker::update_illuminance(uint32_t illuminance)
 
     int64_t illuminance_shifted = illuminance - zero_at_lux;
 
-    float fake_power_w = static_cast<float>(peak_power * illuminance_shifted / peak_at_lux_shifted);
-    float fake_phase_power_w = fake_power_w / 3;
-    float fake_phase_current_a = fake_phase_power_w / 230;
+    float fake_power_w = static_cast<float>(limited_power * illuminance_shifted / peak_at_lux_shifted);
 
     values[INDEX_FAKE_POWER_TOTAL]  = fake_power_w;
-    values[INDEX_FAKE_POWER_A]      = fake_phase_power_w;
-    values[INDEX_FAKE_POWER_B]      = fake_phase_power_w;
-    values[INDEX_FAKE_POWER_C]      = fake_phase_power_w;
-    values[INDEX_FAKE_CURRENT_A]    = fake_phase_current_a;
-    values[INDEX_FAKE_CURRENT_B]    = fake_phase_current_a;
-    values[INDEX_FAKE_CURRENT_C]    = fake_phase_current_a;
     values[INDEX_FAKE_ILLUMINATION] = static_cast<float>(illuminance);
 
     meters.update_all_values(slot, values);
+}
+
+void MeterPvFaker::update_limit(uint32_t illuminance)
+{
+    if (illuminance < zero_at_lux) {
+        illuminance = zero_at_lux;
+    } else if (illuminance > peak_at_lux) {
+        illuminance = peak_at_lux;
+    }
+
+    limited_power = peak_power * illuminance / peak_at_lux;
 }
