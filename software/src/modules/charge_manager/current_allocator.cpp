@@ -1235,8 +1235,8 @@ static bool stage_9_sort(const ChargerState *left_state, const ChargerState *rig
 }
 
 // Stage 9: Wake up chargers.
-// If there is still current left, attempt to wake up one charger with a probably fully charged car.
-// Activating the charger will automatically change it from low to normal priority for at least 3 minutes,
+// If there is still current left, attempt to wake up chargers with a probably fully charged car.
+// Activating a charger will automatically change it from low to normal priority for at least 3 minutes,
 // giving the car time to request current.
 void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
