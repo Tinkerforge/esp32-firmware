@@ -49,7 +49,7 @@ public:
 #if defined(BOARD_HAS_PSRAM)
     std::mutex trace_buf_mutex;
     TF_Ringbuffer<char,
-                  1 << 20,
+                  2 << 20,
                   malloc_psram,
                   heap_caps_free> trace_buf;
 #endif
