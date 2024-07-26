@@ -153,6 +153,14 @@ static void pre_reboot_task(void *arg)
     esp_system_abort(pre_reboot_message);
 }
 
+static void task_creation_failed(int error_code)
+{
+    char msg[48];
+    msg[0] = 0;
+    snprintf(msg, ARRAY_SIZE(msg), "Failed to create pre-reboot task: %i", error_code);
+    esp_system_abort(msg);
+}
+
 #endif
 
 static void pre_reboot_helper(void)
@@ -175,7 +183,7 @@ static void pre_reboot(void)
 #if MODULE_WATCHDOG_AVAILABLE()
         watchdog.add("pre_reboot", pre_reboot_message, PRE_REBOOT_MAX_DURATION, 0, true);
 #else
-        xTaskCreatePinnedToCore(
+        auto err = xTaskCreatePinnedToCore(
             pre_reboot_task,
             "pre_reboot_task",
             640,
@@ -183,6 +191,15 @@ static void pre_reboot(void)
             ESP_TASK_PRIO_MAX,
             nullptr,
             1);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+        // pdPASS expands to an old-style cast that is also useless
+        if (err != pdPASS) {
+            task_creation_failed(err);
+        }
+#pragma GCC diagnostic pop
 #endif
 
         pre_reboot_helper();
