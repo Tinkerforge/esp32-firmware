@@ -27,6 +27,7 @@
 <form>
     <input id="factory_reset" type="text" placeholder="Type RESET to allow a factory reset" oninput=on_input() size=26>
     <button id="factory_reset_button" type="button" onclick='freset()' disabled>Trigger factory reset</button>
+    <label id="p_factory_reset"></label>
 </form>
 
 <h3>Debug report</h3>
@@ -58,6 +59,8 @@ function update() {
 
     let xhr = new XMLHttpRequest();
     let progress = document.getElementById("p_firmware");
+    progress.innerHTML = "";
+
     xhr.onreadystatechange = function (e) {
         if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
             progress.innerHTML = xhr.responseText
@@ -84,12 +87,26 @@ function reboot() {
 }
 
 function freset() {
+    let lbl = document.getElementById("p_factory_reset");
+    lbl.innerHTML = "";
+
+    let abort = new AbortController();
+    let timeout = setTimeout(() => abort.abort(), 3000);
+
     fetch("/factory_reset", {
+        signal: abort.signal,
         method: "PUT",
         credentials: 'same-origin',
         headers: {"Content-Type": "application/json; charset=utf-8"},
         body: JSON.stringify({"do_i_know_what_i_am_doing": true})
-    }).then(response => console.log(response.status, response.statusText));
+    }).then(response => {
+        if(response.status == 200)
+            response.text().then(t => lbl.innerHTML = "Factory reset started")
+        else
+            lbl.innerHTML = "Starting factory reset failed:" + response.status + response.statusText;
+    }).catch(reason => {
+        lbl.innerHTML = "Starting factory reset failed:" + reason;
+    });
 }
 
 function get(url, continuation) {
