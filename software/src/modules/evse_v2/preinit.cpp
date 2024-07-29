@@ -65,6 +65,12 @@ void evse_v2_button_recovery_handler()
         tf_evse_v2_destroy(&evse);
     };
 
+    uint32_t evse_uptime = 0;
+    tf_evse_v2_get_low_level_state(&evse, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &evse_uptime);
+    if (evse_uptime > 10000) {
+        tf_evse_v2_set_indicator_led(&evse, 2005, 3000, 60, 255, 255, nullptr);
+    }
+
     uint32_t start = millis();
 
     uint32_t button_press_time = BUTTON_IS_PRESSED;

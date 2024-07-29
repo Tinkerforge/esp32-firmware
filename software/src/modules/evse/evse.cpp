@@ -62,6 +62,12 @@ void EVSE::pre_init()
     defer {
         tf_evse_destroy(&evse);
     };
+
+    uint32_t evse_uptime = 0;
+    tf_evse_get_low_level_state(&evse, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &evse_uptime);
+    if (evse_uptime > 10000) {
+        tf_evse_set_indicator_led(&evse, 2005, 3000, nullptr);
+    }
 }
 
 void EVSE::pre_setup()
