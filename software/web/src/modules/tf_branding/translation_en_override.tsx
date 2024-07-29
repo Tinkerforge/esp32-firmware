@@ -17,8 +17,8 @@ let x = {
     },
     "firmware_update": {
         "script": {
-            "no_info_page": "Firmware file corrupted (info page missing)",
-            "wrong_firmware_type": "Firmware file does not match the type of this Brick"
+            "install_state_19": "Firmware file corrupted (info page missing)",
+            "install_state_21": "Firmware file does not match the type of this Brick"
         }
     },
     "network": {

@@ -1,0 +1,37 @@
+[preset:my_signature_preset]
+publisher = My Signature Publisher
+
+sodium_public_key_path = sodium_public_key_v1.json
+
+sodium_secret_key_path = sodium_secret_key_v1.kdbx
+sodium_secret_key_protection = token
+sodium_secret_key_token = 123456789
+sodium_secret_key_keyfile = sodium_secret_key_v1.keyfile
+
+gpg_keyring_path = gpg_keyring_v1.gpg
+gpg_keyring_user_id = My Signature Publisher
+
+gpg_keyring_passphrase_path = gpg_keyring_passphrase_v1.kdbx
+gpg_keyring_passphrase_protection = token
+gpg_keyring_passphrase_token = 123456789
+gpg_keyring_passphrase_keyfile = gpg_keyring_passphrase_v1.keyfile
+
+gpg_public_key_path = gpg_public_key_v1.gpg
+
+[signature:esp32]
+preset = my_signature_preset
+
+[signature:esp32_ethernet]
+preset = my_signature_preset
+
+[signature:warp]
+preset = my_signature_preset
+
+[signature:warp2]
+preset = my_signature_preset
+
+[signature:warp3]
+preset = my_signature_preset
+
+[signature:energy_manager]
+preset = my_signature_preset

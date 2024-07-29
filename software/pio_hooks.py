@@ -402,19 +402,27 @@ def hyphenate_translation(translation, parent_key=None):
 
 def repair_rtc_dir():
     path = os.path.abspath("src/modules/rtc")
+
     try:
-        os.remove(path + "/real_time_clock_v2_bricklet_firmware_bin.digest")
-        os.remove(path + "/real_time_clock_v2_bricklet_firmware_bin.embedded.cpp")
-        os.remove(path + "/real_time_clock_v2_bricklet_firmware_bin.embedded.h")
+        os.remove(os.path.join(path, "real_time_clock_v2_bricklet_firmware_bin.digest"))
+        os.remove(os.path.join(path, "real_time_clock_v2_bricklet_firmware_bin.embedded.cpp"))
+        os.remove(os.path.join(path, "real_time_clock_v2_bricklet_firmware_bin.embedded.h"))
     except:
         pass
 
 def repair_firmware_update_dir():
     path = os.path.abspath("src/modules/firmware_update")
+
     try:
-        os.remove(path + "/recovery_html.digest")
-        os.remove(path + "/recovery_html.embedded.cpp")
-        os.remove(path + "/recovery_html.embedded.h")
+        os.remove(os.path.join(path, "recovery_html.digest"))
+        os.remove(os.path.join(path, "recovery_html.embedded.cpp"))
+        os.remove(os.path.join(path, "recovery_html.embedded.h"))
+    except:
+        pass
+
+    try:
+        os.remove(os.path.join(path, "signature_public_key.embedded.cpp"))
+        os.remove(os.path.join(path, "signature_public_key.embedded.h"))
     except:
         pass
 
@@ -488,6 +496,7 @@ def main():
     frontend_debug = env.GetProjectOption("custom_frontend_debug") == "true"
     web_only = env.GetProjectOption("custom_web_only") == "true"
     web_build_flags = env.GetProjectOption("custom_web_build_flags")
+    signed = env.GetProjectOption("custom_signed") == "true"
     monitor_speed = env.GetProjectOption("monitor_speed")
     nightly = "-DNIGHTLY" in build_flags
 
@@ -602,6 +611,7 @@ def main():
 
     build_lines.append('#define BUILD_CONFIG_TYPE "{}"'.format(config_type))
     build_lines.append('#define BUILD_NAME "{}"'.format(name))
+    build_lines.append('#define BUILD_NAME_LENGTH {}'.format(len(name)))
     build_lines.append('#define BUILD_MANUFACTURER "{}"'.format(manufacturer))
     build_lines.append('#define BUILD_DISPLAY_NAME "{}"'.format(display_name))
     build_lines.append('#define BUILD_DISPLAY_NAME_UPPER "{}"'.format(display_name.upper()))
@@ -619,9 +629,8 @@ def main():
     build_lines.append('const char *build_commit_id_str(void);')
     tfutil.write_file_if_different(os.path.join('src', 'build.h'), '\n'.join(build_lines))
 
-    firmware_basename = '{}_firmware-UNSIGNED{}{}{}_{}_{:x}{}'.format(
+    firmware_basename = '{}_firmware-UNSIGNED{}{}_{}_{:x}{}'.format(
         name,
-        "-NONVERIFYING" if not os.path.exists("signature/public_key_v1.json") else "",
         "-NIGHTLY" if nightly else "",
         "-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE" if not_for_distribution else "",
         "{}_{}_{}{}".format(*version[:3], f"_beta_{version[3]}" if version[3] != "255" else ""),
@@ -702,6 +711,8 @@ def main():
     branding_module = find_branding_module(frontend_modules)
 
     metadata = json.dumps({
+        'name': name,
+        'signed': signed,
         'frontend_modules': [frontend_module.under for frontend_module in frontend_modules]
     }, separators=(',', ':'))
 

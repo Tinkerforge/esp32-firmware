@@ -1,0 +1,25 @@
+Idle
+In Progress
+Busy
+Internal Error
+No Update URL
+No Cert
+HTTP Client Init Failed
+No Response
+Download Error
+Version Malformed
+Firmware Too Small
+Flash Begin Failed
+Flash Short Write
+Flash Apply Failed
+Signature Begin Failed
+Signature Update Failed
+Signature Verify Failed
+Vehicle Connected
+Info Page Too Big
+No Info Page
+Info Page Corrupted
+Wrong Firmware Type
+Downgrade
+Aborted
+Rebooting

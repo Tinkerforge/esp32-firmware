@@ -17,8 +17,8 @@ let x = {
     },
     "firmware_update": {
         "script": {
-            "no_info_page": "Firmware file corrupted or for WARP Charger (info page missing)",
-            "wrong_firmware_type": "Firmware file does not match the type of this energy manager"
+            "install_state_19": "Firmware file corrupted or for WARP1 Charger (info page missing)",
+            "install_state_21": "Firmware file does not match the type of this energy manager"
         }
     },
     "mqtt": {

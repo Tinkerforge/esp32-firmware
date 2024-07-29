@@ -140,10 +140,15 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         }
 
         if (received <= 0) {
-            struct httpd_req_aux *ra = (struct httpd_req_aux *)req->aux;
+            int error_code = errno;
 
-            logger.printfln("File reception failed (%d fd %d errno %d %s)!\n", received, ra->sd->fd, errno, strerror(errno));
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to receive file");
+            if (ctx->handler->callbackInMainThread) {
+                task_scheduler.await([ctx, request, error_code](){ctx->handler->uploadErrorCallback(request, error_code);});
+            }
+            else {
+                ctx->handler->uploadErrorCallback(request, error_code);
+            }
+
             return ESP_FAIL;
         }
 
@@ -171,14 +176,56 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-WebServerHandler *WebServer::on(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback)
+WebServerHandler *WebServer::on(const char *uri,
+                                httpd_method_t method,
+                                wshCallback &&callback)
 {
-    return addHandler(uri, method, true, std::forward<wshCallback>(callback), std::forward<wshUploadCallback>(uploadCallback));
+    return addHandler(uri,
+                      method,
+                      true,
+                      std::forward<wshCallback>(callback),
+                      wshUploadCallback(),
+                      wshUploadErrorCallback());
 }
 
-WebServerHandler *WebServer::on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback)
+WebServerHandler *WebServer::on(const char *uri,
+                                httpd_method_t method,
+                                wshCallback &&callback,
+                                wshUploadCallback &&uploadCallback,
+                                wshUploadErrorCallback &&uploadErrorCallback)
 {
-    return addHandler(uri, method, false, std::forward<wshCallback>(callback), std::forward<wshUploadCallback>(uploadCallback));
+    return addHandler(uri,
+                      method,
+                      true,
+                      std::forward<wshCallback>(callback),
+                      std::forward<wshUploadCallback>(uploadCallback),
+                      std::forward<wshUploadErrorCallback>(uploadErrorCallback));
+}
+
+WebServerHandler *WebServer::on_HTTPThread(const char *uri,
+                                           httpd_method_t method,
+                                           wshCallback &&callback)
+{
+    return addHandler(uri,
+                      method,
+                      false,
+                      std::forward<wshCallback>(callback),
+                      wshUploadCallback(),
+                      wshUploadErrorCallback());
+}
+
+WebServerHandler *WebServer::on_HTTPThread(const char *uri,
+                                           httpd_method_t method,
+                                           wshCallback &&callback,
+                                           wshUploadCallback &&uploadCallback,
+                                           wshUploadErrorCallback &&uploadErrorCallback)
+{
+    return addHandler(uri,
+                      method,
+                      false,
+                      std::forward<wshCallback>(callback),
+                      std::forward<wshUploadCallback>(uploadCallback),
+                      std::forward<wshUploadErrorCallback>(uploadErrorCallback));
 }
 
 void WebServer::onNotAuthorized_HTTPThread(wshCallback &&callback)
@@ -186,7 +233,12 @@ void WebServer::onNotAuthorized_HTTPThread(wshCallback &&callback)
     this->on_not_authorized = std::forward<wshCallback>(callback);
 }
 
-WebServerHandler *WebServer::addHandler(const char *uri, httpd_method_t method, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback)
+WebServerHandler *WebServer::addHandler(const char *uri,
+                                        httpd_method_t method,
+                                        bool callbackInMainThread,
+                                        wshCallback &&callback,
+                                        wshUploadCallback &&uploadCallback,
+                                        wshUploadErrorCallback &&uploadErrorCallback)
 {
     if (handler_count >= MAX_URI_HANDLERS) {
         logger.printfln("Can't add WebServer handler for %s: %d handlers already registered. Please increase MAX_URI_HANDLERS.", uri, handler_count);
@@ -199,8 +251,12 @@ WebServerHandler *WebServer::addHandler(const char *uri, httpd_method_t method, 
     // This check has to happen before uploadCallback is forwarded!
     ll_handler.handler   = uploadCallback == nullptr ? low_level_handler : low_level_upload_handler;
 
-    handlers.emplace_front(callbackInMainThread, std::forward<wshCallback>(callback), std::forward<wshUploadCallback>(uploadCallback));
+    handlers.emplace_front(callbackInMainThread,
+                           std::forward<wshCallback>(callback),
+                           std::forward<wshUploadCallback>(uploadCallback),
+                           std::forward<wshUploadErrorCallback>(uploadErrorCallback));
     ++handler_count;
+
     WebServerHandler *result = &handlers.front();
 #ifdef DEBUG_FS_ENABLE
     result->uri = strdup(uri);

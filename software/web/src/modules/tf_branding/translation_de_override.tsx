@@ -22,8 +22,8 @@ let x = {
     },
     "firmware_update": {
         "script": {
-            "no_info_page": "Firmware-Datei ist beschädigt (Firmware-Info-Seite fehlt)",
-            "wrong_firmware_type": "Firmware-Datei passt nicht zu diesem Brick-Typ"
+            "install_state_19": "Firmware-Datei ist beschädigt (Firmware-Info-Seite fehlt)",
+            "install_state_21": "Firmware-Datei passt nicht zu diesem Brick-Typ"
         }
     },
     "mqtt": {

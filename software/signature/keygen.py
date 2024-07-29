@@ -6,6 +6,19 @@ import ctypes
 import ctypes.util
 import argparse
 import json
+import subprocess
+import configparser
+import secrets
+import getpass
+
+directory = os.path.normpath(os.path.dirname(__file__))
+
+
+def make_path(path):
+    if os.path.isabs(path):
+        return path
+
+    return os.path.join('.', os.path.relpath(os.path.join(directory, path)))
 
 
 def load_libsodium():
@@ -14,116 +27,243 @@ def load_libsodium():
     if libsodium_path != None:
         libsodium = ctypes.cdll.LoadLibrary(libsodium_path)
     else:
-        directory = os.path.dirname(__file__)
-
         for extension in ['so', 'dll', 'dylib']:
             try:
-                libsodium = ctypes.cdll.LoadLibrary(os.path.join(directory, f'libsodium.{extension}'))
+                libsodium = ctypes.cdll.LoadLibrary(make_path(f'libsodium.{extension}'))
             except:
                 continue
 
             break
         else:
-            print('error: cannot find libsodium library')
-            return None
+            raise Exception('cannot find libsodium library')
 
     if libsodium.sodium_init() < 0:
-        print('error: sodium_init failed')
-        return None
+        raise Exception('libsodium sodium_init failed')
 
     return libsodium
 
 
-def publisher_type(value):
-    length = len(value.encode('utf-8'))
+def keepassxc(config, prefix, action, args, entry, password=None, input=None):
+    path = make_path(config[prefix + '_path'])
+    protection = config[prefix + '_protection']
+    full_args = ['keepassxc-cli', action]
+    full_kwargs = {'stderr': subprocess.DEVNULL, 'encoding': 'utf-8'}
+    full_input = None
 
-    if length < 1 or length > 63:
-        raise argparse.ArgumentTypeError('publisher UTF-8 length is out of range')
+    if protection == 'token':
+        full_args += ['-q', '--no-password', '-y', f'2:{config[prefix + "_token"]}']
+    elif protection == 'keyfile':
+        full_args += ['-q', '--no-password', '-k', make_path(config[prefix + '_keyfile'])]
+    elif protection == 'password':
+        assert password != None
+        full_input = password + '\n'
+    else:
+        raise Exception(f'invalid protection: {protection}')
 
-    return value
+    full_args += args + [path, entry]
+
+    if input != None:
+        if full_input != None:
+            full_input += input
+        else:
+            full_input = input
+
+    if full_input != None:
+        full_kwargs['input'] = full_input
+
+    try:
+        return subprocess.check_output(full_args, **full_kwargs)
+    except:
+        return None
 
 
 def main():
     libsodium = load_libsodium()
 
-    if libsodium == None:
-        return 1
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--force', action='store_true')
-    parser.add_argument('publisher', type=publisher_type)
+    parser.add_argument('preset')
 
     args = parser.parse_args()
 
-    directory = os.path.dirname(__file__)
-    public_key_filename = os.path.relpath(os.path.join(directory, 'public_key_v1.json'))
-    secret_key_filename = os.path.relpath(os.path.join(directory, 'secret_key_v1.json'))
+    config = configparser.ConfigParser()
+    config.read(make_path('config.ini'))
+    config = config['preset:' + args.preset]
 
-    if os.path.exists(public_key_filename):
-        if args.force:
-            try:
-                os.remove(public_key_filename)
-            except Exception as e:
-                print(f'error: could not remove old public key file {public_key_filename}: {e}')
-                return 1
-        else:
-            print(f'error: public key file {public_key_filename} already exists')
-            return 1
+    sodium_public_key_path = make_path(config['sodium_public_key_path'])
 
-    if os.path.exists(secret_key_filename):
-        if args.force:
-            try:
-                os.remove(secret_key_filename)
-            except Exception as e:
-                print(f'error: could not remove old secret key file {secret_key_filename}: {e}')
-                return 1
-        else:
-            print(f'error: secret key file {secret_key_filename} already exists')
-            return 1
+    print(f'checking for existing sodium public key file {sodium_public_key_path}')
+
+    if os.path.exists(sodium_public_key_path):
+        if not args.force:
+            raise Exception(f'sodium public key file {sodium_public_key_path} already exists')
+
+        print(f'removing existing sodium public key file {sodium_public_key_path} [--force]')
+
+        try:
+            os.remove(sodium_public_key_path)
+        except Exception as e:
+            raise Exception(f'could not remove existing sodium public key file {sodium_public_key_path}: {e}')
+
+    sodium_secret_key_path = make_path(config['sodium_secret_key_path'])
+
+    print(f'checking for existing sodium secret key entry in {sodium_secret_key_path}')
+
+    if not os.path.exists(sodium_secret_key_path):
+        raise Exception(f'sodium secret key file {sodium_secret_key_path} is missing')
+
+    sodium_secret_key_password = None
+
+    if config['sodium_secret_key_protection'] == 'password':
+        print(f'enter password for existing sodium secret key file {sodium_secret_key_path}:')
+        sodium_secret_key_password = getpass.getpass(prompt='')
+
+    if keepassxc(config, 'sodium_secret_key', 'show', [], 'sodium_secret_key', password=sodium_secret_key_password) != None:
+        if not args.force:
+            raise Exception(f'sodium secret key entry already exists in {sodium_secret_key_path}')
+
+        print(f'removing existing sodium secret key entry from {sodium_secret_key_path} [--force]')
+
+        if keepassxc(config, 'sodium_secret_key', 'rm', [], 'sodium_secret_key', password=sodium_secret_key_password) == None:
+            raise Exception(f'could not remove existing sodium secret key entry from {sodium_secret_key_path}')
+
+        if keepassxc(config, 'sodium_secret_key', 'show', [], 'sodium_secret_key', password=sodium_secret_key_password) != None:
+            print(f'removing existing sodium secret key entry from {sodium_secret_key_path} recycling bin [--force]')
+
+            if keepassxc(config, 'sodium_secret_key', 'rm', [], 'sodium_secret_key', password=sodium_secret_key_password) == None:
+                raise Exception(f'could not remove existing sodium secret key entry from {sodium_secret_key_path} recycling bin')
+
+    print('generating sodium public and secret key')
 
     crypto_sign_PUBLICKEYBYTES = libsodium.crypto_sign_publickeybytes()
     crypto_sign_SECRETKEYBYTES = libsodium.crypto_sign_secretkeybytes()
 
-    public_key_buffer = ctypes.create_string_buffer(crypto_sign_PUBLICKEYBYTES)
-    secret_key_buffer = ctypes.create_string_buffer(crypto_sign_SECRETKEYBYTES)
+    sodium_public_key_buffer = ctypes.create_string_buffer(crypto_sign_PUBLICKEYBYTES)
+    sodium_secret_key_buffer = ctypes.create_string_buffer(crypto_sign_SECRETKEYBYTES)
 
-    if libsodium.crypto_sign_keypair(public_key_buffer, secret_key_buffer) < 0:
-        print('error: crypto_sign_keypair failed')
-        return 1
+    if libsodium.crypto_sign_keypair(sodium_public_key_buffer, sodium_secret_key_buffer) < 0:
+        raise Exception('libsodium crypto_sign_keypair failed')
 
-    public_key_json = json.dumps({'publisher': args.publisher, 'public_key': public_key_buffer.raw.hex()})
+    print(f'writing sodium public key to {sodium_public_key_path}')
 
-    try:
-        with open(public_key_filename + '.tmp', 'w', encoding='utf-8') as f:
-            f.write(public_key_json + '\n')
-    except Exception as e:
-        print(f'error: could not write public key to {public_key_filename}.tmp: {e}')
-        return 1
+    sodium_public_key_json = json.dumps({'sodium_public_key': sodium_public_key_buffer.raw.hex()})
 
     try:
-        os.replace(public_key_filename + '.tmp', public_key_filename)
+        with open(sodium_public_key_path + '.tmp', 'w', encoding='utf-8') as f:
+            f.write(sodium_public_key_json + '\n')
     except Exception as e:
-        print(f'error: could not rename public key from {public_key_filename}.tmp to {public_key_filename}: {e}')
-        return 1
-
-    secret_key_json = json.dumps({'publisher': args.publisher, 'secret_key': secret_key_buffer.raw.hex()})
+        raise Exception(f'could not write sodium public key to {sodium_public_key_path}.tmp: {e}')
 
     try:
-        with open(secret_key_filename + '.tmp', 'w', encoding='utf-8') as f:
-            f.write(secret_key_json + '\n')
+        os.replace(sodium_public_key_path + '.tmp', sodium_public_key_path)
     except Exception as e:
-        print(f'error: could not write secret key to {secret_key_filename}.tmp: {e}')
-        return 1
+        raise Exception(f'could not rename sodium public key file from {sodium_public_key_path}.tmp to {sodium_public_key_path}: {e}')
+
+    print(f'adding sodium secret key entry to {sodium_secret_key_path}')
+
+    if keepassxc(config, 'sodium_secret_key', 'add', ['-p'], 'sodium_secret_key', password=sodium_secret_key_password, input=sodium_secret_key_buffer.raw.hex()) == None:
+        raise Exception(f'could not add sodium secret key to {sodium_secret_key_path}')
+
+    gpg_keyring_path = make_path(config['gpg_keyring_path'])
+
+    print(f'checking for existing GPG keyring file {gpg_keyring_path}')
+
+    if os.path.exists(gpg_keyring_path):
+        if not args.force:
+            raise Exception(f'GPG keyring file {gpg_keyring_path} already exists')
+
+        print(f'removing existing GPG keyring file {gpg_keyring_path} [--force]')
+
+        try:
+            os.remove(gpg_keyring_path)
+        except Exception as e:
+            raise Exception(f'could not remove existing GPG keyring file {gpg_keyring_path}: {e}')
+
+    gpg_keyring_passphrase_path = make_path(config['gpg_keyring_passphrase_path'])
+
+    if not os.path.exists(gpg_keyring_passphrase_path):
+        raise Exception(f'GPG keyring passphrase file {gpg_keyring_passphrase_path} is missing')
+
+    gpg_keyring_passphrase_password = None
+
+    if config['gpg_keyring_passphrase_protection'] == 'password':
+        print(f'enter password for existing GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
+        gpg_keyring_passphrase_password = getpass.getpass(prompt='')
+
+    print(f'checking for existing GPG keyring passphrase enrty in {gpg_keyring_passphrase_path}')
+
+    if keepassxc(config, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != None:
+        if not args.force:
+            raise Exception(f'GPG keyring passphrase entry already exists in {gpg_keyring_passphrase_path}')
+
+        print(f'removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} [--force]')
+
+        if keepassxc(config, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
+            raise Exception(f'could not remove existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
+
+        if keepassxc(config, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != None:
+            print(f'removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin [--force]')
+
+            if keepassxc(config, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
+                raise Exception(f'could not remove existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin')
+
+    gpg_public_key_path = make_path(config['gpg_public_key_path'])
+
+    print(f'checking for existing GPG public key file {gpg_public_key_path}')
+
+    if os.path.exists(gpg_public_key_path):
+        if not args.force:
+            raise Exception(f'GPG public key file {gpg_public_key_path} already exists')
+
+        print(f'removing existing GPG public key file {gpg_public_key_path} [--force]')
+
+        try:
+            os.remove(gpg_public_key_path)
+        except Exception as e:
+            raise Exception(f'could not remove existing GPG public key file {gpg_public_key_path}: {e}')
+
+    print(f'adding GPG keyring passphrase entry to {gpg_keyring_passphrase_path}')
+
+    gpg_keyring_passphrase = secrets.token_hex(64)
+
+    if keepassxc(config, 'gpg_keyring_passphrase', 'add', ['-p'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password, input=gpg_keyring_passphrase) == None:
+        raise Exception(f'could not add GPG keyring passphrase to {gpg_keyring_passphrase_path}')
+
+    print(f'creating GPG keyring file {gpg_keyring_path}')
 
     try:
-        os.replace(secret_key_filename + '.tmp', secret_key_filename)
-    except Exception as e:
-        print(f'error: could not rename secret key from {secret_key_filename}.tmp to {secret_key_filename}: {e}')
-        return 1
+        subprocess.check_call([
+            'gpg',
+            '--pinentry-mode', 'loopback',
+            '--no-default-keyring',
+            '--keyring', gpg_keyring_path,
+            '--passphrase', gpg_keyring_passphrase,
+            '--quick-generate-key', config['gpg_keyring_user_id'], 'default', 'default', '0',
+        ])
+    except:
+        raise Exception(f'could not create GPG keyring file {gpg_keyring_path}')
 
-    print(f'success: signature keys created for {repr(args.publisher)}')
-    return 0
+    print(f'exporting GPG public key to {gpg_public_key_path}')
+
+    try:
+        subprocess.check_call([
+            'gpg',
+            '--pinentry-mode', 'loopback',
+            '--no-default-keyring',
+            '--keyring', gpg_keyring_path,
+            '--passphrase', gpg_keyring_passphrase,
+            '--output', gpg_public_key_path,
+            '--export', config['gpg_keyring_user_id'],
+        ])
+    except:
+        raise Exception(f'could not export GPG public key to {gpg_public_key_path}')
+
+    print('successfully generated keys')
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    try:
+        main()
+    except Exception as e:
+        print(f'error: {e}')
+        sys.exit(1)

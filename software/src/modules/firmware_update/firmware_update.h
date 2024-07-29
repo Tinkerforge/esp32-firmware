@@ -26,15 +26,11 @@
 
 #include "module.h"
 #include "config.h"
-#include "signature_public_key.embedded.h"
+#include "semantic_version.h"
+#include "signature_verify.embedded.h"
+#include "install_state.enum.h"
 
-struct SemanticVersion {
-    uint8_t major = 255;
-    uint8_t minor = 255;
-    uint8_t patch = 255;
-    uint8_t beta = 255;
-    uint32_t timestamp = 0;
-};
+struct TFJsonSerializer;
 
 template <typename T>
 class BlockReader
@@ -76,21 +72,25 @@ public:
     void setup() override;
     void register_urls() override;
 
-    bool firmware_update_allowed = true;
+    bool vehicle_connected = false;
 
-    void handle_update_data(const void *data, size_t data_len);
+    void handle_index_data(const void *data, size_t data_len);
+    void handle_firmware_data(void *data, size_t data_len);
 
 private:
-    bool handle_firmware_chunk(std::function<void(uint16_t, const char *, const char *)> result_cb, size_t chunk_offset, uint8_t *chunk_data, size_t chunk_length, size_t remaining, size_t complete_len);
-    String check_firmware_info(bool detect_downgrade, bool log);
+    bool is_vehicle_blocking_update() const;
+    InstallState handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_length, size_t remaining_len, size_t complete_len, TFJsonSerializer *json_ptr);
+    InstallState check_firmware_info(bool detect_downgrade, bool log, TFJsonSerializer *json_ptr);
     void check_for_update();
-    bool parse_version(const char *p, SemanticVersion *version) const;
-    String format_version(SemanticVersion *version) const;
+    void install_firmware(const char *url);
 
     ConfigRoot config;
     ConfigRoot state;
-    ConfigRoot install_firmware;
+    ConfigRoot install_firmware_config;
     ConfigRoot override_signature;
+
+    bool check_firmware_in_progress = false;
+    bool flash_firmware_in_progress = false;
 
     struct firmware_info_t {
         uint32_t magic[2] = {0};
@@ -102,7 +102,7 @@ private:
 
     BlockReader<firmware_info_t> firmware_info;
 
-#if signature_public_key_length != 0
+#if signature_sodium_public_key_length != 0
     struct signature_info_t {
         uint32_t magic[2] = {0};
         char publisher[64] = {0};
@@ -115,13 +115,22 @@ private:
 #endif
 
     String update_url;
+
     int cert_id = -1;
     std::unique_ptr<unsigned char[]> cert = nullptr;
     esp_http_client_handle_t http_client = nullptr;
-    uint32_t last_update_begin;
-    char update_buf[64 + 1];
-    size_t update_buf_used;
+
+    uint32_t check_begin;
+    char index_buf[64 + 1];
+    size_t index_buf_used;
     SemanticVersion update_version;
     //uint32_t last_version_timestamp;
-    bool check_complete;
+    bool check_for_update_in_progress = false;
+    bool check_for_update_aborted = true;
+
+    uint32_t last_install_alive;
+    size_t firmware_data_offset;
+    size_t firmware_len;
+    bool install_firmware_in_progress = false;
+    bool install_firmware_aborted = true;
 };

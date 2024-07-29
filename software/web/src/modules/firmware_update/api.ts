@@ -5,8 +5,10 @@ export interface config {
 
 export interface state {
     check_timestamp: number,
-    check_error: string,
+    check_state: number,
     update_version: string,
+    install_progress: number,
+    install_state: number,
 }
 
 export interface check_for_update {

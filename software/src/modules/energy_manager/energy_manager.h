@@ -102,7 +102,7 @@ public:
 
     void update_grid_balance_led(EmRgbLed::GridBalance balance);
 
-    bool disallow_fw_update_with_vehicle_connected();
+    bool block_firmware_update_with_vehicle_connected();
 
 #if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;

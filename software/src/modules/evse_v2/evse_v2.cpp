@@ -976,7 +976,7 @@ void EVSEV2::update_all_data()
     // as the ESP firmware is already running, so we can for example
     // track the charge.
 #if MODULE_FIRMWARE_UPDATE_AVAILABLE()
-    firmware_update.firmware_update_allowed = charger_state == 0 || charger_state == 4;
+    firmware_update.vehicle_connected = charger_state != 0 && charger_state != 4;
 #endif
 
     // get_state

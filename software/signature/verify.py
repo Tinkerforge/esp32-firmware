@@ -5,8 +5,13 @@ import sys
 import ctypes
 import ctypes.util
 import argparse
+import subprocess
 import json
+import configparser
+import hashlib
 from zlib import crc32
+
+directory = os.path.normpath(os.path.dirname(__file__))
 
 
 class CryptoSignState(ctypes.Structure):
@@ -18,28 +23,31 @@ class CryptoSignState(ctypes.Structure):
     ]
 
 
+def make_path(path):
+    if os.path.isabs(path):
+        return path
+
+    return os.path.join('.', os.path.relpath(os.path.join(directory, path)))
+
+
 def load_libsodium():
     libsodium_path = ctypes.util.find_library('sodium')
 
     if libsodium_path != None:
         libsodium = ctypes.cdll.LoadLibrary(libsodium_path)
     else:
-        directory = os.path.dirname(__file__)
-
         for extension in ['so', 'dll', 'dylib']:
             try:
-                libsodium = ctypes.cdll.LoadLibrary(os.path.join(directory, f'libsodium.{extension}'))
+                libsodium = ctypes.cdll.LoadLibrary(make_path(f'libsodium.{extension}'))
             except:
                 continue
 
             break
         else:
-            print('error: cannot find libsodium library')
-            return None
+            raise Exception('cannot find libsodium library')
 
     if libsodium.sodium_init() < 0:
-        print('error: sodium_init failed')
-        return None
+        raise Exception('libsodium sodium_init failed')
 
     return libsodium
 
@@ -47,59 +55,59 @@ def load_libsodium():
 def main():
     libsodium = load_libsodium()
 
-    if libsodium == None:
-        return 1
-
     parser = argparse.ArgumentParser()
-    parser.add_argument('input_filename')
+    parser.add_argument('signature_name')
+    parser.add_argument('input_path')
 
     args = parser.parse_args()
-    directory = os.path.dirname(__file__)
-    public_key_filename = os.path.relpath(os.path.join(directory, 'public_key_v1.json'))
+
+    config = configparser.ConfigParser()
+    config.read(make_path('config.ini'))
+    config = config['preset:' + config['signature:' + args.signature_name]['preset']]
+
+    gpg_public_key_path = make_path(config['gpg_public_key_path'])
 
     try:
-        with open(public_key_filename, 'r', encoding='utf-8') as f:
-            public_key_json = json.loads(f.read())
-    except Exception as e:
-        print(f'error: could not read public key from {public_key_filename}: {e}')
-        return 1
-
-    expected_publisher = public_key_json['publisher']
-
-    if not isinstance(expected_publisher, str):
-        print('error: publisher is not a string')
-        return 1
-
-    expected_publisher_bytes = expected_publisher.encode('utf-8')
-
-    if len(expected_publisher_bytes) < 1 or len(expected_publisher_bytes) > 61:
-        print('error: publisher UTF-8 length is out of range')
-        return 1
-
-    public_key_hex = public_key_json['public_key']
-
-    if not isinstance(public_key_hex, str):
-        print('error: public key is not a string')
-        return 1
-
-    try:
-        public_key = bytes.fromhex(public_key_hex)
+        subprocess.check_call([
+            'gpgv',
+            '--keyring', gpg_public_key_path,
+            args.input_path + '.sha256.asc', args.input_path + '.sha256',
+        ])
     except:
-        print('error: public key is malformed')
-        return 1
+        raise Exception('could not verify GPG signature')
+
+    print('GPG signature is valid')
+
+    sodium_public_key_path = make_path(config['sodium_public_key_path'])
+
+    with open(sodium_public_key_path, 'r', encoding='utf-8') as f:
+        sodium_public_key_json = json.loads(f.read())
+
+    sodium_public_key = bytes.fromhex(sodium_public_key_json['sodium_public_key'])
 
     crypto_sign_PUBLICKEYBYTES = libsodium.crypto_sign_publickeybytes()
 
-    if len(public_key) != crypto_sign_PUBLICKEYBYTES:
-        print('error: public key has wrong size')
-        return 1
+    if len(sodium_public_key) != crypto_sign_PUBLICKEYBYTES:
+        raise Exception('sodium public key has wrong size')
 
     try:
-        with open(args.input_filename, 'rb') as f:
+        with open(args.input_path, 'rb') as f:
             input_data = bytearray(f.read())
     except Exception as e:
-        print(f'error: could not read input from {args.input_filename}: {e}')
-        return 1
+        raise Exception(f'could not read input from {args.input_path}: {e}')
+
+    try:
+        with open(args.input_path + '.sha256', 'r') as f:
+            expected_sha256sum = f.read().split(' ')[0]
+    except Exception as e:
+        raise Exception(f'could not read checksum from {args.input_path}.sha256: {e}')
+
+    actual_sha256sum = hashlib.sha256(input_data).hexdigest()
+
+    if actual_sha256sum != expected_sha256sum:
+        raise Exception(f'checksum mismatch: {repr(actual_sha256sum)} != {repr(expected_sha256sum)}')
+
+    print('checksum is matching')
 
     crypto_sign_BYTES = libsodium.crypto_sign_bytes()
     assert(crypto_sign_BYTES == 64)
@@ -110,44 +118,41 @@ def main():
     signature_info = bytearray(input_data[signature_info_offset:signature_info_offset + 0x1000])
 
     if signature_info[0:7] == bytes([0xff] * 7):
-        print('error: input file is not signed')
-        return 1
+        raise Exception('input file is not sodium signed')
 
     signature = bytes(signature_info[72:72 + crypto_sign_BYTES])
     signature_info[72:72 + crypto_sign_BYTES] = bytes([0x55] * crypto_sign_BYTES)
 
     if signature_info[4092:4096] != crc32(signature_info[0:4092]).to_bytes(4, byteorder='little'):
-        print('error: signature info is malformed')
-        return 1
+        raise Exception('signature info is malformed')
 
     if signature_info[0:7] != bytes.fromhex('E6210F21EC1217'):
-        print('error: signature info is malformed')
-        return 1
+        raise Exception('signature info is malformed')
 
     actual_publisher = signature_info[8:72].decode('utf-8').rstrip('\0')
 
-    if actual_publisher != expected_publisher:
-        print(f'warning: publisher mismatch: {repr(actual_publisher)} != {repr(expected_publisher)}')
+    if actual_publisher != config['publisher']:
+        raise Exception(f'publisher mismatch: {repr(actual_publisher)} != {repr(config["publisher"])}')
 
     input_data[signature_info_offset + 72:signature_info_offset + 72 + crypto_sign_BYTES] = bytes([0x55] * crypto_sign_BYTES)
 
     state = CryptoSignState()
 
     if libsodium.crypto_sign_init(ctypes.byref(state)) < 0:
-        print('error: crypto_sign_init failed')
-        return 1
+        raise Exception('libsodium crypto_sign_init failed')
 
     if libsodium.crypto_sign_update(ctypes.byref(state), bytes(input_data), len(input_data)) < 0:
-        print('error: crypto_sign_update failed')
-        return 1
+        raise Exception('libsodium crypto_sign_update failed')
 
-    if libsodium.crypto_sign_final_verify(ctypes.byref(state), signature, public_key) < 0:
-        print(f'error: signature is NOT valid, published by {repr(actual_publisher)}')
-        return 1
+    if libsodium.crypto_sign_final_verify(ctypes.byref(state), signature, sodium_public_key) < 0:
+        raise Exception(f'sodium signature by {repr(actual_publisher)} is NOT valid')
 
-    print(f'success: signature is valid, published by {repr(actual_publisher)}')
-    return 0
+    print(f'sodium signature by {repr(actual_publisher)} is valid')
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    try:
+        main()
+    except Exception as e:
+        print(f'error: {e}')
+        sys.exit(1)

@@ -65,7 +65,7 @@ int allocate_current(
     if (local_log)
         local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), "Redistributing current%c", '\0');
 
-    bool any_charger_blocking_firmware_update = false;
+    bool vehicle_connected = false;
 
     assert(cfg->charger_count > 0 && cfg->charger_count <= MAX_CONTROLLED_CHARGERS);
     uint32_t current_array[MAX_CONTROLLED_CHARGERS] = {0};
@@ -140,7 +140,7 @@ int allocate_current(
 
             // Block firmware update if charger has a vehicle connected.
             if (charger_alloc.state != 0)
-                any_charger_blocking_firmware_update = true;
+                vehicle_connected = true;
         }
 
         if (unreachable_evse_found) {
@@ -150,7 +150,7 @@ int allocate_current(
             result = 2;
 
             // Any unreachable EVSE will block a firmware update.
-            any_charger_blocking_firmware_update = true;
+            vehicle_connected = true;
         } else {
             if (ca_state->last_print_local_log_was_error) {
                 ca_state->last_print_local_log_was_error = false;
@@ -424,9 +424,9 @@ int allocate_current(
     }
 
 #if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
-    firmware_update.firmware_update_allowed = !any_charger_blocking_firmware_update;
+    firmware_update.vehicle_connected = vehicle_connected;
 #else
-    (void)any_charger_blocking_firmware_update;
+    (void)vehicle_connected;
 #endif
 
     return result;
@@ -494,7 +494,7 @@ bool update_from_client_packet(
 #if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
     // Immediately block firmware updates if this charger reports a connected vehicle.
     if (v1->charger_state != 0)
-        firmware_update.firmware_update_allowed = false;
+        firmware_update.vehicle_connected = true;
 #endif
 
     // A charger wants to charge if:

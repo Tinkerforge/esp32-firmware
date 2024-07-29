@@ -683,7 +683,7 @@ void EnergyManager::update_grid_balance_led(EmRgbLed::GridBalance balance)
     rgb_led.update_grid_balance(balance);
 }
 
-bool EnergyManager::disallow_fw_update_with_vehicle_connected()
+bool EnergyManager::block_firmware_update_with_vehicle_connected()
 {
     return contactor_installed;
 }

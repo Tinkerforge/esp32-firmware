@@ -92,15 +92,25 @@ private:
     httpd_req_t *req;
 };
 
-using wshCallback = std::function<WebServerRequestReturnProtect(WebServerRequest)>;
+using wshCallback = std::function<WebServerRequestReturnProtect(WebServerRequest request)>;
 using wshUploadCallback = std::function<bool(WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining)>;
+using wshUploadErrorCallback = std::function<WebServerRequestReturnProtect(WebServerRequest request, int error_code)>;
 
 struct WebServerHandler {
-    WebServerHandler(bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback) : /*uri(uri), method(method),*/ callbackInMainThread(callbackInMainThread), callback(std::forward<wshCallback>(callback)), uploadCallback(std::forward<wshUploadCallback>(uploadCallback)) {}
+    WebServerHandler(bool callbackInMainThread,
+                     wshCallback &&callback,
+                     wshUploadCallback &&uploadCallback,
+                     wshUploadErrorCallback &&uploadErrorCallback) : //uri(uri),
+                                                                     //method(method),
+                                                                     callbackInMainThread(callbackInMainThread),
+                                                                     callback(std::forward<wshCallback>(callback)),
+                                                                     uploadCallback(std::forward<wshUploadCallback>(uploadCallback)),
+                                                                     uploadErrorCallback(std::forward<wshUploadErrorCallback>(uploadErrorCallback)) {}
 
     bool callbackInMainThread;
     wshCallback callback;
     wshUploadCallback uploadCallback;
+    wshUploadErrorCallback uploadErrorCallback;
 
 #ifdef DEBUG_FS_ENABLE
     const char *uri;
@@ -119,8 +129,10 @@ public:
 
     void runInHTTPThread(void (*fn)(void *arg), void *arg);
 
-    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback = wshUploadCallback());
-    WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback = wshUploadCallback());
+    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback &&callback);
+    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
+    WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback);
+    WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
     void onNotAuthorized_HTTPThread(wshCallback &&callback);
 
     void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> auth_fn)
@@ -136,5 +148,10 @@ public:
     std::function<bool(WebServerRequest)> auth_fn;
 
 private:
-    WebServerHandler *addHandler(const char *uri, httpd_method_t method, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback);
+    WebServerHandler *addHandler(const char *uri,
+                                 httpd_method_t method,
+                                 bool callbackInMainThread,
+                                 wshCallback &&callback,
+                                 wshUploadCallback &&uploadCallback,
+                                 wshUploadErrorCallback &&uploadErrorCallback);
 };
