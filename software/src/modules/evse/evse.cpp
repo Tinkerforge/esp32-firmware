@@ -22,9 +22,12 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "bindings/errors.h"
+#include "bindings/hal_common.h"
 #include "tools.h"
 #include "string_builder.h"
 #include "evse_bricklet_firmware_bin.embedded.h"
+
+#include "module_available.h"
 
 EVSE::EVSE() : DeviceModule(evse_bricklet_firmware_bin_data,
                             evse_bricklet_firmware_bin_length,
@@ -32,6 +35,34 @@ EVSE::EVSE() : DeviceModule(evse_bricklet_firmware_bin_data,
                             "EVSE",
                             "EVSE",
                             [](){evse_common.setup_evse();}) {}
+
+void EVSE::pre_init()
+{
+#if MODULE_ESP32_BRICK_AVAILABLE()
+    auto esp_brick = esp32_brick;
+#elif MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
+    auto esp_brick = esp32_ethernet_brick;
+#else
+    #warning "Using EVSE module without ESP32 Brick or ESP32 Ethernet Brick module. Pre-init will not work!"
+    return;
+#endif
+
+    if (!esp_brick.initHAL())
+        return;
+
+    defer {
+        esp_brick.destroyHAL();
+    };
+
+    TF_EVSE evse;
+    int result = tf_evse_create(&evse, nullptr, &hal);
+    if (result != TF_E_OK)
+        return;
+
+    defer {
+        tf_evse_destroy(&evse);
+    };
+}
 
 void EVSE::pre_setup()
 {

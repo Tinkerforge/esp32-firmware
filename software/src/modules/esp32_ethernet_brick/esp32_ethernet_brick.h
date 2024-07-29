@@ -29,6 +29,7 @@ public:
     ESP32EthernetBrick(){}
 
     bool initHAL();
+    bool destroyHAL();
 
     void pre_init() override;
     void setup() override;

@@ -26,7 +26,6 @@
 #include "module_dependencies.h"
 #include "bindings/hal_common.h"
 #include "bindings/bricklet_evse_v2.h"
-#include "modules/esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"
 #include "tools.h"
 
 #define BUTTON_MIN_PRESS_THRES 10000
@@ -41,13 +40,30 @@ extern int8_t green_led_pin;
 
 void evse_v2_button_recovery_handler()
 {
-    if (!esp32_ethernet_brick.initHAL())
+#if MODULE_ESP32_BRICK_AVAILABLE()
+    auto esp_brick = esp32_brick;
+#elif MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
+    auto esp_brick = esp32_ethernet_brick;
+#else
+    #warning "Using EVSE module without ESP32 Brick or ESP32 Ethernet Brick module. Pre-init will not work!"
+    return;
+#endif
+
+    if (!esp_brick.initHAL())
         return;
+
+    defer {
+        esp_brick.destroyHAL();
+    };
 
     TF_EVSEV2 evse;
     int result = tf_evse_v2_create(&evse, nullptr, &hal);
     if (result != TF_E_OK)
         return;
+
+    defer {
+        tf_evse_v2_destroy(&evse);
+    };
 
     uint32_t start = millis();
 
@@ -127,9 +143,6 @@ void evse_v2_button_recovery_handler()
         memcpy(buf, &data, sizeof(data));
         tf_evse_v2_set_data_storage(&evse, DATA_STORE_PAGE_RECOVERY, buf);
     }
-
-    tf_evse_v2_destroy(&evse);
-    tf_hal_destroy(&hal);
 
     switch (stage) {
         // Stage 0 - User can't reach the web interface anymore. Remove network configuration and disable http_auth.

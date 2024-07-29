@@ -27,6 +27,8 @@
 #include "build.h"
 #include "hal_arduino_esp32_brick/hal_arduino_esp32_brick.h"
 
+#include "bindings/errors.h"
+
 #if TF_LOCAL_ENABLE != 0
 
 #include "bindings/local.h"
@@ -54,13 +56,25 @@ static TF_Local local;
 
 #endif
 
+bool ESP32Brick::initHAL()
+{
+    int result = tf_hal_create(&hal);
+    if (result != TF_E_OK)
+        return false;
+    tf_hal_set_timeout(&hal, 100000);
+    return true;
+}
+
+bool ESP32Brick::destroyHAL() {
+    return tf_hal_destroy(&hal) == TF_E_OK;
+}
+
 void ESP32Brick::setup()
 {
     read_efuses(&local_uid_num, local_uid_str, passphrase);
     logger.printfln("ESP32 Brick UID: %s", local_uid_str);
 
-    check(tf_hal_create(&hal), "hal create");
-    tf_hal_set_timeout(&hal, 100000);
+    initHAL();
 
 #if TF_LOCAL_ENABLE != 0
     uint8_t hw_version[3] = {1, 0, 0};

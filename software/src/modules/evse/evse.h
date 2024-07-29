@@ -35,6 +35,7 @@ public:
     EVSE();
 
     // IModule implementation (inherited through DeviceModule and IEvseBackend)
+    void pre_init() override;
     void pre_setup() override;
     void setup() override {}; // Override empty: Base method sets initialized to true, but we want EvseCommon to decide this.
     void register_urls() override {this->DeviceModule::register_urls();};

@@ -141,6 +141,10 @@ bool ESP32EthernetBrick::initHAL()
     return true;
 }
 
+bool ESP32EthernetBrick::destroyHAL() {
+    return tf_hal_destroy(&hal) == TF_E_OK;
+}
+
 void ESP32EthernetBrick::pre_init()
 {
     button_pin = BUTTON;
