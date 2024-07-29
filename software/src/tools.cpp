@@ -899,12 +899,12 @@ void poke_localhost()
     esp_netif_tcpip_exec(poke_localhost_fn, nullptr);
 }
 
-void trigger_reboot(const char *initiator)
+void trigger_reboot(const char *initiator, uint32_t delay_ms)
 {
-    task_scheduler.scheduleOnce([initiator]() {
-        logger.printfln("Reboot requested by %s.", initiator);
+    logger.printfln("Reboot requested by %s.", initiator);
+    task_scheduler.scheduleOnce([]() {
         ESP.restart();
-    }, 0);
+    }, delay_ms);
 }
 
 void list_dir(fs::FS &fs, const char *dirname, uint8_t max_depth, uint8_t current_depth)
