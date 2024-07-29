@@ -638,7 +638,7 @@ void FirmwareUpdate::check_for_update()
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
-        logger.printfln("Can't use custom certitifate: certs module is not built into this firmware!");
+        logger.printfln("Can't use custom certificate: certs module is not built into this firmware!");
         return;
 #endif
     }
