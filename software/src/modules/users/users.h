@@ -66,6 +66,7 @@ public:
 
     ConfigRoot config;
     ConfigRoot add;
+    ConfigRoot modify;
     ConfigRoot remove;
     ConfigRoot http_auth;
     ConfigRoot http_auth_update;
