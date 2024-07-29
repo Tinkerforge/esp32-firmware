@@ -28,7 +28,7 @@ export function Progress(props: ProgressProps) {
     return (
         <div class={"form-progress form-control " + (props.class !== undefined ? props.class : "")} style="font-size: 1rem; padding: 0;">
             <div class="progress-bar progress-bar-no-transition"
-                role="progressbar" style={"padding: 0; width: " + (props.progress * 100) + "%"} aria-valuenow={props.progress * 100} aria-valuemin={0}
+                role="progressbar" style={"padding: 0; min-width: 2rem; width: " + (props.progress * 100) + "%"} aria-valuenow={props.progress * 100} aria-valuemin={0}
                 aria-valuemax={100}>{Math.round(props.progress * 100) + "%"}</div>
         </div>
     )
