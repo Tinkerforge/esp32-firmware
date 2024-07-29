@@ -205,10 +205,6 @@ void Mqtt::addState(size_t stateIdx, const StateRegistration &reg)
     this->states.push_back({reg.path, 0});
 }
 
-void Mqtt::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg)
-{
-}
-
 void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)
 {
 }
@@ -293,10 +289,6 @@ void Mqtt::onMqttConnect()
     for (size_t i = 0; i < api.commands.size(); ++i) {
         auto &reg = api.commands[i];
         this->addCommand(i, reg);
-    }
-    for (size_t i = 0; i < api.raw_commands.size(); ++i) {
-        auto &reg = api.raw_commands[i];
-        this->addRawCommand(i, reg);
     }
     for (auto &reg : api.states) {
         reg.config->set_updated(1 << this->backend_idx);
@@ -413,35 +405,6 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
                 logger.printfln("On %s: %s", reg.path, error.c_str());
             esp_mqtt_client_enable_receive(this->client);
         });
-
-        return;
-    }
-
-    for (auto &reg : api.raw_commands) {
-        if (topic_len != reg.path_len || memcmp(topic, reg.path, topic_len) != 0)
-            continue;
-
-        if (retain && reg.is_action) {
-            logger.printfln("Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path, data_len);
-            return;
-        }
-
-        char *data_cpy = (char *)malloc(data_len);
-        if (data_cpy == nullptr) {
-            logger.printfln("Failed to run raw command %s: Failed to allocate copy_buf", reg.path);
-            return;
-        }
-        memcpy(data_cpy, data, data_len);
-
-        esp_mqtt_client_disable_receive(client, 100);
-        task_scheduler.scheduleOnce([this, reg, data_cpy, data_len](){
-            String error = reg.callback(data_cpy, data_len);
-            if (!error.isEmpty())
-                logger.printfln("On %s: %s", reg.path, error.c_str());
-
-            free(data_cpy);
-            esp_mqtt_client_enable_receive(this->client);
-        }, 0);
 
         return;
     }

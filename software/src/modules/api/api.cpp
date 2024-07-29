@@ -284,26 +284,6 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
     return true;
 }
 
-void API::addRawCommand(const char *const path, std::function<String(char *, size_t)> &&callback, bool is_action)
-{
-    size_t path_len = strlen(path);
-
-    if (path_len > std::numeric_limits<decltype(RawCommandRegistration::path_len)>::max()) {
-        logger.printfln("Raw command %s: path too long!", path);
-        return;
-    }
-
-    if (already_registered(path, path_len, "raw command"))
-        return;
-
-    raw_commands.push_back({path, std::forward<std::function<String(char *, size_t)>>(callback), (uint8_t)path_len, is_action});
-    auto rawCommandIdx = raw_commands.size() - 1;
-
-    for (auto *backend : this->backends) {
-        backend->addRawCommand(rawCommandIdx, raw_commands[rawCommandIdx]);
-    }
-}
-
 void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id) {
     if (!running_in_main_task()) {
         logger.printfln("Don't use API::callResponse in non-main thread!");
@@ -475,10 +455,6 @@ void API::register_urls()
                 logger.printfln_prefixed("api_info", len, "],\"content\":");
                 reg.config->print_api_info();
                 logger.printfln_prefixed("api_info", len, "},");
-            }
-
-            for (auto &reg : raw_commands) {
-                logger.printfln_prefixed("api_info", len, "{\"path\":\"%.*s\",\"type\":\"raw_command\",\"is_action\":%s},", reg.path_len, reg.path, reg.is_action ? "true" : "false");
             }
 
             for (auto &handler : server.handlers) {
@@ -710,12 +686,6 @@ bool API::already_registered(const char *path, size_t path_len, const char *api_
         if (path_len != reg.path_len || memcmp(path, reg.path, path_len) != 0)
             continue;
         logger.printfln("Can't register %s %s. Already registered as command!", api_type, path);
-        return true;
-    }
-    for (auto &reg : this->raw_commands) {
-        if (path_len != reg.path_len || memcmp(path, reg.path, path_len) != 0)
-            continue;
-        logger.printfln("Can't register %s %s. Already registered as raw command!", api_type, path);
         return true;
     }
     for (auto &reg : this->responses) {

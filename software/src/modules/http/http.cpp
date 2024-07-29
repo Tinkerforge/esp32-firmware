@@ -115,10 +115,6 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
         if (api.states[i].path_len == len - 1 && memcmp(api.states[i].path, in_uri + 1, len - 1) == 0)
             return true;
 
-    for (size_t i = 0; i < api.raw_commands.size(); i++)
-        if (api.raw_commands[i].path_len == len - 1 && memcmp(api.raw_commands[i].path, in_uri + 1, len - 1) == 0)
-            return true;
-
     for (size_t i = 0; i < api.responses.size(); i++)
         if (api.responses[i].path_len == len - 1 && memcmp(api.responses[i].path, in_uri + 1, len - 1) == 0)
             return true;
@@ -223,33 +219,6 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
     for (size_t i = 0; i < api.commands.size(); i++)
         if (api.commands[i].path_len == req_uri_len && memcmp(api.commands[i].path, req.uriCStr() + 1, req_uri_len) == 0)
             return run_command(req, i);
-
-    for (size_t i = 0; i < api.raw_commands.size(); i++) {
-        if (api.raw_commands[i].path_len != req_uri_len || memcmp(api.raw_commands[i].path, req.uriCStr() + 1, req_uri_len) != 0)
-            continue;
-
-        // TODO: Use streamed parsing
-        int bytes_written = req.receive(recv_buf, RECV_BUF_SIZE);
-        if (bytes_written == -1) {
-            // buffer was not large enough
-            return req.send(413);
-        } else if (bytes_written <= 0) {
-            logger.printfln("Failed to receive raw command payload: error code %d", bytes_written);
-            return req.send(400);
-        }
-
-        String message;
-        auto result = task_scheduler.await([&message, i, bytes_written]() {
-            message = api.raw_commands[i].callback(recv_buf, bytes_written);
-        });
-        if (result == TaskScheduler::AwaitResult::Timeout)
-            return req.send(500, "text/plain", "Failed to call raw command. Task timed out.");
-
-        if (message.isEmpty()) {
-            return req.send(200);
-        }
-        return req.send(400, "text/plain; charset=utf-8", message.c_str());
-    }
 
     for (size_t i = 0; i < api.responses.size(); i++) {
         if (api.responses[i].path_len != req_uri_len || memcmp(api.responses[i].path, req.uriCStr() + 1, req_uri_len) != 0)
@@ -452,10 +421,6 @@ void Http::addCommand(size_t commandIdx, const CommandRegistration &reg)
 }
 
 void Http::addState(size_t stateIdx, const StateRegistration &reg)
-{
-}
-
-void Http::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg)
 {
 }
 

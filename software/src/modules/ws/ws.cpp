@@ -140,10 +140,6 @@ void WS::addState(size_t stateIdx, const StateRegistration &reg)
 {
 }
 
-void WS::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg)
-{
-}
-
 void WS::addResponse(size_t responseIdx, const ResponseRegistration &reg)
 {
 }

@@ -116,10 +116,6 @@ void Event::addState(size_t stateIdx, const StateRegistration &reg)
 {
 }
 
-void Event::addRawCommand(size_t rawCommandIdx, const RawCommandRegistration &reg)
-{
-}
-
 void Event::addResponse(size_t responseIdx, const ResponseRegistration &reg)
 {
 }
