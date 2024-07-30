@@ -767,13 +767,10 @@ void ChargeTracker::register_urls()
             return;
         }
 
-        logger.printfln("Removing all tracked charges and rebooting.");
+        remove_directory(CHARGE_RECORD_FOLDER);
+        users.remove_username_file();
 
-        task_scheduler.scheduleOnce([](){
-            remove_directory(CHARGE_RECORD_FOLDER);
-            users.remove_username_file();
-            ESP.restart();
-        }, 3000);
+        trigger_reboot("Removing all tracked charges", 1000);
     }, true);
 
     server.on_HTTPThread("/charge_tracker/pdf", HTTP_PUT, [this](WebServerRequest request) {

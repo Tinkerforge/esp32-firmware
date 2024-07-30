@@ -855,7 +855,7 @@ void platform_reset(bool hard)
         It should then restart the application software (if possible,
         otherwise restart the processor/controller).
     */
-    ESP.restart();
+    trigger_reboot("OCPP", 1000);
 }
 
 void platform_register_stop_callback(void *ctx, void (*cb)(int32_t, StopReason, void *), void *user_data)
