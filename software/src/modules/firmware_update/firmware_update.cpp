@@ -1037,7 +1037,7 @@ void FirmwareUpdate::install_firmware(const char *url)
                 }
                 else {
                     logger.printfln("Firmware download ended prematurely");
-                    state.get("install_state")->updateEnum(InstallState::DownloadError);
+                    state.get("install_state")->updateEnum(InstallState::DownloadShortRead);
                     Update.abort();
                 }
             }

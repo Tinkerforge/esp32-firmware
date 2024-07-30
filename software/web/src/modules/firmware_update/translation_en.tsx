@@ -69,6 +69,7 @@ let x = {
             "install_state_21": null,
             "install_state_23": "Aborted",
             "install_state_24": "Rebooting",
+            "install_state_25": "Download short read occurred",
             "build_time": /*SFN*/(build_time: string) => ` (created ${build_time})`/*NF*/,
             "install_failed": "Install failed"
         }
