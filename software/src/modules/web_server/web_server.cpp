@@ -127,45 +127,70 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         return ESP_OK;
     }
 
-    size_t remaining = req->content_len;
-    size_t offset = 0;
-
-    auto scratch_buf = heap_alloc_array<uint8_t>(SCRATCH_BUFSIZE);
-
-    while (remaining > 0) {
-        int received = httpd_req_recv(req, (char *)scratch_buf.get(), MIN(remaining, SCRATCH_BUFSIZE));
-        // Retry if timeout occurred
-        if (received == HTTPD_SOCK_ERR_TIMEOUT) {
-            continue;
-        }
-
-        if (received <= 0) {
-            int error_code = errno;
-
+    if (req->content_len == 0) {
+        if (request.header("Content-Length") == "") {
+            // Probably a chunked encoding. Not supported.
             if (ctx->handler->callbackInMainThread) {
-                task_scheduler.await([ctx, request, error_code](){ctx->handler->uploadErrorCallback(request, error_code);});
+                task_scheduler.await([ctx, request](){ctx->handler->uploadErrorCallback(request, EMSGSIZE);});
             }
             else {
-                ctx->handler->uploadErrorCallback(request, error_code);
+                ctx->handler->uploadErrorCallback(request, EMSGSIZE);
+            }
+            return ESP_FAIL;
+        } else {
+            // This is really a request were there are 0 bytes to receive. Call the upload handler once.
+            bool result = false;
+            if (ctx->handler->callbackInMainThread) {
+                task_scheduler.await([ctx, request, &result]{result = ctx->handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);});
+            } else {
+                result = ctx->handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);
             }
 
-            return ESP_FAIL;
+            if (!result) {
+                return ESP_FAIL;
+            }
         }
+    } else {
+        // Receive payload
+        size_t remaining = req->content_len;
+        size_t offset = 0;
+        auto scratch_buf = heap_alloc_array<uint8_t>(SCRATCH_BUFSIZE);
 
-        remaining -= received;
-        bool result = false;
-        if (ctx->handler->callbackInMainThread) {
-            auto scratch_ptr = scratch_buf.get();
-            task_scheduler.await([ctx, request, offset, scratch_ptr, received, remaining, &result]{result = ctx->handler->uploadCallback(request, "not implemented", offset, scratch_ptr, received, remaining);});
-        } else {
-            result = ctx->handler->uploadCallback(request, "not implemented", offset, scratch_buf.get(), received, remaining);
+        while (remaining > 0) {
+            int received = httpd_req_recv(req, (char *)scratch_buf.get(), MIN(remaining, SCRATCH_BUFSIZE));
+            // Retry if timeout occurred
+            if (received == HTTPD_SOCK_ERR_TIMEOUT) {
+                continue;
+            }
+
+            if (received <= 0) {
+                int error_code = errno;
+
+                if (ctx->handler->callbackInMainThread) {
+                    task_scheduler.await([ctx, request, error_code](){ctx->handler->uploadErrorCallback(request, error_code);});
+                }
+                else {
+                    ctx->handler->uploadErrorCallback(request, error_code);
+                }
+
+                return ESP_FAIL;
+            }
+
+            remaining -= received;
+            bool result = false;
+            if (ctx->handler->callbackInMainThread) {
+                auto scratch_ptr = scratch_buf.get();
+                task_scheduler.await([ctx, request, offset, scratch_ptr, received, remaining, &result]{result = ctx->handler->uploadCallback(request, "not implemented", offset, scratch_ptr, received, remaining);});
+            } else {
+                result = ctx->handler->uploadCallback(request, "not implemented", offset, scratch_buf.get(), received, remaining);
+            }
+
+            if (!result) {
+                return ESP_FAIL;
+            }
+
+            offset += received;
         }
-
-        if (!result) {
-            return ESP_FAIL;
-        }
-
-        offset += received;
     }
 
     if (ctx->handler->callbackInMainThread)
