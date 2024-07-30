@@ -47,7 +47,8 @@
             "debug_running": "Recording in progress. Do not close tab!",
             "debug_stop_failed": "Stopping recording debug protocol failed",
             "debug_stopped": "Recording debug protocol stopped",
-            "debug_done": "Done."
+            "debug_done": "Done.",
+            "debug_file": "Energy-Manager-protocol"
         }
     }
 }

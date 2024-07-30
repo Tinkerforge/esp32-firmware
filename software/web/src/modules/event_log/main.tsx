@@ -195,7 +195,7 @@ export class EventLog extends Component<{}, EventLogState> {
                     debug_log += "\n\nNo core dump recorded.";
             }
 
-            util.downloadToFile(debug_log, "debug-report", "txt", "text/plain", timestamp);
+            util.downloadToFile(debug_log, __("event_log.content.debug_report_file"), "txt", "text/plain", timestamp);
         } catch (e) {
             util.add_alert("debug_report_load_failed", "danger", __("event_log.script.load_debug_report_error"), e.message)
         } finally {

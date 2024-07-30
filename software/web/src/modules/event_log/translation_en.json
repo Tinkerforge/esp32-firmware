@@ -9,6 +9,7 @@
         "content": {
             "event_log": "Event Log",
             "debug_report": "Debug report + event log",
+            "debug_report_file": "Debug-report",
             "debug_report_no_passwords": "(without passwords)",
             "event_log_placeholder": "Loading event log..."
         },

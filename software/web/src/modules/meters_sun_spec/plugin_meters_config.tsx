@@ -353,7 +353,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                     <Button variant="primary"
                             disabled={this.state.scan_running || this.state.scan_log.length == 0}
                             className="form-control"
-                            onClick={() => util.downloadToFile(this.state.scan_log, "sun-spec-scan-log", "txt", "text/plain")}>
+                            onClick={() => util.downloadToFile(this.state.scan_log, __("meters_sun_spec.content.scan_log_file"), "txt", "text/plain")}>
                         <span class="mr-2">{__("meters_sun_spec.content.scan_log")}</span>
                         <Download/>
                     </Button>

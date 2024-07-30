@@ -9,6 +9,7 @@
         "content": {
             "event_log": "Ereignis-Log",
             "debug_report": "Debug-Report + Ereignis-Log",
+            "debug_report_file": "Debug-Report",
             "debug_report_no_passwords": "(ohne Passwörter)",
             "event_log_placeholder": "Lade Ereignis-Log..."
         },

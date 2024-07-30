@@ -295,6 +295,7 @@ let x = {
             "debug_stop_failed": "Stopping charge log capture failed",
             "debug_stopped": "Stopped charge log capture",
             "debug_done": "Done",
+            "debug_file": "EVSE-charge-protocol",
 
             "acc_blocked": "Blocked",
             "by": "by",

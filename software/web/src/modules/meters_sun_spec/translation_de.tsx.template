@@ -27,6 +27,7 @@ let x = {
             "scan": "Suche starten",
             "scan_results": "Gefundene Geräte",
             "scan_log": "Log",
+            "scan_log_file": "SunSpec-Gerätesuche",
 
             "model_no_supported": "Nicht unterstützt",
             "model_other_preferred": /*SFN*/(slot: number|"?") => "Modell " + slot + " bevorzugt"/*NF*/,

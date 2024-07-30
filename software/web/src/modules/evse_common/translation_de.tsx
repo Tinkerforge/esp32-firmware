@@ -295,6 +295,7 @@ let x = {
             "debug_stop_failed": "Stoppen der Aufzeichnung des Ladecontroller-Logs fehlgeschlagen.",
             "debug_stopped": "Aufzeichnung des Ladecontroller-Logs gestoppt.",
             "debug_done": "Abgeschlossen.",
+            "debug_file": "EVSE-Ladeprotokoll",
 
             "acc_blocked": "Blockiert",
             "by": "durch",

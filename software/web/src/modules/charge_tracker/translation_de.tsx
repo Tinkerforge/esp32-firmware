@@ -11,6 +11,7 @@ let x = {
         },
         "content": {
             "charge_tracker": "Ladetracker",
+            "charge_log_file": "Ladelog",
             "download": "Ladelog herunterladen",
             "download_desc": "",
             "download_btn": "Ladelog als CSV herunterladen",

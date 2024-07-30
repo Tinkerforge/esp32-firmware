@@ -20,7 +20,7 @@
 
 import { createRef, RefObject } from "preact";
 import * as API from "./api";
-import { __ } from "./translation";
+import { __, removeUnicodeHacks } from "./translation";
 import { AsyncModal } from "./components/async_modal";
 import { api_cache } from "./api_defs";
 import { batch, signal, Signal } from "@preact/signals-core";
@@ -394,7 +394,7 @@ export function unparseIP(ip: number) {
 }
 
 
-export function downloadToFile(content: BlobPart, filename_prefix: string, extension: string, contentType: string, timestamp?: Date) {
+export function downloadToFile(content: BlobPart, fileType: string, extension: string, contentType: string, timestamp?: Date) {
     if (timestamp === undefined) {
         timestamp = new Date();
     }
@@ -404,8 +404,11 @@ export function downloadToFile(content: BlobPart, filename_prefix: string, exten
     let timestamp_str = iso8601ButLocal(timestamp).replace(/:/gi, "-").replace(/\./gi, "-");
     let name = API.get_unchecked('info/name')?.name ?? "unknown_uid";
 
+    let filename = name + "-" + fileType + "-" + timestamp_str + "." + extension;
+    filename = removeUnicodeHacks(filename);
+
     a.href= URL.createObjectURL(file);
-    a.download = filename_prefix + "-" + name + "-" + timestamp_str + "." + extension;
+    a.download = filename;
     a.click();
 
     URL.revokeObjectURL(a.href);

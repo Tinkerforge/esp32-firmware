@@ -47,7 +47,8 @@
             "debug_running": "Aufzeichnung läuft. Tab nicht schließen!",
             "debug_stop_failed": "Stoppen der Aufzeichnung des Energy Manager-Logs fehlgeschlagen.",
             "debug_stopped": "Aufzeichnung des Energy Manager-Logs gestoppt.",
-            "debug_done": "Abgeschlossen."
+            "debug_done": "Abgeschlossen.",
+            "debug_file": "Energy-Manager-Protokoll"
         }
     }
 }

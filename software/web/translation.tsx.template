@@ -71,6 +71,12 @@ function translate<S extends string>(key: string): GetDictValue<S, Translation> 
     return subtranslation;
 }
 
+export function removeUnicodeHacks(s: string) {
+    return s.replace(/\u00AD/g, "") // soft-hyphen
+            .replace(/\u202F/g, " ") // narrow no-break space
+            .replace(/\u00A0/g, " "); // no-break space
+}
+
 export function __<S extends string>(key: DeepKeys<Translation, S>): GetDictValue<S, Translation> {
     // type script has verified that the key is known, so no need to futher check it
     return translate(key);
