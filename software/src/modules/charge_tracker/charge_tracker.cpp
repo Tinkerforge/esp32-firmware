@@ -1020,7 +1020,7 @@ search_done:
                                        "Cost (€)";
 
         init_pdf_generator(&request,
-                           english ? "WARP Charge Log" : "WARP Ladeprotokoll",
+                           english ? "WARP Charge Log" : "WARP Ladelog",
                            stats_buf, (electricity_price == 0) ? 5 : 6,
                            letterhead.get(), letterhead_lines,
                            english ? table_header_en : table_header_de,
