@@ -111,14 +111,14 @@ void MetersModbusTCP::pre_setup()
 
 void MetersModbusTCP::setup()
 {
-    mb.client();
+    modbus.client();
 
     initialized = true;
 }
 
 void MetersModbusTCP::loop()
 {
-    mb.task();
+    modbus.task();
 }
 
 [[gnu::const]]
@@ -129,7 +129,7 @@ MeterClassID MetersModbusTCP::get_class() const
 
 IMeter *MetersModbusTCP::new_meter(uint32_t slot, Config *state, Config *errors)
 {
-    return new MeterModbusTCP(slot, state, errors, &mb);
+    return new MeterModbusTCP(slot, state, errors, &modbus);
 }
 
 const Config *MetersModbusTCP::get_config_prototype()
@@ -149,5 +149,5 @@ const Config *MetersModbusTCP::get_errors_prototype()
 
 ModbusTCP *MetersModbusTCP::get_modbus_tcp_handle()
 {
-    return &mb;
+    return &modbus;
 }

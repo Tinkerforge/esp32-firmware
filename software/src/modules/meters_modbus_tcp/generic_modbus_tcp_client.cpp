@@ -45,7 +45,7 @@ void GenericModbusTCPClient::start_connection()
 
 void GenericModbusTCPClient::stop_connection()
 {
-    if (mb->isConnected(host_ip) && mb->disconnect(host_ip)) {
+    if (modbus->isConnected(host_ip) && modbus->disconnect(host_ip)) {
         logger.printfln("Disconnecting from '%s'", host_name.c_str());
         disconnect_callback();
     }
@@ -77,7 +77,7 @@ void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)
     host_ip = ip->u_addr.ip4.addr;
 
     errno = ENOTRECOVERABLE; // Set to something known because connect() might leave errno unchanged on some errors.
-    if (!mb->connect(host_ip, port)) {
+    if (!modbus->connect(host_ip, port)) {
         if (errno != last_connect_errno) {
             if (errno == EINPROGRESS) { // WiFiClient::connect() doesn't set errno when its select() call times out and incorrectly leaves it at EINPROGRESS despite being blocking.
                 logger.printfln("Connection attempt to '%s' timed out", host_name.c_str());
@@ -105,7 +105,7 @@ void GenericModbusTCPClient::check_ip(const ip_addr_t *ip, int err)
 
 void GenericModbusTCPClient::start_generic_read()
 {
-    if (!mb->isConnected(host_ip)) {
+    if (!modbus->isConnected(host_ip)) {
         logger.printfln("Connection lost, reconnecting to '%s'", host_name.c_str());
         start_connection();
         return;
@@ -182,8 +182,8 @@ void GenericModbusTCPClient::read_next()
 
     uint16_t ret;
     switch (generic_read_request.register_type) {
-    case ModbusRegisterType::HoldingRegister: ret = mb->readHreg(host_ip, read_start_address, target_buffer, read_count, read_done_cb, device_address); break;
-    case ModbusRegisterType::InputRegister:   ret = mb->readIreg(host_ip, read_start_address, target_buffer, read_count, read_done_cb, device_address); break;
+    case ModbusRegisterType::HoldingRegister: ret = modbus->readHreg(host_ip, read_start_address, target_buffer, read_count, read_done_cb, device_address); break;
+    case ModbusRegisterType::InputRegister:   ret = modbus->readIreg(host_ip, read_start_address, target_buffer, read_count, read_done_cb, device_address); break;
     default:
         esp_system_abort("generic_modbus_tcp_client: Unsupported register type to read.");
     }

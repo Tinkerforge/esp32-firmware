@@ -56,14 +56,14 @@ protected:
         std::function<void(void)> done_callback;
     };
 
-    GenericModbusTCPClient(ModbusTCP *mb_) : mb(mb_) {}
+    GenericModbusTCPClient(ModbusTCP *modbus_) : modbus(modbus_) {}
     virtual ~GenericModbusTCPClient() = default;
 
     void start_connection();
     void stop_connection();
     void start_generic_read();
 
-    ModbusTCP *const mb;
+    ModbusTCP *const modbus;
 
     String host_name;
     IPAddress host_ip = IPAddress(0u);

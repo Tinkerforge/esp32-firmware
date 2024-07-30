@@ -57,7 +57,7 @@ private:
 
     std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> table_prototypes;
 
-    ModbusTCP mb;
+    ModbusTCP modbus;
 };
 
 #if defined(__GNUC__)

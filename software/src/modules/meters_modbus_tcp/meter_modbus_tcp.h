@@ -68,7 +68,7 @@ public:
         const uint32_t *index;
     };
 
-    MeterModbusTCP(uint32_t slot_, Config *state_, Config *errors_, ModbusTCP *mb_) : GenericModbusTCPClient(mb_), slot(slot_), state(state_), errors(errors_) {}
+    MeterModbusTCP(uint32_t slot_, Config *state_, Config *errors_, ModbusTCP *modbus_) : GenericModbusTCPClient(modbus_), slot(slot_), state(state_), errors(errors_) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(const Config &ephemeral_config) override;
