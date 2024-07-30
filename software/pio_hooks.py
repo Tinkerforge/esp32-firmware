@@ -239,7 +239,7 @@ def generate_module_dependencies_header(info_path, header_path_prefix, backend_m
             dependencies_h_content  = '// WARNING: This file is generated.\n\n'
             dependencies_h_content += '#pragma once\n\n'
             dependencies_h_content += '#if __INCLUDE_LEVEL__ > 1\n'
-            dependencies_h_content += f'#error "Don\'t include {os.path.split(header_path_prefix)[-1]}dependencies.h in headers, only in sources!"\n'
+            dependencies_h_content += f'#error "Don\'t include {os.path.split(header_path_prefix)[-1]}dependencies.h in headers, only in sources! Use {os.path.split(header_path_prefix)[-1]}available.h in headers if you want to check whether a module is compiled in"\n'
             dependencies_h_content += '#endif\n\n'
             dependencies_h_content += f'#include "{os.path.split(header_path_prefix)[-1]}available.h"\n'
 
