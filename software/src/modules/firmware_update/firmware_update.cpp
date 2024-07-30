@@ -505,7 +505,7 @@ void FirmwareUpdate::register_urls()
             return request.send(400, "application/json", json_buf);
         }
 
-        return request.send(200, "Check OK");
+        return request.send(200, "text/plain", "Check OK");
     },
     [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
         if (is_vehicle_blocking_update()) {
@@ -564,7 +564,7 @@ void FirmwareUpdate::register_urls()
     server.on_HTTPThread("/flash_firmware", HTTP_POST, [this](WebServerRequest request) {
         trigger_reboot("Firmware update", 1000);
         task_scheduler.await([this](){flash_firmware_in_progress = false;});
-        return request.send(200, "Update OK");
+        return request.send(200, "text/plain", "Update OK");
     },
     [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
         if (offset == 0) {
