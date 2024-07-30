@@ -131,10 +131,10 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         if (request.header("Content-Length") == "") {
             // Probably a chunked encoding. Not supported.
             if (ctx->handler->callbackInMainThread) {
-                task_scheduler.await([ctx, request](){ctx->handler->uploadErrorCallback(request, EMSGSIZE);});
+                task_scheduler.await([ctx, request](){ctx->handler->uploadErrorCallback(request, EBADMSG);});
             }
             else {
-                ctx->handler->uploadErrorCallback(request, EMSGSIZE);
+                ctx->handler->uploadErrorCallback(request, EBADMSG);
             }
             return ESP_FAIL;
         } else {
