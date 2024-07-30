@@ -623,7 +623,7 @@ bool FirmwareUpdate::is_vehicle_blocking_update() const
     bool block_firmware_update_with_vehicle_connected = true;
 #endif
 
-    return block_firmware_update_with_vehicle_connected && !vehicle_connected;
+    return block_firmware_update_with_vehicle_connected && vehicle_connected;
 }
 
 static esp_err_t index_event_handler(esp_http_client_event_t *event)
