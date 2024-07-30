@@ -196,7 +196,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         key={ap.bssid}>
                         <div class="row align-items-center mb-2">
                             <div class="col">{wifi_symbol(ap.rssi)}</div>
-                            <div class="col-auto" style="font-size: 1.1rem">{display_name}</div>
+                            <div class="col-auto text-wrap" style="font-size: 1.1rem">{display_name}</div>
                         </div>
                         <div class="row align-items-center">
                             <div class="col">{ap.encryption == 0 ? <Unlock {...{class: "mr-2"} as any}/> : <Lock {...{class: "mr-2"} as any}/>}</div>
