@@ -60,7 +60,7 @@ public:
     #define TRIGGER_CHARGE_ANY 0
     #define TRIGGER_CHARGE_START 1
     #define TRIGGER_CHARGE_STOP 2
-    bool trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info, int action = TRIGGER_CHARGE_ANY);
+    bool trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info, int action, micros_t deadtime_post_stop, micros_t deadtime_post_start);
 
     void remove_username_file();
 
@@ -73,6 +73,8 @@ public:
 
     bool start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth_type, Config::ConfVariant auth_info);
     bool stop_charging(uint8_t user_id, bool force, float meter_abs = 0);
+
+    micros_t last_charge_action_triggered = 0_usec;
 };
 
 void set_led(int16_t mode);

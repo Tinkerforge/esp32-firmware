@@ -6,6 +6,7 @@ interface AuthorizedTag {
 
 export interface config {
     authorized_tags: AuthorizedTag[];
+    deadtime_post_start: number
 }
 
 interface SeenTag {

@@ -121,7 +121,19 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
         return (
             <SubPage name="nfc">
                 <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <div class="mb-3">
+                    <FormRow label={__("nfc.content.deadtime")} label_muted={__("nfc.content.deadtime_muted")}>
+                        <InputSelect items={[
+                                ["0", __("nfc.content.deadtime_min")],
+                                ["3", __("nfc.content.deadtime_3")],
+                                ["10", __("nfc.content.deadtime_10")],
+                                ["30", __("nfc.content.deadtime_30")],
+                                ["60", __("nfc.content.deadtime_60")],
+                                ["4294967295", __("nfc.content.deadtime_max")],
+                            ]}
+                            value={state.deadtime_post_start}
+                            onValue={(v) => this.setState({deadtime_post_start: parseInt(v)})}
+                        />
+                    </FormRow>
                         <Table
                             tableTill="md"
                             columnNames={[__("nfc.content.table_tag_id"), __("nfc.content.table_tag_type"), __("nfc.content.table_user_id"), __("nfc.content.table_last_seen")]}

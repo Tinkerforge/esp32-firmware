@@ -67,7 +67,8 @@ void NFC::pre_setup()
             })},
             0, MAX_AUTHORIZED_TAGS,
             Config::type_id<Config::ConfObject>())
-        }
+        },
+        {"deadtime_post_start", Config::Uint32(30)}
     }), [this](Config &cfg, ConfigSource source) -> String {
         Config *tags = (Config *)cfg.get("authorized_tags");
 
@@ -272,7 +273,7 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
         auth_info.get("tag_id")->updateString(tag->tag_id);
 
         users.trigger_charge_action(user_id, injected ? USERS_AUTH_TYPE_NFC_INJECTION : USERS_AUTH_TYPE_NFC, auth_info.value,
-                injected ? tag_injection_action : TRIGGER_CHARGE_ANY);
+                injected ? tag_injection_action : TRIGGER_CHARGE_ANY, 3_usec * 1000_usec * 1000_usec, deadtime_post_start);
 
     } else {
         bool blink_handled = false;
@@ -411,6 +412,8 @@ void NFC::setup_auth_tags()
         auth_tags[i].user_id = tag->get("user_id")->asUint();
         tag->get("tag_id")->asString().toCharArray(auth_tags[i].tag_id, sizeof(auth_tags[i].tag_id));
     }
+
+    this->deadtime_post_start = micros_t{config.get("deadtime_post_start")->asUint()} * 1000_usec * 1000_usec;
 }
 
 void NFC::setup()
