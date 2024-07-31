@@ -477,6 +477,25 @@ esp_err_t tf_websocket_client_destroy(tf_websocket_client_handle_t client)
     return ESP_OK;
 }
 
+esp_err_t tf_websocket_client_set_headers(tf_websocket_client_handle_t client, const char *headers) {
+    if (client == NULL || headers == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (client->config->headers) {
+        free(client->config->headers);
+    }
+
+    client->config->headers = strdup(headers);
+    ESP_WS_CLIENT_MEM_CHECK(TAG, client->config->headers, return ESP_ERR_NO_MEM);
+
+    ESP_WS_CLIENT_ERR_OK_CHECK(TAG, set_websocket_transport_optional_settings(client, "ws"), printf("ws fail\n"); return ESP_FAIL;)
+    ESP_WS_CLIENT_ERR_OK_CHECK(TAG, set_websocket_transport_optional_settings(client, "wss"), printf("wss fail\n"); return ESP_FAIL;)
+
+    return ESP_OK;
+}
+
+
 esp_err_t tf_websocket_client_set_uri(tf_websocket_client_handle_t client, const char *uri)
 {
     if (client == NULL || uri == NULL) {

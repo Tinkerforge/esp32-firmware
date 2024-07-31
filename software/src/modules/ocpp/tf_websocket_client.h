@@ -132,6 +132,17 @@ tf_websocket_client_handle_t tf_websocket_client_init(const tf_websocket_client_
 esp_err_t tf_websocket_client_set_uri(tf_websocket_client_handle_t client, const char *uri);
 
 /**
+ * @brief      Set headers for client
+ *             Must stop the WebSocket client before set headers if the client has been connected
+ *
+ * @param[in]  client  The client
+ * @param[in]  headers The headers
+ *
+ * @return     esp_err_t
+ */
+esp_err_t tf_websocket_client_set_headers(tf_websocket_client_handle_t client, const char *headers);
+
+/**
  * @brief      Open the WebSocket connection
  *
  * @param[in]  client  The client

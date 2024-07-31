@@ -20,6 +20,7 @@
 #include <ocpp/Platform.h>
 #include <ocpp/ChargePoint.h>
 #include <ocpp/Configuration.h>
+#include <ocpp/Types.h>
 #include <time.h>
 #define URL_PARSER_IMPLEMENTATION_STATIC
 #include <lib/url.h>
@@ -77,7 +78,10 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 tf_websocket_client_handle_t client;
-void *platform_init(const char *websocket_url, const char *basic_auth_user, const uint8_t *basic_auth_pass, size_t basic_auth_pass_length)
+static std::unique_ptr<String[]> auth_headers;
+static size_t auth_headers_count = 0;
+static size_t next_auth_header = 0;
+void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials, size_t credentials_length)
 {
     tf_websocket_client_config_t websocket_cfg = {};
     websocket_cfg.uri = websocket_url;
@@ -113,31 +117,38 @@ void *platform_init(const char *websocket_url, const char *basic_auth_user, cons
     // Username and password are "Not supported for now".
     //websocket_cfg.username = basic_auth_user;
     //websocket_cfg.password = basic_auth_pass;
-    // Instead create and pass the authorization header directly.
+    // Instead create and pass the authorization header(s) directly.
 
-    // We have to hold header outside of the if. Otherwise header.c_str() is a dangling pointer if we
-    // leave the inner scope.
-    String header = "Authorization: Basic ";
+    if (credentials_length > 0) {
+        auth_headers = heap_alloc_array<String>(credentials_length);
+        auth_headers_count = credentials_length;
 
-    if (basic_auth_user != nullptr && basic_auth_pass != nullptr) {
-        size_t user_len = strlen(basic_auth_user);
-        size_t buf_len = user_len + basic_auth_pass_length + 1; // +1 for ':'
-        std::unique_ptr<char[]> buf = heap_alloc_array<char>(buf_len);
-        memcpy(buf.get(), basic_auth_user, user_len);
-        buf[user_len] = ':';
-        memcpy(buf.get() + user_len + 1, basic_auth_pass, basic_auth_pass_length);
+        for(size_t i = 0; i < credentials_length; ++i) {
+            String header = "Authorization: Basic ";
+            auto &cred = credentials[i];
 
-        size_t written = 0;
-        mbedtls_base64_encode(nullptr, 0, &written, (const unsigned char *)buf.get(), buf_len);
+            size_t user_len = strlen(cred.user);
+            size_t buf_len = user_len + cred.pass_length + 1; // +1 for ':'
+            std::unique_ptr<char[]> buf = heap_alloc_array<char>(buf_len);
+            memcpy(buf.get(), cred.user, user_len);
+            buf[user_len] = ':';
+            memcpy(buf.get() + user_len + 1, cred.pass, cred.pass_length);
 
-        std::unique_ptr<char[]> base64_buf{new char[written + 1]()}; // +1 for '\0'
-        mbedtls_base64_encode((unsigned char *)base64_buf.get(), written + 1, &written, (const unsigned char *)buf.get(), buf_len);
-        base64_buf[written] = '\0';
+            size_t written = 0;
+            mbedtls_base64_encode(nullptr, 0, &written, (const unsigned char *)buf.get(), buf_len);
 
-        header += base64_buf.get();
-        header += "\r\n";
+            std::unique_ptr<char[]> base64_buf{new char[written + 1]()}; // +1 for '\0'
+            mbedtls_base64_encode((unsigned char *)base64_buf.get(), written + 1, &written, (const unsigned char *)buf.get(), buf_len);
+            base64_buf[written] = '\0';
 
-        websocket_cfg.headers = header.c_str();
+            header += base64_buf.get();
+            header += "\r\n";
+
+            auth_headers[i] = header;
+        }
+
+        websocket_cfg.headers = auth_headers[0].c_str();
+        next_auth_header = (next_auth_header + 1) % auth_headers_count;
     }
 
     client = tf_websocket_client_init(&websocket_cfg);
@@ -161,6 +172,13 @@ void platform_disconnect(void *ctx)
 void platform_reconnect(void *ctx)
 {
     tf_websocket_client_stop(client);
+
+    // Try next set of credentials if available.
+    if (auth_headers_count > 0) {
+        tf_websocket_client_set_headers(client, auth_headers[next_auth_header].c_str());
+        next_auth_header = (next_auth_header + 1) % auth_headers_count;
+    }
+
     tf_websocket_client_start(client);
 }
 
