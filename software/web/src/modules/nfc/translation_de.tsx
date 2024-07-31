@@ -10,14 +10,14 @@ let x = {
         "content": {
             "nfc": "NFC-Tags",
 
-            "deadtime": "Ignoriere Tag nach Ladefreigabe",
+            "deadtime": "Stoppe Ladevorgang mit Tag",
             "deadtime_muted": "Erlaubt das Stoppen eines Ladevorgangs mit einem NFC-Tag erst nach der konfigurierten Zeit, um Fehlbedienung zu vermeiden.",
-            "deadtime_min": "Nie",
-            "deadtime_3": "3 Sekunden",
-            "deadtime_10": "10 Sekunden",
-            "deadtime_30": "30 Sekunden",
-            "deadtime_60": "60 Sekunden",
-            "deadtime_max": "Für immer",
+            "deadtime_min": "Sofort",
+            "deadtime_3": "Frühestens 3 Sekunden nach Ladefreigabe",
+            "deadtime_10": "Frühestens 10 Sekunden nach Ladefreigabe",
+            "deadtime_30": "Frühestens 30 Sekunden nach Ladefreigabe",
+            "deadtime_60": "Frühestens 60 Sekunden nach Ladefreigabe",
+            "deadtime_max": "Nie",
 
             "tags": "Konfigurierte Tags",
             "table_tag_id": "Tag-ID",
