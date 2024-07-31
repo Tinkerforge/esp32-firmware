@@ -3,7 +3,7 @@
 Ignore this if you only want to build/modify firmwares!
 This is only relevant if you want to build updates for https://github.com/Tinkerforge/arduino-esp32.
 
-(Skip to "Setup lib builder" if on debian-esque distribution)
+(Skip to "Install required packages" if on debian-esque distribution)
 
 ### Create container
 (see https://wiki.archlinux.org/title/systemd-nspawn#Create_a_Debian_or_Ubuntu_environment)
@@ -25,6 +25,8 @@ adduser user
 adduser user sudo
 logout
 # login as user
+git config --global user.name username
+git config --global user.email user@example.com
 ```
 
 ### Install required packages
@@ -32,8 +34,6 @@ logout
 ```bash
 sudo apt update
 sudo apt-get install jq git wget curl libssl-dev libncurses-dev flex bison gperf python3 python-is-python3 python3-pip python3-setuptools python3-serial python3-click python3-cryptography python3-future python3-pyparsing python3-pyelftools cmake ninja-build ccache python3-venv libffi-dev libssl-dev dfu-util libusb-1.0-0
-git config --global user.name username
-git config --global user.email user@example.com
 sudo pip install --upgrade pip
 ```
 
