@@ -1,0 +1,31 @@
+From c0d3fdf7db53e722fb7fdf76e96e443e7d345889 Mon Sep 17 00:00:00 2001
+From: Harshit Malpani <harshit.malpani@espressif.com>
+Date: Fri, 6 Oct 2023 11:48:55 +0530
+Subject: [PATCH 2/2] fix(esp_http_client): Fix esp_http_client async mode
+
+Closes https://github.com/espressif/esp-idf/issues/12358
+---
+ components/esp_http_client/esp_http_client.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/components/esp_http_client/esp_http_client.c b/components/esp_http_client/esp_http_client.c
+index 48a5589edc..3fd2a48515 100644
+--- a/components/esp_http_client/esp_http_client.c
++++ b/components/esp_http_client/esp_http_client.c
+@@ -1018,7 +1018,12 @@ static int esp_http_client_get_data(esp_http_client_handle_t client)
+ 
+     int rlen = esp_transport_read(client->transport, res_buffer->data, client->buffer_size_rx, client->timeout_ms);
+     if (rlen >= 0) {
+-        http_parser_execute(client->parser, client->parser_settings, res_buffer->data, rlen);
++        // When tls error is ESP_TLS_ERR_SSL_WANT_READ (-0x6900), esp_trasnport_read returns ERR_TCP_TRANSPORT_CONNECTION_TIMEOUT (0x0).
++        // We should not execute http_parser_execute() on this condition as it sets the internal state machine in an
++        // invalid state.
++        if (!(client->is_async && rlen == 0)) {
++            http_parser_execute(client->parser, client->parser_settings, res_buffer->data, rlen);
++        }
+     }
+     return rlen;
+ }
+-- 
+2.34.1
+

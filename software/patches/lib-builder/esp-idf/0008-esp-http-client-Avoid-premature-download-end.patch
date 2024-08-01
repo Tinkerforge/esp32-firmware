@@ -1,0 +1,47 @@
+From 47693e67a7b2b0ad592b5f25f176893050ffc88b Mon Sep 17 00:00:00 2001
+From: Matthias Bolte <matthias@tinkerforge.com>
+Date: Thu, 1 Aug 2024 17:13:53 +0200
+Subject: [PATCH] esp-http-client: Avoid premature download end
+
+esp_http_client_get_data (actually esp_transport_read) might
+return 0 with errno == 0 (indicating all data has been received)
+before all data has actually been received. This is most
+likely a bug in esp_transport_read itself. Instead of finding
+an fixing that potetial bug, work around it here by assuming
+errno == EAGAIN in case not all promised data has been received.
+---
+ components/esp_http_client/esp_http_client.c | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
+
+diff --git a/components/esp_http_client/esp_http_client.c b/components/esp_http_client/esp_http_client.c
+index 9e7cb0fa28..d3545196b7 100644
+--- a/components/esp_http_client/esp_http_client.c
++++ b/components/esp_http_client/esp_http_client.c
+@@ -1200,9 +1200,21 @@ esp_err_t esp_http_client_perform(esp_http_client_handle_t client)
+                     }
+                 }
+                 while (client->response->data_process < client->response->content_length) {
+-                    if (esp_http_client_get_data(client) <= 0) {
+-                        if (client->is_async && errno == EAGAIN) {
+-                            return ESP_ERR_HTTP_EAGAIN;
++                    int ret = esp_http_client_get_data(client);
++
++                    if (ret <= 0) {
++                        if (client->is_async) {
++                            if (errno == EAGAIN) {
++                                return ESP_ERR_HTTP_EAGAIN;
++                            }
++
++                            // FIXME: esp_transport_read() called by esp_http_client_get_data() sometimes
++                            //        indicates that all data has been received before all promised data
++                            //        has actually been received. In this case assume that esp_transport_read()
++                            //        reported this incorrectly and just try again.
++                            if (ret == 0 && errno == 0 && client->response->data_process < client->response->content_length) {
++                                return ESP_ERR_HTTP_EAGAIN;
++                            }
+                         }
+                         ESP_LOGD(TAG, "Read finish or server requests close");
+                         break;
+-- 
+2.34.1
+
