@@ -53,7 +53,7 @@ git clone --branch release/v4.4 https://github.com/espressif/esp32-arduino-lib-b
 cd esp32-arduino-lib-builder
 ~/esp32-firmware/software/lib-builder/apply_patches.py ~/esp32-arduino-lib-builder ~/esp32-firmware/software/patches/lib-builder-pre
 ./build.sh -t esp32 -b menuconfig
-# press [s] [return] to write sdkconfig, [q] to quit
+# press [s] [return] [return] to write sdkconfig, [q] to quit
 cp sdkconfig sdkconfig.vanilla
 ```
 
