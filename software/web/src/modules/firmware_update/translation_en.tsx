@@ -47,6 +47,7 @@ let x = {
             "check_state_9": "Version number is malformed",
             "check_state_10": "Firmware index is malformed",
             "check_state_11": "Aborted",
+            "check_state_12": "Download short read occurred",
             "install_state_2": "Another operation is in progress",
             "install_state_3": "Internal error occurred",
             "install_state_4": "No update URL configured",

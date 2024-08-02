@@ -30,8 +30,6 @@
 #include "check_state.enum.h"
 #include "./crc32.h"
 
-extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
-
 // Newer firmwares contain a firmware info page.
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
@@ -53,10 +51,6 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 // The first firmware slot (i.e. the one that is flashed over USB) starts at 0x10000.
 // So we have to skip the first 0x10000 - 0x1000 bytes, after them the actual firmware starts.
 #define FIRMWARE_OFFSET (0x10000 - 0x1000)
-
-#define CHECK_FOR_UPDATE_TIMEOUT 15000
-
-#define INSTALL_FIRMWARE_TIMEOUT 15000
 
 #if !MODULE_CERTS_AVAILABLE()
 #define MAX_CERT_ID -1
@@ -525,13 +519,8 @@ void FirmwareUpdate::register_urls()
                     check_firmware_in_progress = true;
                     ready = true;
 
-                    if (check_for_update_in_progress) {
-                        check_for_update_aborted = true;
-                        ready = false;
-                    }
-
-                    if (install_firmware_in_progress) {
-                        install_firmware_aborted = true;
+                    if (check_for_update_in_progress || install_firmware_in_progress) {
+                        https_client.abort_async();
                         ready = false;
                     }
                 });
@@ -575,13 +564,8 @@ void FirmwareUpdate::register_urls()
                     flash_firmware_in_progress = true;
                     ready = true;
 
-                    if (check_for_update_in_progress) {
-                        check_for_update_aborted = true;
-                        ready = false;
-                    }
-
-                    if (install_firmware_in_progress) {
-                        install_firmware_aborted = true;
+                    if (check_for_update_in_progress || install_firmware_in_progress) {
+                        https_client.abort_async();
                         ready = false;
                     }
                 });
@@ -626,30 +610,6 @@ bool FirmwareUpdate::is_vehicle_blocking_update() const
     return block_firmware_update_with_vehicle_connected && vehicle_connected;
 }
 
-static esp_err_t index_event_handler(esp_http_client_event_t *event)
-{
-    FirmwareUpdate *that = static_cast<FirmwareUpdate *>(event->user_data);
-
-    switch (event->event_id) {
-    case HTTP_EVENT_ERROR:
-        that->handle_index_data(nullptr, 0);
-        break;
-
-    case HTTP_EVENT_ON_DATA:
-        that->handle_index_data(event->data, event->data_len);
-        break;
-
-    case HTTP_EVENT_ON_FINISH:
-        that->handle_index_data("\n", 1);
-        break;
-
-    default:
-        break;
-    }
-
-    return ESP_OK;
-}
-
 static const char *index_url_suffix = "_firmware_v1.txt";
 static size_t index_url_suffix_len = strlen(index_url_suffix);
 
@@ -671,7 +631,7 @@ void FirmwareUpdate::check_for_update()
     state.get("install_state")->updateEnum(InstallState::Idle);
     state.get("install_progress")->updateUint(0);
 
-    if (http_client != nullptr) {
+    if (https_client.is_busy()) {
         logger.printfln("HTTP client is already in use");
         state.get("check_state")->updateEnum(CheckState::Busy);
         return;
@@ -698,136 +658,96 @@ void FirmwareUpdate::check_for_update()
     std::unique_ptr<char> index_url_ptr = index_url.take();
 
     index_buf_used = 0;
-    update_version.major = 255;
     //last_version_timestamp = time(nullptr);
     check_for_update_in_progress = true;
-    check_for_update_aborted = false;
 
-    esp_http_client_config_t http_config = {};
+    https_client.download_async(index_url_ptr.get(), cert_id, [this](AsyncHTTPSClientEvent *event) {
+        switch (event->type) {
+        case AsyncHTTPSClientEventType::Error:
+            switch (event->error) {
+            case AsyncHTTPSClientError::NoHTTPSURL:
+                logger.printfln("No HTTPS update URL");
+                state.get("check_state")->updateEnum(CheckState::InternalError);
+                break;
 
-    http_config.url = index_url_ptr.get();
-    http_config.event_handler = index_event_handler;
-    http_config.user_data = this;
-    http_config.is_async = true;
-    http_config.timeout_ms = 50;
-    http_config.buffer_size = 1024;
-    http_config.buffer_size_tx = 256;
+            case AsyncHTTPSClientError::Busy:
+                logger.printfln("HTTP client is busy");
+                state.get("check_state")->updateEnum(CheckState::Busy);
+                break;
 
-    if (cert_id < 0) {
-        http_config.crt_bundle_attach = esp_crt_bundle_attach;
-    }
-    else {
-#if MODULE_CERTS_AVAILABLE()
-        size_t cert_len = 0;
+            case AsyncHTTPSClientError::NoCert:
+                logger.printfln("Certificate with ID %d is not available", cert_id);
+                state.get("check_state")->updateEnum(CheckState::NoCert);
+                break;
 
-        cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
+            case AsyncHTTPSClientError::NoResponse:
+                logger.printfln("Update server %s did not respond", update_url.c_str());
+                state.get("check_state")->updateEnum(CheckState::NoResponse);
+                break;
 
-        if (cert == nullptr) {
-            logger.printfln("Certificate with ID %d is not available", cert_id);
-            state.get("check_state")->updateEnum(CheckState::NoCert);
+            case AsyncHTTPSClientError::ShortRead:
+                logger.printfln("Firmware index download ended prematurely");
+                state.get("check_state")->updateEnum(CheckState::DownloadShortRead);
+                break;
+
+            case AsyncHTTPSClientError::HTTPError:
+                logger.printfln("HTTP error while downloading firmware index");
+                state.get("check_state")->updateEnum(CheckState::DownloadError);
+                break;
+
+            case AsyncHTTPSClientError::HTTPClientInitFailed:
+                logger.printfln("Error while creating HTTP client");
+                state.get("check_state")->updateEnum(CheckState::HTTPClientInitFailed);
+                break;
+
+            case AsyncHTTPSClientError::HTTPClientError:
+                logger.printfln("Error while downloading firmware index: %s", esp_err_to_name(event->error_http_client));
+                state.get("check_state")->updateEnum(CheckState::DownloadError);
+                break;
+
+            case AsyncHTTPSClientError::HTTPStatusError:
+                logger.printfln("HTTP error while downloading firmware index: %d", event->error_http_status);
+                state.get("check_state")->updateEnum(CheckState::DownloadError);
+                break;
+            }
+
             check_for_update_in_progress = false;
-            return;
-        }
+            break;
 
-        http_config.cert_pem = (const char *)cert.get();
-#else
-        // defense in depth: it should not be possible to arrive here because in case
-        // that the certs module is not available the cert_id should always be -1
-        logger.printfln("Can't use custom certificate: certs module is not built into this firmware!");
-        state.get("check_state")->updateEnum(CheckState::NoCert);
-        check_for_update_in_progress = false;
-        return;
-#endif
-    }
+        case AsyncHTTPSClientEventType::Data:
+            handle_index_data(event->data_chunk, event->data_chunk_len);
+            break;
 
-    http_client = esp_http_client_init(&http_config);
-
-    if (http_client == nullptr) {
-        logger.printfln("Error while creating HTTP client");
-        state.get("check_state")->updateEnum(CheckState::HTTPClientInitFailed);
-        cert.reset();
-        check_for_update_in_progress = false;
-        return;
-    }
-
-    check_begin = millis();
-
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        if (deadline_elapsed(check_begin + CHECK_FOR_UPDATE_TIMEOUT)) {
-            logger.printfln("Update server %s did not respond", update_url.c_str());
-            state.get("check_state")->updateEnum(CheckState::NoResponse);
-            check_for_update_aborted = true;
-        }
-
-        if (check_for_update_aborted) {
+        case AsyncHTTPSClientEventType::Aborted:
             if (state.get("check_state")->asEnum<CheckState>() == CheckState::InProgress) {
                 logger.printfln("Update check aborted");
                 state.get("check_state")->updateEnum(CheckState::Aborted);
             }
 
-            esp_http_client_close(http_client);
-        }
-        else {
-            esp_err_t err = esp_http_client_perform(http_client);
+            check_for_update_in_progress = false;
+            break;
 
-            if (err == ESP_ERR_HTTP_EAGAIN) {
-                return;
-            }
-            else if (err != ESP_OK) {
-                logger.printfln("Error while downloading firmware index: %s", esp_err_to_name(err));
-                state.get("check_state")->updateEnum(CheckState::DownloadError);
-            }
-            else if (state.get("check_state")->asEnum<CheckState>() == CheckState::InProgress) {
-                char update_version_buf[SEMANTIC_VERSION_MAX_STRING_LENGTH] = "";
+        case AsyncHTTPSClientEventType::Finished:
+            handle_index_data("\n", 1);
 
-                if (update_version.major != 255) {
-                    update_version.to_string(update_version_buf, ARRAY_SIZE(update_version_buf));
-                    logger.printfln("Firmware update available: %s", update_version_buf);
-                }
-                else {
-                    logger.printfln("No firmware update available");
-                }
-
+            if (state.get("check_state")->asEnum<CheckState>() == CheckState::InProgress) {
+                logger.printfln("No firmware update available");
                 state.get("check_state")->updateEnum(CheckState::Idle);
-                state.get("update_version")->updateString(update_version_buf);
+                state.get("update_version")->updateString("");
             }
+
+            check_for_update_in_progress = false;
+            break;
         }
-
-        esp_http_client_cleanup(http_client);
-        http_client = nullptr;
-        cert.reset();
-        check_for_update_in_progress = false;
-
-        task_scheduler.cancel(task_scheduler.currentTaskId());
-    }, 100, 100);
+    });
 }
 
 void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
 {
-    if (check_for_update_aborted) {
-        return;
-    }
-
-    if (data == nullptr) {
-        logger.printfln("HTTP error while downloading firmware index");
-        state.get("check_state")->updateEnum(CheckState::DownloadError);
-        check_for_update_aborted = true;
-        return;
-    }
-
-    int code = esp_http_client_get_status_code(http_client);
-
-    if (code != 200) {
-        logger.printfln("HTTP error while downloading firmware index: %d", code);
-        state.get("check_state")->updateEnum(CheckState::DownloadError);
-        check_for_update_aborted = true;
-        return;
-    }
-
     const char *data_start = static_cast<const char *>(data);
     const char *data_end = data_start + data_len;
 
-    while (data_start < data_end && !check_for_update_aborted) {
+    while (data_start < data_end) {
         // fill buffer with new data
         char *index_buf_free_start = index_buf + index_buf_used;
         char *index_buf_free_end = index_buf + sizeof(index_buf) - 1;
@@ -835,7 +755,7 @@ void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
         if (index_buf_free_start == index_buf_free_end) {
             logger.printfln("Firmware index is malformed");
             state.get("check_state")->updateEnum(CheckState::IndexMalformed);
-            check_for_update_aborted = true;
+            https_client.abort_async();
             return;
         }
 
@@ -856,37 +776,47 @@ void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
         while (p != nullptr) {
             *p = '\0';
 
-            SemanticVersion version;
+            if (index_buf[0] != '\0') {
+                SemanticVersion version;
+                bool found_update = false;
 
-            if (!version.from_string(index_buf)) {
-                logger.printfln("Firmware index entry is malformed: %s", index_buf);
-                state.get("check_state")->updateEnum(CheckState::VersionMalformed);
-                check_for_update_aborted = true;
-                return;
-            }
-
-            // ignore all versions that are older than the current version
-            if (compare_version(version.major, version.minor, version.patch, version.beta, version.timestamp,
-                                BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()) <= 0) {
-                check_for_update_aborted = true;
-                return;
-            }
-
-//          if (/* all updates */) {
-                update_version = version;
-                check_for_update_aborted = true;
-                return;
-/*          }
-            else { // only stable updates
-                // the stable update is the newest version that was
-                // released more than 7 days before the next version
-                if (version.timestamp + (7 * 24 * 60 * 60) < last_version_timestamp) {
-                    update_version = version;
-                    check_for_update_aborted = true;
+                if (!version.from_string(index_buf)) {
+                    logger.printfln("Firmware index entry is malformed: %s", index_buf);
+                    state.get("check_state")->updateEnum(CheckState::VersionMalformed);
+                    https_client.abort_async();
                     return;
                 }
 
-                last_version_timestamp = version.timestamp;
+                // ignore all versions that are older than the current version
+                if (compare_version(version.major, version.minor, version.patch, version.beta, version.timestamp,
+                                    BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()) <= 0) {
+                    logger.printfln("No firmware update available");
+                    state.get("check_state")->updateEnum(CheckState::Idle);
+                    state.get("update_version")->updateString("");
+                    https_client.abort_async();
+                    return;
+                }
+
+//              if (/* all updates */) {
+                    found_update = true;
+/*              }
+                else { // only stable updates
+                    // the stable update is the newest version that was
+                    // released more than 7 days before the next version
+                    if (version.timestamp + (7 * 24 * 60 * 60) < last_version_timestamp) {
+                        found_update = true;
+                    }
+
+                    last_version_timestamp = version.timestamp;
+                }*/
+
+                if (found_update) {
+                    logger.printfln("Firmware update available: %s", index_buf);
+                    state.get("check_state")->updateEnum(CheckState::Idle);
+                    state.get("update_version")->updateString(index_buf);
+                    https_client.abort_async();
+                    return;
+                }
             }
 
             size_t index_buf_consumed = p + 1 - index_buf;
@@ -896,29 +826,9 @@ void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
             index_buf_used -= index_buf_consumed;
             index_buf[index_buf_used] = '\0';
 
-            p = strchr(index_buf, '\n');*/
+            p = strchr(index_buf, '\n');
         }
     }
-}
-
-static esp_err_t firmware_event_handler(esp_http_client_event_t *event)
-{
-    FirmwareUpdate *that = static_cast<FirmwareUpdate *>(event->user_data);
-
-    switch (event->event_id) {
-    case HTTP_EVENT_ERROR:
-        that->handle_firmware_data(nullptr, 0);
-        break;
-
-    case HTTP_EVENT_ON_DATA:
-        that->handle_firmware_data(event->data, event->data_len);
-        break;
-
-    default:
-        break;
-    }
-
-    return ESP_OK;
 }
 
 void FirmwareUpdate::install_firmware(const char *url)
@@ -940,75 +850,89 @@ void FirmwareUpdate::install_firmware(const char *url)
         return;
     }
 
-    if (http_client != nullptr) {
+    if (https_client.is_busy()) {
         logger.printfln("HTTP client is busy");
         state.get("install_state")->updateEnum(InstallState::Busy);
         return;
     }
 
-    firmware_data_offset = 0;
-    firmware_len = 0;
     install_firmware_in_progress = true;
-    install_firmware_aborted = false;
 
-    esp_http_client_config_t http_config = {};
+    https_client.download_async(url, cert_id, [this](AsyncHTTPSClientEvent *event) {
+        InstallState result;
 
-    http_config.url = url;
-    http_config.event_handler = firmware_event_handler;
-    http_config.user_data = this;
-    http_config.is_async = true;
-    http_config.timeout_ms = 50;
-    http_config.buffer_size = 1024;
-    http_config.buffer_size_tx = 256;
+        switch (event->type) {
+        case AsyncHTTPSClientEventType::Error:
+            switch (event->error) {
+            case AsyncHTTPSClientError::NoHTTPSURL:
+                logger.printfln("No HTTPS update URL");
+                state.get("install_state")->updateEnum(InstallState::InternalError);
+                break;
 
-    if (cert_id < 0) {
-        http_config.crt_bundle_attach = esp_crt_bundle_attach;
-    }
-    else {
-#if MODULE_CERTS_AVAILABLE()
-        size_t cert_len = 0;
+            case AsyncHTTPSClientError::Busy:
+                logger.printfln("HTTP client is busy");
+                state.get("install_state")->updateEnum(InstallState::Busy);
+                break;
 
-        cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
+            case AsyncHTTPSClientError::NoCert:
+                logger.printfln("Certificate with ID %d is not available", cert_id);
+                state.get("install_state")->updateEnum(InstallState::NoCert);
+                break;
 
-        if (cert == nullptr) {
-            logger.printfln("Certificate with ID %d is not available", cert_id);
-            state.get("install_state")->updateEnum(InstallState::NoCert);
-            install_firmware_in_progress = false;
-            return;
-        }
+            case AsyncHTTPSClientError::NoResponse:
+                logger.printfln("Update server %s did not respond", update_url.c_str());
+                state.get("install_state")->updateEnum(InstallState::NoResponse);
+                break;
 
-        http_config.cert_pem = (const char *)cert.get();
-#else
-        // defense in depth: it should not be possible to arrive here because in case
-        // that the certs module is not available the cert_id should always be -1
-        logger.printfln("Can't use custom certificate: certs module is not built into this firmware!");
-        state.get("install_state")->updateEnum(InstallState::NoCert);
-        install_firmware_in_progress = false;
-        return;
-#endif
-    }
+            case AsyncHTTPSClientError::ShortRead:
+                logger.printfln("Firmware download ended prematurely");
+                state.get("install_state")->updateEnum(InstallState::DownloadShortRead);
+                break;
 
-    http_client = esp_http_client_init(&http_config);
+            case AsyncHTTPSClientError::HTTPError:
+                logger.printfln("HTTP error while downloading firmware");
+                state.get("install_state")->updateEnum(InstallState::DownloadError);
+                break;
 
-    if (http_client == nullptr) {
-        logger.printfln("Error while creating HTTP client");
-        state.get("install_state")->updateEnum(InstallState::HTTPClientInitFailed);
-        cert.reset();
-        install_firmware_in_progress = false;
-        return;
-    }
+            case AsyncHTTPSClientError::HTTPClientInitFailed:
+                logger.printfln("Error while creating HTTP client");
+                state.get("install_state")->updateEnum(InstallState::HTTPClientInitFailed);
+                break;
 
-    last_install_alive = millis();
+            case AsyncHTTPSClientError::HTTPClientError:
+                logger.printfln("Error while downloading firmware: %s", esp_err_to_name(event->error_http_client));
+                state.get("install_state")->updateEnum(InstallState::DownloadError);
+                break;
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        if (deadline_elapsed(last_install_alive + INSTALL_FIRMWARE_TIMEOUT)) {
-            logger.printfln("Update server %s did not respond", update_url.c_str());
-            state.get("install_state")->updateEnum(InstallState::NoResponse);
+            case AsyncHTTPSClientError::HTTPStatusError:
+                logger.printfln("HTTP error while downloading firmware: %d", event->error_http_status);
+                state.get("install_state")->updateEnum(InstallState::DownloadError);
+                break;
+            }
+
             Update.abort();
-            install_firmware_aborted = true;
-        }
+            install_firmware_in_progress = false;
+            break;
 
-        if (install_firmware_aborted) {
+        case AsyncHTTPSClientEventType::Data:
+            if (event->data_complete_len <= FIRMWARE_OFFSET) {
+                logger.printfln("Firmware file is too small: %u", event->data_complete_len);
+                state.get("install_state")->updateEnum(InstallState::FirmwareTooSmall);
+                https_client.abort_async();
+                return;
+            }
+
+            result = handle_firmware_chunk(event->data_chunk_offset, (uint8_t *)event->data_chunk, event->data_chunk_len, event->data_remaining_len, event->data_complete_len, nullptr);
+
+            if (result != InstallState::InProgress) {
+                https_client.abort_async();
+            }
+
+            state.get("install_state")->updateEnum(result);
+            state.get("install_progress")->updateUint(event->data_chunk_offset * 100 / event->data_complete_len);
+            break;
+
+        case AsyncHTTPSClientEventType::Aborted:
             if (state.get("install_state")->asEnum<InstallState>() == InstallState::InProgress) {
                 logger.printfln("Firmware install aborted");
                 state.get("install_state")->updateEnum(InstallState::Aborted);
@@ -1016,89 +940,16 @@ void FirmwareUpdate::install_firmware(const char *url)
                 Update.abort();
             }
 
-            esp_http_client_close(http_client);
+            install_firmware_in_progress = false;
+            break;
+
+        case AsyncHTTPSClientEventType::Finished:
+            logger.printfln("Firmware successfully installed");
+            state.get("install_state")->updateEnum(InstallState::Rebooting);
+            state.get("install_progress")->updateUint(0);
+            trigger_reboot("Firmware update", 1000);
+            install_firmware_in_progress = false;
+            break;
         }
-        else {
-            esp_err_t err = esp_http_client_perform(http_client);
-
-            if (err == ESP_ERR_HTTP_EAGAIN) {
-                return;
-            }
-            else if (err != ESP_OK) {
-                logger.printfln("Error while downloading firmware file: %s", esp_err_to_name(err));
-                state.get("install_state")->updateEnum(InstallState::DownloadError);
-            }
-            else if (state.get("install_state")->asEnum<InstallState>() == InstallState::InProgress) {
-                if (firmware_len > 0 && firmware_data_offset == firmware_len) {
-                    logger.printfln("Firmware successfully installed");
-                    state.get("install_state")->updateEnum(InstallState::Rebooting);
-                    state.get("install_progress")->updateUint(0);
-                    trigger_reboot("Firmware update", 1000);
-                }
-                else {
-                    logger.printfln("Firmware download ended prematurely");
-                    state.get("install_state")->updateEnum(InstallState::DownloadShortRead);
-                    Update.abort();
-                }
-            }
-        }
-
-        esp_http_client_cleanup(http_client);
-        http_client = nullptr;
-        cert.reset();
-        install_firmware_in_progress = false;
-
-        task_scheduler.cancel(task_scheduler.currentTaskId());
-    }, 100, 100);
-}
-
-void FirmwareUpdate::handle_firmware_data(void *data, size_t data_len)
-{
-    if (install_firmware_aborted) {
-        return;
-    }
-
-    last_install_alive = millis();
-
-    if (data == nullptr) {
-        logger.printfln("HTTP error while downloading firmware file");
-        state.get("install_state")->updateEnum(InstallState::DownloadError);
-        Update.abort();
-        install_firmware_aborted = true;
-        return;
-    }
-
-    int code = esp_http_client_get_status_code(http_client);
-
-    if (code != 200) {
-        logger.printfln("HTTP error while downloading firmware file: %d", code);
-        state.get("install_state")->updateEnum(InstallState::DownloadError);
-        Update.abort();
-        install_firmware_aborted = true;
-        return;
-    }
-
-    if (firmware_data_offset == 0) {
-        firmware_len = (size_t)esp_http_client_get_content_length(http_client);
-
-        if (firmware_len <= FIRMWARE_OFFSET) {
-            logger.printfln("Firmware file is too small: %u", firmware_len);
-            state.get("install_state")->updateEnum(InstallState::FirmwareTooSmall);
-            Update.abort();
-            install_firmware_aborted = true;
-            return;
-        }
-    }
-
-    InstallState result = handle_firmware_chunk(firmware_data_offset, (uint8_t *)data, data_len, firmware_len - firmware_data_offset - data_len, firmware_len, nullptr);
-
-    if (result == InstallState::InProgress) {
-        firmware_data_offset += data_len;
-    }
-    else {
-        install_firmware_aborted = true;
-    }
-
-    state.get("install_state")->updateEnum(result);
-    state.get("install_progress")->updateUint(firmware_data_offset * 100 / firmware_len);
+    });
 }

@@ -27,6 +27,7 @@
 #include "module.h"
 #include "config.h"
 #include "semantic_version.h"
+#include "async_https_client.h"
 #include "signature_verify.embedded.h"
 #include "install_state.enum.h"
 
@@ -75,11 +76,10 @@ public:
     bool vehicle_connected = false;
 
     void handle_index_data(const void *data, size_t data_len);
-    void handle_firmware_data(void *data, size_t data_len);
 
 private:
     bool is_vehicle_blocking_update() const;
-    InstallState handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_length, size_t remaining_len, size_t complete_len, TFJsonSerializer *json_ptr);
+    InstallState handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk, size_t chunk_len, size_t remaining_len, size_t complete_len, TFJsonSerializer *json_ptr);
     InstallState check_firmware_info(bool detect_downgrade, bool log, TFJsonSerializer *json_ptr);
     void check_for_update();
     void install_firmware(const char *url);
@@ -115,22 +115,11 @@ private:
 #endif
 
     String update_url;
-
+    AsyncHTTPSClient https_client;
     int cert_id = -1;
-    std::unique_ptr<unsigned char[]> cert = nullptr;
-    esp_http_client_handle_t http_client = nullptr;
-
-    uint32_t check_begin;
     char index_buf[64 + 1];
     size_t index_buf_used;
-    SemanticVersion update_version;
     //uint32_t last_version_timestamp;
     bool check_for_update_in_progress = false;
-    bool check_for_update_aborted = true;
-
-    uint32_t last_install_alive;
-    size_t firmware_data_offset;
-    size_t firmware_len;
     bool install_firmware_in_progress = false;
-    bool install_firmware_aborted = true;
 };

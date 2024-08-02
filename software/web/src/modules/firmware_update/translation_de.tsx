@@ -47,6 +47,7 @@ let x = {
             "check_state_9": "Versionsnummer ist beschädigt",
             "check_state_10": "Firmware-Index ist beschädigt",
             "check_state_11": "Abgebrochen",
+            "check_state_12": "Teil-Download aufgetreten",
             "install_state_2": "Eine andere Abfrage läuft bereits",
             "install_state_3": "Interner Fehler aufgetreten",
             "install_state_4": "Kein Aktualisierungs-URL konfiguriert",
