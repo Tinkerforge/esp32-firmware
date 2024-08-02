@@ -1,6 +1,9 @@
 # Install libsodium
 sudo apt install libsodium23
 
+# Install libccid
+sudo apt install libccid
+
 # Install gpg
 sudo apt install gpg
 
