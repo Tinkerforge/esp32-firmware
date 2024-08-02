@@ -30,6 +30,13 @@ def make_path(path):
     return os.path.join('.', os.path.relpath(os.path.join(directory, path)))
 
 
+def make_keys_path(path):
+    if os.path.isabs(path):
+        return path
+
+    return os.path.join('.', os.path.relpath(os.path.join(directory, 'keys', path)))
+
+
 def load_libsodium():
     libsodium_path = ctypes.util.find_library('sodium')
 
@@ -65,7 +72,7 @@ def main():
     config.read(make_path('config.ini'))
     config = config['preset:' + config['signature:' + args.signature_name]['preset']]
 
-    gpg_public_key_path = make_path(config['gpg_public_key_path'])
+    gpg_public_key_path = make_keys_path(config['gpg_public_key_path'])
 
     try:
         subprocess.check_call([
@@ -78,7 +85,7 @@ def main():
 
     print('GPG signature is valid')
 
-    sodium_public_key_path = make_path(config['sodium_public_key_path'])
+    sodium_public_key_path = make_keys_path(config['sodium_public_key_path'])
 
     with open(sodium_public_key_path, 'r', encoding='utf-8') as f:
         sodium_public_key_json = json.loads(f.read())

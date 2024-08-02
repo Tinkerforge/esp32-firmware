@@ -21,6 +21,13 @@ def make_path(path):
     return os.path.join('.', os.path.relpath(os.path.join(directory, path)))
 
 
+def make_keys_path(path):
+    if os.path.isabs(path):
+        return path
+
+    return os.path.join('.', os.path.relpath(os.path.join(directory, 'keys', path)))
+
+
 def load_libsodium():
     libsodium_path = ctypes.util.find_library('sodium')
 
@@ -44,7 +51,7 @@ def load_libsodium():
 
 
 def keepassxc(config, prefix, action, args, entry, password=None, input=None):
-    path = make_path(config[prefix + '_path'])
+    path = make_keys_path(config[prefix + '_path'])
     protection = config[prefix + '_protection']
     full_args = ['keepassxc-cli', action]
     full_kwargs = {'stderr': subprocess.DEVNULL, 'encoding': 'utf-8'}
@@ -53,7 +60,7 @@ def keepassxc(config, prefix, action, args, entry, password=None, input=None):
     if protection == 'token':
         full_args += ['-q', '--no-password', '-y', f'2:{config[prefix + "_token"]}']
     elif protection == 'keyfile':
-        full_args += ['-q', '--no-password', '-k', make_path(config[prefix + '_keyfile'])]
+        full_args += ['-q', '--no-password', '-k', make_keys_path(config[prefix + '_keyfile'])]
     elif protection == 'password':
         assert password != None
         full_input = password + '\n'
@@ -90,7 +97,7 @@ def main():
     config.read(make_path('config.ini'))
     config = config['preset:' + args.preset]
 
-    sodium_public_key_path = make_path(config['sodium_public_key_path'])
+    sodium_public_key_path = make_keys_path(config['sodium_public_key_path'])
 
     print(f'checking for existing sodium public key file {sodium_public_key_path}')
 
@@ -105,7 +112,7 @@ def main():
         except Exception as e:
             raise Exception(f'could not remove existing sodium public key file {sodium_public_key_path}: {e}')
 
-    sodium_secret_key_path = make_path(config['sodium_secret_key_path'])
+    sodium_secret_key_path = make_keys_path(config['sodium_secret_key_path'])
 
     print(f'checking for existing sodium secret key entry in {sodium_secret_key_path}')
 
@@ -164,7 +171,7 @@ def main():
     if keepassxc(config, 'sodium_secret_key', 'add', ['-p'], 'sodium_secret_key', password=sodium_secret_key_password, input=sodium_secret_key_buffer.raw.hex()) == None:
         raise Exception(f'could not add sodium secret key to {sodium_secret_key_path}')
 
-    gpg_keyring_path = make_path(config['gpg_keyring_path'])
+    gpg_keyring_path = make_keys_path(config['gpg_keyring_path'])
 
     print(f'checking for existing GPG keyring file {gpg_keyring_path}')
 
@@ -179,7 +186,7 @@ def main():
         except Exception as e:
             raise Exception(f'could not remove existing GPG keyring file {gpg_keyring_path}: {e}')
 
-    gpg_keyring_passphrase_path = make_path(config['gpg_keyring_passphrase_path'])
+    gpg_keyring_passphrase_path = make_keys_path(config['gpg_keyring_passphrase_path'])
 
     if not os.path.exists(gpg_keyring_passphrase_path):
         raise Exception(f'GPG keyring passphrase file {gpg_keyring_passphrase_path} is missing')
@@ -207,7 +214,7 @@ def main():
             if keepassxc(config, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
                 raise Exception(f'could not remove existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin')
 
-    gpg_public_key_path = make_path(config['gpg_public_key_path'])
+    gpg_public_key_path = make_keys_path(config['gpg_public_key_path'])
 
     print(f'checking for existing GPG public key file {gpg_public_key_path}')
 

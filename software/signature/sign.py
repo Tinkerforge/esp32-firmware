@@ -30,6 +30,13 @@ def make_path(path):
     return os.path.join('.', os.path.relpath(os.path.join(directory, path)))
 
 
+def make_keys_path(path):
+    if os.path.isabs(path):
+        return path
+
+    return os.path.join('.', os.path.relpath(os.path.join(directory, 'keys', path)))
+
+
 def load_libsodium():
     libsodium_path = ctypes.util.find_library('sodium')
 
@@ -53,7 +60,7 @@ def load_libsodium():
 
 
 def keepassxc(config, prefix, action, args, entry, password=None, input=None):
-    path = make_path(config[prefix + '_path'])
+    path = make_keys_path(config[prefix + '_path'])
     protection = config[prefix + '_protection']
     full_args = ['keepassxc-cli', action]
     full_kwargs = {'stderr': subprocess.DEVNULL, 'encoding': 'utf-8'}
@@ -62,7 +69,7 @@ def keepassxc(config, prefix, action, args, entry, password=None, input=None):
     if protection == 'token':
         full_args += ['-q', '--no-password', '-y', f'2:{config[prefix + "_token"]}']
     elif protection == 'keyfile':
-        full_args += ['-q', '--no-password', '-k', make_path(config[prefix + '_keyfile'])]
+        full_args += ['-q', '--no-password', '-k', make_keys_path(config[prefix + '_keyfile'])]
     elif protection == 'password':
         assert password != None
         full_input = password + '\n'
@@ -108,7 +115,6 @@ def main():
 
     config = configparser.ConfigParser()
     config.read(make_path('config.ini'))
-    print('preset', config['signature:' + args.signature_name]['preset'])
     config = config['preset:' + config['signature:' + args.signature_name]['preset']]
 
     publisher_bytes = config['publisher'].encode('utf-8')
@@ -118,7 +124,7 @@ def main():
 
     publisher = repr(publisher_bytes)[2:-1].replace('"', '\\"')
 
-    sodium_secret_key_path = make_path(config['sodium_secret_key_path'])
+    sodium_secret_key_path = make_keys_path(config['sodium_secret_key_path'])
 
     print(f'reading sodium secret key entry from {sodium_secret_key_path}')
 
@@ -205,7 +211,7 @@ def main():
     except Exception as e:
         raise Exception(f'could not rename checksum file from {args.output_path}.tmp to {args.output_path}.sha256: {e}')
 
-    gpg_keyring_passphrase_path = make_path(config['gpg_keyring_passphrase_path'])
+    gpg_keyring_passphrase_path = make_keys_path(config['gpg_keyring_passphrase_path'])
 
     print(f'reading GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
 
@@ -225,7 +231,7 @@ def main():
 
     gpg_keyring_passphrase = gpg_keyring_passphrase.strip()
 
-    gpg_keyring_path = make_path(config['gpg_keyring_path'])
+    gpg_keyring_path = make_keys_path(config['gpg_keyring_path'])
 
     if not os.path.exists(gpg_keyring_path):
         raise Exception(f'GPG keyring file {gpg_keyring_path} is missing')

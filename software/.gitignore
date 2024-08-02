@@ -37,8 +37,4 @@ web/**/*.embedded.ts
 coredump_py_gdb_cmds
 api_info.json
 signature/config.ini
-signature/*.json
-signature/*.kdbx
-signature/*.keyfile
-signature/*.gpg
-signature/*.gpg~
+signature/keys/

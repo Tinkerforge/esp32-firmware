@@ -19,6 +19,13 @@ def make_signature_path(path):
     return os.path.join('.', os.path.relpath(os.path.join(directory, '../../../signature', path)))
 
 
+def make_signature_keys_path(path):
+    if os.path.isabs(path):
+        return path
+
+    return os.path.join('.', os.path.relpath(os.path.join(directory, '../../../signature/keys', path)))
+
+
 metadata_json = os.getenv('PLATFORMIO_METADATA')
 
 if metadata_json == None:
@@ -43,7 +50,7 @@ else:
 
     publisher = repr(publisher_bytes)[2:-1].replace('"', '\\"')
 
-    sodium_public_key_path = make_signature_path(config['sodium_public_key_path'])
+    sodium_public_key_path = make_signature_keys_path(config['sodium_public_key_path'])
 
     with open(sodium_public_key_path, 'r', encoding='utf-8') as f:
         sodium_public_key_json = json.loads(f.read())
