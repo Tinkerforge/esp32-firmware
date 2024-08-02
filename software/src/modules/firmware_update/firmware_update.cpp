@@ -930,7 +930,7 @@ void FirmwareUpdate::install_firmware(const char *url)
 
     if (check_firmware_in_progress || flash_firmware_in_progress || check_for_update_in_progress) {
         logger.printfln("Firmware install or check for update in progress");
-        state.get("install_state")->updateEnum(CheckState::Busy);
+        state.get("install_state")->updateEnum(InstallState::Busy);
         return;
     }
 
