@@ -62,11 +62,11 @@ void SolarForecast::pre_setup()
     for (SolarForecastPlane &plane : planes) {
         plane.config = ConfigRoot{Config::Object({
             {"active", Config::Bool(false)},
-            {"latitude", Config::Float(0)},
-            {"longitude", Config::Float(0)},
-            {"declination", Config::Int16(0)},
-            {"azimuth", Config::Int16(0)},
-            {"kwp", Config::Float(0)}
+            {"latitude", Config::Int(0, -900000, 900000)},    // in 1/10000 degrees
+            {"longitude", Config::Int(0, -1800000, 1800000)}, // in 1/10000 degrees
+            {"declination", Config::Uint(0, 0, 90)},          // in degrees
+            {"azimuth", Config::Int(0, -180, 180)},           // in degrees
+            {"kwp", Config::Uint(0)}                          // in 1/100 kilowatt-peak
         })};
 
         plane.state = Config::Object({
@@ -314,11 +314,11 @@ const char* SolarForecast::get_api_url_with_path(const SolarForecastPlane &plane
     }
 
     api_url_with_path = api_url + "estimate/"
-        + String(plane.config.get("latitude")->asFloat(),    4) + "/"
-        + String(plane.config.get("longitude")->asFloat(),   4) + "/"
-        + String(plane.config.get("declination")->asFloat(), 4) + "/"
-        + String(plane.config.get("azimuth")->asFloat(),     4) + "/"
-        + String(plane.config.get("kwp")->asFloat(),         4);
+        + String(plane.config.get("latitude")->asInt()/10000.0, 4)  + "/"
+        + String(plane.config.get("longitude")->asInt()/10000.0, 4) + "/"
+        + String(plane.config.get("declination")->asUint())         + "/"
+        + String(plane.config.get("azimuth")->asInt())              + "/"
+        + String(plane.config.get("kwp")->asUint()/100.0, 2);
 
     return api_url_with_path.c_str();
 }
