@@ -327,7 +327,7 @@ static const char *solar_forecast_path_postfixes[] = {"", "config", "state", "fo
 static_assert(ARRAY_SIZE(solar_forecast_path_postfixes) == static_cast<uint32_t>(SolarForecast::PathType::_max) + 1, "Path postfix length mismatch");
 String SolarForecast::get_path(const SolarForecastPlane &plane, const SolarForecast::PathType path_type)
 {
-    String path = "solar_forecast/planes";
+    String path = "solar_forecast/planes/";
     path.concat(plane.index);
     path.concat('/');
     path.concat(solar_forecast_path_postfixes[static_cast<uint32_t>(path_type)]);
