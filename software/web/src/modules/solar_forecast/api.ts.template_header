@@ -1,0 +1,10 @@
+export interface config {
+    enable: boolean;
+    api_url: string;
+    cert_id: number;
+}
+
+export interface state {
+    rate_limit: number;
+    rate_remaining: number;
+}

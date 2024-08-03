@@ -1,0 +1,22 @@
+//APIPath:planes/{{{plane_id}}}/
+export interface plane_config___{{{plane_id}}} {
+    active: boolean;
+    latitude: number;
+    longitude: number;
+    declination: number;
+    azimuth: number;
+    kwp: number;
+}
+
+export interface plane_state___{{{plane_id}}} {
+    last_sync: number;
+    last_check: number;
+    next_check: number;
+    place: string;
+}
+
+export interface plane_forecast___{{{plane_id}}} {
+    first_date: number;
+    resolution: number;
+    forecast: number[];
+}
