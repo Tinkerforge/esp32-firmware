@@ -8,7 +8,7 @@ let x = {
         },
         "content": {
             "solar_forecast": "Solar Forecast",
-            "planes": "Planes",
+            "planes": "PV planes",
             "plane_config_latitude": "Latitude",
             "plane_config_latitude_muted": "-90° south to 90° north",
             "plane_config_longitude": "Longitude",
@@ -22,7 +22,7 @@ let x = {
             "add_plane_config_title": "New PV plane",
             "add_plane_config_message": "Add new PV plane",
             "edit_plane_config_title": "Edit PV plane",
-            "solar_forecast_desc": "Enable Solar Forecast",
+            "solar_forecast_desc": "Enable solar forecast",
             "solar_forecast_muted": "",
             "table_azimuth": "Azimuth",
             "table_declination": "Declination",

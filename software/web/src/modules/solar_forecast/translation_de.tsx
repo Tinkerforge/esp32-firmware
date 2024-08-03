@@ -8,7 +8,7 @@ let x = {
         },
         "content": {
             "solar_forecast": "Solarprognose",
-            "planes": "Flächen",
+            "planes": "PV-Flächen",
             "plane_config_latitude": "Breitengrad",
             "plane_config_latitude_muted": "-90° Süden bis 90° Norden",
             "plane_config_longitude": "Längengrad",
