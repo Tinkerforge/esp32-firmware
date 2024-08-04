@@ -45,14 +45,12 @@ type SolarForecastConfig = API.getType["solar_forecast/config"];
 interface SolarForecastState {
     state: API.getType["solar_forecast/state"];
     plane_states: {[plane_index: number]: Readonly<API.getType['planes/0/plane_state']>};
-    plane_configs: {[plane_index: number]: API.getType['planes/0/plane_config']};
+    plane_configs: {[plane_index: number]: PlaneConfig};
     plane_forecasts: {[plane_index: number]: API.getType['planes/0/plane_forecast']};
-    addPlaneConfig: PlaneConfig;
-    editPlaneConfig: PlaneConfig;
+    plane_config_tmp: PlaneConfig;
 }
 
 export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, SolarForecastState> {
-
     constructor() {
         super('solar_forecast/config',
               __("solar_forecast.script.save_failed"));
@@ -119,6 +117,60 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
         return super.getIsModified(topic);
     }
 
+    // FormRows for onEditGetChildren and onAddGetChildren
+    on_get_children() {
+        return [<>
+            <FormRow label={__("solar_forecast.content.plane_config_latitude")} label_muted={__("solar_forecast.content.plane_config_latitude_muted")}>
+                <InputFloat
+                    unit="°"
+                    value={this.state.plane_config_tmp.latitude}
+                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, latitude: v}})}
+                    digits={4}
+                    min={-900000}
+                    max={900000}
+                />
+            </FormRow>
+            <FormRow label={__("solar_forecast.content.plane_config_longitude")} label_muted={__("solar_forecast.content.plane_config_longitude_muted")}>
+                <InputFloat
+                    unit="°"
+                    value={this.state.plane_config_tmp.longitude}
+                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, longitude: v}})}
+                    digits={4}
+                    min={-1800000}
+                    max={1800000}
+                />
+            </FormRow>
+            <FormRow label={__("solar_forecast.content.plane_config_declination")} label_muted={__("solar_forecast.content.plane_config_declination_muted")}>
+                <InputNumber
+                    unit="°"
+                    value={this.state.plane_config_tmp.declination}
+                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, declination: v}})}
+                    min={0}
+                    max={90}
+                />
+            </FormRow>
+            <FormRow label={__("solar_forecast.content.plane_config_azimuth")} label_muted={__("solar_forecast.content.plane_config_azimuth_muted")}>
+                <InputNumber
+                    unit="°"
+                    value={this.state.plane_config_tmp.azimuth}
+                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, azimuth: v}})}
+                    min={-180}
+                    max={180}
+                />
+            </FormRow>
+            <FormRow label={__("solar_forecast.content.plane_config_kwp")} label_muted={__("solar_forecast.content.plane_config_kwp_muted")}>
+                <InputFloat
+                    unit="kW"
+                    value={this.state.plane_config_tmp.kwp}
+                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, kwp: v}})}
+                    digits={2}
+                    min={0}
+                    max={100000}
+                />
+            </FormRow>
+        </>]
+    }
+
     render(props: {}, state: SolarForecastState & SolarForecastConfig) {
         if (!util.render_allowed()) {
             return <SubPage name="solar_forecast" />;
@@ -175,59 +227,10 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                                 (plane_config.kwp/100).toFixed(2) + "kWp",
                                             ],
                                             editTitle: __("solar_forecast.content.edit_plane_config_title"),
-                                            onEditShow: async () => this.setState({editPlaneConfig: {active: plane_config.active, latitude: plane_config.latitude, longitude: plane_config.longitude, declination: plane_config.declination, azimuth: plane_config.azimuth, kwp: plane_config.kwp}}),
-                                            onEditGetChildren: () => [<>
-                                                <FormRow label={__("solar_forecast.content.plane_config_latitude")} label_muted={__("solar_forecast.content.plane_config_latitude_muted")}>
-                                                    <InputFloat
-                                                        unit="°"
-                                                        value={state.editPlaneConfig.latitude}
-                                                        onValue={(v) => this.setState({editPlaneConfig: {...state.editPlaneConfig, latitude: v}})}
-                                                        digits={4}
-                                                        min={-900000}
-                                                        max={900000} 
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("solar_forecast.content.plane_config_longitude")} label_muted={__("solar_forecast.content.plane_config_longitude_muted")}>
-                                                    <InputFloat
-                                                        unit="°"
-                                                        value={state.editPlaneConfig.longitude}
-                                                        onValue={(v) => this.setState({editPlaneConfig: {...state.editPlaneConfig, longitude: v}})}
-                                                        digits={4}
-                                                        min={-1800000}
-                                                        max={1800000} 
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("solar_forecast.content.plane_config_declination")} label_muted={__("solar_forecast.content.plane_config_declination_muted")}>
-                                                    <InputNumber
-                                                        unit="°"
-                                                        value={state.editPlaneConfig.declination}
-                                                        onValue={(v) => this.setState({editPlaneConfig: {...state.editPlaneConfig, declination: v}})}
-                                                        min={0}
-                                                        max={90} 
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("solar_forecast.content.plane_config_azimuth")} label_muted={__("solar_forecast.content.plane_config_azimuth_muted")}>
-                                                    <InputNumber
-                                                        unit="°"
-                                                        value={state.editPlaneConfig.azimuth}
-                                                        onValue={(v) => this.setState({editPlaneConfig: {...state.editPlaneConfig, azimuth: v}})}
-                                                        min={-180}
-                                                        max={180} 
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("solar_forecast.content.plane_config_kwp")} label_muted={__("solar_forecast.content.plane_config_kwp_muted")}>
-                                                    <InputFloat
-                                                        unit="kW"
-                                                        value={state.editPlaneConfig.kwp}
-                                                        onValue={(v) => this.setState({editPlaneConfig: {...state.editPlaneConfig, kwp: v}})}
-                                                        digits={2}
-                                                        min={0}
-                                                        max={100000} 
-                                                    />
-                                                </FormRow>
-                                            </>],
+                                            onEditShow: async () => this.setState({plane_config_tmp: {active: plane_config.active, latitude: plane_config.latitude, longitude: plane_config.longitude, declination: plane_config.declination, azimuth: plane_config.azimuth, kwp: plane_config.kwp}}),
+                                            onEditGetChildren: () => this.on_get_children(),
                                             onEditSubmit: async () => {
-                                                this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: state.editPlaneConfig}});
+                                                this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: state.plane_config_tmp}});
                                                 this.setDirty(true);
                                             },
                                             onRemoveClick: async () => {
@@ -240,60 +243,11 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                     addTitle={__("solar_forecast.content.add_plane_config_title")}
                                     addMessage={__("solar_forecast.content.add_plane_config_message")}
                                     onAddShow={async () => {
-                                        this.setState({addPlaneConfig: {active: true, latitude: 0, longitude: 0, declination: 0, azimuth: 0, kwp: 0}})
+                                        this.setState({plane_config_tmp: {active: true, latitude: 0, longitude: 0, declination: 0, azimuth: 0, kwp: 0}})
                                     }}
-                                    onAddGetChildren={() => [<>
-                                        <FormRow label={__("solar_forecast.content.plane_config_latitude")} label_muted={__("solar_forecast.content.plane_config_latitude_muted")}>
-                                            <InputFloat
-                                                unit="°"
-                                                value={state.addPlaneConfig.latitude}
-                                                onValue={(v) => this.setState({addPlaneConfig: {...state.addPlaneConfig, latitude: v}})}
-                                                digits={4}
-                                                min={-900000}
-                                                max={900000} 
-                                            />
-                                        </FormRow>
-                                        <FormRow label={__("solar_forecast.content.plane_config_longitude")} label_muted={__("solar_forecast.content.plane_config_longitude_muted")}>
-                                            <InputFloat
-                                                unit="°"
-                                                value={state.addPlaneConfig.longitude}
-                                                onValue={(v) => this.setState({addPlaneConfig: {...state.addPlaneConfig, longitude: v}})}
-                                                digits={4}
-                                                min={-1800000}
-                                                max={1800000} 
-                                            />
-                                        </FormRow>
-                                        <FormRow label={__("solar_forecast.content.plane_config_declination")} label_muted={__("solar_forecast.content.plane_config_declination_muted")}>
-                                            <InputNumber
-                                                unit="°"
-                                                value={state.addPlaneConfig.declination}
-                                                onValue={(v) => this.setState({addPlaneConfig: {...state.addPlaneConfig, declination: v}})}
-                                                min={0}
-                                                max={90} 
-                                            />
-                                        </FormRow>
-                                        <FormRow label={__("solar_forecast.content.plane_config_azimuth")} label_muted={__("solar_forecast.content.plane_config_azimuth_muted")}>
-                                            <InputNumber
-                                                unit="°"
-                                                value={state.addPlaneConfig.azimuth}
-                                                onValue={(v) => this.setState({addPlaneConfig: {...state.addPlaneConfig, azimuth: v}})}
-                                                min={-180}
-                                                max={180} 
-                                            />
-                                        </FormRow>
-                                        <FormRow label={__("solar_forecast.content.plane_config_kwp")} label_muted={__("solar_forecast.content.plane_config_kwp_muted")}>
-                                            <InputFloat
-                                                unit="kW"
-                                                value={state.addPlaneConfig.kwp}
-                                                onValue={(v) => this.setState({addPlaneConfig: {...state.addPlaneConfig, kwp: v}})}
-                                                digits={2}
-                                                min={0}
-                                                max={100000} 
-                                            />
-                                        </FormRow>
-                                    </>]}
+                                    onAddGetChildren={() => this.on_get_children()}
                                     onAddSubmit={async () => {
-                                        this.setState({plane_configs: {...state.plane_configs, [get_next_free_plane_index()]: state.addPlaneConfig}});
+                                        this.setState({plane_configs: {...state.plane_configs, [get_next_free_plane_index()]: state.plane_config_tmp}});
                                         this.setDirty(true);
                                     }}
                                 />
