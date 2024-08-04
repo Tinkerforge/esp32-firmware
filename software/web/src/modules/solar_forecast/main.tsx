@@ -227,7 +227,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                                 (plane_config.kwp/100).toFixed(2) + "kWp",
                                             ],
                                             editTitle: __("solar_forecast.content.edit_plane_config_title"),
-                                            onEditShow: async () => this.setState({plane_config_tmp: {active: plane_config.active, latitude: plane_config.latitude, longitude: plane_config.longitude, declination: plane_config.declination, azimuth: plane_config.azimuth, kwp: plane_config.kwp}}),
+                                            onEditShow: async () => this.setState({plane_config_tmp: {...plane_config}}),
                                             onEditGetChildren: () => this.on_get_children(),
                                             onEditSubmit: async () => {
                                                 this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: state.plane_config_tmp}});
