@@ -1,6 +1,3 @@
-import sys
-import re
-from pathlib import PurePath
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, 'software')
