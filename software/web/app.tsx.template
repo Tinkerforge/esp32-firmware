@@ -61,7 +61,9 @@ function get_sub_page() {
 
     if (element == null || element.hidden) {
         sub_page = "status";
-        history.replaceState({}, "", "#" + sub_page);
+        if (!util.iframeMode) {
+            history.replaceState({}, "", "#" + sub_page);
+        }
     }
 
     return sub_page;
@@ -97,6 +99,7 @@ function login(username: string, password: string): Promise<boolean> {
         }
 
         xhr.open("GET", location.protocol + "//" + location.host + "/credential_check", true, username, password);
+        xhr.setRequestHeader("X-Connection-Id", util.connection_id);
         xhr.send();
     });
 }

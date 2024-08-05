@@ -25,7 +25,6 @@ import { AsyncModal } from "./components/async_modal";
 import { api_cache } from "./api_defs";
 import { batch, signal, Signal } from "@preact/signals-core";
 import { deepSignal, DeepSignal } from "deepsignal";
-import { useState } from "preact/hooks";
 
 export function reboot() {
     API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
@@ -195,12 +194,21 @@ export function initCapsLockCheck() {
 }
 
 export const iframeMode = window.top !== window.self;
-const path = location.pathname.substring(0, location.pathname.length - 1);
+const path = location.origin;
+export let connection_id = "";
+
+if (iframeMode) {
+    window.parent.postMessage("webinterface_loaded");
+}
 
 window.addEventListener("message", (e) => {
-    const msg = e.data as string;
-    if (iFrameSocketCb) {
-        iFrameSocketCb(msg);
+    if (typeof e.data === "string") {
+        const msg = e.data as string;
+        if (iFrameSocketCb) {
+            iFrameSocketCb(msg);
+        }
+    } else {
+        connection_id = e.data.connection_id;
     }
 });
 
@@ -362,10 +370,14 @@ export function postReboot(alert_title: string, alert_text: string) {
 let loginReconnectTimeout: number = null;
 
 export function ifLoggedInElse(if_continuation: () => void, else_continuation: () => void) {
-    download("/login_state", 10000)
-        .catch(e => new Blob(["Logged in"]))
-        .then(blob => blob.text())
-        .then(text => text == "Logged in" ? if_continuation() : else_continuation());
+    if (!iframeMode || connection_id.length > 0) {
+        download("/login_state", 10000)
+            .catch(e => new Blob(["Logged in"]))
+            .then(blob => blob.text())
+            .then(text => text == "Logged in" ? if_continuation() : else_continuation());
+    } else {
+        setTimeout(() => ifLoggedInElse(if_continuation, else_continuation));
+    }
 }
 
 export function ifLoggedInElseReload(continuation: () => void) {
@@ -560,6 +572,7 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
 
         xhr.addEventListener("loadend", () => {
             if (xhr.readyState === XMLHttpRequest.DONE) {
+                xhr.response
                 progress(1);
                 if (xhr.status === 200)
                     resolve();
@@ -568,6 +581,7 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
         });
 
         xhr.open("POST", url, true);
+        xhr.setRequestHeader("X-Connection-Id", connection_id);
         xhr.timeout = timeout_ms;
         if (contentType)
             xhr.setRequestHeader("Content-Type", contentType);
@@ -584,12 +598,11 @@ export async function download(url: string, timeout_ms: number = 5000) {
         if (iframeMode) {
             url = path + (url.startsWith("/") ? "" : "/") + url;
         }
-        response = await fetch(url, {signal: abort.signal})
+        response = await fetch(url, {signal: abort.signal, headers: {"X-Connection-Id": connection_id}});
     } catch (e) {
         clearTimeout(timeout);
         throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
     }
-
     if (!response.ok) {
         throw new Error(`${response.status}(${response.statusText}) ${await response.text()}`)
     }
@@ -610,7 +623,10 @@ export async function put(url: string, payload: any, timeout_ms: number = 5000) 
             signal: abort.signal,
             method: "PUT",
             credentials: 'same-origin',
-            headers: {"Content-Type": "application/json; charset=utf-8"},
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                "X-Connection-Id": connection_id,
+            },
             body: JSON.stringify(payload)})
     } catch (e) {
         clearTimeout(timeout);
