@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "async_https_clnt"
+
 #include "async_https_client.h"
 
 #include "event_log_prefix.h"
