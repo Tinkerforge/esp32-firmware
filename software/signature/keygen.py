@@ -168,7 +168,12 @@ def main():
 
     print(f'adding sodium secret key entry to {sodium_secret_key_path}')
 
-    if keepassxc(config, 'sodium_secret_key', 'add', ['-p'], 'sodium_secret_key', password=sodium_secret_key_password, input=sodium_secret_key_buffer.raw.hex()) == None:
+    sodium_secret_key_hex = sodium_secret_key_buffer.raw.hex()
+
+    if keepassxc(config, 'sodium_secret_key', 'add', ['-p'], 'sodium_secret_key', password=sodium_secret_key_password, input=sodium_secret_key_hex) == None:
+        raise Exception(f'could not add sodium secret key to {sodium_secret_key_path}')
+
+    if keepassxc(config, 'sodium_secret_key', 'show', ['-s', '-a', 'password'], 'sodium_secret_key', password=sodium_secret_key_password) != sodium_secret_key_hex:
         raise Exception(f'could not add sodium secret key to {sodium_secret_key_path}')
 
     gpg_keyring_path = make_keys_path(config['gpg_keyring_path'])
@@ -234,6 +239,9 @@ def main():
     gpg_keyring_passphrase = secrets.token_hex(64)
 
     if keepassxc(config, 'gpg_keyring_passphrase', 'add', ['-p'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password, input=gpg_keyring_passphrase) == None:
+        raise Exception(f'could not add GPG keyring passphrase to {gpg_keyring_passphrase_path}')
+
+    if keepassxc(config, 'gpg_keyring_passphrase', 'show', ['-s', '-a', 'password'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != gpg_keyring_passphrase:
         raise Exception(f'could not add GPG keyring passphrase to {gpg_keyring_passphrase_path}')
 
     print(f'creating GPG keyring file {gpg_keyring_path}')
