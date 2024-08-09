@@ -98,6 +98,8 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--force', action='store_true')
+    parser.add_argument('--sodium-secret-key-password', nargs='?')
+    parser.add_argument('--gpg-keyring-passphrase-password', nargs='?')
     parser.add_argument('signature_name')
     parser.add_argument('input_path')
     parser.add_argument('output_path')
@@ -131,9 +133,9 @@ def main():
     if not os.path.exists(sodium_secret_key_path):
         raise Exception(f'sodium secret key file {sodium_secret_key_path} is missing')
 
-    sodium_secret_key_password = None
+    sodium_secret_key_password = args.sodium_secret_key_password
 
-    if config['sodium_secret_key_protection'] == 'password':
+    if config['sodium_secret_key_protection'] == 'password' and sodium_secret_key_password == None:
         print(f'enter password for sodium secret key file {sodium_secret_key_path}:')
         sodium_secret_key_password = getpass.getpass(prompt='')
 
@@ -221,9 +223,9 @@ def main():
         if not os.path.exists(gpg_keyring_passphrase_path):
             raise Exception(f'GPG keyring passphrase file {gpg_keyring_passphrase_path} is missing')
 
-        gpg_keyring_passphrase_password = None
+        gpg_keyring_passphrase_password = args.gpg_keyring_passphrase_password
 
-        if config['gpg_keyring_passphrase_protection'] == 'password':
+        if config['gpg_keyring_passphrase_protection'] == 'password' and gpg_keyring_passphrase_password == None:
             print(f'enter password for GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
             gpg_keyring_passphrase_password = getpass.getpass(prompt='')
 
