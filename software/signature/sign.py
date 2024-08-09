@@ -106,8 +106,14 @@ def main():
 
     args = parser.parse_args()
 
+    if not os.path.exists(args.input_path):
+        raise Exception(f'input file {args.input_path} is missing')
+
     if os.path.exists(args.output_path):
         if args.force:
+            if os.path.samefile(args.input_path, args.output_path):
+                raise Exception(f'input file {args.input_path} and output file {args.output_path} are the same')
+
             try:
                 os.remove(args.output_path)
             except Exception as e:
