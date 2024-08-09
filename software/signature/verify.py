@@ -63,6 +63,7 @@ def main():
     libsodium = load_libsodium()
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--skip-checksum', action='store_true')
     parser.add_argument('signature_name')
     parser.add_argument('input_path')
 
@@ -94,18 +95,21 @@ def main():
     except Exception as e:
         raise Exception(f'could not read input from {args.input_path}: {e}')
 
-    try:
-        with open(args.input_path + '.sha256', 'r') as f:
-            expected_sha256sum = f.read().split(' ')[0]
-    except Exception as e:
-        raise Exception(f'could not read checksum from {args.input_path}.sha256: {e}')
+    if args.skip_checksum:
+        print('skipping checksum verify')
+    else:
+        try:
+            with open(args.input_path + '.sha256', 'r') as f:
+                expected_sha256sum = f.read().split(' ')[0]
+        except Exception as e:
+            raise Exception(f'could not read checksum from {args.input_path}.sha256: {e}')
 
-    actual_sha256sum = hashlib.sha256(input_data).hexdigest()
+        actual_sha256sum = hashlib.sha256(input_data).hexdigest()
 
-    if actual_sha256sum != expected_sha256sum:
-        raise Exception(f'checksum mismatch: {repr(actual_sha256sum)} != {repr(expected_sha256sum)}')
+        if actual_sha256sum != expected_sha256sum:
+            raise Exception(f'checksum mismatch: {repr(actual_sha256sum)} != {repr(expected_sha256sum)}')
 
-    print('checksum is matching')
+        print('checksum is matching')
 
     sodium_public_key_path = make_keys_path(config['sodium_public_key_path'])
 
