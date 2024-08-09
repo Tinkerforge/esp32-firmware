@@ -8,6 +8,8 @@ sodium_secret_key_protection = token
 sodium_secret_key_token = 123456789
 sodium_secret_key_keyfile = sodium_secret_key_v1.keyfile
 
+gpg_sign = true
+
 gpg_keyring_path = gpg_keyring_v1.gpg
 gpg_keyring_user_id = My Signature Publisher
 

@@ -72,18 +72,21 @@ def main():
     config.read(make_path('config.ini'))
     config = config['preset:' + config['signature:' + args.signature_name]['preset']]
 
-    gpg_public_key_path = make_keys_path(config['gpg_public_key_path'])
+    if not config.getboolean('gpg_sign'):
+        print('skipping GPG verify')
+    else:
+        gpg_public_key_path = make_keys_path(config['gpg_public_key_path'])
 
-    try:
-        subprocess.check_call([
-            'gpgv',
-            '--keyring', gpg_public_key_path,
-            args.input_path + '.sha256.asc', args.input_path + '.sha256',
-        ])
-    except:
-        raise Exception('could not verify GPG signature')
+        try:
+            subprocess.check_call([
+                'gpgv',
+                '--keyring', gpg_public_key_path,
+                args.input_path + '.sha256.asc', args.input_path + '.sha256',
+            ])
+        except:
+            raise Exception('could not verify GPG signature')
 
-    print('GPG signature is valid')
+        print('GPG signature is valid')
 
     try:
         with open(args.input_path, 'rb') as f:

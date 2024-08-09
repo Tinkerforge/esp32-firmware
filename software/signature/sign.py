@@ -211,44 +211,47 @@ def main():
     except Exception as e:
         raise Exception(f'could not rename checksum file from {args.output_path}.tmp to {args.output_path}.sha256: {e}')
 
-    gpg_keyring_passphrase_path = make_keys_path(config['gpg_keyring_passphrase_path'])
+    if not config.getboolean('gpg_sign'):
+        print('skipping GPG signature')
+    else:
+        gpg_keyring_passphrase_path = make_keys_path(config['gpg_keyring_passphrase_path'])
 
-    print(f'reading GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
+        print(f'reading GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
 
-    if not os.path.exists(gpg_keyring_passphrase_path):
-        raise Exception(f'GPG keyring passphrase file {gpg_keyring_passphrase_path} is missing')
+        if not os.path.exists(gpg_keyring_passphrase_path):
+            raise Exception(f'GPG keyring passphrase file {gpg_keyring_passphrase_path} is missing')
 
-    gpg_keyring_passphrase_password = None
+        gpg_keyring_passphrase_password = None
 
-    if config['gpg_keyring_passphrase_protection'] == 'password':
-        print(f'enter password for GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
-        gpg_keyring_passphrase_password = getpass.getpass(prompt='')
+        if config['gpg_keyring_passphrase_protection'] == 'password':
+            print(f'enter password for GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
+            gpg_keyring_passphrase_password = getpass.getpass(prompt='')
 
-    gpg_keyring_passphrase = keepassxc(config, 'gpg_keyring_passphrase', 'show', ['-s', '-a', 'password'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password)
+        gpg_keyring_passphrase = keepassxc(config, 'gpg_keyring_passphrase', 'show', ['-s', '-a', 'password'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password)
 
-    if gpg_keyring_passphrase == None:
-        raise Exception(f'could not read GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
+        if gpg_keyring_passphrase == None:
+            raise Exception(f'could not read GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
 
-    gpg_keyring_passphrase = gpg_keyring_passphrase.strip()
+        gpg_keyring_passphrase = gpg_keyring_passphrase.strip()
 
-    gpg_keyring_path = make_keys_path(config['gpg_keyring_path'])
+        gpg_keyring_path = make_keys_path(config['gpg_keyring_path'])
 
-    if not os.path.exists(gpg_keyring_path):
-        raise Exception(f'GPG keyring file {gpg_keyring_path} is missing')
+        if not os.path.exists(gpg_keyring_path):
+            raise Exception(f'GPG keyring file {gpg_keyring_path} is missing')
 
-    try:
-        subprocess.check_call([
-            'gpg',
-            '--pinentry-mode', 'loopback',
-            '--no-default-keyring',
-            '--keyring', gpg_keyring_path,
-            '--passphrase', gpg_keyring_passphrase,
-            '--output', args.output_path + '.sha256.asc',
-            '--armor',
-            '--detach-sign', args.output_path + '.sha256',
-        ])
-    except:
-        raise Exception(f'could not GPG sign {args.output_path}.sha256')
+        try:
+            subprocess.check_call([
+                'gpg',
+                '--pinentry-mode', 'loopback',
+                '--no-default-keyring',
+                '--keyring', gpg_keyring_path,
+                '--passphrase', gpg_keyring_passphrase,
+                '--output', args.output_path + '.sha256.asc',
+                '--armor',
+                '--detach-sign', args.output_path + '.sha256',
+            ])
+        except:
+            raise Exception(f'could not GPG sign {args.output_path}.sha256')
 
     print(f'successfully signed by {repr(publisher)}')
 

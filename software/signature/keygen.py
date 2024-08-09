@@ -176,102 +176,105 @@ def main():
     if keepassxc(config, 'sodium_secret_key', 'show', ['-s', '-a', 'password'], 'sodium_secret_key', password=sodium_secret_key_password) != sodium_secret_key_hex:
         raise Exception(f'could not add sodium secret key to {sodium_secret_key_path}')
 
-    gpg_keyring_path = make_keys_path(config['gpg_keyring_path'])
+    if not config.getboolean('gpg_sign'):
+        print('skipping GPG keyring')
+    else:
+        gpg_keyring_path = make_keys_path(config['gpg_keyring_path'])
 
-    print(f'checking for existing GPG keyring file {gpg_keyring_path}')
+        print(f'checking for existing GPG keyring file {gpg_keyring_path}')
 
-    if os.path.exists(gpg_keyring_path):
-        if not args.force:
-            raise Exception(f'GPG keyring file {gpg_keyring_path} already exists')
+        if os.path.exists(gpg_keyring_path):
+            if not args.force:
+                raise Exception(f'GPG keyring file {gpg_keyring_path} already exists')
 
-        print(f'removing existing GPG keyring file {gpg_keyring_path} [--force]')
+            print(f'removing existing GPG keyring file {gpg_keyring_path} [--force]')
 
-        try:
-            os.remove(gpg_keyring_path)
-        except Exception as e:
-            raise Exception(f'could not remove existing GPG keyring file {gpg_keyring_path}: {e}')
+            try:
+                os.remove(gpg_keyring_path)
+            except Exception as e:
+                raise Exception(f'could not remove existing GPG keyring file {gpg_keyring_path}: {e}')
 
-    gpg_keyring_passphrase_path = make_keys_path(config['gpg_keyring_passphrase_path'])
+        gpg_keyring_passphrase_path = make_keys_path(config['gpg_keyring_passphrase_path'])
 
-    if not os.path.exists(gpg_keyring_passphrase_path):
-        raise Exception(f'GPG keyring passphrase file {gpg_keyring_passphrase_path} is missing')
+        if not os.path.exists(gpg_keyring_passphrase_path):
+            raise Exception(f'GPG keyring passphrase file {gpg_keyring_passphrase_path} is missing')
 
-    gpg_keyring_passphrase_password = None
+        gpg_keyring_passphrase_password = None
 
-    if config['gpg_keyring_passphrase_protection'] == 'password':
-        print(f'enter password for existing GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
-        gpg_keyring_passphrase_password = getpass.getpass(prompt='')
+        if config['gpg_keyring_passphrase_protection'] == 'password':
+            print(f'enter password for existing GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
+            gpg_keyring_passphrase_password = getpass.getpass(prompt='')
 
-    print(f'checking for existing GPG keyring passphrase enrty in {gpg_keyring_passphrase_path}')
-
-    if keepassxc(config, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != None:
-        if not args.force:
-            raise Exception(f'GPG keyring passphrase entry already exists in {gpg_keyring_passphrase_path}')
-
-        print(f'removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} [--force]')
-
-        if keepassxc(config, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
-            raise Exception(f'could not remove existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
+        print(f'checking for existing GPG keyring passphrase enrty in {gpg_keyring_passphrase_path}')
 
         if keepassxc(config, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != None:
-            print(f'removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin [--force]')
+            if not args.force:
+                raise Exception(f'GPG keyring passphrase entry already exists in {gpg_keyring_passphrase_path}')
+
+            print(f'removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} [--force]')
 
             if keepassxc(config, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
-                raise Exception(f'could not remove existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin')
+                raise Exception(f'could not remove existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
 
-    gpg_public_key_path = make_keys_path(config['gpg_public_key_path'])
+            if keepassxc(config, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != None:
+                print(f'removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin [--force]')
 
-    print(f'checking for existing GPG public key file {gpg_public_key_path}')
+                if keepassxc(config, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
+                    raise Exception(f'could not remove existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin')
 
-    if os.path.exists(gpg_public_key_path):
-        if not args.force:
-            raise Exception(f'GPG public key file {gpg_public_key_path} already exists')
+        gpg_public_key_path = make_keys_path(config['gpg_public_key_path'])
 
-        print(f'removing existing GPG public key file {gpg_public_key_path} [--force]')
+        print(f'checking for existing GPG public key file {gpg_public_key_path}')
+
+        if os.path.exists(gpg_public_key_path):
+            if not args.force:
+                raise Exception(f'GPG public key file {gpg_public_key_path} already exists')
+
+            print(f'removing existing GPG public key file {gpg_public_key_path} [--force]')
+
+            try:
+                os.remove(gpg_public_key_path)
+            except Exception as e:
+                raise Exception(f'could not remove existing GPG public key file {gpg_public_key_path}: {e}')
+
+        print(f'adding GPG keyring passphrase entry to {gpg_keyring_passphrase_path}')
+
+        gpg_keyring_passphrase = secrets.token_hex(64)
+
+        if keepassxc(config, 'gpg_keyring_passphrase', 'add', ['-p'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password, input=gpg_keyring_passphrase) == None:
+            raise Exception(f'could not add GPG keyring passphrase to {gpg_keyring_passphrase_path}')
+
+        if keepassxc(config, 'gpg_keyring_passphrase', 'show', ['-s', '-a', 'password'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != gpg_keyring_passphrase:
+            raise Exception(f'could not add GPG keyring passphrase to {gpg_keyring_passphrase_path}')
+
+        print(f'creating GPG keyring file {gpg_keyring_path}')
 
         try:
-            os.remove(gpg_public_key_path)
-        except Exception as e:
-            raise Exception(f'could not remove existing GPG public key file {gpg_public_key_path}: {e}')
+            subprocess.check_call([
+                'gpg',
+                '--pinentry-mode', 'loopback',
+                '--no-default-keyring',
+                '--keyring', gpg_keyring_path,
+                '--passphrase', gpg_keyring_passphrase,
+                '--quick-generate-key', config['gpg_keyring_user_id'], 'default', 'default', '0',
+            ])
+        except:
+            raise Exception(f'could not create GPG keyring file {gpg_keyring_path}')
 
-    print(f'adding GPG keyring passphrase entry to {gpg_keyring_passphrase_path}')
+        print(f'exporting GPG public key to {gpg_public_key_path}')
 
-    gpg_keyring_passphrase = secrets.token_hex(64)
-
-    if keepassxc(config, 'gpg_keyring_passphrase', 'add', ['-p'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password, input=gpg_keyring_passphrase) == None:
-        raise Exception(f'could not add GPG keyring passphrase to {gpg_keyring_passphrase_path}')
-
-    if keepassxc(config, 'gpg_keyring_passphrase', 'show', ['-s', '-a', 'password'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != gpg_keyring_passphrase:
-        raise Exception(f'could not add GPG keyring passphrase to {gpg_keyring_passphrase_path}')
-
-    print(f'creating GPG keyring file {gpg_keyring_path}')
-
-    try:
-        subprocess.check_call([
-            'gpg',
-            '--pinentry-mode', 'loopback',
-            '--no-default-keyring',
-            '--keyring', gpg_keyring_path,
-            '--passphrase', gpg_keyring_passphrase,
-            '--quick-generate-key', config['gpg_keyring_user_id'], 'default', 'default', '0',
-        ])
-    except:
-        raise Exception(f'could not create GPG keyring file {gpg_keyring_path}')
-
-    print(f'exporting GPG public key to {gpg_public_key_path}')
-
-    try:
-        subprocess.check_call([
-            'gpg',
-            '--pinentry-mode', 'loopback',
-            '--no-default-keyring',
-            '--keyring', gpg_keyring_path,
-            '--passphrase', gpg_keyring_passphrase,
-            '--output', gpg_public_key_path,
-            '--export', config['gpg_keyring_user_id'],
-        ])
-    except:
-        raise Exception(f'could not export GPG public key to {gpg_public_key_path}')
+        try:
+            subprocess.check_call([
+                'gpg',
+                '--pinentry-mode', 'loopback',
+                '--no-default-keyring',
+                '--keyring', gpg_keyring_path,
+                '--passphrase', gpg_keyring_passphrase,
+                '--output', gpg_public_key_path,
+                '--export', config['gpg_keyring_user_id'],
+            ])
+        except:
+            raise Exception(f'could not export GPG public key to {gpg_public_key_path}')
 
     print('successfully generated keys')
 
