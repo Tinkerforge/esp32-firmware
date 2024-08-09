@@ -39,6 +39,7 @@
 #include "shelly_pro_3em_device_profile.enum.h"
 #include "shelly_em_monophase_channel.enum.h"
 #include "shelly_em_monophase_mapping.enum.h"
+#include "goodwe_hybrid_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -145,6 +146,9 @@ private:
     ShellyPro3EMDeviceProfile shelly_pro_3em_device_profile;
     ShellyEMMonophaseChannel shelly_pro_3em_monophase_channel;
     ShellyEMMonophaseMapping shelly_pro_3em_monophase_mapping;
+
+    // GoodWe
+    GoodweHybridInverterVirtualMeter goodwe_hybrid_inverter_virtual_meter;
 };
 
 #if defined(__GNUC__)
