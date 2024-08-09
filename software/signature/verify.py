@@ -85,18 +85,6 @@ def main():
 
     print('GPG signature is valid')
 
-    sodium_public_key_path = make_keys_path(config['sodium_public_key_path'])
-
-    with open(sodium_public_key_path, 'r', encoding='utf-8') as f:
-        sodium_public_key_json = json.loads(f.read())
-
-    sodium_public_key = bytes.fromhex(sodium_public_key_json['sodium_public_key'])
-
-    crypto_sign_PUBLICKEYBYTES = libsodium.crypto_sign_publickeybytes()
-
-    if len(sodium_public_key) != crypto_sign_PUBLICKEYBYTES:
-        raise Exception('sodium public key has wrong size')
-
     try:
         with open(args.input_path, 'rb') as f:
             input_data = bytearray(f.read())
@@ -115,6 +103,18 @@ def main():
         raise Exception(f'checksum mismatch: {repr(actual_sha256sum)} != {repr(expected_sha256sum)}')
 
     print('checksum is matching')
+
+    sodium_public_key_path = make_keys_path(config['sodium_public_key_path'])
+
+    with open(sodium_public_key_path, 'r', encoding='utf-8') as f:
+        sodium_public_key_json = json.loads(f.read())
+
+    sodium_public_key = bytes.fromhex(sodium_public_key_json['sodium_public_key'])
+
+    crypto_sign_PUBLICKEYBYTES = libsodium.crypto_sign_publickeybytes()
+
+    if len(sodium_public_key) != crypto_sign_PUBLICKEYBYTES:
+        raise Exception('sodium public key has wrong size')
 
     crypto_sign_BYTES = libsodium.crypto_sign_bytes()
     assert(crypto_sign_BYTES == 64)
