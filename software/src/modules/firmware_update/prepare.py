@@ -35,7 +35,7 @@ if metadata_json == None:
 metadata = json.loads(metadata_json)
 
 if not metadata['signed']:
-    publisher = b''
+    publisher = ''
     sodium_public_key = b''
 else:
     config = configparser.ConfigParser()
