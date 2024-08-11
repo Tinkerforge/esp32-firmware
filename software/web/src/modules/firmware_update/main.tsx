@@ -41,6 +41,7 @@ interface FirmwareUpdateState {
     current_firmware: string,
     manual_install_in_progress: boolean,
     update_url: string,
+    publisher: string,
     check_timestamp: number,
     check_state: number,
     update_version: string,
@@ -56,6 +57,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             current_firmware: null,
             manual_install_in_progress: false,
             update_url: null,
+            publisher: null,
             check_timestamp: 0,
             check_state: null,
             update_version: null,
@@ -87,6 +89,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             }
 
             this.setState({
+                publisher: state.publisher,
                 check_timestamp: state.check_timestamp,
                 check_state: state.check_state,
                 update_version: state.update_version,
@@ -143,17 +146,31 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
         return true;
     }
 
-    format_build_time(version: string) {
+    format_build_extra(version: string, publisher: string) {
+        let result = '';
+
         try {
             let timestamp = parseInt(version.split('+')[1], 16);
 
             if (util.hasValue(timestamp) && !isNaN(timestamp)) {
-                return __("firmware_update.script.build_time")(util.timestamp_sec_to_date(timestamp));
+                result += __("firmware_update.script.build_time")(util.timestamp_sec_to_date(timestamp));
             }
         } catch {
         }
 
-        return ""
+        if (result.length > 0 && publisher.length > 0) {
+            result += ', ';
+        }
+
+        if (publisher.length > 0) {
+            result += __("firmware_update.script.publisher")(publisher);
+        }
+
+        if (result.length > 0) {
+            result = ` (${result})`
+        }
+
+        return result;
     }
 
     render() {
@@ -165,7 +182,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                 <PageHeader title={__("firmware_update.content.firmware_update")} />
 
                 <FormRow label={__("firmware_update.content.current_version")}>
-                    <InputText value={this.state.current_firmware + this.format_build_time(this.state.current_firmware)}/>
+                    <InputText value={this.state.current_firmware + this.format_build_extra(this.state.current_firmware, this.state.publisher)}/>
                 </FormRow>
 
                 <FormRow label={__("firmware_update.content.manual_update")} label_muted={__("firmware_update.content.manual_update_muted")}>
@@ -270,7 +287,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                                 <FormRow label={__("firmware_update.content.available_update")}>
                                     <InputText value={
                                         this.state.update_version.length > 0
-                                            ? this.state.update_version + this.format_build_time(this.state.update_version)
+                                            ? this.state.update_version + this.format_build_extra(this.state.update_version, '')
                                             : __("firmware_update.content.no_update")}>
                                         {this.state.update_version.length > 0
                                             ? <div class="input-group-append">

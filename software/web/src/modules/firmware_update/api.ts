@@ -4,6 +4,7 @@ export interface config {
 }
 
 export interface state {
+    publisher: string,
     check_timestamp: number,
     check_state: number,
     update_version: string,

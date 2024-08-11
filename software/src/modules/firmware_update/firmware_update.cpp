@@ -147,6 +147,7 @@ void FirmwareUpdate::pre_setup()
     }};
 
     state = Config::Object({
+        {"publisher", Config::Str(signature_publisher, 0, strlen(signature_publisher))},
         {"check_timestamp", Config::Uint(0)},
         {"check_state", Config::Uint8(static_cast<uint8_t>(CheckState::Idle))},
         {"update_version", Config::Str("", 0, 32)},

@@ -71,7 +71,8 @@ let x = {
             "install_state_23": "Abgebrochen",
             "install_state_24": "Starte neu",
             "install_state_25": "Teil-Download aufgetreten",
-            "build_time": /*SFN*/(build_time: string) => ` (erstellt ${build_time})`/*NF*/,
+            "build_time": /*SFN*/(build_time: string) => `erstellt ${build_time}`/*NF*/,
+            "publisher": /*SFN*/(publisher: string) => `von ${publisher}`/*NF*/,
             "install_failed": "Installation fehlgeschlagen"
         }
     }
