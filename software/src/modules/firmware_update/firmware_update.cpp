@@ -183,6 +183,13 @@ void FirmwareUpdate::setup()
     }
 
     cert_id = config.get("cert_id")->asInt();
+
+#if signature_sodium_public_key_length != 0
+    logger.printfln("Firmware is signed by: %s", signature_publisher);
+#else
+    logger.printfln("Firmware is not signed");
+#endif
+
     initialized = true;
 }
 
