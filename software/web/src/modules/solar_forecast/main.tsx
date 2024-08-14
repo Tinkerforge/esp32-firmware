@@ -19,7 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment } from "preact";
+import { createRef, h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -27,11 +27,16 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { Collapse } from "react-bootstrap";
+import { Button, Collapse } from "react-bootstrap";
 import { InputFloat } from "../../ts/components/input_float";
-import { Sunrise } from "react-feather";
+import { Sunrise, Info, ChevronRight } from "react-feather";
 import { Table } from "../../ts/components/table";
 import { InputNumber } from "../../ts/components/input_number";
+import { FormSeparator } from "../../ts/components/form_separator";
+import { UplotLoader } from "../../ts/components/uplot_loader";
+import { UplotData, UplotWrapper } from "../../ts/components/uplot_wrapper_2nd";
+import { InputText } from "../../ts/components/input_text";
+import { CollapsedSection } from "../../ts/components/collapsed_section";
 
 const SOLAR_FORECAST_PLANES = 6;
 
@@ -48,12 +53,27 @@ interface SolarForecastState {
     plane_configs: {[plane_index: number]: PlaneConfig};
     plane_forecasts: {[plane_index: number]: API.getType['planes/0/plane_forecast']};
     plane_config_tmp: PlaneConfig;
+    extra_show: boolean[];
 }
 
 export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, SolarForecastState> {
+    uplot_loader_ref        = createRef();
+    uplot_wrapper_ref       = createRef();
+    uplot_legend_div_ref    = createRef();
+    uplot_wrapper_flags_ref = createRef();
+
     constructor() {
         super('solar_forecast/config',
-              __("solar_forecast.script.save_failed"));
+              __("solar_forecast.script.save_failed"),
+              undefined, {
+                  extra_show: new Array<boolean>(SOLAR_FORECAST_PLANES),
+              });
+
+        this.state.extra_show.fill(false);
+
+        util.addApiEventListener("solar_forecast/state", () => {
+            this.setState({state: API.get("solar_forecast/state")});
+        });
 
         for (let plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; ++plane_index) {
             util.addApiEventListener_unchecked(`solar_forecast/planes/${plane_index}/state`, () => {
@@ -65,6 +85,19 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                         [plane_index]: state
                     }
                 }));
+            });
+
+            util.addApiEventListener_unchecked(`solar_forecast/planes/${plane_index}/forecast`, () => {
+                let forecast = API.get_unchecked(`solar_forecast/planes/${plane_index}/forecast`);
+
+                this.setState((prevState) => ({
+                    plane_forecasts: {
+                        ...prevState.plane_forecasts,
+                        [plane_index]: forecast
+                    }
+                }));
+
+                this.update_uplot();
             });
 
             util.addApiEventListener_unchecked(`solar_forecast/planes/${plane_index}/config`, () => {
@@ -120,6 +153,14 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
     // FormRows for onEditGetChildren and onAddGetChildren
     on_get_children() {
         return [<>
+            <FormRow label={__("solar_forecast.content.plane_config_name")} label_muted={__("solar_forecast.content.plane_config_name_muted")}>
+                <InputText
+                    value={this.state.plane_config_tmp.name}
+                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, name: v}})}
+                    minLength={1}
+                    maxLength={16}
+                />
+            </FormRow>
             <FormRow label={__("solar_forecast.content.plane_config_latitude")} label_muted={__("solar_forecast.content.plane_config_latitude_muted")}>
                 <InputFloat
                     unit="°"
@@ -171,6 +212,84 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
         </>]
     }
 
+    update_uplot() {
+        if (this.uplot_wrapper_ref.current == null) {
+            return;
+        }
+
+        let data: UplotData;
+
+        // Is data to display available?
+        let data_available = false;
+        let first_date = 0;
+        let first_index = 0;
+        let active_planes = [];
+        for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
+            // Data is available if at least one plane is active and all active planes have forecast data
+            if(this.state.plane_configs[i].active && (this.state.plane_forecasts[i].forecast.length > 0)) {
+                if (!data_available) {
+                    // We use first date from first plane that has data available
+                    first_date = this.state.plane_forecasts[i].first_date;
+                    first_index = i;
+                }
+                active_planes.push(i);
+                data_available = true;
+            } else {
+                //data_available = false;
+                //break;
+            }
+        }
+
+        console.log(data_available, first_date, first_index, active_planes);
+
+        if (!data_available) {
+            data = {
+                keys: [],
+                names: [],
+                values: [],
+                stacked: [],
+                bars: [],
+                update_timestamp: 0,
+                use_timestamp: 0
+            }
+        } else {
+            data = {
+                keys: ['time'],
+                names: [__("solar_forecast.content.time")],
+                values: [[]],
+                stacked: [false],
+                bars: [false],
+                default_visibilty: [true],
+                update_timestamp: 0,
+                use_timestamp: 0
+            }
+
+            for (const index in active_planes) {
+                data.keys.push('plane' + index);
+                data.names.push(__("solar_forecast.content.plane") + ' ' + this.state.plane_configs[index].name);
+                data.values.push([]);
+                data.stacked.push(true);
+                data.bars.push(false);
+                data.default_visibilty.push(true);
+
+            }
+
+            let resolution_multiplier = 60;
+            for (let i = 0; i < this.state.plane_forecasts[first_index].forecast.length; i++) {
+                data.values[0].push(this.state.plane_forecasts[first_index].first_date*60 + i*60*resolution_multiplier);
+                let j = 1;
+                for (const index in active_planes) {
+                    data.values[j].push(this.state.plane_forecasts[index].forecast[i]/1000.0);
+                    j++;
+                }
+            }
+        }
+
+        // Show loader or data depending on the availability of data
+        this.uplot_loader_ref.current.set_data(data && data.keys.length > 1);
+        this.uplot_wrapper_ref.current.set_data(data);
+    }
+
     render(props: {}, state: SolarForecastState & SolarForecastConfig) {
         if (!util.render_allowed()) {
             return <SubPage name="solar_forecast" />;
@@ -196,6 +315,22 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
             return active_planes;
         }
 
+        function get_plane_info(plane_index: number) {
+            let plane_state = state.plane_states[plane_index];
+            if (plane_state.last_check == 0) {
+                // Darauf hinweisen das noch nicht gespeichert wurde falls isDirty()
+                return <div class="form-group row"><span class="col-12">Solarprognose für diese Fläche wurde noch nicht abgefragt.</span></div>;
+            } else {
+                return <div>
+                        <div class="form-group row"><span class="col-4">Adresse der PV-Fläche: </span><span class="col-8"> {plane_state.place} (Genauigkeit von ca. 1km ist OK)</span></div>
+                        <div class="form-group row"><span class="col-4">letzter Abfrageversuch:</span><span class="col-8">{new Date(plane_state.last_check*60*1000).toLocaleString()}</span></div>
+                        <div class="form-group row"><span class="col-4">letzte erfolgreiche Abfrage:</span><span class="col-8">{new Date(plane_state.last_sync*60*1000).toLocaleString()}</span></div>
+                        <div class="form-group row"><span class="col-4">nächste Abfrage:</span><span class="col-8">{new Date(plane_state.next_check*60*1000).toLocaleString()}</span></div>
+                       </div>;
+            }
+        }
+        console.log(state);
+
         return (
             <SubPage name="solar_forecast">
                 <ConfigForm
@@ -213,13 +348,27 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                         />
                     </FormRow>
                     <Collapse in={state.enable}>
-                        <div>
+                        <div class="mb-3">
                             <FormRow label={__("solar_forecast.content.planes")}>
-                                <Table columnNames={[__("solar_forecast.content.table_latitude"), __("solar_forecast.content.table_longitude"), __("solar_forecast.content.table_declination"), __("solar_forecast.content.table_azimuth"), __("solar_forecast.content.table_kwp")]}
+                                <div></div>
+                            </FormRow>
+                                <Table columnNames={[__("solar_forecast.content.table_name"), __("solar_forecast.content.table_latitude"), __("solar_forecast.content.table_longitude"), __("solar_forecast.content.table_declination"), __("solar_forecast.content.table_azimuth"), __("solar_forecast.content.table_kwp")]}
+                                    tableTill="lg"
                                     rows={get_active_planes().map((active_plane_index) => {
                                         let plane_config = state.plane_configs[active_plane_index];
                                         return {
+                                            extraShow: this.state.extra_show[active_plane_index],
+                                            extraValue: get_plane_info(active_plane_index),
                                             columnValues: [
+                                                    <span class="text-nowrap">
+                                                <Button size="sm" onClick={() => {
+                                                    this.setState({extra_show: state.extra_show.map((show, i) => active_plane_index == i ? !show : show)});
+                                                }}>
+                                                        <ChevronRight {...{id:`solar-forecast-${active_plane_index}-chevron`, class: state.extra_show[active_plane_index] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
+                                                </Button>
+                                                <span class="ml-1 mr-1">{plane_config.name}</span>
+                                                    </span>
+                                                ,
                                                 (plane_config.latitude/10000).toFixed(4) + "°",
                                                 (plane_config.longitude/10000).toFixed(4) + "°",
                                                 plane_config.declination + "°",
@@ -234,16 +383,16 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                                 this.setDirty(true);
                                             },
                                             onRemoveClick: async () => {
-                                                this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: {active: false, latitude: 0, longitude: 0, declination: 0, azimuth: 0, kwp: 0}}});
+                                                this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: {active: false, name: "#" + active_plane_index, latitude: 0, longitude: 0, declination: 0, azimuth: 0, kwp: 0}}});
                                                 this.setDirty(true);
                                             }}
                                         })
                                     }
                                     addEnabled={get_active_planes().length < SOLAR_FORECAST_PLANES}
                                     addTitle={__("solar_forecast.content.add_plane_config_title")}
-                                    addMessage={__("solar_forecast.content.add_plane_config_message")}
+                                    addMessage={get_active_planes().length == SOLAR_FORECAST_PLANES ? __("solar_forecast.content.add_plane_config_done") : __("solar_forecast.content.add_plane_config_prefix") + (get_active_planes().length + 1) + __("solar_forecast.content.add_plane_config_infix") + SOLAR_FORECAST_PLANES + __("solar_forecast.content.add_plane_config_postfix")}
                                     onAddShow={async () => {
-                                        this.setState({plane_config_tmp: {active: true, latitude: 0, longitude: 0, declination: 0, azimuth: 0, kwp: 0}})
+                                        this.setState({plane_config_tmp: {active: true, name: "#" + get_next_free_plane_index(), latitude: 0, longitude: 0, declination: 0, azimuth: 0, kwp: 0}})
                                     }}
                                     onAddGetChildren={() => this.on_get_children()}
                                     onAddSubmit={async () => {
@@ -251,10 +400,54 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                         this.setDirty(true);
                                     }}
                                 />
-                            </FormRow>
                         </div>
                     </Collapse>
                 </ConfigForm>
+                <FormSeparator heading={__("solar_forecast.content.solar_forecast_chart_heading")}/>
+                <div class="card pl-1 pb-1">
+                    <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                        <UplotLoader
+                            ref={this.uplot_loader_ref}
+                            show={true}
+                            marker_class={'h4'}
+                            no_data={__("solar_forecast.content.no_data")}
+                            loading={__("solar_forecast.content.loading")}>
+                            <UplotWrapper
+                                ref={this.uplot_wrapper_ref}
+                                class="solar-forecast--chart pb-3"
+                                sub_page="solar_forecast"
+                                color_cache_group="meters.default"
+                                show={true}
+                                on_mount={() => this.update_uplot()}
+                                legend_time_label={__("solar_forecast.content.time")}
+                                legend_time_with_minutes={true}
+                                legend_div_ref={this.uplot_legend_div_ref}
+                                aspect_ratio={3}
+                                x_height={30}
+                                x_format={{weekday: 'short', hour: '2-digit'}}
+                                x_padding_factor={0}
+                                y_min={0}
+                                y_max={5}
+                                y_unit={"kWh"}
+                                y_label={"kWh"}
+                                y_digits={2}
+                                y_skip_upper={true}
+                                y_sync_ref={this.uplot_wrapper_flags_ref}
+                                default_fill={true}
+                                only_show_visible={true}
+                                padding={[0, 5, null, null] as uPlot.Padding}
+                            />
+                        </UplotLoader>
+                    </div>
+                </div>
+                <CollapsedSection label="Mehr Informationen">
+                    <FormRow label="Abfragenbegrenzung" label_muted="Wie oft darf die Solarprognose von der API abgefragt werden (in einem 2-Stunden-Intervall)">
+                        <InputText value={this.state.state.rate_limit === -1 ? "Unbekannt (Solarprognose wurde noch nicht abgefragt)" : this.state.state.rate_limit}/>
+                    </FormRow>
+                    <FormRow label="Verbleibende Abfragen" label_muted="Wie oft darf die Solarprognose von der API in diesem Intervall noch abgefragt werden">
+                        <InputText value={this.state.state.rate_remaining === -1 ? "Unbekannt (Solarprognose wurde noch nicht abgefragt)" : this.state.state.rate_remaining}/>
+                    </FormRow>
+                </CollapsedSection>
             </SubPage>
         );
     }
