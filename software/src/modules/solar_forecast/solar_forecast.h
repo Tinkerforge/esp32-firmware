@@ -51,9 +51,12 @@ public:
     void setup() override;
     void register_urls() override;
     esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
+    void next_update();
 
     ConfigRoot config;
     ConfigRoot state;
+
+    uint64_t task_id;
 
 private:
     class SolarForecastPlane {

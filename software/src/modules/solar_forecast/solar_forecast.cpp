@@ -29,6 +29,7 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 #define CHECK_FOR_SF_TIMEOUT 15000
 #define CHECK_INTERVAL 15*60*1000
+#define CHECK_DELAY_MIN 2500
 
 extern SolarForecast dap;
 
@@ -113,10 +114,46 @@ void SolarForecast::register_urls()
         api.addState(get_path(plane, SolarForecast::PathType::Forecast), &plane.forecast);
     }
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleWhenClockSynced([this]() {
+        this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+            this->update();
+        }, 100, CHECK_INTERVAL);
+    });
+}
+
+void SolarForecast::next_update() {
+    // Find smallest next check time.
+    // But we wait for at least CHECK_DELAY_MIN ms before the next check.
+    // This way we avoid hammering the server and also the ESP has some time in-between.
+    int first_delay_ms = CHECK_INTERVAL;
+    for (SolarForecastPlane &plane : planes) {
+        if (plane.config.get("active")->asBool()) {
+            uint32_t next_check = plane.state.get("next_check")->asUint();
+            if(next_check == 0) {
+                first_delay_ms = CHECK_DELAY_MIN;
+                break;
+            } else {
+                uint32_t current_time = timestamp_minutes();
+                if(next_check < current_time) {
+                    first_delay_ms = CHECK_DELAY_MIN;
+                    break;
+                }
+
+                first_delay_ms = std::min(first_delay_ms, (int)(next_check - timestamp_minutes()) * 60 * 1000);
+            }
+        }
+    }
+
+    logger.printfln("Next Solar Forecast update in %d ms", first_delay_ms);
+
+    // Cancel current task
+    task_scheduler.cancel(task_id);
+
+    // And schedule a new one that will run after the given delay,
+    // but with the standard interval afterwards again
+    this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
         this->update();
-        this->update(); // TODO remove me
-    }, 1000*2*60, CHECK_INTERVAL); // TODO: first schudule should be after npt sync
+    }, first_delay_ms, CHECK_INTERVAL);
 }
 
 esp_err_t SolarForecast::update_event_handler_impl(esp_http_client_event_t *event)
@@ -176,6 +213,7 @@ static esp_err_t update_event_handler(esp_http_client_event_t *event)
 
 void SolarForecast::update()
 {
+    logger.printfln("Solar Forecast update");
     if (http_client != nullptr) {
         return;
     }
@@ -278,7 +316,6 @@ void SolarForecast::update()
                     const char hour1 = '0' + (index % 10);
 
                     // If the hour is in the data set the corresponding watt hours, otherwise assume 0 watt hours
-                    logger.printfln("key11: %c, key12: %c, hour0: %c, hour1: %c", key[11], key[12], hour0, hour1);
                     if((key[11] == hour0) && (key[12] == hour1)) {
                         if (plane_current->index == 1) {
                             plane_current->forecast.get("forecast")->add()->updateUint(value/random(1, 10));
@@ -317,6 +354,8 @@ void SolarForecast::update()
             plane_current->state.get("next_check")->updateUint(current_minutes + (period/60)*2);
         }
     }
+
+    next_update();
 
     return;
 
