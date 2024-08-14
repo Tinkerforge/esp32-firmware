@@ -54,7 +54,6 @@ public:
 
     ConfigRoot config;
     ConfigRoot state;
-    ConfigRoot forecast;
 
 private:
     class SolarForecastPlane {
