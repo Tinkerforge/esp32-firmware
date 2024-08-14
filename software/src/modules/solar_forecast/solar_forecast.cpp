@@ -179,6 +179,12 @@ void SolarForecast::update()
         return;
     }
 
+    // Only update if NTP is available
+    struct timeval tv_now;
+    if (!clock_synced(&tv_now)) {
+        return;
+    }
+
     // Find plane that is due for update
     plane_current = nullptr;
     for (SolarForecastPlane &plane : planes) {
