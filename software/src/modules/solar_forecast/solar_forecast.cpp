@@ -54,8 +54,8 @@ void SolarForecast::pre_setup()
     }};
 
     state = Config::Object({
-        {"rate_limit", Config::Uint8(0)},
-        {"rate_remaining", Config::Uint8(0)},
+        {"rate_limit", Config::Int8(-1)},
+        {"rate_remaining", Config::Int8(-1)},
     });
 
     uint8_t index = 0;
