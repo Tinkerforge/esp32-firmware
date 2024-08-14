@@ -1,6 +1,7 @@
 //APIPath:planes/{{{plane_id}}}/
 export interface plane_config___{{{plane_id}}} {
     active: boolean;
+    name: string;
     latitude: number;
     longitude: number;
     declination: number;
