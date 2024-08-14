@@ -173,6 +173,20 @@ uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, u
     return task_id;
 }
 
+uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn)
+{
+    // Check once per second if clock is synced,
+    // cancel task if it is and then call
+    // the user supplied function
+    return this->scheduleWithFixedDelay([fn, this]() {
+        struct timeval tv_now;
+        if (clock_synced(&tv_now)) {
+            this->cancel(this->currentTask->task_id);
+            fn();
+        }
+    }, 0, 1000);
+}
+
 TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id)
 {
     std::lock_guard<std::mutex> l{this->task_mutex};

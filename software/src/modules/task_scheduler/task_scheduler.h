@@ -86,6 +86,7 @@ public:
     CancelResult cancel(uint64_t task_id);
     uint64_t scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms);
     uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms);
+    uint64_t scheduleWhenClockSynced(std::function<void(void)> &&fn);
 
     enum class AwaitResult {
         Done,
