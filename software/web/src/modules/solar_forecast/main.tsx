@@ -329,6 +329,70 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                        </div>;
             }
         }
+
+        function does_forecast_exist() {
+            for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
+                if (state.plane_forecasts[i].forecast.length > 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function get_timestamp_today_00_00_in_seconds() {
+            return Math.floor(new Date().setHours(0, 0, 0, 0) / 1000);
+        }
+
+        function forecast_time_between(plane: number, index: number, start: number, end: number) {
+            let index_timestamp_seconds = (state.plane_forecasts[plane].first_date + index*60)*60;
+            return (index_timestamp_seconds >= start) && (index_timestamp_seconds <= end);
+        }
+
+        function get_kwh_now_to_midnight() {
+            let start         = Math.floor(new Date().setMinutes(0, 0, 0) / 1000);
+            let end           = get_timestamp_today_00_00_in_seconds() + 60*60*24 - 1;
+            let active_planes = get_active_planes();
+            let wh            = 0.0;
+            for (const plane of active_planes) {
+                for (let index = 0; index < state.plane_forecasts[plane].forecast.length; index++) {
+                    if (forecast_time_between(plane, index, start, end)) {
+                        wh += state.plane_forecasts[plane].forecast[index] || 0.0;
+                    }
+                }
+            }
+            return wh/1000.0;
+        }
+
+        function get_kwh_today() {
+            let start         = get_timestamp_today_00_00_in_seconds();
+            let end           = start + 60*60*24 - 1;
+            let active_planes = get_active_planes();
+            let wh            = 0.0;
+            for (const plane of active_planes) {
+                for (let index = 0; index < state.plane_forecasts[plane].forecast.length; index++) {
+                    if (forecast_time_between(plane, index, start, end)) {
+                        wh += state.plane_forecasts[plane].forecast[index] || 0.0;
+                    }
+                }
+            }
+            return wh/1000.0;
+        }
+
+        function get_kwh_tomorrow() {
+            let start         = get_timestamp_today_00_00_in_seconds() + 60*60*24;
+            let end           = start + 60*60*24 - 1;
+            let active_planes = get_active_planes();
+            let wh            = 0.0;
+            for (const plane of active_planes) {
+                for (let index = 0; index < state.plane_forecasts[plane].forecast.length; index++) {
+                    if (forecast_time_between(plane, index, start, end)) {
+                        wh += state.plane_forecasts[plane].forecast[index] || 0.0;
+                    }
+                }
+            }
+            return wh/1000.0;
+        }
+
         console.log(state);
 
         return (
@@ -404,6 +468,15 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                     </Collapse>
                 </ConfigForm>
                 <FormSeparator heading={__("solar_forecast.content.solar_forecast_chart_heading")}/>
+                <FormRow label="Solarprognose ab jetzt" label_muted={("0" + new Date().getHours()).slice(-2) + ":00 bis 23:59"}>
+                    <InputText value={does_forecast_exist() ? get_kwh_now_to_midnight() + " kWh" : "Unbekannt (Solarprognose wurde noch nicht abgefragt)"}/>
+                </FormRow>
+                <FormRow label="Solarprognose heute" label_muted="00:00 bis 23:59">
+                    <InputText value={does_forecast_exist() ? get_kwh_today()           + " kWh" : "Unbekannt (Solarprognose wurde noch nicht abgefragt)"}/>
+                </FormRow>
+                <FormRow label="Solarprognose morgen" label_muted="00:00 bis 23:59">
+                    <InputText value={does_forecast_exist() ? get_kwh_tomorrow()        + " kWh" : "Unbekannt (Solarprognose wurde noch nicht abgefragt)"}/>
+                </FormRow>
                 <div class="card pl-1 pb-1">
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader
