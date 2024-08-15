@@ -54,6 +54,7 @@ void SolarForecast::pre_setup()
             return "HTTPS required for Solar Forecast API URL";
         }
 
+        this->next_update();
         return "";
     }};
 
@@ -72,7 +73,19 @@ void SolarForecast::pre_setup()
             {"declination", Config::Uint(0, 0, 90)},          // in degrees
             {"azimuth", Config::Int(0, -180, 180)},           // in degrees
             {"kwp", Config::Uint(0)}                          // in 1/100 kilowatt-peak
-        })};
+        }), [this, index](Config &update, ConfigSource source) -> String {
+            // If the config changes for a plane, we reset the state and forecast and trigger a new update
+            SolarForecastPlane &plane = this->planes[index];
+            plane.state.get("next_check")->updateUint(0);
+            plane.state.get("last_check")->updateUint(0);
+            plane.state.get("last_sync")->updateUint(0);
+            plane.state.get("place")->updateString("Unknown");
+            plane.forecast.get("first_date")->updateUint(0);
+            plane.forecast.get("forecast")->removeAll();
+
+            this->next_update();
+            return "";
+        }};
 
         plane.state = Config::Object({
             {"last_sync",  Config::Uint32(0)}, // unix timestamp in minutes
