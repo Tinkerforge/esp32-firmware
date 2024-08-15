@@ -470,9 +470,6 @@ void SolarForecast::update()
 
         if (download_complete) {
             if(download_state == SF_DOWNLOAD_STATE_OK) {
-                //json_buffer[json_buffer_position] = 0;
-                //logger.printfln("buffer: %s", json_buffer);
-
                 // Deserialize json received from API
                 deserialize_data();
             }
