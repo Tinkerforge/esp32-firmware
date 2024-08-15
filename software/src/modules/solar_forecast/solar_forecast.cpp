@@ -25,6 +25,8 @@
 #include "module_dependencies.h"
 #include "build.h"
 
+#define SOLAR_FORECAST_USE_TEST_DATA
+
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 #define CHECK_FOR_SF_TIMEOUT 15000
@@ -38,8 +40,12 @@ enum Resolution {
     RESOLUTION_60MIN
 };
 
+
+#ifdef SOLAR_FORECAST_USE_TEST_DATA
 // https://api.forecast.solar/estimate/51.8847388/8.626098/90/25/65
-const String test_data = "{\"result\":{\"watts\":{\"2024-08-06 05:56:31\":0,\"2024-08-06 06:15:00\":824,\"2024-08-06 07:00:00\":1873,\"2024-08-06 08:00:00\":3211,\"2024-08-06 09:00:00\":4460,\"2024-08-06 10:00:00\":6923,\"2024-08-06 11:00:00\":11874,\"2024-08-06 12:00:00\":15565,\"2024-08-06 13:00:00\":17623,\"2024-08-06 14:00:00\":17656,\"2024-08-06 15:00:00\":15257,\"2024-08-06 16:00:00\":12611,\"2024-08-06 17:00:00\":11749,\"2024-08-06 18:00:00\":8164,\"2024-08-06 19:00:00\":4580,\"2024-08-06 20:00:00\":2371,\"2024-08-06 21:06:10\":0,\"2024-08-07 05:58:06\":0,\"2024-08-07 06:15:00\":738,\"2024-08-07 07:00:00\":1719,\"2024-08-07 08:00:00\":2972,\"2024-08-07 09:00:00\":4245,\"2024-08-07 10:00:00\":6018,\"2024-08-07 11:00:00\":8399,\"2024-08-07 12:00:00\":10054,\"2024-08-07 13:00:00\":11140,\"2024-08-07 14:00:00\":11493,\"2024-08-07 15:00:00\":11163,\"2024-08-07 16:00:00\":10139,\"2024-08-07 17:00:00\":8738,\"2024-08-07 18:00:00\":7033,\"2024-08-07 19:00:00\":4549,\"2024-08-07 20:00:00\":2405,\"2024-08-07 21:04:21\":0},\"watt_hours_period\":{\"2024-08-06 05:56:31\":0,\"2024-08-06 06:15:00\":127,\"2024-08-06 07:00:00\":1011,\"2024-08-06 08:00:00\":2542,\"2024-08-06 09:00:00\":3836,\"2024-08-06 10:00:00\":5692,\"2024-08-06 11:00:00\":9399,\"2024-08-06 12:00:00\":13720,\"2024-08-06 13:00:00\":16594,\"2024-08-06 14:00:00\":17640,\"2024-08-06 15:00:00\":16457,\"2024-08-06 16:00:00\":13934,\"2024-08-06 17:00:00\":12180,\"2024-08-06 18:00:00\":9957,\"2024-08-06 19:00:00\":6372,\"2024-08-06 20:00:00\":3476,\"2024-08-06 21:06:10\":1307,\"2024-08-07 05:58:06\":0,\"2024-08-07 06:15:00\":104,\"2024-08-07 07:00:00\":921,\"2024-08-07 08:00:00\":2346,\"2024-08-07 09:00:00\":3609,\"2024-08-07 10:00:00\":5132,\"2024-08-07 11:00:00\":7209,\"2024-08-07 12:00:00\":9227,\"2024-08-07 13:00:00\":10597,\"2024-08-07 14:00:00\":11317,\"2024-08-07 15:00:00\":11328,\"2024-08-07 16:00:00\":10651,\"2024-08-07 17:00:00\":9439,\"2024-08-07 18:00:00\":7886,\"2024-08-07 19:00:00\":5791,\"2024-08-07 20:00:00\":3477,\"2024-08-07 21:04:21\":1290},\"watt_hours\":{\"2024-08-06 05:56:31\":0,\"2024-08-06 06:15:00\":127,\"2024-08-06 07:00:00\":1138,\"2024-08-06 08:00:00\":3680,\"2024-08-06 09:00:00\":7516,\"2024-08-06 10:00:00\":13208,\"2024-08-06 11:00:00\":22607,\"2024-08-06 12:00:00\":36327,\"2024-08-06 13:00:00\":52921,\"2024-08-06 14:00:00\":70561,\"2024-08-06 15:00:00\":87018,\"2024-08-06 16:00:00\":100952,\"2024-08-06 17:00:00\":113132,\"2024-08-06 18:00:00\":123089,\"2024-08-06 19:00:00\":129461,\"2024-08-06 20:00:00\":132937,\"2024-08-06 21:06:10\":134244,\"2024-08-07 05:58:06\":0,\"2024-08-07 06:15:00\":104,\"2024-08-07 07:00:00\":1025,\"2024-08-07 08:00:00\":3371,\"2024-08-07 09:00:00\":6980,\"2024-08-07 10:00:00\":12112,\"2024-08-07 11:00:00\":19321,\"2024-08-07 12:00:00\":28548,\"2024-08-07 13:00:00\":39145,\"2024-08-07 14:00:00\":50462,\"2024-08-07 15:00:00\":61790,\"2024-08-07 16:00:00\":72441,\"2024-08-07 17:00:00\":81880,\"2024-08-07 18:00:00\":89766,\"2024-08-07 19:00:00\":95557,\"2024-08-07 20:00:00\":99034,\"2024-08-07 21:04:21\":100324},\"watt_hours_day\":{\"2024-08-06\":134244,\"2024-08-07\":100324}},\"message\":{\"code\":0,\"type\":\"success\",\"text\":\"\",\"pid\":\"342877Z0\",\"info\":{\"latitude\":51.8847,\"longitude\":8.6261,\"distance\":0,\"place\":\"Helleforthstraße 18-20, 33758 Schloß Holte-Stukenbrock, Germany\",\"timezone\":\"Europe/Berlin\",\"time\":\"2024-08-06T16:55:13+02:00\",\"time_utc\":\"2024-08-06T14:55:13+00:00\"},\"ratelimit\":{\"zone\":\"IP 82.198.84.162\",\"period\":3600,\"limit\":12,\"remaining\":10}}}";
+//const String test_data = "{\"result\":{\"watts\":{\"2024-08-06 05:56:31\":0,\"2024-08-06 06:15:00\":824,\"2024-08-06 07:00:00\":1873,\"2024-08-06 08:00:00\":3211,\"2024-08-06 09:00:00\":4460,\"2024-08-06 10:00:00\":6923,\"2024-08-06 11:00:00\":11874,\"2024-08-06 12:00:00\":15565,\"2024-08-06 13:00:00\":17623,\"2024-08-06 14:00:00\":17656,\"2024-08-06 15:00:00\":15257,\"2024-08-06 16:00:00\":12611,\"2024-08-06 17:00:00\":11749,\"2024-08-06 18:00:00\":8164,\"2024-08-06 19:00:00\":4580,\"2024-08-06 20:00:00\":2371,\"2024-08-06 21:06:10\":0,\"2024-08-07 05:58:06\":0,\"2024-08-07 06:15:00\":738,\"2024-08-07 07:00:00\":1719,\"2024-08-07 08:00:00\":2972,\"2024-08-07 09:00:00\":4245,\"2024-08-07 10:00:00\":6018,\"2024-08-07 11:00:00\":8399,\"2024-08-07 12:00:00\":10054,\"2024-08-07 13:00:00\":11140,\"2024-08-07 14:00:00\":11493,\"2024-08-07 15:00:00\":11163,\"2024-08-07 16:00:00\":10139,\"2024-08-07 17:00:00\":8738,\"2024-08-07 18:00:00\":7033,\"2024-08-07 19:00:00\":4549,\"2024-08-07 20:00:00\":2405,\"2024-08-07 21:04:21\":0},\"watt_hours_period\":{\"2024-08-06 05:56:31\":0,\"2024-08-06 06:15:00\":127,\"2024-08-06 07:00:00\":1011,\"2024-08-06 08:00:00\":2542,\"2024-08-06 09:00:00\":3836,\"2024-08-06 10:00:00\":5692,\"2024-08-06 11:00:00\":9399,\"2024-08-06 12:00:00\":13720,\"2024-08-06 13:00:00\":16594,\"2024-08-06 14:00:00\":17640,\"2024-08-06 15:00:00\":16457,\"2024-08-06 16:00:00\":13934,\"2024-08-06 17:00:00\":12180,\"2024-08-06 18:00:00\":9957,\"2024-08-06 19:00:00\":6372,\"2024-08-06 20:00:00\":3476,\"2024-08-06 21:06:10\":1307,\"2024-08-07 05:58:06\":0,\"2024-08-07 06:15:00\":104,\"2024-08-07 07:00:00\":921,\"2024-08-07 08:00:00\":2346,\"2024-08-07 09:00:00\":3609,\"2024-08-07 10:00:00\":5132,\"2024-08-07 11:00:00\":7209,\"2024-08-07 12:00:00\":9227,\"2024-08-07 13:00:00\":10597,\"2024-08-07 14:00:00\":11317,\"2024-08-07 15:00:00\":11328,\"2024-08-07 16:00:00\":10651,\"2024-08-07 17:00:00\":9439,\"2024-08-07 18:00:00\":7886,\"2024-08-07 19:00:00\":5791,\"2024-08-07 20:00:00\":3477,\"2024-08-07 21:04:21\":1290},\"watt_hours\":{\"2024-08-06 05:56:31\":0,\"2024-08-06 06:15:00\":127,\"2024-08-06 07:00:00\":1138,\"2024-08-06 08:00:00\":3680,\"2024-08-06 09:00:00\":7516,\"2024-08-06 10:00:00\":13208,\"2024-08-06 11:00:00\":22607,\"2024-08-06 12:00:00\":36327,\"2024-08-06 13:00:00\":52921,\"2024-08-06 14:00:00\":70561,\"2024-08-06 15:00:00\":87018,\"2024-08-06 16:00:00\":100952,\"2024-08-06 17:00:00\":113132,\"2024-08-06 18:00:00\":123089,\"2024-08-06 19:00:00\":129461,\"2024-08-06 20:00:00\":132937,\"2024-08-06 21:06:10\":134244,\"2024-08-07 05:58:06\":0,\"2024-08-07 06:15:00\":104,\"2024-08-07 07:00:00\":1025,\"2024-08-07 08:00:00\":3371,\"2024-08-07 09:00:00\":6980,\"2024-08-07 10:00:00\":12112,\"2024-08-07 11:00:00\":19321,\"2024-08-07 12:00:00\":28548,\"2024-08-07 13:00:00\":39145,\"2024-08-07 14:00:00\":50462,\"2024-08-07 15:00:00\":61790,\"2024-08-07 16:00:00\":72441,\"2024-08-07 17:00:00\":81880,\"2024-08-07 18:00:00\":89766,\"2024-08-07 19:00:00\":95557,\"2024-08-07 20:00:00\":99034,\"2024-08-07 21:04:21\":100324},\"watt_hours_day\":{\"2024-08-06\":134244,\"2024-08-07\":100324}},\"message\":{\"code\":0,\"type\":\"success\",\"text\":\"\",\"pid\":\"342877Z0\",\"info\":{\"latitude\":51.8847,\"longitude\":8.6261,\"distance\":0,\"place\":\"Helleforthstraße 18-20, 33758 Schloß Holte-Stukenbrock, Germany\",\"timezone\":\"Europe/Berlin\",\"time\":\"2024-08-06T16:55:13+02:00\",\"time_utc\":\"2024-08-06T14:55:13+00:00\"},\"ratelimit\":{\"zone\":\"IP 82.198.84.162\",\"period\":3600,\"limit\":12,\"remaining\":10}}}";
+const String test_data = "{\"result\":{\"watts\":{\"2024-08-15 06:10:54\":0,\"2024-08-15 06:15:00\":878,\"2024-08-15 07:00:00\":1934,\"2024-08-15 08:00:00\":3213,\"2024-08-15 09:00:00\":4420,\"2024-08-15 10:00:00\":6475,\"2024-08-15 11:00:00\":9964,\"2024-08-15 12:00:00\":15072,\"2024-08-15 13:00:00\":21999,\"2024-08-15 14:00:00\":22271,\"2024-08-15 15:00:00\":18290,\"2024-08-15 16:00:00\":13245,\"2024-08-15 17:00:00\":10684,\"2024-08-15 18:00:00\":7207,\"2024-08-15 19:00:00\":4309,\"2024-08-15 20:00:00\":2460,\"2024-08-15 20:48:53\":0,\"2024-08-16 06:12:31\":0,\"2024-08-16 06:30:00\":578,\"2024-08-16 07:00:00\":1269,\"2024-08-16 08:00:00\":2444,\"2024-08-16 09:00:00\":4132,\"2024-08-16 10:00:00\":6614,\"2024-08-16 11:00:00\":9038,\"2024-08-16 12:00:00\":10617,\"2024-08-16 13:00:00\":11356,\"2024-08-16 14:00:00\":11947,\"2024-08-16 15:00:00\":12356,\"2024-08-16 16:00:00\":10965,\"2024-08-16 17:00:00\":8961,\"2024-08-16 18:00:00\":7029,\"2024-08-16 19:00:00\":4087,\"2024-08-16 20:00:00\":1845,\"2024-08-16 20:46:51\":0},\"watt_hours_period\":{\"2024-08-15 06:10:54\":0,\"2024-08-15 06:15:00\":30,\"2024-08-15 07:00:00\":1055,\"2024-08-15 08:00:00\":2574,\"2024-08-15 09:00:00\":3817,\"2024-08-15 10:00:00\":5448,\"2024-08-15 11:00:00\":8220,\"2024-08-15 12:00:00\":12518,\"2024-08-15 13:00:00\":18536,\"2024-08-15 14:00:00\":22135,\"2024-08-15 15:00:00\":20281,\"2024-08-15 16:00:00\":15768,\"2024-08-15 17:00:00\":11965,\"2024-08-15 18:00:00\":8946,\"2024-08-15 19:00:00\":5758,\"2024-08-15 20:00:00\":3385,\"2024-08-15 20:48:53\":1002,\"2024-08-16 06:12:31\":0,\"2024-08-16 06:30:00\":84,\"2024-08-16 07:00:00\":462,\"2024-08-16 08:00:00\":1857,\"2024-08-16 09:00:00\":3288,\"2024-08-16 10:00:00\":5373,\"2024-08-16 11:00:00\":7826,\"2024-08-16 12:00:00\":9828,\"2024-08-16 13:00:00\":10987,\"2024-08-16 14:00:00\":11652,\"2024-08-16 15:00:00\":12152,\"2024-08-16 16:00:00\":11661,\"2024-08-16 17:00:00\":9963,\"2024-08-16 18:00:00\":7995,\"2024-08-16 19:00:00\":5558,\"2024-08-16 20:00:00\":2966,\"2024-08-16 20:46:51\":720},\"watt_hours\":{\"2024-08-15 06:10:54\":0,\"2024-08-15 06:15:00\":30,\"2024-08-15 07:00:00\":1085,\"2024-08-15 08:00:00\":3659,\"2024-08-15 09:00:00\":7476,\"2024-08-15 10:00:00\":12924,\"2024-08-15 11:00:00\":21144,\"2024-08-15 12:00:00\":33662,\"2024-08-15 13:00:00\":52198,\"2024-08-15 14:00:00\":74333,\"2024-08-15 15:00:00\":94614,\"2024-08-15 16:00:00\":110382,\"2024-08-15 17:00:00\":122347,\"2024-08-15 18:00:00\":131293,\"2024-08-15 19:00:00\":137051,\"2024-08-15 20:00:00\":140436,\"2024-08-15 20:48:53\":141438,\"2024-08-16 06:12:31\":0,\"2024-08-16 06:30:00\":84,\"2024-08-16 07:00:00\":546,\"2024-08-16 08:00:00\":2403,\"2024-08-16 09:00:00\":5691,\"2024-08-16 10:00:00\":11064,\"2024-08-16 11:00:00\":18890,\"2024-08-16 12:00:00\":28718,\"2024-08-16 13:00:00\":39705,\"2024-08-16 14:00:00\":51357,\"2024-08-16 15:00:00\":63509,\"2024-08-16 16:00:00\":75170,\"2024-08-16 17:00:00\":85133,\"2024-08-16 18:00:00\":93128,\"2024-08-16 19:00:00\":98686,\"2024-08-16 20:00:00\":101652,\"2024-08-16 20:46:51\":102372},\"watt_hours_day\":{\"2024-08-15\":141438,\"2024-08-16\":102372}},\"message\":{\"code\":0,\"type\":\"success\",\"text\":\"\",\"pid\":\"wcx7nz26\",\"info\":{\"latitude\":51.8847,\"longitude\":8.6261,\"distance\":0,\"place\":\"Helleforthstraße 18-20, 33758 Schloß Holte-Stukenbrock, Germany\",\"timezone\":\"Europe/Berlin\",\"time\":\"2024-08-15T16:29:33+02:00\",\"time_utc\":\"2024-08-15T14:29:33+00:00\"},\"ratelimit\":{\"zone\":\"IP 82.198.84.162\",\"period\":3600,\"limit\":12,\"remaining\":6}}}";
+#endif
 
 void SolarForecast::pre_setup()
 {
@@ -153,6 +159,9 @@ void SolarForecast::next_update() {
                 }
 
                 first_delay_ms = std::min(first_delay_ms, (int)(next_check - timestamp_minutes()) * 60 * 1000);
+                if(next_sync_forced != 0) {
+                    first_delay_ms = std::max(first_delay_ms, (int)(next_sync_forced - timestamp_minutes()) * 60 * 1000);
+                }
             }
         }
     }
@@ -224,9 +233,98 @@ static esp_err_t update_event_handler(esp_http_client_event_t *event)
     return static_cast<SolarForecast *>(event->user_data)->update_event_handler_impl(event);
 }
 
+void SolarForecast::deserialize_data()
+{
+    // Deserialize json received from API
+    DynamicJsonDocument json_doc{SOLAR_FORECAST_MAX_JSON_LENGTH*2};
+    DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
+    if (error) {
+        logger.printfln("Error during JSON deserialization: %s", error.c_str());
+        download_state = SF_DOWNLOAD_STATE_ERROR;
+    } else {
+        JsonObject js_message = json_doc["message"];
+        JsonInteger code      = js_message["code"];
+        if (code != 0) {
+            JsonString text = js_message["text"];
+            logger.printfln("Solar Forecast server returned error code %ld (%s)", code, text.c_str());
+        } else {
+            JsonObject js_info       = js_message["info"];
+            JsonObject js_reatelimit = js_message["ratelimit"];
+
+            JsonString place         = js_info["place"];
+            JsonString timezone      = js_info["timezone"];
+            plane_current->state.get("place")->updateString(place.c_str());
+
+            JsonInteger limit        = js_reatelimit["limit"];
+            JsonInteger remaining    = js_reatelimit["remaining"];
+            JsonInteger period       = js_reatelimit["period"];
+            state.get("rate_limit")->updateInt(limit);
+            state.get("rate_remaining")->updateInt(remaining);
+            if (remaining == 0) {
+                logger.printfln("Solar Forecast rate limit reached, next solar forecast API call will be in 2 hours");
+                next_sync_forced = timestamp_minutes() + 120;
+            } else {
+                next_sync_forced = 0;
+            }
+
+            JsonObject js_result     = json_doc["result"];
+            JsonObject js_wh_period  = js_result["watt_hours_period"];
+            bool first = true;
+            char day_start0 = 0;
+            char day_start1 = 0;
+
+            plane_current->forecast.get("forecast")->removeAll();
+            while(plane_current->forecast.get("forecast")->count() < 48) {
+                plane_current->forecast.get("forecast")->add()->updateUint(0);
+            }
+            for (JsonPair pair : js_wh_period) {
+                String key(pair.key().c_str());
+                uint32_t value = pair.value().as<int>();
+
+                // Calculate start time of the data from first day
+                if (first) {
+                    first = false;
+                    day_start0 = key[8];
+                    day_start1 = key[9];
+
+                    // String for 00:00:00 of first day
+                    const String first_date = key.substring(0, 11) + "00:00:00";
+
+                    // String to tm struct
+                    struct tm tm;
+                    strptime(first_date.c_str(), "%Y-%m-%d %H:%M:%S", &tm);
+
+                    // Set first date as unix time in minutes
+                    plane_current->forecast.get("first_date")->updateUint(mktime(&tm) / 60);
+                }
+
+                // Add 24 hours for second day
+                const uint8_t index_add = ((day_start0 == key[8]) && (day_start1 == key[9])) ? 0 : 24;
+                const uint8_t index = index_add + (key[11] - '0')*10 + (key[12] - '0');
+                if(index > 47) {
+                    logger.printfln("Found impossible index: %d (date %s)", index, key.c_str());
+                    continue;
+                }
+                // We add up all kWh values that correspond to the same hour
+                // The data is sometimes split up in two values for the same hour
+                const uint32_t old_value = plane_current->forecast.get("forecast")->get(index)->asUint();
+                plane_current->forecast.get("forecast")->get(index)->updateUint(value + old_value);
+            }
+
+            const uint32_t current_minutes = timestamp_minutes();
+            plane_current->state.get("last_sync")->updateUint(current_minutes);
+            plane_current->state.get("last_check")->updateUint(current_minutes);
+
+            // For the next check we take the period given by the server and multiply it by two
+            // to be a good "free tier user" and not hit the server too often.
+            // Usually the period is 3600 seconds (one hour), so we will check every two hours.
+            plane_current->state.get("next_check")->updateUint(current_minutes + (period/60)*2);
+        }
+    }
+}
+
 void SolarForecast::update()
 {
-    logger.printfln("Solar Forecast update");
     if (http_client != nullptr) {
         return;
     }
@@ -258,6 +356,10 @@ void SolarForecast::update()
         return;
     }
 
+    logger.printfln("Solar Forecast update started for plane %d", plane_current->index);
+
+
+#ifdef SOLAR_FORECAST_USE_TEST_DATA
     if(json_buffer == nullptr) {
         json_buffer = (char *)heap_caps_calloc_prefer(SOLAR_FORECAST_MAX_JSON_LENGTH, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
     } else {
@@ -271,109 +373,16 @@ void SolarForecast::update()
     json_buffer_position += test_data.length();
     json_buffer[json_buffer_position] = '\0';
     download_complete = true;
-    // Deserialize json received from API
-    logger.printfln("JSON deserialization test");
-    DynamicJsonDocument json_doc{SOLAR_FORECAST_MAX_JSON_LENGTH*2};
-    DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
-    if (error) {
-        logger.printfln("Error during JSON deserialization: %s", error.c_str());
-        download_state = SF_DOWNLOAD_STATE_ERROR;
-    } else {
-        JsonObject js_message = json_doc["message"];
-        JsonInteger code      = js_message["code"];
-        if (code != 0) {
-            JsonString text = js_message["text"];
-            logger.printfln("Solar Forecast server returned error code %ld (%s)", code, text.c_str());
-        } else {
-            JsonObject js_info       = js_message["info"];
-            JsonObject js_reatelimit = js_message["ratelimit"];
 
-            JsonString place         = js_info["place"];
-            JsonString timezone      = js_info["timezone"];
-            plane_current->state.get("place")->updateString(place.c_str());
-
-            JsonInteger limit        = js_reatelimit["limit"];
-            JsonInteger remaining    = js_reatelimit["remaining"];
-            JsonInteger period       = js_reatelimit["period"];
-            state.get("rate_limit")->updateInt(limit);
-            state.get("rate_remaining")->updateInt(remaining);
-
-            JsonObject js_result     = json_doc["result"];
-            JsonObject js_wh_period  = js_result["watt_hours_period"];
-            uint8_t index = 0;
-            bool first = true;
-            bool second_day = false;
-            for (JsonPair pair : js_wh_period) {
-                String key(pair.key().c_str());
-                uint32_t value = pair.value().as<int>();
-
-                bool found_match = false;
-                while (!found_match) {
-                    // Calculate start time of the data from first day
-                    if (first) {
-                        first = false;
-
-                        // String for 00:00:00 of first day
-                        const String first_date = key.substring(0, 11) + "00:00:00";
-
-                        // String to tm struct
-                        struct tm tm;
-                        strptime(first_date.c_str(), "%Y-%m-%d %H:%M:%S", &tm);
-
-                        // Set first date as unix time in minutes
-                        plane_current->forecast.get("first_date")->updateUint(mktime(&tm) / 60);
-                    }
-
-                    // Make hour chars from index
-                    const char hour0 = '0' + (index / 10);
-                    const char hour1 = '0' + (index % 10);
-
-                    // If the hour is in the data set the corresponding watt hours, otherwise assume 0 watt hours
-                    if((key[11] == hour0) && (key[12] == hour1)) {
-                        if (plane_current->index == 1) {
-                            plane_current->forecast.get("forecast")->add()->updateUint(value/random(1, 10));
-                        } else {
-                            plane_current->forecast.get("forecast")->add()->updateUint(value);
-                        }
-                        found_match = true;
-                    } else {
-                        plane_current->forecast.get("forecast")->add()->updateUint(0);
-                    }
-
-                    // Go through two days
-                    index++;
-                    if (index == 24) {
-                        if (second_day) {
-                            break;
-                        }
-                        index = 0;
-                        second_day = true;
-                    }
-                }
-            }
-
-            // fill rest of the forecast with 0
-            while(plane_current->forecast.get("forecast")->count() < 48) {
-                plane_current->forecast.get("forecast")->add()->updateUint(0);
-            }
-
-            const uint32_t current_minutes = timestamp_minutes();
-            plane_current->state.get("last_sync")->updateUint(current_minutes);
-            plane_current->state.get("last_check")->updateUint(current_minutes);
-
-            // For the next check we take the period given by the server and multiply it by two
-            // to be a good "free tier user" and not hit the server too often.
-            // Usually the period is 3600 seconds (one hour), so we will check every two hours.
-            plane_current->state.get("next_check")->updateUint(current_minutes + (period/60)*2);
-        }
-    }
+    deserialize_data();
 
     next_update();
 
     return;
+#endif
 
     download_state = SF_DOWNLOAD_STATE_PENDING;
-    state.get("last_check")->updateUint(timestamp_minutes());
+    plane_current->state.get("last_check")->updateUint(timestamp_minutes());
 
     if (config.get("api_url")->asString().length() == 0) {
         logger.printfln("No day ahead price API server configured");
@@ -461,9 +470,11 @@ void SolarForecast::update()
 
         if (download_complete) {
             if(download_state == SF_DOWNLOAD_STATE_OK) {
+                //json_buffer[json_buffer_position] = 0;
+                //logger.printfln("buffer: %s", json_buffer);
+
                 // Deserialize json received from API
-                json_buffer[json_buffer_position] = 0;
-                logger.printfln("buffer: %s", json_buffer);
+                deserialize_data();
             }
 
             // Cleanup
@@ -476,6 +487,8 @@ void SolarForecast::update()
             json_buffer_position = 0;
 
             task_scheduler.cancel(task_scheduler.currentTaskId());
+
+            next_update();
         }
 
     }, 100, 100);

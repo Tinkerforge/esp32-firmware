@@ -71,6 +71,7 @@ private:
     void update_price();
     String get_path(const SolarForecastPlane &plane, const PathType path_type);
     const char* get_api_url_with_path(const SolarForecastPlane &plane);
+    void deserialize_data();
 
     SolarForecastPlane *plane_current;
 
@@ -80,6 +81,7 @@ private:
     bool download_complete;
     char *json_buffer;
     uint32_t json_buffer_position;
+    uint32_t next_sync_forced = 0;
 
     SFDownloadState download_state = SF_DOWNLOAD_STATE_OK;
     SolarForecastPlane planes[SOLAR_FORECAST_PLANES];
