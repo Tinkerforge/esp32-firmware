@@ -75,13 +75,13 @@ void SolarForecast::pre_setup()
             {"kwp", Config::Uint(0)}                          // in 1/100 kilowatt-peak
         }), [this, index](Config &update, ConfigSource source) -> String {
             // If the config changes for a plane, we reset the state and forecast and trigger a new update
-            SolarForecastPlane &plane = this->planes[index];
-            plane.state.get("next_check")->updateUint(0);
-            plane.state.get("last_check")->updateUint(0);
-            plane.state.get("last_sync")->updateUint(0);
-            plane.state.get("place")->updateString("Unknown");
-            plane.forecast.get("first_date")->updateUint(0);
-            plane.forecast.get("forecast")->removeAll();
+            SolarForecastPlane &p = this->planes[index];
+            p.state.get("next_check")->updateUint(0);
+            p.state.get("last_check")->updateUint(0);
+            p.state.get("last_sync")->updateUint(0);
+            p.state.get("place")->updateString("Unknown");
+            p.forecast.get("first_date")->updateUint(0);
+            p.forecast.get("forecast")->removeAll();
 
             this->next_update();
             return "";
