@@ -32,9 +32,9 @@ import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Trello } from "react-feather";
-import { InputTime } from "src/ts/components/input_time";
+import { InputTime } from "../../ts/components/input_time";
 import { Collapse } from "react-bootstrap";
-import { InputSelect } from "src/ts/components/input_select";
+import { InputSelect } from "../../ts/components/input_select";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Trello />} hidden={false} />;
@@ -100,6 +100,19 @@ export class Heating extends ConfigComponent<'heating/config'> {
     constructor() {
         super('heating/config',
               __("heating.script.save_failed"));
+    }
+
+    get_date_from_utc_minutes(minutes: number) {
+        const offset = new Date().getTimezoneOffset();
+        const minutes_localtime = minutes - offset;
+        const h = Math.floor(minutes_localtime / 60);
+        const m = minutes_localtime - h * 60;
+        return new Date(0, 0, 1, h, m);
+    }
+
+    get_utc_minutes_from_date(date: Date) {
+        const offset = new Date().getTimezoneOffset();
+        return date.getMinutes() + date.getHours() * 60 + offset;
     }
 
     month_to_days(month: number): [string, string][] {
@@ -323,55 +336,63 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label="Blockierzeit Morgens">
-                        <Switch desc="Aktiviert den ersten Blockierzeit-Zeitraum"
-                                checked={state.summer_block_time1_active}
-                                onClick={this.toggle('summer_block_time1_active')}
+                    <FormRow label="Blockierzeit">
+                        <Switch desc="Aktiviert den täglichen Blockierzeitraum"
+                                checked={state.summer_block_time_active}
+                                onClick={this.toggle('summer_block_time_active')}
                         />
                     </FormRow>
-                    <Collapse in={state.summer_block_time1_active}>
+                    <Collapse in={state.summer_block_time_active}>
                         <div>
-                            <FormRow label="Start-Uhrzeit">
-                                <InputTime
-                                    className={"form-control-sm"}
-                                    date={new Date("2011-04-20T00:00")}
-                                    showSeconds={false}
-                                    onDate={(d: Date) => null}
-                                />
+                            <FormRow label="Morgens">
+                                <div class="row no-gutters">
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Von</span></div>
+                                            <InputTime
+                                                className={"form-control-md"}
+                                                date={new Date(0, 0, 1, 0, 0)}
+                                                showSeconds={false}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Bis</span></div>
+                                                <InputTime
+                                                className={"form-control-md"}
+                                                date={this.get_date_from_utc_minutes(state.summer_block_time_morning)}
+                                                showSeconds={false}
+                                                onDate={(d: Date) => this.setState({summer_block_time_morning: this.get_utc_minutes_from_date(d)})}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </FormRow>
-                            <FormRow label="End-Uhrzeit">
-                                <InputTime
-                                    className={"form-control-sm"}
-                                    date={new Date("2011-04-20T11:00")}
-                                    showSeconds={false}
-                                    onDate={(d: Date) => null}
-                                />
-                            </FormRow>
-                        </div>
-                    </Collapse>
-                    <FormRow label="Blockierzeit Abends">
-                        <Switch desc="Aktiviert den zweiten Blockierzeit-Zeitraum"
-                                checked={state.summer_block_time2_active}
-                                onClick={this.toggle('summer_block_time2_active')}
-                        />
-                    </FormRow>
-                    <Collapse in={state.summer_block_time2_active}>
-                        <div>
-                            <FormRow label="Start-Uhrzeit">
-                                <InputTime
-                                    className={"form-control-sm"}
-                                    date={new Date("2011-04-20T18:00")}
-                                    showSeconds={false}
-                                    onDate={(d: Date) => null}
-                                />
-                            </FormRow>
-                            <FormRow label="End-Uhrzeit">
-                                <InputTime
-                                    className={"form-control-sm"}
-                                    date={new Date("2011-04-20T23:59")}
-                                    showSeconds={false}
-                                    onDate={(d: Date) => null}
-                                />
+                            <FormRow label="Abends">
+                                <div class="row no-gutters">
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Von</span></div>
+                                                <InputTime
+                                                className={"form-control-md"}
+                                                date={this.get_date_from_utc_minutes(state.summer_block_time_evening)}
+                                                showSeconds={false}
+                                                onDate={(d: Date) => this.setState({summer_block_time_evening: this.get_utc_minutes_from_date(d)})}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Bis</span></div>
+                                            <InputTime
+                                                className={"form-control-md"}
+                                                date={new Date(0, 0, 1, 23, 59)}
+                                                showSeconds={false}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </FormRow>
                         </div>
                     </Collapse>

@@ -8,8 +8,9 @@ export interface config {
     winter_dynamic_price_control_threshold: number;
     winter_pv_excess_control_active: boolean;
     winter_pv_excess_control_threshold: number;
-    summer_block_time1_active: boolean;
-    summer_block_time2_active: boolean;
+    summer_block_time_active: boolean;
+    summer_block_time_morning: number;
+    summer_block_time_evening: number;
     summer_yield_forecast_active: boolean;
     summer_yield_forecast_threshold: number;
     summer_dynamic_price_control_active: boolean;

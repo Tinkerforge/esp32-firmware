@@ -40,8 +40,9 @@ void Heating::pre_setup()
         {"winter_dynamic_price_control_threshold", Config::Uint(80, 0, 100)},
         {"winter_pv_excess_control_active", Config::Bool(false)},
         {"winter_pv_excess_control_threshold", Config::Uint(0)},
-        {"summer_block_time1_active", Config::Bool(false)},
-        {"summer_block_time2_active", Config::Bool(false)},
+        {"summer_block_time_active", Config::Bool(false)},
+        {"summer_block_time_morning", Config::Int(8*60 - 120)}, // TODO: A good default here would be local time dependend... but this is good enough for now
+        {"summer_block_time_evening", Config::Int(20*60 - 120)},
         {"summer_yield_forecast_active", Config::Bool(false)},
         {"summer_yield_forecast_threshold", Config::Uint(0)},
         {"summer_dynamic_price_control_active", Config::Bool(false)},
@@ -98,25 +99,26 @@ void Heating::update()
         return;
     }
 
-    const uint8_t winter_start_day                       = config.get("winter_start_day")->asUint();
-    const uint8_t winter_start_month                     = config.get("winter_start_month")->asUint();
-    const uint8_t winter_end_day                         = config.get("winter_end_day")->asUint();
-    const uint8_t winter_end_month                       = config.get("winter_end_month")->asUint();
-    const bool winter_dynamic_price_control_active       = config.get("winter_dynamic_price_control_active")->asBool();
-    const uint8_t winter_dynamic_price_control_threshold = config.get("winter_dynamic_price_control_threshold")->asUint();
-    const bool winter_pv_excess_control_active           = config.get("winter_pv_excess_control_active")->asBool();
-    const uint8_t winter_pv_excess_control_threshold     = config.get("winter_pv_excess_control_threshold")->asUint();
-    const bool summer_block_time1_active                 = config.get("summer_block_time1_active")->asBool();
-    const bool summer_block_time2_active                 = config.get("summer_block_time2_active")->asBool();
-    const bool summer_yield_forecast_active              = config.get("summer_yield_forecast_active")->asBool();
-    const uint8_t summer_yield_forecast_threshold        = config.get("summer_yield_forecast_threshold")->asUint();
-    const bool summer_dynamic_price_control_active       = config.get("summer_dynamic_price_control_active")->asBool();
-    const uint8_t summer_dynamic_price_control_threshold = config.get("summer_dynamic_price_control_threshold")->asUint();
-    const bool summer_pv_excess_control_active           = config.get("summer_pv_excess_control_active")->asBool();
-    const uint8_t summer_pv_excess_control_threshold     = config.get("summer_pv_excess_control_threshold")->asUint();
-    const bool p14enwg_active                            = config.get("p14enwg_active")->asBool();
-    const uint8_t p14enwg_input                          = config.get("p14enwg_input")->asUint();
-    const uint8_t p14enwg_active_type                    = config.get("p14enwg_active_type")->asUint();
+    const uint32_t winter_start_day                       = config.get("winter_start_day")->asUint();
+    const uint32_t winter_start_month                     = config.get("winter_start_month")->asUint();
+    const uint32_t winter_end_day                         = config.get("winter_end_day")->asUint();
+    const uint32_t winter_end_month                       = config.get("winter_end_month")->asUint();
+    const bool     winter_dynamic_price_control_active    = config.get("winter_dynamic_price_control_active")->asBool();
+    const uint32_t winter_dynamic_price_control_threshold = config.get("winter_dynamic_price_control_threshold")->asUint();
+    const bool     winter_pv_excess_control_active        = config.get("winter_pv_excess_control_active")->asBool();
+    const uint32_t winter_pv_excess_control_threshold     = config.get("winter_pv_excess_control_threshold")->asUint();
+    const bool     summer_block_time_active               = config.get("summer_block_time_active")->asBool();
+    const int32_t  summer_block_time_morning              = config.get("summer_block_time_morning")->asInt();
+    const int32_t  summer_block_time_evening              = config.get("summer_block_time_evening")->asInt();
+    const bool     summer_yield_forecast_active           = config.get("summer_yield_forecast_active")->asBool();
+    const uint32_t summer_yield_forecast_threshold        = config.get("summer_yield_forecast_threshold")->asUint();
+    const bool     summer_dynamic_price_control_active    = config.get("summer_dynamic_price_control_active")->asBool();
+    const uint32_t summer_dynamic_price_control_threshold = config.get("summer_dynamic_price_control_threshold")->asUint();
+    const bool     summer_pv_excess_control_active        = config.get("summer_pv_excess_control_active")->asBool();
+    const uint32_t summer_pv_excess_control_threshold     = config.get("summer_pv_excess_control_threshold")->asUint();
+    const bool     p14enwg_active                         = config.get("p14enwg_active")->asBool();
+    const uint32_t p14enwg_input                          = config.get("p14enwg_input")->asUint();
+    const uint32_t p14enwg_active_type                    = config.get("p14enwg_active_type")->asUint();
 
     const time_t now              = time(NULL);
     const struct tm *current_time = localtime(&now);
@@ -156,18 +158,29 @@ void Heating::update()
         }
     } else { // Summer
         bool blocked = false;
-        if (summer_block_time1_active) {
-            // Check if we are in the first block time
-        }
-
-        if (summer_block_time2_active) {
-            // Check if we are in the second block time
+        bool is_morning = false;
+        bool is_evening = false;
+        if (summer_block_time_active) {
+            uint32_t current_minutes = current_time->tm_hour * 60 + current_time->tm_min;
+            if (current_minutes <= summer_block_time_morning) {       // if is between 00:00 and summer_block_time_morning
+                blocked    = true;
+                is_morning = true;
+            } else if(summer_block_time_evening <= current_minutes) { // if is between summer_block_time_evening and 23:59
+                blocked    = true;
+                is_evening = true;
+            }
         }
 
         // If we are in block time and px excess control is active,
         // we check the expected px excess and unblock if it is below the threshold.
         if (blocked && summer_yield_forecast_active) {
-            const int watt_expected = 0; // solar_forecast.get_expected_pv_excess();
+            int watt_expected = 0;
+            if (is_morning) {
+                // watt_expected = solar_forecast.get_expected_pv_excess_today();
+            } else if (is_evening) {
+                // watt_expected = solar_forecast.get_expected_pv_excess_tomorrow();
+            }
+
             if (watt_expected < summer_yield_forecast_threshold) {
                 logger.printfln("Expected PV yield is below threshold.");
                 blocked = false;
