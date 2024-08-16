@@ -43,6 +43,10 @@ export function InputTime(props: InputTimeProps) {
 
     const valueToDate = (value: string) => {
         let [h, m, s] = value.split(/:/g).map(x => parseInt(x));
+        // If showSeconds is false, the string is of form hh:mm and s will be undefined
+        if (s === undefined) {
+            s = 0;
+        }
 
         return new Date(0, 0, 1, h, m, s, 0);
     };
