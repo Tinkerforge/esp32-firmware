@@ -159,11 +159,12 @@ void SolarForecast::next_update() {
                 }
 
                 first_delay_ms = std::min(first_delay_ms, (int)(next_check - timestamp_minutes()) * 60 * 1000);
-                if(next_sync_forced != 0) {
-                    first_delay_ms = std::max(first_delay_ms, (int)(next_sync_forced - timestamp_minutes()) * 60 * 1000);
-                }
             }
         }
+    }
+
+    if(next_sync_forced != 0) {
+        first_delay_ms = std::max(first_delay_ms, (int)(next_sync_forced - timestamp_minutes()) * 60 * 1000);
     }
 
     logger.printfln("Next Solar Forecast update in %d ms", first_delay_ms);
@@ -197,6 +198,15 @@ esp_err_t SolarForecast::update_event_handler_impl(esp_http_client_event_t *even
         // Check status code
         if (code != 200) {
             logger.printfln("HTTP error while downloading json: %d", code);
+            if(code == 429) { // 429 = rate limit reached
+                logger.printfln("Solar Forecast rate limit reached, next solar forecast API call will be in 2 hours");
+                next_sync_forced = timestamp_minutes() + 120;
+                state.get("rate_remaining")->updateInt(0);
+            } else {
+                // Wait 30 minutes after unknown error
+                logger.printfln("Next solar forecast API call will be in 30 minutes");
+                next_sync_forced = timestamp_minutes() + 30;
+            }
             download_state = SF_DOWNLOAD_STATE_ERROR;
             download_complete = true;
             break;
@@ -205,6 +215,8 @@ esp_err_t SolarForecast::update_event_handler_impl(esp_http_client_event_t *even
         // Check length
         if((event->data_len + json_buffer_position) > (SOLAR_FORECAST_MAX_JSON_LENGTH - 1)) {
             logger.printfln("JSON buffer too small");
+            logger.printfln("Next solar forecast API call will be in 30 minutes");
+            next_sync_forced = timestamp_minutes() + 30;
             download_state = SF_DOWNLOAD_STATE_ERROR;
             download_complete = true;
             break;
@@ -240,6 +252,8 @@ void SolarForecast::deserialize_data()
     DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
     if (error) {
         logger.printfln("Error during JSON deserialization: %s", error.c_str());
+        logger.printfln("Next solar forecast API call will be in 30 minutes");
+        next_sync_forced = timestamp_minutes() + 30;
         download_state = SF_DOWNLOAD_STATE_ERROR;
     } else {
         JsonObject js_message = json_doc["message"];
@@ -247,6 +261,16 @@ void SolarForecast::deserialize_data()
         if (code != 0) {
             JsonString text = js_message["text"];
             logger.printfln("Solar Forecast server returned error code %ld (%s)", code, text.c_str());
+            if(code == 429) { // 429 = rate limit reached
+                logger.printfln("Solar Forecast rate limit reached, next solar forecast API call will be in 2 hours");
+                next_sync_forced = timestamp_minutes() + 120;
+                state.get("rate_remaining")->updateInt(0);
+            } else {
+                // Wait 30 minutes after unknown error
+                logger.printfln("Next solar forecast API call will be in 30 minutes");
+                next_sync_forced = timestamp_minutes() + 30;
+            }
+            return;
         } else {
             JsonObject js_info       = js_message["info"];
             JsonObject js_reatelimit = js_message["ratelimit"];
@@ -447,6 +471,8 @@ void SolarForecast::update()
         // Check for global timeout
         if (deadline_elapsed(last_update_begin + CHECK_FOR_SF_TIMEOUT)) {
             logger.printfln("API server %s did not respond in time", config.get("api_url")->asString().c_str());
+            logger.printfln("Next solar forecast API call will be in 30 minutes");
+            next_sync_forced = timestamp_minutes() + 30;
             download_state = SF_DOWNLOAD_STATE_ERROR;
             download_complete = true;
         }
@@ -459,6 +485,15 @@ void SolarForecast::update()
                 // Nothing to do, just wait for more data
             } else if (err != ESP_OK) {
                 logger.printfln("Error while downloading json: %s", esp_err_to_name(err));
+                if(err == 429) { // 429 = rate limit reached
+                    logger.printfln("Solar Forecast rate limit reached, next solar forecast API call will be in 2 hours");
+                    next_sync_forced = timestamp_minutes() + 120;
+                    state.get("rate_remaining")->updateInt(0);
+                } else {
+                    // Wait 30 minutes after unknown error
+                    logger.printfln("Next solar forecast API call will be in 30 minutes");
+                    next_sync_forced = timestamp_minutes() + 30;
+                }
                 download_state = SF_DOWNLOAD_STATE_ERROR;
                 download_complete = true;
             } else if (download_state == SF_DOWNLOAD_STATE_PENDING) {
