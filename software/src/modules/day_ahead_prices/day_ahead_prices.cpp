@@ -119,14 +119,18 @@ void DayAheadPrices::register_urls()
     api.addState("day_ahead_prices/state",             &state);
     api.addState("day_ahead_prices/prices",            &prices);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        this->update();
-    }, 0, CHECK_INTERVAL);
+    task_scheduler.scheduleWhenClockSynced([this]() {
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            this->update();
+        }, 0, CHECK_INTERVAL);
+    });
 
-    // TODO: Can we run this at xx:00, xx:15, xx:30 and xx:45?
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        this->update_price();
-    }, 0, PRICE_UPDATE_INTERVAL);
+    task_scheduler.scheduleWhenClockSynced([this]() {
+        // TODO: Can we run this at xx:00, xx:15, xx:30 and xx:45?
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            this->update_price();
+        }, 0, PRICE_UPDATE_INTERVAL);
+    });
 }
 
 esp_err_t DayAheadPrices::update_event_handler_impl(esp_http_client_event_t *event)
@@ -207,6 +211,12 @@ void DayAheadPrices::update()
     }
 
     if (config.get("enable")->asBool() == false) {
+        return;
+    }
+
+    // Only update if clock is synced
+    struct timeval tv_now;
+    if (!clock_synced(&tv_now)) {
         return;
     }
 
