@@ -53,6 +53,9 @@ public:
     esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
     void next_update();
 
+    uint32_t get_kwh_today();
+    uint32_t get_kwh_tomorrow();
+
     ConfigRoot config;
     ConfigRoot state;
 
@@ -72,6 +75,8 @@ private:
     String get_path(const SolarForecastPlane &plane, const PathType path_type);
     const char* get_api_url_with_path(const SolarForecastPlane &plane);
     void deserialize_data();
+    uint32_t get_timestamp_today_00_00_in_minutes();
+    bool forecast_time_between(const SolarForecastPlane &plane, uint32_t index, uint32_t start, uint32_t end);
 
     SolarForecastPlane *plane_current;
 

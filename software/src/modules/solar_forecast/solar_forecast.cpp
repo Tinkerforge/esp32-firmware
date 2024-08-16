@@ -25,7 +25,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 
-#define SOLAR_FORECAST_USE_TEST_DATA
+// #define SOLAR_FORECAST_USE_TEST_DATA
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
@@ -558,4 +558,79 @@ String SolarForecast::get_path(const SolarForecastPlane &plane, const SolarForec
     path.concat(solar_forecast_path_postfixes[static_cast<uint32_t>(path_type)]);
 
     return path;
+}
+
+// Javascript:
+#if 0
+function get_kwh_today() {
+    let start         = get_timestamp_today_00_00_in_seconds();
+    let end           = start + 60*60*24 - 1;
+    let active_planes = get_active_planes();
+    let wh            = 0.0;
+    for (const plane of active_planes) {
+        for (let index = 0; index < state.plane_forecasts[plane].forecast.length; index++) {
+            if (forecast_time_between(plane, index, start, end)) {
+                wh += state.plane_forecasts[plane].forecast[index] || 0.0;
+            }
+        }
+    }
+    return wh/1000.0;
+}
+#endif
+
+uint32_t SolarForecast::get_timestamp_today_00_00_in_minutes()
+{
+    time_t now = time(nullptr);
+    struct tm tm;
+    localtime_r(&now, &tm);
+
+    tm.tm_hour = 0;
+    tm.tm_min = 0;
+    tm.tm_sec = 0;
+
+    return mktime(&tm)/60;
+}
+
+bool SolarForecast::forecast_time_between(const SolarForecastPlane &plane, uint32_t index, uint32_t start, uint32_t end) {
+    const uint32_t forecast_time = plane.forecast.get("first_date")->asUint() + index * 60;
+
+    return (forecast_time >= start) && (forecast_time <= end);
+}
+
+uint32_t SolarForecast::get_kwh_today()
+{
+    uint32_t start = get_timestamp_today_00_00_in_minutes();
+    uint32_t end   = start + 60*24 - 1;
+    uint32_t wh    = 0;
+
+    for (const SolarForecastPlane &plane : planes) {
+        if (plane.config.get("active")->asBool()) {
+            for (uint8_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
+                if (forecast_time_between(plane, index, start, end)) {
+                    wh += plane.forecast.get("forecast")->get(index)->asUint();
+                }
+            }
+        }
+    }
+
+    return wh;
+}
+
+uint32_t SolarForecast::get_kwh_tomorrow()
+{
+    uint32_t start = get_timestamp_today_00_00_in_minutes() + 60*24;
+    uint32_t end   = start + 60*24 - 1;
+    uint32_t wh    = 0;
+
+    for (const SolarForecastPlane &plane : planes) {
+        if (plane.config.get("active")->asBool()) {
+            for (uint8_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
+                if (forecast_time_between(plane, index, start, end)) {
+                    wh += plane.forecast.get("forecast")->get(index)->asUint();
+                }
+            }
+        }
+    }
+
+    return wh;
 }
