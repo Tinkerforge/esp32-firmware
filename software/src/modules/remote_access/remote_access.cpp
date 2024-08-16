@@ -629,6 +629,27 @@ static int management_filter_out(struct pbuf* packet) {
     return -1;
 }
 
+bool port_valid(uint16_t port) {
+    bool port_valid = false;
+    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sock < 0) {
+        return port_valid;
+    }
+
+    struct sockaddr_in local_addr;
+    bzero(&local_addr, sizeof(local_addr));
+
+    local_addr.sin_addr.s_addr = inet_addr("0.0.0.0");
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_port = htons(port);
+    int ret = bind(sock, (struct sockaddr *)&local_addr, sizeof(local_addr));
+    if (ret == 0) {
+        port_valid = true;
+    }
+    close(sock);
+    return port_valid;
+}
+
 void RemoteAccess::connect_management() {
     static bool done = false;
     if (done)
@@ -663,6 +684,9 @@ void RemoteAccess::connect_management() {
 
     logger.printfln("Connecting to Management WireGuard peer %s:%u", remote_host.c_str(), management_connection.get("remote_port")->asUint());
 
+    while(!port_valid(local_port)) {
+        local_port++;
+    }
     this->setup_inner_socket();
     management.begin(internal_ip,
              internal_subnet,
@@ -725,6 +749,9 @@ void RemoteAccess::connect_remote_access(uint8_t i) {
     String private_key = conf->get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
     String remote_host = conf->get("remote_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
 
+    while(!port_valid(local_port)) {
+        local_port++;
+    }
     remote_connections[i].begin(internal_ip,
              internal_subnet,
              local_port,
