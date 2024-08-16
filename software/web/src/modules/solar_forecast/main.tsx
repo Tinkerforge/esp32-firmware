@@ -520,6 +520,9 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                     <FormRow label="Verbleibende Abfragen" label_muted="Wie oft darf die Solarprognose von der API in diesem Intervall noch abgefragt werden">
                         <InputText value={this.state.state.rate_remaining === -1 ? "Unbekannt (Solarprognose wurde noch nicht abgefragt)" : this.state.state.rate_remaining}/>
                     </FormRow>
+                    <FormRow label="Nächster API-Aufruf" label_muted="Wann wird die Solarprognose das nächste mal abgefragt">
+                        <InputText value={this.state.state.next_api_call === 0 ? "Unbekannt" : new Date(this.state.state.next_api_call*60*1000).toLocaleString()}/>
+                    </FormRow>
                 </CollapsedSection>
             </SubPage>
         );

@@ -67,6 +67,7 @@ void SolarForecast::pre_setup()
     state = Config::Object({
         {"rate_limit", Config::Int8(-1)},
         {"rate_remaining", Config::Int8(-1)},
+        {"next_api_call",  Config::Uint32(0)}, // unix timestamp in minutes
     });
 
     uint8_t index = 0;
@@ -167,7 +168,7 @@ void SolarForecast::next_update() {
         first_delay_ms = std::max(first_delay_ms, (int)(next_sync_forced - timestamp_minutes()) * 60 * 1000);
     }
 
-    logger.printfln("Next Solar Forecast update in %d ms", first_delay_ms);
+    state.get("next_api_call")->updateUint(timestamp_minutes() + first_delay_ms / 60000);
 
     // Cancel current task
     task_scheduler.cancel(task_id);

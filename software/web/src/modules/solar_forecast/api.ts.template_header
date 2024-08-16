@@ -7,4 +7,5 @@ export interface config {
 export interface state {
     rate_limit: number;
     rate_remaining: number;
+    next_api_call: number;
 }
