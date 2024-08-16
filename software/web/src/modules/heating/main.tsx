@@ -166,6 +166,15 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             wenn nur eine der beiden Steuerungen verwendet werden soll.
                         </div>
                     </FormRow>
+                    <FormRow label="Mindesthaltezeit" label_muted="Wie lange soll ein Anlaufbefehl mindestens gelten">
+                        <InputNumber
+                            unit="Minuten"
+                            value={state.minimum_control_holding_time}
+                            onValue={this.set("minimum_control_holding_time")}
+                            min={0}
+                            max={60}
+                        />
+                    </FormRow>
                     <FormSeparator heading="Wintermodus"/>
 
                     <FormRow label="Winter Start" label_muted="">
@@ -264,15 +273,6 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                     onValue={this.set("winter_pv_excess_control_threshold")}
                                     min={0}
                                     max={100000}
-                                />
-                            </FormRow>
-                            <FormRow label="Mindesthaltezeit" label_muted="Wie lange soll der PV-Überschuss-Anlaufbefehl mindestens gelten">
-                                <InputNumber
-                                    unit="Minuten"
-                                    value={state.winter_pv_excess_control_holding_time}
-                                    onValue={this.set("winter_pv_excess_control_holding_time")}
-                                    min={0}
-                                    max={60}
                                 />
                             </FormRow>
                         </div>
@@ -428,15 +428,6 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                     onValue={this.set("summer_pv_excess_control_threshold")}
                                     min={0}
                                     max={100000}
-                                />
-                            </FormRow>
-                            <FormRow label="Mindesthaltezeit" label_muted="Wie lange soll der PV-Überschuss-Anlaufbefehl mindestens gelten">
-                                <InputNumber
-                                    unit="Minuten"
-                                    value={state.summer_pv_excess_control_holding_time}
-                                    onValue={this.set("summer_pv_excess_control_holding_time")}
-                                    min={0}
-                                    max={60}
                                 />
                             </FormRow>
                         </div>
