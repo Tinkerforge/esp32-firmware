@@ -149,9 +149,9 @@ void Heating::update()
             }
 
             if (winter_pv_excess_control_active) {
-                const int watt_expected = 0; // meters.get_expected_pv_excess();
-                if (watt_expected > winter_pv_excess_control_threshold) {
-                    logger.printfln("Expected PV excess is above threshold. Turning on SG ready.");
+                const int watt_current = 0; // meters.get_current_pv_excess();
+                if (watt_current > winter_pv_excess_control_threshold) {
+                    logger.printfln("Current PV excess is above threshold. Turning on SG ready.");
                     sg_ready_on = sg_ready_on || true;
                 }
             }
@@ -174,18 +174,18 @@ void Heating::update()
         // If we are in block time and px excess control is active,
         // we check the expected px excess and unblock if it is below the threshold.
         if (blocked && summer_yield_forecast_active) {
-            int watt_expected = 0;
+            int kwh_expected = 0;
             if (is_morning) {
-                // watt_expected = solar_forecast.get_expected_pv_excess_today();
+                kwh_expected = solar_forecast.get_kwh_today();
             } else if (is_evening) {
-                // watt_expected = solar_forecast.get_expected_pv_excess_tomorrow();
+                kwh_expected = solar_forecast.get_kwh_tomorrow();
             }
 
-            if (watt_expected < summer_yield_forecast_threshold) {
-                logger.printfln("Expected PV yield is below threshold.");
+            if (kwh_expected < summer_yield_forecast_threshold) {
+                logger.printfln("Expected PV yield %d is below threshold of %d.", kwh_expected, summer_yield_forecast_threshold);
                 blocked = false;
             } else {
-                logger.printfln("Expected PV yield is above threshold.");
+                logger.printfln("Expected PV yield %d is above threshold of %d.", kwh_expected, summer_yield_forecast_threshold);
             }
         }
 
@@ -210,9 +210,9 @@ void Heating::update()
                 }
 
                 if (summer_pv_excess_control_active) {
-                    const int watt_expected = 0; // meters.get_expected_pv_excess();
-                    if (watt_expected > summer_pv_excess_control_threshold) {
-                        logger.printfln("Expected PV excess is above threshold. Turning on SG ready.");
+                    const int watt_current = 0; // meters.get_current_pv_excess();
+                    if (watt_current > summer_pv_excess_control_threshold) {
+                        logger.printfln("Current PV excess is above threshold. Turning on SG ready.");
                         sg_ready_on = sg_ready_on || true;
                     }
                 }
