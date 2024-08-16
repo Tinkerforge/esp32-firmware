@@ -49,73 +49,65 @@ export class Heating extends ConfigComponent<'heating/config'> {
     summer_end_month:   number;
 
     static days: [string, string][] = [
-        ["0", "1"],
-        ["1", "2"],
-        ["2", "3"],
-        ["3", "4"],
-        ["4", "5"],
-        ["5", "6"],
-        ["6", "7"],
-        ["7", "8"],
-        ["8", "9"],
-        ["9", "10"],
-        ["10", "11"],
-        ["11", "12"],
-        ["12", "13"],
-        ["13", "14"],
-        ["14", "15"],
-        ["15", "16"],
-        ["16", "17"],
-        ["17", "18"],
-        ["18", "19"],
-        ["19", "20"],
-        ["20", "21"],
-        ["21", "22"],
-        ["22", "23"],
-        ["23", "24"],
-        ["24", "25"],
-        ["25", "26"],
-        ["26", "27"],
-        ["27", "28"],
-        ["28", "29"],
-        ["29", "30"],
-        ["30", "31"]
+        ["1", "1"],
+        ["2", "2"],
+        ["3", "3"],
+        ["4", "4"],
+        ["5", "5"],
+        ["6", "6"],
+        ["7", "7"],
+        ["8", "8"],
+        ["9", "9"],
+        ["10", "10"],
+        ["11", "11"],
+        ["12", "12"],
+        ["13", "13"],
+        ["14", "14"],
+        ["15", "15"],
+        ["16", "16"],
+        ["17", "17"],
+        ["18", "18"],
+        ["19", "19"],
+        ["20", "20"],
+        ["21", "21"],
+        ["22", "22"],
+        ["23", "23"],
+        ["24", "24"],
+        ["25", "25"],
+        ["26", "26"],
+        ["27", "27"],
+        ["28", "28"],
+        ["29", "29"],
+        ["30", "30"],
+        ["31", "31"]
     ];
 
     static months: [string, string][] = [
-        ["0", "Januar"],
-        ["1", "Februar"],
-        ["2", "März"],
-        ["3", "April"],
-        ["4", "Mai"],
-        ["5", "Juni"],
-        ["6", "Juli"],
-        ["7", "August"],
-        ["8", "September"],
-        ["9", "Oktober"],
-        ["10", "November"],
-        ["11", "Dezember"]
+        ["1", "Januar"],
+        ["2", "Februar"],
+        ["3", "März"],
+        ["4", "April"],
+        ["5", "Mai"],
+        ["6", "Juni"],
+        ["7", "Juli"],
+        ["8", "August"],
+        ["9", "September"],
+        ["10", "Oktober"],
+        ["11", "November"],
+        ["12", "Dezember"]
     ];
 
     constructor() {
         super('heating/config',
-              __("heating.script.save_failed"),
-              __("heating.script.reboot_content_changed"));
-
-        // TODO: This is just for testing, such that summer days and months will be auto-filled
-        this.setState({
-            winter_start_day: 0,
-            winter_start_month: 10,
-            winter_end_day: 14,
-            winter_end_month: 2,
-        });
+              __("heating.script.save_failed"));
     }
 
     month_to_days(month: number): [string, string][] {
         switch(month) {
-            case 0: case 2: case 4: case 6: case 7: case 9: case 11: return Heating.days.slice(0, 31);
-            case 3: case 5: case 8: case 10:                         return Heating.days.slice(0, 30);
-            case 1:                                                  return Heating.days.slice(0, 28);
+            case 1: case 3: case 5: case 7: case 8: case 10: case 12: return Heating.days.slice(0, 31);
+            case 4: case 6: case 9: case 11:                          return Heating.days.slice(0, 30);
+            case 2:                                                   return Heating.days.slice(0, 28);
+            default: console.log("Invalid month: " + month);
         }
         return Heating.days.slice(0, 31);
     }
@@ -123,16 +115,16 @@ export class Heating extends ConfigComponent<'heating/config'> {
     recalculateSummer(state: Readonly<HeatingConfig>) {
         this.summer_start_day = state.winter_end_day + 1;
         this.summer_start_month = state.winter_end_month;
-        if(this.summer_start_day > this.month_to_days(state.winter_end_month).length -1) {
-            this.summer_start_day = 0;
-            this.summer_start_month = state.winter_end_month + 1 > 11 ? 0 : state.winter_end_month + 1;
+        if(this.summer_start_day > this.month_to_days(state.winter_end_month).length) {
+            this.summer_start_day = 1;
+            this.summer_start_month = state.winter_end_month + 1 > 12 ? 1 : state.winter_end_month + 1;
         }
 
         this.summer_end_day = state.winter_start_day - 1;
         this.summer_end_month = state.winter_start_month;
-        if(this.summer_end_day < 0) {
-            this.summer_end_month = state.winter_start_month - 1 < 0 ? 11 : state.winter_start_month - 1;
-            this.summer_end_day = this.month_to_days(this.summer_end_month).length - 1;
+        if(this.summer_end_day < 1) {
+            this.summer_end_month = state.winter_start_month - 1 < 1 ? 12 : state.winter_start_month - 1;
+            this.summer_end_day = this.month_to_days(this.summer_end_month).length;
         }
     }
 
@@ -142,8 +134,8 @@ export class Heating extends ConfigComponent<'heating/config'> {
 
         let days_winter_start = this.month_to_days(state.winter_start_month);
         let days_winter_end = this.month_to_days(state.winter_end_month);
-        let days_summer_start = this.month_to_days(0);
-        let days_summer_end = this.month_to_days(0);
+        let days_summer_start = this.month_to_days(1);
+        let days_summer_end = this.month_to_days(1);
 
         this.recalculateSummer(state);
 
