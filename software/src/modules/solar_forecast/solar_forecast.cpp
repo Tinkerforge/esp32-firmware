@@ -560,24 +560,6 @@ String SolarForecast::get_path(const SolarForecastPlane &plane, const SolarForec
     return path;
 }
 
-// Javascript:
-#if 0
-function get_kwh_today() {
-    let start         = get_timestamp_today_00_00_in_seconds();
-    let end           = start + 60*60*24 - 1;
-    let active_planes = get_active_planes();
-    let wh            = 0.0;
-    for (const plane of active_planes) {
-        for (let index = 0; index < state.plane_forecasts[plane].forecast.length; index++) {
-            if (forecast_time_between(plane, index, start, end)) {
-                wh += state.plane_forecasts[plane].forecast[index] || 0.0;
-            }
-        }
-    }
-    return wh/1000.0;
-}
-#endif
-
 uint32_t SolarForecast::get_timestamp_today_00_00_in_minutes()
 {
     time_t now = time(nullptr);
