@@ -1,15 +1,15 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 let x = {
-    "em_display": {
+    "em_front_panel": {
         "status": {},
         "navbar": {
-            "em_display": "Display"
+            "em_front_panel": "Display"
         },
         "content": {
-            "em_display": "Display",
-            "em_display_muted": "Statusinformationen auf Display anzeigen",
-            "em_display_desc": "Aktiviert das Display des Energy Managers"
+            "em_front_panel": "Display",
+            "em_front_panel_muted": "Statusinformationen auf Display anzeigen",
+            "em_front_panel_desc": "Aktiviert das Display des Energy Managers"
         },
         "script": {
             "save_failed": "Speichern der Displayeinstellungen fehlgeschlagen",

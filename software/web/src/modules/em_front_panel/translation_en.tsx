@@ -1,15 +1,15 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 let x = {
-    "em_display": {
+    "em_front_panel": {
         "status": {},
         "navbar": {
-            "em_display": "Display"
+            "em_front_panel": "Display"
         },
         "content": {
-            "em_display": "Display",
-            "em_display_muted": "Show status information on display",
-            "em_display_desc": "Enable the display of the Energy Manager"
+            "em_front_panel": "Display",
+            "em_front_panel_muted": "Show status information on display",
+            "em_front_panel_desc": "Enable the display of the Energy Manager"
         },
         "script": {
             "save_failed": "Failed to save the display settings",

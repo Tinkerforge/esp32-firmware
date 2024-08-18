@@ -30,11 +30,11 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Monitor } from "react-feather";
 import { Collapse } from "react-bootstrap";
 
-export function EMDisplayNavbar() {
+export function EMFrontPanelNavbar() {
     return (
         <NavbarItem
-            name="em_display"
-            title={__("em_display.navbar.em_display")}
+            name="front_panel"
+            title={__("em_front_panel.navbar.em_front_panel")}
             hidden={false}
             symbol={<Monitor/>
             }
@@ -42,33 +42,33 @@ export function EMDisplayNavbar() {
     );
 }
 
-type EMDisplayConfig = API.getType["em_display/config"];
+type EMFrontPanelConfig = API.getType["front_panel/config"];
 
-interface EMDisplayState {
+interface EMFrontPanelState {
 }
 
-export class EMDisplay extends ConfigComponent<"em_display/config", {}, EMDisplayState> {
+export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFrontPanelState> {
     constructor() {
-        super('em_display/config',
-              __("em_display.script.save_failed"));
+        super('front_panel/config',
+              __("em_front_panel.script.save_failed"));
     }
 
-    render(props: {}, state: EMDisplayState & EMDisplayConfig) {
+    render(props: {}, state: EMFrontPanelState & EMFrontPanelConfig) {
         if (!util.render_allowed()) {
-            return <SubPage name="em_display" />;
+            return <SubPage name="front_panel" />;
         }
 
         return (
-            <SubPage name="em_display">
-                <ConfigForm id="em_display_config_form"
-                            title={__("em_display.content.em_display")}
+            <SubPage name="front_panel">
+                <ConfigForm id="em_front_panel_config_form"
+                            title={__("em_front_panel.content.em_front_panel")}
                             isModified={this.isModified()}
                             isDirty={this.isDirty()}
                             onSave={this.save}
                             onReset={undefined}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label={__("em_display.content.em_display")} label_muted={__("em_display.content.em_display_muted")}>
-                        <Switch desc={__("em_display.content.em_display_desc")}
+                    <FormRow label={__("em_front_panel.content.em_front_panel")} label_muted={__("em_front_panel.content.em_front_panel_muted")}>
+                        <Switch desc={__("em_front_panel.content.em_front_panel_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
                         />
