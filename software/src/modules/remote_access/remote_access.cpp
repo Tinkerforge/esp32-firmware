@@ -650,6 +650,13 @@ bool port_valid(uint16_t port) {
     return port_valid;
 }
 
+uint16_t find_next_free_port(uint16_t port) {
+    while (!port_valid(port)) {
+        port++;
+    }
+    return port;
+}
+
 void RemoteAccess::connect_management() {
     static bool done = false;
     if (done)
@@ -684,9 +691,7 @@ void RemoteAccess::connect_management() {
 
     logger.printfln("Connecting to Management WireGuard peer %s:%u", remote_host.c_str(), management_connection.get("remote_port")->asUint());
 
-    while(!port_valid(local_port)) {
-        local_port++;
-    }
+    local_port = find_next_free_port(local_port);
     this->setup_inner_socket();
     management.begin(internal_ip,
              internal_subnet,
@@ -721,13 +726,13 @@ void RemoteAccess::connect_management() {
     }, 0, 250);
 }
 
-void RemoteAccess::connect_remote_access(uint8_t i) {
+void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
     const Config *conf = static_cast<Config *>(remote_connection_config.get("connections")->get(i));
 
     struct timeval tv;
     if (!clock_synced(&tv)) {
-        task_scheduler.scheduleOnce([this, i]() {
-            this->connect_remote_access(i);
+        task_scheduler.scheduleOnce([this, i, local_port]() {
+            this->connect_remote_access(i, local_port);
         }, 5000);
         return;
     }
@@ -737,21 +742,16 @@ void RemoteAccess::connect_remote_access(uint8_t i) {
     IPAddress internal_gateway;
     IPAddress allowed_ip;
     IPAddress allowed_subnet;
-    uint16_t local_port;
 
     internal_ip.fromString(conf->get("internal_ip")->asEphemeralCStr());
     internal_subnet.fromString(conf->get("internal_subnet")->asEphemeralCStr());
     internal_gateway.fromString(conf->get("internal_gateway")->asEphemeralCStr());
     allowed_ip.fromString("0.0.0.0");
     allowed_subnet.fromString("0.0.0.0");
-    local_port = conf->get("local_port")->asUint();
 
     String private_key = conf->get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
     String remote_host = conf->get("remote_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
 
-    while(!port_valid(local_port)) {
-        local_port++;
-    }
     remote_connections[i].begin(internal_ip,
              internal_subnet,
              local_port,
@@ -860,7 +860,7 @@ void RemoteAccess::run_management() {
                 }
 
                 logger.printfln("Opening connection %u", command->connection_no);
-                uint32_t local_port = remote_connection_config.get("connections")->get(command->connection_no)->get("local_port")->asUint();
+                uint16_t local_port = static_cast<uint16_t>(remote_connection_config.get("connections")->get(command->connection_no)->get("local_port")->asUint());
                 port_discovery_packet response;
                 response.charger_id = local_uid_num;
                 response.connection_no = command->connection_no;
@@ -868,9 +868,10 @@ void RemoteAccess::run_management() {
 
                 CoolString remote_host = config.get("relay_host")->asString();
                 remote_connections[command->connection_no].end();
-                create_sock_and_send_to(&response, sizeof(response), remote_host.c_str(), 51820, (uint16_t *)&local_port);
+                local_port = find_next_free_port(local_port);
+                create_sock_and_send_to(&response, sizeof(response), remote_host.c_str(), 51820, &local_port);
+            connect_remote_access(command->connection_no, local_port);
             }
-            connect_remote_access(command->connection_no);
             break;
 
         case management_command_id::Disconnect:

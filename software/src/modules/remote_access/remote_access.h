@@ -42,7 +42,7 @@ private:
     void resolve_management();
     void login();
     void connect_management();
-    void connect_remote_access(uint8_t i);
+    void connect_remote_access(uint8_t i, uint16_t local_port);
     void run_management();
     int setup_inner_socket();
     HttpResponse make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error);
