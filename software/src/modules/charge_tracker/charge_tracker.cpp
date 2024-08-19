@@ -1016,6 +1016,12 @@ search_done:
                                        "Meter start\0"
                                        "Cost (€)";
 
+        // If there are no charges tracked, still generate one page, the table header etc.
+        // We will skip creating the table content later.
+        bool any_charges_tracked = charge_records > 0;
+        if (!any_charges_tracked)
+            charge_records = 1;
+
         init_pdf_generator(&request,
                            english ? "WARP Charge Log" : "WARP Ladelog",
                            stats_buf, (electricity_price == 0) ? 5 : 6,
@@ -1035,7 +1041,8 @@ search_done:
                             electricity_price,
                             english,
                             configured_users,
-                            &display_name_cache]
+                            &display_name_cache,
+                            any_charges_tracked]
                            (const char * * table_lines) {
             memset(table_lines_buffer, 0, ARRAY_SIZE(table_lines_buffer));
 
@@ -1046,7 +1053,10 @@ search_done:
             ChargeStart cs;
             ChargeEnd ce;
 
-            while (current_file <= last_file) {
+            // Skip creating the table content if there were no charges tracked.
+            // charge_records is set to 1 in this case to still generate the page,
+            // table header etc.
+            while (any_charges_tracked && current_file <= last_file) {
                 if (current_charge >= (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE)) {
                     current_charge = 0;
                 }
