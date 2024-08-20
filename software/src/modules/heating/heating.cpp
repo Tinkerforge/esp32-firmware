@@ -41,8 +41,8 @@ void Heating::pre_setup()
         {"winter_pv_excess_control_active", Config::Bool(false)},
         {"winter_pv_excess_control_threshold", Config::Uint(0)},
         {"summer_block_time_active", Config::Bool(false)},
-        {"summer_block_time_morning", Config::Int(8*60 - 120)}, // TODO: A good default here would be local time dependend... but this is good enough for now
-        {"summer_block_time_evening", Config::Int(20*60 - 120)},
+        {"summer_block_time_morning", Config::Int(8*60)},  // localtime in minutes since 00:00
+        {"summer_block_time_evening", Config::Int(20*60)}, // localtime in minutes since 00:00
         {"summer_yield_forecast_active", Config::Bool(false)},
         {"summer_yield_forecast_threshold", Config::Uint(0)},
         {"summer_dynamic_price_control_active", Config::Bool(false)},
@@ -124,6 +124,7 @@ void Heating::update()
     const struct tm *current_time = localtime(&now);
     const int current_month       = current_time->tm_mon + 1;
     const int current_day         = current_time->tm_mday;
+    const int current_minutes     = current_time->tm_hour * 60 + current_time->tm_min;
 
     const bool is_winter = ((current_month == winter_start_month) && (current_day >= winter_start_day )) ||
                            ((current_month == winter_end_month  ) && (current_day <= winter_end_day   )) ||
@@ -161,7 +162,6 @@ void Heating::update()
         bool is_morning = false;
         bool is_evening = false;
         if (summer_block_time_active) {
-            uint32_t current_minutes = current_time->tm_hour * 60 + current_time->tm_min;
             if (current_minutes <= summer_block_time_morning) {       // if is between 00:00 and summer_block_time_morning
                 blocked    = true;
                 is_morning = true;
