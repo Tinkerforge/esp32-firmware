@@ -5,7 +5,24 @@
             "heating": "Heizung"
         },
         "content": {
-            "heating": "Heizung"
+            "heating": "Heizung",
+            "control_signal": "Steuersignal",
+            "minimum_holding_time": "Mindesthaltezeit",
+            "minimum_holding_time_description": "Wie lange soll ein Anlaufbefehl mindestens gelten",
+            "minutes": "Minuten",
+            "month": "Monat",
+            "day": "Tag",
+            "winter_mode": "Wintermodus",
+            "winter_start": "Winter Start",
+            "winter_end": "Winter Ende",
+            "dynamic_price_control": "Dynamische Preissteuerung",
+            "dynamic_price_control_activate": "Aktiviert die Optimierung der Heizungssteuerung anhand des dynamischen Strompreises",
+            "average_price_threshold": "Durchschnitspreis-Schwelle",
+            "average_price_threshold_description": "Liegt der Tagesdurchschnittspreis unter der Schwelle, dann wird der Heizung ein Anlaufbefehl gegeben",
+            "pv_excess_control": "PV-Überschuss-Steuerung",
+            "pv_excess_control_activate": "Aktiviert die Optimierung der Heizungssteuerung anhand des PV-Überschuss",
+            "pv_excess_threshold": "PV-Überschuss-Schwelle",
+            "pv_excess_threshold_description": "Ab wieviel Watt PV-Überschuss soll der Heizung ein Anlaufbefehl gegeben werden"
         },
         "script": {
             "save_failed": "Speichern der Heizungseinstellungen fehlgeschlagen",

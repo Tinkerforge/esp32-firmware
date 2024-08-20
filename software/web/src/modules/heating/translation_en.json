@@ -5,7 +5,24 @@
             "heating": "Heating"
         },
         "content": {
-            "heating": "Heating"
+            "heating": "Heating",
+            "control_signal": "Control Signal",
+            "minimum_holding_time": "Minimum Holding Time",
+            "minimum_holding_time_description": "How long should a start command be valid for",
+            "minutes": "Minutes",
+            "month": "Month",
+            "day": "Day",
+            "winter_mode": "Winter Mode",
+            "winter_start": "Winter Start",
+            "winter_end": "Winter End",
+            "dynamic_price_control": "Dynamic Price Control",
+            "dynamic_price_control_activate": "Enables optimization of heating control based on dynamic electricity price",
+            "average_price_threshold": "Average Price Threshold",
+            "average_price_threshold_description": "If the daily average price is below the threshold, a start command will be given to the heating",
+            "pv_excess_control": "PV Excess Control",
+            "pv_excess_control_activate": "Enables optimization of heating control based on PV excess",
+            "pv_excess_threshold": "PV Excess Threshold",
+            "pv_excess_threshold_description": "At what wattage of PV excess should a start command be given to the heating"
         },
         "script": {
             "save_failed": "Failed to save the heating settings",

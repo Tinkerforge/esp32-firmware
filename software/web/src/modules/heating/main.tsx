@@ -156,7 +156,7 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label="Steuersignal">
+                    <FormRow label={__("heating.content.control_signal")}>
                         <div>
                             Als Steuersignal für die Heizung wird "SG Ready" verwendet.
                             Der SEB hat dafür zwei potentialfreie Schaltausgänge:
@@ -174,22 +174,22 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             wenn nur eine der beiden Steuerungen verwendet werden soll.
                         </div>
                     </FormRow>
-                    <FormRow label="Mindesthaltezeit" label_muted="Wie lange soll ein Anlaufbefehl mindestens gelten">
+                    <FormRow label={__("heating.content.minimum_holding_time")} label_muted={__("heating.content.minimum_holding_time_description")}>
                         <InputNumber
-                            unit="Minuten"
+                            unit={__("heating.content.minutes")}
                             value={state.minimum_control_holding_time}
                             onValue={this.set("minimum_control_holding_time")}
                             min={0}
                             max={60}
                         />
                     </FormRow>
-                    <FormSeparator heading="Wintermodus"/>
+                    <FormSeparator heading={__("heating.content.winter_mode")}/>
 
-                    <FormRow label="Winter Start" label_muted="">
+                    <FormRow label={__("heating.content.winter_start")} label_muted="">
                         <div class="row no-gutters">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Monat</span></div>
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
                                     <InputSelect
                                         items={Heating.months}
                                         value={state.winter_start_month}
@@ -203,7 +203,7 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Tag</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
                                     <InputSelect
                                         items={days_winter_start}
                                         value={state.winter_start_day}
@@ -216,11 +216,11 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label="Winter Ende" label_muted="">
+                    <FormRow label={__("heating.content.winter_end")} label_muted="">
                         <div class="row no-gutters">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Monat</span></div>
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
                                     <InputSelect
                                         items={Heating.months}
                                         value={state.winter_end_month}
@@ -234,7 +234,7 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Tag</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
                                     <InputSelect
                                         items={days_winter_end}
                                         value={state.winter_end_day}
@@ -247,15 +247,15 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label="Dynamische Preissteuerung">
-                        <Switch desc="Aktiviert die Optimierung der Heizungssteuerung anhand des dynamischen Strompreises"
+                    <FormRow label={__("heating.content.dynamic_price_control")}>
+                        <Switch desc={__("heating.content.dynamic_price_control_activate")}
                                 checked={state.winter_dynamic_price_control_active}
                                 onClick={this.toggle('winter_dynamic_price_control_active')}
                         />
                     </FormRow>
                     <Collapse in={state.winter_dynamic_price_control_active}>
                         <div>
-                            <FormRow label="Durchschnitspreis-Schwelle" label_muted="Liegt der Tagesdurchschnittspreis unter der Schwelle, dann wird der Heizung ein Anlaufbefehl gegeben">
+                            <FormRow label={__("heating.content.average_price_threshold")} label_muted={__("heating.content.average_price_threshold_description")}>
                                 <InputNumber
                                     unit="%"
                                     value={state.winter_dynamic_price_control_threshold}
@@ -266,15 +266,15 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </FormRow>
                         </div>
                     </Collapse>
-                    <FormRow label="PV-Überschuss-Steuerung">
-                        <Switch desc="Aktiviert die Optimierung der Heizungssteuerung anhand des PV-Überschuss"
+                    <FormRow label={__("heating.content.pv_excess_control")}>
+                        <Switch desc={__("heating.content.pv_excess_control_activate")}
                                 checked={state.winter_pv_excess_control_active}
                                 onClick={this.toggle('winter_pv_excess_control_active')}
                         />
                     </FormRow>
                     <Collapse in={state.winter_pv_excess_control_active}>
                         <div>
-                            <FormRow label="PV-Überschuss-Schwelle" label_muted="Ab wieviel Watt PV-Überschuss soll der Heizung ein Anlaufbefehl gegeben werden">
+                            <FormRow label={__("heating.content.pv_excess_threshold")} label_muted={__("heating.content.pv_excess_threshold_description")}>
                                 <InputNumber
                                     unit="Watt"
                                     value={state.winter_pv_excess_control_threshold}
