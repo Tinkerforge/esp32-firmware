@@ -102,17 +102,14 @@ export class Heating extends ConfigComponent<'heating/config'> {
               __("heating.script.save_failed"));
     }
 
-    get_date_from_utc_minutes(minutes: number) {
-        const offset = new Date().getTimezoneOffset();
-        const minutes_localtime = minutes - offset;
-        const h = Math.floor(minutes_localtime / 60);
-        const m = minutes_localtime - h * 60;
+    get_date_from_minutes(minutes: number) {
+        const h = Math.floor(minutes / 60);
+        const m = minutes - h * 60;
         return new Date(0, 0, 1, h, m);
     }
 
-    get_utc_minutes_from_date(date: Date) {
-        const offset = new Date().getTimezoneOffset();
-        return date.getMinutes() + date.getHours() * 60 + offset;
+    get_minutes_from_date(date: Date) {
+        return date.getMinutes() + date.getHours()*60;
     }
 
     month_to_days(month: number): [string, string][] {
@@ -361,9 +358,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                             <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Bis</span></div>
                                                 <InputTime
                                                 className={"form-control-md"}
-                                                date={this.get_date_from_utc_minutes(state.summer_block_time_morning)}
+                                                date={this.get_date_from_minutes(state.summer_block_time_morning)}
                                                 showSeconds={false}
-                                                onDate={(d: Date) => this.setState({summer_block_time_morning: this.get_utc_minutes_from_date(d)})}
+                                                onDate={(d: Date) => this.setState({summer_block_time_morning: this.get_minutes_from_date(d)})}
                                             />
                                         </div>
                                     </div>
@@ -376,9 +373,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                             <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Von</span></div>
                                                 <InputTime
                                                 className={"form-control-md"}
-                                                date={this.get_date_from_utc_minutes(state.summer_block_time_evening)}
+                                                date={this.get_date_from_minutes(state.summer_block_time_evening)}
                                                 showSeconds={false}
-                                                onDate={(d: Date) => this.setState({summer_block_time_evening: this.get_utc_minutes_from_date(d)})}
+                                                onDate={(d: Date) => this.setState({summer_block_time_evening: this.get_minutes_from_date(d)})}
                                             />
                                         </div>
                                     </div>
