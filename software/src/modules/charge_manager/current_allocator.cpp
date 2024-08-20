@@ -262,7 +262,8 @@ int allocate_current(
                 if (requested_current < current_array[idx_array[i]])
                     continue;
 
-                uint16_t current_to_add = std::min(requested_current - current_array[idx_array[i]], (uint32_t)current_per_charger);
+                uint16_t max_current = std::min((uint16_t)32000u, requested_current) - current_array[idx_array[i]];
+                uint16_t current_to_add = std::min(max_current, current_per_charger);
 
                 ++chargers_reallocated;
 
