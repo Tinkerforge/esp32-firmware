@@ -263,7 +263,7 @@ def main():
         except:
             raise Exception(f'could not GPG sign {args.output_path}.sha256')
 
-    print(f'successfully signed by {repr(publisher)}')
+    print(f'successfully signed by {repr(publisher)}: {args.output_path}')
 
     # FIXME: force token unplugging now
 
