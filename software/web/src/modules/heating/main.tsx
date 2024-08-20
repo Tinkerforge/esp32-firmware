@@ -26,8 +26,6 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
-import { InputDate } from "../../ts/components/input_date";
-import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
