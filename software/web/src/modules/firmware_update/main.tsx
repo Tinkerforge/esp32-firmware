@@ -40,7 +40,6 @@ export function FirmwareUpdateNavbar() {
 interface FirmwareUpdateState {
     current_firmware: string,
     manual_install_in_progress: boolean,
-    update_url: string,
     publisher: string,
     check_timestamp: number,
     check_state: number,
@@ -56,7 +55,6 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
         this.state = {
             current_firmware: null,
             manual_install_in_progress: false,
-            update_url: null,
             publisher: null,
             check_timestamp: 0,
             check_state: null,
@@ -73,12 +71,6 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             }
 
             this.setState({current_firmware: version.firmware});
-        });
-
-        util.addApiEventListener('firmware_update/config', () => {
-            let config = API.get('firmware_update/config');
-
-            this.setState({update_url: config.update_url});
         });
 
         util.addApiEventListener('firmware_update/state', () => {
@@ -262,7 +254,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                     />
                 </FormRow>
 
-                {this.state.update_url ?
+                {API.hasFeature("firmware_auto_update") ?
                     <>
                         <FormRow label={__("firmware_update.content.check_for_update")}>
                             <Button variant="primary"

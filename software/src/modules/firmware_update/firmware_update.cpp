@@ -178,7 +178,7 @@ void FirmwareUpdate::setup()
 
     update_url = config.get("update_url")->asString();
 
-    if (!update_url.endsWith("/")) {
+    if (update_url.length() > 0 && !update_url.endsWith("/")) {
         update_url += "/";
     }
 
@@ -186,6 +186,10 @@ void FirmwareUpdate::setup()
 
 #if signature_sodium_public_key_length != 0
     logger.printfln("Firmware is signed by: %s", signature_publisher);
+
+    if (update_url.length() > 0) {
+        api.addFeature("firmware_auto_update");
+    }
 #else
     logger.printfln("Firmware is not signed");
 #endif
@@ -398,11 +402,13 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
     return InstallState::InProgress;
 }
 
+#if signature_sodium_public_key_length != 0
 static const char *firmware_url_infix = "_firmware_";
 static size_t firmware_url_infix_len = strlen(firmware_url_infix);
 static size_t firmware_url_version_len = strlen("MAJ_MIN_PAT_beta_BET_TIMESTAM");
 static const char *firmware_url_suffix = "_merged.bin";
 static size_t firmware_url_suffix_len = strlen(firmware_url_suffix);
+#endif
 
 void FirmwareUpdate::register_urls()
 {
@@ -414,6 +420,12 @@ void FirmwareUpdate::register_urls()
     }, true);
 
     api.addCommand("firmware_update/install_firmware", &install_firmware_config, {}, [this]() {
+#if signature_sodium_public_key_length == 0
+        logger.printfln("Installing firmware from URL is not supported (installed firmware is unsigned)");
+
+        state.get("install_state")->updateEnum(InstallState::NotSupported);
+        state.get("install_progress")->updateUint(0);
+#else
         String version_str = install_firmware_config.get("version")->asString();
         SemanticVersion version;
 
@@ -455,6 +467,7 @@ void FirmwareUpdate::register_urls()
         std::unique_ptr<char> firmware_url_ptr = firmware_url.take();
 
         install_firmware(firmware_url_ptr.get());
+#endif
     }, true);
 
     api.addCommand("firmware_update/override_signature", &override_signature, {}, [this](String &result) {
@@ -622,6 +635,13 @@ static size_t index_url_suffix_len = strlen(index_url_suffix);
 // index files are not signed to allow customer fleet update managment, firmwares are signed
 void FirmwareUpdate::check_for_update()
 {
+#if signature_sodium_public_key_length == 0
+    logger.printfln("Checking for firmware update is not supported (installed firmware is unsigned)");
+
+    state.get("check_timestamp")->updateUint(time(nullptr));
+    state.get("check_state")->updateEnum(CheckState::NotSupported);
+    state.get("update_version")->updateString("");
+#else
     logger.printfln("Checking for firmware update");
 
     state.get("check_timestamp")->updateUint(time(nullptr));
@@ -746,6 +766,7 @@ void FirmwareUpdate::check_for_update()
             break;
         }
     });
+#endif
 }
 
 void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
@@ -839,6 +860,12 @@ void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
 
 void FirmwareUpdate::install_firmware(const char *url)
 {
+#if signature_sodium_public_key_length == 0
+    logger.printfln("Installing firmware from URL is not supported (installed firmware is unsigned)");
+
+    state.get("install_state")->updateEnum(InstallState::NotSupported);
+    state.get("install_progress")->updateUint(0);
+#else
     logger.printfln("Installing firmware: %s", url);
 
     state.get("install_state")->updateEnum(InstallState::InProgress);
@@ -958,4 +985,5 @@ void FirmwareUpdate::install_firmware(const char *url)
             break;
         }
     });
+#endif
 }

@@ -203,7 +203,21 @@ export async function call_unchecked(topic: string, payload: any, error_string?:
     }
 }
 
-export type feature = "evse" | "energy_manager" | "cp_disconnect" | "button_configuration" | "ethernet" | "meters" | "nfc" | "phase_switch" | "rtc"| "meter" | "meter_phases" | "meter_all_values" | "rgb_led";
+export type feature =
+    "evse" |
+    "energy_manager" |
+    "cp_disconnect" |
+    "button_configuration" |
+    "ethernet" |
+    "meters" |
+    "nfc" |
+    "phase_switch" |
+    "rtc"|
+    "meter" |
+    "meter_phases" |
+    "meter_all_values" |
+    "rgb_led" |
+    "firmware_auto_update";
 
 export function hasFeature(feature: feature) {
     return hasFeature_unchecked(feature);
