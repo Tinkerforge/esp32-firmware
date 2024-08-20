@@ -39,7 +39,22 @@ let x = {
             "table_latitude": "Latitude",
             "table_longitude": "Longitude",
             "time": "Time",
-            "solar_forecast_chart_heading": "Solar forecast chart"
+            "solar_forecast_chart_heading": "Solar forecast chart",
+            "solar_forecast_now_label": "Solar forecast from now",
+            "solar_forecast_today_label": "Solar forecast for today",
+            "solar_forecast_today_label_muted": "00:00 to 23:59",
+            "solar_forecast_tomorrow_label": "Solar forecast for tomorrow",
+            "solar_forecast_tomorrow_label_muted": "00:00 to 23:59",
+            "time_to": "to",
+            "unknown_not_yet": "Unknown (Solar forecast has not been queried yet)",
+            "more_information": "More information",
+            "rate_limit_label": "Query limit",
+            "rate_limit_label_muted": "How often can the solar forecast be queried from the API (in a 2-hour interval)",
+            "remaining_requests_label": "Remaining queries",
+            "remaining_requests_label_muted": "How many more times can the solar forecast be queried from the API in this interval",
+            "next_api_call_label": "Next API call",
+            "next_api_call_label_muted": "When will the solar forecast be queried next",
+            "unknown": "Unknown"
 
         },
         "script": {

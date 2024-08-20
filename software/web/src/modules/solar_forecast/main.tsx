@@ -468,14 +468,14 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                     </Collapse>
                 </ConfigForm>
                 <FormSeparator heading={__("solar_forecast.content.solar_forecast_chart_heading")}/>
-                <FormRow label="Solarprognose ab jetzt" label_muted={("0" + new Date().getHours()).slice(-2) + ":00 bis 23:59"}>
-                    <InputText value={does_forecast_exist() ? get_kwh_now_to_midnight() + " kWh" : "Unbekannt (Solarprognose wurde noch nicht abgefragt)"}/>
+                <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date().getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + "23:59"}>
+                    <InputText value={does_forecast_exist() ? get_kwh_now_to_midnight() + " kWh" : __("solar_forecast.content.unknown_not_yet")}/>
                 </FormRow>
-                <FormRow label="Solarprognose heute" label_muted="00:00 bis 23:59">
-                    <InputText value={does_forecast_exist() ? get_kwh_today()           + " kWh" : "Unbekannt (Solarprognose wurde noch nicht abgefragt)"}/>
+                <FormRow label={__("solar_forecast.content.solar_forecast_today_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
+                    <InputText value={does_forecast_exist() ? get_kwh_today()           + " kWh" : __("solar_forecast.content.unknown_not_yet")}/>
                 </FormRow>
-                <FormRow label="Solarprognose morgen" label_muted="00:00 bis 23:59">
-                    <InputText value={does_forecast_exist() ? get_kwh_tomorrow()        + " kWh" : "Unbekannt (Solarprognose wurde noch nicht abgefragt)"}/>
+                <FormRow label={__("solar_forecast.content.solar_forecast_tomorrow_label")} label_muted={__("solar_forecast.content.solar_forecast_tomorrow_label_muted")}>
+                    <InputText value={does_forecast_exist() ? get_kwh_tomorrow()        + " kWh" : __("solar_forecast.content.unknown_not_yet")}/>
                 </FormRow>
                 <div class="card pl-1 pb-1">
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
@@ -513,15 +513,15 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                         </UplotLoader>
                     </div>
                 </div>
-                <CollapsedSection label="Mehr Informationen">
-                    <FormRow label="Abfragenbegrenzung" label_muted="Wie oft darf die Solarprognose von der API abgefragt werden (in einem 2-Stunden-Intervall)">
-                        <InputText value={this.state.state.rate_limit === -1 ? "Unbekannt (Solarprognose wurde noch nicht abgefragt)" : this.state.state.rate_limit}/>
+                <CollapsedSection label={__("solar_forecast.content.more_information")}>
+                    <FormRow label={__("solar_forecast.content.rate_limit_label")} label_muted={__("solar_forecast.content.rate_limit_label_muted")}>
+                        <InputText value={this.state.state.rate_limit === -1 ? __("solar_forecast.content.unknown_not_yet") : this.state.state.rate_limit}/>
                     </FormRow>
-                    <FormRow label="Verbleibende Abfragen" label_muted="Wie oft darf die Solarprognose von der API in diesem Intervall noch abgefragt werden">
-                        <InputText value={this.state.state.rate_remaining === -1 ? "Unbekannt (Solarprognose wurde noch nicht abgefragt)" : this.state.state.rate_remaining}/>
+                    <FormRow label={__("solar_forecast.content.remaining_requests_label")} label_muted={__("solar_forecast.content.remaining_requests_label_muted")}>
+                        <InputText value={this.state.state.rate_remaining === -1 ?  __("solar_forecast.content.unknown_not_yet") : this.state.state.rate_remaining}/>
                     </FormRow>
-                    <FormRow label="Nächster API-Aufruf" label_muted="Wann wird die Solarprognose das nächste mal abgefragt">
-                        <InputText value={this.state.state.next_api_call === 0 ? "Unbekannt" : new Date(this.state.state.next_api_call*60*1000).toLocaleString()}/>
+                    <FormRow label={__("solar_forecast.content.next_api_call_label")} label_muted={__("solar_forecast.content.next_api_call_label_muted")}>
+                        <InputText value={this.state.state.next_api_call === 0 ? __("solar_forecast.content.unknown") : new Date(this.state.state.next_api_call*60*1000).toLocaleString()}/>
                     </FormRow>
                 </CollapsedSection>
             </SubPage>
