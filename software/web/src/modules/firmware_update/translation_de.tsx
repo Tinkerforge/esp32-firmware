@@ -48,6 +48,7 @@ let x = {
             "check_state_10": "Firmware-Index ist beschädigt",
             "check_state_11": "Abgebrochen",
             "check_state_12": "Teil-Download aufgetreten",
+            "check_state_13": "Aktualisierungssuche wird nicht unterstüzt",
             "install_state_2": "Eine andere Abfrage läuft bereits",
             "install_state_3": "Interner Fehler aufgetreten",
             "install_state_4": "Kein Aktualisierungs-URL konfiguriert",
@@ -71,6 +72,7 @@ let x = {
             "install_state_23": "Abgebrochen",
             "install_state_24": "Starte neu",
             "install_state_25": "Teil-Download aufgetreten",
+            "install_state_26": "Installation wird nicht unterstüzt",
             "build_time": /*SFN*/(build_time: string) => `erstellt ${build_time}`/*NF*/,
             "publisher": /*SFN*/(publisher: string) => `von ${publisher}`/*NF*/,
             "install_failed": "Installation fehlgeschlagen"

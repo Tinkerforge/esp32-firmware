@@ -48,6 +48,7 @@ let x = {
             "check_state_10": "Firmware index is malformed",
             "check_state_11": "Aborted",
             "check_state_12": "Download short read occurred",
+            "check_state_13": "Check for update is not supported",
             "install_state_2": "Another operation is in progress",
             "install_state_3": "Internal error occurred",
             "install_state_4": "No update URL configured",
@@ -71,6 +72,7 @@ let x = {
             "install_state_23": "Aborted",
             "install_state_24": "Rebooting",
             "install_state_25": "Download short read occurred",
+            "install_state_26": "Installation is not supported",
             "build_time": /*SFN*/(build_time: string) => `created ${build_time}`/*NF*/,
             "publisher": /*SFN*/(publisher: string) => `by ${publisher}`/*NF*/,
             "install_failed": "Install failed"
