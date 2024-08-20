@@ -417,8 +417,6 @@ void FirmwareUpdate::register_urls()
         String version_str = install_firmware_config.get("version")->asString();
         SemanticVersion version;
 
-        // FIXME: check if manual firmware update is in progress
-
         if (!version.from_string(version_str.c_str())) {
             logger.printfln("Version is malformed: %s", version_str.c_str());
             state.get("install_state")->updateEnum(InstallState::VersionMalformed);
