@@ -92,6 +92,28 @@ void Heating::update()
         return;
     }
 
+    // TODO: Does §14 EnWG need a smaller update interval or is it enough to check it every minute?
+    const bool     p14enwg_active      = config.get("p14enwg_active")->asBool();
+    const uint32_t p14enwg_input       = config.get("p14enwg_input")->asUint();
+    const uint32_t p14enwg_active_type = config.get("p14enwg_active_type")->asUint();
+    if(p14enwg_active) {
+        bool p14enwg_on  = false;
+        bool input_value = false; // energy_manager.get_input(p14enwg_input);
+        if (p14enwg_active_type == 0 && input_value) {
+            p14enwg_on = true;
+        } else if(p14enwg_active_type == 1 && !input_value) {
+            p14enwg_on = true;
+        }
+
+        if(p14enwg_on) {
+            logger.printfln("§14 EnWG blocks heating.");
+            // energy_manager.set_sg_ready_on(SG_READY_OUTPUT0);
+        } else {
+            logger.printfln("§14 EnWG does not block heating.");
+            // energy_manager.set_sg_ready_off(SG_READY_OUTPUT0);
+        }
+    }
+
     // Get values from config
     const uint8_t minimum_control_holding_time = config.get("minimum_control_holding_time")->asUint();
     if(timestamp_minutes() < last_sg_ready_change + minimum_control_holding_time) {
@@ -116,9 +138,6 @@ void Heating::update()
     const uint32_t summer_dynamic_price_control_threshold = config.get("summer_dynamic_price_control_threshold")->asUint();
     const bool     summer_pv_excess_control_active        = config.get("summer_pv_excess_control_active")->asBool();
     const uint32_t summer_pv_excess_control_threshold     = config.get("summer_pv_excess_control_threshold")->asUint();
-    const bool     p14enwg_active                         = config.get("p14enwg_active")->asBool();
-    const uint32_t p14enwg_input                          = config.get("p14enwg_input")->asUint();
-    const uint32_t p14enwg_active_type                    = config.get("p14enwg_active_type")->asUint();
 
     const time_t now              = time(NULL);
     const struct tm *current_time = localtime(&now);
@@ -230,22 +249,4 @@ void Heating::update()
 
     // TODO: Only when sg ready above actually changed
     last_sg_ready_change = timestamp_minutes();
-
-    bool p14enwg_on = false;
-    if(p14enwg_active) {
-        bool input_value = false; // energy_manager.get_input(p14enwg_input);
-        if (p14enwg_active_type == 0 && input_value) {
-            p14enwg_on = true;
-        } else if(p14enwg_active_type == 1 && !input_value) {
-            p14enwg_on = true;
-        }
-
-        if(p14enwg_on) {
-            logger.printfln("§14 EnWG blocks heating.");
-            // energy_manager.set_sg_ready_on(SG_READY_OUTPUT0);
-        } else {
-            logger.printfln("§14 EnWG does not block heating.");
-            // energy_manager.set_sg_ready_off(SG_READY_OUTPUT0);
-        }
-    }
 }
