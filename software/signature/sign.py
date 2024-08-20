@@ -206,22 +206,22 @@ def main():
     except Exception as e:
         raise Exception(f'could not rename output file from {args.output_path}.tmp to {args.output_path}: {e}')
 
-    sha256sum = hashlib.sha256(input_data).hexdigest()
-
-    try:
-        with open(args.output_path + '.sha256.tmp', 'w', encoding='utf-8') as f:
-            f.write(f'{sha256sum}  {os.path.split(args.output_path)[-1]}\n')
-    except Exception as e:
-        raise Exception(f'could not write checksum to {args.output_path}.sha256.tmp: {e}')
-
-    try:
-        os.replace(args.output_path + '.sha256.tmp', args.output_path + '.sha256')
-    except Exception as e:
-        raise Exception(f'could not rename checksum file from {args.output_path}.tmp to {args.output_path}.sha256: {e}')
-
     if not config.getboolean('gpg_sign'):
         print('skipping GPG signature')
     else:
+        sha256sum = hashlib.sha256(input_data).hexdigest()
+
+        try:
+            with open(args.output_path + '.sha256.tmp', 'w', encoding='utf-8') as f:
+                f.write(f'{sha256sum}  {os.path.split(args.output_path)[-1]}\n')
+        except Exception as e:
+            raise Exception(f'could not write checksum to {args.output_path}.sha256.tmp: {e}')
+
+        try:
+            os.replace(args.output_path + '.sha256.tmp', args.output_path + '.sha256')
+        except Exception as e:
+            raise Exception(f'could not rename checksum file from {args.output_path}.tmp to {args.output_path}.sha256: {e}')
+
         gpg_keyring_passphrase_path = make_keys_path(config['gpg_keyring_passphrase_path'])
 
         print(f'reading GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')

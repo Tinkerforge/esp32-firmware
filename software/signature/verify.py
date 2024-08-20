@@ -63,7 +63,6 @@ def main():
     libsodium = load_libsodium()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--skip-checksum', action='store_true')
     parser.add_argument('signature_name')
     parser.add_argument('input_path')
 
@@ -72,6 +71,12 @@ def main():
     config = configparser.ConfigParser()
     config.read(make_path('config.ini'))
     config = config['preset:' + config['signature:' + args.signature_name]['preset']]
+
+    try:
+        with open(args.input_path, 'rb') as f:
+            input_data = bytearray(f.read())
+    except Exception as e:
+        raise Exception(f'could not read input from {args.input_path}: {e}')
 
     if not config.getboolean('gpg_sign'):
         print('skipping GPG verify')
@@ -89,15 +94,6 @@ def main():
 
         print('GPG signature is valid')
 
-    try:
-        with open(args.input_path, 'rb') as f:
-            input_data = bytearray(f.read())
-    except Exception as e:
-        raise Exception(f'could not read input from {args.input_path}: {e}')
-
-    if args.skip_checksum:
-        print('skipping checksum verify')
-    else:
         try:
             with open(args.input_path + '.sha256', 'r') as f:
                 expected_sha256sum = f.read().split(' ')[0]
