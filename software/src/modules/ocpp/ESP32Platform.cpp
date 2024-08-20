@@ -800,7 +800,11 @@ void platform_set_charging_current(int32_t connectorId, uint32_t milliAmps)
 
 size_t platform_read_file(const char *name, char *buf, size_t len)
 {
-    File f = LittleFS.open(PATH_PREFIX + name);
+    auto path = PATH_PREFIX + name;
+    if (!LittleFS.exists(path))
+        return 0;
+
+    File f = LittleFS.open(path);
     size_t read = f.read((uint8_t *)buf, len);
     // File::read can return 2^32-1 because it returns -1 if the file is not open but the return type is size_t.
     if (read > len)
@@ -846,7 +850,11 @@ void platform_close_dir(void *dir_fd)
 
 void platform_remove_file(const char *name)
 {
-    LittleFS.remove(PATH_PREFIX + name);
+    auto path = PATH_PREFIX + name;
+    if (!LittleFS.exists(path))
+        return;
+
+    LittleFS.remove(path);
 }
 
 void platform_reset(bool hard)
