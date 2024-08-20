@@ -97,7 +97,7 @@ def main():
     libsodium = load_libsodium()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--force', action='store_true')
+    parser.add_argument('--force-overwrite', action='store_true')
     parser.add_argument('--sodium-secret-key-password', nargs='?')
     parser.add_argument('--gpg-keyring-passphrase-password', nargs='?')
     parser.add_argument('signature_name')
@@ -110,16 +110,18 @@ def main():
         raise Exception(f'input file {args.input_path} is missing')
 
     if os.path.exists(args.output_path):
-        if args.force:
-            if os.path.samefile(args.input_path, args.output_path):
-                raise Exception(f'input file {args.input_path} and output file {args.output_path} are the same')
-
-            try:
-                os.remove(args.output_path)
-            except Exception as e:
-                raise Exception(f'could not remove existing output file {args.output_path}: {e}')
-        else:
+        if not args.force_overwrite:
             raise Exception(f'output file {args.output_path} already exists')
+
+        if os.path.samefile(args.input_path, args.output_path):
+            raise Exception(f'input file {args.input_path} and output file {args.output_path} are the same')
+
+        print(f'removing existing output file {args.output_path} [--force-overwrite]')
+
+        try:
+            os.remove(args.output_path)
+        except Exception as e:
+            raise Exception(f'could not remove existing output file {args.output_path}: {e}')
 
     config = configparser.ConfigParser()
     config.read(make_path('config.ini'))

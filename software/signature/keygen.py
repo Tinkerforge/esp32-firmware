@@ -88,7 +88,7 @@ def main():
     libsodium = load_libsodium()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--force', action='store_true')
+    parser.add_argument('--force-overwrite', action='store_true')
     parser.add_argument('--sodium-secret-key-password', nargs='?')
     parser.add_argument('--gpg-keyring-passphrase-password', nargs='?')
     parser.add_argument('preset')
@@ -104,10 +104,10 @@ def main():
     print(f'checking for existing sodium public key file {sodium_public_key_path}')
 
     if os.path.exists(sodium_public_key_path):
-        if not args.force:
+        if not args.force_overwrite:
             raise Exception(f'sodium public key file {sodium_public_key_path} already exists')
 
-        print(f'removing existing sodium public key file {sodium_public_key_path} [--force]')
+        print(f'removing existing sodium public key file {sodium_public_key_path} [--force-overwrite]')
 
         try:
             os.remove(sodium_public_key_path)
@@ -128,16 +128,16 @@ def main():
         sodium_secret_key_password = getpass.getpass(prompt='')
 
     if keepassxc(config, 'sodium_secret_key', 'show', [], 'sodium_secret_key', password=sodium_secret_key_password) != None:
-        if not args.force:
+        if not args.force_overwrite:
             raise Exception(f'sodium secret key entry already exists in {sodium_secret_key_path}')
 
-        print(f'removing existing sodium secret key entry from {sodium_secret_key_path} [--force]')
+        print(f'removing existing sodium secret key entry from {sodium_secret_key_path} [--force-overwrite]')
 
         if keepassxc(config, 'sodium_secret_key', 'rm', [], 'sodium_secret_key', password=sodium_secret_key_password) == None:
             raise Exception(f'could not remove existing sodium secret key entry from {sodium_secret_key_path}')
 
         if keepassxc(config, 'sodium_secret_key', 'show', [], 'sodium_secret_key', password=sodium_secret_key_password) != None:
-            print(f'removing existing sodium secret key entry from {sodium_secret_key_path} recycling bin [--force]')
+            print(f'removing existing sodium secret key entry from {sodium_secret_key_path} recycling bin [--force-overwrite]')
 
             if keepassxc(config, 'sodium_secret_key', 'rm', [], 'sodium_secret_key', password=sodium_secret_key_password) == None:
                 raise Exception(f'could not remove existing sodium secret key entry from {sodium_secret_key_path} recycling bin')
@@ -186,10 +186,10 @@ def main():
         print(f'checking for existing GPG keyring file {gpg_keyring_path}')
 
         if os.path.exists(gpg_keyring_path):
-            if not args.force:
+            if not args.force_overwrite:
                 raise Exception(f'GPG keyring file {gpg_keyring_path} already exists')
 
-            print(f'removing existing GPG keyring file {gpg_keyring_path} [--force]')
+            print(f'removing existing GPG keyring file {gpg_keyring_path} [--force-overwrite]')
 
             try:
                 os.remove(gpg_keyring_path)
@@ -210,16 +210,16 @@ def main():
         print(f'checking for existing GPG keyring passphrase enrty in {gpg_keyring_passphrase_path}')
 
         if keepassxc(config, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != None:
-            if not args.force:
+            if not args.force_overwrite:
                 raise Exception(f'GPG keyring passphrase entry already exists in {gpg_keyring_passphrase_path}')
 
-            print(f'removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} [--force]')
+            print(f'removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} [--force-overwrite]')
 
             if keepassxc(config, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
                 raise Exception(f'could not remove existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
 
             if keepassxc(config, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != None:
-                print(f'removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin [--force]')
+                print(f'removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin [--force-overwrite]')
 
                 if keepassxc(config, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
                     raise Exception(f'could not remove existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin')
@@ -229,10 +229,10 @@ def main():
         print(f'checking for existing GPG public key file {gpg_public_key_path}')
 
         if os.path.exists(gpg_public_key_path):
-            if not args.force:
+            if not args.force_overwrite:
                 raise Exception(f'GPG public key file {gpg_public_key_path} already exists')
 
-            print(f'removing existing GPG public key file {gpg_public_key_path} [--force]')
+            print(f'removing existing GPG public key file {gpg_public_key_path} [--force-overwrites]')
 
             try:
                 os.remove(gpg_public_key_path)
