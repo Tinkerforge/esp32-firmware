@@ -24,6 +24,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "tools.h"
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
@@ -376,4 +377,46 @@ int DayAheadPrices::get_max_price_values()
     // We save maximal 2 days with 24 hours each and one additional hour for daylight savings time switch.
     // Depending on resoultion we have 4 or 1 data points per hour.
     return (2*24 + 1) * (config.get("resolution")->asUint() == RESOLUTION_15MIN ? 4 : 1);
+}
+
+bool DayAheadPrices::time_between(const uint32_t index, const uint32_t start, const uint32_t end, const uint32_t first_date, const uint8_t resolution) {
+    const uint32_t dap_time = first_date + index * resolution;
+
+    return (dap_time >= start) && (dap_time <= end);
+}
+
+int32_t DayAheadPrices::get_average_price_today()
+{
+    // TODO: What do we do if no price data is available?
+    if (prices.get("prices")->count() == 0) {
+        return 0;
+    }
+
+    const uint32_t first_date = prices.get("first_date")->asUint();
+    const uint32_t resolution = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
+    const uint32_t start      = get_localtime_today_midnight_in_utc() / 60;
+    const uint32_t end        = start + 24*60 - 1;
+    const uint32_t num_prices = prices.get("prices")->count();
+
+    int32_t sum = 0;
+    int32_t count = 0;
+    for (uint32_t i = 0; i < num_prices; i++) {
+
+        if(time_between(i, start, end, first_date, resolution)) {
+            sum += prices.get("prices")->get(i)->asInt();
+            count++;
+        }
+    }
+
+    // TODO: What to do if no data is available for today?
+    if (count == 0) {
+        return 0;
+    }
+
+    return sum / count;
+}
+
+int32_t DayAheadPrices::get_price_now()
+{
+    return state.get("current_price")->asInt();
 }

@@ -42,6 +42,8 @@ private:
     void update_price();
     const char* get_api_url_with_path();
     int get_max_price_values();
+    bool time_between(const uint32_t index, const uint32_t start, const uint32_t end, const uint32_t first_date, const uint8_t resolution);
+
 
     std::unique_ptr<unsigned char[]> cert = nullptr;
     esp_http_client_handle_t http_client = nullptr;
@@ -58,6 +60,9 @@ public:
     void setup() override;
     void register_urls() override;
     esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
+    int32_t get_average_price_today();
+    int32_t get_price_now();
+
 
     ConfigRoot config;
     ConfigRoot state;
