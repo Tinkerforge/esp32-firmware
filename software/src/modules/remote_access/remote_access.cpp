@@ -239,7 +239,7 @@ void RemoteAccess::setup() {
     logger.printfln("Remote Access is enabled trying to connect");
 }
 
-static std::unique_ptr<char []> decode_bas64(const CoolString &input, size_t buffer_size, size_t *bytes_written) {
+static std::unique_ptr<char []> decode_base64(const CoolString &input, size_t buffer_size, size_t *bytes_written) {
     std::unique_ptr<char []> out = heap_alloc_array<char>(buffer_size);
     int ret = mbedtls_base64_decode((unsigned char *)out.get(), buffer_size, bytes_written, (unsigned char *)input.c_str(), input.length());
     if (ret != 0) {
@@ -283,11 +283,11 @@ void RemoteAccess::register_urls() {
         CoolString secret_string = register_config.get("secret")->asString();
         size_t outlen;
 
-        std::unique_ptr<char[]> encrypted_secret = decode_bas64(secret_string, 32 + crypto_secretbox_MACBYTES, &outlen);
+        std::unique_ptr<char[]> encrypted_secret = decode_base64(secret_string, 32 + crypto_secretbox_MACBYTES, &outlen);
 
         char secret[32];
-        std::unique_ptr<char[]> secret_nonce = decode_bas64(register_config.get("secret_nonce")->asString(), crypto_secretbox_NONCEBYTES, &outlen);
-        std::unique_ptr<char[]> secret_key = decode_bas64(register_config.get("secret_key")->asString(), crypto_secretbox_KEYBYTES, &outlen);
+        std::unique_ptr<char[]> secret_nonce = decode_base64(register_config.get("secret_nonce")->asString(), crypto_secretbox_NONCEBYTES, &outlen);
+        std::unique_ptr<char[]> secret_key = decode_base64(register_config.get("secret_key")->asString(), crypto_secretbox_KEYBYTES, &outlen);
 
         if (sodium_init() < 0) {
             return request.send(500);
@@ -549,7 +549,7 @@ void RemoteAccess::login() {
     login_url += "/api/auth/login";
 
     size_t bytes_written;
-    std::unique_ptr<char[]> login_key = decode_bas64(register_config.get("login_key")->asString(), 24, &bytes_written);
+    std::unique_ptr<char[]> login_key = decode_base64(register_config.get("login_key")->asString(), 24, &bytes_written);
     std::unique_ptr<char[]> json = heap_alloc_array<char>(250);
 
     TFJsonSerializer serializer = TFJsonSerializer(json.get(), 250);
