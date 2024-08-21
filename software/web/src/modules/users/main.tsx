@@ -224,7 +224,12 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         }
 
         for (let u of users_to_modify) {
-            u.digest_hash = (u.password != null && u.password != "") ? YaMD5.YaMD5.hashStr(u.username + ":esp32-lib:" + u.password) : u.password
+            // Don't hash if u.password is falsy, i.e. null, undefined or the empty string
+            u.digest_hash = u.password ? YaMD5.YaMD5.hashStr(u.username + ":esp32-lib:" + u.password) : u.password
+            // Always send digest_hash, but as null if we don't want to change it.
+            // digest_hash can be undefined if this user was not modified.
+            if (u.digest_hash === undefined)
+                u.digest_hash = null;
             await modify_user(u);
         }
 
@@ -232,7 +237,10 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         outer_loop:
         for (let u of users_to_add) {
-            u.digest_hash = (u.password != null && u.password != "") ? YaMD5.YaMD5.hashStr(u.username + ":esp32-lib:" + u.password) : u.password
+            // Don't hash if u.password is falsy, i.e. null, or the empty string.
+            // u.password can't be undefined (as is handled above when modifying users),
+            // because adding a user sets password to "" if nothing was entered.
+            u.digest_hash = u.password ? YaMD5.YaMD5.hashStr(u.username + ":esp32-lib:" + u.password) : u.password
             u.id = next_user_id;
             await add_user(u);
             for (let i = 0; i < 20; ++i) {
