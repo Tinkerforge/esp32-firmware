@@ -211,6 +211,8 @@ static void pre_reboot(void)
     }
 }
 
+static int watchdog_handle;
+
 void setup(void)
 {
     set_main_task_handle();
@@ -289,10 +291,16 @@ void setup(void)
         }
     }
 
+    watchdog_handle = watchdog.add("main_loop", "Main thread blocked", 30000, 0, true);
+
     boot_stage = BootStage::LOOP;
 }
 
 void loop(void) {
+#if MODULE_WATCHDOG_AVAILABLE()
+    watchdog.reset(watchdog_handle);
+#endif
+
     tf_hal_tick(&hal, 0);
     task_scheduler.custom_loop();
 
