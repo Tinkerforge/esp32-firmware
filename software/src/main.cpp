@@ -211,7 +211,9 @@ static void pre_reboot(void)
     }
 }
 
+#if MODULE_WATCHDOG_AVAILABLE()
 static int watchdog_handle;
+#endif
 
 void setup(void)
 {
@@ -291,7 +293,9 @@ void setup(void)
         }
     }
 
+#if MODULE_WATCHDOG_AVAILABLE()
     watchdog_handle = watchdog.add("main_loop", "Main thread blocked", 30000, 0, true);
+#endif
 
     boot_stage = BootStage::LOOP;
 }
