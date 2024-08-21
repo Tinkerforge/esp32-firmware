@@ -110,11 +110,13 @@ void Automation::pre_setup()
         }
     };
 
+    const Config *conf_uint8_prototype = new Config{Config::Uint8(0)};
+
     state = Config::Object({
-        {"registered_triggers", Config::Array({}, new Config{Config::Uint8(0)}, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfInt>())},
-        {"registered_actions", Config::Array({}, new Config{Config::Uint8(0)}, 0, AUTOMATION_ACTION_ID_COUNT, Config::type_id<Config::ConfInt>())},
-        {"enabled_triggers", Config::Array({}, new Config{Config::Uint8(0)}, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfInt>())},
-        {"enabled_actions", Config::Array({}, new Config{Config::Uint8(0)}, 0, AUTOMATION_ACTION_ID_COUNT, Config::type_id<Config::ConfInt>())},
+        {"registered_triggers", Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
+        {"registered_actions",  Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
+        {"enabled_triggers",    Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
+        {"enabled_actions",     Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
     });
 
     for (auto const &trigger : trigger_map) {
