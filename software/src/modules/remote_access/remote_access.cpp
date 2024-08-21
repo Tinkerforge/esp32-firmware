@@ -35,6 +35,8 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "tools.h"
+#include "esp_tls_errors.h"
+#include "esp_tls.h"
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 extern char local_uid_str[32];
@@ -287,9 +289,18 @@ void RemoteAccess::register_urls() {
         std::unique_ptr<char[]> secret_nonce = decode_bas64(register_config.get("secret_nonce")->asString(), crypto_secretbox_NONCEBYTES, &outlen);
         std::unique_ptr<char[]> secret_key = decode_bas64(register_config.get("secret_key")->asString(), crypto_secretbox_KEYBYTES, &outlen);
 
+        if (sodium_init() < 0) {
+            return request.send(500);
+        }
         int ret = crypto_secretbox_open_easy((unsigned char *)secret, (unsigned char *)encrypted_secret.get(), 32 +crypto_secretbox_MACBYTES, (unsigned char*)secret_nonce.get(), (unsigned char*)secret_key.get());
         if (ret != 0) {
             logger.printfln("Failed to decrypt secret");
+            return request.send(500);
+        }
+
+        unsigned char pk[crypto_box_PUBLICKEYBYTES];
+        ret = crypto_scalarmult_base(pk, (unsigned char *)secret);
+        if (ret < 0) {
             return request.send(500);
         }
 
@@ -305,16 +316,6 @@ void RemoteAccess::register_urls() {
             CoolString wg_key = key.get("web_private")->asString();
 
             std::unique_ptr<char[]> output = heap_alloc_array<char>(crypto_box_SEALBYTES + wg_key.length());
-
-            if (sodium_init() < 0) {
-                return request.send(500);
-            }
-
-            unsigned char pk[crypto_box_PUBLICKEYBYTES];
-            ret = crypto_scalarmult_base(pk, (unsigned char *)secret);
-            if (ret < 0) {
-                return request.send(500);
-            }
 
             ret = crypto_box_seal((unsigned char *)output.get(), (unsigned char *)wg_key.c_str(), wg_key.length(), pk);
             if (ret < 0) {
@@ -348,7 +349,17 @@ void RemoteAccess::register_urls() {
 
         serializer.addMemberString("charger_pub", register_config.get("charger_pub")->asEphemeralCStr());
         serializer.addMemberString("id", register_config.get("id")->asEphemeralCStr());
-        serializer.addMemberString("name", register_config.get("name")->asEphemeralCStr());
+
+        CoolString name = register_config.get("name")->asString();
+        std::unique_ptr<char[]> encrypted_name = heap_alloc_array<char>(crypto_box_SEALBYTES + name.length());
+        crypto_box_seal((unsigned char *)encrypted_name.get(), (unsigned char *)name.c_str(), name.length(), (unsigned char *)pk);
+
+        serializer.addMemberArray("name");
+        for (size_t i = 0; i < crypto_box_SEALBYTES + name.length(); i++) {
+            serializer.addNumber(encrypted_name[i]);
+        }
+        serializer.endArray();
+
         serializer.addMemberString("wg_charger_ip", register_config.get("wg_charger_ip")->asEphemeralCStr());
         serializer.addMemberString("wg_server_ip", register_config.get("wg_server_ip")->asEphemeralCStr());
         serializer.addMemberString("psk", register_config.get("psk")->asEphemeralCStr());
@@ -405,7 +416,15 @@ static esp_err_t http_event_handle(esp_http_client_event *evt) {
     switch (evt->event_id)
     {
     case HTTP_EVENT_ERROR:
-        logger.printfln("Management: error while resolving");
+        {
+            ESP_LOGI(TAG, "HTTP_EVENT_ERROR\n");
+            int mbedtls_err = 0;
+            esp_err_t err = esp_tls_get_and_clear_last_error(*(esp_tls_error_handle_t *)evt->data, &mbedtls_err, NULL);
+            if (err != 0) {
+                ESP_LOGI(TAG, "Last esp error code: 0x%x\n", err);
+                ESP_LOGI(TAG, "Last mbedtls failure: 0x%x\n", mbedtls_err);
+            }
+        }
         break;
 
     case HTTP_EVENT_ON_HEADER:
