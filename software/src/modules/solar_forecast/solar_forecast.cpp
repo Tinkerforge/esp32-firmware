@@ -560,35 +560,23 @@ String SolarForecast::get_path(const SolarForecastPlane &plane, const SolarForec
     return path;
 }
 
-uint32_t SolarForecast::get_timestamp_today_00_00_in_minutes()
-{
-    time_t now = time(nullptr);
-    struct tm tm;
-    localtime_r(&now, &tm);
-
-    tm.tm_hour = 0;
-    tm.tm_min = 0;
-    tm.tm_sec = 0;
-
-    return mktime(&tm)/60;
-}
-
-bool SolarForecast::forecast_time_between(const SolarForecastPlane &plane, uint32_t index, uint32_t start, uint32_t end) {
-    const uint32_t forecast_time = plane.forecast.get("first_date")->asUint() + index * 60;
+bool SolarForecast::forecast_time_between(const uint32_t first_date, const uint32_t index, const uint32_t start, const uint32_t end) {
+    const uint32_t forecast_time = first_date + index * 60;
 
     return (forecast_time >= start) && (forecast_time <= end);
 }
 
 uint32_t SolarForecast::get_kwh_today()
 {
-    uint32_t start = get_timestamp_today_00_00_in_minutes();
-    uint32_t end   = start + 60*24 - 1;
-    uint32_t wh    = 0;
+    const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
+    const uint32_t end   = start + 60*24 - 1;
 
+    uint32_t wh    = 0;
     for (const SolarForecastPlane &plane : planes) {
         if (plane.config.get("active")->asBool()) {
+            const uint32_t first_date = plane.forecast.get("first_date")->asUint();
             for (uint8_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
-                if (forecast_time_between(plane, index, start, end)) {
+                if (forecast_time_between(first_date, index, start, end)) {
                     wh += plane.forecast.get("forecast")->get(index)->asUint();
                 }
             }
@@ -600,14 +588,15 @@ uint32_t SolarForecast::get_kwh_today()
 
 uint32_t SolarForecast::get_kwh_tomorrow()
 {
-    uint32_t start = get_timestamp_today_00_00_in_minutes() + 60*24;
-    uint32_t end   = start + 60*24 - 1;
-    uint32_t wh    = 0;
+    const uint32_t start = get_localtime_today_midnight_in_utc() / 60 + 60*24;
+    const uint32_t end   = start + 60*24 - 1;
 
+    uint32_t wh    = 0;
     for (const SolarForecastPlane &plane : planes) {
         if (plane.config.get("active")->asBool()) {
+            const uint32_t first_date = plane.forecast.get("first_date")->asUint();
             for (uint8_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
-                if (forecast_time_between(plane, index, start, end)) {
+                if (forecast_time_between(first_date, index, start, end)) {
                     wh += plane.forecast.get("forecast")->get(index)->asUint();
                 }
             }

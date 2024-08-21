@@ -76,7 +76,7 @@ private:
     const char* get_api_url_with_path(const SolarForecastPlane &plane);
     void deserialize_data();
     uint32_t get_timestamp_today_00_00_in_minutes();
-    bool forecast_time_between(const SolarForecastPlane &plane, uint32_t index, uint32_t start, uint32_t end);
+    bool forecast_time_between(const uint32_t first_date, const uint32_t index, const uint32_t start, const uint32_t end);
 
     SolarForecastPlane *plane_current;
 
