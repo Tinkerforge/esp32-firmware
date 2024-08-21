@@ -156,8 +156,8 @@ void Heating::update()
             logger.printfln("It is winter but no winter control active.");
         } else {
             if (winter_dynamic_price_control_active) {
-                const float average_price = 0; //day_ahead_prices.get_average_price_today();
-                const float price         = 0; //day_ahead_prices.get_price_now();
+                const int32_t average_price = day_ahead_prices.get_average_price_today();
+                const int32_t price         = day_ahead_prices.get_price_now();
 
                 if (price < average_price * winter_dynamic_price_control_threshold / 100.0) {
                     logger.printfln("Price is below threshold. Turning on SG ready.");
@@ -216,8 +216,8 @@ void Heating::update()
                 logger.printfln("It is summer but no summer control active.");
             } else {
                 if (summer_dynamic_price_control_active) {
-                    const float average_price = 0; //day_ahead_prices.get_average_price_today();
-                    const float price         = 0; //day_ahead_prices.get_price_now();
+                    const int32_t average_price = day_ahead_prices.get_average_price_today();
+                    const int32_t price         = day_ahead_prices.get_price_now();
 
                     if (price < average_price * summer_dynamic_price_control_threshold / 100.0) {
                         logger.printfln("Price is below threshold. Turning on SG ready.");
