@@ -1138,3 +1138,28 @@ error:
     i2c_cmd_link_delete_static(handle);
     return nullptr;
 }
+
+time_t get_localtime_today_midnight()
+{
+    // Current local time
+    time_t now = time(nullptr);
+    struct tm tm;
+    localtime_r(&now, &tm);
+
+    // Lcal time to today midnight
+    tm.tm_hour = 0;
+    tm.tm_min = 0;
+    tm.tm_sec = 0;
+    return mktime(&tm);
+}
+
+time_t get_localtime_today_midnight_in_utc()
+{
+    time_t midnight_local = get_localtime_today_midnight();
+
+    // Midnight local time to UTC
+    struct tm tm_utc;
+    gmtime_r(&midnight_local, &tm_utc);
+
+    return mktime(&tm_utc);
+}
