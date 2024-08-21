@@ -157,22 +157,7 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
                     <FormRow label={__("heating.content.control_signal")}>
-                        <div>
-                            Als Steuersignal für die Heizung wird "SG Ready" verwendet.
-                            Der SEB hat dafür zwei potentialfreie Schaltausgänge:
-                        </div>
-                        <div>
-                            <ul>
-                                <li>Ausgang 0 wird für den blockierenden Betrieb verwendet (SG Ready Zustand 1).</li>
-                                <li>Ausgang 1 wird für die Einschaltempfehlung verwendet (SG Ready Zustand 3).</li>
-                                <li>Wenn beide Ausgänge nicht geschaltet sind findet der Normalbetrieb statt (SG Ready Zustand 2).</li>
-                            </ul>
-                        </div>
-                        <div>
-                            Die intelligente Winter-/Sommermodussteuerung nutzt den Ausgang 1 und
-                            die Steuerung nach §14 EnWG den Ausgang 0. Es ist möglich nur einen der beiden Ausgänge anzuschließen
-                            wenn nur eine der beiden Steuerungen verwendet werden soll.
-                        </div>
+                        {__("heating.content.control_signal_description")}
                     </FormRow>
                     <FormRow label={__("heating.content.minimum_holding_time")} label_muted={__("heating.content.minimum_holding_time_description")}>
                         <InputNumber
@@ -286,12 +271,12 @@ export class Heating extends ConfigComponent<'heating/config'> {
                         </div>
                     </Collapse>
 
-                    <FormSeparator heading="Sommermodus"/>
+                    <FormSeparator heading={__("heating.content.summer_mode")}/>
                     <FormRow label="Sommer Start" label_muted="">
                         <div class="row no-gutters">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Monat</span></div>
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
                                     <InputSelect
                                         items={Heating.months}
                                         value={this.summer_start_month}
@@ -300,7 +285,7 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Tag</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
                                     <InputSelect
                                         items={days_summer_start}
                                         value={this.summer_start_day}
@@ -313,7 +298,7 @@ export class Heating extends ConfigComponent<'heating/config'> {
                         <div class="row no-gutters">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Monat</span></div>
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
                                     <InputSelect
                                         items={Heating.months}
                                         value={this.summer_end_month}
@@ -322,7 +307,7 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Tag</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
                                     <InputSelect
                                         items={days_summer_end}
                                         value={this.summer_end_day}
@@ -331,19 +316,19 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label="Blockierzeit">
-                        <Switch desc="Aktiviert den täglichen Blockierzeitraum"
+                    <FormRow label={__("heating.content.block_time")}>
+                        <Switch desc={__("heating.content.enable_daily_block_period")}
                                 checked={state.summer_block_time_active}
                                 onClick={this.toggle('summer_block_time_active')}
                         />
                     </FormRow>
                     <Collapse in={state.summer_block_time_active}>
                         <div>
-                            <FormRow label="Morgens">
+                            <FormRow label={__("heating.content.morning")}>
                                 <div class="row no-gutters">
                                     <div class="col-md-6">
                                         <div class="input-group">
-                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Von</span></div>
+                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
                                             <InputTime
                                                 className={"form-control-md"}
                                                 date={new Date(0, 0, 1, 0, 0)}
@@ -353,7 +338,7 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                     </div>
                                     <div class="col-md-6">
                                         <div class="input-group">
-                                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Bis</span></div>
+                                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
                                                 <InputTime
                                                 className={"form-control-md"}
                                                 date={this.get_date_from_minutes(state.summer_block_time_morning)}
@@ -364,11 +349,11 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                     </div>
                                 </div>
                             </FormRow>
-                            <FormRow label="Abends">
+                            <FormRow label={__("heating.content.evening")}>
                                 <div class="row no-gutters">
                                     <div class="col-md-6">
                                         <div class="input-group">
-                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Von</span></div>
+                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
                                                 <InputTime
                                                 className={"form-control-md"}
                                                 date={this.get_date_from_minutes(state.summer_block_time_evening)}
@@ -379,7 +364,7 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                     </div>
                                     <div class="col-md-6">
                                         <div class="input-group">
-                                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Bis</span></div>
+                                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
                                             <InputTime
                                                 className={"form-control-md"}
                                                 date={new Date(0, 0, 1, 23, 59)}
@@ -391,15 +376,15 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </FormRow>
                         </div>
                     </Collapse>
-                    <FormRow label="PV-Ertragsprognose">
-                        <Switch desc="Blockiere nur wenn erwarteter Ertrag über konfigurierter Blockier-Schwelle"
+                    <FormRow label={__("heating.content.pv_yield_forecast")}>
+                        <Switch desc={__("heating.content.pv_yield_forecast_activate")}
                                 checked={state.summer_yield_forecast_active}
                                 onClick={this.toggle('summer_yield_forecast_active')}
                         />
                     </FormRow>
                     <Collapse in={state.summer_yield_forecast_active}>
                         <div>
-                            <FormRow label="Blockier-Schwelle" label_muted="Ab wieviel kWh Ertragsprognose soll der Anlaufbefehl anhand Uhrzeit blockiert werden">
+                            <FormRow label={__("heating.content.blocking_threshold")} label_muted={__("heating.content.blocking_threshold_description")}>
                                 <InputNumber
                                     unit="kWh"
                                     value={state.summer_yield_forecast_threshold}
@@ -410,15 +395,15 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </FormRow>
                         </div>
                     </Collapse>
-                    <FormRow label="Dynamische Preissteuerung">
-                        <Switch desc="Aktiviert die Optimierung der Heizungssteuerung anhand des dynamischen Strompreises"
+                    <FormRow label={__("heating.content.dynamic_price_control")}>
+                        <Switch desc={__("heating.content.dynamic_price_control_activate")}
                                 checked={state.summer_dynamic_price_control_active}
                                 onClick={this.toggle('summer_dynamic_price_control_active')}
                         />
                     </FormRow>
                     <Collapse in={state.summer_dynamic_price_control_active}>
                         <div>
-                            <FormRow label="Durchschnitspreis-Schwelle" label_muted="Liegt der Tagesdurchschnittspreis unter der Schwelle, dann wird der Heizung ein Anlaufbefehl gegeben">
+                            <FormRow label={__("heating.content.average_price_threshold")} label_muted={__("heating.content.average_price_threshold_description")}>
                                 <InputNumber
                                     unit="%"
                                     value={state.summer_dynamic_price_control_threshold}
@@ -429,15 +414,15 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </FormRow>
                         </div>
                     </Collapse>
-                    <FormRow label="PV-Überschuss-Steuerung">
-                        <Switch desc="Aktiviert die Optimierung der Heizungssteuerung anhand des PV-Überschuss"
+                    <FormRow label={__("heating.content.pv_excess_control")}>
+                        <Switch desc={__("heating.content.pv_excess_control_activate")}
                                 checked={state.summer_pv_excess_control_active}
                                 onClick={this.toggle('summer_pv_excess_control_active')}
                         />
                     </FormRow>
                     <Collapse in={state.summer_pv_excess_control_active}>
                         <div>
-                            <FormRow label="PV-Überschuss-Schwelle" label_muted="Ab wieviel Watt PV-Überschuss soll der Heizung ein Anlaufbefehl gegeben werden">
+                            <FormRow label={__("heating.content.pv_excess_threshold")} label_muted={__("heating.content.pv_excess_threshold_description")}>
                                 <InputNumber
                                     unit="Watt"
                                     value={state.summer_pv_excess_control_threshold}
@@ -451,30 +436,30 @@ export class Heating extends ConfigComponent<'heating/config'> {
 
                     <FormSeparator heading="§14 EnWG"/>
                     <FormRow label="§14 EnWG">
-                        <Switch desc="Aktiviert die Kontrolle der Heizung anhand §14 EnWG"
+                        <Switch desc={__("heating.content.p14_enwg_control_activate")}
                                 checked={state.p14enwg_active}
                                 onClick={this.toggle('p14enwg_active')}
                         />
                     </FormRow>
                     <Collapse in={state.p14enwg_active}>
                         <div>
-                            <FormRow label="Eingang">
+                            <FormRow label={__("heating.content.input")}>
                                 <InputSelect
                                     items={[
-                                        ["0", "Eingang 0"],
-                                        ["1", "Eingang 1"],
-                                        ["2", "Eingang 2"],
-                                        ["3", "Eingang 3"],
+                                        ["0", __("heating.content.input") + " 0"],
+                                        ["1", __("heating.content.input") + " 1"],
+                                        ["2", __("heating.content.input") + " 2"],
+                                        ["3", __("heating.content.input") + " 3"],
                                     ]}
                                     value={state.p14enwg_input}
                                     onValue={(v) => this.setState({p14enwg_input: parseInt(v)})}
                                 />
                             </FormRow>
-                            <FormRow label="Gedrosselt wenn Eingang">
+                            <FormRow label={__("heating.content.throttled_if_input")}>
                                 <InputSelect
                                     items={[
-                                        ["0", "Geschlossen"],
-                                        ["1", "Geöffnet"]
+                                        ["0", __("heating.content.closed")],
+                                        ["1", __("heating.content.opened")]
                                     ]}
                                     value={state.p14enwg_active_type}
                                     onValue={(v) => this.setState({p14enwg_active_type: parseInt(v)})}
