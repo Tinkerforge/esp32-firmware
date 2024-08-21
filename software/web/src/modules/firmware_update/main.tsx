@@ -254,7 +254,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                     />
                 </FormRow>
 
-                {API.hasFeature("firmware_auto_update") ?
+                {API.hasFeature("firmware_update") ?
                     <>
                         <FormRow label={__("firmware_update.content.check_for_update")}>
                             <Button variant="primary"

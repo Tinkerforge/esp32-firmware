@@ -217,7 +217,7 @@ export type feature =
     "meter_phases" |
     "meter_all_values" |
     "rgb_led" |
-    "firmware_auto_update";
+    "firmware_update";
 
 export function hasFeature(feature: feature) {
     return hasFeature_unchecked(feature);

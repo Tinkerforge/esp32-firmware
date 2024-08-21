@@ -188,7 +188,7 @@ void FirmwareUpdate::setup()
     logger.printfln("Firmware is signed by: %s", signature_publisher);
 
     if (update_url.length() > 0) {
-        api.addFeature("firmware_auto_update");
+        api.addFeature("firmware_update");
     }
 #else
     logger.printfln("Firmware is not signed");
