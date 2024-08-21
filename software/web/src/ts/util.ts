@@ -25,7 +25,6 @@ import { AsyncModal } from "./components/async_modal";
 import { api_cache } from "./api_defs";
 import { batch, signal, Signal } from "@preact/signals-core";
 import { deepSignal, DeepSignal } from "deepsignal";
-import Median from "median-js-bridge";
 
 export function reboot() {
     API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
@@ -496,15 +495,9 @@ export function downloadToFile(content: BlobPart, fileType: string, extension: s
     let filename = name + "-" + fileType + "-" + timestamp_str + "." + extension;
     filename = removeUnicodeHacks(filename);
 
-    const url = URL.createObjectURL(file);
-
-    if (Median.isNativeApp()) {
-        Median.share.downloadFile({url: url});
-    } else {
-        a.href = url
-        a.download = filename;
-        a.click();
-    }
+    a.href= URL.createObjectURL(file);
+    a.download = filename;
+    a.click();
 
     URL.revokeObjectURL(a.href);
 }
