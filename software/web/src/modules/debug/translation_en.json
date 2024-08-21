@@ -12,6 +12,8 @@
             "cpu_usage": "CPU usage",
             "cpu_usage_muted": "ballpark figure",
 
+            "main_loop_max": "Maximum main loop runtime",
+
             "memory_header": "Memory statistics",
             "heap_used": "Used heap bytes",
             "heap_free": "Free heap bytes",

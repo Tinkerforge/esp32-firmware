@@ -151,6 +151,7 @@ void Debug::pre_setup()
         {"largest_free_dram_block",  Config::Uint32(0)},
         {"largest_free_psram_block", Config::Uint32(0)},
         {"heap_integrity_ok", Config::Bool(true)},
+        {"main_loop_max_runtime_us", Config::Uint32(0)},
     });
 
     state_hwm = Config::Array({},
@@ -480,6 +481,9 @@ void Debug::register_events()
 #define CHECK_PSRAM 0
 #endif
 
+static micros_t last_run = 0_usec;
+static uint32_t run_max = 0;
+
 void Debug::loop()
 {
     micros_t start = now_us();
@@ -505,6 +509,13 @@ void Debug::loop()
         state_slow.get("heap_integrity_ok")->updateBool(false);
         integrity_check_print_errors = false;
     }
+
+    uint32_t run = static_cast<uint32_t>(static_cast<int64_t>(start - last_run));
+    if (run > run_max && last_run != 0_usec) {
+        run_max = run;
+        state_slow.get("main_loop_max_runtime_us")->updateUint(run_max);
+    }
+    last_run = start;
 }
 
 void Debug::register_task(const char *task_name, uint32_t stack_size, TaskAvailability availability)

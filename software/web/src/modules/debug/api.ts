@@ -33,6 +33,7 @@ export interface state_slow {
     largest_free_dram_block: number;
     largest_free_psram_block: number;
     heap_integrity_ok: boolean;
+    main_loop_max_runtime_us: number;
 }
 
 interface task_hwm {

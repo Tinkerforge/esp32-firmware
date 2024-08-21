@@ -60,6 +60,10 @@ export class Debug extends Component {
                     <OutputFloat value={state_fast.cpu_usage} digits={0} scale={0} unit="%"/>
                 </FormRow>
 
+                <FormRow label={__("debug.content.main_loop_max")}>
+                    <OutputFloat value={state_slow.main_loop_max_runtime_us} digits={3} scale={3} unit="ms"/>
+                </FormRow>
+
                 <FormSeparator heading={__("debug.content.heap_integrity_header")} first={false} />
 
                 <FormRow label={__("debug.content.heap_integrity_result")}>

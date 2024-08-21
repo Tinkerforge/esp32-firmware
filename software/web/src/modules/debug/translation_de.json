@@ -12,6 +12,8 @@
             "cpu_usage": "CPU-Nutzung",
             "cpu_usage_muted": "grobe Schätzung",
 
+            "main_loop_max": "Maximale Laufzeit des Main-Loops",
+
             "memory_header": "Speicherstatistik",
             "heap_used": "Belegte Heap-Bytes",
             "heap_free": "Freie Heap-Bytes",
