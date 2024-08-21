@@ -1146,7 +1146,7 @@ time_t get_localtime_today_midnight()
     struct tm tm;
     localtime_r(&now, &tm);
 
-    // Lcal time to today midnight
+    // Local time to today midnight
     tm.tm_hour = 0;
     tm.tm_min = 0;
     tm.tm_sec = 0;
