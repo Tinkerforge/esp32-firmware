@@ -36,6 +36,7 @@ import { AlphaESSHybridInverterVirtualMeter } from "./alpha_ess_hybrid_inverter_
 import { ShellyPro3EMDeviceProfile } from "./shelly_pro_3em_device_profile.enum";
 import { ShellyEMMonophaseChannel } from "./shelly_em_monophase_channel.enum";
 import { ShellyEMMonophaseMapping } from "./shelly_em_monophase_mapping.enum";
+import { GoodweHybridInverterVirtualMeter } from "./goodwe_hybrid_inverter_virtual_meter.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
@@ -135,6 +136,14 @@ type TableConfigShellyPro3EM = [
     },
 ];
 
+type TableConfigGoodweHybridInverter = [
+    MeterModbusTCPTableID.GoodweHybridInverter,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -144,7 +153,8 @@ type TableConfig = TableConfigNone |
                    TableConfigDeyeHybridInverter |
                    TableConfigAlphaESSHybridInverter |
                    TableConfigShellyProEM |
-                   TableConfigShellyPro3EM;
+                   TableConfigShellyPro3EM |
+                   TableConfigGoodweHybridInverter;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -184,6 +194,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.ShellyPro3EM:
             return [MeterModbusTCPTableID.ShellyPro3EM, {device_address: 1, device_profile: ShellyPro3EMDeviceProfile.Triphase, monophase_channel: ShellyEMMonophaseChannel.None, monophase_mapping: ShellyEMMonophaseMapping.None}];
+
+        case MeterModbusTCPTableID.GoodweHybridInverter:
+            return [MeterModbusTCPTableID.GoodweHybridInverter, {virtual_meter: null, device_address: 247}];
 
         default:
             return [MeterModbusTCPTableID.None, {}];
@@ -403,6 +416,7 @@ export function init() {
                                 [MeterModbusTCPTableID.AlphaESSHybridInverter.toString(), __("meters_modbus_tcp.content.table_alpha_ess_hybrid_inverter")],
                                 [MeterModbusTCPTableID.ShellyProEM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_em")],
                                 [MeterModbusTCPTableID.ShellyPro3EM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_3em")],
+                                [MeterModbusTCPTableID.GoodweHybridInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_hybrid_inverter")],
                             ]}
                             placeholder={__("meters_modbus_tcp.content.table_select")}
                             value={util.hasValue(config[1].table) ? config[1].table[0].toString() : undefined}
@@ -420,7 +434,8 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.AlphaESSHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.ShellyProEM
-                  || config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM
+                  || config[1].table[0] == MeterModbusTCPTableID.GoodweHybridInverter)) {
                     let virtual_meter_items: [string, string][] = [];
                     let device_address_default: number = 1;
 
@@ -472,6 +487,16 @@ export function init() {
                         ];
 
                         device_address_default = 85;
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.GoodweHybridInverter) {
+                        virtual_meter_items = [
+                            [GoodweHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [GoodweHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [GoodweHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [GoodweHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                        ];
+
+                        device_address_default = 247;
                     }
 
                     if (virtual_meter_items.length > 0) {
