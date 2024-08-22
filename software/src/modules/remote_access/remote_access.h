@@ -53,6 +53,7 @@ private:
     String jwt;
     int inner_socket = -1;
     uint16_t in_seq_number = 0;
+    bool management_request_done = false;
 
     ConfigRoot config;
     ConfigRoot management_connection;

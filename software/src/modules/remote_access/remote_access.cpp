@@ -405,7 +405,7 @@ void RemoteAccess::register_urls() {
     }, 5000);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        if (!management.is_peer_up(nullptr, nullptr)) {
+        if (!this->management_request_done) {
             this->resolve_management();
         }
     }, 1000 * 10, 1000 * 10);
@@ -516,7 +516,7 @@ HttpResponse RemoteAccess::make_http_request(const char *url, esp_http_client_me
     } while (err == ESP_ERR_HTTP_EAGAIN);
 
     if (err != ESP_OK) {
-        logger.printfln("Failed to send request: %i", err);
+        logger.printfln("Failed to send request with error %i: %s", errno, strerror_r(errno, nullptr, 0));
         esp_http_client_cleanup(client);
         *ret_error = err;
         return response;
@@ -610,7 +610,10 @@ void RemoteAccess::resolve_management() {
     std::vector<std::pair<CoolString, CoolString>> headers;
     headers.push_back(std::pair<CoolString, CoolString>(CoolString("Content-Type"), CoolString("application/json")));
     esp_err_t err;
-    make_http_request(url.c_str(), HTTP_METHOD_PUT, json.get(), len, &headers, &err);
+    HttpResponse response = make_http_request(url.c_str(), HTTP_METHOD_PUT, json.get(), len, &headers, &err);
+    if (response.status == 200 && err == 0) {
+        management_request_done = true;
+    }
 }
 
 static int management_filter_in(struct pbuf* packet) {
@@ -734,6 +737,7 @@ void RemoteAccess::connect_management() {
             if (up) {
                 logger.printfln("Management connection connected");
             } else {
+                this->management_request_done = false;
                 in_seq_number = 0;
                 logger.printfln("Management connection disconnected");
             }
