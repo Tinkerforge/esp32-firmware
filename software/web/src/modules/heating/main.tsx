@@ -168,6 +168,12 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             max={60}
                         />
                     </FormRow>
+                    <FormRow label={__("heating.content.extended_logging")} label_muted={__("heating.content.extended_logging_description")}>
+                        <Switch desc={__("heating.content.extended_logging_activate")}
+                                checked={state.extended_logging_active}
+                                onClick={this.toggle('extended_logging_active')}
+                        />
+                    </FormRow>
                     <FormSeparator heading={__("heating.content.winter_mode")}/>
 
                     <FormRow label={__("heating.content.winter_start")} label_muted="">

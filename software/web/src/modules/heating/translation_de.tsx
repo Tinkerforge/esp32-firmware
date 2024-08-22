@@ -27,6 +27,9 @@ let x = {
                     wenn nur eine der beiden Steuerungen verwendet werden soll.
                 </div>
             </>,
+            "extended_logging": "Erweitertes Logging",
+            "extended_logging_activate": "Aktiviert das erweiterte Logging",
+            "extended_logging_description": "Mehr Informationen zu den Steuerentscheidungen im Ereignis-Log",
             "minimum_holding_time": "Mindesthaltezeit",
             "minimum_holding_time_description": "Wie lange soll ein Anlaufbefehl mindestens gelten",
             "minutes": "Minuten",

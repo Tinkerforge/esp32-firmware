@@ -1,5 +1,6 @@
 export interface config {
     minimum_control_holding_time: number;
+    extended_logging_active: boolean;
     winter_start_day: number;
     winter_start_month: number;
     winter_end_day: number;

@@ -27,6 +27,9 @@ let x = {
                     if only one of the two control types is needed.
                 </div>
             </>,
+            "extended_logging": "Extended Logging",
+            "extended_logging_activate": "Activates extended logging",
+            "extended_logging_description": "More information about the control decisions in the event log",
             "minimum_holding_time": "Minimum Holding Time",
             "minimum_holding_time_description": "How long should a start command be valid for",
             "minutes": "Minutes",

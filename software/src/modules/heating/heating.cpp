@@ -28,10 +28,16 @@
 
 extern Heating heating;
 
+#define extended_logging(...) \
+    if(extended_logging_active) { \
+        logger.printfln(__VA_ARGS__); \
+    }
+
 void Heating::pre_setup()
 {
     config = ConfigRoot{Config::Object({
         {"minimum_control_holding_time", Config::Uint(15, 0, 60)},
+        {"extended_logging_active", Config::Bool(false)},
         {"winter_start_day", Config::Uint(1, 1, 31)},
         {"winter_start_month", Config::Uint(11, 1, 12)},
         {"winter_end_day", Config::Uint(15, 1, 31)},
@@ -86,9 +92,11 @@ void Heating::register_urls()
 
 void Heating::update()
 {
+    const bool extended_logging_active = config.get("extended_logging_active")->asBool();
     // Only update if clock is synced. Heating control depends on time of day.
     struct timeval tv_now;
     if (!clock_synced(&tv_now)) {
+        extended_logging("Clock not synced. Skipping update.");
         return;
     }
 
@@ -106,18 +114,19 @@ void Heating::update()
         }
 
         if(p14enwg_on) {
-            logger.printfln("§14 EnWG blocks heating.");
+            extended_logging("§14 EnWG blocks heating. Turning on SG ready output 0.");
             // energy_manager.set_sg_ready_on(SG_READY_OUTPUT0);
         } else {
-            logger.printfln("§14 EnWG does not block heating.");
+            extended_logging("§14 EnWG does not block heating. Turning off SG ready output 0.");
             // energy_manager.set_sg_ready_off(SG_READY_OUTPUT0);
         }
     }
 
     // Get values from config
     const uint8_t minimum_control_holding_time = config.get("minimum_control_holding_time")->asUint();
-    if(timestamp_minutes() < last_sg_ready_change + minimum_control_holding_time) {
-        logger.printfln("Minimum control holding time not reached.");
+    const uint32_t minutes = timestamp_minutes();
+    if(minutes < (last_sg_ready_change + minimum_control_holding_time)) {
+        extended_logging("Minimum control holding time not reached. Current time: %d, last change: %d, minimum holding time: %d.", minutes, last_sg_ready_change, minimum_control_holding_time);
         return;
     }
 
@@ -152,18 +161,19 @@ void Heating::update()
     bool sg_ready_on = false;
 
     if (is_winter) { // Winter
+        extended_logging("It is winter. Current month: %d, winter start month: %d, winter end month: %d, current day: %d, winter start day: %d, winter end day: %d.", current_month, winter_start_month, winter_end_month, current_day, winter_start_day, winter_end_day);
         if (!winter_dynamic_price_control_active && !winter_pv_excess_control_active) {
-            logger.printfln("It is winter but no winter control active.");
+            extended_logging("It is winter but no winter control active.");
         } else {
             if (winter_dynamic_price_control_active) {
                 const int32_t average_price = day_ahead_prices.get_average_price_today();
                 const int32_t price         = day_ahead_prices.get_price_now();
 
                 if (price < average_price * winter_dynamic_price_control_threshold / 100.0) {
-                    logger.printfln("Price is below threshold. Turning on SG ready.");
+                    extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price, price, winter_dynamic_price_control_threshold);
                     sg_ready_on = true;
                 } else {
-                    logger.printfln("Price is above threshold. Turning off SG ready.");
+                    extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price, price, winter_dynamic_price_control_threshold);
                     sg_ready_on = false;
                 }
             }
@@ -171,20 +181,23 @@ void Heating::update()
             if (winter_pv_excess_control_active) {
                 const int watt_current = 0; // meters.get_current_pv_excess();
                 if (watt_current > winter_pv_excess_control_threshold) {
-                    logger.printfln("Current PV excess is above threshold. Turning on SG ready.");
+                    extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", watt_current, winter_pv_excess_control_threshold);
                     sg_ready_on = sg_ready_on || true;
                 }
             }
         }
     } else { // Summer
+        extended_logging("It is summer. Current month: %d, winter start month: %d, winter end month: %d, current day: %d, winter start day: %d, winter end day: %d.", current_month, winter_start_month, winter_end_month, current_day, winter_start_day, winter_end_day);
         bool blocked = false;
         bool is_morning = false;
         bool is_evening = false;
         if (summer_block_time_active) {
             if (current_minutes <= summer_block_time_morning) {       // if is between 00:00 and summer_block_time_morning
+                extended_logging("We are in morning block time. Current time: %d, block time morning: %d.", current_minutes, summer_block_time_morning);
                 blocked    = true;
                 is_morning = true;
             } else if(summer_block_time_evening <= current_minutes) { // if is between summer_block_time_evening and 23:59
+                extended_logging("We are in evening block time. Current time: %d, block time evening: %d.", current_minutes, summer_block_time_evening);
                 blocked    = true;
                 is_evening = true;
             }
@@ -193,6 +206,7 @@ void Heating::update()
         // If we are in block time and px excess control is active,
         // we check the expected px excess and unblock if it is below the threshold.
         if (blocked && summer_yield_forecast_active) {
+            extended_logging("We are in block time and summer yield forecast is active.");
             int kwh_expected = 0;
             if (is_morning) {
                 kwh_expected = solar_forecast.get_kwh_today();
@@ -201,29 +215,29 @@ void Heating::update()
             }
 
             if (kwh_expected < summer_yield_forecast_threshold) {
-                logger.printfln("Expected PV yield %d is below threshold of %d.", kwh_expected, summer_yield_forecast_threshold);
+                extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", kwh_expected, summer_yield_forecast_threshold);
                 blocked = false;
             } else {
-                logger.printfln("Expected PV yield %d is above threshold of %d.", kwh_expected, summer_yield_forecast_threshold);
+                extended_logging("Expected PV yield %dkWh is above or equasl to threshold of %dkWh.", kwh_expected, summer_yield_forecast_threshold);
             }
         }
 
         if (blocked) {
-            logger.printfln("We are in a block time. Turning off SG ready.");
+            extended_logging("We are in a block time.");
             sg_ready_on = false;
         } else {
             if (!summer_dynamic_price_control_active && !summer_pv_excess_control_active) {
-                logger.printfln("It is summer but no summer control active.");
+                extended_logging("It is summer but no summer control active.");
             } else {
                 if (summer_dynamic_price_control_active) {
                     const int32_t average_price = day_ahead_prices.get_average_price_today();
                     const int32_t price         = day_ahead_prices.get_price_now();
 
                     if (price < average_price * summer_dynamic_price_control_threshold / 100.0) {
-                        logger.printfln("Price is below threshold. Turning on SG ready.");
+                        extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price, price, summer_dynamic_price_control_threshold);
                         sg_ready_on = true;
                     } else {
-                        logger.printfln("Price is above threshold. Turning off SG ready.");
+                        extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price, price, summer_dynamic_price_control_threshold);
                         sg_ready_on = false;
                     }
                 }
@@ -231,7 +245,7 @@ void Heating::update()
                 if (summer_pv_excess_control_active) {
                     const int watt_current = 0; // meters.get_current_pv_excess();
                     if (watt_current > summer_pv_excess_control_threshold) {
-                        logger.printfln("Current PV excess is above threshold. Turning on SG ready.");
+                        extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", watt_current, summer_pv_excess_control_threshold);
                         sg_ready_on = sg_ready_on || true;
                     }
                 }
@@ -240,10 +254,10 @@ void Heating::update()
     }
 
     if (sg_ready_on) {
-        logger.printfln("SG ready output1 on.");
+        extended_logging("Heating decision: Turning on SG Ready output 1.");
         // energy_manager.set_sg_ready_on(SG_READY_OUTPUT1);
     } else {
-        logger.printfln("SG ready output1 off.");
+        extended_logging("Heating decision: Turning off SG Ready output 1.");
         // energy_manager.set_sg_ready_off(SG_READY_OUTPUT1);
     }
 
