@@ -464,38 +464,6 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
-    case MeterModbusTCPTableID::GoodweHybridInverter:
-        goodwe_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<GoodweHybridInverterVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
-
-        switch (goodwe_hybrid_inverter_virtual_meter) {
-        case GoodweHybridInverterVirtualMeter::None:
-            logger.printfln("No Goodwe Hybrid Inverter Virtual Meter selected");
-            return;
-
-        case GoodweHybridInverterVirtualMeter::Inverter:
-            table = &goodwe_hybrid_inverter_table;
-            break;
-
-        case GoodweHybridInverterVirtualMeter::Grid:
-            table = &goodwe_hybrid_inverter_grid_table;
-            break;
-
-        case GoodweHybridInverterVirtualMeter::Battery:
-            table = &goodwe_hybrid_inverter_battery_table;
-            break;
-
-        case GoodweHybridInverterVirtualMeter::Load:
-            table = &goodwe_hybrid_inverter_load_table;
-            break;
-
-        default:
-            logger.printfln("Unknown Goodwe Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(goodwe_hybrid_inverter_virtual_meter));
-            return;
-        }
-
-        break;
-
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;

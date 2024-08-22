@@ -93,11 +93,6 @@ void MetersModbusTCP::pre_setup()
         {"monophase_mapping", Config::Uint8(static_cast<uint8_t>(ShellyEMMonophaseMapping::None))},
     })});
 
-    table_prototypes.push_back({MeterModbusTCPTableID::GoodweHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(GoodweHybridInverterVirtualMeter::None))},
-        {"device_address", Config::Uint(247, 1, 247)},
-    })});
-
     Config table_union = Config::Union<MeterModbusTCPTableID>(
         *Config::Null(),
         MeterModbusTCPTableID::None,
