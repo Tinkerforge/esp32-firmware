@@ -60,7 +60,7 @@ public:
     void setup() override;
     void register_urls() override;
     esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
-    int32_t get_average_price_today();
+    DataReturn<int32_t> get_average_price_today();
     int32_t get_price_now();
 
 

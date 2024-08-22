@@ -385,11 +385,11 @@ bool DayAheadPrices::time_between(const uint32_t index, const uint32_t start, co
     return (dap_time >= start) && (dap_time <= end);
 }
 
-int32_t DayAheadPrices::get_average_price_today()
+DataReturn<int32_t> DayAheadPrices::get_average_price_today()
 {
-    // TODO: What do we do if no price data is available?
+    // No price data available
     if (prices.get("prices")->count() == 0) {
-        return 0;
+        return {false, 0};
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
@@ -408,12 +408,12 @@ int32_t DayAheadPrices::get_average_price_today()
         }
     }
 
-    // TODO: What to do if no data is available for today?
+    // No data available for today
     if (count == 0) {
-        return 0;
+        return {false, 0};
     }
 
-    return sum / count;
+    return {true, sum / count};
 }
 
 int32_t DayAheadPrices::get_price_now()
