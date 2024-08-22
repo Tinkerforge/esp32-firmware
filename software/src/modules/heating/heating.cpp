@@ -166,15 +166,19 @@ void Heating::update()
             extended_logging("It is winter but no winter control active.");
         } else {
             if (winter_dynamic_price_control_active) {
-                const int32_t average_price = day_ahead_prices.get_average_price_today();
+                const auto    average_price = day_ahead_prices.get_average_price_today();
                 const int32_t price         = day_ahead_prices.get_price_now();
 
-                if (price < average_price * winter_dynamic_price_control_threshold / 100.0) {
-                    extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price, price, winter_dynamic_price_control_threshold);
-                    sg_ready_on = true;
+                if (!average_price.data_available) {
+                    extended_logging("Average price for today not available. Ignoring dynamic price control.");
                 } else {
-                    extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price, price, winter_dynamic_price_control_threshold);
-                    sg_ready_on = false;
+                    if (price < average_price.data * winter_dynamic_price_control_threshold / 100.0) {
+                        extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price.data, price, winter_dynamic_price_control_threshold);
+                        sg_ready_on = true;
+                    } else {
+                        extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price.data, price, winter_dynamic_price_control_threshold);
+                        sg_ready_on = false;
+                    }
                 }
             }
 
@@ -230,15 +234,19 @@ void Heating::update()
                 extended_logging("It is summer but no summer control active.");
             } else {
                 if (summer_dynamic_price_control_active) {
-                    const int32_t average_price = day_ahead_prices.get_average_price_today();
+                    const auto    average_price = day_ahead_prices.get_average_price_today();
                     const int32_t price         = day_ahead_prices.get_price_now();
 
-                    if (price < average_price * summer_dynamic_price_control_threshold / 100.0) {
-                        extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price, price, summer_dynamic_price_control_threshold);
-                        sg_ready_on = true;
+                    if (!average_price.data_available) {
+                        extended_logging("Average price for today not available. Ignoring dynamic price control.");
                     } else {
-                        extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price, price, summer_dynamic_price_control_threshold);
-                        sg_ready_on = false;
+                        if (price < average_price.data * summer_dynamic_price_control_threshold / 100.0) {
+                            extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price.data, price, summer_dynamic_price_control_threshold);
+                            sg_ready_on = true;
+                        } else {
+                            extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", average_price.data, price, summer_dynamic_price_control_threshold);
+                            sg_ready_on = false;
+                        }
                     }
                 }
 
