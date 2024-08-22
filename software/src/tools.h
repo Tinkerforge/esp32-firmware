@@ -282,3 +282,9 @@ i2c_cmd_handle_t i2c_master_prepare_write_read_device(uint8_t device_address,
 
 time_t get_localtime_today_midnight();
 time_t get_localtime_today_midnight_in_utc();
+
+template <typename T>
+struct DataReturn {
+    bool data_available;
+    T data;
+};
