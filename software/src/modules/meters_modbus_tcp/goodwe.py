@@ -11,9 +11,16 @@ specs = [
                 'scale_factor': -1.0,
             },
             {
-                'name': 'Inverter Internal Temperature [0.1 °C]',
-                'value_id': 'TemperatureCabinet',
+                'name': 'Air Temperature [0.1 °C]',
+                'value_id': 'TemperatureAmbient',
                 'start_address': 35174,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Module Temperature [0.1 °C]',
+                'value_id': 'TemperatureCabinet',
+                'start_address': 35175,
                 'value_type': 'S16',
                 'scale_factor': 0.1,
             },
@@ -28,7 +35,7 @@ specs = [
                 'name': 'Total PV Energy [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 35191,
-                'value_type': 'U32BE',
+                'value_type': 'U32LE',  # FIXME: endianness?
                 'scale_factor': 0.1,
             },
         ],
@@ -56,7 +63,6 @@ specs = [
                 'value_id': 'FrequencyL1',
                 'start_address': 35123,
                 'value_type': 'U16',
-                'scale_factor': 0.01,
             },
             {
                 'name': 'R Phase Grid Power [W]',
@@ -84,7 +90,6 @@ specs = [
                 'value_id': 'FrequencyL2',
                 'start_address': 35128,
                 'value_type': 'U16',
-                'scale_factor': 0.01,
             },
             {
                 'name': 'S Phase Grid Power [W]',
@@ -112,7 +117,6 @@ specs = [
                 'value_id': 'FrequencyL3',
                 'start_address': 35133,
                 'value_type': 'U16',
-                'scale_factor': 0.01,
             },
             {
                 'name': 'T Phase Grid Power [W]',
@@ -131,14 +135,14 @@ specs = [
             {
                 'name': 'AC Reactive Power [var]',
                 'value_id': 'PowerReactiveLSumIndCapDiff',
-                'start_address': 35142,
+                'start_address': 35140,
                 'value_type': 'S16',
                 'scale_factor': -1.0,
             },
             {
                 'name': 'AC Apparent Power [VA]',
                 'value_id': 'PowerApparentLSumImExDiff',
-                'start_address': 35144,
+                'start_address': 35140,
                 'value_type': 'S16',
                 'scale_factor': -1.0,
             },
@@ -146,14 +150,14 @@ specs = [
                 'name': 'Total Feed Energy to Grid [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 35195,
-                'value_type': 'U32BE',
+                'value_type': 'U32LE',  # FIXME: endianness?
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Total Draw Energy from Grid [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 35200,
-                'value_type': 'U32BE',
+                'value_type': 'U32LE',  # FIXME: endianness?
                 'scale_factor': 0.1,
             },
         ],
@@ -174,33 +178,34 @@ specs = [
                 'value_id': 'CurrentDCChaDisDiff',
                 'start_address': 35181,
                 'value_type': 'S16',
-                'scale_factor': 0.1,
+                'scale_factor': 0.1,  # FIXME: sign?
             },
             {
                 'name': 'First Group Battery Power [W]',
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 35183,
                 'value_type': 'S16',
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Charge Energy [0.1 kWh]',
                 'value_id': 'EnergyDCCharge',
                 'start_address': 35206,
-                'value_type': 'U32BE',
+                'value_type': 'U32LE',  # FIXME: endianness?
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Discharge Energy [0.1 kWh]',
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 35209,
-                'value_type': 'U32BE',
+                'value_type': 'U32LE',  # FIXME: endianness?
                 'scale_factor': 0.1,
             },
             {
                 'name': 'BMS Pack Temperature [0.1 °C]',
                 'value_id': 'Temperature',
                 'start_address': 37003,
-                'value_type': 'U16',
+                'value_type': 'U32LE',  # FIXME: endianness?
                 'scale_factor': 0.1,
             },
             {
@@ -220,18 +225,21 @@ specs = [
                 'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 35164,
                 'value_type': 'S16',
+                'scale_factor': -1.0,
             },
             {
                 'name': 'S Phase Load Power [W]',
                 'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 35166,
                 'value_type': 'S16',
+                'scale_factor': -1.0,
             },
             {
                 'name': 'T Phase Load Power [W]',
                 'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 35168,
                 'value_type': 'S16',
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Total Load Power [W]',
@@ -244,7 +252,7 @@ specs = [
                 'name': 'Total Energy of Load [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 35200,
-                'value_type': 'U32BE',
+                'value_type': 'U32LE',  # FIXME: endianness?
                 'scale_factor': 0.1,
             },
         ],
