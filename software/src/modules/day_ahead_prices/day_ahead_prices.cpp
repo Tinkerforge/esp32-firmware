@@ -81,6 +81,7 @@ void DayAheadPrices::pre_setup()
             prices.get("first_date")->updateUint(0);
             prices.get("prices")->removeAll();
             prices.get("resolution")->updateUint(update.get("resolution")->asUint());
+            current_price_available = false;
             task_scheduler.scheduleOnce([this]() {
                 this->update();
             }, 10);
@@ -196,8 +197,10 @@ void DayAheadPrices::update_price()
     const uint32_t index = diff/resolution_divisor;
     if (prices.get("prices")->count() <= index) {
         state.get("current_price")->updateInt(0);
+        current_price_available = false;
     } else {
         state.get("current_price")->updateInt(prices.get("prices")->get(index)->asInt());
+        current_price_available = true;
     }
 }
 
@@ -416,7 +419,7 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_today()
     return {true, sum / count};
 }
 
-int32_t DayAheadPrices::get_price_now()
+DataReturn<int32_t> DayAheadPrices::get_price_now()
 {
-    return state.get("current_price")->asInt();
+    return {current_price_available, prices.get("current_price")->asInt()};
 }

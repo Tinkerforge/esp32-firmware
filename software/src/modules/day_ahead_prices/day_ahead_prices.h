@@ -51,6 +51,7 @@ private:
     bool download_complete;
     char *json_buffer;
     uint32_t json_buffer_position;
+    bool current_price_available = false;
 
     DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
 
@@ -61,7 +62,7 @@ public:
     void register_urls() override;
     esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
     DataReturn<int32_t> get_average_price_today();
-    int32_t get_price_now();
+    DataReturn<int32_t> get_price_now();
 
 
     ConfigRoot config;
