@@ -174,7 +174,9 @@ void FirmwareUpdate::pre_setup()
 
 void FirmwareUpdate::setup()
 {
-    api.restorePersistentConfig("firmware_update/config", &config);
+    if (strlen(BUILD_FIRMWARE_UPDATE_URL) > 0) {
+        api.restorePersistentConfig("firmware_update/config", &config);
+    }
 
     update_url = config.get("update_url")->asString();
 
@@ -412,7 +414,13 @@ static size_t firmware_url_suffix_len = strlen(firmware_url_suffix);
 
 void FirmwareUpdate::register_urls()
 {
-    api.addPersistentConfig("firmware_update/config", &config);
+    if (strlen(BUILD_FIRMWARE_UPDATE_URL) > 0) {
+        api.addPersistentConfig("firmware_update/config", &config);
+    }
+    else {
+        api.addState("firmware_update/config", &config);
+    }
+
     api.addState("firmware_update/state", &state);
 
     api.addCommand("firmware_update/check_for_update", Config::Null(), {}, [this]() {
