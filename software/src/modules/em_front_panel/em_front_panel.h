@@ -25,6 +25,8 @@
 #include "bindings/bricklet_warp_front_panel.h"
 #include "module_available.h"
 
+#define FRONT_PANEL_TILES 6
+
 class EMFrontPanel : public DeviceModule<TF_WARPFrontPanel,
                                          tf_warp_front_panel_create,
                                          tf_warp_front_panel_get_bootloader_mode,
@@ -43,4 +45,11 @@ public:
 
 private:
     ConfigRoot config;
+    class FrontPanelTile {
+    public:
+        uint8_t index;
+        ConfigRoot config;
+    };
+
+    FrontPanelTile tiles[FRONT_PANEL_TILES];
 };

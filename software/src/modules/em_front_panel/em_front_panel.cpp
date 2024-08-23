@@ -44,6 +44,19 @@ void EMFrontPanel::pre_setup()
             return "";
         }
     };
+
+    uint8_t index = 0;
+    for (FrontPanelTile &tile : tiles) {
+        tile.config = ConfigRoot{Config::Object({
+            {"type", Config::Uint8(0)},
+            {"parameter", Config::Uint8(0)},
+        }), [this, index](Config &update, ConfigSource source) -> String {
+
+            return "";
+        }};
+
+        tile.index = index++;
+    }
 }
 
 void EMFrontPanel::setup_bricklet()
@@ -75,6 +88,9 @@ void EMFrontPanel::setup()
         return;
 
     api.restorePersistentConfig("front_panel/config", &config);
+    for (FrontPanelTile &tile : tiles) {
+        api.restorePersistentConfig("front_panel/tiles/" + String(tile.index) + "/config", &tile.config);
+    }
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->check_bricklet_state();
@@ -84,6 +100,10 @@ void EMFrontPanel::setup()
 void EMFrontPanel::register_urls()
 {
     api.addPersistentConfig("front_panel/config", &config);
+    for (FrontPanelTile &tile : tiles) {
+        api.addPersistentConfig("front_panel/tiles/" + String(tile.index) + "/config", &tile.config);
+    }
+
     this->DeviceModule::register_urls();
 }
 
