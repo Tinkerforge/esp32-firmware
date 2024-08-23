@@ -206,25 +206,33 @@ void Heating::update()
                 extended_logging("We are in evening block time. Current time: %d, block time evening: %d.", current_minutes, summer_block_time_evening);
                 blocked    = true;
                 is_evening = true;
+            } else {
+                extended_logging("We are not in block time. Current time: %d, block time morning: %d, block time evening: %d.", current_minutes, summer_block_time_morning, summer_block_time_evening);
             }
         }
 
         // If we are in block time and px excess control is active,
         // we check the expected px excess and unblock if it is below the threshold.
         if (blocked && summer_yield_forecast_active) {
-            extended_logging("We are in block time and summer yield forecast is active.");
-            int kwh_expected = 0;
+            extended_logging("We are in block time and yield forecast is active.");
+            DataReturn<uint32_t> kwh_expected = {false, 0};
             if (is_morning) {
                 kwh_expected = solar_forecast.get_kwh_today();
             } else if (is_evening) {
                 kwh_expected = solar_forecast.get_kwh_tomorrow();
+            } else {
+                extended_logging("We are in block time but not in morning or evening. Ignoring yield forecast.");
             }
 
-            if (kwh_expected < summer_yield_forecast_threshold) {
-                extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", kwh_expected, summer_yield_forecast_threshold);
-                blocked = false;
+            if(!kwh_expected.data_available) {
+                extended_logging("Expected PV yield not available. Ignoring yield forecast.");
             } else {
-                extended_logging("Expected PV yield %dkWh is above or equasl to threshold of %dkWh.", kwh_expected, summer_yield_forecast_threshold);
+                if (kwh_expected.data < summer_yield_forecast_threshold) {
+                    extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", kwh_expected.data, summer_yield_forecast_threshold);
+                    blocked = false;
+                } else {
+                    extended_logging("Expected PV yield %dkWh is above or equasl to threshold of %dkWh.", kwh_expected.data, summer_yield_forecast_threshold);
+                }
             }
         }
 
