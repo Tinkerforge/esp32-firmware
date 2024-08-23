@@ -15,7 +15,8 @@ let x = {
             "enable": "Fernzugriff aktivieren",
             "enable_desc": <>Um den Fernzugriff benutzen zu können muss vorher ein <a href="https://my.warp-charger.com/">Account</a> erstellt werden</>,
             "cert": "TLS-Zertifikat",
-            "not_used": "Eingebettetes Zertifikatsbundle"
+            "not_used": "Eingebettetes Zertifikatsbundle",
+            "advanced_settings": "Experten Einstellungen"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",

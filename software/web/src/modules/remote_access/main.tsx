@@ -35,6 +35,7 @@ import { config, management_connection } from "./api";
 import { InputNumber } from "src/ts/components/input_number";
 import { InputSelect } from "src/ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
+import { CollapsedSection } from "src/ts/components/collapsed_section";
 
 export function RemoteAccessNavbar() {
     return <NavbarItem name="remote_access" module="remote_access" title={__("remote_access.navbar.remote_access")} symbol={<Smartphone />} />;
@@ -270,26 +271,28 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                                 this.setState({password: v});
                                            }} />
                         </FormRow>
-                        <FormRow label={__("remote_access.content.relay_host")}>
-                            <InputText required
-                                       maxLength={64}
-                                       value={this.state.relay_host}
-                                       onValue={(v) => {
-                                            this.setState({relay_host: v})
-                                       }} />
-                        </FormRow>
-                        <FormRow label={__("remote_access.content.relay_host_port")}>
-                            <InputNumber required
-                                         min={1}
-                                         max={65565}
-                                         value={this.state.relay_host_port}
-                                         onValue={v => this.setState({relay_host_port: v})} />
-                        </FormRow>
-                        <FormRow label={__("remote_access.content.cert")}>
-                            <InputSelect items={cert_items} value={this.state.cert_id} onValue={(v) => {
-                                this.setState({cert_id: parseInt(v)});
-                            }}/>
-                        </FormRow>
+                        <CollapsedSection label={__("remote_access.content.advanced_settings")}>
+                            <FormRow label={__("remote_access.content.relay_host")}>
+                                <InputText required
+                                        maxLength={64}
+                                        value={this.state.relay_host}
+                                        onValue={(v) => {
+                                                this.setState({relay_host: v})
+                                        }} />
+                            </FormRow>
+                            <FormRow label={__("remote_access.content.relay_host_port")}>
+                                <InputNumber required
+                                            min={1}
+                                            max={65565}
+                                            value={this.state.relay_host_port}
+                                            onValue={v => this.setState({relay_host_port: v})} />
+                            </FormRow>
+                            <FormRow label={__("remote_access.content.cert")}>
+                                <InputSelect items={cert_items} value={this.state.cert_id} onValue={(v) => {
+                                    this.setState({cert_id: parseInt(v)});
+                                }}/>
+                            </FormRow>
+                        </CollapsedSection>
                     </ConfigForm>
                 </SubPage>
     }
