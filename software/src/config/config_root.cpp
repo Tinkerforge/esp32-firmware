@@ -26,7 +26,7 @@ ConfigRoot::ConfigRoot(Config cfg, Validator &&validator) : Config(cfg), validat
 
 String ConfigRoot::update_from_file(File &&file)
 {
-    DynamicJsonDocument doc(this->json_size(false));
+    DynamicJsonDocument doc(std::max(4096u, this->json_size(false)));
     DeserializationError error = deserializeJson(doc, file);
     if (error)
         return String("Failed to read file: ") + error.c_str();
