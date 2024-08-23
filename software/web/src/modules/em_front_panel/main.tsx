@@ -176,7 +176,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                                         <InputSelect
                                             items={EMFrontPanel.options_tile}
                                             value={state.tile_configs[tile_index].type}
-                                            onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: state.tile_configs[0].parameter, "type": parseInt(v)}}})}
+                                            onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: state.tile_configs[tile_index].parameter, "type": parseInt(v)}}})}
                                         />
                                     </FormRow>
                                     {state.tile_configs[tile_index].type === 1 &&
@@ -184,7 +184,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                                             <InputSelect
                                                 items={EMFrontPanel.options_wallbox}
                                                 value={state.tile_configs[tile_index].parameter}
-                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[0].type}}})}
+                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[tile_index].type}}})}
                                             />
                                         </FormRow>
                                     }
@@ -193,7 +193,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                                             <InputSelect
                                                 items={EMFrontPanel.options_meter}
                                                 value={state.tile_configs[tile_index].parameter}
-                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[0].type}}})}
+                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[tile_index].type}}})}
                                             />
                                         </FormRow>
                                     }
@@ -202,7 +202,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                                             <InputSelect
                                                 items={EMFrontPanel.options_day_ahead_prices}
                                                 value={state.tile_configs[tile_index].parameter}
-                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[0].type}}})}
+                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[tile_index].type}}})}
                                             />
                                         </FormRow>
                                     }
@@ -211,7 +211,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                                             <InputSelect
                                                 items={EMFrontPanel.options_front_panel}
                                                 value={state.tile_configs[tile_index].parameter}
-                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[0].type}}})}
+                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[tile_index].type}}})}
                                             />
                                         </FormRow>
                                     }
