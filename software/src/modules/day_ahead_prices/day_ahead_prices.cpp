@@ -419,7 +419,7 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_today()
     return {true, sum / count};
 }
 
-DataReturn<int32_t> DayAheadPrices::get_price_now()
+DataReturn<int32_t> DayAheadPrices::get_current_price()
 {
     return {current_price_available, prices.get("current_price")->asInt()};
 }
