@@ -741,20 +741,21 @@ void Mqtt::pre_reboot()
 bool Mqtt::has_triggered(const Config *conf, void *data)
 {
     const Config *cfg = static_cast<const Config *>(conf->get());
-    MqttMessage *msg = (MqttMessage *)data;
-    const CoolString &payload = cfg->get("payload")->asString();
-    CoolString topic = cfg->get("topic_filter")->asString();
+    const MqttMessage *msg = (const MqttMessage *)data;
+    const String &payload = cfg->get("payload")->asString();
 
+    String topic(static_cast<const char *>(nullptr));
     if (cfg->get("use_prefix")->asBool()) {
+        topic.reserve(64);
         topic = this->config.get("global_topic_prefix")->asString();
         topic += "/automation_trigger/";
-        topic += cfg->get("topic")->asString();
     }
+    topic += cfg->get("topic_filter")->asString();
 
     switch (conf->getTag<AutomationTriggerID>())
     {
     case AutomationTriggerID::MQTT:
-        if (msg->topic == topic && (payload == msg->payload || payload.length() == 0))
+        if (msg->topic == topic && (payload.length() == 0 || msg->payload == payload))
             return true;
         break;
 
