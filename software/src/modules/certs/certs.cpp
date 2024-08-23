@@ -171,7 +171,7 @@ void Certs::register_urls()
         }
 
         {
-            File f = LittleFS.open(Sget_cert_path(cert_id), "w");
+            File f = LittleFS.open(get_cert_path(cert_id), "w");
             // TODO: more robust writing
             auto &cert = add.get("cert")->asString();
             f.write((const uint8_t *) cert.c_str(), cert.length());
