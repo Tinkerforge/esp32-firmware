@@ -103,14 +103,16 @@ void RemoteAccess::pre_setup() {
     })};
 
     Config *key_cfg = new Config{
-                    Config::Object({
-                        {"private_key",       Config::Str("", 0, 44)},
-                        {"psk", Config::Str("", 0, 44)},
-                        {"remote_public_key", Config::Str("", 0, 44)},
-                    })
-                };
+        Config::Object({
+            {"private_key",       Config::Str("", 0, 44)},
+            {"psk", Config::Str("", 0, 44)},
+            {"remote_public_key", Config::Str("", 0, 44)},
+        })
+    };
 
-    management_connection = ConfigRoot{*key_cfg, [](Config &cfg, ConfigSource source) -> String {
+    management_connection = ConfigRoot{
+        *key_cfg,
+        [](Config &cfg, ConfigSource source) -> String {
             const String &private_key = cfg.get("private_key")->asString();
             String result = check_key(private_key, true);
             if (!result.isEmpty())
@@ -123,55 +125,52 @@ void RemoteAccess::pre_setup() {
 
 
             return "";
-        }};
-
-    remote_connection_config = ConfigRoot {
-        Config::Object({
-            {"connections", Config::Array({},
-                key_cfg, 5, 5, Config::type_id<Config::ConfObject>())
-            }
-        })
+        }
     };
 
+    remote_connection_config = Config::Object({
+        {"connections", Config::Array({},
+            key_cfg, 5, 5, Config::type_id<Config::ConfObject>())
+        }
+    });
+
     Config *cs = new Config {
-                    Config::Object({
-                        {"connection_state", Config::Uint8(0)}
-                    })
-                };
+        Config::Object({
+            {"connection_state", Config::Uint8(0)}
+        })
+    };
 
     connection_state = ConfigRoot{
         Config::Object({
             {"management_connection_state", Config::Uint8(0)},
             {"remote_connection_states", Config::Array({
-                *cs,*cs,*cs,*cs,*cs
-            },
+                    *cs,*cs,*cs,*cs,*cs
+                },
                 cs, 5, 5, Config::type_id<Config::ConfObject>())}
         })
     };
 
-    register_config = ConfigRoot {
-        Config::Object({
-            {"login_key", Config::Str("", 0, 64)},
-            {"remote_host", Config::Str("", 0, 64)},
-            {"charger_pub", Config::Str("", 0, 44)},
-            {"psk", Config::Str("", 0, 44)},
-            {"id", Config::Str("", 0, 6)},
-            {"name", Config::Str("", 0, 32)},
-            {"secret", Config::Str("", 0, 256)},
-            {"secret_key", Config::Str("", 0, 256)},
-            {"secret_nonce", Config::Str("", 0, 256)},
-            {"config", config},
-            {"keys", Config::Array({}, new Config {
-                Config::Object({
-                    {"charger_public", Config::Str("", 0, 44)},
-                    {"connection_no", Config::Uint8(0)},
-                    {"web_private", Config::Str("", 0, 44)},
-                    {"psk", Config::Str("", 0, 44)},
-                })
-            },
-            5, 5, Config::type_id<Config::ConfObject>())}
-        })
-    };
+    register_config = Config::Object({
+        {"login_key", Config::Str("", 0, 64)},
+        {"remote_host", Config::Str("", 0, 64)},
+        {"charger_pub", Config::Str("", 0, 44)},
+        {"psk", Config::Str("", 0, 44)},
+        {"id", Config::Str("", 0, 6)},
+        {"name", Config::Str("", 0, 32)},
+        {"secret", Config::Str("", 0, 256)},
+        {"secret_key", Config::Str("", 0, 256)},
+        {"secret_nonce", Config::Str("", 0, 256)},
+        {"config", config},
+        {"keys", Config::Array({}, new Config {
+            Config::Object({
+                {"charger_public", Config::Str("", 0, 44)},
+                {"connection_no", Config::Uint8(0)},
+                {"web_private", Config::Str("", 0, 44)},
+                {"psk", Config::Str("", 0, 44)},
+            })
+        },
+        5, 5, Config::type_id<Config::ConfObject>())}
+    });
 }
 
 void RemoteAccess::setup() {
