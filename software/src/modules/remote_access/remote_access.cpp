@@ -98,39 +98,19 @@ void RemoteAccess::pre_setup() {
         {"email", Config::Str("", 0, 64)},
         {"password", Config::Str("", 0, 32)},
         {"relay_host", Config::Str("my.warp-charger.com", 0, 64)},
-        {"relay_host_port", Config::Uint16(443)},
+        {"relay_host_port", Config::Uint16(443)}, //relay_host_port -> relay_port
         {"cert_id", Config::Int8(-1)}
     })};
 
-    management_connection = ConfigRoot{Config::Object({
-        {"internal_ip",      Config::Str("0.0.0.0", 7, 15)},
-        {"internal_subnet",  Config::Str("0.0.0.0", 7, 15)},
-        {"internal_gateway", Config::Str("0.0.0.0", 7, 15)},
+    Config *key_cfg = new Config{
+                    Config::Object({
+                        {"private_key",       Config::Str("", 0, 44)},
+                        {"psk", Config::Str("", 0, 44)},
+                        {"remote_public_key", Config::Str("", 0, 44)},
+                    })
+                };
 
-        {"remote_internal_ip", Config::Str("0.0.0.0", 7, 15)},
-        {"remote_host", Config::Str("", 0, 64)},
-        {"remote_port", Config::Uint16(51820)},
-
-        {"local_port", Config::Uint16(51820)},
-
-        {"private_key",       Config::Str("", 0, 44)},
-        {"psk", Config::Str("", 0, 44)},
-        {"remote_public_key", Config::Str("", 0, 44)},
-        }), [](Config &cfg, ConfigSource source) -> String {
-            IPAddress unused;
-
-            if (!unused.fromString(cfg.get("internal_ip")->asEphemeralCStr()))
-                return "Failed to parse \"internal_ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
-
-            if (!unused.fromString(cfg.get("internal_subnet")->asEphemeralCStr()))
-                return "Failed to parse \"internal_subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
-
-            if (!unused.fromString(cfg.get("internal_gateway")->asEphemeralCStr()))
-                return "Failed to parse \"internal_gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
-
-            if (!unused.fromString(cfg.get("remote_internal_ip")->asEphemeralCStr()))
-                return "Failed to parse \"remote_internal_ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
-
+    management_connection = ConfigRoot{*key_cfg, [](Config &cfg, ConfigSource source) -> String {
             const String &private_key = cfg.get("private_key")->asString();
             String result = check_key(private_key, true);
             if (!result.isEmpty())
@@ -148,52 +128,24 @@ void RemoteAccess::pre_setup() {
     remote_connection_config = ConfigRoot {
         Config::Object({
             {"connections", Config::Array({},
-                new Config{
-                    Config::Object({
-                        {"internal_ip",      Config::Str("0.0.0.0", 7, 15)},
-                        {"internal_subnet",  Config::Str("0.0.0.0", 7, 15)},
-                        {"internal_gateway", Config::Str("0.0.0.0", 7, 15)},
-
-                        {"remote_internal_ip", Config::Str("0.0.0.0", 7, 15)},
-                        {"remote_host", Config::Str("", 0, 64)},
-                        {"remote_port", Config::Uint16(51820)},
-
-                        {"local_port", Config::Uint16(51820)},
-
-                        {"private_key",       Config::Str("", 0, 44)},
-                        {"psk", Config::Str("", 0, 44)},
-                        {"remote_public_key", Config::Str("", 0, 44)},
-                    })
-                }, 5, 5, Config::type_id<Config::ConfObject>())
+                key_cfg, 5, 5, Config::type_id<Config::ConfObject>())
             }
         })
     };
+
+    Config *cs = new Config {
+                    Config::Object({
+                        {"connection_state", Config::Uint8(0)}
+                    })
+                };
 
     connection_state = ConfigRoot{
         Config::Object({
             {"management_connection_state", Config::Uint8(0)},
             {"remote_connection_states", Config::Array({
-                Config::Object({
-                    {"connection_state", Config::Uint8(0)}
-                }),
-                Config::Object({
-                    {"connection_state", Config::Uint8(0)}
-                }),
-                Config::Object({
-                    {"connection_state", Config::Uint8(0)}
-                }),
-                Config::Object({
-                    {"connection_state", Config::Uint8(0)}
-                }),
-                Config::Object({
-                    {"connection_state", Config::Uint8(0)}
-                })
+                *cs,*cs,*cs,*cs,*cs
             },
-                new Config {
-                    Config::Object({
-                        {"connection_state", Config::Uint8(0)}
-                    })
-                }, 5, 5, Config::type_id<Config::ConfObject>())}
+                cs, 5, 5, Config::type_id<Config::ConfObject>())}
         })
     };
 
@@ -201,23 +153,18 @@ void RemoteAccess::pre_setup() {
         Config::Object({
             {"login_key", Config::Str("", 0, 64)},
             {"remote_host", Config::Str("", 0, 64)},
-            {"remote_port", Config::Uint16(0)},
             {"charger_pub", Config::Str("", 0, 44)},
             {"psk", Config::Str("", 0, 44)},
             {"id", Config::Str("", 0, 6)},
             {"name", Config::Str("", 0, 32)},
-            {"wg_charger_ip", Config::Str("", 0, 15)},
-            {"wg_server_ip", Config::Str("", 0, 15)},
             {"secret", Config::Str("", 0, 256)},
             {"secret_key", Config::Str("", 0, 256)},
             {"secret_nonce", Config::Str("", 0, 256)},
             {"config", config},
             {"keys", Config::Array({}, new Config {
                 Config::Object({
-                    {"charger_address", Config::Str("", 0, 15)},
                     {"charger_public", Config::Str("", 0, 44)},
                     {"connection_no", Config::Uint8(0)},
-                    {"web_address", Config::Str("", 0, 15)},
                     {"web_private", Config::Str("", 0, 44)},
                     {"psk", Config::Str("", 0, 44)},
                 })
@@ -307,12 +254,16 @@ void RemoteAccess::register_urls() {
         TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), 5000);
         serializer.addObject();
         serializer.addMemberArray("keys");
+        std::unique_ptr<char[]> buf = heap_alloc_array<char>(50);
+        int i = 0;
         for (auto &key : register_config.get("keys")) {
             serializer.addObject();
-            serializer.addMemberString("charger_address", key.get("charger_address")->asEphemeralCStr());
+            std::snprintf(buf.get(), 50, "10.123.%i.2", i);
+            serializer.addMemberString("charger_address", buf.get());
             serializer.addMemberString("charger_public", key.get("charger_public")->asEphemeralCStr());
-            serializer.addMemberNumber("connection_no", key.get("connection_no")->asUint());
-            serializer.addMemberString("web_address", key.get("web_address")->asEphemeralCStr());
+            serializer.addMemberNumber("connection_no", i);
+            std::snprintf(buf.get(), 50, "10.123.%i.3", i);
+            serializer.addMemberString("web_address", buf.get());
             CoolString wg_key = key.get("web_private")->asString();
 
             std::unique_ptr<char[]> output = heap_alloc_array<char>(crypto_box_SEALBYTES + wg_key.length());
@@ -323,8 +274,8 @@ void RemoteAccess::register_urls() {
             }
 
             serializer.addMemberArray("web_private");
-            for (size_t i = 0; i < crypto_box_SEALBYTES + wg_key.length(); i++) {
-                serializer.addNumber(output[i]);
+            for (size_t a = 0; a < crypto_box_SEALBYTES + wg_key.length(); a++) {
+                serializer.addNumber(output[a]);
             }
             serializer.endArray();
 
@@ -336,12 +287,13 @@ void RemoteAccess::register_urls() {
             }
 
             serializer.addMemberArray("psk");
-            for (size_t i = 0; i < crypto_box_SEALBYTES + psk.length(); i++) {
-                serializer.addNumber(encrypted_psk[i]);
+            for (size_t a = 0; a < crypto_box_SEALBYTES + psk.length(); a++) {
+                serializer.addNumber(encrypted_psk[a]);
             }
             serializer.endArray();
 
             serializer.endObject();
+            i++;
         }
         serializer.endArray();
 
@@ -355,13 +307,13 @@ void RemoteAccess::register_urls() {
         crypto_box_seal((unsigned char *)encrypted_name.get(), (unsigned char *)name.c_str(), name.length(), (unsigned char *)pk);
 
         serializer.addMemberArray("name");
-        for (size_t i = 0; i < crypto_box_SEALBYTES + name.length(); i++) {
-            serializer.addNumber(encrypted_name[i]);
+        for (size_t a = 0; a < crypto_box_SEALBYTES + name.length(); a++) {
+            serializer.addNumber(encrypted_name[a]);
         }
         serializer.endArray();
 
-        serializer.addMemberString("wg_charger_ip", register_config.get("wg_charger_ip")->asEphemeralCStr());
-        serializer.addMemberString("wg_server_ip", register_config.get("wg_server_ip")->asEphemeralCStr());
+        serializer.addMemberString("wg_charger_ip", "10.123.123.2");
+        serializer.addMemberString("wg_server_ip", "10.123.123.3");
         serializer.addMemberString("psk", register_config.get("psk")->asEphemeralCStr());
 
         serializer.endObject();
@@ -701,17 +653,17 @@ void RemoteAccess::connect_management() {
     IPAddress allowed_subnet;
     uint16_t local_port;
 
-    internal_ip.fromString(management_connection.get("internal_ip")->asEphemeralCStr());
-    internal_subnet.fromString(management_connection.get("internal_subnet")->asEphemeralCStr());
-    internal_gateway.fromString(management_connection.get("internal_gateway")->asEphemeralCStr());
+    internal_ip.fromString("10.123.123.2");
+    internal_subnet.fromString("255.255.255.0");
+    internal_gateway.fromString("10.123.123.1");
     allowed_ip.fromString("0.0.0.0");
     allowed_subnet.fromString("0.0.0.0");
-    local_port = management_connection.get("local_port")->asUint();
+    local_port = 51820;
 
     String private_key = management_connection.get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
-    String remote_host = management_connection.get("remote_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
+    String remote_host = config.get("relay_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
 
-    logger.printfln("Connecting to Management WireGuard peer %s:%u", remote_host.c_str(), management_connection.get("remote_port")->asUint());
+    logger.printfln("Connecting to Management WireGuard peer %s:%u", remote_host.c_str(), 51820);
 
     local_port = find_next_free_port(local_port);
     this->setup_inner_socket();
@@ -722,7 +674,7 @@ void RemoteAccess::connect_management() {
              private_key.c_str(),
              remote_host.c_str(),
              management_connection.get("remote_public_key")->asEphemeralCStr(),
-             management_connection.get("remote_port")->asUint(),
+             51820,
              allowed_ip,
              allowed_subnet,
              false,
@@ -766,14 +718,18 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
     IPAddress allowed_ip;
     IPAddress allowed_subnet;
 
-    internal_ip.fromString(conf->get("internal_ip")->asEphemeralCStr());
-    internal_subnet.fromString(conf->get("internal_subnet")->asEphemeralCStr());
-    internal_gateway.fromString(conf->get("internal_gateway")->asEphemeralCStr());
+    std::unique_ptr<char[]> buf = heap_alloc_array<char>(50);
+
+    snprintf(buf.get(), 50, "10.123.%u.2", i);
+    internal_ip.fromString(buf.get());
+    internal_subnet.fromString("255.255.255.0");
+    snprintf(buf.get(), 50, "10.123.%u.1", i);
+    internal_gateway.fromString(buf.get());
     allowed_ip.fromString("0.0.0.0");
     allowed_subnet.fromString("0.0.0.0");
 
     String private_key = conf->get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
-    String remote_host = conf->get("remote_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
+    String remote_host = config.get("relay_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
 
     remote_connections[i].begin(internal_ip,
              internal_subnet,
@@ -782,7 +738,7 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
              private_key.c_str(),
              remote_host.c_str(),
              conf->get("remote_public_key")->asEphemeralCStr(),
-             conf->get("remote_port")->asUint(),
+             51820,
              allowed_ip,
              allowed_subnet,
              false,
@@ -883,7 +839,7 @@ void RemoteAccess::run_management() {
                 }
 
                 logger.printfln("Opening connection %u", command->connection_no);
-                uint16_t local_port = static_cast<uint16_t>(remote_connection_config.get("connections")->get(command->connection_no)->get("local_port")->asUint());
+                uint16_t local_port = 51821;
                 port_discovery_packet response;
                 response.charger_id = local_uid_num;
                 response.connection_no = command->connection_no;

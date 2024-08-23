@@ -9,23 +9,14 @@ export interface config {
 }
 
 export interface management_connection {
-    internal_ip: string,
-    internal_subnet: string,
-    internal_gateway: string,
-    remote_internal_ip: string,
-    remote_host: string,
-    remote_port: number,
-    local_port: number,
     private_key: string,
     psk: string,
     remote_public_key: string,
 }
 
 interface KeyObject {
-    charger_address: string,
     charger_public: string,
     connection_no: number,
-    web_address: string,
     web_private: string,
     psk: string,
 }
@@ -33,13 +24,10 @@ interface KeyObject {
 export interface register {
     login_key: string,
     remote_host: string,
-    remote_port: number,
     charger_pub: string,
     psk: string,
     id: string,
     name: string,
-    wg_charger_ip: string,
-    wg_server_ip: string,
     secret: string,
     secret_key: string,
     secret_nonce: string,

@@ -82,8 +82,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     async registerCharger(cfg: config) {
         const charger_id = API.get("info/name").uid;
         const charger_name = API.get("info/display_name").display_name;
-        const mg_charger_address = "10.123.123.2";
-        const mg_server_address = "10.123.123.3";
         const mg_charger_keypair = (window as any).wireguard.generateKeypair();
 
         const keys = [];
@@ -91,15 +89,10 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         for (const i of util.range(0, 5)) {
             const charger_keypair = (window as any).wireguard.generateKeypair();
             const web_keypair = (window as any).wireguard.generateKeypair();
-            const charger_address = "10.123." + i + ".2";
-            const web_address = "10.123." + i + ".3";
-            const port = 51825 + i;
 
             const psk: string = (window as any).wireguard.generatePresharedKey();
 
             keys.push({
-                charger_address: charger_address,
-                web_address: web_address,
                 charger_public: charger_keypair.publicKey,
                 web_private: web_keypair.privateKey,
                 psk: psk,
@@ -107,13 +100,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             });
 
             const connection: management_connection = {
-                internal_ip: charger_address,
-                internal_subnet: "255.255.255.0",
-                internal_gateway: "10.123." + i + ".1",
-                remote_internal_ip: web_address,
-                remote_host: this.state.relay_host,
-                remote_port: 51820,
-                local_port: port,
                 private_key: charger_keypair.privateKey,
                 psk: psk,
                 remote_public_key: web_keypair.publicKey,
@@ -153,13 +139,10 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             psk: psk,
             id: charger_id,
             name: charger_name,
-            wg_charger_ip: mg_charger_address,
-            wg_server_ip: mg_server_address,
             secret: secret_string.replace("data:application/octet-stream;base64,", ""),
             secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
             secret_nonce: secret_nonce_string.replace("data:application/octet-stream;base64,", ""),
             remote_host: this.state.relay_host,
-            remote_port: this.state.relay_host_port,
             config: cfg,
             keys: keys
         };
@@ -171,8 +154,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         const json = (JSON.parse(await resp.text()));
         const ret = {
             charger_pub: mg_charger_keypair.publicKey,
-            wg_charger_ip: mg_charger_address,
-            wg_server_ip: mg_server_address,
             charger_private: mg_charger_keypair.privateKey,
             remote_public: json.management_pub,
             password: json.charger_password,
@@ -239,13 +220,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             const info = await this.registerCharger(cfg);
             cfg.password = info.password;
             await API.save("remote_access/management_connection", {
-                internal_ip: info.wg_charger_ip,
-                internal_gateway: "10.123.123.1",
-                internal_subnet: "255.255.255.0",
-                remote_internal_ip: info.wg_server_ip,
-                remote_host: this.state.relay_host,
-                remote_port: 51820,
-                local_port: 51820,
                 private_key: info.charger_private,
                 psk: info.psk,
                 remote_public_key: info.remote_public
