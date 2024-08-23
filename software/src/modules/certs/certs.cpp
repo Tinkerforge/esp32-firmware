@@ -24,6 +24,16 @@
 
 #include "module_dependencies.h"
 
+#define CERT_DIRECTORY "/certs"
+
+static inline String get_cert_path(uint8_t id) {
+    return String(CERT_DIRECTORY "/") + id;
+}
+
+static inline String get_cert_name_path(uint8_t id) {
+    return String(CERT_DIRECTORY "/") + id + "_name";
+}
+
 void Certs::pre_setup()
 {
     state = Config::Object({
@@ -109,7 +119,7 @@ void Certs::update_state()
     state.get("certs")->removeAll();
 
     for (uint8_t i = 0; i < MAX_CERTS; ++i) {
-        String path = String("/certs/") + i;
+        String path = get_cert_path(i);
 
         if (!LittleFS.exists(path) || !LittleFS.exists(path + "_name"))
             continue;
@@ -127,7 +137,7 @@ void Certs::update_state()
 
 void Certs::setup()
 {
-    LittleFS.mkdir("/certs");
+    LittleFS.mkdir(CERT_DIRECTORY);
     update_state();
 
     initialized = true;
@@ -155,13 +165,13 @@ void Certs::register_urls()
         }
 
         {
-            File f = LittleFS.open(String("/certs/") + cert_id + "_name", "w");
+            File f = LittleFS.open(get_cert_name_path(cert_id), "w");
             auto cert_name = add.get("name")->asString();
             f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
         }
 
         {
-            File f = LittleFS.open(String("/certs/") + cert_id, "w");
+            File f = LittleFS.open(Sget_cert_path(cert_id), "w");
             // TODO: more robust writing
             auto &cert = add.get("cert")->asString();
             f.write((const uint8_t *) cert.c_str(), cert.length());
@@ -190,13 +200,13 @@ void Certs::register_urls()
         }
 
         {
-            File f = LittleFS.open(String("/certs/") + cert_id + "_name", "w");
+            File f = LittleFS.open(get_cert_name_path(cert_id), "w");
             auto cert_name = add.get("name")->asString();
             f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
         }
 
         if (add.get("cert")->asString().length() != 0) {
-            File f = LittleFS.open(String("/certs/") + cert_id, "w");
+            File f = LittleFS.open(get_cert_path(cert_id), "w");
             // TODO: more robust writing
             auto &cert = add.get("cert")->asString();
             f.write((const uint8_t *) cert.c_str(), cert.length());
@@ -213,7 +223,7 @@ void Certs::register_urls()
 
         uint8_t cert_id = remove.get("id")->asUint();
 
-        String path = String("/certs/") + cert_id;
+        String path = get_cert_path(cert_id);
 
         if (!LittleFS.exists(path)) {
             error = String("No cert with ID ") + cert_id + " found!";
@@ -228,7 +238,7 @@ void Certs::register_urls()
 
 std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t id, size_t *out_cert_len)
 {
-    String path = String("/certs/") + id;
+    String path = get_cert_path(cert_id);
 
     if (!LittleFS.exists(path))
         return nullptr;
