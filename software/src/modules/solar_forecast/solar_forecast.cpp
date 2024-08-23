@@ -25,7 +25,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 
-// #define SOLAR_FORECAST_USE_TEST_DATA
+#define SOLAR_FORECAST_USE_TEST_DATA
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
@@ -566,12 +566,13 @@ bool SolarForecast::forecast_time_between(const uint32_t first_date, const uint3
     return (forecast_time >= start) && (forecast_time <= end);
 }
 
-uint32_t SolarForecast::get_kwh_today()
+DataReturn<uint32_t> SolarForecast::get_kwh_today()
 {
     const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
     const uint32_t end   = start + 60*24 - 1;
 
     uint32_t wh    = 0;
+    uint32_t count = 0;
     for (const SolarForecastPlane &plane : planes) {
         if (plane.config.get("active")->asBool()) {
             const uint32_t first_date = plane.forecast.get("first_date")->asUint();
@@ -583,25 +584,31 @@ uint32_t SolarForecast::get_kwh_today()
         }
     }
 
-    return wh;
+    // We assume that we have valid data for the day if
+    // there is at least one data point today
+    return {count != 0, wh};
 }
 
-uint32_t SolarForecast::get_kwh_tomorrow()
+DataReturn<uint32_t> SolarForecast::get_kwh_tomorrow()
 {
     const uint32_t start = get_localtime_today_midnight_in_utc() / 60 + 60*24;
     const uint32_t end   = start + 60*24 - 1;
 
     uint32_t wh    = 0;
+    uint32_t count = 0;
     for (const SolarForecastPlane &plane : planes) {
         if (plane.config.get("active")->asBool()) {
             const uint32_t first_date = plane.forecast.get("first_date")->asUint();
             for (uint8_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
                 if (forecast_time_between(first_date, index, start, end)) {
                     wh += plane.forecast.get("forecast")->get(index)->asUint();
+                    count++;
                 }
             }
         }
     }
 
-    return wh;
+    // We assume that we have valid data for the day if
+    // there is at least one data point tomorrow
+    return {count != 0, wh};
 }

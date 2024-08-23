@@ -53,8 +53,8 @@ public:
     esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
     void next_update();
 
-    uint32_t get_kwh_today();
-    uint32_t get_kwh_tomorrow();
+    DataReturn<uint32_t> get_kwh_today();
+    DataReturn<uint32_t> get_kwh_tomorrow();
 
     ConfigRoot config;
     ConfigRoot state;
