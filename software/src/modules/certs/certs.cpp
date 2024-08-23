@@ -26,12 +26,12 @@
 
 #define CERT_DIRECTORY "/certs"
 
-static inline String get_cert_path(uint8_t id) {
-    return String(CERT_DIRECTORY "/") + id;
+static inline String get_cert_path(uint8_t cert_id) {
+    return String(CERT_DIRECTORY "/") + cert_id;
 }
 
-static inline String get_cert_name_path(uint8_t id) {
-    return String(CERT_DIRECTORY "/") + id + "_name";
+static inline String get_cert_name_path(uint8_t cert_id) {
+    return String(CERT_DIRECTORY "/") + cert_id + "_name";
 }
 
 void Certs::pre_setup()
@@ -236,7 +236,7 @@ void Certs::register_urls()
     }, true);
 }
 
-std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t id, size_t *out_cert_len)
+std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t cert_id, size_t *out_cert_len)
 {
     String path = get_cert_path(cert_id);
 
