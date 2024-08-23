@@ -579,6 +579,7 @@ DataReturn<uint32_t> SolarForecast::get_kwh_today()
             for (uint8_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
                 if (forecast_time_between(first_date, index, start, end)) {
                     wh += plane.forecast.get("forecast")->get(index)->asUint();
+                    count++;
                 }
             }
         }
