@@ -29,6 +29,9 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Monitor } from "react-feather";
 import { Collapse } from "react-bootstrap";
+import { InputSelect } from "../../ts/components/input_select";
+
+const FRONT_PANEL_TILES = 6;
 
 export function EMFrontPanelNavbar() {
     return (
@@ -42,17 +45,109 @@ export function EMFrontPanelNavbar() {
     );
 }
 
+type TileConfig = API.getType['tiles/0/config'];
 type EMFrontPanelConfig = API.getType["front_panel/config"];
 
 interface EMFrontPanelState {
+    tile_configs: {[tile_index: number]: TileConfig};
 }
 
 export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFrontPanelState> {
+    static options_tile: [string, string][] = [
+        ["0", "Leere Kachel"],
+        ["1", "Wallbox"],
+        ["2", "Lastmanagement"],
+        ["3", "Stromzähler"],
+        ["4", "Dynamischer Strompreis"],
+        ["5", "Solarprognose"],
+        ["6", "Status des Energy Managers"],
+    ]
+
+    static options_wallbox: [string, string][] = [
+        ["0", "Wallbox 1"],
+        ["1", "Wallbox 2"],
+        ["2", "Wallbox 3"],
+        ["3", "Wallbox 4"],
+        ["4", "Wallbox 5"],
+        ["5", "Wallbox 6"],
+    ]
+
+    static options_meter: [string, string][] = [
+        ["0", "Stromzähler 1"],
+        ["1", "Stromzähler 2"],
+        ["2", "Stromzähler 3"],
+        ["3", "Stromzähler 4"],
+        ["4", "Stromzähler 5"],
+        ["5", "Stromzähler 6"],
+    ]
+
+    static options_day_ahead_prices: [string, string][] = [
+        ["0", "Aktueller Strompreis"],
+        ["1", "Durchschnittspreis heute"],
+        ["2", "Durchschnittspreis morgen"],
+    ]
+
+    static options_front_panel: [string, string][] = [
+        ["0", "PV-Ertragsprognose heute"],
+        ["1", "PV-Ertragsprognose morgen"],
+    ]
+
     constructor() {
         super('front_panel/config',
               __("em_front_panel.script.save_failed"));
+
+        for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
+            util.addApiEventListener_unchecked(`front_panel/tiles/${tile_index}/config`, () => {
+                console.log("tile_index", tile_index);
+                let config = API.get_unchecked(`front_panel/tiles/${tile_index}/config`);
+
+                this.setState((prevState) => ({
+                    tile_configs: {
+                        ...prevState.tile_configs,
+                        [tile_index]: config
+                    }
+                }));
+
+                if (!this.isDirty()) {
+                    this.setState((prevState) => ({
+                        tile_configs: {
+                            ...prevState.tile_configs,
+                            [tile_index]: config
+                        }
+                    }));
+                }
+            });
+        }
     }
 
+    override async sendSave(topic: "front_panel/config", config: EMFrontPanelConfig) {
+        for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
+            await API.save_unchecked(
+                `front_panel/tiles/${tile_index}/config`,
+                this.state.tile_configs[tile_index],
+                __("em_front_panel.script.save_failed"),
+                tile_index == FRONT_PANEL_TILES - 1 ? this.reboot_string : undefined);
+        }
+
+        await super.sendSave(topic, config);
+    }
+
+    override async sendReset(topic: "front_panel/config") {
+        for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
+            await API.reset_unchecked(`front_panel/tiles/${tile_index}/config`, this.error_string, this.reboot_string);
+        }
+
+        await super.sendReset(topic);
+    }
+
+    override getIsModified(topic: "front_panel/config"): boolean {
+        for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
+            if (API.is_modified_unchecked(`front_panel/tiles/${tile_index}/config`))
+                return true;
+        }
+
+        return super.getIsModified(topic);
+    }
     render(props: {}, state: EMFrontPanelState & EMFrontPanelConfig) {
         if (!util.render_allowed()) {
             return <SubPage name="front_panel" />;
@@ -75,6 +170,53 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                     </FormRow>
                     <Collapse in={state.enable}>
                         <div>
+                            {[0, 1, 2, 3, 4, 5].map((tile_index) => {
+                                return <div>
+                                    <FormRow label={"Kachel " + (tile_index+1)}>
+                                        <InputSelect
+                                            items={EMFrontPanel.options_tile}
+                                            value={state.tile_configs[tile_index].type}
+                                            onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: state.tile_configs[0].parameter, "type": parseInt(v)}}})}
+                                        />
+                                    </FormRow>
+                                    {state.tile_configs[tile_index].type === 1 &&
+                                        <FormRow label="">
+                                            <InputSelect
+                                                items={EMFrontPanel.options_wallbox}
+                                                value={state.tile_configs[tile_index].parameter}
+                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[0].type}}})}
+                                            />
+                                        </FormRow>
+                                    }
+                                    {state.tile_configs[tile_index].type === 3 &&
+                                        <FormRow label="">
+                                            <InputSelect
+                                                items={EMFrontPanel.options_meter}
+                                                value={state.tile_configs[tile_index].parameter}
+                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[0].type}}})}
+                                            />
+                                        </FormRow>
+                                    }
+                                    {state.tile_configs[tile_index].type === 4 &&
+                                        <FormRow label="">
+                                            <InputSelect
+                                                items={EMFrontPanel.options_day_ahead_prices}
+                                                value={state.tile_configs[tile_index].parameter}
+                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[0].type}}})}
+                                            />
+                                        </FormRow>
+                                    }
+                                    {state.tile_configs[tile_index].type === 5 &&
+                                        <FormRow label="">
+                                            <InputSelect
+                                                items={EMFrontPanel.options_front_panel}
+                                                value={state.tile_configs[tile_index].parameter}
+                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[0].type}}})}
+                                            />
+                                        </FormRow>
+                                    }
+                                </div>
+                            })}
                         </div>
                     </Collapse>
                 </ConfigForm>
