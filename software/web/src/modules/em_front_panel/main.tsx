@@ -170,7 +170,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                     </FormRow>
                     <Collapse in={state.enable}>
                         <div>
-                            {[0, 1, 2, 3, 4, 5].map((tile_index) => {
+                            {[...Array(FRONT_PANEL_TILES).keys()].map((tile_index) => {
                                 return <div>
                                     <FormRow label={"Kachel " + (tile_index+1)}>
                                         <InputSelect
