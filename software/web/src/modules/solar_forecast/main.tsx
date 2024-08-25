@@ -240,8 +240,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
             }
         }
 
-        console.log(data_available, first_date, first_index, active_planes);
-
         if (!data_available) {
             data = {
                 keys: [],
@@ -392,8 +390,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
             }
             return wh/1000.0;
         }
-
-        console.log(state);
 
         return (
             <SubPage name="solar_forecast">
