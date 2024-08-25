@@ -30,6 +30,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Monitor } from "react-feather";
 import { Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
+import { FormSeparator } from "src/ts/components/form_separator";
 
 const FRONT_PANEL_TILES = 6;
 
@@ -87,7 +88,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
         ["2", "Durchschnittspreis morgen"],
     ]
 
-    static options_front_panel: [string, string][] = [
+    static options_solar_forecast: [string, string][] = [
         ["0", "PV-Ertragsprognose heute"],
         ["1", "PV-Ertragsprognose morgen"],
     ]
@@ -153,6 +154,36 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
             return <SubPage name="front_panel" />;
         }
 
+        function get_tile_symbol(tile_index: number) {
+            return <svg xmlns="http://www.w3.org/2000/svg" width="35" height="24" viewBox="0 0 35 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-grid">
+                <rect fill={tile_index == 0 ? "currentColor" : ""} x="3"  y="3"  width="7" height="7"></rect>
+                <rect fill={tile_index == 1 ? "currentColor" : ""} x="14" y="3"  width="7" height="7"></rect>
+                <rect fill={tile_index == 2 ? "currentColor" : ""} x="25" y="3"  width="7" height="7"></rect>
+                <rect fill={tile_index == 3 ? "currentColor" : ""} x="3"  y="14" width="7" height="7"></rect>
+                <rect fill={tile_index == 4 ? "currentColor" : ""} x="14" y="14" width="7" height="7"></rect>
+                <rect fill={tile_index == 5 ? "currentColor" : ""} x="25" y="14" width="7" height="7"></rect>
+            </svg>
+        }
+
+        function get_tile_config(tile_index: number, tile_items: [string, string][]) {
+            return <FormRow label="">
+                <div class="row no-gutters">
+                    <div class="col-md-12">
+                        <div class="input-group">
+                            <div class="input-group-prepend heating-input-group-append">
+                                <span class="heating-fixed-size input-group-text">Einstellung</span>
+                            </div>
+                            <InputSelect
+                                items={tile_items}
+                                value={state.tile_configs[tile_index].parameter}
+                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[tile_index].type}}})}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </FormRow>
+        }
+
         return (
             <SubPage name="front_panel">
                 <ConfigForm id="em_front_panel_config_form"
@@ -172,49 +203,18 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                         <div>
                             {[...Array(FRONT_PANEL_TILES).keys()].map((tile_index) => {
                                 return <div>
-                                    <FormRow label={"Kachel " + (tile_index+1)}>
+                                    {tile_index != 0 && <FormSeparator first={true}/>}
+                                    <FormRow symbol={get_tile_symbol(tile_index)} label={"Kachel " + (tile_index+1)}>
                                         <InputSelect
                                             items={EMFrontPanel.options_tile}
                                             value={state.tile_configs[tile_index].type}
                                             onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: state.tile_configs[tile_index].parameter, "type": parseInt(v)}}})}
                                         />
                                     </FormRow>
-                                    {state.tile_configs[tile_index].type === 1 &&
-                                        <FormRow label="">
-                                            <InputSelect
-                                                items={EMFrontPanel.options_wallbox}
-                                                value={state.tile_configs[tile_index].parameter}
-                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[tile_index].type}}})}
-                                            />
-                                        </FormRow>
-                                    }
-                                    {state.tile_configs[tile_index].type === 3 &&
-                                        <FormRow label="">
-                                            <InputSelect
-                                                items={EMFrontPanel.options_meter}
-                                                value={state.tile_configs[tile_index].parameter}
-                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[tile_index].type}}})}
-                                            />
-                                        </FormRow>
-                                    }
-                                    {state.tile_configs[tile_index].type === 4 &&
-                                        <FormRow label="">
-                                            <InputSelect
-                                                items={EMFrontPanel.options_day_ahead_prices}
-                                                value={state.tile_configs[tile_index].parameter}
-                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[tile_index].type}}})}
-                                            />
-                                        </FormRow>
-                                    }
-                                    {state.tile_configs[tile_index].type === 5 &&
-                                        <FormRow label="">
-                                            <InputSelect
-                                                items={EMFrontPanel.options_front_panel}
-                                                value={state.tile_configs[tile_index].parameter}
-                                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[tile_index].type}}})}
-                                            />
-                                        </FormRow>
-                                    }
+                                    {state.tile_configs[tile_index].type === 1 && (get_tile_config(tile_index, EMFrontPanel.options_wallbox))}
+                                    {state.tile_configs[tile_index].type === 3 && (get_tile_config(tile_index, EMFrontPanel.options_meter))}
+                                    {state.tile_configs[tile_index].type === 4 && (get_tile_config(tile_index, EMFrontPanel.options_day_ahead_prices))}
+                                    {state.tile_configs[tile_index].type === 5 && (get_tile_config(tile_index, EMFrontPanel.options_solar_forecast))}
                                 </div>
                             })}
                         </div>
