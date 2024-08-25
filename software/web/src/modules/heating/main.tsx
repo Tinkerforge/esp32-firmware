@@ -180,8 +180,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                         <div class="row no-gutters">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
+                                    <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
                                     <InputSelect
+                                        className="heating-input-group-prepend"
                                         items={Heating.months}
                                         value={state.winter_start_month}
                                         onValue={(v) => {
@@ -194,8 +195,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
                                     <InputSelect
+                                        className="heating-input-group-prepend"
                                         items={days_winter_start}
                                         value={state.winter_start_day}
                                         onValue={(v) => {
@@ -211,8 +213,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                         <div class="row no-gutters">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
+                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
                                     <InputSelect
+                                        className="heating-input-group-prepend"
                                         items={Heating.months}
                                         value={state.winter_end_month}
                                         onValue={(v) => {
@@ -225,8 +228,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
                                     <InputSelect
+                                        className="heating-input-group-prepend"
                                         items={days_winter_end}
                                         value={state.winter_end_day}
                                         onValue={(v) => {
@@ -282,8 +286,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                         <div class="row no-gutters">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
+                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
                                     <InputSelect
+                                        className="heating-input-group-prepend"
                                         items={Heating.months}
                                         value={this.summer_start_month}
                                     />
@@ -291,8 +296,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
                                     <InputSelect
+                                        className="heating-input-group-prepend"
                                         items={days_summer_start}
                                         value={this.summer_start_day}
                                     />
@@ -304,8 +310,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                         <div class="row no-gutters">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
+                                    <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
                                     <InputSelect
+                                        className="heating-input-group-prepend"
                                         items={Heating.months}
                                         value={this.summer_end_month}
                                     />
@@ -313,8 +320,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
                                     <InputSelect
+                                        className="heating-input-group-prepend"
                                         items={days_summer_end}
                                         value={this.summer_end_day}
                                     />
@@ -334,9 +342,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                 <div class="row no-gutters">
                                     <div class="col-md-6">
                                         <div class="input-group">
-                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
+                                            <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
                                             <InputTime
-                                                className={"form-control-md"}
+                                                className={"form-control-md heating-input-group-prepend"}
                                                 date={new Date(0, 0, 1, 0, 0)}
                                                 showSeconds={false}
                                             />
@@ -344,9 +352,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                     </div>
                                     <div class="col-md-6">
                                         <div class="input-group">
-                                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
+                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
                                                 <InputTime
-                                                className={"form-control-md"}
+                                                className={"form-control-md heating-input-group-prepend"}
                                                 date={this.get_date_from_minutes(state.summer_block_time_morning)}
                                                 showSeconds={false}
                                                 onDate={(d: Date) => this.setState({summer_block_time_morning: this.get_minutes_from_date(d)})}
@@ -359,9 +367,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                 <div class="row no-gutters">
                                     <div class="col-md-6">
                                         <div class="input-group">
-                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
+                                            <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
                                                 <InputTime
-                                                className={"form-control-md"}
+                                                className={"form-control-md heating-input-group-prepend"}
                                                 date={this.get_date_from_minutes(state.summer_block_time_evening)}
                                                 showSeconds={false}
                                                 onDate={(d: Date) => this.setState({summer_block_time_evening: this.get_minutes_from_date(d)})}
@@ -370,9 +378,9 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                     </div>
                                     <div class="col-md-6">
                                         <div class="input-group">
-                                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
+                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
                                             <InputTime
-                                                className={"form-control-md"}
+                                                className={"form-control-md heating-input-group-prepend"}
                                                 date={new Date(0, 0, 1, 23, 59)}
                                                 showSeconds={false}
                                             />
