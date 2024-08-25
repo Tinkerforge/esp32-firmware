@@ -170,10 +170,11 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                 <div class="row no-gutters">
                     <div class="col-md-12">
                         <div class="input-group">
-                            <div class="input-group-prepend heating-input-group-append">
-                                <span class="heating-fixed-size input-group-text">Einstellung</span>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Einstellung</span>
                             </div>
                             <InputSelect
+                                className="front-panel-input-group-prepend"
                                 items={tile_items}
                                 value={state.tile_configs[tile_index].parameter}
                                 onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[tile_index].type}}})}
