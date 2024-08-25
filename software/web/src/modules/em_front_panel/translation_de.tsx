@@ -15,7 +15,7 @@ let x = {
             "wallbox": "Wallbox",
             "load_management": "Lastmanagement",
             "meter": "Stromzähler",
-            "dynamic_electricity_price": "Dynamischer Strompreis",
+            "day_ahead_price": "Dynamischer Strompreis",
             "solar_forecast": "Solarprognose",
             "energy_manager_status": "Status des Energy Managers",
             "wallbox_1": "Wallbox 1",

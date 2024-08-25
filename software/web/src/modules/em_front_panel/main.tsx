@@ -59,7 +59,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
         ["1", __("front_panel.content.wallbox")],
         ["2", __("front_panel.content.load_management")],
         ["3", __("front_panel.content.meter")],
-        ["4", __("front_panel.content.dynamic_electricity_price")],
+        ["4", __("front_panel.content.day_ahead_price")],
         ["5", __("front_panel.content.solar_forecast")],
         ["6", __("front_panel.content.energy_manager_status")],
     ]
