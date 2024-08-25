@@ -38,7 +38,7 @@ export function EMFrontPanelNavbar() {
     return (
         <NavbarItem
             name="front_panel"
-            title={__("em_front_panel.navbar.em_front_panel")}
+            title={__("front_panel.navbar.front_panel")}
             hidden={false}
             symbol={<Monitor/>
             }
@@ -55,47 +55,47 @@ interface EMFrontPanelState {
 
 export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFrontPanelState> {
     static options_tile: [string, string][] = [
-        ["0", __("em_front_panel.content.empty_tile")],
-        ["1", __("em_front_panel.content.wallbox")],
-        ["2", __("em_front_panel.content.load_management")],
-        ["3", __("em_front_panel.content.meter")],
-        ["4", __("em_front_panel.content.dynamic_electricity_price")],
-        ["5", __("em_front_panel.content.solar_forecast")],
-        ["6", __("em_front_panel.content.energy_manager_status")],
+        ["0", __("front_panel.content.empty_tile")],
+        ["1", __("front_panel.content.wallbox")],
+        ["2", __("front_panel.content.load_management")],
+        ["3", __("front_panel.content.meter")],
+        ["4", __("front_panel.content.dynamic_electricity_price")],
+        ["5", __("front_panel.content.solar_forecast")],
+        ["6", __("front_panel.content.energy_manager_status")],
     ]
 
     static options_wallbox: [string, string][] = [
-        ["0", __("em_front_panel.content.wallbox_1")],
-        ["1", __("em_front_panel.content.wallbox_2")],
-        ["2", __("em_front_panel.content.wallbox_3")],
-        ["3", __("em_front_panel.content.wallbox_4")],
-        ["4", __("em_front_panel.content.wallbox_5")],
-        ["5", __("em_front_panel.content.wallbox_6")],
+        ["0", __("front_panel.content.wallbox_1")],
+        ["1", __("front_panel.content.wallbox_2")],
+        ["2", __("front_panel.content.wallbox_3")],
+        ["3", __("front_panel.content.wallbox_4")],
+        ["4", __("front_panel.content.wallbox_5")],
+        ["5", __("front_panel.content.wallbox_6")],
     ]
 
     static options_meter: [string, string][] = [
-        ["0", __("em_front_panel.content.meter_1")],
-        ["1", __("em_front_panel.content.meter_2")],
-        ["2", __("em_front_panel.content.meter_3")],
-        ["3", __("em_front_panel.content.meter_4")],
-        ["4", __("em_front_panel.content.meter_5")],
-        ["5", __("em_front_panel.content.meter_6")],
+        ["0", __("front_panel.content.meter_1")],
+        ["1", __("front_panel.content.meter_2")],
+        ["2", __("front_panel.content.meter_3")],
+        ["3", __("front_panel.content.meter_4")],
+        ["4", __("front_panel.content.meter_5")],
+        ["5", __("front_panel.content.meter_6")],
     ]
 
     static options_day_ahead_prices: [string, string][] = [
-        ["0", __("em_front_panel.content.current_electricity_price")],
-        ["1", __("em_front_panel.content.average_price_today")],
-        ["2", __("em_front_panel.content.average_price_tomorrow")],
+        ["0", __("front_panel.content.current_electricity_price")],
+        ["1", __("front_panel.content.average_price_today")],
+        ["2", __("front_panel.content.average_price_tomorrow")],
     ]
 
     static options_solar_forecast: [string, string][] = [
-        ["0", __("em_front_panel.content.pv_yield_forecast_today")],
-        ["1", __("em_front_panel.content.pv_yield_forecast_tomorrow")],
+        ["0", __("front_panel.content.pv_yield_forecast_today")],
+        ["1", __("front_panel.content.pv_yield_forecast_tomorrow")],
     ]
 
     constructor() {
         super('front_panel/config',
-              __("em_front_panel.script.save_failed"));
+              __("front_panel.script.save_failed"));
 
         for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
             util.addApiEventListener_unchecked(`front_panel/tiles/${tile_index}/config`, () => {
@@ -126,7 +126,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
             await API.save_unchecked(
                 `front_panel/tiles/${tile_index}/config`,
                 this.state.tile_configs[tile_index],
-                __("em_front_panel.script.save_failed"),
+                __("front_panel.script.save_failed"),
                 tile_index == FRONT_PANEL_TILES - 1 ? this.reboot_string : undefined);
         }
 
@@ -187,15 +187,15 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
 
         return (
             <SubPage name="front_panel">
-                <ConfigForm id="em_front_panel_config_form"
-                            title={__("em_front_panel.content.em_front_panel")}
+                <ConfigForm id="front_panel_config_form"
+                            title={__("front_panel.content.front_panel")}
                             isModified={this.isModified()}
                             isDirty={this.isDirty()}
                             onSave={this.save}
                             onReset={undefined}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label={__("em_front_panel.content.em_front_panel")} label_muted={__("em_front_panel.content.em_front_panel_muted")}>
-                        <Switch desc={__("em_front_panel.content.em_front_panel_desc")}
+                    <FormRow label={__("front_panel.content.front_panel")} label_muted={__("front_panel.content.front_panel_muted")}>
+                        <Switch desc={__("front_panel.content.front_panel_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
                         />
@@ -205,7 +205,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                             {[...Array(FRONT_PANEL_TILES).keys()].map((tile_index) => {
                                 return <div>
                                     {tile_index != 0 && <FormSeparator first={true}/>}
-                                    <FormRow symbol={get_tile_symbol(tile_index)} label={__("em_front_panel.content.tile") + " " + (tile_index+1)}>
+                                    <FormRow symbol={get_tile_symbol(tile_index)} label={__("front_panel.content.tile") + " " + (tile_index+1)}>
                                         <InputSelect
                                             items={EMFrontPanel.options_tile}
                                             value={state.tile_configs[tile_index].type}

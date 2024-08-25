@@ -1,15 +1,15 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 let x = {
-    "em_front_panel": {
+    "front_panel": {
         "status": {},
         "navbar": {
-            "em_front_panel": "Display"
+            "front_panel": "Display"
         },
         "content": {
-            "em_front_panel": "Display",
-            "em_front_panel_muted": "Show status information on display",
-            "em_front_panel_desc": "Enable the display of the Energy Manager",
+            "front_panel": "Display",
+            "front_panel_muted": "Show status information on display",
+            "front_panel_desc": "Enable the display of the Energy Manager",
             "tile": "Tile",
             "empty_tile": "Empty Tile",
             "wallbox": "Wallbox",
