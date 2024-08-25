@@ -55,42 +55,42 @@ interface EMFrontPanelState {
 
 export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFrontPanelState> {
     static options_tile: [string, string][] = [
-        ["0", "Leere Kachel"],
-        ["1", "Wallbox"],
-        ["2", "Lastmanagement"],
-        ["3", "Stromzähler"],
-        ["4", "Dynamischer Strompreis"],
-        ["5", "Solarprognose"],
-        ["6", "Status des Energy Managers"],
+        ["0", __("em_front_panel.content.empty_tile")],
+        ["1", __("em_front_panel.content.wallbox")],
+        ["2", __("em_front_panel.content.load_management")],
+        ["3", __("em_front_panel.content.meter")],
+        ["4", __("em_front_panel.content.dynamic_electricity_price")],
+        ["5", __("em_front_panel.content.solar_forecast")],
+        ["6", __("em_front_panel.content.energy_manager_status")],
     ]
 
     static options_wallbox: [string, string][] = [
-        ["0", "Wallbox 1"],
-        ["1", "Wallbox 2"],
-        ["2", "Wallbox 3"],
-        ["3", "Wallbox 4"],
-        ["4", "Wallbox 5"],
-        ["5", "Wallbox 6"],
+        ["0", __("em_front_panel.content.wallbox_1")],
+        ["1", __("em_front_panel.content.wallbox_2")],
+        ["2", __("em_front_panel.content.wallbox_3")],
+        ["3", __("em_front_panel.content.wallbox_4")],
+        ["4", __("em_front_panel.content.wallbox_5")],
+        ["5", __("em_front_panel.content.wallbox_6")],
     ]
 
     static options_meter: [string, string][] = [
-        ["0", "Stromzähler 1"],
-        ["1", "Stromzähler 2"],
-        ["2", "Stromzähler 3"],
-        ["3", "Stromzähler 4"],
-        ["4", "Stromzähler 5"],
-        ["5", "Stromzähler 6"],
+        ["0", __("em_front_panel.content.meter_1")],
+        ["1", __("em_front_panel.content.meter_2")],
+        ["2", __("em_front_panel.content.meter_3")],
+        ["3", __("em_front_panel.content.meter_4")],
+        ["4", __("em_front_panel.content.meter_5")],
+        ["5", __("em_front_panel.content.meter_6")],
     ]
 
     static options_day_ahead_prices: [string, string][] = [
-        ["0", "Aktueller Strompreis"],
-        ["1", "Durchschnittspreis heute"],
-        ["2", "Durchschnittspreis morgen"],
+        ["0", __("em_front_panel.content.current_electricity_price")],
+        ["1", __("em_front_panel.content.average_price_today")],
+        ["2", __("em_front_panel.content.average_price_tomorrow")],
     ]
 
     static options_solar_forecast: [string, string][] = [
-        ["0", "PV-Ertragsprognose heute"],
-        ["1", "PV-Ertragsprognose morgen"],
+        ["0", __("em_front_panel.content.pv_yield_forecast_today")],
+        ["1", __("em_front_panel.content.pv_yield_forecast_tomorrow")],
     ]
 
     constructor() {
@@ -205,7 +205,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                             {[...Array(FRONT_PANEL_TILES).keys()].map((tile_index) => {
                                 return <div>
                                     {tile_index != 0 && <FormSeparator first={true}/>}
-                                    <FormRow symbol={get_tile_symbol(tile_index)} label={"Kachel " + (tile_index+1)}>
+                                    <FormRow symbol={get_tile_symbol(tile_index)} label={__("em_front_panel.content.tile") + " " + (tile_index+1)}>
                                         <InputSelect
                                             items={EMFrontPanel.options_tile}
                                             value={state.tile_configs[tile_index].type}
