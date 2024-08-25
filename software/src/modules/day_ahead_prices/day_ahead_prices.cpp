@@ -404,7 +404,6 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_today()
     int32_t sum = 0;
     int32_t count = 0;
     for (uint32_t i = 0; i < num_prices; i++) {
-
         if(time_between(i, start, end, first_date, resolution)) {
             sum += prices.get("prices")->get(i)->asInt();
             count++;
@@ -421,5 +420,5 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_today()
 
 DataReturn<int32_t> DayAheadPrices::get_current_price()
 {
-    return {current_price_available, prices.get("current_price")->asInt()};
+    return {current_price_available, state.get("current_price")->asInt()};
 }
