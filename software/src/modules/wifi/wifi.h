@@ -43,6 +43,11 @@ public:
 
     WifiState get_connection_state() const;
     bool is_sta_enabled() const;
+    int get_sta_rssi() const;
+
+    const char* get_ap_ssid() const;
+    const char* get_ap_ip() const;
+    const char* get_ap_passphrase() const;
 
 private:
     void apply_soft_ap_config_and_start();

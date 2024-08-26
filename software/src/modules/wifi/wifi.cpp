@@ -887,3 +887,23 @@ int Wifi::get_ap_state()
 
     return 3;
 }
+
+int Wifi::get_sta_rssi() const
+{
+    return state.get("sta_rssi")->asInt();
+}
+
+const char* Wifi::get_ap_ssid() const
+{
+    return ap_config_in_use.get("ssid")->asEphemeralCStr();
+}
+
+const char* Wifi::get_ap_ip() const
+{
+    return ap_config_in_use.get("ip")->asEphemeralCStr();
+}
+
+const char* Wifi::get_ap_passphrase() const
+{
+    return ap_config_in_use.get("passphrase")->asEphemeralCStr();
+}
