@@ -81,6 +81,23 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     async registerCharger(cfg: config) {
+        if (!cfg.enable) {
+            const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
+                config: cfg,
+                login_key: "",
+                secret: "",
+                secret_key: "",
+                secret_nonce: "",
+                mgmt_charger_public: "",
+                mgmt_charger_private: "",
+                mgmt_psk: "",
+                keys: []
+            };
+
+            await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), undefined, 10000);
+            return;
+        }
+
         const mg_charger_keypair = (window as any).wireguard.generateKeypair();
 
         const keys: util.NoExtraProperties<API.getType["remote_access/register"]["keys"]> = [];
