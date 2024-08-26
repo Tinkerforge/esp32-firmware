@@ -64,23 +64,14 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
         ["6", __("front_panel.content.energy_manager_status")],
     ]
 
-    static options_wallbox: [string, string][] = [
-        ["0", __("front_panel.content.wallbox_1")],
-        ["1", __("front_panel.content.wallbox_2")],
-        ["2", __("front_panel.content.wallbox_3")],
-        ["3", __("front_panel.content.wallbox_4")],
-        ["4", __("front_panel.content.wallbox_5")],
-        ["5", __("front_panel.content.wallbox_6")],
-    ]
+    static options_wallbox: [string, string][] = [...Array(32).keys()].map((i) => [
+        i.toString(),
+        __("front_panel.content.wallbox") + " " + i
+    ]);
 
-    static options_meter: [string, string][] = [
-        ["0", __("front_panel.content.meter_1")],
-        ["1", __("front_panel.content.meter_2")],
-        ["2", __("front_panel.content.meter_3")],
-        ["3", __("front_panel.content.meter_4")],
-        ["4", __("front_panel.content.meter_5")],
-        ["5", __("front_panel.content.meter_6")],
-    ]
+    static options_meter: [string, string][] = [...Array(7).keys()].map((i) => [
+        i.toString(), __("front_panel.content.meter") + " " + i
+    ]);
 
     static options_day_ahead_prices: [string, string][] = [
         ["0", __("front_panel.content.current_electricity_price")],
