@@ -252,7 +252,7 @@ void RemoteAccess::register_urls() {
 
             remove_key(0, 0);
             for(int user_id = 1; user_id < MAX_USERS + 1; ++user_id) // user 0 is the management connection
-                for(int key_id = 0; i < MAX_KEYS_PER_USER; ++key_id)
+                for(int key_id = 0; key_id < MAX_KEYS_PER_USER; ++key_id)
                     remove_key(user_id, key_id);
 
             return request.send(200); // TODO result json?
