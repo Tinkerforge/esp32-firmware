@@ -168,22 +168,18 @@ void RemoteAccess::pre_setup() {
         {"cert_id", Config::Int8(-1)}
     })};
 
-    Config *cs = new Config {
-        Config::Object({
-            {"connection_state", Config::Uint8(0)}
-        })
-    };
+    Config *cs = new Config {Config::Uint8(0)};
 
-    // TODO
-    connection_state = ConfigRoot{
-        Config::Object({
-            {"management_connection_state", Config::Uint8(0)},
-            {"remote_connection_states", Config::Array({
-                    *cs,*cs,*cs,*cs,*cs
-                },
-                cs, 5, 5, Config::type_id<Config::ConfObject>())}
-        })
-    };
+    connection_state = Config::Array(
+                {},
+                cs,
+                MAX_USERS * MAX_KEYS_PER_USER + 1,
+                MAX_USERS * MAX_KEYS_PER_USER + 1,
+                Config::type_id<Config::ConfUint>()
+    );
+    for(int i = 0; i < MAX_USERS * MAX_KEYS_PER_USER + 1; ++i) {
+        connection_state.add();
+    }
 }
 
 void RemoteAccess::setup() {
@@ -429,7 +425,7 @@ void RemoteAccess::register_urls() {
     task_scheduler.scheduleOnce([this]() {
         this->resolve_management();
         this->connect_management();
-        this->connection_state.get("management_connection_state")->updateUint(1);
+        this->connection_state.get(0)->updateUint(1);
     }, 5000);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
@@ -439,13 +435,13 @@ void RemoteAccess::register_urls() {
     }, 1000 * 10, 1000 * 10);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
             uint32_t state = 0;
             if (this->remote_connections[i] != nullptr) {
                 state = this->remote_connections[i]->is_peer_up(nullptr, nullptr) ? 2 : 1;
             }
 
-            if (this->connection_state.get("remote_connection_states")->get(i)->get("connection_state")->updateUint(state)) {
+            if (this->connection_state.get(i + 1)->updateUint(state)) { // 0 is the management connection
                 if (state == 2) {
                     logger.printfln("Connection %i connected", i);
                 } else if (state == 1) {
@@ -461,7 +457,7 @@ void RemoteAccess::register_urls() {
             state = management->is_peer_up(nullptr, nullptr) ? 2 : 1;
         }
 
-        if (this->connection_state.get("management_connection_state")->updateUint(state)) {
+        if (this->connection_state.get(0)->updateUint(state)) {
             if (state == 2) {
                 logger.printfln("Management connection connected");
             } else {
@@ -666,7 +662,7 @@ void RemoteAccess::resolve_management() {
                 serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
                 //TODO: Adapt this once we support more than one user.
                 serializer.addMemberArray("configured_connections");
-                    for (int i = 0; i < 5; i++) {
+                    for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
                         serializer.addNumber(i);
                     }
                 serializer.endArray();
@@ -950,7 +946,7 @@ void RemoteAccess::run_management() {
     }
 
     management_command *command = &command_packet->command;
-    if (static_cast<uint32_t>(command->connection_no) > 5) {
+    if (static_cast<uint32_t>(command->connection_no) >= MAX_KEYS_PER_USER) {
         return;
     }
 
