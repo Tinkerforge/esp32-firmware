@@ -278,7 +278,9 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                            value={this.state.password}
                                            onValue={(v) => {
                                                 this.setState({password: v});
-                                           }} />
+                                           }}
+                                           hideClear
+                                           placeholder="" />
                         </FormRow>
                         <CollapsedSection label={__("remote_access.content.advanced_settings")}>
                             <FormRow label={__("remote_access.content.relay_host")}>
