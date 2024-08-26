@@ -243,6 +243,39 @@ void RemoteAccess::register_urls() {
         }
 
         if (!new_config.get("enable")->asBool()) {
+            TFJsonSerializer test_serializer = TFJsonSerializer(nullptr, 0);
+            test_serializer.addObject();
+            test_serializer.addMemberNumber("id", local_uid_num);
+            test_serializer.addMemberString("password", config.get("password")->asEphemeralCStr()),
+            test_serializer.endObject();
+            size_t json_size = test_serializer.end();
+
+            std::unique_ptr<char[]> delete_buf = heap_alloc_array<char>(json_size + 1);
+
+            TFJsonSerializer serializer = TFJsonSerializer(delete_buf.get(), json_size + 1);
+            serializer.addObject();
+            serializer.addMemberNumber("id", local_uid_num);
+            serializer.addMemberString("password", config.get("password")->asEphemeralCStr()),
+            serializer.endObject();
+            serializer.end();
+
+            CoolString relay_host = config.get("relay_host")->asString();
+            uint32_t relay_host_port = config.get("relay_host_port")->asUint();
+            CoolString login_url = "https://";
+            login_url += relay_host;
+            login_url += ":";
+            login_url += relay_host_port;
+            login_url += "/api/selfdestruct";
+
+            std::vector<std::pair<CoolString, CoolString>> headers;
+            headers.push_back(std::pair<CoolString, CoolString>(CoolString("Content-Type"), CoolString("application/json")));
+
+            esp_err_t err;
+            HttpResponse resp = this->make_http_request(login_url.c_str(), HTTP_METHOD_DELETE, delete_buf.get(), json_size, &headers, &err, &config);
+            if (resp.status != 200) {
+                return request.send(resp.status);
+            }
+
             config = new_config;
             API::writeConfig("remote_access/config", &config);
 
@@ -983,4 +1016,3 @@ void RemoteAccess::run_management() {
             break;
     }
 }
-
