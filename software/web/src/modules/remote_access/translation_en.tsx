@@ -11,7 +11,7 @@ let x = {
             "email": "Email",
             "password": "Password",
             "relay_host": "Relay server hostname",
-            "relay_host_port": "Relay server port",
+            "relay_port": "Relay server port",
             "enable": "Enable remote access",
             "enable_desc": <>A <a href="https://my.warp-charger.com/">my.warp-charger.com</a> account is required for the remote access.</>,
             "cert": "TLS certificate",

@@ -287,3 +287,6 @@
 - Close network connections before reboot
 - Generate some meter values if energy meter does not report them
 - Fix MQTT errors sometimes not being reported to event log
+
+<unknown>: 2.2.0 (<unknown>)
+- TODO

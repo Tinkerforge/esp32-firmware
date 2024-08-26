@@ -11,7 +11,7 @@ let x = {
             "email": "E-Mail-Adresse",
             "password": "Passwort",
             "relay_host": "Relay-Server-Hostname",
-            "relay_host_port": "Relay-Server-Port",
+            "relay_port": "Relay-Server-Port",
             "enable": "Fernzugriff aktiviert",
             "enable_desc": <>Für den Fernzugriff wird ein <a href="https://my.warp-charger.com/">my.warp-charger.com</a>-Account benötigt.</>,
             "cert": "TLS-Zertifikat",

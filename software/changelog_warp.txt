@@ -606,3 +606,6 @@
 - Speed up charge log PDF generation
 - Fix meter value overflows
 - Improve CP/PE measurement (through EVSE Bricklet firmware 2.1.10)
+
+<unknown>: 2.4.2 (<unknown>)
+- TODO

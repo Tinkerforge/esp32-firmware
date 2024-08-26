@@ -164,7 +164,7 @@ void RemoteAccess::pre_setup() {
         {"email", Config::Str("", 0, 64)},
         {"password", Config::Str("", 0, 32)},
         {"relay_host", Config::Str("my.warp-charger.com", 0, 64)},
-        {"relay_host_port", Config::Uint16(443)}, //relay_host_port -> relay_port
+        {"relay_port", Config::Uint16(443)},
         {"cert_id", Config::Int8(-1)}
     })};
 
@@ -395,11 +395,11 @@ void RemoteAccess::register_urls() {
         login(&new_config, CoolString{doc["login_key"].as<String>()});
 
         CoolString relay_host = new_config.get("relay_host")->asString();
-        uint32_t relay_host_port = new_config.get("relay_host_port")->asUint();
+        uint32_t relay_port = new_config.get("relay_port")->asUint();
         CoolString url = "https://";
         url += relay_host;
         url += ":";
-        url += relay_host_port;
+        url += relay_port;
         url += "/api/charger/add";
 
         CoolString access_token = "access_token=";
@@ -639,11 +639,11 @@ HttpResponse RemoteAccess::make_http_request(const char *url, esp_http_client_me
 
 void RemoteAccess::login(Config *config, const CoolString &login_key_base64) {
     CoolString relay_host = config->get("relay_host")->asString();
-    uint32_t relay_host_port = config->get("relay_host_port")->asUint();
+    uint32_t relay_port = config->get("relay_port")->asUint();
     CoolString login_url = "https://";
     login_url += relay_host;
     login_url += ":";
-    login_url += relay_host_port;
+    login_url += relay_port;
     login_url += "/api/auth/login";
 
     std::unique_ptr<char[]> login_key = decode_base64(login_key_base64, 24);
@@ -677,11 +677,11 @@ void RemoteAccess::resolve_management() {
     }
 
     CoolString relay_host = config.get("relay_host")->asString();
-    uint32_t relay_host_port = config.get("relay_host_port")->asUint();
+    uint32_t relay_port = config.get("relay_port")->asUint();
     CoolString url = "https://";
     url += relay_host;
     url += ":";
-    url += relay_host_port;
+    url += relay_port;
     url += "/api/management";
 
     std::unique_ptr<char[]> json = heap_alloc_array<char>(256);

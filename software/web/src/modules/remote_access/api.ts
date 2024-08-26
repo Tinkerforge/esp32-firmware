@@ -4,7 +4,7 @@ export interface config {
     email: string,
     password: string,
     relay_host: string,
-    relay_host_port: number,
+    relay_port: number,
     cert_id: number,
 }
 

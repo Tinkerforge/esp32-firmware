@@ -55,7 +55,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     async get_salt_for_user(email: string) {
-        const resp = await fetch(`https://${this.state.relay_host}:${this.state.relay_host_port}/api/auth/get_login_salt?email=${email}`, {
+        const resp = await fetch(`https://${this.state.relay_host}:${this.state.relay_port}/api/auth/get_login_salt?email=${email}`, {
             method: "GET"
         });
         if (resp.status !== 200) {
@@ -68,7 +68,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     async get_secret() {
-        const resp = await fetch(`https://${this.state.relay_host}:${this.state.relay_host_port}/api/user/get_secret`, {
+        const resp = await fetch(`https://${this.state.relay_host}:${this.state.relay_port}/api/user/get_secret`, {
             method: "GET",
             credentials: "include",
         });
@@ -176,7 +176,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             login_key: [].slice.call(login_key),
         };
 
-        const resp = await fetch("https://" + this.state.relay_host + ":" + this.state.relay_host_port + "/api/auth/login", {
+        const resp = await fetch("https://" + this.state.relay_host + ":" + this.state.relay_port + "/api/auth/login", {
             method: "POST",
             credentials: "include",
             body: JSON.stringify(login_schema),
@@ -266,12 +266,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                                 this.setState({relay_host: v})
                                         }} />
                             </FormRow>
-                            <FormRow label={__("remote_access.content.relay_host_port")}>
+                            <FormRow label={__("remote_access.content.relay_port")}>
                                 <InputNumber required
                                             min={1}
                                             max={65565}
-                                            value={this.state.relay_host_port}
-                                            onValue={v => this.setState({relay_host_port: v})} />
+                                            value={this.state.relay_port}
+                                            onValue={v => this.setState({relay_port: v})} />
                             </FormRow>
                             <FormRow label={__("remote_access.content.cert")}>
                                 <InputSelect items={cert_items} value={this.state.cert_id} onValue={(v) => {
