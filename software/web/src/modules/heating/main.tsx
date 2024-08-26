@@ -21,6 +21,7 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
+import { METERS_SLOTS } from "../../build";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -33,7 +34,7 @@ import { Trello } from "react-feather";
 import { InputTime } from "../../ts/components/input_time";
 import { Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
-
+import { MeterClassID } from "../meters/meter_class_id.enum";
 export function HeatingNavbar() {
     return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Trello />} hidden={false} />;
 }
@@ -136,6 +137,18 @@ export class Heating extends ConfigComponent<'heating/config'> {
         }
     }
 
+    get_meter_name(meter_slot: number) {
+        let cfg = API.get_unchecked(`meters/${meter_slot}/config`) as API.getType["meters/0/config"]
+        if (cfg[0] == MeterClassID.None)
+            return null;
+
+        // Disallow selecting the charger-internal meter for PM
+        if (cfg[0] as any == MeterClassID.RS485Bricklet || cfg[0] as any == MeterClassID.EVSEV2)
+            return null;
+
+        return cfg[1]?.display_name;
+    }
+
     render(props: {}, state: Readonly<HeatingConfig>) {
         if (!util.render_allowed())
             return <SubPage name="heating" />;
@@ -146,6 +159,14 @@ export class Heating extends ConfigComponent<'heating/config'> {
         let days_summer_end = this.month_to_days(1);
 
         this.recalculateSummer(state);
+
+        let meter_slots: [string, string][] = [];
+        for (let i = 0; i < METERS_SLOTS; i++) {
+            let name = this.get_meter_name(i);
+            if (name !== null) {
+                meter_slots.push([i.toString(), name]);
+            }
+        }
 
         return (
             <SubPage name="heating">
@@ -166,6 +187,14 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             onValue={this.set("minimum_control_holding_time")}
                             min={0}
                             max={60}
+                        />
+                    </FormRow>
+                    <FormRow label={__("heating.content.meter_slot_grid_power")} label_muted={__("heating.content.meter_slot_grid_power_muted")}>
+                        <InputSelect
+                            placeholder={meter_slots.length > 0 ? __("heating.content.meter_slot_grid_power_select") : __("heating.content.meter_slot_grid_power_none")}
+                            items={meter_slots}
+                            value={state.meter_slot_grid_power}
+                            onValue={(v) => this.setState({meter_slot_grid_power: parseInt(v)})}
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.extended_logging")} label_muted={__("heating.content.extended_logging_description")}>

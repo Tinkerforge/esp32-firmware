@@ -63,7 +63,11 @@ let x = {
             "input": "Input",
             "throttled_if_input": "Throttled if Input",
             "closed": "Closed",
-            "opened": "Opened"
+            "opened": "Opened",
+            "meter_slot_grid_power": "Power meter",
+            "meter_slot_grid_power_muted": "typically at the grid connection",
+            "meter_slot_grid_power_select": "Select...",
+            "meter_slot_grid_power_none": "No power meter configured"
         },
         "script": {
             "save_failed": "Failed to save the heating settings",

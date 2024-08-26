@@ -63,7 +63,11 @@ let x = {
             "input": "Eingang",
             "throttled_if_input": "Gedrosselt wenn Eingang",
             "closed": "Geschlossen",
-            "opened": "Geöffnet"
+            "opened": "Geöffnet",
+            "meter_slot_grid_power": "Stromzähler",
+            "meter_slot_grid_power_muted": "Typischerweise am Netzanschluss",
+            "meter_slot_grid_power_select": "Auswählen...",
+            "meter_slot_grid_power_none": "Kein Stromzähler konfiguriert"
         },
         "script": {
             "save_failed": "Speichern der Heizungseinstellungen fehlgeschlagen",
