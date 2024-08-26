@@ -31,7 +31,7 @@ import { SubPage } from "src/ts/components/sub_page";
 import { Switch } from "src/ts/components/switch";
 import { __ } from "src/ts/translation";
 import "./wireguard";
-import { config, management_connection } from "./api";
+import { config } from "./api";
 import { InputNumber } from "src/ts/components/input_number";
 import { InputSelect } from "src/ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
@@ -81,12 +81,10 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     async registerCharger(cfg: config) {
-        const charger_id = API.get("info/name").uid;
-        const charger_name = API.get("info/display_name").display_name;
         const mg_charger_keypair = (window as any).wireguard.generateKeypair();
 
-        const keys = [];
-        const connections = [];
+        const keys: util.NoExtraProperties<API.getType["remote_access/register"]["keys"]> = [];
+
         for (const i of util.range(0, 5)) {
             const charger_keypair = (window as any).wireguard.generateKeypair();
             const web_keypair = (window as any).wireguard.generateKeypair();
@@ -95,17 +93,11 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
 
             keys.push({
                 charger_public: charger_keypair.publicKey,
+                charger_private: charger_keypair.privateKey,
+                web_public: web_keypair.publicKey,
                 web_private: web_keypair.privateKey,
                 psk: psk,
-                connection_no: i
             });
-
-            const connection: management_connection = {
-                private_key: charger_keypair.privateKey,
-                psk: psk,
-                remote_public_key: web_keypair.publicKey,
-            }
-            connections.push(connection);
         }
 
         const {
@@ -134,25 +126,21 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
 
         const psk: string = (window as any).wireguard.generatePresharedKey();
 
-        const registration_data = {
+        const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
+            config: cfg,
             login_key: this.state.login_key,
-            charger_pub: mg_charger_keypair.publicKey,
-            psk: psk,
-            id: charger_id,
-            name: charger_name,
             secret: secret_string.replace("data:application/octet-stream;base64,", ""),
             secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
             secret_nonce: secret_nonce_string.replace("data:application/octet-stream;base64,", ""),
-            remote_host: this.state.relay_host,
-            config: cfg,
+            mgmt_charger_public: mg_charger_keypair.publicKey,
+            mgmt_charger_private: mg_charger_keypair.privateKey,
+            mgmt_psk: psk,
             keys: keys
         };
 
         const resp = await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), undefined, 10000);
-        await API.save("remote_access/remote_connection_config", {
-            connections: connections
-        }, __("remote_access.script.save_failed"));
-        const json = (JSON.parse(await resp.text()));
+
+        /*const json = (JSON.parse(await resp.text()));
         const ret = {
             charger_pub: mg_charger_keypair.publicKey,
             charger_private: mg_charger_keypair.privateKey,
@@ -161,7 +149,21 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             psk: psk,
         }
 
-        return ret;
+        await API.call("remote_access/set_key", {
+            user_id: 0,
+            key_id: 0,
+            key: mg_charger_keypair.privateKey + psk + ret.remote_public
+        }, __("remote_access.script.save_failed"));
+
+        for(let i = connections.length; i < connections.length; ++i) {
+            await API.call("remote_access/set_key", {
+                user_id: 1,
+                key_id: i,
+                key: connections[i].private_key + connections[i].psk + connections[i].remote_public_key
+            }, __("remote_access.script.save_failed"));
+        }
+
+        return ret;*/
     }
 
     async login(): Promise<boolean> {
@@ -217,17 +219,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
-        if (cfg.enable) {
-            const info = await this.registerCharger(cfg);
-            cfg.password = info.password;
-            await API.save("remote_access/management_connection", {
-                private_key: info.charger_private,
-                psk: info.psk,
-                remote_public_key: info.remote_public
-            }, __("remote_access.script.save_failed"));
-        }
-
-        await super.sendSave(t, cfg);
+        await this.registerCharger(cfg);
     }
 
     render() {
