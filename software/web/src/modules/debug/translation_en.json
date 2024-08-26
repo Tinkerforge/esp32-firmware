@@ -18,6 +18,7 @@
             "heap_used": "Used heap bytes",
             "heap_free": "Free heap bytes",
             "heap_block": "Largest free heap block",
+            "heap_min_free": "Minimum free heap",
             "heap_size": "Heap size",
             "static": "Static use",
             "total_size": "Total size",

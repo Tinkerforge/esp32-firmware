@@ -65,5 +65,4 @@ private:
 
     micros_t last_run = 0_usec;
     uint32_t run_max = 0;
-    uint32_t min_free_dram = 0xFFFFFFFF;
 };

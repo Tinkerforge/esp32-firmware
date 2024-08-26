@@ -144,6 +144,19 @@ export class Debug extends Component {
                     </div>
                 </FormRow>
 
+                <FormRow label={__("debug.content.heap_min_free")}>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_slow.min_free_dram} digits={0} scale={0} unit="B"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                        </div>
+                        <div class="mb-1 col-12 col-sm-4">
+                            <OutputFloat value={state_slow.min_free_psram} digits={0} scale={0} unit="B"/>
+                        </div>
+                    </div>
+                </FormRow>
+
                 <FormRow label={__("debug.content.heap_size")}>
                     <div class="row">
                         <div class="mb-1 col-12 col-sm-4">

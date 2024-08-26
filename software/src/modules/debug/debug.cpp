@@ -153,6 +153,7 @@ void Debug::pre_setup()
         {"heap_integrity_ok", Config::Bool(true)},
         {"main_loop_max_runtime_us", Config::Uint32(0)},
         {"min_free_dram", Config::Uint32(0)},
+        {"min_free_psram", Config::Uint32(0)},
     });
 
     state_hwm = Config::Array({},
@@ -195,15 +196,13 @@ void Debug::setup()
 
         state_fast.get("uptime")->updateUint(millis());
         state_fast.get("free_dram")->updateUint(dram_info.total_free_bytes);
-        if (min_free_dram > dram_info.total_free_bytes) {
-            min_free_dram = dram_info.total_free_bytes;
-            state_slow.get("min_free_dram")->updateUint(min_free_dram);
-        }
         state_fast.get("free_iram")->updateUint(free_internal - dram_info.total_free_bytes);
         state_fast.get("free_psram")->updateUint(psram_info.total_free_bytes);
 
         state_slow.get("largest_free_dram_block")->updateUint(dram_info.largest_free_block);
         state_slow.get("largest_free_psram_block")->updateUint(psram_info.largest_free_block);
+        state_slow.get("min_free_dram")->updateUint(dram_info.minimum_free_bytes);
+        state_slow.get("min_free_psram")->updateUint(psram_info.minimum_free_bytes);
 
         if (dram_info.largest_free_block < 2000) {
             logger.printfln("Heap full. Largest block is %u bytes.", dram_info.largest_free_block);

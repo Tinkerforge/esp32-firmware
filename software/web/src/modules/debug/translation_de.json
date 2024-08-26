@@ -18,6 +18,7 @@
             "heap_used": "Belegte Heap-Bytes",
             "heap_free": "Freie Heap-Bytes",
             "heap_block": "Größter freier Heap-Block",
+            "heap_min_free": "Minimal freier Heap",
             "heap_size": "Heap-Größe",
             "static": "Statische Nutzung",
             "total_size": "Gesamtgröße",
