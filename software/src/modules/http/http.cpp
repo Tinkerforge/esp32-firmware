@@ -22,11 +22,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 
-#if defined(BOARD_HAS_PSRAM)
 #define RECV_BUF_SIZE 4096
-#else
-#define RECV_BUF_SIZE 2048
-#endif
 
 class HTTPChunkedResponse : public IBaseChunkedResponse
 {
