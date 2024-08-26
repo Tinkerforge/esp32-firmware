@@ -47,8 +47,8 @@ private:
     int setup_inner_socket();
     HttpResponse make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error);
 
-    WireGuard management;
-    WireGuard remote_connections[5];
+    WireGuard *management = nullptr;
+    WireGuard *remote_connections[5] = {};
 
     String jwt;
     int inner_socket = -1;

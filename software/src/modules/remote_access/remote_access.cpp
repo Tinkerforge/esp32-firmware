@@ -353,6 +353,7 @@ void RemoteAccess::register_urls() {
     task_scheduler.scheduleOnce([this]() {
         this->resolve_management();
         this->connect_management();
+        this->connection_state.get("management_connection_state")->updateUint(1);
     }, 5000);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
@@ -360,6 +361,40 @@ void RemoteAccess::register_urls() {
             this->resolve_management();
         }
     }, 1000 * 10, 1000 * 10);
+
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        for (int i = 0; i < 5; i++) {
+            uint32_t state = 0;
+            if (this->remote_connections[i] != nullptr) {
+                state = this->remote_connections[i]->is_peer_up(nullptr, nullptr) ? 2 : 1;
+            }
+
+            if (this->connection_state.get("remote_connection_states")->get(i)->get("connection_state")->updateUint(state)) {
+                if (state == 2) {
+                    logger.printfln("Connection %i connected", i);
+                } else if (state == 1) {
+                    logger.printfln("Connection %i disconnected", i);
+                }
+            }
+        }
+    }, 1000, 1000);
+
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        uint32_t state = 0;
+        if (management != nullptr) {
+            state = management->is_peer_up(nullptr, nullptr) ? 2 : 1;
+        }
+
+        if (this->connection_state.get("management_connection_state")->updateUint(state)) {
+            if (state == 2) {
+                logger.printfln("Management connection connected");
+            } else {
+                this->management_request_done = false;
+                in_seq_number = 0;
+                logger.printfln("Management connection disconnected");
+            }
+        }
+    }, 1000, 1000);
 }
 
 static esp_err_t http_event_handle(esp_http_client_event *evt) {
@@ -664,9 +699,14 @@ void RemoteAccess::connect_management() {
 
     logger.printfln("Connecting to Management WireGuard peer %s:%u", remote_host.c_str(), 51820);
 
+    if (management != nullptr) {
+        delete management;
+    }
+    management = new WireGuard();
+
     local_port = find_next_free_port(local_port);
     this->setup_inner_socket();
-    management.begin(internal_ip,
+    management->begin(internal_ip,
              internal_subnet,
              local_port,
              internal_gateway,
@@ -680,20 +720,6 @@ void RemoteAccess::connect_management() {
              management_connection.get("psk")->asEphemeralCStr(),
              &management_filter_in,
              &management_filter_out);
-
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        bool up = management.is_peer_up(nullptr, nullptr);
-
-        if (this->connection_state.get("management_connection_state")->updateUint(up ? 2 : 1)) {
-            if (up) {
-                logger.printfln("Management connection connected");
-            } else {
-                this->management_request_done = false;
-                in_seq_number = 0;
-                logger.printfln("Management connection disconnected");
-            }
-        }
-    }, 1000, 1000);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->run_management();
@@ -730,7 +756,12 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
     String private_key = conf->get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
     String remote_host = config.get("relay_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
 
-    remote_connections[i].begin(internal_ip,
+    if (remote_connections[i] != nullptr) {
+        delete remote_connections[i];
+    }
+    remote_connections[i] = new WireGuard();
+
+    remote_connections[i]->begin(internal_ip,
              internal_subnet,
              local_port,
              internal_gateway,
@@ -742,18 +773,6 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
              allowed_subnet,
              false,
              conf->get("psk")->asEphemeralCStr());
-
-    task_scheduler.scheduleWithFixedDelay([this, i]() {
-        bool up = remote_connections[i].is_peer_up(nullptr, nullptr);
-
-        if (this->connection_state.get("remote_connection_states")->get(i)->get("connection_state")->updateUint(up ? 2 : 1)) {
-            if (up) {
-                logger.printfln("Connection %i connected", i);
-            } else {
-                logger.printfln("Connection %i disconnected", i);
-            }
-        }
-    }, 1000, 1000);
 }
 
 int RemoteAccess::setup_inner_socket() {
@@ -833,7 +852,7 @@ void RemoteAccess::run_management() {
     switch (command->command_id) {
         case management_command_id::Connect:
             {
-                if (remote_connections[command->connection_no].is_peer_up(nullptr, nullptr)) {
+                if (remote_connections[command->connection_no] != nullptr && remote_connections[command->connection_no]->is_peer_up(nullptr, nullptr)) {
                     return;
                 }
 
@@ -845,16 +864,23 @@ void RemoteAccess::run_management() {
                 memcpy(&response.connection_uuid, &command->connection_uuid, 16);
 
                 CoolString remote_host = config.get("relay_host")->asString();
-                remote_connections[command->connection_no].end();
+                if (remote_connections[command->connection_no] != nullptr) {
+                    remote_connections[command->connection_no]->end();
+                }
                 local_port = find_next_free_port(local_port);
                 create_sock_and_send_to(&response, sizeof(response), remote_host.c_str(), 51820, &local_port);
-            connect_remote_access(command->connection_no, local_port);
+                connect_remote_access(command->connection_no, local_port);
             }
             break;
 
         case management_command_id::Disconnect:
+            if (remote_connections[command->connection_no] == nullptr) {
+                break;
+            }
             logger.printfln("Closing connection %u", command->connection_no);
-            remote_connections[command->connection_no].end();
+            remote_connections[command->connection_no]->end();
+            delete remote_connections[command->connection_no];
+            remote_connections[command->connection_no] = nullptr;
             break;
     }
 }
