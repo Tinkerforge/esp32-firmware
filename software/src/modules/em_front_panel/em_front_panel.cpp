@@ -25,6 +25,8 @@
 #include "tools.h"
 #include "warp_front_panel_bricklet_firmware_bin.embedded.h"
 
+#define UPDATE_INTERVAL 1000
+
 extern EMFrontPanel em_front_panel;
 
 EMFrontPanel::EMFrontPanel() : DeviceModule(warp_front_panel_bricklet_firmware_bin_data,
@@ -104,10 +106,43 @@ void EMFrontPanel::register_urls()
         api.addPersistentConfig("front_panel/tiles/" + String(tile.index) + "/config", &tile.config);
     }
 
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        this->update();
+    }, 100, UPDATE_INTERVAL);
+
     this->DeviceModule::register_urls();
 }
 
 void EMFrontPanel::loop()
 {
     this->DeviceModule::loop();
+}
+
+void EMFrontPanel::update()
+{
+    int result = tf_warp_front_panel_set_display_wifi_setup_1(
+        &device,
+        wifi.get_ap_ip(),
+        wifi.get_ap_ssid()
+    );
+
+    result = tf_warp_front_panel_set_display_wifi_setup_2(
+        &device,
+        wifi.get_ap_passphrase()
+    );
+
+    EthernetState ethernet_state = ethernet.get_connection_state();
+    WifiState wifi_state = wifi.get_connection_state();
+    int wifi_rssi = wifi.get_sta_rssi();
+    time_t now = time(nullptr);
+    struct tm tm;
+    localtime_r(&now, &tm);
+    result = tf_warp_front_panel_set_status_bar(
+        &device,
+        static_cast<std::underlying_type<EthernetState>::type>(ethernet_state), // Ethernet status
+        (wifi_rssi + 127) |  (static_cast<std::underlying_type<WifiState>::type>(wifi_state) << 16), // Wifi status
+        tm.tm_hour, // Hours
+        tm.tm_min, // Minutes
+        tm.tm_sec // Seconds
+    );
 }

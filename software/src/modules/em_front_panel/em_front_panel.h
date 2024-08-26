@@ -44,6 +44,8 @@ public:
     void check_bricklet_state();
 
 private:
+    void update();
+
     ConfigRoot config;
     class FrontPanelTile {
     public:
