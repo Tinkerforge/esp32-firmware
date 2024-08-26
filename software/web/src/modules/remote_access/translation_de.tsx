@@ -8,15 +8,15 @@ let x = {
         },
         "content": {
             "remote_access": "Fernzugriff",
-            "email": "Email",
+            "email": "E-Mail-Adresse",
             "password": "Passwort",
             "relay_host": "Relay-Server-Hostname",
             "relay_host_port": "Relay-Server-Port",
-            "enable": "Fernzugriff aktivieren",
-            "enable_desc": <>Um den Fernzugriff benutzen zu können muss vorher ein <a href="https://my.warp-charger.com/">Account</a> erstellt werden</>,
+            "enable": "Fernzugriff aktiviert",
+            "enable_desc": <>Für den Fernzugriff wird ein <a href="https://my.warp-charger.com/">my.warp-charger.com</a>-Account benötigt.</>,
             "cert": "TLS-Zertifikat",
             "not_used": "Eingebettetes Zertifikatsbundle",
-            "advanced_settings": "Experten Einstellungen"
+            "advanced_settings": "Experteneinstellungen"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",
