@@ -538,6 +538,8 @@ HttpResponse RemoteAccess::make_http_request(const char *url, esp_http_client_me
     http_config.is_async = true;
     http_config.timeout_ms = 15000;
 
+    auto deadline = now_us() + 15_usec * 1000_usec * 1000_usec;
+
     if (cert == nullptr) {
         http_config.crt_bundle_attach = esp_crt_bundle_attach;
         http_config.transport_type = HTTP_TRANSPORT_OVER_SSL;
@@ -575,6 +577,10 @@ HttpResponse RemoteAccess::make_http_request(const char *url, esp_http_client_me
 
     do {
         err = esp_http_client_perform(client);
+        // TODO: improve http timeout handling.
+        if (deadline_elapsed(deadline)) {
+            err = ESP_FAIL;
+        }
     } while (err == ESP_ERR_HTTP_EAGAIN);
 
     if (err != ESP_OK) {
