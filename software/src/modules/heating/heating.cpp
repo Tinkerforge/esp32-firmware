@@ -25,9 +25,6 @@
 #include "module_dependencies.h"
 #include "build.h"
 
-#include "modules/meters/meter_value_availability.h"
-#include "modules/meters/meters.h"
-
 #define HEATING_UPDATE_INTERVAL 1000*60
 
 extern Heating heating;
@@ -111,19 +108,21 @@ void Heating::update()
     const uint32_t p14enwg_active_type = config.get("p14enwg_active_type")->asUint();
     if(p14enwg_active) {
         bool p14enwg_on  = false;
-        bool input_value = false; // energy_manager.get_input(p14enwg_input);
-        if (p14enwg_active_type == 0 && input_value) {
+        bool input_value[4];
+        energy_manager_v2.get_input(input_value);
+
+        if (p14enwg_active_type == 0 && input_value[p14enwg_input]) {
             p14enwg_on = true;
-        } else if(p14enwg_active_type == 1 && !input_value) {
+        } else if(p14enwg_active_type == 1 && !input_value[p14enwg_input]) {
             p14enwg_on = true;
         }
 
         if(p14enwg_on) {
             extended_logging("§14 EnWG blocks heating. Turning on SG ready output 0.");
-            // energy_manager.set_sg_ready_on(SG_READY_OUTPUT0);
+            energy_manager_v2.set_sg_ready_output(0, true);
         } else {
             extended_logging("§14 EnWG does not block heating. Turning off SG ready output 0.");
-            // energy_manager.set_sg_ready_off(SG_READY_OUTPUT0);
+            energy_manager_v2.set_sg_ready_output(0, false);
         }
     }
 
@@ -167,19 +166,19 @@ void Heating::update()
     bool sg_ready_on = false;
 
     // PV excess handling for winter and summer
-    auto handle_pv_excess = [&] () {
+    auto handle_pv_excess = [&] (const uint32_t threshold) {
         float watt_current = 0;
         MeterValueAvailability meter_availability = meters.get_power_real(meter_slot_grid_power, &watt_current);
         if (meter_availability != MeterValueAvailability::Fresh) {
             extended_logging("Meter value not available (meter %d has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
-        } else if (watt_current > summer_pv_excess_control_threshold) {
-            extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, summer_pv_excess_control_threshold);
+        } else if (watt_current > threshold) {
+            extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, threshold);
             sg_ready_on = sg_ready_on || true;
         }
     };
 
     // Dynamic price handling for winter and summer
-    auto handle_dynamic_price = [&] () {
+    auto handle_dynamic_price = [&] (const uint32_t threshold) {
         const auto price_average = day_ahead_prices.get_average_price_today();
         const auto price_current = day_ahead_prices.get_current_price();
 
@@ -188,11 +187,11 @@ void Heating::update()
         } else if (!price_current.data_available) {
             extended_logging("Current price not available. Ignoring dynamic price control.");
         } else {
-            if (price_current.data < price_average.data * winter_dynamic_price_control_threshold / 100.0) {
-                extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, winter_dynamic_price_control_threshold);
+            if (price_current.data < price_average.data * threshold / 100.0) {
+                extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, threshold);
                 sg_ready_on = true;
             } else {
-                extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, winter_dynamic_price_control_threshold);
+                extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, threshold);
                 sg_ready_on = false;
             }
         }
@@ -204,11 +203,11 @@ void Heating::update()
             extended_logging("It is winter but no winter control active.");
         } else {
             if (winter_dynamic_price_control_active) {
-                handle_dynamic_price();
+                handle_dynamic_price(winter_dynamic_price_control_threshold);
             }
 
             if (winter_pv_excess_control_active) {
-                handle_pv_excess();
+                handle_pv_excess(winter_pv_excess_control_threshold);
             }
         }
     } else { // Summer
@@ -263,24 +262,29 @@ void Heating::update()
                 extended_logging("It is summer but no summer control active.");
             } else {
                 if (summer_dynamic_price_control_active) {
-                    handle_dynamic_price();
+                    handle_dynamic_price(summer_dynamic_price_control_threshold);
                 }
 
                 if (summer_pv_excess_control_active) {
-                    handle_pv_excess();
+                    handle_pv_excess(summer_pv_excess_control_threshold);
                 }
             }
         }
     }
 
+    bool sg_ready_output[2];
+    energy_manager_v2.get_sg_ready_output(sg_ready_output);
     if (sg_ready_on) {
         extended_logging("Heating decision: Turning on SG Ready output 1.");
-        // energy_manager.set_sg_ready_on(SG_READY_OUTPUT1);
+        if (!sg_ready_output[1]) {
+            energy_manager_v2.set_sg_ready_output(1, true);
+            last_sg_ready_change = timestamp_minutes();
+        }
     } else {
         extended_logging("Heating decision: Turning off SG Ready output 1.");
-        // energy_manager.set_sg_ready_off(SG_READY_OUTPUT1);
+        if (sg_ready_output[1]) {
+            energy_manager_v2.set_sg_ready_output(1, false);
+            last_sg_ready_change = timestamp_minutes();
+        }
     }
-
-    // TODO: Only when sg ready above actually changed
-    last_sg_ready_change = timestamp_minutes();
 }
