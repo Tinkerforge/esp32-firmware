@@ -452,7 +452,7 @@ static const ConfigMigration migrations[] = {
             delete_config_file("remote_access/management_connection");
             delete_config_file("remote_access/remote_connection_config");
         }
-    }
+    },
 #endif
 
 #if BUILD_IS_ENERGY_MANAGER()
