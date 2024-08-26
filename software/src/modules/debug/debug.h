@@ -62,4 +62,8 @@ private:
     bool     internal_heap_valid = true;
     bool     psram_heap_valid = true;
     bool     check_psram_next = false;
+
+    micros_t last_run = 0_usec;
+    uint32_t run_max = 0;
+    uint32_t min_free_dram = 0xFFFFFFFF;
 };

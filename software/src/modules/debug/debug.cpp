@@ -152,6 +152,7 @@ void Debug::pre_setup()
         {"largest_free_psram_block", Config::Uint32(0)},
         {"heap_integrity_ok", Config::Bool(true)},
         {"main_loop_max_runtime_us", Config::Uint32(0)},
+        {"min_free_dram", Config::Uint32(0)},
     });
 
     state_hwm = Config::Array({},
@@ -194,6 +195,10 @@ void Debug::setup()
 
         state_fast.get("uptime")->updateUint(millis());
         state_fast.get("free_dram")->updateUint(dram_info.total_free_bytes);
+        if (min_free_dram > dram_info.total_free_bytes) {
+            min_free_dram = dram_info.total_free_bytes;
+            state_slow.get("min_free_dram")->updateUint(min_free_dram);
+        }
         state_fast.get("free_iram")->updateUint(free_internal - dram_info.total_free_bytes);
         state_fast.get("free_psram")->updateUint(psram_info.total_free_bytes);
 
@@ -480,9 +485,6 @@ void Debug::register_events()
 #else
 #define CHECK_PSRAM 0
 #endif
-
-static micros_t last_run = 0_usec;
-static uint32_t run_max = 0;
 
 void Debug::loop()
 {
