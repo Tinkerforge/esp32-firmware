@@ -32,6 +32,8 @@ let x = {
             "virtual_meter_grid": "Netzanschluss",
             "virtual_meter_battery": "Speicher",
             "virtual_meter_load": "Last",
+            "virtual_meter_backup_load": "Backup-Last",
+            "virtual_meter_meter": "Zähler",
             "device_address": "Geräteadresse",
             "device_address_muted": /*SFN*/(device_address: number) => "typischerweise " + device_address/*NF*/,
             "shelly_pro_3em_device_profile": "Geräteprofil",

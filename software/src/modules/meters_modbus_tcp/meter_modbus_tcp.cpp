@@ -489,6 +489,14 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             table = &goodwe_hybrid_inverter_load_table;
             break;
 
+        case GoodweHybridInverterVirtualMeter::BackupLoad:
+            table = &goodwe_hybrid_inverter_backup_load_table;
+            break;
+
+        case GoodweHybridInverterVirtualMeter::Meter:
+            table = &goodwe_hybrid_inverter_meter_table;
+            break;
+
         default:
             logger.printfln("Unknown Goodwe Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(goodwe_hybrid_inverter_virtual_meter));
             return;
