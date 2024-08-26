@@ -43,6 +43,71 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 extern char local_uid_str[32];
 extern uint32_t local_uid_num;
 
+#define MAX_KEYS_PER_USER 5
+#define MAX_USERS 1
+#define WG_KEY_LENGTH 44
+#define KEY_SIZE (3 * WG_KEY_LENGTH)
+#define KEY_DIRECTORY "/remote-access-keys"
+
+static inline String get_key_path(uint8_t user_id, uint8_t key_id) {
+    return String(KEY_DIRECTORY "/") + user_id + "_" + key_id;
+}
+
+void remove_key(uint8_t user_id, uint8_t key_id) {
+    auto path = get_key_path(user_id, key_id);
+    if (!LittleFS.exists(path))
+        return;
+
+    LittleFS.remove(path);
+}
+
+void store_key(uint8_t user_id, uint8_t key_id, const char *pri, const char *psk, const char *pub) {
+    File f = LittleFS.open(get_key_path(user_id, key_id), "w+");
+    // TODO: more robust writing
+    f.write((const uint8_t *)pri, WG_KEY_LENGTH);
+    f.write((const uint8_t *)psk, WG_KEY_LENGTH);
+    f.write((const uint8_t *)pub, WG_KEY_LENGTH);
+}
+
+static bool get_key(uint8_t user_id, uint8_t key_id, char *pri, char *psk, char *pub)
+{
+    String path = get_key_path(user_id, key_id);
+
+    if (!LittleFS.exists(path)) {
+        goto fail;
+    }
+
+    {
+        File f = LittleFS.open(path, "r");
+
+        if (f.size() != KEY_SIZE) {
+            goto fail;
+        }
+
+        if (f.read((uint8_t *)pri, WG_KEY_LENGTH) != WG_KEY_LENGTH) {
+            goto fail;
+        }
+        if (f.read((uint8_t *)psk, WG_KEY_LENGTH) != WG_KEY_LENGTH) {
+            goto fail;
+        }
+        if (f.read((uint8_t *)pub, WG_KEY_LENGTH) != WG_KEY_LENGTH) {
+            goto fail;
+        }
+    }
+
+    pri[WG_KEY_LENGTH] = '\0';
+    psk[WG_KEY_LENGTH] = '\0';
+    pub[WG_KEY_LENGTH] = '\0';
+
+    return true;
+
+fail:
+    pri[0] = '\0';
+    psk[0] = '\0';
+    pub[0] = '\0';
+    return false;
+}
+
 static int create_sock_and_send_to(const void *payload, size_t payload_len, const char *dest_host, uint16_t port, uint16_t *local_port) {
     struct sockaddr_in dest_addr;
     bzero(&dest_addr, sizeof(dest_addr));
@@ -93,17 +158,6 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     return ret;
 }
 
-
-#define MAX_KEYS_PER_USER 5
-#define MAX_USERS 1
-#define WG_KEY_LENGTH 44
-#define KEY_SIZE (3 * WG_KEY_LENGTH)
-#define KEY_DIRECTORY "/remote-access-keys"
-
-static inline String get_key_path(uint8_t user_id, uint8_t key_id) {
-    return String(KEY_DIRECTORY "/") + user_id + "_" + key_id;
-}
-
 void RemoteAccess::pre_setup() {
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
@@ -130,28 +184,6 @@ void RemoteAccess::pre_setup() {
                 cs, 5, 5, Config::type_id<Config::ConfObject>())}
         })
     };
-
-    // TODO: keys are currently not censored!
-    register_config = Config::Object({
-        {"config", config},
-        {"login_key", Config::Str("", 0, 64)}, // The user's login key
-        {"secret", Config::Str("", 0, 256)}, // The user's encrypted private key that encrypts the WireGuard keys
-        {"secret_key", Config::Str("", 0, 256)}, // The user's key to encrypt the secret. Derived from the user's password
-        {"secret_nonce", Config::Str("", 0, 256)}, // Nonce used to en/decrypt the WireGuard keys
-        {"mgmt_charger_public", Config::Str("", 0, 44)}, //mgmt connection public key
-        {"mgmt_charger_private", Config::Str("", 0, 44)}, //mgmt connection public key
-        {"mgmt_psk", Config::Str("", 0, 44)}, //mgmt connection psk
-        {"keys", Config::Array({}, new Config {
-            Config::Object({
-                {"charger_public", Config::Str("", 0, 44)},
-                {"charger_private", Config::Str("", 0, 44)},
-                {"web_public", Config::Str("", 0, 44)},
-                {"web_private", Config::Str("", 0, 44)},
-                {"psk", Config::Str("", 0, 44)},
-            })
-        },
-        5, 5, Config::type_id<Config::ConfObject>())}
-    });
 }
 
 void RemoteAccess::setup() {
@@ -176,16 +208,6 @@ static std::unique_ptr<char []> decode_base64(const CoolString &input, size_t bu
     return out;
 }
 
-void store_key(uint8_t user_id, uint8_t key_id, const char *pri, const char *psk, const char *pub) {
-    logger.printfln("Storing keys for %u %u: private %s psk %s public %s", user_id, key_id, pri, psk, pub);
-    File f = LittleFS.open(get_key_path(user_id, key_id), "w+");
-    // TODO: more robust writing
-    f.write((const uint8_t *)pri, WG_KEY_LENGTH);
-    f.write((const uint8_t *)psk, WG_KEY_LENGTH);
-    f.write((const uint8_t *)pub, WG_KEY_LENGTH);
-}
-
-
 void RemoteAccess::register_urls() {
     api.addState("remote_access/config", &config, {
         "password"
@@ -194,30 +216,56 @@ void RemoteAccess::register_urls() {
     api.addState("remote_access/state", &connection_state);
 
     server.on("/remote_access/register", HTTP_PUT, [this](WebServerRequest request) {
-        {
-            std::unique_ptr<char[]> req_body = heap_alloc_array<char>(request.contentLength() + 1);
-            if (request.receive(req_body.get(), request.contentLength()) <= 0) {
-                return request.send(500);
-            }
-            req_body[request.contentLength()] = '\0';
-            String err_string = register_config.update_from_cstr(req_body.get(), request.contentLength());
+        // TODO: Maybe don't run the registration in the request handler. Start a task instead?
 
-            if (!err_string.isEmpty()) {
-                return request.send(400, "text/plain", err_string.c_str(), err_string.length());
+        auto content_len = request.contentLength();
+        std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
+        if (request.receive(req_body.get(), content_len) <= 0) {
+            // TODO: Fix error codes?
+            return request.send(500);
+        }
+
+        // TODO: use TFJsonDeserializer?
+        StaticJsonDocument<768> doc;
+
+        {
+            DeserializationError error = deserializeJson(doc, req_body.get(), content_len);
+
+            if (error) {
+                // TODO: Fix error codes?
+                return request.send(500);
             }
         }
 
-        if (!register_config.get("config")->get("enable")->asBool()) {
-            config = *(Config *)register_config.get("config");
+        ConfigRoot new_config = this->config;
+
+        {
+            String error = new_config.update_from_json(doc["config"], true, ConfigSource::API);
+            if (error != "") {
+                return request.send(400, "text/plain", error.c_str());
+            }
+        }
+
+        if (!new_config.get("enable")->asBool()) {
+            config = new_config;
             API::writeConfig("remote_access/config", &config);
+
+            remove_key(0, 0);
+            for(int user_id = 1; user_id < MAX_USERS + 1; ++user_id) // user 0 is the management connection
+                for(int key_id = 0; i < MAX_KEYS_PER_USER; ++key_id)
+                    remove_key(user_id, key_id);
+
             return request.send(200); // TODO result json?
         }
 
         std::unique_ptr<char[]> ptr = heap_alloc_array<char>(5000);
 
-        std::unique_ptr<char[]> encrypted_secret = decode_base64(register_config.get("secret")->asString(),       32 + crypto_secretbox_MACBYTES);
-        std::unique_ptr<char[]> secret_nonce     = decode_base64(register_config.get("secret_nonce")->asString(), crypto_secretbox_NONCEBYTES);
-        std::unique_ptr<char[]> secret_key       = decode_base64(register_config.get("secret_key")->asString(),   crypto_secretbox_KEYBYTES);
+        // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
+        // Also validate the decoded lengths!
+        // TODO: The decode_base64 takes a string, so doc["secret..."] is probably copied here
+        std::unique_ptr<char[]> encrypted_secret = decode_base64(doc["secret"],       32 + crypto_secretbox_MACBYTES);
+        std::unique_ptr<char[]> secret_nonce     = decode_base64(doc["secret_nonce"], crypto_secretbox_NONCEBYTES);
+        std::unique_ptr<char[]> secret_key       = decode_base64(doc["secret_key"],   crypto_secretbox_KEYBYTES);
 
         if (sodium_init() < 0) {
             return request.send(500);
@@ -241,16 +289,17 @@ void RemoteAccess::register_urls() {
         std::unique_ptr<char[]> buf = heap_alloc_array<char>(50);
         {
             int i = 0;
-            for (auto &key : register_config.get("keys")) {
+            // JsonArray already has reference semantics. No need for &.
+            for (const auto key : doc["keys"].as<JsonArray>()) {
                 serializer.addObject();
                 // TODO optimize
                 std::snprintf(buf.get(), 50, "10.123.%i.2", i);
                 serializer.addMemberString("charger_address", buf.get());
-                serializer.addMemberString("charger_public", key.get("charger_public")->asEphemeralCStr());
+                serializer.addMemberString("charger_public", key["charger_public"]);
                 serializer.addMemberNumber("connection_no", i);
                 std::snprintf(buf.get(), 50, "10.123.%i.3", i);
                 serializer.addMemberString("web_address", buf.get());
-                CoolString wg_key = key.get("web_private")->asString();
+                CoolString wg_key = CoolString{key["web_private"].as<String>()};
 
                 // TODO optimize: this is always 44 bytes + crypto_box_SEALBYTES -> stack alloc
                 std::unique_ptr<char[]> output = heap_alloc_array<char>(crypto_box_SEALBYTES + wg_key.length());
@@ -267,7 +316,7 @@ void RemoteAccess::register_urls() {
                 }
                 serializer.endArray();
 
-                CoolString psk = key.get("psk")->asString();
+                CoolString psk = key["psk"];
                 std::unique_ptr<char[]> encrypted_psk = heap_alloc_array<char>(crypto_box_SEALBYTES + psk.length());
                 ret = crypto_box_seal((unsigned char*)encrypted_psk.get(), (unsigned char*)psk.c_str(), psk.length(), pk);
                 if (ret < 0) {
@@ -283,15 +332,17 @@ void RemoteAccess::register_urls() {
 
                 serializer.endObject();
                 i++;
+
+                // Ignore rest of keys if there were sent more than we support.
+                if (i == MAX_KEYS_PER_USER)
+                    break;
             }
         }
         serializer.endArray();
 
         serializer.addMemberObject("charger");
 
-        serializer.addMemberString("charger_pub", register_config.get("mgmt_charger_public")->asEphemeralCStr());
-        //char local_uid_num_str[11] = {};
-        //snprintf(local_uid_num_str, ARRAY_SIZE(local_uid_num_str), "%u", local_uid_num);
+        serializer.addMemberString("charger_pub", doc["mgmt_charger_public"]);
         serializer.addMemberString("id", local_uid_str);
 
         CoolString name = api.getState("info/display_name")->get("display_name")->asString();
@@ -306,16 +357,16 @@ void RemoteAccess::register_urls() {
 
         serializer.addMemberString("wg_charger_ip", "10.123.123.2");
         serializer.addMemberString("wg_server_ip", "10.123.123.3");
-        serializer.addMemberString("psk", register_config.get("mgmt_psk")->asEphemeralCStr());
+        serializer.addMemberString("psk", doc["mgmt_psk"]);
 
         serializer.endObject();
         serializer.endObject();
         size_t size = serializer.end();
 
-        login((Config *)register_config.get("config"));
+        login(&new_config, CoolString{doc["login_key"].as<String>()});
 
-        CoolString relay_host = register_config.get("config")->get("relay_host")->asString();
-        uint32_t relay_host_port = register_config.get("config")->get("relay_host_port")->asUint();
+        CoolString relay_host = new_config.get("relay_host")->asString();
+        uint32_t relay_host_port = new_config.get("relay_host_port")->asUint();
         CoolString url = "https://";
         url += relay_host;
         url += ":";
@@ -329,34 +380,42 @@ void RemoteAccess::register_urls() {
         headers.push_back(std::pair<CoolString, CoolString>(CoolString("Cookie"), access_token));
         headers.push_back(std::pair<CoolString, CoolString>(CoolString("Content-Type"), CoolString("application/json")));
         esp_err_t err;
-        HttpResponse response = make_http_request(url.c_str(), HTTP_METHOD_PUT, ptr.get(), size, &headers, &err, (Config *)register_config.get("config"));
+
+        HttpResponse response = make_http_request(url.c_str(), HTTP_METHOD_PUT, ptr.get(), size, &headers, &err, &new_config);
         if (err != ESP_OK) {
             return request.send(500);
         } else if (response.status != 200) {
             return request.send(response.status, "text/plain", response.body.c_str(), response.body.length());
         }
 
-        StaticJsonDocument<32> doc;
+        StaticJsonDocument<32> resp_doc;
 
-        DeserializationError error = deserializeJson(doc, response.body.begin(), response.body.length());
+        DeserializationError error = deserializeJson(resp_doc, response.body.begin(), response.body.length());
 
         if (error) {
             return request.send(500);
         }
 
-        const char* charger_password = doc["charger_password"]; // "string"
-        const char* management_pub = doc["management_pub"]; // "string"
+        const char* charger_password = resp_doc["charger_password"];
+        const char* management_pub = resp_doc["management_pub"];
 
-        store_key(0, 0, register_config.get("mgmt_charger_private")->asEphemeralCStr(), register_config.get("mgmt_psk")->asEphemeralCStr(), management_pub);
+        store_key(0, 0, doc["mgmt_charger_private"], doc["mgmt_psk"], management_pub);
 
-        for (int i = 0; i < 5; ++i) {
-            store_key(1, i,
-                register_config.get("keys")->get(i)->get("charger_private")->asEphemeralCStr(),
-                register_config.get("keys")->get(i)->get("psk")->asEphemeralCStr(),
-                register_config.get("keys")->get(i)->get("web_public")->asEphemeralCStr());
+        {
+            int i = 0;
+            for (const auto key : doc["keys"].as<JsonArray>()) {
+                store_key(1, i,
+                    key["charger_private"],
+                    key["psk"],
+                    key["web_public"]);
+                ++i;
+                // Ignore rest of keys if there were sent more than we support.
+                if (i == MAX_KEYS_PER_USER)
+                    break;
+            }
         }
 
-        config = *(Config *)register_config.get("config");
+        config = new_config;
         config.get("password")->updateString(charger_password);
         API::writeConfig("remote_access/config", &config);
 
@@ -533,6 +592,7 @@ HttpResponse RemoteAccess::make_http_request(const char *url, esp_http_client_me
 
     int status = esp_http_client_get_status_code(client);
     if (status < 200 || status > 299) {
+        // TODO: Dont log nginx error page!
         logger.printfln("Request to %s failed with code %i: %s", url, status, response.body.c_str());
     }
     response.status = status;
@@ -542,7 +602,7 @@ HttpResponse RemoteAccess::make_http_request(const char *url, esp_http_client_me
     return response;
 }
 
-void RemoteAccess::login(Config *config) {
+void RemoteAccess::login(Config *config, const CoolString &login_key_base64) {
     CoolString relay_host = config->get("relay_host")->asString();
     uint32_t relay_host_port = config->get("relay_host_port")->asUint();
     CoolString login_url = "https://";
@@ -551,7 +611,7 @@ void RemoteAccess::login(Config *config) {
     login_url += relay_host_port;
     login_url += "/api/auth/login";
 
-    std::unique_ptr<char[]> login_key = decode_base64(register_config.get("login_key")->asString(), 24);
+    std::unique_ptr<char[]> login_key = decode_base64(login_key_base64, 24);
     std::unique_ptr<char[]> json = heap_alloc_array<char>(250);
 
     TFJsonSerializer serializer = TFJsonSerializer(json.get(), 250);
@@ -924,59 +984,3 @@ void RemoteAccess::run_management() {
     }
 }
 
-bool RemoteAccess::key_exists(uint8_t user_id, uint8_t key_id)
-{
-    String path = get_key_path(user_id, key_id);
-
-    if (!LittleFS.exists(path)) {
-        return false;
-    }
-
-    File f = LittleFS.open(path, "r");
-
-    if (f.size() != KEY_SIZE) {
-        return false;
-    }
-    return true;
-}
-
-bool RemoteAccess::get_key(uint8_t user_id, uint8_t key_id, char *pri, char *psk, char *pub)
-{
-    String path = get_key_path(user_id, key_id);
-
-    if (!LittleFS.exists(path)) {
-        goto fail;
-    }
-
-    {
-        File f = LittleFS.open(path, "r");
-
-        if (f.size() != KEY_SIZE) {
-            goto fail;
-        }
-
-        if (f.read((uint8_t *)pri, WG_KEY_LENGTH) != WG_KEY_LENGTH) {
-            goto fail;
-        }
-        if (f.read((uint8_t *)psk, WG_KEY_LENGTH) != WG_KEY_LENGTH) {
-            goto fail;
-        }
-        if (f.read((uint8_t *)pub, WG_KEY_LENGTH) != WG_KEY_LENGTH) {
-            goto fail;
-        }
-    }
-
-    pri[WG_KEY_LENGTH] = '\0';
-    psk[WG_KEY_LENGTH] = '\0';
-    pub[WG_KEY_LENGTH] = '\0';
-
-    logger.printfln("Loading keys for %u %u: private %s psk %s pub %s", user_id, key_id, pri, psk, pub);
-
-    return true;
-
-fail:
-    pri[0] = '\0';
-    psk[0] = '\0';
-    pub[0] = '\0';
-    return false;
-}

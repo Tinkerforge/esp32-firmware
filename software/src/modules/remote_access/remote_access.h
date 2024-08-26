@@ -40,15 +40,12 @@ public:
 
 private:
     void resolve_management();
-    void login(Config *config);
+    void login(Config *config, const CoolString &login_key_base64);
     void connect_management();
     void connect_remote_access(uint8_t i, uint16_t local_port);
     void run_management();
     int setup_inner_socket();
     HttpResponse make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error, Config *config);
-
-    bool key_exists(uint8_t user_id, uint8_t key_id);
-    bool get_key(uint8_t user_id, uint8_t key_id, char *pri, char *psk, char *pub);
 
     WireGuard *management = nullptr;
     WireGuard *remote_connections[5] = {};
@@ -60,7 +57,6 @@ private:
 
     ConfigRoot config;
     ConfigRoot connection_state;
-    ConfigRoot register_config;
 };
 
 enum management_command_id {
