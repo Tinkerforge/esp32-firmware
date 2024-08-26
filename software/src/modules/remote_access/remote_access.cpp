@@ -855,8 +855,6 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
     // Only used for BLOCKING! DNS resolve. TODO Make this non-blocking in Wireguard-ESP32-Arduino/src/WireGuard.cpp!
     auto remote_host = config.get("relay_host")->asEphemeralCStr();
 
-    logger.printfln("Connecting: private %s psk %s pub %s", private_key, psk, remote_public_key);
-
     if (remote_connections[i] != nullptr) {
         delete remote_connections[i];
     }
