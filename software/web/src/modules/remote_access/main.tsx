@@ -94,7 +94,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 keys: []
             };
 
-            await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), undefined, 10000);
+            await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"), 10000);
             return;
         }
 
@@ -155,32 +155,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             keys: keys
         };
 
-        const resp = await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), undefined, 10000);
-
-        /*const json = (JSON.parse(await resp.text()));
-        const ret = {
-            charger_pub: mg_charger_keypair.publicKey,
-            charger_private: mg_charger_keypair.privateKey,
-            remote_public: json.management_pub,
-            password: json.charger_password,
-            psk: psk,
-        }
-
-        await API.call("remote_access/set_key", {
-            user_id: 0,
-            key_id: 0,
-            key: mg_charger_keypair.privateKey + psk + ret.remote_public
-        }, __("remote_access.script.save_failed"));
-
-        for(let i = connections.length; i < connections.length; ++i) {
-            await API.call("remote_access/set_key", {
-                user_id: 1,
-                key_id: i,
-                key: connections[i].private_key + connections[i].psk + connections[i].remote_public_key
-            }, __("remote_access.script.save_failed"));
-        }
-
-        return ret;*/
+        await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"), 10000);
     }
 
     async login(): Promise<boolean> {
