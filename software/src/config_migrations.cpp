@@ -446,7 +446,6 @@ static const ConfigMigration migrations[] = {
             for(int i = 0; i < 5; ++i) {
                 auto key = conn["connections"][i];
                 store_key(1, i, key["private_key"].as<const char *>(), key["psk"].as<const char *>(), key["remote_public_key"].as<const char *>());
-                logger.printfln("mgmt %s %s %s", key["private_key"].as<const char *>(), key["psk"].as<const char *>(), key["remote_public_key"].as<const char *>());
             }
 
             delete_config_file("remote_access/management_connection");
