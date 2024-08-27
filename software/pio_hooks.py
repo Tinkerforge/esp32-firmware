@@ -495,6 +495,7 @@ def main():
     build_flags = env.GetProjectOption("build_flags")
     frontend_debug = env.GetProjectOption("custom_frontend_debug") == "true"
     web_only = env.GetProjectOption("custom_web_only") == "true"
+    prepare_only = "-DPREPARE_ONLY" in build_flags
     web_build_flags = env.GetProjectOption("custom_web_build_flags")
     signed = env.GetProjectOption("custom_signed") == "true"
     monitor_speed = env.GetProjectOption("monitor_speed")
@@ -1204,6 +1205,10 @@ def main():
                         f.write(f'export const enum {enum_name.camel} {{\n')
                         f.write(''.join(enum_values))
                         f.write('}\n')
+
+    if prepare_only:
+        print("Stopping build after prepare")
+        sys.exit(0)
 
     # Generate web interface
     util.log('Checking web interface dependencies')
