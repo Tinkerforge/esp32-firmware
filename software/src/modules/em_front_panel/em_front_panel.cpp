@@ -24,8 +24,11 @@
 #include "bindings/errors.h"
 #include "tools.h"
 #include "warp_front_panel_bricklet_firmware_bin.embedded.h"
+#include "sprite_defines.h"
+#include "font_defines.h"
 
 #define UPDATE_INTERVAL 1000
+#define PAGE_FRONT_TEXT_MAX_CHAR 6
 
 extern EMFrontPanel em_front_panel;
 
@@ -118,31 +121,207 @@ void EMFrontPanel::loop()
     this->DeviceModule::loop();
 }
 
-void EMFrontPanel::update()
+void EMFrontPanel::update_wifi()
 {
     int result = tf_warp_front_panel_set_display_wifi_setup_1(
         &device,
         wifi.get_ap_ip(),
         wifi.get_ap_ssid()
     );
+    if (result != TF_E_OK) {
+        logger.printfln("Failed to call set_display_wifi_setup_1: %d", result);
+        return;
+    }
 
     result = tf_warp_front_panel_set_display_wifi_setup_2(
         &device,
         wifi.get_ap_passphrase()
     );
+    if (result != TF_E_OK) {
+        logger.printfln("Failed to call set_display_wifi_setup_2: %d", result);
+        return;
+    }
+}
 
-    EthernetState ethernet_state = ethernet.get_connection_state();
-    WifiState wifi_state = wifi.get_connection_state();
-    int wifi_rssi = wifi.get_sta_rssi();
-    time_t now = time(nullptr);
-    struct tm tm;
-    localtime_r(&now, &tm);
-    result = tf_warp_front_panel_set_status_bar(
+void EMFrontPanel::update_status_bar()
+{
+    const EthernetState ethernet_state = ethernet.get_connection_state();
+    const WifiState wifi_state         = wifi.get_connection_state();
+    const int wifi_rssi                = wifi.get_sta_rssi();
+
+    uint8_t hours   = 0;
+    uint8_t minutes = 0;
+    uint8_t seconds = 0;
+
+    struct timeval tv_now;
+    if (clock_synced(&tv_now)) {
+        time_t now = time(nullptr);
+        struct tm tm;
+        localtime_r(&now, &tm);
+        hours   = tm.tm_hour;
+        minutes = tm.tm_min;
+        seconds = tm.tm_sec;
+    }
+
+    int result = tf_warp_front_panel_set_status_bar(
         &device,
-        static_cast<std::underlying_type<EthernetState>::type>(ethernet_state), // Ethernet status
-        (wifi_rssi + 127) |  (static_cast<std::underlying_type<WifiState>::type>(wifi_state) << 16), // Wifi status
-        tm.tm_hour, // Hours
-        tm.tm_min, // Minutes
-        tm.tm_sec // Seconds
+        static_cast<std::underlying_type<EthernetState>::type>(ethernet_state),
+        (wifi_rssi + 127) |  (static_cast<std::underlying_type<WifiState>::type>(wifi_state) << 16),
+        hours,
+        minutes,
+        seconds
     );
+
+    if (result != TF_E_OK) {
+        logger.printfln("Failed to call set_status_bar: %d", result);
+        return;
+    }
+}
+
+int EMFrontPanel::set_display_front_page_icon_with_check(const uint32_t icon_index, bool active, const uint32_t sprite_index, const char *text_1, const uint8_t font_index_1, const char *text_2, const uint8_t font_index_2)
+{
+    // Always fill text with spaces, such that if a new string is
+    // shorter than the previous one, the old characters are overwritten.
+    char checked_text_1[PAGE_FRONT_TEXT_MAX_CHAR] = "     ";
+    char checked_text_2[PAGE_FRONT_TEXT_MAX_CHAR] = "     ";
+    strncpy(checked_text_1, text_1, PAGE_FRONT_TEXT_MAX_CHAR);
+    strncpy(checked_text_2, text_2, PAGE_FRONT_TEXT_MAX_CHAR);
+
+    return tf_warp_front_panel_set_display_front_page_icon(
+        &device,
+        icon_index,
+        active,
+        sprite_index,
+        checked_text_1,
+        font_index_1,
+        checked_text_2,
+        font_index_2
+    );
+}
+
+int EMFrontPanel::update_front_page_empty_tile(const uint8_t index, const TileType type, const uint8_t param)
+{
+    return set_display_front_page_icon_with_check(
+        index,
+        false,
+        0, // TODO: Make SPRITE_EMPTY?
+        "",
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+        "",
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK
+    );
+}
+
+int EMFrontPanel::update_front_page_wallbox(const uint8_t index, const TileType type, const uint8_t param)
+{
+    return set_display_front_page_icon_with_check(
+        index,
+        true,
+        SPRITE_ICON_TYPE2,
+        (String("Box ") + String(param)).c_str(),
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+        "2 kW", // TODO: Get value from load management
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK
+    );
+}
+
+int EMFrontPanel::update_front_page_load_management(const uint8_t index, const TileType type, const uint8_t param)
+{
+    return set_display_front_page_icon_with_check(
+        index,
+        true,
+        SPRITE_ICON_COG, // TODO: Make SPRITE_LOAD_MANAGEMENT
+        "WB 3x", // TODO: Get value from load management
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+        "42 kW", // TODO: Get value from load management
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK
+    );
+}
+
+int EMFrontPanel::update_front_page_meter(const uint8_t index, const TileType type, const uint8_t param)
+{
+    return set_display_front_page_icon_with_check(
+        index,
+        true,
+        SPRITE_ICON_COG, // TODO: Make SPRITE_METER
+        "Bezug", // TODO: Get value from load management
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+        "10 kW", // TODO: Get value from load management
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK
+    );
+}
+
+int EMFrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const TileType type, const uint8_t param)
+{
+    return set_display_front_page_icon_with_check(
+        index,
+        true,
+        SPRITE_ICON_MONEY,
+        "Preis",
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+        "0,18 \x1F", // TODO: Get value from load management
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK
+    );
+}
+
+int EMFrontPanel::update_front_page_solar_forecast(const uint8_t index, const TileType type, const uint8_t param)
+{
+    return set_display_front_page_icon_with_check(
+        index,
+        true,
+        SPRITE_ICON_SUN,
+        "Morgen",
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+        "135 kWh", // TODO: Get value from solar forecast
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK
+    );
+}
+
+int EMFrontPanel::update_front_page_energy_manager_status(const uint8_t index, const TileType type, const uint8_t param)
+{
+    return tf_warp_front_panel_set_display_front_page_icon(
+        &device,
+        index,
+        true,
+        SPRITE_ICON_COG, // TODO: WEM icon?
+        "All OK", // TODO: Get status from WEM
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+        "V2.3.1", // TODO: Get WEM firmware version
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK
+    );
+}
+
+
+void EMFrontPanel::update_front_page()
+{
+    for (FrontPanelTile &tile : tiles) {
+        const uint8_t index = tile.index;
+        const TileType type = TileType(tile.config.get("type")->asUint());
+        const uint8_t param = tile.config.get("parameter")->asUint();
+        int result = 0;
+        switch (type) {
+            case TileType::EmptyTile:           result = update_front_page_empty_tile(index, type, param);            break;
+            case TileType::Wallbox:             result = update_front_page_wallbox(index, type, param);               break;
+            case TileType::LoadManagement:      result = update_front_page_load_management(index, type, param);       break;
+            case TileType::Meter:               result = update_front_page_meter(index, type, param);                 break;
+            case TileType::DayAheadPrices:      result = update_front_page_day_ahead_prices(index, type, param);      break;
+            case TileType::SolarForecast:       result = update_front_page_solar_forecast(index, type, param);        break;
+            case TileType::EnergyManagerStatus: result = update_front_page_energy_manager_status(index, type, param); break;
+            default:
+                logger.printfln("Unknown tile type: %d", static_cast<std::underlying_type<TileType>::type>(type));
+                break;
+        }
+
+        if (result != TF_E_OK) {
+            logger.printfln("Failed to call set_display_front_page_icon: %d", result);
+            return;
+        }
+    }
+}
+
+void EMFrontPanel::update()
+{
+    update_wifi();
+    update_status_bar();
+    update_front_page();
 }
