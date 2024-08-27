@@ -57,7 +57,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
     static options_tile: [string, string][] = [
         ["0", __("front_panel.content.empty_tile")],
         ["1", __("front_panel.content.wallbox")],
-        ["2", __("front_panel.content.load_management")],
+        ["2", __("front_panel.content.charge_management")],
         ["3", __("front_panel.content.meter")],
         ["4", __("front_panel.content.day_ahead_price")],
         ["5", __("front_panel.content.solar_forecast")],

@@ -13,7 +13,7 @@ let x = {
             "tile": "Kachel",
             "empty_tile": "Leere Kachel",
             "wallbox": "Wallbox",
-            "load_management": "Lastmanagement",
+            "charge_management": "Lastmanagement",
             "meter": "Stromzähler",
             "day_ahead_price": "Dynamischer Strompreis",
             "solar_forecast": "Solarprognose",

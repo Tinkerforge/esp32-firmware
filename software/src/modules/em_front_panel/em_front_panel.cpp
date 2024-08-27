@@ -225,7 +225,7 @@ int EMFrontPanel::update_front_page_wallbox(const uint8_t index, const TileType 
     );
 }
 
-int EMFrontPanel::update_front_page_load_management(const uint8_t index, const TileType type, const uint8_t param)
+int EMFrontPanel::update_front_page_charge_management(const uint8_t index, const TileType type, const uint8_t param)
 {
     return set_display_front_page_icon_with_check(
         index,
@@ -302,7 +302,7 @@ void EMFrontPanel::update_front_page()
         switch (type) {
             case TileType::EmptyTile:           result = update_front_page_empty_tile(index, type, param);            break;
             case TileType::Wallbox:             result = update_front_page_wallbox(index, type, param);               break;
-            case TileType::LoadManagement:      result = update_front_page_load_management(index, type, param);       break;
+            case TileType::ChargeManagement:    result = update_front_page_charge_management(index, type, param);     break;
             case TileType::Meter:               result = update_front_page_meter(index, type, param);                 break;
             case TileType::DayAheadPrices:      result = update_front_page_day_ahead_prices(index, type, param);      break;
             case TileType::SolarForecast:       result = update_front_page_solar_forecast(index, type, param);        break;

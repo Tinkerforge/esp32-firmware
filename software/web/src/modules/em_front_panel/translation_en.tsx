@@ -13,7 +13,7 @@ let x = {
             "tile": "Tile",
             "empty_tile": "Empty Tile",
             "wallbox": "Wallbox",
-            "load_management": "Load Management",
+            "charge_management": "Charge Management",
             "meter": "Meter",
             "day_ahead_price": "Day Ahead Price",
             "solar_forecast": "Solar Forecast",
