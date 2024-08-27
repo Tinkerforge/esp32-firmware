@@ -621,7 +621,30 @@ de_hyph = [
     "Em-pfangs-qua-li-tät",
     "Ro-bust-heit",
     "ver-bes-sern",
-    "ver-lang-samt"
+    "ver-lang-samt",
+    "Ab-ge-bro-chen",
+    "Ab-weich-ung",
+    "Be-rech-nung",
+    "Fehl-be-dien-ung",
+    "Fort-schritt",
+    "Früh-es-tens",
+    "Funk-tio-na-li-tät",
+    "Geräte-profil",
+    "Her-aus-geber",
+    "In-i-ti-a-li-sie-rung",
+    "In-s-tal-la-tion",
+    "In-s-tal-la-tions",
+    "In-s-tal-lie-ren",
+    "Kon-fi-gu-rier-te",
+    "Si-cher-heit",
+    "Ve-ri-fi-ka-ti-on",
+    "Versions-nummer",
+    "her-aus-ge-geben",
+    "in-s-tall-ier-en",
+    "in-s-tall-iert",
+    "unter-stüzt",
+    "Fern-zu-griff",
+    "Fern-zu-griffs"
 ]
 
 en_hyph = [
@@ -782,8 +805,14 @@ en_hyph = [
     "ex-ter-nal-ly",
     "back-ground",
     "de-pre-ca-ted",
-    "ro-bust-ness"
-
+    "ro-bust-ness",
+    "Im-me-di-ate-ly",
+    "cal-cu-la-tion",
+    "func-tion-al-i-ty",
+    "ini-tia-li-za-tion",
+    "in-stal-ling",
+    "sup-pos-ed-ly",
+    "ver-i-fi-ca-tion",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
@@ -889,5 +918,10 @@ allowed_missing = set([
     "meter_all_values_any",
     "return___START_FRAGMENT___show",
     "start_address",
-    "value_id_name"
+    "value_id_name",
+    "actual_publisher",
+    "device_address",
+    "expected_publisher",
+    "firmware_version",
+    "installed_version"
 ])
