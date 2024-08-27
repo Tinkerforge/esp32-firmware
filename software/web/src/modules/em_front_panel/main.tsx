@@ -90,7 +90,6 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
 
         for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
             util.addApiEventListener_unchecked(`front_panel/tiles/${tile_index}/config`, () => {
-                console.log("tile_index", tile_index);
                 let config = API.get_unchecked(`front_panel/tiles/${tile_index}/config`);
 
                 this.setState((prevState) => ({
@@ -140,6 +139,27 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
 
         return super.getIsModified(topic);
     }
+
+    get_tile_config(tile_index: number, tile_items: [string, string][]) {
+        return <FormRow label="">
+            <div class="row no-gutters">
+                <div class="col-md-12">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Einstellung</span>
+                        </div>
+                        <InputSelect
+                            className="front-panel-input-group-prepend"
+                            items={tile_items}
+                            value={this.state.tile_configs[tile_index].parameter}
+                            onValue={(v) => this.setState({tile_configs: {...this.state.tile_configs, [tile_index]: {parameter: parseInt(v), type: this.state.tile_configs[tile_index].type}}})}
+                        />
+                    </div>
+                </div>
+            </div>
+        </FormRow>
+    }
+
     render(props: {}, state: EMFrontPanelState & EMFrontPanelConfig) {
         if (!util.render_allowed()) {
             return <SubPage name="front_panel" />;
@@ -154,26 +174,6 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                 <rect fill={tile_index == 4 ? "currentColor" : ""} x="14" y="14" width="7" height="7"></rect>
                 <rect fill={tile_index == 5 ? "currentColor" : ""} x="25" y="14" width="7" height="7"></rect>
             </svg>
-        }
-
-        function get_tile_config(tile_index: number, tile_items: [string, string][]) {
-            return <FormRow label="">
-                <div class="row no-gutters">
-                    <div class="col-md-12">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">Einstellung</span>
-                            </div>
-                            <InputSelect
-                                className="front-panel-input-group-prepend"
-                                items={tile_items}
-                                value={state.tile_configs[tile_index].parameter}
-                                onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: parseInt(v), "type": state.tile_configs[tile_index].type}}})}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </FormRow>
         }
 
         return (
@@ -200,13 +200,13 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                                         <InputSelect
                                             items={EMFrontPanel.options_tile}
                                             value={state.tile_configs[tile_index].type}
-                                            onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: state.tile_configs[tile_index].parameter, "type": parseInt(v)}}})}
+                                            onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: state.tile_configs[tile_index].parameter, type: parseInt(v)}}})}
                                         />
                                     </FormRow>
-                                    {state.tile_configs[tile_index].type === 1 && (get_tile_config(tile_index, EMFrontPanel.options_wallbox))}
-                                    {state.tile_configs[tile_index].type === 3 && (get_tile_config(tile_index, EMFrontPanel.options_meter))}
-                                    {state.tile_configs[tile_index].type === 4 && (get_tile_config(tile_index, EMFrontPanel.options_day_ahead_prices))}
-                                    {state.tile_configs[tile_index].type === 5 && (get_tile_config(tile_index, EMFrontPanel.options_solar_forecast))}
+                                    {state.tile_configs[tile_index].type === 1 && (this.get_tile_config(tile_index, EMFrontPanel.options_wallbox))}
+                                    {state.tile_configs[tile_index].type === 3 && (this.get_tile_config(tile_index, EMFrontPanel.options_meter))}
+                                    {state.tile_configs[tile_index].type === 4 && (this.get_tile_config(tile_index, EMFrontPanel.options_day_ahead_prices))}
+                                    {state.tile_configs[tile_index].type === 5 && (this.get_tile_config(tile_index, EMFrontPanel.options_solar_forecast))}
                                 </div>
                             })}
                         </div>
