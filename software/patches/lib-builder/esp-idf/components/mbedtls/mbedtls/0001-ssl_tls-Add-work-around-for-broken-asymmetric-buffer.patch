@@ -1,0 +1,45 @@
+From 5e9b62f68a51e8bc3ff6a18bd5accaaf015f0298 Mon Sep 17 00:00:00 2001
+From: Erik Fleckstein <erik@tinkerforge.com>
+Date: Tue, 27 Aug 2024 10:10:45 +0200
+Subject: [PATCH] ssl_tls: Add work-around for broken asymmetric buffers.
+
+---
+ library/ssl_tls.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/library/ssl_tls.c b/library/ssl_tls.c
+index c667a2923..fd5948329 100644
+--- a/library/ssl_tls.c
++++ b/library/ssl_tls.c
+@@ -5015,6 +5015,17 @@ const char *mbedtls_ssl_get_version(const mbedtls_ssl_context *ssl)
+ size_t mbedtls_ssl_get_input_max_frag_len(const mbedtls_ssl_context *ssl)
+ {
+     size_t max_len = MBEDTLS_SSL_MAX_CONTENT_LEN;
++
++    /*
++     * The buffer management is broken somewhere resulting in an input buffer
++     * that has the same size as the output buffer. We want to shrink the
++     * output buffer, but can't force a server to only send fragments that
++     * fit in a smaller than default input buffer (not every server supports
++     * negotiating a smaller fragment size), so just return the configured
++     * input buffer size here.
++     */
++    return max_len;
++
+     size_t read_mfl;
+ 
+     /* Use the configured MFL for the client if we're past SERVER_HELLO_DONE */
+@@ -5024,8 +5035,8 @@ size_t mbedtls_ssl_get_input_max_frag_len(const mbedtls_ssl_context *ssl)
+     }
+ 
+     /* Check if a smaller max length was negotiated */
+-    if (ssl->session_out != NULL) {
+-        read_mfl = ssl_mfl_code_to_length(ssl->session_out->mfl_code);
++    if (ssl->session_in != NULL) {
++        read_mfl = ssl_mfl_code_to_length(ssl->session_in->mfl_code);
+         if (read_mfl < max_len) {
+             max_len = read_mfl;
+         }
+-- 
+2.46.0
+
