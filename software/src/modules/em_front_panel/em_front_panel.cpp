@@ -26,6 +26,7 @@
 #include "warp_front_panel_bricklet_firmware_bin.embedded.h"
 #include "sprite_defines.h"
 #include "font_defines.h"
+#include "semantic_version.h"
 
 #define UPDATE_INTERVAL 1000
 #define PAGE_FRONT_TEXT_MAX_CHAR 6
@@ -337,14 +338,20 @@ int EMFrontPanel::update_front_page_solar_forecast(const uint8_t index, const Ti
 
 int EMFrontPanel::update_front_page_energy_manager_status(const uint8_t index, const TileType type, const uint8_t param)
 {
+    const SemanticVersion version;
+    String str1 = "FW Ver";
+    String str2 = String(version.major) + '.' + String(version.minor) + '.' + String(version.patch);
+
+    // TODO: Show error instead if energy manager has an error?
+
     return tf_warp_front_panel_set_display_front_page_icon(
         &device,
         index,
         true,
         SPRITE_ICON_COG, // TODO: WEM icon?
-        "All OK", // TODO: Get status from WEM
+        str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
-        "V2.3.1", // TODO: Get WEM firmware version
+        str2.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK
     );
 }
