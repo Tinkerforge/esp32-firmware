@@ -260,11 +260,11 @@ void RemoteAccess::register_urls() {
             serializer.end();
 
             CoolString relay_host = config.get("relay_host")->asString();
-            uint32_t relay_host_port = config.get("relay_host_port")->asUint();
+            uint32_t relay_port = config.get("relay_port")->asUint();
             CoolString login_url = "https://";
             login_url += relay_host;
             login_url += ":";
-            login_url += relay_host_port;
+            login_url += relay_port;
             login_url += "/api/selfdestruct";
 
             std::vector<std::pair<CoolString, CoolString>> headers;
