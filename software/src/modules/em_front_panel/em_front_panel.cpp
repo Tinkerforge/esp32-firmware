@@ -253,13 +253,43 @@ int EMFrontPanel::update_front_page_meter(const uint8_t index, const TileType ty
 
 int EMFrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const TileType type, const uint8_t param)
 {
+    String str1 = "Preis";
+    String str2 = "-- ct";
+
+    if (param > 2) {
+        logger.printfln("Invalid day ahead prices parameter: %d", param);
+    } else {
+        DataReturn<int32_t> price = {false, 0};
+        if (param == 0) {
+            str1 = "Preis";
+            price = day_ahead_prices.get_current_price();
+        } else if (param == 1) {
+            str1 = "Heute";
+            price = day_ahead_prices.get_average_price_today();
+        } else if (param == 2) {
+            str1 = "Morgen";
+            // price = day_ahead_prices.get_average_price_tomorrow(); // TODO: Add get_average_price_tomorrow to DayAheadPrices
+        }
+
+        if (price.data_available) {
+            int32_t ct = price.data / 1000;
+            if(ct >= 100) {
+                str2 = String(ct/100) + "." + String((ct/10) % 10) + " €";
+            } else if (ct <= -100) {
+                str2 = "-" + String(abs(ct)/100) + "." + String((abs(ct)/10) % 10) + " €";
+            } else {
+                str2 = String(ct) + " ct";
+            }
+        }
+    }
+
     return set_display_front_page_icon_with_check(
         index,
         true,
         SPRITE_ICON_MONEY,
-        "Preis",
+        str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
-        "0,18 \x1F", // TODO: Get value from load management
+        str2.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK
     );
 }
