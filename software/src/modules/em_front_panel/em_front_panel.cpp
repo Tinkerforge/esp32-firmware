@@ -266,13 +266,41 @@ int EMFrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const 
 
 int EMFrontPanel::update_front_page_solar_forecast(const uint8_t index, const TileType type, const uint8_t param)
 {
+    String str1 = "------";
+    String str2 = "-- kWh";
+    if(param > 1) {
+        logger.printfln("Invalid solar forecast parameter: %d", param);
+    } else {
+        auto kwh = param == 0 ? solar_forecast.get_kwh_today() : solar_forecast.get_kwh_tomorrow();
+        str1 = param == 0 ? "Heute" : "Morgen";
+        if (kwh.data_available) {
+            if (kwh.data < 1000) {
+                str2 = String(kwh.data) + "kWh";
+            } else if (kwh.data < (1000*10)) {
+                uint32_t mwh = kwh.data / 1000;
+                str2 = String(mwh/10) + "." + String(mwh%10) + "MWh";
+            } else if (kwh.data < (1000*1000)) {
+                uint32_t mwh = kwh.data / 1000;
+                str2 = String(mwh) + "MWh";
+            } else if(kwh.data < (1000*1000*10)) {
+                uint32_t gwh = kwh.data / (1000*1000);
+                str2 = String(gwh/10) + "." + String(gwh%10) + "GWh";
+            } else if (kwh.data < (1000*1000*1000)) {
+                uint32_t gwh = kwh.data / (1000*1000);
+                str2 = String(gwh) + "GWh";
+            } else {
+                str2 = ">1 TWh"; // damn
+            }
+        }
+    }
+
     return set_display_front_page_icon_with_check(
         index,
         true,
         SPRITE_ICON_SUN,
-        "Morgen",
+        str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
-        "135 kWh", // TODO: Get value from solar forecast
+        str2.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK
     );
 }
@@ -314,7 +342,6 @@ void EMFrontPanel::update_front_page()
 
         if (result != TF_E_OK) {
             logger.printfln("Failed to call set_display_front_page_icon: %d", result);
-            return;
         }
     }
 }
