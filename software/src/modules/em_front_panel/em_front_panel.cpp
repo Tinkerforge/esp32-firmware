@@ -269,7 +269,7 @@ int EMFrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const 
             price = day_ahead_prices.get_average_price_today();
         } else if (param == 2) {
             str1 = "Morgen";
-            // price = day_ahead_prices.get_average_price_tomorrow(); // TODO: Add get_average_price_tomorrow to DayAheadPrices
+            price = day_ahead_prices.get_average_price_tomorrow();
         }
 
         if (price.data_available) {
