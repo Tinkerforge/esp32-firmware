@@ -287,3 +287,13 @@
 - Close network connections before reboot
 - Generate some meter values if energy meter does not report them
 - Fix MQTT errors sometimes not being reported to event log
+
+<unknown>: 2.2.0 (<unknown>)
+- Add firmware update check and download
+- Add remote access
+- Sign firmware updates
+- Fix focus loss when starting to edit device display name
+- Fix localization of names of downloaded files
+- Fix long SSIDs overflowing the web interface layout
+- Show error message if recovery page failed to start factory reset
+- Fix MQTT automation rules with prefix
