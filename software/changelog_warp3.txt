@@ -58,6 +58,3 @@
 - Fix charge log PDF title
 - Speed up charge log PDF generation
 - Fix meter value overflows
-
-<unknown>: 2.5.0 (<unknown>)
-- TODO
