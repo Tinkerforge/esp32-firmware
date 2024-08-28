@@ -426,9 +426,6 @@ void EvseCommon::register_urls()
     }, false);
 
     api.addState("evse/management_current", &management_current);
-    api.addCommand("evse/management_current_update", &management_current_update, {}, [this](){
-        set_managed_current(management_current_update.get("current")->asUint());
-    }, false);
 
     api.addState("evse/boost_mode", &boost_mode);
     api.addCommand("evse/boost_mode_update", &boost_mode_update, {}, [this](){
