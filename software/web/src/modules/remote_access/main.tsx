@@ -214,6 +214,27 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         await this.registerCharger(cfg);
     }
 
+
+    override getIsModified(t: "remote_access/config"): boolean {
+        return API.get(t).enable;
+    }
+
+    override async sendReset(t: "remote_access/config") {
+        const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
+            config: {...API.get("remote_access/config"), enable: false},
+            login_key: "",
+            secret: "",
+            secret_key: "",
+            secret_nonce: "",
+            mgmt_charger_public: "",
+            mgmt_charger_private: "",
+            mgmt_psk: "",
+            keys: []
+        };
+
+        await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"), 10000);
+    }
+
     render() {
         if (!util.render_allowed())
             return <></>

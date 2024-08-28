@@ -272,9 +272,7 @@ void RemoteAccess::register_urls() {
 
             esp_err_t err;
             HttpResponse resp = this->make_http_request(login_url.c_str(), HTTP_METHOD_DELETE, delete_buf.get(), json_size, &headers, &err, &config);
-            if (resp.status != 200) {
-                return request.send(resp.status);
-            }
+            // Deregistering from the server is optional. Don't handle any request errors.
 
             config = new_config;
             API::writeConfig("remote_access/config", &config);
