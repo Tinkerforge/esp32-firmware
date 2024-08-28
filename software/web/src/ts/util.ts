@@ -212,6 +212,10 @@ window.addEventListener("message", (e) => {
     }
 });
 
+export function closeRemoteConnection() {
+    window.parent.postMessage("close");
+}
+
 let iFrameSocketCb: (data: any) => void = null;
 
 function iFrameSocketInit(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket | undefined, eventTarget: API.APIEventTarget) => void) {

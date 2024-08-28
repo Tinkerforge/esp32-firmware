@@ -76,6 +76,9 @@ let x = {
             "abort": "Verwerfen",
             "add": "Hinzufügen",
             "apply": "Übernehmen"
+        },
+        "remote_close_button": {
+            "close": "Fernzugriff schließen"
         }
     },
     "util": {
