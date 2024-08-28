@@ -27,6 +27,7 @@
 #include "bindings/errors.h"
 #include "build.h"
 #include "config_migrations.h"
+#include "tools.h"
 
 extern TF_HAL hal;
 
@@ -415,57 +416,146 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config)
 void API::register_urls()
 {
 #ifdef DEBUG_FS_ENABLE
-    server.on("/api_info", HTTP_GET, [this](WebServerRequest request) {
-        task_scheduler.scheduleOnce([this](){
-            auto len = strlen("api_info");
-            logger.printfln_prefixed("api_info", len, "[");
-            for (auto &reg : states) {
-                logger.printfln_prefixed("api_info", len, "{\"path\":\"%.*s\",\"type\":\"state\",\"low_latency\":%s,\"keys_to_censor\":[",
-                                reg.path_len, reg.path,
-                                reg.low_latency ? "true" : "false");
+    server.on_HTTPThread("/api_info", HTTP_GET, [this](WebServerRequest request) {
 
-                for (int i = 0; i < reg.keys_to_censor_len; ++i)
-                    logger.printfln_prefixed("api_info", len, "\"%s\",", reg.keys_to_censor[i].c_str());
+        request.beginChunkedResponse(200, "application/json; charset=utf-8");
 
-                logger.printfln_prefixed("api_info", len, "],\"content\":");
-                reg.config->print_api_info();
-                logger.printfln_prefixed("api_info", len, "},");
-            }
+        constexpr size_t BUF_SIZE = 5120;
+        // Largest API is 4k
+        auto buf = heap_alloc_array<char>(BUF_SIZE);
+        auto ptr = buf.get();
+        size_t written = 0;
 
-            for (auto &reg : commands) {
-                logger.printfln_prefixed("api_info", len, "{\"path\":\"%.*s\",\"type\":\"command\",\"is_action\":%s,\"keys_to_censor\":[",
+        *(ptr + written) = '[';
+        ++written;
+
+        size_t i = 0;
+        bool done = false;
+        while (!done) {
+            task_scheduler.await([ptr, &written, &i, &done, this](){
+                // There could be 0 states registered.
+                done = i >= states.size();
+                if (done)
+                    return;
+
+                const auto &reg = states[i];
+
+                written += snprintf_u((ptr + written), BUF_SIZE - written, "{\"path\":\"%.*s\",\"type\":\"state\",\"low_latency\":%s,\"keys_to_censor\":[",
+                                    reg.path_len, reg.path,
+                                    reg.low_latency ? "true" : "false");
+
+                for (int key = 0; key < reg.keys_to_censor_len; ++key)
+                    written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor[key].c_str());
+
+                written += snprintf_u((ptr + written), BUF_SIZE - written, "],\"content\":");
+                reg.config->print_api_info(ptr, BUF_SIZE, written);
+                written += snprintf_u((ptr + written), BUF_SIZE - written, "},");
+
+                ++i;
+                done = i >= states.size();
+            });
+            if (written != 0)
+                request.sendChunk(ptr, written);
+            written = 0;
+        }
+
+        i = 0;
+        done = false;
+        written = 0;
+        while (!done) {
+            task_scheduler.await([ptr, &written, &i, &done, this](){
+                // There could be 0 commands registered.
+                done = i >= commands.size();
+                if (done)
+                    return;
+
+                const auto &reg = commands[i];
+
+                written += snprintf_u((ptr + written), BUF_SIZE - written, "{\"path\":\"%.*s\",\"type\":\"command\",\"is_action\":%s,\"keys_to_censor\":[",
                                 reg.path_len, reg.path,
                                 reg.is_action ? "true" : "false");
 
-                for (int i = 0; i < reg.keys_to_censor_in_debug_report_len; ++i)
-                    logger.printfln_prefixed("api_info", len, "\"%s\",", reg.keys_to_censor_in_debug_report[i].c_str());
+                for (int key = 0; key < reg.keys_to_censor_in_debug_report_len; ++key)
+                    written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor_in_debug_report[key].c_str());
 
-                logger.printfln_prefixed("api_info", len, "],\"content\":");
-                reg.config->print_api_info();
-                logger.printfln_prefixed("api_info", len, "},");
-            }
+                written += snprintf_u((ptr + written), BUF_SIZE - written, "],\"content\":");
+                reg.config->print_api_info(ptr, BUF_SIZE, written);
+                written += snprintf_u((ptr + written), BUF_SIZE - written, "},");
 
-            for (auto &reg : responses) {
-                logger.printfln_prefixed("api_info", len, "{\"path\":\"%.*s\",\"type\":\"response\",\"keys_to_censor\":[",
+                ++i;
+                done = i >= commands.size();
+            });
+            if (written != 0)
+                request.sendChunk(ptr, written);
+            written = 0;
+        }
+
+        i = 0;
+        done = false;
+        written = 0;
+        while (!done) {
+            task_scheduler.await([ptr, &written, &i, &done, this](){
+                // There could be 0 responses registered.
+                done = i >= responses.size();
+                if (done)
+                    return;
+
+                const auto &reg = responses[i];
+
+                written += snprintf_u((ptr + written), BUF_SIZE - written, "{\"path\":\"%.*s\",\"type\":\"response\",\"keys_to_censor\":[",
                                 reg.path_len, reg.path);
 
-                for (int i = 0; i < reg.keys_to_censor_in_debug_report_len; ++i)
-                    logger.printfln_prefixed("api_info", len, "\"%s\",", reg.keys_to_censor_in_debug_report[i].c_str());
+                for (int key = 0; key < reg.keys_to_censor_in_debug_report_len; ++key)
+                    written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor_in_debug_report[i].c_str());
 
-                logger.printfln_prefixed("api_info", len, "],\"content\":");
-                reg.config->print_api_info();
-                logger.printfln_prefixed("api_info", len, "},");
-            }
+                written += snprintf_u((ptr + written), BUF_SIZE - written, "],\"content\":");
+                reg.config->print_api_info(ptr, BUF_SIZE, written);
+                written += snprintf_u((ptr + written), BUF_SIZE - written, "},");
 
-            for (auto &handler : server.handlers) {
-                logger.printfln_prefixed("api_info", len, "{\"path\":\"%s\",\"type\":\"http_only\",\"method\":%d,\"accepts_upload\":%s},", handler.uri + 1, handler.method, handler.accepts_upload ? "true" : "false"); // Skip first /
-            }
+                ++i;
+                done = i >= responses.size();
+            });
+            if (written != 0)
+                request.sendChunk(ptr, written);
+            written = 0;
+        }
 
+        std::forward_list<WebServerHandler>::iterator it;
+        bool first = true;
+        done = false;
+        written = 0;
+        while (!done) {
+            task_scheduler.await([ptr, &written, &i, &done, first, &it, this](){
+                if (first)
+                    it = server.handlers.begin();
 
-            logger.printfln_prefixed("api_info", len, "]");
-        }, 0);
+                // There could be 0 handlers registered.
+                done = it == server.handlers.end();
+                if (done)
+                    return;
 
-        return request.send(200);
+                const auto &handler = *it;
+
+                written += snprintf_u((ptr + written), BUF_SIZE - written, "{\"path\":\"%s\",\"type\":\"http_only\",\"method\":%d,\"accepts_upload\":%s},",
+                                handler.uri + 1, handler.method, handler.accepts_upload ? "true" : "false"); // Skip first /
+
+                ++it;
+                done = it == server.handlers.end();
+            });
+            first = false;
+            if (written != 0)
+                request.sendChunk(ptr, written);
+            written = 0;
+        }
+        written = 0;
+        *(ptr + written) = ']';
+        ++written;
+        // Be nice and end the file with a \n.
+        *(ptr + written) = '\n';
+        ++written;
+        request.sendChunk(ptr, written);
+
+        return request.endChunkedResponse();
     });
 #endif
 

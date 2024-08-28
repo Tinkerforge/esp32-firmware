@@ -814,7 +814,7 @@ public:
     OwnedConfig get_owned_copy();
 
 #ifdef DEBUG_FS_ENABLE
-    void print_api_info();
+    void print_api_info(char *buf, size_t buf_size, size_t &written);
 #endif
 
 private:

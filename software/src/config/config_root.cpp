@@ -173,7 +173,7 @@ bool ConfigRoot::get_permit_null_updates() {
 }
 
 #ifdef DEBUG_FS_ENABLE
-void ConfigRoot::print_api_info() {
-    Config::apply_visitor(api_info{}, this->value);
+void ConfigRoot::print_api_info(char *buf, size_t buf_size, size_t &written) {
+    Config::apply_visitor(api_info{buf, buf_size, written}, this->value);
 }
 #endif
