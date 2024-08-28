@@ -23,6 +23,8 @@
 
 #include "header_logger.h"
 
+#include "tools.h"
+
 struct default_validator {
     String operator()(const Config::ConfString &x) const
     {
@@ -999,67 +1001,81 @@ struct to_owned {
 struct api_info {
     void operator()(const Config::ConfString &x)
     {
-        written += snprintf(buf + written, buf_size - written, "{\"type\":\"string\",\"val\":\"%s\",\"minChars\":%u,\"maxChars\":%u}", x.getSlot()->val.c_str(), x.getSlot()->minChars, x.getSlot()->maxChars);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"string\",\"val\":\"%s\",\"minChars\":%u,\"maxChars\":%u}", x.getSlot()->val.c_str(), x.getSlot()->minChars, x.getSlot()->maxChars);
     }
     void operator()(const Config::ConfFloat &x)
     {
-        written += snprintf(buf + written, buf_size - written, "{\"type\":\"float\",\"val\":%f,\"min\":%f,\"max\":%f}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"float\",\"val\":%f,\"min\":%f,\"max\":%f}", isnan(x.getSlot()->val) ? 0.0f : x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfInt &x)
     {
-        written += snprintf(buf + written, buf_size - written, "{\"type\":\"int\",\"val\":%d,\"min\":%d,\"max\":%d}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"int\",\"val\":%d,\"min\":%d,\"max\":%d}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfUint &x)
     {
-        written += snprintf(buf + written, buf_size - written, "{\"type\":\"uint\",\"val\":%u,\"min\":%u,\"max\":%u}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"uint\",\"val\":%u,\"min\":%u,\"max\":%u}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfBool &x)
     {
-        written += snprintf(buf + written, buf_size - written, "{\"type\":\"bool\",\"val\":%s}", x.value ? "true" : "false");
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"bool\",\"val\":%s}", x.value ? "true" : "false");
     }
     void operator()(const Config::ConfVariant::Empty &x)
     {
-        written += snprintf(buf + written, buf_size - written, "{\"type\":\"null\"}");
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"null\"}");
     }
     void operator()(const Config::ConfArray &x)
     {
-        written += snprintf(buf + written, buf_size - written, "{\"type\":\"array\",\"prototype\":");
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"array\",\"prototype\":");
         Config::apply_visitor(api_info{buf, buf_size, written}, x.getSlot()->prototype->value);
-        written += snprintf(buf + written, buf_size - written, ",\"minElements\":%u,\"maxElements\":%u,\"variantType\":%d,\"content\":[", x.getSlot()->minElements, x.getSlot()->maxElements, x.getSlot()->variantType);
+        written += snprintf_u(buf + written, buf_size - written, ",\"minElements\":%u,\"maxElements\":%u,\"variantType\":%d,\"content\":[", x.getSlot()->minElements, x.getSlot()->maxElements, x.getSlot()->variantType);
+        bool first = true;
         for (const Config &c : *x.getVal()) {
+            if (!first) {
+                written += snprintf_u(buf + written, buf_size - written, ",");
+            }
+            first = false;
             Config::apply_visitor(api_info{buf, buf_size, written}, c.value);
-            written += snprintf(buf + written, buf_size - written, ",");
         }
-        written += snprintf(buf + written, buf_size - written, "]}");
+        written += snprintf_u(buf + written, buf_size - written, "]}");
     }
     void operator()(const Config::ConfObject &x)
     {
         const auto *slot = x.getSlot();
         const auto size = slot->schema->length;
 
-        written += snprintf(buf + written, buf_size - written, "{\"type\":\"object\",\"length\":%u,\"entries\":[", size);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"object\",\"length\":%u,\"entries\":[", size);
 
+        bool first = true;
         for (size_t i = 0; i < size; ++i) {
-            written += snprintf(buf + written, buf_size - written, "{\"key\":\"%.*s\",\"value\":", slot->schema->key_lengths[i], slot->schema->keys[i]);
+            if (!first) {
+                written += snprintf_u(buf + written, buf_size - written, ",");
+            }
+            first = false;
+            written += snprintf_u(buf + written, buf_size - written, "{\"key\":\"%.*s\",\"value\":", slot->schema->key_lengths[i], slot->schema->keys[i]);
             Config::apply_visitor(api_info{buf, buf_size, written}, slot->values[i].value);
-            written += snprintf(buf + written, buf_size - written, "},");
+            written += snprintf_u(buf + written, buf_size - written, "}");
         }
-        written += snprintf(buf + written, buf_size - written, "]}");
+        written += snprintf_u(buf + written, buf_size - written, "]}");
     }
     void operator()(const Config::ConfUnion &x)
     {
-        written += snprintf(buf + written, buf_size - written, "{\"type\":\"union\",\"tag\":%u,\"prototypes_len\":%u,\"prototypes\":[", x.getSlot()->tag, x.getSlot()->prototypes_len);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"union\",\"tag\":%u,\"prototypes_len\":%u,\"prototypes\":[", x.getSlot()->tag, x.getSlot()->prototypes_len);
 
+        bool first = true;
         for (size_t i = 0; i < x.getSlot()->prototypes_len; ++i) {
-            written += snprintf(buf + written, buf_size - written, "{\"tag\": %u,\"value\":", x.getSlot()->prototypes[i].tag);
+            if (!first) {
+                written += snprintf_u(buf + written, buf_size - written, ",");
+            }
+            first = false;
+            written += snprintf_u(buf + written, buf_size - written, "{\"tag\": %u,\"value\":", x.getSlot()->prototypes[i].tag);
             Config::apply_visitor(api_info{buf, buf_size, written}, x.getSlot()->prototypes[i].config.value);
-            written += snprintf(buf + written, buf_size - written, "},");
+            written += snprintf_u(buf + written, buf_size - written, "}");
         }
-        written += snprintf(buf + written, buf_size - written, "],\"val\":");
+        written += snprintf_u(buf + written, buf_size - written, "],\"val\":");
 
         auto &value = x.getVal()->value;
         Config::apply_visitor(api_info{buf, buf_size, written}, value);
-        written += snprintf(buf + written, buf_size - written, "}");
+        written += snprintf_u(buf + written, buf_size - written, "}");
     }
 
     char *buf;
