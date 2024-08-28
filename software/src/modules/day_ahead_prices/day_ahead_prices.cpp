@@ -388,8 +388,7 @@ bool DayAheadPrices::time_between(const uint32_t index, const uint32_t start, co
     return (dap_time >= start) && (dap_time <= end);
 }
 
-DataReturn<int32_t> DayAheadPrices::get_average_price_today()
-{
+DataReturn<int32_t> DayAheadPrices::get_average_price_between(const uint32_t start, const uint32_t end) {
     // No price data available
     if (prices.get("prices")->count() == 0) {
         return {false, 0};
@@ -397,8 +396,6 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_today()
 
     const uint32_t first_date = prices.get("first_date")->asUint();
     const uint32_t resolution = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
-    const uint32_t start      = get_localtime_today_midnight_in_utc() / 60;
-    const uint32_t end        = start + 24*60 - 1;
     const uint32_t num_prices = prices.get("prices")->count();
 
     int32_t sum = 0;
@@ -416,6 +413,22 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_today()
     }
 
     return {true, sum / count};
+}
+
+DataReturn<int32_t> DayAheadPrices::get_average_price_tomorrow()
+{
+    const uint32_t start = (get_localtime_today_midnight_in_utc() / 60) + (24 * 60);
+    const uint32_t end   = start + 24*60 - 1;
+
+    return get_average_price_between(start, end);
+}
+
+DataReturn<int32_t> DayAheadPrices::get_average_price_today()
+{
+    const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
+    const uint32_t end   = start + 24*60 - 1;
+
+    return get_average_price_between(start, end);
 }
 
 DataReturn<int32_t> DayAheadPrices::get_current_price()

@@ -61,7 +61,9 @@ public:
     void setup() override;
     void register_urls() override;
     esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
+    DataReturn<int32_t> get_average_price_between(const uint32_t start, const uint32_t end);
     DataReturn<int32_t> get_average_price_today();
+    DataReturn<int32_t> get_average_price_tomorrow();
     DataReturn<int32_t> get_current_price();
 
 
