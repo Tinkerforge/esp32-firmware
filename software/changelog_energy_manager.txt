@@ -288,7 +288,7 @@
 - Generate some meter values if energy meter does not report them
 - Fix MQTT errors sometimes not being reported to event log
 
-2024-08-29: 2.2.0 (<unknown>)
+2024-08-29: 2.2.0 (60ada225)
 - Add firmware update check and download
 - Add remote access
 - Sign firmware updates
