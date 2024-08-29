@@ -389,6 +389,27 @@ int EMFrontPanel::update_front_page_energy_manager_status(const uint8_t index, c
     );
 }
 
+int EMFrontPanel::update_front_page_heating_status(const uint8_t index, const TileType type, const uint8_t param)
+{
+    const SemanticVersion version;
+    String str1 = "SG Rdy";
+    String str2 = "--";
+    if (heating.is_active()) {
+        str2 = heating.is_sg_ready_output1_closed() ? "Ein" : "Aus";
+    }
+
+
+    return tf_warp_front_panel_set_display_front_page_icon(
+        &device,
+        index,
+        true,
+        SPRITE_ICON_HEATING,
+        str1.c_str(),
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+        str2.c_str(),
+        FONT_24PX_FREEMONO_WHITE_ON_BLACK
+    );
+}
 
 void EMFrontPanel::update_front_page()
 {
@@ -405,6 +426,7 @@ void EMFrontPanel::update_front_page()
             case TileType::DayAheadPrices:      result = update_front_page_day_ahead_prices(index, type, param);      break;
             case TileType::SolarForecast:       result = update_front_page_solar_forecast(index, type, param);        break;
             case TileType::EnergyManagerStatus: result = update_front_page_energy_manager_status(index, type, param); break;
+            case TileType::HeatingStatus:       result = update_front_page_heating_status(index, type, param);        break;
             default:
                 logger.printfln("Unknown tile type: %d", static_cast<std::underlying_type<TileType>::type>(type));
                 break;

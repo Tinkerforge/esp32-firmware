@@ -18,6 +18,7 @@ let x = {
             "day_ahead_price": "Day Ahead Price",
             "solar_forecast": "Solar Forecast",
             "energy_manager_status": "Energy Manager Status",
+            "heating_status": "Heating Status",
             "current_electricity_price": "Current electricity price",
             "average_price_today": "Average price today",
             "average_price_tomorrow": "Average price tomorrow",

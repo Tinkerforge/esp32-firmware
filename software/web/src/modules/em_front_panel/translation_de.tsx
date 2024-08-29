@@ -18,6 +18,7 @@ let x = {
             "day_ahead_price": "Dynamischer Strompreis",
             "solar_forecast": "Solarprognose",
             "energy_manager_status": "Status des Energy Managers",
+            "heating_status": "Status der Heizung",
             "current_electricity_price": "Aktueller Strompreis",
             "average_price_today": "Durchschnittspreis heute",
             "average_price_tomorrow": "Durchschnittspreis morgen",

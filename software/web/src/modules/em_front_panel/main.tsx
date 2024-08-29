@@ -62,6 +62,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
         ["4", __("front_panel.content.day_ahead_price")],
         ["5", __("front_panel.content.solar_forecast")],
         ["6", __("front_panel.content.energy_manager_status")],
+        ["7", __("front_panel.content.heating_status")],
     ]
 
     static options_wallbox: [string, string][] = [...Array(32).keys()].map((i) => [

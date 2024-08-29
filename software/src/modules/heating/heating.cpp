@@ -92,6 +92,29 @@ void Heating::register_urls()
     });
 }
 
+bool Heating::is_active()
+{
+    const bool winter_dynamic_price_control_active = config.get("winter_dynamic_price_control_active")->asBool();
+    const bool winter_pv_excess_control_active     = config.get("winter_pv_excess_control_active")->asBool();
+    const bool summer_block_time_active            = config.get("summer_block_time_active")->asBool();
+    const bool summer_yield_forecast_active        = config.get("summer_yield_forecast_active")->asBool();
+    const bool summer_dynamic_price_control_active = config.get("summer_dynamic_price_control_active")->asBool();
+    const bool summer_pv_excess_control_active     = config.get("summer_pv_excess_control_active")->asBool();
+
+    if(!winter_dynamic_price_control_active && !winter_pv_excess_control_active && !summer_block_time_active && !summer_yield_forecast_active && !summer_dynamic_price_control_active && !summer_pv_excess_control_active) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Heating::is_sg_ready_output1_closed() {
+    bool sg_ready_output[2] = {false, false};
+    energy_manager_v2.get_sg_ready_output(sg_ready_output);
+
+    return sg_ready_output[1];
+}
+
 void Heating::update()
 {
     const bool extended_logging_active = config.get("extended_logging_active")->asBool();
@@ -152,6 +175,11 @@ void Heating::update()
     const uint32_t summer_dynamic_price_control_threshold = config.get("summer_dynamic_price_control_threshold")->asUint();
     const bool     summer_pv_excess_control_active        = config.get("summer_pv_excess_control_active")->asBool();
     const uint32_t summer_pv_excess_control_threshold     = config.get("summer_pv_excess_control_threshold")->asUint();
+
+    if(!winter_dynamic_price_control_active && !winter_pv_excess_control_active && !summer_block_time_active && !summer_yield_forecast_active && !summer_dynamic_price_control_active && !summer_pv_excess_control_active) {
+        extended_logging("No control active.");
+        return;
+    }
 
     const time_t now              = time(NULL);
     const struct tm *current_time = localtime(&now);

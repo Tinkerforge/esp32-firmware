@@ -66,6 +66,7 @@ private:
         DayAheadPrices      = 4,
         SolarForecast       = 5,
         EnergyManagerStatus = 6,
+        HeatingStatus       = 7,
     };
 
     void update();
@@ -79,6 +80,7 @@ private:
     int update_front_page_day_ahead_prices(const uint8_t index, const TileType type, const uint8_t param);
     int update_front_page_solar_forecast(const uint8_t index, const TileType type, const uint8_t param);
     int update_front_page_energy_manager_status(const uint8_t index, const TileType type, const uint8_t param);
+    int update_front_page_heating_status(const uint8_t index, const TileType type, const uint8_t param);
     int set_display_front_page_icon_with_check(const uint32_t icon_index, bool active, const uint32_t sprite_index, const char *text_1, const uint8_t font_index_1, const char *text_2, const uint8_t font_index_2);
 
     ConfigRoot config;
