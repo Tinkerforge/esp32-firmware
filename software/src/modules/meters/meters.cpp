@@ -754,10 +754,13 @@ void Meters::apply_filters(MeterSlot &meter_slot, size_t base_value_count, const
     for (size_t i = 0; i < extra_value_count; i++) {
         float value = extra_values[i];
         if (!isnan(value)) {
-            values.get(static_cast<uint16_t>(base_value_count + i))->updateFloat(value);
+            uint32_t index = base_value_count + i;
+            values.get(static_cast<uint16_t>(index))->updateFloat(value);
+            if (index == meter_slot.index_cache_single_values[INDEX_CACHE_POWER_REAL]) {
+                meter_slot.power_history.add_sample(value);
+            }
         }
     }
-
 }
 
 void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
