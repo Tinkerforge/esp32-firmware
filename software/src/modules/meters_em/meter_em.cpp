@@ -95,6 +95,8 @@ void MeterEM::update_from_em_all_data(const EnergyManagerAllData &all_data)
     for (size_t i = 0; i < ARRAY_SIZE(value_index_currents); i++) {
         meters.update_value(slot, value_index_currents[i], all_data.current[i]);
     }
+
+    meters.finish_update(slot);
 }
 
 void MeterEM::update_all_values(float *values)

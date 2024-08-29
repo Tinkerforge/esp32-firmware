@@ -183,6 +183,8 @@ void MetersLegacyAPI::register_urls()
             float val = as_const(this->legacy_values_update).get(field_name)->asFloat();
             meters.update_value(this->linked_meter_slot, target_index, val);
         }
+
+        meters.finish_update(this->linked_meter_slot);
     }, false);
 
     api.addCommand("meter/phases_update", &legacy_phases_update, {}, [this](){

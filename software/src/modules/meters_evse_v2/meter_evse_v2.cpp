@@ -101,6 +101,8 @@ void MeterEVSEV2::energy_meter_values_callback(float power, float current[3])
     for (size_t i = 0; i < ARRAY_SIZE(value_index_currents); i++) {
         meters.update_value(slot, value_index_currents[i], current[i]);
     }
+
+    meters.finish_update(slot);
 }
 
 void MeterEVSEV2::update_all_values(float *values)

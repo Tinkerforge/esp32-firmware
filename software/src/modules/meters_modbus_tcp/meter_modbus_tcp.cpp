@@ -985,6 +985,7 @@ void MeterModbusTCP::read_done_callback()
 
     if (overflow) {
         // make a little pause after each round trip
+        meters.finish_update(slot);
         read_allowed = true;
     }
     else {

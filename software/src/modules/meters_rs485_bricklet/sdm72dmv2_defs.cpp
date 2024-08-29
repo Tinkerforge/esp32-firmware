@@ -57,6 +57,8 @@ static void sdm72dmv2_fast_read_done(const uint16_t *all_regs, uint32_t meter_sl
     meters.update_value(meter_slot, idx_current_l1,     fast_values[CurrentPhase0]);
     meters.update_value(meter_slot, idx_current_l1 + 1, fast_values[CurrentPhase1]);
     meters.update_value(meter_slot, idx_current_l1 + 2, fast_values[CurrentPhase2]);
+
+    meters.finish_update(meter_slot);
 }
 
 static void sdm72dmv2_slow_read_done(const uint16_t *all_regs, uint32_t meter_slot, ConfigRoot *reset)

@@ -757,7 +757,6 @@ void Meters::apply_filters(MeterSlot &meter_slot, size_t base_value_count, const
             values.get(static_cast<uint16_t>(base_value_count + i))->updateFloat(value);
         }
     }
-
 }
 
 void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
@@ -798,10 +797,6 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 
         apply_filters(meter_slot, base_value_count, base_values);
     }
-
-    if (index == meter_slot.index_cache_single_values[INDEX_CACHE_POWER_REAL]) {
-        meter_slot.power_history.add_sample(new_value);
-    }
 }
 
 void Meters::update_all_values(uint32_t slot, const float new_values[])
@@ -841,14 +836,10 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
     if (changed_any_value)
         meter_slot.values_last_changed_at = t_now;
 
-    if (updated_any_value) {
+    if (updated_any_value)
         meter_slot.values_last_updated_at = t_now;
 
-        float power;
-        if (get_power_real(slot, &power) == MeterValueAvailability::Fresh) {
-            meter_slot.power_history.add_sample(power);
-        }
-    }
+    finish_update(slot);
 }
 
 void Meters::update_all_values(uint32_t slot, const Config *new_values)
@@ -871,6 +862,21 @@ void Meters::update_all_values(uint32_t slot, const Config *new_values)
     }
 
     update_all_values(slot, float_values);
+}
+
+void Meters::finish_update(uint32_t slot)
+{
+    if (slot >= METERS_SLOTS) {
+        logger.printfln("Tried to finish an update for meter in non-existent slot %u.", slot);
+        return;
+    }
+
+    MeterSlot &meter_slot = meter_slots[slot];
+    float power;
+
+    if (get_power_real(slot, &power) == MeterValueAvailability::Fresh) {
+        meter_slot.power_history.add_sample(power);
+    }
 }
 
 void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[], uint32_t value_id_count)
