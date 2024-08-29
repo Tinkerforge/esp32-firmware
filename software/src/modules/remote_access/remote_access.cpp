@@ -563,7 +563,7 @@ HttpResponse RemoteAccess::make_http_request(const char *url, esp_http_client_me
     http_config.method = method;
     http_config.user_data = &response;
     http_config.is_async = true;
-    http_config.timeout_ms = 15000;
+    http_config.timeout_ms = 5000;
 
     auto deadline = now_us() + 5_usec * 1000_usec * 1000_usec;
 
@@ -606,12 +606,14 @@ HttpResponse RemoteAccess::make_http_request(const char *url, esp_http_client_me
         err = esp_http_client_perform(client);
         // TODO: improve http timeout handling.
         if (deadline_elapsed(deadline)) {
+            errno = ETIMEDOUT;
             err = ESP_FAIL;
         }
     } while (err == ESP_ERR_HTTP_EAGAIN);
 
     if (err != ESP_OK) {
         logger.printfln("Failed to send request with error %i: %s", errno, strerror_r(errno, nullptr, 0));
+        esp_http_client_close(client);
         esp_http_client_cleanup(client);
         *ret_error = err;
         return response;
