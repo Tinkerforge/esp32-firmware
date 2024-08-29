@@ -297,3 +297,4 @@
 - Fix long SSIDs overflowing the web interface layout
 - Show error message if recovery page failed to start factory reset
 - Fix MQTT automation rules with prefix
+- Fix missing power graph for Victron Energy GX grid meter
