@@ -464,7 +464,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                     </Collapse>
                 </ConfigForm>
                 <FormSeparator heading={__("solar_forecast.content.solar_forecast_chart_heading")}/>
-                <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date().getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + "23:59"}>
+                <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date().getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
                     <InputText value={does_forecast_exist() ? get_kwh_now_to_midnight() + " kWh" : __("solar_forecast.content.unknown_not_yet")}/>
                 </FormRow>
                 <FormRow label={__("solar_forecast.content.solar_forecast_today_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
