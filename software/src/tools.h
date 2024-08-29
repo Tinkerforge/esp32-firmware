@@ -89,15 +89,15 @@ err_t dns_gethostbyname_addrtype_lwip_ctx(const char *hostname, ip_addr_t *addr,
 
 struct dns_gethostbyname_addrtype_lwip_ctx_async_data
 {
-    int err; // output
+    err_t err; // output
     ip_addr_t addr; // internal
     ip_addr_t *addr_ptr; // output
-    void (*found_callback)(dns_gethostbyname_addrtype_lwip_ctx_async_data */*data*/); // input
+    std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> found_callback; // input
     void *user; // input/output
 };
 
 void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
-                                               void (*found_callback)(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg),
+                                               std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback,
                                                dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg,
                                                u8_t dns_addrtype);
 

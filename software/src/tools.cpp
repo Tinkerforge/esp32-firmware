@@ -847,7 +847,7 @@ static void gethostbyname_addrtype_lwip_ctx_async(const char */*hostname*/, cons
 }
 
 void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
-                                               void (*found_callback)(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg),
+                                               std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback,
                                                dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg,
                                                u8_t dns_addrtype)
 {
