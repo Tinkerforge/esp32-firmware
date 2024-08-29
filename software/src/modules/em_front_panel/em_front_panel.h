@@ -34,6 +34,18 @@ class EMFrontPanel : public DeviceModule<TF_WARPFrontPanel,
                                          tf_warp_front_panel_destroy>
 {
 public:
+    enum class LEDPattern : uint8_t {
+        Off       = 0,
+        On        = 1,
+        Blinking  = 2,
+        Breathing = 3,
+    };
+    enum class LEDColor : uint8_t {
+        Green  = 0,
+        Red    = 1,
+        Yellow = 2,
+    };
+
     EMFrontPanel();
 
     void pre_setup() override;
@@ -42,6 +54,8 @@ public:
     void loop() override;
     void setup_bricklet();
     void check_bricklet_state();
+    int set_led(const LEDPattern pattern, const LEDColor color);
+    int get_led(LEDPattern *pattern, LEDColor *color);
 
 private:
     enum class TileType : uint8_t {

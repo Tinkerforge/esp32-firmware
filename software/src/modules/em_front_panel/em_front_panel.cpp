@@ -122,6 +122,39 @@ void EMFrontPanel::loop()
     this->DeviceModule::loop();
 }
 
+int EMFrontPanel::set_led(const LEDPattern pattern, const LEDColor color)
+{
+    int result = tf_warp_front_panel_set_led_state(
+        &device,
+        static_cast<std::underlying_type<LEDPattern>::type>(pattern),
+        static_cast<std::underlying_type<LEDColor>::type>(color)
+    );
+    if (result != TF_E_OK) {
+        logger.printfln("Failed to call set_led_state: %d", result);
+    }
+    return result;
+}
+
+int EMFrontPanel::get_led(LEDPattern *pattern, LEDColor *color)
+{
+    uint8_t pattern_raw = 0;
+    uint8_t color_raw   = 0;
+    int result = tf_warp_front_panel_get_led_state(
+        &device,
+        &pattern_raw,
+        &color_raw
+    );
+
+    if (result == TF_E_OK) {
+        *pattern = static_cast<LEDPattern>(pattern_raw);
+        *color   = static_cast<LEDColor>(color_raw);
+    } else {
+        logger.printfln("Failed to call set_led_state: %d", result);
+    }
+
+    return result;
+}
+
 void EMFrontPanel::update_wifi()
 {
     int result = tf_warp_front_panel_set_display_wifi_setup_1(

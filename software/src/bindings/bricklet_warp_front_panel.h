@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-08-18.      *
+ * This file was automatically generated on 2024-08-29.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -122,6 +122,16 @@ typedef struct TF_WARPFrontPanel {
 /**
  * \ingroup TF_WARPFrontPanel
  */
+#define TF_WARP_FRONT_PANEL_FUNCTION_SET_LED_STATE 16
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_FUNCTION_GET_LED_STATE 17
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
 #define TF_WARP_FRONT_PANEL_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
@@ -192,6 +202,41 @@ typedef struct TF_WARPFrontPanel {
  * \ingroup TF_WARPFrontPanel
  */
 #define TF_WARP_FRONT_PANEL_FLASH_STATUS_BUSY 1
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_LED_PATTERN_OFF 0
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_LED_PATTERN_ON 1
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_LED_PATTERN_BLINKING 2
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_LED_PATTERN_BREATHING 3
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_LED_COLOR_GREEN 0
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_LED_COLOR_RED 1
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_LED_COLOR_YELLOW 2
 
 /**
  * \ingroup TF_WARPFrontPanel
@@ -427,7 +472,7 @@ int tf_warp_front_panel_get_display_page_index(TF_WARPFrontPanel *warp_front_pan
  *
  * TODO
  */
-int tf_warp_front_panel_set_display_front_page_icon(TF_WARPFrontPanel *warp_front_panel, uint32_t icon_index, bool active, uint32_t sprite_index, const char text_1[10], uint8_t font_index_1, const char text_2[10], uint8_t font_index_2);
+int tf_warp_front_panel_set_display_front_page_icon(TF_WARPFrontPanel *warp_front_panel, uint32_t icon_index, bool active, uint32_t sprite_index, const char text_1[6], uint8_t font_index_1, const char text_2[6], uint8_t font_index_2);
 
 /**
  * \ingroup TF_WARPFrontPanel
@@ -463,6 +508,20 @@ int tf_warp_front_panel_set_display_wifi_setup_2(TF_WARPFrontPanel *warp_front_p
  * TODO
  */
 int tf_warp_front_panel_get_display_wifi_setup_2(TF_WARPFrontPanel *warp_front_panel, char ret_password[64]);
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ *
+ *
+ */
+int tf_warp_front_panel_set_led_state(TF_WARPFrontPanel *warp_front_panel, uint8_t pattern, uint8_t color);
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ *
+ *
+ */
+int tf_warp_front_panel_get_led_state(TF_WARPFrontPanel *warp_front_panel, uint8_t *ret_pattern, uint8_t *ret_color);
 
 /**
  * \ingroup TF_WARPFrontPanel
