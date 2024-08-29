@@ -129,9 +129,11 @@ int EMFrontPanel::set_led(const LEDPattern pattern, const LEDColor color)
         static_cast<std::underlying_type<LEDPattern>::type>(pattern),
         static_cast<std::underlying_type<LEDColor>::type>(color)
     );
+
     if (result != TF_E_OK) {
         logger.printfln("Failed to call set_led_state: %d", result);
     }
+
     return result;
 }
 
@@ -238,7 +240,7 @@ int EMFrontPanel::update_front_page_empty_tile(const uint8_t index, const TileTy
     return set_display_front_page_icon_with_check(
         index,
         false,
-        0, // TODO: Make SPRITE_EMPTY?
+        SPRITE_ICON_EMPTY,
         "",
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
         "",
@@ -264,7 +266,7 @@ int EMFrontPanel::update_front_page_charge_management(const uint8_t index, const
     return set_display_front_page_icon_with_check(
         index,
         true,
-        SPRITE_ICON_COG, // TODO: Make SPRITE_LOAD_MANAGEMENT
+        SPRITE_ICON_CHARGE_MANAGEMENT,
         "WB 3x", // TODO: Get value from load management
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
         "42 kW", // TODO: Get value from load management
@@ -277,7 +279,7 @@ int EMFrontPanel::update_front_page_meter(const uint8_t index, const TileType ty
     return set_display_front_page_icon_with_check(
         index,
         true,
-        SPRITE_ICON_COG, // TODO: Make SPRITE_METER
+        SPRITE_ICON_HOME_METER,
         "Bezug", // TODO: Get value from load management
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
         "10 kW", // TODO: Get value from load management
