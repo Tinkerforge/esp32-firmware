@@ -22,7 +22,7 @@
 #include "module.h"
 #include "modules/meters/meter_generator.h"
 #include "config.h"
-#include "modules/energy_manager/structs.h"
+#include "modules/em_common/structs.h"
 #include "meter_em.h"
 
 #if defined(__GNUC__)
@@ -44,7 +44,7 @@ public:
     [[gnu::const]] virtual const Config *get_state_prototype()  override;
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
-    void update_from_em_all_data(const EnergyManagerAllData &all_data);
+    void update_from_em_all_data(const EMAllDataCommon &all_data);
 
 private:
     Config config_prototype;

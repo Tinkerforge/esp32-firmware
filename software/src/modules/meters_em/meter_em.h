@@ -21,7 +21,7 @@
 
 #include "modules/meters/imeter.h"
 #include "config.h"
-#include "modules/energy_manager/structs.h"
+#include "modules/em_common/structs.h"
 #include "modules/meters/meter_defs.h"
 
 #if defined(__GNUC__)
@@ -36,7 +36,6 @@ public:
     MeterEM(uint32_t slot_, Config *state_, Config *errors_) : slot(slot_), state(state_), errors(errors_) {}
 
     MeterClassID get_class() const override;
-    //void setup() override;
 
     bool supports_power()         override {return true;}
     bool supports_energy_import() override {return true;}
@@ -46,7 +45,7 @@ public:
     bool supports_reset()         override {return true;}
     bool reset()                  override;
 
-    void update_from_em_all_data(const EnergyManagerAllData &all_data);
+    void update_from_em_all_data(const EMAllDataCommon &all_data);
 private:
     void update_all_values(float *values);
 

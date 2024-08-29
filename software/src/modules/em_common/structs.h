@@ -1,5 +1,6 @@
+
 /* esp32-firmware
- * Copyright (C) 2022 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2024 Mattias Schäffersmann <mattias@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,24 +26,12 @@ typedef struct {
     uint32_t last_update;
     bool is_valid;
 
-    bool contactor_value;
-
-    uint8_t rgb_value_r;
-    uint8_t rgb_value_g;
-    uint8_t rgb_value_b;
-
     float power;
     float current[3];
 
     uint8_t energy_meter_type;
     uint32_t error_count[6];
-
-    bool input[2];
-    bool relay;
-    uint16_t voltage;
-    uint8_t contactor_check_state;
-    uint32_t uptime;
-} EnergyManagerAllData;
+} EMAllDataCommon;
 
 struct sdcard_info {
     uint32_t sd_status;

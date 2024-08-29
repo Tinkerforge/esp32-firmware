@@ -275,6 +275,20 @@ void EnergyManager::register_urls()
     this->DeviceModule::register_urls();
 }
 
+// for IEMBackend
+
+bool EnergyManager::is_initialized() const
+{
+    return initialized;
+}
+
+uint32_t EnergyManager::get_em_version() const
+{
+    return 1;
+}
+
+// for PhaseSwitcherBackend
+
 bool EnergyManager::phase_switching_capable()
 {
     return contactor_installed;
@@ -375,7 +389,7 @@ void EnergyManager::update_all_data()
     if (state.get("phases_switched")->updateUint(have_phases)) AUTOMATION_TRIGGER(EMPhaseSwitch, nullptr);
 
 #if MODULE_METERS_EM_AVAILABLE()
-    meters_em.update_from_em_all_data(all_data);
+    meters_em.update_from_em_all_data(all_data.common);
 #endif
 
     // Update meter values even if the config is bad.
@@ -403,10 +417,10 @@ void EnergyManager::update_all_data_struct()
         &all_data.rgb_value_r,
         &all_data.rgb_value_g,
         &all_data.rgb_value_b,
-        &all_data.power,
-        all_data.current,
-        &all_data.energy_meter_type,
-        all_data.error_count,
+        &all_data.common.power,
+        all_data.common.current,
+        &all_data.common.energy_meter_type,
+        all_data.common.error_count,
         all_data.input,
         &all_data.relay,
         &all_data.voltage,
@@ -417,8 +431,8 @@ void EnergyManager::update_all_data_struct()
     check_bricklet_reachable(rc, "update_all_data_struct");
 
     if (rc == TF_E_OK) {
-        all_data.last_update = millis();
-        all_data.is_valid = true;
+        all_data.common.last_update = millis();
+        all_data.common.is_valid = true;
     }
 }
 

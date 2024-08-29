@@ -79,7 +79,7 @@ const Config *MetersEM::get_errors_prototype()
     return &errors_prototype;
 }
 
-void MetersEM::update_from_em_all_data(const EnergyManagerAllData &all_data)
+void MetersEM::update_from_em_all_data(const EMAllDataCommon &all_data)
 {
     if (!meter_instance)
         return;

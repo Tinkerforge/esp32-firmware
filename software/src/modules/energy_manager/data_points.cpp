@@ -190,7 +190,7 @@ void EnergyManager::collect_data_points()
 #endif
         }
 
-        if (all_data.is_valid && !deadline_elapsed(all_data.last_update + MAX_DATA_AGE)) {
+        if (all_data.common.is_valid && !deadline_elapsed(all_data.common.last_update + MAX_DATA_AGE)) {
             uint8_t flags = 0; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data (read only)
             int32_t power[7] = {INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX}; // W
 

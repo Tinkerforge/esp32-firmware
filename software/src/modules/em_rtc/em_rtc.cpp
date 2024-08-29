@@ -23,7 +23,7 @@
 
 void EmRtc::setup()
 {
-    if (!energy_manager.initialized)
+    if (!em_common.initialized)
         return;
 
     initialized = true;
@@ -39,12 +39,12 @@ void EmRtc::register_urls()
 
 void EmRtc::set_time(const tm &tm)
 {
-    energy_manager.set_time(tm);
+    em_common.set_time(tm);
 }
 
 struct timeval EmRtc::get_time()
 {
-    return energy_manager.get_time();
+    return em_common.get_time();
 }
 
 void EmRtc::reset()

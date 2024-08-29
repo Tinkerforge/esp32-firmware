@@ -40,7 +40,7 @@ void EMSDcard::pre_setup()
 
 void EMSDcard::setup()
 {
-    if (!energy_manager.initialized)
+    if (!em_common.initialized)
         return;
 
     update_sdcard_info();
@@ -63,7 +63,7 @@ void EMSDcard::register_urls()
         }
 
         logger.printfln("Formatting SD card...");
-        if (!energy_manager.format_sdcard()) {
+        if (!em_common.format_sdcard()) {
             result = "Format request failed";
             return;
         }
@@ -77,7 +77,7 @@ void EMSDcard::update_sdcard_info()
 {
     struct sdcard_info data;
 
-    if (energy_manager.get_sdcard_info(&data)) {
+    if (em_common.get_sdcard_info(&data)) {
         state.get("sd_status")->updateUint(data.sd_status);
         state.get("lfs_status")->updateUint(data.lfs_status);
         state.get("card_type")->updateUint(data.card_type);

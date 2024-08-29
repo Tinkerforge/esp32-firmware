@@ -33,7 +33,7 @@ MeterClassID MeterEM::get_class() const
     return MeterClassID::EnergyManager;
 }
 
-void MeterEM::update_from_em_all_data(const EnergyManagerAllData &all_data)
+void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
 {
     // Reject stale data older than five seconds.
     if (deadline_elapsed(all_data.last_update + 5 * 1000))
@@ -65,7 +65,7 @@ void MeterEM::update_from_em_all_data(const EnergyManagerAllData &all_data)
 
         // No need to initialize the array because either all values are written or it is rejected entirely.
         float all_values[METER_ALL_VALUES_RESETTABLE_COUNT];
-        if (energy_manager.get_energy_meter_detailed_values(all_values) != METER_ALL_VALUES_RESETTABLE_COUNT)
+        if (em_common.get_energy_meter_detailed_values(all_values) != METER_ALL_VALUES_RESETTABLE_COUNT)
             return;
 
         meter_type = all_data.energy_meter_type;
@@ -106,7 +106,7 @@ void MeterEM::update_all_values(float *values)
 
     if (!values) {
         values = local_values;
-        if (energy_manager.get_energy_meter_detailed_values(values) != METER_ALL_VALUES_RESETTABLE_COUNT)
+        if (em_common.get_energy_meter_detailed_values(values) != METER_ALL_VALUES_RESETTABLE_COUNT)
             return;
     }
 
@@ -117,5 +117,5 @@ void MeterEM::update_all_values(float *values)
 
 bool MeterEM::reset()
 {
-    return energy_manager.reset_energy_meter_relative_energy();
+    return em_common.reset_energy_meter_relative_energy();
 }

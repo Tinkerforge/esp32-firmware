@@ -26,10 +26,11 @@
 #include "config.h"
 #include "bindings/bricklet_warp_energy_manager.h"
 #include "modules/api/api.h"
+#include "modules/em_common/em_common.h"
+#include "modules/em_common/structs.h"
 #include "modules/power_manager/phase_switcher_back-end.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
 #include "em_rgb_led.h"
-#include "structs.h"
 #include "module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -53,11 +54,28 @@
 #define ERROR_FLAGS_ALL_ERRORS_MASK         (0x7FFF0000)
 #define ERROR_FLAGS_ALL_WARNINGS_MASK       (0x0000FFFF)
 
+typedef struct {
+    EMAllDataCommon common;
+
+    bool contactor_value;
+
+    uint8_t rgb_value_r;
+    uint8_t rgb_value_g;
+    uint8_t rgb_value_b;
+
+    bool input[2];
+    bool relay;
+    uint16_t voltage;
+    uint8_t contactor_check_state;
+    uint32_t uptime;
+} EnergyManagerAllData;
+
 class EnergyManager final : public DeviceModule<TF_WARPEnergyManager,
                                                 tf_warp_energy_manager_create,
                                                 tf_warp_energy_manager_get_bootloader_mode,
                                                 tf_warp_energy_manager_reset,
                                                 tf_warp_energy_manager_destroy>,
+                            public IEMBackend,
                             public PhaseSwitcherBackend,
                             public IDebugProtocolBackend
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -72,6 +90,24 @@ public:
     void setup() override;
     void register_urls() override;
     void register_events() override;
+
+protected:
+
+    // for IEMBackend
+    bool is_initialized() const override;
+
+    [[gnu::const]] uint32_t get_em_version() const override;
+
+    void set_time(const tm &tm) override;
+    struct timeval get_time() override;
+
+    bool get_sdcard_info(struct sdcard_info *data) override;
+    bool format_sdcard() override;
+
+    uint16_t get_energy_meter_detailed_values(float *ret_values);
+    bool reset_energy_meter_relative_energy();
+
+public:
 
     // for PhaseSwitcherBackend
     uint32_t get_phase_switcher_priority() override {return 8;}
@@ -93,15 +129,8 @@ public:
     [[gnu::const]] size_t get_debug_line_length() const override;
     void get_debug_line(StringBuilder *sb) override;
 
-    bool get_sdcard_info(struct sdcard_info *data);
-    bool format_sdcard();
-    uint16_t get_energy_meter_detailed_values(float *ret_values);
-    bool reset_energy_meter_relative_energy();
     void set_output(bool output);
     void set_rgb_led(uint8_t pattern, uint16_t hue);
-
-    void set_time(const tm &tm);
-    struct timeval get_time();
 
     void update_grid_balance_led(EmRgbLed::GridBalance balance);
 
