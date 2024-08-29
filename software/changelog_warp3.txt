@@ -59,7 +59,7 @@
 - Speed up charge log PDF generation
 - Fix meter value overflows
 
-<unknown>: 2.5.0 (<unknown>)
+2024-08-29: 2.5.0 (<unknown>)
 - Add firmware update check and download
 - Add remote access
 - Add configurable time that NFC tags are ignored for after authorizing a charge start

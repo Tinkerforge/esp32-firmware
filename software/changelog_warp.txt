@@ -607,7 +607,7 @@
 - Fix meter value overflows
 - Improve CP/PE measurement (through EVSE Bricklet firmware 2.1.10)
 
-<unknown>: 2.4.2 (<unknown>)
+2024-08-29: 2.4.2 (<unknown>)
 - Add configurable time that NFC tags are ignored for after authorizing a charge start
 - Add front panel LED blink on ESP restart
 - Sign firmware updates
