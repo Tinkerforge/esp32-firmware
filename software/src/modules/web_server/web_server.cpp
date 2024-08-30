@@ -85,29 +85,26 @@ void WebServer::runInHTTPThread(void (*fn)(void *arg), void *arg)
     httpd_queue_work(httpd, fn, arg);
 }
 
-struct UserCtx {
-    WebServer *server;
-    WebServerHandler *handler;
-};
-
 static esp_err_t low_level_handler(httpd_req_t *req)
 {
-    auto ctx = (UserCtx *)req->user_ctx;
+    auto *handler = (WebServerHandler *)req->user_ctx;
+    auto *server = (WebServer *) httpd_get_global_user_ctx(req->handle);
+
     auto request = WebServerRequest{req};
 
-    if (ctx->server->auth_fn && !ctx->server->auth_fn(request)) {
-        if (ctx->server->on_not_authorized) {
-            ctx->server->on_not_authorized(request);
+    if (server->auth_fn && !server->auth_fn(request)) {
+        if (server->on_not_authorized) {
+            server->on_not_authorized(request);
             return ESP_OK;
         }
         request.requestAuthentication();
         return ESP_OK;
     }
 
-    if (ctx->handler->callbackInMainThread)
-        task_scheduler.await([ctx, request](){ctx->handler->callback(request);});
+    if (handler->callbackInMainThread)
+        task_scheduler.await([handler, request](){handler->callback(request);});
     else
-        ctx->handler->callback(request);
+        handler->callback(request);
 
     return ESP_OK;
 }
@@ -116,11 +113,13 @@ static const size_t SCRATCH_BUFSIZE = 2048;
 
 static esp_err_t low_level_upload_handler(httpd_req_t *req)
 {
-    auto ctx = (UserCtx *)req->user_ctx;
+    auto *handler = (WebServerHandler *)req->user_ctx;
+    auto *server = (WebServer *) httpd_get_global_user_ctx(req->handle);
+
     auto request = WebServerRequest{req};
-    if (ctx->server->auth_fn && !ctx->server->auth_fn(request)) {
-        if (ctx->server->on_not_authorized) {
-            ctx->server->on_not_authorized(request);
+    if (server->auth_fn && !server->auth_fn(request)) {
+        if (server->on_not_authorized) {
+            server->on_not_authorized(request);
             return ESP_OK;
         }
         request.requestAuthentication();
@@ -130,20 +129,20 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
     if (req->content_len == 0) {
         if (request.header("Content-Length") == "") {
             // Probably a chunked encoding. Not supported.
-            if (ctx->handler->callbackInMainThread) {
-                task_scheduler.await([ctx, request](){ctx->handler->uploadErrorCallback(request, EBADMSG);});
+            if (handler->callbackInMainThread) {
+                task_scheduler.await([handler, request](){handler->uploadErrorCallback(request, EBADMSG);});
             }
             else {
-                ctx->handler->uploadErrorCallback(request, EBADMSG);
+                handler->uploadErrorCallback(request, EBADMSG);
             }
             return ESP_FAIL;
         } else {
             // This is really a request were there are 0 bytes to receive. Call the upload handler once.
             bool result = false;
-            if (ctx->handler->callbackInMainThread) {
-                task_scheduler.await([ctx, request, &result]{result = ctx->handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);});
+            if (handler->callbackInMainThread) {
+                task_scheduler.await([handler, request, &result]{result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);});
             } else {
-                result = ctx->handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);
+                result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);
             }
 
             if (!result) {
@@ -166,11 +165,11 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
             if (received <= 0) {
                 int error_code = errno;
 
-                if (ctx->handler->callbackInMainThread) {
-                    task_scheduler.await([ctx, request, error_code](){ctx->handler->uploadErrorCallback(request, error_code);});
+                if (handler->callbackInMainThread) {
+                    task_scheduler.await([handler, request, error_code](){handler->uploadErrorCallback(request, error_code);});
                 }
                 else {
-                    ctx->handler->uploadErrorCallback(request, error_code);
+                    handler->uploadErrorCallback(request, error_code);
                 }
 
                 return ESP_FAIL;
@@ -178,11 +177,11 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
 
             remaining -= received;
             bool result = false;
-            if (ctx->handler->callbackInMainThread) {
+            if (handler->callbackInMainThread) {
                 auto scratch_ptr = scratch_buf.get();
-                task_scheduler.await([ctx, request, offset, scratch_ptr, received, remaining, &result]{result = ctx->handler->uploadCallback(request, "not implemented", offset, scratch_ptr, received, remaining);});
+                task_scheduler.await([handler, request, offset, scratch_ptr, received, remaining, &result]{result = handler->uploadCallback(request, "not implemented", offset, scratch_ptr, received, remaining);});
             } else {
-                result = ctx->handler->uploadCallback(request, "not implemented", offset, scratch_buf.get(), received, remaining);
+                result = handler->uploadCallback(request, "not implemented", offset, scratch_buf.get(), received, remaining);
             }
 
             if (!result) {
@@ -193,10 +192,10 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         }
     }
 
-    if (ctx->handler->callbackInMainThread)
-        task_scheduler.await([ctx, request](){ctx->handler->callback(request);});
+    if (handler->callbackInMainThread)
+        task_scheduler.await([handler, request](){handler->callback(request);});
     else
-        ctx->handler->callback(request);
+        handler->callback(request);
 
     return ESP_OK;
 }
@@ -289,11 +288,7 @@ WebServerHandler *WebServer::addHandler(const char *uri,
     result->accepts_upload = uploadCallback != nullptr;
 #endif
 
-    UserCtx *user_ctx = (UserCtx *)malloc(sizeof(UserCtx));
-    user_ctx->server = this;
-    user_ctx->handler = result;
-
-    ll_handler.user_ctx  = (void*)user_ctx;
+    ll_handler.user_ctx = result;
 
     httpd_register_uri_handler(httpd, &ll_handler);
     return result;
