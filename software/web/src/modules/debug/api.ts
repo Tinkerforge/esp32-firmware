@@ -36,6 +36,13 @@ export interface state_slow {
     main_loop_max_runtime_us: number;
     min_free_dram: number;
     min_free_psram: number;
+    conf_uint_buf_size: number;
+    conf_int_buf_size: number;
+    conf_float_buf_size: number;
+    conf_string_buf_size: number;
+    conf_array_buf_size: number;
+    conf_object_buf_size: number;
+    conf_union_buf_size: number;
 }
 
 interface task_hwm {

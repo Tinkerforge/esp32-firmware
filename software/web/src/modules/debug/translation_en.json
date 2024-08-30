@@ -26,6 +26,15 @@
             "iram": "IRAM",
             "psram": "PSRAM",
 
+            "config_buffers": "Config buffers",
+            "conf_uint_buf": "ConfUint",
+            "conf_int_buf": "ConfInt",
+            "conf_float_buf": "ConfFloat",
+            "conf_string_buf": "ConfString",
+            "conf_array_buf": "ConfArray",
+            "conf_object_buf": "ConfObject",
+            "conf_union_buf": "ConfUnion",
+
             "stack_hwm_header": "Stack high water marks",
             "task_name": "Task name",
             "free_stack": "Free stack",

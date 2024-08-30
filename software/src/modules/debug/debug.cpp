@@ -33,6 +33,8 @@
 #include "backtrace.h"
 #include "string_builder.h"
 
+#include "config/private.h"
+
 #include "gcc_warnings.h"
 
 #define BENCHMARK_BLOCKSIZE 32768
@@ -154,6 +156,13 @@ void Debug::pre_setup()
         {"main_loop_max_runtime_us", Config::Uint32(0)},
         {"min_free_dram", Config::Uint32(0)},
         {"min_free_psram", Config::Uint32(0)},
+        {"conf_uint_buf_size", Config::Uint32(0)},
+        {"conf_int_buf_size", Config::Uint32(0)},
+        {"conf_float_buf_size", Config::Uint32(0)},
+        {"conf_string_buf_size", Config::Uint32(0)},
+        {"conf_array_buf_size", Config::Uint32(0)},
+        {"conf_object_buf_size", Config::Uint32(0)},
+        {"conf_union_buf_size", Config::Uint32(0)},
     });
 
     state_hwm = Config::Array({},
@@ -203,6 +212,14 @@ void Debug::setup()
         state_slow.get("largest_free_psram_block")->updateUint(psram_info.largest_free_block);
         state_slow.get("min_free_dram")->updateUint(dram_info.minimum_free_bytes);
         state_slow.get("min_free_psram")->updateUint(psram_info.minimum_free_bytes);
+
+        state_slow.get("conf_uint_buf_size")->updateUint(uint_buf_size * sizeof(ConfUintSlot));
+        state_slow.get("conf_int_buf_size")->updateUint(int_buf_size * sizeof(ConfIntSlot));
+        state_slow.get("conf_float_buf_size")->updateUint(float_buf_size * sizeof(ConfFloatSlot));
+        state_slow.get("conf_string_buf_size")->updateUint(string_buf_size * sizeof(ConfStringSlot));
+        state_slow.get("conf_array_buf_size")->updateUint(array_buf_size * sizeof(ConfArraySlot));
+        state_slow.get("conf_object_buf_size")->updateUint(object_buf_size * sizeof(ConfObjectSlot));
+        state_slow.get("conf_union_buf_size")->updateUint(union_buf_size * sizeof(ConfUnionSlot));
 
         if (dram_info.largest_free_block < 2000) {
             logger.printfln("Heap full. Largest block is %u bytes.", dram_info.largest_free_block);

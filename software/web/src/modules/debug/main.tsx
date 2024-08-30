@@ -141,6 +141,29 @@ export class Debug extends Component {
                      c={<OutputFloat value={131072} digits={0} scale={0} unit="B"/>}
                      r={<OutputFloat value={state_static.psram_size} digits={0} scale={0} unit="B"/>}/>
 
+                <FormSeparator heading={__("debug.content.config_buffers")} first={false} />
+
+                <Row label={__("debug.content.conf_uint_buf")}
+                     c={<OutputFloat value={state_slow.conf_uint_buf_size} digits={0} scale={0} unit="B"/>}/>
+
+                <Row label={__("debug.content.conf_int_buf")}
+                     c={<OutputFloat value={state_slow.conf_int_buf_size} digits={0} scale={0} unit="B"/>}/>
+
+                <Row label={__("debug.content.conf_float_buf")}
+                     c={<OutputFloat value={state_slow.conf_float_buf_size} digits={0} scale={0} unit="B"/>}/>
+
+                <Row label={__("debug.content.conf_string_buf")}
+                     l={<OutputFloat value={state_slow.conf_string_buf_size} digits={0} scale={0} unit="B"/>}/>
+
+                <Row label={__("debug.content.conf_array_buf")}
+                     l={<OutputFloat value={state_slow.conf_array_buf_size} digits={0} scale={0} unit="B"/>}/>
+
+                <Row label={__("debug.content.conf_object_buf")}
+                     l={<OutputFloat value={state_slow.conf_object_buf_size} digits={0} scale={0} unit="B"/>}/>
+
+                <Row label={__("debug.content.conf_union_buf")}
+                     l={<OutputFloat value={state_slow.conf_union_buf_size} digits={0} scale={0} unit="B"/>}/>
+
                 <FormSeparator heading={__("debug.content.stack_hwm_header")} first={false} />
 
                 <Row label={__("debug.content.task_name")}
