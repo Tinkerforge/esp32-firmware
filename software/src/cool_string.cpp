@@ -14,6 +14,11 @@ void CoolString::shrinkToFit()
 {
     changeBuffer(len());
 }
+
+void CoolString::make_invalid() {
+    this->invalidate();
+}
+
 /* Currently broken for SSO strings
 char* CoolString::releaseOwnership(size_t *len) {
     char *p = const_cast<char *>(c_str());

@@ -487,6 +487,9 @@ inline size_t Config::fillArray<float, Config::ConfFloat>(float *arr, size_t ele
 
 bool Config::updateString(const String &value)
 {
+    if (!value) {
+        esp_system_abort("Can't update string, value is invalid string!");
+    }
     return update_value<String, ConfString>(value, "String");
 }
 

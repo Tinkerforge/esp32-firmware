@@ -28,7 +28,6 @@ struct ConfStringSlot {
     CoolString val = "";
     uint16_t minChars = 0;
     uint16_t maxChars = 0;
-    bool inUse = false;
 };
 
 struct ConfFloatSlot {

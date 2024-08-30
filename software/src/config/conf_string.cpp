@@ -21,12 +21,14 @@
 
 bool Config::ConfString::slotEmpty(size_t i)
 {
-    return !string_buf[i].inUse;
+    return !string_buf[i].val;
 }
 
 Config::ConfString::Slot *Config::ConfString::allocSlotBuf(size_t elements)
 {
-    return new Config::ConfString::Slot[elements];
+    auto *result = new Config::ConfString::Slot[elements];
+    memset(result, 0, sizeof(Config::ConfString::Slot) * elements);
+    return result;
 }
 
 void Config::ConfString::freeSlotBuf(Config::ConfString::Slot *buf)
@@ -44,7 +46,6 @@ Config::ConfString::ConfString(const CoolString &val, uint16_t minChars, uint16_
 {
     idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
     auto *slot = this->getSlot();
-    slot->inUse = true;
 
     slot->val = val;
     slot->minChars = minChars;
@@ -54,8 +55,6 @@ Config::ConfString::ConfString(const CoolString &val, uint16_t minChars, uint16_
 Config::ConfString::ConfString(const ConfString &cpy)
 {
     idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
-
-    // If cpy->inUse is false, it is okay that we don't mark this slot as inUse.
 
     // this->getSlot() is evaluated before the RHS of the assignment is copied over.
     // This results in the LHS pointing to a deallocated array if copying the RHS
@@ -71,10 +70,8 @@ Config::ConfString::~ConfString()
         return;
 
     auto *slot = this->getSlot();
-    string_buf[idx].inUse = false;
 
-    slot->val.clear();
-    slot->val.shrinkToFit();
+    slot->val.make_invalid();
     slot->minChars = 0;
     slot->maxChars = 0;
 }
