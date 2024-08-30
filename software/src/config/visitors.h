@@ -1006,7 +1006,7 @@ struct api_info {
     }
     void operator()(const Config::ConfFloat &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"float\",\"val\":%f,\"min\":%f,\"max\":%f}", isnan(x.getSlot()->val) ? 0.0f : x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"float\",\"val\":%f,\"min\":%f,\"max\":%f}", isnan(x.getVal()) ? 0.0f : x.getVal(), x.getMin(), x.getMax());
     }
     void operator()(const Config::ConfInt &x)
     {
