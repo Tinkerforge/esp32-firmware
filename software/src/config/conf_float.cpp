@@ -26,16 +26,52 @@ bool Config::ConfFloat::slotEmpty(size_t i) {
 }
 Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements)
 {
-    return new Config::ConfFloat::Slot[elements];
+    return (Config::ConfFloat::Slot *) heap_caps_calloc(elements, sizeof(Config::ConfFloat::Slot), MALLOC_CAP_32BIT);
 }
 
 void Config::ConfFloat::freeSlotBuf(Config::ConfFloat::Slot *buf)
 {
-    delete[] buf;
+    heap_caps_free(buf);
 }
 
-float* Config::ConfFloat::getVal() { return &float_buf[idx].val; }
-const float* Config::ConfFloat::getVal() const { return &float_buf[idx].val; }
+typedef union {
+    float f;
+    uint32_t u;
+} float_uint;
+
+float Config::ConfFloat::getVal() const {
+    float_uint result;
+    result.u = float_buf[idx].val;
+    return result.f;
+}
+
+void Config::ConfFloat::setVal(float f) {
+    float_uint v;
+    v.f = f;
+    float_buf[idx].val = v.u;
+}
+
+float Config::ConfFloat::getMin() const {
+    float_uint result;
+    result.u = float_buf[idx].min;
+    return result.f;
+}
+
+void Config::ConfFloat::setSlot(float val, float min, float max) {
+    float_uint va, mi, ma;
+    va.f = val;
+    mi.f = min;
+    ma.f = max;
+    float_buf[idx].val = va.u;
+    float_buf[idx].min = mi.u;
+    float_buf[idx].max = ma.u;
+}
+
+float Config::ConfFloat::getMax() const {
+    float_uint result;
+    result.u = float_buf[idx].max;
+    return result.f;
+}
 
 const Config::ConfFloat::Slot *Config::ConfFloat::getSlot() const { return &float_buf[idx]; }
 Config::ConfFloat::Slot *Config::ConfFloat::getSlot() { return &float_buf[idx]; }
@@ -43,10 +79,7 @@ Config::ConfFloat::Slot *Config::ConfFloat::getSlot() { return &float_buf[idx]; 
 Config::ConfFloat::ConfFloat(float val, float min, float max)
 {
     idx = nextSlot<Config::ConfFloat>(float_buf, float_buf_size);
-    auto *slot = this->getSlot();
-    slot->val = val;
-    slot->min = min;
-    slot->max = max;
+    this->setSlot(val, min, max);
 }
 
 Config::ConfFloat::ConfFloat(const ConfFloat &cpy)

@@ -102,6 +102,8 @@ struct Config {
     private:
         uint16_t idx;
         Slot *getSlot();
+        const Slot *getSlot() const;
+        void setSlot(float val, float min, float max);
 
     public:
         static bool slotEmpty(size_t i);
@@ -109,9 +111,11 @@ struct Config {
         static Slot *allocSlotBuf(size_t elements);
         static void freeSlotBuf(Slot *buf);
 
-        float *getVal();
-        const float *getVal() const;
-        const Slot *getSlot() const;
+        float getVal() const;
+        float getMin() const;
+        float getMax() const;
+
+        void setVal(float f);
 
         ConfFloat(float val, float min, float max);
         ConfFloat(const ConfFloat &cpy);

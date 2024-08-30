@@ -32,9 +32,9 @@ struct ConfStringSlot {
 };
 
 struct ConfFloatSlot {
-    float val = 0;
-    float min = 0;
-    float max = 0;
+    uint32_t val = 0;
+    uint32_t min = 0;
+    uint32_t max = 0;
 };
 
 struct ConfIntSlot {

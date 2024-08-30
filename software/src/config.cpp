@@ -400,7 +400,7 @@ const char *Config::asUnsafeCStr() const
 
 float Config::asFloat() const
 {
-    return *this->get<ConfFloat>()->getVal();
+    return this->get<ConfFloat>()->getVal();
 }
 
 uint32_t Config::asUint() const
@@ -437,6 +437,52 @@ bool Config::clearString()
     val->clear();
     val->shrinkToFit();
     return true;
+}
+
+// Specialize update_value and fillArray:
+// ConfFloat::getVal does not return a pointer to the value
+// because it is stored as uint32_t in the IRAM.
+template<>
+inline bool Config::update_value<float, Config::ConfFloat>(float value, const char *value_type) {
+    ASSERT_MAIN_THREAD();
+    if (!this->is<ConfFloat>()) {
+        char *message;
+        int result = -1;
+#ifndef DEBUG_FS_ENABLE
+        result = asprintf(&message, "update_value: Config has wrong type. This is a %s. new value is a %s", this->value.getVariantName(), value_type);
+#else
+        result = asprintf(&message, "update_value: Config has wrong type. This is a %s. new value is a %s\nContent is %s\nvalue is %s", this->value.getVariantName(), value_type, this->to_string().c_str(), String(value).c_str());
+#endif
+        esp_system_abort(result < 0 ? "" : message);
+    }
+    float old_value = get<ConfFloat>()->getVal();
+    get<ConfFloat>()->setVal(value);
+
+    if (old_value != value)
+        this->value.updated = 0xFF;
+
+    return old_value != value;
+}
+
+template<>
+inline size_t Config::fillArray<float, Config::ConfFloat>(float *arr, size_t elements) {
+    ASSERT_MAIN_THREAD();
+    if (!this->is<ConfArray>()) {
+        esp_system_abort("Can't fill array, Config is not an array");
+    }
+
+    const ConfArray &confArr = this->value.val.a;
+    size_t toWrite = std::min(confArr.getVal()->size(), elements);
+
+    for (size_t i = 0; i < toWrite; ++i) {
+        const Config *entry = confArr.get(i);
+        if (!entry->is<Config::ConfFloat>()) {
+            esp_system_abort("Config entry has wrong type.");
+        }
+        arr[i] = entry->get<Config::ConfFloat>()->getVal();
+    }
+
+    return toWrite;
 }
 
 bool Config::updateString(const String &value)

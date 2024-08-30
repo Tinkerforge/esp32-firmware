@@ -42,13 +42,14 @@ struct default_validator {
 
     String operator()(const Config::ConfFloat &x) const
     {
-        const auto *slot = x.getSlot();
-        const auto val = *x.getVal();
+        const auto val = x.getVal();
+        const auto min = x.getMin();
+        const auto max = x.getMax();
 
-        if (val < slot->min)
-            return String("Float value ") + val + " was less than the allowed minimum of " + slot->min;
-        if (val > slot->max)
-            return String("Float value ") + val + " was more than the allowed maximum of " + slot->max;
+        if (val < min)
+            return String("Float value ") + val + " was less than the allowed minimum of " + min;
+        if (val > max)
+            return String("Float value ") + val + " was more than the allowed maximum of " + max;
         return "";
     }
 
@@ -139,7 +140,7 @@ struct to_json {
     }
     void operator()(const Config::ConfFloat &x)
     {
-        insertHere.set(*x.getVal());
+        insertHere.set(x.getVal());
     }
     void operator()(const Config::ConfInt &x)
     {
@@ -465,7 +466,7 @@ struct from_json {
         if (!json_node.is<float>())
             return "JSON node was not a float.";
 
-        *x.getVal() = json_node.as<float>();
+        x.setVal(json_node.as<float>());
         return "";
     }
     String operator()(Config::ConfInt &x)
@@ -689,7 +690,7 @@ struct from_update {
         if (update_val == nullptr)
             return "ConfUpdate node was not a float.";
 
-        *x.getVal() = *update_val;
+        x.setVal(*update_val);
         return "";
     }
     String operator()(Config::ConfInt &x)
@@ -945,7 +946,7 @@ struct to_owned {
     }
     OwnedConfig operator()(const Config::ConfFloat &x)
     {
-        return OwnedConfig{*x.getVal()};
+        return OwnedConfig{x.getVal()};
     }
     OwnedConfig operator()(const Config::ConfInt &x)
     {
