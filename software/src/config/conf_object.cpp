@@ -26,12 +26,12 @@ bool Config::ConfObject::slotEmpty(size_t i)
 
 Config::ConfObject::Slot *Config::ConfObject::allocSlotBuf(size_t elements)
 {
-    return new Config::ConfObject::Slot[elements];
+    return (Config::ConfObject::Slot *) heap_caps_calloc(elements, sizeof(Config::ConfObject::Slot), MALLOC_CAP_32BIT);
 }
 
 void Config::ConfObject::freeSlotBuf(Config::ConfObject::Slot *buf)
 {
-    delete[] buf;
+    heap_caps_free(buf);
 }
 
 Config *Config::ConfObject::get(const String &needle)
@@ -104,7 +104,8 @@ Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> &&val)
     idx = nextSlot<Config::ConfObject>(object_buf, object_buf_size);
     auto *slot = this->getSlot();
     slot->schema = schema;
-    slot->values = heap_alloc_array<Config>(len);
+
+    slot->values = new Config[len]();
 
     for (int i = 0; i < len; ++i) {
         this->getSlot()->values[i] = std::move(val[i].second); //TODO: move here?
@@ -125,13 +126,13 @@ Config::ConfObject::ConfObject(const ConfObject &cpy)
     this->getSlot()->schema = cpy.getSlot()->schema;
 
     const auto len = cpy.getSlot()->schema->length;
-    auto values = heap_alloc_array<Config>(len);
+    auto values = new Config[len]();
     for (int i = 0; i < len; ++i)
         values[i] = cpy.getSlot()->values[i];
 
     // Must call getSlot() again because any reference would be invalidated
     // if the copy triggers a move of the slots.
-    this->getSlot()->values = std::move(values);
+    this->getSlot()->values = values;
 }
 
 Config::ConfObject::~ConfObject()
@@ -141,6 +142,10 @@ Config::ConfObject::~ConfObject()
 
     auto *slot = this->getSlot();
     slot->schema = nullptr;
+
+    if (slot->values != nullptr)
+        delete[] slot->values;
+
     slot->values = nullptr;
 }
 
@@ -157,13 +162,15 @@ Config::ConfObject &Config::ConfObject::operator=(const ConfObject &cpy)
     this->getSlot()->schema = cpy.getSlot()->schema;
 
     const auto len = cpy.getSlot()->schema->length;
-    auto values = heap_alloc_array<Config>(len);
+    auto values = new Config[len]();
     for (int i = 0; i < len; ++i)
         values[i] = cpy.getSlot()->values[i];
 
     // Must call getSlot() again because any reference would be invalidated
     // if the copy triggers a move of the slots.
-    this->getSlot()->values = std::move(values);
+    if (this->getSlot()->values != nullptr)
+        delete[] this->getSlot()->values;
+    this->getSlot()->values = values;
 
     return *this;
 }

@@ -69,7 +69,7 @@ struct ConfObjectSchema {
 
 struct ConfObjectSlot {
     const ConfObjectSchema *schema = nullptr;
-    std::unique_ptr<Config[]> values;
+    Config *values;
 };
 
 struct ConfUnionSlot {

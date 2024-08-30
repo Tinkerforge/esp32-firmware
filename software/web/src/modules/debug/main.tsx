@@ -159,7 +159,7 @@ export class Debug extends Component {
                      l={<OutputFloat value={state_slow.conf_array_buf_size} digits={0} scale={0} unit="B"/>}/>
 
                 <Row label={__("debug.content.conf_object_buf")}
-                     l={<OutputFloat value={state_slow.conf_object_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     c={<OutputFloat value={state_slow.conf_object_buf_size} digits={0} scale={0} unit="B"/>}/>
 
                 <Row label={__("debug.content.conf_union_buf")}
                      l={<OutputFloat value={state_slow.conf_union_buf_size} digits={0} scale={0} unit="B"/>}/>
