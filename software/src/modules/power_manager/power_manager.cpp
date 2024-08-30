@@ -746,17 +746,6 @@ void PowerManager::update_energy()
     size_t trace_log_len = snprintf_u(trace_log, sizeof(trace_log), "PM");
 #endif
 
-    int32_t cm_total_allocated_current_ma = 0;
-
-    for (size_t i = 1; i <= 3; i++) {
-        int32_t allocated_current = (*cm_allocated_currents)[i];
-        if (allocated_current < 0) {
-            logger.printfln("CM allocated current on L%u negative: %i", i, allocated_current);
-        } else {
-            cm_total_allocated_current_ma += allocated_current;
-        }
-    }
-
     if (!excess_charging_enabled) {
         power_available_w = INT32_MAX;
     } else {
@@ -803,11 +792,16 @@ void PowerManager::update_energy()
                 } else {
                     // Excess charging uses an adaptive P controller to adjust available power.
                     int32_t p_adjust_w;
-                    const int32_t cm_allocated_power_w = cm_total_allocated_current_ma * 230 / 1000; // ma -> watt
+                    const int32_t cm_allocated_power_w = cm_allocated_currents->pv * 230 / 1000; // ma -> watt
 
-                    if (cm_allocated_power_w == 0) {
+                    if (cm_allocated_power_w <= 0) {
                         // When no power was allocated to any charger, use p=1 so that the threshold for switching on can be reached properly.
                         p_adjust_w = p_error_w;
+
+                        // Sanity check
+                        if (cm_allocated_power_w < 0) {
+                            logger.printfln("Negative cm_allocated_power_w: %i", cm_allocated_power_w);
+                        }
                     } else {
                         // Some EVs may only be able to adjust their charge power in steps of 1500W,
                         // so smaller factors are required for smaller errors.
@@ -950,11 +944,17 @@ void PowerManager::update_energy()
                 // Current controller
                 int32_t current_error_ma = target_phase_current_ma - phase_preproc_ma;
 
+                int32_t cm_allocated_phase_current_ma = (*cm_allocated_currents)[cm_phase];
                 int32_t current_adjust_ma;
 
-                if (cm_total_allocated_current_ma == 0) {
-                    // When no current was allocated to any charger, use p=1 so that the threshold for switching on can be reached properly.
+                if (cm_allocated_phase_current_ma <= 0) {
+                    // When no current was allocated to any charger on this phase, use p=1 so that the threshold for switching on can be reached properly.
                     current_adjust_ma = current_error_ma;
+
+                    // Sanity check
+                    if (cm_allocated_phase_current_ma < 0) {
+                        logger.printfln("Negative cm_allocated_phase_current_ma: %i", cm_allocated_phase_current_ma);
+                    }
                 } else {
                     if (current_error_ma < 0) {
                         // Negative error = over limit, reduce by 93.75% of error
@@ -968,7 +968,6 @@ void PowerManager::update_energy()
                     }
                 }
 
-                int32_t cm_allocated_phase_current_ma = (*cm_allocated_currents)[cm_phase];
                 int32_t phase_limit_raw_ma = cm_allocated_phase_current_ma + current_adjust_ma;
 
                 phase_limit_raw_ma = min(phase_limit_raw_ma, max_current_limited_ma);
