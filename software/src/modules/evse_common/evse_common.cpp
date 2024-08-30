@@ -24,7 +24,6 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 
-extern EvseCommon evse_common;
 extern uint32_t local_uid_num;
 
 EvseCommon::EvseCommon()
