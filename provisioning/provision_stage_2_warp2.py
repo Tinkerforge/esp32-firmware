@@ -656,6 +656,7 @@ def main(stage3):
         print("Configuring tags")
         req = urllib.request.Request("http://{}/nfc/config_update".format(ssid),
                                      data=json.dumps({
+                                         "deadtime_post_start": None,
                                          "authorized_tags": [
                                              {
                                                  "user_id": 1,
