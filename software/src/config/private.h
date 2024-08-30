@@ -59,9 +59,12 @@ struct ConfArraySlot {
 };
 
 struct ConfObjectSchema {
+    struct Key {
+        size_t length;
+        char *val;
+    };
     size_t length;
-    std::unique_ptr<uint8_t[]> key_lengths;
-    std::unique_ptr<char *[]> keys;
+    Key keys[];
 };
 
 struct ConfObjectSlot {

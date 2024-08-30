@@ -43,10 +43,10 @@ Config *Config::ConfObject::get(const String &needle)
     const auto needle_length = needle.length();
 
     for (size_t i = 0; i < size; ++i) {
-        if (schema->key_lengths[i] != needle_length)
+        if (schema->keys[i].length != needle_length)
             continue;
 
-        if (memcmp(schema->keys[i], needle.c_str(), needle_length) == 0)
+        if (memcmp(schema->keys[i].val, needle.c_str(), needle_length) == 0)
             return &slot->values[i];
     }
 
@@ -63,10 +63,10 @@ const Config *Config::ConfObject::get(const String &needle) const
     const auto needle_length = needle.length();
 
     for (size_t i = 0; i < size; ++i) {
-        if (schema->key_lengths[i] != needle_length)
+        if (schema->keys[i].length != needle_length)
             continue;
 
-        if (memcmp(schema->keys[i], needle.c_str(), needle_length) == 0)
+        if (memcmp(schema->keys[i].val, needle.c_str(), needle_length) == 0)
             return &slot->values[i];
     }
 
@@ -80,24 +80,23 @@ Config::ConfObject::Slot *Config::ConfObject::getSlot() { return &object_buf[idx
 Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> &&val)
 {
     auto len = val.size();
-    auto schema = new ConfObjectSchema{len, heap_alloc_array<uint8_t>(len), heap_alloc_array<char *>(len)};
+
+    auto schema = (ConfObjectSchema *) heap_caps_malloc(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key), MALLOC_CAP_32BIT);
+    schema->length = len;
 
     size_t buf_len = 0;
     for (int i = 0; i < len; ++i) {
-        if (val[i].first.length() > 255)
-            esp_system_abort("ConfObject key was longer than 255 chars!");
-
-        schema->key_lengths[i] = val[i].first.length();
-        buf_len += schema->key_lengths[i] + 1;
+        schema->keys[i].length = val[i].first.length();
+        buf_len += schema->keys[i].length + 1;
     }
 
     char *key_buf = (char *)heap_caps_calloc_prefer(buf_len, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
     size_t written = 0;
     for (int i = 0; i < len; ++i) {
-        schema->keys[i] = key_buf + written;
-        memcpy(key_buf + written, val[i].first.c_str(), schema->key_lengths[i]);
-        written += schema->key_lengths[i];
+        schema->keys[i].val = key_buf + written;
+        memcpy(key_buf + written, val[i].first.c_str(), schema->keys[i].length);
+        written += schema->keys[i].length;
         key_buf[written] = '\0';
         ++written;
     }
