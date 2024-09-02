@@ -60,7 +60,7 @@ struct ConfArraySlot {
 struct ConfObjectSchema {
     struct Key {
         size_t length;
-        char *val;
+        const char *val;
     };
     size_t length;
     Key keys[];

@@ -239,7 +239,7 @@ struct Config {
         const Slot *getSlot() const;
         Slot *getSlot();
 
-        ConfObject(std::vector<std::pair<String, Config>> &&val);
+        ConfObject(std::vector<std::pair<const char *, Config>> &&val);
         ConfObject(const ConfObject &cpy);
         ~ConfObject();
 
@@ -486,7 +486,7 @@ struct Config {
                         uint16_t maxElements,
                         int variantType);
 
-    static Config Object(std::initializer_list<std::pair<String, Config>> obj);
+    static Config Object(std::initializer_list<std::pair<const char *, Config>> obj);
 
     template<typename T>
     static void check_enum_template_type() {
@@ -516,7 +516,9 @@ public:
     static ConfigRoot *Null();
 
     static ConfigRoot *Confirm();
+    // Just for convenience.
     static String ConfirmKey();
+    static constexpr const char *confirm_key = "do_i_know_what_i_am_doing";
 
     static Config Uint8(uint8_t u);
 

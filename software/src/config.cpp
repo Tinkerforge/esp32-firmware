@@ -116,7 +116,7 @@ Config Config::Array(std::initializer_list<Config> arr, const Config *prototype,
     return Config{ConfArray{arr, prototype, minElements, maxElements, (int8_t)variantType}};
 }
 
-Config Config::Object(std::initializer_list<std::pair<String, Config>> obj)
+Config Config::Object(std::initializer_list<std::pair<const char *, Config>> obj)
 {
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
@@ -150,7 +150,7 @@ ConfigRoot *Config::Confirm()
 
     if (confirmconf == nullptr) {
         confirmconf = new ConfigRoot{Config::Object({
-            {Config::ConfirmKey(), Config::Bool(false)}
+            {Config::confirm_key, Config::Bool(false)}
         })};
     }
 
@@ -159,7 +159,7 @@ ConfigRoot *Config::Confirm()
 
 String Config::ConfirmKey()
 {
-    return "do_i_know_what_i_am_doing";
+    return Config::confirm_key;
 }
 
 Config Config::Uint8(uint8_t u)

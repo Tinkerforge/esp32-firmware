@@ -77,28 +77,25 @@ const Config *Config::ConfObject::get(const String &needle) const
 const Config::ConfObject::Slot *Config::ConfObject::getSlot() const { return &object_buf[idx]; }
 Config::ConfObject::Slot *Config::ConfObject::getSlot() { return &object_buf[idx]; }
 
-Config::ConfObject::ConfObject(std::vector<std::pair<String, Config>> &&val)
+extern char _rodata_start;
+extern char _rodata_end;
+
+Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&val)
 {
     auto len = val.size();
 
     auto schema = (ConfObjectSchema *) heap_caps_malloc(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key), MALLOC_CAP_32BIT);
     schema->length = len;
 
-    size_t buf_len = 0;
     for (int i = 0; i < len; ++i) {
-        schema->keys[i].length = val[i].first.length();
-        buf_len += schema->keys[i].length + 1;
-    }
+        const char *key = val[i].first;
 
-    char *key_buf = (char *)heap_caps_calloc_prefer(buf_len, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        bool key_in_flash = (key >= &_rodata_start && key <= &_rodata_end);
+        if (!key_in_flash)
+            esp_system_abort("ConfObject key not in flash! Please pass a string literal!");
 
-    size_t written = 0;
-    for (int i = 0; i < len; ++i) {
-        schema->keys[i].val = key_buf + written;
-        memcpy(key_buf + written, val[i].first.c_str(), schema->keys[i].length);
-        written += schema->keys[i].length;
-        key_buf[written] = '\0';
-        ++written;
+        schema->keys[i].val = key;
+        schema->keys[i].length = strlen(key);
     }
 
     idx = nextSlot<Config::ConfObject>(object_buf, object_buf_size);
