@@ -750,7 +750,7 @@ private:
         return toWrite;
     }
 
-    DynamicJsonDocument to_json(const String *keys_to_censor, size_t keys_to_censor_len) const;
+    DynamicJsonDocument to_json(const char *const *keys_to_censor, size_t keys_to_censor_len) const;
 
 public:
     size_t fillFloatArray(float *arr, size_t elements);
@@ -770,12 +770,12 @@ public:
     void save_to_file(File &file);
 
     void write_to_stream(Print &output);
-    void write_to_stream_except(Print &output, const String *keys_to_censor, size_t keys_to_censor_len);
+    void write_to_stream_except(Print &output, const char *const *keys_to_censor, size_t keys_to_censor_len);
 
     String to_string() const;
 
-    String to_string_except(const String *keys_to_censor, size_t keys_to_censor_len) const;
-    void to_string_except(const String *keys_to_censor, size_t keys_to_censor_len, StringBuilder *sb) const;
+    String to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len) const;
+    void to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len, StringBuilder *sb) const;
 };
 
 struct ConfigRoot : public Config {

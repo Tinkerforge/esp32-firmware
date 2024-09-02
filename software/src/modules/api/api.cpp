@@ -31,6 +31,9 @@
 
 extern TF_HAL hal;
 
+extern char _rodata_start;
+extern char _rodata_end;
+
 API::API()
 {
 }
@@ -146,13 +149,13 @@ String API::getLittleFSConfigPath(const String &path, bool tmp) {
     return (tmp ? String("/config/.") : String("/config/")) + path_copy;
 }
 
-void API::addCommand(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action)
+void API::addCommand(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action)
 {
     // The lambda's by-copy capture creates a safe copy of the callback.
     this->addCommand(path, config, keys_to_censor_in_debug_report, [callback](String &){callback();}, is_action);
 }
 
-void API::addCommand(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
+void API::addCommand(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
 {
     size_t path_len = strlen(path);
 
@@ -161,7 +164,9 @@ void API::addCommand(const char * const path, ConfigRoot *config, std::initializ
         return;
     }
 
-    if (keys_to_censor_in_debug_report.size() > std::numeric_limits<decltype(CommandRegistration::keys_to_censor_in_debug_report_len)>::max()) {
+    size_t ktc_size = keys_to_censor_in_debug_report.size();
+
+    if (ktc_size > std::numeric_limits<decltype(CommandRegistration::keys_to_censor_in_debug_report_len)>::max()) {
         logger.printfln("Command %s: keys_to_censor_in_debug_report too long!", path);
         return;
     }
@@ -169,8 +174,18 @@ void API::addCommand(const char * const path, ConfigRoot *config, std::initializ
     if (already_registered(path, path_len, "command"))
         return;
 
-    auto ktc = new String[keys_to_censor_in_debug_report.size()];
-    std::copy(keys_to_censor_in_debug_report.begin(), keys_to_censor_in_debug_report.end(), ktc);
+    auto ktc = ktc_size == 0 ? nullptr : new const char *[ktc_size];
+    {
+        int i = 0;
+        for(const char *k : keys_to_censor_in_debug_report){
+            bool key_in_flash = (k >= &_rodata_start && k <= &_rodata_end);
+            if (!key_in_flash)
+                esp_system_abort("Key to censor not in flash! Please pass a string literal!");
+
+            ktc[i] = k;
+            ++i;
+        }
+    }
 
     commands.push_back({
         path,
@@ -178,7 +193,7 @@ void API::addCommand(const char * const path, ConfigRoot *config, std::initializ
         config,
         std::forward<std::function<void(String &)>>(callback),
         (uint8_t)path_len,
-        (uint8_t)keys_to_censor_in_debug_report.size(),
+        (uint8_t)ktc_size,
         is_action,
     });
 
@@ -189,17 +204,17 @@ void API::addCommand(const char * const path, ConfigRoot *config, std::initializ
     }
 }
 
-void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(void)> &&callback, bool is_action) {
+void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(void)> &&callback, bool is_action) {
     // The lambda's by-copy capture creates a safe copy of the callback.
     this->addCommand(strdup(path.c_str()), config, keys_to_censor_in_debug_report, [callback](String &){callback();}, is_action);
 }
 
-void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
+void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
 {
     this->addCommand(strdup(path.c_str()), config, keys_to_censor_in_debug_report, std::forward<std::function<void(String &)>>(callback), is_action);
 }
 
-void API::addState(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, bool low_latency)
+void API::addState(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, bool low_latency)
 {
     size_t path_len = strlen(path);
 
@@ -208,7 +223,8 @@ void API::addState(const char * const path, ConfigRoot *config, std::initializer
         return;
     }
 
-    if (keys_to_censor.size() > std::numeric_limits<decltype(StateRegistration::keys_to_censor_len)>::max()) {
+    size_t ktc_size = keys_to_censor.size();
+    if (ktc_size > std::numeric_limits<decltype(StateRegistration::keys_to_censor_len)>::max()) {
         logger.printfln("State %s: keys_to_censor too long!", path);
         return;
     }
@@ -216,15 +232,25 @@ void API::addState(const char * const path, ConfigRoot *config, std::initializer
     if (already_registered(path, path_len, "state"))
         return;
 
-    auto ktc = new String[keys_to_censor.size()];
-    std::copy(keys_to_censor.begin(), keys_to_censor.end(), ktc);
+    auto ktc = ktc_size == 0 ? nullptr : new const char *[ktc_size];
+    {
+        int i = 0;
+        for(const char *k : keys_to_censor){
+            bool key_in_flash = (k >= &_rodata_start && k <= &_rodata_end);
+            if (!key_in_flash)
+                esp_system_abort("Key to censor not in flash! Please pass a string literal!");
+
+            ktc[i] = k;
+            ++i;
+        }
+    }
 
     states.push_back({
         path,
         ktc,
         config,
         (uint8_t)path_len,
-        (uint8_t)keys_to_censor.size(),
+        (uint8_t)ktc_size,
         low_latency
     });
 
@@ -235,12 +261,12 @@ void API::addState(const char * const path, ConfigRoot *config, std::initializer
     }
 }
 
-void API::addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, bool low_latency)
+void API::addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, bool low_latency)
 {
     this->addState(strdup(path.c_str()), config, keys_to_censor, low_latency);
 }
 
-bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor)
+bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor)
 {
     if (path.length() > 63) {
         logger.printfln("The maximum allowed config path length is 63 bytes. Got %u bytes instead.", path.length());
@@ -305,7 +331,7 @@ void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, ICh
     reg.callback(response, response_ownership, response_owner_id);
 }
 
-void API::addResponse(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback)
+void API::addResponse(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback)
 {
     size_t path_len = strlen(path);
 
@@ -314,7 +340,8 @@ void API::addResponse(const char * const path, ConfigRoot *config, std::initiali
         return;
     }
 
-    if (keys_to_censor_in_debug_report.size() > std::numeric_limits<decltype(ResponseRegistration::keys_to_censor_in_debug_report_len)>::max()) {
+    size_t ktc_size = keys_to_censor_in_debug_report.size();
+    if (ktc_size > std::numeric_limits<decltype(ResponseRegistration::keys_to_censor_in_debug_report_len)>::max()) {
         logger.printfln("State %s: keys_to_censor_in_debug_report too long!", path);
         return;
     }
@@ -322,8 +349,18 @@ void API::addResponse(const char * const path, ConfigRoot *config, std::initiali
     if (already_registered(path, path_len, "response"))
         return;
 
-    auto ktc = new String[keys_to_censor_in_debug_report.size()];
-    std::copy(keys_to_censor_in_debug_report.begin(), keys_to_censor_in_debug_report.end(), ktc);
+    auto ktc = ktc_size == 0 ? nullptr : new const char *[ktc_size];
+    {
+        int i = 0;
+        for(const char *k : keys_to_censor_in_debug_report){
+            bool key_in_flash = (k >= &_rodata_start && k <= &_rodata_end);
+            if (!key_in_flash)
+                esp_system_abort("Key to censor not in flash! Please pass a string literal!");
+
+            ktc[i] = k;
+            ++i;
+        }
+    }
 
     responses.push_back({
         path,
@@ -331,7 +368,7 @@ void API::addResponse(const char * const path, ConfigRoot *config, std::initiali
         config,
         std::forward<std::function<void(IChunkedResponse *, Ownership *, uint32_t)>>(callback),
         (uint8_t)path_len,
-        (uint8_t)keys_to_censor_in_debug_report.size()
+        (uint8_t)ktc_size
     });
     auto responseIdx = responses.size() - 1;
 
@@ -389,7 +426,7 @@ void API::removeAllConfig()
 }
 
 /*
-void API::addTemporaryConfig(String path, Config *config, std::initializer_list<String> keys_to_censor, std::function<void(void)> &&callback)
+void API::addTemporaryConfig(String path, Config *config, std::initializer_list<const char *> keys_to_censor, std::function<void(void)> &&callback)
 {
     addState(path, config, keys_to_censor);
     addCommand(path + "_update", config, std::forward<std::function<void(void)>>(callback));
@@ -446,9 +483,9 @@ void API::register_urls()
 
                 for (int key = 0; key < reg.keys_to_censor_len; ++key)
                     if (key != reg.keys_to_censor_len - 1)
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor[key].c_str());
+                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor[key]);
                     else
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\"", reg.keys_to_censor[key].c_str());
+                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\"", reg.keys_to_censor[key]);
 
                 written += snprintf_u((ptr + written), BUF_SIZE - written, "],\"content\":");
                 reg.config->print_api_info(ptr, BUF_SIZE, written);
@@ -487,9 +524,9 @@ void API::register_urls()
 
                 for (int key = 0; key < reg.keys_to_censor_in_debug_report_len; ++key)
                     if (key != reg.keys_to_censor_in_debug_report_len - 1)
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor_in_debug_report[key].c_str());
+                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor_in_debug_report[key]);
                     else
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\"", reg.keys_to_censor_in_debug_report[key].c_str());
+                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\"", reg.keys_to_censor_in_debug_report[key]);
 
                 written += snprintf_u((ptr + written), BUF_SIZE - written, "],\"content\":");
                 reg.config->print_api_info(ptr, BUF_SIZE, written);
@@ -527,9 +564,9 @@ void API::register_urls()
 
                 for (int key = 0; key < reg.keys_to_censor_in_debug_report_len; ++key)
                     if (key != reg.keys_to_censor_in_debug_report_len - 1)
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor_in_debug_report[key].c_str());
+                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor_in_debug_report[key]);
                     else
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\"", reg.keys_to_censor_in_debug_report[key].c_str());
+                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\"", reg.keys_to_censor_in_debug_report[key]);
 
                 written += snprintf_u((ptr + written), BUF_SIZE - written, "],\"content\":");
                 reg.config->print_api_info(ptr, BUF_SIZE, written);

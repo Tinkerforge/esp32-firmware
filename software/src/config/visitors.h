@@ -189,6 +189,22 @@ struct to_json {
             const char *key = schema->keys[i].val;
             const Config &child = slot->values[i];
 
+            bool censored = false;
+            for (size_t ktc = 0; ktc < keys_to_censor_len; ++ktc) {
+                // We've made sure that both keys point to _rodata.
+                // Comparing the pointers should be enough, assuming that the literal strings are deduplicated perfectly.
+                if (key != keys_to_censor[ktc])
+                    continue;
+
+                if (!(child.is<Config::ConfString>() && child.asString().length() == 0)) {
+                    obj[key] = nullptr;
+                    censored = true;
+                    break;
+                }
+            }
+            if (censored)
+                continue;
+
             if (child.is<Config::ConfObject>()) {
                 obj.createNestedObject(key);
             } else if (child.is<Config::ConfArray>() || child.is<Config::ConfUnion>()) {
@@ -198,12 +214,6 @@ struct to_json {
             }
 
             Config::apply_visitor(to_json{obj[key], keys_to_censor, keys_to_censor_len}, child.value);
-        }
-
-        for (size_t i = 0; i < keys_to_censor_len; ++i) {
-            const String &key = keys_to_censor[i];
-            if (obj.containsKey(key) && !(obj[key].is<String>() && obj[key].as<String>().length() == 0))
-                obj[key] = nullptr;
         }
     }
 
@@ -225,7 +235,7 @@ struct to_json {
     }
 
     JsonVariant insertHere;
-    const String *keys_to_censor;
+    const char *const *keys_to_censor;
     size_t keys_to_censor_len;
 };
 

@@ -563,7 +563,7 @@ size_t Config::string_length() const
     return Config::apply_visitor(string_length_visitor{}, value);
 }
 
-DynamicJsonDocument Config::to_json(const String *keys_to_censor, size_t keys_to_censor_len) const
+DynamicJsonDocument Config::to_json(const char *const *keys_to_censor, size_t keys_to_censor_len) const
 {
     DynamicJsonDocument doc(json_size(true));
 
@@ -602,7 +602,7 @@ void Config::write_to_stream(Print &output)
     write_to_stream_except(output, nullptr, 0);
 }
 
-void Config::write_to_stream_except(Print &output, const String *keys_to_censor, size_t keys_to_censor_len)
+void Config::write_to_stream_except(Print &output, const char *const *keys_to_censor, size_t keys_to_censor_len)
 {
     auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
 
@@ -625,7 +625,7 @@ String Config::to_string() const
     return this->to_string_except(nullptr, 0);
 }
 
-String Config::to_string_except(const String *keys_to_censor, size_t keys_to_censor_len) const
+String Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len) const
 {
     auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
 
@@ -645,7 +645,7 @@ String Config::to_string_except(const String *keys_to_censor, size_t keys_to_cen
     return result;
 }
 
-void Config::to_string_except(const String *keys_to_censor, size_t keys_to_censor_len, StringBuilder *sb) const
+void Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len, StringBuilder *sb) const
 {
     auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
     char *ptr = sb->getRemainingPtr();

@@ -32,7 +32,7 @@
 
 struct StateRegistration {
     const char *const path;
-    const String *const keys_to_censor;
+    const char *const *const keys_to_censor;
     ConfigRoot *const config;
 
     const uint8_t path_len;
@@ -42,7 +42,7 @@ struct StateRegistration {
 
 struct CommandRegistration {
     const char *const path;
-    const String *const keys_to_censor_in_debug_report;
+    const char *const *const keys_to_censor_in_debug_report;
     ConfigRoot *const config;
     const std::function<void(String &)> callback;
 
@@ -53,7 +53,7 @@ struct CommandRegistration {
 
 struct ResponseRegistration {
     const char *const path;
-    const String *const keys_to_censor_in_debug_report;
+    const char *const *const keys_to_censor_in_debug_report;
     ConfigRoot *config;
     std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback;
 
@@ -101,26 +101,26 @@ public:
     void addFeature(const char *name);
 
     // Prefer this version of addCommand over those below.
-    void addCommand(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action);
-    void addCommand(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
-    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
-    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action);
+    void addCommand(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action);
+    void addCommand(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
+    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
+    void addCommand(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action);
 
-    void addState(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {}, bool low_latency = false);
-    void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {}, bool low_latency = false);
-    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor = {});
-    //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<String> keys_to_censor, std::function<void(void)> &&callback);
-    void addResponse(const char * const path, ConfigRoot *config, std::initializer_list<String> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);
+    void addState(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {}, bool low_latency = false);
+    void addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {}, bool low_latency = false);
+    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {});
+    //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<const char *> keys_to_censor, std::function<void(void)> &&callback);
+    void addResponse(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);
 
     // TODO Remove deprecated functions. Marked as deprecated on 2024-01-29.
     template<typename T>
     [[gnu::deprecated("Pass bool low_latecy instead of interval_ms. Use 'false' or default for a 1000ms interval or 'true' for a 250ms interval.")]]
-    void addState(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, T interval_ms) {
+    void addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, T interval_ms) {
         addState(path, config, keys_to_censor, interval_ms < 1000);
     }
     template<typename T>
     [[gnu::deprecated("Please remove the interval_ms parameter.")]]
-    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<String> keys_to_censor, T interval_ms) {
+    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, T interval_ms) {
         (void)interval_ms;
         return addPersistentConfig(path, config, keys_to_censor);
     }
