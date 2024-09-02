@@ -35,38 +35,38 @@
 
 static bool getMD5(uint8_t * data, uint16_t len, char * output){//33 bytes or more
     mbedtls_md5_context _ctx;
-  uint8_t i;
-  uint8_t * _buf = (uint8_t*)malloc(16);
-  if(_buf == NULL)
-    return false;
-  memset(_buf, 0x00, 16);
+    uint8_t i;
+    uint8_t * _buf = (uint8_t*)malloc(16);
+    if(_buf == NULL)
+        return false;
+    memset(_buf, 0x00, 16);
 
-  mbedtls_md5_init(&_ctx);
-  mbedtls_md5_starts_ret(&_ctx);
-  mbedtls_md5_update_ret(&_ctx, data, len);
-  mbedtls_md5_finish_ret(&_ctx, _buf);
-  for(i = 0; i < 16; i++) {
-    sprintf(output + (i * 2), "%02x", _buf[i]);
-  }
-  free(_buf);
-  return true;
+    mbedtls_md5_init(&_ctx);
+    mbedtls_md5_starts_ret(&_ctx);
+    mbedtls_md5_update_ret(&_ctx, data, len);
+    mbedtls_md5_finish_ret(&_ctx, _buf);
+    for(i = 0; i < 16; i++) {
+        sprintf(output + (i * 2), "%02x", _buf[i]);
+    }
+    free(_buf);
+    return true;
 }
 
 static String genRandomString(){
-  uint8_t data[16] = {0};
-  uint32_t t = micros();
-  memcpy(data, &t, sizeof(t));
-  t = build_timestamp();
-  memcpy(data + 4, &t, sizeof(t));
-  uint32_t r = esp_random();
-  memcpy(data + 8, &r, sizeof(r));
-  r = esp_random();
-  memcpy(data + 12, &r, sizeof(r));
+    uint8_t data[16] = {0};
+    uint32_t t = micros();
+    memcpy(data, &t, sizeof(t));
+    t = build_timestamp();
+    memcpy(data + 4, &t, sizeof(t));
+    uint32_t r = esp_random();
+    memcpy(data + 8, &r, sizeof(r));
+    r = esp_random();
+    memcpy(data + 12, &r, sizeof(r));
 
-  char buf[33] = {0};
-  getMD5(data, 16, buf);
+    char buf[33] = {0};
+    getMD5(data, 16, buf);
 
-  return String(buf);
+    return String(buf);
 }
 
 static String stringMD5(const String& in){
@@ -81,17 +81,18 @@ static String stringMD5(const String& in){
 }
 
 String requestDigestAuthentication(const char * realm){
-  String header = "realm=\"";
-  if(realm == NULL)
-    header.concat(DEFAULT_REALM);
-  else
-    header.concat(realm);
-  header.concat( "\", qop=\"auth\", nonce=\"");
-  header.concat(genRandomString());
-  header.concat("\", opaque=\"");
-  header.concat(genRandomString());
-  header.concat("\"");
-  return header;
+    String header = "realm=\"";
+    if(realm == NULL) {
+        header.concat(DEFAULT_REALM);
+    } else {
+        header.concat(realm);
+    }
+    header.concat( "\", qop=\"auth\", nonce=\"");
+    header.concat(genRandomString());
+    header.concat("\", opaque=\"");
+    header.concat(genRandomString());
+    header.concat("\"");
+    return header;
 }
 
 AuthFields parseDigestAuth(const char *header)
@@ -212,9 +213,9 @@ bool checkDigestAuthentication(const AuthFields &fields, const char * method, co
 }
 
 String generateDigestHash(const char * username, const char * password, const char * realm){
-  if(username == NULL || password == NULL || realm == NULL){
-    return "";
-  }
+    if(username == NULL || password == NULL || realm == NULL){
+        return "";
+    }
 
-  return stringMD5(String(username) + ':' + realm + ':' + password);
+    return stringMD5(String(username) + ':' + realm + ':' + password);
 }
