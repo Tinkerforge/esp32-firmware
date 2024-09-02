@@ -39,10 +39,10 @@
 
 #define BENCHMARK_BLOCKSIZE 32768
 
-static float benchmark_area(uint8_t *start_address, size_t max_length);
+static float benchmark_area(uint32_t *start_address, size_t max_length);
 static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_clk, uint32_t *dummy_cyclelen, const char **spi_mode);
 
-extern uint8_t _text_start;
+extern uint32_t _text_start;
 
 [[gnu::noinline]]
 static void malloc_failed_log_detailed(size_t size, uint32_t caps, const char *function_name, const char *task_name)
@@ -102,11 +102,11 @@ void Debug::pre_setup()
 
     float psram_speed = 0;
 #if defined(BOARD_HAS_PSRAM)
-    psram_speed = benchmark_area(reinterpret_cast<uint8_t *>(0x3FB00000), 128*1024); // 128KiB inside the fourth MiB
+    psram_speed = benchmark_area(reinterpret_cast<uint32_t *>(0x3FB00000), 128*1024); // 128KiB inside the fourth MiB
 #endif
 
-    float dram_speed  = benchmark_area(reinterpret_cast<uint8_t *>(0x3FFAE000), 200*1024);
-    float iram_speed  = benchmark_area(reinterpret_cast<uint8_t *>(0x40080000), 128*1024);
+    float dram_speed  = benchmark_area(reinterpret_cast<uint32_t *>(0x3FFAE000), 200*1024);
+    float iram_speed  = benchmark_area(reinterpret_cast<uint32_t *>(0x40080000), 128*1024);
     float flash_speed = benchmark_area(&_text_start, 128*1024); // 128KiB at the beginning of the code
 
     rtc_cpu_freq_config_t cpu_freq_conf;
@@ -572,30 +572,51 @@ void Debug::register_task(TaskHandle_t handle, uint32_t stack_size)
     conf->get("stack_size")->updateUint(stack_size);
 }
 
-static float benchmark_area(uint8_t *start_address, size_t max_length)
+static float benchmark_area(uint32_t *start_address, size_t max_length)
 {
-    uint8_t *buffer = static_cast<uint8_t *>(heap_caps_malloc(BENCHMARK_BLOCKSIZE, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    if (!buffer) {
-        logger.printfln("Can't malloc %i bytes for benchmark buffer.", BENCHMARK_BLOCKSIZE);
-        return 0;
-    }
-
-    size_t blocks = max_length / BENCHMARK_BLOCKSIZE;
-    size_t test_length = blocks * BENCHMARK_BLOCKSIZE;
+    uint32_t *end_address = start_address + (max_length / 4);
 
     micros_t start_time = now_us();
-    while (blocks > 0) {
-        memcpy(buffer, start_address, BENCHMARK_BLOCKSIZE);
-        start_address += BENCHMARK_BLOCKSIZE;
-        blocks--;
+    while (start_address < end_address) {
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
+        asm volatile ("" : /* No outputs */ : "r" (*start_address++));
     }
     micros_t runtime = now_us() - start_time;
+
     uint32_t runtime32 = static_cast<uint32_t>(static_cast<int64_t>(runtime));
     float runtime_f = static_cast<float>(runtime32);
-    float test_length_f = static_cast<float>(test_length);
+    float test_length_f = static_cast<float>(max_length);
     float speed_MiBps = (test_length_f * 1000000.0F) / (runtime_f * 1024 * 1024);
-
-    free(buffer);
 
     return speed_MiBps;
 }
