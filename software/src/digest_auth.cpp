@@ -36,9 +36,7 @@
 static bool getMD5(uint8_t * data, uint16_t len, char * output){//33 bytes or more
     mbedtls_md5_context _ctx;
     uint8_t i;
-    uint8_t * _buf = (uint8_t*)malloc(16);
-    if(_buf == NULL)
-        return false;
+    uint8_t _buf[16];
     memset(_buf, 0x00, 16);
 
     mbedtls_md5_init(&_ctx);
