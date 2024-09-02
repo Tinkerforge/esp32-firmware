@@ -107,7 +107,6 @@ private:
     };
 
     struct MqttState {
-        String topic;
         uint32_t last_send_ms;
     };
 
@@ -118,7 +117,7 @@ private:
     };
 
     std::vector<MqttCommand> commands;
-    std::vector<MqttState> states;
+    std::vector<MqttState, IRAMAlloc<MqttState>> states;
 
     size_t backend_idx;
 

@@ -202,7 +202,7 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 
 void Mqtt::addState(size_t stateIdx, const StateRegistration &reg)
 {
-    this->states.push_back({reg.path, 0});
+    this->states.push_back({0});
 }
 
 void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)
