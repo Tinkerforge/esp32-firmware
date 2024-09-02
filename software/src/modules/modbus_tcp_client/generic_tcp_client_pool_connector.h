@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2023 Mattias Schäffersmann <mattias@tinkerforge.com>
+ * Copyright (C) 2024 Matthias Bolte <matthias@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,27 +19,20 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stdlib.h>
+#include <TFGenericTCPClientPool.h>
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #include "gcc_warnings.h"
-#endif
+#include "generic_tcp_client_connector.h"
 
-void modbus_bswap_registers(uint16_t *register_start, size_t register_count);
-
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
-
-struct ModbusDeserializer
+class GenericTCPClientPoolConnector : protected GenericTCPClientConnector
 {
-    uint16_t *buf;
-    size_t idx;
+protected:
+    GenericTCPClientPoolConnector(const char *event_log_prefix_override_, TFGenericTCPClientPool *pool_) :
+        GenericTCPClientConnector(event_log_prefix_override_, nullptr), pool(pool_) {}
 
-    uint16_t read_uint16();
-    uint32_t read_uint32();
-    float read_float32();
-    void read_string(char *string, size_t length);
+    void start_connection() override;
+    void stop_connection() override;
+
+private:
+    TFGenericTCPClientPool *pool;
+    TFGenericTCPClientPoolHandle *handle = nullptr;
 };

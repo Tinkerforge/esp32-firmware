@@ -21,7 +21,7 @@
 
 #include <stdint.h>
 #include <unordered_map>
-#include <ModbusTCP.h>
+#include <TFModbusTCPClient.h>
 #include <lwip/ip_addr.h>
 
 #include "module.h"
@@ -40,7 +40,6 @@ class MetersSunSpec final : public IModule, public MeterGenerator
 public:
     // for IModule
     void pre_setup() override;
-    void setup() override;
     void register_urls() override;
     void loop() override;
 
@@ -54,9 +53,8 @@ public:
 private:
     enum class ScanState {
         Idle,
-        Resolve,
-        Resolving,
         Connect,
+        Connecting,
         Disconnect,
         Done,
         NextDeviceAddress,
@@ -80,7 +78,7 @@ private:
 
     Config config_prototype;
 
-    ModbusTCP modbus;
+    TFModbusTCPClient client;
     ConfigRoot scan_config;
     ConfigRoot scan_continue_config;
     ConfigRoot scan_abort_config;
@@ -96,8 +94,6 @@ private:
     bool scan_abort = false;
     ScanState scan_state = ScanState::Idle;
     String scan_host;
-    dns_gethostbyname_addrtype_lwip_ctx_async_data scan_host_data;
-    IPAddress scan_host_address;
     uint16_t scan_port;
     uint8_t scan_device_address_first;
     uint8_t scan_device_address_last;
@@ -113,7 +109,7 @@ private:
     uint32_t scan_read_cookie = 0;
     ModbusDeserializer scan_deserializer;
     size_t scan_read_index;
-    Modbus::ResultCode scan_read_result;
+    TFModbusTCPClientTransactionResult scan_read_result;
     ScanState scan_read_state;
     uint16_t scan_model_id;
     std::unordered_map<uint16_t, uint16_t> scan_model_instances;
