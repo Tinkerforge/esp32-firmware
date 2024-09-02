@@ -27,7 +27,11 @@ bool Config::ConfString::slotEmpty(size_t i)
 Config::ConfString::Slot *Config::ConfString::allocSlotBuf(size_t elements)
 {
     auto *result = new Config::ConfString::Slot[elements];
-    memset(result, 0, sizeof(Config::ConfString::Slot) * elements);
+
+    // A slot is empty if the string is invalid.
+    for(size_t i = 0; i < elements; ++i)
+        result[i].val.make_invalid();
+
     return result;
 }
 
