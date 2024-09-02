@@ -248,6 +248,26 @@ bool operator==(const DebugAlloc<T>&, const DebugAlloc<U>&) { return true; }
 template <class T, class U>
 bool operator!=(const DebugAlloc<T>&, const DebugAlloc<U>&) { return false; }
 
+template <class Tp>
+struct IRAMAlloc {
+    typedef Tp value_type;
+    IRAMAlloc() = default;
+    template <class T> IRAMAlloc(const IRAMAlloc<T>&) {}
+
+    Tp *allocate(std::size_t n)
+    {
+        return (Tp *) heap_caps_malloc(n * sizeof(Tp), MALLOC_CAP_32BIT);
+    }
+    void deallocate(Tp *p, std::size_t n)
+    {
+        heap_caps_free(p);
+    }
+};
+template <class T, class U>
+bool operator==(const IRAMAlloc<T>&, const IRAMAlloc<U>&) { return true; }
+template <class T, class U>
+bool operator!=(const IRAMAlloc<T>&, const IRAMAlloc<U>&) { return false; }
+
 enum class BootStage {
     STATIC_INITIALIZATION,
     PRE_INIT,

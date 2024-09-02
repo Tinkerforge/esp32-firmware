@@ -35,9 +35,9 @@ struct StateRegistration {
     const char *const *const keys_to_censor;
     ConfigRoot *const config;
 
-    const uint8_t path_len;
-    const uint8_t keys_to_censor_len;
-    const bool low_latency;
+    const size_t path_len;
+    const size_t keys_to_censor_len;
+    const uint32_t low_latency;
 };
 
 struct CommandRegistration {
@@ -46,9 +46,9 @@ struct CommandRegistration {
     ConfigRoot *const config;
     const std::function<void(String &)> callback;
 
-    const uint8_t path_len;
-    const uint8_t keys_to_censor_in_debug_report_len;
-    const bool is_action;
+    const size_t path_len;
+    const size_t keys_to_censor_in_debug_report_len;
+    const uint32_t is_action;
 };
 
 struct ResponseRegistration {
@@ -57,8 +57,8 @@ struct ResponseRegistration {
     ConfigRoot *config;
     std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback;
 
-    const uint8_t path_len;
-    const uint8_t keys_to_censor_in_debug_report_len;
+    const size_t path_len;
+    const size_t keys_to_censor_in_debug_report_len;
 };
 
 class IAPIBackend
@@ -137,9 +137,9 @@ public:
 
     size_t registerBackend(IAPIBackend *backend);
 
-    std::vector<StateRegistration> states;
-    std::vector<CommandRegistration> commands;
-    std::vector<ResponseRegistration> responses;
+    std::vector<StateRegistration, IRAMAlloc<StateRegistration>> states;
+    std::vector<CommandRegistration, IRAMAlloc<CommandRegistration>> commands;
+    std::vector<ResponseRegistration, IRAMAlloc<ResponseRegistration>> responses;
 
     std::vector<IAPIBackend *> backends;
 
