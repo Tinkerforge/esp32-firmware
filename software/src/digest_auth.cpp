@@ -46,7 +46,6 @@ static bool getMD5(uint8_t * data, uint16_t len, char * output){//33 bytes or mo
     for(i = 0; i < 16; i++) {
         sprintf(output + (i * 2), "%02x", _buf[i]);
     }
-    free(_buf);
     return true;
 }
 
