@@ -620,3 +620,7 @@
 - Fix MQTT automation rules with prefix
 - Fix missing power graph for Victron Energy GX grid meter
 - Fix certificate upload
+
+2024-09-02: 2.5.0 (<unknown>)
+- Add firmware update check and download
+- Add remote access
