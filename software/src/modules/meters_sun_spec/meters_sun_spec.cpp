@@ -78,13 +78,6 @@ void MetersSunSpec::pre_setup()
     scan_abort_config = scan_continue_config;
 }
 
-void MetersSunSpec::setup()
-{
-    modbus.client();
-
-    initialized = true;
-}
-
 void MetersSunSpec::register_urls()
 {
     api.addCommand("meters_sun_spec/scan", &scan_config, {}, [this](String &error) {
@@ -158,7 +151,7 @@ void MetersSunSpec::loop()
         if (scan_new) {
             scan_printfln("Starting scan");
 
-            scan_state = ScanState::Resolve;
+            scan_state = ScanState::Connect;
             scan_host = scan_new_host;
             scan_port = scan_new_port;
             scan_device_address_first = scan_new_device_address_first;
@@ -175,52 +168,6 @@ void MetersSunSpec::loop()
 
         break;
 
-    case ScanState::Resolve:
-        if (scan_abort) {
-            scan_state = ScanState::Done;
-            break;
-        }
-
-        scan_printfln("Resolving %s", scan_host.c_str());
-
-        scan_host_data.user = this;
-        scan_state = ScanState::Resolving;
-
-        dns_gethostbyname_addrtype_lwip_ctx_async(scan_host.c_str(), [](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
-            MetersSunSpec *mss = static_cast<MetersSunSpec *>(data->user);
-
-            if (data->err == ERR_OK) {
-                if (data->addr_ptr == nullptr) {
-                    mss->scan_printfln("Could not resolve %s", mss->scan_host.c_str());
-
-                    mss->scan_state = ScanState::Done;
-                }
-                else if (data->addr_ptr->type != IPADDR_TYPE_V4) {
-                    mss->scan_printfln("Could not resolve %s to an IPv4 address", mss->scan_host.c_str());
-
-                    mss->scan_state = ScanState::Done;
-                }
-                else {
-                    mss->scan_host_address = data->addr_ptr->u_addr.ip4.addr;
-                    mss->scan_state = MetersSunSpec::ScanState::Connect;
-                }
-            }
-            else {
-                if (data->err == ERR_VAL) {
-                    mss->scan_printfln("Could not resolve %s, no DNS server is configured", mss->scan_host.c_str());
-                } else {
-                    mss->scan_printfln("Could not resolve %s (error: %d)", mss->scan_host.c_str(), data->err);
-                }
-
-                mss->scan_state = ScanState::Done;
-            }
-        }, &scan_host_data, LWIP_DNS_ADDRTYPE_IPV4);
-
-        break;
-
-    case ScanState::Resolving:
-        break;
-
     case ScanState::Connect:
         if (scan_abort) {
             scan_state = ScanState::Done;
@@ -228,27 +175,56 @@ void MetersSunSpec::loop()
         }
 
         scan_printfln("Connecting to %s:%u", scan_host.c_str(), scan_port);
+        scan_state = ScanState::Connecting;
 
-        if (!modbus.connect(scan_host_address, scan_port)) {
-            scan_printfln("Could not connect to %s:%u", scan_host.c_str(), scan_port);
+        client.connect(scan_host.c_str(), scan_port,
+        [this](TFGenericTCPClientConnectResult result, int error_number) {
+            if (result == TFGenericTCPClientConnectResult::Connected) {
+                scan_state = ScanState::ReadSunSpecID;
+            }
+            else if (result == TFGenericTCPClientConnectResult::ResolveFailed) {
+                if (error_number == EINVAL) {
+                    scan_printfln("Couldn't resolve %s, no DNS server is configured", scan_host.c_str());
+                }
+                else if (error_number >= 0) {
+                    scan_printfln("Couldn't resolve %s: %s (%d)", scan_host.c_str(), strerror(error_number), error_number);
+                }
+                else {
+                    scan_printfln("Couldn't resolve %s", scan_host.c_str());
+                }
+
+                scan_state = ScanState::Done;
+            }
+            else if (error_number >= 0) {
+                scan_printfln("Could not connect to %s:%u: %s / %s (%d)", scan_host.c_str(), scan_port, get_tf_generic_tcp_client_connect_result_name(result), strerror(error_number), error_number);
+                scan_state = ScanState::Done;
+            }
+            else {
+                scan_printfln("Could not connect to %s:%u: %s", scan_host.c_str(), scan_port, get_tf_generic_tcp_client_connect_result_name(result));
+                scan_state = ScanState::Done;
+            }
+        },
+        [this](TFGenericTCPClientDisconnectReason reason, int error_number) {
+            if (reason == TFGenericTCPClientDisconnectReason::Requested) {
+                scan_printfln("Disconnected from %s:%u", scan_host.c_str(), scan_port);
+            }
+            else if (error_number >= 0) {
+                scan_printfln("Disconnected from %s:%u: %s / %s (%d)", scan_host.c_str(), scan_port, get_tf_generic_tcp_client_disconnect_reason_name(reason), strerror(error_number), error_number);
+            }
+            else {
+                scan_printfln("Disconnected from %s:%u: %s", scan_host.c_str(), scan_port, get_tf_generic_tcp_client_disconnect_reason_name(reason));
+            }
 
             scan_state = ScanState::Done;
-        }
-        else {
-            scan_state = ScanState::ReadSunSpecID;
-        }
+        });
 
         break;
 
+    case ScanState::Connecting:
+        break;
+
     case ScanState::Disconnect:
-        scan_printfln("Disconnecting from %s", scan_host.c_str());
-
-        if (!modbus.disconnect(scan_host_address)) {
-            scan_printfln("Could not disconnect from %s", scan_host.c_str());
-        }
-
-        scan_state = ScanState::Done;
-
+        client.disconnect();
         break;
 
     case ScanState::Done: {
@@ -361,14 +337,18 @@ void MetersSunSpec::loop()
 
             scan_state = ScanState::Reading;
 
-            uint16_t rc = modbus.readHreg(scan_host_address, static_cast<uint16_t>(scan_read_address), &scan_read_buffer[scan_read_index], static_cast<uint16_t>(read_chunk_size),
-            [this, cookie, read_chunk_size](Modbus::ResultCode result, uint16_t transactionId, void *data) -> bool {
+            client.read_register(TFModbusTCPClientRegisterType::HoldingRegister,
+                                 scan_device_address,
+                                 static_cast<uint16_t>(scan_read_address),
+                                 static_cast<uint16_t>(read_chunk_size),
+                                 &scan_read_buffer[scan_read_index],
+                                 [this, cookie, read_chunk_size](TFModbusTCPClientTransactionResult result) {
                 if (scan_state != ScanState::Reading || cookie != scan_read_cookie) {
-                    return true;
+                    return;
                 }
 
-                if (result != Modbus::ResultCode::EX_TIMEOUT) {
-                    modbus.setTimeout(1000);
+                if (result != TFModbusTCPClientTransactionResult::Timeout) {
+                    client.set_transaction_timeout(TF_MODBUS_TCP_CLIENT_TRANSACTION_TIMEOUT);
 
                     scan_read_timeout_burst = 0;
                     scan_read_retries = MAX_SCAN_READ_RETRIES;
@@ -378,27 +358,26 @@ void MetersSunSpec::loop()
                         ++scan_read_timeout_burst;
                     }
                     else {
-                        modbus.setTimeout(200);
+                        client.set_transaction_timeout(200);
 
                         scan_read_retries = 0;
                     }
                 }
 
-                if (result == Modbus::ResultCode::EX_TIMEOUT && scan_read_retries > 0) {
+                if (result == TFModbusTCPClientTransactionResult::Timeout && scan_read_retries > 0) {
                     scan_printfln("Reading timed out, retrying");
 
                     --scan_read_retries;
                     scan_read_delay_deadline = now_us() + 100_ms + static_cast<micros_t>(esp_random() % 2400000);
                     scan_state = ScanState::ReadDelay;
-
-                    return true;
+                    return;
                 }
 
                 scan_read_address += read_chunk_size;
                 scan_read_index += read_chunk_size;
                 scan_read_result = result;
 
-                if (result != Modbus::ResultCode::EX_SUCCESS || scan_read_index >= scan_read_size) {
+                if (result != TFModbusTCPClientTransactionResult::Success || scan_read_index >= scan_read_size) {
                     scan_read_index = 0;
                     scan_state = scan_read_state;
 
@@ -408,21 +387,7 @@ void MetersSunSpec::loop()
                 else {
                     scan_state = ScanState::ReadNext;
                 }
-
-                return true;
-            }, scan_device_address);
-
-            if (rc == 0) {
-                if (scan_read_retries > 0) {
-                    scan_printfln("Unknown read error, retrying");
-
-                    --scan_read_retries;
-                    scan_state = ScanState::ReadNext;
-                } else {
-                    scan_read_result = Modbus::ResultCode::EX_CONNECTION_LOST; // abuse this unused error code to report this error
-                    scan_state = scan_read_state;
-                }
-            }
+            });
         }
 
         break;
@@ -455,7 +420,7 @@ void MetersSunSpec::loop()
             break;
         }
 
-        if (scan_read_result == Modbus::ResultCode::EX_SUCCESS) {
+        if (scan_read_result == TFModbusTCPClientTransactionResult::Success) {
             uint32_t sun_spec_id = scan_deserializer.read_uint32();
 
             if (sun_spec_id == SUN_SPEC_ID) {
@@ -470,7 +435,9 @@ void MetersSunSpec::loop()
             }
         }
         else {
-            scan_printfln("Could not read SunSpec ID (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
+            scan_printfln("Could not read SunSpec ID (error: %s [%d])",
+                          get_tf_modbus_tcp_client_transaction_result_name(scan_read_result),
+                          static_cast<int>(scan_read_result));
 
             scan_state = scan_get_next_state_after_read_error();
         }
@@ -497,7 +464,7 @@ void MetersSunSpec::loop()
             break;
         }
 
-        if (scan_read_result == Modbus::ResultCode::EX_SUCCESS) {
+        if (scan_read_result == TFModbusTCPClientTransactionResult::Success) {
             char options[16 + 1];
             char version[16 + 1];
 
@@ -531,7 +498,9 @@ void MetersSunSpec::loop()
             scan_state = ScanState::ReadModelHeader;
         }
         else {
-            scan_printfln("Could not read Common Model block (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
+            scan_printfln("Could not read Common Model block (error: %s [%d])",
+                          get_tf_modbus_tcp_client_transaction_result_name(scan_read_result),
+                          static_cast<int>(scan_read_result));
 
             scan_state = scan_get_next_state_after_read_error();
         }
@@ -558,7 +527,7 @@ void MetersSunSpec::loop()
             break;
         }
 
-        if (scan_read_result == Modbus::ResultCode::EX_SUCCESS) {
+        if (scan_read_result == TFModbusTCPClientTransactionResult::Success) {
             uint16_t model_id = scan_deserializer.read_uint16();
             size_t block_length = scan_deserializer.read_uint16();
 
@@ -603,7 +572,8 @@ void MetersSunSpec::loop()
                     ++scan_model_instances[model_id];
                 }
 
-                scan_printfln("%s Model found (model-id/instance: %u/%u, block-length: %zu)", model_name, model_id, scan_model_instances.at(model_id), block_length);
+                scan_printfln("%s Model found (model-id/instance: %u/%u, block-length: %zu)",
+                              model_name, model_id, scan_model_instances.at(model_id), block_length);
 
                 scan_model_id = model_id;
                 scan_block_length = block_length;
@@ -611,7 +581,9 @@ void MetersSunSpec::loop()
             }
         }
         else {
-            scan_printfln("Could not read Model header (error: %s [%d])", get_modbus_result_code_name(scan_read_result), scan_read_result);
+            scan_printfln("Could not read Model header (error: %s [%d])",
+                          get_tf_modbus_tcp_client_transaction_result_name(scan_read_result),
+                          static_cast<int>(scan_read_result));
 
             scan_state = scan_get_next_state_after_read_error();
         }
@@ -652,7 +624,7 @@ void MetersSunSpec::loop()
         esp_system_abort("meters_sun_spec: Invalid state.");
     }
 
-    modbus.task();
+    client.tick();
 }
 
 [[gnu::const]]
@@ -663,8 +635,7 @@ MeterClassID MetersSunSpec::get_class() const
 
 IMeter *MetersSunSpec::new_meter(uint32_t slot, Config *state, Config *errors)
 {
-    // Must get ModbusTCP handle here because IMeters are created before our setup() ran.
-    return new MeterSunSpec(slot, state, errors, meters_modbus_tcp.get_modbus_tcp_handle());
+    return new MeterSunSpec(slot, state, errors, modbus_tcp_client.get_pool());
 }
 
 [[gnu::const]]
@@ -685,10 +656,10 @@ const Config *MetersSunSpec::get_errors_prototype()
     return Config::Null();
 }
 
-MetersSunSpec::ScanState MetersSunSpec::scan_get_next_state_after_read_error() {
-    if (scan_read_result == Modbus::ResultCode::EX_DEVICE_FAILED_TO_RESPOND ||
-        (scan_read_result == Modbus::ResultCode::EX_TIMEOUT && scan_read_retries <= 0) ||
-        (scan_read_result == Modbus::ResultCode::EX_CONNECTION_LOST && scan_read_retries <= 0)) {
+MetersSunSpec::ScanState MetersSunSpec::scan_get_next_state_after_read_error()
+{
+    if (scan_read_result == TFModbusTCPClientTransactionResult::ModbusGatewayTargetDeviceFailedToRespond ||
+        (scan_read_result == TFModbusTCPClientTransactionResult::Timeout && scan_read_retries <= 0)) {
         return ScanState::NextDeviceAddress;
     }
 

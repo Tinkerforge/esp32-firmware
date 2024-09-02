@@ -552,15 +552,15 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
     }
 
     task_scheduler.scheduleOnce([this]() {
-        this->read_allowed = false;
-        this->start_connection();
+        read_allowed = false;
+        start_connection();
     }, 1_s);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        if (this->read_allowed) {
-            this->read_allowed = false;
-            this->read_next();
-        };
+        if (read_allowed) {
+            read_allowed = false;
+            read_next();
+        }
     }, 2_s, 1_s);
 }
 
@@ -687,14 +687,14 @@ bool MeterModbusTCP::is_shelly_pro_xem_monophase() const
 
 void MeterModbusTCP::read_done_callback()
 {
-    if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
-        logger.printfln("Error reading %s / %s (address: %zu, number: %zu): %s [%d]",
+    if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
+        logger.printfln("Modbus error reading %s / %s (address: %zu, number: %zu): %s [%d]",
                         get_meter_modbus_tcp_table_id_name(table_id),
                         table->specs[read_index].name,
                         table->specs[read_index].start_address,
                         table->specs[read_index].start_address + 1,
-                        get_modbus_result_code_name(generic_read_request.result_code),
-                        generic_read_request.result_code);
+                        get_tf_modbus_tcp_client_transaction_result_name(generic_read_request.result),
+                        static_cast<int>(generic_read_request.result));
 
         read_allowed = true;
         register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;

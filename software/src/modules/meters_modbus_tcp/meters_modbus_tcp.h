@@ -20,7 +20,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <ModbusTCP.h>
 
 #include "module.h"
 #include "modules/meters/meter_generator.h"
@@ -40,8 +39,6 @@ class MetersModbusTCP final : public IModule, public MeterGenerator
 public:
     // for IModule
     void pre_setup() override;
-    void setup() override;
-    void loop() override;
 
     // for MeterGenerator
     [[gnu::const]] MeterClassID get_class() const override;
@@ -50,15 +47,10 @@ public:
     [[gnu::const]] virtual const Config *get_state_prototype()  override;
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
-    [[gnu::const]] ModbusTCP *get_modbus_tcp_handle();
-
 private:
     Config config_prototype;
-
     Config table_custom_registers_prototype;
     std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> table_prototypes;
-
-    ModbusTCP modbus;
 };
 
 #if defined(__GNUC__)

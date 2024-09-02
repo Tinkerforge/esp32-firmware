@@ -59,15 +59,15 @@ void MeterSunSpec::setup(const Config &ephemeral_config)
     }
 
     task_scheduler.scheduleOnce([this]() {
-        this->read_allowed = false;
-        this->start_connection();
+        read_allowed = false;
+        start_connection();
     }, 1_s);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        if (this->read_allowed) {
-            this->read_allowed = false;
-            this->start_generic_read();
-        };
+        if (read_allowed) {
+            read_allowed = false;
+            start_generic_read();
+        }
     }, 2_s, 1_s);
 }
 
@@ -119,8 +119,8 @@ void MeterSunSpec::read_done_callback()
 {
     read_allowed = true;
 
-    if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
-        logger.printfln("Read error: %s (%d)", get_modbus_result_code_name(generic_read_request.result_code), generic_read_request.result_code);
+    if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
+        logger.printfln("Modbus read error: %s (%d)", get_tf_modbus_tcp_client_transaction_result_name(generic_read_request.result), static_cast<int>(generic_read_request.result));
         return;
     }
 
@@ -187,8 +187,8 @@ void MeterSunSpec::scan_read_delay()
 
 void MeterSunSpec::scan_next()
 {
-    if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
-        logger.printfln("Modbus read error during scan: %s (%d)", get_modbus_result_code_name(generic_read_request.result_code), generic_read_request.result_code);
+    if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
+        logger.printfln("Modbus read error during scan: %s (%d)", get_tf_modbus_tcp_client_transaction_result_name(generic_read_request.result), static_cast<int>(generic_read_request.result));
         scan_read_delay();
         return;
     }
