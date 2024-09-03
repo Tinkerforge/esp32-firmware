@@ -43,7 +43,7 @@ export interface UplotData extends CachedData {
     values: number[][];
     extras?: number[][];
     stacked: boolean[];
-    paths: UplotPath[];
+    paths?: UplotPath[];
     value_names?: {[id: number]: string}[];
     value_strokes?: {[id: number]: string}[];
     value_fills?: {[id: number]: string}[];
@@ -399,11 +399,13 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
         let color = plot.get_color(this.props.color_cache_group, name);
         let paths = undefined;
 
-        if (this.data.paths[i] == UplotPath.Bar) {
-            paths = uPlot.paths.bars({size: [0.4, 100], align: this.data.stacked[i] ? 1 : -1})
-        }
-        else if (this.data.paths[i] == UplotPath.Step) {
-            paths = uPlot.paths.stepped({align: 1});
+        if (this.data.paths) {
+            if (this.data.paths[i] == UplotPath.Bar) {
+                paths = uPlot.paths.bars({size: [0.4, 100], align: this.data.stacked[i] ? 1 : -1})
+            }
+            else if (this.data.paths[i] == UplotPath.Step) {
+                paths = uPlot.paths.stepped({align: 1});
+            }
         }
 
         return {

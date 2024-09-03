@@ -19,16 +19,23 @@
 
 // meters
 
-import { h, Component, createRef } from "preact";
+import { h, Component, RefObject, createRef } from "preact";
 import { effect } from "@preact/signals-core";
 import * as util from "../util";
 import * as plot from "../plot";
 import uPlot from "uplot";
 
+export const enum UplotPath {
+    Line = 0,
+    Bar = 1,
+    Step = 2,
+}
+
 export interface UplotData {
     keys: string[];
     names: string[];
     values: number[][];
+    paths?: UplotPath[];
     default_visibilty?: boolean[];
 }
 
@@ -41,6 +48,7 @@ interface UplotWrapperProps {
     sync?: uPlot.SyncPubSub;
     legend_time_label: string;
     legend_time_with_seconds: boolean;
+    legend_div_ref?: RefObject<HTMLDivElement>;
     aspect_ratio: number;
     x_height: number;
     x_padding_factor: number;
@@ -218,6 +226,13 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     }
                 },
             },
+            legend: {
+                mount: (self: uPlot, legend: HTMLElement) => {
+                    if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
+                        this.props.legend_div_ref.current.appendChild(legend);
+                    }
+                },
+            },
             padding: [null, 20, null, 5] as uPlot.Padding,
             plugins: [
                 {
@@ -326,11 +341,25 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
     set_show(show: boolean) {
         this.div_ref.current.style.display = show ? 'block' : 'none';
+
+        if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
+            this.props.legend_div_ref.current.style.display = show ? 'block' : 'none';
+        }
     }
 
     get_series_opts(i: number, fill: boolean): uPlot.Series {
         let name = this.data.names[i];
         let color = plot.get_color(this.props.color_cache_group, name);
+        let paths = undefined;
+
+        if (this.data.paths) {
+            if (this.data.paths[i] == UplotPath.Bar) {
+                paths = uPlot.paths.bars({size: [0.4, 100], align: -1})
+            }
+            else if (this.data.paths[i] == UplotPath.Step) {
+                paths = uPlot.paths.stepped({align: 1});
+            }
+        }
 
         return {
             show: this.series_visibility[this.data.keys[i]],
@@ -341,6 +370,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             stroke: color.stroke,
             fill: fill ? color.fill : undefined,
             width: 2,
+            paths: paths,
             points: {
                 show: false,
             },
@@ -419,9 +449,17 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
         if (visible === false || (visible === undefined && (!this.data || this.data.keys.length <= 1))) {
             this.div_ref.current.style.visibility = 'hidden';
+
+            if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
+                this.props.legend_div_ref.current.style.visibility = 'hidden';
+            }
         }
         else {
             this.div_ref.current.style.visibility = 'inherit';
+
+            if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
+                this.props.legend_div_ref.current.style.visibility = 'inherit';
+            }
 
             while (this.uplot.series.length > 1) {
                 this.uplot.delSeries(this.uplot.series.length - 1);
