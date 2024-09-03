@@ -34,10 +34,6 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Download, Terminal } from "react-feather";
 import { InputNumber } from "src/ts/components/input_number";
 
-export function ChargeManagerDebugNavbar() {
-    return <NavbarItem name="charge_manager_debug" module="charge_manager" title={__("charge_manager_debug.navbar.charge_manager_debug")} symbol={<Terminal />} />;
-}
-
 
 const CMDOutFloat = (props: any) => <OutputFloat maxFractionalDigitsOnPage={3} maxUnitLengthOnPage={2} {...props}/>
 const CMDCardOutFloat = (props: any) => <OutputFloat maxUnitLengthOnPage={3.5} {...props}/>
@@ -154,10 +150,9 @@ function Charger (props: {i: number,
 }
 
 export class ChargeManagerDebug extends Component {
-
     render() {
         if (!util.render_allowed())
-            return <SubPage name="charge_manager_debug" />;
+            return undefined;
 
         // For some reason info/keep_alive can be missing even if render_allowed is true?
         const uptime      = API.get('info/keep_alive')?.uptime ?? 0;
@@ -166,11 +161,8 @@ export class ChargeManagerDebug extends Component {
         const ll_state    = API.get('charge_manager/low_level_state');
         const pm_ll_state = API.get_unchecked('power_manager/low_level_state');
 
-        return (
-            <SubPage name="charge_manager_debug" colClasses="col-xl-10">
-                <PageHeader title={__("charge_manager_debug.content.charge_manager_debug")}/>
-
-                <FormSeparator heading={__("charge_manager_debug.content.protocol")} first={true} />
+        return (<>
+                <FormSeparator heading={__("charge_manager.content.protocol")} first={true} />
                 <CMDFormRow label="Trace log" labelColClasses="col-lg-2" contentColClasses="col-lg-10">
                     <Button variant="primary" className="form-control" onClick={async () => util.downloadToFile(await util.download("/trace_log"), "charge-manager-trace-log", "txt", "text/plain")}><span class="ml-1 mr-2">Download</span> <Download/></Button>
                 </CMDFormRow>
@@ -315,93 +307,7 @@ export class ChargeManagerDebug extends Component {
                         <Charger i={i} state={state.chargers[i]} ll_state={ll_state.chargers[i]}/>
                     </div>)}
                 </div>
-
-
-
-{/*
-
-                <FormRow label="power at meter smooth">
-                    <OutputFloat value={pm_ll_state.power_at_meter} digits={3} scale={3} unit={'kW'} />
-                </FormRow>
-                <FormRow label="power available">
-                    <OutputFloat value={pm_ll_state.power_available} digits={3} scale={3} unit={'kW'} />
-                </FormRow>
-                <FormRow label="overall min power">
-                    <OutputFloat value={pm_ll_state.overall_min_power} digits={3} scale={3} unit={'kW'} />
-                </FormRow>
-                <FormRow label="CM available current">
-                    <OutputFloat value={pm_ll_state.charge_manager_available_current} digits={3} scale={3} unit={'A'} />
-                </FormRow>
-                <FormRow label="CM allocated current">
-                    <OutputFloat value={pm_ll_state.charge_manager_allocated_current} digits={3} scale={3} unit={'A'} />
-                </FormRow>
-                <FormRow label="max current limited">
-                    <OutputFloat value={pm_ll_state.max_current_limited} digits={3} scale={3} unit={'A'} />
-                </FormRow>
-                <FormRow label="is 3phase">
-                    <IndicatorGroup
-                        value={pm_ll_state.is_3phase ? 1 : 0}
-                        items={[
-                            ["secondary", "false"],
-                            ["primary",   "true" ],
-                        ]} />
-                </FormRow>
-                <FormRow label="charging blocked">
-                    <InputText value={"0x" + pm_ll_state.charging_blocked.toString(16)}/>
-                </FormRow>
-                <FormRow label="consecutive bricklet errors">
-                    <InputText value={ll_state.consecutive_bricklet_errors}/>
-                </FormRow>
-
-                <FormSeparator heading={__("charge_manager_debug.content.hardware_state")} />
-                <FormRow label={__("charge_manager_debug.content.contactor_control")}>
-                    <IndicatorGroup
-                        value={ll_state.contactor ? 1 : 0}
-                        items={[
-                            ["secondary", __("charge_manager_debug.content.contactor_off")],
-                            ["primary", __("charge_manager_debug.content.contactor_on")],
-                        ]} />
-                </FormRow>
-
-                <FormRow label={__("charge_manager_debug.content.contactor_check")}>
-                    <IndicatorGroup
-                        value={ll_state.contactor_check_state ? 0 : 1} // intentionally inverted, OK is first
-                        items={[
-                            ["success", __("charge_manager_debug.content.contactor_check_ok")],
-                            ["danger", __("charge_manager_debug.content.contactor_check_fail")],
-                        ]} />
-                </FormRow>
-
-                <FormRow label={__("charge_manager_debug.content.state_led")} label_muted={__("charge_manager_debug.content.state_led_names")}>
-                    <div class="row mx-n1">
-                        {ll_state.led_rgb.map((x, i) => (
-                            <div key={i} class="mb-1 col-4 px-1">
-                                <InputText value={x} />
-                            </div>
-                        ))}
-                    </div>
-                </FormRow>
-
-                <FormRow label={__("charge_manager_debug.content.gpios")} label_muted={__("charge_manager_debug.content.gpio_names_0")}>
-                    <div class="row mx-n1">
-                        {[state.input3_state, state.input4_state, state.relay_state].map((x, j) => (
-                            <IndicatorGroup vertical key={j} class="mb-1 col px-1"
-                                value={x ? 0 : 1} //intentionally inverted: the high button is the first
-                                items={[
-                                    ["primary", __("charge_manager_debug.content.high")],
-                                    ["secondary", __("charge_manager_debug.content.low")]
-                                ]} />
-                        ))}
-                    </div>
-                </FormRow>
-
-                <FormRow label={__("charge_manager_debug.content.state_input_voltage")}>
-                    <OutputFloat value={ll_state.input_voltage} digits={3} scale={3} unit={'V'} />
-                </FormRow>*/}
-            </SubPage>
+            </>
         );
     }
-}
-
-export function init() {
 }

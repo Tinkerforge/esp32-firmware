@@ -110,7 +110,16 @@ let x = {
             "dlm_safety_margin_pct": "Safety margin",
             "dlm_safety_margin_pct_muted": "",
 
-            "managed_disabled": "Charge management settings will be ignored: Charger only controls itself or is controlled externally."
+            "managed_disabled": "Charge management settings will be ignored: Charger only controls itself or is controlled externally.",
+
+            "charge_manager_debug": "Debug",
+            "protocol": "Energy Manager Protocol",
+            "debug_description": "Create protocol",
+            "debug_description_muted": "for diagnosing issues",
+            "debug_start": "Start",
+            "debug_stop": "Stop + Download",
+
+            "internal_state": "Internal state"
         },
         "automation": {
           "charge_manager_wd": "Charge manager watchdog triggered",

@@ -110,7 +110,16 @@ let x = {
             "dlm_safety_margin_pct": "Sicherheitsmarge",
             "dlm_safety_margin_pct_muted": "",
 
-            "managed_disabled": "Lastmanagement-Einstellungen werden ignoriert: Wallbox steuert nur sich selbst oder ist fremdgesteuert."
+            "managed_disabled": "Lastmanagement-Einstellungen werden ignoriert: Wallbox steuert nur sich selbst oder ist fremdgesteuert.",
+
+            "charge_manager_debug": "Debug",
+            "protocol": "Lastmanagement-Protokoll",
+            "debug_description": "Protokoll erstellen",
+            "debug_description_muted": "zur Diagnose bei Problemen",
+            "debug_start": "Start",
+            "debug_stop": "Stop + Download",
+
+            "internal_state": "Interner Zustand"
         },
         "automation": {
             "charge_manager_wd": "Lastmanagement-Watchdog ausgelöst",

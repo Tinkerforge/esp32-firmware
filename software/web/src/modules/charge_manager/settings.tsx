@@ -37,6 +37,9 @@ import { get_noninternal_meter_slots } from "../power_manager/main";
 import type { ChargeManagerStatus } from "./main"
 import { FormSeparator } from "src/ts/components/form_separator";
 
+import { ChargeManagerDebug } from "./debug";
+import { CollapsedSection } from "src/ts/components/collapsed_section";
+
 type ChargeManagerConfig = API.getType["charge_manager/config"];
 
 interface ChargeManagerState {
@@ -338,6 +341,9 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                     :
                         null
                     }
+                    <CollapsedSection label="Debug">
+                        <ChargeManagerDebug/>
+                    </CollapsedSection>
                     </ConfigForm>
             </SubPage>
         )
