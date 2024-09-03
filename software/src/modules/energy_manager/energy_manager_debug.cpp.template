@@ -11,7 +11,7 @@
 #define MAX_FMT_LENGTH 512
 #define MAX_DEBUG_LINE_LENGTH 512
 
-extern inline const char* fmt(SwitchingState) {return "%u";  }
+//extern inline const char* fmt(SwitchingState) {return "%u";  }
 extern inline const char* fmt(bool          ) {return "%i";  } // implicitly converted to int
 extern inline const char* fmt(uint8_t       ) {return "%i";  } // implicitly converted to int
 extern inline const char* fmt(uint16_t      ) {return "%i";  } // implicitly converted to int
