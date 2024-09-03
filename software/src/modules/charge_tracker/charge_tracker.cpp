@@ -936,7 +936,7 @@ search_done:
         char *stats_head = stats_buf;
         stats_head += 1 + sprintf_u(stats_head, "%s: %s", english ? "Charger" : "Wallbox", dev_name.c_str());
 
-        stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported on" : "Exportiert an");
+        stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported on" : "Exportiert am");
         stats_head += 1 + timestamp_min_to_date_time_string(stats_head, current_timestamp_min, english);
 
         stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported users" : "Exportierte Benutzer");
