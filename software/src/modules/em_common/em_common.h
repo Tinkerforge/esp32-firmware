@@ -41,7 +41,12 @@ protected:
 
     virtual bool is_initialized() const = 0;
 
+    // Pass through to DeviceModule if used
+    //virtual bool setup_device() = 0;
+    virtual bool device_module_is_in_bootloader(int rc) = 0;
+
     virtual uint32_t get_em_version() const = 0;
+    virtual const EMAllDataCommon *get_all_data_common() const = 0;
 
     virtual void set_time(const tm &tm) = 0;
     virtual timeval get_time() = 0;
@@ -51,6 +56,26 @@ protected:
 
     virtual uint16_t get_energy_meter_detailed_values(float *ret_values) = 0;
     virtual bool reset_energy_meter_relative_energy() = 0;
+
+    typedef void (*WEM_SDWallboxDataPointsLowLevelHandler)(void *do_not_use, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[60], void *user_data);
+    typedef void (*WEM_SDWallboxDailyDataPointsLowLevelHandler)(void *do_not_use, uint16_t data_length, uint16_t data_chunk_offset, uint32_t data_chunk_data[15], void *user_data);
+    typedef void (*WEM_SDEnergyManagerDataPointsLowLevelHandler)(void *do_not_use, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[58], void *user_data);
+    typedef void (*WEM_SDEnergyManagerDailyDataPointsLowLevelHandler)(void *do_not_use, uint16_t data_length, uint16_t data_chunk_offset, uint32_t data_chunk_data[14], void *user_data);
+
+    virtual int wem_register_sd_wallbox_data_points_low_level_callback(WEM_SDWallboxDataPointsLowLevelHandler handler, void *user_data) = 0;
+    virtual int wem_register_sd_wallbox_daily_data_points_low_level_callback(WEM_SDWallboxDailyDataPointsLowLevelHandler handler, void *user_data) = 0;
+    virtual int wem_register_sd_energy_manager_data_points_low_level_callback(WEM_SDEnergyManagerDataPointsLowLevelHandler handler, void *user_data) = 0;
+    virtual int wem_register_sd_energy_manager_daily_data_points_low_level_callback(WEM_SDEnergyManagerDailyDataPointsLowLevelHandler handler, void *user_data) = 0;
+    virtual int wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status) = 0;
+    virtual int wem_get_sd_wallbox_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status) = 0;
+    virtual int wem_set_sd_wallbox_daily_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint32_t energy, uint8_t *ret_status) = 0;
+    virtual int wem_get_sd_wallbox_daily_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status) = 0;
+    virtual int wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, int32_t power_grid, const int32_t power_general[6], uint8_t *ret_status) = 0;
+    virtual int wem_get_sd_energy_manager_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status) = 0;
+    virtual int wem_set_sd_energy_manager_daily_data_point(uint8_t year, uint8_t month, uint8_t day, uint32_t energy_grid_in, uint32_t energy_grid_out, const uint32_t energy_general_in[6], const uint32_t energy_general_out[6], uint8_t *ret_status) = 0;
+    virtual int wem_get_sd_energy_manager_daily_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status) = 0;
+    virtual int wem_get_data_storage(uint8_t page, uint8_t ret_data[63]) = 0;
+    virtual int wem_set_data_storage(uint8_t page, const uint8_t data[63]) = 0;
 };
 
 class EMCommon final : public IModule
@@ -69,7 +94,10 @@ public:
     void setup() override;
     //void register_urls() override;
 
+    bool device_module_is_in_bootloader(int rc);
+
     uint32_t get_em_version();
+    inline const EMAllDataCommon *get_all_data_common() {return backend->get_all_data_common();}
 
     void set_time(const tm &tm);
     timeval get_time();
@@ -79,6 +107,76 @@ public:
 
     uint16_t get_energy_meter_detailed_values(float *ret_values);
     bool reset_energy_meter_relative_energy();
+
+    inline int wem_register_sd_wallbox_data_points_low_level_callback(IEMBackend::WEM_SDWallboxDataPointsLowLevelHandler handler, void *user_data)
+    {
+        return backend->wem_register_sd_wallbox_data_points_low_level_callback(handler, user_data);
+    }
+
+    inline int wem_register_sd_wallbox_daily_data_points_low_level_callback(IEMBackend::WEM_SDWallboxDailyDataPointsLowLevelHandler handler, void *user_data)
+    {
+        return backend->wem_register_sd_wallbox_daily_data_points_low_level_callback(handler, user_data);
+    }
+
+    inline int wem_register_sd_energy_manager_data_points_low_level_callback(IEMBackend::WEM_SDEnergyManagerDataPointsLowLevelHandler handler, void *user_data)
+    {
+        return backend->wem_register_sd_energy_manager_data_points_low_level_callback(handler, user_data);
+    }
+
+    inline int wem_register_sd_energy_manager_daily_data_points_low_level_callback(IEMBackend::WEM_SDEnergyManagerDailyDataPointsLowLevelHandler handler, void *user_data)
+    {
+        return backend->wem_register_sd_energy_manager_daily_data_points_low_level_callback(handler, user_data);
+    }
+
+    inline int wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status)
+    {
+        return backend->wem_set_sd_wallbox_data_point(wallbox_id, year, month, day, hour, minute, flags, power, ret_status);
+    }
+
+    inline int wem_get_sd_wallbox_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status)
+    {
+        return backend->wem_get_sd_wallbox_data_points(wallbox_id, year, month, day, hour, minute, amount, ret_status);
+    }
+
+    inline int wem_set_sd_wallbox_daily_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint32_t energy, uint8_t *ret_status)
+    {
+        return backend->wem_set_sd_wallbox_daily_data_point(wallbox_id, year, month, day, energy, ret_status);
+    }
+
+    inline int wem_get_sd_wallbox_daily_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status)
+    {
+        return backend->wem_get_sd_wallbox_daily_data_points(wallbox_id, year, month, day, amount, ret_status);
+    }
+
+    inline int wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, int32_t power_grid, const int32_t power_general[6], uint8_t *ret_status)
+    {
+        return backend->wem_set_sd_energy_manager_data_point(year, month, day, hour, minute, flags, power_grid, power_general, ret_status);
+    }
+
+    inline int wem_get_sd_energy_manager_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status)
+    {
+        return backend->wem_get_sd_energy_manager_data_points(year, month, day, hour, minute, amount, ret_status);
+    }
+
+    inline int wem_set_sd_energy_manager_daily_data_point(uint8_t year, uint8_t month, uint8_t day, uint32_t energy_grid_in, uint32_t energy_grid_out, const uint32_t energy_general_in[6], const uint32_t energy_general_out[6], uint8_t *ret_status)
+    {
+        return backend->wem_set_sd_energy_manager_daily_data_point(year, month, day, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out, ret_status);
+    }
+
+    inline int wem_get_sd_energy_manager_daily_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status)
+    {
+        return backend->wem_get_sd_energy_manager_daily_data_points(year, month, day, amount, ret_status);
+    }
+
+    inline int wem_get_data_storage(uint8_t page, uint8_t ret_data[63])
+    {
+        return backend->wem_get_data_storage(page, ret_data);
+    }
+
+    inline int wem_set_data_storage(uint8_t page, const uint8_t data[63])
+    {
+        return backend->wem_set_data_storage(page, data);
+    }
 
 #if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;

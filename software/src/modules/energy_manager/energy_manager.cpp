@@ -282,9 +282,89 @@ bool EnergyManager::is_initialized() const
     return initialized;
 }
 
+bool EnergyManager::device_module_is_in_bootloader(int rc)
+{
+    return is_in_bootloader(rc);
+}
+
 uint32_t EnergyManager::get_em_version() const
 {
     return 1;
+}
+
+const EMAllDataCommon *EnergyManager::get_all_data_common() const
+{
+    return &all_data.common;
+}
+
+int EnergyManager::wem_register_sd_wallbox_data_points_low_level_callback(WEM_SDWallboxDataPointsLowLevelHandler handler, void *user_data)
+{
+    return tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDWallboxDataPointsLowLevelHandler>(handler), user_data);
+}
+
+int EnergyManager::wem_register_sd_wallbox_daily_data_points_low_level_callback(WEM_SDWallboxDailyDataPointsLowLevelHandler handler, void *user_data)
+{
+    return tf_warp_energy_manager_register_sd_wallbox_daily_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDWallboxDailyDataPointsLowLevelHandler>(handler), user_data);
+}
+
+int EnergyManager::wem_register_sd_energy_manager_data_points_low_level_callback(WEM_SDEnergyManagerDataPointsLowLevelHandler handler, void *user_data)
+{
+    return tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDEnergyManagerDataPointsLowLevelHandler>(handler), user_data);
+}
+
+int EnergyManager::wem_register_sd_energy_manager_daily_data_points_low_level_callback(WEM_SDEnergyManagerDailyDataPointsLowLevelHandler handler, void *user_data)
+{
+    return tf_warp_energy_manager_register_sd_energy_manager_daily_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDEnergyManagerDailyDataPointsLowLevelHandler>(handler), user_data);
+}
+
+int EnergyManager::wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status)
+{
+    return tf_warp_energy_manager_set_sd_wallbox_data_point(&device, wallbox_id, year, month, day, hour, minute, flags, power, ret_status);
+}
+
+int EnergyManager::wem_get_sd_wallbox_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status)
+{
+    return tf_warp_energy_manager_get_sd_wallbox_data_points(&device, wallbox_id, year, month, day, hour, minute, amount, ret_status);
+}
+
+int EnergyManager::wem_set_sd_wallbox_daily_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint32_t energy, uint8_t *ret_status)
+{
+    return tf_warp_energy_manager_set_sd_wallbox_daily_data_point(&device, wallbox_id, year, month, day, energy, ret_status);
+}
+
+int EnergyManager::wem_get_sd_wallbox_daily_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status)
+{
+    return tf_warp_energy_manager_get_sd_wallbox_daily_data_points(&device, wallbox_id, year, month, day, amount, ret_status);
+}
+
+int EnergyManager::wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, int32_t power_grid, const int32_t power_general[6], uint8_t *ret_status)
+{
+    return tf_warp_energy_manager_set_sd_energy_manager_data_point(&device, year, month, day, hour, minute, flags, power_grid, power_general, ret_status);
+}
+
+int EnergyManager::wem_get_sd_energy_manager_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status)
+{
+    return tf_warp_energy_manager_get_sd_energy_manager_data_points(&device, year, month, day, hour, minute, amount, ret_status);
+}
+
+int EnergyManager::wem_set_sd_energy_manager_daily_data_point(uint8_t year, uint8_t month, uint8_t day, uint32_t energy_grid_in, uint32_t energy_grid_out, const uint32_t energy_general_in[6], const uint32_t energy_general_out[6], uint8_t *ret_status)
+{
+    return tf_warp_energy_manager_set_sd_energy_manager_daily_data_point(&device, year, month, day, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out, ret_status);
+}
+
+int EnergyManager::wem_get_sd_energy_manager_daily_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status)
+{
+    return tf_warp_energy_manager_get_sd_energy_manager_daily_data_points(&device, year, month, day, amount, ret_status);
+}
+
+int EnergyManager::wem_get_data_storage(uint8_t page, uint8_t ret_data[63])
+{
+    return tf_warp_energy_manager_get_data_storage(&device, page, ret_data);
+}
+
+int EnergyManager::wem_set_data_storage(uint8_t page, const uint8_t data[63])
+{
+    return tf_warp_energy_manager_set_data_storage(&device, page, data);
 }
 
 // for PhaseSwitcherBackend

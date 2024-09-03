@@ -42,6 +42,11 @@ void EMCommon::setup()
     initialized = true;
 }
 
+bool EMCommon::device_module_is_in_bootloader(int rc)
+{
+    return backend->device_module_is_in_bootloader(rc);
+}
+
 uint32_t EMCommon::get_em_version()
 {
     return backend->get_em_version();
