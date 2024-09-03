@@ -31,13 +31,19 @@ export interface CachedData {
     use_timestamp: number;
 }
 
+export const enum UplotPath {
+    Line = 0,
+    Bar = 1,
+    Step = 2,
+}
+
 export interface UplotData extends CachedData {
     keys: string[];
     names: string[];
     values: number[][];
     extras?: number[][];
     stacked: boolean[];
-    bars: boolean[];
+    paths: UplotPath[];
     value_names?: {[id: number]: string}[];
     value_strokes?: {[id: number]: string}[];
     value_fills?: {[id: number]: string}[];
@@ -391,6 +397,14 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
     get_series_opts(i: number): uPlot.Series {
         let name = this.data.names[i];
         let color = plot.get_color(this.props.color_cache_group, name);
+        let paths = undefined;
+
+        if (this.data.paths[i] == UplotPath.Bar) {
+            paths = uPlot.paths.bars({size: [0.4, 100], align: this.data.stacked[i] ? 1 : -1})
+        }
+        else if (this.data.paths[i] == UplotPath.Step) {
+            paths = uPlot.paths.stepped({align: 1});
+        }
 
         return {
             show: this.series_visibility[this.data.keys[i]],
@@ -413,7 +427,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             stroke: color.stroke,
             fill: this.data.stacked[i] || this.props.default_fill ? color.fill : undefined,
             width: 2,
-            paths: this.data.bars[i] ? uPlot.paths.bars({size: [0.4, 100], align: this.data.stacked[i] ? 1 : -1}) : undefined,
+            paths: paths,
             points: {
                 show: false,
             },

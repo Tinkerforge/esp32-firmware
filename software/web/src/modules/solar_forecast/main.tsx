@@ -34,7 +34,7 @@ import { Table } from "../../ts/components/table";
 import { InputNumber } from "../../ts/components/input_number";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { UplotData, UplotWrapper } from "../../ts/components/uplot_wrapper_2nd";
+import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 
@@ -246,7 +246,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 names: [],
                 values: [],
                 stacked: [],
-                bars: [],
+                paths: [],
                 update_timestamp: 0,
                 use_timestamp: 0
             }
@@ -256,7 +256,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 names: [__("solar_forecast.content.time")],
                 values: [[]],
                 stacked: [false],
-                bars: [false],
+                paths: [null],
                 default_visibilty: [true],
                 update_timestamp: 0,
                 use_timestamp: 0
@@ -267,7 +267,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 data.names.push(__("solar_forecast.content.plane") + ' ' + this.state.plane_configs[index].name);
                 data.values.push([]);
                 data.stacked.push(true);
-                data.bars.push(false);
+                data.paths.push(UplotPath.Line);
                 data.default_visibilty.push(true);
 
             }

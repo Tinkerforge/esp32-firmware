@@ -31,7 +31,7 @@ import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { UplotWrapper, UplotData, CachedData } from "../../ts/components/uplot_wrapper_2nd";
+import { UplotWrapper, UplotData, CachedData, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { UplotFlagsWrapper } from "../../ts/components/uplot_wrapper_3rd";
 import uPlot from "uplot";
 import { MeterConfig } from "../meters/types";
@@ -676,7 +676,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             values: [null],
             extras: [null],
             stacked: [false],
-            bars: [false],
+            paths: [null],
             extra_names: [null],
         };
 
@@ -693,7 +693,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.values.push(energy_manager_data.power[meter_slot]);
                     uplot_data.extras.push(null);
                     uplot_data.stacked.push(false);
-                    uplot_data.bars.push(false);
+                    uplot_data.paths.push(UplotPath.Line);
                     uplot_data.extra_names.push(null);
                 }
             }
@@ -722,7 +722,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.values.push(wallbox_data.power);
                     uplot_data.extras.push(state);
                     uplot_data.stacked.push(true);
-                    uplot_data.bars.push(false);
+                    uplot_data.paths.push(UplotPath.Line);
                     uplot_data.extra_names.push(wb_state_names);
                 }
             }
@@ -789,7 +789,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             names: [null],
             values: [null],
             stacked: [false],
-            bars: [false],
+            paths: [null],
             value_names: [null],
             value_strokes: [null],
             value_fills: [null],
@@ -849,7 +849,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.names.push(__("em_energy_analysis.content.state_phase"));
             uplot_data.values.push(phase);
             uplot_data.stacked.push(false);
-            uplot_data.bars.push(false);
+            uplot_data.paths.push(UplotPath.Line);
             uplot_data.value_names.push(em_phase_names);
             uplot_data.value_strokes.push(em_phase_strokes);
             uplot_data.value_fills.push(em_phase_fills);
@@ -859,7 +859,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.names.push(__("em_energy_analysis.content.state_input3"));
             uplot_data.values.push(input3);
             uplot_data.stacked.push(false);
-            uplot_data.bars.push(false);
+            uplot_data.paths.push(UplotPath.Line);
             uplot_data.value_names.push(em_input_names);
             uplot_data.value_strokes.push(em_input_strokes);
             uplot_data.value_fills.push(em_input_fills);
@@ -869,7 +869,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.names.push(__("em_energy_analysis.content.state_input4"));
             uplot_data.values.push(input4);
             uplot_data.stacked.push(false);
-            uplot_data.bars.push(false);
+            uplot_data.paths.push(UplotPath.Line);
             uplot_data.value_names.push(em_input_names);
             uplot_data.value_strokes.push(em_input_strokes);
             uplot_data.value_fills.push(em_input_fills);
@@ -879,7 +879,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.names.push(__("em_energy_analysis.content.state_relay"));
             uplot_data.values.push(relay);
             uplot_data.stacked.push(false);
-            uplot_data.bars.push(false);
+            uplot_data.paths.push(UplotPath.Line);
             uplot_data.value_names.push(em_relay_names);
             uplot_data.value_strokes.push(em_relay_strokes);
             uplot_data.value_fills.push(em_relay_fills);
@@ -911,7 +911,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(state);
                     uplot_data.stacked.push(true);
-                    uplot_data.bars.push(false);
+                    uplot_data.paths.push(UplotPath.Line);
                     uplot_data.value_names.push(wb_state_names);
                     uplot_data.value_strokes.push(wb_state_strokes);
                     uplot_data.value_fills.push(wb_state_fills);
@@ -968,7 +968,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             names: [null],
             values: [null],
             stacked: [false],
-            bars: [false],
+            paths: [null],
         };
 
         let timestamp_slot_count: number = 0;
@@ -981,7 +981,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.names.push(get_meter_name(this.state.meter_configs, this.state.meter_slot_status));
             uplot_data.values.push(energy_manager_data.power[this.state.meter_slot_status]);
             uplot_data.stacked.push(false);
-            uplot_data.bars.push(false);
+            uplot_data.paths.push(UplotPath.Line);
         }
 
         let timestamps: number[] = new Array(timestamp_slot_count);
@@ -1061,7 +1061,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             names: [null],
             values: [null],
             stacked: [false],
-            bars: [false],
+            paths: [null],
         };
 
         let timestamp_slot_count: number = 0;
@@ -1113,7 +1113,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")})`);
                     uplot_data.values.push(energy_import);
                     uplot_data.stacked.push(false);
-                    uplot_data.bars.push(true);
+                    uplot_data.paths.push(UplotPath.Bar);
                 }
 
                 let energy_export = new Array(energy_manager_data.energy_export[meter_slot].length);
@@ -1156,7 +1156,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.export")})`);
                     uplot_data.values.push(energy_export);
                     uplot_data.stacked.push(false);
-                    uplot_data.bars.push(true);
+                    uplot_data.paths.push(UplotPath.Bar);
                 }
             }
 
@@ -1218,7 +1218,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(energy);
                     uplot_data.stacked.push(true);
-                    uplot_data.bars.push(true);
+                    uplot_data.paths.push(UplotPath.Bar);
 
                     this.setState((prevState) => ({
                         wallbox_5min_cache_energy_total: {
@@ -1789,7 +1789,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     values: [data_flags.values[0]],
                     extras: [null],
                     stacked: [false],
-                    bars: [false],
+                    paths: [null],
                     extra_names: [null],
                 };
             }
@@ -1803,7 +1803,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     values: [data_power.values[0]],
                     extras: [null],
                     stacked: [false],
-                    bars: [false],
+                    paths: [null],
                     extra_names: [null],
                 };
             }

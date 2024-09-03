@@ -32,7 +32,7 @@ import { Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { UplotData, UplotWrapper } from "../../ts/components/uplot_wrapper_2nd";
+import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 
 export function DayAheadPricesNavbar() {
@@ -113,7 +113,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 names: [],
                 values: [],
                 stacked: [],
-                bars: [],
+                paths: [],
                 update_timestamp: 0,
                 use_timestamp: 0
             }
@@ -124,7 +124,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 names: [__("day_ahead_prices.content.time"), __("day_ahead_prices.content.electricity_price"), __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
                 values: [[], [], [], []],
                 stacked: [false, true, true, true],
-                bars: [false, false, false, false],
+                paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step],
                 // Only enable the electricity price by default.
                 // The chart with only electricity price is the most useful in most cases.
                 default_visibilty: [true, true, false, false],
