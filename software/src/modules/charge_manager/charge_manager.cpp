@@ -604,7 +604,8 @@ const char *ChargeManager::get_charger_name(uint8_t idx)
 void ChargeManager::register_urls()
 {
     bool enabled = config.get("enable_charge_manager")->asBool();
-    if (enabled && this->static_cm) {
+
+    if (enabled && config.get("chargers")->count() > 0 && this->static_cm) {
         ca_config->global_hysteresis = 0_us;
         ca_config->enable_current_factor = 1;
     }
