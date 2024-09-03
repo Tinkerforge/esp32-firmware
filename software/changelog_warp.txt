@@ -621,6 +621,6 @@
 - Fix missing power graph for Victron Energy GX grid meter
 - Fix certificate upload
 
-2024-09-02: 2.5.0 (<unknown>)
+2024-09-02: 2.5.0 (864e61a0)
 - Add firmware update check and download
 - Add remote access
