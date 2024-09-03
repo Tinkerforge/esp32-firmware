@@ -34,7 +34,6 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotWrapper, UplotData, CachedData } from "../../ts/components/uplot_wrapper_2nd";
 import { UplotFlagsWrapper } from "../../ts/components/uplot_wrapper_3rd";
 import uPlot from "uplot";
-import { MeterValueID } from "../meters/meter_value_id";
 import { MeterConfig } from "../meters/types";
 import { get_meter_power_index } from "../meters/main";
 import { NavbarItem } from "../../ts/components/navbar_item";
