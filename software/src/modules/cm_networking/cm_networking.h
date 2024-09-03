@@ -63,7 +63,9 @@ public:
                             uint16_t allowed_charging_current,
                             uint16_t supported_current,
                             bool managed,
-                            bool cp_disconnected_state);
+                            bool cp_disconnected_state,
+                            int8_t phases,
+                            bool can_switch_phases_now);
 
     bool get_scan_results(CoolString &result);
 

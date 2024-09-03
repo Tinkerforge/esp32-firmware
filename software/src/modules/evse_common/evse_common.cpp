@@ -380,7 +380,9 @@ void EvseCommon::register_urls()
             slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint(),
             supported_current,
             management_enabled.get("enabled")->asBool(),
-            backend->get_control_pilot_disconnect()
+            backend->get_control_pilot_disconnect(),
+            backend->get_is_3phase() ? 3 : 1,
+            backend->phase_switching_capable() && backend->can_switch_phases_now(!backend->get_is_3phase())
         );
     }, 1000, 1000);
 
