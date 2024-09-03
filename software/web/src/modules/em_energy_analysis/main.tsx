@@ -371,8 +371,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let chargers: Charger[] = [];
 
             for (let charger of state.chargers) {
-                if (charger.uid > 0) {
-                    chargers.push({uid: charger.uid, name: charger.name});
+                if (charger.u > 0) {
+                    chargers.push({uid: charger.u, name: charger.n});
                 }
             }
 
