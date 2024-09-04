@@ -149,165 +149,163 @@ function Charger (props: {i: number,
     </>
 }
 
-export class ChargeManagerDebug extends Component {
-    render() {
-        if (!util.render_allowed())
-            return undefined;
+export function ChargeManagerDebug() {
+    if (!util.render_allowed())
+        return undefined;
 
-        // For some reason info/keep_alive can be missing even if render_allowed is true?
-        const uptime      = API.get('info/keep_alive')?.uptime ?? 0;
-        const ll_cfg      = API.get('charge_manager/low_level_config');
-        const state       = API.get('charge_manager/state');
-        const ll_state    = API.get('charge_manager/low_level_state');
-        const pm_ll_state = API.get_unchecked('power_manager/low_level_state');
+    // For some reason info/keep_alive can be missing even if render_allowed is true?
+    const uptime      = API.get('info/keep_alive')?.uptime ?? 0;
+    const ll_cfg      = API.get('charge_manager/low_level_config');
+    const state       = API.get('charge_manager/state');
+    const ll_state    = API.get('charge_manager/low_level_state');
+    const pm_ll_state = API.get_unchecked('power_manager/low_level_state');
 
-        return (<>
-                <FormSeparator heading={__("charge_manager.content.protocol")} first={true} />
-                <CMDFormRow label="Trace log" labelColClasses="col-lg-2" contentColClasses="col-lg-10">
-                    <Button variant="primary" className="form-control" onClick={async () => util.downloadToFile(await util.download("/trace_log"), "charge-manager-trace-log", "txt", "text/plain")}><span class="ml-1 mr-2">Download</span> <Download/></Button>
-                </CMDFormRow>
+    return (<>
+            <FormSeparator heading={__("charge_manager.content.protocol")} first={true} />
+            <CMDFormRow label="Trace log" labelColClasses="col-lg-2" contentColClasses="col-lg-10">
+                <Button variant="primary" className="form-control" onClick={async () => util.downloadToFile(await util.download("/trace_log"), "charge-manager-trace-log", "txt", "text/plain")}><span class="ml-1 mr-2">Download</span> <Download/></Button>
+            </CMDFormRow>
 
-                <FormSeparator heading="Limits" />
+            <FormSeparator heading="Limits" />
 
-                <CMDFormRow label="Hysteresis">
-                    <div class="row">
-                        <div class="mb-1 col-12 col-lg-6">
-                            <InputText value={(ll_state.last_hyst_reset == 0 ? 0 : util.format_timespan_ms(uptime - ll_state.last_hyst_reset)) + " / " + util.format_timespan(ll_cfg.global_hysteresis)}/>
-                        </div>
-                    </div>
-                </CMDFormRow>
-
-                <CMDFormRow label="">
-                    <div class="row">
-                        <div class="col-12 col-sm-3">
-                            <p class="mb-0 form-label text-center">PV</p>
-                        </div>
-                        <div class="col-12 col-sm-3">
-                            <p class="mb-0 form-label text-center">L1</p>
-                        </div>
-                        <div class="col-12 col-sm-3">
-                            <p class="mb-0 form-label text-center">L2</p>
-                        </div>
-                        <div class="col-12 col-sm-3">
-                            <p class="mb-0 form-label text-center">L3</p>
-                        </div>
-                    </div>
-                </CMDFormRow>
-
-                <CMDFormRow label="Raw">
-                    <div class="row">
-                        {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
-                            <CMDOutFloat value={state.l_raw[i]} digits={3} scale={3} unit="A"/>
-                        </div>)}
-                    </div>
-                </CMDFormRow>
-
-                <CMDFormRow label="Min">
-                    <div class="row">
-                        {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
-                            <CMDOutFloat value={state.l_min[i]} digits={3} scale={3} unit="A"/>
-                        </div>)}
-                    </div>
-                </CMDFormRow>
-
-                <CMDFormRow label="Spread">
-                    <div class="row">
-                        {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
-                            <CMDOutFloat value={state.l_spread[i]} digits={3} scale={3} unit="A"/>
-                        </div>)}
-                    </div>
-                </CMDFormRow>
-
-                <CMDFormRow label="Max PV">
-                    <div class="row">
-                        <div class="mb-1 col-12 col-lg-3">
-                            <CMDOutFloat value={state.l_max_pv} digits={3} scale={3} unit="A"/>
-                        </div>
-                    </div>
-                </CMDFormRow>
-
-                <FormSeparator heading="Window" />
-
-                <CMDFormRow label="Max">
-                    <div class="row">
-                        {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
-                            <CMDOutFloat value={ll_state.wnd_max[i]} digits={3} scale={3} unit="A"/>
-                        </div>)}
-                    </div>
-                </CMDFormRow>
-
-                <CMDFormRow label="Allocated">
-                    <div class="row">
-                        {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
-                            <CMDOutFloat value={state.alloc[i]} digits={3} scale={3} unit="A"/>
-                        </div>)}
-                    </div>
-                </CMDFormRow>
-
-                <CMDFormRow label="Min">
-                    <div class="row">
-                        {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
-                            <CMDOutFloat value={ll_state.wnd_min[i]} digits={3} scale={3} unit="A"/>
-                        </div>)}
-                    </div>
-                </CMDFormRow>
-
-                {pm_ll_state ?
-                    <>
-                        <FormSeparator heading="Power Manager" />
-
-                        <CMDFormRow label="Meter">
-                            <div class="row">
-                                <div class="mb-1 col-12 col-lg-3">
-                                    <CMDOutFloat value={pm_ll_state.power_at_meter} digits={3} scale={3} unit="kW"/>
-                                </div>
-                                {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
-                                    <CMDOutFloat value={pm_ll_state.i_meter[i]} digits={3} scale={3} unit="A"/>
-                                </div>)}
-                            </div>
-                        </CMDFormRow>
-
-                        <CMDFormRow label="I_pp_max">
-                            <div class="row">
-                                <div class="mb-1 col-12 col-lg-3">
-                                </div>
-                                {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
-                                    <CMDOutFloat value={pm_ll_state.i_pp_max[i]} digits={3} scale={3} unit="A"/>
-                                </div>)}
-                            </div>
-                        </CMDFormRow>
-
-                        <CMDFormRow label="I_pp_mavg">
-                            <div class="row">
-                                <div class="mb-1 col-12 col-lg-3">
-                                </div>
-                                {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
-                                    <CMDOutFloat value={pm_ll_state.i_pp_mavg[i]} digits={3} scale={3} unit="A"/>
-                                </div>)}
-                            </div>
-                        </CMDFormRow>
-
-                        <CMDFormRow label="P_avl / I_pp">
-                            <div class="row">
-                                <div class="mb-1 col-12 col-lg-3">
-                                    <CMDOutFloat value={pm_ll_state.power_available} digits={3} scale={3} unit="kW"/>
-                                </div>
-                                {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
-                                    <CMDOutFloat value={pm_ll_state.i_pp[i]} digits={3} scale={3} unit="A"/>
-                                </div>)}
-                            </div>
-                        </CMDFormRow>
-                    </>
-                : null}
-
-                <FormSeparator heading="Chargers" />
-
+            <CMDFormRow label="Hysteresis">
                 <div class="row">
-                    {util.range(state.chargers.length).map(i => <div class="mb-5 col-12 col-sm-6 ">
-                        <Charger i={i} state={state.chargers[i]} ll_state={ll_state.chargers[i]}/>
+                    <div class="mb-1 col-12 col-lg-6">
+                        <InputText value={(ll_state.last_hyst_reset == 0 ? 0 : util.format_timespan_ms(uptime - ll_state.last_hyst_reset)) + " / " + util.format_timespan(ll_cfg.global_hysteresis)}/>
+                    </div>
+                </div>
+            </CMDFormRow>
+
+            <CMDFormRow label="">
+                <div class="row">
+                    <div class="col-12 col-sm-3">
+                        <p class="mb-0 form-label text-center">PV</p>
+                    </div>
+                    <div class="col-12 col-sm-3">
+                        <p class="mb-0 form-label text-center">L1</p>
+                    </div>
+                    <div class="col-12 col-sm-3">
+                        <p class="mb-0 form-label text-center">L2</p>
+                    </div>
+                    <div class="col-12 col-sm-3">
+                        <p class="mb-0 form-label text-center">L3</p>
+                    </div>
+                </div>
+            </CMDFormRow>
+
+            <CMDFormRow label="Raw">
+                <div class="row">
+                    {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
+                        <CMDOutFloat value={state.l_raw[i]} digits={3} scale={3} unit="A"/>
                     </div>)}
                 </div>
-            </>
-        );
-    }
+            </CMDFormRow>
+
+            <CMDFormRow label="Min">
+                <div class="row">
+                    {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
+                        <CMDOutFloat value={state.l_min[i]} digits={3} scale={3} unit="A"/>
+                    </div>)}
+                </div>
+            </CMDFormRow>
+
+            <CMDFormRow label="Spread">
+                <div class="row">
+                    {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
+                        <CMDOutFloat value={state.l_spread[i]} digits={3} scale={3} unit="A"/>
+                    </div>)}
+                </div>
+            </CMDFormRow>
+
+            <CMDFormRow label="Max PV">
+                <div class="row">
+                    <div class="mb-1 col-12 col-lg-3">
+                        <CMDOutFloat value={state.l_max_pv} digits={3} scale={3} unit="A"/>
+                    </div>
+                </div>
+            </CMDFormRow>
+
+            <FormSeparator heading="Window" />
+
+            <CMDFormRow label="Max">
+                <div class="row">
+                    {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
+                        <CMDOutFloat value={ll_state.wnd_max[i]} digits={3} scale={3} unit="A"/>
+                    </div>)}
+                </div>
+            </CMDFormRow>
+
+            <CMDFormRow label="Allocated">
+                <div class="row">
+                    {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
+                        <CMDOutFloat value={state.alloc[i]} digits={3} scale={3} unit="A"/>
+                    </div>)}
+                </div>
+            </CMDFormRow>
+
+            <CMDFormRow label="Min">
+                <div class="row">
+                    {util.range(4).map(i => <div class="mb-1 col-12 col-lg-3">
+                        <CMDOutFloat value={ll_state.wnd_min[i]} digits={3} scale={3} unit="A"/>
+                    </div>)}
+                </div>
+            </CMDFormRow>
+
+            {pm_ll_state ?
+                <>
+                    <FormSeparator heading="Power Manager" />
+
+                    <CMDFormRow label="Meter">
+                        <div class="row">
+                            <div class="mb-1 col-12 col-lg-3">
+                                <CMDOutFloat value={pm_ll_state.power_at_meter} digits={3} scale={3} unit="kW"/>
+                            </div>
+                            {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
+                                <CMDOutFloat value={pm_ll_state.i_meter[i]} digits={3} scale={3} unit="A"/>
+                            </div>)}
+                        </div>
+                    </CMDFormRow>
+
+                    <CMDFormRow label="I_pp_max">
+                        <div class="row">
+                            <div class="mb-1 col-12 col-lg-3">
+                            </div>
+                            {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
+                                <CMDOutFloat value={pm_ll_state.i_pp_max[i]} digits={3} scale={3} unit="A"/>
+                            </div>)}
+                        </div>
+                    </CMDFormRow>
+
+                    <CMDFormRow label="I_pp_mavg">
+                        <div class="row">
+                            <div class="mb-1 col-12 col-lg-3">
+                            </div>
+                            {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
+                                <CMDOutFloat value={pm_ll_state.i_pp_mavg[i]} digits={3} scale={3} unit="A"/>
+                            </div>)}
+                        </div>
+                    </CMDFormRow>
+
+                    <CMDFormRow label="P_avl / I_pp">
+                        <div class="row">
+                            <div class="mb-1 col-12 col-lg-3">
+                                <CMDOutFloat value={pm_ll_state.power_available} digits={3} scale={3} unit="kW"/>
+                            </div>
+                            {util.range(3).map(i => <div class="mb-1 col-12 col-lg-3">
+                                <CMDOutFloat value={pm_ll_state.i_pp[i]} digits={3} scale={3} unit="A"/>
+                            </div>)}
+                        </div>
+                    </CMDFormRow>
+                </>
+            : null}
+
+            <FormSeparator heading="Chargers" />
+
+            <div class="row">
+                {util.range(state.chargers.length).map(i => <div class="mb-5 col-12 col-sm-6 ">
+                    <Charger i={i} state={state.chargers[i]} ll_state={ll_state.chargers[i]}/>
+                </div>)}
+            </div>
+        </>
+    );
 }
