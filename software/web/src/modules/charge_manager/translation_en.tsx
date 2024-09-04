@@ -108,8 +108,9 @@ let x = {
             "dlm_largest_consumer_current": "Largest consumer current",
             "dlm_largest_consumer_current_muted": "per phase",
             "dlm_largest_consumer_current_help": "The largest sudden rise in current draw to be expected at the meter, that the dynamic load management must be able to compensate for quickly (<\u00A030 seconds). For example a water heater or heat pump.",
-            "dlm_safety_margin_pct": "Safety margin",
+            "dlm_safety_margin_pct": "Additional safety margin",
             "dlm_safety_margin_pct_muted": "",
+            "dlm_safety_margin_pct_help": "The load management will calculate a safety margin based on the grid current limit and the largest consumer current. This setting can be used to increase the safety marging above the calculated value.",
 
             "managed_disabled": "Charge management settings will be ignored: Charger only controls itself or is controlled externally.",
 

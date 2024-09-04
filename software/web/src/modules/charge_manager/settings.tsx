@@ -300,7 +300,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                 />
                             </FormRow>
 
-                            <FormRow label={__("charge_manager.content.dlm_safety_margin_pct")} label_muted={__("charge_manager.content.dlm_safety_margin_pct_muted")}>
+                            <FormRow label={__("charge_manager.content.dlm_safety_margin_pct")} label_muted={__("charge_manager.content.dlm_safety_margin_pct_muted")} help={__("charge_manager.content.dlm_safety_margin_pct_help")}>
                                 <InputFloat
                                     required={state.dynamicLoadConfig.enabled}
                                     unit="%"

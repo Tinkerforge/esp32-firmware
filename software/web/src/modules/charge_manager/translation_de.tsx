@@ -108,8 +108,9 @@ let x = {
             "dlm_largest_consumer_current": "Strombedarf des größten Einzelverbrauchers",
             "dlm_largest_consumer_current_muted": "pro Phase",
             "dlm_largest_consumer_current_help": "Gibt den zu erwartenden größten plötzlichen Sprung des Strombezugs am Zähler an, den das dynamische Lastmanagement kurzfristig (<\u00A030 Sekunden) kompensieren können muss. Beispielsweise ein Durchlauferhitzer oder eine Wärmepumpe.",
-            "dlm_safety_margin_pct": "Sicherheitsmarge",
+            "dlm_safety_margin_pct": "Zusätzliche Sicherheitsmarge",
             "dlm_safety_margin_pct_muted": "",
+            "dlm_safety_margin_pct_help": "Das Lastmanagement berechnet eine Sicherheitsmarge basierend auf dem maximalen Strom am Netzanschluss und dem Strombedarf des größten Einzelverbrauchers. Mit dieser Einstellung kann die Sicherheitsmarge über den berechneten Wert hinaus erhöht werden.",
 
             "managed_disabled": "Lastmanagement-Einstellungen werden ignoriert: Wallbox steuert nur sich selbst oder ist fremdgesteuert.",
 
