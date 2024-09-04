@@ -311,38 +311,12 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                     max={50}
                                 />
                             </FormRow>
-
-                            {API.hasModule("debug") ?
-                                <>
-                                    <FormRow label="Target constant current" label_muted="for debugging">
-                                        <OutputFloat
-                                            unit="A"
-                                            value={Math.min((state.dynamicLoadConfig.current_limit * 1.4) - state.dynamicLoadConfig.largest_consumer_current, state.dynamicLoadConfig.current_limit)
-                                                * (100 - state.dynamicLoadConfig.safety_margin_pct) / 100}
-                                            digits={3}
-                                            scale={3}
-                                        />
-                                    </FormRow>
-
-                                    <FormRow label="Expected peak current" label_muted="for debugging">
-                                        <OutputFloat
-                                            unit="A"
-                                            value={Math.min((state.dynamicLoadConfig.current_limit * 1.4) - state.dynamicLoadConfig.largest_consumer_current, state.dynamicLoadConfig.current_limit)
-                                                * (100 - state.dynamicLoadConfig.safety_margin_pct) / 100 + state.dynamicLoadConfig.largest_consumer_current}
-                                            digits={3}
-                                            scale={3}
-                                        />
-                                    </FormRow>
-                                </>
-                            :
-                                null
-                            }
                         </>
                     :
                         null
                     }
                     <CollapsedSection label="Debug">
-                        <ChargeManagerDebug/>
+                        <ChargeManagerDebug dynamicLoadConfig={state.dynamicLoadConfig}/>
                     </CollapsedSection>
                     </ConfigForm>
             </SubPage>
