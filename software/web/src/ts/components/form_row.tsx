@@ -94,7 +94,7 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
                 {props.help ? <Collapse in={state.help_expanded} className="my-2">
                                 <div>{/*Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse*/}
                                     <div class="card">
-                                        <div class="card-body p-3">
+                                        <div class="card-body p-3" style="background: #ffffe7;">
                                             {props.help}
                                         </div>
                                     </div>
@@ -103,22 +103,25 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
                             : <></>}
             </div>
 
-
         return (
             <div class="form-group row" hidden={props.hidden == undefined ? false : props.hidden}>
-                <label for={use_id_context ? this.id : undefined} class={"col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label " + (props.labelColClasses === undefined ? "col-lg-4" : props.labelColClasses)}>
-                    <div class="row mx-lg-0">
-                        <div class={"col px-lg-0" + (props.symbol ? " d-flex-ni align-items-center" : "")}>
-                            {props.label_prefix ? props.label_prefix : undefined}
-                            {props.symbol ? <span class="col-auto px-1">{props.symbol}</span> : undefined}
-                            {props.label ? <span class={"form-label" + (props.small ? " form-label-sm" : "") + (props.label_muted && !props.label_infix ? " pr-2" : "") + (props.symbol ? " col px-1" : "")}>{props.label}</span> : undefined}
-                            {props.label_infix ? props.label_infix : undefined}
-                            {props.label_muted ? <span class={"text-muted" + (props.small ? " text-muted-sm" : "")}>{props.label_muted}</span> : undefined}
-                            {props.label_suffix ? props.label_suffix : undefined}
-                        </div>
-                        {props.help ? <span class="col-auto px-lg-0" onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:"btn-outline-secondary", style:"border-radius: 50%;"} as any}/></span> : undefined}
+                <div class={(props.labelColClasses === undefined ? "col-lg-4" : props.labelColClasses)}>
+                    <div class="row">
+                        <label for={use_id_context ? this.id : undefined} class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
+                            <div class="row mx-lg-0">
+                                <div class={"col px-lg-0" + (props.symbol ? " d-flex-ni align-items-center" : "")}>
+                                    {props.label_prefix ? props.label_prefix : undefined}
+                                    {props.symbol ? <span class="col-auto px-1">{props.symbol}</span> : undefined}
+                                    {props.label ? <span class={"form-label" + (props.small ? " form-label-sm" : "") + (props.label_muted && !props.label_infix ? " pr-2" : "") + (props.symbol ? " col px-1" : "")}>{props.label}</span> : undefined}
+                                    {props.label_infix ? props.label_infix : undefined}
+                                    {props.label_muted ? <span class={"text-muted" + (props.small ? " text-muted-sm" : "")}>{props.label_muted}</span> : undefined}
+                                    {props.label_suffix ? props.label_suffix : undefined}
+                                </div>
+                            </div>
+                        </label>
+                        {props.help ? <span class={"col-auto pt-lg-col-form-label"} onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:(state.help_expanded ? "btn-dark" : "btn-outline-secondary"), style:"border-radius: 50%; transition: .35s;"} as any}/></span> : undefined}
                     </div>
-                </label>
+                </div>
                 {inner}
             </div>
         );
