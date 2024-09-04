@@ -90,10 +90,10 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
         if (props.contentColClasses === undefined || props.contentColClasses !== "")
             inner = <div class={props.contentColClasses === undefined ? "col-lg-8" : props.contentColClasses}>
                 {inner}
-                {props.error ? <div class="alert alert-danger my-2 p-3">{props.error}</div> : <></>}
-                {props.help ? <Collapse in={state.help_expanded} className="my-2">
+                {props.error ? <div class="alert alert-danger mt-2 p-3">{props.error}</div> : <></>}
+                {props.help ? <Collapse in={state.help_expanded} >
                                 <div>{/*Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse*/}
-                                    <div class="card">
+                                    <div class="card mt-2">
                                         <div class="card-body p-3" style="background: #ffffe7;">
                                             {props.help}
                                         </div>
