@@ -30,7 +30,7 @@
 
 #define MAX_URI_HANDLERS 128
 
-#define HTTPD_STACK_SIZE 6144
+#define HTTPD_STACK_SIZE 7168
 
 void WebServer::post_setup()
 {

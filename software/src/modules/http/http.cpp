@@ -22,8 +22,6 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 
-#define RECV_BUF_SIZE 4096
-
 class HTTPChunkedResponse : public IBaseChunkedResponse
 {
 public:
@@ -62,8 +60,6 @@ protected:
 private:
     WebServerRequest *request;
 };
-
-static char recv_buf[RECV_BUF_SIZE] = {0};
 
 bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 {
@@ -155,8 +151,11 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
 {
     CommandRegistration &reg = api.commands[cmdidx];
 
+    // Check stack usage after increasing buffer size.
+    char recv_buf[4096];
+
     // TODO: Use streamed parsing
-    int bytes_written = req.receive(recv_buf, RECV_BUF_SIZE);
+    int bytes_written = req.receive(recv_buf, ARRAY_SIZE(recv_buf));
     if (bytes_written == -1) {
         // buffer was not large enough
         return req.send(413);
@@ -178,6 +177,42 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
         return req.send(200);
     }
     return req.send(400, "text/plain; charset=utf-8", message.c_str());
+}
+
+WebServerRequestReturnProtect Http::run_response(WebServerRequest req, ResponseRegistration &reg)
+{
+    // Check stack usage after increasing buffer size.
+    char recv_buf[2048];
+
+    // TODO: Use streamed parsing
+    int bytes_written = req.receive(recv_buf, ARRAY_SIZE(recv_buf));
+    if (bytes_written == -1) {
+        // buffer was not large enough
+        return req.send(413);
+    } else if (bytes_written < 0) {
+        logger.printfln("Failed to receive response payload: error code %d", bytes_written);
+        return req.send(400);
+    }
+
+    uint32_t response_owner_id = response_ownership.current();
+    HTTPChunkedResponse http_response(&req);
+    QueuedChunkedResponse queued_response(&http_response, 500);
+    BufferedChunkedResponse buffered_response(&queued_response);
+
+    task_scheduler.scheduleOnce(
+        [this, &reg, &recv_buf, bytes_written, &buffered_response, response_owner_id] {
+            api.callResponse(reg, recv_buf, bytes_written, &buffered_response, &response_ownership, response_owner_id);
+        },
+        0);
+
+    String error = queued_response.wait();
+
+    if (!error.isEmpty()) {
+        logger.printfln("Response processing failed after update: %s (%s %s)", error.c_str(), req.methodString(), req.uriCStr());
+    }
+
+    response_ownership.next();
+    return WebServerRequestReturnProtect{};
 }
 
 // Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
@@ -216,40 +251,9 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
         if (api.commands[i].path_len == req_uri_len && memcmp(api.commands[i].path, req.uriCStr() + 1, req_uri_len) == 0)
             return run_command(req, i);
 
-    for (size_t i = 0; i < api.responses.size(); i++) {
-        if (api.responses[i].path_len != req_uri_len || memcmp(api.responses[i].path, req.uriCStr() + 1, req_uri_len) != 0)
-            continue;
-
-        // TODO: Use streamed parsing
-        int bytes_written = req.receive(recv_buf, RECV_BUF_SIZE);
-        if (bytes_written == -1) {
-            // buffer was not large enough
-            return req.send(413);
-        } else if (bytes_written < 0) {
-            logger.printfln("Failed to receive response payload: error code %d", bytes_written);
-            return req.send(400);
-        }
-
-        uint32_t response_owner_id = response_ownership.current();
-        HTTPChunkedResponse http_response(&req);
-        QueuedChunkedResponse queued_response(&http_response, 500);
-        BufferedChunkedResponse buffered_response(&queued_response);
-
-        task_scheduler.scheduleOnce(
-            [this, i, bytes_written, &buffered_response, response_owner_id] {
-                api.callResponse(api.responses[i], recv_buf, bytes_written, &buffered_response, &response_ownership, response_owner_id);
-            },
-            0);
-
-        String error = queued_response.wait();
-
-        if (!error.isEmpty()) {
-            logger.printfln("Response processing failed after update: %s (%s %s)", error.c_str(), req.methodString(), req.uriCStr());
-        }
-
-        response_ownership.next();
-        return WebServerRequestReturnProtect{};
-    }
+    for (size_t i = 0; i < api.responses.size(); i++)
+        if (api.responses[i].path_len == req_uri_len && memcmp(api.responses[i].path, req.uriCStr() + 1, req_uri_len) == 0)
+            return run_response(req, api.responses[i]);
 
     if (req.uri().endsWith("_update")) {
         return req.send(405, "text/plain", "Request method for this URI is not handled by server");

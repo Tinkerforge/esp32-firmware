@@ -76,5 +76,8 @@ public:
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 
+private:
+    WebServerRequestReturnProtect run_response(WebServerRequest req, ResponseRegistration &reg);
+
     Ownership response_ownership;
 };
