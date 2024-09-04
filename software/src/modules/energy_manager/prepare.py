@@ -9,7 +9,7 @@ util.embed_bricklet_firmware_bin()
 
 debug_log_variables = [
     "contactor_check_tripped",
-    "consecutive_bricklet_errors",
+    "em_common.consecutive_bricklet_errors",
     "",
     "all_data.common.power",
     "all_data.common.current[0]",

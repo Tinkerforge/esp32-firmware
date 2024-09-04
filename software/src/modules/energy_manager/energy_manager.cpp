@@ -52,7 +52,7 @@ void EnergyManager::pre_setup()
     this->DeviceModule::pre_setup();
 
     // States
-    state = Config::Object({
+    em_common.state = Config::Object({
         {"phases_switched", Config::Uint8(0)},
         {"input3_state", Config::Bool(false)},
         {"input4_state", Config::Bool(false)},
@@ -61,7 +61,7 @@ void EnergyManager::pre_setup()
         {"config_error_flags", Config::Uint32(0)},
     });
 
-    low_level_state = Config::Object({
+    em_common.low_level_state = Config::Object({
         {"consecutive_bricklet_errors", Config::Uint32(0)},
         // Bricklet states below
         {"contactor", Config::Bool(false)},
@@ -74,7 +74,7 @@ void EnergyManager::pre_setup()
     });
 
     // Config
-    config = Config::Object({
+    em_common.config = Config::Object({
         {"contactor_installed", Config::Bool(false)},
     });
 
@@ -159,19 +159,19 @@ bool EnergyManager::has_triggered(const Config *conf, void *data)
 
     switch (conf->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::EMInputThree:
-            if (cfg->get("closed")->asBool() == state.get("input3_state")->asBool()) {
+            if (cfg->get("closed")->asBool() == em_common.state.get("input3_state")->asBool()) {
                 return true;
             }
             break;
 
         case AutomationTriggerID::EMInputFour:
-            if (cfg->get("closed")->asBool() == state.get("input4_state")->asBool()) {
+            if (cfg->get("closed")->asBool() == em_common.state.get("input4_state")->asBool()) {
                 return true;
             }
             break;
 
         case AutomationTriggerID::EMPhaseSwitch:
-            if (cfg->get("phases")->asUint() == state.get("phases_switched")->asUint()) {
+            if (cfg->get("phases")->asUint() == em_common.state.get("phases_switched")->asUint()) {
                 return true;
             }
             break;
@@ -206,7 +206,7 @@ void EnergyManager::setup()
 {
     setup_energy_manager();
     if (!device_found) {
-        set_error(ERROR_FLAGS_BRICKLET_MASK);
+        em_common.set_error(ERROR_FLAGS_BRICKLET_MASK);
         return;
     }
 
@@ -215,10 +215,10 @@ void EnergyManager::setup()
     update_status_led();
     debug_protocol.register_backend(this);
 
-    api.restorePersistentConfig("energy_manager/config", &config);
+    api.restorePersistentConfig("energy_manager/config", &em_common.config);
 
     // Cache config
-    contactor_installed = config.get("contactor_installed")->asBool();
+    contactor_installed = em_common.config.get("contactor_installed")->asBool();
 
     // Initialize contactor check state so that the check doesn't trip immediately if the first response from the bricklet is invalid.
     all_data.contactor_check_state = 1;
@@ -262,10 +262,10 @@ void EnergyManager::setup()
 
 void EnergyManager::register_urls()
 {
-    api.addState("energy_manager/state", &state);
+    api.addState("energy_manager/state", &em_common.state);
 
-    api.addPersistentConfig("energy_manager/config", &config);
-    api.addState("energy_manager/low_level_state", &low_level_state);
+    api.addPersistentConfig("energy_manager/config", &em_common.config);
+    api.addState("energy_manager/low_level_state", &em_common.low_level_state);
 
     api.addResponse("energy_manager/history_wallbox_5min", &history_wallbox_5min, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_5min_response(response, ownership, owner_id);});
     api.addResponse("energy_manager/history_wallbox_daily", &history_wallbox_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_daily_response(response, ownership, owner_id);});
@@ -399,7 +399,7 @@ PhaseSwitcherBackend::SwitchingState EnergyManager::get_phase_switching_state()
         return PhaseSwitcherBackend::SwitchingState::Ready;
     }
 
-    if (contactor_check_tripped || !bricklet_reachable) {
+    if (contactor_check_tripped || !em_common.is_bricklet_reachable()) {
         return PhaseSwitcherBackend::SwitchingState::Error;
     }
 
@@ -453,27 +453,27 @@ void EnergyManager::update_all_data()
 {
     update_all_data_struct();
 
-    low_level_state.get("contactor")->updateBool(all_data.contactor_value);
-    low_level_state.get("led_rgb")->get(0)->updateUint(all_data.rgb_value_r);
-    low_level_state.get("led_rgb")->get(1)->updateUint(all_data.rgb_value_g);
-    low_level_state.get("led_rgb")->get(2)->updateUint(all_data.rgb_value_b);
-    if (state.get("input3_state")->updateBool(all_data.input[0])) AUTOMATION_TRIGGER(EMInputThree, nullptr);
-    if (state.get("input4_state")->updateBool(all_data.input[1])) AUTOMATION_TRIGGER(EMInputFour, nullptr);
-    state.get("relay_state")->updateBool(all_data.relay);
-    low_level_state.get("input_voltage")->updateUint(all_data.voltage);
-    low_level_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
-    low_level_state.get("uptime")->updateUint(all_data.uptime);
+    em_common.low_level_state.get("contactor")->updateBool(all_data.contactor_value);
+    em_common.low_level_state.get("led_rgb")->get(0)->updateUint(all_data.rgb_value_r);
+    em_common.low_level_state.get("led_rgb")->get(1)->updateUint(all_data.rgb_value_g);
+    em_common.low_level_state.get("led_rgb")->get(2)->updateUint(all_data.rgb_value_b);
+    if (em_common.state.get("input3_state")->updateBool(all_data.input[0])) AUTOMATION_TRIGGER(EMInputThree, nullptr);
+    if (em_common.state.get("input4_state")->updateBool(all_data.input[1])) AUTOMATION_TRIGGER(EMInputFour, nullptr);
+    em_common.state.get("relay_state")->updateBool(all_data.relay);
+    em_common.low_level_state.get("input_voltage")->updateUint(all_data.voltage);
+    em_common.low_level_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
+    em_common.low_level_state.get("uptime")->updateUint(all_data.uptime);
 
     // Update derived states
     uint32_t have_phases = 1 + static_cast<uint32_t>(all_data.contactor_value) * 2;
-    if (state.get("phases_switched")->updateUint(have_phases)) AUTOMATION_TRIGGER(EMPhaseSwitch, nullptr);
+    if (em_common.state.get("phases_switched")->updateUint(have_phases)) AUTOMATION_TRIGGER(EMPhaseSwitch, nullptr);
 
 #if MODULE_METERS_EM_AVAILABLE()
     meters_em.update_from_em_all_data(all_data.common);
 #endif
 
     // Update meter values even if the config is bad.
-    if (is_error(ERROR_FLAGS_BAD_CONFIG_MASK))
+    if (em_common.is_error(ERROR_FLAGS_BAD_CONFIG_MASK))
         return;
 
     if (contactor_installed) {
@@ -484,7 +484,7 @@ void EnergyManager::update_all_data()
                 AUTOMATION_TRIGGER(EMContactorMonitoring, &contactor_okay);
             }
             contactor_check_tripped = true;
-            set_error(ERROR_FLAGS_CONTACTOR_MASK);
+            em_common.set_error(ERROR_FLAGS_CONTACTOR_MASK);
         }
     }
 }
@@ -508,7 +508,7 @@ void EnergyManager::update_all_data_struct()
         &all_data.uptime
     );
 
-    check_bricklet_reachable(rc, "update_all_data_struct");
+    em_common.check_bricklet_reachable(rc, "update_all_data_struct");
 
     if (rc == TF_E_OK) {
         all_data.common.last_update = millis();
@@ -518,67 +518,17 @@ void EnergyManager::update_all_data_struct()
 
 void EnergyManager::update_status_led()
 {
-    if (error_flags & ERROR_FLAGS_BAD_CONFIG_MASK)
+    if (!device_found)
+        return;
+
+    if (em_common.is_error(ERROR_FLAGS_BAD_CONFIG_BIT_POS))
         rgb_led.set_status(EmRgbLed::Status::BadConfig);
-    else if (error_flags & ERROR_FLAGS_ALL_ERRORS_MASK)
+    else if (em_common.is_error(ERROR_FLAGS_ALL_ERRORS_MASK))
         rgb_led.set_status(EmRgbLed::Status::Error);
-    else if (error_flags & ERROR_FLAGS_ALL_WARNINGS_MASK)
+    else if (em_common.is_error(ERROR_FLAGS_ALL_WARNINGS_MASK))
         rgb_led.set_status(EmRgbLed::Status::Warning);
     else
         rgb_led.set_status(EmRgbLed::Status::OK);
-}
-
-void EnergyManager::clr_error(uint32_t error_mask)
-{
-    error_flags &= ~error_mask;
-    state.get("error_flags")->updateUint(error_flags);
-    update_status_led();
-}
-
-bool EnergyManager::is_error(uint32_t error_bit_pos)
-{
-    return (error_flags >> error_bit_pos) & 1;
-}
-
-void EnergyManager::set_error(uint32_t error_mask)
-{
-    error_flags |= error_mask;
-    state.get("error_flags")->updateUint(error_flags);
-
-    if (device_found)
-        update_status_led();
-}
-
-void EnergyManager::set_config_error(uint32_t config_error_mask)
-{
-    config_error_flags |= config_error_mask;
-    state.get("config_error_flags")->updateUint(config_error_flags);
-
-    set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
-}
-
-void EnergyManager::check_bricklet_reachable(int rc, const char *context)
-{
-    if (rc == TF_E_OK) {
-        consecutive_bricklet_errors = 0;
-        if (!bricklet_reachable) {
-            bricklet_reachable = true;
-            clr_error(ERROR_FLAGS_BRICKLET_MASK);
-            logger.printfln("Bricklet is reachable again.");
-        }
-    } else {
-        if (rc == TF_E_TIMEOUT) {
-            logger.printfln("%s: Bricklet access timed out.", context);
-        } else {
-            logger.printfln("%s: Bricklet access returned error %d.", context, rc);
-        }
-        if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
-            bricklet_reachable = false;
-            set_error(ERROR_FLAGS_BRICKLET_MASK);
-            logger.printfln("%s: Bricklet is unreachable.", context);
-        }
-    }
-    low_level_state.get("consecutive_bricklet_errors")->updateUint(consecutive_bricklet_errors);
 }
 
 void EnergyManager::start_network_check_task()
@@ -614,10 +564,10 @@ void EnergyManager::start_network_check_task()
         } while (0);
 
         if (disconnected) {
-            set_error(ERROR_FLAGS_NETWORK_MASK);
+            em_common.set_error(ERROR_FLAGS_NETWORK_MASK);
         } else {
-            if (is_error(ERROR_FLAGS_NETWORK_BIT_POS))
-                clr_error(ERROR_FLAGS_NETWORK_MASK);
+            if (em_common.is_error(ERROR_FLAGS_NETWORK_BIT_POS))
+                em_common.clr_error(ERROR_FLAGS_NETWORK_MASK);
         }
     }, 0, 5000);
 }
@@ -639,16 +589,16 @@ bool EnergyManager::get_sdcard_info(struct sdcard_info *data)
     // Product name retrieved from the SD card is an unterminated 5-character string, so we have to terminate it here.
     data->product_name[sizeof(data->product_name) - 1] = 0;
 
-    check_bricklet_reachable(rc, "get_sdcard_info");
+    em_common.check_bricklet_reachable(rc, "get_sdcard_info");
 
     if (rc != TF_E_OK) {
-        set_error(ERROR_FLAGS_SDCARD_MASK);
+        em_common.set_error(ERROR_FLAGS_SDCARD_MASK);
         logger.printfln("Failed to get SD card information. Error %i", rc);
         return false;
     }
 
-    if (is_error(ERROR_FLAGS_SDCARD_BIT_POS))
-        clr_error(ERROR_FLAGS_SDCARD_MASK);
+    if (em_common.is_error(ERROR_FLAGS_SDCARD_BIT_POS))
+        em_common.clr_error(ERROR_FLAGS_SDCARD_MASK);
 
     return true;
 }
@@ -658,7 +608,7 @@ bool EnergyManager::format_sdcard()
     uint8_t ret_format_status;
     int rc = tf_warp_energy_manager_format_sd(&device, 0x4223ABCD, &ret_format_status);
 
-    check_bricklet_reachable(rc, "format_sdcard");
+    em_common.check_bricklet_reachable(rc, "format_sdcard");
 
     return rc == TF_E_OK && ret_format_status == TF_WARP_ENERGY_MANAGER_FORMAT_STATUS_OK;
 }
@@ -668,7 +618,7 @@ uint16_t EnergyManager::get_energy_meter_detailed_values(float *ret_values)
     uint16_t len = 0;
     int rc = tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, &len);
 
-    check_bricklet_reachable(rc, "get_energy_meter_detailed_values");
+    em_common.check_bricklet_reachable(rc, "get_energy_meter_detailed_values");
 
     return rc == TF_E_OK ? len : 0;
 }
@@ -677,7 +627,7 @@ bool EnergyManager::reset_energy_meter_relative_energy()
 {
     int rc = tf_warp_energy_manager_reset_energy_meter_relative_energy(&device);
 
-    check_bricklet_reachable(rc, "reset_energy_meter_relative_energy");
+    em_common.check_bricklet_reachable(rc, "reset_energy_meter_relative_energy");
 
     return rc == TF_E_OK;
 }
@@ -743,7 +693,7 @@ struct timeval EnergyManager::get_time()
     do {
         rc = tf_warp_energy_manager_get_date_time(&device, &tm_sec, &tm_min, &tm_hour, &tm_mday, &tm_wday, &tm_mon, &tm_year);
 
-        check_bricklet_reachable(rc, "get_time");
+        em_common.check_bricklet_reachable(rc, "get_time");
 
         if (rc != TF_E_OK)
             continue;

@@ -1080,9 +1080,9 @@ void PowerManager::set_config_error(uint32_t config_error_mask)
     config_error_flags |= config_error_mask;
     state.get("config_error_flags")->updateUint(config_error_flags);
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_EM_COMMON_AVAILABLE()
     // TODO FIXME
-    energy_manager.set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
+    em_common.set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
 #endif
 }
 

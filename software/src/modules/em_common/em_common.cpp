@@ -82,6 +82,63 @@ bool EMCommon::reset_energy_meter_relative_energy()
     return backend->reset_energy_meter_relative_energy();
 }
 
+void EMCommon::clr_error(uint32_t error_mask)
+{
+    error_flags &= ~error_mask;
+    state.get("error_flags")->updateUint(error_flags);
+
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
+    energy_manager.update_status_led();
+#endif
+}
+
+bool EMCommon::is_error(uint32_t error_bit_pos) const
+{
+    return (error_flags >> error_bit_pos) & 1;
+}
+
+void EMCommon::set_error(uint32_t error_mask)
+{
+    error_flags |= error_mask;
+    state.get("error_flags")->updateUint(error_flags);
+
+#if MODULE_ENERGY_MANAGER_AVAILABLE()
+    energy_manager.update_status_led();
+#endif
+}
+
+void EMCommon::set_config_error(uint32_t config_error_mask)
+{
+    config_error_flags |= config_error_mask;
+    state.get("config_error_flags")->updateUint(config_error_flags);
+
+    set_error(ERROR_FLAGS_BAD_CONFIG_MASK);
+}
+
+void EMCommon::check_bricklet_reachable(int rc, const char *context)
+{
+    if (rc == TF_E_OK) {
+        consecutive_bricklet_errors = 0;
+        if (!bricklet_reachable) {
+            bricklet_reachable = true;
+            clr_error(ERROR_FLAGS_BRICKLET_MASK);
+            logger.printfln("Bricklet is reachable again.");
+        }
+    } else {
+        if (rc == TF_E_TIMEOUT) {
+            logger.printfln("%s: Bricklet access timed out.", context);
+        } else {
+            logger.printfln("%s: Bricklet access returned error %d.", context, rc);
+        }
+        if (bricklet_reachable && ++consecutive_bricklet_errors >= 8) {
+            bricklet_reachable = false;
+            set_error(ERROR_FLAGS_BRICKLET_MASK);
+            logger.printfln("%s: Bricklet is unreachable.", context);
+        }
+    }
+    low_level_state.get("consecutive_bricklet_errors")->updateUint(consecutive_bricklet_errors);
+}
+
 #if MODULE_AUTOMATION_AVAILABLE()
 bool EMCommon::has_triggered(const Config *conf, void *data)
 {

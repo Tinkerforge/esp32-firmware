@@ -542,7 +542,7 @@ bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const stru
                                                               power,
                                                               &status);
 
-    check_bricklet_reachable(rc, "set_wallbox_5min_data_point");
+    em_common.check_bricklet_reachable(rc, "set_wallbox_5min_data_point");
 
 #ifdef DEBUG_LOGGING
     logger.printfln("set_wallbox_5min_data_point: u%u %d-%02d-%02d %02d:%02d f%u p%u",
@@ -616,7 +616,7 @@ bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_
     uint8_t day = local->tm_mday;
     int rc = tf_warp_energy_manager_set_sd_wallbox_daily_data_point(&device, uid, year, month, day, energy, &status);
 
-    check_bricklet_reachable(rc, "set_wallbox_daily_data_point");
+    em_common.check_bricklet_reachable(rc, "set_wallbox_daily_data_point");
 
 #ifdef DEBUG_LOGGING
     logger.printfln("set_wallbox_daily_data_point: u%u %d-%02d-%02d e%u",
@@ -693,7 +693,7 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
                                                                      &power[1],
                                                                      &status);
 
-    check_bricklet_reachable(rc, "set_energy_manager_5min_data_point");
+    em_common.check_bricklet_reachable(rc, "set_energy_manager_5min_data_point");
 
 #ifdef DEBUG_LOGGING
     logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u p%d,%d,%d,%d,%d,%d,%d",
@@ -783,7 +783,7 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
                                                                            &energy_export[1],
                                                                            &status);
 
-    check_bricklet_reachable(rc, "set_energy_manager_daily_data_point");
+    em_common.check_bricklet_reachable(rc, "set_energy_manager_daily_data_point");
 
 #ifdef DEBUG_LOGGING
     logger.printfln("set_energy_manager_daily_data_point: %d-%02d-%02d ei%u,%u,%u,%u,%u,%u,%u ee%u,%u,%u,%u,%u,%u,%u",
@@ -1136,7 +1136,7 @@ void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ow
         tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(&device, wallbox_5min_data_points_handler, metadata);
     }
 
-    check_bricklet_reachable(rc, "history_wallbox_5min_response");
+    em_common.check_bricklet_reachable(rc, "history_wallbox_5min_response");
 }
 
 static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
@@ -1293,7 +1293,7 @@ void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
         tf_warp_energy_manager_register_sd_wallbox_daily_data_points_low_level_callback(&device, wallbox_daily_data_points_handler, metadata);
     }
 
-    check_bricklet_reachable(rc, "history_wallbox_daily_response");
+    em_common.check_bricklet_reachable(rc, "history_wallbox_daily_response");
 }
 
 struct [[gnu::packed]] EnergyManager5MinData {
@@ -1562,7 +1562,7 @@ void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *respo
         tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(&device, energy_manager_5min_data_points_handler, metadata);
     }
 
-    check_bricklet_reachable(rc, "history_energy_manager_5min_response");
+    em_common.check_bricklet_reachable(rc, "history_energy_manager_5min_response");
 }
 
 static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *device,
@@ -1708,5 +1708,5 @@ void EnergyManager::history_energy_manager_daily_response(IChunkedResponse *resp
         tf_warp_energy_manager_register_sd_energy_manager_daily_data_points_low_level_callback(&device, energy_manager_daily_data_points_handler, metadata);
     }
 
-    check_bricklet_reachable(rc, "history_energy_manager_daily_response");
+    em_common.check_bricklet_reachable(rc, "history_energy_manager_daily_response");
 }

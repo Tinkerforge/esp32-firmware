@@ -25,6 +25,7 @@
 #include "module_available.h"
 #include "structs.h"
 
+#include "config.h"
 #include "module.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -108,6 +109,8 @@ public:
     uint16_t get_energy_meter_detailed_values(float *ret_values);
     bool reset_energy_meter_relative_energy();
 
+    void set_error(uint32_t error_mask);
+
     inline int wem_register_sd_wallbox_data_points_low_level_callback(IEMBackend::WEM_SDWallboxDataPointsLowLevelHandler handler, void *user_data)
     {
         return backend->wem_register_sd_wallbox_data_points_low_level_callback(handler, user_data);
@@ -182,6 +185,24 @@ public:
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 
+    void check_bricklet_reachable(int rc, const char *context);
+
+protected:
+    void clr_error(uint32_t error_mask);
+    bool is_error(uint32_t error_bit_pos) const;
+    void set_config_error(uint32_t config_error_mask);
+    inline bool is_bricklet_reachable() const {return bricklet_reachable;}
+
+    ConfigRoot state;
+    ConfigRoot low_level_state;
+    ConfigRoot config;
+
+    uint32_t consecutive_bricklet_errors = 0;
+
 private:
     IEMBackend *backend = nullptr;
+
+    uint32_t error_flags = 0;
+    uint32_t config_error_flags = 0;
+    bool     bricklet_reachable = true;
 };

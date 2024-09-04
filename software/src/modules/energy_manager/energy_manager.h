@@ -139,8 +139,6 @@ public:
     // That is not supported, see requires_cp_disconnect.
     bool is_external_control_allowed() override {return false;}
 
-    void set_error(uint32_t error_mask);
-
     void setup_energy_manager();
     [[gnu::const]] size_t get_debug_header_length() const override;
     void get_debug_header(StringBuilder *sb) override;
@@ -158,13 +156,9 @@ public:
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 
-private:
     void update_status_led();
-    void clr_error(uint32_t error_mask);
-    bool is_error(uint32_t error_bit_pos);
-    void set_config_error(uint32_t config_error_mask);
-    void check_bricklet_reachable(int rc, const char *context);
 
+private:
     template<typename T>
     void update_all_data_triggers(T id, void *data);
     void update_all_data();
@@ -173,21 +167,12 @@ private:
     void start_network_check_task();
     const char *prepare_fmtstr();
 
-    ConfigRoot state;
-    ConfigRoot low_level_state;
-    ConfigRoot config;
-
     EnergyManagerAllData all_data;
 
     EmRgbLed rgb_led;
 
-    uint32_t error_flags        = 0;
-    uint32_t config_error_flags = 0;
-
     bool     contactor_check_tripped             = false;
     micros_t phase_switch_deadtime_us            = 0_us;
-    bool     bricklet_reachable                  = true;
-    uint32_t consecutive_bricklet_errors         = 0;
 
     // Config cache
     bool     contactor_installed      = false;
