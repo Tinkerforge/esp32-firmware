@@ -266,7 +266,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                 />
                             </FormRow>
 
-                            <FormRow label={__("charge_manager.content.dlm_meter_slot_grid_currents")}>
+                            <FormRow label={__("charge_manager.content.dlm_meter_slot_grid_currents")} label_muted={__("power_manager.content.meter_slot_grid_power_muted")}>
                                 <InputSelect
                                     required={state.dynamicLoadConfig.enabled}
                                     placeholder={meter_slots.length > 0 ? __("charge_manager.content.dlm_meter_slot_grid_currents_select") : __("charge_manager.content.dlm_meter_slot_grid_currents_none")}
@@ -288,7 +288,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                                 />
                             </FormRow>
 
-                            <FormRow label={__("charge_manager.content.dlm_largest_consumer_current")} label_muted={__("charge_manager.content.dlm_largest_consumer_current_muted")}>
+                            <FormRow label={__("charge_manager.content.dlm_largest_consumer_current")} label_muted={__("charge_manager.content.dlm_largest_consumer_current_muted")} help={__("charge_manager.content.dlm_largest_consumer_current_help")}>
                                 <InputFloat
                                     required={state.dynamicLoadConfig.enabled}
                                     unit="A"

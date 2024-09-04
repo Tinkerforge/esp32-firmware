@@ -107,6 +107,7 @@ let x = {
             "dlm_current_limit_muted": "Nennwert der Absicherung",
             "dlm_largest_consumer_current": "Strombedarf des größten Einzelverbrauchers",
             "dlm_largest_consumer_current_muted": "pro Phase",
+            "dlm_largest_consumer_current_help": "Gibt den zu erwartenden größten plötzlichen Sprung des Strombezugs am Zähler an, den das dynamische Lastmanagement kurzfristig (<\u00A030 Sekunden) kompensieren können muss. Beispielsweise ein Durchlauferhitzer oder eine Wärmepumpe.",
             "dlm_safety_margin_pct": "Sicherheitsmarge",
             "dlm_safety_margin_pct_muted": "",
 

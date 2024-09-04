@@ -107,6 +107,7 @@ let x = {
             "dlm_current_limit_muted": "connection's fuse rating",
             "dlm_largest_consumer_current": "Largest consumer current",
             "dlm_largest_consumer_current_muted": "per phase",
+            "dlm_largest_consumer_current_help": "The largest sudden rise in current draw to be expected at the meter, that the dynamic load management must be able to compensate for quickly (<\u00A030 seconds). For example a water heater or heat pump.",
             "dlm_safety_margin_pct": "Safety margin",
             "dlm_safety_margin_pct_muted": "",
 
