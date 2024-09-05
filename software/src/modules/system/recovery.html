@@ -25,8 +25,7 @@
 
 <h3>Factory reset</h3>
 <form>
-    <input id="factory_reset" type="text" placeholder="Type RESET to allow a factory reset" oninput=on_input() size=26>
-    <button id="factory_reset_button" type="button" onclick='freset()' disabled>Trigger factory reset</button>
+    <button id="factory_reset_button" type="button" onclick='factory_reset()'>Trigger factory reset</button>
     <label id="p_factory_reset"></label>
 </form>
 
@@ -42,9 +41,6 @@
     <textarea id="api_result" rows=12 cols=40 placeholder="API call result"></textarea>
 </form>
 <script>
-function on_input() {
-    document.getElementById("factory_reset_button").disabled = document.getElementById("factory_reset").value != "RESET";
-}
 
 function update() {
     var file_select = document.getElementById("firmware").files;
@@ -131,7 +127,11 @@ function reboot() {
     xhr.send();
 }
 
-function freset() {
+function factory_reset() {
+    if (!confirm('Really trigger factory reset?')) {
+        return;
+    }
+
     let lbl = document.getElementById("p_factory_reset");
     lbl.innerHTML = "";
 
