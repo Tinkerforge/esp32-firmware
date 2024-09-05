@@ -52,8 +52,8 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         super('charge_manager/config',
               __("charge_manager.script.save_failed"),
               __("charge_manager.script.reboot_content_changed"), {
-                  addCharger: {host: "", name: "", rot: 0},
-                  editCharger: {host: "", name: "", rot: 0},
+                  addCharger: {host: "", name: "", rot: -1},
+                  editCharger: {host: "", name: "", rot: -1},
                   managementEnabled: false,
                   showExpert: false,
                   scanResult: []
@@ -330,6 +330,8 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                             ]}
                                             value={state.editCharger.rot}
                                             onValue={(v) => this.setState({editCharger: {...state.editCharger, rot: parseInt(v)}})}
+                                            placeholder={__("charge_manager.content.add_charger_rotation_select")}
+                                            required
                                             />
                                     </FormRow>
                                 </>],
@@ -403,9 +405,10 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                             ["4", __("charge_manager.content.rotation_4")],
                                             ["5", __("charge_manager.content.rotation_5")],
                                         ]}
-                                        value={state.editCharger.rot}
-                                        onValue={(v) => this.setState({editCharger: {...state.editCharger, rot: parseInt(v)}})}
+                                        value={state.addCharger.rot}
+                                        onValue={(v) => this.setState({addCharger: {...state.addCharger, rot: parseInt(v)}})}
                                         placeholder={__("charge_manager.content.add_charger_rotation_select")}
+                                        required
                                         />
                                 </FormRow>
                         </>]}
