@@ -34,7 +34,9 @@ import { Trello } from "react-feather";
 import { InputTime } from "../../ts/components/input_time";
 import { Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
-import { MeterClassID } from "../meters/meter_class_id.enum";
+import { MeterValueID    } from "../meters/meter_value_id";
+import { get_noninternal_meter_slots } from "../power_manager/main";
+
 export function HeatingNavbar() {
     return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Trello />} hidden={false} />;
 }
@@ -108,18 +110,6 @@ export class Heating extends ConfigComponent<'heating/config'> {
         }
     }
 
-    get_meter_name(meter_slot: number) {
-        let cfg = API.get_unchecked(`meters/${meter_slot}/config`) as API.getType["meters/0/config"]
-        if (cfg[0] == MeterClassID.None)
-            return null;
-
-        // Disallow selecting the charger-internal meter for PM
-        if (cfg[0] as any == MeterClassID.RS485Bricklet || cfg[0] as any == MeterClassID.EVSEV2)
-            return null;
-
-        return cfg[1]?.display_name;
-    }
-
     render(props: {}, state: Readonly<HeatingConfig>) {
         if (!util.render_allowed())
             return <SubPage name="heating" />;
@@ -131,13 +121,7 @@ export class Heating extends ConfigComponent<'heating/config'> {
 
         this.recalculateSummer(state);
 
-        let meter_slots: [string, string][] = [];
-        for (let i = 0; i < METERS_SLOTS; i++) {
-            let name = this.get_meter_name(i);
-            if (name !== null) {
-                meter_slots.push([i.toString(), name]);
-            }
-        }
+        const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], __("power_manager.content.meter_slot_grid_power_missing_value"));
 
         return (
             <SubPage name="heating">
