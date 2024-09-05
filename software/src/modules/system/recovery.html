@@ -144,13 +144,17 @@ function factory_reset() {
         credentials: 'same-origin',
         headers: {"Content-Type": "application/json; charset=utf-8"},
         body: JSON.stringify({"do_i_know_what_i_am_doing": true})
-    }).then(response => {
-        if(response.status == 200)
+    })
+    .then(response => {
+        if (response.status == 200) {
             response.text().then(t => lbl.innerHTML = "Factory reset started")
-        else
-            lbl.innerHTML = "Starting factory reset failed:" + response.status + response.statusText;
-    }).catch(reason => {
-        lbl.innerHTML = "Starting factory reset failed:" + reason;
+        }
+        else {
+            lbl.innerHTML = "Starting factory reset failed: " + response.status + " " + response.statusText;
+        }
+    })
+    .catch(reason => {
+        lbl.innerHTML = "Starting factory reset failed: " + reason;
     });
 }
 
@@ -158,12 +162,12 @@ function get(url, continuation) {
     fetch(url, {
         method: "GET",
         credentials: 'same-origin'
-    }).then(response => response.status == 200 ? response.text().then(t => continuation(t)) : Promise.reject());
+    })
+    .then(response => response.status == 200 ? response.text().then(t => continuation(t)) : Promise.reject());
 }
 
 function debug_report() {
     let t = (new Date()).toISOString().replace(/:/gi, "-").replace(/\./gi, "-");
-
     let debug_log = t + "\nScroll down for event log!\n\n";
 
     get("/debug_report", (debug_report) => {
@@ -203,9 +207,10 @@ function call_api() {
     .then(response => {
         return response.text()
                        .catch(() => response.statusText)
-                       .then(x => response.status + "\n" + x);
-    }).then(txt => {
-        document.getElementById('api_result').value = txt;
+                       .then(text => response.status + "\n" + text);
+    })
+    .then(text => {
+        document.getElementById('api_result').value = text;
     });
 }
 </script>
