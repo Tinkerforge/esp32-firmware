@@ -811,6 +811,11 @@ bool EVSEV2::switch_phases_3phase(bool wants_3phase)
     return false;
 }
 
+bool EVSEV2::is_external_control_allowed()
+{
+    return !evse_common.management_enabled.get("enabled")->asBool();
+}
+
 void EVSEV2::update_all_data()
 {
     if (!initialized)

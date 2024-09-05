@@ -106,6 +106,7 @@ protected:
     bool get_is_3phase() override;
     PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override;
     bool switch_phases_3phase(bool wants_3phase) override;
+    bool is_external_control_allowed() override;
 
 // To allow the meters_evse_v2 module to get/set energy meter values
 public:

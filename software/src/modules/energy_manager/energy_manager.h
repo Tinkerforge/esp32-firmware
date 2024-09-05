@@ -81,6 +81,9 @@ public:
     bool get_is_3phase() override;
     PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override;
     bool switch_phases_3phase(bool wants_3phase) override;
+    // Always false because this is would be a phase switch without CP disconnect.
+    // That is not supported, see requires_cp_disconnect.
+    bool is_external_control_allowed() override {return false;}
 
     void set_error(uint32_t error_mask);
 

@@ -125,6 +125,7 @@ private:
         bool get_is_3phase()                         override {return false;}
         SwitchingState get_phase_switching_state()   override {return SwitchingState::Ready;} // Don't report an error when phase_switching_capable() is false.
         bool switch_phases_3phase(bool wants_3phase) override {return false;}
+        bool is_external_control_allowed()           override {return false;}
     };
 
     enum class TristateBool : uint8_t {

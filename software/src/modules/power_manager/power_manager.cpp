@@ -461,7 +461,7 @@ void PowerManager::register_urls()
 
     api.addState("power_manager/external_control", &external_control);
 
-    if (!config.get("enabled")->asBool() && phase_switcher_backend->phase_switching_capable() && !phase_switcher_backend->requires_cp_disconnect()) {
+    if (!config.get("enabled")->asBool() && phase_switcher_backend->is_external_control_allowed() && phase_switcher_backend->phase_switching_capable() && !phase_switcher_backend->requires_cp_disconnect()) {
         logger.printfln("Disabled but phase switching backend can switch autonomously. Enabling external control API.");
 
         api.addFeature("phase_switch");
@@ -470,6 +470,11 @@ void PowerManager::register_urls()
 #endif
 
         api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this]() {
+            if (!phase_switcher_backend->is_external_control_allowed()) {
+                logger.printfln("Ignoring external control phase change request: External control currently not allowed.");
+                return;
+            }
+
             switch (phase_switcher_backend->get_phase_switching_state()) {
                 case PhaseSwitcherBackend::SwitchingState::Error:
                     logger.printfln("Ignoring external control phase change request: Phase switching in error state.");

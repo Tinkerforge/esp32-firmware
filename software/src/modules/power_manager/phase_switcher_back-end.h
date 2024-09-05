@@ -45,6 +45,7 @@ public:
     virtual bool get_is_3phase() = 0;
     virtual SwitchingState get_phase_switching_state() = 0;
     virtual bool switch_phases_3phase(bool wants_3phase) = 0;
+    virtual bool is_external_control_allowed() = 0;
 };
 
 #if defined(__GNUC__)
