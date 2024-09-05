@@ -53,6 +53,25 @@ env.AddPostAction(
                       f"Copying $BUILD_DIR{os.sep}${{PROGNAME}}.elf -> build{os.sep}{firmware_basename}.elf")
 )
 
+if sys.platform == 'win32':
+    symlink = lambda src, dst: copy2(os.path.join('build', src), dst)
+else:
+    symlink = os.symlink
+
+env.AddPostAction(
+    "$BUILD_DIR/${PROGNAME}.elf",
+    env.VerboseAction(lambda env, **kwargs: symlink(f"{firmware_basename}.elf",
+                                                    f"build/{env.GetProjectOption('custom_name')}_firmware_latest.elf"),
+                    f"Symlinking build/{firmware_basename}.elf -> build{os.sep}{env.GetProjectOption('custom_name')}_firmware_latest.elf")
+)
+
+env.AddPostAction(
+    "$BUILD_DIR/${PROGNAME}.elf",
+    env.VerboseAction(lambda env, **kwargs: symlink(f"{firmware_basename}.elf",
+                                                    f"build/firmware_latest.elf"),
+                    f"Symlinking build/{firmware_basename}.elf -> build{os.sep}firmware_latest.elf")
+)
+
 def check_call(*args): # hide subprocess.check_call return value
     subprocess.check_call(args)
     return None
@@ -94,3 +113,17 @@ else:
                                                       f"build/{firmware_basename}_merged.bin"),
                           f"Copying $BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin -> build{os.sep}{firmware_basename}_merged.bin")
     )
+
+env.AddPostAction(
+    "$BUILD_DIR/${PROGNAME}.bin",
+    env.VerboseAction(lambda env, **kwargs: symlink(f"{firmware_basename}_merged.bin",
+                                                    f"build/{env.GetProjectOption('custom_name')}_firmware_latest_merged.bin"),
+                        f"Symlinking build{os.sep}{firmware_basename}_merged.bin -> build{os.sep}{env.GetProjectOption('custom_name')}_firmware_latest_merged.bin")
+)
+
+env.AddPostAction(
+    "$BUILD_DIR/${PROGNAME}.bin",
+    env.VerboseAction(lambda env, **kwargs: symlink(f"{firmware_basename}_merged.bin",
+                                                    f"build/firmware_latest_merged.bin"),
+                        f"Symlinking build{os.sep}{firmware_basename}_merged.bin -> build{os.sep}firmware_latest_merged.bin")
+)

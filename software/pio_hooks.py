@@ -501,6 +501,30 @@ def main():
     monitor_speed = env.GetProjectOption("monitor_speed")
     nightly = "-DNIGHTLY" in build_flags
 
+    if sys.platform.startswith('linux'):
+        firmware_elf_symlink = f'build/{name}_firmware_latest.elf'
+        firmware_bin_symlink = f'build/{name}_firmware_latest_merged.bin'
+
+        try:
+            os.remove(firmware_elf_symlink)
+        except FileNotFoundError:
+            pass
+
+        try:
+            os.remove(firmware_bin_symlink)
+        except FileNotFoundError:
+            pass
+
+        try:
+            os.remove('build/firmware_latest.elf')
+        except FileNotFoundError:
+            pass
+
+        try:
+            os.remove('build/firmware_latest_merged.bin')
+        except FileNotFoundError:
+            pass
+
     is_release = len(subprocess.run(["git", "tag", "--contains", "HEAD"], check=True, capture_output=True).stdout) > 0
     is_dirty = len(subprocess.run(["git", "diff"], check=True, capture_output=True).stdout) > 0
     dirty_suffix = ""
