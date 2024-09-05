@@ -136,7 +136,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                     value={state.default_available_current}
                     onValue={this.set("default_available_current")}
                     digits={3}
-                    min={0}
+                    min={state.enable_charge_manager ? 6000 : 0}
                     max={state.maximum_available_current}
                     disabled={state.dynamicLoadConfig.enabled}
                     />
