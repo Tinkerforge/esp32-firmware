@@ -22,8 +22,8 @@ let x = {
             "signature_verify_failed_title": "Signature mismatch",
             "signature_verify_failed_body": /*FFN*/(actual_publisher: string, expected_publisher: string) =>
                 <>The firmware file was <strong>not</strong> published by <span class="text-success">{expected_publisher}</span>
-                {actual_publisher == null ? <> and is <strong>not</strong>to be trusted</> : <>, but supposedly by <span class="text-danger">{actual_publisher}</span> instead</>}!
-                The publisher <span class="text-success">{expected_publisher}</span> does not <strong>warrant</strong> the security and functionality of this unknown firmware!</>/*NF*/,
+                {actual_publisher == null ? <> and is <strong>not</strong> to be trusted</> : <>, but supposedly by <span class="text-danger">{actual_publisher}</span> instead</>}!
+                The publisher <span class="text-success">{expected_publisher}</span> does <strong>not</strong> warrant the security and functionality of this unknown firmware!</>/*NF*/,
             "abort_update": "Abort",
             "confirm_override": "Install firmware anyway",
             "check_for_update": "Check for update",
