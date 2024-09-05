@@ -1056,25 +1056,9 @@ static int32_t current_capacity(const CurrentLimits *limits, const ChargerState 
     return allocated_phases * capacity;
 }
 
-// Stage 7: Allocate fair current to chargers with at least one allocated phase
-// - All those chargers already have their minimum current allocated
-// - The fair current is the current left divided by the number of chargers active on that phase.
-//   On the PV "phase" include a charger n times were n is the number of phases this charger uses.
-//   A three-phase charger will use 18 A of PV current if it is allocated 6 A to each phase.
-void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
-    int matched = 0;
-
-    filter(allocated_current > 0);
-
-    if (matched == 0)
-        return;
-
-    // No need to sort here: Each charger gets the same current
-
-    trace_sort(7);
-
+static Cost get_fair_current(int matched, int start, int *idx_array, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state) {
     Cost active_on_phase{0, 0, 0, 0};
-    for (int i = 0; i < matched; ++i) {
+    for (int i = start; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
         auto allocated_phases = phase_allocation[idx_array[i]];
         ++active_on_phase.pv;
@@ -1101,7 +1085,32 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     trace("7: active (%d %d %d %d) fair (%d %d %d %d)", active_on_phase.pv, active_on_phase.l1, active_on_phase.l2, active_on_phase.l3, fair.pv, fair.l1, fair.l2, fair.l3);
 
+    return fair;
+}
+
+// Stage 7: Allocate fair current to chargers with at least one allocated phase
+// - All those chargers already have their minimum current allocated
+// - The fair current is the current left divided by the number of chargers active on that phase.
+//   On the PV "phase" include a charger n times were n is the number of phases this charger uses.
+//   A three-phase charger will use 18 A of PV current if it is allocated 6 A to each phase.
+void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+    int matched = 0;
+
+    filter(allocated_current > 0);
+
+    if (matched == 0)
+        return;
+
+    sort(
+        3 - allocated_phases,
+        current_capacity(_limits, left.state, left.allocated_current, left.allocated_phases, _cfg) < current_capacity(_limits, right.state, right.allocated_current, right.allocated_phases, _cfg)
+    );
+
+    trace_sort(7);
+
     for (int i = 0; i < matched; ++i) {
+        Cost fair = get_fair_current(matched, i, idx_array, phase_allocation, limits, charger_state);
+
         const auto *state = &charger_state[idx_array[i]];
 
         auto allocated_current = current_allocation[idx_array[i]];
