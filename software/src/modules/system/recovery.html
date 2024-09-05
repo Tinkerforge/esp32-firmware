@@ -62,12 +62,57 @@ function update() {
     progress.innerHTML = "";
 
     xhr.onreadystatechange = function (e) {
-        if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
-            progress.innerHTML = xhr.responseText
-        } else if (xhr.status == 0)
+        if (xhr.readyState != XMLHttpRequest.DONE) {
+            return;
+        }
+
+        if (xhr.status == 0) {
             progress.innerHTML = "Server closed the connection abruptly!";
-        else
-            progress.innerHTML = (xhr.status + " Error!\n" + xhr.responseText);
+        }
+        else if (xhr.status == 200) {
+            progress.innerHTML = xhr.responseText;
+        }
+        else {
+            progress.innerHTML = xhr.status + " Error: " + xhr.responseText;
+
+            if (xhr.status == 400) {
+                let response = JSON.parse(xhr.responseText);
+
+                if (response.error == 16 /* SignatureVerifyFailed */) {
+                    let message = `The firmware file was NOT published by "${response.expected_publisher}"`;
+
+                    if (response.actual_publisher == null) {
+                        message += ' and is NOT to be trusted!';
+                    }
+                    else {
+                        message += `, but supposedly by "${response.actual_publisher}" instead!`;
+                    }
+
+                    message += ' Install firmware anyway?';
+
+                    if (confirm(message)) {
+                        fetch('firmware_update/override_signature', {
+                            method: 'PUT',
+                            credentials: 'same-origin',
+                            headers: {'Content-Type': 'application/json; charset=utf-8'},
+                            body: JSON.stringify({cookie: response.cookie}),
+                        })
+                        .then(response => {
+                            return response.text()
+                                           .catch(() => response.statusText)
+                                           .then(text => response.status + "\n" + text);
+                        })
+                        .then(text => {
+                            progress.innerHTML = text;
+                        });
+                    }
+                    else {
+                        document.getElementById("firmware").disabled = false;
+                        document.getElementById("u_firmware").disabled = false;
+                    }
+                }
+            }
+        }
     };
 
     xhr.upload.addEventListener("progress", function (e) {
