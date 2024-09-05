@@ -15,8 +15,8 @@
             "main_loop_max": "Maximum main loop runtime",
 
             "memory_header": "Memory statistics",
-            "heap_used": "Used heap bytes",
-            "heap_free": "Free heap bytes",
+            "heap_used": "Used heap",
+            "heap_free": "Free heap",
             "heap_block": "Largest free heap block",
             "heap_min_free": "Minimum free heap",
             "heap_size": "Heap size",
