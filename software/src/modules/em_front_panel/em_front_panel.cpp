@@ -47,6 +47,12 @@ void EMFrontPanel::pre_setup()
     config = ConfigRoot{Config::Object({
             {"enable", Config::Bool(true)}
         }), [this](Config &cfg, ConfigSource source) -> String {
+            // Schedule check_bricklet_state() here, since this checks
+            // if the display needs to be turned on/off.
+            task_scheduler.scheduleOnce([this](){
+                this->check_bricklet_state();
+            }, 1);
+
             return "";
         }
     };
@@ -77,13 +83,25 @@ void EMFrontPanel::setup_bricklet()
 
 void EMFrontPanel::check_bricklet_state()
 {
-    uint32_t index = 0;
-    int result = tf_warp_front_panel_get_display_page_index(&device, &index);
+    const bool enable = config.get("enable")->asBool();
+    uint8_t display = 0;
+    uint32_t countdown = 0;
+    int result = tf_warp_front_panel_get_display(&device, &display, &countdown);
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
-            logger.printfln("Failed to call front panel function, rc: %d", result);
+            logger.printfln("Failed to call get_display: %d", result);
         }
         return;
+    } else if ((display == TF_WARP_FRONT_PANEL_DISPLAY_OFF) && enable) {
+        result = tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC);
+        if (result != TF_E_OK) {
+            logger.printfln("Failed to call set_display(%d): %d", TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC, result);
+        }
+    } else if((display == TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC) && !enable) {
+        result = tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_OFF);
+        if (result != TF_E_OK) {
+            logger.printfln("Failed to call set_display(%d): %d", TF_WARP_FRONT_PANEL_DISPLAY_OFF, result);
+        }
     }
 }
 
