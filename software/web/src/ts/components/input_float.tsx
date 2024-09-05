@@ -115,8 +115,8 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                ref={input}
                step={1/pow10}
                // Don't set min/max: this is already enforced in setTarget.
-               //min={'min' in props ? floatMin : undefined}
-               //max={'max' in props ? floatMax : undefined}
+               min={'min' in props ? floatMin : undefined}
+               max={'max' in props ? floatMax : undefined}
                onInput={'onValue' in props ? (e) => setInputInFlight((e.target as HTMLInputElement).value) : undefined}
                // onfocusout is not triggered if a user submits the form by pressing enter
                onKeyDown={(e: KeyboardEvent) => {
