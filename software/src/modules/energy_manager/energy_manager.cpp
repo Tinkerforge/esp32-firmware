@@ -78,40 +78,6 @@ void EnergyManager::pre_setup()
         {"contactor_installed", Config::Bool(false)},
     });
 
-    // history
-    history_wallbox_5min = Config::Object({
-        {"uid", Config::Uint32(0)},
-        // date in UTC to avoid DST overlap problems
-        {"year", Config::Uint(0, 2000, 2255)},
-        {"month", Config::Uint(0, 1, 12)},
-        {"day", Config::Uint(0, 1, 31)},
-    });
-
-    history_wallbox_daily = Config::Object({
-        {"uid", Config::Uint32(0)},
-        // date in local time to have the days properly aligned
-        {"year", Config::Uint(0, 2000, 2255)},
-        {"month", Config::Uint(0, 1, 12)},
-    });
-
-    history_energy_manager_5min = Config::Object({
-        // date in UTC to avoid DST overlap problems
-        {"year", Config::Uint(0, 2000, 2255)},
-        {"month", Config::Uint(0, 1, 12)},
-        {"day", Config::Uint(0, 1, 31)},
-    });
-
-    history_energy_manager_daily = Config::Object({
-        // date in local time to have the days properly aligned
-        {"year", Config::Uint(0, 2000, 2255)},
-        {"month", Config::Uint(0, 1, 12)},
-    });
-
-    for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
-        history_meter_setup_done[slot] = false;
-        history_meter_power_value[slot] = NAN;
-    }
-
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_action(
         AutomationActionID::EMRelaySwitch,
@@ -252,12 +218,7 @@ void EnergyManager::setup()
     }, 0);
 #endif
 
-    task_scheduler.scheduleWithFixedDelay([this](){collect_data_points();}, 15000, 10000);
-    task_scheduler.scheduleWithFixedDelay([this](){set_pending_data_points();}, 15000, 100);
-
     start_network_check_task();
-
-    task_scheduler.scheduleOnce([this](){this->show_blank_value_id_update_warnings = true;}, 250);
 }
 
 void EnergyManager::register_urls()
@@ -266,11 +227,6 @@ void EnergyManager::register_urls()
 
     api.addPersistentConfig("energy_manager/config", &em_common.config);
     api.addState("energy_manager/low_level_state", &em_common.low_level_state);
-
-    api.addResponse("energy_manager/history_wallbox_5min", &history_wallbox_5min, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_5min_response(response, ownership, owner_id);});
-    api.addResponse("energy_manager/history_wallbox_daily", &history_wallbox_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_daily_response(response, ownership, owner_id);});
-    api.addResponse("energy_manager/history_energy_manager_5min", &history_energy_manager_5min, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_5min_response(response, ownership, owner_id);});
-    api.addResponse("energy_manager/history_energy_manager_daily", &history_energy_manager_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_daily_response(response, ownership, owner_id);});
 
     this->DeviceModule::register_urls();
 }
@@ -295,6 +251,24 @@ uint32_t EnergyManager::get_em_version() const
 const EMAllDataCommon *EnergyManager::get_all_data_common() const
 {
     return &all_data.common;
+}
+
+void EnergyManager::get_input_output_states(bool *inputs, size_t *inputs_len, bool *outputs, size_t *outputs_len) const
+{
+    if (*inputs_len < 2) {
+        *inputs_len = 0;
+    } else {
+        inputs[0] = all_data.input[0];
+        inputs[1] = all_data.input[1];
+        *inputs_len = 2;
+    }
+
+    if (*outputs_len < 1) {
+        *outputs_len = 0;
+    } else {
+        outputs[0] = all_data.relay;
+        *outputs_len = 1;
+    }
 }
 
 int EnergyManager::wem_register_sd_wallbox_data_points_low_level_callback(WEM_SDWallboxDataPointsLowLevelHandler handler, void *user_data)

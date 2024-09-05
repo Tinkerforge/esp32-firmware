@@ -17,12 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "energy_manager.h"
+#include "em_energy_analysis.h"
 
-#include <Arduino.h>
 #include <sys/time.h>
-#include <time.h>
 
+#include "modules/em_common/bricklet_bindings_constants.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "modules/charge_manager/charge_manager_private.h"
@@ -38,16 +37,76 @@ static_assert(METERS_SLOTS <= 7, "Too many meters slots");
 static const char *get_data_status_string(uint8_t status)
 {
     switch (status) {
-        case TF_WARP_ENERGY_MANAGER_DATA_STATUS_OK:         return "OK";
-        case TF_WARP_ENERGY_MANAGER_DATA_STATUS_SD_ERROR:   return "SD error";
-        case TF_WARP_ENERGY_MANAGER_DATA_STATUS_LFS_ERROR:  return "LFS error";
-        case TF_WARP_ENERGY_MANAGER_DATA_STATUS_QUEUE_FULL: return "queue full";
+        case WEM_DATA_STATUS_OK:         return "OK";
+        case WEM_DATA_SDATUS_SD_ERROR:   return "SD error";
+        case WEM_DATA_SDATUS_LFS_ERROR:  return "LFS error";
+        case WEM_DATA_SDATUS_QUEUE_FULL: return "queue full";
     }
 
     return "<unknown>";
 }
 
-void EnergyManager::register_events()
+void EMEnergyAnalysis::pre_setup()
+{
+    history_wallbox_5min = Config::Object({
+        {"uid", Config::Uint32(0)},
+        // date in UTC to avoid DST overlap problems
+        {"year", Config::Uint(0, 2000, 2255)},
+        {"month", Config::Uint(0, 1, 12)},
+        {"day", Config::Uint(0, 1, 31)},
+    });
+
+    history_wallbox_daily = Config::Object({
+        {"uid", Config::Uint32(0)},
+        // date in local time to have the days properly aligned
+        {"year", Config::Uint(0, 2000, 2255)},
+        {"month", Config::Uint(0, 1, 12)},
+    });
+
+    history_energy_manager_5min = Config::Object({
+        // date in UTC to avoid DST overlap problems
+        {"year", Config::Uint(0, 2000, 2255)},
+        {"month", Config::Uint(0, 1, 12)},
+        {"day", Config::Uint(0, 1, 31)},
+    });
+
+    history_energy_manager_daily = Config::Object({
+        // date in local time to have the days properly aligned
+        {"year", Config::Uint(0, 2000, 2255)},
+        {"month", Config::Uint(0, 1, 12)},
+    });
+
+    for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
+        history_meter_setup_done[slot] = false;
+        history_meter_power_value[slot] = NAN;
+    }
+}
+
+void EMEnergyAnalysis::setup()
+{
+    if (!em_common.initialized)
+        return;
+
+    all_data_common = em_common.get_all_data_common();
+
+    task_scheduler.scheduleWithFixedDelay([this]() {collect_data_points();    }, 15000, 10000);
+    task_scheduler.scheduleWithFixedDelay([this]() {set_pending_data_points();}, 15000,   100);
+
+    task_scheduler.scheduleOnce([this]() {this->show_blank_value_id_update_warnings = true;}, 250);
+}
+
+void EMEnergyAnalysis::register_urls()
+{
+    if (!em_common.initialized)
+        return;
+
+    api.addResponse("energy_manager/history_wallbox_5min",         &history_wallbox_5min,         {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_5min_response(response, ownership, owner_id);});
+    api.addResponse("energy_manager/history_wallbox_daily",        &history_wallbox_daily,        {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_daily_response(response, ownership, owner_id);});
+    api.addResponse("energy_manager/history_energy_manager_5min",  &history_energy_manager_5min,  {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_5min_response(response, ownership, owner_id);});
+    api.addResponse("energy_manager/history_energy_manager_daily", &history_energy_manager_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_daily_response(response, ownership, owner_id);});
+}
+
+void EMEnergyAnalysis::register_events()
 {
     for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
         if (meters.get_meter_class(slot) == MeterClassID::None) {
@@ -82,7 +141,7 @@ void EnergyManager::register_events()
     }
 }
 
-void EnergyManager::update_history_meter_power(uint32_t slot, float power /* W, must not be NaN */)
+void EMEnergyAnalysis::update_history_meter_power(uint32_t slot, float power /* W, must not be NaN */)
 {
     uint32_t now = millis();
 
@@ -123,7 +182,7 @@ void EnergyManager::update_history_meter_power(uint32_t slot, float power /* W, 
     history_meter_power_timestamp[slot] = now;
 }
 
-void EnergyManager::collect_data_points()
+void EMEnergyAnalysis::collect_data_points()
 {
     struct timeval tv;
     struct tm utc;
@@ -190,14 +249,22 @@ void EnergyManager::collect_data_points()
 #endif
         }
 
-        if (all_data.common.is_valid && !deadline_elapsed(all_data.common.last_update + MAX_DATA_AGE)) {
+        if (all_data_common->is_valid && !deadline_elapsed(all_data_common->last_update + MAX_DATA_AGE)) {
             uint8_t flags = 0; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data (read only)
             int32_t power[7] = {INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX}; // W
 
+            bool inputs[4];
+            bool outputs[4];
+            size_t input_len  = ARRAY_SIZE(inputs);
+            size_t output_len = ARRAY_SIZE(outputs);
+
+            em_common.get_input_output_states(inputs, &input_len, outputs, &output_len);
+            // input_len and output_len now contain the actual value count
+
             flags |= power_manager.get_is_3phase() ? 0b0001 : 0;
-            flags |= all_data.input[0]             ? 0b0010 : 0;
-            flags |= all_data.input[1]             ? 0b0100 : 0;
-            flags |= all_data.relay                ? 0b1000 : 0;
+            flags |= inputs[0]                     ? 0b0010 : 0; // EMv1 input[0]
+            flags |= inputs[1]                     ? 0b0100 : 0; // EMv1 input[1]
+            flags |= outputs[0]                    ? 0b1000 : 0; // EMv1 relay
 
             for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
                 // FIXME: how to tell if meter data is stale?
@@ -333,7 +400,7 @@ void EnergyManager::collect_data_points()
     }
 }
 
-void EnergyManager::set_pending_data_points()
+void EMEnergyAnalysis::set_pending_data_points()
 {
     if (pending_data_points.empty()) {
         return;
@@ -381,11 +448,11 @@ struct PersistentDataV2 {
 static_assert(sizeof(PersistentDataV1) == 40);
 static_assert(sizeof(PersistentDataV2) == 104);
 
-bool EnergyManager::load_persistent_data()
+bool EMEnergyAnalysis::load_persistent_data()
 {
     uint8_t buf[DATA_STORAGE_PAGE_SIZE * DATA_STORAGE_PAGE_COUNT] = {0};
     for (uint8_t page = 0; page < DATA_STORAGE_PAGE_COUNT; ++page) {
-        if (tf_warp_energy_manager_get_data_storage(&device, page, buf + (DATA_STORAGE_PAGE_SIZE * page)) != TF_E_OK) {
+        if (em_common.wem_get_data_storage(page, buf + (DATA_STORAGE_PAGE_SIZE * page)) != TF_E_OK) {
             return false;
         }
     }
@@ -415,7 +482,7 @@ bool EnergyManager::load_persistent_data()
     return true;
 }
 
-void EnergyManager::load_persistent_data_v1(uint8_t *buf)
+void EMEnergyAnalysis::load_persistent_data_v1(uint8_t *buf)
 {
     PersistentDataV1 data_v1;
     memcpy(&data_v1, buf, sizeof(data_v1));
@@ -443,7 +510,7 @@ void EnergyManager::load_persistent_data_v1(uint8_t *buf)
     history_meter_energy_export[0] = data_v1.history_meter_energy_export;
 }
 
-void EnergyManager::load_persistent_data_v2(uint8_t *buf)
+void EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
 {
     PersistentDataV2 data_v2;
     memcpy(&data_v2, buf, sizeof(data_v2));
@@ -472,7 +539,7 @@ void EnergyManager::load_persistent_data_v2(uint8_t *buf)
     }
 }
 
-void EnergyManager::save_persistent_data()
+void EMEnergyAnalysis::save_persistent_data()
 {
     PersistentDataV1 data_v1;
     memset(&data_v1, 0, sizeof(data_v1));
@@ -519,11 +586,11 @@ void EnergyManager::save_persistent_data()
     memcpy(buf + sizeof(data_v1), &data_v2, sizeof(data_v2));
 
     for (uint8_t page = 0; page < DATA_STORAGE_PAGE_COUNT; ++page) {
-        tf_warp_energy_manager_set_data_storage(&device, page, buf + (DATA_STORAGE_PAGE_SIZE * page));
+        em_common.wem_set_data_storage(page, buf + (DATA_STORAGE_PAGE_SIZE * page));
     }
 }
 
-bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const struct tm *local, uint32_t uid, uint8_t flags, uint16_t power /* W */)
+bool EMEnergyAnalysis::set_wallbox_5min_data_point(const struct tm *utc, const struct tm *local, uint32_t uid, uint8_t flags, uint16_t power /* W */)
 {
     uint8_t status;
     uint8_t utc_year = utc->tm_year - 100;
@@ -531,16 +598,15 @@ bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const stru
     uint8_t utc_day = utc->tm_mday;
     uint8_t utc_hour = utc->tm_hour;
     uint8_t utc_minute = (utc->tm_min / 5) * 5;
-    int rc = tf_warp_energy_manager_set_sd_wallbox_data_point(&device,
-                                                              uid,
-                                                              utc_year,
-                                                              utc_month,
-                                                              utc_day,
-                                                              utc_hour,
-                                                              utc_minute,
-                                                              flags,
-                                                              power,
-                                                              &status);
+    int rc = em_common.wem_set_sd_wallbox_data_point(uid,
+                                                     utc_year,
+                                                     utc_month,
+                                                     utc_day,
+                                                     utc_hour,
+                                                     utc_minute,
+                                                     flags,
+                                                     power,
+                                                     &status);
 
     em_common.check_bricklet_reachable(rc, "set_wallbox_5min_data_point");
 
@@ -550,7 +616,7 @@ bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const stru
 #endif
 
     if (rc != TF_E_OK) {
-        if (rc == TF_E_TIMEOUT || is_in_bootloader(rc)) {
+        if (rc == TF_E_TIMEOUT || em_common.device_module_is_in_bootloader(rc)) {
             return false; // retry
         }
         else {
@@ -559,7 +625,7 @@ bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const stru
         }
     }
     else if (status != 0) {
-        if (status == TF_WARP_ENERGY_MANAGER_DATA_STATUS_QUEUE_FULL) {
+        if (status == WEM_DATA_SDATUS_QUEUE_FULL) {
             return false; // retry
         }
         else {
@@ -608,13 +674,13 @@ bool EnergyManager::set_wallbox_5min_data_point(const struct tm *utc, const stru
     }
 }
 
-bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_t uid, uint32_t energy /* daWh */)
+bool EMEnergyAnalysis::set_wallbox_daily_data_point(const struct tm *local, uint32_t uid, uint32_t energy /* daWh */)
 {
     uint8_t status;
     uint8_t year = local->tm_year - 100;
     uint8_t month = local->tm_mon + 1;
     uint8_t day = local->tm_mday;
-    int rc = tf_warp_energy_manager_set_sd_wallbox_daily_data_point(&device, uid, year, month, day, energy, &status);
+    int rc = em_common.wem_set_sd_wallbox_daily_data_point(uid, year, month, day, energy, &status);
 
     em_common.check_bricklet_reachable(rc, "set_wallbox_daily_data_point");
 
@@ -624,7 +690,7 @@ bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_
 #endif
 
     if (rc != TF_E_OK) {
-        if (rc == TF_E_TIMEOUT || is_in_bootloader(rc)) {
+        if (rc == TF_E_TIMEOUT || em_common.device_module_is_in_bootloader(rc)) {
             return false; // retry
         }
         else {
@@ -633,7 +699,7 @@ bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_
         }
     }
     else if (status != 0) {
-        if (status == TF_WARP_ENERGY_MANAGER_DATA_STATUS_QUEUE_FULL) {
+        if (status == WEM_DATA_SDATUS_QUEUE_FULL) {
             return false; // retry
         }
         else {
@@ -671,7 +737,7 @@ bool EnergyManager::set_wallbox_daily_data_point(const struct tm *local, uint32_
     }
 }
 
-bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
+bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
                                                        const struct tm *local,
                                                        uint8_t flags,
                                                        const int32_t power[7] /* W */)
@@ -682,16 +748,15 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
     uint8_t utc_day = utc->tm_mday;
     uint8_t utc_hour = utc->tm_hour;
     uint8_t utc_minute = (utc->tm_min / 5) * 5;
-    int rc = tf_warp_energy_manager_set_sd_energy_manager_data_point(&device,
-                                                                     utc_year,
-                                                                     utc_month,
-                                                                     utc_day,
-                                                                     utc_hour,
-                                                                     utc_minute,
-                                                                     flags,
-                                                                     power[0],
-                                                                     &power[1],
-                                                                     &status);
+    int rc = em_common.wem_set_sd_energy_manager_data_point(utc_year,
+                                                            utc_month,
+                                                            utc_day,
+                                                            utc_hour,
+                                                            utc_minute,
+                                                            flags,
+                                                            power[0],
+                                                            &power[1],
+                                                            &status);
 
     em_common.check_bricklet_reachable(rc, "set_energy_manager_5min_data_point");
 
@@ -701,7 +766,7 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
 #endif
 
     if (rc != TF_E_OK) {
-        if (rc == TF_E_TIMEOUT || is_in_bootloader(rc)) {
+        if (rc == TF_E_TIMEOUT || em_common.device_module_is_in_bootloader(rc)) {
             return false; // retry
         }
         else {
@@ -710,7 +775,7 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
         }
     }
     else if (status != 0) {
-        if (status == TF_WARP_ENERGY_MANAGER_DATA_STATUS_QUEUE_FULL) {
+        if (status == WEM_DATA_SDATUS_QUEUE_FULL) {
             return false; // retry
         }
         else {
@@ -765,7 +830,7 @@ bool EnergyManager::set_energy_manager_5min_data_point(const struct tm *utc,
     }
 }
 
-bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
+bool EMEnergyAnalysis::set_energy_manager_daily_data_point(const struct tm *local,
                                                         const uint32_t energy_import[7] /* daWh */,
                                                         const uint32_t energy_export[7] /* daWh */)
 {
@@ -773,15 +838,14 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
     uint8_t year = local->tm_year - 100;
     uint8_t month = local->tm_mon + 1;
     uint8_t day = local->tm_mday;
-    int rc = tf_warp_energy_manager_set_sd_energy_manager_daily_data_point(&device,
-                                                                           year,
-                                                                           month,
-                                                                           day,
-                                                                           energy_import[0],
-                                                                           energy_export[0],
-                                                                           &energy_import[1],
-                                                                           &energy_export[1],
-                                                                           &status);
+    int rc = em_common.wem_set_sd_energy_manager_daily_data_point(year,
+                                                                  month,
+                                                                  day,
+                                                                  energy_import[0],
+                                                                  energy_export[0],
+                                                                  &energy_import[1],
+                                                                  &energy_export[1],
+                                                                  &status);
 
     em_common.check_bricklet_reachable(rc, "set_energy_manager_daily_data_point");
 
@@ -793,7 +857,7 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
 #endif
 
     if (rc != TF_E_OK) {
-        if (rc == TF_E_TIMEOUT || is_in_bootloader(rc)) {
+        if (rc == TF_E_TIMEOUT || em_common.device_module_is_in_bootloader(rc)) {
             return false; // retry
         }
         else {
@@ -802,7 +866,7 @@ bool EnergyManager::set_energy_manager_daily_data_point(const struct tm *local,
         }
     }
     else if (status != 0) {
-        if (status == TF_WARP_ENERGY_MANAGER_DATA_STATUS_QUEUE_FULL) {
+        if (status == WEM_DATA_SDATUS_QUEUE_FULL) {
             return false; // retry
         }
         else {
@@ -881,7 +945,7 @@ struct [[gnu::packed]] Wallbox5minData {
     uint16_t power; // W
 };
 
-static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[60], void *user_data)
+static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[60], void *user_data)
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
     IChunkedResponse *response = metadata->response;
@@ -889,7 +953,7 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
     OwnershipGuard ownership_guard(metadata->response_ownership, metadata->response_owner_id);
 
     if (!ownership_guard.have_ownership()) {
-        tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
@@ -913,7 +977,7 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
         write_success &= response->flush();
         response->end(write_success ? "" : "write error");
 
-        tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
@@ -961,19 +1025,18 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
                 response->flush();
                 response->end("write error");
 
-                tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(device, nullptr, nullptr);
+                em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
             } else {
-                task_scheduler.scheduleOnce([device, metadata, response]{
+                task_scheduler.scheduleOnce([metadata, response]{
                     uint8_t status;
-                    int rc = tf_warp_energy_manager_get_sd_wallbox_data_points(device,
-                                                                               metadata->uid,
-                                                                               metadata->utc_end_year,
-                                                                               metadata->utc_end_month,
-                                                                               metadata->utc_end_day,
-                                                                               0,
-                                                                               0,
-                                                                               metadata->utc_end_slots,
-                                                                               &status);
+                    int rc = em_common.wem_get_sd_wallbox_data_points(metadata->uid,
+                                                                      metadata->utc_end_year,
+                                                                      metadata->utc_end_month,
+                                                                      metadata->utc_end_day,
+                                                                      0,
+                                                                      0,
+                                                                      metadata->utc_end_slots,
+                                                                      &status);
 
                     metadata->next_offset = 0;
                     metadata->utc_end_slots = 0;
@@ -993,7 +1056,7 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
                             response->end("continuation error");
                         }
 
-                        tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(device, nullptr, nullptr);
+                        em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
                     }
                 }, 0);
             }
@@ -1006,7 +1069,7 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
             write_success &= response->flush();
             response->end(write_success ? "" : "write error");
 
-            tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(device, nullptr, nullptr);
+            em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
         }
 
         return;
@@ -1015,12 +1078,12 @@ static void wallbox_5min_data_points_handler(TF_WARPEnergyManager *device, uint1
     if (!write_success) {
         response->end("write error");
 
-        tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 }
 
-void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id)
+void EMEnergyAnalysis::history_wallbox_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id)
 {
     uint32_t uid = history_wallbox_5min.get("uid")->asUint();
 
@@ -1073,25 +1136,23 @@ void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ow
     int rc;
 
     if (utc_start_slots > 0) {
-        rc = tf_warp_energy_manager_get_sd_wallbox_data_points(&device,
-                                                               uid,
-                                                               utc_start_year,
-                                                               utc_start_month,
-                                                               utc_start_day,
-                                                               utc_start_hour,
-                                                               utc_start_minute,
-                                                               utc_start_slots,
-                                                               &status);
+        rc = em_common.wem_get_sd_wallbox_data_points(uid,
+                                                      utc_start_year,
+                                                      utc_start_month,
+                                                      utc_start_day,
+                                                      utc_start_hour,
+                                                      utc_start_minute,
+                                                      utc_start_slots,
+                                                      &status);
     } else {
-        rc = tf_warp_energy_manager_get_sd_wallbox_data_points(&device,
-                                                               uid,
-                                                               utc_end_year,
-                                                               utc_end_month,
-                                                               utc_end_day,
-                                                               utc_end_hour,
-                                                               utc_end_minute,
-                                                               utc_end_slots,
-                                                               &status);
+        rc = em_common.wem_get_sd_wallbox_data_points(uid,
+                                                      utc_end_year,
+                                                      utc_end_month,
+                                                      utc_end_day,
+                                                      utc_end_hour,
+                                                      utc_end_minute,
+                                                      utc_end_slots,
+                                                      &status);
         utc_end_slots = 0;
     }
 
@@ -1133,13 +1194,13 @@ void EnergyManager::history_wallbox_5min_response(IChunkedResponse *response, Ow
         metadata->utc_end_day = utc_end_day;
         metadata->utc_end_slots = utc_end_slots;
 
-        tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(&device, wallbox_5min_data_points_handler, metadata);
+        em_common.wem_register_sd_wallbox_data_points_low_level_callback(wallbox_5min_data_points_handler, metadata);
     }
 
     em_common.check_bricklet_reachable(rc, "history_wallbox_5min_response");
 }
 
-static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
+static void wallbox_daily_data_points_handler(void *do_not_use,
                                               uint16_t data_length,
                                               uint16_t data_chunk_offset,
                                               uint32_t data_chunk_data[15],
@@ -1151,7 +1212,7 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
     OwnershipGuard ownership_guard(metadata->response_ownership, metadata->response_owner_id);
 
     if (!ownership_guard.have_ownership()) {
-        tf_warp_energy_manager_register_sd_wallbox_daily_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
@@ -1176,7 +1237,7 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
         write_success &= response->flush();
         response->end(write_success ? "" : "write error");
 
-        tf_warp_energy_manager_register_sd_wallbox_daily_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
@@ -1214,14 +1275,14 @@ static void wallbox_daily_data_points_handler(TF_WARPEnergyManager *device,
         write_success &= response->flush();
         response->end(write_success ? "" : "write error");
 
-        tf_warp_energy_manager_register_sd_wallbox_daily_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
     if (!write_success) {
         response->end("write error");
 
-        tf_warp_energy_manager_register_sd_wallbox_daily_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 }
@@ -1243,7 +1304,7 @@ static int days_per_month(int year, int month)
     return 31;
 }
 
-void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
+void EMEnergyAnalysis::history_wallbox_daily_response(IChunkedResponse *response,
                                                    Ownership *response_ownership,
                                                    uint32_t response_owner_id)
 {
@@ -1255,7 +1316,7 @@ void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
 
     uint32_t seqnum = history_request_seqnum++;
     uint8_t status;
-    int rc = tf_warp_energy_manager_get_sd_wallbox_daily_data_points(&device, uid, year, month, 1, days_per_month(2000 + year, month), &status);
+    int rc = em_common.wem_get_sd_wallbox_daily_data_points(uid, year, month, 1, days_per_month(2000 + year, month), &status);
 
     //logger.printfln("history_wallbox_daily_response: u%u %d-%02d",
     //                uid, 2000 + year, month);
@@ -1290,7 +1351,7 @@ void EnergyManager::history_wallbox_daily_response(IChunkedResponse *response,
         metadata->next_offset = 0;
         metadata->seqnum = seqnum;
 
-        tf_warp_energy_manager_register_sd_wallbox_daily_data_points_low_level_callback(&device, wallbox_daily_data_points_handler, metadata);
+        em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(wallbox_daily_data_points_handler, metadata);
     }
 
     em_common.check_bricklet_reachable(rc, "history_wallbox_daily_response");
@@ -1301,7 +1362,7 @@ struct [[gnu::packed]] EnergyManager5MinData {
     int32_t power[7]; // W
 };
 
-static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device,
+static void energy_manager_5min_data_points_handler(void *do_not_use,
                                                     uint16_t data_length,
                                                     uint16_t data_chunk_offset,
                                                     uint8_t data_chunk_data[58],
@@ -1313,7 +1374,7 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
     OwnershipGuard ownership_guard(metadata->response_ownership, metadata->response_owner_id);
 
     if (!ownership_guard.have_ownership()) {
-        tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
@@ -1338,7 +1399,7 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
         write_success &= response->flush();
         response->end(write_success ? "" : "write error");
 
-        tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
@@ -1391,18 +1452,17 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
                 response->flush();
                 response->end("write error");
 
-                tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(device, nullptr, nullptr);
+                em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
             } else {
-                task_scheduler.scheduleOnce([device, metadata, response]{
+                task_scheduler.scheduleOnce([metadata, response]{
                     uint8_t status;
-                    int rc = tf_warp_energy_manager_get_sd_energy_manager_data_points(device,
-                                                                                      metadata->utc_end_year,
-                                                                                      metadata->utc_end_month,
-                                                                                      metadata->utc_end_day,
-                                                                                      0,
-                                                                                      0,
-                                                                                      metadata->utc_end_slots,
-                                                                                      &status);
+                    int rc = em_common.wem_get_sd_energy_manager_data_points(metadata->utc_end_year,
+                                                                             metadata->utc_end_month,
+                                                                             metadata->utc_end_day,
+                                                                             0,
+                                                                             0,
+                                                                             metadata->utc_end_slots,
+                                                                             &status);
 
                     metadata->next_offset = 0;
                     metadata->utc_end_slots = 0;
@@ -1422,7 +1482,7 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
                             response->end("continuation error");
                         }
 
-                        tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(device, nullptr, nullptr);
+                        em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
                     }
                 }, 0);
             }
@@ -1435,7 +1495,7 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
             write_success &= response->flush();
             response->end(write_success ? "" : "write error");
 
-            tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(device, nullptr, nullptr);
+            em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
         }
 
         return;
@@ -1444,12 +1504,12 @@ static void energy_manager_5min_data_points_handler(TF_WARPEnergyManager *device
     if (!write_success) {
         response->end("write error");
 
-        tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 }
 
-void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *response,
+void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *response,
                                                          Ownership *response_ownership,
                                                          uint32_t response_owner_id)
 {
@@ -1502,24 +1562,22 @@ void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *respo
     int rc;
 
     if (utc_start_slots > 0) {
-        rc = tf_warp_energy_manager_get_sd_energy_manager_data_points(&device,
-                                                                      utc_start_year,
-                                                                      utc_start_month,
-                                                                      utc_start_day,
-                                                                      utc_start_hour,
-                                                                      utc_start_minute,
-                                                                      utc_start_slots,
-                                                                      &status);
+        rc = em_common.wem_get_sd_energy_manager_data_points(utc_start_year,
+                                                             utc_start_month,
+                                                             utc_start_day,
+                                                             utc_start_hour,
+                                                             utc_start_minute,
+                                                             utc_start_slots,
+                                                             &status);
     }
     else {
-        rc = tf_warp_energy_manager_get_sd_energy_manager_data_points(&device,
-                                                                      utc_end_year,
-                                                                      utc_end_month,
-                                                                      utc_end_day,
-                                                                      utc_start_hour,
-                                                                      utc_start_minute,
-                                                                      utc_start_slots,
-                                                                      &status);
+        rc = em_common.wem_get_sd_energy_manager_data_points(utc_end_year,
+                                                             utc_end_month,
+                                                             utc_end_day,
+                                                             utc_start_hour,
+                                                             utc_start_minute,
+                                                             utc_start_slots,
+                                                             &status);
     }
 
     //logger.printfln("history_energy_manager_5min_response: %d-%02d-%02d",
@@ -1559,13 +1617,13 @@ void EnergyManager::history_energy_manager_5min_response(IChunkedResponse *respo
         metadata->utc_end_day = utc_end_day;
         metadata->utc_end_slots = utc_end_slots;
 
-        tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(&device, energy_manager_5min_data_points_handler, metadata);
+        em_common.wem_register_sd_energy_manager_data_points_low_level_callback(energy_manager_5min_data_points_handler, metadata);
     }
 
     em_common.check_bricklet_reachable(rc, "history_energy_manager_5min_response");
 }
 
-static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *device,
+static void energy_manager_daily_data_points_handler(void *do_not_use,
                                                      uint16_t data_length,
                                                      uint16_t data_chunk_offset,
                                                      uint32_t data_chunk_data[14],
@@ -1577,7 +1635,7 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
     OwnershipGuard ownership_guard(metadata->response_ownership, metadata->response_owner_id);
 
     if (!ownership_guard.have_ownership()) {
-        tf_warp_energy_manager_register_sd_energy_manager_daily_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
@@ -1602,7 +1660,7 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
         write_success &= response->flush();
         response->end(write_success ? "" : "write error");
 
-        tf_warp_energy_manager_register_sd_energy_manager_daily_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
@@ -1648,19 +1706,19 @@ static void energy_manager_daily_data_points_handler(TF_WARPEnergyManager *devic
         write_success &= response->flush();
         response->end(write_success ? "" : "write error");
 
-        tf_warp_energy_manager_register_sd_energy_manager_daily_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
     if (!write_success) {
         response->end("write error");
 
-        tf_warp_energy_manager_register_sd_energy_manager_daily_data_points_low_level_callback(device, nullptr, nullptr);
+        em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 }
 
-void EnergyManager::history_energy_manager_daily_response(IChunkedResponse *response,
+void EMEnergyAnalysis::history_energy_manager_daily_response(IChunkedResponse *response,
                                                           Ownership *response_ownership,
                                                           uint32_t response_owner_id)
 {
@@ -1670,7 +1728,7 @@ void EnergyManager::history_energy_manager_daily_response(IChunkedResponse *resp
 
     uint32_t seqnum = history_request_seqnum++;
     uint8_t status;
-    int rc = tf_warp_energy_manager_get_sd_energy_manager_daily_data_points(&device, year, month, 1, days_per_month(2000 + year, month), &status);
+    int rc = em_common.wem_get_sd_energy_manager_daily_data_points(year, month, 1, days_per_month(2000 + year, month), &status);
 
     //logger.printfln("history_energy_manager_daily_response: %d-%02d",
     //                2000 + year, month);
@@ -1705,7 +1763,7 @@ void EnergyManager::history_energy_manager_daily_response(IChunkedResponse *resp
         metadata->next_offset = 0;
         metadata->seqnum = seqnum;
 
-        tf_warp_energy_manager_register_sd_energy_manager_daily_data_points_low_level_callback(&device, energy_manager_daily_data_points_handler, metadata);
+        em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(energy_manager_daily_data_points_handler, metadata);
     }
 
     em_common.check_bricklet_reachable(rc, "history_energy_manager_daily_response");

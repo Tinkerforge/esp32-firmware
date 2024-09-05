@@ -25,7 +25,6 @@
 #include "device_module.h"
 #include "config.h"
 #include "bindings/bricklet_warp_energy_manager.h"
-#include "modules/api/api.h"
 #include "modules/em_common/em_common.h"
 #include "modules/em_common/structs.h"
 #include "modules/power_manager/phase_switcher_back-end.h"
@@ -89,7 +88,6 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void register_events() override;
 
 protected:
 
@@ -109,6 +107,8 @@ protected:
 
     uint16_t get_energy_meter_detailed_values(float *ret_values);
     bool reset_energy_meter_relative_energy();
+
+    void get_input_output_states(bool *inputs, size_t *inputs_len, bool *outputs, size_t *outputs_len) const override;
 
     int wem_register_sd_wallbox_data_points_low_level_callback(WEM_SDWallboxDataPointsLowLevelHandler handler, void *user_data) override;
     int wem_register_sd_wallbox_daily_data_points_low_level_callback(WEM_SDWallboxDailyDataPointsLowLevelHandler handler, void *user_data) override;
@@ -176,37 +176,4 @@ private:
 
     // Config cache
     bool     contactor_installed      = false;
-
-    void update_history_meter_power(uint32_t slot, float power /* W */);
-    void collect_data_points();
-    void set_pending_data_points();
-    bool load_persistent_data();
-    void load_persistent_data_v1(uint8_t *buf);
-    void load_persistent_data_v2(uint8_t *buf);
-    void save_persistent_data();
-    void history_wallbox_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
-    void history_wallbox_daily_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
-    void history_energy_manager_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
-    void history_energy_manager_daily_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
-    bool set_wallbox_5min_data_point(const struct tm *utc, const struct tm *local, uint32_t uid, uint8_t flags, uint16_t power /* W */);
-    bool set_wallbox_daily_data_point(const struct tm *local, uint32_t uid, uint32_t energy /* daWh */);
-    bool set_energy_manager_5min_data_point(const struct tm *utc, const struct tm *local, uint8_t flags, const int32_t power[7] /* W */);
-    bool set_energy_manager_daily_data_point(const struct tm *local, const uint32_t energy_import[7] /* daWh */, const uint32_t energy_export[7] /* daWh */);
-
-    std::list<std::function<bool(void)>> pending_data_points;
-    bool persistent_data_loaded = false;
-    bool show_blank_value_id_update_warnings = false;
-    uint32_t last_history_5min_slot = 0;
-    ConfigRoot history_wallbox_5min;
-    ConfigRoot history_wallbox_daily;
-    ConfigRoot history_energy_manager_5min;
-    ConfigRoot history_energy_manager_daily;
-    bool history_meter_setup_done[METERS_SLOTS];
-    float history_meter_power_value[METERS_SLOTS]; // W
-    uint32_t history_meter_power_timestamp[METERS_SLOTS];
-    double history_meter_power_sum[METERS_SLOTS] = {0}; // watt seconds
-    double history_meter_power_duration[METERS_SLOTS] = {0}; // seconds
-    double history_meter_energy_import[METERS_SLOTS] = {0}; // daWh
-    double history_meter_energy_export[METERS_SLOTS] = {0}; // daWh
-    uint32_t history_request_seqnum = 0;
 };

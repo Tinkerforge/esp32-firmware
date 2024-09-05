@@ -58,6 +58,8 @@ protected:
     virtual uint16_t get_energy_meter_detailed_values(float *ret_values) = 0;
     virtual bool reset_energy_meter_relative_energy() = 0;
 
+    virtual void get_input_output_states(bool *inputs, size_t *inputs_len, bool *outputs, size_t *outputs_len) const = 0;
+
     typedef void (*WEM_SDWallboxDataPointsLowLevelHandler)(void *do_not_use, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[60], void *user_data);
     typedef void (*WEM_SDWallboxDailyDataPointsLowLevelHandler)(void *do_not_use, uint16_t data_length, uint16_t data_chunk_offset, uint32_t data_chunk_data[15], void *user_data);
     typedef void (*WEM_SDEnergyManagerDataPointsLowLevelHandler)(void *do_not_use, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[58], void *user_data);
@@ -108,6 +110,11 @@ public:
 
     uint16_t get_energy_meter_detailed_values(float *ret_values);
     bool reset_energy_meter_relative_energy();
+
+    inline void get_input_output_states(bool *inputs, size_t *inputs_len, bool *outputs, size_t *outputs_len) const
+    {
+        backend->get_input_output_states(inputs, inputs_len, outputs, outputs_len);
+    }
 
     void set_error(uint32_t error_mask);
 
