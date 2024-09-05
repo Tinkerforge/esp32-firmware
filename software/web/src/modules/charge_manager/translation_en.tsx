@@ -107,9 +107,9 @@ let x = {
             "dlm_current_limit_muted": "connection's fuse rating",
             "dlm_largest_consumer_current": "Largest consumer current",
             "dlm_largest_consumer_current_muted": "per phase",
-            "dlm_largest_consumer_current_help": "The largest sudden rise in current draw to be expected at the meter, that the dynamic load management must be able to compensate for quickly (<\u00A030 seconds). For example a water heater or heat pump.",
+            "dlm_largest_consumer_current_help": "The largest sudden rise in current draw to be expected at the meter, that the dynamic load management must be able to compensate for quickly (< 30 seconds). Could be caused by a water heater or heat pump for example. The managed chargers do not have to be taken into account here.",
             "dlm_safety_margin_pct": "Additional safety margin",
-            "dlm_safety_margin_pct_muted": "",
+            "dlm_safety_margin_pct_muted": "Usually no additional margin is necessary.",
             "dlm_safety_margin_pct_help": "The load management will calculate a safety margin based on the grid current limit and the largest consumer current. This setting can be used to increase the safety marging above the calculated value.",
 
             "managed_disabled": "Charge management settings will be ignored: Charger only controls itself or is controlled externally.",
@@ -121,7 +121,16 @@ let x = {
             "debug_start": "Start",
             "debug_stop": "Stop + Download",
 
-            "internal_state": "Internal state"
+            "internal_state": "Internal state",
+
+            "peak_current": "Short-term allowed peak current",
+            "peak_current_muted": "Overload that is compensated by the load management within 30 seconds. 140 % of the Grid current limit.",
+
+            "expected_peak_current": "Expected peak current",
+            "expected_peak_current_muted": "Short-term expected peak current including the additional safety margin.",
+
+            "target_constant_current": "Target constant current",
+            "target_constant_current_muted": "Chargers will be throttled if this current is exceeded to make sure the largest consumer will not exceed the expected peak current."
         },
         "automation": {
           "charge_manager_wd": "Charge manager watchdog triggered",

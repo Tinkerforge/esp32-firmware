@@ -161,7 +161,26 @@ export function ChargeManagerDebug(props: {dynamicLoadConfig: API.getType['power
     const pm_ll_state = API.get_unchecked('power_manager/low_level_state');
 
     return (<>
-            <FormRow label="Target constant current">
+            <FormRow label={__("charge_manager.content.peak_current")} label_muted={__("charge_manager.content.peak_current_muted")}>
+                <OutputFloat
+                    unit="A"
+                    value={props.dynamicLoadConfig.current_limit * 1.4}
+                    digits={3}
+                    scale={3}
+                />
+            </FormRow>
+
+            <FormRow label={__("charge_manager.content.expected_peak_current")} label_muted={__("charge_manager.content.expected_peak_current_muted")}>
+                <OutputFloat
+                    unit="A"
+                    value={Math.min((props.dynamicLoadConfig.current_limit * 1.4) - props.dynamicLoadConfig.largest_consumer_current, props.dynamicLoadConfig.current_limit)
+                        * (100 - props.dynamicLoadConfig.safety_margin_pct) / 100 + props.dynamicLoadConfig.largest_consumer_current}
+                    digits={3}
+                    scale={3}
+                />
+            </FormRow>
+
+            <FormRow label={__("charge_manager.content.target_constant_current")} label_muted={__("charge_manager.content.target_constant_current_muted")}>
                 <OutputFloat
                     unit="A"
                     value={Math.min((props.dynamicLoadConfig.current_limit * 1.4) - props.dynamicLoadConfig.largest_consumer_current, props.dynamicLoadConfig.current_limit)
@@ -171,15 +190,7 @@ export function ChargeManagerDebug(props: {dynamicLoadConfig: API.getType['power
                 />
             </FormRow>
 
-            <FormRow label="Expected peak current">
-                <OutputFloat
-                    unit="A"
-                    value={Math.min((props.dynamicLoadConfig.current_limit * 1.4) - props.dynamicLoadConfig.largest_consumer_current, props.dynamicLoadConfig.current_limit)
-                        * (100 - props.dynamicLoadConfig.safety_margin_pct) / 100 + props.dynamicLoadConfig.largest_consumer_current}
-                    digits={3}
-                    scale={3}
-                />
-            </FormRow>
+
             <FormSeparator heading={__("charge_manager.content.protocol")} first={true} />
             <CMDFormRow label="Trace log" labelColClasses="col-lg-2" contentColClasses="col-lg-10">
                 <Button variant="primary" className="form-control" onClick={async () => util.downloadToFile(await util.download("/trace_log"), "charge-manager-trace-log", "txt", "text/plain")}><span class="ml-1 mr-2">Download</span> <Download/></Button>

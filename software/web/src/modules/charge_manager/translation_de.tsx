@@ -107,9 +107,9 @@ let x = {
             "dlm_current_limit_muted": "Nennwert der Absicherung",
             "dlm_largest_consumer_current": "Strombedarf des größten Einzelverbrauchers",
             "dlm_largest_consumer_current_muted": "pro Phase",
-            "dlm_largest_consumer_current_help": "Gibt den zu erwartenden größten plötzlichen Sprung des Strombezugs am Zähler an, den das dynamische Lastmanagement kurzfristig (<\u00A030 Sekunden) kompensieren können muss. Beispielsweise ein Durchlauferhitzer oder eine Wärmepumpe.",
+            "dlm_largest_consumer_current_help": "Gibt den größten zu erwartenden plötzlichen Sprung des Strombezugs am Zähler an, den das dynamische Lastmanagement kurzfristig (< 30 Sekunden) kompensieren können muss. Dieser kann beispielsweise durch einen Durchlauferhitzer oder eine Wärmepumpe erzeugt werden. Die vom Lastmanagement gesteuerten Wallboxen müssen nicht berücksichtigt werden.",
             "dlm_safety_margin_pct": "Zusätzliche Sicherheitsmarge",
-            "dlm_safety_margin_pct_muted": "",
+            "dlm_safety_margin_pct_muted": "Typischerweise ist keine zusätzliche Marge notwendig.",
             "dlm_safety_margin_pct_help": "Das Lastmanagement berechnet eine Sicherheitsmarge basierend auf dem maximalen Strom am Netzanschluss und dem Strombedarf des größten Einzelverbrauchers. Mit dieser Einstellung kann die Sicherheitsmarge über den berechneten Wert hinaus erhöht werden.",
 
             "managed_disabled": "Lastmanagement-Einstellungen werden ignoriert: Wallbox steuert nur sich selbst oder ist fremdgesteuert.",
@@ -121,7 +121,17 @@ let x = {
             "debug_start": "Start",
             "debug_stop": "Stop + Download",
 
-            "internal_state": "Interner Zustand"
+            "internal_state": "Interner Zustand",
+
+            "peak_current": "Kurzzeitig erlaubter Spitzenstrom",
+            "peak_current_muted": "Überlast, die das Lastmanagement innerhalb von 30 Sekunden kompensiert. Entspricht 140 % des maximalen Stroms am Netzanschluss.",
+
+            "expected_peak_current": "Erwarteter Spitzenstrom",
+            "expected_peak_current_muted": "Kurzzeitig erwarteter Spitzenstrom unter Berücksichtigung der zusätzlichen Sicherheitsmarge.",
+
+            "target_constant_current": "Zielstrom",
+            "target_constant_current_muted": "Wallboxen werden limitiert, wenn dieser Strom überschritten wird, damit der größte Verbraucher nicht den erwarteten Spitzenstrom überschreitet."
+
         },
         "automation": {
             "charge_manager_wd": "Lastmanagement-Watchdog ausgelöst",
