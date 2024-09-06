@@ -307,9 +307,9 @@ int EMV1::wem_get_sd_wallbox_daily_data_points(uint32_t wallbox_id, uint8_t year
     return tf_warp_energy_manager_get_sd_wallbox_daily_data_points(&device, wallbox_id, year, month, day, amount, ret_status);
 }
 
-int EMV1::wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, int32_t power_grid, const int32_t power_general[6], uint8_t *ret_status)
+int EMV1::wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, int32_t power_grid, const int32_t power_general[6], uint32_t price, uint8_t *ret_status)
 {
-    return tf_warp_energy_manager_set_sd_energy_manager_data_point(&device, year, month, day, hour, minute, flags, power_grid, power_general, ret_status);
+    return tf_warp_energy_manager_set_sd_energy_manager_data_point(&device, year, month, day, hour, minute, flags, power_grid, power_general, price, ret_status);
 }
 
 int EMV1::wem_get_sd_energy_manager_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status)
@@ -317,9 +317,9 @@ int EMV1::wem_get_sd_energy_manager_data_points(uint8_t year, uint8_t month, uin
     return tf_warp_energy_manager_get_sd_energy_manager_data_points(&device, year, month, day, hour, minute, amount, ret_status);
 }
 
-int EMV1::wem_set_sd_energy_manager_daily_data_point(uint8_t year, uint8_t month, uint8_t day, uint32_t energy_grid_in, uint32_t energy_grid_out, const uint32_t energy_general_in[6], const uint32_t energy_general_out[6], uint8_t *ret_status)
+int EMV1::wem_set_sd_energy_manager_daily_data_point(uint8_t year, uint8_t month, uint8_t day, uint32_t energy_grid_in, uint32_t energy_grid_out, const uint32_t energy_general_in[6], const uint32_t energy_general_out[6], uint32_t price, uint8_t *ret_status)
 {
-    return tf_warp_energy_manager_set_sd_energy_manager_daily_data_point(&device, year, month, day, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out, ret_status);
+    return tf_warp_energy_manager_set_sd_energy_manager_daily_data_point(&device, year, month, day, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out, price, ret_status);
 }
 
 int EMV1::wem_get_sd_energy_manager_daily_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status)

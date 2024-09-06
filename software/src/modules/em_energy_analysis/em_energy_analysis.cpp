@@ -754,6 +754,7 @@ bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
                                                             flags,
                                                             power[0],
                                                             &power[1],
+                                                            UINT32_MAX, // FIXME Pass actual price.
                                                             &status);
 
 #ifdef DEBUG_LOGGING
@@ -841,6 +842,7 @@ bool EMEnergyAnalysis::set_energy_manager_daily_data_point(const struct tm *loca
                                                                   energy_export[0],
                                                                   &energy_import[1],
                                                                   &energy_export[1],
+                                                                  UINT32_MAX, // FIXME Pass actual price.
                                                                   &status);
 
 #ifdef DEBUG_LOGGING
@@ -1355,7 +1357,7 @@ struct [[gnu::packed]] EnergyManager5MinData {
 static void energy_manager_5min_data_points_handler(void *do_not_use,
                                                     uint16_t data_length,
                                                     uint16_t data_chunk_offset,
-                                                    uint8_t data_chunk_data[58],
+                                                    uint8_t data_chunk_data[33], // FIXME Chunk data length changed from 58 to 33.
                                                     void *user_data)
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
@@ -1397,7 +1399,7 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
     uint16_t i;
     EnergyManager5MinData *p;
 
-    if (actual_length > 58) {
+    if (actual_length > 58) { // FIXME Chunk data length changed to 33.
         actual_length = 58;
     }
 
@@ -1434,7 +1436,7 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
     }
 
     metadata->write_comma = true;
-    metadata->next_offset += 58;
+    metadata->next_offset += 58; // FIXME Chunk data length changed to 33.
 
     if (metadata->next_offset >= data_length) {
         if (metadata->utc_end_slots > 0) {
@@ -1503,6 +1505,9 @@ void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *re
                                                          Ownership *response_ownership,
                                                          uint32_t response_owner_id)
 {
+    // FIXME energy_manager_5min_data_points_handler is broken.
+    return;
+
     // history is stored with date in UTC to avoid DST overlap problems.
     // API accepts date in localtime, convert from localtime to UTC
     uint8_t local_year = history_energy_manager_5min.get("year")->asUint() - 2000;
@@ -1614,7 +1619,7 @@ void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *re
 static void energy_manager_daily_data_points_handler(void *do_not_use,
                                                      uint16_t data_length,
                                                      uint16_t data_chunk_offset,
-                                                     uint32_t data_chunk_data[14],
+                                                     uint32_t data_chunk_data[15], // FIXME Chunk data length changed from 14 to 15.
                                                      void *user_data)
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
@@ -1655,7 +1660,7 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
     uint16_t actual_length = data_length - data_chunk_offset;
     uint16_t i;
 
-    if (actual_length > 14) {
+    if (actual_length > 14) { // FIXME Chunk data length changed from 14 to 15.
         actual_length = 14;
     }
 
@@ -1684,7 +1689,7 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
     }
 
     metadata->write_comma = true;
-    metadata->next_offset += 14;
+    metadata->next_offset += 15;
 
     if (metadata->next_offset >= data_length) {
         if (write_success) {
