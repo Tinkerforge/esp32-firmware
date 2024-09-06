@@ -1054,7 +1054,8 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                                     }
                                                 }
                                             }}
-                                            value={this.state.addMeter[0].toString()} />
+                                            value={this.state.addMeter[0].toString()}
+                                            required />
                                     </FormRow>
                                 ];
 
