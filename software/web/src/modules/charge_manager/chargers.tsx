@@ -132,7 +132,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         }))
             return;
 
-        let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
+        let energyManagerMode = API.hasModule("em_common") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
         if (!energyManagerMode)
             await API.save_unchecked('evse/management_enabled', {"enabled": this.state.managementEnabled}, translate_unchecked("charge_manager.script.save_failed"));
 
@@ -161,7 +161,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             }))
             return;
 
-        let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
+        let energyManagerMode = API.hasModule("em_common") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
         if (!energyManagerMode)
             await API.save_unchecked('evse/management_enabled', {"enabled": false}, translate_unchecked("charge_manager.script.save_failed"));
 
@@ -247,7 +247,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
         const MAX_CONTROLLED_CHARGERS = API.hasModule("esp32_ethernet_brick") ? 32 : 10;
 
-        let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
+        let energyManagerMode = API.hasModule("em_common") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
 
         const check_host = (host: string, idx: number): string => {
             let ret: string;

@@ -93,7 +93,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
             }))
             return;
 
-        let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
+        let energyManagerMode = API.hasModule("em_common") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
         if (!energyManagerMode)
             await API.save_unchecked('evse/management_enabled', {"enabled": false}, translate_unchecked("charge_manager.script.save_failed"));
 
@@ -111,8 +111,8 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         if (!util.render_allowed())
             return <SubPage name="charge_manager_settings" />;
 
-        let energyManagerMode = API.hasModule("energy_manager") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
-        let warpUltimateMode  = API.hasModule("energy_manager") &&  (API.hasModule("evse_v2") || API.hasModule("evse"));
+        let energyManagerMode = API.hasModule("em_common") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
+        let warpUltimateMode  = API.hasModule("em_common") &&  (API.hasModule("evse_v2") || API.hasModule("evse"));
         let is_warp3          = API.get_unchecked("evse/hardware_configuration")?.evse_version >= 30;
         let show_1p_current   = energyManagerMode || warpUltimateMode || is_warp3 || API.hasFeature("phase_switch");
 

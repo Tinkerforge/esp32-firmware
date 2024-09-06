@@ -27,9 +27,9 @@
 
 EMCommon::EMCommon()
 {
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
-    backend = &energy_manager;
-//#elif MODULE_EVSE_V2_AVAILABLE()
+#if MODULE_EM_V1_AVAILABLE()
+    backend = &em_v1;
+//#elif MODULE_EM_V2_AVAILABLE()
 //    backend = &em_v2;
 #else
     #error Unknown or missing Energy Manager module!
@@ -171,8 +171,8 @@ void EMCommon::clr_error(uint32_t error_mask)
     error_flags &= ~error_mask;
     state.get("error_flags")->updateUint(error_flags);
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
-    energy_manager.update_status_led();
+#if MODULE_EM_V1_AVAILABLE()
+    em_v1.update_status_led();
 #endif
 }
 
@@ -186,8 +186,8 @@ void EMCommon::set_error(uint32_t error_mask)
     error_flags |= error_mask;
     state.get("error_flags")->updateUint(error_flags);
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
-    energy_manager.update_status_led();
+#if MODULE_EM_V1_AVAILABLE()
+    em_v1.update_status_led();
 #endif
 }
 

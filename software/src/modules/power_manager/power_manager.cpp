@@ -29,7 +29,7 @@
 
 #define ENABLE_PM_TRACE 1
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_EM_V1_AVAILABLE()
 #define PM_ENABLED_DEFAULT (true)
 #else
 #define PM_ENABLED_DEFAULT (false)
@@ -198,7 +198,7 @@ void PowerManager::pre_setup()
         nullptr,
         false);
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_EM_V1_AVAILABLE()
     automation.register_action(
         AutomationActionID::PMBlockCharge,
         Config::Object({
@@ -398,7 +398,7 @@ void PowerManager::setup()
                 break;
             default: {
                     const char *err_reason;
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_EM_V1_AVAILABLE()
                     err_reason = "no contactor installed";
 #elif 0 // FIXME: charger back-end
                     err_reason = "charger doesn't support it";
@@ -773,13 +773,13 @@ void PowerManager::update_energy()
 
             p_error_w = target_power_from_grid_w - static_cast<int32_t>(power_at_meter_raw_w);
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_EM_V1_AVAILABLE()
             if (p_error_w > 200) {
-                energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Export);
+                em_v1.update_grid_balance_led(EmRgbLed::GridBalance::Export);
             } else if (p_error_w < -200) {
-                energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Import);
+                em_v1.update_grid_balance_led(EmRgbLed::GridBalance::Import);
             } else {
-                energy_manager.update_grid_balance_led(EmRgbLed::GridBalance::Balanced);
+                em_v1.update_grid_balance_led(EmRgbLed::GridBalance::Balanced);
             }
 #endif
         }

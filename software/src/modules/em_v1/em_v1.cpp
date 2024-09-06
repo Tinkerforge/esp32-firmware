@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "energy_manager.h"
+#include "em_v1.h"
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -32,7 +32,7 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-EnergyManager::EnergyManager() : DeviceModule(warp_energy_manager_bricklet_firmware_bin_data,
+EMV1::EMV1() : DeviceModule(warp_energy_manager_bricklet_firmware_bin_data,
                                               warp_energy_manager_bricklet_firmware_bin_length,
                                               "energy_manager",
                                               "WARP Energy Manager",
@@ -43,7 +43,7 @@ EnergyManager::EnergyManager() : DeviceModule(warp_energy_manager_bricklet_firmw
     #pragma GCC diagnostic pop
 #endif
 
-void EnergyManager::pre_setup()
+void EMV1::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
@@ -112,7 +112,7 @@ void EnergyManager::pre_setup()
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-bool EnergyManager::has_triggered(const Config *conf, void *data)
+bool EMV1::has_triggered(const Config *conf, void *data)
 {
     const Config *cfg = static_cast<const Config *>(conf->get());
 
@@ -150,7 +150,7 @@ bool EnergyManager::has_triggered(const Config *conf, void *data)
 }
 #endif
 
-void EnergyManager::setup_energy_manager()
+void EMV1::setup_energy_manager()
 {
     if (!this->DeviceModule::setup_device()) {
         logger.printfln("setup_device error. Reboot in 5 Minutes.");
@@ -164,7 +164,7 @@ void EnergyManager::setup_energy_manager()
     initialized = true;
 }
 
-void EnergyManager::setup()
+void EMV1::setup()
 {
     setup_energy_manager();
     if (!device_found) {
@@ -217,34 +217,34 @@ void EnergyManager::setup()
     start_network_check_task();
 }
 
-void EnergyManager::register_urls()
+void EMV1::register_urls()
 {
     this->DeviceModule::register_urls();
 }
 
 // for IEMBackend
 
-bool EnergyManager::is_initialized() const
+bool EMV1::is_initialized() const
 {
     return initialized;
 }
 
-bool EnergyManager::device_module_is_in_bootloader(int rc)
+bool EMV1::device_module_is_in_bootloader(int rc)
 {
     return is_in_bootloader(rc);
 }
 
-uint32_t EnergyManager::get_em_version() const
+uint32_t EMV1::get_em_version() const
 {
     return 1;
 }
 
-const EMAllDataCommon *EnergyManager::get_all_data_common() const
+const EMAllDataCommon *EMV1::get_all_data_common() const
 {
     return &all_data.common;
 }
 
-void EnergyManager::get_input_output_states(bool *inputs, size_t *inputs_len, bool *outputs, size_t *outputs_len) const
+void EMV1::get_input_output_states(bool *inputs, size_t *inputs_len, bool *outputs, size_t *outputs_len) const
 {
     if (*inputs_len < 2) {
         *inputs_len = 0;
@@ -262,114 +262,114 @@ void EnergyManager::get_input_output_states(bool *inputs, size_t *inputs_len, bo
     }
 }
 
-int EnergyManager::wem_register_sd_wallbox_data_points_low_level_callback(WEM_SDWallboxDataPointsLowLevelHandler handler, void *user_data)
+int EMV1::wem_register_sd_wallbox_data_points_low_level_callback(WEM_SDWallboxDataPointsLowLevelHandler handler, void *user_data)
 {
     return tf_warp_energy_manager_register_sd_wallbox_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDWallboxDataPointsLowLevelHandler>(handler), user_data);
 }
 
-int EnergyManager::wem_register_sd_wallbox_daily_data_points_low_level_callback(WEM_SDWallboxDailyDataPointsLowLevelHandler handler, void *user_data)
+int EMV1::wem_register_sd_wallbox_daily_data_points_low_level_callback(WEM_SDWallboxDailyDataPointsLowLevelHandler handler, void *user_data)
 {
     return tf_warp_energy_manager_register_sd_wallbox_daily_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDWallboxDailyDataPointsLowLevelHandler>(handler), user_data);
 }
 
-int EnergyManager::wem_register_sd_energy_manager_data_points_low_level_callback(WEM_SDEnergyManagerDataPointsLowLevelHandler handler, void *user_data)
+int EMV1::wem_register_sd_energy_manager_data_points_low_level_callback(WEM_SDEnergyManagerDataPointsLowLevelHandler handler, void *user_data)
 {
     return tf_warp_energy_manager_register_sd_energy_manager_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDEnergyManagerDataPointsLowLevelHandler>(handler), user_data);
 }
 
-int EnergyManager::wem_register_sd_energy_manager_daily_data_points_low_level_callback(WEM_SDEnergyManagerDailyDataPointsLowLevelHandler handler, void *user_data)
+int EMV1::wem_register_sd_energy_manager_daily_data_points_low_level_callback(WEM_SDEnergyManagerDailyDataPointsLowLevelHandler handler, void *user_data)
 {
     return tf_warp_energy_manager_register_sd_energy_manager_daily_data_points_low_level_callback(&device, reinterpret_cast<TF_WARPEnergyManager_SDEnergyManagerDailyDataPointsLowLevelHandler>(handler), user_data);
 }
 
-int EnergyManager::wem_get_sd_information(uint32_t *ret_sd_status, uint32_t *ret_lfs_status, uint16_t *ret_sector_size, uint32_t *ret_sector_count, uint32_t *ret_card_type, uint8_t *ret_product_rev, char ret_product_name[5], uint8_t *ret_manufacturer_id)
+int EMV1::wem_get_sd_information(uint32_t *ret_sd_status, uint32_t *ret_lfs_status, uint16_t *ret_sector_size, uint32_t *ret_sector_count, uint32_t *ret_card_type, uint8_t *ret_product_rev, char ret_product_name[5], uint8_t *ret_manufacturer_id)
 {
     return tf_warp_energy_manager_get_sd_information(&device, ret_sd_status, ret_lfs_status, ret_sector_size, ret_sector_count, ret_card_type, ret_product_rev, ret_product_name, ret_manufacturer_id);
 }
 
-int EnergyManager::wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status)
+int EMV1::wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status)
 {
     return tf_warp_energy_manager_set_sd_wallbox_data_point(&device, wallbox_id, year, month, day, hour, minute, flags, power, ret_status);
 }
 
-int EnergyManager::wem_get_sd_wallbox_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status)
+int EMV1::wem_get_sd_wallbox_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status)
 {
     return tf_warp_energy_manager_get_sd_wallbox_data_points(&device, wallbox_id, year, month, day, hour, minute, amount, ret_status);
 }
 
-int EnergyManager::wem_set_sd_wallbox_daily_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint32_t energy, uint8_t *ret_status)
+int EMV1::wem_set_sd_wallbox_daily_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint32_t energy, uint8_t *ret_status)
 {
     return tf_warp_energy_manager_set_sd_wallbox_daily_data_point(&device, wallbox_id, year, month, day, energy, ret_status);
 }
 
-int EnergyManager::wem_get_sd_wallbox_daily_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status)
+int EMV1::wem_get_sd_wallbox_daily_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status)
 {
     return tf_warp_energy_manager_get_sd_wallbox_daily_data_points(&device, wallbox_id, year, month, day, amount, ret_status);
 }
 
-int EnergyManager::wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, int32_t power_grid, const int32_t power_general[6], uint8_t *ret_status)
+int EMV1::wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, int32_t power_grid, const int32_t power_general[6], uint8_t *ret_status)
 {
     return tf_warp_energy_manager_set_sd_energy_manager_data_point(&device, year, month, day, hour, minute, flags, power_grid, power_general, ret_status);
 }
 
-int EnergyManager::wem_get_sd_energy_manager_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status)
+int EMV1::wem_get_sd_energy_manager_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status)
 {
     return tf_warp_energy_manager_get_sd_energy_manager_data_points(&device, year, month, day, hour, minute, amount, ret_status);
 }
 
-int EnergyManager::wem_set_sd_energy_manager_daily_data_point(uint8_t year, uint8_t month, uint8_t day, uint32_t energy_grid_in, uint32_t energy_grid_out, const uint32_t energy_general_in[6], const uint32_t energy_general_out[6], uint8_t *ret_status)
+int EMV1::wem_set_sd_energy_manager_daily_data_point(uint8_t year, uint8_t month, uint8_t day, uint32_t energy_grid_in, uint32_t energy_grid_out, const uint32_t energy_general_in[6], const uint32_t energy_general_out[6], uint8_t *ret_status)
 {
     return tf_warp_energy_manager_set_sd_energy_manager_daily_data_point(&device, year, month, day, energy_grid_in, energy_grid_out, energy_general_in, energy_general_out, ret_status);
 }
 
-int EnergyManager::wem_get_sd_energy_manager_daily_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status)
+int EMV1::wem_get_sd_energy_manager_daily_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status)
 {
     return tf_warp_energy_manager_get_sd_energy_manager_daily_data_points(&device, year, month, day, amount, ret_status);
 }
 
-int EnergyManager::wem_format_sd(uint32_t password, uint8_t *ret_format_status)
+int EMV1::wem_format_sd(uint32_t password, uint8_t *ret_format_status)
 {
     return tf_warp_energy_manager_format_sd(&device, password, ret_format_status);
 }
 
-int EnergyManager::wem_set_date_time(uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t days, uint8_t days_of_week, uint8_t month, uint16_t year)
+int EMV1::wem_set_date_time(uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t days, uint8_t days_of_week, uint8_t month, uint16_t year)
 {
     return tf_warp_energy_manager_set_date_time(&device, seconds, minutes, hours, days, days_of_week, month, year);
 }
 
-int EnergyManager::wem_get_date_time(uint8_t *ret_seconds, uint8_t *ret_minutes, uint8_t *ret_hours, uint8_t *ret_days, uint8_t *ret_days_of_week, uint8_t *ret_month, uint16_t *ret_year)
+int EMV1::wem_get_date_time(uint8_t *ret_seconds, uint8_t *ret_minutes, uint8_t *ret_hours, uint8_t *ret_days, uint8_t *ret_days_of_week, uint8_t *ret_month, uint16_t *ret_year)
 {
     return tf_warp_energy_manager_get_date_time(&device, ret_seconds, ret_minutes, ret_hours, ret_days, ret_days_of_week, ret_month, ret_year);
 }
 
-int EnergyManager::wem_set_data_storage(uint8_t page, const uint8_t data[63])
+int EMV1::wem_set_data_storage(uint8_t page, const uint8_t data[63])
 {
     return tf_warp_energy_manager_set_data_storage(&device, page, data);
 }
 
-int EnergyManager::wem_get_data_storage(uint8_t page, uint8_t ret_data[63])
+int EMV1::wem_get_data_storage(uint8_t page, uint8_t ret_data[63])
 {
     return tf_warp_energy_manager_get_data_storage(&device, page, ret_data);
 }
 
-int EnergyManager::wem_reset_energy_meter_relative_energy()
+int EMV1::wem_reset_energy_meter_relative_energy()
 {
     return tf_warp_energy_manager_reset_energy_meter_relative_energy(&device);
 }
 
-int EnergyManager::wem_get_energy_meter_detailed_values(float *ret_values, uint16_t *ret_values_length)
+int EMV1::wem_get_energy_meter_detailed_values(float *ret_values, uint16_t *ret_values_length)
 {
     return tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, ret_values_length);
 }
 
 // for PhaseSwitcherBackend
 
-bool EnergyManager::phase_switching_capable()
+bool EMV1::phase_switching_capable()
 {
     return contactor_installed;
 }
 
-bool EnergyManager::can_switch_phases_now(bool /*wants_3phase*/)
+bool EMV1::can_switch_phases_now(bool /*wants_3phase*/)
 {
     if (!contactor_installed) {
         return false;
@@ -382,12 +382,12 @@ bool EnergyManager::can_switch_phases_now(bool /*wants_3phase*/)
     return true;
 }
 
-bool EnergyManager::get_is_3phase()
+bool EMV1::get_is_3phase()
 {
     return all_data.contactor_value;
 }
 
-PhaseSwitcherBackend::SwitchingState EnergyManager::get_phase_switching_state()
+PhaseSwitcherBackend::SwitchingState EMV1::get_phase_switching_state()
 {
     if (!contactor_installed) {
         // Don't report an error when phase_switching_capable() is false.
@@ -411,7 +411,7 @@ PhaseSwitcherBackend::SwitchingState EnergyManager::get_phase_switching_state()
     return PhaseSwitcherBackend::SwitchingState::Ready;
 }
 
-bool EnergyManager::switch_phases_3phase(bool wants_3phase)
+bool EMV1::switch_phases_3phase(bool wants_3phase)
 {
     if (!contactor_installed) {
         logger.printfln("Requested phase switch without contactor installed.");
@@ -431,7 +431,7 @@ bool EnergyManager::switch_phases_3phase(bool wants_3phase)
 
 #if MODULE_AUTOMATION_AVAILABLE()
 template<typename T>
-void EnergyManager::update_all_data_triggers(T id, void *data_)
+void EMV1::update_all_data_triggers(T id, void *data_)
 {
     // Don't attempt to trigger actions during the setup stage because the automation rules are probably not loaded yet.
     // Start-up triggers are dispatched from a task started in our setup().
@@ -444,7 +444,7 @@ void EnergyManager::update_all_data_triggers(T id, void *data_)
 #define AUTOMATION_TRIGGER(TRIGGER_ID, DATA) do {} while (0)
 #endif
 
-void EnergyManager::update_all_data()
+void EMV1::update_all_data()
 {
     update_all_data_struct();
 
@@ -484,7 +484,7 @@ void EnergyManager::update_all_data()
     }
 }
 
-void EnergyManager::update_all_data_struct()
+void EMV1::update_all_data_struct()
 {
     int rc = tf_warp_energy_manager_get_all_data_1(
         &device,
@@ -511,7 +511,7 @@ void EnergyManager::update_all_data_struct()
     }
 }
 
-void EnergyManager::update_status_led()
+void EMV1::update_status_led()
 {
     if (!device_found)
         return;
@@ -526,7 +526,7 @@ void EnergyManager::update_status_led()
         rgb_led.set_status(EmRgbLed::Status::OK);
 }
 
-void EnergyManager::start_network_check_task()
+void EMV1::start_network_check_task()
 {
     task_scheduler.scheduleWithFixedDelay([this]() {
         bool disconnected;
@@ -567,7 +567,7 @@ void EnergyManager::start_network_check_task()
     }, 0, 5000);
 }
 
-void EnergyManager::set_output(bool output_value)
+void EMV1::set_output(bool output_value)
 {
     int result = tf_warp_energy_manager_set_output(&device, output_value);
 
@@ -577,7 +577,7 @@ void EnergyManager::set_output(bool output_value)
         logger.printfln("Failed to set output relay: error %i", result);
 }
 
-void EnergyManager::set_rgb_led(uint8_t pattern, uint16_t hue)
+void EMV1::set_rgb_led(uint8_t pattern, uint16_t hue)
 {
     int rc = tf_warp_energy_manager_set_led_state(&device, pattern, hue);
 
@@ -587,12 +587,12 @@ void EnergyManager::set_rgb_led(uint8_t pattern, uint16_t hue)
         logger.printfln("Failed to set LED state: error %i. Continuing anyway.", rc);
 }
 
-void EnergyManager::update_grid_balance_led(EmRgbLed::GridBalance balance)
+void EMV1::update_grid_balance_led(EmRgbLed::GridBalance balance)
 {
     rgb_led.update_grid_balance(balance);
 }
 
-bool EnergyManager::block_firmware_update_with_vehicle_connected()
+bool EMV1::block_firmware_update_with_vehicle_connected()
 {
     return contactor_installed;
 }

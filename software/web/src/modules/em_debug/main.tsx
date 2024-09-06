@@ -34,7 +34,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Terminal } from "react-feather";
 
 export function EMDebugNavbar() {
-    return <NavbarItem name="em_debug" module="energy_manager" title={__("em_debug.navbar.em_debug")} symbol={<Terminal />} />;
+    return <NavbarItem name="em_debug" module="em_v1" title={__("em_debug.navbar.em_debug")} symbol={<Terminal />} />;
 }
 
 export class EMDebug extends Component {

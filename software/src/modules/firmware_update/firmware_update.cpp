@@ -628,8 +628,8 @@ void FirmwareUpdate::register_urls()
 
 bool FirmwareUpdate::is_vehicle_blocking_update() const
 {
-#if MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
-    bool block_firmware_update_with_vehicle_connected = energy_manager.block_firmware_update_with_vehicle_connected();
+#if MODULE_EM_V1_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
+    bool block_firmware_update_with_vehicle_connected = em_v1.block_firmware_update_with_vehicle_connected();
 #else
     bool block_firmware_update_with_vehicle_connected = true;
 #endif

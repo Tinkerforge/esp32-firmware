@@ -226,7 +226,7 @@ export class PowerManagerSettings extends ConfigComponent<'power_manager/config'
     }
 
     override async sendSave(t: "power_manager/config", cfg: API.getType['power_manager/config']) {
-        if (API.hasModule("energy_manager")) {
+        if (API.hasModule("em_v1")) {
             await API.save_unchecked('energy_manager/config', {
                 contactor_installed: this.state.em_contactor_installed,
             }, __("power_manager.script.save_failed"));
@@ -239,14 +239,14 @@ export class PowerManagerSettings extends ConfigComponent<'power_manager/config'
     }
 
     override async sendReset(t: "power_manager/config") {
-        if (API.hasModule("energy_manager")) {
+        if (API.hasModule("em_v1")) { // TODO EM V2 has this config too but without contactor_installed field.
             await API.save_unchecked('energy_manager/config', {
                 ...API.get_unchecked('energy_manager/config'),
                 contactor_installed: this.state.em_contactor_installed,
             }, this.error_string);
         }
 
-        let new_cfg: API.getType['power_manager/config'] = {...API.get("power_manager/config"), enabled: API.hasModule("energy_manager")};
+        let new_cfg: API.getType['power_manager/config'] = {...API.get("power_manager/config"), enabled: API.hasModule("em_common")};
 
         await super.sendSave(t, new_cfg);
     }
@@ -320,7 +320,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         let cm_config = API.get_unchecked("charge_manager/config");
         let cm_ok = cm_config?.enable_charge_manager && cm_config?.chargers.length >= 1;
 
-        let is_em = API.hasModule("energy_manager");
+        let is_em = API.hasModule("em_common");
         let device_translation_suffix = is_em ? "em" : "wb";
 
         // On a charger, the power manager is enabled iff excess charging is enabled.

@@ -20,17 +20,17 @@
 #include "em_rgb_led.h"
 
 #include "module_dependencies.h"
-#include "energy_manager.h"
+#include "em_v1.h"
 
 #include "gcc_warnings.h"
 
-extern EnergyManager energy_manager;
+extern EMV1 em_v1;
 
 void EmRgbLed::update_led()
 {
     if (status == Status::OK) {
         uint32_t H = have_grid_balance ? hue_balance : HUE_OK;
-        energy_manager.set_rgb_led(TF_WARP_ENERGY_MANAGER_LED_PATTERN_BREATHING, static_cast<uint16_t>(H));
+        em_v1.set_rgb_led(TF_WARP_ENERGY_MANAGER_LED_PATTERN_BREATHING, static_cast<uint16_t>(H));
     } else {
         uint32_t H;
         if (status == Status::Warning)
@@ -42,7 +42,7 @@ void EmRgbLed::update_led()
         else
             H = HUE_UNKNOWN;
 
-        energy_manager.set_rgb_led(TF_WARP_ENERGY_MANAGER_LED_PATTERN_BLINKING, static_cast<uint16_t>(H));
+        em_v1.set_rgb_led(TF_WARP_ENERGY_MANAGER_LED_PATTERN_BLINKING, static_cast<uint16_t>(H));
     }
 }
 

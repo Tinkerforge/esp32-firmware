@@ -21,7 +21,7 @@
 
 #include "module_available.h"
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_EM_V1_AVAILABLE()
 #include "bindings/bricklet_warp_energy_manager.h"
 
 #define WEM_DATA_STATUS_OK         TF_WARP_ENERGY_MANAGER_DATA_STATUS_OK

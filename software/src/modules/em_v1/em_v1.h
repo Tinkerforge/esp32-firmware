@@ -69,7 +69,7 @@ typedef struct {
     uint32_t uptime;
 } EnergyManagerAllData;
 
-class EnergyManager final : public DeviceModule<TF_WARPEnergyManager,
+class EMV1 final : public DeviceModule<TF_WARPEnergyManager,
                                                 tf_warp_energy_manager_create,
                                                 tf_warp_energy_manager_get_bootloader_mode,
                                                 tf_warp_energy_manager_reset,
@@ -82,7 +82,7 @@ class EnergyManager final : public DeviceModule<TF_WARPEnergyManager,
 #endif
 {
 public:
-    EnergyManager();
+    EMV1();
 
     // for IModule
     void pre_setup() override;

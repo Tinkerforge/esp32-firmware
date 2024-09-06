@@ -1,6 +1,6 @@
 // WARNING: Edit only energy_manager_debug.cpp.template. Do not edit energy_manager_debug.cpp.
 
-#include "energy_manager.h"
+#include "em_v1.h"
 
 #include "module_dependencies.h"
 #include "tools.h"
@@ -23,7 +23,7 @@ extern inline const char* fmt(void          ) {return "";    }
 static char *fmtstr;
 
 [[gnu::noinline]]
-const char *EnergyManager::prepare_fmtstr() {
+const char *EMV1::prepare_fmtstr() {
     const char * const fmts[{{{varcount}}}] = {
         {{{formats}}}
     };
@@ -53,18 +53,18 @@ static const char *debug_header =
 static const size_t debug_header_len = strlen(debug_header);
 
 [[gnu::const]]
-size_t EnergyManager::get_debug_header_length() const
+size_t EMV1::get_debug_header_length() const
 {
     return debug_header_len;
 }
 
-void EnergyManager::get_debug_header(StringBuilder *sb)
+void EMV1::get_debug_header(StringBuilder *sb)
 {
     sb->puts(debug_header, static_cast<ssize_t>(debug_header_len));
 }
 
 [[gnu::const]]
-size_t EnergyManager::get_debug_line_length() const
+size_t EMV1::get_debug_line_length() const
 {
     return MAX_DEBUG_LINE_LENGTH;
 }
@@ -75,7 +75,7 @@ size_t EnergyManager::get_debug_line_length() const
     #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
 
-void EnergyManager::get_debug_line(StringBuilder *sb)
+void EMV1::get_debug_line(StringBuilder *sb)
 {
     if (!fmtstr) {
         const char *err = prepare_fmtstr();

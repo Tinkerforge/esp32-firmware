@@ -46,7 +46,7 @@ static uint32_t max_avail_current = 0;
 
 extern ChargeManager charge_manager;
 
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_EM_V1_AVAILABLE()
 static void apply_energy_manager_config(Config &conf)
 {
     conf.get("enable_charge_manager")->updateBool(true);
@@ -123,7 +123,7 @@ void ChargeManager::pre_setup()
             0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
         )}
     }), [](Config &conf, ConfigSource source) -> String {
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_EM_V1_AVAILABLE()
         apply_energy_manager_config(conf);
 #else
         uint32_t default_available_current = conf.get("default_available_current")->asUint();
@@ -288,7 +288,7 @@ void ChargeManager::pre_setup()
         {"disconnect", Config::Bool(false)},
     });
 
-#if MODULE_AUTOMATION_AVAILABLE() && !MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE() && !MODULE_EM_V1_AVAILABLE()
     automation.register_trigger(
         AutomationTriggerID::ChargeManagerWd,
         *Config::Null(),
@@ -358,7 +358,7 @@ void ChargeManager::start_manager_task()
 void ChargeManager::setup()
 {
     if (!api.restorePersistentConfig("charge_manager/config", &config)) {
-#if MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_EM_V1_AVAILABLE()
         apply_energy_manager_config(config);
 #endif
     }
@@ -610,7 +610,7 @@ void ChargeManager::register_urls()
         ca_config->enable_current_factor = 1;
     }
 
-#if MODULE_AUTOMATION_AVAILABLE() && MODULE_POWER_MANAGER_AVAILABLE() && !MODULE_ENERGY_MANAGER_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE() && MODULE_POWER_MANAGER_AVAILABLE() && !MODULE_EM_V1_AVAILABLE()
     automation.set_enabled(AutomationTriggerID::ChargeManagerWd, enabled && this->static_cm);
     automation.set_enabled(AutomationActionID::SetManagerCurrent, enabled && this->static_cm);
 #endif

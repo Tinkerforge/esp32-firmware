@@ -1580,7 +1580,7 @@ int allocate_current(
         *allocated_current += charger_alloc.allocated_current;
     }
 
-#if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
+#if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_EM_V1_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
     firmware_update.vehicle_connected = vehicle_connected;
 #else
     (void)vehicle_connected;
@@ -1651,7 +1651,7 @@ bool update_from_client_packet(
     target.uid = v1->esp32_uid;
     target.uptime = v1->evse_uptime;
 
-#if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_ENERGY_MANAGER_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
+#if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_EM_V1_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
     // Immediately block firmware updates if this charger reports a connected vehicle.
     if (v1->charger_state != 0)
         firmware_update.vehicle_connected = true;

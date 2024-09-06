@@ -31,7 +31,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Save } from "react-feather";
 
 export function EMSDcardNavbar() {
-    return <NavbarItem name="em_sdcard" module="energy_manager" title={__("em_sdcard.navbar.em_sdcard")} symbol={<Save />} />;
+    return <NavbarItem name="em_sdcard" module="em_common" title={__("em_sdcard.navbar.em_sdcard")} symbol={<Save />} />;
 }
 
 export class EMSDcard extends Component {
