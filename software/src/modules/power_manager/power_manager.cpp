@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <type_traits>
+
 #include "power_manager.h"
 #include "module_dependencies.h"
 

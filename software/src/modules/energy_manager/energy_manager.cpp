@@ -19,8 +19,6 @@
 
 #include "energy_manager.h"
 
-#include <type_traits>
-
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "musl_libc_timegm.h"
