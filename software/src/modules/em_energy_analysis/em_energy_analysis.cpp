@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "em_energy_analys"
+
 #include "em_energy_analysis.h"
 
 #include <sys/time.h>
@@ -608,8 +610,6 @@ bool EMEnergyAnalysis::set_wallbox_5min_data_point(const struct tm *utc, const s
                                                      power,
                                                      &status);
 
-    em_common.check_bricklet_reachable(rc, "set_wallbox_5min_data_point");
-
 #ifdef DEBUG_LOGGING
     logger.printfln("set_wallbox_5min_data_point: u%u %d-%02d-%02d %02d:%02d f%u p%u",
                     uid, 2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power);
@@ -681,8 +681,6 @@ bool EMEnergyAnalysis::set_wallbox_daily_data_point(const struct tm *local, uint
     uint8_t month = local->tm_mon + 1;
     uint8_t day = local->tm_mday;
     int rc = em_common.wem_set_sd_wallbox_daily_data_point(uid, year, month, day, energy, &status);
-
-    em_common.check_bricklet_reachable(rc, "set_wallbox_daily_data_point");
 
 #ifdef DEBUG_LOGGING
     logger.printfln("set_wallbox_daily_data_point: u%u %d-%02d-%02d e%u",
@@ -757,8 +755,6 @@ bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
                                                             power[0],
                                                             &power[1],
                                                             &status);
-
-    em_common.check_bricklet_reachable(rc, "set_energy_manager_5min_data_point");
 
 #ifdef DEBUG_LOGGING
     logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u p%d,%d,%d,%d,%d,%d,%d",
@@ -846,8 +842,6 @@ bool EMEnergyAnalysis::set_energy_manager_daily_data_point(const struct tm *loca
                                                                   &energy_import[1],
                                                                   &energy_export[1],
                                                                   &status);
-
-    em_common.check_bricklet_reachable(rc, "set_energy_manager_daily_data_point");
 
 #ifdef DEBUG_LOGGING
     logger.printfln("set_energy_manager_daily_data_point: %d-%02d-%02d ei%u,%u,%u,%u,%u,%u,%u ee%u,%u,%u,%u,%u,%u,%u",
@@ -1196,8 +1190,6 @@ void EMEnergyAnalysis::history_wallbox_5min_response(IChunkedResponse *response,
 
         em_common.wem_register_sd_wallbox_data_points_low_level_callback(wallbox_5min_data_points_handler, metadata);
     }
-
-    em_common.check_bricklet_reachable(rc, "history_wallbox_5min_response");
 }
 
 static void wallbox_daily_data_points_handler(void *do_not_use,
@@ -1353,8 +1345,6 @@ void EMEnergyAnalysis::history_wallbox_daily_response(IChunkedResponse *response
 
         em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(wallbox_daily_data_points_handler, metadata);
     }
-
-    em_common.check_bricklet_reachable(rc, "history_wallbox_daily_response");
 }
 
 struct [[gnu::packed]] EnergyManager5MinData {
@@ -1619,8 +1609,6 @@ void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *re
 
         em_common.wem_register_sd_energy_manager_data_points_low_level_callback(energy_manager_5min_data_points_handler, metadata);
     }
-
-    em_common.check_bricklet_reachable(rc, "history_energy_manager_5min_response");
 }
 
 static void energy_manager_daily_data_points_handler(void *do_not_use,
@@ -1765,6 +1753,4 @@ void EMEnergyAnalysis::history_energy_manager_daily_response(IChunkedResponse *r
 
         em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(energy_manager_daily_data_points_handler, metadata);
     }
-
-    em_common.check_bricklet_reachable(rc, "history_energy_manager_daily_response");
 }
