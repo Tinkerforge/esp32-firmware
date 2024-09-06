@@ -1008,7 +1008,8 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                             onAddShow={async () => {
                                 let addMeterSlot = null;
 
-                                for (let free_meter_slot = 0; free_meter_slot < METERS_SLOTS; ++free_meter_slot) {
+                                // Slot 0 is special, don't auto-select it
+                                for (let free_meter_slot = 1; free_meter_slot < METERS_SLOTS; ++free_meter_slot) {
                                     if (state.configs_table[free_meter_slot][0] == MeterClassID.None) {
                                         addMeterSlot = free_meter_slot;
                                         break;
@@ -1034,9 +1035,11 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                 let rows: ComponentChild[] = [
                                     <FormRow label={__("meters.content.add_meter_slot")}>
                                         <InputSelect
+                                            placeholder={__("meters.content.add_meter_slot_select")}
                                             items={slots}
                                             onValue={(v) => this.setState({addMeterSlot: parseInt(v)})}
-                                            value={state.addMeterSlot.toString()} />
+                                            value={state.addMeterSlot !== null ? state.addMeterSlot.toString() : null}
+                                            required />
                                     </FormRow>,
                                     <FormRow label={__("meters.content.add_meter_class")}>
                                         <InputSelect

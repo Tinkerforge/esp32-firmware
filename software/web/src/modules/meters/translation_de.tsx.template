@@ -39,6 +39,7 @@ let x = {
             "add_meter_infix": " von ",
             "add_meter_suffix": " Stromzählern konfiguriert",
             "add_meter_slot": "Nummer",
+            "add_meter_slot_select": "Auswählen...",
             "add_meter_class": "Klasse",
             "add_meter_class_select": "Auswählen...",
 

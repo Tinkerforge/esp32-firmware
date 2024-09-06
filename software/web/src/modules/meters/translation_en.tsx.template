@@ -39,6 +39,7 @@ let x = {
             "add_meter_infix": " of ",
             "add_meter_suffix": " energy meters configured",
             "add_meter_slot": "Number",
+            "add_meter_slot_select": "Select...",
             "add_meter_class": "Class",
             "add_meter_class_select": "Select...",
 
