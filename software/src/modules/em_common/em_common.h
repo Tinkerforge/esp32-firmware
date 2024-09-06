@@ -92,7 +92,7 @@ public:
 
     //void pre_setup() override;
     void setup() override;
-    //void register_urls() override;
+    void register_urls() override;
 
     inline bool device_module_is_in_bootloader(int rc) {return backend->device_module_is_in_bootloader(rc);}
 

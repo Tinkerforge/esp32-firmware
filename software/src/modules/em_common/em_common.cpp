@@ -45,6 +45,13 @@ void EMCommon::setup()
     initialized = true;
 }
 
+void EMCommon::register_urls()
+{
+    api.addState("energy_manager/state", &state);
+    api.addState("energy_manager/low_level_state", &low_level_state);
+    api.addPersistentConfig("energy_manager/config", &config);
+}
+
 void EMCommon::set_time(const tm &tm)
 {
     int rc = backend->wem_set_date_time(static_cast<uint8_t >(tm.tm_sec),

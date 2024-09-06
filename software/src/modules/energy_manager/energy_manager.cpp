@@ -219,11 +219,6 @@ void EnergyManager::setup()
 
 void EnergyManager::register_urls()
 {
-    api.addState("energy_manager/state", &em_common.state);
-
-    api.addPersistentConfig("energy_manager/config", &em_common.config);
-    api.addState("energy_manager/low_level_state", &em_common.low_level_state);
-
     this->DeviceModule::register_urls();
 }
 
