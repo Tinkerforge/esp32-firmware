@@ -174,13 +174,14 @@ specs = [
                 'value_id': 'CurrentDCChaDisDiff',
                 'start_address': 35181,
                 'value_type': 'S16',
-                'scale_factor': 0.1,
+                'scale_factor': -0.1,
             },
             {
                 'name': 'First Group Battery Power [W]',
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 35183,
                 'value_type': 'S16',
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Charge Energy [0.1 kWh]',
