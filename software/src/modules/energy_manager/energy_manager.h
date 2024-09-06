@@ -94,19 +94,10 @@ protected:
     // for IEMBackend
     bool is_initialized() const override;
 
-    bool device_module_is_in_bootloader(int rc);
+    bool device_module_is_in_bootloader(int rc) override;
 
     [[gnu::const]] uint32_t get_em_version() const override;
     [[gnu::const]] const EMAllDataCommon *get_all_data_common() const override;
-
-    void set_time(const tm &tm) override;
-    struct timeval get_time() override;
-
-    bool get_sdcard_info(struct sdcard_info *data) override;
-    bool format_sdcard() override;
-
-    uint16_t get_energy_meter_detailed_values(float *ret_values);
-    bool reset_energy_meter_relative_energy();
 
     void get_input_output_states(bool *inputs, size_t *inputs_len, bool *outputs, size_t *outputs_len) const override;
 
@@ -114,6 +105,7 @@ protected:
     int wem_register_sd_wallbox_daily_data_points_low_level_callback(WEM_SDWallboxDailyDataPointsLowLevelHandler handler, void *user_data) override;
     int wem_register_sd_energy_manager_data_points_low_level_callback(WEM_SDEnergyManagerDataPointsLowLevelHandler handler, void *user_data) override;
     int wem_register_sd_energy_manager_daily_data_points_low_level_callback(WEM_SDEnergyManagerDailyDataPointsLowLevelHandler handler, void *user_data) override;
+    int wem_get_sd_information(uint32_t *ret_sd_status, uint32_t *ret_lfs_status, uint16_t *ret_sector_size, uint32_t *ret_sector_count, uint32_t *ret_card_type, uint8_t *ret_product_rev, char ret_product_name[5], uint8_t *ret_manufacturer_id) override;
     int wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status) override;
     int wem_get_sd_wallbox_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status) override;
     int wem_set_sd_wallbox_daily_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint32_t energy, uint8_t *ret_status) override;
@@ -122,8 +114,13 @@ protected:
     int wem_get_sd_energy_manager_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status) override;
     int wem_set_sd_energy_manager_daily_data_point(uint8_t year, uint8_t month, uint8_t day, uint32_t energy_grid_in, uint32_t energy_grid_out, const uint32_t energy_general_in[6], const uint32_t energy_general_out[6], uint8_t *ret_status) override;
     int wem_get_sd_energy_manager_daily_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status) override;
-    int wem_get_data_storage(uint8_t page, uint8_t ret_data[63]) override;
+    int wem_format_sd(uint32_t password, uint8_t *ret_format_status) override;
+    int wem_set_date_time(uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t days, uint8_t days_of_week, uint8_t month, uint16_t year) override;
+    int wem_get_date_time(uint8_t *ret_seconds, uint8_t *ret_minutes, uint8_t *ret_hours, uint8_t *ret_days, uint8_t *ret_days_of_week, uint8_t *ret_month, uint16_t *ret_year) override;
     int wem_set_data_storage(uint8_t page, const uint8_t data[63]) override;
+    int wem_get_data_storage(uint8_t page, uint8_t ret_data[63]) override;
+    int wem_reset_energy_meter_relative_energy() override;
+    int wem_get_energy_meter_detailed_values(float *ret_values, uint16_t *ret_values_length) override;
 
 public:
 

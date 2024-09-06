@@ -18,9 +18,12 @@
  */
 
 #include "em_common.h"
-
-#include "event_log_prefix.h"
 #include "module_dependencies.h"
+
+#include "bindings/errors.h"
+#include "build.h"
+#include "event_log_prefix.h"
+#include "musl_libc_timegm.h"
 
 EMCommon::EMCommon()
 {
@@ -42,44 +45,118 @@ void EMCommon::setup()
     initialized = true;
 }
 
-bool EMCommon::device_module_is_in_bootloader(int rc)
-{
-    return backend->device_module_is_in_bootloader(rc);
-}
-
-uint32_t EMCommon::get_em_version()
-{
-    return backend->get_em_version();
-}
-
 void EMCommon::set_time(const tm &tm)
 {
-    backend->set_time(tm);
+    int rc = backend->wem_set_date_time(static_cast<uint8_t >(tm.tm_sec),
+                                        static_cast<uint8_t >(tm.tm_min),
+                                        static_cast<uint8_t >(tm.tm_hour),
+                                        static_cast<uint8_t >(tm.tm_mday - 1),
+                                        static_cast<uint8_t >(tm.tm_wday),
+                                        static_cast<uint8_t >(tm.tm_mon),
+                                        static_cast<uint16_t>(tm.tm_year - 100));
+    check_bricklet_reachable(rc, "set_date_time");
+
+    if (rc != TF_E_OK)
+        logger.printfln("Failed to set datetime: error %i", rc);
+
+    return;
 }
 
 timeval EMCommon::get_time()
 {
-    return backend->get_time();
+    struct tm date_time;
+    struct timeval time;
+    time.tv_usec = 0;
+
+    uint8_t tm_sec;
+    uint8_t tm_min;
+    uint8_t tm_hour;
+    uint8_t tm_mday;
+    uint8_t tm_wday;
+    uint8_t tm_mon;
+    uint16_t tm_year;
+
+    int rc = backend->wem_get_date_time(&tm_sec, &tm_min, &tm_hour, &tm_mday, &tm_wday, &tm_mon, &tm_year);
+    check_bricklet_reachable(rc, "get_date_time");
+
+    if (rc != TF_E_OK) {
+        logger.printfln("Failed to get datetime: error %i", rc);
+        time.tv_sec = 0;
+        return time;
+    }
+
+    date_time.tm_sec  = tm_sec;
+    date_time.tm_min  = tm_min;
+    date_time.tm_hour = tm_hour;
+    date_time.tm_mday = tm_mday + 1;
+    date_time.tm_wday = tm_wday;
+    date_time.tm_mon  = tm_mon;
+    date_time.tm_year = tm_year + 100;
+
+    time.tv_sec = timegm(&date_time);
+
+    // Allow time to be 24h older than the build timestamp,
+    // in case the RTC is set by hand to test something.
+    //FIXME not Y2038-safe
+    if (time.tv_sec < static_cast<time_t>(build_timestamp() - 24 * 3600))
+        time.tv_sec = 0;
+
+    return time;
 }
 
 bool EMCommon::get_sdcard_info(struct sdcard_info *data)
 {
-    return backend->get_sdcard_info(data);
+    int rc = backend->wem_get_sd_information(
+        &data->sd_status,
+        &data->lfs_status,
+        &data->sector_size,
+        &data->sector_count,
+        &data->card_type,
+        &data->product_rev,
+        data->product_name,
+        &data->manufacturer_id
+    );
+
+    check_bricklet_reachable(rc, "get_sd_information");
+
+    // Product name retrieved from the SD card is an unterminated 5-character string, so we have to terminate it here.
+    data->product_name[sizeof(data->product_name) - 1] = 0;
+
+    if (rc != TF_E_OK) {
+        set_error(ERROR_FLAGS_SDCARD_MASK);
+        logger.printfln("Failed to get SD card information. Error %i", rc);
+        return false;
+    }
+
+    if (is_error(ERROR_FLAGS_SDCARD_BIT_POS))
+        clr_error(ERROR_FLAGS_SDCARD_MASK);
+
+    return true;
 }
 
 bool EMCommon::format_sdcard()
 {
-    return backend->format_sdcard();
+    uint8_t ret_format_status;
+    int rc = backend->wem_format_sd(0x4223ABCD, &ret_format_status);
+    check_bricklet_reachable(rc, "format_sd");
+
+    return rc == TF_E_OK && ret_format_status == TF_WARP_ENERGY_MANAGER_FORMAT_STATUS_OK;
 }
 
 uint16_t EMCommon::get_energy_meter_detailed_values(float *ret_values)
 {
-    return backend->get_energy_meter_detailed_values(ret_values);
+    uint16_t len = 0;
+    int rc = backend->wem_get_energy_meter_detailed_values(ret_values, &len);
+    check_bricklet_reachable(rc, "get_energy_meter_detailed_values");
+
+    return rc == TF_E_OK ? len : 0;
 }
 
 bool EMCommon::reset_energy_meter_relative_energy()
 {
-    return backend->reset_energy_meter_relative_energy();
+    int rc = backend->wem_reset_energy_meter_relative_energy();
+    check_bricklet_reachable(rc, "reset_energy_meter_relative_energy");
+    return rc == TF_E_OK;
 }
 
 void EMCommon::clr_error(uint32_t error_mask)

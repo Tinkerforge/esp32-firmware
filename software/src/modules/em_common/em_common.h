@@ -49,15 +49,6 @@ protected:
     virtual uint32_t get_em_version() const = 0;
     virtual const EMAllDataCommon *get_all_data_common() const = 0;
 
-    virtual void set_time(const tm &tm) = 0;
-    virtual timeval get_time() = 0;
-
-    virtual bool get_sdcard_info(struct sdcard_info *data) = 0;
-    virtual bool format_sdcard() = 0;
-
-    virtual uint16_t get_energy_meter_detailed_values(float *ret_values) = 0;
-    virtual bool reset_energy_meter_relative_energy() = 0;
-
     virtual void get_input_output_states(bool *inputs, size_t *inputs_len, bool *outputs, size_t *outputs_len) const = 0;
 
     typedef void (*WEM_SDWallboxDataPointsLowLevelHandler)(void *do_not_use, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[60], void *user_data);
@@ -69,6 +60,7 @@ protected:
     virtual int wem_register_sd_wallbox_daily_data_points_low_level_callback(WEM_SDWallboxDailyDataPointsLowLevelHandler handler, void *user_data) = 0;
     virtual int wem_register_sd_energy_manager_data_points_low_level_callback(WEM_SDEnergyManagerDataPointsLowLevelHandler handler, void *user_data) = 0;
     virtual int wem_register_sd_energy_manager_daily_data_points_low_level_callback(WEM_SDEnergyManagerDailyDataPointsLowLevelHandler handler, void *user_data) = 0;
+    virtual int wem_get_sd_information(uint32_t *ret_sd_status, uint32_t *ret_lfs_status, uint16_t *ret_sector_size, uint32_t *ret_sector_count, uint32_t *ret_card_type, uint8_t *ret_product_rev, char ret_product_name[5], uint8_t *ret_manufacturer_id) = 0;
     virtual int wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status) = 0;
     virtual int wem_get_sd_wallbox_data_points(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status) = 0;
     virtual int wem_set_sd_wallbox_daily_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint32_t energy, uint8_t *ret_status) = 0;
@@ -77,8 +69,13 @@ protected:
     virtual int wem_get_sd_energy_manager_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t amount, uint8_t *ret_status) = 0;
     virtual int wem_set_sd_energy_manager_daily_data_point(uint8_t year, uint8_t month, uint8_t day, uint32_t energy_grid_in, uint32_t energy_grid_out, const uint32_t energy_general_in[6], const uint32_t energy_general_out[6], uint8_t *ret_status) = 0;
     virtual int wem_get_sd_energy_manager_daily_data_points(uint8_t year, uint8_t month, uint8_t day, uint8_t amount, uint8_t *ret_status) = 0;
-    virtual int wem_get_data_storage(uint8_t page, uint8_t ret_data[63]) = 0;
+    virtual int wem_format_sd(uint32_t password, uint8_t *ret_format_status) = 0;
+    virtual int wem_set_date_time(uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t days, uint8_t days_of_week, uint8_t month, uint16_t year) = 0;
+    virtual int wem_get_date_time(uint8_t *ret_seconds, uint8_t *ret_minutes, uint8_t *ret_hours, uint8_t *ret_days, uint8_t *ret_days_of_week, uint8_t *ret_month, uint16_t *ret_year) = 0;
     virtual int wem_set_data_storage(uint8_t page, const uint8_t data[63]) = 0;
+    virtual int wem_get_data_storage(uint8_t page, uint8_t ret_data[63]) = 0;
+    virtual int wem_reset_energy_meter_relative_energy() = 0;
+    virtual int wem_get_energy_meter_detailed_values(float *ret_values, uint16_t *ret_values_length) = 0;
 };
 
 class EMCommon final : public IModule
@@ -97,9 +94,9 @@ public:
     void setup() override;
     //void register_urls() override;
 
-    bool device_module_is_in_bootloader(int rc);
+    inline bool device_module_is_in_bootloader(int rc) {return backend->device_module_is_in_bootloader(rc);}
 
-    uint32_t get_em_version();
+    inline uint32_t get_em_version() {return backend->get_em_version();}
     inline const EMAllDataCommon *get_all_data_common() {return backend->get_all_data_common();}
 
     void set_time(const tm &tm);
@@ -194,14 +191,14 @@ public:
         return rc;
     }
 
-    inline int wem_get_data_storage(uint8_t page, uint8_t ret_data[63])
-    {
-        return backend->wem_get_data_storage(page, ret_data);
-    }
-
     inline int wem_set_data_storage(uint8_t page, const uint8_t data[63])
     {
         return backend->wem_set_data_storage(page, data);
+    }
+
+    inline int wem_get_data_storage(uint8_t page, uint8_t ret_data[63])
+    {
+        return backend->wem_get_data_storage(page, ret_data);
     }
 
 #if MODULE_AUTOMATION_AVAILABLE()
