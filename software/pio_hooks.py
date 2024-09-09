@@ -379,8 +379,12 @@ def hyphenate(s, key):
         print("Found unicode soft hyphen in translation value {}: {}".format(key, s.replace('\u00AD', "___HERE___")))
         sys.exit(1)
 
+    if '&shy;' in s:
+        print("Found HTML entity soft hyphen in translation value {}: {}".format(key, s))
+        sys.exit(1)
+
     # Replace longest words first. This prevents replacing parts of longer words.
-    for word in sorted(re.split(r'\W+', s.replace("&shy;", "")), key=lambda x: len(x), reverse=True):
+    for word in sorted(re.split(r'\W+', s), key=lambda x: len(x), reverse=True):
         for l, r in hyphenations:
             if word == l:
                 s = s.replace(l, r)
