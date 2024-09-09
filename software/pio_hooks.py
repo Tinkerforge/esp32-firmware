@@ -372,9 +372,12 @@ def check_translation(translation, parent_key=None):
 
 HYPHENATE_THRESHOLD = 9
 
-missing_hyphenations = []
+missing_hyphenations = {}
 
-def hyphenate(s, key):
+def should_be_hyphenated(x):
+    return x not in allowed_missing and not x.startswith("___START_FRAGMENT___") and not x.endswith("___END_FRAGMENT___")
+
+def hyphenate(s, key, lang):
     if '\u00AD' in s:
         print("Found unicode soft hyphen in translation value {}: {}".format(key, s.replace('\u00AD', "___HERE___")))
         sys.exit(1)
@@ -391,18 +394,18 @@ def hyphenate(s, key):
                 break
         else:
             is_too_long = len(word) > HYPHENATE_THRESHOLD
-            is_camel_case = word[:1].islower() and not word[1:].islower()
+            is_camel_case = re.search(r'[a-z][A-Z]', word) is not None
             is_snake_case = "_" in word
-            if is_too_long:# and not (is_camel_case or is_snake_case):
-                missing_hyphenations.append(word)
+            if is_too_long and not is_camel_case and not is_snake_case and should_be_hyphenated(word):
+                missing_hyphenations.setdefault(lang, []).append(word)
 
     return s
 
-def hyphenate_translation(translation, parent_key=None):
+def hyphenate_translation(translation, parent_key=None, lang=None):
     if parent_key == None:
         parent_key = []
 
-    return {key: (hyphenate(value, key) if isinstance(value, str) else hyphenate_translation(value, parent_key=parent_key + [key])) for key, value in translation.items()}
+    return {key: (hyphenate(value, key, lang if lang is not None else key) if isinstance(value, str) else hyphenate_translation(value, parent_key + [key], lang if lang is not None else key)) for key, value in translation.items()}
 
 def repair_rtc_dir():
     path = os.path.abspath("src/modules/rtc")
@@ -981,12 +984,26 @@ def main():
     translation = hyphenate_translation(translation)
 
     global missing_hyphenations
-    missing_hyphenations = sorted(set(missing_hyphenations) - allowed_missing)
-    missing_hyphenations = [x for x in missing_hyphenations if not x.startswith("___START_FRAGMENT___") and not x.endswith("___END_FRAGMENT___")]
     if len(missing_hyphenations) > 0:
         print("Missing hyphenations detected. Add those to hyphenations.py!")
-        for x in missing_hyphenations:
-            print("    {}".format(x))
+        dicts = None
+        try:
+            from pyphen import Pyphen
+            langs = {
+                'de': 'de_DE',
+                'en': 'en_US'
+            }
+            dicts = {k: Pyphen(lang=langs[k]) for k in missing_hyphenations.keys()}
+        except ImportError:
+            print("Pyphen not installed. Will not print hyphenation suggestions.")
+
+        for lang, lst in missing_hyphenations.items():
+            print("  {}".format(lang))
+            for x in lst:
+                if dicts is None:
+                    print("    {}".format(x))
+                else:
+                    print('    "{}",'.format(dicts[lang].inserted(x)))
 
     for path in glob.glob(os.path.join('web', 'src', 'ts', 'translation_*.ts')):
         os.remove(path)
