@@ -219,7 +219,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 ref={this.uplot_wrapper_ref}
                                 class="day-ahead-prices--chart pb-3"
                                 sub_page="day_ahead_prices"
-                                color_cache_group="meters.default"
+                                color_cache_group="day_ahead_prices.default"
                                 show={true}
                                 on_mount={() => this.update_uplot()}
                                 legend_time_label={__("day_ahead_prices.content.time")}

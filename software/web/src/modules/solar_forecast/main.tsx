@@ -485,7 +485,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                 ref={this.uplot_wrapper_ref}
                                 class="solar-forecast--chart pb-3"
                                 sub_page="solar_forecast"
-                                color_cache_group="meters.default"
+                                color_cache_group="solar_forecast.default"
                                 show={true}
                                 on_mount={() => this.update_uplot()}
                                 legend_time_label={__("solar_forecast.content.time")}
