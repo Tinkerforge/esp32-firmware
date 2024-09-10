@@ -46,6 +46,15 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
         that->callback(&async_event);
         break;
 
+    case HTTP_EVENT_ON_HEADER:
+        for (int i = 0; event->header_key[i] != 0; i++) {
+            event->header_key[i] = tolower(event->header_key[i]);
+        }
+        if (!strcmp("set-cookie", event->header_key)) {
+            that->parse_cookie(event->header_value);
+        }
+        break;
+
     case HTTP_EVENT_ON_DATA:
         that->last_async_alive = millis();
         http_status = esp_http_client_get_status_code(that->http_client);
@@ -88,27 +97,16 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
 static const char *https_prefix = "https://";
 static const size_t https_prefix_len = strlen(https_prefix);
 
-void AsyncHTTPSClient::download_async(const char *url, int cert_id, std::function<void(AsyncHTTPSClientEvent *event)> callback)
-{
+void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_method_t method, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> callback) {
     AsyncHTTPSClientEvent async_event;
 
     if (strncmp(url, https_prefix, https_prefix_len) != 0) {
-        async_event.type = AsyncHTTPSClientEventType::Error;
-        async_event.error = AsyncHTTPSClientError::NoHTTPSURL;
-        async_event.error_http_client = ESP_OK;
-        async_event.error_http_status = -1;
-
-        callback(&async_event);
+        error_abort(async_event, AsyncHTTPSClientError::NoHTTPSURL);
         return;
     }
 
     if (in_progress) {
-        async_event.type = AsyncHTTPSClientEventType::Error;
-        async_event.error = AsyncHTTPSClientError::Busy;
-        async_event.error_http_client = ESP_OK;
-        async_event.error_http_status = -1;
-
-        callback(&async_event);
+        error_abort(async_event, AsyncHTTPSClientError::Busy);
         return;
     }
 
@@ -117,9 +115,13 @@ void AsyncHTTPSClient::download_async(const char *url, int cert_id, std::functio
     abort_requested = false;
     received_len = 0;
     complete_len = 0;
+    if (body != nullptr) {
+        owned_body = String(body, body_size);
+    }
 
     esp_http_client_config_t http_config = {};
 
+    http_config.method = method;
     http_config.url = url;
     http_config.event_handler = event_handler;
     http_config.user_data = this;
@@ -134,35 +136,21 @@ void AsyncHTTPSClient::download_async(const char *url, int cert_id, std::functio
     else {
 #if MODULE_CERTS_AVAILABLE()
         size_t cert_len = 0;
-
         cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
 
         if (cert == nullptr) {
-            in_progress = false;
-
-            async_event.type = AsyncHTTPSClientEventType::Error;
-            async_event.error = AsyncHTTPSClientError::NoCert;
-            async_event.error_http_client = ESP_OK;
-            async_event.error_http_status = -1;
-
-            callback(&async_event);
+            error_abort(async_event, AsyncHTTPSClientError::NoCert);
             return;
         }
 
         http_config.cert_pem = (const char *)cert.get();
+        // http_config.skip_cert_common_name_check = true;
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
         logger.printfln("Can't use custom certificate: certs module is not built into this firmware!");
 
-        in_progress = false;
-
-        async_event.type = AsyncHTTPSClientEventType::Error;
-        async_event.error = AsyncHTTPSClientError::NoCert;
-        async_event.error_http_client = ESP_OK;
-        async_event.error_http_status = -1;
-
-        callback(&async_event);
+        error_abort(async_event, AsyncHTTPSClientError::NoCert);
         return;
 #endif
     }
@@ -170,17 +158,28 @@ void AsyncHTTPSClient::download_async(const char *url, int cert_id, std::functio
     http_client = esp_http_client_init(&http_config);
 
     if (http_client == nullptr) {
-        cert.reset();
-
-        in_progress = false;
-
-        async_event.type = AsyncHTTPSClientEventType::Error;
-        async_event.error = AsyncHTTPSClientError::HTTPClientInitFailed;
-        async_event.error_http_client = ESP_OK;
-        async_event.error_http_status = -1;
-
-        callback(&async_event);
+        error_abort(async_event, AsyncHTTPSClientError::HTTPClientInitFailed);
         return;
+    }
+
+    if (owned_body.length() > 0 && esp_http_client_set_post_field(http_client, owned_body.c_str(), owned_body.length())) {
+        error_abort(async_event, AsyncHTTPSClientError::HTTPClientSetBodyFailed);
+        return;
+    }
+
+    if (cookies.length() > 0) {
+        if (esp_http_client_set_header(http_client, "cookie", cookies.c_str()) != ESP_OK) {
+            error_abort(async_event, AsyncHTTPSClientError::HTTPClientSetCookieFailed);
+            return;
+        }
+    }
+    if (headers.size() > 0) {
+        for (std::pair<String, String> header : headers) {
+            if (esp_http_client_set_header(http_client, header.first.c_str(), header.second.c_str()) != ESP_OK) {
+                error_abort(async_event, AsyncHTTPSClientError::HTTPClientSetCookieFailed);
+                return;
+            }
+        }
     }
 
     last_async_alive = millis();
@@ -215,6 +214,7 @@ void AsyncHTTPSClient::download_async(const char *url, int cert_id, std::functio
         esp_http_client_close(http_client);
         esp_http_client_cleanup(http_client);
         http_client = nullptr;
+        owned_body = String();
 
         cert.reset();
 
@@ -259,6 +259,54 @@ void AsyncHTTPSClient::download_async(const char *url, int cert_id, std::functio
 
         task_scheduler.cancel(task_scheduler.currentTaskId());
     }, 0, 200);
+}
+
+void AsyncHTTPSClient::download_async(const char *url, int cert_id, std::function<void(AsyncHTTPSClientEvent *event)> callback)
+{
+    fetch(url, cert_id, HTTP_METHOD_GET, nullptr, 0, callback);
+}
+
+void AsyncHTTPSClient::post_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> callback) {
+    fetch(url, cert_id, HTTP_METHOD_POST, body, body_size, callback);
+}
+
+void AsyncHTTPSClient::delete_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> callback) {
+    fetch(url, cert_id, HTTP_METHOD_DELETE, body, body_size, callback);
+}
+
+void AsyncHTTPSClient::set_header(const char *key, const char *value) {
+    if (key == nullptr || value == nullptr) {
+        return;
+    }
+
+    String k = key;
+    String v = value;
+    headers.push_back(std::pair<String, String>(k, v));
+}
+
+void AsyncHTTPSClient::error_abort(AsyncHTTPSClientEvent &async_event, AsyncHTTPSClientError reason) {
+    cert.reset();
+
+    in_progress = false;
+
+    async_event.type = AsyncHTTPSClientEventType::Error;
+    async_event.error = reason;
+    async_event.error_http_client = ESP_OK;
+    async_event.error_http_status = -1;
+    esp_http_client_close(http_client);
+    esp_http_client_cleanup(http_client);
+    http_client = nullptr;
+    owned_body = String();
+
+    callback(&async_event);
+}
+
+void AsyncHTTPSClient::parse_cookie(const char *cookie) {
+    char *i = strchr(cookie, ';');
+    if (i != nullptr) {
+        *i = 0;
+    }
+    cookies += cookie + ';';
 }
 
 void AsyncHTTPSClient::abort_async()
