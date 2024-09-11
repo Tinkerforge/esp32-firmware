@@ -112,6 +112,12 @@ void Debug::pre_setup()
     rtc_cpu_freq_config_t cpu_freq_conf;
     rtc_clk_cpu_freq_get_config(&cpu_freq_conf);
 
+    state_spi_bus_prototype = Config::Object({
+        {"clk",          Config::Uint32(0)},
+        {"dummy_cycles", Config::Uint32(0)},
+        {"spi_mode",     Config::Str("", 0, 14)}
+    });
+
     state_static = Config::Object({
         {"heap_dram",  Config::Uint32(dram_heap_size)},
         {"heap_iram",  Config::Uint32(iram_heap_size)},
@@ -120,11 +126,7 @@ void Debug::pre_setup()
         {"cpu_clk",    Config::Uint32(cpu_freq_conf.freq_mhz * 1000000)},
         {"apb_clk",    Config::Uint32(rtc_clk_apb_freq_get())},
         {"spi_buses",  Config::Array({},
-            new Config{Config::Object({
-                {"clk",          Config::Uint32(0)},
-                {"dummy_cycles", Config::Uint32(0)},
-                {"spi_mode",     Config::Str("", 0, 14)}
-            })},
+            &state_spi_bus_prototype,
             0, 4, Config::type_id<Config::ConfObject>()
         )},
         {"dram_benchmark",  Config::Float(dram_speed)},
@@ -165,12 +167,14 @@ void Debug::pre_setup()
         {"conf_union_buf_size", Config::Uint32(0)},
     });
 
+    state_hwm_prototype = Config::Object({
+        {"task_name",  Config::Str("", 0, CONFIG_FREERTOS_MAX_TASK_NAME_LEN)},
+        {"hwm",        Config::Uint32(0)},
+        {"stack_size", Config::Uint32(0)},
+    });
+
     state_hwm = Config::Array({},
-        new Config{Config::Object({
-            {"task_name",  Config::Str("", 0, CONFIG_FREERTOS_MAX_TASK_NAME_LEN)},
-            {"hwm",        Config::Uint32(0)},
-            {"stack_size", Config::Uint32(0)},
-        })},
+        &state_hwm_prototype,
         0, 64, Config::type_id<Config::ConfObject>()
     );
 
@@ -229,8 +233,11 @@ void Debug::setup()
         for (uint16_t i = 0; i < task_count; i++) {
             uint32_t hwm = uxTaskGetStackHighWaterMark(this->task_handles[i]);
             Config *conf_task_hwm = static_cast<Config *>(this->state_hwm.get(i));
-            if (conf_task_hwm->get("hwm")->updateUint(hwm) && hwm < 200 && this->show_hwm_changes) {
-                logger.printfln("HWM of task '%s' changed: %u", conf_task_hwm->get("task_name")->asUnsafeCStr(), hwm);
+            if (conf_task_hwm->get("hwm")->updateUint(hwm) && hwm < 384) {
+                const char *task_name = conf_task_hwm->get("task_name")->asUnsafeCStr();
+                if (hwm < 120 || strcmp(task_name, "watchdog_task") != 0) {
+                    logger.printfln("HWM of task '%s' changed: %u", task_name, hwm);
+                }
             }
         }
 
@@ -253,11 +260,6 @@ void Debug::setup()
         this->integrity_check_runtime_sum = 0;
         this->integrity_check_runtime_max = 0;
     }, 1000, 1000);
-
-    // Don't show HWM changes during the first two minutes after boot.
-    task_scheduler.scheduleOnce([this](){
-        this->show_hwm_changes = true;
-    }, 2 * 60 * 1000);
 
     last_state_update = now_us();
 
