@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "em_front_panel.h"
+#include "front_panel.h"
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -31,16 +31,16 @@
 #define UPDATE_INTERVAL 1000
 #define PAGE_FRONT_TEXT_MAX_CHAR 6
 
-extern EMFrontPanel em_front_panel;
+extern FrontPanel front_panel;
 
-EMFrontPanel::EMFrontPanel() : DeviceModule(warp_front_panel_bricklet_firmware_bin_data,
+FrontPanel::FrontPanel() : DeviceModule(warp_front_panel_bricklet_firmware_bin_data,
                                             warp_front_panel_bricklet_firmware_bin_length,
                                             "front_panel",
                                             "WARP Front Panel",
                                             "Front Panel",
                                             [this](){this->setup_bricklet();}) {}
 
-void EMFrontPanel::pre_setup()
+void FrontPanel::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
@@ -68,7 +68,7 @@ void EMFrontPanel::pre_setup()
     }
 }
 
-void EMFrontPanel::setup_bricklet()
+void FrontPanel::setup_bricklet()
 {
     if (!this->DeviceModule::setup_device()) {
         return;
@@ -78,7 +78,7 @@ void EMFrontPanel::setup_bricklet()
     api.addFeature("front_panel");
 }
 
-void EMFrontPanel::check_bricklet_state()
+void FrontPanel::check_bricklet_state()
 {
     const bool enable = config.get("enable")->asBool();
     uint8_t display = 0;
@@ -102,7 +102,7 @@ void EMFrontPanel::check_bricklet_state()
     }
 }
 
-void EMFrontPanel::setup()
+void FrontPanel::setup()
 {
     setup_bricklet();
     if (!device_found)
@@ -118,7 +118,7 @@ void EMFrontPanel::setup()
     }, 5 * 60 * 1000, 5 * 60 * 1000);
 }
 
-void EMFrontPanel::register_urls()
+void FrontPanel::register_urls()
 {
     api.addPersistentConfig("front_panel/config", &config);
     for (FrontPanelTile &tile : tiles) {
@@ -132,12 +132,12 @@ void EMFrontPanel::register_urls()
     this->DeviceModule::register_urls();
 }
 
-void EMFrontPanel::loop()
+void FrontPanel::loop()
 {
     this->DeviceModule::loop();
 }
 
-int EMFrontPanel::set_led(const LEDPattern pattern, const LEDColor color)
+int FrontPanel::set_led(const LEDPattern pattern, const LEDColor color)
 {
     int result = tf_warp_front_panel_set_led_state(
         &device,
@@ -152,7 +152,7 @@ int EMFrontPanel::set_led(const LEDPattern pattern, const LEDColor color)
     return result;
 }
 
-int EMFrontPanel::get_led(LEDPattern *pattern, LEDColor *color)
+int FrontPanel::get_led(LEDPattern *pattern, LEDColor *color)
 {
     uint8_t pattern_raw = 0;
     uint8_t color_raw   = 0;
@@ -172,7 +172,7 @@ int EMFrontPanel::get_led(LEDPattern *pattern, LEDColor *color)
     return result;
 }
 
-void EMFrontPanel::update_wifi()
+void FrontPanel::update_wifi()
 {
     int result = tf_warp_front_panel_set_display_wifi_setup_1(
         &device,
@@ -194,7 +194,7 @@ void EMFrontPanel::update_wifi()
     }
 }
 
-void EMFrontPanel::update_status_bar()
+void FrontPanel::update_status_bar()
 {
     const EthernetState ethernet_state = ethernet.get_connection_state();
     const WifiState wifi_state         = wifi.get_connection_state();
@@ -229,7 +229,7 @@ void EMFrontPanel::update_status_bar()
     }
 }
 
-int EMFrontPanel::set_display_front_page_icon_with_check(const uint32_t icon_index, bool active, const uint32_t sprite_index, const char *text_1, const uint8_t font_index_1, const char *text_2, const uint8_t font_index_2)
+int FrontPanel::set_display_front_page_icon_with_check(const uint32_t icon_index, bool active, const uint32_t sprite_index, const char *text_1, const uint8_t font_index_1, const char *text_2, const uint8_t font_index_2)
 {
     // Always fill text with spaces, such that if a new string is
     // shorter than the previous one, the old characters are overwritten.
@@ -250,7 +250,7 @@ int EMFrontPanel::set_display_front_page_icon_with_check(const uint32_t icon_ind
     );
 }
 
-int EMFrontPanel::update_front_page_empty_tile(const uint8_t index, const TileType type, const uint8_t param)
+int FrontPanel::update_front_page_empty_tile(const uint8_t index, const TileType type, const uint8_t param)
 {
     return set_display_front_page_icon_with_check(
         index,
@@ -263,7 +263,7 @@ int EMFrontPanel::update_front_page_empty_tile(const uint8_t index, const TileTy
     );
 }
 
-int EMFrontPanel::update_front_page_wallbox(const uint8_t index, const TileType type, const uint8_t param)
+int FrontPanel::update_front_page_wallbox(const uint8_t index, const TileType type, const uint8_t param)
 {
     return set_display_front_page_icon_with_check(
         index,
@@ -276,7 +276,7 @@ int EMFrontPanel::update_front_page_wallbox(const uint8_t index, const TileType 
     );
 }
 
-int EMFrontPanel::update_front_page_charge_management(const uint8_t index, const TileType type, const uint8_t param)
+int FrontPanel::update_front_page_charge_management(const uint8_t index, const TileType type, const uint8_t param)
 {
     return set_display_front_page_icon_with_check(
         index,
@@ -289,7 +289,7 @@ int EMFrontPanel::update_front_page_charge_management(const uint8_t index, const
     );
 }
 
-int EMFrontPanel::update_front_page_meter(const uint8_t index, const TileType type, const uint8_t param)
+int FrontPanel::update_front_page_meter(const uint8_t index, const TileType type, const uint8_t param)
 {
     return set_display_front_page_icon_with_check(
         index,
@@ -302,7 +302,7 @@ int EMFrontPanel::update_front_page_meter(const uint8_t index, const TileType ty
     );
 }
 
-int EMFrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const TileType type, const uint8_t param)
+int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const TileType type, const uint8_t param)
 {
     String str1 = "Preis";
     String str2 = "-- ct";
@@ -345,7 +345,7 @@ int EMFrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const 
     );
 }
 
-int EMFrontPanel::update_front_page_solar_forecast(const uint8_t index, const TileType type, const uint8_t param)
+int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const TileType type, const uint8_t param)
 {
     String str1 = "------";
     String str2 = "-- kWh";
@@ -386,7 +386,7 @@ int EMFrontPanel::update_front_page_solar_forecast(const uint8_t index, const Ti
     );
 }
 
-int EMFrontPanel::update_front_page_energy_manager_status(const uint8_t index, const TileType type, const uint8_t param)
+int FrontPanel::update_front_page_energy_manager_status(const uint8_t index, const TileType type, const uint8_t param)
 {
     const SemanticVersion version;
     String str1 = "FW Ver";
@@ -406,9 +406,9 @@ int EMFrontPanel::update_front_page_energy_manager_status(const uint8_t index, c
     );
 }
 
-int EMFrontPanel::update_front_page_heating_status(const uint8_t index, const TileType type, const uint8_t param)
+int FrontPanel::update_front_page_heating_status(const uint8_t index, const TileType type, const uint8_t param)
 {
-    const SemanticVersion version;
+    /*const SemanticVersion version;
     String str1 = "SG Rdy";
     String str2 = "--";
     if (heating.is_active()) {
@@ -425,10 +425,11 @@ int EMFrontPanel::update_front_page_heating_status(const uint8_t index, const Ti
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
         str2.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK
-    );
+    );*/
+    return TF_E_OK;
 }
 
-void EMFrontPanel::update_front_page()
+void FrontPanel::update_front_page()
 {
     for (FrontPanelTile &tile : tiles) {
         const uint8_t index = tile.index;
@@ -455,7 +456,7 @@ void EMFrontPanel::update_front_page()
     }
 }
 
-void EMFrontPanel::update()
+void FrontPanel::update()
 {
     update_wifi();
     update_status_bar();

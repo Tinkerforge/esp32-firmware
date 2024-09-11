@@ -27,7 +27,7 @@
 
 #define FRONT_PANEL_TILES 6
 
-class EMFrontPanel : public DeviceModule<TF_WARPFrontPanel,
+class FrontPanel : public DeviceModule<TF_WARPFrontPanel,
                                          tf_warp_front_panel_create,
                                          tf_warp_front_panel_get_bootloader_mode,
                                          tf_warp_front_panel_reset,
@@ -46,7 +46,7 @@ public:
         Yellow = 2,
     };
 
-    EMFrontPanel();
+    FrontPanel();
 
     void pre_setup() override;
     void setup() override;

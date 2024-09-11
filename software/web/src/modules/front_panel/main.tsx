@@ -34,12 +34,12 @@ import { FormSeparator } from "src/ts/components/form_separator";
 
 const FRONT_PANEL_TILES = 6;
 
-export function EMFrontPanelNavbar() {
+export function FrontPanelNavbar() {
     return (
         <NavbarItem
             name="front_panel"
             title={__("front_panel.navbar.front_panel")}
-            hidden={false}
+            hidden={false} // Module/Feature-Check
             symbol={<Monitor/>
             }
         />
@@ -47,13 +47,13 @@ export function EMFrontPanelNavbar() {
 }
 
 type TileConfig = API.getType['tiles/0/config'];
-type EMFrontPanelConfig = API.getType["front_panel/config"];
+type FrontPanelConfig = API.getType["front_panel/config"];
 
-interface EMFrontPanelState {
+interface FrontPanelState {
     tile_configs: {[tile_index: number]: TileConfig};
 }
 
-export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFrontPanelState> {
+export class FrontPanel extends ConfigComponent<"front_panel/config", {}, FrontPanelState> {
     static options_tile: [string, string][] = [
         ["0", __("front_panel.content.empty_tile")],
         ["1", __("front_panel.content.wallbox")],
@@ -112,7 +112,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
         }
     }
 
-    override async sendSave(topic: "front_panel/config", config: EMFrontPanelConfig) {
+    override async sendSave(topic: "front_panel/config", config: FrontPanelConfig) {
         for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
             await API.save_unchecked(
                 `front_panel/tiles/${tile_index}/config`,
@@ -161,7 +161,7 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
         </FormRow>
     }
 
-    render(props: {}, state: EMFrontPanelState & EMFrontPanelConfig) {
+    render(props: {}, state: FrontPanelState & FrontPanelConfig) {
         if (!util.render_allowed()) {
             return <SubPage name="front_panel" />;
         }
@@ -199,15 +199,15 @@ export class EMFrontPanel extends ConfigComponent<"front_panel/config", {}, EMFr
                                     {tile_index != 0 && <FormSeparator first={true}/>}
                                     <FormRow symbol={get_tile_symbol(tile_index)} label={__("front_panel.content.tile") + " " + (tile_index+1)}>
                                         <InputSelect
-                                            items={EMFrontPanel.options_tile}
+                                            items={FrontPanel.options_tile}
                                             value={state.tile_configs[tile_index].type}
                                             onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: state.tile_configs[tile_index].parameter, type: parseInt(v)}}})}
                                         />
                                     </FormRow>
-                                    {state.tile_configs[tile_index].type === 1 && (this.get_tile_config(tile_index, EMFrontPanel.options_wallbox))}
-                                    {state.tile_configs[tile_index].type === 3 && (this.get_tile_config(tile_index, EMFrontPanel.options_meter))}
-                                    {state.tile_configs[tile_index].type === 4 && (this.get_tile_config(tile_index, EMFrontPanel.options_day_ahead_prices))}
-                                    {state.tile_configs[tile_index].type === 5 && (this.get_tile_config(tile_index, EMFrontPanel.options_solar_forecast))}
+                                    {state.tile_configs[tile_index].type === 1 && (this.get_tile_config(tile_index, FrontPanel.options_wallbox))}
+                                    {state.tile_configs[tile_index].type === 3 && (this.get_tile_config(tile_index, FrontPanel.options_meter))}
+                                    {state.tile_configs[tile_index].type === 4 && (this.get_tile_config(tile_index, FrontPanel.options_day_ahead_prices))}
+                                    {state.tile_configs[tile_index].type === 5 && (this.get_tile_config(tile_index, FrontPanel.options_solar_forecast))}
                                 </div>
                             })}
                         </div>
