@@ -310,7 +310,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
                                     ctx.save();
                                     ctx.beginPath();
-                                    ctx.strokeStyle = `rgba(255, 0, 0, 0.2)`;
+                                    ctx.strokeStyle = `rgba(64, 64, 64, 0.2)`;
                                     ctx.lineWidth = xn-x;
                                     ctx.moveTo(x+ctx.lineWidth/2, bbox.top);
                                     ctx.lineTo(x+ctx.lineWidth/2, bbox.top + bbox.height);
