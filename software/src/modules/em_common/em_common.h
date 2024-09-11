@@ -32,6 +32,21 @@
 #include "modules/automation/automation_backend.h"
 #endif
 
+#define ERROR_FLAGS_BAD_CONFIG_BIT_POS      31
+#define ERROR_FLAGS_BAD_CONFIG_MASK         (1u<< ERROR_FLAGS_BAD_CONFIG_BIT_POS)
+#define ERROR_FLAGS_SDCARD_BIT_POS          25
+#define ERROR_FLAGS_SDCARD_MASK             (1 << ERROR_FLAGS_SDCARD_BIT_POS)
+#define ERROR_FLAGS_BRICKLET_BIT_POS        24
+#define ERROR_FLAGS_BRICKLET_MASK           (1 << ERROR_FLAGS_BRICKLET_BIT_POS)
+#define ERROR_FLAGS_CONTACTOR_BIT_POS       16
+#define ERROR_FLAGS_CONTACTOR_MASK          (1 << ERROR_FLAGS_CONTACTOR_BIT_POS)
+#define ERROR_FLAGS_NETWORK_BIT_POS         1
+#define ERROR_FLAGS_NETWORK_MASK            (1 << ERROR_FLAGS_NETWORK_BIT_POS)
+
+#define ERROR_FLAGS_ALL_INTERNAL_MASK       (ERROR_FLAGS_SDCARD_MASK | ERROR_FLAGS_BRICKLET_MASK)
+#define ERROR_FLAGS_ALL_ERRORS_MASK         (0x7FFF0000)
+#define ERROR_FLAGS_ALL_WARNINGS_MASK       (0x0000FFFF)
+
 class IEMBackend
 {
     friend class EMCommon;
@@ -219,6 +234,8 @@ protected:
     uint32_t consecutive_bricklet_errors = 0;
 
 private:
+    void start_network_check_task();
+
     IEMBackend *backend = nullptr;
 
     uint32_t error_flags = 0;

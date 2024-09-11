@@ -35,7 +35,7 @@ debug_log_variables = [
     "",
     "all_data.relay",
     "",
-    "all_data.voltage",
+    "all_data.common.voltage",
     "",
     "all_data.contactor_check_state",
 ]

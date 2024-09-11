@@ -29,6 +29,9 @@ typedef struct {
     float power;
     float current[3];
 
+    uint32_t uptime;
+    uint16_t voltage;
+
     uint8_t energy_meter_type;
     uint32_t error_count[6];
 } EMAllDataCommon;

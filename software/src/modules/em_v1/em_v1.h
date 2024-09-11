@@ -19,9 +19,6 @@
 
 #pragma once
 
-#include <math.h>
-#include <list>
-
 #include "device_module.h"
 #include "config.h"
 #include "bindings/bricklet_warp_energy_manager.h"
@@ -38,21 +35,6 @@
 
 #define EM_TASK_DELAY_MS                    250
 
-#define ERROR_FLAGS_BAD_CONFIG_BIT_POS      31
-#define ERROR_FLAGS_BAD_CONFIG_MASK         (1u<< ERROR_FLAGS_BAD_CONFIG_BIT_POS)
-#define ERROR_FLAGS_SDCARD_BIT_POS          25
-#define ERROR_FLAGS_SDCARD_MASK             (1 << ERROR_FLAGS_SDCARD_BIT_POS)
-#define ERROR_FLAGS_BRICKLET_BIT_POS        24
-#define ERROR_FLAGS_BRICKLET_MASK           (1 << ERROR_FLAGS_BRICKLET_BIT_POS)
-#define ERROR_FLAGS_CONTACTOR_BIT_POS       16
-#define ERROR_FLAGS_CONTACTOR_MASK          (1 << ERROR_FLAGS_CONTACTOR_BIT_POS)
-#define ERROR_FLAGS_NETWORK_BIT_POS         1
-#define ERROR_FLAGS_NETWORK_MASK            (1 << ERROR_FLAGS_NETWORK_BIT_POS)
-
-#define ERROR_FLAGS_ALL_INTERNAL_MASK       (ERROR_FLAGS_SDCARD_MASK | ERROR_FLAGS_BRICKLET_MASK)
-#define ERROR_FLAGS_ALL_ERRORS_MASK         (0x7FFF0000)
-#define ERROR_FLAGS_ALL_WARNINGS_MASK       (0x0000FFFF)
-
 typedef struct {
     EMAllDataCommon common;
 
@@ -64,9 +46,7 @@ typedef struct {
 
     bool input[2];
     bool relay;
-    uint16_t voltage;
     uint8_t contactor_check_state;
-    uint32_t uptime;
 } EnergyManagerAllData;
 
 class EMV1 final : public DeviceModule<TF_WARPEnergyManager,
@@ -161,7 +141,6 @@ private:
     void update_all_data();
     void update_all_data_struct();
 
-    void start_network_check_task();
     const char *prepare_fmtstr();
 
     EnergyManagerAllData all_data;

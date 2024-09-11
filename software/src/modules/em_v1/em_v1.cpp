@@ -172,8 +172,6 @@ void EMV1::setup()
         return;
     }
 
-    api.addFeature("energy_manager");
-
     update_status_led();
     debug_protocol.register_backend(this);
 
@@ -213,8 +211,6 @@ void EMV1::setup()
         }
     }, 0);
 #endif
-
-    start_network_check_task();
 }
 
 void EMV1::register_urls()
@@ -455,9 +451,9 @@ void EMV1::update_all_data()
     if (em_common.state.get("input3_state")->updateBool(all_data.input[0])) AUTOMATION_TRIGGER(EMInputThree, nullptr);
     if (em_common.state.get("input4_state")->updateBool(all_data.input[1])) AUTOMATION_TRIGGER(EMInputFour, nullptr);
     em_common.state.get("relay_state")->updateBool(all_data.relay);
-    em_common.low_level_state.get("input_voltage")->updateUint(all_data.voltage);
+    em_common.low_level_state.get("input_voltage")->updateUint(all_data.common.voltage);
     em_common.low_level_state.get("contactor_check_state")->updateUint(all_data.contactor_check_state);
-    em_common.low_level_state.get("uptime")->updateUint(all_data.uptime);
+    em_common.low_level_state.get("uptime")->updateUint(all_data.common.uptime);
 
     // Update derived states
     uint32_t have_phases = 1 + static_cast<uint32_t>(all_data.contactor_value) * 2;
@@ -498,9 +494,9 @@ void EMV1::update_all_data_struct()
         all_data.common.error_count,
         all_data.input,
         &all_data.relay,
-        &all_data.voltage,
+        &all_data.common.voltage,
         &all_data.contactor_check_state,
-        &all_data.uptime
+        &all_data.common.uptime
     );
 
     em_common.check_bricklet_reachable(rc, "update_all_data_struct");
@@ -524,47 +520,6 @@ void EMV1::update_status_led()
         rgb_led.set_status(EmRgbLed::Status::Warning);
     else
         rgb_led.set_status(EmRgbLed::Status::OK);
-}
-
-void EMV1::start_network_check_task()
-{
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        bool disconnected;
-        do {
-#if MODULE_ETHERNET_AVAILABLE()
-            if (ethernet.get_connection_state() == EthernetState::Connected) {
-                disconnected = false;
-                break;
-            }
-#endif
-#if MODULE_WIFI_AVAILABLE()
-            if (wifi.get_connection_state() == WifiState::Connected) {
-                disconnected = false;
-                break;
-            }
-#endif
-#if MODULE_ETHERNET_AVAILABLE()
-            if (ethernet.is_enabled()) {
-                disconnected = true;
-                break;
-            }
-#endif
-#if MODULE_WIFI_AVAILABLE()
-            if (wifi.is_sta_enabled()) {
-                disconnected = true;
-                break;
-            }
-#endif
-            disconnected = false;
-        } while (0);
-
-        if (disconnected) {
-            em_common.set_error(ERROR_FLAGS_NETWORK_MASK);
-        } else {
-            if (em_common.is_error(ERROR_FLAGS_NETWORK_BIT_POS))
-                em_common.clr_error(ERROR_FLAGS_NETWORK_MASK);
-        }
-    }, 0, 5000);
 }
 
 void EMV1::set_output(bool output_value)
