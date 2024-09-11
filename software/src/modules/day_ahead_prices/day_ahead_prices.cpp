@@ -84,7 +84,7 @@ void DayAheadPrices::pre_setup()
             current_price_available = false;
             task_scheduler.scheduleOnce([this]() {
                 this->update();
-            }, 10);
+            }, 0);
         }
 
         return "";
@@ -94,13 +94,13 @@ void DayAheadPrices::pre_setup()
         {"last_sync",  Config::Uint32(0)}, // unix timestamp in minutes
         {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
         {"next_check", Config::Uint32(0)}, // unix timestamp in minutes
-        {"current_price", Config::Int32(0)}
+        {"current_price", Config::Int32(0)} // in ct/1000 per kWh
     });
 
     prices = Config::Object({
         {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
         {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
-        {"prices",     Config::Array({}, new Config{Config::Int32(0)}, 0, 200, Config::type_id<Config::ConfInt>())}
+        {"prices",     Config::Array({}, new Config{Config::Int32(0)}, 0, 25 /*DST switchover*/ * 4 * 2, Config::type_id<Config::ConfInt>())}
     });
 }
 
@@ -235,7 +235,6 @@ void DayAheadPrices::update()
 
     esp_http_client_config_t http_config = {};
 
-    http_config.url = get_api_url_with_path();
     http_config.event_handler = update_event_handler;
     http_config.user_data = this;
     http_config.is_async = true;
@@ -267,7 +266,12 @@ void DayAheadPrices::update()
 #endif
     }
 
-    http_client = esp_http_client_init(&http_config);
+    {
+        // esp_http_client_init copies the url.
+        String api_url_with_path = get_api_url_with_path();
+        http_config.url = api_url_with_path.c_str();
+        http_client = esp_http_client_init(&http_config);
+    }
 
     if (http_client == nullptr) {
         logger.printfln("Error while creating HTTP client");
@@ -314,7 +318,7 @@ void DayAheadPrices::update()
         if (download_complete) {
             if(download_state == DAP_DOWNLOAD_STATE_OK) {
                 // Deserialize json received from API
-                DynamicJsonDocument json_doc{DAY_AHEAD_PRICE_MAX_JSON_LENGTH*2};
+                DynamicJsonDocument json_doc{DAY_AHEAD_PRICE_MAX_ARDUINO_JSON_BUFFER_SIZE};
                 DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
                 if (error) {
                     logger.printfln("Error during JSON deserialization: %s", error.c_str());
@@ -358,10 +362,8 @@ void DayAheadPrices::update()
 }
 
 // Create API path that includes currently configured region and resolution
-const char* DayAheadPrices::get_api_url_with_path()
+String DayAheadPrices::get_api_url_with_path()
 {
-    static String api_url_with_path;
-
     String api_url = config.get("api_url")->asString();
 
     if (!api_url.endsWith("/")) {
@@ -371,8 +373,7 @@ const char* DayAheadPrices::get_api_url_with_path()
     String region = region_str[config.get("region")->asUint()];
     String resolution = resolution_str[config.get("resolution")->asUint()];
 
-    api_url_with_path = api_url + "v1/day_ahead_prices/" + region + "/" + resolution;
-    return api_url_with_path.c_str();
+    return api_url + "v1/day_ahead_prices/" + region + "/" + resolution;
 }
 
 int DayAheadPrices::get_max_price_values()

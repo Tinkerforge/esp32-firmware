@@ -27,8 +27,6 @@
 
 #define HEATING_UPDATE_INTERVAL 1000*60
 
-extern Heating heating;
-
 #define extended_logging(...) \
     if(extended_logging_active) { \
         logger.printfln(__VA_ARGS__); \
@@ -64,7 +62,7 @@ void Heating::pre_setup()
     }), [this](Config &update, ConfigSource source) -> String {
         task_scheduler.scheduleOnce([this]() {
             this->update();
-        }, 10);
+        }, 0);
         return "";
     }};
 

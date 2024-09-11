@@ -51,7 +51,7 @@ void EMFrontPanel::pre_setup()
             // if the display needs to be turned on/off.
             task_scheduler.scheduleOnce([this](){
                 this->check_bricklet_state();
-            }, 1);
+            }, 0);
 
             return "";
         }
@@ -59,13 +59,10 @@ void EMFrontPanel::pre_setup()
 
     uint8_t index = 0;
     for (FrontPanelTile &tile : tiles) {
-        tile.config = ConfigRoot{Config::Object({
+        tile.config = Config::Object({
             {"type", Config::Uint8(0)},
             {"parameter", Config::Uint8(0)},
-        }), [this, index](Config &update, ConfigSource source) -> String {
-
-            return "";
-        }};
+        });
 
         tile.index = index++;
     }
@@ -236,8 +233,8 @@ int EMFrontPanel::set_display_front_page_icon_with_check(const uint32_t icon_ind
 {
     // Always fill text with spaces, such that if a new string is
     // shorter than the previous one, the old characters are overwritten.
-    char checked_text_1[PAGE_FRONT_TEXT_MAX_CHAR] = "     ";
-    char checked_text_2[PAGE_FRONT_TEXT_MAX_CHAR] = "     ";
+    char checked_text_1[PAGE_FRONT_TEXT_MAX_CHAR + 1] = "      ";
+    char checked_text_2[PAGE_FRONT_TEXT_MAX_CHAR + 1] = "      ";
     strncpy(checked_text_1, text_1, PAGE_FRONT_TEXT_MAX_CHAR);
     strncpy(checked_text_2, text_2, PAGE_FRONT_TEXT_MAX_CHAR);
 
