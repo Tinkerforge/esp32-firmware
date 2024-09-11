@@ -303,15 +303,19 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                             (self: uPlot) => {
                                 this.data.lines_vertical?.forEach(index  => {
                                     const { ctx, bbox } = self;
+
                                     let xd = self.data[0];
                                     let x = self.valToPos(xd[index], 'x', true);
                                     let xn = self.valToPos(xd[index+1], 'x', true) - 1;
+
+                                    ctx.save();
                                     ctx.beginPath();
                                     ctx.strokeStyle = `rgba(255, 0, 0, 0.2)`;
                                     ctx.lineWidth = xn-x;
                                     ctx.moveTo(x+ctx.lineWidth/2, bbox.top);
                                     ctx.lineTo(x+ctx.lineWidth/2, bbox.top + bbox.height);
                                     ctx.stroke();
+                                    ctx.restore();
                                 });
                             },
                         ],
