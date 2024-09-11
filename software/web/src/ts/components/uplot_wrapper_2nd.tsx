@@ -49,6 +49,7 @@ export interface UplotData extends CachedData {
     value_fills?: {[id: number]: string}[];
     extra_names?: {[id: number]: string}[];
     default_visibilty?: boolean[];
+    lines_vertical?: number[];
 }
 
 interface UplotWrapperProps {
@@ -74,7 +75,7 @@ interface UplotWrapperProps {
     y_sync_ref?: RefObject<UplotFlagsWrapper>;
     default_fill?: boolean;
     padding?: uPlot.Padding;
-    only_show_visible?: boolean
+    only_show_visible?: boolean;
 }
 
 export class UplotWrapper extends Component<UplotWrapperProps, {}> {
@@ -296,6 +297,22 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                 ctx.stroke();
                                 ctx.translate(-offset, -offset);
                                 ctx.restore();
+                            },
+                        ],
+                        draw: [
+                            (self: uPlot) => {
+                                this.data.lines_vertical?.forEach(index  => {
+                                    const { ctx, bbox } = self;
+                                    let xd = self.data[0];
+                                    let x = self.valToPos(xd[index], 'x', true);
+                                    let xn = self.valToPos(xd[index+1], 'x', true) - 1;
+                                    ctx.beginPath();
+                                    ctx.strokeStyle = `rgba(255, 0, 0, 0.2)`;
+                                    ctx.lineWidth = xn-x;
+                                    ctx.moveTo(x+ctx.lineWidth/2, bbox.top);
+                                    ctx.lineTo(x+ctx.lineWidth/2, bbox.top + bbox.height);
+                                    ctx.stroke();
+                                });
                             },
                         ],
                     },
