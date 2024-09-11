@@ -284,13 +284,14 @@ export class PowerManagerSettings extends ConfigComponent<'power_manager/config'
                         </div>
                     </Collapse>
 
-                    <FormRow label={__("power_manager.content.contactor_installed")}>
-                        <Switch desc={__("power_manager.content.contactor_installed_desc")}
-                                disabled={!this.state.enabled}
-                                checked={this.state.em_contactor_installed}
-                                onClick={() => this.setState({em_contactor_installed: !this.state.em_contactor_installed})}
-                        />
-                    </FormRow>
+                    <Collapse in={API.hasModule("em_v1")}>
+                        <FormRow label={__("power_manager.content.contactor_installed")}>
+                            <Switch desc={__("power_manager.content.contactor_installed_desc")}
+                                    checked={this.state.em_contactor_installed}
+                                    onClick={() => this.setState({em_contactor_installed: !this.state.em_contactor_installed})}
+                            />
+                        </FormRow>
+                    </Collapse>
                 </ConfigForm>
             </SubPage>
         );
