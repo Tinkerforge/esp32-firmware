@@ -129,7 +129,8 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 // The chart with only electricity price is the most useful in most cases.
                 default_visibilty: [true, true, false, false],
                 update_timestamp: 0,
-                use_timestamp: 0
+                use_timestamp: 0,
+                lines_vertical: []
             }
             let resolution_multiplier = this.state.prices.resolution == 0 ? 15 : 60
             for (let i = 0; i < this.state.prices.prices.length; i++) {
@@ -138,6 +139,12 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 data.values[2].push(this.state.grid_costs_and_taxes/1000.0);
                 data.values[3].push(this.state.supplier_markup/1000.0);
             }
+
+            // Add vertical line at current time
+            const resolution_divisor = this.state.resolution == 0 ? 15 : 60;
+            const diff = Math.floor(Date.now() / 60000) - this.state.prices.first_date;
+            const index = Math.floor(diff / resolution_divisor);
+            data.lines_vertical.push(index);
         }
 
         // Show loader or data depending on the availability of data
