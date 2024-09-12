@@ -489,6 +489,11 @@ struct Config {
     static Config Object(std::initializer_list<std::pair<const char *, Config>> obj);
 
     template<typename T>
+    static Config Enum(T u, T first, T last) {
+        return Uint(static_cast<uint32_t>(u), static_cast<uint32_t>(first), static_cast<uint32_t>(last));
+    }
+
+    template<typename T>
     static void check_enum_template_type() {
         static_assert(std::is_enum<T>::value, "ConfUnion tag type must be enum");
 
@@ -726,6 +731,23 @@ public:
 #endif
             esp_system_abort(result < 0 ? "" : message);
         }
+    }
+
+    template<typename T>
+    bool changeUnionVariant(T tag) {
+        ASSERT_MAIN_THREAD();
+        if (!this->is<ConfUnion>()) {
+            char *message;
+            int result = -1;
+#ifndef DEBUG_FS_ENABLE
+            result = asprintf(&message, "updateUnion: Config has wrong type. This is %s, (not a ConfUnion)", this->value.getVariantName());
+#else
+            result = asprintf(&message, "updateUnion: Config has wrong type. This is %s, (not a ConfUnion)\nContent is %s", this->value.getVariantName(), this->to_string().c_str());
+#endif
+            esp_system_abort(result < 0 ? "" : message);
+        }
+
+        return get<ConfUnion>()->changeUnionVariant(static_cast<uint8_t>(tag));
     }
 
 private:
