@@ -107,10 +107,7 @@ bool Heating::is_active()
 }
 
 bool Heating::is_sg_ready_output1_closed() {
-    bool sg_ready_output[2] = {false, false};
-    energy_manager_v2.get_sg_ready_output(sg_ready_output);
-
-    return sg_ready_output[1];
+    return em_v2.get_sg_ready_output(1);
 }
 
 void Heating::update()
@@ -128,22 +125,21 @@ void Heating::update()
     const uint32_t p14enwg_input       = config.get("p14enwg_input")->asUint();
     const uint32_t p14enwg_active_type = config.get("p14enwg_active_type")->asUint();
     if(p14enwg_active) {
-        bool p14enwg_on  = false;
-        bool input_value[4];
-        energy_manager_v2.get_input(input_value);
+        bool p14enwg_on;
+        bool input_value = em_v2.get_input(p14enwg_input);
 
-        if (p14enwg_active_type == 0 && input_value[p14enwg_input]) {
-            p14enwg_on = true;
-        } else if(p14enwg_active_type == 1 && !input_value[p14enwg_input]) {
-            p14enwg_on = true;
+        if (p14enwg_active_type == 0) {
+            p14enwg_on = input_value;
+        } else {
+            p14enwg_on = !input_value;
         }
 
         if(p14enwg_on) {
             extended_logging("§14 EnWG blocks heating. Turning on SG ready output 0.");
-            energy_manager_v2.set_sg_ready_output(0, true);
+            em_v2.set_sg_ready_output(0, true);
         } else {
             extended_logging("§14 EnWG does not block heating. Turning off SG ready output 0.");
-            energy_manager_v2.set_sg_ready_output(0, false);
+            em_v2.set_sg_ready_output(0, false);
         }
     }
 
@@ -298,18 +294,17 @@ void Heating::update()
         }
     }
 
-    bool sg_ready_output[2];
-    energy_manager_v2.get_sg_ready_output(sg_ready_output);
+    bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
     if (sg_ready_on) {
         extended_logging("Heating decision: Turning on SG Ready output 1.");
-        if (!sg_ready_output[1]) {
-            energy_manager_v2.set_sg_ready_output(1, true);
+        if (!sg_ready_output_1) {
+            em_v2.set_sg_ready_output(1, true);
             last_sg_ready_change = timestamp_minutes();
         }
     } else {
         extended_logging("Heating decision: Turning off SG Ready output 1.");
-        if (sg_ready_output[1]) {
-            energy_manager_v2.set_sg_ready_output(1, false);
+        if (sg_ready_output_1) {
+            em_v2.set_sg_ready_output(1, false);
             last_sg_ready_change = timestamp_minutes();
         }
     }
