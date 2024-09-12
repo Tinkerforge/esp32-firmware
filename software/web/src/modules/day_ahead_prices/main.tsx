@@ -245,7 +245,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 y_sync_ref={this.uplot_wrapper_flags_ref}
                                 default_fill={true}
                                 only_show_visible={true}
-                                padding={[null, 5, null, null] as uPlot.Padding}
+                                padding={[15, 5, null, null] as uPlot.Padding}
                             />
                         </UplotLoader>
                     </div>
