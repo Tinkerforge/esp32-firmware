@@ -27,10 +27,24 @@
 #include "sprite_defines.h"
 #include "font_defines.h"
 #include "semantic_version.h"
+#include "modules/charge_manager/charge_manager_private.h"
 
 #define UPDATE_INTERVAL 1000
 #define PAGE_FRONT_TEXT_MAX_CHAR 6
 #define TILE_TYPES 8
+
+
+#if MODULE_CM_NETWORKING_AVAILABLE()
+#define FRONT_PANEL_CONTROLLED_CHARGES (MAX_CONTROLLED_CHARGERS - 1)
+#else
+#define FRONT_PANEL_CONTROLLED_CHARGES 0
+#endif
+
+#if MODULE_METERS_AVAILABLE()
+#define FRONT_PANEL_METERS_SLOTS (METERS_SLOTS - 1)
+#else
+#define FRONT_PANEL_METERS_SLOTS 0
+#endif
 
 FrontPanel::FrontPanel() : DeviceModule(warp_front_panel_bricklet_firmware_bin_data,
                                         warp_front_panel_bricklet_firmware_bin_length,
@@ -45,9 +59,9 @@ void FrontPanel::pre_setup()
 
     ConfUnionPrototype<TileType> *tile_prototypes = new ConfUnionPrototype<TileType>[TILE_TYPES]{
         {TileType::EmptyTile,           *Config::Null()},
-        {TileType::Wallbox,             Config::Uint(0, 0, MAX_CONTROLLED_CHARGERS - 1)},
+        {TileType::Wallbox,             Config::Uint(0, 0, FRONT_PANEL_CONTROLLED_CHARGES)},
         {TileType::ChargeManagement,    *Config::Null()},
-        {TileType::Meter,               Config::Uint(0, 0, METERS_SLOTS)},
+        {TileType::Meter,               Config::Uint(0, 0, FRONT_PANEL_METERS_SLOTS)},
         {TileType::DayAheadPrices,      Config::Enum(DAPType::CurrentPrice, DAPType::CurrentPrice, DAPType::AveragePriveTomorrow)},
         {TileType::SolarForecast,       Config::Enum(SFType::ForecastToday, SFType::ForecastToday, SFType::ForecastTomorrow)},
         {TileType::EnergyManagerStatus, *Config::Null()},
@@ -282,39 +296,79 @@ int FrontPanel::update_front_page_empty_tile(const uint8_t index, const TileType
 
 int FrontPanel::update_front_page_wallbox(const uint8_t index, const TileType type, const uint8_t param)
 {
+    String str1 = "Box " + String(param);
+    String str2 = "-- kW";
+#if MODULE_CHARGE_MANAGER_AVAILABLE()
+    size_t charger_count = charge_manager.charger_count;
+    if (charger_count > 0) {
+        auto &charger = charge_manager.charger_state[param];
+        const float watt = charger.power_total_sum/charger.power_total_count;
+        str2 = watt_value_to_display_string(watt);
+    }
+#endif
+
     return set_display_front_page_icon_with_check(
         index,
         true,
         SPRITE_ICON_TYPE2,
-        (String("Box ") + String(param)).c_str(),
+        str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
-        "2 kW", // TODO: Get value from load management
+        str2.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK
     );
 }
 
 int FrontPanel::update_front_page_charge_management(const uint8_t index, const TileType type, const uint8_t param)
 {
+    String str1 = "WB 0x";
+    String str2 = "-- kW";
+#if MODULE_CHARGE_MANAGER_AVAILABLE()
+    size_t charger_count = charge_manager.charger_count;
+    if (charger_count > 0) {
+        str1 = "WB " + String(charger_count) + "x";
+
+        // ma*0.23 = W
+        const float watt = charge_manager.get_allocated_currents()->pv*0.23;
+        str2 = watt_value_to_display_string(watt);
+    }
+#endif
+
     return set_display_front_page_icon_with_check(
         index,
         true,
         SPRITE_ICON_CHARGE_MANAGEMENT,
-        "WB 3x", // TODO: Get value from load management
+        str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
-        "42 kW", // TODO: Get value from load management
+        str2.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK
     );
 }
 
 int FrontPanel::update_front_page_meter(const uint8_t index, const TileType type, const uint8_t param)
 {
+    String str1 = "Bezug";
+    String str2 = "-- kW";
+
+#if MODULE_METERS_AVAILABLE()
+    float watt = 0;
+    MeterValueAvailability meter_availability = meters.get_power_real(param, &watt);
+    if (watt < 0) {
+        watt = -watt;
+        str1 = "Einsp.";
+    }
+
+    if (meter_availability == MeterValueAvailability::Fresh) {
+        str2 = watt_value_to_display_string(watt);
+    }
+#endif
+
     return set_display_front_page_icon_with_check(
         index,
         true,
         SPRITE_ICON_HOME_METER,
-        "Bezug", // TODO: Get value from load management
+        str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
-        "10 kW", // TODO: Get value from load management
+        str2.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK
     );
 }
@@ -324,6 +378,7 @@ int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const Ti
     String str1 = "Preis";
     String str2 = "-- ct";
 
+#if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
     DataReturn<int32_t> price = {false, 0};
     switch (param) {
         case DAPType::CurrentPrice:
@@ -341,15 +396,9 @@ int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const Ti
     }
 
     if (price.data_available) {
-        int32_t ct = price.data / 1000;
-        if(ct >= 100) {
-            str2 = String(ct/100) + "." + String((ct/10) % 10) + " €";
-        } else if (ct <= -100) {
-            str2 = "-" + String(abs(ct)/100) + "." + String((abs(ct)/10) % 10) + " €";
-        } else {
-            str2 = String(ct) + " ct";
-        }
+        str2 = price_value_to_display_string(price.data / 1000);
     }
+#endif
 
     return set_display_front_page_icon_with_check(
         index,
@@ -367,6 +416,7 @@ int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const Tile
     String str1 = "------";
     String str2 = "-- kWh";
 
+#if MODULE_SOLAR_FORECAST_AVAILABLE()
     DataReturn<uint32_t> kwh{};
     switch (param) {
         case SFType::ForecastToday:
@@ -380,24 +430,9 @@ int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const Tile
     }
 
     if (kwh.data_available) {
-        if (kwh.data < 1000) {
-            str2 = String(kwh.data) + "kWh";
-        } else if (kwh.data < (1000*10)) {
-            uint32_t mwh = kwh.data / 1000;
-            str2 = String(mwh/10) + "." + String(mwh%10) + "MWh";
-        } else if (kwh.data < (1000*1000)) {
-            uint32_t mwh = kwh.data / 1000;
-            str2 = String(mwh) + "MWh";
-        } else if(kwh.data < (1000*1000*10)) {
-            uint32_t gwh = kwh.data / (1000*1000);
-            str2 = String(gwh/10) + "." + String(gwh%10) + "GWh";
-        } else if (kwh.data < (1000*1000*1000)) {
-            uint32_t gwh = kwh.data / (1000*1000);
-            str2 = String(gwh) + "GWh";
-        } else {
-            str2 = ">1 TWh"; // damn
-        }
+        str2 = watt_hour_value_to_display_string(kwh.data);
     }
+#endif
 
     return set_display_front_page_icon_with_check(
         index,
@@ -435,9 +470,11 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
     const SemanticVersion version;
     String str1 = "SG Rdy";
     String str2 = "--";
+#if MODULE_HEATING_AVAILABLE()
     if (heating.is_active()) {
         str2 = heating.is_sg_ready_output1_closed() ? "Ein" : "Aus";
     }
+#endif
 
 
     return tf_warp_front_panel_set_display_front_page_icon(
@@ -504,3 +541,49 @@ void FrontPanel::update()
     update_front_page();
 }
 
+String FrontPanel::watt_value_to_display_string(const float watt)
+{
+    if (watt < 10000) {
+        return String(watt) + " W";
+    } else if (watt < (1000*1000)) {
+        uint32_t kw = watt / 1000;
+        return String(kw) + " kW";
+    } else if (watt < (1000*1000*1000)) {
+        uint32_t mw = watt / (1000*1000);
+        return String(mw) + " MW";
+    } else {
+        return String(">1GW");
+    }
+}
+
+String FrontPanel::watt_hour_value_to_display_string(const uint32_t kilo_watt_hour)
+{
+    if (kilo_watt_hour < 1000) {
+        return String(kilo_watt_hour) + "kWh";
+    } else if (kilo_watt_hour < (1000*10)) {
+        uint32_t mwh = kilo_watt_hour / 1000;
+        return String(mwh/10) + "." + String(mwh%10) + "MWh";
+    } else if (kilo_watt_hour < (1000*1000)) {
+        uint32_t mwh = kilo_watt_hour / 1000;
+        return String(mwh) + "MWh";
+    } else if(kilo_watt_hour < (1000*1000*10)) {
+        uint32_t gwh = kilo_watt_hour / (1000*1000);
+        return String(gwh/10) + "." + String(gwh%10) + "GWh";
+    } else if (kilo_watt_hour < (1000*1000*1000)) {
+        uint32_t gwh = kilo_watt_hour / (1000*1000);
+        return String(gwh) + "GWh";
+    } else {
+        return String(">1 TWh"); // damn
+    }
+}
+
+String FrontPanel::price_value_to_display_string(const int32_t price)
+{
+    if(price >= 100) {
+        return String(price/100) + "." + String((price/10) % 10) + " €";
+    } else if (price <= -100) {
+        return "-" + String(abs(price)/100) + "." + String((abs(price)/10) % 10) + " €";
+    } else {
+        return String(price) + " ct";
+    }
+}
