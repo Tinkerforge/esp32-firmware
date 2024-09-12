@@ -144,7 +144,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             const resolution_divisor = this.state.resolution == 0 ? 15 : 60;
             const diff = Math.floor(Date.now() / 60000) - this.state.prices.first_date;
             const index = Math.floor(diff / resolution_divisor);
-            data.lines_vertical.push(index);
+            data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now")});
         }
 
         // Show loader or data depending on the availability of data
@@ -214,7 +214,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 <FormRow label={__("day_ahead_prices.content.current_price")}>
                     <InputText value={(dap.state.current_price/1000.0).toLocaleString() + " ct/kWh (" + this.get_price_timeframe() + ")"}/>
                 </FormRow>
-                <div class="card pl-1 pb-1">
+                <div>
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader
                             ref={this.uplot_loader_ref}
@@ -245,7 +245,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 y_sync_ref={this.uplot_wrapper_flags_ref}
                                 default_fill={true}
                                 only_show_visible={true}
-                                padding={[0, 5, null, null] as uPlot.Padding}
+                                padding={[null, 5, null, null] as uPlot.Padding}
                             />
                         </UplotLoader>
                     </div>

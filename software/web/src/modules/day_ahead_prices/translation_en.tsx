@@ -33,7 +33,8 @@ let x = {
             "day_ahead_market_prices_heading": "Day-Ahead-Börsenpreise",
             "price_ct_per_kwh": "Preis [ct/kWh]",
             "current_price": "Current market price",
-            "undefined": "Undefined"
+            "undefined": "Undefined",
+            "now": "Now"
         },
         "script": {
             "save_failed": "Failed to save the day ahead prices settings",

@@ -33,7 +33,8 @@ let x = {
             "day_ahead_market_prices_heading": "Day-Ahead-Börsenpreise",
             "price_ct_per_kwh": "Preis [ct/kWh]",
             "current_price": "Aktueller Börsenpreis",
-            "undefined": "Unbekannt"
+            "undefined": "Unbekannt",
+            "now": "Jetzt"
         },
         "script": {
             "save_failed": "Speichern der Strompreiseinstellungen fehlgeschlagen",
