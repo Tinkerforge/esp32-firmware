@@ -6,7 +6,7 @@ export interface plane_config___{{{plane_id}}} {
     longitude: number;
     declination: number;
     azimuth: number;
-    kwp: number;
+    wp: number;
 }
 
 export interface plane_state___{{{plane_id}}} {

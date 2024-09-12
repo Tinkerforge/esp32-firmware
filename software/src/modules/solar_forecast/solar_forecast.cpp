@@ -79,7 +79,7 @@ void SolarForecast::pre_setup()
             {"longitude", Config::Int(0, -1800000, 1800000)}, // in 1/10000 degrees
             {"declination", Config::Uint(0, 0, 90)},          // in degrees
             {"azimuth", Config::Int(0, -180, 180)},           // in degrees
-            {"kwp", Config::Uint(0)}                          // in 1/100 kilowatt-peak
+            {"wp", Config::Uint(0)}                           // in watt-peak
         }), [this, index](Config &update, ConfigSource source) -> String {
             // If the config changes for a plane, we reset the state and forecast and trigger a new update
             SolarForecastPlane &p = this->planes[index];
@@ -543,7 +543,7 @@ const char* SolarForecast::get_api_url_with_path(const SolarForecastPlane &plane
         + String(plane.config.get("longitude")->asInt()/10000.0, 4) + "/"
         + String(plane.config.get("declination")->asUint())         + "/"
         + String(plane.config.get("azimuth")->asInt())              + "/"
-        + String(plane.config.get("kwp")->asUint()/100.0, 2);
+        + String(plane.config.get("wp")->asUint()/1000.0, 3);
 
     return api_url_with_path.c_str();
 }
