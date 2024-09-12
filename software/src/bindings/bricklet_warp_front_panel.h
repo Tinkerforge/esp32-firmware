@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-08-29.      *
+ * This file was automatically generated on 2024-09-11.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -132,6 +132,16 @@ typedef struct TF_WARPFrontPanel {
 /**
  * \ingroup TF_WARPFrontPanel
  */
+#define TF_WARP_FRONT_PANEL_FUNCTION_SET_DISPLAY 18
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_FUNCTION_GET_DISPLAY 19
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
 #define TF_WARP_FRONT_PANEL_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
@@ -237,6 +247,16 @@ typedef struct TF_WARPFrontPanel {
  * \ingroup TF_WARPFrontPanel
  */
 #define TF_WARP_FRONT_PANEL_LED_COLOR_YELLOW 2
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_DISPLAY_OFF 0
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC 1
 
 /**
  * \ingroup TF_WARPFrontPanel
@@ -522,6 +542,20 @@ int tf_warp_front_panel_set_led_state(TF_WARPFrontPanel *warp_front_panel, uint8
  *
  */
 int tf_warp_front_panel_get_led_state(TF_WARPFrontPanel *warp_front_panel, uint8_t *ret_pattern, uint8_t *ret_color);
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ *
+ *
+ */
+int tf_warp_front_panel_set_display(TF_WARPFrontPanel *warp_front_panel, uint8_t display);
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ *
+ *
+ */
+int tf_warp_front_panel_get_display(TF_WARPFrontPanel *warp_front_panel, uint8_t *ret_display, uint32_t *ret_countdown);
 
 /**
  * \ingroup TF_WARPFrontPanel

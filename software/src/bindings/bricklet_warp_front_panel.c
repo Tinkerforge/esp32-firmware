@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-08-29.      *
+ * This file was automatically generated on 2024-09-11.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -112,24 +112,29 @@ int tf_warp_front_panel_get_response_expected(TF_WARPFrontPanel *warp_front_pane
                 *ret_response_expected = (warp_front_panel->response_expected[0] & (1 << 6)) != 0;
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_WARP_FRONT_PANEL_FUNCTION_SET_DISPLAY:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_front_panel->response_expected[0] & (1 << 7)) != 0;
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_WARP_FRONT_PANEL_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_front_panel->response_expected[1] & (1 << 0)) != 0;
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_RESET:
+        case TF_WARP_FRONT_PANEL_FUNCTION_SET_STATUS_LED_CONFIG:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_front_panel->response_expected[1] & (1 << 1)) != 0;
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_WRITE_UID:
+        case TF_WARP_FRONT_PANEL_FUNCTION_RESET:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_front_panel->response_expected[1] & (1 << 2)) != 0;
+            }
+            break;
+        case TF_WARP_FRONT_PANEL_FUNCTION_WRITE_UID:
+            if (ret_response_expected != NULL) {
+                *ret_response_expected = (warp_front_panel->response_expected[1] & (1 << 3)) != 0;
             }
             break;
         default:
@@ -198,32 +203,39 @@ int tf_warp_front_panel_set_response_expected(TF_WARPFrontPanel *warp_front_pane
                 warp_front_panel->response_expected[0] &= ~(1 << 6);
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_WARP_FRONT_PANEL_FUNCTION_SET_DISPLAY:
             if (response_expected) {
                 warp_front_panel->response_expected[0] |= (1 << 7);
             } else {
                 warp_front_panel->response_expected[0] &= ~(1 << 7);
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_WARP_FRONT_PANEL_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (response_expected) {
                 warp_front_panel->response_expected[1] |= (1 << 0);
             } else {
                 warp_front_panel->response_expected[1] &= ~(1 << 0);
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_RESET:
+        case TF_WARP_FRONT_PANEL_FUNCTION_SET_STATUS_LED_CONFIG:
             if (response_expected) {
                 warp_front_panel->response_expected[1] |= (1 << 1);
             } else {
                 warp_front_panel->response_expected[1] &= ~(1 << 1);
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_WRITE_UID:
+        case TF_WARP_FRONT_PANEL_FUNCTION_RESET:
             if (response_expected) {
                 warp_front_panel->response_expected[1] |= (1 << 2);
             } else {
                 warp_front_panel->response_expected[1] &= ~(1 << 2);
+            }
+            break;
+        case TF_WARP_FRONT_PANEL_FUNCTION_WRITE_UID:
+            if (response_expected) {
+                warp_front_panel->response_expected[1] |= (1 << 3);
+            } else {
+                warp_front_panel->response_expected[1] &= ~(1 << 3);
             }
             break;
         default:
@@ -1275,6 +1287,124 @@ int tf_warp_front_panel_get_led_state(TF_WARPFrontPanel *warp_front_panel, uint8
     _result = tf_tfp_finish_send(warp_front_panel->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 2) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_warp_front_panel_set_display(TF_WARPFrontPanel *warp_front_panel, uint8_t display) {
+    if (warp_front_panel == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (warp_front_panel->magic != 0x5446 || warp_front_panel->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = warp_front_panel->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_warp_front_panel_get_response_expected(warp_front_panel, TF_WARP_FRONT_PANEL_FUNCTION_SET_DISPLAY, &_response_expected);
+    tf_tfp_prepare_send(warp_front_panel->tfp, TF_WARP_FRONT_PANEL_FUNCTION_SET_DISPLAY, 1, _response_expected);
+
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_front_panel->tfp);
+
+    _send_buf[0] = (uint8_t)display;
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_front_panel->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(warp_front_panel->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(warp_front_panel->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(warp_front_panel->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_warp_front_panel_get_display(TF_WARPFrontPanel *warp_front_panel, uint8_t *ret_display, uint32_t *ret_countdown) {
+    if (warp_front_panel == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (warp_front_panel->magic != 0x5446 || warp_front_panel->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = warp_front_panel->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_front_panel->tfp, TF_WARP_FRONT_PANEL_FUNCTION_GET_DISPLAY, 0, _response_expected);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_front_panel->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_front_panel->tfp);
+        if (_error_code != 0 || _length != 5) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_display != NULL) { *ret_display = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_countdown != NULL) { *ret_countdown = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
+        tf_tfp_packet_processed(warp_front_panel->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(warp_front_panel->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(warp_front_panel->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 5) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
