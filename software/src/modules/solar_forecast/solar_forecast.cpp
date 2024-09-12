@@ -249,7 +249,7 @@ static esp_err_t update_event_handler(esp_http_client_event_t *event)
 void SolarForecast::deserialize_data()
 {
     // Deserialize json received from API
-    DynamicJsonDocument json_doc{SOLAR_FORECAST_MAX_JSON_LENGTH*2};
+    DynamicJsonDocument json_doc{SOLAR_FORECAST_MAX_ARDUINO_JSON_BUFFER_SIZE};
     DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
     if (error) {
         logger.printfln("Error during JSON deserialization: %s", error.c_str());
@@ -273,16 +273,15 @@ void SolarForecast::deserialize_data()
             }
             return;
         } else {
-            JsonObject js_info       = js_message["info"];
-            JsonObject js_reatelimit = js_message["ratelimit"];
+            JsonObject js_info      = js_message["info"];
+            JsonObject js_ratelimit = js_message["ratelimit"];
 
             JsonString place         = js_info["place"];
-            JsonString timezone      = js_info["timezone"];
             plane_current->state.get("place")->updateString(place.c_str());
 
-            JsonInteger limit        = js_reatelimit["limit"];
-            JsonInteger remaining    = js_reatelimit["remaining"];
-            JsonInteger period       = js_reatelimit["period"];
+            JsonInteger limit        = js_ratelimit["limit"];
+            JsonInteger remaining    = js_ratelimit["remaining"];
+            JsonInteger period       = js_ratelimit["period"];
             state.get("rate_limit")->updateInt(limit);
             state.get("rate_remaining")->updateInt(remaining);
             if (remaining == 0) {
@@ -417,7 +416,6 @@ void SolarForecast::update()
 
     esp_http_client_config_t http_config = {};
 
-    http_config.url = get_api_url_with_path(*plane_current);
     http_config.event_handler = update_event_handler;
     http_config.user_data = this;
     http_config.is_async = true;
@@ -449,7 +447,12 @@ void SolarForecast::update()
 #endif
     }
 
-    http_client = esp_http_client_init(&http_config);
+    {
+        // esp_http_client_init copies the url.
+        String api_url_with_path = get_api_url_with_path(*plane_current);
+        http_config.url = api_url_with_path.c_str();
+        http_client = esp_http_client_init(&http_config);
+    }
 
     if (http_client == nullptr) {
         logger.printfln("Error while creating HTTP client");
@@ -528,24 +531,20 @@ void SolarForecast::update()
 }
 
 // Create API path including user configuration
-const char* SolarForecast::get_api_url_with_path(const SolarForecastPlane &plane)
+String SolarForecast::get_api_url_with_path(const SolarForecastPlane &plane)
 {
-    static String api_url_with_path;
-
     String api_url = config.get("api_url")->asString();
 
     if (!api_url.endsWith("/")) {
         api_url += "/";
     }
 
-    api_url_with_path = api_url + "estimate/"
+    return api_url + "estimate/"
         + String(plane.config.get("latitude")->asInt()/10000.0, 4)  + "/"
         + String(plane.config.get("longitude")->asInt()/10000.0, 4) + "/"
         + String(plane.config.get("declination")->asUint())         + "/"
         + String(plane.config.get("azimuth")->asInt())              + "/"
         + String(plane.config.get("wp")->asUint()/1000.0, 3);
-
-    return api_url_with_path.c_str();
 }
 
 static const char *solar_forecast_path_postfixes[] = {"", "config", "state", "forecast"};

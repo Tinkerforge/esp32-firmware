@@ -26,7 +26,8 @@
 #include "module.h"
 #include "config.h"
 
-#define SOLAR_FORECAST_MAX_JSON_LENGTH 4096*4 // TODO: How big does this need to be?
+#define SOLAR_FORECAST_MAX_JSON_LENGTH 8192
+#define SOLAR_FORECAST_MAX_ARDUINO_JSON_BUFFER_SIZE 8192
 #define SOLAR_FORECAST_PLANES 6
 
 enum SFDownloadState {
@@ -73,7 +74,7 @@ private:
     void update();
     void update_price();
     String get_path(const SolarForecastPlane &plane, const PathType path_type);
-    const char* get_api_url_with_path(const SolarForecastPlane &plane);
+    String get_api_url_with_path(const SolarForecastPlane &plane);
     void deserialize_data();
     uint32_t get_timestamp_today_00_00_in_minutes();
     bool forecast_time_between(const uint32_t first_date, const uint32_t index, const uint32_t start, const uint32_t end);
