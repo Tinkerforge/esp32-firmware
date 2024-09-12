@@ -473,7 +473,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 <FormRow label={__("solar_forecast.content.solar_forecast_tomorrow_label")} label_muted={__("solar_forecast.content.solar_forecast_tomorrow_label_muted")}>
                     <InputText value={does_forecast_exist() ? get_kwh_tomorrow()        + " kWh" : __("solar_forecast.content.unknown_not_yet")}/>
                 </FormRow>
-                <div class="card pl-1 pb-1">
+                <div>
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader
                             ref={this.uplot_loader_ref}
@@ -504,7 +504,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                 y_sync_ref={this.uplot_wrapper_flags_ref}
                                 default_fill={true}
                                 only_show_visible={true}
-                                padding={[0, 5, null, null] as uPlot.Padding}
+                                padding={[null, 5, null, null] as uPlot.Padding}
                             />
                         </UplotLoader>
                     </div>
