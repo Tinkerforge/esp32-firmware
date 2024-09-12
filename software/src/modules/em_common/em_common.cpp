@@ -30,8 +30,8 @@ EMCommon::EMCommon()
 {
 #if MODULE_EM_V1_AVAILABLE()
     backend = &em_v1;
-//#elif MODULE_EM_V2_AVAILABLE()
-//    backend = &em_v2;
+#elif MODULE_EM_V2_AVAILABLE()
+    backend = &em_v2;
 #else
     #error Unknown or missing Energy Manager module!
 #endif

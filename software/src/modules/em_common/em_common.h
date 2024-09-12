@@ -101,6 +101,7 @@ class EMCommon final : public IModule
     // It's a bit ugly that we have to declare all specific EM modules as friends here.
     // But this allows us to make the configs private, to enforce all access happens via the public methods below.
     friend class EMV1;
+    friend class EMV2;
 
 public:
     EMCommon();
