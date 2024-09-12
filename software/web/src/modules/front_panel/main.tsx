@@ -19,7 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { createRef, h } from "preact";
+import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -46,14 +46,9 @@ export function FrontPanelNavbar() {
     );
 }
 
-type TileConfig = API.getType['tiles/0/config'];
 type FrontPanelConfig = API.getType["front_panel/config"];
 
-interface FrontPanelState {
-    tile_configs: {[tile_index: number]: TileConfig};
-}
-
-export class FrontPanel extends ConfigComponent<"front_panel/config", {}, FrontPanelState> {
+export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
     static options_tile: [string, string][] = [
         ["0", __("front_panel.content.empty_tile")],
         ["1", __("front_panel.content.wallbox")],
@@ -88,7 +83,7 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}, FrontP
     constructor() {
         super('front_panel/config',
               __("front_panel.script.save_failed"));
-
+/*
         for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
             util.addApiEventListener_unchecked(`front_panel/tiles/${tile_index}/config`, () => {
                 let config = API.get_unchecked(`front_panel/tiles/${tile_index}/config`);
@@ -110,9 +105,10 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}, FrontP
                 }
             });
         }
+*/
     }
 
-    override async sendSave(topic: "front_panel/config", config: FrontPanelConfig) {
+    /*override async sendSave(topic: "front_panel/config", config: FrontPanelConfig) {
         for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
             await API.save_unchecked(
                 `front_panel/tiles/${tile_index}/config`,
@@ -122,8 +118,9 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}, FrontP
         }
 
         await super.sendSave(topic, config);
-    }
+    }*/
 
+/*
     override async sendReset(topic: "front_panel/config") {
         for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
             await API.reset_unchecked(`front_panel/tiles/${tile_index}/config`, this.error_string, this.reboot_string);
@@ -131,7 +128,8 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}, FrontP
 
         await super.sendReset(topic);
     }
-
+*/
+/*
     override getIsModified(topic: "front_panel/config"): boolean {
         for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
             if (API.is_modified_unchecked(`front_panel/tiles/${tile_index}/config`))
@@ -140,7 +138,7 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}, FrontP
 
         return super.getIsModified(topic);
     }
-
+*/
     get_tile_config(tile_index: number, tile_items: [string, string][]) {
         return <FormRow label="">
             <div class="row no-gutters">
@@ -152,8 +150,12 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}, FrontP
                         <InputSelect
                             className="front-panel-input-group-prepend"
                             items={tile_items}
-                            value={this.state.tile_configs[tile_index].parameter}
-                            onValue={(v) => this.setState({tile_configs: {...this.state.tile_configs, [tile_index]: {parameter: parseInt(v), type: this.state.tile_configs[tile_index].type}}})}
+                            value={this.state.tiles[tile_index][1]}
+                            onValue={(v) => {
+                                let tiles = this.state.tiles;
+                                tiles[tile_index][1] = parseInt(v);
+                                this.setState({tiles: tiles})
+                            }}
                         />
                     </div>
                 </div>
@@ -161,7 +163,7 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}, FrontP
         </FormRow>
     }
 
-    render(props: {}, state: FrontPanelState & FrontPanelConfig) {
+    render(props: {}, state: FrontPanelConfig) {
         if (!util.render_allowed()) {
             return <SubPage name="front_panel" />;
         }
@@ -194,20 +196,24 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}, FrontP
                     </FormRow>
                     <Collapse in={state.enable}>
                         <div>
-                            {[...Array(FRONT_PANEL_TILES).keys()].map((tile_index) => {
+                            {util.range(FRONT_PANEL_TILES).map((tile_index) => {
                                 return <div>
                                     {tile_index != 0 && <FormSeparator first={true}/>}
                                     <FormRow symbol={get_tile_symbol(tile_index)} label={__("front_panel.content.tile") + " " + (tile_index+1)}>
                                         <InputSelect
                                             items={FrontPanel.options_tile}
-                                            value={state.tile_configs[tile_index].type}
-                                            onValue={(v) => this.setState({tile_configs: {...state.tile_configs, [tile_index]: {parameter: state.tile_configs[tile_index].parameter, type: parseInt(v)}}})}
+                                            value={state.tiles[tile_index][0]}
+                                            onValue={(v) => {
+                                                let tiles = state.tiles;
+                                                tiles[tile_index] = [parseInt(v), state.tiles[tile_index][1]];
+                                                this.setState({tiles: tiles})}
+                                            }
                                         />
                                     </FormRow>
-                                    {state.tile_configs[tile_index].type === 1 && (this.get_tile_config(tile_index, FrontPanel.options_wallbox))}
-                                    {state.tile_configs[tile_index].type === 3 && (this.get_tile_config(tile_index, FrontPanel.options_meter))}
-                                    {state.tile_configs[tile_index].type === 4 && (this.get_tile_config(tile_index, FrontPanel.options_day_ahead_prices))}
-                                    {state.tile_configs[tile_index].type === 5 && (this.get_tile_config(tile_index, FrontPanel.options_solar_forecast))}
+                                    {state.tiles[tile_index][0] === 1 && (this.get_tile_config(tile_index, FrontPanel.options_wallbox))}
+                                    {state.tiles[tile_index][0] === 3 && (this.get_tile_config(tile_index, FrontPanel.options_meter))}
+                                    {state.tiles[tile_index][0] === 4 && (this.get_tile_config(tile_index, FrontPanel.options_day_ahead_prices))}
+                                    {state.tiles[tile_index][0] === 5 && (this.get_tile_config(tile_index, FrontPanel.options_solar_forecast))}
                                 </div>
                             })}
                         </div>

@@ -30,22 +30,47 @@
 
 #define UPDATE_INTERVAL 1000
 #define PAGE_FRONT_TEXT_MAX_CHAR 6
-
-extern FrontPanel front_panel;
+#define TILE_TYPES 8
 
 FrontPanel::FrontPanel() : DeviceModule(warp_front_panel_bricklet_firmware_bin_data,
-                                            warp_front_panel_bricklet_firmware_bin_length,
-                                            "front_panel",
-                                            "WARP Front Panel",
-                                            "Front Panel",
-                                            [this](){this->setup_bricklet();}) {}
+                                        warp_front_panel_bricklet_firmware_bin_length,
+                                        "front_panel",
+                                        "WARP Front Panel",
+                                        "Front Panel",
+                                        [this](){this->setup_bricklet();}) {}
 
 void FrontPanel::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
+    ConfUnionPrototype<TileType> *tile_prototypes = new ConfUnionPrototype<TileType>[TILE_TYPES]{
+        {TileType::EmptyTile,           *Config::Null()},
+        {TileType::Wallbox,             Config::Uint(0, 0, MAX_CONTROLLED_CHARGERS - 1)},
+        {TileType::ChargeManagement,    *Config::Null()},
+        {TileType::Meter,               Config::Uint(0, 0, METERS_SLOTS)},
+        {TileType::DayAheadPrices,      Config::Enum(DAPType::CurrentPrice, DAPType::CurrentPrice, DAPType::AveragePriveTomorrow)},
+        {TileType::SolarForecast,       Config::Enum(SFType::ForecastToday, SFType::ForecastToday, SFType::ForecastTomorrow)},
+        {TileType::EnergyManagerStatus, *Config::Null()},
+        {TileType::HeatingStatus,       *Config::Null()},
+    };
+
+    Config *tile_union = new Config{Config::Union<TileType>(
+        *Config::Null(),
+        TileType::EmptyTile,
+        tile_prototypes,
+        TILE_TYPES
+    )};
+
     config = ConfigRoot{Config::Object({
-            {"enable", Config::Bool(true)}
+            {"enable", Config::Bool(true)},
+            {"tiles", Config::Array({
+                    *tile_union,
+                    *tile_union,
+                    *tile_union,
+                    *tile_union,
+                    *tile_union,
+                    *tile_union
+                }, tile_union, FRONT_PANEL_TILES, FRONT_PANEL_TILES, Config::type_id<Config::ConfUnion>())}
         }), [this](Config &cfg, ConfigSource source) -> String {
             // Schedule check_bricklet_state() here, since this checks
             // if the display needs to be turned on/off.
@@ -57,15 +82,12 @@ void FrontPanel::pre_setup()
         }
     };
 
-    uint8_t index = 0;
-    for (FrontPanelTile &tile : tiles) {
-        tile.config = Config::Object({
-            {"type", Config::Uint8(0)},
-            {"parameter", Config::Uint8(0)},
-        });
-
-        tile.index = index++;
-    }
+    config.get("tiles")->get(0)->changeUnionVariant(TileType::Wallbox);
+    config.get("tiles")->get(1)->changeUnionVariant(TileType::DayAheadPrices);
+    config.get("tiles")->get(2)->changeUnionVariant(TileType::HeatingStatus);
+    config.get("tiles")->get(3)->changeUnionVariant(TileType::Meter);
+    config.get("tiles")->get(4)->changeUnionVariant(TileType::SolarForecast);
+    config.get("tiles")->get(5)->changeUnionVariant(TileType::EnergyManagerStatus);
 }
 
 void FrontPanel::setup_bricklet()
@@ -82,14 +104,15 @@ void FrontPanel::check_bricklet_state()
 {
     const bool enable = config.get("enable")->asBool();
     uint8_t display = 0;
-    uint32_t countdown = 0;
-    int result = tf_warp_front_panel_get_display(&device, &display, &countdown);
+    int result = tf_warp_front_panel_get_display(&device, &display, nullptr);
     if (result != TF_E_OK) {
         if (!is_in_bootloader(result)) {
             logger.printfln("Failed to call get_display: %d", result);
         }
         return;
-    } else if ((display == TF_WARP_FRONT_PANEL_DISPLAY_OFF) && enable) {
+    }
+
+    if ((display == TF_WARP_FRONT_PANEL_DISPLAY_OFF) && enable) {
         result = tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC);
         if (result != TF_E_OK) {
             logger.printfln("Failed to call set_display(%d): %d", TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC, result);
@@ -109,9 +132,6 @@ void FrontPanel::setup()
         return;
 
     api.restorePersistentConfig("front_panel/config", &config);
-    for (FrontPanelTile &tile : tiles) {
-        api.restorePersistentConfig("front_panel/tiles/" + String(tile.index) + "/config", &tile.config);
-    }
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->check_bricklet_state();
@@ -121,9 +141,6 @@ void FrontPanel::setup()
 void FrontPanel::register_urls()
 {
     api.addPersistentConfig("front_panel/config", &config);
-    for (FrontPanelTile &tile : tiles) {
-        api.addPersistentConfig("front_panel/tiles/" + String(tile.index) + "/config", &tile.config);
-    }
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update();
@@ -302,35 +319,35 @@ int FrontPanel::update_front_page_meter(const uint8_t index, const TileType type
     );
 }
 
-int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const TileType type, const uint8_t param)
+int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const TileType type, const DAPType param)
 {
     String str1 = "Preis";
     String str2 = "-- ct";
 
-    if (param > 2) {
-        logger.printfln("Invalid day ahead prices parameter: %d", param);
-    } else {
-        DataReturn<int32_t> price = {false, 0};
-        if (param == 0) {
+    DataReturn<int32_t> price = {false, 0};
+    switch (param) {
+        case DAPType::CurrentPrice:
             str1 = "Preis";
             price = day_ahead_prices.get_current_price();
-        } else if (param == 1) {
+            break;
+        case DAPType::AveragePriveToday:
             str1 = "Heute";
             price = day_ahead_prices.get_average_price_today();
-        } else if (param == 2) {
+            break;
+        case DAPType::AveragePriveTomorrow:
             str1 = "Morgen";
             price = day_ahead_prices.get_average_price_tomorrow();
-        }
+            break;
+    }
 
-        if (price.data_available) {
-            int32_t ct = price.data / 1000;
-            if(ct >= 100) {
-                str2 = String(ct/100) + "." + String((ct/10) % 10) + " €";
-            } else if (ct <= -100) {
-                str2 = "-" + String(abs(ct)/100) + "." + String((abs(ct)/10) % 10) + " €";
-            } else {
-                str2 = String(ct) + " ct";
-            }
+    if (price.data_available) {
+        int32_t ct = price.data / 1000;
+        if(ct >= 100) {
+            str2 = String(ct/100) + "." + String((ct/10) % 10) + " €";
+        } else if (ct <= -100) {
+            str2 = "-" + String(abs(ct)/100) + "." + String((abs(ct)/10) % 10) + " €";
+        } else {
+            str2 = String(ct) + " ct";
         }
     }
 
@@ -345,33 +362,40 @@ int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const Ti
     );
 }
 
-int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const TileType type, const uint8_t param)
+int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const TileType type, const SFType param)
 {
     String str1 = "------";
     String str2 = "-- kWh";
-    if(param > 1) {
-        logger.printfln("Invalid solar forecast parameter: %d", param);
-    } else {
-        auto kwh = param == 0 ? solar_forecast.get_kwh_today() : solar_forecast.get_kwh_tomorrow();
-        str1 = param == 0 ? "Heute" : "Morgen";
-        if (kwh.data_available) {
-            if (kwh.data < 1000) {
-                str2 = String(kwh.data) + "kWh";
-            } else if (kwh.data < (1000*10)) {
-                uint32_t mwh = kwh.data / 1000;
-                str2 = String(mwh/10) + "." + String(mwh%10) + "MWh";
-            } else if (kwh.data < (1000*1000)) {
-                uint32_t mwh = kwh.data / 1000;
-                str2 = String(mwh) + "MWh";
-            } else if(kwh.data < (1000*1000*10)) {
-                uint32_t gwh = kwh.data / (1000*1000);
-                str2 = String(gwh/10) + "." + String(gwh%10) + "GWh";
-            } else if (kwh.data < (1000*1000*1000)) {
-                uint32_t gwh = kwh.data / (1000*1000);
-                str2 = String(gwh) + "GWh";
-            } else {
-                str2 = ">1 TWh"; // damn
-            }
+
+    DataReturn<uint32_t> kwh{};
+    switch (param) {
+        case SFType::ForecastToday:
+            str1 = "Heute";
+            kwh = solar_forecast.get_kwh_today();
+            break;
+        case SFType::ForecastTomorrow:
+            str1 = "Morgen";
+            kwh = solar_forecast.get_kwh_tomorrow();
+            break;
+    }
+
+    if (kwh.data_available) {
+        if (kwh.data < 1000) {
+            str2 = String(kwh.data) + "kWh";
+        } else if (kwh.data < (1000*10)) {
+            uint32_t mwh = kwh.data / 1000;
+            str2 = String(mwh/10) + "." + String(mwh%10) + "MWh";
+        } else if (kwh.data < (1000*1000)) {
+            uint32_t mwh = kwh.data / 1000;
+            str2 = String(mwh) + "MWh";
+        } else if(kwh.data < (1000*1000*10)) {
+            uint32_t gwh = kwh.data / (1000*1000);
+            str2 = String(gwh/10) + "." + String(gwh%10) + "GWh";
+        } else if (kwh.data < (1000*1000*1000)) {
+            uint32_t gwh = kwh.data / (1000*1000);
+            str2 = String(gwh) + "GWh";
+        } else {
+            str2 = ">1 TWh"; // damn
         }
     }
 
@@ -430,20 +454,38 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
 
 void FrontPanel::update_front_page()
 {
-    for (FrontPanelTile &tile : tiles) {
-        const uint8_t index = tile.index;
-        const TileType type = TileType(tile.config.get("type")->asUint());
-        const uint8_t param = tile.config.get("parameter")->asUint();
-        int result = 0;
+    auto tiles = config.get("tiles");
+    for (size_t i = 0; i < tiles->count(); ++i) {
+        auto tile = tiles->get(i);
+        TileType type = tile->getTag<TileType>();
+
+        int result = TF_E_OK;
+
         switch (type) {
-            case TileType::EmptyTile:           result = update_front_page_empty_tile(index, type, param);            break;
-            case TileType::Wallbox:             result = update_front_page_wallbox(index, type, param);               break;
-            case TileType::ChargeManagement:    result = update_front_page_charge_management(index, type, param);     break;
-            case TileType::Meter:               result = update_front_page_meter(index, type, param);                 break;
-            case TileType::DayAheadPrices:      result = update_front_page_day_ahead_prices(index, type, param);      break;
-            case TileType::SolarForecast:       result = update_front_page_solar_forecast(index, type, param);        break;
-            case TileType::EnergyManagerStatus: result = update_front_page_energy_manager_status(index, type, param); break;
-            case TileType::HeatingStatus:       result = update_front_page_heating_status(index, type, param);        break;
+            case TileType::EmptyTile:
+                result = update_front_page_empty_tile(i, type, 0);
+                break;
+            case TileType::Wallbox:
+                result = update_front_page_wallbox(i, type, tile->get()->asUint());
+                break;
+            case TileType::ChargeManagement:
+                result = update_front_page_charge_management(i, type, 0);
+                break;
+            case TileType::Meter:
+                result = update_front_page_meter(i, type, tile->get()->asUint());
+                break;
+            case TileType::DayAheadPrices:
+                result = update_front_page_day_ahead_prices(i, type, tile->get()->asEnum<DAPType>());
+                break;
+            case TileType::SolarForecast:
+                result = update_front_page_solar_forecast(i, type, tile->get()->asEnum<SFType>());
+                break;
+            case TileType::EnergyManagerStatus:
+                result = update_front_page_energy_manager_status(i, type, 0);
+                break;
+            case TileType::HeatingStatus:
+                result = update_front_page_heating_status(i, type, 0);
+                break;
             default:
                 logger.printfln("Unknown tile type: %d", static_cast<std::underlying_type<TileType>::type>(type));
                 break;
@@ -461,3 +503,4 @@ void FrontPanel::update()
     update_status_bar();
     update_front_page();
 }
+
