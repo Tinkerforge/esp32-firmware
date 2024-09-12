@@ -426,7 +426,6 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
         str2.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK
     );
-    return TF_E_OK;
 }
 
 void FrontPanel::update_front_page()
