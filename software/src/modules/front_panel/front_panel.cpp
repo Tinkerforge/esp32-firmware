@@ -408,7 +408,7 @@ int FrontPanel::update_front_page_energy_manager_status(const uint8_t index, con
 
 int FrontPanel::update_front_page_heating_status(const uint8_t index, const TileType type, const uint8_t param)
 {
-    /*const SemanticVersion version;
+    const SemanticVersion version;
     String str1 = "SG Rdy";
     String str2 = "--";
     if (heating.is_active()) {
@@ -425,7 +425,7 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
         str2.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK
-    );*/
+    );
     return TF_E_OK;
 }
 
