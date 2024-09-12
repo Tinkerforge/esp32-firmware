@@ -49,7 +49,7 @@ export interface UplotData extends CachedData {
     value_fills?: {[id: number]: string}[];
     extra_names?: {[id: number]: string}[];
     default_visibilty?: boolean[];
-    lines_vertical?: number[];
+    lines_vertical?: {index: number, text: string}[];
 }
 
 interface UplotWrapperProps {
@@ -301,20 +301,34 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         ],
                         draw: [
                             (self: uPlot) => {
-                                this.data.lines_vertical?.forEach(index  => {
+                                this.data.lines_vertical?.forEach(line  => {
                                     const { ctx, bbox } = self;
 
                                     let xd = self.data[0];
-                                    let x = self.valToPos(xd[index], 'x', true);
-                                    let xn = self.valToPos(xd[index+1], 'x', true) - 1;
+                                    let x = self.valToPos(xd[line.index], 'x', true);
+                                    let xn = self.valToPos(xd[line.index+1], 'x', true) - 1;
 
                                     ctx.save();
+
                                     ctx.beginPath();
                                     ctx.strokeStyle = `rgba(64, 64, 64, 0.2)`;
                                     ctx.lineWidth = xn-x;
-                                    ctx.moveTo(x+ctx.lineWidth/2, bbox.top);
+                                    if (line.text.length > 0) {
+                                        ctx.moveTo(x+ctx.lineWidth/2, bbox.top + 15);
+                                    } else {
+                                        ctx.moveTo(x+ctx.lineWidth/2, bbox.top);
+                                    }
                                     ctx.lineTo(x+ctx.lineWidth/2, bbox.top + bbox.height);
                                     ctx.stroke();
+
+                                    if (line.text.length > 0) {
+                                        ctx.lineWidth = 1;
+                                        let metrics   = ctx.measureText(line.text);
+                                        let text_mid  = metrics.width/2 + (xn-x)/2;
+                                        ctx.fillStyle = `rgba(32, 32, 32, 1)`;
+                                        ctx.fillText(line.text, x + text_mid, bbox.top + (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent)/2);
+                                    }
+
                                     ctx.restore();
                                 });
                             },
