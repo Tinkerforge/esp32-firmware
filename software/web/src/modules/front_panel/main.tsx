@@ -167,13 +167,13 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}, FrontP
         }
 
         function get_tile_symbol(tile_index: number) {
-            return <svg xmlns="http://www.w3.org/2000/svg" width="35" height="24" viewBox="0 0 35 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-grid">
-                <rect fill={tile_index == 0 ? "currentColor" : ""} x="3"  y="3"  width="7" height="7"></rect>
-                <rect fill={tile_index == 1 ? "currentColor" : ""} x="14" y="3"  width="7" height="7"></rect>
-                <rect fill={tile_index == 2 ? "currentColor" : ""} x="25" y="3"  width="7" height="7"></rect>
-                <rect fill={tile_index == 3 ? "currentColor" : ""} x="3"  y="14" width="7" height="7"></rect>
-                <rect fill={tile_index == 4 ? "currentColor" : ""} x="14" y="14" width="7" height="7"></rect>
-                <rect fill={tile_index == 5 ? "currentColor" : ""} x="25" y="14" width="7" height="7"></rect>
+            return <svg xmlns="http://www.w3.org/2000/svg" width="38" height="35" viewBox="0 0 38 35" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-grid">
+                <rect fill={tile_index == 0 ? "currentColor" : ""} y="3"  x="3"  width="14" height="7"></rect>
+                <rect fill={tile_index == 1 ? "currentColor" : ""} y="14" x="3"  width="14" height="7"></rect>
+                <rect fill={tile_index == 2 ? "currentColor" : ""} y="25" x="3"  width="14" height="7"></rect>
+                <rect fill={tile_index == 3 ? "currentColor" : ""} y="3"  x="21" width="14" height="7"></rect>
+                <rect fill={tile_index == 4 ? "currentColor" : ""} y="14" x="21" width="14" height="7"></rect>
+                <rect fill={tile_index == 5 ? "currentColor" : ""} y="25" x="21" width="14" height="7"></rect>
             </svg>
         }
 
