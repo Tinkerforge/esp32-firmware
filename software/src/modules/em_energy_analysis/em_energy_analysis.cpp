@@ -264,9 +264,14 @@ void EMEnergyAnalysis::collect_data_points()
             // input_len and output_len now contain the actual value count
 
             flags |= power_manager.get_is_3phase() ? 0b0001 : 0;
-            flags |= inputs[0]                     ? 0b0010 : 0; // EMv1 input[0]
-            flags |= inputs[1]                     ? 0b0100 : 0; // EMv1 input[1]
-            flags |= outputs[0]                    ? 0b1000 : 0; // EMv1 relay
+            flags |= inputs[0]                     ? 0b0010 : 0; // EMv1 input[0]  EMv2 input[0]
+            flags |= inputs[1]                     ? 0b0100 : 0; // EMv1 input[1]  EMv2 input[1]
+            //       inputs[2]                                                     EMv2 input[2]
+            //       inputs[3]                                                     EMv2 input[3]
+            flags |= outputs[0]                    ? 0b1000 : 0; // EMv1 relay     EMv2 relay[0]
+            //       outputs[1]                                                    EMv2 relay[1]
+            //       outputs[2]                                                    EMv2 sg_ready[0]
+            //       outputs[3]                                                    EMv2 sg_ready[1]
 
             for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
                 // FIXME: how to tell if meter data is stale?
@@ -1352,12 +1357,13 @@ void EMEnergyAnalysis::history_wallbox_daily_response(IChunkedResponse *response
 struct [[gnu::packed]] EnergyManager5MinData {
     uint8_t flags; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data
     int32_t power[7]; // W
+    uint32_t price; // FIXME Unit? Use price for something.
 };
 
 static void energy_manager_5min_data_points_handler(void *do_not_use,
                                                     uint16_t data_length,
                                                     uint16_t data_chunk_offset,
-                                                    uint8_t data_chunk_data[33], // FIXME Chunk data length changed from 58 to 33.
+                                                    uint8_t data_chunk_data[33],
                                                     void *user_data)
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
@@ -1396,19 +1402,13 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
     }
 
     uint16_t actual_length = data_length - data_chunk_offset;
-    uint16_t i;
-    EnergyManager5MinData *p;
 
-    if (actual_length > 58) { // FIXME Chunk data length changed to 33.
-        actual_length = 58;
-    }
+    if (actual_length >= sizeof(EnergyManager5MinData)) {
+        if (metadata->write_comma && write_success) {
+            write_success = response->write(",", 1);
+        }
 
-    if (metadata->write_comma && write_success) {
-        write_success = response->write(",", 1);
-    }
-
-    for (i = 0; i < actual_length && write_success; i += sizeof(EnergyManager5MinData)) {
-        p = (EnergyManager5MinData *)&data_chunk_data[i];
+        EnergyManager5MinData *p = (EnergyManager5MinData *)data_chunk_data;
 
         if ((p->flags & 0x80 /* no data */) == 0) {
             write_success = response->writef("%u", p->flags);
@@ -1428,15 +1428,11 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
                     write_success = response->writef(",null");
                 }
             }
-
-            if (write_success && i < actual_length - sizeof(EnergyManager5MinData)) {
-                write_success = response->write(",");
-            }
         }
     }
 
     metadata->write_comma = true;
-    metadata->next_offset += 58; // FIXME Chunk data length changed to 33.
+    metadata->next_offset += 33;
 
     if (metadata->next_offset >= data_length) {
         if (metadata->utc_end_slots > 0) {
@@ -1505,9 +1501,6 @@ void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *re
                                                          Ownership *response_ownership,
                                                          uint32_t response_owner_id)
 {
-    // FIXME energy_manager_5min_data_points_handler is broken.
-    return;
-
     // history is stored with date in UTC to avoid DST overlap problems.
     // API accepts date in localtime, convert from localtime to UTC
     uint8_t local_year = history_energy_manager_5min.get("year")->asUint() - 2000;
