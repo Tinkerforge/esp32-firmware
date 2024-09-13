@@ -365,7 +365,7 @@ int FrontPanel::update_front_page_meter(const uint8_t index, const TileType type
     return set_display_front_page_icon_with_check(
         index,
         true,
-        SPRITE_ICON_HOME_METER,
+        watt < 0 ? SPRITE_ICON_ENERGY_EXPORT : SPRITE_ICON_ENERGY_IMPORT,
         str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
         str2.c_str(),
