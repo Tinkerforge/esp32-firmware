@@ -30,7 +30,7 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { Trello } from "react-feather";
+import { Thermometer } from "react-feather";
 import { InputTime } from "../../ts/components/input_time";
 import { Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
@@ -38,7 +38,7 @@ import { MeterValueID    } from "../meters/meter_value_id";
 import { get_noninternal_meter_slots } from "../power_manager/main";
 
 export function HeatingNavbar() {
-    return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Trello />} hidden={false} />;
+    return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} hidden={false} />;
 }
 
 type HeatingConfig = API.getType["heating/config"];
