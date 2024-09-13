@@ -37,8 +37,6 @@ export class NavbarGroup extends Component<NavbarGroupProps, NavbarGroupState> {
     constructor(props: NavbarGroupProps) {
         super(props);
 
-        props.symbol.props.class = "col-auto";
-
         this.state = {
             open: false,
         } as any;
