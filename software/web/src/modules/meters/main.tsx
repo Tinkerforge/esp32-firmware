@@ -71,6 +71,7 @@ interface MetersState {
     configs_table: {[meter_slot: number]: MeterConfig};
     values_by_id: {[meter_slot: number]: NumberToNumber};
     chart_selected: "history_48"|"history_24"|"history_12"|"history_6"|"history_3"|"live";
+    charger_meter_slot: number;
     addMeterSlot: number;
     addMeter: MeterConfig;
     editMeterSlot: number;
@@ -210,6 +211,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                   configs_table: {},
                   values_by_id: {},
                   chart_selected: "history_48",
+                  charger_meter_slot: null,
                   addMeterSlot: null,
                   addMeter: [MeterClassID.None, null],
                   editMeterSlot: null,
@@ -227,6 +229,14 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         util.addApiEventListener('info/modules', () => {
             this.update_live_cache();
             this.update_history_cache();
+        });
+
+        util.addApiEventListener_unchecked('evse/meter_config', () => {
+            let config = API.get_unchecked('evse/meter_config');
+
+            this.setState({
+                charger_meter_slot: config.slot,
+            });
         });
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
@@ -514,7 +524,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 values: [this.history_data.timestamps],
             };
 
-            let meter_slot = this.props.status_ref.current.state.meter_slot;
+            let meter_slot = this.props.status_ref.current.state.charger_meter_slot;
 
             if (this.history_data.samples[meter_slot].length > 0) {
                 status_data.keys.push('meter_' + meter_slot);
@@ -1008,10 +1018,10 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                             onAddShow={async () => {
                                 let addMeterSlot = null;
 
-                                // Slot 0 is special, don't auto-select it
-                                for (let free_meter_slot = 1; free_meter_slot < METERS_SLOTS; ++free_meter_slot) {
-                                    if (state.configs_table[free_meter_slot][0] == MeterClassID.None) {
-                                        addMeterSlot = free_meter_slot;
+                                // Don't auto-select charger meter slot
+                                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                                    if (meter_slot != state.charger_meter_slot && state.configs_table[meter_slot][0] == MeterClassID.None) {
+                                        addMeterSlot = meter_slot;
                                         break;
                                     }
                                 }
@@ -1086,7 +1096,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 }
 
 interface MetersStatusState {
-    meter_slot: number,
+    charger_meter_slot: number,
     meter_configs: {[meter_slot: number]: MeterConfig},
 }
 
@@ -1110,9 +1120,17 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         super();
 
         this.state = {
-            meter_slot: 0,
+            charger_meter_slot: null,
             meter_configs: {},
         } as any;
+
+        util.addApiEventListener_unchecked('evse/meter_config', () => {
+            let config = API.get_unchecked('evse/meter_config');
+
+            this.setState({
+                charger_meter_slot: config.slot,
+            });
+        });
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
@@ -1139,10 +1157,10 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
     }
 
     render() {
-        if (!util.render_allowed() || !API.hasFeature("meters") || API.hasFeature("energy_manager"))
+        if (!util.render_allowed() || !API.hasFeature("meters") || API.hasFeature("energy_manager") || this.state.charger_meter_slot === null)
             return <StatusSection name="meters" />;
 
-        let value_ids = API.get_unchecked(`meters/${this.state.meter_slot}/value_ids`);
+        let value_ids = API.get_unchecked(`meters/${this.state.charger_meter_slot}/value_ids`);
 
         // The meters feature is set if any meter is connected. This includes a WARP Charger Smart
         // with external meter for PV excess charging. But in this case the status plot should not
@@ -1151,7 +1169,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         if (value_ids.length == 0)
             return <StatusSection name="meters" />;
 
-        let values = API.get_unchecked(`meters/${this.state.meter_slot}/values`);
+        let values = API.get_unchecked(`meters/${this.state.charger_meter_slot}/values`);
         let power: number = undefined;
         let power_idx = get_meter_power_index(value_ids);
 
@@ -1197,7 +1215,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                         </div>
                     </div>
                 </FormRow>
-                <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(this.state.meter_configs, this.state.meter_slot)}>
+                <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(this.state.meter_configs, this.state.charger_meter_slot)}>
                     <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                 </FormRow>
             </StatusSection>
