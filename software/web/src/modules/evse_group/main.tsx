@@ -20,11 +20,12 @@
 import { __ } from "../../ts/translation";
 import { h, ComponentChildren, RefObject } from "preact";
 import { NavbarGroup } from "../../ts/components/navbar_group";
-import { BatteryCharging } from "react-feather";
 
 export function EVSEGroupNavbar(props: {children: ComponentChildren, group_ref: RefObject<NavbarGroup>}) {
     return (
-        <NavbarGroup ref={props.group_ref} title={__("evse_group.navbar.evse_group")} symbol={<BatteryCharging />} hidden={false}>
+        <NavbarGroup ref={props.group_ref} title={__("evse_group.navbar.evse_group")} symbol={
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="feather feather-type2"><path d="M23 10.846c0 6.022-4.925 10.904-11 10.904S1 16.868 1 10.846c0-1.506.308-2.94.864-4.244C2.143 5.95 2.88 4.75 2.88 4.75h18.243s.736 1.2 1.014 1.852c.556 1.304.864 2.738.864 4.244z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="8.5" r="1.5"/><circle cx="15" cy="8.5" r="1.5"/><circle cx="9" cy="16.75" r="2"/><circle cx="15" cy="16.75" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg>
+            } hidden={false}>
             {props.children}
         </NavbarGroup>);
 }
