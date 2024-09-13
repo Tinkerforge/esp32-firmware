@@ -312,9 +312,9 @@ void tag_id_bytes_to_string(const uint8_t *tag_id, uint8_t tag_id_len, char buf[
 void NFC::update_seen_tags()
 {
     for (int i = 0; i < TAG_LIST_LENGTH - 1; ++i) {
-        uint8_t buf[10] = {0};
+        uint8_t tag_id_bytes[10];
         uint8_t tag_id_len = 0;
-        int result = tf_nfc_simple_get_tag_id(&device, i, &new_tags[i].tag_type, buf, &tag_id_len, &new_tags[i].last_seen);
+        int result = tf_nfc_simple_get_tag_id(&device, i, &new_tags[i].tag_type, tag_id_bytes, &tag_id_len, &new_tags[i].last_seen);
         if (result != TF_E_OK) {
             if (!is_in_bootloader(result)) {
                 logger.printfln("Failed to get tag id %d, rc: %d", i, result);
@@ -322,11 +322,7 @@ void NFC::update_seen_tags()
             continue;
         }
 
-        tag_id_bytes_to_string(buf, tag_id_len, new_tags[i].tag_id);
-
-        seen_tags.get(i)->get("tag_type")->updateUint(new_tags[i].tag_type);
-        seen_tags.get(i)->get("tag_id")->updateString(new_tags[i].tag_id);
-        seen_tags.get(i)->get("last_seen")->updateUint(new_tags[i].last_seen);
+        tag_id_bytes_to_string(tag_id_bytes, tag_id_len, new_tags[i].tag_id);
     }
 
     if (last_tag_injection == 0 || deadline_elapsed(last_tag_injection + 1000 * 60 * 60 * 24)) {
@@ -340,9 +336,15 @@ void NFC::update_seen_tags()
         new_tags[TAG_LIST_LENGTH - 1].last_seen = millis() - last_tag_injection;
     }
 
-    seen_tags.get(TAG_LIST_LENGTH - 1)->get("last_seen")->updateUint(new_tags[TAG_LIST_LENGTH - 1].last_seen);
-    seen_tags.get(TAG_LIST_LENGTH - 1)->get("tag_type")->updateUint(new_tags[TAG_LIST_LENGTH - 1].tag_type);
-    seen_tags.get(TAG_LIST_LENGTH - 1)->get("tag_id")->updateString(new_tags[TAG_LIST_LENGTH - 1].tag_id);
+    // update state
+    for (int i = 0; i < TAG_LIST_LENGTH; ++i) {
+        Config *seen_tag_state = static_cast<Config *>(seen_tags.get(i));
+        tag_info_t *new_tag = new_tags + i;
+
+        seen_tag_state->get("last_seen")->updateUint(new_tag->last_seen);
+        seen_tag_state->get("tag_type")->updateUint(new_tag->tag_type);
+        seen_tag_state->get("tag_id")->updateString(new_tag->tag_id);
+    }
 
     // compare new list with old
     for (int new_idx = 0; new_idx < TAG_LIST_LENGTH; ++new_idx) {
