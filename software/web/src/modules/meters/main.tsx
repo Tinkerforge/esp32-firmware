@@ -1111,6 +1111,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
 
         this.state = {
             meter_slot: 0,
+            meter_configs: {},
         } as any;
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
@@ -1142,6 +1143,14 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             return <StatusSection name="meters" />;
 
         let value_ids = API.get_unchecked(`meters/${this.state.meter_slot}/value_ids`);
+
+        // The meters feature is set if any meter is connected. This includes a WARP Charger Smart
+        // with external meter for PV excess charging. But in this case the status plot should not
+        // be shown, because it will never have values. Only show the plot if the shown meter has
+        // declared its value IDs to indicate that it actually is alive.
+        if (value_ids.length == 0)
+            return <StatusSection name="meters" />;
+
         let values = API.get_unchecked(`meters/${this.state.meter_slot}/values`);
         let power: number = undefined;
         let power_idx = get_meter_power_index(value_ids);
