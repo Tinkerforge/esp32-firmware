@@ -429,17 +429,13 @@ void NFC::setup()
         seen_tags.add();
     }
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleWithFixedDelay([this]() {
         this->check_nfc_state();
     }, 5 * 60 * 1000, 5 * 60 * 1000);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
-        static uint32_t last_run = 0;
-        if (deadline_elapsed(last_run + 300)) {
-            last_run = millis();
-            this->update_seen_tags();
-        }
-    }, 10, 10);
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        this->update_seen_tags();
+    }, 0, 300);
 }
 
 void NFC::register_urls()
