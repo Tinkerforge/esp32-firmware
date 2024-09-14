@@ -35,6 +35,7 @@ public:
     void setup() override;
     void register_urls() override;
     bool is_active();
+    bool is_sg_ready_output0_closed();
     bool is_sg_ready_output1_closed();
 
     ConfigRoot config;

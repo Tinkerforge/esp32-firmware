@@ -106,6 +106,10 @@ bool Heating::is_active()
     return true;
 }
 
+bool Heating::is_sg_ready_output0_closed() {
+    return em_v2.get_sg_ready_output(0);
+}
+
 bool Heating::is_sg_ready_output1_closed() {
     return em_v2.get_sg_ready_output(1);
 }

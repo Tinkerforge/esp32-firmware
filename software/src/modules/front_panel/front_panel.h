@@ -84,6 +84,7 @@ private:
     void update_wifi();
     void update_status_bar();
     void update_front_page();
+    void update_led();
     int update_front_page_empty_tile(const uint8_t index, const TileType type, const uint8_t param);
     int update_front_page_wallbox(const uint8_t index, const TileType type, const uint8_t param);
     int update_front_page_charge_management(const uint8_t index, const TileType type, const uint8_t param);

@@ -348,16 +348,22 @@ int FrontPanel::update_front_page_meter(const uint8_t index, const TileType type
 {
     String str1 = "Bezug";
     String str2 = "-- kW";
+    uint32_t icon_index = SPRITE_ICON_ENERGY;
 
 #if MODULE_METERS_AVAILABLE()
     float watt = 0;
     MeterValueAvailability meter_availability = meters.get_power_real(param, &watt);
-    if (watt < 0) {
-        watt = -watt;
-        str1 = "Einsp.";
-    }
-
     if (meter_availability == MeterValueAvailability::Fresh) {
+        if (watt > 0) {
+            icon_index = SPRITE_ICON_ENERGY_IMPORT;
+        } else if (watt == 0) {
+            // Different str1 here if no energy is flowing?
+        } else if (watt < 0) {
+            icon_index = SPRITE_ICON_ENERGY_EXPORT;
+            watt = -watt;
+            str1 = "Einsp.";
+        }
+
         str2 = watt_value_to_display_string(watt);
     }
 #endif
@@ -365,7 +371,7 @@ int FrontPanel::update_front_page_meter(const uint8_t index, const TileType type
     return set_display_front_page_icon_with_check(
         index,
         true,
-        watt < 0 ? SPRITE_ICON_ENERGY_EXPORT : SPRITE_ICON_ENERGY_IMPORT,
+        icon_index,
         str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
         str2.c_str(),
@@ -403,7 +409,7 @@ int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const Ti
     return set_display_front_page_icon_with_check(
         index,
         true,
-        SPRITE_ICON_MONEY,
+        SPRITE_ICON_WALLET_EURO,
         str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
         str2.c_str(),
@@ -415,6 +421,7 @@ int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const Tile
 {
     String str1 = "------";
     String str2 = "-- kWh";
+    uint32_t icon_index = SPRITE_ICON_SUN;
 
 #if MODULE_SOLAR_FORECAST_AVAILABLE()
     DataReturn<uint32_t> kwh{};
@@ -431,13 +438,18 @@ int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const Tile
 
     if (kwh.data_available) {
         str2 = watt_hour_value_to_display_string(kwh.data);
+        // If 5 kWh is a high or a low value of course depends on the size of the pv system.
+        // On average, 5 kWh in a day sounds low enough to show some clouds.
+        if (kwh.data <= 5) {
+            icon_index = SPRITE_ICON_CLOUD_SUN;
+        }
     }
 #endif
 
     return set_display_front_page_icon_with_check(
         index,
         true,
-        SPRITE_ICON_SUN,
+        icon_index,
         str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
         str2.c_str(),
@@ -457,7 +469,7 @@ int FrontPanel::update_front_page_energy_manager_status(const uint8_t index, con
         &device,
         index,
         true,
-        SPRITE_ICON_COG, // TODO: WEM icon?
+        SPRITE_ICON_WRENCH,
         str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
         str2.c_str(),
@@ -470,18 +482,29 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
     const SemanticVersion version;
     String str1 = "SG Rdy";
     String str2 = "--";
+    uint32_t icon_index = SPRITE_ICON_HEATING;
+
 #if MODULE_HEATING_AVAILABLE()
     if (heating.is_active()) {
-        str2 = heating.is_sg_ready_output1_closed() ? "Ein" : "Aus";
+        // First check for SG Ready output 0 (§14EnWG blocked or not)
+        // §14EnWG has priority if active. Afterwards check for heating overdrive
+        if (heating.is_sg_ready_output0_closed()) {
+            str1 = "14EnWG";
+            str2 = "Block.";
+            icon_index = SPRITE_ICON_HEATING_OFF;
+        } else {
+            const bool closed1 = heating.is_sg_ready_output1_closed();
+            str2 = closed1 ? "Ein" : "Aus";
+            icon_index = closed1 ? SPRITE_ICON_HEATING_HOT : SPRITE_ICON_HEATING;
+        }
     }
 #endif
-
 
     return tf_warp_front_panel_set_display_front_page_icon(
         &device,
         index,
         true,
-        SPRITE_ICON_HEATING,
+        icon_index,
         str1.c_str(),
         FONT_24PX_FREEMONO_WHITE_ON_BLACK,
         str2.c_str(),
@@ -534,11 +557,40 @@ void FrontPanel::update_front_page()
     }
 }
 
+void FrontPanel::update_led()
+{
+    // Go trough possible states by decreasing priority and return after LED is set
+
+    // Check if Wifi is enabled but not connected
+    if (wifi.get_connection_state() == WifiState::NotConnected) {
+        set_led(LEDPattern::Blinking, LEDColor::Red);
+        return;
+    }
+
+    // TODO: Add more error checks here
+
+    // Check if something is charging
+#if MODULE_CHARGE_MANAGER_AVAILABLE()
+    size_t charger_count = charge_manager.charger_count;
+    if (charger_count > 0) {
+        const float current = charge_manager.get_allocated_currents()->pv; // mA
+        if (current > 100) {
+            set_led(LEDPattern::Breathing, LEDColor::Green);
+            return;
+        }
+    }
+#endif
+
+    // Default is green
+    set_led(LEDPattern::On, LEDColor::Green);
+}
+
 void FrontPanel::update()
 {
     update_wifi();
     update_status_bar();
     update_front_page();
+    update_led();
 }
 
 String FrontPanel::watt_value_to_display_string(const float watt)
