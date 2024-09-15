@@ -322,7 +322,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                         let metrics   = ctx.measureText(line.text);
                                         let text_mid  = metrics.width/2 + (xn-x)/2;
                                         ctx.fillStyle = `rgba(32, 32, 32, 1)`;
-                                        ctx.fillText(line.text, x + text_mid, (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent)/2);
+                                        ctx.fillText(line.text, x + text_mid, 1 + (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent)/2);
                                     }
 
                                     ctx.restore();
