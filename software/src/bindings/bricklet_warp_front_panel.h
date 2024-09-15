@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-09-11.      *
+ * This file was automatically generated on 2024-09-15.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -138,6 +138,11 @@ typedef struct TF_WARPFrontPanel {
  * \ingroup TF_WARPFrontPanel
  */
 #define TF_WARP_FRONT_PANEL_FUNCTION_GET_DISPLAY 19
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_FUNCTION_GET_FLASH_METADATA 20
 
 /**
  * \ingroup TF_WARPFrontPanel
@@ -556,6 +561,13 @@ int tf_warp_front_panel_set_display(TF_WARPFrontPanel *warp_front_panel, uint8_t
  *
  */
 int tf_warp_front_panel_get_display(TF_WARPFrontPanel *warp_front_panel, uint8_t *ret_display, uint32_t *ret_countdown);
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ *
+ *
+ */
+int tf_warp_front_panel_get_flash_metadata(TF_WARPFrontPanel *warp_front_panel, uint32_t *ret_version_flash, uint32_t *ret_version_expected, uint32_t *ret_length_flash, uint32_t *ret_length_expected, uint32_t *ret_checksum_flash, uint32_t *ret_checksum_expected);
 
 /**
  * \ingroup TF_WARPFrontPanel

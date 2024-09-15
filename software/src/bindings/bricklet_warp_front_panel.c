@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-09-11.      *
+ * This file was automatically generated on 2024-09-15.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -1405,6 +1405,70 @@ int tf_warp_front_panel_get_display(TF_WARPFrontPanel *warp_front_panel, uint8_t
     _result = tf_tfp_finish_send(warp_front_panel->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 5) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_warp_front_panel_get_flash_metadata(TF_WARPFrontPanel *warp_front_panel, uint32_t *ret_version_flash, uint32_t *ret_version_expected, uint32_t *ret_length_flash, uint32_t *ret_length_expected, uint32_t *ret_checksum_flash, uint32_t *ret_checksum_expected) {
+    if (warp_front_panel == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (warp_front_panel->magic != 0x5446 || warp_front_panel->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = warp_front_panel->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_tfp_prepare_send(warp_front_panel->tfp, TF_WARP_FRONT_PANEL_FUNCTION_GET_FLASH_METADATA, 0, _response_expected);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_front_panel->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_front_panel->tfp);
+        if (_error_code != 0 || _length != 24) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_version_flash != NULL) { *ret_version_flash = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_version_expected != NULL) { *ret_version_expected = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_length_flash != NULL) { *ret_length_flash = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_length_expected != NULL) { *ret_length_expected = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_checksum_flash != NULL) { *ret_checksum_flash = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_checksum_expected != NULL) { *ret_checksum_expected = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+        }
+        tf_tfp_packet_processed(warp_front_panel->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(warp_front_panel->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(warp_front_panel->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 24) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 

@@ -28,6 +28,7 @@
 #include "font_defines.h"
 #include "semantic_version.h"
 #include "modules/charge_manager/charge_manager_private.h"
+#include "metadata.h"
 
 #define UPDATE_INTERVAL 1000
 #define PAGE_FRONT_TEXT_MAX_CHAR 6
@@ -150,6 +151,10 @@ void FrontPanel::setup()
     task_scheduler.scheduleWithFixedDelay([this](){
         this->check_bricklet_state();
     }, 5 * 60 * 1000, 5 * 60 * 1000);
+
+    task_scheduler.scheduleOnce([this](){
+        this->check_flash_metadata();
+    }, 15*1000); // We assume that the Bricklet has booted and read the metadata after 15s
 }
 
 void FrontPanel::register_urls()
@@ -637,5 +642,47 @@ String FrontPanel::price_value_to_display_string(const int32_t price)
         return "-" + String(abs(price)/100) + "." + String((abs(price)/10) % 10) + " €";
     } else {
         return String(price) + " ct";
+    }
+}
+
+void FrontPanel::check_flash_metadata()
+{
+    uint32_t version_flash     = 0;
+    uint32_t version_bricklet  = 0;
+    uint32_t length_flash      = 0;
+    uint32_t length_bricklet   = 0;
+    uint32_t checksum_flash    = 0;
+    uint32_t checksum_bricklet = 0;
+
+    int result = tf_warp_front_panel_get_flash_metadata(
+        &device,
+        &version_flash,
+        &version_bricklet,
+        &length_flash,
+        &length_bricklet,
+        &checksum_flash,
+        &checksum_bricklet
+    );
+
+    if (result != TF_E_OK) {
+        logger.printfln("Failed to call get_flash_metadata: %d", result);
+        return;
+    }
+
+    const bool metadata_ok = (version_flash  == METADATA_VERSION)  && (version_bricklet  == METADATA_VERSION) &&
+                             (length_flash   == METADATA_LENGTH)   && (length_bricklet   == METADATA_LENGTH)  &&
+                             (checksum_flash == METADATA_CHECKSUM) && (checksum_bricklet == METADATA_CHECKSUM);
+
+    // Check if content of flash and expectation of the Bricklet and expections of the ESP32 match
+    // If it doesn't match, we can't actually do anything. The front panel will still work, but
+    // probably miss some icons or similar.
+    // This print will help to identify which part is not up-to-date
+    if (!metadata_ok) {
+        logger.printfln(
+            "Flash metadata mismatch. Version: %u vs %u vs %u, Length: %u vs %u vs %u, Checksum: %x vs %x vs %x",
+            version_flash,  version_bricklet,  METADATA_VERSION,
+            length_flash,   length_bricklet,   METADATA_LENGTH,
+            checksum_flash, checksum_bricklet, METADATA_CHECKSUM
+        );
     }
 }

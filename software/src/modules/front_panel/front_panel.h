@@ -95,6 +95,8 @@ private:
     int update_front_page_heating_status(const uint8_t index, const TileType type, const uint8_t param);
     int set_display_front_page_icon_with_check(const uint32_t icon_index, bool active, const uint32_t sprite_index, const char *text_1, const uint8_t font_index_1, const char *text_2, const uint8_t font_index_2);
 
+    void check_flash_metadata();
+
     String watt_value_to_display_string(const float watt);
     String watt_hour_value_to_display_string(const uint32_t kilo_watt_hour);
     String price_value_to_display_string(const int32_t price);
