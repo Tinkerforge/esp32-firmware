@@ -301,7 +301,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         ],
                         draw: [
                             (self: uPlot) => {
-                                this.data.lines_vertical?.forEach(line  => {
+                                this.data?.lines_vertical?.forEach(line  => {
                                     const { ctx, bbox } = self;
 
                                     let xd = self.data[0];
