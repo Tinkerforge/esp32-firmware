@@ -117,6 +117,10 @@ void FrontPanel::setup_bricklet()
 
 void FrontPanel::check_bricklet_state()
 {
+    if (!initialized) {
+        return;
+    }
+
     const bool enable = config.get("enable")->asBool();
     uint8_t display = 0;
     int result = tf_warp_front_panel_get_display(&device, &display, nullptr);
@@ -143,8 +147,9 @@ void FrontPanel::check_bricklet_state()
 void FrontPanel::setup()
 {
     setup_bricklet();
-    if (!device_found)
+    if (!device_found) {
         return;
+    }
 
     api.restorePersistentConfig("front_panel/config", &config);
 
@@ -592,6 +597,10 @@ void FrontPanel::update_led()
 
 void FrontPanel::update()
 {
+    if (!initialized) {
+        return;
+    }
+
     update_wifi();
     update_status_bar();
     update_front_page();
@@ -647,6 +656,14 @@ String FrontPanel::price_value_to_display_string(const int32_t price)
 
 void FrontPanel::check_flash_metadata()
 {
+    // Not yet initialized, try again in 15s.
+    if (!initialized) {
+        task_scheduler.scheduleOnce([this](){
+            this->check_flash_metadata();
+        }, 15*1000);
+        return;
+    }
+
     uint32_t version_flash     = 0;
     uint32_t version_bricklet  = 0;
     uint32_t length_flash      = 0;
