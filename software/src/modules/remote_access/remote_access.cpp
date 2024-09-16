@@ -296,7 +296,7 @@ void RemoteAccess::register_urls() {
 
             if (error) {
                 char err_str[64];
-                snprintf(err_str, 64, "Failed to deserialize request body: %i", error);
+                snprintf(err_str, 64, "Failed to deserialize request body: %s", error.c_str());
                 return request.send(400, "text/plain; charset=utf-8", err_str);
             }
         }
@@ -335,7 +335,7 @@ void RemoteAccess::register_urls() {
 
             if (error) {
                 char err_str[64];
-                snprintf(err_str, 64, "Failed to deserialize request body: %i", error);
+                snprintf(err_str, 64, "Failed to deserialize request body: %s", error.c_str());
                 return request.send(400, "text/plain; charset=utf-8", err_str);
             }
         }
@@ -748,7 +748,7 @@ void RemoteAccess::parse_secret(ConfigRoot config) {
         DeserializationError error = deserializeJson(doc, response_body.c_str());
         if (error) {
             char err_str[64];
-            snprintf(err_str, 64, "Error while deserializing Secret: %i", error);
+            snprintf(err_str, 64, "Error while deserializing Secret: %s", error.c_str());
             registration_state.get("message")->updateString(err_str);
             registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
             return;
@@ -789,7 +789,7 @@ void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> k
 
         if (error) {
             char err_str[64];
-            snprintf(err_str, 64, "Error while deserializing registration response: %i", error);
+            snprintf(err_str, 64, "Error while deserializing registration response: %s", error.c_str());
             registration_state.get("message")->updateString(err_str);
             registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
             return;
