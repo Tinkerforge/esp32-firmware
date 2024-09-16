@@ -689,10 +689,8 @@ void RemoteAccess::login_new(ConfigRoot config, CoolString &login_key) {
     }
 
     for (int i = 0; i < 24; i++) {
-        printf("%u, ", key[i]);
         doc["login_key"].add(key[i]);
     }
-    printf("\n");
     serializeJson(doc, body);
 
     run_request_with_next_stage(url, HTTP_METHOD_POST, body.c_str(), body.length(), config, [this](ConfigRoot cfg) {
