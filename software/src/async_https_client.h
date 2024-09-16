@@ -66,7 +66,7 @@ struct AsyncHTTPSClientEvent
             const void *data_chunk;
             size_t data_chunk_len;
             size_t data_remaining_len;
-            size_t data_complete_len;
+            ssize_t data_complete_len;
         };
     };
 };
@@ -78,6 +78,7 @@ public:
 
     void download_async(const char *url, int cert_id, std::function<void(AsyncHTTPSClientEvent *event)> callback);
     void post_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> callback);
+    void put_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> callback);
     void delete_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> callback);
     void abort_async();
     void set_header(const char *key, const char *value);
@@ -92,12 +93,12 @@ private:
     std::unique_ptr<unsigned char[]> cert;
     std::function<void(AsyncHTTPSClientEvent *event)> callback;
     std::vector<std::pair<String, String>> headers;
-    String cookies;
+    String cookies = "";
     String owned_body;
     bool in_progress;
     bool abort_requested;
     esp_http_client_handle_t http_client;
     uint32_t last_async_alive;
     size_t received_len;
-    size_t complete_len;
+    ssize_t complete_len;
 };
