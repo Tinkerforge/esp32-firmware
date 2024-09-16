@@ -193,15 +193,17 @@ export function initCapsLockCheck() {
     document.addEventListener("click", checkCapsLock);
 }
 
-export const iframeMode = window.top !== window.self;
+export let remoteAccessMode = window.top !== window.self;
 const path = location.origin;
 export let connection_id = "";
-
-if (iframeMode) {
-    window.parent.postMessage("webinterface_loaded");
-}
+let iframe_timeout: number = null;
+let iframe_timeout_ms = 100;
 
 window.addEventListener("message", (e) => {
+    if (iframe_timeout != null) {
+        window.clearTimeout(iframe_timeout);
+        iframe_timeout = null;
+    }
     if (typeof e.data === "string") {
         const msg = e.data as string;
         if (iFrameSocketCb) {
@@ -211,6 +213,13 @@ window.addEventListener("message", (e) => {
         connection_id = e.data.connection_id;
     }
 });
+
+if (remoteAccessMode) {
+    window.parent.postMessage("webinterface_loaded");
+    iframe_timeout = window.setTimeout(() => {
+        remoteAccessMode = false;
+    }, iframe_timeout_ms);
+}
 
 export function closeRemoteConnection() {
     window.parent.postMessage("close");
@@ -272,11 +281,17 @@ function iFrameSocketInit(first: boolean, keep_as_first: boolean, continuation: 
 }
 
 export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void, isIframe?: boolean) {
-    if (iframeMode) {
-        pauseWebSockets();
-        iFrameSocketInit(first, keep_as_first, continuation);
-        window.parent.postMessage("initIFrame", "*");
-        return;
+    if (remoteAccessMode) {
+        if (iframe_timeout != null) {
+            // We are currently checking whether the iframe parent is the remote access page.
+            // Retry after the check is done.
+            window.setTimeout(() => setupEventSource(first, keep_as_first, continuation, isIframe), iframe_timeout_ms);
+        } else {
+            pauseWebSockets();
+            iFrameSocketInit(first, keep_as_first, continuation);
+            window.parent.postMessage("initIFrame", "*");
+            return;
+        }
     }
 
     if (!first) {
@@ -374,7 +389,7 @@ export function postReboot(alert_title: string, alert_text: string) {
 let loginReconnectTimeout: number = null;
 
 export function ifLoggedInElse(if_continuation: () => void, else_continuation: () => void) {
-    if (!iframeMode || connection_id.length > 0) {
+    if (!remoteAccessMode || connection_id.length > 0) {
         download("/login_state", 10000)
             .catch(e => new Blob(["Logged in"]))
             .then(blob => blob.text())
@@ -552,7 +567,7 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
 
     let error_message: string = null;
 
-    if (iframeMode) {
+    if (remoteAccessMode) {
         url = path + (url.startsWith("/") ? "" : "/") + url;
     }
 
@@ -599,7 +614,7 @@ export async function download(url: string, timeout_ms: number = 5000) {
 
     let response = null;
     try {
-        if (iframeMode) {
+        if (remoteAccessMode) {
             url = path + (url.startsWith("/") ? "" : "/") + url;
         }
         response = await fetch(url, {signal: abort.signal, headers: {"X-Connection-Id": connection_id}});
@@ -620,7 +635,7 @@ export async function put(url: string, payload: any, timeout_ms: number = 5000) 
 
     let response = null;
     try {
-        if (iframeMode) {
+        if (remoteAccessMode) {
             url = path + (url.startsWith("/") ? "" : "/") + url;
         }
         response = await fetch(url, {
