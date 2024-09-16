@@ -31,7 +31,7 @@ import { SubPage } from "src/ts/components/sub_page";
 import { Switch } from "src/ts/components/switch";
 import { __ } from "src/ts/translation";
 import "./wireguard";
-import { config } from "./api";
+import { config, RegistrationState } from "./api";
 import { InputNumber } from "src/ts/components/input_number";
 import { InputSelect } from "src/ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
@@ -67,6 +67,105 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         return new Uint8Array(data);
     }
 
+    reset_registration_state() {
+        const resetPromise: Promise<void> = new Promise((resolve, reject) => {
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            util.addApiEventListener("remote_access/registration_state", () => {
+                const state = API.get("remote_access/registration_state");
+                if (state.state === RegistrationState.None) {
+                    controller.abort();
+                    resolve();
+                }
+            }, {signal});
+        });
+
+        API.call_unchecked("remote_access/reset_registration_state", {}, __("remote_access.script.save_failed"));
+        return resetPromise;
+    }
+
+    get_login_salt(cfg: config) {
+        const getLoginSaltPromise: Promise<Uint8Array> = new Promise((resolve, reject) => {
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            util.addApiEventListener("remote_access/registration_state", async () => {
+                const state = API.get("remote_access/registration_state");
+                if (state.state === RegistrationState.Success) {
+                    controller.abort();
+                    const encodedString = "data:application/octet-stream;base64," + state.message;
+                    const res = await fetch(encodedString);
+                    resolve(new Uint8Array(await res.arrayBuffer()));
+                } else if (state.state === RegistrationState.Error) {
+                    controller.abort();
+                    reject(state.message);
+                }
+            }, {signal});
+        });
+        API.call_unchecked("remote_access/get_login_salt", cfg, __("remote_access.script.save_failed"));
+
+        return getLoginSaltPromise;
+    }
+
+    get_secret_salt(cfg: config) {
+        const getSecretPromise: Promise<Uint8Array> = new Promise((resolve, reject) => {
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            util.addApiEventListener("remote_access/registration_state", async () => {
+                const state = API.get("remote_access/registration_state");
+                if (state.state === RegistrationState.Success) {
+                    controller.abort();
+                    const encodedString = "data:application/octet-stream;base64," + state.message;
+                    const res = await fetch(encodedString);
+                    resolve(new Uint8Array(await res.arrayBuffer()));
+                } else if (state.state === RegistrationState.Error) {
+                    controller.abort()
+                    reject(state.message);
+                }
+            }, {signal});
+        });
+        API.call_unchecked("remote_access/get_secret_salt", cfg, __("remote_access.script.save_failed"));
+
+        return getSecretPromise;
+    }
+
+    async register_new(cfg: util.NoExtraProperties<API.getType["remote_access/register"]>) {
+        const registrationPromise: Promise<void> = new Promise((resolve, reject) => {
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            util.addApiEventListener("remote_access/registration_state", () => {
+                const state = API.get("remote_access/registration_state");
+                if (state.state === RegistrationState.Success) {
+                    controller.abort();
+                    resolve();
+                } else if (state.state === RegistrationState.Error) {
+                    controller.abort();
+                    reject(state.message);
+                }
+            }, {signal});
+        });
+
+        await API.call("remote_access/register", cfg, __("remote_access.script.save_failed"));
+        await registrationPromise;
+        await this.reset_registration_state();
+
+        const modal = util.async_modal_ref.current;
+        if(!await modal.show({
+                title: __("main.reboot_title"),
+                body: __("main.reboot_content")(__("remote_access.script.reboot_content_changed")),
+                no_text: __("main.abort"),
+                yes_text: __("main.reboot"),
+                no_variant: "secondary",
+                yes_variant: "danger"
+            }))
+            return;
+
+        util.reboot();
+    }
+
     async get_secret() {
         const resp = await fetch(`https://${this.state.relay_host}:${this.state.relay_port}/api/user/get_secret`, {
             method: "GET",
@@ -81,13 +180,13 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     async registerCharger(cfg: config) {
+        await this.reset_registration_state();
+
         if (!cfg.enable) {
             const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
                 config: cfg,
                 login_key: "",
-                secret: "",
                 secret_key: "",
-                secret_nonce: "",
                 mgmt_charger_public: "",
                 mgmt_charger_private: "",
                 mgmt_psk: "",
@@ -95,6 +194,52 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             };
 
             await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"), 10000);
+            return;
+        }
+
+
+        let loginSalt: Uint8Array;
+        try {
+            loginSalt = await this.get_login_salt(cfg);
+            await this.reset_registration_state();
+        } catch (err) {
+            console.error(`Failed to get login-salt: ${err}`);
+            return;
+        }
+
+        const loginHash = await hash({
+            pass: this.state.password,
+            salt: loginSalt,
+            time: 2,
+            mem: 19 * 1024,
+            hashLen: 24,
+            parallelism: 1,
+            type: ArgonType.Argon2id
+        });
+        const loginKey = (await util.blobToBase64(new Blob([loginHash.hash]))).replace("data:application/octet-stream;base64,", "");
+
+        try {
+            await this.new_login({
+                config: cfg,
+                login_key: loginKey,
+                secret_key: "",
+                mgmt_charger_public: "",
+                mgmt_charger_private: "",
+                mgmt_psk: "",
+                keys: []
+            });
+            await this.reset_registration_state();
+        } catch (err) {
+            console.error(`Failed to login: ${err}`);
+            return;
+        }
+
+        let secretSalt: Uint8Array;
+        try {
+            secretSalt = await this.get_secret_salt(cfg);
+            await this.reset_registration_state();
+        } catch (err) {
+            console.error(`Failed to get secret salt: ${err}`);
             return;
         }
 
@@ -117,15 +262,9 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             });
         }
 
-        const {
-            secret,
-            secret_salt,
-            secret_nonce
-        } = await this.get_secret();
-
         const secret_key = await hash({
             pass: this.state.password,
-            salt: secret_salt,
+            salt: secretSalt,
             // Takes about 1.5 seconds on a Nexus 4
             time: 2, // the number of iterations
             mem: 19 * 1024, // used memory, in KiB
@@ -134,81 +273,55 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             type: ArgonType.Argon2id,
         })
 
-        const secret_blob = new Blob([new Uint8Array(secret)]);
-        const secret_string = await util.blobToBase64(secret_blob);
         const secret_key_blob = new Blob([secret_key.hash]);
         const secret_key_string = await util.blobToBase64(secret_key_blob);
-        const secret_nonce_blob = new Blob([new Uint8Array(secret_nonce)]);
-        const secret_nonce_string = await util.blobToBase64(secret_nonce_blob);
 
         const psk: string = (window as any).wireguard.generatePresharedKey();
 
         const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
             config: cfg,
             login_key: this.state.login_key,
-            secret: secret_string.replace("data:application/octet-stream;base64,", ""),
             secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
-            secret_nonce: secret_nonce_string.replace("data:application/octet-stream;base64,", ""),
             mgmt_charger_public: mg_charger_keypair.publicKey,
             mgmt_charger_private: mg_charger_keypair.privateKey,
             mgmt_psk: psk,
             keys: keys
         };
 
-        await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"), 10000);
-    }
-
-    async login(): Promise<boolean> {
-        const salt = await this.get_salt_for_user(this.state.email);
-        const login_hash = await hash({
-            pass: this.state.password,
-            salt: salt,
-            time: 2,
-            mem: 19 * 1024,
-            hashLen: 24,
-            parallelism: 1,
-            type: ArgonType.Argon2id
-        });
-        const login_key = login_hash.hash;
-
-        const login_schema = {
-            email: this.state.email,
-            login_key: [].slice.call(login_key),
-        };
-
-        const resp = await fetch("https://" + this.state.relay_host + ":" + this.state.relay_port + "/api/auth/login", {
-            method: "POST",
-            credentials: "include",
-            body: JSON.stringify(login_schema),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        if (resp.status !== 200) {
-            throw new Error(`Failed to login at remote access server: ${await resp.text()}`);
-        }
-
-        const login_blob = new Blob([login_key]);
-        const login_string = await util.blobToBase64(login_blob);
-
-        this.setState({login_key: login_string.replace("data:application/octet-stream;base64,", "")});
-
-        return resp.status === 200;
-    }
-
-    override async isSaveAllowed(cfg: config): Promise<boolean> {
-        if (!cfg.enable) {
-            return true;
-        }
-        let allowed = false;
         try {
-            allowed = await this.login();
-        } catch (e) {
-            util.add_alert("login_failed", "danger", __("remote_access.script.save_failed"), e.message);
+            await this.register_new(registration_data);
+        } catch (err) {
+            console.error(`Failed to register charger: ${err}`);
         }
-        return allowed;
     }
+
+    new_login(data: util.NoExtraProperties<API.getType["remote_access/register"]>) {
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        const loginPromise: Promise<void> = new Promise((resolve, reject) => {
+            util.addApiEventListener("remote_access/registration_state",  () => {
+                const state = API.get("remote_access/registration_state");
+                if (state.state === RegistrationState.Success) {
+                    resolve();
+                    controller.abort();
+                } else if (state.state === RegistrationState.Error) {
+                    reject(state.message);
+                    controller.abort();
+                }
+            }, {signal})
+        });
+
+        API.call_unchecked("remote_access/login", data, __("remote_access.script.save_failed"));
+        return loginPromise;
+    }
+
+    // override async isSaveAllowed(cfg: config): Promise<boolean> {
+    //     if (!cfg.enable) {
+    //         return true;
+    //     }
+    //     return allowed;
+    // }
 
     override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
         await this.registerCharger(cfg);
@@ -223,9 +336,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
             config: {...API.get("remote_access/config"), enable: false},
             login_key: "",
-            secret: "",
             secret_key: "",
-            secret_nonce: "",
             mgmt_charger_public: "",
             mgmt_charger_private: "",
             mgmt_psk: "",

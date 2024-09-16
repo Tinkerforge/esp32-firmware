@@ -16,12 +16,22 @@ interface KeyObject {
     psk: string,
 }
 
+export enum RegistrationState {
+    None,
+    InProgress,
+    Success,
+    Error,
+}
+
+export interface registration_state {
+    state: RegistrationState,
+    message: string,
+}
+
 export interface register {
     config: config,
     login_key: string,
-    secret: string,
     secret_key: string,
-    secret_nonce: string,
     mgmt_charger_public: string,
     mgmt_charger_private: string,
     mgmt_psk: string,

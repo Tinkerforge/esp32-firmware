@@ -19,15 +19,30 @@
 
 #include <WireGuard-ESP32.h>
 #include <esp_http_client.h>
+#include <queue>
 
 #include "module.h"
 #include "config.h"
+#include "async_https_client.h"
 
 struct HttpResponse {
     int status;
     char *cookie = nullptr;
     String body;
     uint64_t data_read = 0;
+};
+
+enum class RegistrationState {
+    None,
+    InProgress,
+    Success,
+    Error,
+};
+
+struct WgKey {
+    String priv;
+    String psk;
+    String pub;
 };
 
 class RemoteAccess final : public IModule {
@@ -44,6 +59,14 @@ private:
     void connect_management();
     void connect_remote_access(uint8_t i, uint16_t local_port);
     void run_management();
+    void handle_response_chunk(const AsyncHTTPSClientEvent *event);
+    void run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, ConfigRoot config, std::function<void(ConfigRoot config)> next_stage);
+    void get_login_salt(ConfigRoot config);
+    void parse_login_salt(ConfigRoot config);
+    void get_secret(ConfigRoot config);
+    void parse_secret(ConfigRoot config);
+    void parse_registration(ConfigRoot config, std::queue<WgKey> keys);
+    void login_new(ConfigRoot config, CoolString &login_key);
     int setup_inner_socket();
     HttpResponse make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error, Config *config);
 
@@ -55,8 +78,16 @@ private:
     uint16_t in_seq_number = 0;
     bool management_request_done = false;
 
+    AsyncHTTPSClient https_client;
+    String response_body;
+    std::unique_ptr<uint8_t[]> encrypted_secret = nullptr;
+    std::unique_ptr<uint8_t[]> secret_nonce = nullptr;
+    std::unique_ptr<StaticJsonDocument<768>> registration_doc = nullptr;
+
+
     ConfigRoot config;
     ConfigRoot connection_state;
+    ConfigRoot registration_state;
 };
 
 enum management_command_id {
