@@ -62,7 +62,7 @@ function get_sub_page() {
 
     if (element == null || element.hidden) {
         sub_page = "status";
-        if (!util.iframeMode) {
+        if (!util.remoteAccessMode) {
             history.replaceState({}, "", "#" + sub_page);
         }
     }
