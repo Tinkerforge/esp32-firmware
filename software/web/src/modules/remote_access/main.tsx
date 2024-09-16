@@ -54,19 +54,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             __("remote_access.script.reboot_content_changed"));
     }
 
-    async get_salt_for_user(email: string) {
-        const resp = await fetch(`https://${this.state.relay_host}:${this.state.relay_port}/api/auth/get_login_salt?email=${email}`, {
-            method: "GET"
-        });
-        if (resp.status !== 200) {
-            throw new Error(`Failed to get login_salt for user ${email}: ${await resp.text()}`);
-        }
-        const json = await resp.text();
-        const data = JSON.parse(json);
-
-        return new Uint8Array(data);
-    }
-
     reset_registration_state() {
         const resetPromise: Promise<void> = new Promise((resolve, reject) => {
             const controller = new AbortController();
@@ -131,7 +118,28 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         return getSecretPromise;
     }
 
-    async register_new(cfg: util.NoExtraProperties<API.getType["remote_access/register"]>) {
+    login(data: util.NoExtraProperties<API.getType["remote_access/register"]>) {
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        const loginPromise: Promise<void> = new Promise((resolve, reject) => {
+            util.addApiEventListener("remote_access/registration_state",  () => {
+                const state = API.get("remote_access/registration_state");
+                if (state.state === RegistrationState.Success) {
+                    resolve();
+                    controller.abort();
+                } else if (state.state === RegistrationState.Error) {
+                    reject(state.message);
+                    controller.abort();
+                }
+            }, {signal})
+        });
+
+        API.call_unchecked("remote_access/login", data, __("remote_access.script.save_failed"));
+        return loginPromise;
+    }
+
+    async runRegistration(cfg: util.NoExtraProperties<API.getType["remote_access/register"]>) {
         const registrationPromise: Promise<void> = new Promise((resolve, reject) => {
             const controller = new AbortController();
             const signal = controller.signal;
@@ -164,19 +172,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             return;
 
         util.reboot();
-    }
-
-    async get_secret() {
-        const resp = await fetch(`https://${this.state.relay_host}:${this.state.relay_port}/api/user/get_secret`, {
-            method: "GET",
-            credentials: "include",
-        });
-        if (resp.status !== 200) {
-            throw new Error(`Failed to get secret: ${await resp.text()}`);
-        }
-        const json = await resp.text();
-        const data = JSON.parse(json);
-        return data
     }
 
     async registerCharger(cfg: config) {
@@ -219,7 +214,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         const loginKey = (await util.blobToBase64(new Blob([loginHash.hash]))).replace("data:application/octet-stream;base64,", "");
 
         try {
-            await this.new_login({
+            await this.login({
                 config: cfg,
                 login_key: loginKey,
                 secret_key: "",
@@ -289,39 +284,11 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         };
 
         try {
-            await this.register_new(registration_data);
+            await this.runRegistration(registration_data);
         } catch (err) {
             console.error(`Failed to register charger: ${err}`);
         }
     }
-
-    new_login(data: util.NoExtraProperties<API.getType["remote_access/register"]>) {
-        const controller = new AbortController();
-        const signal = controller.signal;
-
-        const loginPromise: Promise<void> = new Promise((resolve, reject) => {
-            util.addApiEventListener("remote_access/registration_state",  () => {
-                const state = API.get("remote_access/registration_state");
-                if (state.state === RegistrationState.Success) {
-                    resolve();
-                    controller.abort();
-                } else if (state.state === RegistrationState.Error) {
-                    reject(state.message);
-                    controller.abort();
-                }
-            }, {signal})
-        });
-
-        API.call_unchecked("remote_access/login", data, __("remote_access.script.save_failed"));
-        return loginPromise;
-    }
-
-    // override async isSaveAllowed(cfg: config): Promise<boolean> {
-    //     if (!cfg.enable) {
-    //         return true;
-    //     }
-    //     return allowed;
-    // }
 
     override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
         await this.registerCharger(cfg);
