@@ -299,7 +299,7 @@ void RemoteAccess::register_urls() {
         }
 
         CoolString login_key = doc["login_key"];
-        this->login_new(new_config, login_key);
+        this->login(new_config, login_key);
 
         return request.send(200);
     });
@@ -349,22 +349,20 @@ void RemoteAccess::register_urls() {
             serializer.addMemberNumber("id", local_uid_num);
             serializer.addMemberString("password", config.get("password")->asEphemeralCStr()),
             serializer.endObject();
-            serializer.end();
+            size_t size = serializer.end();
 
             CoolString relay_host = config.get("relay_host")->asString();
             uint32_t relay_port = config.get("relay_port")->asUint();
-            CoolString login_url = "https://";
-            login_url += relay_host;
-            login_url += ":";
-            login_url += relay_port;
-            login_url += "/api/selfdestruct";
+            CoolString url = "https://";
+            url += relay_host;
+            url += ":";
+            url += relay_port;
+            url += "/api/selfdestruct";
 
-            std::vector<std::pair<CoolString, CoolString>> headers;
-            headers.push_back(std::pair<CoolString, CoolString>(CoolString("Content-Type"), CoolString("application/json")));
-
-            esp_err_t err;
-            HttpResponse resp = this->make_http_request(login_url.c_str(), HTTP_METHOD_DELETE, delete_buf.get(), json_size, &headers, &err, &config);
+            https_client.set_header("Content-Type", "application/json");
             // Deregistering from the server is optional. Don't handle any request errors.
+            auto callback = [this](ConfigRoot _) {};
+            this->run_request_with_next_stage(url.c_str(), HTTP_METHOD_DELETE, delete_buf.get(), size, config, callback);
 
             config = new_config;
             API::writeConfig("remote_access/config", &config);
@@ -624,6 +622,10 @@ void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_
             break;
         case HTTP_METHOD_PUT:
             https_client.put_async(url, config.get("cert_id")->asInt(), body, body_size, callback);
+            break;
+        case HTTP_METHOD_DELETE:
+            https_client.delete_async(url, config.get("cert_id")->asInt(), body, body_size, callback);
+            break;
         default:
             break;
     }
@@ -670,7 +672,7 @@ void RemoteAccess::parse_login_salt(ConfigRoot config) {
     response_body = String();
 }
 
-void RemoteAccess::login_new(ConfigRoot config, CoolString &login_key) {
+void RemoteAccess::login(ConfigRoot config, CoolString &login_key) {
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
     registration_state.get("message")->updateString("");
     char url[128] = {};
@@ -784,170 +786,6 @@ void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> k
         API::writeConfig("remote_access/config", &this->config);
         registration_state.get("message")->updateString("");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);
-}
-
-static esp_err_t http_event_handle(esp_http_client_event *evt) {
-    HttpResponse *response = reinterpret_cast<HttpResponse*>(evt->user_data);
-    switch (evt->event_id)
-    {
-    case HTTP_EVENT_ERROR:
-        {
-            ESP_LOGI(TAG, "HTTP_EVENT_ERROR\n");
-            int mbedtls_err = 0;
-            esp_err_t err = esp_tls_get_and_clear_last_error(*(esp_tls_error_handle_t *)evt->data, &mbedtls_err, NULL);
-            if (err != 0) {
-                ESP_LOGI(TAG, "Last esp error code: 0x%x\n", err);
-                ESP_LOGI(TAG, "Last mbedtls failure: 0x%x\n", mbedtls_err);
-            }
-        }
-        break;
-
-    case HTTP_EVENT_ON_HEADER:
-        if (!strcmp("set-cookie", evt->header_key) && !strncmp("access_token", evt->header_value, 12)) {
-            response->cookie = strdup(evt->header_value);
-        }
-        break;
-
-    case HTTP_EVENT_ON_DATA:
-        response->body += String((char*)evt->data, evt->data_len);
-        break;
-
-    default:
-        break;
-    }
-    return ESP_OK;
-}
-
-static String parse_cookie(const String &cookie) {
-    size_t start = cookie.indexOf('=') + 1;
-    size_t end = cookie.indexOf(';');
-    return cookie.substring(start, end);
-}
-
-HttpResponse RemoteAccess::make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error, Config *config) {
-    esp_err_t err = ESP_OK;
-    size_t cert_len = 0;
-    int cert_id = config->get("cert_id")->asInt();
-    std::unique_ptr<unsigned char[]> cert = nullptr;
-
-    HttpResponse response;
-    if (cert_id >= 0) {
-        cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
-        if (cert == nullptr) {
-            logger.printfln("Management: Failed to get self signed cert");
-            *ret_error = ESP_FAIL;
-            response.body = "Failed to get self signed cert";
-            response.status = 500;
-            return response;
-        }
-    }
-    esp_http_client_config_t http_config;
-    bzero(&http_config, sizeof(esp_http_client_config_t));
-
-    http_config.url = url;
-    http_config.event_handler = http_event_handle;
-    http_config.method = method;
-    http_config.user_data = &response;
-    http_config.is_async = true;
-    http_config.timeout_ms = 5000;
-
-    auto deadline = now_us() + 5_s;
-
-    if (cert == nullptr) {
-        http_config.crt_bundle_attach = esp_crt_bundle_attach;
-        http_config.transport_type = HTTP_TRANSPORT_OVER_SSL;
-    } else {
-        http_config.cert_pem = (const char *)cert.get();
-        http_config.skip_cert_common_name_check = true;
-    }
-
-    esp_http_client_handle_t client = esp_http_client_init(&http_config);
-
-    if (payload != nullptr && payload_size > 0) {
-        err = esp_http_client_set_post_field(client, payload, payload_size);
-        if (err != ESP_OK) {
-            logger.printfln("Failed to set post data: %i", err);
-            esp_http_client_cleanup(client);
-            *ret_error = err;
-            response.body = "Failed to set post data";
-            response.status = 500;
-            return response;
-        }
-    }
-
-    if (headers != nullptr) {
-        for (auto &header : *headers) {
-            err = esp_http_client_set_header(client, header.first.c_str(), header.second.c_str());
-            if (err != ESP_OK) {
-                logger.printfln("Failed to set header");
-                *ret_error = err;
-                response.body = "Failed to set header";
-                response.status = 500;
-                return response;
-            }
-        }
-    }
-
-    do {
-        err = esp_http_client_perform(client);
-        // TODO: improve http timeout handling.
-        if (deadline_elapsed(deadline)) {
-            errno = ETIMEDOUT;
-            err = ESP_FAIL;
-        }
-    } while (err == ESP_ERR_HTTP_EAGAIN);
-
-    if (err != ESP_OK) {
-        logger.printfln("Failed to send request with error %i: %s", errno, strerror_r(errno, nullptr, 0));
-        esp_http_client_close(client);
-        esp_http_client_cleanup(client);
-        *ret_error = err;
-        return response;
-    }
-    response.body += "\0";
-
-    if (response.cookie != nullptr) {
-        jwt = parse_cookie(String(response.cookie));
-        free(response.cookie);
-    }
-
-    int status = esp_http_client_get_status_code(client);
-    if (status < 200 || status > 299) {
-        // TODO: Dont log nginx error page!
-        logger.printfln("Request to %s failed with code %i: %s", url, status, response.body.c_str());
-    }
-    response.status = status;
-
-    esp_http_client_cleanup(client);
-    *ret_error = err;
-    return response;
-}
-
-void RemoteAccess::login(Config *config, const CoolString &login_key_base64) {
-    CoolString relay_host = config->get("relay_host")->asString();
-    uint32_t relay_port = config->get("relay_port")->asUint();
-    CoolString login_url = "https://";
-    login_url += relay_host;
-    login_url += ":";
-    login_url += relay_port;
-    login_url += "/api/auth/login";
-
-    std::unique_ptr<char[]> login_key = decode_base64(login_key_base64, 24);
-    std::unique_ptr<char[]> json = heap_alloc_array<char>(250);
-
-    TFJsonSerializer serializer = TFJsonSerializer(json.get(), 250);
-    serializer.addObject();
-    serializer.addMemberString("email", config->get("email")->asEphemeralCStr());
-    serializer.addMemberArray("login_key");
-    for (int i = 0; i < 24; i++) {
-        serializer.addNumber(login_key.get()[i]);
-    }
-    serializer.endArray();
-    serializer.endObject();
-    size_t json_size = serializer.end();
-
-    esp_err_t err;
-    make_http_request(login_url.c_str(), HTTP_METHOD_POST, json.get(), json_size, nullptr, &err, config);
 }
 
 void RemoteAccess::resolve_management() {

@@ -55,7 +55,6 @@ public:
 
 private:
     void resolve_management();
-    void login(Config *config, const CoolString &login_key_base64);
     void connect_management();
     void connect_remote_access(uint8_t i, uint16_t local_port);
     void run_management();
@@ -66,10 +65,8 @@ private:
     void get_secret(ConfigRoot config);
     void parse_secret(ConfigRoot config);
     void parse_registration(ConfigRoot config, std::queue<WgKey> keys);
-    void login_new(ConfigRoot config, CoolString &login_key);
+    void login(ConfigRoot config, CoolString &login_key);
     int setup_inner_socket();
-    HttpResponse make_http_request(const char *url, esp_http_client_method_t method, const char *payload, size_t payload_size, std::vector<std::pair<CoolString, CoolString>> *headers, esp_err_t *ret_error, Config *config);
-
     WireGuard *management = nullptr;
     WireGuard *remote_connections[5] = {};
 
