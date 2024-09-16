@@ -192,13 +192,13 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             return;
         }
 
-
         let loginSalt: Uint8Array;
         try {
             loginSalt = await this.get_login_salt(cfg);
             await this.reset_registration_state();
         } catch (err) {
-            console.error(`Failed to get login-salt: ${err}`);
+            console.error(err);
+            util.add_alert("registration", "danger", "Failed to login:", "Wrong user or password");
             return;
         }
 
@@ -226,6 +226,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             await this.reset_registration_state();
         } catch (err) {
             console.error(`Failed to login: ${err}`);
+            util.add_alert("registration", "danger", "Failed to login:", "Wrong user or password");
             return;
         }
 
@@ -235,6 +236,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             await this.reset_registration_state();
         } catch (err) {
             console.error(`Failed to get secret salt: ${err}`);
+            util.add_alert("registration", "danger", "Failed to get secret-salt:", err);
             return;
         }
 
@@ -287,6 +289,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             await this.runRegistration(registration_data);
         } catch (err) {
             console.error(`Failed to register charger: ${err}`);
+            util.add_alert("registration", "danger", "Failed to register", err);
         }
     }
 
