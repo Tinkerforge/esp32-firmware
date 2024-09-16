@@ -992,13 +992,11 @@ void RemoteAccess::resolve_management() {
     serializer.endObject();
     size_t len = serializer.end();
 
-    std::vector<std::pair<CoolString, CoolString>> headers;
-    headers.push_back(std::pair<CoolString, CoolString>(CoolString("Content-Type"), CoolString("application/json")));
-    esp_err_t err;
-    HttpResponse response = make_http_request(url.c_str(), HTTP_METHOD_PUT, json.get(), len, &headers, &err, &config);
-    if (response.status == 200 && err == 0) {
+    https_client.set_header("Content-Type", "application/json");
+    auto callback = [this](ConfigRoot cfg) {
         management_request_done = true;
-    }
+    };
+    run_request_with_next_stage(url.c_str(), HTTP_METHOD_PUT, json.get(), len, config, callback);
 }
 
 static int management_filter_in(struct pbuf* packet) {
