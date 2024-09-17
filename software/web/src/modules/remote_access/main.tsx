@@ -48,91 +48,68 @@ interface RemoteAccessState {
 }
 
 export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, RemoteAccessState> {
+
+    resolve: ((arg0?: any) => void);
+    reject: (arg0?: any) => void;
     constructor() {
         super("remote_access/config",
             __("remote_access.script.save_failed"),
             __("remote_access.script.reboot_content_changed"));
+
+        this.resolve = undefined;
+        this.reject = undefined;
+        util.addApiEventListener("remote_access/registration_state", () => {
+            if (!this.resolve || !this.reject) {
+                return;
+            }
+            const state = API.get("remote_access/registration_state");
+            if (state.state === RegistrationState.Success) {
+                if (state.message !== "") {
+                    this.resolve(state.message);
+                } else {
+                    this.resolve();
+                }
+                this.resolve = undefined;
+                this.reject = undefined;
+            } else if (state.state === RegistrationState.Error) {
+                this.reject(state.message);
+                this.resolve = undefined;
+                this.reject = undefined;
+            }
+        })
     }
 
-    reset_registration_state() {
-        const resetPromise: Promise<void> = new Promise((resolve, reject) => {
-            const controller = new AbortController();
-            const signal = controller.signal;
-
-            util.addApiEventListener("remote_access/registration_state", () => {
-                const state = API.get("remote_access/registration_state");
-                if (state.state === RegistrationState.None) {
-                    controller.abort();
-                    resolve();
-                }
-            }, {signal});
-        });
-
-        API.call_unchecked("remote_access/reset_registration_state", {}, __("remote_access.script.save_failed"));
-        return resetPromise;
-    }
-
-    get_login_salt(cfg: config) {
-        const getLoginSaltPromise: Promise<Uint8Array> = new Promise((resolve, reject) => {
-            const controller = new AbortController();
-            const signal = controller.signal;
-
-            util.addApiEventListener("remote_access/registration_state", async () => {
-                const state = API.get("remote_access/registration_state");
-                if (state.state === RegistrationState.Success) {
-                    controller.abort();
-                    const encodedString = "data:application/octet-stream;base64," + state.message;
-                    const res = await fetch(encodedString);
-                    resolve(new Uint8Array(await res.arrayBuffer()));
-                } else if (state.state === RegistrationState.Error) {
-                    controller.abort();
-                    reject(state.message);
-                }
-            }, {signal});
+    async get_login_salt(cfg: config) {
+        const getLoginSaltPromise: Promise<string> = new Promise((resolve, reject) => {
+            this.resolve = resolve;
+            this.reject = reject;
         });
         API.call_unchecked("remote_access/get_login_salt", cfg, __("remote_access.script.save_failed"));
 
-        return getLoginSaltPromise;
+        const bs64LoginSalt = await getLoginSaltPromise;
+        const encodedString = "data:application/octet-stream;base64," + bs64LoginSalt;
+        const res = await fetch(encodedString);
+
+        return new Uint8Array(await res.arrayBuffer());
     }
 
-    get_secret_salt(cfg: config) {
-        const getSecretPromise: Promise<Uint8Array> = new Promise((resolve, reject) => {
-            const controller = new AbortController();
-            const signal = controller.signal;
-
-            util.addApiEventListener("remote_access/registration_state", async () => {
-                const state = API.get("remote_access/registration_state");
-                if (state.state === RegistrationState.Success) {
-                    controller.abort();
-                    const encodedString = "data:application/octet-stream;base64," + state.message;
-                    const res = await fetch(encodedString);
-                    resolve(new Uint8Array(await res.arrayBuffer()));
-                } else if (state.state === RegistrationState.Error) {
-                    controller.abort()
-                    reject(state.message);
-                }
-            }, {signal});
+    async get_secret_salt(cfg: config) {
+        const getSecretPromise: Promise<string> = new Promise((resolve, reject) => {
+            this.resolve = resolve;
+            this.reject = reject;
         });
         API.call_unchecked("remote_access/get_secret_salt", cfg, __("remote_access.script.save_failed"));
+        const bs64Secret = await getSecretPromise;
+        const encodedString = "data:application/octet-stream;base64," + bs64Secret;
+        const res = await fetch(encodedString);
 
-        return getSecretPromise;
+        return new Uint8Array(await res.arrayBuffer());
     }
 
     login(data: util.NoExtraProperties<API.getType["remote_access/register"]>) {
-        const controller = new AbortController();
-        const signal = controller.signal;
-
         const loginPromise: Promise<void> = new Promise((resolve, reject) => {
-            util.addApiEventListener("remote_access/registration_state",  () => {
-                const state = API.get("remote_access/registration_state");
-                if (state.state === RegistrationState.Success) {
-                    resolve();
-                    controller.abort();
-                } else if (state.state === RegistrationState.Error) {
-                    reject(state.message);
-                    controller.abort();
-                }
-            }, {signal})
+            this.resolve = resolve;
+            this.reject = reject;
         });
 
         API.call_unchecked("remote_access/login", data, __("remote_access.script.save_failed"));
@@ -141,24 +118,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
 
     async runRegistration(cfg: util.NoExtraProperties<API.getType["remote_access/register"]>) {
         const registrationPromise: Promise<void> = new Promise((resolve, reject) => {
-            const controller = new AbortController();
-            const signal = controller.signal;
-
-            util.addApiEventListener("remote_access/registration_state", () => {
-                const state = API.get("remote_access/registration_state");
-                if (state.state === RegistrationState.Success) {
-                    controller.abort();
-                    resolve();
-                } else if (state.state === RegistrationState.Error) {
-                    controller.abort();
-                    reject(state.message);
-                }
-            }, {signal});
+            this.resolve = resolve;
+            this.reject = reject;
         });
 
         await API.call("remote_access/register", cfg, __("remote_access.script.save_failed"));
         await registrationPromise;
-        await this.reset_registration_state();
 
         const modal = util.async_modal_ref.current;
         if(!await modal.show({
@@ -175,7 +140,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     async registerCharger(cfg: config) {
-        await this.reset_registration_state();
 
         if (!cfg.enable) {
             const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
@@ -195,7 +159,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         let loginSalt: Uint8Array;
         try {
             loginSalt = await this.get_login_salt(cfg);
-            await this.reset_registration_state();
         } catch (err) {
             console.error(err);
             util.add_alert("registration", "danger", "Failed to login:", "Wrong user or password");
@@ -223,7 +186,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 mgmt_psk: "",
                 keys: []
             });
-            await this.reset_registration_state();
         } catch (err) {
             console.error(`Failed to login: ${err}`);
             util.add_alert("registration", "danger", "Failed to login:", "Wrong user or password");
@@ -233,7 +195,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         let secretSalt: Uint8Array;
         try {
             secretSalt = await this.get_secret_salt(cfg);
-            await this.reset_registration_state();
         } catch (err) {
             console.error(`Failed to get secret salt: ${err}`);
             util.add_alert("registration", "danger", "Failed to get secret-salt:", err);
