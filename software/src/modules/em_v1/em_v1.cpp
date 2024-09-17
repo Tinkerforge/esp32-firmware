@@ -49,24 +49,28 @@ void EMV1::pre_setup()
 
     // States
     em_common.state = Config::Object({
+        // Common
+        {"error_flags", Config::Uint32(0)},
+        {"config_error_flags", Config::Uint32(0)},
+        {"em_version", Config::Uint(1, 1, 1)},
+        // EMv1
         {"phases_switched", Config::Uint8(0)},
         {"input3_state", Config::Bool(false)},
         {"input4_state", Config::Bool(false)},
         {"relay_state", Config::Bool(false)},
-        {"error_flags", Config::Uint32(0)},
-        {"config_error_flags", Config::Uint32(0)},
     });
 
     em_common.low_level_state = Config::Object({
+        // Common
         {"consecutive_bricklet_errors", Config::Uint32(0)},
-        // Bricklet states below
+        {"input_voltage", Config::Uint16(0)},
+        {"uptime", Config::Uint32(0)},
+        // EMv1
         {"contactor", Config::Bool(false)},
         {"contactor_check_state", Config::Uint8(0)},
-        {"input_voltage", Config::Uint16(0)},
         {"led_rgb", Config::Array({Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)},
             new Config{Config::Uint8(0)}, 3, 3, Config::type_id<Config::ConfUint>())
         },
-        {"uptime", Config::Uint32(0)},
     });
 
     // Config

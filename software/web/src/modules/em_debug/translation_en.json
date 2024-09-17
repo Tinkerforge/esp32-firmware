@@ -16,6 +16,8 @@
             "internal_state": "Internal state",
 
             "hardware_state": "Hardware state",
+            "bricklet_errors": "Consecutive bricklet errors",
+            "state_input_voltage": "Input voltage",
             "contactor_control": "Contactor control",
             "contactor_off": "Contactor open (single phase active)",
             "contactor_on": "Contactor closed (three phases active)",
@@ -25,8 +27,11 @@
             "state_led": "LED",
             "state_led_names": "red, green, blue",
             "gpios": "Inputs/Outputs",
-            "gpio_names_0": "Input 3, Input 4, Output",
-            "state_input_voltage": "Input voltage",
+            "gpio_names_v1": "Input 3, Input 4, Output",
+            "gpio_inputs": "Inputs",
+            "gpio_outputs": "Outputs",
+            "gpio_input_names_v2": "1-4",
+            "gpio_output_names_v2": "Relays 1+2, SG Ready 1+2",
 
             "low": "Low",
             "high": "High",

@@ -1,19 +1,15 @@
-export interface low_level_state {
-    consecutive_bricklet_errors: number;
+import { EMV1State, EMV2State, EMV1LowLevelState, EMV2LowLevelState } from "./types"
 
-    contactor: boolean;
-    led_rgb: number[];
+export interface low_level_state extends Partial<EMV1LowLevelState>, Partial<EMV2LowLevelState> {
+    consecutive_bricklet_errors: number;
     input_voltage: number;
-    contactor_check_state: number;
+    uptime: number;
 }
 
-export interface state {
-    phases_switched: number;
+export interface state extends Partial<EMV1State>, Partial<EMV2State> {
     error_flags: number;
     config_error_flags: number;
-    input3_state: boolean;
-    input4_state: boolean;
-    relay_state: boolean;
+    em_version: number;
 }
 
 export interface config {

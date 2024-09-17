@@ -47,33 +47,44 @@ void EMV2::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
+    const Config *prototype_bool_false = new Config{Config::Bool(false)};
+
     // FIXME states and low_level_states are wrong
     // States
     em_common.state = Config::Object({
-        {"phases_switched", Config::Uint8(0)},
-        {"input3_state", Config::Bool(false)},
-        {"input4_state", Config::Bool(false)},
-        {"relay_state", Config::Bool(false)},
+        // Common
         {"error_flags", Config::Uint32(0)},
         {"config_error_flags", Config::Uint32(0)},
+        {"em_version", Config::Uint(2, 2, 2)},
+        // EMv2
+        {"inputs", Config::Array(
+            {Config::Bool(false), Config::Bool(false), Config::Bool(false), Config::Bool(false)},
+            prototype_bool_false,
+            4, 4, Config::type_id<Config::ConfBool>())
+        },
+        {"sg_ready_outputs", Config::Array(
+            {Config::Bool(false), Config::Bool(false)},
+            prototype_bool_false,
+            2, 2, Config::type_id<Config::ConfBool>())
+        },
+        {"relays", Config::Array(
+            {Config::Bool(false), Config::Bool(false)},
+            prototype_bool_false,
+            2, 2, Config::type_id<Config::ConfBool>())
+        },
     });
 
     em_common.low_level_state = Config::Object({
+        // Common
         {"consecutive_bricklet_errors", Config::Uint32(0)},
-        // Bricklet states below
-        {"contactor", Config::Bool(false)},
-        {"contactor_check_state", Config::Uint8(0)},
         {"input_voltage", Config::Uint16(0)},
-        {"led_rgb", Config::Array({Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)},
-            new Config{Config::Uint8(0)}, 3, 3, Config::type_id<Config::ConfUint>())
-        },
         {"uptime", Config::Uint32(0)},
+        // EMv2
     });
 
     // Config
-    em_common.config = Config::Object({
-        {"contactor_installed", Config::Bool(false)},
-    });
+    //em_common.config = Config::Object({
+    //});
 
 #if MODULE_AUTOMATION_AVAILABLE()
 //    automation.register_action(
@@ -143,7 +154,7 @@ void EMV2::setup()
     //update_status_led();
     //debug_protocol.register_backend(this);
 
-    api.restorePersistentConfig("energy_manager/config", &em_common.config);
+    //api.restorePersistentConfig("energy_manager/config", &em_common.config);
 
     // Cache config
 
@@ -310,18 +321,26 @@ void EMV2::update_all_data()
 {
     update_all_data_struct();
 
-    // TODO Update other fields
     em_common.low_level_state.get("input_voltage")->updateUint(all_data.common.voltage);
     em_common.low_level_state.get("uptime")->updateUint(all_data.common.uptime);
+
+    Config *state_inputs = static_cast<Config *>(em_common.state.get("inputs"));
+    bool *inputs = all_data.input;
+    for (uint16_t i = 0; i < ARRAY_SIZE(all_data.input); i++) {
+        state_inputs->get(i)->updateBool(inputs[i]);
+    }
+
+    Config *state_sg_ready = static_cast<Config *>(em_common.state.get("sg_ready_outputs"));
+    state_sg_ready->get(0)->updateBool(all_data.output_sg_ready[0]);
+    state_sg_ready->get(1)->updateBool(all_data.output_sg_ready[1]);
+
+    Config *state_relays = static_cast<Config *>(em_common.state.get("relays"));
+    state_relays->get(0)->updateBool(all_data.output_relay[0]);
+    state_relays->get(1)->updateBool(all_data.output_relay[1]);
 
 #if MODULE_METERS_EM_AVAILABLE()
     meters_em.update_from_em_all_data(all_data.common);
 #endif
-
-    // Update meter values even if the config is bad.
-    if (em_common.is_error(ERROR_FLAGS_BAD_CONFIG_MASK))
-        return;
-
 }
 
 void EMV2::update_all_data_struct()

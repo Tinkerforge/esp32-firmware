@@ -16,6 +16,8 @@
             "internal_state": "Interner Zustand",
 
             "hardware_state": "Hardwarezustände",
+            "bricklet_errors": "Aufeinanderfolgende Bricklet-Fehler",
+            "state_input_voltage": "Eingangsspannung",
             "contactor_control": "Schützsteuerung",
             "contactor_off": "Schütz offen (eine Phase aktiv)",
             "contactor_on": "Schütz geschlossen (drei Phasen aktiv)",
@@ -25,8 +27,11 @@
             "state_led": "LED",
             "state_led_names": "rot, grün, blau",
             "gpios": "Ein-/Ausgänge",
-            "gpio_names_0": "Eingang 3, Eingang 4, Ausgang",
-            "state_input_voltage": "Eingangsspannung",
+            "gpio_names_v1": "Eingang 3, Eingang 4, Ausgang",
+            "gpio_inputs": "Eingänge",
+            "gpio_outputs": "Ausgänge",
+            "gpio_input_names_v2": "1-4",
+            "gpio_output_names_v2": "Relais 1+2, SG Ready 1+2",
 
             "low": "Low",
             "high": "High",
