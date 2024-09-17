@@ -229,7 +229,7 @@ let iFrameSocketCb: (data: any) => void = null;
 
 function iFrameSocketInit(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket | undefined, eventTarget: API.APIEventTarget) => void) {
     if (!first) {
-        add_alert("event_connection_lost", "alert-warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
+        add_alert("event_connection_lost", "warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
     }
     if (wsReconnectTimeout != null) {
         clearTimeout(wsReconnectTimeout);
