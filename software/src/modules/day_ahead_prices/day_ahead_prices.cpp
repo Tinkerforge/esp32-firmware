@@ -406,7 +406,7 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t sta
     int32_t count = 0;
     for (uint32_t i = 0; i < num_prices; i++) {
         if(time_between(i, start, end, first_date, resolution)) {
-            int32_t price = prices.get("prices")->get(i)->asInt();
+            const int32_t price = prices.get("prices")->get(i)->asInt();
             min = MIN(min, price);
         }
     }
@@ -494,12 +494,12 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t sta
     const uint32_t resolution = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
     const uint32_t num_prices = prices.get("prices")->count();
 
-    int32_t min = INT32_MIN;
+    int32_t max = INT32_MIN;
     int32_t count = 0;
     for (uint32_t i = 0; i < num_prices; i++) {
         if(time_between(i, start, end, first_date, resolution)) {
-            int32_t price = prices.get("prices")->get(i)->asInt();
-            min = MAX(min, price);
+            const int32_t price = prices.get("prices")->get(i)->asInt();
+            max = MAX(max, price);
         }
     }
 
@@ -508,7 +508,7 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t sta
         return {false, 0};
     }
 
-    return {true, min};
+    return {true, max};
 }
 
 DataReturn<int32_t> DayAheadPrices::get_maximum_price_today()
