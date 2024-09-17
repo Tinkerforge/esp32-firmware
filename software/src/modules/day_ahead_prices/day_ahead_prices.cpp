@@ -393,14 +393,15 @@ bool DayAheadPrices::time_between(const uint32_t index, const uint32_t start, co
 
 DataReturn<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t start, const uint32_t end)
 {
+    const uint32_t num_prices = prices.get("prices")->count();
+
     // No price data available
-    if (prices.get("prices")->count() == 0) {
+    if (num_prices == 0) {
         return {false, 0};
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
     const uint32_t resolution = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
-    const uint32_t num_prices = prices.get("prices")->count();
 
     int32_t min = INT32_MAX;
     int32_t count = 0;
@@ -435,15 +436,17 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_tomorrow()
     return get_minimum_price_between(start, end);
 }
 
-DataReturn<int32_t> DayAheadPrices::get_average_price_between(const uint32_t start, const uint32_t end) {
+DataReturn<int32_t> DayAheadPrices::get_average_price_between(const uint32_t start, const uint32_t end)
+{
+    const uint32_t num_prices = prices.get("prices")->count();
+
     // No price data available
-    if (prices.get("prices")->count() == 0) {
+    if (num_prices == 0) {
         return {false, 0};
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
     const uint32_t resolution = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
-    const uint32_t num_prices = prices.get("prices")->count();
 
     int32_t sum = 0;
     int32_t count = 0;
@@ -480,14 +483,15 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_tomorrow()
 
 DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t start, const uint32_t end)
 {
+    const uint32_t num_prices = prices.get("prices")->count();
+
     // No price data available
-    if (prices.get("prices")->count() == 0) {
+    if (num_prices == 0) {
         return {false, 0};
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
     const uint32_t resolution = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
-    const uint32_t num_prices = prices.get("prices")->count();
 
     int32_t max = INT32_MIN;
     int32_t count = 0;
