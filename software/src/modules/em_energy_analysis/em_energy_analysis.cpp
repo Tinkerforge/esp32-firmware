@@ -1410,13 +1410,15 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
 
         EnergyManager5MinData *p = (EnergyManager5MinData *)data_chunk_data;
 
-        if ((p->flags & 0x80 /* no data */) == 0) {
-            write_success = response->writef("%u", p->flags);
-        } else {
-            write_success = response->writef("null");
+        if (write_success) {
+            if ((p->flags & 0x80 /* no data */) == 0) {
+                write_success = response->writef("%u", p->flags);
+            } else {
+                write_success = response->writef("null");
 
-            for (int k = 0; k < 7; ++k) {
-                p->power[k] = INT32_MAX;
+                for (int k = 0; k < 7; ++k) {
+                    p->power[k] = INT32_MAX;
+                }
             }
         }
 
