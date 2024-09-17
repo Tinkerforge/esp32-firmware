@@ -30,13 +30,16 @@ export function reboot() {
     API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
 }
 
-let alerts: DeepSignal<Array<{id: string, variant: string, title: string, text: string}>> = deepSignal([]);
+// react-bootstrap's Variant adds | string as the last union variant m(
+type StrictVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'dark' | 'light';
+
+let alerts: DeepSignal<Array<{id: string, variant: StrictVariant, title: string, text: string}>> = deepSignal([]);
 
 export function get_alerts() {
     return alerts;
 }
 
-export function add_alert(id: string, variant: string, title: string, text: string) {
+export function add_alert(id: string, variant: StrictVariant, title: string, text: string) {
     let idx = alerts.findIndex((alert) => alert.id == id);
     let alert = {id: id, variant: variant, title: title, text: text};
 
