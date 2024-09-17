@@ -312,7 +312,7 @@ int FrontPanel::update_front_page_wallbox(const uint8_t index, const TileType ty
     size_t charger_count = charge_manager.charger_count;
     if (charger_count > 0) {
         auto &charger = charge_manager.charger_state[param];
-        const float watt = charger.power_total_sum/charger.power_total_count;
+        const int32_t watt = charger.power_total_sum/charger.power_total_count;
         str2 = watt_value_to_display_string(watt);
     }
 #endif
@@ -338,7 +338,7 @@ int FrontPanel::update_front_page_charge_management(const uint8_t index, const T
         str1 = "WB " + String(charger_count) + "x";
 
         // ma*0.23 = W
-        const float watt = charge_manager.get_allocated_currents()->pv*0.23;
+        const int32_t watt = charge_manager.get_allocated_currents()->pv*0.23;
         str2 = watt_value_to_display_string(watt);
     }
 #endif
@@ -607,7 +607,7 @@ void FrontPanel::update()
     update_led();
 }
 
-String FrontPanel::watt_value_to_display_string(const float watt)
+String FrontPanel::watt_value_to_display_string(const int32_t watt)
 {
     if (watt < 10000) {
         return String(watt) + " W";
