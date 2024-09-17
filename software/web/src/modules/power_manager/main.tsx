@@ -370,13 +370,13 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                     <FormRow label={__("power_manager.content.enable_excess_charging")} label_muted={__("power_manager.content.enable_excess_charging_muted")}>
                         <Switch desc={__("power_manager.content.enable_excess_charging_desc")}
                             checked={s.excess_charging_enable}
-                            disabled={(is_em && !s.enabled) || s.phase_switching_mode == 3}
+                            disabled={s.phase_switching_mode == 3}
                             onClick={() => {
                                         let enable_pv_excess = !this.state.excess_charging_enable;
 
-                                        // If this is an energy manager, enabled is controlled in the power manager settings sub-page.
-                                        if (!is_em) {
-                                            this.setState({enabled: enable_pv_excess});
+                                        // Force PM on if PV excess is enabled. Never force off because dynamic load management might be on and the PM will disable itself if unused.
+                                        if (enable_pv_excess) {
+                                            this.setState({enabled: true});
                                         }
 
                                         this.setState({excess_charging_enable: enable_pv_excess});
@@ -386,8 +386,6 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
 
                     <FormRow label={__("power_manager.content.phase_switching_mode")}>
                         <InputSelect
-                            required={enabled}
-                            disabled={!enabled && is_em}
                             items={phase_switching_modes}
                             value={s.phase_switching_mode}
                             onValue={(v) => {
@@ -419,8 +417,6 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
 
                     <FormRow label={__("power_manager.content.default_mode")} label_muted={__("power_manager.content.default_mode_muted")}>
                         <InputSelect
-                            required={enabled}
-                            disabled={!enabled && is_em}
                             items={mode_list}
                             value={s.default_mode}
                             onValue={s.phase_switching_mode == 3 ? undefined : (v) => this.setState({default_mode: parseInt(v)})}
@@ -431,7 +427,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                         <div>
                             <FormRow label={__("power_manager.content.meter_slot_grid_power")} label_muted={__("power_manager.content.meter_slot_grid_power_muted")}>
                                 <InputSelect
-                                    required={enabled}
+                                    required={s.excess_charging_enable}
                                     placeholder={meter_slots.length > 0 ? __("power_manager.content.meter_slot_grid_power_select") : __("power_manager.content.meter_slot_grid_power_none")}
                                     items={meter_slots}
                                     value={s.meter_slot_grid_power}
