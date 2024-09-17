@@ -144,7 +144,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             const resolution_divisor = this.state.resolution == 0 ? 15 : 60;
             const diff = Math.floor(Date.now() / 60000) - this.state.prices.first_date;
             const index = Math.floor(diff / resolution_divisor);
-            data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now")});
+            data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now"), 'color': [64, 64, 64, 0.2]});
         }
 
         // Show loader or data depending on the availability of data
