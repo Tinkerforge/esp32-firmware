@@ -421,7 +421,7 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t sta
 
 DataReturn<int32_t> DayAheadPrices::get_minimum_price_today()
 {
-    const uint32_t start = (get_localtime_today_midnight_in_utc() / 60) + (24 * 60);
+    const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
     const uint32_t end   = start + 24*60 - 1;
 
     return get_minimum_price_between(start, end);
@@ -429,7 +429,7 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_today()
 
 DataReturn<int32_t> DayAheadPrices::get_minimum_price_tomorrow()
 {
-    const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
+    const uint32_t start = (get_localtime_today_midnight_in_utc() / 60) + (24 * 60);
     const uint32_t end   = start + 24*60 - 1;
 
     return get_minimum_price_between(start, end);
@@ -462,14 +462,6 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_between(const uint32_t sta
     return {true, sum / count};
 }
 
-DataReturn<int32_t> DayAheadPrices::get_average_price_tomorrow()
-{
-    const uint32_t start = (get_localtime_today_midnight_in_utc() / 60) + (24 * 60);
-    const uint32_t end   = start + 24*60 - 1;
-
-    return get_average_price_between(start, end);
-}
-
 DataReturn<int32_t> DayAheadPrices::get_average_price_today()
 {
     const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
@@ -478,9 +470,12 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_today()
     return get_average_price_between(start, end);
 }
 
-DataReturn<int32_t> DayAheadPrices::get_current_price()
+DataReturn<int32_t> DayAheadPrices::get_average_price_tomorrow()
 {
-    return {current_price_available, state.get("current_price")->asInt()};
+    const uint32_t start = (get_localtime_today_midnight_in_utc() / 60) + (24 * 60);
+    const uint32_t end   = start + 24*60 - 1;
+
+    return get_average_price_between(start, end);
 }
 
 DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t start, const uint32_t end)
@@ -513,7 +508,7 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t sta
 
 DataReturn<int32_t> DayAheadPrices::get_maximum_price_today()
 {
-    const uint32_t start = (get_localtime_today_midnight_in_utc() / 60) + (24 * 60);
+    const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
     const uint32_t end   = start + 24*60 - 1;
 
     return get_maximum_price_between(start, end);
@@ -521,8 +516,13 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_today()
 
 DataReturn<int32_t> DayAheadPrices::get_maximum_price_tomorrow()
 {
-    const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
+    const uint32_t start = (get_localtime_today_midnight_in_utc() / 60) + (24 * 60);
     const uint32_t end   = start + 24*60 - 1;
 
     return get_maximum_price_between(start, end);
+}
+
+DataReturn<int32_t> DayAheadPrices::get_current_price()
+{
+    return {current_price_available, state.get("current_price")->asInt()};
 }
