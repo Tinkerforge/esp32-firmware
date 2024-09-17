@@ -73,7 +73,9 @@ void DayAheadPrices::pre_setup()
         // and trigger a new update (with the new config).
         if ((update.get("region")->asUint()     != config.get("region")->asUint()) ||
             (update.get("resolution")->asUint() != config.get("resolution")->asUint()) ||
-            (update.get("enable")->asBool()     != config.get("enable")->asBool())) {
+            (update.get("enable")->asBool()     != config.get("enable")->asBool()) ||
+            (update.get("api_url")->asString()  != config.get("api_url")->asString()) ||
+            (update.get("cert_id")->asInt()     != config.get("cert_id")->asInt()) ) {
             state.get("last_sync")->updateUint(0);
             state.get("last_check")->updateUint(0);
             state.get("next_check")->updateUint(0);
