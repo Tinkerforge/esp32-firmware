@@ -36,6 +36,7 @@ import { InputNumber } from "src/ts/components/input_number";
 import { InputSelect } from "src/ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
 import { CollapsedSection } from "src/ts/components/collapsed_section";
+import { Container, Modal, Row, Spinner } from "react-bootstrap";
 
 export function RemoteAccessNavbar() {
     return <NavbarItem name="remote_access" module="remote_access" title={__("remote_access.navbar.remote_access")} symbol={<Smartphone />} />;
@@ -45,6 +46,7 @@ interface RemoteAccessState {
     email: string,
     login_key: string,
     password: string,
+    status_modal_string: string,
 }
 
 export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, RemoteAccessState> {
@@ -76,15 +78,17 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 this.resolve = undefined;
                 this.reject = undefined;
             }
-        })
+        });
+        this.setState({status_modal_string: ""});
     }
 
     async get_login_salt(cfg: config) {
+        this.setState({status_modal_string: __("remote_access.content.prepare_login")});
         const getLoginSaltPromise: Promise<string> = new Promise((resolve, reject) => {
             this.resolve = resolve;
             this.reject = reject;
         });
-        API.call_unchecked("remote_access/get_login_salt", cfg, __("remote_access.script.save_failed"));
+        await API.call_unchecked("remote_access/get_login_salt", cfg, __("remote_access.script.save_failed"));
 
         const bs64LoginSalt = await getLoginSaltPromise;
         const encodedString = "data:application/octet-stream;base64," + bs64LoginSalt;
@@ -94,11 +98,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     async get_secret_salt(cfg: config) {
+        this.setState({status_modal_string: __("remote_access.content.prepare_encryption")});
         const getSecretPromise: Promise<string> = new Promise((resolve, reject) => {
             this.resolve = resolve;
             this.reject = reject;
         });
-        API.call_unchecked("remote_access/get_secret_salt", cfg, __("remote_access.script.save_failed"));
+        await API.call_unchecked("remote_access/get_secret_salt", cfg, __("remote_access.script.save_failed"));
         const bs64Secret = await getSecretPromise;
         const encodedString = "data:application/octet-stream;base64," + bs64Secret;
         const res = await fetch(encodedString);
@@ -107,6 +112,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     login(data: util.NoExtraProperties<API.getType["remote_access/register"]>) {
+        this.setState({status_modal_string: __("remote_access.content.logging_in")});
         const loginPromise: Promise<void> = new Promise((resolve, reject) => {
             this.resolve = resolve;
             this.reject = reject;
@@ -117,6 +123,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     async runRegistration(cfg: util.NoExtraProperties<API.getType["remote_access/register"]>) {
+        this.setState({status_modal_string: __("remote_access.content.registration")});
         const registrationPromise: Promise<void> = new Promise((resolve, reject) => {
             this.resolve = resolve;
             this.reject = reject;
@@ -125,6 +132,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         await API.call("remote_access/register", cfg, __("remote_access.script.save_failed"));
         await registrationPromise;
 
+        this.setState({status_modal_string: ""});
         const modal = util.async_modal_ref.current;
         if(!await modal.show({
                 title: __("main.reboot_title"),
@@ -162,6 +170,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         } catch (err) {
             console.error(err);
             util.add_alert("registration", "danger", "Failed to login:", "Wrong user or password");
+            this.setState({status_modal_string: ""});
             return;
         }
 
@@ -189,6 +198,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         } catch (err) {
             console.error(`Failed to login: ${err}`);
             util.add_alert("registration", "danger", "Failed to login:", "Wrong user or password");
+            this.setState({status_modal_string: ""});
             return;
         }
 
@@ -198,6 +208,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         } catch (err) {
             console.error(`Failed to get secret salt: ${err}`);
             util.add_alert("registration", "danger", "Failed to get secret-salt:", err);
+            this.setState({status_modal_string: ""});
             return;
         }
 
@@ -251,6 +262,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         } catch (err) {
             console.error(`Failed to register charger: ${err}`);
             util.add_alert("registration", "danger", "Failed to register", err);
+            this.setState({status_modal_string: ""});
         }
     }
 
@@ -287,63 +299,82 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             cert_items.push([cert.id.toString(), cert.name]);
         }
 
-        return <SubPage name="remote_access">
-                    <ConfigForm id="remote_access_config_form"
-                                title={__("remote_access.content.remote_access")}
-                                isModified={this.isModified()}
-                                isDirty={this.isDirty()}
-                                onReset={this.reset}
-                                onSave={this.save}
-                                onDirtyChange={this.setDirty}>
-                        <FormRow label={__("remote_access.content.enable")}>
-                            <Switch checked={this.state.enable}
-                                    desc={__("remote_access.content.enable_desc")}
-                                    onClick={() => {
-                                        this.setState({enable: !this.state.enable});
+        return <>
+            <Modal centered show={this.state.status_modal_string != ""}>
+                <Modal.Header {...{closeButton: false} as any}>
+                    <Modal.Title>
+                        {__("remote_access.content.status_modal_header")}
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Container fluid>
+                        <Row className="justify-content-center mb-2">
+                            <Spinner animation="border" variant="primary"/>
+                        </Row>
+                        <Row className="justify-content-center">
+                            <div>{this.state.status_modal_string}</div>
+                        </Row>
+                    </Container>
+                </Modal.Body>
+            </Modal>
+            <SubPage name="remote_access">
+                <ConfigForm id="remote_access_config_form"
+                            title={__("remote_access.content.remote_access")}
+                            isModified={this.isModified()}
+                            isDirty={this.isDirty()}
+                            onReset={this.reset}
+                            onSave={this.save}
+                            onDirtyChange={this.setDirty}>
+                    <FormRow label={__("remote_access.content.enable")}>
+                        <Switch checked={this.state.enable}
+                                desc={__("remote_access.content.enable_desc")}
+                                onClick={() => {
+                                    this.setState({enable: !this.state.enable});
+                                }} />
+                    </FormRow>
+                    <FormRow label={__("remote_access.content.email")}>
+                        <InputText value={this.state.email}
+                                    required
+                                    maxLength={64}
+                                    onValue={(v) => {
+                                        this.setState({email: v});
+                                    }} />
+                    </FormRow>
+                    <FormRow label={__("remote_access.content.password")}>
+                        <InputPassword required={this.state.enable}
+                                        maxLength={64}
+                                        value={this.state.password}
+                                        onValue={(v) => {
+                                            this.setState({password: v});
+                                        }}
+                                        hideClear
+                                        placeholder="" />
+                    </FormRow>
+                    <CollapsedSection label={__("remote_access.content.advanced_settings")}>
+                        <FormRow label={__("remote_access.content.relay_host")}>
+                            <InputText required
+                                    maxLength={64}
+                                    value={this.state.relay_host}
+                                    onValue={(v) => {
+                                            this.setState({relay_host: v})
                                     }} />
                         </FormRow>
-                        <FormRow label={__("remote_access.content.email")}>
-                            <InputText value={this.state.email}
-                                       required
-                                       maxLength={64}
-                                       onValue={(v) => {
-                                            this.setState({email: v});
-                                       }} />
+                        <FormRow label={__("remote_access.content.relay_port")}>
+                            <InputNumber required
+                                        min={1}
+                                        max={65565}
+                                        value={this.state.relay_port}
+                                        onValue={v => this.setState({relay_port: v})} />
                         </FormRow>
-                        <FormRow label={__("remote_access.content.password")}>
-                            <InputPassword required={this.state.enable}
-                                           maxLength={64}
-                                           value={this.state.password}
-                                           onValue={(v) => {
-                                                this.setState({password: v});
-                                           }}
-                                           hideClear
-                                           placeholder="" />
+                        <FormRow label={__("remote_access.content.cert")}>
+                            <InputSelect items={cert_items} value={this.state.cert_id} onValue={(v) => {
+                                this.setState({cert_id: parseInt(v)});
+                            }}/>
                         </FormRow>
-                        <CollapsedSection label={__("remote_access.content.advanced_settings")}>
-                            <FormRow label={__("remote_access.content.relay_host")}>
-                                <InputText required
-                                        maxLength={64}
-                                        value={this.state.relay_host}
-                                        onValue={(v) => {
-                                                this.setState({relay_host: v})
-                                        }} />
-                            </FormRow>
-                            <FormRow label={__("remote_access.content.relay_port")}>
-                                <InputNumber required
-                                            min={1}
-                                            max={65565}
-                                            value={this.state.relay_port}
-                                            onValue={v => this.setState({relay_port: v})} />
-                            </FormRow>
-                            <FormRow label={__("remote_access.content.cert")}>
-                                <InputSelect items={cert_items} value={this.state.cert_id} onValue={(v) => {
-                                    this.setState({cert_id: parseInt(v)});
-                                }}/>
-                            </FormRow>
-                        </CollapsedSection>
-                    </ConfigForm>
-                </SubPage>
+                    </CollapsedSection>
+                </ConfigForm>
+            </SubPage>
+        </>
     }
 }
 

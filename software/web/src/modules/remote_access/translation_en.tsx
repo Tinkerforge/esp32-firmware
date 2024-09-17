@@ -16,7 +16,13 @@ let x = {
             "enable_desc": <>A <a href="https://my.warp-charger.com/">my.warp-charger.com</a> account is required for the remote access.</>,
             "cert": "TLS certificate",
             "not_used": "Embedded certificate-bundle",
-            "advanced_settings": "Advanced Settings"
+            "status_modal_header": "Registration progess",
+            "advanced_settings": "Advanced Settings",
+            "prepare_login": "Preparing login",
+            "logging_in": "Logging in",
+            "prepare_encryption": "Preparing encryption",
+            "encrypting": "Encrypting",
+            "registration": "Registration in progress"
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",

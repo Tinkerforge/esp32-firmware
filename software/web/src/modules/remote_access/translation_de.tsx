@@ -16,7 +16,13 @@ let x = {
             "enable_desc": <>Für den Fernzugriff wird ein <a href="https://my.warp-charger.com/">my.warp-charger.com</a>-Account benötigt.</>,
             "cert": "TLS-Zertifikat",
             "not_used": "Eingebettetes Zertifikatsbundle",
-            "advanced_settings": "Experteneinstellungen"
+            "status_modal_header": "Registrierung wird durchgeführt",
+            "advanced_settings": "Experteneinstellungen",
+            "prepare_login": "Login wird vorbereitet",
+            "logging_in": "Einloggen",
+            "prepare_encryption": "Verschlüsselung wird vorbereitet",
+            "encrypting": "Verschlüsseln",
+            "registration": "Registrieren"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",
