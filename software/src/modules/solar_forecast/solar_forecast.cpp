@@ -50,7 +50,7 @@ const String test_data = "{\"result\":{\"watts\":{\"2024-08-15 06:10:54\":0,\"20
 void SolarForecast::pre_setup()
 {
     config = ConfigRoot{Config::Object({
-        {"enable", Config::Bool(true)},
+        {"enable", Config::Bool(false)},
         {"api_url", Config::Str(BUILD_SOLAR_FORECAST_API_URL, 0, 64)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {

@@ -54,7 +54,7 @@ extern DayAheadPrices dap;
 void DayAheadPrices::pre_setup()
 {
     config = ConfigRoot{Config::Object({
-        {"enable", Config::Bool(true)},
+        {"enable", Config::Bool(false)},
         {"api_url", Config::Str(BUILD_DAY_AHEAD_PRICE_API_URL, 0, 64)},
         {"region", Config::Uint(REGION_DE, REGION_DE, REGION_LU)},
         {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
