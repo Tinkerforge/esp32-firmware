@@ -168,7 +168,7 @@ void RemoteAccess::pre_setup() {
         {"cert_id", Config::Int8(-1)}
     })};
 
-    Config *cs = new Config {Config::Uint8(0)};
+    Config *cs = new Config {Config::Uint8(1)};
 
     connection_state = Config::Array(
                 {},
@@ -564,7 +564,7 @@ void RemoteAccess::register_urls() {
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
-            uint32_t state = 0;
+            uint32_t state = 1;
             if (this->remote_connections[i] != nullptr) {
                 state = this->remote_connections[i]->is_peer_up(nullptr, nullptr) ? 2 : 1;
             }
@@ -580,7 +580,7 @@ void RemoteAccess::register_urls() {
     }, 1000, 1000);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        uint32_t state = 0;
+        uint32_t state = 1;
         if (management != nullptr) {
             state = management->is_peer_up(nullptr, nullptr) ? 2 : 1;
         }
@@ -1138,8 +1138,10 @@ void RemoteAccess::run_management() {
                 if (remote_connections[command->connection_no] != nullptr && remote_connections[command->connection_no]->is_peer_up(nullptr, nullptr)) {
                     return;
                 }
+                if (remote_connections[command->connection_no] == nullptr) {
+                    logger.printfln("Opening connection %u", command->connection_no);
+                }
 
-                logger.printfln("Opening connection %u", command->connection_no);
                 uint16_t local_port = 51821;
                 port_discovery_packet response;
                 response.charger_id = local_uid_num;
