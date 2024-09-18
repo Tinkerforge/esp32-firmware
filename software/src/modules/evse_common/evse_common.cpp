@@ -193,8 +193,9 @@ bool EvseCommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled
 
 void EvseCommon::apply_defaults()
 {
-    if (should_factory_reset_bricklets()) {
+    if (should_factory_reset_bricklets) {
         this->factory_reset();
+        should_factory_reset_bricklets = false;
     }
 
     // Maybe this is the first start-up after updating the EVSE to firmware 2.1.0 (or higher)

@@ -75,7 +75,7 @@ void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
 
 int check(int rc, const char *msg);
 
-bool should_factory_reset_bricklets();
+extern bool should_factory_reset_bricklets;
 bool mount_or_format_spiffs();
 
 int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose, const uint8_t *firmware, size_t firmware_len, bool force);
