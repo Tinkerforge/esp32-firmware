@@ -275,7 +275,7 @@ void Heating::update()
                     extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", kwh_expected.data, summer_yield_forecast_threshold);
                     blocked = false;
                 } else {
-                    extended_logging("Expected PV yield %dkWh is above or equasl to threshold of %dkWh.", kwh_expected.data, summer_yield_forecast_threshold);
+                    extended_logging("Expected PV yield %dkWh is above or equal to threshold of %dkWh.", kwh_expected.data, summer_yield_forecast_threshold);
                 }
             }
         }
