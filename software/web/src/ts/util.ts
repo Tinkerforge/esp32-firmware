@@ -208,9 +208,8 @@ window.addEventListener("message", (e) => {
         iframe_timeout = null;
     }
     if (typeof e.data === "string") {
-        const msg = e.data as string;
         if (iFrameSocketCb) {
-            iFrameSocketCb(msg);
+            iFrameSocketCb(e);
         }
     } else {
         connection_id = e.data.connection_id;
@@ -240,50 +239,54 @@ function iFrameSocketInit(first: boolean, keep_as_first: boolean, continuation: 
     wsReconnectCallback = () => setupEventSource(keep_as_first ? first : false, keep_as_first, continuation, true)
     wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
 
-    iFrameSocketCb = (data: any) => {
-        if(!keep_as_first)
-            remove_alert("event_connection_lost");
-
-        if (wsReconnectTimeout != null) {
-            window.clearTimeout(wsReconnectTimeout);
-            wsReconnectTimeout = null;
-        }
-        wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
-
-        if (typeof data !== "string") {
-            return;
-        }
-        const end_marker_found = (data as string).includes("\n\n");
-        const messages = (data as string).trim();
-
-        let topics: any[] = [];
-        batch(() => {
-            for (let item of messages.split("\n")) {
-                if (item == "")
-                    continue;
-                let obj = JSON.parse(item);
-                if (!("topic" in obj) || !("payload" in obj)) {
-                    console.log("Received malformed event", obj);
-                    return;
-                }
-
-                topics.push(obj["topic"]);
-                API.update(obj["topic"], obj["payload"]);
-            }
-
-            for (let topic of topics) {
-                API.trigger(topic, eventTarget);
-            }
-
-            if (end_marker_found) {
-                allow_render.value = true;
-            }
-        });
-    }
+    iFrameSocketCb = wsOnMessageCallback;
     continuation(undefined, eventTarget);
 }
 
+// Copy of keep_as_first parameter of setupEventSource
+let k_a_f: boolean;
+const wsOnMessageCallback = (e: MessageEvent) => {
+    if(!k_a_f)
+        remove_alert("event_connection_lost");
+
+    if (wsReconnectTimeout != null) {
+        window.clearTimeout(wsReconnectTimeout);
+        wsReconnectTimeout = null;
+    }
+    wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
+
+    let topics: any[] = [];
+
+    let end_marker_found = (e.data as string).includes("\n\n");
+    let messages = (e.data as string).trim();
+
+    batch(() => {
+        for (let item of messages.split("\n")) {
+            let obj = JSON.parse(item);
+            if (!("topic" in obj) || !("payload" in obj)) {
+                console.log("Received malformed event", obj);
+                return;
+            }
+
+            topics.push(obj["topic"]);
+            API.update(obj["topic"], obj["payload"]);
+        }
+
+        if (allow_render.peek()) {
+            for (let topic of topics) {
+                API.trigger(topic, eventTarget);
+            }
+        }
+
+        if (end_marker_found) {
+            API.trigger_all(eventTarget);
+            allow_render.value = true;
+        }
+    });
+};
+
 export function setupEventSource(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket, eventTarget: API.APIEventTarget) => void, isIframe?: boolean) {
+    k_a_f = keep_as_first;
     if (remoteAccessMode) {
         if (iframe_timeout != null) {
             // We are currently checking whether the iframe parent is the remote access page.
@@ -312,45 +315,7 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
     wsReconnectCallback = () => setupEventSource(keep_as_first ? first : false, keep_as_first, continuation)
     wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
 
-    ws.onmessage = (e: MessageEvent) => {
-        if(!keep_as_first)
-            remove_alert("event_connection_lost");
-
-        if (wsReconnectTimeout != null) {
-            window.clearTimeout(wsReconnectTimeout);
-            wsReconnectTimeout = null;
-        }
-        wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
-
-        let topics: any[] = [];
-
-        let end_marker_found = (e.data as string).includes("\n\n");
-        let messages = (e.data as string).trim();
-
-        batch(() => {
-            for (let item of messages.split("\n")) {
-                let obj = JSON.parse(item);
-                if (!("topic" in obj) || !("payload" in obj)) {
-                    console.log("Received malformed event", obj);
-                    return;
-                }
-
-                topics.push(obj["topic"]);
-                API.update(obj["topic"], obj["payload"]);
-            }
-
-            if (allow_render.peek()) {
-                for (let topic of topics) {
-                    API.trigger(topic, eventTarget);
-                }
-            }
-
-            if (end_marker_found) {
-                API.trigger_all(eventTarget);
-                allow_render.value = true;
-            }
-        });
-    };
+    ws.onmessage = wsOnMessageCallback;
 
     continuation(ws, eventTarget);
 }
