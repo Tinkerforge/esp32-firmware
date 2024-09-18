@@ -743,6 +743,12 @@ void FirmwareUpdate::check_for_update()
                 logger.printfln("HTTP error while downloading firmware index: %d", event->error_http_status);
                 state.get("check_state")->updateEnum(CheckState::DownloadError);
                 break;
+
+            // use default to prevent warnings since we dont use a body, cookies or headers here
+            default:
+                logger.printfln("Uncovered error, this should never happen!");
+                state.get("check_state")->updateEnum(CheckState::InternalError);
+                break;
             }
 
             check_for_update_in_progress = false;
