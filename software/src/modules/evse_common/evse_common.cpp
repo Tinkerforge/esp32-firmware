@@ -193,6 +193,10 @@ bool EvseCommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled
 
 void EvseCommon::apply_defaults()
 {
+    if (should_factory_reset_bricklets()) {
+        this->factory_reset();
+    }
+
     // Maybe this is the first start-up after updating the EVSE to firmware 2.1.0 (or higher)
     // (Or the first start-up at all)
     // Make sure, that the charging slot defaults are the expected ones.

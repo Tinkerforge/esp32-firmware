@@ -292,6 +292,12 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
     return true;
 }
 
+static bool data_partition_formatted = false;
+
+bool should_factory_reset_bricklets() {
+    return data_partition_formatted;
+}
+
 bool mount_or_format_spiffs()
 {
     /*
@@ -341,6 +347,7 @@ bool mount_or_format_spiffs()
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
         }
         LittleFS.format();
+        data_partition_formatted = true;
         LittleFS.begin(false, "/spiffs", 10, "spiffs");
 
         logger.printfln("Mirroring data backup to data partition.");
@@ -365,6 +372,7 @@ bool mount_or_format_spiffs()
             LittleFS.begin(false, "/spiffs", 10, "spiffs");
         }
         LittleFS.format();
+        data_partition_formatted = true;
         logger.printfln("Data partition is now formatted as LittleFS.");
     }
 
