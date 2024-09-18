@@ -955,6 +955,12 @@ void FirmwareUpdate::install_firmware(const char *url)
                 logger.printfln("HTTP error while downloading firmware: %d", event->error_http_status);
                 state.get("install_state")->updateEnum(InstallState::DownloadError);
                 break;
+
+            // use default to prevent warnings since we dont use a body, cookies or headers here
+            default:
+                logger.printfln("Uncovered error, this should never happen!");
+                state.get("check_state")->updateEnum(CheckState::InternalError);
+                break;
             }
 
             Update.abort();
