@@ -103,20 +103,21 @@ void PowerManager::pre_setup()
     }};
 
     dynamic_load_config = ConfigRoot{Config::Object({
-        {"enabled", Config::Bool(false)},
+        {"enabled",                  Config::Bool(false)},
         {"meter_slot_grid_currents", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
-        {"current_limit", Config::Uint(0, 0, 524287)}, // < 524 A
-        {"largest_consumer_current", Config::Uint(32, 0, 524287)}, // < 524 A
-        {"safety_margin_pct", Config::Uint(0, 0, 50)},
+        {"current_limit",            Config::Uint(    0, 0, 524287)}, // mA, maximum is 524 A
+        {"largest_consumer_current", Config::Uint(32000, 0, 524287)}, // mA, maximum is 524 A
+        {"safety_margin_pct",        Config::Uint(    0, 0,     50)}, // percent
     }), [](const Config &cfg, ConfigSource source) -> String {
         if (cfg.get("enabled")->asBool()) {
-            uint32_t current_limit            = cfg.get("current_limit")->asUint();
-            uint32_t largest_consumer_current = cfg.get("largest_consumer_current")->asUint();
+            uint32_t current_limit_ma            = cfg.get("current_limit")->asUint();
+            uint32_t largest_consumer_current_ma = cfg.get("largest_consumer_current")->asUint();
 
-            if (current_limit < 16) {
+            // Check here so that the config can be saved with an invalid current_limit when dynamic load management is disabled.
+            if (current_limit_ma < 16000) {
                 return "Invalid current limit. Must be at least 16A.";
             }
-            if (largest_consumer_current > current_limit) {
+            if (largest_consumer_current_ma > current_limit_ma) {
                 return "Largest consumer current cannot be above current limit.";
             }
         }
