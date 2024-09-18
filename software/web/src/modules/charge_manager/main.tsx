@@ -110,7 +110,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
             }
 
             let charger_config = state.config.chargers[i];
-            const name_link = (API.is_dirty("charge_manager/config") || !charger_config) ? c.n :
+            const name_link = (API.is_dirty("charge_manager/config") || !charger_config || util.remoteAccessMode) ? c.n :
                                 <a target="_blank" rel="noopener noreferrer" href={(charger_config.host == '127.0.0.1' || charger_config.host == 'localhost') ? '/' : "http://" + charger_config.host}>{c.n}</a>
 
             return  <div class="card">

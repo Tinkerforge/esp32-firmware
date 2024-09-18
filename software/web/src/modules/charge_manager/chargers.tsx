@@ -293,7 +293,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                             { return {
                                 columnValues: [
                                     charger.name,
-                                    <a target="_blank" rel="noopener noreferrer" href={(charger.host == '127.0.0.1' || charger.host == 'localhost') ? '/' : "http://" + charger.host}>{charger.host}</a>,
+                                    util.remoteAccessMode ? charger.host : <a target="_blank" rel="noopener noreferrer" href={(charger.host == '127.0.0.1' || charger.host == 'localhost') ? '/' : "http://" + charger.host}>{charger.host}</a>,
                                     translate_unchecked(`charge_manager.content.rotation_${charger.rot}`)
                                 ],
                                 editTitle: __("charge_manager.content.edit_charger_title"),
@@ -387,8 +387,8 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                                     }
                                                 </div>
                                                 <div class="d-flex w-100 justify-content-between">
-                                                    <a target="_blank" rel="noopener noreferrer" href={"http://" + c.hostname + ".local"}>{c.hostname + ".local"}</a>
-                                                    <a target="_blank" rel="noopener noreferrer" href={"http://" + c.ip}>{c.ip}</a>
+                                                    {util.remoteAccessMode ? <span>{c.hostname + ".local"}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + c.hostname + ".local"}>{c.hostname + ".local"}</a>}
+                                                    {util.remoteAccessMode ? <span>{c.ip}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + c.ip}>{c.ip}</a>}
                                                 </div>
                                             </ListGroupItem>))
                                 }</ListGroup>
