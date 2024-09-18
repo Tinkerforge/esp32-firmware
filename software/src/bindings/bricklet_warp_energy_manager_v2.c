@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-09-06.      *
+ * This file was automatically generated on 2024-09-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -540,7 +540,7 @@ int tf_warp_energy_manager_v2_get_input(TF_WARPEnergyManagerV2 *warp_energy_mana
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_warp_energy_manager_v2_set_sg_ready_output(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, const bool output[2]) {
+int tf_warp_energy_manager_v2_set_sg_ready_output(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t index, bool output) {
     if (warp_energy_manager_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -557,12 +557,12 @@ int tf_warp_energy_manager_v2_set_sg_ready_output(TF_WARPEnergyManagerV2 *warp_e
 
     bool _response_expected = true;
     tf_warp_energy_manager_v2_get_response_expected(warp_energy_manager_v2, TF_WARP_ENERGY_MANAGER_V2_FUNCTION_SET_SG_READY_OUTPUT, &_response_expected);
-    tf_tfp_prepare_send(warp_energy_manager_v2->tfp, TF_WARP_ENERGY_MANAGER_V2_FUNCTION_SET_SG_READY_OUTPUT, 1, _response_expected);
+    tf_tfp_prepare_send(warp_energy_manager_v2->tfp, TF_WARP_ENERGY_MANAGER_V2_FUNCTION_SET_SG_READY_OUTPUT, 2, _response_expected);
 
-    size_t _i;
     uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager_v2->tfp);
 
-    memset(_send_buf + 0, 0, 1); for (_i = 0; _i < 2; ++_i) _send_buf[0 + (_i / 8)] |= (output[_i] ? 1 : 0) << (_i % 8);
+    _send_buf[0] = (uint8_t)index;
+    _send_buf[1] = output ? 1 : 0;
 
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
@@ -658,7 +658,7 @@ int tf_warp_energy_manager_v2_get_sg_ready_output(TF_WARPEnergyManagerV2 *warp_e
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_warp_energy_manager_v2_set_relay_output(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, const bool output[2]) {
+int tf_warp_energy_manager_v2_set_relay_output(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t index, bool output) {
     if (warp_energy_manager_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -675,12 +675,12 @@ int tf_warp_energy_manager_v2_set_relay_output(TF_WARPEnergyManagerV2 *warp_ener
 
     bool _response_expected = true;
     tf_warp_energy_manager_v2_get_response_expected(warp_energy_manager_v2, TF_WARP_ENERGY_MANAGER_V2_FUNCTION_SET_RELAY_OUTPUT, &_response_expected);
-    tf_tfp_prepare_send(warp_energy_manager_v2->tfp, TF_WARP_ENERGY_MANAGER_V2_FUNCTION_SET_RELAY_OUTPUT, 1, _response_expected);
+    tf_tfp_prepare_send(warp_energy_manager_v2->tfp, TF_WARP_ENERGY_MANAGER_V2_FUNCTION_SET_RELAY_OUTPUT, 2, _response_expected);
 
-    size_t _i;
     uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager_v2->tfp);
 
-    memset(_send_buf + 0, 0, 1); for (_i = 0; _i < 2; ++_i) _send_buf[0 + (_i / 8)] |= (output[_i] ? 1 : 0) << (_i % 8);
+    _send_buf[0] = (uint8_t)index;
+    _send_buf[1] = output ? 1 : 0;
 
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 

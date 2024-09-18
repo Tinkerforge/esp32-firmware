@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-09-06.      *
+ * This file was automatically generated on 2024-09-18.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -690,7 +690,7 @@ int tf_warp_energy_manager_v2_get_input(TF_WARPEnergyManagerV2 *warp_energy_mana
  *
  * TODO
  */
-int tf_warp_energy_manager_v2_set_sg_ready_output(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, const bool output[2]);
+int tf_warp_energy_manager_v2_set_sg_ready_output(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t index, bool output);
 
 /**
  * \ingroup TF_WARPEnergyManagerV2
@@ -704,7 +704,7 @@ int tf_warp_energy_manager_v2_get_sg_ready_output(TF_WARPEnergyManagerV2 *warp_e
  *
  * TODO
  */
-int tf_warp_energy_manager_v2_set_relay_output(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, const bool output[2]);
+int tf_warp_energy_manager_v2_set_relay_output(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t index, bool output);
 
 /**
  * \ingroup TF_WARPEnergyManagerV2

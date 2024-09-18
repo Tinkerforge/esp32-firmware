@@ -366,7 +366,7 @@ void EMV2::update_all_data_struct()
     }
 }
 
-bool EMV2::get_input(uint32_t channel)
+bool EMV2::get_input(uint8_t channel)
 {
     if (channel > 3) {
         logger.printfln("get_input channel out of range: %u > 3", channel);
@@ -376,24 +376,14 @@ bool EMV2::get_input(uint32_t channel)
     return all_data.input[channel];
 }
 
-void EMV2::set_sg_ready_output(uint32_t channel, bool value)
+void EMV2::set_sg_ready_output(uint8_t channel, bool value)
 {
     if (channel > 1) {
         logger.printfln("set_sg_ready_output channel out of range: %u > 1", channel);
         return;
     }
 
-    bool outputs[2];
-
-    if (channel == 0) {
-        outputs[0] = value;
-        outputs[1] = all_data.output_sg_ready[1];
-    } else {
-        outputs[0] = all_data.output_sg_ready[0];
-        outputs[1] = value;
-    }
-
-    int rc = tf_warp_energy_manager_v2_set_sg_ready_output(&device, outputs);
+    int rc = tf_warp_energy_manager_v2_set_sg_ready_output(&device, channel, value);
 
     // Don't check if bricklet is reachable because the setter call won't tell us.
 
@@ -402,7 +392,7 @@ void EMV2::set_sg_ready_output(uint32_t channel, bool value)
     }
 }
 
-bool EMV2::get_sg_ready_output(uint32_t channel)
+bool EMV2::get_sg_ready_output(uint8_t channel)
 {
     if (channel > 1) {
         logger.printfln("get_sg_ready_output channel out of range: %u > 1", channel);
@@ -410,4 +400,30 @@ bool EMV2::get_sg_ready_output(uint32_t channel)
     }
 
     return all_data.output_sg_ready[channel];
+}
+
+void EMV2::set_relay_output(uint8_t channel, bool value)
+{
+    if (channel > 1) {
+        logger.printfln("set_relay_output channel out of range: %u > 1", channel);
+        return;
+    }
+
+    int rc = tf_warp_energy_manager_v2_set_relay_output(&device, channel, value);
+
+    // Don't check if bricklet is reachable because the setter call won't tell us.
+
+    if (rc != TF_E_OK) {
+        logger.printfln("Failed to set SG Ready output %u: error %i", channel, rc);
+    }
+}
+
+bool EMV2::get_relay_output(uint8_t channel)
+{
+    if (channel > 1) {
+        logger.printfln("get_relay_output channel out of range: %u > 1", channel);
+        return false;
+    }
+
+    return all_data.output_relay[channel];
 }
