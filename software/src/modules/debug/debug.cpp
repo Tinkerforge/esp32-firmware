@@ -233,7 +233,7 @@ void Debug::setup()
         for (uint16_t i = 0; i < task_count; i++) {
             uint32_t hwm = uxTaskGetStackHighWaterMark(this->task_handles[i]);
             Config *conf_task_hwm = static_cast<Config *>(this->state_hwm.get(i));
-            if (conf_task_hwm->get("hwm")->updateUint(hwm) && hwm < 384) {
+            if (conf_task_hwm->get("hwm")->updateUint(hwm) && hwm < 256) {
                 const char *task_name = conf_task_hwm->get("task_name")->asUnsafeCStr();
                 if (hwm < 120 || strcmp(task_name, "watchdog_task") != 0) {
                     logger.printfln("HWM of task '%s' changed: %u", task_name, hwm);
