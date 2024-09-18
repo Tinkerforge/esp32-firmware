@@ -12,5 +12,8 @@ software/src/modules/valovo*
 software/src/modules/modbus_reader/tinkerforge
 software/valovo_*
 software/changelog_valovo_*
+software/web/src/modules/valovo_*
 software/*_valovo_*
 cov-analysis-linux64-*
+software/build_*.sh
+software/signature/keys-*
