@@ -49,19 +49,6 @@ def get_latest_fw(fw_type=''):
 
     return latest
 
-if args.firmware is None:
-    firmware = get_latest_fw()
-else:
-    if os.path.exists(args.firmware):
-        if ".elf" in args.firmware:
-            firmware = args.firmware.replace(".elf", "_merged.bin")
-        if "_merged.bin" in args.firmware:
-            firmware = args.firmware
-    else:
-        firmware = get_latest_fw(args.firmware)
-
-print(f'Using firmware: {firmware}')
-
 if args.port:
     if len(args.port) < 6:
         port = "/dev/ttyUSB" + args.port
@@ -75,6 +62,17 @@ if args.erase:
     os.system("pio pkg exec esptool.py -- --port {} --chip esp32 erase_flash".format(port))
 
 if not args.serial_only:
+    if args.firmware is None:
+        firmware = get_latest_fw()
+    else:
+        if os.path.exists(args.firmware):
+            if ".elf" in args.firmware:
+                firmware = args.firmware.replace(".elf", "_merged.bin")
+            if "_merged.bin" in args.firmware:
+                firmware = args.firmware
+        else:
+            firmware = get_latest_fw(args.firmware)
+
     print(green("Flashing firmware {} to port {}".format(firmware, port)))
 
     os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 --before default_reset --after hard_reset write_flash 0x1000 {}".format(port, firmware))
