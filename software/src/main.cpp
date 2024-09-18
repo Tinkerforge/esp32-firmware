@@ -92,7 +92,7 @@ static WebServerRequestReturnProtect send_index_html(WebServerRequest &request) 
     return request.send(200, "text/html; charset=utf-8", index_html_data, index_html_length);
 }
 
-static void register_default_urls(void) {
+static void register_default_urls() {
     server.on_HTTPThread("/", HTTP_GET, [](WebServerRequest request) {
         return send_index_html(request);
     });
@@ -163,7 +163,7 @@ static void task_creation_failed(int error_code)
 
 #endif
 
-static void pre_reboot_helper(void)
+static void pre_reboot_helper()
 {
     std::vector<IModule *> imodules;
     modules_get_imodules(&imodules);
@@ -175,7 +175,7 @@ static void pre_reboot_helper(void)
     delay(1500);
 }
 
-static void pre_reboot(void)
+static void pre_reboot()
 {
     boot_stage = BootStage::PRE_REBOOT;
 
@@ -215,7 +215,7 @@ static void pre_reboot(void)
 static int watchdog_handle;
 #endif
 
-void setup(void)
+void setup()
 {
     set_main_task_handle();
 
@@ -300,7 +300,7 @@ void setup(void)
     boot_stage = BootStage::LOOP;
 }
 
-void loop(void) {
+void loop() {
 #if MODULE_WATCHDOG_AVAILABLE()
     watchdog.reset(watchdog_handle);
 #endif

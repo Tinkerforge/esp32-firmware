@@ -292,7 +292,7 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
     return true;
 }
 
-bool mount_or_format_spiffs(void)
+bool mount_or_format_spiffs()
 {
     /*
     tl;dr:

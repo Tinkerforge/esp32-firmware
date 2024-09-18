@@ -652,13 +652,13 @@ def main():
     build_lines.append('#define BUILD_FIRMWARE_UPDATE_URL "{}"'.format(firmware_update_url))
     build_lines.append('#define BUILD_DAY_AHEAD_PRICE_API_URL "{}"'.format(day_ahead_price_api_url))
     build_lines.append('#define BUILD_SOLAR_FORECAST_API_URL "{}"'.format(solar_forecast_api_url))
-    build_lines.append('uint32_t build_timestamp(void);')
-    build_lines.append('const char *build_timestamp_hex_str(void);')
-    build_lines.append('const char *build_version_full_str(void);')
-    build_lines.append('const char *build_version_full_str_upper(void);')
-    build_lines.append('const char *build_info_str(void);')
-    build_lines.append('const char *build_filename_str(void);')
-    build_lines.append('const char *build_commit_id_str(void);')
+    build_lines.append('uint32_t build_timestamp();')
+    build_lines.append('const char *build_timestamp_hex_str();')
+    build_lines.append('const char *build_version_full_str();')
+    build_lines.append('const char *build_version_full_str_upper();')
+    build_lines.append('const char *build_info_str();')
+    build_lines.append('const char *build_filename_str();')
+    build_lines.append('const char *build_commit_id_str();')
     tfutil.write_file_if_different(os.path.join('src', 'build.h'), '\n'.join(build_lines))
 
     firmware_basename = '{}_firmware{}{}{}_{}_{:x}{}'.format(
@@ -675,13 +675,13 @@ def main():
 
     build_lines = []
     build_lines.append('#include "build.h"')
-    build_lines.append('uint32_t build_timestamp(void) {{ return {}; }}'.format(timestamp))
-    build_lines.append('const char *build_timestamp_hex_str(void) {{ return "{:x}"; }}'.format(timestamp))
-    build_lines.append('const char *build_version_full_str(void) {{ return "{}"; }}'.format(version_full_str))
-    build_lines.append('const char *build_version_full_str_upper(void) {{ return "{}"; }}'.format(version_full_str.upper()))
-    build_lines.append('const char *build_info_str(void) {{ return "git url: {}, git branch: {}, git commit id: {}"; }}'.format(git_url, branch_name, git_commit_id))
-    build_lines.append('const char *build_filename_str(void) {{ return "{}"; }}'.format(firmware_basename))
-    build_lines.append('const char *build_commit_id_str(void) {{ return "{}"; }}'.format(git_commit_id))
+    build_lines.append('uint32_t build_timestamp() {{ return {}; }}'.format(timestamp))
+    build_lines.append('const char *build_timestamp_hex_str() {{ return "{:x}"; }}'.format(timestamp))
+    build_lines.append('const char *build_version_full_str() {{ return "{}"; }}'.format(version_full_str))
+    build_lines.append('const char *build_version_full_str_upper() {{ return "{}"; }}'.format(version_full_str.upper()))
+    build_lines.append('const char *build_info_str() {{ return "git url: {}, git branch: {}, git commit id: {}"; }}'.format(git_url, branch_name, git_commit_id))
+    build_lines.append('const char *build_filename_str() {{ return "{}"; }}'.format(firmware_basename))
+    build_lines.append('const char *build_commit_id_str() {{ return "{}"; }}'.format(git_commit_id))
     tfutil.write_file_if_different(os.path.join('src', 'build.cpp'), '\n'.join(build_lines))
     del build_lines
 

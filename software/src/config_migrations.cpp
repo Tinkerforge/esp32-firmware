@@ -35,7 +35,7 @@
 
 struct ConfigMigration {
     const int major, minor, patch;
-    void (*const fn)(void);
+    void (*const fn)();
 };
 
 [[gnu::unused]]
