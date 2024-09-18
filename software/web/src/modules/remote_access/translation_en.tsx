@@ -19,10 +19,10 @@ let x = {
             "status_modal_header": "Registration progess",
             "advanced_settings": "Advanced Settings",
             "prepare_login": "Preparing login",
-            "logging_in": "Logging in",
+            "logging_in": "Logging in user",
             "prepare_encryption": "Preparing encryption",
-            "encrypting": "Encrypting",
-            "registration": "Registration in progress"
+            "encrypting": "Encrypting WireGuard keys",
+            "registration": "Registering"
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",

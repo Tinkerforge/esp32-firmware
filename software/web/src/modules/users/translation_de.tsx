@@ -54,7 +54,7 @@ let x = {
             "save_failed": "Speichern der Benutzereinstellungen fehlgeschlagen.",
             "username_already_tracked": "Benutzername ist bereits in aufgezeichneten Ladevorgängen",
             "username_already_used": "Benutzername ist bereits vergeben ",
-            "all_user_ids_in_use": "Keine freien Nutzer-IDs mehr."
+            "all_user_ids_in_use": "Keine freien Benutzer-IDs mehr."
         }
     }
 }

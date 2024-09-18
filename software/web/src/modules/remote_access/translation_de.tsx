@@ -18,11 +18,11 @@ let x = {
             "not_used": "Eingebettetes Zertifikatsbundle",
             "status_modal_header": "Registrierung wird durchgeführt",
             "advanced_settings": "Experteneinstellungen",
-            "prepare_login": "Login wird vorbereitet",
-            "logging_in": "Einloggen",
-            "prepare_encryption": "Verschlüsselung wird vorbereitet",
-            "encrypting": "Verschlüsseln",
-            "registration": "Registrieren"
+            "prepare_login": "Bereite Login vor",
+            "logging_in": "Logge Benutzer ein",
+            "prepare_encryption": "Bereite Verschlüsselung vor",
+            "encrypting": "Verschlüssele WireGuard-Schlüssel",
+            "registration": "Registriere Wallbox"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",
