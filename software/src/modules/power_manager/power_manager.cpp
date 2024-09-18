@@ -29,12 +29,6 @@
 
 #define ENABLE_PM_TRACE 1
 
-#if MODULE_EM_V1_AVAILABLE()
-#define PM_ENABLED_DEFAULT (true)
-#else
-#define PM_ENABLED_DEFAULT (false)
-#endif
-
 void PowerManager::pre_setup()
 {
     // States
@@ -87,7 +81,7 @@ void PowerManager::pre_setup()
     });
 
     config = ConfigRoot{Config::Object({
-        {"enabled", Config::Bool(PM_ENABLED_DEFAULT)},
+        {"enabled", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint(PHASE_SWITCHING_AUTOMATIC, PHASE_SWITCHING_MIN, PHASE_SWITCHING_MAX)},
         {"excess_charging_enable", Config::Bool(false)},
         {"default_mode", Config::Uint(0, 0, 3)},
