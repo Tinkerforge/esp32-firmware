@@ -16,14 +16,14 @@ let x = {
                 </div>
                 <div>
                     <ul>
-                        <li>Ausgang 0 wird für den blockierenden Betrieb verwendet (SG Ready Zustand 1).</li>
-                        <li>Ausgang 1 wird für die Einschaltempfehlung verwendet (SG Ready Zustand 3).</li>
+                        <li>Ausgang 1 wird für den blockierenden Betrieb verwendet (SG Ready Zustand 1).</li>
+                        <li>Ausgang 2 wird für die Einschaltempfehlung verwendet (SG Ready Zustand 3).</li>
                         <li>Wenn beide Ausgänge nicht geschaltet sind findet der Normalbetrieb statt (SG Ready Zustand 2).</li>
                     </ul>
                 </div>
                 <div>
-                    Die intelligente Winter-/Sommermodussteuerung nutzt den Ausgang 1 und
-                    die Steuerung nach §14 EnWG den Ausgang 0. Es ist möglich nur einen der beiden Ausgänge anzuschließen
+                    Die intelligente Winter-/Sommermodussteuerung nutzt den Ausgang 2 und
+                    die Steuerung nach §14 EnWG den Ausgang 1. Es ist möglich nur einen der beiden Ausgänge anzuschließen
                     wenn nur eine der beiden Steuerungen verwendet werden soll.
                 </div>
             </>,

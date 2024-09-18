@@ -16,14 +16,14 @@ let x = {
                 </div>
                 <div>
                     <ul>
-                        <li>Output 0 is used for blocking operation (SG Ready state 1).</li>
-                        <li>Output 1 is used for the activation recommendation (SG Ready state 3).</li>
+                        <li>Output 1 is used for blocking operation (SG Ready state 1).</li>
+                        <li>Output 2 is used for the activation recommendation (SG Ready state 3).</li>
                         <li>If both outputs are not switched, normal operation takes place (SG Ready state 2).</li>
                     </ul>
                 </div>
                 <div>
-                    The intelligent winter/summer mode control uses output 1, and
-                    the control according to §14 EnWG uses output 0. It is possible to connect only one of the two outputs
+                    The intelligent winter/summer mode control uses output 2, and
+                    the control according to §14 EnWG uses output 1. It is possible to connect only one of the two outputs
                     if only one of the two control types is needed.
                 </div>
             </>,

@@ -444,10 +444,10 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             <FormRow label={__("heating.content.input")}>
                                 <InputSelect
                                     items={[
-                                        ["0", __("heating.content.input") + " 0"],
-                                        ["1", __("heating.content.input") + " 1"],
-                                        ["2", __("heating.content.input") + " 2"],
-                                        ["3", __("heating.content.input") + " 3"],
+                                        ["0", __("heating.content.input") + " 1"],
+                                        ["1", __("heating.content.input") + " 2"],
+                                        ["2", __("heating.content.input") + " 3"],
+                                        ["3", __("heating.content.input") + " 4"],
                                     ]}
                                     value={state.p14enwg_input}
                                     onValue={(v) => this.setState({p14enwg_input: parseInt(v)})}
