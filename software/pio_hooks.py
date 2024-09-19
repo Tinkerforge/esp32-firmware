@@ -404,7 +404,10 @@ def hyphenate(s, key, lang):
             is_camel_case = re.search(r'[a-z][A-Z]', word) is not None
             is_snake_case = "_" in word
             if is_too_long and not is_camel_case and not is_snake_case and should_be_hyphenated(word):
-                missing_hyphenations.setdefault(lang, []).append(word)
+                missing_hyphenation = missing_hyphenations.setdefault(lang, [])
+
+                if word not in missing_hyphenation:
+                    missing_hyphenation.append(word)
 
     return s
 
