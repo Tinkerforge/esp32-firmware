@@ -39,5 +39,10 @@ let x = {
             "ap_hide_ssid_desc_pre": "The Brick is reachable under the BSSID ",
             "confirm_content": <>Are you sure you want to disable the WiFi Access Point? If no connection to a configured network can be established in the future, <b>it is not possible to access the brick anymore</b>.The brick then has to be reset to factory defaults. <a href="{{{manual_url}}}">See manual for details.</a></>
         }
+    },
+    "remote_access": {
+        "content": {
+            "registration": "Registrating Brick"
+        }
     }
 }

@@ -45,5 +45,10 @@ let x = {
             "ap_hide_ssid_desc_pre": "Der Brick ist unter der BSSID ",
             "confirm_content": <>Soll der WLAN-Access-Point wirklich komplett deaktiviert werden? Falls zukünftig keine Verbindung zu einem konfigurierten Netzwerk möglich ist, <b>kann nicht mehr auf den Brick zugegriffen werden</b>. Der Brick muss dann auf den Werkszustand zurückgesetzt werden. <a href="{{{manual_url}}}">Siehe Betriebsanleitung für Details.</a></>
         }
+    },
+    "remote_access": {
+        "content": {
+            "registration": "Registriere Brick"
+        }
     }
 }
