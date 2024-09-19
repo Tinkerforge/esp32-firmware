@@ -762,11 +762,7 @@ private:
         size_t toWrite = std::min(confArr.getVal()->size(), elements);
 
         for (size_t i = 0; i < toWrite; ++i) {
-            const Config *entry = confArr.get(i);
-            if (!entry->is<ConfigT>()) {
-                esp_system_abort("Config entry has wrong type.");
-            }
-            arr[i] = *entry->get<ConfigT>()->getVal();
+            arr[i] = *confArr.get(i)->get<ConfigT>()->getVal();
         }
 
         return toWrite;
