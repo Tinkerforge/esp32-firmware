@@ -625,7 +625,7 @@
 - Add firmware update check and download
 - Add remote access
 
-2024-09-06: 2.6.0 (<unknown>)
+2024-09-06: 2.6.0 (9d8169d3)
 - Rewrite charge manager: Manage phases individually
 - Add dynamic load management
 - Support PV excess charging with more than one charger

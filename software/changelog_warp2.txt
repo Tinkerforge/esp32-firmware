@@ -637,7 +637,7 @@
 - Fix MQTT automation rules with prefix
 - Fix missing power graph for Victron Energy GX grid meter
 
-2024-09-06: 2.6.0 (<unknown>)
+2024-09-06: 2.6.0 (9d8169d3)
 - Rewrite charge manager: Manage phases individually
 - Add dynamic load management
 - Support PV excess charging with more than one charger
