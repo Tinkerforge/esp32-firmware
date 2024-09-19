@@ -25,6 +25,13 @@ from hyphenations import hyphenations, allowed_missing
 FrontendComponent = namedtuple('FrontendComponent', 'module component mode')
 FrontendStatusComponent = namedtuple('FrontendStatusComponent', 'module component')
 
+def check_call(*args, **kwargs):
+    try:
+        subprocess.check_call(*args, **kwargs)
+    except Exception as e:
+        print(f'Error: Command failed: {e}')
+        sys.exit(1)
+
 def get_changelog_version(name):
     path = os.path.join('changelog_{}.txt'.format(name))
     versions = []
@@ -483,7 +490,7 @@ def main():
     repair_rtc_dir()
     repair_firmware_update_dir()
 
-    subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
+    check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
 
     # Add build flags
     timestamp = int(time.time())
@@ -809,7 +816,7 @@ def main():
 
             abs_branding_module = os.path.abspath(branding_module)
             with tfutil.ChangedDirectory(mod_path):
-                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
+                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
 
     for root, dirs, files in os.walk('src'):
         root_path = PurePath(root)
@@ -931,7 +938,7 @@ def main():
 
             abs_branding_module = os.path.abspath(branding_module)
             with tfutil.ChangedDirectory(mod_path):
-                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
+                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
 
         if os.path.exists(os.path.join(mod_path, 'main.ts')) or os.path.exists(os.path.join(mod_path, 'main.tsx')):
             main_ts_entries.append(frontend_module.under)
@@ -1170,13 +1177,13 @@ def main():
     util.log('Checking translation completeness')
 
     with tfutil.ChangedDirectory('web'):
-        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"] + [x.under for x in frontend_modules])
+        check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"] + [x.under for x in frontend_modules])
 
     # Check translation override completeness
     util.log('Checking translation override completeness')
 
     with tfutil.ChangedDirectory('web'):
-        subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
+        check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
 
     # Generate enums
     for backend_module in backend_modules:
@@ -1322,7 +1329,7 @@ def main():
                 print('Error: npm >= 8 required, found npm {0}'.format(npm_version))
                 sys.exit(1)
 
-            subprocess.check_call(['npm', 'ci'], shell=sys.platform == 'win32')
+            check_call(['npm', 'ci'], shell=sys.platform == 'win32')
 
         with open('web/node_modules/tinkerforge.marker', 'wb') as f:
             pass
@@ -1371,7 +1378,7 @@ def main():
 
         with tfutil.ChangedDirectory('web'):
             try:
-                subprocess.check_call([env.subst('$PYTHONEXE'), "-u", "build.py"] + ([] if not frontend_debug else ['--js-source-map', '--css-source-map', '--no-minify']))
+                check_call([env.subst('$PYTHONEXE'), "-u", "build.py"] + ([] if not frontend_debug else ['--js-source-map', '--css-source-map', '--no-minify']))
             except subprocess.CalledProcessError as e:
                 if e.returncode != 42:
                     print(e, file=sys.stderr)
