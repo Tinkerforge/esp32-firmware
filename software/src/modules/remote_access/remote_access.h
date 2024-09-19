@@ -75,11 +75,10 @@ private:
     uint16_t in_seq_number = 0;
     bool management_request_done = false;
 
-    AsyncHTTPSClient https_client;
+    std::unique_ptr<AsyncHTTPSClient> https_client;
     String response_body;
     std::unique_ptr<uint8_t[]> encrypted_secret = nullptr;
     std::unique_ptr<uint8_t[]> secret_nonce = nullptr;
-    std::unique_ptr<StaticJsonDocument<768>> registration_doc = nullptr;
 
 
     ConfigRoot config;
