@@ -630,7 +630,7 @@
 - Add dynamic load management
 - Support PV excess charging with more than one charger
 
-2024-09-19: 2.6.1 (<unknown>)
+2024-09-19: 2.6.1 (bc58e3ee)
 - Add support for more Modbus TCP devices: GoodWe Hybrid Inverter
 - Fix remote access registration with Safari
 - Improve remote access registration UI
