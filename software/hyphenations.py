@@ -683,7 +683,10 @@ de_hyph = [
     "un-be-kann-ter",
     "zu-sätz-li-che",
     "zu-sätz-li-chen",
-    "über-schrei-tet"
+    "über-schrei-tet",
+    "Ver-schlüs-se-lung",
+    "Ver-schlüs-se-le",
+    "Re-gis-trie-re",
 ]
 
 en_hyph = [
@@ -856,7 +859,11 @@ en_hyph = [
     "ad-di-tion-al",
     "cal-cu-lat-ed",
     "com-pen-sat-ed",
-    "di-rec-tion-al"
+    "di-rec-tion-al",
+    "Reg-is-tra-tion",
+    "en-cryp-tion",
+    "En-crypt-ing",
+    "Reg-is-ter-ing",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
