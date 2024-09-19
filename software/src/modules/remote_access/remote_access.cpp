@@ -931,7 +931,6 @@ void RemoteAccess::resolve_management() {
         management_request_done = true;
         https_client = nullptr;
     };
-    logger.tf_dbg("In resolve_management");
     run_request_with_next_stage(url.c_str(), HTTP_METHOD_PUT, json, len, config, callback);
 }
 
