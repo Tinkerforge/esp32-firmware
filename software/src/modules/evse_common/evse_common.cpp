@@ -359,7 +359,7 @@ void EvseCommon::register_urls()
 
         backend->set_control_pilot_disconnect(cp_disconnect_requested, nullptr);
         auto phases = backend->get_is_3phase() ? 3 : 1;
-        if (phases != phases_requested) {
+        if (phases_requested != 0 && phases != phases_requested) {
             backend->switch_phases_3phase(phases_requested == 3);
         }
     });
