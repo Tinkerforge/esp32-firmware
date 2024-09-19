@@ -60,5 +60,10 @@ let x = {
         "content": {
             "cm_requirements_warning": "Um das PV-Überschussladen zu nutzen, muss das Lastmanagement auf „Lastmanager“ eingestellt und nur diese Wallbox als kontrollierte Wallbox eingetragen sein."
         }
+    },
+    "remote_access": {
+        "content": {
+            "registration": "Registriere Wallbox"
+        }
     }
 }

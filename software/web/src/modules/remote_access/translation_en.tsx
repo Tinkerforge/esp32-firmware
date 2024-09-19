@@ -21,11 +21,11 @@ let x = {
             "prepare_login": "Preparing login",
             "logging_in": "Logging in user",
             "prepare_encryption": "Preparing encryption",
-            "registration": "Registering"
+            "registration": null
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",
-            "reboot_content_changed": "remote-access settings"
+            "reboot_content_changed": "remote access settings"
         }
     }
 }

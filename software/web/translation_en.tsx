@@ -78,7 +78,7 @@ let x = {
             "apply": "Apply"
         },
         "remote_close_button": {
-            "close": "Close remote-access"
+            "close": "Close remote access"
         }
     },
     "util": {

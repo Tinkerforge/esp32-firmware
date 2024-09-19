@@ -54,5 +54,10 @@ let x = {
         "content": {
             "cm_requirements_warning": "To use the PV excess charging, charge management must be enabled and set to “Charge manager” and the charger should only manage itself."
         }
+    },
+    "remote_access": {
+        "content": {
+            "registration": "Registrating charger"
+        }
     }
 }

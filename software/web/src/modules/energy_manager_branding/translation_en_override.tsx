@@ -49,5 +49,10 @@ let x = {
         "content": {
             "cm_requirements_warning": "No chargers configured. To use the PV excess charging, all connected chargers must be configured as managed chargers in the charge manager."
         }
+    },
+    "remote_access": {
+        "content": {
+            "registration": "Registering Energy Manager"
+        }
     }
 }

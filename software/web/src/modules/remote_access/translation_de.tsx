@@ -20,8 +20,7 @@ let x = {
             "advanced_settings": "Experteneinstellungen",
             "prepare_login": "Bereite Login vor",
             "logging_in": "Logge Benutzer ein",
-            "prepare_encryption": "Bereite Verschlüsselung vor",
-            "registration": "Registriere Wallbox"
+            "prepare_encryption": "Bereite Verschlüsselung vor"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",
