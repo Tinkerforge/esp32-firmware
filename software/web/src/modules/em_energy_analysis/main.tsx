@@ -259,7 +259,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                                             y_label={__("em_energy_analysis.script.power") + " [Watt]"}
                                             y_digits={0}
                                             default_fill={true}
-                                            padding={[null, 15, null, 5] as uPlot.Padding} />
+                                            padding={[null, 15, null, 5]} />
                         </UplotLoader>
                     </div>
                 </div>
@@ -2034,7 +2034,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         y_digits={0}
                                         y_skip_upper={true}
                                         y_sync_ref={this.uplot_wrapper_5min_flags_ref}
-                                        padding={[0, 5, null, null] as uPlot.Padding}/>
+                                        padding={[0, 5, null, null]}/>
                         <div class="uplot u-hz u-time-in-legend-alone" ref={this.uplot_legend_div_5min_flags_ref} style="width: 100%; visibility: hidden;" />
                         <div class="uplot u-hz u-hide-first-series-in-legend" ref={this.uplot_legend_div_5min_power_ref} style="width: 100%; visibility: hidden;" />
                     </UplotLoader>
@@ -2061,7 +2061,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         y_label={__("em_energy_analysis.script.energy") + " [kWh]"}
                                         y_digits={2}
                                         default_fill={true}
-                                        padding={[null, 5, null, null] as uPlot.Padding} />
+                                        padding={[null, 5, null, null]} />
                     </UplotLoader>
                 </div>
 

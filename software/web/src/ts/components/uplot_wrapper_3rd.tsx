@@ -72,7 +72,7 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             }
         });
 
-        let options = {
+        let options: uPlot.Options = {
             ...this.get_size(),
             pxAlign: 0,
             cursor: {
@@ -165,7 +165,7 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     },
                 },
             },
-            padding: [null, 5, 0, null] as uPlot.Padding,
+            padding: [null, 5, 0, null],
             legend: {
                 mount: (self: uPlot, legend: HTMLElement) => {
                     if (this.props.legend_div_ref && this.props.legend_div_ref.current) {

@@ -113,10 +113,10 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
         let padding: uPlot.Padding = this.props.padding;
 
         if (!padding) {
-            padding = [null, null, null, null] as uPlot.Padding;
+            padding = [null, null, null, null];
         }
 
-        let options = {
+        let options: uPlot.Options = {
             ...this.get_size(),
             pxAlign: 0,
             cursor: {
