@@ -74,7 +74,8 @@ struct AsyncHTTPSClientEvent
 class AsyncHTTPSClient
 {
 public:
-    AsyncHTTPSClient() {}
+    AsyncHTTPSClient(bool use_cookies = false): use_cookies{use_cookies} {}
+    ~AsyncHTTPSClient();
 
     void download_async(const char *url, int cert_id, std::function<void(AsyncHTTPSClientEvent *event)> callback);
     void post_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> callback);
@@ -90,15 +91,18 @@ private:
     void parse_cookie(const char *cookie);
     static esp_err_t event_handler(esp_http_client_event_t *event);
 
-    std::unique_ptr<unsigned char[]> cert;
+    std::unique_ptr<unsigned char[]> cert = nullptr;
     std::function<void(AsyncHTTPSClientEvent *event)> callback;
     std::vector<std::pair<String, String>> headers;
     String cookies = "";
     String owned_body;
-    bool in_progress;
-    bool abort_requested;
-    esp_http_client_handle_t http_client;
-    uint32_t last_async_alive;
-    size_t received_len;
-    ssize_t complete_len;
+    bool in_progress = false;
+    bool abort_requested = false;
+    esp_http_client_handle_t http_client = nullptr;
+    uint32_t last_async_alive = 0;
+    size_t received_len = 0;
+    ssize_t complete_len = -1;
+    bool use_cookies;
+
+    uint64_t task_id = 0;
 };

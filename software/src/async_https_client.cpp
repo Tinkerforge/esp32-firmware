@@ -28,6 +28,16 @@
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
+AsyncHTTPSClient::~AsyncHTTPSClient()  {
+    if (task_id != 0) {
+        task_scheduler.cancel(task_id);
+    }
+    if (http_client != nullptr) {
+        esp_http_client_close(http_client);
+        esp_http_client_cleanup(http_client);
+    }
+}
+
 esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
 {
     AsyncHTTPSClient *that = static_cast<AsyncHTTPSClient *>(event->user_data);
@@ -45,6 +55,9 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
         break;
 
     case HTTP_EVENT_ON_HEADER:
+        if (!that->use_cookies) {
+            break;
+        }
         for (int i = 0; event->header_key[i] != 0; i++) {
             event->header_key[i] = tolower(event->header_key[i]);
         }
@@ -185,7 +198,7 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
 
     last_async_alive = millis();
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_id = task_scheduler.scheduleWithFixedDelay([this]() {
         bool no_response = false;
         bool short_read = false;
         esp_err_t err = ESP_OK;
@@ -265,6 +278,7 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
         this->headers = std::vector<std::pair<String,String>>();
 
         task_scheduler.cancel(task_scheduler.currentTaskId());
+        task_id = 0;
     }, 0, 200);
 }
 
