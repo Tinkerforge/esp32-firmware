@@ -21,7 +21,6 @@ let x = {
             "prepare_login": "Preparing login",
             "logging_in": "Logging in user",
             "prepare_encryption": "Preparing encryption",
-            "encrypting": "Encrypting WireGuard keys",
             "registration": "Registering"
         },
         "script": {

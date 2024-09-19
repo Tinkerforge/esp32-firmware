@@ -21,7 +21,6 @@ let x = {
             "prepare_login": "Bereite Login vor",
             "logging_in": "Logge Benutzer ein",
             "prepare_encryption": "Bereite Verschlüsselung vor",
-            "encrypting": "Verschlüssele WireGuard-Schlüssel",
             "registration": "Registriere Wallbox"
         },
         "script": {
