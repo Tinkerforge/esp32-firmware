@@ -106,6 +106,11 @@ bool Heating::is_active()
     return true;
 }
 
+bool Heating::is_p14enwg_active()
+{
+    return config.get("p14enwg_active")->asBool();
+}
+
 bool Heating::is_sg_ready_output0_closed() {
     return em_v2.get_sg_ready_output(0);
 }

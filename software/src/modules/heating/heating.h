@@ -27,6 +27,9 @@ class Heating final : public IModule
 {
 private:
     void update();
+
+    ConfigRoot config;
+    ConfigRoot state;
     uint32_t last_sg_ready_change = 0;
 
 public:
@@ -35,9 +38,7 @@ public:
     void setup() override;
     void register_urls() override;
     bool is_active();
+    bool is_p14enwg_active();
     bool is_sg_ready_output0_closed();
     bool is_sg_ready_output1_closed();
-
-    ConfigRoot config;
-    ConfigRoot state;
 };
