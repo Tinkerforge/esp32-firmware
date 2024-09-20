@@ -102,11 +102,11 @@ public:
     //[[gnu::const]] size_t get_debug_line_length() const override;
     //void get_debug_line(StringBuilder *sb) override;
 
-    bool get_input(uint8_t channel);
-    void set_sg_ready_output(uint8_t channel, bool value);
-    bool get_sg_ready_output(uint8_t channel);
-    void set_relay_output(uint8_t channel, bool value);
-    bool get_relay_output(uint8_t channel);
+    bool get_input(uint32_t index);
+    void set_sg_ready_output(uint32_t index, bool value);
+    bool get_sg_ready_output(uint32_t index);
+    void set_relay_output(uint32_t index, bool value);
+    bool get_relay_output(uint32_t index);
 
 #if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;

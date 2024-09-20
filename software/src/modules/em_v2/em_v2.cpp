@@ -366,64 +366,64 @@ void EMV2::update_all_data_struct()
     }
 }
 
-bool EMV2::get_input(uint8_t channel)
+bool EMV2::get_input(uint32_t index)
 {
-    if (channel > 3) {
-        logger.printfln("get_input channel out of range: %u > 3", channel);
+    if (index > 3) {
+        logger.printfln("get_input index out of range: %u > 3", index);
         return false;
     }
 
-    return all_data.input[channel];
+    return all_data.input[index];
 }
 
-void EMV2::set_sg_ready_output(uint8_t channel, bool value)
+void EMV2::set_sg_ready_output(uint32_t index, bool value)
 {
-    if (channel > 1) {
-        logger.printfln("set_sg_ready_output channel out of range: %u > 1", channel);
+    if (index > 1) {
+        logger.printfln("set_sg_ready_output index out of range: %u > 1", index);
         return;
     }
 
-    int rc = tf_warp_energy_manager_v2_set_sg_ready_output(&device, channel, value);
+    int rc = tf_warp_energy_manager_v2_set_sg_ready_output(&device, static_cast<uint8_t>(index), value);
 
     // Don't check if bricklet is reachable because the setter call won't tell us.
 
     if (rc != TF_E_OK) {
-        logger.printfln("Failed to set SG Ready output %u: error %i", channel, rc);
+        logger.printfln("Failed to set SG Ready output %u: error %i", index, rc);
     }
 }
 
-bool EMV2::get_sg_ready_output(uint8_t channel)
+bool EMV2::get_sg_ready_output(uint32_t index)
 {
-    if (channel > 1) {
-        logger.printfln("get_sg_ready_output channel out of range: %u > 1", channel);
+    if (index > 1) {
+        logger.printfln("get_sg_ready_output index out of range: %u > 1", index);
         return false;
     }
 
-    return all_data.output_sg_ready[channel];
+    return all_data.output_sg_ready[index];
 }
 
-void EMV2::set_relay_output(uint8_t channel, bool value)
+void EMV2::set_relay_output(uint32_t index, bool value)
 {
-    if (channel > 1) {
-        logger.printfln("set_relay_output channel out of range: %u > 1", channel);
+    if (index > 1) {
+        logger.printfln("set_relay_output index out of range: %u > 1", index);
         return;
     }
 
-    int rc = tf_warp_energy_manager_v2_set_relay_output(&device, channel, value);
+    int rc = tf_warp_energy_manager_v2_set_relay_output(&device, static_cast<uint8_t>(index), value);
 
     // Don't check if bricklet is reachable because the setter call won't tell us.
 
     if (rc != TF_E_OK) {
-        logger.printfln("Failed to set SG Ready output %u: error %i", channel, rc);
+        logger.printfln("Failed to set SG Ready output %u: error %i", index, rc);
     }
 }
 
-bool EMV2::get_relay_output(uint8_t channel)
+bool EMV2::get_relay_output(uint32_t index)
 {
-    if (channel > 1) {
-        logger.printfln("get_relay_output channel out of range: %u > 1", channel);
+    if (index > 1) {
+        logger.printfln("get_relay_output index out of range: %u > 1", index);
         return false;
     }
 
-    return all_data.output_relay[channel];
+    return all_data.output_relay[index];
 }
