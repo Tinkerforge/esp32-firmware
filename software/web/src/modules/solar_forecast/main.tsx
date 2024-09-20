@@ -492,9 +492,9 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                 x_format={{weekday: 'short', hour: '2-digit'}}
                                 x_padding_factor={0}
                                 y_min={0}
-                                y_max={5}
-                                y_unit={"kWh"}
-                                y_label={"kWh"}
+                                y_max={0.1}
+                                y_unit={"kW"}
+                                y_label={"kW"}
                                 y_digits={2}
                                 y_skip_upper={true}
                                 y_sync_ref={this.uplot_wrapper_flags_ref}
