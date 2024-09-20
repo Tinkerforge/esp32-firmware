@@ -72,7 +72,7 @@ public:
     DataReturn<int32_t> get_maximum_price_today();
     DataReturn<int32_t> get_maximum_price_tomorrow();
     DataReturn<int32_t> get_current_price();
-
+    int32_t get_grid_cost_plus_tax_plus_markup();
 
     ConfigRoot config;
     ConfigRoot state;
