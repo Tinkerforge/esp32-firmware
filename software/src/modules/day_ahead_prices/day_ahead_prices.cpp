@@ -537,5 +537,5 @@ DataReturn<int32_t> DayAheadPrices::get_current_price()
 
 int32_t DayAheadPrices::get_grid_cost_plus_tax_plus_markup()
 {
-    return config.get("grid_costs_and_taxes")->asInt() + config.get("supplier_markup")->asInt();
+    return config.get("grid_costs_and_taxes")->asUint() + config.get("supplier_markup")->asUint();
 }
