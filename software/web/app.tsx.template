@@ -28,6 +28,7 @@ import { FormRow } from "./ts/components/form_row";
 import { InputText } from "./ts/components/input_text";
 import { InputPassword } from "./ts/components/input_password";
 import { RemoteCloseButton } from "./ts/components/remote_close_button";
+import { InnerNavbar } from "./ts/components/inner_navbar";
 import { Key, Home, Menu } from "react-feather";
 import Container from "react-bootstrap/Container";
 import Tab from "react-bootstrap/Tab";
@@ -211,16 +212,9 @@ export class App extends Component<AppProps, AppState> {
                     <Collapse in={this.state.sidebar_open}>
                     <nav id="sidebar-menu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar navbar-collapse">
                         <div class="sidebar-sticky pt-3 pb-3">
-                            <Nav as="ul" className="flex-column" id="nav-list" style={this.state.visible ? undefined : "visibility: hidden;"}>
-                                {this.state.mode == "login" ?
-                                    <NavbarItem name="login" title={__("main.navbar_login")} symbol={<Key />} hidden={false} no_href={true} />
-                                    : undefined}
-                                {this.state.mode == "normal" ? <>
-                                    <NavbarItem name="status" title={__("main.navbar_status")} symbol={<Home />} hidden={false} />
-                                    {{{navbar}}}
-                                    </> : undefined}
-                                    <RemoteCloseButton />
-                            </Nav>
+                            <InnerNavbar mode={this.state.mode} visible={this.state.visible}>
+                                {{{navbar}}}
+                            </InnerNavbar>
                         </div>
                     </nav>
                     </Collapse>
