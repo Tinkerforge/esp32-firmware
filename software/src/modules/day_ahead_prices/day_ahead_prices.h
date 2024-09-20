@@ -28,7 +28,7 @@
 
 // TODO: We can reduce this again after reducing data on weekend on API server
 #define DAY_AHEAD_PRICE_MAX_JSON_LENGTH 4096*2
-#define DAY_AHEAD_PRICE_MAX_ARDUINO_JSON_BUFFER_SIZE 4096
+#define DAY_AHEAD_PRICE_MAX_ARDUINO_JSON_BUFFER_SIZE 8192
 
 enum DAPDownloadState {
     DAP_DOWNLOAD_STATE_OK,
