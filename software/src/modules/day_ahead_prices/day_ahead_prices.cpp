@@ -328,11 +328,12 @@ void DayAheadPrices::update()
                 } else {
                     // Put data from json into day_ahead_prices/state object
                     JsonArray js_prices = json_doc["prices"].as<JsonArray>();
-                    prices.get("prices")->removeAll();
+                    auto p = prices.get("prices");
+                    p->removeAll();
                     int count = 0;
                     int max_count = this->get_max_price_values();
                     for(JsonVariant v : js_prices) {
-                        prices.get("prices")->add()->updateInt(v.as<int>());
+                        p->add()->updateInt(v.as<int>());
                         count++;
                         if(count >= max_count) {
                             break;
@@ -393,7 +394,8 @@ bool DayAheadPrices::time_between(const uint32_t index, const uint32_t start, co
 
 DataReturn<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t start, const uint32_t end)
 {
-    const uint32_t num_prices = prices.get("prices")->count();
+    auto p = prices.get("prices");
+    const uint32_t num_prices = p->count();
 
     // No price data available
     if (num_prices == 0) {
@@ -407,7 +409,7 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t sta
     int32_t count = 0;
     for (uint32_t i = 0; i < num_prices; i++) {
         if(time_between(i, start, end, first_date, resolution)) {
-            const int32_t price = prices.get("prices")->get(i)->asInt();
+            const int32_t price = p->get(i)->asInt();
             min = MIN(min, price);
         }
     }
@@ -438,7 +440,8 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_tomorrow()
 
 DataReturn<int32_t> DayAheadPrices::get_average_price_between(const uint32_t start, const uint32_t end)
 {
-    const uint32_t num_prices = prices.get("prices")->count();
+    auto p = prices.get("prices");
+    const uint32_t num_prices = p->count();
 
     // No price data available
     if (num_prices == 0) {
@@ -452,7 +455,7 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_between(const uint32_t sta
     int32_t count = 0;
     for (uint32_t i = 0; i < num_prices; i++) {
         if(time_between(i, start, end, first_date, resolution)) {
-            sum += prices.get("prices")->get(i)->asInt();
+            sum += p->get(i)->asInt();
             count++;
         }
     }
@@ -483,7 +486,8 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_tomorrow()
 
 DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t start, const uint32_t end)
 {
-    const uint32_t num_prices = prices.get("prices")->count();
+    auto p = prices.get("prices");
+    const uint32_t num_prices = p->count();
 
     // No price data available
     if (num_prices == 0) {
@@ -497,7 +501,7 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t sta
     int32_t count = 0;
     for (uint32_t i = 0; i < num_prices; i++) {
         if(time_between(i, start, end, first_date, resolution)) {
-            const int32_t price = prices.get("prices")->get(i)->asInt();
+            const int32_t price = p->get(i)->asInt();
             max = MAX(max, price);
         }
     }
