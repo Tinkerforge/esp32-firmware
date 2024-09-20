@@ -263,10 +263,9 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 data.keys.push('plane' + index);
                 data.names.push(__("solar_forecast.content.plane") + ' ' + this.state.plane_configs[index].name);
                 data.values.push([]);
-                data.stacked.push(true);
+                data.stacked.push(false);
                 data.paths.push(UplotPath.Line);
                 data.default_visibilty.push(true);
-
             }
 
             let resolution_multiplier = 60;
