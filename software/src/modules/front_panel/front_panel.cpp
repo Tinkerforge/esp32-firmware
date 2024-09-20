@@ -412,7 +412,7 @@ int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const Ti
     }
 
     if (price.data_available) {
-        str2 = price_value_to_display_string(price.data / 1000);
+        str2 = price_value_to_display_string((price.data + day_ahead_prices.get_grid_cost_plus_tax_plus_markup()) / 1000);
     }
 #endif
 
