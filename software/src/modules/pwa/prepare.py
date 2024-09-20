@@ -1,19 +1,31 @@
 import sys
+import os
 import base64
+import json
+import pathlib
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, 'software')
 
 from software import util
 
-dir = sys.argv[1]
+metadata_json = os.getenv('PLATFORMIO_METADATA')
 
-with open(dir + '/favicon_192.png', 'rb') as file:
-    icon_small = base64.b64encode(file.read()).decode('utf-8')
-with open(dir + '/favicon_512.png', 'rb') as file:
-    icon_big = base64.b64encode(file.read()).decode('utf-8')
-with open(dir + '/pre.scss', 'r', encoding='utf-8') as file:
-    color = file.read().split('\n')[1].split(' ')[1]
+if metadata_json == None:
+    print('$PLATFORMIO_METADATA not set')
+    sys.exit(-1)
+
+metadata = json.loads(metadata_json)
+branding_mod_path = pathlib.Path(metadata['branding_mod_path'])
+
+with open(branding_mod_path / 'favicon_192.png', 'rb') as f:
+    icon_small = base64.b64encode(f.read()).decode('utf-8')
+
+with open(branding_mod_path / 'favicon_512.png', 'rb') as f:
+    icon_big = base64.b64encode(f.read()).decode('utf-8')
+
+with open(branding_mod_path / 'pre.scss', 'r', encoding='utf-8') as f:
+    color = f.read().split('\n')[1].split(' ')[1]
     if color.endswith(';'):
         color = color[:-1]
 
@@ -25,12 +37,11 @@ content = content.replace(" ", "").replace("\n", "").replace("maskableany", "mas
 with open('manifest.json', 'w', encoding='utf-8') as f:
     f.write(content)
 
-
 tfutil.specialize_template('manifest.json', 'manifest.json', {
     '{{{theme_color}}}': color,
     '{{{small_icon}}}': 'data:image/png;base64, ' + icon_small,
-    '{{{big_icon}}}': 'data:image/png;base64, ' +  icon_big
+    '{{{big_icon}}}': 'data:image/png;base64, ' + icon_big,
 })
 
-with open('manifest.json', 'r', encoding='utf-8') as file:
-    util.embed_data_with_digest(file.read().encode('utf-8'), '.', 'manifest', 'char')
+with open('manifest.json', 'r', encoding='utf-8') as f:
+    util.embed_data_with_digest(f.read().encode('utf-8'), '.', 'manifest', 'char')

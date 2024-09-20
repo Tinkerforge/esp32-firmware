@@ -741,7 +741,8 @@ def main():
     metadata = json.dumps({
         'name': name,
         'signed': signed,
-        'frontend_modules': [frontend_module.under for frontend_module in frontend_modules]
+        'frontend_modules': [frontend_module.under for frontend_module in frontend_modules],
+        'branding_mod_path': os.path.abspath(branding_mod_path),
     }, separators=(',', ':'))
 
     web_build_lines = []
@@ -802,9 +803,8 @@ def main():
             environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
             environ['PLATFORMIO_METADATA'] = metadata
 
-            abs_branding_mod_path = os.path.abspath(branding_mod_path)
             with tfutil.ChangedDirectory(mod_path):
-                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_mod_path], env=environ)
+                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
 
     for root, dirs, files in os.walk('src'):
         root_path = PurePath(root)
@@ -924,9 +924,8 @@ def main():
             environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
             environ['PLATFORMIO_METADATA'] = metadata
 
-            abs_branding_mod_path = os.path.abspath(branding_mod_path)
             with tfutil.ChangedDirectory(mod_path):
-                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_mod_path], env=environ)
+                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
 
         if os.path.exists(os.path.join(mod_path, 'main.ts')) or os.path.exists(os.path.join(mod_path, 'main.tsx')):
             main_ts_entries.append(frontend_module.under)
