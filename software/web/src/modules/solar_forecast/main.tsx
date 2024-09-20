@@ -234,9 +234,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 }
                 active_planes.push(i);
                 data_available = true;
-            } else {
-                //data_available = false;
-                //break;
             }
         }
 
