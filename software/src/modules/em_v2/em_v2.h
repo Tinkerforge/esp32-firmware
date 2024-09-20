@@ -119,4 +119,6 @@ private:
     void update_all_data_struct();
 
     EnergyManagerV2AllData all_data;
+
+    ConfigRoot outputs_update;
 };

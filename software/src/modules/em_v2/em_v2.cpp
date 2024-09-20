@@ -86,6 +86,12 @@ void EMV2::pre_setup()
     //em_common.config = Config::Object({
     //});
 
+    outputs_update = Config::Array(
+        {Config::Uint8(255), Config::Uint8(255), Config::Uint8(255), Config::Uint8(255)}, // 2x SG Ready, 2x Relay
+        new Config{Config::Uint8(0)}, // The prototype's default value can be 0 because the array cannot be extended.
+        4, 4, Config::type_id<Config::ConfUint>()
+    );
+
 #if MODULE_AUTOMATION_AVAILABLE()
 //    automation.register_action(
 //        AutomationActionID::EMRelaySwitch,
@@ -170,6 +176,53 @@ void EMV2::setup()
 void EMV2::register_urls()
 {
     this->DeviceModule::register_urls();
+
+    api.addCommand("energy_manager/outputs_update", &outputs_update, {}, [this](String &error) {
+        // 2x SG Ready, 2x Relay
+        uint8_t new_values[4];
+        this->outputs_update.fillUint8Array(new_values, ARRAY_SIZE(new_values));
+
+        // Handle relays first because they switch slower.
+        for (size_t i = 0; i < 2; i++) {
+            uint8_t new_value = new_values[i + 2];
+            if (new_value != 255) {
+                if (new_value > 1) {
+                    error += "Relay output value out of range [0, 1].\n";
+                } else {
+                    set_relay_output(i, new_value);
+                }
+                // Reset update config entry
+                this->outputs_update.get(static_cast<uint16_t>(i + 2))->updateUint(255);
+            }
+        }
+
+        for (size_t i = 0; i < 2; i++) {
+            uint8_t new_value = new_values[i];
+            if (new_value != 255) {
+                if (new_value > 1) {
+                    error += "SG Ready output value out of range [0, 1].\n";
+                } else {
+                    bool switching_blocked = false;
+
+#if MODULE_HEATING_AVAILABLE()
+                    if (i == 0) { // Output 0 is §14EnWG shutdown.
+                        switching_blocked = heating.is_p14enwg_active();
+                    } else { // Output 1 is for elevated power.
+                        switching_blocked = heating.is_active();
+                    }
+#endif
+
+                    if (switching_blocked) {
+                        error += "Cannot control SG Ready output that is currently in use by heating control.\n";
+                    } else {
+                        set_sg_ready_output(i, new_value);
+                    }
+                }
+                // Reset update config entry
+                this->outputs_update.get(static_cast<uint16_t>(i))->updateUint(255);
+            }
+        }
+    }, true);
 }
 
 // for IEMBackend
