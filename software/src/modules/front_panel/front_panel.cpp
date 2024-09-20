@@ -438,11 +438,11 @@ int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const Tile
     switch (param) {
         case SFType::ForecastToday:
             str1 = "Heute";
-            kwh = solar_forecast.get_kwh_today();
+            kwh = solar_forecast.get_wh_today();
             break;
         case SFType::ForecastTomorrow:
             str1 = "Morgen";
-            kwh = solar_forecast.get_kwh_tomorrow();
+            kwh = solar_forecast.get_wh_tomorrow();
             break;
     }
 
@@ -607,39 +607,39 @@ void FrontPanel::update()
     update_led();
 }
 
-String FrontPanel::watt_value_to_display_string(const int32_t watt)
+String FrontPanel::watt_value_to_display_string(const int32_t w)
 {
-    if (watt < 10000) {
-        return String(watt) + " W";
-    } else if (watt < (1000*1000)) {
-        uint32_t kw = watt / 1000;
+    if (w < 10000) {
+        return String(w) + " W";
+    } else if (w < (1000*1000)) {
+        uint32_t kw = w / 1000;
         return String(kw) + " kW";
-    } else if (watt < (1000*1000*1000)) {
-        uint32_t mw = watt / (1000*1000);
+    } else if (w < (1000*1000*1000)) {
+        uint32_t mw = w / (1000*1000);
         return String(mw) + " MW";
     } else {
         return String(">1GW");
     }
 }
 
-String FrontPanel::watt_hour_value_to_display_string(const uint32_t kilo_watt_hour)
+String FrontPanel::watt_hour_value_to_display_string(const uint32_t wh)
 {
-    if (kilo_watt_hour < 1000) {
-        return String(kilo_watt_hour) + "kWh";
-    } else if (kilo_watt_hour < (1000*10)) {
-        uint32_t mwh = kilo_watt_hour / 1000;
-        return String(mwh/10) + "." + String(mwh%10) + "MWh";
-    } else if (kilo_watt_hour < (1000*1000)) {
-        uint32_t mwh = kilo_watt_hour / 1000;
+    if (wh < 1000) {
+        return String(wh) + "Wh";
+    } else if (wh < (1000*10)) {
+        uint32_t wh100 = wh / 100;
+        return String(wh100/10) + "." + String(wh100%10) + "kWh";
+    } else if (wh < (1000*1000)) {
+        uint32_t kwh = wh / 1000;
+        return String(kwh) + "kWh";
+    } else if(wh < (1000*1000*10)) {
+        uint32_t kwh100 = wh / (1000*100);
+        return String(kwh100/10) + "." + String(kwh100%10) + "MWh";
+    } else if (wh < (1000*1000*1000)) {
+        uint32_t mwh = wh / (1000*1000);
         return String(mwh) + "MWh";
-    } else if(kilo_watt_hour < (1000*1000*10)) {
-        uint32_t gwh = kilo_watt_hour / (1000*1000);
-        return String(gwh/10) + "." + String(gwh%10) + "GWh";
-    } else if (kilo_watt_hour < (1000*1000*1000)) {
-        uint32_t gwh = kilo_watt_hour / (1000*1000);
-        return String(gwh) + "GWh";
     } else {
-        return String(">1 TWh"); // damn
+        return String(">1 GWh"); // damn
     }
 }
 

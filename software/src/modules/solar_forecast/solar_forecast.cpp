@@ -565,7 +565,7 @@ bool SolarForecast::forecast_time_between(const uint32_t first_date, const uint3
     return (forecast_time >= start) && (forecast_time <= end);
 }
 
-DataReturn<uint32_t> SolarForecast::get_kwh_today()
+DataReturn<uint32_t> SolarForecast::get_wh_today()
 {
     const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
     const uint32_t end   = start + 60*24 - 1;
@@ -589,7 +589,7 @@ DataReturn<uint32_t> SolarForecast::get_kwh_today()
     return {count != 0, wh};
 }
 
-DataReturn<uint32_t> SolarForecast::get_kwh_tomorrow()
+DataReturn<uint32_t> SolarForecast::get_wh_tomorrow()
 {
     const uint32_t start = get_localtime_today_midnight_in_utc() / 60 + 60*24;
     const uint32_t end   = start + 60*24 - 1;

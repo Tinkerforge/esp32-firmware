@@ -97,8 +97,8 @@ private:
 
     void check_flash_metadata();
 
-    String watt_value_to_display_string(const int32_t watt);
-    String watt_hour_value_to_display_string(const uint32_t kilo_watt_hour);
+    String watt_value_to_display_string(const int32_t w);
+    String watt_hour_value_to_display_string(const uint32_t wh);
     String price_value_to_display_string(const int32_t price);
 
     ConfigRoot config;
