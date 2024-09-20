@@ -458,34 +458,6 @@ def find_backend_module_space(backend_modules, name_space):
 
     return None, -1
 
-def find_branding_module(frontend_modules):
-    branding_module = None
-
-    for frontend_module in frontend_modules:
-        mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
-
-        potential_branding_path = os.path.join(mod_path, 'branding.ts')
-
-        if os.path.exists(potential_branding_path):
-            if branding_module != None:
-                print('Error: Branding module collision ' + mod_path + ' vs ' + branding_module)
-                sys.exit(1)
-
-            branding_module = mod_path
-
-    if branding_module is None:
-        print('Error: No branding module selected')
-        sys.exit(1)
-
-    req_for_branding = ['branding.ts', 'logo.png', 'favicon.png']
-
-    for f in req_for_branding:
-        if not os.path.exists(os.path.join(branding_module, f)):
-            print('Error: Branding module does not contain {}'.format(f))
-            sys.exit(1)
-
-    return branding_module
-
 def main():
     if env.IsCleanTarget():
         return
@@ -509,6 +481,7 @@ def main():
     day_ahead_price_api_url = env.GetProjectOption("custom_day_ahead_price_api_url")
     solar_forecast_api_url = env.GetProjectOption("custom_solar_forecast_api_url")
     require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
+    branding = env.GetProjectOption("custom_branding")
     build_flags = env.GetProjectOption("build_flags")
     frontend_debug = env.GetProjectOption("custom_frontend_debug") == "true"
     web_only = env.GetProjectOption("custom_web_only") == "true"
@@ -699,9 +672,23 @@ def main():
         f.write(firmware_basename)
 
     frontend_modules = [util.FlavoredName(x).get() for x in env.GetProjectOption("custom_frontend_modules").splitlines()]
+
     if nightly:
         frontend_modules.append(util.FlavoredName("Nightly").get())
         frontend_modules.append(util.FlavoredName("Debug").get())
+
+    branding_module = util.FlavoredName(branding + ' Branding').get()
+    frontend_modules.append(branding_module)
+    branding_mod_path = os.path.join('web', 'src', 'modules', branding_module.under)
+
+    if not os.path.exists(branding_mod_path):
+        print(f'Error: Branding module {branding} Branding missing')
+        sys.exit(1)
+
+    for name in ['branding.ts', 'logo.png', 'favicon.png']:
+        if not os.path.exists(os.path.join(branding_mod_path, name)):
+            print(f'Error: Branding module {branding} Branding does not contain {name}')
+            sys.exit(1)
 
     frontend_components = []
     for entry in env.GetProjectOption("custom_frontend_components").splitlines():
@@ -750,8 +737,6 @@ def main():
             sys.exit(1)
 
         frontend_status_components.append(FrontendStatusComponent(module, component))
-
-    branding_module = find_branding_module(frontend_modules)
 
     metadata = json.dumps({
         'name': name,
@@ -817,9 +802,9 @@ def main():
             environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
             environ['PLATFORMIO_METADATA'] = metadata
 
-            abs_branding_module = os.path.abspath(branding_module)
+            abs_branding_mod_path = os.path.abspath(branding_mod_path)
             with tfutil.ChangedDirectory(mod_path):
-                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
+                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_mod_path], env=environ)
 
     for root, dirs, files in os.walk('src'):
         root_path = PurePath(root)
@@ -939,9 +924,9 @@ def main():
             environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
             environ['PLATFORMIO_METADATA'] = metadata
 
-            abs_branding_module = os.path.abspath(branding_module)
+            abs_branding_mod_path = os.path.abspath(branding_mod_path)
             with tfutil.ChangedDirectory(mod_path):
-                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_module], env=environ)
+                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py", abs_branding_mod_path], env=environ)
 
         if os.path.exists(os.path.join(mod_path, 'main.ts')) or os.path.exists(os.path.join(mod_path, 'main.tsx')):
             main_ts_entries.append(frontend_module.under)
@@ -1030,16 +1015,16 @@ def main():
     tfutil.write_file_if_different(os.path.join('web', 'src', 'ts', 'translation.json'), translation_data)
     del translation_data
 
-    with open(os.path.join(branding_module, 'favicon.png'), 'rb') as f:
+    with open(os.path.join(branding_mod_path, 'favicon.png'), 'rb') as f:
         favicon = b64encode(f.read()).decode('ascii')
 
-    with open(os.path.join(branding_module, 'logo.png'), 'rb') as f:
+    with open(os.path.join(branding_mod_path, 'logo.png'), 'rb') as f:
         logo_base64 = b64encode(f.read()).decode('ascii')
 
-    with open(os.path.join(branding_module, 'branding.ts'), 'r', encoding='utf-8') as f:
-        branding = f.read()
+    with open(os.path.join(branding_mod_path, 'branding.ts'), 'r', encoding='utf-8') as f:
+        branding_ts = f.read()
 
-    with open(os.path.join(branding_module, 'pre.scss'), 'r', encoding='utf-8') as f:
+    with open(os.path.join(branding_mod_path, 'pre.scss'), 'r', encoding='utf-8') as f:
         color = f.read().split('\n')[1].split(' ')[1]
         if color.endswith(';'):
             color = color[:-1]
@@ -1102,7 +1087,7 @@ def main():
 
     tfutil.specialize_template(os.path.join("web", "branding.ts.template"), os.path.join("web", "src", "ts", "branding.ts"), {
         '{{{logo_base64}}}': logo_base64,
-        '{{{branding}}}': branding,
+        '{{{branding}}}': branding_ts,
     })
 
     translation_str = ''
