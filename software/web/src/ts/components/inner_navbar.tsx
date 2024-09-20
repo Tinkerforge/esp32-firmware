@@ -25,12 +25,11 @@ function generateAppMenu(elements: VNode<any>[]): any {
                 subLinks: childElements,
             };
             appElements.push(addElement);
-            console.log("Group: ", element);
         } else if (!element.props || !element.props.children) {
             const singleElement = (element.type as any)();
             const addElement = {
                 label: singleElement.props.title,
-                url: `javascript:window.log("Test")`,
+                url: `javascript:window.switchTo('${singleElement.props.name}')`,
             };
             appElements.push(addElement);
         }
@@ -40,9 +39,17 @@ function generateAppMenu(elements: VNode<any>[]): any {
 
 export function InnerNavbar(props: NavbarProps) {
     if (Median.isNativeApp()) {
-        (window as any).log = alert;
-        const appMenuItems = generateAppMenu(props.children);
-        Median.sidebar.setItems({items: appMenuItems, enabled: true, persist: false});
+        const appMenuItems = [{
+            label: __("main.navbar_status"),
+            url: "javascript:window.switchTo('status')",
+        }];
+        appMenuItems.push(...generateAppMenu(props.children));
+        appMenuItems.push({
+            label: __("component.remote_close_button.close"),
+            url: "javascript:window.close()",
+        });
+
+        Median.sidebar.setItems({items: appMenuItems, enabled: true, persist: true});
     }
 
     return <Nav as="ul" className="flex-column" id="nav-list" style={props.visible ? undefined : "visibility: hidden;"}>
