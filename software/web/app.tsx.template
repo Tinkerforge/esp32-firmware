@@ -191,7 +191,7 @@ export class App extends Component<AppProps, AppState> {
     render() {
         return <>
             <nav class="navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2">
-                <a href="#status"><img class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
+                <a href="#status"><img id="navbar-logo" class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
                 <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" onClick={() => {this.setState({sidebar_open: !this.state.sidebar_open})}}>
                     <Menu {...{class: "navbar-toggler-icon", style: "vertical-align: baseline;"} as any} />
                 </button>
