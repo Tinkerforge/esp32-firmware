@@ -1304,8 +1304,8 @@ static int days_per_month(int year, int month)
 }
 
 void EMEnergyAnalysis::history_wallbox_daily_response(IChunkedResponse *response,
-                                                   Ownership *response_ownership,
-                                                   uint32_t response_owner_id)
+                                                      Ownership *response_ownership,
+                                                      uint32_t response_owner_id)
 {
     uint32_t uid = history_wallbox_daily.get("uid")->asUint();
 
@@ -1500,8 +1500,8 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
 }
 
 void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *response,
-                                                         Ownership *response_ownership,
-                                                         uint32_t response_owner_id)
+                                                            Ownership *response_ownership,
+                                                            uint32_t response_owner_id)
 {
     // history is stored with date in UTC to avoid DST overlap problems.
     // API accepts date in localtime, convert from localtime to UTC
@@ -1707,8 +1707,8 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
 }
 
 void EMEnergyAnalysis::history_energy_manager_daily_response(IChunkedResponse *response,
-                                                          Ownership *response_ownership,
-                                                          uint32_t response_owner_id)
+                                                             Ownership *response_ownership,
+                                                             uint32_t response_owner_id)
 {
     // date in local time to have the days properly aligned
     uint8_t year = history_energy_manager_daily.get("year")->asUint() - 2000;
