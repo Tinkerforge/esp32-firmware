@@ -123,7 +123,7 @@ let x = {
 
             "print_action": "Print to event log",
             "print_action_message": "Message",
-            "print_action_text": /*FFN*/(message: string) => <>Show {message} in the <b>event log</b>.</> /*NF*/
+            "print_action_text": /*FFN*/(message: string) => <>Show "<b>{message}</b>" in the <b>event log</b>.</> /*NF*/
         },
         "content": {
             "automation": "Automation",
