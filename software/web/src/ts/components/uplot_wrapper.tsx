@@ -51,6 +51,7 @@ interface UplotWrapperProps {
     legend_div_ref?: RefObject<HTMLDivElement>;
     aspect_ratio: number;
     x_height: number;
+    x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
     x_include_date: boolean;
     y_min?: number;
@@ -142,7 +143,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
                         for (let i = 0; i < splits.length; ++i) {
                             let date = new Date(splits[i] * 1000);
-                            let value = date.toLocaleString([], {hour: '2-digit', minute: '2-digit'});
+                            let value = date.toLocaleString([], this.props.x_format);
 
                             if (this.props.x_include_date && foundIncr >= 3600) {
                                 let year = date.toLocaleString([], {year: 'numeric'});

@@ -488,9 +488,10 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                 legend_time_with_minutes={true}
                                 legend_div_ref={this.uplot_legend_div_ref}
                                 aspect_ratio={3}
-                                x_height={30}
-                                x_format={{weekday: 'short', hour: '2-digit'}}
+                                x_height={50}
+                                x_format={{hour: '2-digit', minute: '2-digit'}}
                                 x_padding_factor={0}
+                                x_include_date={true}
                                 y_min={0}
                                 y_max={0.1}
                                 y_unit={"kW"}

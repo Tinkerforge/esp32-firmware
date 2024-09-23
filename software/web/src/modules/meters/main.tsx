@@ -626,6 +626,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                             legend_time_with_seconds={true}
                                             aspect_ratio={3}
                                             x_height={30}
+                                            x_format={{hour: '2-digit', minute: '2-digit'}}
                                             x_padding_factor={0}
                                             x_include_date={false}
                                             y_diff_min={100}
@@ -648,6 +649,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                             legend_time_with_seconds={false}
                                             aspect_ratio={3}
                                             x_height={50}
+                                            x_format={{hour: '2-digit', minute: '2-digit'}}
                                             x_padding_factor={0}
                                             x_include_date={true}
                                             y_min={0}
@@ -1204,6 +1206,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                             legend_time_with_seconds={false}
                                             aspect_ratio={3}
                                             x_height={50}
+                                            x_format={{hour: '2-digit', minute: '2-digit'}}
                                             x_padding_factor={0}
                                             x_include_date={true}
                                             y_min={0}

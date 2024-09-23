@@ -66,6 +66,7 @@ interface UplotWrapperProps {
     x_height: number;
     x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
+    x_include_date: boolean;
     y_min?: number;
     y_max?: number;
     y_unit: string;
@@ -161,11 +162,32 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         3600 * 72,
                         3600 * 168,
                     ],
-                    values: (self: uPlot, splits: number[]) => {
+                    values: (self: uPlot, splits: number[], axisIdx: number, foundSpace: number, foundIncr: number) => {
                         let values: string[] = new Array(splits.length);
+                        let last_year: string = null;
+                        let last_month_and_day: string = null;
 
                         for (let i = 0; i < splits.length; ++i) {
-                            values[i] = (new Date(splits[i] * 1000)).toLocaleString([], this.props.x_format);
+                            let date = new Date(splits[i] * 1000);
+                            let value = date.toLocaleString([], this.props.x_format);
+
+                            if (this.props.x_include_date && foundIncr >= 3600) {
+                                let year = date.toLocaleString([], {year: 'numeric'});
+                                let month_and_day = date.toLocaleString([], {month: '2-digit', day: '2-digit'});
+
+                                if (year != last_year) {
+                                    value += '\n' + date.toLocaleString([], {year: 'numeric', month: '2-digit', day: '2-digit'});
+                                    last_year = year;
+                                    last_month_and_day = month_and_day;
+                                }
+
+                                if (month_and_day != last_month_and_day) {
+                                    value += '\n' + date.toLocaleString([], {month: '2-digit', day: '2-digit'});
+                                    last_month_and_day = month_and_day;
+                                }
+                            }
+
+                            values[i] = value;
                         }
 
                         return values;

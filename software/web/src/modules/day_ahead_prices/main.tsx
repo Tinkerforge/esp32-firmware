@@ -233,9 +233,10 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 legend_time_with_minutes={true}
                                 legend_div_ref={this.uplot_legend_div_ref}
                                 aspect_ratio={3}
-                                x_height={30}
-                                x_format={{weekday: 'short', hour: '2-digit'}}
+                                x_height={50}
+                                x_format={{hour: '2-digit', minute: '2-digit'}}
                                 x_padding_factor={0}
+                                x_include_date={true}
                                 y_min={0}
                                 y_max={5}
                                 y_unit={"ct/kWh"}
@@ -245,7 +246,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 y_sync_ref={this.uplot_wrapper_flags_ref}
                                 default_fill={true}
                                 only_show_visible={true}
-                                padding={[15, 5, null, null] as uPlot.Padding}
+                                padding={[15, 5, null, null]}
                             />
                         </UplotLoader>
                     </div>

@@ -253,6 +253,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                                             x_height={30}
                                             x_format={{hour: '2-digit', minute: '2-digit'}}
                                             x_padding_factor={0}
+                                            x_include_date={false}
                                             y_min={0}
                                             y_max={1500}
                                             y_unit={"W"}
@@ -2026,6 +2027,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         x_height={30}
                                         x_format={{hour: '2-digit', minute: '2-digit'}}
                                         x_padding_factor={0}
+                                        x_include_date={false}
                                         y_min={0}
                                         y_max={100}
                                         y_unit={"W"}
@@ -2054,6 +2056,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         x_height={30}
                                         x_format={{month: '2-digit', day: '2-digit'}}
                                         x_padding_factor={0.015}
+                                        x_include_date={false}
                                         y_min={0}
                                         y_max={10}
                                         y_unit={"kWh"}
