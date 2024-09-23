@@ -1405,7 +1405,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             use_timestamp: now,
             empty: true,
             complete: key < this.date_to_5min_key(new Date(now)),
-            flags: new Array(METERS_SLOTS),
+            flags: new Array(timestamp_slot_count),
             power: new Array(METERS_SLOTS),
             power_empty: new Array(METERS_SLOTS),
         };
