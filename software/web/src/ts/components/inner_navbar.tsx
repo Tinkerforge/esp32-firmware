@@ -6,6 +6,7 @@ import { Home, Key } from "react-feather";
 import Median from "median-js-bridge";
 import { NavbarGroup } from "./navbar_group";
 import { RemoteCloseButton } from "./remote_close_button";
+import { range } from "../util";
 
 interface NavbarProps {
     children: VNode<any>[],
@@ -14,11 +15,11 @@ interface NavbarProps {
     mode: string,
 }
 
-function generateAppMenu(elements: VNode<any>[]): any {
+function generateAppMenu(elements: VNode<any>[], nesting?: number): any {
     const appElements = [];
     for (const element of elements) {
         if (element.props.children && element.props.group_ref.current && !element.props.group_ref.current.props.hidden) {
-            const childElements: any = generateAppMenu(element.props.children as any);
+            const childElements: any = generateAppMenu(element.props.children as any, nesting ? nesting + 1 : 1);
             const addElement = {
                 label: element.props.group_ref.current.props.title,
                 isGrouping: true,
@@ -27,8 +28,15 @@ function generateAppMenu(elements: VNode<any>[]): any {
             appElements.push(addElement);
         } else if (!element.props || !element.props.children) {
             const singleElement = (element.type as any)();
+            let label = "";
+            if (nesting) {
+                for (const n in range(0, nesting)) {
+                    label += "\u00A0\u00A0\u00A0\u00A0";
+                }
+            }
+            label += singleElement.props.title;
             const addElement = {
-                label: singleElement.props.title,
+                label: label,
                 url: `javascript:window.switchTo('${singleElement.props.name}')`,
             };
             appElements.push(addElement);
