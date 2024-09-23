@@ -36,7 +36,6 @@ interface UplotFlagsWrapperProps {
     legend_time_label: string;
     legend_time_with_minutes: boolean;
     legend_div_ref?: RefObject<HTMLDivElement>;
-    x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
     y_sync_ref?: RefObject<UplotWrapper>;
 }
@@ -121,13 +120,7 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                         3600 * 168,
                     ],
                     values: (self: uPlot, splits: number[]) => {
-                        let values: string[] = new Array(splits.length);
-
-                        for (let i = 0; i < splits.length; ++i) {
-                            values[i] = (new Date(splits[i] * 1000)).toLocaleString([], this.props.x_format);
-                        }
-
-                        return values;
+                        return new Array(splits.length);
                     },
                     side: 0,
                 },

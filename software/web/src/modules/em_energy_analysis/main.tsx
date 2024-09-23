@@ -2010,7 +2010,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                             legend_time_label={__("em_energy_analysis.script.time_5min")}
                                             legend_time_with_minutes={true}
                                             legend_div_ref={this.uplot_legend_div_5min_flags_ref}
-                                            x_format={{hour: '2-digit', minute: '2-digit'}}
                                             x_padding_factor={0}
                                             y_sync_ref={this.uplot_wrapper_5min_power_ref} />
                         <UplotWrapper ref={this.uplot_wrapper_5min_power_ref}
