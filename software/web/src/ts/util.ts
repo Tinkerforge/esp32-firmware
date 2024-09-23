@@ -201,7 +201,7 @@ export let remoteAccessMode = window.top !== window.self;
 const path = location.origin;
 export let connection_id = "";
 let iframe_timeout: number = null;
-let iframe_timeout_ms = 100;
+let iframe_timeout_ms = 200;
 
 window.addEventListener("message", (e) => {
     if (iframe_timeout != null) {
