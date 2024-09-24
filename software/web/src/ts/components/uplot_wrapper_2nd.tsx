@@ -42,7 +42,8 @@ export interface UplotData extends CachedData {
     names: string[];
     values: number[][];
     extras?: number[][];
-    stacked: boolean[];
+    stacked?: boolean[];
+    filled?: boolean[];
     paths?: UplotPath[];
     value_names?: {[id: number]: string}[];
     value_strokes?: {[id: number]: string}[];
@@ -74,7 +75,6 @@ interface UplotWrapperProps {
     y_digits: number;
     y_skip_upper?: boolean;
     y_sync_ref?: RefObject<UplotFlagsWrapper>;
-    default_fill?: boolean;
     padding?: uPlot.Padding;
     only_show_visible?: boolean;
 }
@@ -454,7 +454,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
         if (this.data.paths) {
             if (this.data.paths[i] == UplotPath.Bar) {
-                paths = uPlot.paths.bars({size: [0.4, 100], align: this.data.stacked[i] ? 1 : -1})
+                paths = uPlot.paths.bars({size: [0.4, 100], align: this.data.stacked !== undefined && this.data.stacked[i] ? 1 : -1})
             }
             else if (this.data.paths[i] == UplotPath.Step) {
                 paths = uPlot.paths.stepped({align: 1});
@@ -480,7 +480,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 return null;
             },
             stroke: color.stroke,
-            fill: this.data.stacked[i] || this.props.default_fill ? color.fill : undefined,
+            fill: (this.data.stacked !== undefined && this.data.stacked[i]) || (this.data.filled !== undefined && this.data.filled[i]) ? color.fill : undefined,
             width: 2,
             paths: paths,
             points: {
@@ -497,7 +497,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
         this.uplot.delBand(null);
 
         for (let i = this.data.values.length - 1; i > 0; --i) {
-            if (!this.data.stacked[i]) {
+            if (this.data.stacked === undefined || !this.data.stacked[i]) {
                 for (let k = 0; k < this.data.values[i].length; ++k) {
                     let value = this.data.values[i][k];
 
@@ -560,7 +560,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
         last_stacked_values = [];
 
         for (let i = this.data.values.length - 1; i >= 0; --i) {
-            if (!this.data.stacked[i] || !this.series_visibility[this.data.keys[i]]) {
+            if (this.data.stacked === undefined || !this.data.stacked[i] || !this.series_visibility[this.data.keys[i]]) {
                 uplot_values.unshift(this.data.values[i]);
             }
             else {
@@ -587,7 +587,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
         let last_stacked_index: number = null;
 
         for (let i = this.data.values.length - 1; i > 0; --i) {
-            if (this.data.stacked[i] && this.series_visibility[this.data.keys[i]]) {
+            if (this.data.stacked !== undefined && this.data.stacked[i] && this.series_visibility[this.data.keys[i]]) {
                 if (last_stacked_index === null) {
                     this.uplot.delSeries(i);
                     this.uplot.addSeries(this.get_series_opts(i), i);

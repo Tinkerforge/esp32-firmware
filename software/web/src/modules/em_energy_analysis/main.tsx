@@ -259,7 +259,6 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                                             y_unit={"W"}
                                             y_label={__("em_energy_analysis.script.power") + " [Watt]"}
                                             y_digits={0}
-                                            default_fill={true}
                                             padding={[null, 15, null, 5]} />
                         </UplotLoader>
                     </div>
@@ -676,7 +675,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             names: [null],
             values: [null],
             extras: [null],
-            stacked: [false],
+            stacked: [null],
             paths: [null],
             extra_names: [null],
         };
@@ -789,7 +788,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             keys: [null],
             names: [null],
             values: [null],
-            stacked: [false],
             paths: [null],
             value_names: [null],
             value_strokes: [null],
@@ -849,7 +847,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.keys.push('em_phase');
             uplot_data.names.push(__("em_energy_analysis.content.state_phase"));
             uplot_data.values.push(phase);
-            uplot_data.stacked.push(false);
             uplot_data.paths.push(UplotPath.Line);
             uplot_data.value_names.push(em_phase_names);
             uplot_data.value_strokes.push(em_phase_strokes);
@@ -859,7 +856,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.keys.push('em_input3');
             uplot_data.names.push(__("em_energy_analysis.content.state_input3"));
             uplot_data.values.push(input3);
-            uplot_data.stacked.push(false);
             uplot_data.paths.push(UplotPath.Line);
             uplot_data.value_names.push(em_input_names);
             uplot_data.value_strokes.push(em_input_strokes);
@@ -869,7 +865,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.keys.push('em_input4');
             uplot_data.names.push(__("em_energy_analysis.content.state_input4"));
             uplot_data.values.push(input4);
-            uplot_data.stacked.push(false);
             uplot_data.paths.push(UplotPath.Line);
             uplot_data.value_names.push(em_input_names);
             uplot_data.value_strokes.push(em_input_strokes);
@@ -879,7 +874,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.keys.push('em_relay');
             uplot_data.names.push(__("em_energy_analysis.content.state_relay"));
             uplot_data.values.push(relay);
-            uplot_data.stacked.push(false);
             uplot_data.paths.push(UplotPath.Line);
             uplot_data.value_names.push(em_relay_names);
             uplot_data.value_strokes.push(em_relay_strokes);
@@ -911,7 +905,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.keys.push('wb_state_' + charger.uid);
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(state);
-                    uplot_data.stacked.push(true);
                     uplot_data.paths.push(UplotPath.Line);
                     uplot_data.value_names.push(wb_state_names);
                     uplot_data.value_strokes.push(wb_state_strokes);
@@ -968,7 +961,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             keys: [null],
             names: [null],
             values: [null],
-            stacked: [false],
+            stacked: [null],
+            filled: [null],
             paths: [null],
         };
 
@@ -982,6 +976,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             uplot_data.names.push(get_meter_name(this.state.meter_configs, this.state.meter_slot_status));
             uplot_data.values.push(energy_manager_data.power[this.state.meter_slot_status]);
             uplot_data.stacked.push(false);
+            uplot_data.filled.push(true);
             uplot_data.paths.push(UplotPath.Line);
         }
 
@@ -1061,7 +1056,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             keys: [null],
             names: [null],
             values: [null],
-            stacked: [false],
+            stacked: [null],
+            filled: [null],
             paths: [null],
         };
 
@@ -1114,6 +1110,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")})`);
                     uplot_data.values.push(energy_import);
                     uplot_data.stacked.push(false);
+                    uplot_data.filled.push(true);
                     uplot_data.paths.push(UplotPath.Bar);
                 }
 
@@ -1157,6 +1154,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.export")})`);
                     uplot_data.values.push(energy_export);
                     uplot_data.stacked.push(false);
+                    uplot_data.filled.push(true);
                     uplot_data.paths.push(UplotPath.Bar);
                 }
             }
@@ -1219,6 +1217,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(energy);
                     uplot_data.stacked.push(true);
+                    uplot_data.filled.push(true);
                     uplot_data.paths.push(UplotPath.Bar);
 
                     this.setState((prevState) => ({
@@ -1788,10 +1787,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     keys: [null],
                     names: [null],
                     values: [data_flags.values[0]],
-                    extras: [null],
-                    stacked: [false],
-                    paths: [null],
-                    extra_names: [null],
                 };
             }
 
@@ -1802,10 +1797,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     keys: [null],
                     names: [null],
                     values: [data_power.values[0]],
-                    extras: [null],
-                    stacked: [false],
-                    paths: [null],
-                    extra_names: [null],
                 };
             }
 
@@ -2062,7 +2053,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         y_unit={"kWh"}
                                         y_label={__("em_energy_analysis.script.energy") + " [kWh]"}
                                         y_digits={2}
-                                        default_fill={true}
                                         padding={[null, 5, null, null]} />
                     </UplotLoader>
                 </div>

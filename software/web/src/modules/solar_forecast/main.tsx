@@ -242,30 +242,25 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 keys: [],
                 names: [],
                 values: [],
-                stacked: [],
-                paths: [],
                 update_timestamp: 0,
-                use_timestamp: 0
+                use_timestamp: 0,
+                filled: [],
             }
         } else {
             data = {
                 keys: ['time'],
                 names: [__("solar_forecast.content.time")],
                 values: [[]],
-                stacked: [false],
-                paths: [null],
-                default_visibilty: [true],
                 update_timestamp: 0,
-                use_timestamp: 0
+                use_timestamp: 0,
+                filled: [null],
             }
 
             for (const index in active_planes) {
                 data.keys.push('plane' + index);
                 data.names.push(__("solar_forecast.content.plane") + ' ' + this.state.plane_configs[index].name);
                 data.values.push([]);
-                data.stacked.push(false);
-                data.paths.push(UplotPath.Line);
-                data.default_visibilty.push(true);
+                data.filled.push(true);
             }
 
             let resolution_multiplier = 60;
@@ -499,7 +494,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                 y_digits={2}
                                 y_skip_upper={true}
                                 y_sync_ref={this.uplot_wrapper_flags_ref}
-                                default_fill={true}
                                 only_show_visible={true}
                                 padding={[null, 5, null, null]}
                             />

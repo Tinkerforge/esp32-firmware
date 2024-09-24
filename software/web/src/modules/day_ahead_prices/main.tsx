@@ -123,11 +123,11 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 keys: ['time', 'price', 'price2', 'price3'],
                 names: [__("day_ahead_prices.content.time"), __("day_ahead_prices.content.electricity_price"), __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
                 values: [[], [], [], []],
-                stacked: [false, true, true, true],
+                stacked: [null, true, true, true],
                 paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step],
                 // Only enable the electricity price by default.
                 // The chart with only electricity price is the most useful in most cases.
-                default_visibilty: [true, true, false, false],
+                default_visibilty: [null, true, false, false],
                 update_timestamp: 0,
                 use_timestamp: 0,
                 lines_vertical: []
@@ -244,7 +244,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 y_digits={3}
                                 y_skip_upper={true}
                                 y_sync_ref={this.uplot_wrapper_flags_ref}
-                                default_fill={true}
                                 only_show_visible={true}
                                 padding={[15, 5, null, null]}
                             />
