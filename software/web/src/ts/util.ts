@@ -321,6 +321,14 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
     continuation(ws, eventTarget);
 }
 
+export function pauseiFrameSocket() {
+    window.parent.postMessage("pauseWS");
+    if (wsReconnectTimeout != null) {
+        clearTimeout(wsReconnectTimeout);
+        wsReconnectTimeout = null;
+    }
+}
+
 export function pauseWebSockets() {
     if (ws !== null) {
         ws.close();

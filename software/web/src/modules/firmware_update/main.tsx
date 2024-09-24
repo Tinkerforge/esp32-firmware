@@ -195,7 +195,11 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                                 return false;
                             }
 
-                            util.pauseWebSockets();
+                            if (util.remoteAccessMode) {
+                                util.pauseiFrameSocket();
+                            } else {
+                                util.pauseWebSockets();
+                            }
 
                             if (this.state.install_state == InstallState.InProgress) {
                                 this.setState({install_state: InstallState.Aborted, install_progress: 0});
