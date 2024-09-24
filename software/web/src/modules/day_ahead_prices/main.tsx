@@ -114,8 +114,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 values: [],
                 stacked: [],
                 paths: [],
-                update_timestamp: 0,
-                use_timestamp: 0
             }
         // Else fill with time and the three different prices we want to show
         } else {
@@ -128,8 +126,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 // Only enable the electricity price by default.
                 // The chart with only electricity price is the most useful in most cases.
                 default_visibilty: [null, true, false, false],
-                update_timestamp: 0,
-                use_timestamp: 0,
                 lines_vertical: []
             }
             let resolution_multiplier = this.state.prices.resolution == 0 ? 15 : 60

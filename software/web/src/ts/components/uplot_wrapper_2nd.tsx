@@ -26,18 +26,13 @@ import * as plot from "../plot";
 import uPlot from "uplot";
 import type { UplotFlagsWrapper } from './uplot_wrapper_3rd';
 
-export interface CachedData {
-    update_timestamp: number;
-    use_timestamp: number;
-}
-
 export const enum UplotPath {
     Line = 0,
     Bar = 1,
     Step = 2,
 }
 
-export interface UplotData extends CachedData {
+export interface UplotData {
     keys: string[];
     names: string[];
     values: number[][];

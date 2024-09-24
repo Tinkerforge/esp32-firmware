@@ -242,8 +242,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 keys: [],
                 names: [],
                 values: [],
-                update_timestamp: 0,
-                use_timestamp: 0,
                 filled: [],
             }
         } else {
@@ -251,8 +249,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 keys: ['time'],
                 names: [__("solar_forecast.content.time")],
                 values: [[]],
-                update_timestamp: 0,
-                use_timestamp: 0,
                 filled: [null],
             }
 

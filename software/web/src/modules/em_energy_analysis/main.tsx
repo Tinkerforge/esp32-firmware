@@ -31,7 +31,7 @@ import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { UplotWrapper, UplotData, CachedData, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
+import { UplotWrapper, UplotData, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { UplotFlagsWrapper } from "../../ts/components/uplot_wrapper_3rd";
 import uPlot from "uplot";
 import { MeterConfig } from "../meters/types";
@@ -45,6 +45,13 @@ export function EMEnergyAnalysisNavbar() {
 }
 
 const UPDATE_RETRY_DELAY = 500; // ms
+
+interface CachedData {
+    update_timestamp: number;
+    use_timestamp: number;
+}
+
+type CachedUplotData = CachedData & UplotData;
 
 interface Wallbox5minData extends CachedData {
     empty: boolean;
@@ -307,11 +314,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     uplot_loader_daily_ref = createRef();
     uplot_wrapper_daily_ref = createRef();
     uplot_update_timeout: number = null;
-    uplot_5min_flags_cache: {[id: string]: UplotData} = {};
-    uplot_5min_power_cache: {[id: string]: UplotData} = {};
-    uplot_5min_status_cache: {[id: string]: UplotData} = {};
+    uplot_5min_flags_cache: {[id: string]: CachedUplotData} = {};
+    uplot_5min_power_cache: {[id: string]: CachedUplotData} = {};
+    uplot_5min_status_cache: {[id: string]: CachedUplotData} = {};
     uplot_5min_cache_initalized: boolean = false;
-    uplot_daily_cache: {[id: string]: UplotData} = {};
+    uplot_daily_cache: {[id: string]: CachedUplotData} = {};
     uplot_daily_cache_initalized: boolean = false;
     wallbox_5min_cache: {[id: number]: { [id: string]: Wallbox5minData}} = {};
     wallbox_daily_cache: {[id: string]: { [id: string]: WallboxDailyData}} = {};
