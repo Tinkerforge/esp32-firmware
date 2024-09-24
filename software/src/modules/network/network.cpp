@@ -20,8 +20,8 @@
 #include "network.h"
 
 #include <sdkconfig.h>
-#include <ESPmDNS.h>
 
+#include "mdns.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
@@ -50,15 +50,24 @@ void Network::register_urls()
 {
     api.addPersistentConfig("network/config", &config);
 
-    if (!config.get("enable_mdns")->asBool())
+    if (!config.get("enable_mdns")->asBool()) {
         return;
-
-    if (!MDNS.begin(config.get("hostname")->asEphemeralCStr())) {
-        logger.printfln("Error setting up mDNS responder!");
-    } else {
-        logger.printfln("mDNS responder started");
     }
-    MDNS.addService("http", "tcp", 80);
+
+    if (mdns_init() != ESP_OK) {
+        logger.printfln("Error initializing mDNS responder");
+    } else {
+        String hostname = config.get("hostname")->asString();
+        hostname.toLowerCase();
+
+        if(mdns_hostname_set(hostname.c_str()) != ESP_OK) {
+            logger.printfln("Error initializing mDNS hostname");
+        } else {
+            logger.printfln("mDNS responder started");
+        }
+    }
+
+    mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0);
 
 #if MODULE_DEBUG_AVAILABLE()
     debug.register_task("mdns", CONFIG_MDNS_TASK_STACK_SIZE);

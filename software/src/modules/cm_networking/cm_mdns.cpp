@@ -19,14 +19,13 @@
 
 #include "cm_networking.h"
 
-#include <Arduino.h>
-#include <ESPmDNS.h>
 #include <lwip/ip_addr.h>
 #include <lwip/opt.h>
 #include <lwip/dns.h>
 #include <cstring>
 #include <TFJson.h>
 
+#include "mdns.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools.h"
@@ -61,16 +60,16 @@ void CMNetworking::register_urls()
     if (!network.config.get("enable_mdns")->asBool())
         return;
 
-    MDNS.addService("tf-warp-cm", "udp", 34127);
-    MDNS.addServiceTxt("tf-warp-cm", "udp", "version", MACRO_VALUE_TO_STRING(CM_PACKET_MAGIC) "." MACRO_VALUE_TO_STRING(CM_STATE_VERSION));
+    mdns_service_add(NULL, "_tf-warp-cm", "_udp", 34127, NULL, 0);
+    mdns_service_txt_item_set("_tf-warp-cm", "_udp", "version", MACRO_VALUE_TO_STRING(CM_PACKET_MAGIC) "." MACRO_VALUE_TO_STRING(CM_STATE_VERSION));
     task_scheduler.scheduleWithFixedDelay([](){
         #if MODULE_DEVICE_NAME_AVAILABLE()
             // Keep "display_name" updated because it can be changed at runtime without clicking "Save".
-            MDNS.addServiceTxt("tf-warp-cm", "udp", "display_name", device_name.display_name.get("display_name")->asString());
+            mdns_service_txt_item_set("_tf-warp-cm", "_udp", "display_name", device_name.display_name.get("display_name")->asEphemeralCStr());
         #endif
 
         // Keep "enabled" updated because it is retrieved from the EVSE.
-        MDNS.addServiceTxt("tf-warp-cm", "udp", "enabled", evse_common.get_management_enabled() ? "true" : "false");
+        mdns_service_txt_item_set("_tf-warp-cm", "_udp", "enabled", evse_common.get_management_enabled() ? "true" : "false");
     }, 0, 10000);
 #endif
 }
