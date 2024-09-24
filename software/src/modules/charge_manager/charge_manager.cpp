@@ -643,7 +643,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     auto &charger = charger_state[idx];
     auto &charger_alloc = charger_allocation_state[idx];
     auto *charger_cfg = (Config *)this->state.get("chargers")->get(idx);
-    auto *charger_ll_cfg = (Config *)this->low_level_state.get("chargers")->get(idx);
+    auto *ll_charger_cfg = (Config *)this->low_level_state.get("chargers")->get(idx);
     charger_cfg->get("s")->updateUint(charger_alloc.state);
     charger_cfg->get("e")->updateUint(charger_alloc.error);
     charger_cfg->get("ac")->updateUint(charger_alloc.allocated_current);
@@ -654,12 +654,12 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     charger_cfg->get("u")->updateUint(charger.uid);
 
     uint8_t bits = (charger.last_alloc_fulfilled_reqd << 5) | (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;
-    charger_ll_cfg->get("b")->updateUint(bits);
-    charger_ll_cfg->get("rc")->updateUint(charger.requested_current);
-    charger_ll_cfg->get("ae")->updateUint(charger.allocated_energy * 1000);
-    charger_ll_cfg->get("ar")->updateUint(charger.allocated_energy_this_rotation * 1000);
-    charger_ll_cfg->get("ls")->updateUint(charger.last_switch.millis());
-    charger_ll_cfg->get("lp")->updateUint(charger.last_plug_in.millis());
-    charger_ll_cfg->get("lw")->updateUint(charger.last_wakeup.millis());
-    charger_ll_cfg->get("ip")->updateUint(charger.ignore_phase_currents.millis());
+    ll_charger_cfg->get("b")->updateUint(bits);
+    ll_charger_cfg->get("rc")->updateUint(charger.requested_current);
+    ll_charger_cfg->get("ae")->updateUint(charger.allocated_energy * 1000);
+    ll_charger_cfg->get("ar")->updateUint(charger.allocated_energy_this_rotation * 1000);
+    ll_charger_cfg->get("ls")->updateUint(charger.last_switch.millis());
+    ll_charger_cfg->get("lp")->updateUint(charger.last_plug_in.millis());
+    ll_charger_cfg->get("lw")->updateUint(charger.last_wakeup.millis());
+    ll_charger_cfg->get("ip")->updateUint(charger.ignore_phase_currents.millis());
 }
