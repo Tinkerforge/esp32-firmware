@@ -28,7 +28,7 @@
 #include "tools.h"
 
 #define WATCHDOG_MAX_REGS 10
-// Highest observed stack usage was 616.
+// Highest observed stack usage was 712.
 #define WATCHDOG_STACK_SIZE 768
 
 static StaticTask_t xTaskBuffer;
