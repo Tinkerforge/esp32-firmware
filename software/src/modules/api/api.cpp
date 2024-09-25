@@ -317,13 +317,21 @@ void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, ICh
         return;
     }
 
-    if (!(len == 0 && reg.config->is_null())) {
+    if (len != 0 || !reg.config->is_null()) {
         String message = reg.config->update_from_cstr(payload, len);
+
         if (!message.isEmpty()) {
+            OwnershipGuard ownership_guard(response_ownership, response_owner_id);
+
+            if (!ownership_guard.have_ownership()) {
+                return;
+            }
+
             response->begin(false);
             response->write(message.c_str(), message.length());
             response->flush();
             response->end("");
+
             return;
         }
     }
