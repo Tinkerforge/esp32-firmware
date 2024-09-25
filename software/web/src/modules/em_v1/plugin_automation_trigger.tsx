@@ -113,17 +113,17 @@ function new_em_input_four_config(): AutomationTrigger {
 }
 
 function get_em_phase_switch_table_children(trigger: EMPhaseSwitchAutomationTrigger) {
-    return __("energy_manager.automation.automation_phase_switch_text")(trigger[1].phases);
+    return __("em_v1.automation.automation_phase_switch_text")(trigger[1].phases);
 }
 
 function get_em_phase_switch_edit_children(trigger: EMPhaseSwitchAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
-        <FormRow label={__("energy_manager.automation.phase")}>
+        <FormRow label={__("em_v1.automation.phase")}>
             <InputSelect
                 value={trigger[1].phases.toString()}
                 items = {[
-                    ['1', __("energy_manager.automation.single_phase")],
-                    ['3', __("energy_manager.automation.three_phase")],
+                    ['1', __("em_v1.automation.single_phase")],
+                    ['3', __("em_v1.automation.three_phase")],
                 ]}
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {phases: parseInt(v)}));
@@ -142,17 +142,17 @@ function new_em_phase_switch_config(): AutomationTrigger {
 }
 
 function get_em_contactor_monitoring_table_children(trigger: EMContactorMonitoringAutomationTrigger) {
-    return __("energy_manager.automation.automation_contactor_monitoring_text")(trigger[1].contactor_okay);
+    return __("em_v1.automation.automation_contactor_monitoring_text")(trigger[1].contactor_okay);
 }
 
 function get_em_contactor_monitoring_edit_children(trigger: EMContactorMonitoringAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
-        <FormRow label={__("energy_manager.automation.contactor_monitoring_state")}>
+        <FormRow label={__("em_v1.automation.contactor_monitoring_state")}>
             <InputSelect
                 value={trigger[1].contactor_okay ? '1' : '0'}
                 items = {[
-                    ['0', __("energy_manager.automation.contactor_error")],
-                    ['1', __("energy_manager.automation.contactor_okay")],
+                    ['0', __("em_v1.automation.contactor_error")],
+                    ['1', __("em_v1.automation.contactor_okay")],
                 ]}
                 onValue={(v) => {
                     on_trigger(util.get_updated_union(trigger, {contactor_okay: v === '1'}));
@@ -188,14 +188,14 @@ export function init(): InitResult {
                 get_edit_children: get_em_input_four_edit_children,
             },
             [AutomationTriggerID.EMPhaseSwitch]: {
-                name: __("energy_manager.automation.phase_switch"),
+                name: __("em_v1.automation.phase_switch"),
                 new_config: new_em_phase_switch_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_em_phase_switch_table_children,
                 get_edit_children: get_em_phase_switch_edit_children,
             },
             [AutomationTriggerID.EMContactorMonitoring]: {
-                name: __("energy_manager.automation.contactor_monitoring"),
+                name: __("em_v1.automation.contactor_monitoring"),
                 new_config: new_em_contactor_monitoring_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_em_contactor_monitoring_table_children,

@@ -13,36 +13,6 @@ let x = {
             "no_bricklet": "Internal error, Bricklet not found"
         },
         "automation": {
-            "contactor_monitoring": "Contactor error",
-            "automation_contactor_monitoring_text": /*FFN*/(contactor: boolean) => {
-                if (contactor) {
-                    return <>When <b>no contactor error</b> is detected on boot, </>
-                } else {
-                    return <>When <b>a contactor error</b> is detected, </>
-                }
-            }/*NF*/,
-            "contactor_monitoring_state": "",
-            "contactor_error": "Detected",
-            "contactor_okay": "Not detected on boot",
-
-            "phase_switch": "Phases switched",
-            "phase": "",
-            "single_phase": "To single phase",
-            "three_phase": "To three phases",
-            "automation_phase_switch_text": /*FFN*/(phase: number) => {
-                let ret = <></>;
-                switch (phase) {
-                    case 1:
-                        ret = <><b>single-phase</b></>
-                        break;
-
-                    case 3:
-                        ret = <><b>three-phase</b></>
-                        break;
-                }
-                return <>When the contactor switched to {ret}, </>
-            }/*NF*/,
-
             "input": /*SFN*/(input: number) => "Input " + input + " switched"/*NF*/,
             "state": "",
             "closed": "To closed",
@@ -52,12 +22,14 @@ let x = {
             }/*NF*/,
 
             "switch_relay": "Switch relay",
+            "relay_index": "Relay number",
             "relay_state": "Switch to",
             "relay_state_open": "Open",
             "relay_state_closed": "Closed",
-            "relay_action_text": /*FFN*/(state: boolean) => {
+            "relay_action_text": /*FFN*/(index: number, state: boolean) => {
+                const index_text = index >= 0 ? " " + index.toString() : "";
                 let ret = state ? <><b>close</b></> : <><b>open</b></>
-                return <>{ret} relay.</>
+                return <>{ret} relay{index_text}.</>
             }/*NF*/
         }
     }

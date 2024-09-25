@@ -49,7 +49,6 @@ void EMV2::pre_setup()
 
     const Config *prototype_bool_false = new Config{Config::Bool(false)};
 
-    // FIXME states and low_level_states are wrong
     // States
     em_common.state = Config::Object({
         // Common
@@ -93,47 +92,42 @@ void EMV2::pre_setup()
     );
 
 #if MODULE_AUTOMATION_AVAILABLE()
-//    automation.register_action(
-//        AutomationActionID::EMRelaySwitch,
-//        Config::Object({
-//            {"closed", Config::Bool(false)}
-//        }),
-//        [this](const Config *cfg) {
-//            this->set_output(cfg->get("closed")->asBool());
-//        }
-//    );
-//
-//    automation.register_trigger(
-//        AutomationTriggerID::EMInputThree,
-//        Config::Object({
-//            {"closed", Config::Bool(false)}
-//        }));
+    automation.register_trigger(
+        AutomationTriggerID::EMInput,
+        Config::Object({
+            {"index",  Config::Uint(0, 0, 3)},
+            {"closed", Config::Bool(false)},
+        })
+    );
+
+    automation.register_action(
+        AutomationActionID::EMRelaySwitch,
+        Config::Object({
+            {"index",  Config::Uint(0, 0, 1)},
+            {"closed", Config::Bool(false)}
+        }),
+        [this](const Config *cfg) {
+            const uint32_t index  = cfg->get("index" )->asUint();
+            const bool     closed = cfg->get("closed")->asBool();
+            this->set_relay_output(index, closed);
+        }
+    );
+
+    automation.register_action(
+        AutomationActionID::EMSGReadySwitch,
+        Config::Object({
+            {"index",  Config::Uint(0, 0, 1)},
+            {"closed", Config::Bool(false)}
+        }),
+        [this](const Config *cfg) {
+            const uint32_t index  = cfg->get("index" )->asUint();
+            const bool     closed = cfg->get("closed")->asBool();
+            this->set_sg_ready_output(index, closed);
+        }
+    );
+
 #endif
 }
-
-#if MODULE_AUTOMATION_AVAILABLE()
-bool EMV2::has_triggered(const Config *conf, void *data)
-{
-    //const Config *cfg = static_cast<const Config *>(conf->get());
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-
-    switch (conf->getTag<AutomationTriggerID>()) {
-//        case AutomationTriggerID::EMInputThree:
-//            if (cfg->get("closed")->asBool() == em_common.state.get("input3_state")->asBool()) {
-//                return true;
-//            }
-//            break;
-
-        default:
-            break;
-    }
-#pragma GCC diagnostic pop
-
-    return false;
-}
-#endif
 
 void EMV2::setup_energy_manager()
 {
@@ -171,6 +165,15 @@ void EMV2::setup()
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update_all_data();
     }, 0, EM_TASK_DELAY_MS);
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    task_scheduler.scheduleOnce([this]() {
+        for (size_t i = 0; i < ARRAY_SIZE(this->all_data.input); i++) {
+            uint32_t index = i;
+            automation.trigger(AutomationTriggerID::EMInput, &index, this);
+        }
+    }, 0);
+#endif
 }
 
 void EMV2::register_urls()
@@ -370,6 +373,52 @@ int EMV2::wem_get_energy_meter_detailed_values(float *ret_values, uint16_t *ret_
     return tf_warp_energy_manager_v2_get_energy_meter_detailed_values(&device, ret_values, ret_values_length);
 }
 
+#if MODULE_AUTOMATION_AVAILABLE()
+bool EMV2::has_triggered(const Config *conf, void *data)
+{
+    const AutomationTriggerID trigger_id = conf->getTag<AutomationTriggerID>();
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
+    switch (trigger_id) {
+        case AutomationTriggerID::EMInput: {
+            const uint32_t triggered_index = *static_cast<uint32_t *>(data);
+            const Config *cfg = static_cast<const Config *>(conf->get());
+            const uint32_t cfg_index = cfg->get("index")->asUint();
+
+            if (triggered_index != cfg_index) {
+                return false;
+            }
+
+            const bool is_closed = this->all_data.input[triggered_index];
+            const bool want_closed = cfg->get("closed")->asBool();
+            return is_closed == want_closed;
+        }
+
+        default:
+            break;
+    }
+#pragma GCC diagnostic pop
+
+    logger.printfln("has_triggered called for unexpected trigger ID %u", static_cast<uint32_t>(trigger_id));
+    return false;
+}
+
+template<typename T>
+void EMV2::update_all_data_triggers(T id, void *data_)
+{
+    // Don't attempt to trigger actions during the setup stage because the automation rules are probably not loaded yet.
+    // Start-up triggers are dispatched from a task started in our setup().
+    if (boot_stage > BootStage::SETUP) {
+        automation.trigger(id, data_, this);
+    }
+}
+#define AUTOMATION_TRIGGER(TRIGGER_ID, DATA) update_all_data_triggers(AutomationTriggerID::TRIGGER_ID, DATA)
+#else // no MODULE_AUTOMATION_AVAILABLE()
+#define AUTOMATION_TRIGGER(TRIGGER_ID, DATA) do {(void)DATA;} while (0)
+#endif
+
 void EMV2::update_all_data()
 {
     update_all_data_struct();
@@ -380,7 +429,10 @@ void EMV2::update_all_data()
     Config *state_inputs = static_cast<Config *>(em_common.state.get("inputs"));
     bool *inputs = all_data.input;
     for (uint16_t i = 0; i < ARRAY_SIZE(all_data.input); i++) {
-        state_inputs->get(i)->updateBool(inputs[i]);
+        if (state_inputs->get(i)->updateBool(inputs[i])) {
+            uint32_t index = i;
+            AUTOMATION_TRIGGER(EMInput, &index);
+        }
     }
 
     Config *state_sg_ready = static_cast<Config *>(em_common.state.get("sg_ready_outputs"));
