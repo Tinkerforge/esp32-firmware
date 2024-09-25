@@ -37,6 +37,7 @@ interface UplotFlagsWrapperProps {
     legend_time_with_minutes: boolean;
     legend_div_ref?: RefObject<HTMLDivElement>;
     x_padding_factor: number;
+    y2_enable?: boolean;
     y_sync_ref?: RefObject<UplotWrapper>;
 }
 
@@ -153,45 +154,6 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                         return size;
                     },
                 },
-                {
-                    side: 1, // right
-                    size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
-                        let size = 0;
-
-                        if (values) {
-                            self.ctx.save();
-                            self.ctx.font = self.axes[axisIdx].font;
-
-                            for (let i = 0; i < values.length; ++i) {
-                                size = Math.max(size, self.ctx.measureText(values[i]).width);
-                            }
-
-                            self.ctx.restore();
-                        }
-
-                        this.y2_size = Math.ceil(size / devicePixelRatio) + this.y2_size_offset;
-                        size = Math.max(this.y2_size, this.y2_other_size);;
-
-                        if (this.props.y_sync_ref && this.props.y_sync_ref.current) {
-                            this.props.y_sync_ref.current.set_y2_other_size(this.y2_size);
-                        }
-
-                        return size;
-                    },
-                    values: (self: uPlot, splits: number[]) => {
-                        let values: string[] = new Array(splits.length);
-
-                        values.fill('');
-
-                        return values;
-                    },
-                    grid: {
-                        show: false, // FIXME: y and y2 grid are misaligned, hide y2 grid for now
-                    },
-                    ticks: {
-                        show: false,
-                    },
-                },
             ],
             scales: {
                 x: {
@@ -241,6 +203,48 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                 },
             ],
         };
+
+        if (this.props.y2_enable === true) {
+            options.axes.push({
+                side: 1, // right
+                size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
+                    let size = 0;
+
+                    if (values) {
+                        self.ctx.save();
+                        self.ctx.font = self.axes[axisIdx].font;
+
+                        for (let i = 0; i < values.length; ++i) {
+                            size = Math.max(size, self.ctx.measureText(values[i]).width);
+                        }
+
+                        self.ctx.restore();
+                    }
+
+                    this.y2_size = Math.ceil(size / devicePixelRatio) + this.y2_size_offset;
+                    size = Math.max(this.y2_size, this.y2_other_size);
+
+                    if (this.props.y_sync_ref && this.props.y_sync_ref.current) {
+                        this.props.y_sync_ref.current.set_y2_other_size(this.y2_size);
+                    }
+
+                    return size;
+                },
+                values: (self: uPlot, splits: number[]) => {
+                    let values: string[] = new Array(splits.length);
+
+                    values.fill('');
+
+                    return values;
+                },
+                grid: {
+                    show: false, // FIXME: y and y2 grid are misaligned, hide y2 grid for now
+                },
+                ticks: {
+                    show: false,
+                },
+            });
+        }
 
         let div = this.div_ref.current;
         this.uplot = new uPlot(options, [], div);
