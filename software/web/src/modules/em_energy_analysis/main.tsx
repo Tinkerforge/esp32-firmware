@@ -2012,7 +2012,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                             x_padding_factor={0}
                                             y_sync_ref={this.uplot_wrapper_5min_power_ref} />
                         <UplotWrapper ref={this.uplot_wrapper_5min_power_ref}
-                                        class="em-energy-analysis-chart pb-4"
+                                        class="em-energy-analysis-chart"
                                         sub_page="em_energy_analysis"
                                         color_cache_group="em_energy_analysis.analysis_5min"
                                         show={true}
@@ -2034,8 +2034,10 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         y_skip_upper={true}
                                         y_sync_ref={this.uplot_wrapper_5min_flags_ref}
                                         padding={[0, 5, null, null]}/>
-                        <div class="uplot u-hz u-time-in-legend-alone" ref={this.uplot_legend_div_5min_flags_ref} style="width: 100%; visibility: hidden;" />
-                        <div class="uplot u-hz u-hide-first-series-in-legend" ref={this.uplot_legend_div_5min_power_ref} style="width: 100%; visibility: hidden;" />
+                        <div class="pb-4">
+                            <div class="uplot u-hz u-time-in-legend-alone" ref={this.uplot_legend_div_5min_flags_ref} style="width: 100%; visibility: hidden;" />
+                            <div class="uplot u-hz u-hide-first-series-in-legend" ref={this.uplot_legend_div_5min_power_ref} style="width: 100%; visibility: hidden;" />
+                        </div>
                     </UplotLoader>
                     <UplotLoader ref={this.uplot_loader_daily_ref}
                                     show={false}
