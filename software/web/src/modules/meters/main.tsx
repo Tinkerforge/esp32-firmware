@@ -631,7 +631,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                             x_include_date={false}
                                             y_diff_min={100}
                                             y_unit="W"
-                                            y_label={__("meters.script.power") + " [Watt]"}
+                                            y_label={__("meters.script.power") + " [W]"}
                                             y_digits={0} />
                         </UplotLoader>
                         <UplotLoader ref={this.uplot_loader_history_ref}
@@ -655,7 +655,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                             y_min={0}
                                             y_max={1500}
                                             y_unit="W"
-                                            y_label={__("meters.script.power") + " [Watt]"}
+                                            y_label={__("meters.script.power") + " [W]"}
                                             y_digits={0} />
                         </UplotLoader>
                     </div>
@@ -1186,7 +1186,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                         <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                             <UplotLoader ref={this.uplot_loader_ref}
                                         show={true}
-                                        marker_class={'h4'}
+                                        marker_class="h4"
                                         no_data={__("meters.content.no_data")}
                                         loading={__("meters.content.loading")} >
                                 <UplotWrapper ref={this.uplot_wrapper_ref}
@@ -1212,7 +1212,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                             y_min={0}
                                             y_max={1500}
                                             y_unit="W"
-                                            y_label={__("meters.script.power") + " [Watt]"}
+                                            y_label={__("meters.script.power") + " [W]"}
                                             y_digits={0} />
                             </UplotLoader>
                         </div>

@@ -264,7 +264,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                                             y_min={0}
                                             y_max={1500}
                                             y_unit={"W"}
-                                            y_label={__("em_energy_analysis.script.power") + " [Watt]"}
+                                            y_label={__("em_energy_analysis.script.power") + " [W]"}
                                             y_digits={0}
                                             padding={[null, 15, null, 5]} />
                         </UplotLoader>
@@ -1998,7 +1998,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                     <UplotLoader ref={this.uplot_loader_5min_ref}
                                     show={true}
-                                    marker_class={'h3'}
+                                    marker_class="h3"
                                     no_data={__("em_energy_analysis.content.no_data")}
                                     loading={__("em_energy_analysis.content.loading")} >
                         <UplotFlagsWrapper ref={this.uplot_wrapper_5min_flags_ref}
@@ -2029,7 +2029,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         y_min={0}
                                         y_max={100}
                                         y_unit={"W"}
-                                        y_label={__("em_energy_analysis.script.power") + " [Watt]"}
+                                        y_label={__("em_energy_analysis.script.power") + " [W]"}
                                         y_digits={0}
                                         y_skip_upper={true}
                                         y_sync_ref={this.uplot_wrapper_5min_flags_ref}
@@ -2039,7 +2039,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     </UplotLoader>
                     <UplotLoader ref={this.uplot_loader_daily_ref}
                                     show={false}
-                                    marker_class={'h3'}
+                                    marker_class="h3"
                                     no_data={__("em_energy_analysis.content.no_data")}
                                     loading={__("em_energy_analysis.content.loading")} >
                         <UplotWrapper ref={this.uplot_wrapper_daily_ref}

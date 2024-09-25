@@ -57,6 +57,7 @@ let x = {
             "unknown": "Unbekannt"
         },
         "script": {
+            "power": "Leistung",
             "save_failed": "Speichern der Solarprognoseeinstellungen fehlgeschlagen",
             "reboot_content_changed": "Solarprognoseeinstellungen"
         }

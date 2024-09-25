@@ -264,7 +264,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 data.values[0].push(this.state.plane_forecasts[first_index].first_date*60 + i*60*resolution_multiplier);
                 let j = 1;
                 for (const index in active_planes) {
-                    data.values[j].push(this.state.plane_forecasts[index].forecast[i]/1000.0);
+                    data.values[j].push(this.state.plane_forecasts[index].forecast[i]);
                     j++;
                 }
             }
@@ -485,8 +485,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                 x_include_date={true}
                                 y_min={0}
                                 y_max={0.1}
-                                y_unit={"kW"}
-                                y_label={"kW"}
+                                y_unit={"W"}
+                                y_label={__("solar_forecast.script.power") + " [W]"}
                                 y_digits={2}
                                 y_skip_upper={true}
                                 y_sync_ref={this.uplot_wrapper_flags_ref}
