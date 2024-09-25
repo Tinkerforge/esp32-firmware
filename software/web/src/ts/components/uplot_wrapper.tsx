@@ -73,6 +73,8 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
     observer: ResizeObserver;
     y_min: number = 0;
     y_max: number = 0;
+    y_size_offset: number = 22;
+    y_label_size: number = 20;
 
     shouldComponentUpdate() {
         return false;
@@ -91,7 +93,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             }
         });
 
-        let options = {
+        let options: uPlot.Options = {
             ...this.get_size(),
             pxAlign: 0,
             cursor: {
@@ -169,8 +171,8 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 },
                 {
                     label: this.props.y_label,
-                    labelSize: 20,
-                    labelGap: 2,
+                    labelSize: this.y_label_size,
+                    labelGap: 0,
                     labelFont: 'bold 14px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
                         let size = 0;
@@ -186,7 +188,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                             self.ctx.restore();
                         }
 
-                        return Math.ceil(size / devicePixelRatio) + 20;
+                        return Math.ceil(size / devicePixelRatio) + this.y_size_offset;
                     },
                     values: (self: uPlot, splits: number[]) => {
                         let values: string[] = new Array(splits.length);

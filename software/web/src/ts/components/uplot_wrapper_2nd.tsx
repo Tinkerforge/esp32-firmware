@@ -46,6 +46,7 @@ export interface UplotData {
     extra_names?: {[id: number]: string}[];
     default_visibilty?: boolean[];
     lines_vertical?: {index: number, text: string, color: [number, number, number, number]}[];
+    y_axes?: ('y' | 'y2')[];
 }
 
 interface UplotWrapperProps {
@@ -70,6 +71,13 @@ interface UplotWrapperProps {
     y_digits: number;
     y_skip_upper?: boolean;
     y_sync_ref?: RefObject<UplotFlagsWrapper>;
+    y2_enable?: boolean;
+    y2_min?: number;
+    y2_max?: number;
+    y2_unit?: string;
+    y2_label?: string;
+    y2_digits?: number;
+    y2_skip_upper?: boolean;
     padding?: uPlot.Padding;
     only_show_visible?: boolean;
 }
@@ -86,8 +94,15 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
     y_min: number = 0;
     y_max: number = 0;
     y_size: number = 0;
+    y_size_offset: number = 22;
     y_other_size: number = 0;
     y_label_size: number = 20;
+    y2_min: number = 0;
+    y2_max: number = 0;
+    y2_size: number = 0;
+    y2_size_offset: number = 22;
+    y2_other_size: number = 0;
+    y2_label_size: number = 20;
 
     shouldComponentUpdate() {
         return false;
@@ -191,7 +206,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 {
                     label: this.props.y_label,
                     labelSize: this.y_label_size,
-                    labelGap: 2,
+                    labelGap: 0,
                     labelFont: 'bold 14px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
                         let size = 0;
@@ -207,7 +222,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                             self.ctx.restore();
                         }
 
-                        this.y_size = Math.ceil(size / devicePixelRatio) + 20;
+                        this.y_size = Math.ceil(size / devicePixelRatio) + this.y_size_offset;
                         size = Math.max(this.y_size + this.y_label_size, this.y_other_size) - this.y_label_size;
 
                         if (this.props.y_sync_ref && this.props.y_sync_ref.current) {
@@ -351,6 +366,78 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             ],
         };
 
+        if (this.props.y2_enable === true) {
+            options.axes.push({
+                label: this.props.y2_label,
+                labelSize: this.y2_label_size,
+                labelGap: 0,
+                labelFont: 'bold 14px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+                side: 1, // right
+                scale: 'y2',
+                size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
+                    let size = 0;
+
+                    if (values) {
+                        self.ctx.save();
+                        self.ctx.font = self.axes[axisIdx].font;
+
+                        for (let i = 0; i < values.length; ++i) {
+                            size = Math.max(size, self.ctx.measureText(values[i]).width);
+                        }
+
+                        self.ctx.restore();
+                    }
+
+                    this.y2_size = Math.ceil(size / devicePixelRatio) + this.y2_size_offset;
+                    size = Math.max(this.y2_size + this.y2_label_size, this.y2_other_size) - this.y2_label_size;
+
+                    if (this.props.y_sync_ref && this.props.y_sync_ref.current) {
+                        this.props.y_sync_ref.current.set_y2_other_size(this.y2_size + this.y2_label_size);
+                    }
+
+                    return size;
+                },
+                values: (self: uPlot, splits: number[]) => {
+                    let values: string[] = new Array(splits.length);
+
+                    for (let digits = 0; digits <= 3; ++digits) {
+                        let last_value: string = null;
+                        let unique = true;
+
+                        for (let i = 0; i < splits.length; ++i) {
+                            if (this.props.y2_skip_upper && splits[i] >= this.y2_max) {
+                                values[i] = '';
+                            }
+                            else {
+                                values[i] = util.toLocaleFixed(splits[i], digits);
+                            }
+
+                            if (last_value == values[i]) {
+                                unique = false;
+                            }
+
+                            last_value = values[i];
+                        }
+
+                        if (unique) {
+                            break;
+                        }
+                    }
+
+                    return values;
+                },
+                grid: {
+                    show: false, // FIXME: y and y2 grid are misaligned, hide y2 grid for now
+                },
+            });
+
+            options.scales.y2 = {
+                range: (self: uPlot, initMin: number, initMax: number, scaleKey: string): uPlot.Range.MinMax => {
+                    return uPlot.rangeNum(this.y2_min, this.y2_max, {min: {}, max: {}});
+                }
+            };
+        }
+
         let div = this.div_ref.current;
         this.uplot = new uPlot(options, [], div);
 
@@ -421,7 +508,19 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
         this.y_other_size = size;
 
-        if (this.y_other_size != this.y_size) {
+        if (this.y_other_size != this.y_size + this.y_label_size) {
+            this.resize();
+        }
+    }
+
+    set_y2_other_size(size: number) {
+        if (this.y2_other_size == size) {
+            return;
+        }
+
+        this.y2_other_size = size;
+
+        if (this.y2_other_size != this.y2_size + this.y2_label_size) {
             this.resize();
         }
     }
@@ -456,6 +555,10 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             }
         }
 
+        let y_axis = this.data.y_axes ? this.data.y_axes[i] : 'y';
+        let y_digits = y_axis == 'y' ? this.props.y_digits : this.props.y2_digits;
+        let y_unit = y_axis == 'y' ? this.props.y_unit : this.props.y2_unit;
+
         return {
             show: this.series_visibility[this.data.keys[i]],
             pxAlign: 0,
@@ -469,7 +572,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         prefix = this.data.extra_names[seriesIdx][this.data.extras[seriesIdx][idx]] + ' / ';
                     }
 
-                    return prefix + util.toLocaleFixed(this.data.values[seriesIdx][idx], this.props.y_digits) + " " + this.props.y_unit;
+                    return prefix + util.toLocaleFixed(this.data.values[seriesIdx][idx], y_digits) + " " + y_unit;
                 }
 
                 return null;
@@ -481,28 +584,31 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             points: {
                 show: false,
             },
+            scale: y_axis,
         };
     }
 
     update_internal_data() {
-        let y_min: number = this.props.y_min;
-        let y_max: number = this.props.y_max;
-        let last_stacked_values: number[] = [];
+        let y_min: {[id: string]: number} = {'y': this.props.y_min, 'y2': this.props.y2_min};
+        let y_max: {[id: string]: number} = {'y': this.props.y_max, 'y2': this.props.y2_max};
+        let last_stacked_values: {[id: string]: number[]} = {'y': [], 'y2': []};
 
         this.uplot.delBand(null);
 
         for (let i = this.data.values.length - 1; i > 0; --i) {
+            let y_axis = this.data.y_axes ? this.data.y_axes[i] : 'y';
+
             if (this.data.stacked === undefined || !this.data.stacked[i]) {
                 for (let k = 0; k < this.data.values[i].length; ++k) {
                     let value = this.data.values[i][k];
 
                     if (value !== null) {
-                        if (y_min === undefined || value < y_min) {
-                            y_min = value;
+                        if (y_min[y_axis] === undefined || value < y_min[y_axis]) {
+                            y_min[y_axis] = value;
                         }
 
-                        if (y_max === undefined || value > y_max) {
-                            y_max = value;
+                        if (y_max[y_axis] === undefined || value > y_max[y_axis]) {
+                            y_max[y_axis] = value;
                         }
                     }
                 }
@@ -512,49 +618,55 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
                 if ((this.props.only_show_visible !== true) || this.series_visibility[this.data.keys[i]]) {
                     for (let k = 0; k < this.data.values[i].length; ++k) {
-                        if (last_stacked_values[k] !== null
-                            && last_stacked_values[k] !== undefined
+                        if (last_stacked_values[y_axis][k] !== null
+                            && last_stacked_values[y_axis][k] !== undefined
                             && this.data.values[i][k] !== null
                             && this.data.values[i][k] !== undefined) {
-                            stacked_values[k] = last_stacked_values[k] + this.data.values[i][k];
+                            stacked_values[k] = last_stacked_values[y_axis][k] + this.data.values[i][k];
                         } else {
                             stacked_values[k] = this.data.values[i][k];
                         }
 
                         if (stacked_values[k] !== null) {
-                            if (stacked_values[k] < y_min) {
-                                y_min = stacked_values[k];
+                            if (stacked_values[k] < y_min[y_axis]) {
+                                y_min[y_axis] = stacked_values[k];
                             }
 
-                            if (stacked_values[k] > y_max) {
-                                y_max = stacked_values[k];
+                            if (stacked_values[k] > y_max[y_axis]) {
+                                y_max[y_axis] = stacked_values[k];
                             }
                         }
                     }
                 }
 
-                last_stacked_values = stacked_values;
+                last_stacked_values[y_axis] = stacked_values;
             }
         }
 
-        if (y_min === undefined && y_max === undefined) {
-            y_min = 0;
-            y_max = 0;
-        }
-        else if (y_min === undefined) {
-            y_min = y_max;
-        }
-        else if (y_max === undefined) {
-            y_max = y_min;
+        for (let y_axis of ['y', 'y2']) {
+            if (y_min[y_axis] === undefined && y_max[y_axis] === undefined) {
+                y_min[y_axis] = 0;
+                y_max[y_axis] = 0;
+            }
+            else if (y_min[y_axis] === undefined) {
+                y_min[y_axis] = y_max[y_axis];
+            }
+            else if (y_max === undefined) {
+                y_max[y_axis] = y_min[y_axis];
+            }
         }
 
-        this.y_min = y_min;
-        this.y_max = y_max;
+        this.y_min = y_min['y'];
+        this.y_max = y_max['y'];
+        this.y2_min = y_min['y2'];
+        this.y2_max = y_max['y2'];
 
         let uplot_values: number[][] = [];
-        last_stacked_values = [];
+        last_stacked_values = {'y': [], 'y2': []};
 
         for (let i = this.data.values.length - 1; i >= 0; --i) {
+            let y_axis = this.data.y_axes ? this.data.y_axes[i] : 'y';
+
             if (this.data.stacked === undefined || !this.data.stacked[i] || !this.series_visibility[this.data.keys[i]]) {
                 uplot_values.unshift(this.data.values[i]);
             }
@@ -562,38 +674,40 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 let stacked_values: number[] = new Array(this.data.values[i].length);
 
                 for (let k = 0; k < this.data.values[i].length; ++k) {
-                    if (last_stacked_values[k] !== null
-                        && last_stacked_values[k] !== undefined
+                    if (last_stacked_values[y_axis][k] !== null
+                        && last_stacked_values[y_axis][k] !== undefined
                         && this.data.values[i][k] !== null
                         && this.data.values[i][k] !== undefined) {
-                        stacked_values[k] = last_stacked_values[k] + this.data.values[i][k];
+                        stacked_values[k] = last_stacked_values[y_axis][k] + this.data.values[i][k];
                     } else {
                         stacked_values[k] = this.data.values[i][k];
                     }
                 }
 
                 uplot_values.unshift(stacked_values);
-                last_stacked_values = stacked_values;
+                last_stacked_values[y_axis] = stacked_values;
             }
         }
 
         this.uplot.setData(uplot_values as any);
 
-        let last_stacked_index: number = null;
+        let last_stacked_index: {[id: string]: number} = {'y': null, 'y2': null};
 
         for (let i = this.data.values.length - 1; i > 0; --i) {
+            let y_axis = this.data.y_axes ? this.data.y_axes[i] : 'y';
+
             if (this.data.stacked !== undefined && this.data.stacked[i] && this.series_visibility[this.data.keys[i]]) {
-                if (last_stacked_index === null) {
+                if (last_stacked_index[y_axis] === null) {
                     this.uplot.delSeries(i);
                     this.uplot.addSeries(this.get_series_opts(i), i);
                 } else {
                     this.uplot.addBand({
-                        series: [i, last_stacked_index],
+                        series: [i, last_stacked_index[y_axis]],
                         fill: plot.get_color(this.props.color_cache_group, this.data.names[i]).fill,
                     });
                 }
 
-                last_stacked_index = i;
+                last_stacked_index[y_axis] = i;
             }
         }
     }
