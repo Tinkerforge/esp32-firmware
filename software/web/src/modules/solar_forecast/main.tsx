@@ -221,7 +221,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
 
         // Is data to display available?
         let data_available = false;
-        let first_date = 0;
         let first_index = 0;
         let active_planes = [];
         for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
@@ -229,7 +228,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
             if(this.state.plane_configs[i].active && (this.state.plane_forecasts[i].forecast.length > 0)) {
                 if (!data_available) {
                     // We use first date from first plane that has data available
-                    first_date = this.state.plane_forecasts[i].first_date;
                     first_index = i;
                 }
                 active_planes.push(i);
