@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#pragma once
+
 #include <WireGuard-ESP32.h>
 #include <esp_http_client.h>
 #include <queue>

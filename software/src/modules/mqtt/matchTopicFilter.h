@@ -1,4 +1,5 @@
 // From: https://github.com/FreeRTOS/coreMQTT
+#pragma once
 
 /*
  * coreMQTT v2.1.0

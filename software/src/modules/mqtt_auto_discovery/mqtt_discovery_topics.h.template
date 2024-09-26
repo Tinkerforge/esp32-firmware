@@ -1,3 +1,4 @@
+#pragma once
 
 #define TOPIC_COUNT ({{{topic_count}}})
 #define MAX_JSON_LEN ({{{max_json_len}}})

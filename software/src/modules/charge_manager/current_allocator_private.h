@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#pragma once
+
 #include "current_allocator.h"
 
 typedef bool(*filter_fn)(int32_t /*allocated_current*/, uint8_t /*allocated_phases*/, const ChargerState */*state*/);
