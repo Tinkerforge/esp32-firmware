@@ -229,6 +229,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--interactive", action='store_true', help="Don't exit gdb immediately")
     parser.add_argument("-l", "--local-source", action='store_true', help="Don't checkout firmware git, use local copy")
+    parser.add_argument("-e", "--elf")
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("path", nargs='?', default=None)
@@ -265,6 +266,9 @@ if __name__ == '__main__':
             os.path.join(script_path, "..", "..", "warp-charger", "firmwares", elf_name),
             os.path.join(".", elf_name),
         ]
+
+        if args.elf:
+            possible_firmware_paths.insert(0, args.elf)
 
         firmware_path = None
         for path in possible_firmware_paths:
