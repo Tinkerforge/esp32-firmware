@@ -35,6 +35,7 @@ import { InputText } from "./input_text";
 import { InputTime } from "./input_time";
 import { InputMonth } from "./input_month";
 import { OutputFloat } from "./output_float";
+import { SwitchableInputNumber } from "./switchable_input_number";
 
 export interface FormRowProps {
     label: ComponentChildren;
@@ -70,6 +71,7 @@ const components_using_id_context: any = [
     OutputDatetime,
     OutputFloat,
     Switch,
+    SwitchableInputNumber,
 ];
 
 export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
