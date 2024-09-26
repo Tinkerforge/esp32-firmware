@@ -91,7 +91,7 @@ rm platform.txt
 rm -r tools/sdk
 
 # Either
-cp ~/esp32-arduino-lib-builder/out/* .
+cp -r ~/esp32-arduino-lib-builder/out/* .
 # Or
 ln -s ~/esp32-arduino-lib-builder/out/platform.txt platform.txt
 ln -s ~/esp32-arduino-lib-builder/out/tools/sdk tools/sdk
