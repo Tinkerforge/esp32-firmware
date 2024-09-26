@@ -46,10 +46,10 @@ static uint8_t bcdToInt(uint8_t bcd) {
 	return static_cast<uint8_t>(((bcd >> 4) * 10) + (bcd & 0x0f));
 }
 
-static i2c_cmd_handle_t rtc_cmd_handle;
-static uint8_t rtc_cmd_buf[I2C_LINK_RECOMMENDED_SIZE(2)] = {};
-static uint8_t rtc_write_buf[1] = {0x03};
-static uint8_t rtc_read_buf[7] = {};
+static i2c_cmd_handle_t rtc_read_time_cmd_handle;
+static uint8_t rtc_read_time_cmd_buf[I2C_LINK_RECOMMENDED_SIZE(2)] = {};
+static uint8_t rtc_read_time_write_buf[1] = {0x03};
+static uint8_t rtc_read_time_read_buf[7] = {};
 
 static i2c_cmd_handle_t rtc_write_time_cmd_handle;
 static uint8_t rtc_write_time_cmd_buf[I2C_LINK_RECOMMENDED_SIZE(1)] = {};
@@ -57,10 +57,10 @@ static uint8_t rtc_write_time_write_buf[8] = {};
 
 void WarpEsp32Rtc::setup()
 {
-    rtc_cmd_handle = i2c_master_prepare_write_read_device(I2C_RTC_ADDRESS,
-                                         rtc_cmd_buf, ARRAY_SIZE(rtc_cmd_buf),
-                                         rtc_write_buf, ARRAY_SIZE(rtc_write_buf),
-                                         rtc_read_buf, ARRAY_SIZE(rtc_read_buf));
+    rtc_read_time_cmd_handle = i2c_master_prepare_write_read_device(I2C_RTC_ADDRESS,
+                                         rtc_read_time_cmd_buf, ARRAY_SIZE(rtc_read_time_cmd_buf),
+                                         rtc_read_time_write_buf, ARRAY_SIZE(rtc_read_time_write_buf),
+                                         rtc_read_time_read_buf, ARRAY_SIZE(rtc_read_time_read_buf));
 
     rtc_write_time_cmd_handle = i2c_master_prepare_write_read_device(I2C_RTC_ADDRESS,
                                          rtc_write_time_cmd_buf, ARRAY_SIZE(rtc_write_time_cmd_buf),
@@ -114,20 +114,20 @@ struct timeval WarpEsp32Rtc::get_time()
     time.tv_sec = 0;
     time.tv_usec = 0;
 
-    auto ret = i2c_master_cmd_begin(I2C_MASTER_PORT, rtc_cmd_handle, i2c_timeout);
+    auto ret = i2c_master_cmd_begin(I2C_MASTER_PORT, rtc_read_time_cmd_handle, i2c_timeout);
 
     if (ret != ESP_OK) {
         return time;
     }
     struct tm tm;
     memset(&tm, 0, sizeof(struct tm));
-    tm.tm_sec  = bcdToInt(rtc_read_buf[0]);
-    tm.tm_min  = bcdToInt(rtc_read_buf[1]);
-    tm.tm_hour = bcdToInt(rtc_read_buf[2]);
-    tm.tm_mday = bcdToInt(rtc_read_buf[3]);
-    tm.tm_wday = bcdToInt(rtc_read_buf[4]);
-    tm.tm_mon  = bcdToInt(rtc_read_buf[5]) - 1; // 0-11. The month on the PCF8523 is 1-12.
-    tm.tm_year = bcdToInt(rtc_read_buf[6]) + 100; // Years since 1900
+    tm.tm_sec  = bcdToInt(rtc_read_time_read_buf[0]);
+    tm.tm_min  = bcdToInt(rtc_read_time_read_buf[1]);
+    tm.tm_hour = bcdToInt(rtc_read_time_read_buf[2]);
+    tm.tm_mday = bcdToInt(rtc_read_time_read_buf[3]);
+    tm.tm_wday = bcdToInt(rtc_read_time_read_buf[4]);
+    tm.tm_mon  = bcdToInt(rtc_read_time_read_buf[5]) - 1; // 0-11. The month on the PCF8523 is 1-12.
+    tm.tm_year = bcdToInt(rtc_read_time_read_buf[6]) + 100; // Years since 1900
 
     time.tv_sec = timegm(&tm);
     time.tv_usec = 0;
