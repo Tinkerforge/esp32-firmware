@@ -68,12 +68,22 @@ void WarpEsp32Rtc::setup()
                                          nullptr, 0);
 
     task_scheduler.scheduleWithFixedDelay([this](){
-        // Enable battery switch-over in control register.
+        /*
+            Configure RTC:
+            - Select oscillator capacitor of 12.5 pF in register control_1 (@ address 0x00):
+              The register default is 0_0000000, by setting bit 7 we select the 12.5 pF capacitor.
+            - Enable battery switch-over in register control_3 (@ address 0x02):
+              The register default is 111_00000, by clearing bits 7 to 5,
+              we enable battery switch-over in standard mode and battery low detection.
+            register control_2 (@ address 0x01) has a default of 00000000 which we overwrite but don't change.
+        */
+        uint8_t write_buf[3] = {0x80, 0x00, 0x00};
+
         i2c_cmd_handle_t cmd = i2c_cmd_link_create();
         ESP_ERROR_CHECK(i2c_master_start(cmd));
-        ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_RTC_ADDRESS << 1) | I2C_MASTER_WRITE, 1)); // expect ack
-        ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0x02, 1));
-        ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0b00000000, 1));
+        ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_RTC_ADDRESS << 1) | I2C_MASTER_WRITE, true)); // expect ack
+        ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0x00, true)); // start address is register control_1 (@ address 0x00), expect ack
+        ESP_ERROR_CHECK(i2c_master_write(cmd, write_buf, ARRAY_SIZE(write_buf), true)); // overwrite the control registers, expect ack
         ESP_ERROR_CHECK(i2c_master_stop(cmd));
         auto errRc = i2c_master_cmd_begin(I2C_MASTER_PORT, cmd, i2c_timeout);
         i2c_cmd_link_delete(cmd);
