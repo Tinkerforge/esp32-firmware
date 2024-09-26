@@ -28,7 +28,7 @@
 #include "tools.h"
 
 // Pre- and postfix take up 54 characters.
-COREDUMP_DRAM_ATTR char tf_coredump_info[512];
+COREDUMP_RTC_DATA_ATTR char tf_coredump_info[512];
 
 Coredump::Coredump()
 {
@@ -74,8 +74,10 @@ bool Coredump::build_coredump_info(JsonDocument &tf_coredump_json)
 
 void Coredump::pre_setup()
 {
+    bool coredump_available = esp_core_dump_image_check() == ESP_OK;
+
     state = Config::Object({
-        {"coredump_available", Config::Bool(false)}
+        {"coredump_available", Config::Bool(coredump_available)}
     });
 
     if (setup_error == CoredumpSetupError::BufferToSmall) {
@@ -83,14 +85,6 @@ void Coredump::pre_setup()
     } else if (setup_error == CoredumpSetupError::Truncated) {
         logger.printfln("Buffer too small for all data; info data truncated.");
     }
-}
-
-void Coredump::setup()
-{
-    if (esp_core_dump_image_check() == ESP_OK)
-        state.get("coredump_available")->updateBool(true);
-
-    initialized = true;
 }
 
 void Coredump::register_urls()
@@ -112,12 +106,6 @@ void Coredump::register_urls()
         if (esp_core_dump_image_check() != ESP_OK)
             return request.send(404);
 
-        auto buffer = heap_caps_calloc_prefer(4096, 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-        defer {free(buffer);};
-
-        if (!buffer)
-            return request.send(503, "text/plain", "Out of memory");
-
         esp_core_dump_summary_t summary;
         if (esp_core_dump_get_summary(&summary) != ESP_OK)
             return request.send(503, "text/plain", "Failed to get core dump summary");
@@ -129,14 +117,16 @@ void Coredump::register_urls()
 
         request.beginChunkedResponse(200, "application/octet-stream");
 
+        char buffer[4096];
+
         for (size_t i = 0; i < size; i += 4096) {
-            size_t to_send = min((size_t)4096, size - i);
+            size_t to_send = std::min(4096U, size - i);
             if (esp_flash_read(NULL, buffer, addr + i, to_send) != ESP_OK) {
                 String s = "ESP_FLASH_READ failed. Core dump truncated";
                 request.sendChunk(s.c_str(), s.length());
                 return request.endChunkedResponse();
             }
-            request.sendChunk((char *)buffer + (i == 0 ? 20 : 0), to_send - (i == 0 ? 20 : 0));
+            request.sendChunk(buffer + (i == 0 ? 20 : 0), to_send - (i == 0 ? 20 : 0));
         }
 
         return request.endChunkedResponse();
