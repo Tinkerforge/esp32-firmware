@@ -23,6 +23,7 @@ import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { METERS_SLOTS } from "../../build";
 import { Switch } from "../../ts/components/switch";
+import { SwitchableInputNumber } from "../../ts/components/switchable_input_number";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
@@ -226,44 +227,48 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label={__("heating.content.dynamic_price_control")}>
-                        <Switch desc={__("heating.content.dynamic_price_control_activate")}
-                                checked={state.winter_dynamic_price_control_active}
-                                onClick={this.toggle('winter_dynamic_price_control_active')}
+                    <FormRow label={__("heating.content.pv_excess_control")} help={__("heating.content.pv_excess_control_help")}>
+                        <SwitchableInputNumber
+                            switch_label_active="Aktiv"
+                            switch_label_inactive="Inaktiv"
+                            unit="Watt"
+                            checked={state.winter_pv_excess_control_active}
+                            onClick={this.toggle('winter_pv_excess_control_active')}
+                            value={state.winter_pv_excess_control_threshold}
+                            onValue={this.set("winter_pv_excess_control_threshold")}
+                            min={0}
+                            max={100000}
+                            switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <Collapse in={state.winter_dynamic_price_control_active}>
-                        <div>
-                            <FormRow label={__("heating.content.average_price_threshold")} label_muted={__("heating.content.average_price_threshold_description")}>
-                                <InputNumber
-                                    unit="%"
-                                    value={state.winter_dynamic_price_control_threshold}
-                                    onValue={this.set("winter_dynamic_price_control_threshold")}
-                                    min={0}
-                                    max={100}
-                                />
-                            </FormRow>
-                        </div>
-                    </Collapse>
-                    <FormRow label={__("heating.content.pv_excess_control")}>
-                        <Switch desc={__("heating.content.pv_excess_control_activate")}
-                                checked={state.winter_pv_excess_control_active}
-                                onClick={this.toggle('winter_pv_excess_control_active')}
+                    <FormRow label={__("heating.content.dpc")} label_muted="Für niedrige Preise (einschalten unter Tagesdurchschnitts-Schwelle)" help={__("heating.content.dpc_extended_help")}>
+                        <SwitchableInputNumber
+                            switch_label_active="Aktiv"
+                            switch_label_inactive="Inaktiv"
+                            unit="%"
+                            checked={state.winter_dpc_extended_active}
+                            onClick={this.toggle('winter_dpc_extended_active')}
+                            value={state.winter_dpc_extended_threshold}
+                            onValue={this.set("winter_dpc_extended_threshold")}
+                            min={0}
+                            max={100}
+                            switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <Collapse in={state.winter_pv_excess_control_active}>
-                        <div>
-                            <FormRow label={__("heating.content.pv_excess_threshold")} label_muted={__("heating.content.pv_excess_threshold_description")}>
-                                <InputNumber
-                                    unit="Watt"
-                                    value={state.winter_pv_excess_control_threshold}
-                                    onValue={this.set("winter_pv_excess_control_threshold")}
-                                    min={0}
-                                    max={100000}
-                                />
-                            </FormRow>
-                        </div>
-                    </Collapse>
+                    <FormRow label={__("heating.content.dpc")} label_muted="Für hohe Preise (blockieren über Tagesdurchschnitts-Schwelle)" help={__("heating.content.dpc_blocking_help")}>
+                        <SwitchableInputNumber
+                            switch_label_active="Aktiv"
+                            switch_label_inactive="Inaktiv"
+                            unit="%"
+                            checked={state.winter_dpc_blocking_active}
+                            onClick={this.toggle('winter_dpc_blocking_active')}
+                            value={state.winter_dpc_blocking_threshold}
+                            onValue={this.set("winter_dpc_blocking_threshold")}
+                            min={100}
+                            max={1000}
+                            switch_label_min_width="100px"
+                        />
+                    </FormRow>
 
                     <FormSeparator heading={__("heating.content.summer_mode")}/>
                     <FormRow label="Sommer Start" label_muted="">
@@ -314,7 +319,7 @@ export class Heating extends ConfigComponent<'heating/config'> {
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label={__("heating.content.block_time")}>
+                    <FormRow label={__("heating.content.block_time")} help={__("heating.content.block_time_help")}>
                         <Switch desc={__("heating.content.enable_daily_block_period")}
                                 checked={state.summer_block_time_active}
                                 onClick={this.toggle('summer_block_time_active')}
@@ -372,65 +377,64 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                     </div>
                                 </div>
                             </FormRow>
-                        </div>
-                    </Collapse>
-                    <FormRow label={__("heating.content.pv_yield_forecast")}>
-                        <Switch desc={__("heating.content.pv_yield_forecast_activate")}
-                                checked={state.summer_yield_forecast_active}
-                                onClick={this.toggle('summer_yield_forecast_active')}
-                        />
-                    </FormRow>
-                    <Collapse in={state.summer_yield_forecast_active}>
-                        <div>
-                            <FormRow label={__("heating.content.blocking_threshold")} label_muted={__("heating.content.blocking_threshold_description")}>
-                                <InputNumber
+                            <FormRow label={__("heating.content.pv_yield_forecast")} label_muted="Optimiert die Blockierzeit anhand des erwarteten PV-Ertrag" help={__("heating.content.pv_yield_forecast_help")}>
+                                <SwitchableInputNumber
+                                    switch_label_active="Aktiv"
+                                    switch_label_inactive="Inaktiv"
                                     unit="kWh"
+                                    checked={state.summer_yield_forecast_active}
+                                    onClick={this.toggle('summer_yield_forecast_active')}
                                     value={state.summer_yield_forecast_threshold}
                                     onValue={this.set("summer_yield_forecast_threshold")}
                                     min={0}
                                     max={1000}
+                                    switch_label_min_width="100px"
                                 />
                             </FormRow>
                         </div>
                     </Collapse>
-                    <FormRow label={__("heating.content.dynamic_price_control")}>
-                        <Switch desc={__("heating.content.dynamic_price_control_activate")}
-                                checked={state.summer_dynamic_price_control_active}
-                                onClick={this.toggle('summer_dynamic_price_control_active')}
+                    <FormRow label={__("heating.content.pv_excess_control")} help={__("heating.content.pv_excess_control_help")}>
+                        <SwitchableInputNumber
+                            switch_label_active="Aktiv"
+                            switch_label_inactive="Inaktiv"
+                            unit="Watt"
+                            checked={state.summer_pv_excess_control_active}
+                            onClick={this.toggle('summer_pv_excess_control_active')}
+                            value={state.summer_pv_excess_control_threshold}
+                            onValue={this.set("summer_pv_excess_control_threshold")}
+                            min={0}
+                            max={100000}
+                            switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <Collapse in={state.summer_dynamic_price_control_active}>
-                        <div>
-                            <FormRow label={__("heating.content.average_price_threshold")} label_muted={__("heating.content.average_price_threshold_description")}>
-                                <InputNumber
-                                    unit="%"
-                                    value={state.summer_dynamic_price_control_threshold}
-                                    onValue={this.set("summer_dynamic_price_control_threshold")}
-                                    min={0}
-                                    max={100}
-                                />
-                            </FormRow>
-                        </div>
-                    </Collapse>
-                    <FormRow label={__("heating.content.pv_excess_control")}>
-                        <Switch desc={__("heating.content.pv_excess_control_activate")}
-                                checked={state.summer_pv_excess_control_active}
-                                onClick={this.toggle('summer_pv_excess_control_active')}
+                    <FormRow label={__("heating.content.dpc")} label_muted="Für niedrige Preise (einschalten unter Tagesdurchschnitts-Schwelle)" help={__("heating.content.dpc_extended_help")}>
+                        <SwitchableInputNumber
+                            switch_label_active="Aktiv"
+                            switch_label_inactive="Inaktiv"
+                            unit="%"
+                            checked={state.summer_dpc_extended_active}
+                            onClick={this.toggle('summer_dpc_extended_active')}
+                            value={state.summer_dpc_extended_threshold}
+                            onValue={this.set("summer_dpc_extended_threshold")}
+                            min={0}
+                            max={100}
+                            switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <Collapse in={state.summer_pv_excess_control_active}>
-                        <div>
-                            <FormRow label={__("heating.content.pv_excess_threshold")} label_muted={__("heating.content.pv_excess_threshold_description")}>
-                                <InputNumber
-                                    unit="Watt"
-                                    value={state.summer_pv_excess_control_threshold}
-                                    onValue={this.set("summer_pv_excess_control_threshold")}
-                                    min={0}
-                                    max={100000}
-                                />
-                            </FormRow>
-                        </div>
-                    </Collapse>
+                    <FormRow label={__("heating.content.dpc")} label_muted="Für hohe Preise (blockieren über Tagesdurchschnitts-Schwelle)" help={__("heating.content.dpc_blocking_help")}>
+                        <SwitchableInputNumber
+                            switch_label_active="Aktiv"
+                            switch_label_inactive="Inaktiv"
+                            unit="%"
+                            checked={state.summer_dpc_blocking_active}
+                            onClick={this.toggle('summer_dpc_blocking_active')}
+                            value={state.summer_dpc_blocking_threshold}
+                            onValue={this.set("summer_dpc_blocking_threshold")}
+                            min={100}
+                            max={1000}
+                            switch_label_min_width="100px"
+                        />
+                    </FormRow>
 
                     <FormSeparator heading="§14 EnWG"/>
                     <FormRow label="§14 EnWG">
@@ -439,32 +443,28 @@ export class Heating extends ConfigComponent<'heating/config'> {
                                 onClick={this.toggle('p14enwg_active')}
                         />
                     </FormRow>
-                    <Collapse in={state.p14enwg_active}>
-                        <div>
-                            <FormRow label={__("heating.content.input")}>
-                                <InputSelect
-                                    items={[
-                                        ["0", __("heating.content.input") + " 1"],
-                                        ["1", __("heating.content.input") + " 2"],
-                                        ["2", __("heating.content.input") + " 3"],
-                                        ["3", __("heating.content.input") + " 4"],
-                                    ]}
-                                    value={state.p14enwg_input}
-                                    onValue={(v) => this.setState({p14enwg_input: parseInt(v)})}
-                                />
-                            </FormRow>
-                            <FormRow label={__("heating.content.throttled_if_input")}>
-                                <InputSelect
-                                    items={[
-                                        ["0", __("heating.content.closed")],
-                                        ["1", __("heating.content.opened")]
-                                    ]}
-                                    value={state.p14enwg_active_type}
-                                    onValue={(v) => this.setState({p14enwg_active_type: parseInt(v)})}
-                                />
-                            </FormRow>
-                        </div>
-                    </Collapse>
+                    <FormRow label={__("heating.content.input")}>
+                        <InputSelect
+                            items={[
+                                ["0", __("heating.content.input") + " 1"],
+                                ["1", __("heating.content.input") + " 2"],
+                                ["2", __("heating.content.input") + " 3"],
+                                ["3", __("heating.content.input") + " 4"],
+                            ]}
+                            value={state.p14enwg_input}
+                            onValue={(v) => this.setState({p14enwg_input: parseInt(v)})}
+                        />
+                    </FormRow>
+                    <FormRow label={__("heating.content.throttled_if_input")}>
+                        <InputSelect
+                            items={[
+                                ["0", __("heating.content.closed")],
+                                ["1", __("heating.content.opened")]
+                            ]}
+                            value={state.p14enwg_active_type}
+                            onValue={(v) => this.setState({p14enwg_active_type: parseInt(v)})}
+                        />
+                    </FormRow>
                 </ConfigForm>
             </SubPage>
         );

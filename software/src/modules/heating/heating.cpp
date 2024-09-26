@@ -42,8 +42,10 @@ void Heating::pre_setup()
         {"winter_start_month", Config::Uint(11, 1, 12)},
         {"winter_end_day", Config::Uint(15, 1, 31)},
         {"winter_end_month", Config::Uint(3, 1, 12)},
-        {"winter_dynamic_price_control_active", Config::Bool(false)},
-        {"winter_dynamic_price_control_threshold", Config::Uint(80, 0, 100)},
+        {"winter_dpc_extended_active", Config::Bool(false)},
+        {"winter_dpc_extended_threshold", Config::Uint(80, 0, 100)},
+        {"winter_dpc_blocking_active", Config::Bool(false)},
+        {"winter_dpc_blocking_threshold", Config::Uint(120, 100, 1000)},
         {"winter_pv_excess_control_active", Config::Bool(false)},
         {"winter_pv_excess_control_threshold", Config::Uint(0)},
         {"summer_block_time_active", Config::Bool(false)},
@@ -51,8 +53,10 @@ void Heating::pre_setup()
         {"summer_block_time_evening", Config::Int(20*60)}, // localtime in minutes since 00:00
         {"summer_yield_forecast_active", Config::Bool(false)},
         {"summer_yield_forecast_threshold", Config::Uint(0)},
-        {"summer_dynamic_price_control_active", Config::Bool(false)},
-        {"summer_dynamic_price_control_threshold", Config::Uint(80, 0, 100)},
+        {"summer_dpc_extended_active", Config::Bool(false)},
+        {"summer_dpc_extended_threshold", Config::Uint(80, 0, 100)},
+        {"summer_dpc_blocking_active", Config::Bool(false)},
+        {"summer_dpc_blocking_threshold", Config::Uint(120, 100, 1000)},
         {"summer_pv_excess_control_active", Config::Bool(false)},
         {"summer_pv_excess_control_threshold", Config::Uint(0)},
         {"summer_pv_excess_control_holding_time", Config::Uint(15, 0, 12*60)},
@@ -92,14 +96,14 @@ void Heating::register_urls()
 
 bool Heating::is_active()
 {
-    const bool winter_dynamic_price_control_active = config.get("winter_dynamic_price_control_active")->asBool();
-    const bool winter_pv_excess_control_active     = config.get("winter_pv_excess_control_active")->asBool();
-    const bool summer_block_time_active            = config.get("summer_block_time_active")->asBool();
-    const bool summer_yield_forecast_active        = config.get("summer_yield_forecast_active")->asBool();
-    const bool summer_dynamic_price_control_active = config.get("summer_dynamic_price_control_active")->asBool();
-    const bool summer_pv_excess_control_active     = config.get("summer_pv_excess_control_active")->asBool();
+    const bool winter_dpc_extended_active      = config.get("winter_dpc_extended_active")->asBool();
+    const bool winter_pv_excess_control_active = config.get("winter_pv_excess_control_active")->asBool();
+    const bool summer_block_time_active        = config.get("summer_block_time_active")->asBool();
+    const bool summer_yield_forecast_active    = config.get("summer_yield_forecast_active")->asBool();
+    const bool summer_dpc_extended_active      = config.get("summer_dpc_extended_active")->asBool();
+    const bool summer_pv_excess_control_active = config.get("summer_pv_excess_control_active")->asBool();
 
-    if(!winter_dynamic_price_control_active && !winter_pv_excess_control_active && !summer_block_time_active && !summer_yield_forecast_active && !summer_dynamic_price_control_active && !summer_pv_excess_control_active) {
+    if(!winter_dpc_extended_active && !winter_pv_excess_control_active && !summer_block_time_active && !summer_yield_forecast_active && !summer_dpc_extended_active && !summer_pv_excess_control_active) {
         return false;
     }
 
@@ -160,26 +164,26 @@ void Heating::update()
         return;
     }
 
-    const uint32_t meter_slot_grid_power                  = config.get("meter_slot_grid_power")->asUint();
-    const uint32_t winter_start_day                       = config.get("winter_start_day")->asUint();
-    const uint32_t winter_start_month                     = config.get("winter_start_month")->asUint();
-    const uint32_t winter_end_day                         = config.get("winter_end_day")->asUint();
-    const uint32_t winter_end_month                       = config.get("winter_end_month")->asUint();
-    const bool     winter_dynamic_price_control_active    = config.get("winter_dynamic_price_control_active")->asBool();
-    const uint32_t winter_dynamic_price_control_threshold = config.get("winter_dynamic_price_control_threshold")->asUint();
-    const bool     winter_pv_excess_control_active        = config.get("winter_pv_excess_control_active")->asBool();
-    const uint32_t winter_pv_excess_control_threshold     = config.get("winter_pv_excess_control_threshold")->asUint();
-    const bool     summer_block_time_active               = config.get("summer_block_time_active")->asBool();
-    const int32_t  summer_block_time_morning              = config.get("summer_block_time_morning")->asInt();
-    const int32_t  summer_block_time_evening              = config.get("summer_block_time_evening")->asInt();
-    const bool     summer_yield_forecast_active           = config.get("summer_yield_forecast_active")->asBool();
-    const uint32_t summer_yield_forecast_threshold        = config.get("summer_yield_forecast_threshold")->asUint();
-    const bool     summer_dynamic_price_control_active    = config.get("summer_dynamic_price_control_active")->asBool();
-    const uint32_t summer_dynamic_price_control_threshold = config.get("summer_dynamic_price_control_threshold")->asUint();
-    const bool     summer_pv_excess_control_active        = config.get("summer_pv_excess_control_active")->asBool();
-    const uint32_t summer_pv_excess_control_threshold     = config.get("summer_pv_excess_control_threshold")->asUint();
+    const uint32_t meter_slot_grid_power              = config.get("meter_slot_grid_power")->asUint();
+    const uint32_t winter_start_day                   = config.get("winter_start_day")->asUint();
+    const uint32_t winter_start_month                 = config.get("winter_start_month")->asUint();
+    const uint32_t winter_end_day                     = config.get("winter_end_day")->asUint();
+    const uint32_t winter_end_month                   = config.get("winter_end_month")->asUint();
+    const bool     winter_dpc_extended_active         = config.get("winter_dpc_extended_active")->asBool();
+    const uint32_t winter_dpc_extended_threshold      = config.get("winter_dpc_extended_threshold")->asUint();
+    const bool     winter_pv_excess_control_active    = config.get("winter_pv_excess_control_active")->asBool();
+    const uint32_t winter_pv_excess_control_threshold = config.get("winter_pv_excess_control_threshold")->asUint();
+    const bool     summer_block_time_active           = config.get("summer_block_time_active")->asBool();
+    const int32_t  summer_block_time_morning          = config.get("summer_block_time_morning")->asInt();
+    const int32_t  summer_block_time_evening          = config.get("summer_block_time_evening")->asInt();
+    const bool     summer_yield_forecast_active       = config.get("summer_yield_forecast_active")->asBool();
+    const uint32_t summer_yield_forecast_threshold    = config.get("summer_yield_forecast_threshold")->asUint();
+    const bool     summer_dpc_extended_active         = config.get("summer_dpc_extended_active")->asBool();
+    const uint32_t summer_dpc_extended_threshold      = config.get("summer_dpc_extended_threshold")->asUint();
+    const bool     summer_pv_excess_control_active    = config.get("summer_pv_excess_control_active")->asBool();
+    const uint32_t summer_pv_excess_control_threshold = config.get("summer_pv_excess_control_threshold")->asUint();
 
-    if(!winter_dynamic_price_control_active && !winter_pv_excess_control_active && !summer_block_time_active && !summer_yield_forecast_active && !summer_dynamic_price_control_active && !summer_pv_excess_control_active) {
+    if(!winter_dpc_extended_active && !winter_pv_excess_control_active && !summer_block_time_active && !summer_yield_forecast_active && !summer_dpc_extended_active && !summer_pv_excess_control_active) {
         extended_logging("No control active.");
         return;
     }
@@ -230,11 +234,11 @@ void Heating::update()
 
     if (is_winter) { // Winter
         extended_logging("It is winter. Current month: %d, winter start month: %d, winter end month: %d, current day: %d, winter start day: %d, winter end day: %d.", current_month, winter_start_month, winter_end_month, current_day, winter_start_day, winter_end_day);
-        if (!winter_dynamic_price_control_active && !winter_pv_excess_control_active) {
+        if (!winter_dpc_extended_active && !winter_pv_excess_control_active) {
             extended_logging("It is winter but no winter control active.");
         } else {
-            if (winter_dynamic_price_control_active) {
-                handle_dynamic_price(winter_dynamic_price_control_threshold);
+            if (winter_dpc_extended_active) {
+                handle_dynamic_price(winter_dpc_extended_threshold);
             }
 
             if (winter_pv_excess_control_active) {
@@ -289,11 +293,11 @@ void Heating::update()
             extended_logging("We are in a block time.");
             sg_ready_on = false;
         } else {
-            if (!summer_dynamic_price_control_active && !summer_pv_excess_control_active) {
+            if (!summer_dpc_extended_active && !summer_pv_excess_control_active) {
                 extended_logging("It is summer but no summer control active.");
             } else {
-                if (summer_dynamic_price_control_active) {
-                    handle_dynamic_price(summer_dynamic_price_control_threshold);
+                if (summer_dpc_extended_active) {
+                    handle_dynamic_price(summer_dpc_extended_threshold);
                 }
 
                 if (summer_pv_excess_control_active) {
