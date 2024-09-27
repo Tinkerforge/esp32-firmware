@@ -240,10 +240,10 @@ def generate_module_dependencies_header(info_path, header_path_prefix, backend_m
             includes = ''.join([f'#include "modules/{x.under}/{x.under}.h"\n' for x in dep_mods])
             decls    = ''.join([f'extern {x.camel} {backend_module_instance_names[x.space]};\n' for x in dep_mods])
 
-            available_h_content  = '// WARNING: This file is generated.\n\n'
+            available_h_content  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n'
             available_h_content += '#pragma once\n'
 
-            dependencies_h_content  = '// WARNING: This file is generated.\n\n'
+            dependencies_h_content  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n'
             dependencies_h_content += '#pragma once\n\n'
             dependencies_h_content += '#if __INCLUDE_LEVEL__ > 1\n'
             dependencies_h_content += f'#error "Don\'t include {os.path.split(header_path_prefix)[-1]}dependencies.h in headers, only in sources! Use {os.path.split(header_path_prefix)[-1]}available.h in headers if you want to check whether a module is compiled in"\n'
@@ -874,7 +874,7 @@ def main():
         backend_module_instance_names[backend_module.space] = instance_name
 
         with open(os.path.join(mod_path, 'module.cpp'), 'w', encoding='utf-8') as f:
-            f.write('// WARNING: This file is generated.\n\n')
+            f.write(f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n')
             f.write(f'#include "{backend_module.under}.h"\n\n')
             f.write(f'{backend_module.camel} {instance_name};\n\n')
             f.write('// Enforce that all back-end modules implement the IModule interface. If you receive\n')
@@ -1216,7 +1216,7 @@ def main():
                         enum_cases.append('    case {0}::{1}: return "{2}";\n'.format(enum_name.camel, value_name.camel, value_name.space))
 
                 with open(os.path.join(mod_path, enum_name.under + '.enum.h'), 'w', encoding='utf-8') as f:
-                    f.write(f'// WARNING: This file is generated from "{name}"\n\n')
+                    f.write(f'// WARNING: This file is generated from "{name}" by pio_hooks.py\n\n')
                     f.write('#include <stdint.h>\n\n')
                     f.write('#pragma once\n\n')
                     f.write(f'enum class {enum_name.camel} : {name_parts[1]}_t {{\n')
@@ -1226,7 +1226,7 @@ def main():
                     f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value);\n')
 
                 with open(os.path.join(mod_path, enum_name.under + '.enum.cpp'), 'w', encoding='utf-8') as f:
-                    f.write(f'// WARNING: This file is generated from "{name}"\n\n')
+                    f.write(f'// WARNING: This file is generated from "{name}" by pio_hooks.py\n\n')
                     f.write(f'#include "{enum_name.under}.enum.h"\n\n')
                     f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value)\n')
                     f.write('{\n')
@@ -1240,7 +1240,7 @@ def main():
 
                 if os.path.exists(frontend_mod_path) and os.path.isdir(frontend_mod_path):
                     with open(os.path.join(frontend_mod_path, enum_name.under + '.enum.ts'), 'w', encoding='utf-8') as f:
-                        f.write(f'// WARNING: This file is generated from "{name}"\n\n')
+                        f.write(f'// WARNING: This file is generated from "{name}" by pio_hooks.py\n\n')
                         f.write(f'export const enum {enum_name.camel} {{\n')
                         f.write(''.join(enum_values))
                         f.write('}\n')
