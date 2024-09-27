@@ -787,7 +787,8 @@ def main():
         mod_path = os.path.join('src', 'modules', backend_module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
-            print("Backend module {} not found.".format(backend_module.space))
+            print("Backend module '{}' not found.".format(backend_module.space))
+            sys.exit(1)
 
         for root, dirs, files in os.walk(mod_path):
             for name in files:
