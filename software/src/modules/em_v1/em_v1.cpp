@@ -441,7 +441,7 @@ void EMV1::update_all_data_triggers(T id, void *data_)
 }
 #define AUTOMATION_TRIGGER(TRIGGER_ID, DATA) update_all_data_triggers(AutomationTriggerID::TRIGGER_ID, DATA)
 #else
-#define AUTOMATION_TRIGGER(TRIGGER_ID, DATA) do {} while (0)
+#define AUTOMATION_TRIGGER(TRIGGER_ID, DATA) do {(void)DATA;} while (0)
 #endif
 
 void EMV1::update_all_data()
