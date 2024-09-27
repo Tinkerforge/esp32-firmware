@@ -303,6 +303,8 @@ void ChargeManager::pre_setup()
             this->last_available_current_update = millis();
         },
         [](const Config *config) -> String {
+            uint32_t max_avail_current = charge_manager.get_maximum_available_current();
+
             if (config->get("current")->asUint() > max_avail_current)
                 return "Current too large: maximum available current is configured to " + String(max_avail_current);
             return "";
