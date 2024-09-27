@@ -424,8 +424,6 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         logger.printfln("Received message on unknown topic '%.*s' (data_len=%u)", static_cast<int>(topic_len), topic, data_len);
 }
 
-static char err_buf[64] = {0};
-
 static const char *get_mqtt_error(esp_mqtt_connect_return_code_t rc)
 {
     switch (rc) {
@@ -483,10 +481,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                     if (eh.error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
                         if (was_connected) {
                             if (eh.esp_tls_last_esp_err != ESP_OK) {
+                                char err_buf[64];
                                 const char *e = esp_err_to_name_r(eh.esp_tls_last_esp_err, err_buf, ARRAY_SIZE(err_buf));
                                 logger.printfln("Transport error: %s (esp_tls_last_esp_err)", e);
                                 mqtt->state.get("last_error")->updateInt(eh.esp_tls_last_esp_err);
                             } else if (eh.esp_tls_stack_err != 0) {
+                                char err_buf[64];
                                 const char *e = esp_err_to_name_r(eh.esp_tls_stack_err, err_buf, ARRAY_SIZE(err_buf));
                                 logger.printfln("Transport error: %s (esp_tls_stack_err)", e);
                                 mqtt->state.get("last_error")->updateInt(eh.esp_tls_stack_err);
