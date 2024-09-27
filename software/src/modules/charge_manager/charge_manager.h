@@ -79,6 +79,8 @@ public:
     size_t charger_count = 0;
     ChargerState *charger_state = nullptr;
 
+    uint32_t get_maximum_available_current();
+
     CurrentLimits *get_limits() {
         // TODO: Maybe add separate function for this?
         static_cm = false;
@@ -98,7 +100,6 @@ private:
     bool all_chargers_seen = false;
 
     std::unique_ptr<const char *[]> hosts;
-    uint32_t default_available_current;
     uint16_t requested_current_threshold;
     uint16_t requested_current_margin;
 

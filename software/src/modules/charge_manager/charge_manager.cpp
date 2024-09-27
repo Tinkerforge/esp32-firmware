@@ -32,12 +32,6 @@
 #include "build.h"
 #include "tools.h"
 
-// This is a hack to allow the validator of available_current
-// to access config["maximum_available_current"]
-// It is necessary, because configs only take a function pointer as
-// validator function, so lambda capture lists have to be empty.
-static uint32_t max_avail_current = 0;
-
 #define WATCHDOG_TIMEOUT_MS 30000
 
 // If this is an energy manager, we have exactly one charger and the margin is still the default,
@@ -280,6 +274,8 @@ void ChargeManager::pre_setup()
             return "Cannot set available_current if the Power Manager is enabled.";
         }
 
+        uint32_t max_avail_current = charge_manager.get_maximum_available_current();
+
         if (conf.get("current")->asUint() > max_avail_current)
             return "Current too large: maximum available current is configured to " + String(max_avail_current);
         return "";
@@ -507,7 +503,7 @@ void ChargeManager::check_watchdog()
 
     this->watchdog_triggered = true;
 
-    uint32_t default_available_current = this->default_available_current;
+    uint32_t default_available_current = config.get("default_available_current")->asUint();
 
     logger.printfln("Watchdog triggered! Received no available current update for %d ms. Setting available current to %u mA", WATCHDOG_TIMEOUT_MS, default_available_current);
 
@@ -662,4 +658,9 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     ll_charger_cfg->get("lp")->updateUint(charger.last_plug_in.millis());
     ll_charger_cfg->get("lw")->updateUint(charger.last_wakeup.millis());
     ll_charger_cfg->get("ip")->updateUint(charger.ignore_phase_currents.millis());
+}
+
+uint32_t ChargeManager::get_maximum_available_current()
+{
+    return config.get("maximum_available_current")->asUint();
 }
