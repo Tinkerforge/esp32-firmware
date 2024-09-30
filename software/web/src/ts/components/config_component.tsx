@@ -63,8 +63,8 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
         });
     }
 
-    toggle(x: keyof PickByValue<API.getType[Config] & S & ConfigComponentState, boolean>) {
-        return () => this.setState({ [x]: !this.state[x] } as unknown as Partial<API.getType[Config] & S & ConfigComponentState>);
+    toggle(x: keyof PickByValue<API.getType[Config] & S & ConfigComponentState, boolean>, callback?: () => void) {
+        return () => this.setState({ [x]: !this.state[x] } as unknown as Partial<API.getType[Config] & S & ConfigComponentState>, callback);
     }
 
     save = async () => {
@@ -104,8 +104,8 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S 
             this.setState({internal_isDirty: dirty} as any);
     };
 
-    set<T extends keyof (API.getType[Config] & S & ConfigComponentState)>(x: T) {
-        return (s: (API.getType[Config] & S & ConfigComponentState)[T]) => this.setState({ [x]: s } as unknown as Partial<API.getType[Config] & S & ConfigComponentState>);
+    set<T extends keyof (API.getType[Config] & S & ConfigComponentState)>(x: T, callback?: () => void) {
+        return (s: (API.getType[Config] & S & ConfigComponentState)[T]) => this.setState({ [x]: s } as unknown as Partial<API.getType[Config] & S & ConfigComponentState>, callback);
     }
 
     // Override this to block saving on a condition
