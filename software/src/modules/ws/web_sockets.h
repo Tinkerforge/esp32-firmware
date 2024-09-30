@@ -77,6 +77,7 @@ public:
     bool queueFull();
 
     void onConnect_HTTPThread(std::function<void(WebSocketsClient)> fn);
+    void onBinaryDataReceived_HTTPThread(std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> fn);
 
     void triggerHttpThread();
     bool haveWork(ws_work_item *item);
@@ -102,7 +103,9 @@ public:
     uint32_t worker_poll_count = 0;
 
     httpd_handle_t httpd;
+
     std::function<void(WebSocketsClient)> on_client_connect_fn;
+    std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> on_binary_data_received_fn = nullptr;
 
     ConfigRoot state;
 };

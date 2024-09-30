@@ -222,6 +222,11 @@ static esp_err_t ws_handler(httpd_req_t *req)
         // If it was a TEXT message, print it
         logger.printfln("Ignoring received packet with message: \"%s\" (web sockets are unidirectional for now)", ws_pkt.payload);
         // FIXME: input handling
+    } else if (ws_pkt.type == HTTPD_WS_TYPE_BINARY) {
+        WebSockets *ws = (WebSockets *)req->user_ctx;
+        if (ws->on_binary_data_received_fn != nullptr) {
+            ws->on_binary_data_received_fn(httpd_req_to_sockfd(req), &ws_pkt);
+        }
     } else if (ws_pkt.type == HTTPD_WS_TYPE_CLOSE) {
         // If it was a CLOSE, remove it from the keep-alive list
         WebSockets *ws = (WebSockets *)req->user_ctx;
@@ -605,4 +610,15 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
 void WebSockets::onConnect_HTTPThread(std::function<void(WebSocketsClient)> fn)
 {
     on_client_connect_fn = fn;
+}
+
+// TODO: In a perfect world this function would be part of the WebSocketsClient class.
+//       In the ws_handler it could then be called with just the websocket frame.
+//       Currently all callees of this function have to check the fd against all open connections and match it.
+//       If we would do this the other way around, the interfaces would be nicer.
+//       However, in WebSockets we would need to keep a list of all WebSocketsClient instances and
+//       and maintain it (remove closed connections etc). This is not necessary now.
+void WebSockets::onBinaryDataReceived_HTTPThread(std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> fn)
+{
+    on_binary_data_received_fn = fn;
 }
