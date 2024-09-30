@@ -72,14 +72,14 @@ let x = {
             "pv_excess_threshold": "PV-Überschuss-Schwelle",
             "pv_excess_threshold_description": "Ab wieviel Watt PV-Überschuss soll der Heizung ein Anlaufbefehl gegeben werden",
             "summer_mode": "Sommermodus",
-            "summer_start": "Sommer Start",
-            "summer_end": "Sommer Ende",
+            "summer_start": "Sommeranfang",
+            "summer_end": "Sommerende",
             "block_time": "Blockierzeit",
-            "block_time_help": <>
+            "active_time_help": <>
                 <div>
                     <p>Diese Einstellung steuert die Einschaltempfehlung (SG-Ready-Ausgang 2).</p>
-                    <p>Wenn die Blockzierzeit aktiviert ist und die aktuelle Uhrzeit innerhalb der Blockierzeit liegt, wird keine Einschaltempfehlung gegeben. Somit kann in der Sommerzeit verhindert werden dass morgens teurer Strom eingekauft wird, wenn Tagsüber die PV-Anlage Strom liefert.</p>
-                    <p>Hinweis: Die Blockierzeit kann über eine PV-Ertragsprognose optimiert werden (siehe unten).</p>
+                    <p>Wenn die aktuelle Uhrzeit außerhalb der Aktivzeit liegt, wird keine Einschaltempfehlung gegeben. Somit kann in der Sommerzeit verhindert werden dass morgens teurer Strom eingekauft wird, wenn Tagsüber die PV-Anlage Strom liefert.</p>
+                    <p>Hinweis: Die Aktivzeit kann von der PV-Ertragsprognose überschrieben werden (siehe unten).</p>
                 </div>
             </>,
             "enable_daily_block_period": "Täglicher Blockierzeitraum aktiviert",
@@ -92,8 +92,8 @@ let x = {
             "pv_yield_forecast_help": <>
                 <div>
                     <p>Diese Einstellung steuert die Einschaltempfehlung (SG-Ready-Ausgang 2).</p>
-                    <p>Wenn die PV-Ertragsprognose aktiviert ist, kann der Heizung eine Einschaltempfehlung innerhalb der Blockierzeit gegeben werden, wenn die PV-Ertragsprognose (Summe des Ertrags von einem Tag in kWh) die eingetellte Schwelle unterschreitet.</p>
-                    <p>Beispiel: Es ist 05:00 morgens und die Blockierzeit ist von 00:00 bis 06:00 aktiv. Die PV-Ertragsprognose ist aktiviert und die Schwelle ist auf 50kWh eingestellt, die Prognose sagt allerdings nur einen Ertrag von 10kWh voraus. In diesem Fall würde trotz der Blockierzeit eine Einschaltempfehlung an die Heizung gesendet, wenn der Strom günstig ist.</p>
+                    <p>Wenn die PV-Ertragsprognose aktiviert ist, kann der Heizung eine Einschaltempfehlung auch außerhalb der Aktivzeit gegeben werden, wenn die PV-Ertragsprognose (Summe des Ertrags von einem Tag in kWh) die eingetellte Schwelle unterschreitet.</p>
+                    <p>Beispiel: Es ist 05:00 morgens und die Aktivzeit ist von 06:00 bis 18:00. Die PV-Ertragsprognose ist aktiviert und die Schwelle ist auf 50kWh eingestellt, die Prognose sagt allerdings nur einen Ertrag von 10kWh voraus. In diesem Fall würde trotz der Uhrzeit außerhalb der Aktivzeit eine Einschaltempfehlung an die Heizung gesendet, wenn der Strom günstig ist.</p>
                     <p>Die Idee ist es, Nachts den günstigen Strom zu nutzen wenn bekannt ist das am Tag die Sonne nicht scheinen wird.</p>
                 </div>
             </>,

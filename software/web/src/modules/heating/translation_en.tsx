@@ -76,7 +76,7 @@ let x = {
             "summer_start": "Summer Start",
             "summer_end": "Summer End",
             "block_time": "Block Time",
-            "block_time_help": <>
+            "active_time_help": <>
                 <div>
                     <p>Diese Einstellung steuert die Einschaltempfehlung (SG-Ready-Ausgang 2).</p>
                     <p>Wenn die Blockzierzeit aktiviert ist und die aktuelle Uhrzeit innerhalb der Blockierzeit liegt, wird keine Einschaltempfehlung gegeben. Somit kann in der Sommerzeit verhindert werden dass morgens teurer Strom eingekauft wird, wenn Tagsüber die PV-Anlage Strom liefert.</p>

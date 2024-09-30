@@ -160,16 +160,19 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                 data.values[1].push(this.state.dap_prices.prices[i]/1000.0 + grid_costs_and_taxes_and_supplier_markup);
             }
 
-            const num_per_day = 24*60/resolution_multiplier;
-            console.log(num_per_day)
+            const num_per_day   = 24*60/resolution_multiplier;
+            const active_active = this.state.summer_active_time_active;
+            const active_start  = this.state.summer_active_time_start/resolution_multiplier;
+            const active_end    = this.state.summer_active_time_end/resolution_multiplier;
 
             if (this.state.dap_prices.prices.length >= num_per_day*2) {
                 let avg_price_day1 = this.state.dap_prices.prices.slice(0, num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
                 let avg_price_day2 = this.state.dap_prices.prices.slice(num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
 
                 for (let i = 0; i < num_per_day; i++) {
-                    console.log(this.state.dap_prices.prices[i], this.state.dpc_extended_threshold, avg_price_day1);
-                    if (this.state.dap_prices.prices[i] < avg_price_day1*this.state.dpc_extended_threshold/100) {
+                    if (((i < active_start) || (i >= active_end)) && active_active) {
+                        data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
+                    } else if (this.state.dap_prices.prices[i] < avg_price_day1*this.state.dpc_extended_threshold/100) {
                         if (this.state.dpc_extended_active) {
                             data.lines_vertical.push({'index': i, 'text': '', 'color': [0, 255, 0, 0.5]});
                         }
@@ -180,7 +183,9 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                     }
                 }
                 for (let i = num_per_day; i < num_per_day*2; i++) {
-                    if (this.state.dap_prices.prices[i] < avg_price_day2*this.state.dpc_extended_threshold/100) {
+                    if ((((i-num_per_day) < active_start) || ((i-num_per_day) >= active_end)) && active_active) {
+                        data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
+                    } else if (this.state.dap_prices.prices[i] < avg_price_day2*this.state.dpc_extended_threshold/100) {
                         if (this.state.dpc_extended_active) {
                             data.lines_vertical.push({'index': i, 'text': '', 'color': [0, 255, 0, 0.5]});
                         }
@@ -224,32 +229,12 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
         return Heating.days.slice(0, 31);
     }
 
-    recalculateSummer(state: Readonly<HeatingConfig>) {
-        this.summer_start_day = state.winter_end_day + 1;
-        this.summer_start_month = state.winter_end_month;
-        if(this.summer_start_day > this.month_to_days(state.winter_end_month).length) {
-            this.summer_start_day = 1;
-            this.summer_start_month = state.winter_end_month + 1 > 12 ? 1 : state.winter_end_month + 1;
-        }
-
-        this.summer_end_day = state.winter_start_day - 1;
-        this.summer_end_month = state.winter_start_month;
-        if(this.summer_end_day < 1) {
-            this.summer_end_month = state.winter_start_month - 1 < 1 ? 12 : state.winter_start_month - 1;
-            this.summer_end_day = this.month_to_days(this.summer_end_month).length;
-        }
-    }
-
     render(props: {}, state: Readonly<HeatingConfig>) {
         if (!util.render_allowed())
             return <SubPage name="heating" />;
 
-        let days_winter_start = this.month_to_days(state.winter_start_month);
-        let days_winter_end = this.month_to_days(state.winter_end_month);
-        let days_summer_start = this.month_to_days(1);
-        let days_summer_end = this.month_to_days(1);
-
-        this.recalculateSummer(state);
+        let days_summer_start = this.month_to_days(state.summer_start_month);
+        let days_summer_end = this.month_to_days(state.summer_end_month);
 
         const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], __("power_manager.content.meter_slot_grid_power_missing_value"));
 
@@ -305,9 +290,9 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                                 onClick={this.toggle('extended_logging_active')}
                         />
                     </FormRow>
-                    <FormSeparator heading="Wintereinstellungen"/>
 
-                    <FormRow label={__("heating.content.winter_start")} label_muted="">
+                    <FormSeparator heading="Sommereinstellungen"/>
+                    <FormRow label={__("heating.content.summer_start")} label_muted="">
                         <div class="row no-gutters">
                             <div class="col-md-6">
                                 <div class="input-group">
@@ -315,75 +300,11 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                                     <InputSelect
                                         className="heating-input-group-prepend"
                                         items={Heating.months}
-                                        value={state.winter_start_month}
+                                        value={state.summer_start_month}
                                         onValue={(v) => {
-                                            this.setState({winter_start_month: parseInt(v)});
-                                            days_winter_start = this.month_to_days(parseInt(v));
-                                            this.recalculateSummer(state);
+                                            this.setState({summer_start_month: parseInt(v)});
+                                            days_summer_start = this.month_to_days(parseInt(v));
                                         }}
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
-                                    <InputSelect
-                                        className="heating-input-group-prepend"
-                                        items={days_winter_start}
-                                        value={state.winter_start_day}
-                                        onValue={(v) => {
-                                            this.setState({winter_start_day: parseInt(v)})
-                                            this.recalculateSummer(state);
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </FormRow>
-                    <FormRow label={__("heating.content.winter_end")} label_muted="">
-                        <div class="row no-gutters">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
-                                    <InputSelect
-                                        className="heating-input-group-prepend"
-                                        items={Heating.months}
-                                        value={state.winter_end_month}
-                                        onValue={(v) => {
-                                            this.setState({winter_end_month: parseInt(v)});
-                                            days_winter_end = this.month_to_days(parseInt(v));
-                                            this.recalculateSummer(state);
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
-                                    <InputSelect
-                                        className="heating-input-group-prepend"
-                                        items={days_winter_end}
-                                        value={state.winter_end_day}
-                                        onValue={(v) => {
-                                            this.setState({winter_end_day: parseInt(v)})
-                                            this.recalculateSummer(state);
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </FormRow>
-
-                    <FormSeparator heading="Sommereinstellungen"/>
-                    <FormRow label="Sommer Start" label_muted="anhand der Wintereinstellung berechnet">
-                        <div class="row no-gutters">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
-                                    <InputSelect
-                                        className="heating-input-group-prepend"
-                                        items={Heating.months}
-                                        value={this.summer_start_month}
                                     />
                                 </div>
                             </div>
@@ -393,21 +314,28 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                                     <InputSelect
                                         className="heating-input-group-prepend"
                                         items={days_summer_start}
-                                        value={this.summer_start_day}
+                                        value={state.summer_start_day}
+                                        onValue={(v) => {
+                                            this.setState({summer_start_day: parseInt(v)})
+                                        }}
                                     />
                                 </div>
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label="Sommer Ende" label_muted="anhand der Wintereinstellung berechnet">
+                    <FormRow label={__("heating.content.summer_end")} label_muted="">
                         <div class="row no-gutters">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
+                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
                                     <InputSelect
                                         className="heating-input-group-prepend"
                                         items={Heating.months}
-                                        value={this.summer_end_month}
+                                        value={state.summer_end_month}
+                                        onValue={(v) => {
+                                            this.setState({summer_end_month: parseInt(v)});
+                                            days_summer_end = this.month_to_days(parseInt(v));
+                                        }}
                                     />
                                 </div>
                             </div>
@@ -417,86 +345,61 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                                     <InputSelect
                                         className="heating-input-group-prepend"
                                         items={days_summer_end}
-                                        value={this.summer_end_day}
+                                        value={state.summer_end_day}
+                                        onValue={(v) => {
+                                            this.setState({summer_end_day: parseInt(v)})
+                                        }}
                                     />
                                 </div>
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label={__("heating.content.block_time")} help={__("heating.content.block_time_help")}>
-                        <Switch desc={__("heating.content.enable_daily_block_period")}
-                                checked={state.summer_block_time_active}
-                                onClick={this.toggle('summer_block_time_active')}
+                    <FormRow label="Tägliche Aktivzeit" help={__("heating.content.active_time_help")}>
+                        <Switch desc="Aktiviert einen Zeitraum, in dem die SG-Ready-Ausgänge gesteuert werden"
+                                checked={state.summer_active_time_active}
+                                onClick={this.toggle('summer_active_time_active', this.update_uplot)}
                         />
                     </FormRow>
-                    <Collapse in={state.summer_block_time_active}>
-                        <div>
-                            <FormRow label={__("heating.content.morning")}>
-                                <div class="row no-gutters">
-                                    <div class="col-md-6">
-                                        <div class="input-group">
-                                            <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
-                                            <InputTime
-                                                className={"form-control-md heating-input-group-prepend"}
-                                                date={new Date(0, 0, 1, 0, 0)}
-                                                showSeconds={false}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="input-group">
-                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
-                                                <InputTime
-                                                className={"form-control-md heating-input-group-prepend"}
-                                                date={this.get_date_from_minutes(state.summer_block_time_morning)}
-                                                showSeconds={false}
-                                                onDate={(d: Date) => this.setState({summer_block_time_morning: this.get_minutes_from_date(d)})}
-                                            />
-                                        </div>
-                                    </div>
+                    <FormRow label="">
+                        <div class="row no-gutters">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
+                                    <InputTime
+                                        className={"form-control-md heating-input-group-prepend"}
+                                        date={this.get_date_from_minutes(state.summer_active_time_start)}
+                                        showSeconds={false}
+                                        onDate={(d: Date) => this.setState({summer_active_time_start: this.get_minutes_from_date(d)}, this.update_uplot)}
+                                    />
                                 </div>
-                            </FormRow>
-                            <FormRow label={__("heating.content.evening")}>
-                                <div class="row no-gutters">
-                                    <div class="col-md-6">
-                                        <div class="input-group">
-                                            <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
-                                                <InputTime
-                                                className={"form-control-md heating-input-group-prepend"}
-                                                date={this.get_date_from_minutes(state.summer_block_time_evening)}
-                                                showSeconds={false}
-                                                onDate={(d: Date) => this.setState({summer_block_time_evening: this.get_minutes_from_date(d)})}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="input-group">
-                                            <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
-                                            <InputTime
-                                                className={"form-control-md heating-input-group-prepend"}
-                                                date={new Date(0, 0, 1, 23, 59)}
-                                                showSeconds={false}
-                                            />
-                                        </div>
-                                    </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
+                                        <InputTime
+                                        className={"form-control-md heating-input-group-prepend"}
+                                        date={this.get_date_from_minutes(state.summer_active_time_end)}
+                                        showSeconds={false}
+                                        onDate={(d: Date) => this.setState({summer_active_time_end: this.get_minutes_from_date(d)}, this.update_uplot)}
+                                    />
                                 </div>
-                            </FormRow>
-                            <FormRow label={__("heating.content.pv_yield_forecast")} label_muted="Setzt die Blockierzeit anhand des erwarteten PV-Ertrags außer Kraft." help={__("heating.content.pv_yield_forecast_help")}>
-                                <SwitchableInputNumber
-                                    switch_label_active="Aktiv"
-                                    switch_label_inactive="Inaktiv"
-                                    unit="kWh"
-                                    checked={state.summer_yield_forecast_active}
-                                    onClick={this.toggle('summer_yield_forecast_active')}
-                                    value={state.summer_yield_forecast_threshold}
-                                    onValue={this.set("summer_yield_forecast_threshold")}
-                                    min={0}
-                                    max={1000}
-                                    switch_label_min_width="100px"
-                                />
-                            </FormRow>
+                            </div>
                         </div>
-                    </Collapse>
+                    </FormRow>
+                    <FormRow label={__("heating.content.pv_yield_forecast")} label_muted="setzt die Aktivzeit anhand des erwarteten PV-Ertrags außer Kraft." help={__("heating.content.pv_yield_forecast_help")}>
+                        <SwitchableInputNumber
+                            switch_label_active="Aktiv"
+                            switch_label_inactive="Inaktiv"
+                            unit="kWh"
+                            checked={state.summer_yield_forecast_active}
+                            onClick={this.toggle('summer_yield_forecast_active')}
+                            value={state.summer_yield_forecast_threshold}
+                            onValue={this.set("summer_yield_forecast_threshold")}
+                            min={0}
+                            max={1000}
+                            switch_label_min_width="100px"
+                        />
+                    </FormRow>
 
                     <FormSeparator heading="Allgemeine Einstellungen"/>
                     <FormRow label={__("heating.content.pv_excess_control")} help={__("heating.content.pv_excess_control_help")}>
@@ -541,7 +444,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                             switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <FormRow label="Preisbasierter Heizplan" label_muted="Heizplan anhand dynamischer Preise: Rot = blockierender Betrieb, Grün = Einschaltempfehlung">
+                    <FormRow label="Preisbasierter Heizplan" label_muted="Heizplan anhand dynamischer Preise: Rot = blockierender Betrieb, Grün = Einschaltempfehlung, Grau = Außerhalb der Aktivzeit">
                     <div class="card pl-1 pb-1">
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader

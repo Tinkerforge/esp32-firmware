@@ -40,13 +40,13 @@ void Heating::pre_setup()
         {"minimum_control_holding_time", Config::Uint(15, 0, 60)},
         {"meter_slot_grid_power", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
         {"extended_logging_active", Config::Bool(false)},
-        {"winter_start_day", Config::Uint(1, 1, 31)},
-        {"winter_start_month", Config::Uint(11, 1, 12)},
-        {"winter_end_day", Config::Uint(15, 1, 31)},
-        {"winter_end_month", Config::Uint(3, 1, 12)},
-        {"summer_block_time_active", Config::Bool(false)},
-        {"summer_block_time_morning", Config::Int(8*60)},  // localtime in minutes since 00:00
-        {"summer_block_time_evening", Config::Int(20*60)}, // localtime in minutes since 00:00
+        {"summer_start_day", Config::Uint(15, 1, 31)},
+        {"summer_start_month", Config::Uint(3, 1, 12)},
+        {"summer_end_day", Config::Uint(1, 1, 31)},
+        {"summer_end_month", Config::Uint(11, 1, 12)},
+        {"summer_active_time_active", Config::Bool(false)},
+        {"summer_active_time_start", Config::Int(8*60)},  // localtime in minutes since 00:00
+        {"summer_active_time_end", Config::Int(20*60)}, // localtime in minutes since 00:00
         {"summer_yield_forecast_active", Config::Bool(false)},
         {"summer_yield_forecast_threshold", Config::Uint(0)},
         {"dpc_extended_active", Config::Bool(false)},
@@ -55,7 +55,6 @@ void Heating::pre_setup()
         {"dpc_blocking_threshold", Config::Uint(120, 100, 1000)},
         {"pv_excess_control_active", Config::Bool(false)},
         {"pv_excess_control_threshold", Config::Uint(0)},
-        {"pv_excess_control_holding_time", Config::Uint(15, 0, 12*60)},
         {"p14enwg_active", Config::Bool(false)},
         {"p14enwg_input", Config::Uint(0, 0, 3)},
         {"p14enwg_active_type", Config::Uint(0, 0, 1)}
@@ -94,10 +93,10 @@ bool Heating::is_active()
 {
     const bool dpc_extended_active          = config.get("dpc_extended_active")->asBool();
     const bool pv_excess_control_active     = config.get("pv_excess_control_active")->asBool();
-    const bool summer_block_time_active     = config.get("summer_block_time_active")->asBool();
+    const bool summer_active_time_active     = config.get("summer_active_time_active")->asBool();
     const bool summer_yield_forecast_active = config.get("summer_yield_forecast_active")->asBool();
 
-    if(!summer_block_time_active && !summer_yield_forecast_active && !dpc_extended_active && !pv_excess_control_active) {
+    if(!summer_active_time_active && !summer_yield_forecast_active && !dpc_extended_active && !pv_excess_control_active) {
         return false;
     }
 
@@ -159,13 +158,13 @@ void Heating::update()
     }
 
     const uint32_t meter_slot_grid_power           = config.get("meter_slot_grid_power")->asUint();
-    const uint32_t winter_start_day                = config.get("winter_start_day")->asUint();
-    const uint32_t winter_start_month              = config.get("winter_start_month")->asUint();
-    const uint32_t winter_end_day                  = config.get("winter_end_day")->asUint();
-    const uint32_t winter_end_month                = config.get("winter_end_month")->asUint();
-    const bool     summer_block_time_active        = config.get("summer_block_time_active")->asBool();
-    const int32_t  summer_block_time_morning       = config.get("summer_block_time_morning")->asInt();
-    const int32_t  summer_block_time_evening       = config.get("summer_block_time_evening")->asInt();
+    const uint32_t summer_start_day                = config.get("summer_start_day")->asUint();
+    const uint32_t summer_start_month              = config.get("summer_start_month")->asUint();
+    const uint32_t summer_end_day                  = config.get("summer_end_day")->asUint();
+    const uint32_t summer_end_month                = config.get("summer_end_month")->asUint();
+    const bool     summer_active_time_active       = config.get("summer_active_time_active")->asBool();
+    const int32_t  summer_active_time_start        = config.get("summer_active_time_start")->asInt();
+    const int32_t  summer_active_time_end          = config.get("summer_active_time_end")->asInt();
     const bool     summer_yield_forecast_active    = config.get("summer_yield_forecast_active")->asBool();
     const uint32_t summer_yield_forecast_threshold = config.get("summer_yield_forecast_threshold")->asUint();
     const bool     dpc_extended_active             = config.get("dpc_extended_active")->asBool();
@@ -173,7 +172,7 @@ void Heating::update()
     const bool     pv_excess_control_active        = config.get("pv_excess_control_active")->asBool();
     const uint32_t pv_excess_control_threshold     = config.get("pv_excess_control_threshold")->asUint();
 
-    if(!summer_block_time_active && !summer_yield_forecast_active && !dpc_extended_active && !pv_excess_control_active) {
+    if(!summer_active_time_active && !summer_yield_forecast_active && !dpc_extended_active && !pv_excess_control_active) {
         extended_logging("No control active.");
         return;
     }
@@ -184,9 +183,9 @@ void Heating::update()
     const int current_day         = current_time->tm_mday;
     const int current_minutes     = current_time->tm_hour * 60 + current_time->tm_min;
 
-    const bool is_winter = ((current_month == winter_start_month) && (current_day >= winter_start_day )) ||
-                           ((current_month == winter_end_month  ) && (current_day <= winter_end_day   )) ||
-                           ((current_month > winter_start_month ) && (current_month < winter_end_month));
+    const bool is_summer = ((current_month == summer_start_month) && (current_day >= summer_start_day )) ||
+                           ((current_month == summer_end_month  ) && (current_day <= summer_end_day   )) ||
+                           ((current_month > summer_start_month ) && (current_month < summer_end_month));
 
     bool sg_ready_on = false;
 
@@ -222,8 +221,8 @@ void Heating::update()
         }
     };
 
-    if (is_winter) { // Winter
-        extended_logging("It is winter. Current month: %d, winter start month: %d, winter end month: %d, current day: %d, winter start day: %d, winter end day: %d.", current_month, winter_start_month, winter_end_month, current_day, winter_start_day, winter_end_day);
+    if (!is_summer) { // Winter
+        extended_logging("It is winter. Current month: %d, winter start month: %d, winter end month: %d, current day: %d, winter start day: %d, winter end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
         if (!dpc_extended_active && !pv_excess_control_active) {
             extended_logging("It is winter but no winter control active.");
         } else {
@@ -236,21 +235,21 @@ void Heating::update()
             }
         }
     } else { // Summer
-        extended_logging("It is summer. Current month: %d, winter start month: %d, winter end month: %d, current day: %d, winter start day: %d, winter end day: %d.", current_month, winter_start_month, winter_end_month, current_day, winter_start_day, winter_end_day);
+        extended_logging("It is summer. Current month: %d, winter start month: %d, winter end month: %d, current day: %d, winter start day: %d, winter end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
         bool blocked = false;
         bool is_morning = false;
         bool is_evening = false;
-        if (summer_block_time_active) {
-            if (current_minutes <= summer_block_time_morning) {       // if is between 00:00 and summer_block_time_morning
-                extended_logging("We are in morning block time. Current time: %d, block time morning: %d.", current_minutes, summer_block_time_morning);
+        if (summer_active_time_active) {
+            if (current_minutes <= summer_active_time_start) {       // if is between 00:00 and summer_active_time_start
+                extended_logging("We are in morning block time. Current time: %d, block time morning: %d.", current_minutes, summer_active_time_start);
                 blocked    = true;
                 is_morning = true;
-            } else if(summer_block_time_evening <= current_minutes) { // if is between summer_block_time_evening and 23:59
-                extended_logging("We are in evening block time. Current time: %d, block time evening: %d.", current_minutes, summer_block_time_evening);
+            } else if(summer_active_time_end <= current_minutes) { // if is between summer_active_time_end and 23:59
+                extended_logging("We are in evening block time. Current time: %d, block time evening: %d.", current_minutes, summer_active_time_end);
                 blocked    = true;
                 is_evening = true;
             } else {
-                extended_logging("We are not in block time. Current time: %d, block time morning: %d, block time evening: %d.", current_minutes, summer_block_time_morning, summer_block_time_evening);
+                extended_logging("We are not in block time. Current time: %d, block time morning: %d, block time evening: %d.", current_minutes, summer_active_time_start, summer_active_time_end);
             }
         }
 
