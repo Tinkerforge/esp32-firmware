@@ -35,6 +35,8 @@
 void Heating::pre_setup()
 {
     config = ConfigRoot{Config::Object({
+        {"sg_ready_blocking_active_type", Config::Uint(0, 0, 1)},
+        {"sg_ready_extended_active_type", Config::Uint(0, 0, 1)},
         {"minimum_control_holding_time", Config::Uint(15, 0, 60)},
         {"meter_slot_grid_power", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
         {"extended_logging_active", Config::Bool(false)},

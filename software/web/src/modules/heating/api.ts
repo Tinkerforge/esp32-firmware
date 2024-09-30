@@ -1,4 +1,6 @@
 export interface config {
+    sg_ready_blocking_active_type: number;
+    sg_ready_extended_active_type: number;
     minimum_control_holding_time: number;
     meter_slot_grid_power: number;
     extended_logging_active: boolean;

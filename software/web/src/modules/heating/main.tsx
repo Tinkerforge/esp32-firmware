@@ -262,10 +262,15 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label={__("heating.content.control_signal")}>
-                        {__("heating.content.control_signal_description")}
+                    <FormRow label={__("heating.content.meter_slot_grid_power")} label_muted={__("heating.content.meter_slot_grid_power_muted")}>
+                        <InputSelect
+                            placeholder={meter_slots.length > 0 ? __("heating.content.meter_slot_grid_power_select") : __("heating.content.meter_slot_grid_power_none")}
+                            items={meter_slots}
+                            value={state.meter_slot_grid_power}
+                            onValue={(v) => this.setState({meter_slot_grid_power: parseInt(v)})}
+                        />
                     </FormRow>
-                    <FormRow label={__("heating.content.minimum_holding_time")} label_muted={__("heating.content.minimum_holding_time_description")}>
+                    <FormRow label={__("heating.content.minimum_holding_time")} label_muted="Für SG-Ready-Ausgang 1 und SG-Ready-Ausgang 2">
                         <InputNumber
                             unit={__("heating.content.minutes")}
                             value={state.minimum_control_holding_time}
@@ -274,12 +279,24 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                             max={60}
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.meter_slot_grid_power")} label_muted={__("heating.content.meter_slot_grid_power_muted")}>
+                    <FormRow label="SG-Ready-Ausgang 1 aktiv wenn" label_muted="Ausgang 1 wird für den blockierenden Betrieb verwendet (SG Ready Zustand 1).">
                         <InputSelect
-                            placeholder={meter_slots.length > 0 ? __("heating.content.meter_slot_grid_power_select") : __("heating.content.meter_slot_grid_power_none")}
-                            items={meter_slots}
-                            value={state.meter_slot_grid_power}
-                            onValue={(v) => this.setState({meter_slot_grid_power: parseInt(v)})}
+                            items={[
+                                ["0", __("heating.content.closed")],
+                                ["1", __("heating.content.opened")]
+                            ]}
+                            value={state.sg_ready_blocking_active_type}
+                            onValue={(v) => this.setState({sg_ready_blocking_active_type: parseInt(v)})}
+                        />
+                    </FormRow>
+                    <FormRow label="SG-Ready-Ausgang 2 aktiv wenn" label_muted="Ausgang 2 wird für die Einschaltempfehlung verwendet (SG Ready Zustand 3).">
+                        <InputSelect
+                            items={[
+                                ["0", __("heating.content.closed")],
+                                ["1", __("heating.content.opened")]
+                            ]}
+                            value={state.sg_ready_extended_active_type}
+                            onValue={(v) => this.setState({sg_ready_extended_active_type: parseInt(v)})}
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.extended_logging")} label_muted={__("heating.content.extended_logging_description")}>
