@@ -37,7 +37,7 @@ struct WebSocketsClient {
     int fd;
     WebSockets *ws;
 
-    bool sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len);
+    bool sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
     void close_HTTPThread();
 };
 
@@ -45,6 +45,7 @@ struct ws_work_item {
     int fds[MAX_WEB_SOCKET_CLIENTS];
     char *payload;
     size_t payload_len;
+    httpd_ws_type_t ws_type;
 };
 
 void clear_ws_work_item(ws_work_item *wi);
@@ -61,10 +62,10 @@ public:
     void pre_setup();
     void start(const char *uri);
 
-    bool sendToClient(const char *payload, size_t payload_len, int sock);
-    bool sendToClientOwned(char *payload, size_t payload_len, int sock);
-    bool sendToAll(const char *payload, size_t payload_len);
-    bool sendToAllOwned(char *payload, size_t payload_len);
+    bool sendToClient(const char *payload, size_t payload_len, int sock, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
+    bool sendToClientOwned(char *payload, size_t payload_len, int sock, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
+    bool sendToAll(const char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
+    bool sendToAllOwned(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
 
     bool haveFreeSlot();
     bool haveActiveClient();

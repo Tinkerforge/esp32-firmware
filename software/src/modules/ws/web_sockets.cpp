@@ -91,7 +91,7 @@ static bool send_ws_work_item(WebSockets *ws, ws_work_item wi)
 
     ws_pkt.payload = (uint8_t *)wi.payload;
     ws_pkt.len = wi.payload_len;
-    ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : HTTPD_WS_TYPE_TEXT;
+    ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : wi.ws_type;
 
     bool result = true;
 
@@ -329,7 +329,7 @@ void WebSockets::pingActiveClients()
         return;
     }
 
-    work_queue.push_back({{}, nullptr, 0});
+    work_queue.push_back({{}, nullptr, 0, HTTPD_WS_TYPE_PING});
     memcpy(work_queue.back().fds, fds, sizeof(fds));
 }
 
@@ -357,9 +357,9 @@ void WebSockets::receivedPong(int fd)
     }
 }
 
-bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len)
+bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
-    ws_work_item wi{{this->fd, -1, -1, -1, -1}, payload, payload_len};
+    ws_work_item wi{{this->fd, -1, -1, -1, -1}, payload, payload_len, ws_type};
     bool result = send_ws_work_item(ws, wi);
     return result;
 }
@@ -369,7 +369,7 @@ void WebSocketsClient::close_HTTPThread()
     ws->keepAliveCloseDead(fd);
 }
 
-bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
+bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd, httpd_ws_type_t ws_type)
 {
     // Connection was closed -> message was "sent", as in it has not to be resent
     if (httpd_ws_get_fd_info(server.httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET)
@@ -388,11 +388,11 @@ bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd)
         return false;
     }
 
-    work_queue.push_back({{fd, -1, -1, -1, -1}, payload_copy, payload_len});
+    work_queue.push_back({{fd, -1, -1, -1, -1}, payload_copy, payload_len, ws_type});
     return true;
 }
 
-bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd)
+bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd, httpd_ws_type_t ws_type)
 {
     if (httpd_ws_get_fd_info(server.httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
         free(payload);
@@ -405,7 +405,7 @@ bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd)
         return false;
     }
 
-    work_queue.push_back({{fd, -1, -1, -1, -1}, payload, payload_len});
+    work_queue.push_back({{fd, -1, -1, -1, -1}, payload, payload_len, ws_type});
     return true;
 }
 
@@ -429,7 +429,7 @@ bool WebSockets::haveFreeSlot()
     return false;
 }
 
-bool WebSockets::sendToAllOwned(char *payload, size_t payload_len)
+bool WebSockets::sendToAllOwned(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
     if (!this->haveActiveClient()) {
         free(payload);
@@ -448,12 +448,12 @@ bool WebSockets::sendToAllOwned(char *payload, size_t payload_len)
         free(payload);
         return false;
     }
-    work_queue.push_back({{}, payload, payload_len});
+    work_queue.push_back({{}, payload, payload_len, ws_type});
     memcpy(work_queue.back().fds, fds, sizeof(fds));
     return true;
 }
 
-bool WebSockets::sendToAll(const char *payload, size_t payload_len)
+bool WebSockets::sendToAll(const char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
     if (!this->haveActiveClient())
         return true;
@@ -477,7 +477,7 @@ bool WebSockets::sendToAll(const char *payload, size_t payload_len)
         return false;
     }
 
-    work_queue.push_back({{}, payload_copy, payload_len});
+    work_queue.push_back({{}, payload_copy, payload_len, ws_type});
     memcpy(work_queue.back().fds, fds, sizeof(fds));
     return true;
 }
