@@ -168,20 +168,26 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                 let avg_price_day2 = this.state.dap_prices.prices.slice(num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
 
                 for (let i = 0; i < num_per_day; i++) {
-                    console.log(this.state.dap_prices.prices[i], this.state.summer_dpc_extended_threshold, avg_price_day1);
-                    if (this.state.dap_prices.prices[i] < avg_price_day1*this.state.summer_dpc_extended_threshold/100) {
-                        console.log("green");
-                        data.lines_vertical.push({'index': i, 'text': '', 'color': [0, 255, 0, 0.5]});
-                    } else if(this.state.dap_prices.prices[i] > avg_price_day1*this.state.summer_dpc_blocking_threshold/100) {
-                        console.log("red");
-                        data.lines_vertical.push({'index': i, 'text': '', 'color': [255, 0, 0, 0.5]});
+                    console.log(this.state.dap_prices.prices[i], this.state.dpc_extended_threshold, avg_price_day1);
+                    if (this.state.dap_prices.prices[i] < avg_price_day1*this.state.dpc_extended_threshold/100) {
+                        if (this.state.dpc_extended_active) {
+                            data.lines_vertical.push({'index': i, 'text': '', 'color': [0, 255, 0, 0.5]});
+                        }
+                    } else if(this.state.dap_prices.prices[i] > avg_price_day1*this.state.dpc_blocking_threshold/100) {
+                        if (this.state.dpc_blocking_active) {
+                            data.lines_vertical.push({'index': i, 'text': '', 'color': [255, 0, 0, 0.5]});
+                        }
                     }
                 }
                 for (let i = num_per_day; i < num_per_day*2; i++) {
-                    if (this.state.dap_prices.prices[i] < avg_price_day2*this.state.summer_dpc_extended_threshold/100) {
-                        data.lines_vertical.push({'index': i, 'text': '', 'color': [0, 255, 0, 0.5]});
-                    } else if(this.state.dap_prices.prices[i] > avg_price_day2*this.state.summer_dpc_blocking_threshold/100) {
-                        data.lines_vertical.push({'index': i, 'text': '', 'color': [255, 0, 0, 0.5]});
+                    if (this.state.dap_prices.prices[i] < avg_price_day2*this.state.dpc_extended_threshold/100) {
+                        if (this.state.dpc_extended_active) {
+                            data.lines_vertical.push({'index': i, 'text': '', 'color': [0, 255, 0, 0.5]});
+                        }
+                    } else if(this.state.dap_prices.prices[i] > avg_price_day2*this.state.dpc_blocking_threshold/100) {
+                        if (this.state.dpc_blocking_active) {
+                            data.lines_vertical.push({'index': i, 'text': '', 'color': [255, 0, 0, 0.5]});
+                        }
                     }
                 }
             }
@@ -282,7 +288,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                                 onClick={this.toggle('extended_logging_active')}
                         />
                     </FormRow>
-                    <FormSeparator heading={__("heating.content.winter_mode")}/>
+                    <FormSeparator heading="Winter-Einstellungen"/>
 
                     <FormRow label={__("heating.content.winter_start")} label_muted="">
                         <div class="row no-gutters">
@@ -350,50 +356,8 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label={__("heating.content.pv_excess_control")} help={__("heating.content.pv_excess_control_help")}>
-                        <SwitchableInputNumber
-                            switch_label_active="Aktiv"
-                            switch_label_inactive="Inaktiv"
-                            unit="Watt"
-                            checked={state.winter_pv_excess_control_active}
-                            onClick={this.toggle('winter_pv_excess_control_active')}
-                            value={state.winter_pv_excess_control_threshold}
-                            onValue={this.set("winter_pv_excess_control_threshold")}
-                            min={0}
-                            max={100000}
-                            switch_label_min_width="100px"
-                        />
-                    </FormRow>
-                    <FormRow label={__("heating.content.dpc")} label_muted="Für niedrige Preise (einschalten unter Tagesdurchschnitts-Schwelle)" help={__("heating.content.dpc_extended_help")}>
-                        <SwitchableInputNumber
-                            switch_label_active="Aktiv"
-                            switch_label_inactive="Inaktiv"
-                            unit="%"
-                            checked={state.winter_dpc_extended_active}
-                            onClick={this.toggle('winter_dpc_extended_active')}
-                            value={state.winter_dpc_extended_threshold}
-                            onValue={this.set("winter_dpc_extended_threshold")}
-                            min={0}
-                            max={100}
-                            switch_label_min_width="100px"
-                        />
-                    </FormRow>
-                    <FormRow label={__("heating.content.dpc")} label_muted="Für hohe Preise (blockieren über Tagesdurchschnitts-Schwelle)" help={__("heating.content.dpc_blocking_help")}>
-                        <SwitchableInputNumber
-                            switch_label_active="Aktiv"
-                            switch_label_inactive="Inaktiv"
-                            unit="%"
-                            checked={state.winter_dpc_blocking_active}
-                            onClick={this.toggle('winter_dpc_blocking_active')}
-                            value={state.winter_dpc_blocking_threshold}
-                            onValue={this.set("winter_dpc_blocking_threshold")}
-                            min={100}
-                            max={1000}
-                            switch_label_min_width="100px"
-                        />
-                    </FormRow>
 
-                    <FormSeparator heading={__("heating.content.summer_mode")}/>
+                    <FormSeparator heading="Sommer-Einstellungen"/>
                     <FormRow label="Sommer Start" label_muted="Zeitraum anhand des Wintermodus berechnet">
                         <div class="row no-gutters">
                             <div class="col-md-6">
@@ -516,15 +480,17 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                             </FormRow>
                         </div>
                     </Collapse>
+
+                    <FormSeparator heading="Allgemeine Einstellungen"/>
                     <FormRow label={__("heating.content.pv_excess_control")} help={__("heating.content.pv_excess_control_help")}>
                         <SwitchableInputNumber
                             switch_label_active="Aktiv"
                             switch_label_inactive="Inaktiv"
                             unit="Watt"
-                            checked={state.summer_pv_excess_control_active}
-                            onClick={this.toggle('summer_pv_excess_control_active')}
-                            value={state.summer_pv_excess_control_threshold}
-                            onValue={this.set("summer_pv_excess_control_threshold")}
+                            checked={state.pv_excess_control_active}
+                            onClick={this.toggle('pv_excess_control_active')}
+                            value={state.pv_excess_control_threshold}
+                            onValue={this.set("pv_excess_control_threshold")}
                             min={0}
                             max={100000}
                             switch_label_min_width="100px"
@@ -535,10 +501,10 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                             switch_label_active="Aktiv"
                             switch_label_inactive="Inaktiv"
                             unit="%"
-                            checked={state.summer_dpc_extended_active}
-                            onClick={this.toggle('summer_dpc_extended_active')}
-                            value={state.summer_dpc_extended_threshold}
-                            onValue={(v) => {this.setState({summer_dpc_extended_threshold: v}, function() {this.update_uplot()})}}
+                            checked={state.dpc_extended_active}
+                            onClick={this.toggle('dpc_extended_active', this.update_uplot)}
+                            value={state.dpc_extended_threshold}
+                            onValue={(v) => {this.setState({dpc_extended_threshold: v}, this.update_uplot)}}
                             min={0}
                             max={100}
                             switch_label_min_width="100px"
@@ -549,16 +515,16 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                             switch_label_active="Aktiv"
                             switch_label_inactive="Inaktiv"
                             unit="%"
-                            checked={state.summer_dpc_blocking_active}
-                            onClick={this.toggle('summer_dpc_blocking_active')}
-                            value={state.summer_dpc_blocking_threshold}
-                            onValue={(v) => {this.setState({summer_dpc_blocking_threshold: v}, function() {this.update_uplot()})}}
+                            checked={state.dpc_blocking_active}
+                            onClick={this.toggle('dpc_blocking_active', this.update_uplot)}
+                            value={state.dpc_blocking_threshold}
+                            onValue={(v) => {this.setState({dpc_blocking_threshold: v}, this.update_uplot)}}
                             min={100}
                             max={1000}
                             switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <FormRow label="Heizplan Sommer" label_muted="Heizplan anhand der dynamischen Preise. Rot = blockierender Betrieb, Grün = Einschaltempfehlung">
+                    <FormRow label="Preisbasierter Heizplan" label_muted="Heizplan anhand der dynamischen Preise. Rot = blockierender Betrieb, Grün = Einschaltempfehlung">
                     <div class="card pl-1 pb-1">
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader
