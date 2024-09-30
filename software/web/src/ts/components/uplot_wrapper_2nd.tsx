@@ -338,7 +338,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
 
                                     let xd = self.data[0];
                                     let x = self.valToPos(xd[line.index], 'x', true);
-                                    let xn = self.valToPos(xd[line.index+1], 'x', true) - 1;
+                                    let xn = self.valToPos(xd[line.index+1], 'x', true);
 
                                     ctx.save();
 
