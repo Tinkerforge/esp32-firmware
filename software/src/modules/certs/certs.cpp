@@ -93,7 +93,16 @@ void Certs::pre_setup()
                         &ignored);
         mbedtls_pem_free(&key_ctx);
 
-        if (result != 0 && key_res != 0 && second_key_res != 0) {
+        int third_key_res = mbedtls_pem_read_buffer(
+                        &key_ctx,
+                        "-----BEGIN EC PRIVATE KEY-----",
+                        "-----END EC PRIVATE KEY-----",
+                        (const unsigned char *)cert.c_str(),
+                        nullptr, 0,
+                        &ignored);
+        mbedtls_pem_free(&key_ctx);
+
+        if ((result != 0) && (key_res != 0) && (second_key_res != 0) && (third_key_res != 0)) {
             if (result != 0) {
                 char buf[256] = {0};
                 mbedtls_strerror(result, buf, sizeof(buf));
@@ -108,6 +117,11 @@ void Certs::pre_setup()
                 char buf[256] = {0};
                 mbedtls_strerror(second_key_res, buf, sizeof(buf));
                 return String("Failed to parse RSA private key: ") + buf;
+            }
+            if (third_key_res != 0) {
+                char buf[256] = {0};
+                mbedtls_strerror(third_key_res, buf, sizeof(buf));
+                return String("Failed to parse EC private key: ") + buf;
             }
         }
         return "";
@@ -240,8 +254,9 @@ std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t cert_id, size_t *out_ce
 {
     String path = get_cert_path(cert_id);
 
-    if (!LittleFS.exists(path))
+    if (!LittleFS.exists(path)) {
         return nullptr;
+    }
 
     File f = LittleFS.open(path, "r");
     // Allocate one byte more so that the cert is also null-terminated.
