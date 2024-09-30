@@ -559,7 +559,7 @@ void WebSockets::updateDebugState()
     }
 }
 
-void WebSockets::start(const char *uri)
+void WebSockets::start(const char *uri, const char *state_path)
 {
     httpd_handle_t httpd = server.httpd;
 
@@ -596,7 +596,9 @@ void WebSockets::start(const char *uri)
         checkActiveClients();
     }, 100, 100);
 
-    api.addState("info/ws", &state);
+    if (state_path != nullptr) {
+        api.addState(state_path, &state);
+    }
 }
 
 void WebSockets::onConnect_HTTPThread(std::function<void(WebSocketsClient)> fn)
