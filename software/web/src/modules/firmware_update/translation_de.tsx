@@ -64,7 +64,7 @@ let x = {
             "install_state_14": "Signatur-Initialisierung fehlgeschlagen",
             "install_state_15": "Signatur-Berechnung fehlgeschlagen",
             "install_state_16": "Signatur-Verifikation fehlgeschlagen",
-            "install_state_17": "Es kann keine Aktualisierung vorgenommen werden, während ein Fahrzeug verbunden ist.",
+            "install_state_17": "Während ein Fahrzeug verbunden ist, kann keine Aktualisierung vorgenommen werden",
             "install_state_18": "Firmware-Info-Seite ist zu groß",
             "install_state_19": null,
             "install_state_20": "Firmware-Datei ist beschädigt (Checksummenfehler)",
