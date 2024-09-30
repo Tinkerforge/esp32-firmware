@@ -559,7 +559,7 @@ void WebSockets::updateDebugState()
     }
 }
 
-void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t httpd)
+void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t httpd, const char *supported_subprotocol)
 {
     this->httpd = httpd;
 
@@ -570,6 +570,7 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
     ws.user_ctx = this;
     ws.is_websocket = false;
     ws.handle_ws_control_frames = true;
+    ws.supported_subprotocol = supported_subprotocol;
 
     httpd_register_uri_handler(httpd, &ws);
 
