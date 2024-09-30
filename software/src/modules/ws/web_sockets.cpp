@@ -95,7 +95,7 @@ static bool send_ws_work_item(WebSockets *ws, ws_work_item wi)
 
     bool result = true;
 
-    struct httpd_data *hd = (struct httpd_data *)server.httpd;
+    struct httpd_data *hd = (struct httpd_data *)ws->httpd;
 
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (wi.fds[i] == -1) {
@@ -153,7 +153,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
                 return ESP_FAIL;
             }
 
-            struct httpd_data *hd = (struct httpd_data *)server.httpd;
+            struct httpd_data *hd = (struct httpd_data *)ws->httpd;
             esp_err_t ret = httpd_ws_respond_server_handshake(&hd->hd_req, nullptr);
             if (ret != ESP_OK) {
                 return ret;
@@ -280,10 +280,10 @@ void WebSockets::keepAliveCloseDead(int fd)
     // Don't kill this socket if it is a HTTP socket:
     // Sometimes a fd is reused so fast that the keep alive does not notice
     // the closed fd before it is reopened as normal HTTP connection.
-    if (httpd_ws_get_fd_info(server.httpd, fd) == HTTPD_WS_CLIENT_HTTP)
+    if (httpd_ws_get_fd_info(httpd, fd) == HTTPD_WS_CLIENT_HTTP)
         return;
 
-    httpd_sess_trigger_close(server.httpd, fd);
+    httpd_sess_trigger_close(httpd, fd);
 
     // Seems like we have to do everything by ourselves...
     // In the case that the client is really dead (for example: someone pulled the ethernet cable)
@@ -295,7 +295,7 @@ void WebSockets::keepAliveCloseDead(int fd)
     // faster than we are able to throw it away via send timeouts.
     // Unfortunately there is no API to throw away a web socket connection, so
     // we have to poke around in the internal structures here.
-    struct httpd_data *hd = (struct httpd_data *)server.httpd;
+    struct httpd_data *hd = (struct httpd_data *)httpd;
 
     struct sock_db *current = hd->hd_sd;
     struct sock_db *end = hd->hd_sd + hd->config.max_open_sockets - 1;
@@ -340,7 +340,7 @@ void WebSockets::checkActiveClients()
         if (keep_alive_fds[i] == -1)
             continue;
 
-        if (httpd_ws_get_fd_info(server.httpd, keep_alive_fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET || deadline_elapsed(keep_alive_last_pong[i] + KEEP_ALIVE_TIMEOUT_MS)) {
+        if (httpd_ws_get_fd_info(httpd, keep_alive_fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET || deadline_elapsed(keep_alive_last_pong[i] + KEEP_ALIVE_TIMEOUT_MS)) {
             this->keepAliveCloseDead(keep_alive_fds[i]);
         }
     }
@@ -372,7 +372,7 @@ void WebSocketsClient::close_HTTPThread()
 bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd, httpd_ws_type_t ws_type)
 {
     // Connection was closed -> message was "sent", as in it has not to be resent
-    if (httpd_ws_get_fd_info(server.httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET)
+    if (httpd_ws_get_fd_info(httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET)
         return true;
 
     char *payload_copy = (char *)malloc(payload_len * sizeof(char));
@@ -394,7 +394,7 @@ bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd, h
 
 bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd, httpd_ws_type_t ws_type)
 {
-    if (httpd_ws_get_fd_info(server.httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
+    if (httpd_ws_get_fd_info(httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
         free(payload);
         return true;
     }
@@ -519,7 +519,7 @@ void WebSockets::triggerHttpThread()
     // NEVER able to start the worker again.
     worker_active = WEBSOCKET_WORKER_ENQUEUED;
     errno = 0;
-    err_t err = httpd_queue_work(server.httpd, work, this);
+    err_t err = httpd_queue_work(httpd, work, this);
     if (err == ESP_OK) {
         last_worker_run = millis();
         worker_poll_count = 0;
@@ -559,9 +559,9 @@ void WebSockets::updateDebugState()
     }
 }
 
-void WebSockets::start(const char *uri, const char *state_path)
+void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t httpd)
 {
-    httpd_handle_t httpd = server.httpd;
+    this->httpd = httpd;
 
     httpd_uri_t ws = {};
     ws.uri = uri;

@@ -60,7 +60,7 @@ public:
     WebSockets() : worker_active(WEBSOCKET_WORKER_DONE) {}
 
     void pre_setup();
-    void start(const char *uri, const char *state_path);
+    void start(const char *uri, const char *state_path, httpd_handle_t httpd);
 
     bool sendToClient(const char *payload, size_t payload_len, int sock, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
     bool sendToClientOwned(char *payload, size_t payload_len, int sock, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
@@ -101,6 +101,7 @@ public:
     uint32_t last_worker_run = 0;
     uint32_t worker_poll_count = 0;
 
+    httpd_handle_t httpd;
     std::function<void(WebSocketsClient)> on_client_connect_fn;
 
     ConfigRoot state;
