@@ -28,8 +28,8 @@ let x = {
                 </div>
             </>,
             "extended_logging": "Erweitertes Logging",
-            "extended_logging_activate": "Aktiviert das erweiterte Logging",
-            "extended_logging_description": "Mehr Informationen zu den Steuerentscheidungen im Ereignis-Log",
+            "extended_logging_activate": "Weiterführende Informationen zu den Steuerentscheidungen werden im Ereignis-Log angezeigt.",
+            "extended_logging_description": "",
             "minimum_holding_time": "Mindesthaltezeit",
             "minimum_holding_time_description": "Wie lange soll ein Anlaufbefehl mindestens gelten",
             "minutes": "Minuten",
@@ -38,7 +38,8 @@ let x = {
             "winter_mode": "Wintermodus",
             "winter_start": "Winter Start",
             "winter_end": "Winter Ende",
-            "dpc": "Dynamische Preissteuerung",
+            "dpc_low": "Einschalten bei niedrigem Strompreis",
+            "dpc_high": "Blockieren bei hohem Strompreis",
             "dpc_extended_activate": "Einschaltempfehlung für die Heizung bei unterschreiten der Preisschwelle",
             "dpc_extended_help": <>
                 <div>
@@ -59,7 +60,7 @@ let x = {
             "average_price_threshold": "Preisschwelle",
             "average_price_threshold_extended_description": "Liegt der Tagesdurchschnitt unter der Schwelle, wird SG Ready zur Sollwerterhöhung geschaltet",
             "average_price_threshold_blocking_description": "Liegt der Tagesdurchschnitt über der Schwelle, wird SG Ready zur Blockierung geschaltet",
-            "pv_excess_control": "PV-Überschuss-Steuerung",
+            "pv_excess_control": "Einschalten bei PV-Überschuss",
             "pv_excess_control_activate": "Aktiviert die Optimierung der Heizungssteuerung anhand des PV-Überschuss",
             "pv_excess_control_help": <>
                 <div>
@@ -81,11 +82,11 @@ let x = {
                     <p>Hinweis: Die Blockierzeit kann über eine PV-Ertragsprognose optimiert werden (siehe unten).</p>
                 </div>
             </>,
-            "enable_daily_block_period": "Aktiviert den täglichen Blockierzeitraum",
+            "enable_daily_block_period": "Täglicher Blockierzeitraum aktiviert",
             "from": "Von",
             "to": "Bis",
-            "morning": "Blockierzeit Morgens",
-            "evening": "Blockierzeit Abends",
+            "morning": "Blockierzeit morgens",
+            "evening": "Blockierzeit abends",
             "pv_yield_forecast": "PV-Ertragsprognose",
             "pv_yield_forecast_activate": "Blockiere nur wenn erwarteter Ertrag über konfigurierter Blockier-Schwelle",
             "pv_yield_forecast_help": <>
@@ -98,13 +99,13 @@ let x = {
             </>,
             "blocking_threshold": "Blockier-Schwelle",
             "blocking_threshold_description": "Ab wieviel kWh Ertragsprognose soll der Anlaufbefehl anhand Uhrzeit blockiert werden",
-            "p14_enwg_control_activate": "Aktiviert die Kontrolle der Heizung anhand §14 EnWG",
+            "p14_enwg_control_activate": "Aktiviert die Kontrolle der Heizung nach §14 EnWG",
             "input": "Eingang",
-            "throttled_if_input": "Gedrosselt wenn Eingang",
-            "closed": "Geschlossen",
-            "opened": "Geöffnet",
+            "throttled_if_input": "Drosselung",
+            "closed": "Aktiv wenn geschlossen",
+            "opened": "Aktiv wenn geöffnet",
             "meter_slot_grid_power": "Stromzähler",
-            "meter_slot_grid_power_muted": "Typischerweise am Netzanschluss",
+            "meter_slot_grid_power_muted": "typischerweise am Netzanschluss",
             "meter_slot_grid_power_select": "Auswählen...",
             "meter_slot_grid_power_none": "Kein Stromzähler konfiguriert"
         },

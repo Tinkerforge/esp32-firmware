@@ -38,7 +38,8 @@ let x = {
             "winter_mode": "Winter Mode",
             "winter_start": "Winter Start",
             "winter_end": "Winter End",
-            "dpc": "Dynamic Price Control",
+            "dpc_low": "Dynamic Price Control",
+            "dpc_high": "Dynamic Price Control",
             "dpc_extended_activate": "Einschaltempfehlung für die Heizung bei unterschreiten der Preisschwelle",
             "dpc_extended_help": <>
                 <div>
