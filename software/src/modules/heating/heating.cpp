@@ -27,6 +27,9 @@
 
 #define HEATING_UPDATE_INTERVAL 1000*60
 
+#define HEATING_SG_READY_ACTIVE_CLOSED 0
+#define HEATING_SG_READY_ACTIVE_OPEN   1
+
 #define extended_logging(...) \
     if(extended_logging_active) { \
         logger.printfln(__VA_ARGS__); \
@@ -45,7 +48,7 @@ void Heating::pre_setup()
         {"summer_end_day", Config::Uint(1, 1, 31)},
         {"summer_end_month", Config::Uint(11, 1, 12)},
         {"summer_active_time_active", Config::Bool(false)},
-        {"summer_active_time_start", Config::Int(8*60)},  // localtime in minutes since 00:00
+        {"summer_active_time_start", Config::Int(8*60)}, // localtime in minutes since 00:00
         {"summer_active_time_end", Config::Int(20*60)}, // localtime in minutes since 00:00
         {"summer_yield_forecast_active", Config::Bool(false)},
         {"summer_yield_forecast_threshold", Config::Uint(0)},
@@ -93,7 +96,7 @@ bool Heating::is_active()
 {
     const bool dpc_extended_active          = config.get("dpc_extended_active")->asBool();
     const bool pv_excess_control_active     = config.get("pv_excess_control_active")->asBool();
-    const bool summer_active_time_active     = config.get("summer_active_time_active")->asBool();
+    const bool summer_active_time_active    = config.get("summer_active_time_active")->asBool();
     const bool summer_yield_forecast_active = config.get("summer_yield_forecast_active")->asBool();
 
     if(!summer_active_time_active && !summer_yield_forecast_active && !dpc_extended_active && !pv_excess_control_active) {
@@ -108,12 +111,27 @@ bool Heating::is_p14enwg_active()
     return config.get("p14enwg_active")->asBool();
 }
 
-bool Heating::is_sg_ready_output0_closed() {
-    return em_v2.get_sg_ready_output(0);
-}
+Heating::Status Heating::get_status()
+{
+    const bool p14enwg_active          = config.get("p14enwg_active")->asBool();
+    const uint32_t p14enwg_active_type = config.get("p14enwg_active_type")->asUint();
+    const uint32_t sg_ready0_type      = config.get("sg_ready_blocking_active_type")->asUint();
+    const uint32_t sg_ready1_type      = config.get("sg_ready_extended_active_type")->asUint();
+    const bool sg_ready_output_0       = em_v2.get_sg_ready_output(0);
+    const bool sg_ready_output_1       = em_v2.get_sg_ready_output(1);
+    const bool sg_ready0_on            = sg_ready_output_0 == (sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
+    const bool sg_ready1_on            = sg_ready_output_1 == (sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED);
+    const bool p14_enwg_on             = p14enwg_active && (sg_ready_output_0 == (p14enwg_active_type == HEATING_SG_READY_ACTIVE_CLOSED));
 
-bool Heating::is_sg_ready_output1_closed() {
-    return em_v2.get_sg_ready_output(1);
+    if(p14_enwg_on) {
+        return Status::BlockingP14;
+    } else if(sg_ready0_on) {
+        return Status::Blocking;
+    } else if(sg_ready1_on) {
+        return Status::Extended;
+    }
+
+    return Status::Idle;
 }
 
 void Heating::update()
@@ -130,8 +148,12 @@ void Heating::update()
     const bool     p14enwg_active      = config.get("p14enwg_active")->asBool();
     const uint32_t p14enwg_input       = config.get("p14enwg_input")->asUint();
     const uint32_t p14enwg_active_type = config.get("p14enwg_active_type")->asUint();
+    const uint32_t sg_ready0_type      = config.get("sg_ready_blocking_active_type")->asUint();
+    const uint32_t sg_ready1_type      = config.get("sg_ready_extended_active_type")->asUint();
+
+    // Check if §14 EnWG should be turned on
+    bool p14enwg_on;
     if(p14enwg_active) {
-        bool p14enwg_on;
         bool input_value = em_v2.get_input(p14enwg_input);
 
         if (p14enwg_active_type == 0) {
@@ -139,14 +161,13 @@ void Heating::update()
         } else {
             p14enwg_on = !input_value;
         }
+    }
 
-        if(p14enwg_on) {
-            extended_logging("§14 EnWG blocks heating. Turning on SG ready output 0.");
-            em_v2.set_sg_ready_output(0, true);
-        } else {
-            extended_logging("§14 EnWG does not block heating. Turning off SG ready output 0.");
-            em_v2.set_sg_ready_output(0, false);
-        }
+    // If p14enwg is triggered, we immediately set output 0 accordingly.
+    // If it is not triggered it depends on the heating controller if it should be on or off.
+    if (p14enwg_on) {
+        extended_logging("§14 EnWG blocks heating. Turning on SG ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
+        em_v2.set_sg_ready_output(0, sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
     }
 
     // Get values from config
@@ -169,6 +190,8 @@ void Heating::update()
     const uint32_t summer_yield_forecast_threshold = config.get("summer_yield_forecast_threshold")->asUint();
     const bool     dpc_extended_active             = config.get("dpc_extended_active")->asBool();
     const uint32_t dpc_extended_threshold          = config.get("dpc_extended_threshold")->asUint();
+    const bool     dpc_blocking_active             = config.get("dpc_blocking_active")->asBool();
+    const uint32_t dpc_blocking_threshold          = config.get("dpc_blocking_threshold")->asUint();
     const bool     pv_excess_control_active        = config.get("pv_excess_control_active")->asBool();
     const uint32_t pv_excess_control_threshold     = config.get("pv_excess_control_threshold")->asUint();
 
@@ -187,7 +210,8 @@ void Heating::update()
                            ((current_month == summer_end_month  ) && (current_day <= summer_end_day   )) ||
                            ((current_month > summer_start_month ) && (current_month < summer_end_month));
 
-    bool sg_ready_on = false;
+    bool sg_ready0_on = false;
+    bool sg_ready1_on = false;
 
     // PV excess handling for winter and summer
     auto handle_pv_excess = [&] (const uint32_t threshold) {
@@ -197,12 +221,12 @@ void Heating::update()
             extended_logging("Meter value not available (meter %d has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
         } else if (watt_current > threshold) {
             extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, threshold);
-            sg_ready_on = sg_ready_on || true;
+            sg_ready1_on = sg_ready1_on || true;
         }
     };
 
     // Dynamic price handling for winter and summer
-    auto handle_dynamic_price = [&] (const uint32_t threshold) {
+    auto handle_dynamic_price_extended = [&] (const uint32_t threshold) {
         const auto price_average = day_ahead_prices.get_average_price_today();
         const auto price_current = day_ahead_prices.get_current_price();
 
@@ -213,21 +237,41 @@ void Heating::update()
         } else {
             if (price_current.data < price_average.data * threshold / 100.0) {
                 extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, threshold);
-                sg_ready_on = true;
+                sg_ready1_on = true;
             } else {
                 extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, threshold);
-                sg_ready_on = false;
+                sg_ready1_on = false;
+            }
+        }
+    };
+
+    // Dynamic price handling for winter and summer
+    auto handle_dynamic_price_blocking = [&] (const uint32_t threshold) {
+        const auto price_average = day_ahead_prices.get_average_price_today();
+        const auto price_current = day_ahead_prices.get_current_price();
+
+        if (!price_average.data_available) {
+            extended_logging("Average price for today not available. Ignoring dynamic price control.");
+        } else if (!price_current.data_available) {
+            extended_logging("Current price not available. Ignoring dynamic price control.");
+        } else {
+            if (price_current.data > price_average.data * threshold / 100.0) {
+                extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, threshold);
+                sg_ready0_on = true;
+            } else {
+                extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, threshold);
+                sg_ready0_on = false;
             }
         }
     };
 
     if (!is_summer) { // Winter
-        extended_logging("It is winter. Current month: %d, winter start month: %d, winter end month: %d, current day: %d, winter start day: %d, winter end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
+        extended_logging("It is winter. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
         if (!dpc_extended_active && !pv_excess_control_active) {
             extended_logging("It is winter but no winter control active.");
         } else {
             if (dpc_extended_active) {
-                handle_dynamic_price(dpc_extended_threshold);
+                handle_dynamic_price_extended(dpc_extended_threshold);
             }
 
             if (pv_excess_control_active) {
@@ -235,12 +279,12 @@ void Heating::update()
             }
         }
     } else { // Summer
-        extended_logging("It is summer. Current month: %d, winter start month: %d, winter end month: %d, current day: %d, winter start day: %d, winter end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
+        extended_logging("It is summer. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
         bool blocked = false;
         bool is_morning = false;
         bool is_evening = false;
         if (summer_active_time_active) {
-            if (current_minutes <= summer_active_time_start) {       // if is between 00:00 and summer_active_time_start
+            if (current_minutes <= summer_active_time_start) { // if is between 00:00 and summer_active_time_start
                 extended_logging("We are in morning block time. Current time: %d, block time morning: %d.", current_minutes, summer_active_time_start);
                 blocked    = true;
                 is_morning = true;
@@ -280,13 +324,13 @@ void Heating::update()
 
         if (blocked) {
             extended_logging("We are in a block time.");
-            sg_ready_on = false;
+            sg_ready1_on = false;
         } else {
             if (!dpc_extended_active && !pv_excess_control_active) {
                 extended_logging("It is summer but no summer control active.");
             } else {
                 if (dpc_extended_active) {
-                    handle_dynamic_price(dpc_extended_threshold);
+                    handle_dynamic_price_extended(dpc_extended_threshold);
                 }
 
                 if (pv_excess_control_active) {
@@ -296,18 +340,36 @@ void Heating::update()
         }
     }
 
-    bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
-    if (sg_ready_on) {
-        extended_logging("Heating decision: Turning on SG Ready output 1.");
+    const bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
+    if (sg_ready1_on) {
+        extended_logging("Heating decision: Turning on SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         if (!sg_ready_output_1) {
-            em_v2.set_sg_ready_output(1, true);
+            em_v2.set_sg_ready_output(1, sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED);
             last_sg_ready_change = timestamp_minutes();
         }
     } else {
-        extended_logging("Heating decision: Turning off SG Ready output 1.");
+        extended_logging("Heating decision: Turning off SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         if (sg_ready_output_1) {
-            em_v2.set_sg_ready_output(1, false);
+            em_v2.set_sg_ready_output(1, !(sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED));
             last_sg_ready_change = timestamp_minutes();
+        }
+    }
+
+    // If §14 EnWG is triggerend, we don't override it.
+    if (!p14enwg_on) {
+        const bool sg_ready_output_0 = em_v2.get_sg_ready_output(0);
+        if (sg_ready0_on) {
+            extended_logging("Heating decision: Turning on SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
+            if (!sg_ready_output_0) {
+                em_v2.set_sg_ready_output(0, sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
+                last_sg_ready_change = timestamp_minutes();
+            }
+        } else {
+            extended_logging("Heating decision: Turning off SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
+            if (sg_ready_output_0) {
+                em_v2.set_sg_ready_output(0, !(sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED));
+                last_sg_ready_change = timestamp_minutes();
+            }
         }
     }
 }
