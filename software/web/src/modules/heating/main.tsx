@@ -355,7 +355,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                         </div>
                     </FormRow>
                     <FormRow label="Tägliche Aktivzeit" help={__("heating.content.active_time_help")}>
-                        <Switch desc="Aktiviert einen Zeitraum, in dem die SG-Ready-Ausgänge gesteuert werden"
+                        <Switch desc="Aktiviert einen Zeitraum, in dem die SG-Ready-Ausgänge gesteuert werden, damit die PV-Anlage im Sommermodus Vorrang hat, z.B. von 08:00 bis 20:00h"
                                 checked={state.summer_active_time_active}
                                 onClick={this.toggle('summer_active_time_active', this.update_uplot)}
                         />
@@ -386,7 +386,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label={__("heating.content.pv_yield_forecast")} label_muted="setzt die Aktivzeit anhand des erwarteten PV-Ertrags außer Kraft." help={__("heating.content.pv_yield_forecast_help")}>
+                    <FormRow label={__("heating.content.pv_yield_forecast")} label_muted="liegt der erwartete PV-Ertrag unter dem eingestellten Wert, erweitert sich die Aktivzeit auf 24h, so dass die günstigen Stromtarife auch Nachts genutzt werden könnenl" help={__("heating.content.pv_yield_forecast_help")}>
                         <SwitchableInputNumber
                             switch_label_active="Aktiv"
                             switch_label_inactive="Inaktiv"
