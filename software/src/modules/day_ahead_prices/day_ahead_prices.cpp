@@ -49,8 +49,6 @@ static const char * const resolution_str[] {
     "15min", "60min"
 };
 
-extern DayAheadPrices dap;
-
 void DayAheadPrices::pre_setup()
 {
     config = ConfigRoot{Config::Object({

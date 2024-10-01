@@ -243,8 +243,6 @@ void platform_printfln(int level, const char *fmt, ...)
     va_end(args);
 }
 
-extern Ocpp ocpp;
-
 void platform_register_tag_seen_callback(void *ctx, void (*cb)(int32_t, const char *, void *), void *user_data)
 {
     ocpp.tag_seen_cb = cb;

@@ -32,8 +32,6 @@ static bool first = true;
 
 #define NTP_DESYNC_THRESHOLD_S 25 * 60 * 60
 
-extern NTP ntp;
-
 static void ntp_sync_cb(struct timeval *t)
 {
     if (first) {

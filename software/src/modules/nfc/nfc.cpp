@@ -25,8 +25,6 @@
 #include "tools.h"
 #include "nfc_bricklet_firmware_bin.embedded.h"
 
-extern NFC nfc;
-
 #if defined(BOARD_HAS_PSRAM)
 #define MAX_AUTHORIZED_TAGS 32
 #else

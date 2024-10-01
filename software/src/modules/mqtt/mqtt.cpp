@@ -28,10 +28,6 @@
 #include "build.h"
 #include "matchTopicFilter.h"
 
-#if MODULE_AUTOMATION_AVAILABLE()
-extern Mqtt mqtt;
-#endif
-
 extern char local_uid_str[32];
 
 // MQTT over WSS takes ~ 3.4k only for the connection

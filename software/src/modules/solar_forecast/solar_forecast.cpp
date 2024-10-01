@@ -33,8 +33,6 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define CHECK_INTERVAL 2*60*60*1000
 #define CHECK_DELAY_MIN 2500
 
-extern SolarForecast dap;
-
 enum Resolution {
     RESOLUTION_15MIN,
     RESOLUTION_60MIN
