@@ -285,29 +285,29 @@ void Heating::update()
         bool is_evening = false;
         if (summer_active_time_active) {
             if (current_minutes <= summer_active_time_start) { // if is between 00:00 and summer_active_time_start
-                extended_logging("We are in morning block time. Current time: %d, block time morning: %d.", current_minutes, summer_active_time_start);
+                extended_logging("We are outside morning active time. Current time: %d, active time morning start: %d.", current_minutes, summer_active_time_start);
                 blocked    = true;
                 is_morning = true;
             } else if(summer_active_time_end <= current_minutes) { // if is between summer_active_time_end and 23:59
-                extended_logging("We are in evening block time. Current time: %d, block time evening: %d.", current_minutes, summer_active_time_end);
+                extended_logging("We are outside evening active time. Current time: %d, active time evening end: %d.", current_minutes, summer_active_time_end);
                 blocked    = true;
                 is_evening = true;
             } else {
-                extended_logging("We are not in block time. Current time: %d, block time morning: %d, block time evening: %d.", current_minutes, summer_active_time_start, summer_active_time_end);
+                extended_logging("We are in active time. Current time: %d, active time morning: %d, active time evening: %d.", current_minutes, summer_active_time_start, summer_active_time_end);
             }
         }
 
-        // If we are in block time and px excess control is active,
+        // If we are outside active time and px excess control is active,
         // we check the expected px excess and unblock if it is below the threshold.
         if (blocked && summer_yield_forecast_active) {
-            extended_logging("We are in block time and yield forecast is active.");
+            extended_logging("We are outside active time and yield forecast is active.");
             DataReturn<uint32_t> wh_expected = {false, 0};
             if (is_morning) {
                 wh_expected = solar_forecast.get_wh_today();
             } else if (is_evening) {
                 wh_expected = solar_forecast.get_wh_tomorrow();
             } else {
-                extended_logging("We are in block time but not in morning or evening. Ignoring yield forecast.");
+                extended_logging("We are outside active time but not in morning or evening. Ignoring yield forecast.");
             }
 
             if(!wh_expected.data_available) {
@@ -323,7 +323,7 @@ void Heating::update()
         }
 
         if (blocked) {
-            extended_logging("We are in a block time.");
+            extended_logging("We are outside of the active time.");
             sg_ready1_on = false;
         } else {
             if (!dpc_extended_active && !pv_excess_control_active) {
