@@ -496,16 +496,28 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
 
 #if MODULE_HEATING_AVAILABLE()
     if (heating.is_active()) {
-        // First check for SG Ready output 0 (§14EnWG blocked or not)
-        // §14EnWG has priority if active. Afterwards check for heating overdrive
-        if (heating.is_sg_ready_output0_closed()) {
-            str1 = "14EnWG";
-            str2 = "Block.";
-            icon_index = SPRITE_ICON_HEATING_OFF;
-        } else {
-            const bool closed1 = heating.is_sg_ready_output1_closed();
-            str2 = closed1 ? "Ein" : "Aus";
-            icon_index = closed1 ? SPRITE_ICON_HEATING_HOT : SPRITE_ICON_HEATING;
+        auto status = heating.get_status();
+        switch (status) {
+            case Heating::Status::Idle:
+                str1 = "SG Rdy";
+                str2 = "Aus";
+                icon_index = SPRITE_ICON_HEATING;
+                break;
+            case Heating::Status::Blocking:
+                str1 = "SG Rdy";
+                str2 = "Block.";
+                icon_index = SPRITE_ICON_HEATING_COLD;
+                break;
+            case Heating::Status::BlockingP14:
+                str1 = "14EnWG";
+                str2 = "Block.";
+                icon_index = SPRITE_ICON_HEATING_OFF;
+                break;
+            case Heating::Status::Extended:
+                str1 = "SG Rdy";
+                str2 = "Ein";
+                icon_index = SPRITE_ICON_HEATING_HOT;
+                break;
         }
     }
 #endif
