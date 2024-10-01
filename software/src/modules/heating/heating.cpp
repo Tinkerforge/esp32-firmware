@@ -214,39 +214,26 @@ void Heating::update()
     bool sg_ready1_on = false;
 
     // PV excess handling for winter and summer
-    auto handle_pv_excess = [&] (const uint32_t threshold) {
+    auto handle_pv_excess = [&] () {
+        if (!pv_excess_control_active) {
+            return;
+        }
         float watt_current = 0;
         MeterValueAvailability meter_availability = meters.get_power_real(meter_slot_grid_power, &watt_current);
         if (meter_availability != MeterValueAvailability::Fresh) {
             extended_logging("Meter value not available (meter %d has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
-        } else if (watt_current > threshold) {
-            extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, threshold);
+        } else if (watt_current > pv_excess_control_threshold) {
+            extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, pv_excess_control_threshold);
             sg_ready1_on = sg_ready1_on || true;
         }
     };
 
     // Dynamic price handling for winter and summer
-    auto handle_dynamic_price_extended = [&] (const uint32_t threshold) {
-        const auto price_average = day_ahead_prices.get_average_price_today();
-        const auto price_current = day_ahead_prices.get_current_price();
-
-        if (!price_average.data_available) {
-            extended_logging("Average price for today not available. Ignoring dynamic price control.");
-        } else if (!price_current.data_available) {
-            extended_logging("Current price not available. Ignoring dynamic price control.");
-        } else {
-            if (price_current.data < price_average.data * threshold / 100.0) {
-                extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, threshold);
-                sg_ready1_on = true;
-            } else {
-                extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, threshold);
-                sg_ready1_on = false;
-            }
+    auto handle_dynamic_price = [&] () {
+        if (!dpc_extended_active && !dpc_blocking_active) {
+            return;
         }
-    };
 
-    // Dynamic price handling for winter and summer
-    auto handle_dynamic_price_blocking = [&] (const uint32_t threshold) {
         const auto price_average = day_ahead_prices.get_average_price_today();
         const auto price_current = day_ahead_prices.get_current_price();
 
@@ -255,28 +242,34 @@ void Heating::update()
         } else if (!price_current.data_available) {
             extended_logging("Current price not available. Ignoring dynamic price control.");
         } else {
-            if (price_current.data > price_average.data * threshold / 100.0) {
-                extended_logging("Price is below threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, threshold);
-                sg_ready0_on = true;
-            } else {
-                extended_logging("Price is above threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, threshold);
-                sg_ready0_on = false;
+            if (dpc_extended_active) {
+                if (price_current.data < price_average.data * dpc_extended_threshold / 100.0) {
+                    extended_logging("Price is below extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
+                    sg_ready1_on = true;
+                } else {
+                    extended_logging("Price is above extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
+                    sg_ready1_on = false;
+                }
+            }
+            if (dpc_blocking_active) {
+                if (price_current.data > price_average.data * dpc_blocking_threshold / 100.0) {
+                    extended_logging("Price is below extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
+                    sg_ready1_on = true;
+                } else {
+                    extended_logging("Price is above extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
+                    sg_ready1_on = false;
+                }
             }
         }
     };
 
     if (!is_summer) { // Winter
         extended_logging("It is winter. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
-        if (!dpc_extended_active && !pv_excess_control_active) {
+        if (!dpc_extended_active && !dpc_blocking_active && !pv_excess_control_active) {
             extended_logging("It is winter but no winter control active.");
         } else {
-            if (dpc_extended_active) {
-                handle_dynamic_price_extended(dpc_extended_threshold);
-            }
-
-            if (pv_excess_control_active) {
-                handle_pv_excess(pv_excess_control_threshold);
-            }
+            handle_dynamic_price();
+            handle_pv_excess();
         }
     } else { // Summer
         extended_logging("It is summer. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
@@ -329,13 +322,8 @@ void Heating::update()
             if (!dpc_extended_active && !pv_excess_control_active) {
                 extended_logging("It is summer but no summer control active.");
             } else {
-                if (dpc_extended_active) {
-                    handle_dynamic_price_extended(dpc_extended_threshold);
-                }
-
-                if (pv_excess_control_active) {
-                    handle_pv_excess(pv_excess_control_threshold);
-                }
+                handle_dynamic_price();
+                handle_pv_excess();
             }
         }
     }
