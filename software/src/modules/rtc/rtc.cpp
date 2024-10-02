@@ -90,7 +90,7 @@ void Rtc::register_urls() {
 #if MODULE_NTP_AVAILABLE()
         if (time.get("minute")->updateUint(tm.tm_min))
             ntp.set_api_time(tv);
-#elif
+#else
         time.get("minute")->updateUint(tm.tm_min);
 #endif
 
