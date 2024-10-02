@@ -40,7 +40,7 @@ public:
     void setup_rtc();
 
     // IRtcBackend implementation
-    void set_time(const tm &time) override;
+    void set_time(const tm &time, int microseconds) override;
     struct timeval get_time() override;
     void reset() override;
 };

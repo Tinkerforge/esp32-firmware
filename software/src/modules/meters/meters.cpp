@@ -412,7 +412,7 @@ void Meters::register_urls()
 
                 struct timeval tv_now;
 
-                if (clock_synced(&tv_now)) {
+                if (rtc.clock_synced(&tv_now)) {
                     //FIXME not Y2038-safe
                     meter_slot.last_reset.get("last_reset")->updateUint(static_cast<uint32_t>(tv_now.tv_sec));
                 } else {

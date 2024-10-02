@@ -30,7 +30,7 @@ public:
     void register_urls() override;
 
     // IRtcBackend implementation
-    void set_time(const tm &time) override;
+    void set_time(const tm &time, int32_t microseconds) override;
     struct timeval get_time() override;
     void reset() override;
 };

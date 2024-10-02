@@ -780,7 +780,7 @@ void ChargeTracker::register_urls()
         int user_filter = USER_FILTER_ALL_USERS;
         uint32_t start_timestamp_min = 0;
         uint32_t end_timestamp_min = 0;
-        uint32_t current_timestamp_min = timestamp_minutes();
+        uint32_t current_timestamp_min = rtc.timestamp_minutes();
 
         bool english = false;
         #define LETTERHEAD_SIZE 512

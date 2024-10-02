@@ -190,7 +190,7 @@ void EMEnergyAnalysis::collect_data_points()
     struct tm utc;
     struct tm local;
 
-    if (!clock_synced(&tv)) {
+    if (!rtc.clock_synced(&tv)) {
         return;
     }
 

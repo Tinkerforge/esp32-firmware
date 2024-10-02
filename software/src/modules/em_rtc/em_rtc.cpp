@@ -37,8 +37,9 @@ void EmRtc::register_urls()
     rtc.register_backend(this);
 }
 
-void EmRtc::set_time(const tm &tm)
+void EmRtc::set_time(const tm &tm, int32_t microseconds)
 {
+    // TODO: can we do something with the microseconds here?
     em_common.set_time(tm);
 }
 

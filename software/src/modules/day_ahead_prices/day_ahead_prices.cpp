@@ -193,7 +193,7 @@ static esp_err_t update_event_handler(esp_http_client_event_t *event)
 void DayAheadPrices::update_price()
 {
     const uint32_t resolution_divisor = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
-    const uint32_t diff = timestamp_minutes() - prices.get("first_date")->asUint();
+    const uint32_t diff = rtc.timestamp_minutes() - prices.get("first_date")->asUint();
     const uint32_t index = diff/resolution_divisor;
     if (prices.get("prices")->count() <= index) {
         state.get("current_price")->updateInt(0);
@@ -210,7 +210,7 @@ void DayAheadPrices::update()
         return;
     }
 
-    if (state.get("next_check")->asUint() > timestamp_minutes()) {
+    if (state.get("next_check")->asUint() > rtc.timestamp_minutes()) {
         return;
     }
 
@@ -220,12 +220,12 @@ void DayAheadPrices::update()
 
     // Only update if clock is synced
     struct timeval tv_now;
-    if (!clock_synced(&tv_now)) {
+    if (!rtc.clock_synced(&tv_now)) {
         return;
     }
 
     download_state = DAP_DOWNLOAD_STATE_PENDING;
-    state.get("last_check")->updateUint(timestamp_minutes());
+    state.get("last_check")->updateUint(rtc.timestamp_minutes());
 
     if (config.get("api_url")->asString().length() == 0) {
         logger.printfln("No day ahead price API server configured");
@@ -338,7 +338,7 @@ void DayAheadPrices::update()
                         }
                     }
 
-                    const uint32_t current_minutes = timestamp_minutes();
+                    const uint32_t current_minutes = rtc.timestamp_minutes();
                     state.get("last_sync")->updateUint(current_minutes);
                     state.get("last_check")->updateUint(current_minutes);
                     state.get("next_check")->updateUint(json_doc["next_date"].as<int>()/60);

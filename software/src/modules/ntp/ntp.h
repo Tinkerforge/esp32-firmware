@@ -27,8 +27,6 @@
 class NTP final : public IModule
 {
 private:
-    struct timeval last_sync{};
-
     String ntp_server1;
     String ntp_server2;
 
@@ -37,10 +35,12 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void set_synced();
+    void set_synced(bool synced);
+    void set_api_time(struct timeval time);
 
     std::mutex mtx;
     uint32_t sync_counter = 0;
+    micros_t last_sync = 0_us;
 
     ConfigRoot config;
     ConfigRoot state;

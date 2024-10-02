@@ -147,7 +147,7 @@ void Automation::setup()
             static int last_min = 0;
             static bool was_synced = false;
             timeval tv;
-            bool is_synced = clock_synced(&tv);
+            bool is_synced = rtc.clock_synced(&tv);
             tm time_struct;
 
             localtime_r(&tv.tv_sec, &time_struct);

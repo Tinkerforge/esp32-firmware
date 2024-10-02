@@ -20,7 +20,7 @@
 #include "task_scheduler.h"
 
 #include "event_log_prefix.h"
-#include "main_dependencies.h"
+#include "module_dependencies.h"
 
 static uint64_t last_task_id = 0;
 
@@ -180,7 +180,7 @@ uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn)
     // the user supplied function
     return this->scheduleWithFixedDelay([fn, this]() {
         struct timeval tv_now;
-        if (clock_synced(&tv_now)) {
+        if (rtc.clock_synced(&tv_now)) {
             this->cancel(this->currentTask->task_id);
             fn();
         }

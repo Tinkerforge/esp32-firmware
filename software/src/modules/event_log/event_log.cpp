@@ -60,7 +60,7 @@ void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
     struct timeval tv_now;
     struct tm timeinfo;
 
-    if (clock_synced(&tv_now)) {
+    if (rtc.clock_synced(&tv_now)) {
         localtime_r(&tv_now.tv_sec, &timeinfo);
 
         // ISO 8601 allows omitting the T between date and time. Also  ',' is the preferred decimal sign.

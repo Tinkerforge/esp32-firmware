@@ -116,7 +116,7 @@ void Wireguard::start_wireguard()
         return;
 
     struct timeval tv;
-    if (!clock_synced(&tv))
+    if (!rtc.clock_synced(&tv))
         return;
 
     done = true;

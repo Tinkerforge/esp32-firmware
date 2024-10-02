@@ -1003,7 +1003,7 @@ void RemoteAccess::connect_management() {
         return;
 
     struct timeval tv;
-    if (!clock_synced(&tv)) {
+    if (!rtc.clock_synced(&tv)) {
         task_scheduler.scheduleOnce([this]() {
             this->connect_management();
         }, 5000);
@@ -1070,7 +1070,7 @@ void RemoteAccess::connect_management() {
 
 void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
     struct timeval tv;
-    if (!clock_synced(&tv)) {
+    if (!rtc.clock_synced(&tv)) {
         task_scheduler.scheduleOnce([this, i, local_port]() {
             this->connect_remote_access(i, local_port);
         }, 5000);

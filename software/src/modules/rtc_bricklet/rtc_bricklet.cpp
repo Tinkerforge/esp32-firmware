@@ -51,7 +51,7 @@ void RtcBricklet::register_urls()
     rtc.register_backend(this);
 }
 
-void RtcBricklet::set_time(const tm &date_time)
+void RtcBricklet::set_time(const tm &date_time, int32_t microseconds)
 {
     uint16_t year = static_cast<uint16_t>(date_time.tm_year + 1900);
     uint8_t  mon  = static_cast<uint8_t >(date_time.tm_mon + 1);
@@ -60,12 +60,13 @@ void RtcBricklet::set_time(const tm &date_time)
     uint8_t  min  = static_cast<uint8_t >(date_time.tm_min);
     uint8_t  sec  = static_cast<uint8_t >(date_time.tm_sec);
     uint8_t  wday = static_cast<uint8_t >(date_time.tm_wday);
+    uint8_t  csec = static_cast<uint8_t >(microseconds / 1000 / 10);
 
     // Bricklet expects Sunday to be 7, but tm_wday is specified to use 0 for Sunday.
     if (wday == 0)
         wday = 7;
 
-    auto ret = tf_real_time_clock_v2_set_date_time(&device, year, mon, day, hour, min, sec, 0, wday);
+    auto ret = tf_real_time_clock_v2_set_date_time(&device, year, mon, day, hour, min, sec, csec, wday);
     if (ret)
         logger.printfln("Setting RTC to %04u-%02u-%02u %02u:%02u:%02u (wd %i) failed with code %i", year, mon, day, hour, min, sec, wday, ret);
 }
@@ -89,15 +90,6 @@ struct timeval RtcBricklet::get_time()
     // Unix timestamps start at 1970-01-01, the RTC starts at year 00 (i.e. 2000). Add the unix timestamp of 2000-01-01 00:00:00
     time.tv_sec += 946684800;
 
-    // Allow time to be 24h older than the build timestamp,
-    // in case the RTC is set by hand to test something.
-    // FIXME not Y2038-safe
-    if (time.tv_sec < static_cast<time_t>(build_timestamp() - 24 * 3600)) {
-        struct timeval tmp;
-        tmp.tv_sec = 0;
-        tmp.tv_usec = 0;
-        return tmp;
-    }
     return time;
 }
 

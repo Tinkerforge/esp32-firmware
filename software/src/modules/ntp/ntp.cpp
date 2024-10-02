@@ -30,52 +30,33 @@
 
 static bool first = true;
 
-extern NTP ntp;
-
-#define NTP_DESYNC_THRESHOLD_S 25 * 60 * 60
-
-static void ntp_sync_cb(struct timeval *t)
+// Don't set the system time directly, rely on the Rtc module to do that.
+extern "C" void sntp_sync_time(struct timeval *tv)
 {
+    if (sntp_get_sync_mode() != SNTP_SYNC_MODE_IMMED) {
+        logger.printfln("This sync mode is not supported.");
+        return;
+    }
+
+    rtc.push_system_time(*tv, Rtc::Quality::High);
+    sntp_set_sync_status(SNTP_SYNC_STATUS_COMPLETED);
+    ntp.last_sync = now_us();
+
     if (first) {
         first = false;
         auto now = millis();
         auto secs = now / 1000;
         auto ms = now % 1000;
         logger.printfln("NTP synchronized at %lu,%03lu", secs, ms);
+        task_scheduler.scheduleOnce([](){
+            ntp.set_synced(true);
+        }, 0);
 
         task_scheduler.scheduleWithFixedDelay([](){
-            ntp.state.get("time")->updateUint(timestamp_minutes());
-        }, 0, 1000);
+            if (deadline_elapsed(ntp.last_sync + 25_h))
+                ntp.set_synced(false);
+        }, 60 * 60 * 1000, 60 * 60 * 1000);
     }
-
-    task_scheduler.scheduleOnce([]() {
-        ntp.set_synced();
-
-#if MODULE_RTC_AVAILABLE()
-        if (!api.hasFeature("rtc"))
-            return;
-
-        timeval time;
-        gettimeofday(&time, nullptr);
-        rtc.set_time(time);
-#endif
-    }, 0);
-}
-
-// Because there is the risk of a race condition with the rtc module,
-// we have to replace the sntp_sync_time function with a thread-safe implementation.
-extern "C" void sntp_sync_time(struct timeval *tv)
-{
-    if (sntp_get_sync_mode() == SNTP_SYNC_MODE_IMMED) {
-        {
-            std::lock_guard<std::mutex> lock{ntp.mtx};
-            settimeofday(tv, NULL);
-            ntp.sync_counter++;
-        }
-        sntp_set_sync_status(SNTP_SYNC_STATUS_COMPLETED);
-    } else
-        logger.printfln("This sync mode is not supported.");
-    ntp_sync_cb(tv);
 }
 
 void NTP::pre_setup()
@@ -166,21 +147,17 @@ void NTP::setup()
     }
 }
 
-void NTP::set_synced()
+void NTP::set_synced(bool synced)
 {
-    gettimeofday(&last_sync, NULL);
-    ntp.state.get("synced")->updateBool(last_sync.tv_sec > build_timestamp());
+    this->state.get("synced")->updateBool(synced);
+}
+
+void NTP::set_api_time(struct timeval time) {
+    state.get("time")->updateUint(time.tv_sec / 60);
 }
 
 void NTP::register_urls()
 {
     api.addPersistentConfig("ntp/config", &config);
     api.addState("ntp/state", &state);
-
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        struct timeval time;
-        gettimeofday(&time, NULL);
-        if (time.tv_sec - this->last_sync.tv_sec >= NTP_DESYNC_THRESHOLD_S)
-            ntp.state.get("synced")->updateBool(false);
-    }, 0, 30 * 1000);
 }

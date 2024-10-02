@@ -140,7 +140,7 @@ void Heating::update()
     const bool extended_logging_active = config.get("extended_logging_active")->asBool();
     // Only update if clock is synced. Heating control depends on time of day.
     struct timeval tv_now;
-    if (!clock_synced(&tv_now)) {
+    if (!rtc.clock_synced(&tv_now)) {
         extended_logging("Clock not synced. Skipping update.");
         return;
     }
@@ -173,7 +173,7 @@ void Heating::update()
 
     // Get values from config
     const uint8_t minimum_control_holding_time = config.get("minimum_control_holding_time")->asUint();
-    const uint32_t minutes = timestamp_minutes();
+    const uint32_t minutes = rtc.timestamp_minutes();
     if(minutes < (last_sg_ready_change + minimum_control_holding_time)) {
         extended_logging("Minimum control holding time not reached. Current time: %dmin, last change: %dmin, minimum holding time: %dmin.", minutes, last_sg_ready_change, minimum_control_holding_time);
         return;
@@ -334,13 +334,13 @@ void Heating::update()
         extended_logging("Heating decision: Turning on SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         if (!sg_ready_output_1) {
             em_v2.set_sg_ready_output(1, sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED);
-            last_sg_ready_change = timestamp_minutes();
+            last_sg_ready_change = rtc.timestamp_minutes();
         }
     } else {
         extended_logging("Heating decision: Turning off SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         if (sg_ready_output_1) {
             em_v2.set_sg_ready_output(1, !(sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED));
-            last_sg_ready_change = timestamp_minutes();
+            last_sg_ready_change = rtc.timestamp_minutes();
         }
     }
 

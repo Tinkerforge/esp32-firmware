@@ -752,7 +752,7 @@ bool Users::start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth
 
     uint32_t evse_uptime = evse_common.get_low_level_state().get("uptime")->asUint();
     float meter_start = get_energy();
-    uint32_t timestamp = timestamp_minutes();
+    uint32_t timestamp = rtc.timestamp_minutes();
 
     if (!charge_tracker.startCharge(timestamp, meter_start, user_id, evse_uptime, auth_type, auth_info))
         return false;

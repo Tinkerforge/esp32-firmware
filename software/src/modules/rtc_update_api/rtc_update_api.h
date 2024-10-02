@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,18 +20,18 @@
 #pragma once
 
 #include "module.h"
-#include "modules/rtc/rtc.h"
+#include "config.h"
 
-class WarpEsp32Rtc final : public IModule, public IRtcBackend
+class RtcUpdateApi final : public IModule
 {
+private:
+    ConfigRoot time_update;
+    ConfigRoot config;
+
 public:
-    WarpEsp32Rtc() {};
+    RtcUpdateApi() {}
+
+    void pre_setup() override;
     void setup() override;
-
-    void setup_rtc();
-
-    // IRtcBackend implementation
-    void set_time(const tm &time, int microseconds) override;
-    struct timeval get_time() override;
-    void reset() override;
+    void register_urls() override;
 };

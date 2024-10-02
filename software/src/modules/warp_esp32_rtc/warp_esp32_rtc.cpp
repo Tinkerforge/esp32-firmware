@@ -99,7 +99,7 @@ void WarpEsp32Rtc::setup()
     }, 0, 60 * 1000);
 }
 
-void WarpEsp32Rtc::set_time(const tm &date_time)
+void WarpEsp32Rtc::set_time(const tm &date_time, int32_t microseconds)
 {
     // Register 3 is the first time and date register.
     rtc_write_time_write_buf[0] = 0x03;
@@ -110,6 +110,8 @@ void WarpEsp32Rtc::set_time(const tm &date_time)
     rtc_write_time_write_buf[5] = intToBCD(static_cast<uint8_t>(date_time.tm_wday));
     rtc_write_time_write_buf[6] = intToBCD(static_cast<uint8_t>(date_time.tm_mon + 1));
     rtc_write_time_write_buf[7] = intToBCD(static_cast<uint8_t>(date_time.tm_year - 100));
+
+    // TODO: can we do something with the microseconds here?
 
     esp_err_t errRc;
     errRc = i2c_master_cmd_begin(I2C_MASTER_PORT, rtc_write_time_cmd_handle, i2c_timeout);
@@ -141,14 +143,6 @@ struct timeval WarpEsp32Rtc::get_time()
 
     time.tv_sec = timegm(&tm);
     time.tv_usec = 0;
-
-    // Allow time to be 24h older than the build timestamp,
-    // in case the RTC is set by hand to test something.
-    // FIXME not Y2038-safe
-    if (time.tv_sec < static_cast<time_t>(build_timestamp() - 24 * 3600)) {
-        time.tv_sec = 0;
-        time.tv_usec = 0;
-    }
 
     return time;
 }

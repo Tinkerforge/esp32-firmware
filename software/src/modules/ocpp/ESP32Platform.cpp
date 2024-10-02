@@ -224,8 +224,8 @@ uint32_t last_system_time_set_at = 0;
 
 void platform_set_system_time(void *ctx, time_t t)
 {
-   struct timeval tv{t, 0};
-   settimeofday(&tv, nullptr);
+    struct timeval tv{t, 0};
+    rtc.push_system_time(tv, Rtc::Quality::Force);
 }
 
 time_t platform_get_system_time(void *ctx)

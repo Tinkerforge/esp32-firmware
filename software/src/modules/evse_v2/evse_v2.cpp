@@ -225,7 +225,7 @@ void EVSEV2::post_setup()
     // observable by the user.
     task_scheduler.scheduleWithFixedDelay([this]() {
         struct timeval tv;
-        if (!clock_synced(&tv))
+        if (!rtc.clock_synced(&tv))
             return;
 
         struct tm timeinfo;

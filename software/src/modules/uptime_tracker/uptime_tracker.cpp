@@ -75,7 +75,7 @@ void UptimeTracker::setup()
             uint8_t idx = uptimes.count() - 1;
 
             //timestamp_min initialized with 0. 0 means not synced
-            if (clock_synced(&timestamp))
+            if (rtc.clock_synced(&timestamp))
                 uptimes.get(idx)->get("timestamp_min")->updateUint((timestamp.tv_sec - millis() / 1000) / 60);
 
             uptimes.get(idx)->get("reset_reason")->updateUint(esp_reset_reason());
