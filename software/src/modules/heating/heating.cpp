@@ -351,13 +351,13 @@ void Heating::update()
             extended_logging("Heating decision: Turning on SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
             if (!sg_ready_output_0) {
                 em_v2.set_sg_ready_output(0, sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
-                last_sg_ready_change = timestamp_minutes();
+                last_sg_ready_change = rtc.timestamp_minutes();
             }
         } else {
             extended_logging("Heating decision: Turning off SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
             if (sg_ready_output_0) {
                 em_v2.set_sg_ready_output(0, !(sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED));
-                last_sg_ready_change = timestamp_minutes();
+                last_sg_ready_change = rtc.timestamp_minutes();
             }
         }
     }
