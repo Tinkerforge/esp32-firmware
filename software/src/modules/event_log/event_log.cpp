@@ -92,6 +92,36 @@ void EventLog::trace_timestamp() {
 #endif
 }
 
+void EventLog::trace_write_prefixed(const char *buf) {
+#if defined(BOARD_HAS_PSRAM)
+    this->trace_write(buf, strlen(buf));
+#endif
+}
+
+void EventLog::trace_write_prefixed(const char *buf, size_t len)
+{
+#if defined(BOARD_HAS_PSRAM)
+    if (len >= 2 && buf[len - 2] == '\r' && buf[len - 1] == '\n') {
+        len -= 2;
+    }
+
+    bool drop_line = trace_buf.free() < (len + 1);
+
+    char timestamp_buf[TIMESTAMP_LEN + 1];
+    this->get_timestamp(timestamp_buf);
+
+    trace_buf.push_n(timestamp_buf, TIMESTAMP_LEN);
+
+    trace_buf.push_n(buf, len);
+    if (buf[len - 1] != '\n') {
+        trace_buf.push('\n');
+    }
+
+    if (drop_line)
+        trace_buf.pop_until('\n');
+#endif
+}
+
 void EventLog::trace_write(const char *buf) {
 #if defined(BOARD_HAS_PSRAM)
     this->trace_write(buf, strlen(buf));
@@ -117,13 +147,48 @@ void EventLog::trace_write(const char *buf, size_t len)
 #endif
 }
 
+int EventLog::tracefln_plain(const char *fmt, va_list args)
+{
+#if defined(BOARD_HAS_PSRAM)
+    char buf[768];
+    auto buf_size = ARRAY_SIZE(buf);
+    auto written = 0;
+
+    written += vsnprintf_u(buf + written, buf_size - written, fmt, args);
+    if (written >= buf_size) {
+        trace_write("Next log message was truncated. Bump EventLog::printfln buffer size!", 68); // Don't include termination in write request.
+        written = buf_size - 1; // Don't include termination, which vsnprintf always leaves in.
+    }
+
+    trace_write(buf, written);
+
+    return written;
+#else
+    return 0;
+#endif
+}
+
+int EventLog::tracefln_plain(const char *fmt, ...)
+{
+#if defined(BOARD_HAS_PSRAM)
+    va_list args;
+    va_start(args, fmt);
+    int result = tracefln_plain(fmt, args);
+    va_end(args);
+
+    return result;
+#else
+    return 0;
+#endif
+}
+
 int EventLog::tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
 {
 #if defined(BOARD_HAS_PSRAM)
     char buf[768];
     auto buf_size = ARRAY_SIZE(buf);
     auto written = 0;
-/*
+
     *(buf + written) = '|';
     ++written;
 
@@ -148,14 +213,14 @@ int EventLog::tracefln_prefixed(const char *prefix, size_t prefix_len, const cha
 
     *(buf + written) = ' ';
     ++written;
-*/
+
     written += vsnprintf_u(buf + written, buf_size - written, fmt, args);
     if (written >= buf_size) {
-        trace_write("Next log message was truncated. Bump EventLog::printfln buffer size!", 68); // Don't include termination in write request.
+        trace_write_prefixed("Next log message was truncated. Bump EventLog::printfln buffer size!", 68); // Don't include termination in write request.
         written = buf_size - 1; // Don't include termination, which vsnprintf always leaves in.
     }
 
-    trace_write(buf, written);
+    trace_write_prefixed(buf, written);
 
     return written;
 #else

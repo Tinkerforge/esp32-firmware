@@ -40,7 +40,7 @@
 
 #define ENABLE_CA_TRACE 1
 #if ENABLE_CA_TRACE
-#define trace(...) logger.tracefln(__VA_ARGS__)
+#define trace(...) logger.tracefln_plain(__VA_ARGS__)
 #else
 #define trace(...)
 #endif
