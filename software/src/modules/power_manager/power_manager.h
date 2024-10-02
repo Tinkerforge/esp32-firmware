@@ -126,6 +126,12 @@ private:
         bool is_external_control_allowed()           override {return false;}
     };
 
+    enum class BatteryMode : uint8_t {
+        PreferChargers = 0,
+        PreferBattery = 1,
+        BatteryModeMax = 1,
+    };
+
     enum class TristateBool : uint8_t {
         False = 0,
         True = 1,
@@ -180,6 +186,7 @@ private:
     size_t current_long_min_iterations = 0;
 
     float    power_at_meter_raw_w = NAN;
+    float    power_at_battery_raw_w = NAN;
     int32_t  current_pv_floating_min_ma = INT32_MAX;
     minmax_filter current_pv_minmax_ma;
     minmax_filter current_pv_long_min_ma;
@@ -209,6 +216,10 @@ private:
     uint32_t default_mode             = 0;
     bool     excess_charging_enabled  = false;
     uint32_t meter_slot_power         = UINT32_MAX;
+    uint32_t meter_slot_battery_power = UINT32_MAX;
+    BatteryMode battery_mode          = BatteryMode::PreferChargers;
+    bool     battery_inverted         = false;
+    uint16_t battery_deadzone_w       = 0;
     int32_t  target_power_from_grid_w = 0;
     int32_t  guaranteed_power_w       = 0;
     uint32_t phase_switching_mode     = 0;
@@ -222,6 +233,7 @@ private:
     int32_t  overall_min_power_w = 0;
     int32_t  target_phase_current_ma = 0;
     int32_t  phase_current_max_increase_ma = 0;
+    bool     have_battery = false;
 
     // Automation
     TristateBool automation_drawing_power_last   = TristateBool::Undefined;

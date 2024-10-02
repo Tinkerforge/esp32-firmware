@@ -71,9 +71,19 @@ let x = {
             "cloud_filter_medium": "Medium",
             "cloud_filter_strong": "Strong",
 
-            "header_expert_settings": "Expert settings",
-            "hysteresis_time": "Hysteresis time",
-            "hysteresis_time_muted": "Minimum delay before phase switches or starting or stopping a charge, to avoid excessive wear on the vehicle's charge electronics by switching too often."
+            "header_battery_storage": "Battery storage",
+            "meter_slot_battery_power": "Power meter",
+            "meter_slot_battery_power_muted": "of the battery",
+            "meter_slot_battery_power_none": "No battery",
+            "battery_mode": "Battery priority",
+            "battery_mode_prefer_chargers": "Prefer chargers, charge battery storage with any excess power",
+            "battery_mode_prefer_battery": "Prefer battery, charge vehicles with any excess power",
+            "battery_inverted": "Battery power direction",
+            "battery_inverted_n": "Normal: positive power while charging, negative power while discharging",
+            "battery_inverted_i": "Inverted: negative power while charging, positive power while discharging",
+            "battery_deadzone": "Import and export tolerance",
+            "battery_deadzone_muted": "at the grid connection, while the battery is active",
+            "battery_deadzone_help": "Most battery storages will allow some export and import while charging or discharging. The tolerance should be set to 1.5 times the expected export and import. If the battery permits an export of -50 W and an import of 50 W, the tolerance should be set to 75 W."
         },
         "automation": {
             "slot": "Blocking slot",

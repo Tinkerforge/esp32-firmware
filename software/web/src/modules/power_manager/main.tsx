@@ -317,6 +317,8 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         mode_list.push(["0", __("power_manager.status.mode_fast")]);
 
         const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], __("power_manager.content.meter_slot_grid_power_missing_value"));
+        let meter_slots_with_no_battery = meter_slots;
+        meter_slots_with_no_battery.unshift(["255", __("power_manager.content.meter_slot_battery_power_none")]);
 
         let cm_config = API.get_unchecked("charge_manager/config");
         let cm_ok = cm_config?.enable_charge_manager && cm_config?.chargers.length >= 1;
@@ -486,6 +488,57 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                                     ]}
                                     value={s.cloud_filter_mode}
                                     onValue={(v) => this.setState({cloud_filter_mode: parseInt(v)})}
+                                />
+                            </FormRow>
+
+                            <FormSeparator heading={__("power_manager.content.header_battery_storage")} />
+
+                            <FormRow label={__("power_manager.content.meter_slot_battery_power")} label_muted={__("power_manager.content.meter_slot_battery_power_muted")}>
+                                <InputSelect
+                                    required={s.excess_charging_enable}
+                                    placeholder={meter_slots_with_no_battery.length > 0 ? __("power_manager.content.meter_slot_grid_power_select") : __("power_manager.content.meter_slot_grid_power_none")}
+                                    items={meter_slots_with_no_battery}
+                                    value={s.meter_slot_battery_power}
+                                    onValue={(v) => this.setState({meter_slot_battery_power: parseInt(v)})}
+                                />
+                            </FormRow>
+
+                            <FormRow label={__("power_manager.content.battery_mode")} label_muted="">
+                                <InputSelect
+                                    disabled={s.meter_slot_battery_power >= 255}
+                                    required={s.meter_slot_battery_power < 255}
+                                    items={[
+                                        ["0", __("power_manager.content.battery_mode_prefer_chargers")],
+                                        ["1", __("power_manager.content.battery_mode_prefer_battery")],
+                                    ]}
+                                    value={s.battery_mode}
+                                    onValue={(v) => this.setState({battery_mode: parseInt(v)})}
+                                />
+                            </FormRow>
+
+                            <FormRow label={__("power_manager.content.battery_inverted")} label_muted="">
+                                <InputSelect
+                                    disabled={s.meter_slot_battery_power >= 255}
+                                    required={s.meter_slot_battery_power < 255}
+                                    items={[
+                                        ["n", __("power_manager.content.battery_inverted_n")],
+                                        ["i", __("power_manager.content.battery_inverted_i")],
+                                    ]}
+                                    value={s.battery_inverted ? "i" : "n"}
+                                    onValue={(v) => this.setState({battery_inverted: v == "i"})}
+                                />
+                            </FormRow>
+
+                            <FormRow label={__("power_manager.content.battery_deadzone")} label_muted={__("power_manager.content.battery_deadzone_muted")} help={__("power_manager.content.battery_deadzone_help")}>
+                                <InputFloat
+                                    disabled={s.meter_slot_battery_power >= 255}
+                                    required={s.meter_slot_battery_power < 255}
+                                    unit="W"
+                                    value={s.battery_deadzone}
+                                    onValue={this.set('battery_deadzone')}
+                                    digits={0}
+                                    min={10}
+                                    max={9999}
                                 />
                             </FormRow>
                         </div>

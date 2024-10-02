@@ -41,6 +41,7 @@ void PowerManager::pre_setup()
 
     low_level_state = Config::Object({
         {"power_at_meter", Config::Float(0)},
+        {"power_at_battery", Config::Float(0)},
         {"power_available", Config::Int32(0)},
         {"i_meter", Config::Array({
                 Config::Int32(0),
@@ -86,6 +87,10 @@ void PowerManager::pre_setup()
         {"excess_charging_enable", Config::Bool(false)},
         {"default_mode", Config::Uint(0, 0, 3)},
         {"meter_slot_grid_power", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
+        {"meter_slot_battery_power", Config::Uint(255, 0, 255)},
+        {"battery_mode", Config::Uint(0, 0, static_cast<uint32_t>(BatteryMode::BatteryModeMax))},
+        {"battery_inverted", Config::Bool(false)},
+        {"battery_deadzone", Config::Uint(100, 0, 9999)}, // in watt
         {"target_power_from_grid", Config::Int32(0)}, // in watt
         {"guaranteed_power", Config::Uint(1380, 0, 22080)}, // in watt
         {"cloud_filter_mode", Config::Uint(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_OFF, CLOUD_FILTER_STRONG)},
@@ -284,6 +289,10 @@ void PowerManager::setup()
     excess_charging_enabled     = config.get("excess_charging_enable")->asBool();
     meter_slot_power            = config.get("meter_slot_grid_power")->asUint();
     target_power_from_grid_w    = config.get("target_power_from_grid")->asInt();    // watt
+    meter_slot_battery_power    = config.get("meter_slot_battery_power")->asUint();
+    battery_mode                = config.get("battery_mode")->asEnum<BatteryMode>();
+    battery_inverted            = config.get("battery_inverted")->asBool();
+    battery_deadzone_w          = static_cast<uint16_t>(config.get("battery_deadzone")->asUint()); // watt
     guaranteed_power_w          = static_cast<int32_t>(config.get("guaranteed_power")->asUint()); // watt
     phase_switching_mode        = config.get("phase_switching_mode")->asUint();
     dynamic_load_enabled        = dynamic_load_config.get("enabled")->asBool();
@@ -380,6 +389,13 @@ void PowerManager::setup()
         meter_slot_power = UINT32_MAX;
     } else {
         power_meter_available = true;
+    }
+
+    if (meters.get_power_real(meter_slot_battery_power, &unused_power) == MeterValueAvailability::Unavailable) {
+        meter_slot_battery_power = UINT32_MAX;
+        logger.printfln("Battery storage configured but meter can't provide power values.");
+    } else {
+        have_battery = true;
     }
 #endif
     if (excess_charging_enabled && !power_meter_available) {
@@ -721,10 +737,14 @@ void PowerManager::update_data()
     low_level_state.get("is_3phase")->updateBool(is_3phase);
 
 #if MODULE_METERS_AVAILABLE()
-    if (meters.get_power_virtual(meter_slot_power, &power_at_meter_raw_w) != MeterValueAvailability::Fresh)
+    if (meters.get_power_virtual(meter_slot_power, &power_at_meter_raw_w) != MeterValueAvailability::Fresh) {
         power_at_meter_raw_w = NAN;
-#else
-    power_at_meter_raw_w = NAN;
+    }
+    if (have_battery) {
+        if (meters.get_power_virtual(meter_slot_battery_power, &power_at_battery_raw_w) != MeterValueAvailability::Fresh) {
+            power_at_battery_raw_w = NAN;
+        }
+    }
 #endif
 
     if (!isnan(power_at_meter_raw_w)) {
@@ -737,6 +757,13 @@ void PowerManager::update_data()
             automation_drawing_power_last = drawing_power;
         }
 #endif
+    }
+
+    if (!isnan(power_at_battery_raw_w)) {
+        if (battery_inverted) {
+            power_at_battery_raw_w *= -1;
+        }
+        low_level_state.get("power_at_battery")->updateFloat(power_at_battery_raw_w);
     }
 
     float meter_currents[INDEX_CACHE_CURRENT_COUNT];
@@ -777,7 +804,7 @@ void PowerManager::update_energy()
     } else {
         int32_t p_error_w;
 
-        if (isnan(power_at_meter_raw_w)) {
+        if (isnan(power_at_meter_raw_w) || (have_battery && isnan(power_at_battery_raw_w))) {
             if (!printed_skipping_energy_update) {
                 logger.printfln("PV excess charging unavailable because power values are not available yet.");
                 printed_skipping_energy_update = true;
@@ -790,7 +817,46 @@ void PowerManager::update_energy()
                 printed_skipping_energy_update = false;
             }
 
-            p_error_w = target_power_from_grid_w - static_cast<int32_t>(power_at_meter_raw_w);
+            // Grid: +import -export
+            const int32_t power_grid_raw_w = static_cast<int32_t>(power_at_meter_raw_w);
+            int32_t power_combined_raw_w;
+
+            if (have_battery) {
+                // Battery: +charging -discharging
+                int32_t power_battery_w = static_cast<int32_t>(power_at_battery_raw_w);
+
+                // Only take battery charging power into account if chargers are preferred,
+                // by simply ignoring the battery's power while it's charging.
+                if (power_battery_w > 0 && battery_mode != BatteryMode::PreferChargers) {
+                    power_battery_w = 0;
+                }
+
+                int32_t power_grid_adjusted_w = power_grid_raw_w;
+
+                if (power_grid_adjusted_w > 0) {
+                    if (power_grid_adjusted_w > battery_deadzone_w) {
+                        power_grid_adjusted_w -= battery_deadzone_w;
+                    } else {
+                        power_grid_adjusted_w = 0;
+                    }
+                } else if (power_grid_adjusted_w < 0) {
+                    if (power_grid_adjusted_w < -battery_deadzone_w) {
+                        power_grid_adjusted_w += battery_deadzone_w;
+                    } else {
+                        power_grid_adjusted_w = 0;
+                    }
+                } // Nothing to do if power_grid_adjusted_w == 0.
+
+                // Combined: +deficit from +grid import and -discharging
+                //           -surplus from -grid export and +charging
+                // Therefore, battery power must be subtracted.
+                power_combined_raw_w = power_grid_adjusted_w - power_battery_w;
+            } else {
+                // No battery, use grid power as-is.
+                power_combined_raw_w = power_grid_raw_w;
+            }
+
+            p_error_w = target_power_from_grid_w - power_combined_raw_w;
 
 #if MODULE_EM_V1_AVAILABLE()
             if (p_error_w > 200) {
