@@ -24,8 +24,6 @@
 #include "tools.h"
 #include "modules/meters/meter_value_availability.h"
 
-extern RequireMeter require_meter;
-
 #define METER_TIMEOUT micros_t{24ll * 60 * 60 * 1000 * 1000}
 // #define METER_TIMEOUT micros_t{10 * 1000 * 1000}
 

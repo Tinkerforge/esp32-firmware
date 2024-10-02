@@ -427,8 +427,6 @@ void EventLog::register_urls()
     api.addState("event_log/boot_id", &boot_id);
 }
 
-extern EventLog logger;
-
 int tf_event_log_vprintfln(const char *fmt, va_list args)
 {
     return logger.printfln_prefixed("external code", 13, fmt, args);

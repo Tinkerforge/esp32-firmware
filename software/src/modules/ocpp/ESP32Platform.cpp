@@ -36,9 +36,6 @@
 #include "ocpp.h"
 #include "modules/meters/meter_defs.h"
 
-// A module can't have a dependency on itself. Manually declare it here.
-extern Ocpp ocpp;
-
 static bool feature_evse = false;
 static bool feature_meter = false;
 static bool feature_meter_all_values = false;

@@ -38,8 +38,6 @@
 // double it to react faster if more current is available.
 #define REQUESTED_CURRENT_MARGIN_DEFAULT 3000
 
-extern ChargeManager charge_manager;
-
 #if MODULE_EM_COMMON_AVAILABLE()
 static void apply_energy_manager_config(Config &conf)
 {
@@ -274,7 +272,7 @@ void ChargeManager::pre_setup()
             return "Cannot set available_current if the Power Manager is enabled.";
         }
 
-        uint32_t max_avail_current = charge_manager.get_maximum_available_current();
+        uint32_t max_avail_current = this->get_maximum_available_current();
 
         if (conf.get("current")->asUint() > max_avail_current)
             return "Current too large: maximum available current is configured to " + String(max_avail_current);
@@ -302,8 +300,8 @@ void ChargeManager::pre_setup()
             this->available_current.get("current")->updateUint(config->get("current")->asUint());
             this->last_available_current_update = millis();
         },
-        [](const Config *config) -> String {
-            uint32_t max_avail_current = charge_manager.get_maximum_available_current();
+        [this](const Config *config) -> String {
+            uint32_t max_avail_current = this->get_maximum_available_current();
 
             if (config->get("current")->asUint() > max_avail_current)
                 return "Current too large: maximum available current is configured to " + String(max_avail_current);

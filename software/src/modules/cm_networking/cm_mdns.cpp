@@ -31,8 +31,6 @@
 #include "tools.h"
 #include "cool_string.h"
 
-extern CMNetworking cm_networking;
-
 void CMNetworking::setup()
 {
     mdns_init();
@@ -45,7 +43,7 @@ void CMNetworking::register_urls()
         start_scan();
     }, true);
 
-    server.on_HTTPThread("/charge_manager/scan_result", HTTP_GET, [this](WebServerRequest request) {
+    server.on_HTTPThread("/charge_manager/scan_result", HTTP_GET, [](WebServerRequest request) {
         CoolString result;
 
         if (!cm_networking.get_scan_results(result))

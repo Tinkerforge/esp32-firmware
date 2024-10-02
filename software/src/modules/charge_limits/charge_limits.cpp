@@ -29,8 +29,6 @@
 # define CHARGE_LIMITS_TIME_MODIFIER 60
 #endif
 
-extern ChargeLimits charge_limits;
-
 static uint32_t map_duration(uint32_t val)
 {
     switch (val)
