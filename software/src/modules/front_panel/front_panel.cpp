@@ -248,7 +248,7 @@ void FrontPanel::update_status_bar()
     struct timeval tv_now;
     if (clock_synced(&tv_now)) {
         struct tm tm;
-        localtime_r(&tv_now->tv_sec, &tm);
+        localtime_r(&tv_now.tv_sec, &tm);
         hours   = tm.tm_hour;
         minutes = tm.tm_min;
         seconds = tm.tm_sec;
