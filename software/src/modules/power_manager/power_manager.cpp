@@ -227,6 +227,11 @@ void PowerManager::pre_setup()
 
 static void init_minmax_filter(PowerManager::minmax_filter *filter, size_t values_count, PowerManager::FilterType filter_type)
 {
+    if (values_count <= 0) {
+        logger.printfln("Cannot create minmax filter with %zu values.", values_count);
+        values_count = 1;
+    }
+
     filter->history_length = static_cast<decltype(filter->history_length)>(values_count);
     filter->history_values = static_cast<decltype(filter->history_values)>(heap_caps_malloc_prefer(values_count * sizeof(filter->history_values[0]), 2, MALLOC_CAP_32BIT, MALLOC_CAP_SPIRAM)); // Prefer IRAM
     filter->type = filter_type;
@@ -234,6 +239,11 @@ static void init_minmax_filter(PowerManager::minmax_filter *filter, size_t value
 
 static void init_mavg_filter(PowerManager::mavg_filter *filter, size_t values_count)
 {
+    if (values_count <= 0) {
+        logger.printfln("Cannot create mavg filter with %zu values.", values_count);
+        values_count = 1;
+    }
+
     filter->mavg_values_count = static_cast<decltype(filter->mavg_values_count)>(values_count);
     filter->mavg_values       = static_cast<decltype(filter->mavg_values)>(heap_caps_malloc_prefer(values_count * sizeof(filter->mavg_values[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT)); // Prefer SPIRAM
 }
@@ -556,6 +566,14 @@ void PowerManager::zero_limits()
     cm_limits->raw.l3 = 0;
 }
 
+[[gnu::noinline]] // Don't put msg buffer on calling function's stack.
+static void abort_on_invalid_history_length(int32_t history_length)
+{
+    char msg[52]; // Message buffer must be on the stack to be included in a coredump.
+    snprintf(msg, ARRAY_SIZE(msg), "Invalid minmax filter history length %i", history_length);
+    esp_system_abort(msg);
+}
+
 static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter *filter)
 {
     // Check if filter history needs to be initialized
@@ -563,7 +581,13 @@ static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter 
         filter->min = new_value;
         filter->max = filter->type == PowerManager::FilterType::MinOnly ? -1 : new_value; // Unused max uses -1 to avoid underflows from INT32_MIN
 
-        filter->history_pos     = 1; // Position for next value
+        if (filter->history_length <= 0) {
+            abort_on_invalid_history_length(filter->history_length);
+        } else if (filter->history_length == 1) {
+            filter->history_pos = 0; // History contains only a single value, next value will overwrite.
+        } else {
+            filter->history_pos = 1; // Position for next value
+        }
         filter->history_min_pos = 0;
         filter->history_max_pos = 0;
 
