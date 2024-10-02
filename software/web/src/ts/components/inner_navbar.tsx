@@ -9,14 +9,17 @@ import { RemoteCloseButton } from "./remote_close_button";
 import { range } from "../util";
 
 interface NavbarProps {
-    children: VNode<any>[],
+    children: VNode<any> | VNode<any>[],
     logo?: string,
     visible: boolean,
     mode: string,
 }
 
-function generateAppMenu(elements: VNode<any>[], nesting?: number): any {
+function generateAppMenu(elements:  VNode<any> | VNode<any>[], nesting?: number): any {
     const appElements = [];
+    if (!Array.isArray(elements))
+        elements = [elements];
+
     for (const element of elements) {
         if (element.props.children && element.props.group_ref.current && !element.props.group_ref.current.props.hidden) {
             const childElements: any = generateAppMenu(element.props.children as any, nesting ? nesting + 1 : 1);
