@@ -30,7 +30,6 @@
 
 static bool first = true;
 
-// Don't set the system time directly, rely on the Rtc module to do that.
 extern "C" void sntp_sync_time(struct timeval *tv)
 {
     if (sntp_get_sync_mode() != SNTP_SYNC_MODE_IMMED) {
@@ -38,7 +37,11 @@ extern "C" void sntp_sync_time(struct timeval *tv)
         return;
     }
 
+#ifdef MODULE_RTC_AVAILABLE()
     rtc.push_system_time(*tv, Rtc::Quality::High);
+#elif
+    settimeofday(&time, NULL);
+#endif
     sntp_set_sync_status(SNTP_SYNC_STATUS_COMPLETED);
     ntp.last_sync = now_us();
 
