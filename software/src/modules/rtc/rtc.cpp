@@ -118,7 +118,7 @@ void Rtc::update_system_time_from_rtc() {
         if (t.tv_sec == 0 && t.tv_usec == 0)
             continue;
 
-        this->push_system_time(t, Quality::Low);
+        this->push_system_time(t, Quality::RTC);
         break;
     }
 }
