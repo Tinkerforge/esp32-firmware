@@ -95,7 +95,7 @@ void PowerManager::pre_setup()
                 return "Can't enable excess charging when external control is enabled for phase switching.";
             }
             if (cfg.get("default_mode")->asUint() != MODE_FAST) {
-                return "Can't select any charging mode besides 'Fast' when extrenal control is enabled for phase switching.";
+                return "Can't select any charging mode besides 'Fast' when external control is enabled for phase switching.";
             }
         }
 

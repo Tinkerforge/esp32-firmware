@@ -72,8 +72,6 @@ class PowerManager final : public IModule,
                          , public IAutomationBackend
 #endif
 {
-    friend class EnergyManager;
-
 public:
     PowerManager() {}
     void pre_setup() override;
