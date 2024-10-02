@@ -37,7 +37,7 @@ extern "C" void sntp_sync_time(struct timeval *tv)
         return;
     }
 
-#ifdef MODULE_RTC_AVAILABLE()
+#if MODULE_RTC_AVAILABLE()
     rtc.push_system_time(*tv, Rtc::Quality::High);
 #elif
     settimeofday(&time, NULL);
