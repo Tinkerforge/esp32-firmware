@@ -753,7 +753,7 @@ def main():
 
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
-    backend_modules = [util.FlavoredName(x).get() for x in ['Task Scheduler', 'Event Log', 'API', 'Web Server'] + env.GetProjectOption("custom_backend_modules").splitlines()]
+    backend_modules = [util.FlavoredName(x).get() for x in ['Task Scheduler', 'Event Log', 'API', 'Web Server', 'Rtc'] + env.GetProjectOption("custom_backend_modules").splitlines()]
 
     if nightly:
         backend_modules.append(util.FlavoredName("Debug").get())
