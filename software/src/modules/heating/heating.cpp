@@ -25,6 +25,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 
+
 #define HEATING_UPDATE_INTERVAL 1000*60
 
 #define HEATING_SG_READY_ACTIVE_CLOSED 0
@@ -32,7 +33,7 @@
 
 #define extended_logging(...) \
     if(extended_logging_active) { \
-        logger.printfln(__VA_ARGS__); \
+        logger.tracefln(__VA_ARGS__); \
     }
 
 void Heating::pre_setup()
