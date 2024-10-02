@@ -1,16 +1,16 @@
 {
-    "ntp": {
+    "time": {
         "navbar": {
-            "ntp": "Time Synchronization"
+            "time": "Time Synchronization"
         },
         "status": {
-            "ntp": "Time synchronization",
+            "time": "Time synchronization",
             "deactivated": "Deactivated",
             "not_synced": "Not synchronized",
             "synced": "Synchronized"
         },
         "content": {
-            "ntp": "Time Synchronization",
+            "time": "Time Synchronization",
             "enable": "Time synchronization enabled",
             "enable_desc": "Synchronizes the internal clock over the network (NTP)",
             "use_dhcp": "Use DHCP",
@@ -19,7 +19,14 @@
             "use_browser_timezone": "Use browser timezone",
             "server": "Time server",
             "server2": "Alternative time server",
-            "server2_muted": "optional"
+            "server2_muted": "optional",
+
+            "rtc": "System Time",
+            "live_date": "Current system time",
+            "set_time": "Set time",
+            "enable_auto_sync": "Use browser time",
+            "auto_sync_desc": "Automatically sets the system time when loading the web interface and NTP is not synchronized.",
+            "time_not_set": "Time not set"
         },
         "script": {
             "save_failed": "Failed to save the time synchronization settings.",

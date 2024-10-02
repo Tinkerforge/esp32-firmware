@@ -25,7 +25,7 @@ import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import timezones from "./timezones";
+import timezones from "../ntp/timezones";
 import { InputSelect } from "../../ts/components/input_select";
 import { Button } from "react-bootstrap";
 import { InputText } from "../../ts/components/input_text";
@@ -34,18 +34,33 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { Clock } from "react-feather";
+import { FormSeparator } from "src/ts/components/form_separator";
+import { OutputDatetime } from "src/ts/components/output_datetime";
+import { config } from "../ntp/api";
 
-export function NTPNavbar() {
-    return <NavbarItem name="ntp" module="ntp" title={__("ntp.navbar.ntp")} symbol={<Clock />} />;
+export function TimeNavbar() {
+    return <NavbarItem name="time" module="ntp" title={__("time.navbar.time")} symbol={<Clock />} />;
 }
 
-type NTPConfig = API.getType["ntp/config"];
+type TimeConfig = API.getType["ntp/config"] & API.getType["rtc/config"];
 
-export class NTP extends ConfigComponent<'ntp/config', {status_ref?: RefObject<NTPStatus>}> {
+type RTCTime = API.getType['rtc/time'];
+
+export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<TimeStatus>}, API.getType['rtc/config']> {
     constructor() {
         super('ntp/config',
-              __("ntp.script.save_failed"),
-              __("ntp.script.reboot_content_changed"));
+              __("time.script.save_failed"),
+              __("time.script.reboot_content_changed"));
+
+        // TODO: this is not very robust!
+        window.setTimeout(() => {
+                if (util.render_allowed() && API.hasFeature("rtc") && API.get("rtc/config").auto_sync && !API.get("ntp/state").synced) {
+                    this.set_current_time();
+                }
+            },
+            1000);
+
+        util.addApiEventListener("rtc/config", () => this.setState({...API.get("rtc/config")}));
     }
 
     updateTimezone(s: string, i: number) {
@@ -63,34 +78,68 @@ export class NTP extends ConfigComponent<'ntp/config', {status_ref?: RefObject<N
         this.setState({timezone: splt.join("/")});
     }
 
-    render(props: {}, state: Readonly<NTPConfig>) {
-        if (!util.render_allowed())
-            return <SubPage name="ntp" />;
+    set_current_time() {
+        let date = new Date();
+        let time: RTCTime = {
+            year: date.getUTCFullYear(),
+            month: date.getUTCMonth() + 1,
+            day: date.getUTCDate(),
+            hour: date.getUTCHours(),
+            minute: date.getUTCMinutes(),
+            second: date.getUTCSeconds(),
+            weekday: date.getUTCDay(),
+        };
+
+        API.save("rtc/time", time, __("time.script.save_failed"));
+    }
+
+    override async sendSave(t: "ntp/config", cfg: TimeConfig) {
+        super.sendSave(t, cfg);
+        API.save("rtc/config", cfg);
+    }
+
+    override async sendReset(t: "ntp/config") {
+        super.sendReset(t);
+        API.reset("rtc/config");
+    }
+
+    override getIsModified(t: "ntp/config"): boolean {
+        return API.is_modified(t) || API.is_modified("rtc/config");
+    }
+
+    render(props: {}, state: Readonly<TimeConfig>) {
+        if (!util.render_allowed() || !API.hasFeature("rtc"))
+            return <SubPage name="time" />;
 
         let splt = state.timezone.split("/");
 
+        const p = (i: number) => util.leftPad(i, 0, 2);
+        let t = API.get('rtc/time');
+        let date = new Date(
+            `20${p(t.year)}-${p(t.month)}-${p(t.day)}T${p(t.hour)}:${p(t.minute)}:${p(t.second)}.000Z`);
+
         return (
-            <SubPage name="ntp">
-                <ConfigForm id="ntp_config_form"
-                            title={__("ntp.content.ntp")}
+            <SubPage name="time">
+                <ConfigForm id="time_config_form"
+                            title={__("time.content.time")}
                             isModified={this.isModified()}
                             isDirty={this.isDirty()}
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label={__("ntp.content.enable")}>
-                        <Switch desc={__("ntp.content.enable_desc")}
+                    <FormRow label={__("time.content.enable")}>
+                        <Switch desc={__("time.content.enable_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}/>
                     </FormRow>
 
-                    <FormRow label={__("ntp.content.use_dhcp")}>
-                        <Switch desc={__("ntp.content.use_dhcp_desc")}
+                    <FormRow label={__("time.content.use_dhcp")}>
+                        <Switch desc={__("time.content.use_dhcp_desc")}
                                 checked={state.use_dhcp}
                                 onClick={this.toggle('use_dhcp')}/>
                     </FormRow>
 
-                    <FormRow label={__("ntp.content.timezone")}>
+                    <FormRow label={__("time.content.timezone")}>
                         <div class="input-group">
                             <InputSelect
                                 required
@@ -121,35 +170,48 @@ export class NTP extends ConfigComponent<'ntp/config', {status_ref?: RefObject<N
                             }
                         </div>
                         <br/>
-                        <Button variant="primary" className="form-control" onClick={() => this.setState({timezone: Intl.DateTimeFormat().resolvedOptions().timeZone})}>{__("ntp.content.use_browser_timezone")}</Button>
+                        <Button variant="primary" className="form-control" onClick={() => this.setState({timezone: Intl.DateTimeFormat().resolvedOptions().timeZone})}>{__("time.content.use_browser_timezone")}</Button>
                     </FormRow>
 
-                    <FormRow label={__("ntp.content.server")}>
+                    <FormRow label={__("time.content.server")}>
                         <InputText required
                                    maxLength={64}
                                    value={state.server}
                                    onValue={this.set("server")}/>
                     </FormRow>
 
-                    <FormRow label={__("ntp.content.server2")} label_muted={__("ntp.content.server2_muted")}>
+                    <FormRow label={__("time.content.server2")} label_muted={__("time.content.server2_muted")}>
                         <InputText maxLength={64}
                                    value={state.server2}
                                    onValue={this.set("server2")}/>
                     </FormRow>
+
+                    <FormSeparator heading="Systemzeit"/>
+
+                    <FormRow label={__("time.content.enable_auto_sync")}>
+                        <Switch desc={__("time.content.auto_sync_desc")} checked={state.auto_sync} onClick={() => {
+                                this.setState({"auto_sync": !state.auto_sync})
+                        }}/>
+                    </FormRow>
+                    <FormRow label={__("time.content.live_date")}>
+                        <OutputDatetime date={date}
+                                        onClick={() => this.set_current_time()}
+                                        buttonText={__("time.content.set_time")}
+                                        disabled={this.state.auto_sync}
+                                        invalidDateText={__("time.content.time_not_set")}/>
+                    </FormRow>
                 </ConfigForm>
-
-
             </SubPage>
         );
     }
 }
 
-interface NTPStatusState {
+interface TimeStatusState {
     state: API.getType["ntp/state"];
     config: API.getType["ntp/config"];
 }
 
-export class NTPStatus extends Component<{}, NTPStatusState> {
+export class TimeStatus extends Component<{}, TimeStatusState> {
     constructor() {
         super();
 
@@ -162,20 +224,20 @@ export class NTPStatus extends Component<{}, NTPStatusState> {
         });
     }
 
-    render(props: {}, state: NTPStatusState) {
+    render(props: {}, state: TimeStatusState) {
         if (!util.render_allowed() || !state.config.enable)
-            return <StatusSection name="ntp" />;
+            return <StatusSection name="time" />;
 
-        return <StatusSection name="ntp">
-                <FormRow label={__("ntp.status.ntp")} label_muted={util.timestamp_min_to_date(state.state.time, "")}>
+        return <StatusSection name="time">
+                <FormRow label={__("time.status.time")} label_muted={util.timestamp_min_to_date(state.state.time, "")}>
                     <IndicatorGroup
                         style="width: 100%"
                         class="flex-wrap"
                         value={!state.config.enable ? 0 : (state.state.synced ? 2 : 1)}
                         items={[
-                            ["primary", __("ntp.status.deactivated")],
-                            ["danger", __("ntp.status.not_synced")],
-                            ["success", __("ntp.status.synced")],
+                            ["primary", __("time.status.deactivated")],
+                            ["danger", __("time.status.not_synced")],
+                            ["success", __("time.status.synced")],
                         ]}/>
                 </FormRow>
             </StatusSection>;
