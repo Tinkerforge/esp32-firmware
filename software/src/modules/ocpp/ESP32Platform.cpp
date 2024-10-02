@@ -866,9 +866,7 @@ void platform_reset(bool hard)
 #if MODULE_NFC_AVAILABLE()
         nfc.reset();
 #endif
-#if MODULE_RTC_AVAILABLE()
         rtc.reset();
-#endif
     }
 
     /*
