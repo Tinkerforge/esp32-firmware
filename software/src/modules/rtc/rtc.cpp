@@ -162,9 +162,11 @@ void Rtc::update_rtc_from_system_time(int attempt) {
         backend->set_time(time);
     }
 
+#if MODULE_DEBUG_AVAILABLE()
     if (attempt > 0) {
         logger.printfln("Failed to hit < X.010s %d times.%s", attempt, attempt >= 3 ? " RTC time may not be precise" : "");
     }
+#endif
 }
 
 bool Rtc::push_system_time(const timeval &time, Quality quality)
