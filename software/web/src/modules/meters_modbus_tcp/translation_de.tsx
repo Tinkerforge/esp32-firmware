@@ -26,6 +26,7 @@ let x = {
             "table_shelly_pro_em": "Shelly Pro EM",
             "table_shelly_pro_3em": "Shelly Pro 3EM",
             "table_goodwe_hybrid_inverter": "GoodWe Hybrid-Wechselrichter (EH-, ET-, BH- und BT-Serie)",
+            "table_solax_hybrid_inverter": "Solax Hybrid-Wechselrichter",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_select": "Auswählen...",
             "virtual_meter_inverter": "Wechselrichter",

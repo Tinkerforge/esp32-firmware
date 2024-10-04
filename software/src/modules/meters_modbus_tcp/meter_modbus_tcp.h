@@ -40,6 +40,7 @@
 #include "shelly_em_monophase_channel.enum.h"
 #include "shelly_em_monophase_mapping.enum.h"
 #include "goodwe_hybrid_inverter_virtual_meter.enum.h"
+#include "solax_hybrid_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -149,6 +150,9 @@ private:
 
     // GoodWe
     GoodweHybridInverterVirtualMeter goodwe_hybrid_inverter_virtual_meter;
+
+    // Solax
+    SolaxHybridInverterVirtualMeter solax_hybrid_inverter_virtual_meter;
 };
 
 #if defined(__GNUC__)

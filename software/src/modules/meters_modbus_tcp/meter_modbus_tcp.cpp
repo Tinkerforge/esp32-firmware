@@ -504,6 +504,30 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::SolaxHybridInverter:
+        solax_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SolaxHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+
+        switch (solax_hybrid_inverter_virtual_meter) {
+        case SolaxHybridInverterVirtualMeter::None:
+            logger.printfln("No Solax Hybrid Inverter Virtual Meter selected");
+            return;
+
+        case SolaxHybridInverterVirtualMeter::Grid:
+            table = &solax_hybrid_inverter_grid_table;
+            break;
+
+        case SolaxHybridInverterVirtualMeter::Battery:
+            table = &solax_hybrid_inverter_battery_table;
+            break;
+
+        default:
+            logger.printfln("Unknown Solax Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(solax_hybrid_inverter_virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
