@@ -153,7 +153,7 @@ void Heating::update()
     const uint32_t sg_ready1_type      = config.get("sg_ready_extended_active_type")->asUint();
 
     // Check if §14 EnWG should be turned on
-    bool p14enwg_on;
+    bool p14enwg_on = false;
     if(p14enwg_active) {
         bool input_value = em_v2.get_input(p14enwg_input);
 
