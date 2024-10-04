@@ -231,7 +231,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 x_padding_factor={0}
                                 x_include_date={true}
                                 y_min={0}
-                                y_max={5}
                                 y_unit={"ct/kWh"}
                                 y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
                                 y_digits={3}
