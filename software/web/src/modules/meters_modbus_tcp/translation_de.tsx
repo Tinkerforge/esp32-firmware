@@ -25,6 +25,7 @@ let x = {
             "table_alpha_ess_hybrid_inverter": "Alpha ESS Hybrid-Wechselrichter",
             "table_shelly_pro_em": "Shelly Pro EM",
             "table_shelly_pro_3em": "Shelly Pro 3EM",
+            "table_solax_hybrid_inverter": "Solax Hybrid-Wechselrichter",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_select": "Auswählen...",
             "virtual_meter_inverter": "Wechselrichter",
