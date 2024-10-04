@@ -685,9 +685,9 @@ def main():
         print(f'Error: Branding module {branding} Branding missing')
         sys.exit(1)
 
-    for name in ['branding.ts', 'logo.png', 'favicon.png']:
-        if not os.path.exists(os.path.join(branding_mod_path, name)):
-            print(f'Error: Branding module {branding} Branding does not contain {name}')
+    for filename in ['branding.ts', 'logo.png', 'favicon.png']:
+        if not os.path.exists(os.path.join(branding_mod_path, filename)):
+            print(f'Error: Branding module {branding} Branding does not contain {filename}')
             sys.exit(1)
 
     frontend_components = []
