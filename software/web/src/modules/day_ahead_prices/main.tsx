@@ -60,8 +60,6 @@ interface DayAheadPricesState {
 export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {}, DayAheadPricesState> {
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
-    uplot_legend_div_ref    = createRef();
-    uplot_wrapper_flags_ref = createRef();
 
     constructor() {
         super('day_ahead_prices/config',
@@ -109,17 +107,17 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
         // If we have not got any prices yet, use empty data
         if (this.state.prices.prices.length == 0) {
             data = {
-                keys: [],
-                names: [],
-                values: [],
-                stacked: [],
-                paths: [],
+                keys: [null],
+                names: [null],
+                values: [null],
+                stacked: [null],
+                paths: [null],
             }
         // Else fill with time and the three different prices we want to show
         } else {
             data = {
-                keys: ['time', 'price', 'price2', 'price3'],
-                names: [__("day_ahead_prices.content.time"), __("day_ahead_prices.content.electricity_price"), __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
+                keys: [null, 'price', 'price2', 'price3'],
+                names: [null, __("day_ahead_prices.content.electricity_price"), __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
                 values: [[], [], [], []],
                 stacked: [null, true, true, true],
                 paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step],
@@ -220,14 +218,13 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             loading={__("day_ahead_prices.content.loading")}>
                             <UplotWrapper
                                 ref={this.uplot_wrapper_ref}
-                                class="day-ahead-prices--chart pb-3"
+                                class="day-ahead-prices-chart pb-3"
                                 sub_page="day_ahead_prices"
                                 color_cache_group="day_ahead_prices.default"
                                 show={true}
                                 on_mount={() => this.update_uplot()}
                                 legend_time_label={__("day_ahead_prices.content.time")}
                                 legend_time_with_minutes={true}
-                                legend_div_ref={this.uplot_legend_div_ref}
                                 aspect_ratio={3}
                                 x_height={50}
                                 x_format={{hour: '2-digit', minute: '2-digit'}}
@@ -238,8 +235,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 y_unit={"ct/kWh"}
                                 y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
                                 y_digits={3}
-                                y_skip_upper={true}
-                                y_sync_ref={this.uplot_wrapper_flags_ref}
                                 only_show_visible={true}
                                 padding={[15, 5, null, null]}
                             />

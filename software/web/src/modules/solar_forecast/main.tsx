@@ -57,10 +57,8 @@ interface SolarForecastState {
 }
 
 export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, SolarForecastState> {
-    uplot_loader_ref        = createRef();
-    uplot_wrapper_ref       = createRef();
-    uplot_legend_div_ref    = createRef();
-    uplot_wrapper_flags_ref = createRef();
+    uplot_loader_ref  = createRef();
+    uplot_wrapper_ref = createRef();
 
     constructor() {
         super('solar_forecast/config',
@@ -237,15 +235,15 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
 
         if (!data_available) {
             data = {
-                keys: [],
-                names: [],
-                values: [],
-                filled: [],
+                keys: [null],
+                names: [null],
+                values: [null],
+                filled: [null],
             }
         } else {
             data = {
-                keys: ['time'],
-                names: [__("solar_forecast.content.time")],
+                keys: [null],
+                names: [null],
                 values: [[]],
                 filled: [null],
             }
@@ -475,7 +473,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                 on_mount={() => this.update_uplot()}
                                 legend_time_label={__("solar_forecast.content.time")}
                                 legend_time_with_minutes={true}
-                                legend_div_ref={this.uplot_legend_div_ref}
                                 aspect_ratio={3}
                                 x_height={50}
                                 x_format={{hour: '2-digit', minute: '2-digit'}}
@@ -486,8 +483,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                 y_unit={"W"}
                                 y_label={__("solar_forecast.script.power") + " [W]"}
                                 y_digits={2}
-                                y_skip_upper={true}
-                                y_sync_ref={this.uplot_wrapper_flags_ref}
                                 only_show_visible={true}
                                 padding={[null, 5, null, null]}
                             />
