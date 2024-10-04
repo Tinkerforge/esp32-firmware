@@ -361,7 +361,7 @@ int FrontPanel::update_front_page_meter(const uint8_t index, const TileType type
 
 #if MODULE_METERS_AVAILABLE()
     float watt = 0;
-    MeterValueAvailability meter_availability = meters.get_power_real(param, &watt);
+    MeterValueAvailability meter_availability = meters.get_power(param, &watt);
     if (meter_availability == MeterValueAvailability::Fresh) {
         if (watt > 0) {
             icon_index = SPRITE_ICON_ENERGY_IMPORT;

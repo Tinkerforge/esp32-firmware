@@ -385,13 +385,13 @@ void PowerManager::setup()
     bool power_meter_available = false;
 #if MODULE_METERS_AVAILABLE()
     float unused_power;
-    if (meters.get_power_virtual(meter_slot_power, &unused_power) == MeterValueAvailability::Unavailable) {
+    if (meters.get_power(meter_slot_power, &unused_power) == MeterValueAvailability::Unavailable) {
         meter_slot_power = UINT32_MAX;
     } else {
         power_meter_available = true;
     }
 
-    if (meters.get_power_real(meter_slot_battery_power, &unused_power) == MeterValueAvailability::Unavailable) {
+    if (meters.get_power(meter_slot_battery_power, &unused_power) == MeterValueAvailability::Unavailable) {
         meter_slot_battery_power = UINT32_MAX;
         logger.printfln("Battery storage configured but meter can't provide power values.");
     } else {
@@ -737,11 +737,11 @@ void PowerManager::update_data()
     low_level_state.get("is_3phase")->updateBool(is_3phase);
 
 #if MODULE_METERS_AVAILABLE()
-    if (meters.get_power_virtual(meter_slot_power, &power_at_meter_raw_w) != MeterValueAvailability::Fresh) {
+    if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != MeterValueAvailability::Fresh) {
         power_at_meter_raw_w = NAN;
     }
     if (have_battery) {
-        if (meters.get_power_virtual(meter_slot_battery_power, &power_at_battery_raw_w) != MeterValueAvailability::Fresh) {
+        if (meters.get_power(meter_slot_battery_power, &power_at_battery_raw_w) != MeterValueAvailability::Fresh) {
             power_at_battery_raw_w = NAN;
         }
     }

@@ -645,8 +645,7 @@ MeterValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, fl
         // Meter hasn't declared its values yet, ask the configured meter.
         bool supported;
         switch (kind) {
-            case INDEX_CACHE_POWER_REAL:     // fallthrough
-            case INDEX_CACHE_POWER_VIRTUAL:  supported = meter_slot.meter->supports_power();  break;
+            case INDEX_CACHE_POWER:          supported = meter_slot.meter->supports_power();  break;
             case INDEX_CACHE_ENERGY_IMPORT:  supported = meter_slot.meter->supports_energy_import(); break;
             case INDEX_CACHE_ENERGY_IMEXSUM: supported = meter_slot.meter->supports_energy_imexsum(); break;
             case INDEX_CACHE_ENERGY_EXPORT:  supported = meter_slot.meter->supports_energy_export(); break;
@@ -668,14 +667,9 @@ MeterValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, fl
     }
 }
 
-MeterValueAvailability Meters::get_power_real(uint32_t slot, float *power, micros_t max_age)
+MeterValueAvailability Meters::get_power(uint32_t slot, float *power, micros_t max_age)
 {
-    return get_single_value(slot, INDEX_CACHE_POWER_REAL, power, max_age);
-}
-
-MeterValueAvailability Meters::get_power_virtual(uint32_t slot, float *power, micros_t max_age)
-{
-    return get_single_value(slot, INDEX_CACHE_POWER_VIRTUAL, power, max_age);
+    return get_single_value(slot, INDEX_CACHE_POWER, power, max_age);
 }
 
 MeterValueAvailability Meters::get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age)
@@ -874,7 +868,7 @@ void Meters::finish_update(uint32_t slot)
     MeterSlot &meter_slot = meter_slots[slot];
     float power;
 
-    if (get_power_real(slot, &power) == MeterValueAvailability::Fresh) {
+    if (get_power(slot, &power) == MeterValueAvailability::Fresh) {
         meter_slot.power_history.add_sample(power);
     }
 }
@@ -992,8 +986,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     uint32_t index_power_ac            = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::PowerActiveLSumImExDiff);
     uint32_t index_power_dc            = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::PowerDCImExDiff);
     uint32_t index_power_dc_battery    = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::PowerDCChaDisDiff);
-    uint32_t index_power_real          = std::min({index_power_ac, index_power_dc, index_power_dc_battery});
-    uint32_t index_power_virtual       = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::PowerActiveLSumImExDiffVirtual);
+    uint32_t index_power               = index_power_ac != UINT32_MAX ? index_power_ac : (index_power_dc != UINT32_MAX ? index_power_dc : index_power_dc_battery);
     uint32_t index_energy_ac_import    = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyActiveLSumImport);
     uint32_t index_energy_ac_imexsum   = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyActiveLSumImExSum);
     uint32_t index_energy_ac_export    = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyActiveLSumExport);
@@ -1004,8 +997,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     uint32_t index_energy_dc_chadissum = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyDCChaDisSum);
     uint32_t index_energy_dc_discharge = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::EnergyDCDischarge);
 
-    meter_slot.index_cache_single_values[INDEX_CACHE_POWER_REAL]     = index_power_real;
-    meter_slot.index_cache_single_values[INDEX_CACHE_POWER_VIRTUAL]  = index_power_virtual != UINT32_MAX ? index_power_virtual : index_power_real;
+    meter_slot.index_cache_single_values[INDEX_CACHE_POWER]          = index_power;
     meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMPORT]  = std::min({index_energy_ac_import,  index_energy_dc_import,  index_energy_dc_charge});
     meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_IMEXSUM] = std::min({index_energy_ac_imexsum, index_energy_dc_imexsum, index_energy_dc_chadissum});
     meter_slot.index_cache_single_values[INDEX_CACHE_ENERGY_EXPORT]  = std::min({index_energy_ac_export,  index_energy_dc_export,  index_energy_dc_discharge});
@@ -1027,9 +1019,9 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     }
 }
 
-bool Meters::get_cached_real_power_index(uint32_t slot, uint32_t *index)
+bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
 {
-    *index = meter_slots[slot].index_cache_single_values[INDEX_CACHE_POWER_REAL];
+    *index = meter_slots[slot].index_cache_single_values[INDEX_CACHE_POWER];
     return *index != UINT32_MAX;
 }
 

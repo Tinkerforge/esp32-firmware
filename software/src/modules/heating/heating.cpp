@@ -220,7 +220,7 @@ void Heating::update()
             return;
         }
         float watt_current = 0;
-        MeterValueAvailability meter_availability = meters.get_power_real(meter_slot_grid_power, &watt_current);
+        MeterValueAvailability meter_availability = meters.get_power(meter_slot_grid_power, &watt_current);
         if (meter_availability != MeterValueAvailability::Fresh) {
             extended_logging("Meter value not available (meter %d has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
         } else if (watt_current > pv_excess_control_threshold) {
