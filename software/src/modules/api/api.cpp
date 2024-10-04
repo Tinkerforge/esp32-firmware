@@ -19,6 +19,7 @@
 
 #include "api.h"
 
+#include <esp_task.h>
 #include <LittleFS.h>
 
 #include "event_log_prefix.h"
@@ -742,6 +743,9 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len)
         });
 
     if (await_result == TaskScheduler::AwaitResult::Timeout) {
+        const char *task_name = pcTaskGetName(xTaskGetCurrentTaskHandle());
+        logger.printfln("callCommand timed out. This may affect the stack of task '%s'.", task_name);
+
         return "Failed to execute command: Timeout reached.";
     }
 
