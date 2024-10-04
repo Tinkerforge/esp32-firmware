@@ -75,6 +75,7 @@ let x = {
             "meter_slot_battery_power": "Power meter",
             "meter_slot_battery_power_muted": "of the battery",
             "meter_slot_battery_power_none": "No battery",
+            "meter_slot_battery_power_missing_value": "sum of directional active power or directional DC power are missing",
             "battery_mode": "Battery priority",
             "battery_mode_prefer_chargers": "Prefer chargers, charge battery storage with any excess power",
             "battery_mode_prefer_battery": "Prefer battery, charge vehicles with any excess power",

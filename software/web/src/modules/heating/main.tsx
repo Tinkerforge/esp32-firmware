@@ -36,7 +36,7 @@ import { InputTime } from "../../ts/components/input_time";
 import { Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { MeterValueID    } from "../meters/meter_value_id";
-import { get_noninternal_meter_slots } from "../power_manager/main";
+import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_manager/main";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 
@@ -236,7 +236,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
         let days_summer_start = this.month_to_days(state.summer_start_month);
         let days_summer_end = this.month_to_days(state.summer_end_month);
 
-        const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], __("power_manager.content.meter_slot_grid_power_missing_value"));
+        const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"));
 
         return (
             <SubPage name="heating">

@@ -75,6 +75,7 @@ let x = {
             "meter_slot_battery_power": "Stromzähler",
             "meter_slot_battery_power_muted": "des Batteriespeichers",
             "meter_slot_battery_power_none": "Kein Speicher",
+            "meter_slot_battery_power_missing_value": "Summe der gerichteten Wirkleistung oder gerichtete DC-Leistung fehlen",
             "battery_mode": "Speicherpriorität",
             "battery_mode_prefer_chargers": "Wallboxen bevorzugen, überschüssige Leistung für Speicher",
             "battery_mode_prefer_battery": "Speicher bevorzugen, überschüssige Leistung für Wallboxen",
