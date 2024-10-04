@@ -54,8 +54,13 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
 
         // TODO: this is not very robust!
         window.setTimeout(() => {
-                if (util.render_allowed() && API.hasFeature("rtc") && API.get("rtc/config").auto_sync && !API.get("ntp/state").synced) {
-                    this.set_current_time();
+                if (util.render_allowed() && API.hasFeature("rtc")) {
+                    let rtc_config = API.get("rtc/config");
+                    let ntp_state = API.get("ntp/state");
+
+                    if (rtc_config && rtc_config.auto_sync && ntp_state && !ntp_state.synced) {
+                        this.set_current_time();
+                    }
                 }
             },
             1000);
