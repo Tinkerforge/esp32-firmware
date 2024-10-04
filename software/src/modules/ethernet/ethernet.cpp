@@ -252,7 +252,7 @@ void Ethernet::register_urls()
 {
     api.addPersistentConfig("ethernet/config", &config);
     api.addState("ethernet/state", &state);
-    api.addCommand("ethernet/force_reset", Config::Null(), {}, [this](){
+    api.addCommand("ethernet/force_reset", Config::Null(), {}, [this](String &/*errmsg*/) {
         esp_eth_stop(ETH.eth_handle);
         pinMode(5, OUTPUT);
         digitalWrite(5, LOW);

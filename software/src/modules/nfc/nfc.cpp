@@ -442,7 +442,7 @@ void NFC::register_urls()
 {
     api.addState("nfc/seen_tags", &seen_tags);
     api.addPersistentConfig("nfc/config", &config);
-    api.addCommand("nfc/inject_tag", &inject_tag, {}, [this](){
+    api.addCommand("nfc/inject_tag", &inject_tag, {}, [this](String &/*errmsg*/) {
         last_tag_injection = millis();
         tag_injection_action = TRIGGER_CHARGE_ANY;
         // 0 is the marker that no injection happened or the last one was handled.
@@ -451,7 +451,7 @@ void NFC::register_urls()
             last_tag_injection -= 1;
     }, true);
 
-    api.addCommand("nfc/inject_tag_start", &inject_tag, {}, [this](){
+    api.addCommand("nfc/inject_tag_start", &inject_tag, {}, [this](String &/*errmsg*/) {
         last_tag_injection = millis();
         tag_injection_action = TRIGGER_CHARGE_START;
         // 0 is the marker that no injection happened or the last one was handled.
@@ -460,7 +460,7 @@ void NFC::register_urls()
             last_tag_injection -= 1;
     }, true);
 
-    api.addCommand("nfc/inject_tag_stop", &inject_tag, {}, [this](){
+    api.addCommand("nfc/inject_tag_stop", &inject_tag, {}, [this](String &/*errmsg*/) {
         last_tag_injection = millis();
         tag_injection_action = TRIGGER_CHARGE_STOP;
         // 0 is the marker that no injection happened or the last one was handled.

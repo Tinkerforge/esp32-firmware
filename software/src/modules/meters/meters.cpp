@@ -406,7 +406,7 @@ void Meters::register_urls()
         }
 
         if (meter_slot.meter->supports_reset()) {
-            api.addCommand(get_path(slot, Meters::PathType::Reset), Config::Null(), {}, [this, &meter_slot, slot]() mutable {
+            api.addCommand(get_path(slot, Meters::PathType::Reset), Config::Null(), {}, [this, &meter_slot, slot](String &/*errmsg*/) mutable {
                 if (!meter_slot.meter->reset())
                     return;
 

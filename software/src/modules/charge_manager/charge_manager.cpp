@@ -619,7 +619,7 @@ void ChargeManager::register_urls()
     api.addState("charge_manager/low_level_state", &low_level_state);
 
     api.addState("charge_manager/available_current", &available_current);
-    api.addCommand("charge_manager/available_current_update", &available_current_update, {}, [this](){
+    api.addCommand("charge_manager/available_current_update", &available_current_update, {}, [this](String &/*errmsg*/) {
         uint32_t current = this->available_current_update.get("current")->asUint();
         this->available_current.get("current")->updateUint(current);
         this->last_available_current_update = millis();

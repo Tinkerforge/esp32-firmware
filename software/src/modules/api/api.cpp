@@ -299,12 +299,12 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
 
     addState(path, config, keys_to_censor);
 
-    addCommand(path + "_update", config, keys_to_censor, [path, config, conf_modified]() {
+    addCommand(path + "_update", config, keys_to_censor, [path, config, conf_modified](String &/*errmsg*/) {
         API::writeConfig(path, config);
         conf_modified->get("modified")->updateUint(3);
     }, false);
 
-    addCommand(path + "_reset", Config::Null(), {}, [path, conf_modified]() {
+    addCommand(path + "_reset", Config::Null(), {}, [path, conf_modified](String &/*errmsg*/) {
         API::removeConfig(path);
         conf_modified->get("modified")->updateUint(1);
     }, true);
@@ -435,10 +435,10 @@ void API::removeAllConfig()
 }
 
 /*
-void API::addTemporaryConfig(String path, Config *config, std::initializer_list<const char *> keys_to_censor, std::function<void(void)> &&callback)
+void API::addTemporaryConfig(String path, Config *config, std::initializer_list<const char *> keys_to_censor, std::function<void(String &)> &&callback)
 {
     addState(path, config, keys_to_censor);
-    addCommand(path + "_update", config, std::forward<std::function<void(void)>>(callback));
+    addCommand(path + "_update", config, std::forward<std::function<void(String &)>>(callback));
 }
 */
 
@@ -724,7 +724,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len)
         return "Use ConfUpdate overload of callCommand in main thread!";
     }
 
-    String result = "";
+    String result;
 
     auto await_result = task_scheduler.await(
         [&result, reg, payload, len]() mutable {

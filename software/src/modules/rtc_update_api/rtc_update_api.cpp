@@ -43,7 +43,7 @@ void RtcUpdateApi::setup()
 void RtcUpdateApi::register_urls() {
     api.addPersistentConfig("rtc/config", &config);
 
-    api.addCommand("rtc/time_update", &time_update, {}, [this]() {
+    api.addCommand("rtc/time_update", &time_update, {}, [this](String &/*errmsg*/) {
         struct tm tm;
         tm.tm_year = time_update.get("year")->asUint() - 1900;
         tm.tm_mon  = time_update.get("month")->asUint() - 1;

@@ -46,7 +46,7 @@ void DeviceModuleBase::pre_setup()
 
 void DeviceModuleBase::register_urls()
 {
-    api.addCommand(url_prefix + "/reflash", Config::Null(), {}, [this]() {
+    api.addCommand(url_prefix + "/reflash", Config::Null(), {}, [this](String &/*errmsg*/) {
         uint16_t device_id = get_device_id();
         TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, false);
 
@@ -55,7 +55,7 @@ void DeviceModuleBase::register_urls()
         }
     }, true);
 
-    api.addCommand(url_prefix + "/reset", Config::Null(), {}, [this]() {
+    api.addCommand(url_prefix + "/reset", Config::Null(), {}, [this](String &/*errmsg*/) {
         reset();
 
         initialized = false;

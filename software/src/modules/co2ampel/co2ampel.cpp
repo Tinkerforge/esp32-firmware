@@ -190,7 +190,7 @@ void Co2Ampel::register_urls()
 {
     api.addPersistentConfig("co2ampel/config", &config);
     api.addState("co2ampel/state", &state);
-    api.addCommand("co2ampel/stop_blink", Config::Null(), {}, [](){
+    api.addCommand("co2ampel/stop_blink", Config::Null(), {}, [](String &/*errmsg*/) {
         blink_allowed = false;
     }, true);
 }

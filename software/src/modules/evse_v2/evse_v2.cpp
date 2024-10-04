@@ -239,11 +239,11 @@ void EVSEV2::post_setup()
 
 void EVSEV2::post_register_urls()
 {
-    api.addCommand("evse/reset_dc_fault_current_state", &reset_dc_fault_current_state, {}, [this](){
+    api.addCommand("evse/reset_dc_fault_current_state", &reset_dc_fault_current_state, {}, [this](String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_reset_dc_fault_current_state(&device, reset_dc_fault_current_state.get("password")->asUint()));
     }, true);
 
-    api.addCommand("evse/trigger_dc_fault_test", Config::Null(), {}, [this](){
+    api.addCommand("evse/trigger_dc_fault_test", Config::Null(), {}, [this](String &/*errmsg*/) {
         if (evse_common.state.get("iec61851_state")->asUint() != IEC_STATE_A) {
             logger.printfln("Can't trigger DC fault test: IEC state is not A.");
             return;
@@ -261,35 +261,35 @@ void EVSEV2::post_register_urls()
     // are marked as actions to make sure the flash is not written unnecessarily.
 
     api.addState("evse/gpio_configuration", &gpio_configuration);
-    api.addCommand("evse/gpio_configuration_update", &gpio_configuration_update, {}, [this](){
+    api.addCommand("evse/gpio_configuration_update", &gpio_configuration_update, {}, [this](String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_set_gpio_configuration(&device, gpio_configuration_update.get("shutdown_input")->asUint(),
                                                                     gpio_configuration_update.get("input")->asUint(),
                                                                     gpio_configuration_update.get("output")->asUint()));
     }, true);
 
     api.addState("evse/button_configuration", &button_configuration);
-    api.addCommand("evse/button_configuration_update", &button_configuration_update, {}, [this](){
+    api.addCommand("evse/button_configuration_update", &button_configuration_update, {}, [this](String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_set_button_configuration(&device, button_configuration_update.get("button")->asUint()));
     }, true);
 
     api.addState("evse/ev_wakeup", &ev_wakeup);
-    api.addCommand("evse/ev_wakeup_update", &ev_wakeup_update, {}, [this](){
+    api.addCommand("evse/ev_wakeup_update", &ev_wakeup_update, {}, [this](String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_set_ev_wakeup(&device, ev_wakeup_update.get("enabled")->asBool()));
     }, true);
 
     api.addState("evse/phase_auto_switch", &phase_auto_switch);
-    api.addCommand("evse/phase_auto_switch_update", &phase_auto_switch_update, {}, [this](){
+    api.addCommand("evse/phase_auto_switch_update", &phase_auto_switch_update, {}, [this](String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_set_phase_auto_switch(&device, phase_auto_switch_update.get("enabled")->asBool()));
     }, true);
 
 
     api.addState("evse/phases_connected", &phases_connected);
-    api.addCommand("evse/phases_connected_update", &phases_connected_update, {}, [this](){
+    api.addCommand("evse/phases_connected_update", &phases_connected_update, {}, [this](String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_set_phases_connected(&device, phases_connected_update.get("phases")->asUint()));
     }, true);
 
     api.addState("evse/control_pilot_disconnect", &control_pilot_disconnect);
-    api.addCommand("evse/control_pilot_disconnect_update", &control_pilot_disconnect_update, {}, [this](){
+    api.addCommand("evse/control_pilot_disconnect_update", &control_pilot_disconnect_update, {}, [this](String &/*errmsg*/) {
         if (evse_common.management_enabled.get("enabled")->asBool()) { // Disallow updating control pilot configuration if management is enabled because the charge manager will override the CP config every second.
             logger.printfln("Control pilot cannot be (dis)connected by API while charge management is enabled.");
             return;
@@ -298,7 +298,7 @@ void EVSEV2::post_register_urls()
     }, true);
 
     api.addState("evse/gp_output", &gp_output);
-    api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](){
+    api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()));
     }, true);
 }

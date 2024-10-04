@@ -572,7 +572,7 @@ void Users::register_urls()
     }, true);
 
     api.addState("users/config", &config, {"digest_hash"});
-    api.addCommand("users/add", &add, {"digest_hash"}, [this](){
+    api.addCommand("users/add", &add, {"digest_hash"}, [this](String &/*errmsg*/) {
         config.get("users")->add();
         Config *user = (Config *)config.get("users")->get(config.get("users")->count() - 1);
 
@@ -589,7 +589,7 @@ void Users::register_urls()
         this->rename_user(user->get("id")->asUint(), user->get("username")->asString(), user->get("display_name")->asString());
     }, true);
 
-    api.addCommand("users/remove", &remove, {}, [this](){
+    api.addCommand("users/remove", &remove, {}, [this](String &/*errmsg*/) {
         int idx = -1;
         for(int i = 0; i < config.get("users")->count(); ++i) {
             if (config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
@@ -624,7 +624,7 @@ void Users::register_urls()
     }, true);
 
 
-    api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](){
+    api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](String &/*errmsg*/) {
         bool enable = http_auth_update.get("enabled")->asBool();
         if (!enable)
             server.runInHTTPThread([](void *arg) {

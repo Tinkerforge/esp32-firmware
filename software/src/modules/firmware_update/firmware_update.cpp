@@ -423,11 +423,11 @@ void FirmwareUpdate::register_urls()
 
     api.addState("firmware_update/state", &state);
 
-    api.addCommand("firmware_update/check_for_update", Config::Null(), {}, [this]() {
+    api.addCommand("firmware_update/check_for_update", Config::Null(), {}, [this](String &/*errmsg*/ ) {
         check_for_update();
     }, true);
 
-    api.addCommand("firmware_update/install_firmware", &install_firmware_config, {}, [this]() {
+    api.addCommand("firmware_update/install_firmware", &install_firmware_config, {}, [this](String &/*errmsg*/) {
 #if signature_sodium_public_key_length == 0
         logger.printfln("Installing firmware from URL is not supported (installed firmware is unsigned)");
 

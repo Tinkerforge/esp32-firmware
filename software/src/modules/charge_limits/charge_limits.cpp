@@ -126,7 +126,7 @@ void ChargeLimits::register_urls()
     api.addState("charge_limits/state", &state);
     api.addState("charge_limits/active_limits", &config_in_use);
 
-    api.addCommand("charge_limits/override_duration", &override_duration, {}, [this]() {
+    api.addCommand("charge_limits/override_duration", &override_duration, {}, [this](String &/*errmsg*/) {
         was_triggered = false;
         config_in_use.get("duration")->updateUint(override_duration.get("duration")->asUint());
 
@@ -136,7 +136,7 @@ void ChargeLimits::register_urls()
             state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint() + map_duration(override_duration.get("duration")->asUint()));
     }, true);
 
-    api.addCommand("charge_limits/override_energy", &override_energy, {}, [this]() {
+    api.addCommand("charge_limits/override_energy", &override_energy, {}, [this](String &/*errmsg*/) {
         was_triggered = false;
         config_in_use.get("energy_wh")->updateUint(override_energy.get("energy_wh")->asUint());
         if (override_energy.get("energy_wh")->asUint() == 0)
@@ -145,7 +145,7 @@ void ChargeLimits::register_urls()
             state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + override_energy.get("energy_wh")->asUint() / 1000.0);
     }, true);
 
-    api.addCommand("charge_limits/restart", Config::Null(), {}, [this]() {
+    api.addCommand("charge_limits/restart", Config::Null(), {}, [this](String &/*errmsg*/) {
         if (charge_tracker.current_charge.get("user_id")->asInt() == -1) {
             return;
         }

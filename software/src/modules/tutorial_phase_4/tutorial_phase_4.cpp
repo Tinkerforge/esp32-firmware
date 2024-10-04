@@ -84,7 +84,7 @@ void TutorialPhase4::register_urls()
     // Add extra ConfigRoot object to the API manager as a command target under
     // the name "tutorial_phase_4/config" to receive updates from the front-end
     // module. If an update is received, the lambda function is called to handle it.
-    api.addCommand("tutorial_phase_4/config_update", &config_update, {}, [this]() {
+    api.addCommand("tutorial_phase_4/config_update", &config_update, {}, [this](String &/*errmsg*/) {
         String color = config_update.get("color")->asString();
 
         logger.printfln("Tutorial (Phase 4) module received color update: %s", color.c_str());

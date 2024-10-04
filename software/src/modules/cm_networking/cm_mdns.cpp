@@ -39,7 +39,7 @@ void CMNetworking::setup()
 
 void CMNetworking::register_urls()
 {
-    api.addCommand("charge_manager/scan", Config::Null(), {}, [this]() {
+    api.addCommand("charge_manager/scan", Config::Null(), {}, [this](String &/*errmsg*/) {
         start_scan();
     }, true);
 

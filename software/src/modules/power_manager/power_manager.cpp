@@ -468,7 +468,7 @@ void PowerManager::register_urls()
     api.addState("power_manager/low_level_state", &low_level_state);
 
     api.addState("power_manager/charge_mode", &charge_mode);
-    api.addCommand("power_manager/charge_mode_update", &charge_mode_update, {}, [this]() {
+    api.addCommand("power_manager/charge_mode_update", &charge_mode_update, {}, [this](String &/*errmsg*/) {
         uint32_t new_mode = this->charge_mode_update.get("mode")->asUint();
 
         if (new_mode == MODE_DO_NOTHING)
@@ -492,7 +492,7 @@ void PowerManager::register_urls()
         automation.set_enabled(AutomationActionID::PMPhaseSwitch, true);
 #endif
 
-        api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this]() {
+        api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](String &/*errmsg*/) {
             if (!phase_switcher_backend->is_external_control_allowed()) {
                 logger.printfln("Ignoring external control phase change request: External control currently not allowed.");
                 return;
@@ -537,7 +537,7 @@ void PowerManager::register_urls()
             low_level_state.get("is_3phase")->updateBool(phase_switcher_backend->get_is_3phase());
         }, 1000, 1000);
     } else {
-        api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this]() {
+        api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](String &/*errmsg*/) {
             uint32_t external_control_state = state.get("external_control")->asUint();
             switch (external_control_state) {
                 case EXTERNAL_CONTROL_STATE_DISABLED:

@@ -97,7 +97,7 @@ static void register_default_urls() {
         return send_index_html(request);
     });
 
-    api.addCommand("reboot", Config::Null(), {}, []() {
+    api.addCommand("reboot", Config::Null(), {}, [](String &/*errmsg*/) {
         trigger_reboot("API", 1000);
     }, true);
 
