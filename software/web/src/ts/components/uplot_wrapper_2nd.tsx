@@ -628,11 +628,11 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         }
 
                         if (stacked_values[k] !== null) {
-                            if (stacked_values[k] < y_min[y_axis]) {
+                            if (y_min[y_axis] === undefined || stacked_values[k] < y_min[y_axis]) {
                                 y_min[y_axis] = stacked_values[k];
                             }
 
-                            if (stacked_values[k] > y_max[y_axis]) {
+                            if (y_max[y_axis] === undefined || stacked_values[k] > y_max[y_axis]) {
                                 y_max[y_axis] = stacked_values[k];
                             }
                         }
@@ -651,7 +651,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             else if (y_min[y_axis] === undefined) {
                 y_min[y_axis] = y_max[y_axis];
             }
-            else if (y_max === undefined) {
+            else if (y_max[y_axis] === undefined) {
                 y_max[y_axis] = y_min[y_axis];
             }
         }
