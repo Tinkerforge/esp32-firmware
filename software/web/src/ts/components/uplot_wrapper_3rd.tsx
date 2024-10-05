@@ -37,8 +37,8 @@ interface UplotFlagsWrapperProps {
     legend_time_with_minutes: boolean;
     legend_div_ref?: RefObject<HTMLDivElement>;
     x_padding_factor: number;
-    y2_enable?: boolean;
     y_sync_ref?: RefObject<UplotWrapper>;
+    y2_enable?: boolean;
 }
 
 export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {

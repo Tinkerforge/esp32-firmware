@@ -52,8 +52,10 @@ private:
     void history_energy_manager_daily_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
     bool set_wallbox_5min_data_point(const struct tm *utc, const struct tm *local, uint32_t uid, uint16_t flags, uint16_t power /* W */);
     bool set_wallbox_daily_data_point(const struct tm *local, uint32_t uid, uint32_t energy /* daWh */);
-    bool set_energy_manager_5min_data_point(const struct tm *utc, const struct tm *local, uint16_t flags, const int32_t power[7] /* W */);
-    bool set_energy_manager_daily_data_point(const struct tm *local, const uint32_t energy_import[7] /* daWh */, const uint32_t energy_export[7] /* daWh */);
+    bool set_energy_manager_5min_data_point(const struct tm *utc, const struct tm *local, uint16_t flags, const int32_t power[7] /* W */,
+                                            const int32_t price /* mct/kWh */);
+    bool set_energy_manager_daily_data_point(const struct tm *local, const uint32_t energy_import[7] /* daWh */, const uint32_t energy_export[7] /* daWh */,
+                                             int32_t price_min /* ct/kWh */, int32_t price_avg /* ct/kWh */, int32_t price_max /* ct/kWh */);
 
     std::list<std::function<bool(void)>> pending_data_points;
     bool persistent_data_loaded = false;

@@ -27,6 +27,7 @@ export interface history_energy_manager_5min_changed {
     minute: number;
     flags: number;
     power: number[];
+    price: number;
 }
 
 export interface history_energy_manager_daily_changed {
@@ -35,4 +36,7 @@ export interface history_energy_manager_daily_changed {
     day: number;
     energy_import: number[];
     energy_export: number[];
+    price_min: number;
+    price_avg: number;
+    price_max: number;
 }

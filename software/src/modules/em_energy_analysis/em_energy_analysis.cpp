@@ -221,8 +221,11 @@ void EMEnergyAnalysis::collect_data_points()
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
                 uint32_t uid = charger.uid;
+#if MODULE_EM_V1_AVAILABLE()
                 uint16_t flags = charger.charger_state; // v1: bit 0-2 = charger state, bit 7 = no data (read only)
-                                                        // v2: bit 0-2 = charger state, bit 15 = no data (read only)
+#elif MODULE_EM_V2_AVAILABLE()
+                uint16_t flags = charger.charger_state | (charger.phases << 3); // v2: bit 0-2 = charger state, bit 3-4 = phases, bit 15 = no data (read only)
+#endif
                 uint16_t power = UINT16_MAX;
 
                 if (charger.meter_supported) {
@@ -257,9 +260,10 @@ void EMEnergyAnalysis::collect_data_points()
         }
 
         if (all_data_common->is_valid && !deadline_elapsed(all_data_common->last_update + MAX_DATA_AGE)) {
-            uint8_t flags = 0; // v1: bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data (read only)
-                               // v2: bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 15 = no data (read only)
+            uint8_t flags = 0; // v1: bit 0 = 1p/3p, bit 1-2 = inputs, bit 3 = relay, bit 7 = no data (read only)
+                               // v2: bit 0-3 = inputs, bit 4-5 = SG ready, bit 6-7 = relays, bit 15 = no data (read only)
             int32_t power[7] = {INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX}; // W
+            int32_t price = INT32_MAX; // mct/kWh
 
             bool inputs[4];
             bool outputs[4];
@@ -269,15 +273,21 @@ void EMEnergyAnalysis::collect_data_points()
             em_common.get_input_output_states(inputs, &input_len, outputs, &output_len);
             // input_len and output_len now contain the actual value count
 
+#if MODULE_EM_V1_AVAILABLE()
             flags |= power_manager.get_is_3phase() ? 0b0001 : 0;
-            flags |= inputs[0]                     ? 0b0010 : 0; // EMv1 input[0]  EMv2 input[0]
-            flags |= inputs[1]                     ? 0b0100 : 0; // EMv1 input[1]  EMv2 input[1]
-            //       inputs[2]                                                     EMv2 input[2]
-            //       inputs[3]                                                     EMv2 input[3]
-            flags |= outputs[0]                    ? 0b1000 : 0; // EMv1 relay     EMv2 relay[0]
-            //       outputs[1]                                                    EMv2 relay[1]
-            //       outputs[2]                                                    EMv2 sg_ready[0]
-            //       outputs[3]                                                    EMv2 sg_ready[1]
+            flags |= inputs[0]                     ? 0b0010 : 0;
+            flags |= inputs[1]                     ? 0b0100 : 0;
+            flags |= outputs[0]                    ? 0b1000 : 0;
+#elif MODULE_EM_V2_AVAILABLE()
+            flags |= inputs[0]  ? (1 << 0) : 0;
+            flags |= inputs[1]  ? (1 << 1) : 0;
+            flags |= inputs[2]  ? (1 << 2) : 0;
+            flags |= inputs[3]  ? (1 << 3) : 0;
+            flags |= outputs[0] ? (1 << 4) : 0;
+            flags |= outputs[1] ? (1 << 5) : 0;
+            flags |= outputs[2] ? (1 << 6) : 0;
+            flags |= outputs[3] ? (1 << 7) : 0;
+#endif
 
             for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
                 // FIXME: how to tell if meter data is stale?
@@ -295,12 +305,21 @@ void EMEnergyAnalysis::collect_data_points()
                 }
             }
 
+#if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
+            DataReturn<int32_t> current_price_data = day_ahead_prices.get_current_price();
+            int32_t grid_cost_plus_tax_plus_markup = day_ahead_prices.get_grid_cost_plus_tax_plus_markup();
+
+            if (current_price_data.data_available) {
+                price = current_price_data.data + grid_cost_plus_tax_plus_markup;
+            }
+#endif
+
             if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
                 logger.printfln("Data point queue is full, dropping new data point");
             }
             else {
-                pending_data_points.push_back([this, utc, local, flags, power]{
-                    return set_energy_manager_5min_data_point(&utc, &local, flags, power);
+                pending_data_points.push_back([this, utc, local, flags, power, price] {
+                    return set_energy_manager_5min_data_point(&utc, &local, flags, power, price);
                 });
             }
         }
@@ -350,6 +369,9 @@ void EMEnergyAnalysis::collect_data_points()
         bool have_data = false;
         uint32_t energy_import[7] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // daWh
         uint32_t energy_export[7] = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}; // daWh
+        int32_t price_min = INT32_MAX; // ct/kWh
+        int32_t price_avg = INT32_MAX; // ct/kWh
+        int32_t price_max = INT32_MAX; // ct/kWh
 
         micros_t max_age = micros_t{5 * 60 * 1000 * 1000};
         MeterValueAvailability availability;
@@ -396,13 +418,35 @@ void EMEnergyAnalysis::collect_data_points()
             }
         }
 
+#if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
+        DataReturn<int32_t> minimum_price_today_data = day_ahead_prices.get_minimum_price_today();
+        DataReturn<int32_t> average_price_today_data = day_ahead_prices.get_average_price_today();
+        DataReturn<int32_t> maximum_price_today_data = day_ahead_prices.get_maximum_price_today();
+        int32_t grid_cost_plus_tax_plus_markup = day_ahead_prices.get_grid_cost_plus_tax_plus_markup();
+
+        if (minimum_price_today_data.data_available) {
+            have_data = true;
+            price_min = (minimum_price_today_data.data + grid_cost_plus_tax_plus_markup) / 1000; // mct/kWh -> ct/kWh (floor)
+        }
+
+        if (average_price_today_data.data_available) {
+            have_data = true;
+            price_avg = ((average_price_today_data.data + grid_cost_plus_tax_plus_markup) + 500) / 1000; // mct/kWh -> ct/kWh (round)
+        }
+
+        if (maximum_price_today_data.data_available) {
+            have_data = true;
+            price_max = ((maximum_price_today_data.data + grid_cost_plus_tax_plus_markup) + 999) / 1000; // mct/kWh -> ct/kWh (ceil)
+        }
+#endif
+
         if (have_data) {
             if (pending_data_points.size() > MAX_PENDING_DATA_POINTS) {
                 logger.printfln("Data point queue is full, dropping new data point");
             }
             else {
-                pending_data_points.push_back([this, local, energy_import, energy_export]{
-                    return set_energy_manager_daily_data_point(&local, energy_import, energy_export);
+                pending_data_points.push_back([this, local, energy_import, energy_export, price_min, price_avg, price_max] {
+                    return set_energy_manager_daily_data_point(&local, energy_import, energy_export, price_min, price_avg, price_max);
                 });
             }
         }
@@ -748,9 +792,16 @@ bool EMEnergyAnalysis::set_wallbox_daily_data_point(const struct tm *local, uint
 
 bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
                                                           const struct tm *local,
-                                                          uint16_t flags,
-                                                          const int32_t power[7] /* W */)
+                                                          const uint16_t flags,
+                                                          const int32_t power[7] /* W */,
+                                                          const int32_t price /* mct/kWh */)
 {
+    uint32_t price_bits = UINT32_MAX;
+
+    if (price != INT32_MAX) {
+        price_bits = (uint32_t)price;
+    }
+
     uint8_t status;
     uint8_t utc_year = utc->tm_year - 100;
     uint8_t utc_month = utc->tm_mon + 1;
@@ -765,12 +816,12 @@ bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
                                                             flags,
                                                             power[0],
                                                             &power[1],
-                                                            UINT32_MAX, // FIXME Pass actual price.
+                                                            price_bits,
                                                             &status);
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u p%d,%d,%d,%d,%d,%d,%d",
-                    2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power[0], power[1], power[2], power[3], power[4], power[5], power[6]);
+    logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u po%d,%d,%d,%d,%d,%d,%d pr%d",
+                    2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power[0], power[1], power[2], power[3], power[4], power[5], power[6], price);
 #endif
 
     if (rc != TF_E_OK) {
@@ -793,11 +844,16 @@ bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
     }
     else {
         char power_str[7][12] = {"null", "null", "null", "null", "null", "null", "null"};
+        char price_str[12] = "null";
 
         for (int i = 0; i < 7; ++i) {
             if (power[i] != INT32_MAX) {
                 snprintf(power_str[i], sizeof(power_str[i]), "%d", power[i]);
             }
+        }
+
+        if (price != INT32_MAX) {
+            snprintf(price_str, sizeof(price_str), "%.3f", (double)price / 1000.0); // mct/kWh -> ct/kWh
         }
 
         uint8_t local_year = local->tm_year - 100;
@@ -815,7 +871,8 @@ bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
                                     "\"hour\":%u,"
                                     "\"minute\":%u,"
                                     "\"flags\":%u,"
-                                    "\"power\":[%s,%s,%s,%s,%s,%s,%s]}}\n",
+                                    "\"power\":[%s,%s,%s,%s,%s,%s,%s],"
+                                    "\"price\":%s}}\n",
                                    2000U + local_year,
                                    local_month,
                                    local_day,
@@ -828,7 +885,8 @@ bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
                                    power_str[3],
                                    power_str[4],
                                    power_str[5],
-                                   power_str[6]);
+                                   power_str[6],
+                                   price_str);
 
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
@@ -838,14 +896,40 @@ bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
     }
 }
 
+#define PRICE_UINT10_MAX 1023
+#define PRICE_INT10_MAX  911
+#define PRICE_INT10_MIN  (PRICE_INT10_MAX - PRICE_UINT10_MAX)
+
+static uint32_t price_to_10bit(int32_t price)
+{
+    if (price == INT32_MAX) {
+        return PRICE_UINT10_MAX;
+    }
+
+    return clamp(PRICE_INT10_MIN, price, PRICE_INT10_MAX) - PRICE_INT10_MIN;
+}
+
+static int32_t price_from_10bit(uint32_t price)
+{
+    if (price >= PRICE_UINT10_MAX) {
+        return INT32_MAX;
+    }
+
+    return price + PRICE_INT10_MIN;
+}
+
 bool EMEnergyAnalysis::set_energy_manager_daily_data_point(const struct tm *local,
-                                                        const uint32_t energy_import[7] /* daWh */,
-                                                        const uint32_t energy_export[7] /* daWh */)
+                                                           const uint32_t energy_import[7] /* daWh */,
+                                                           const uint32_t energy_export[7] /* daWh */,
+                                                           int32_t price_min /* ct/kWh */,
+                                                           int32_t price_avg /* ct/kWh */,
+                                                           int32_t price_max /* ct/kWh */)
 {
     uint8_t status;
     uint8_t year = local->tm_year - 100;
     uint8_t month = local->tm_mon + 1;
     uint8_t day = local->tm_mday;
+    uint32_t price_bits = (price_to_10bit(price_min) << 20) | (price_to_10bit(price_avg) << 10) | price_to_10bit(price_max);
     int rc = em_common.wem_set_sd_energy_manager_daily_data_point(year,
                                                                   month,
                                                                   day,
@@ -853,14 +937,15 @@ bool EMEnergyAnalysis::set_energy_manager_daily_data_point(const struct tm *loca
                                                                   energy_export[0],
                                                                   &energy_import[1],
                                                                   &energy_export[1],
-                                                                  UINT32_MAX, // FIXME Pass actual price.
+                                                                  price_bits,
                                                                   &status);
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("set_energy_manager_daily_data_point: %d-%02d-%02d ei%u,%u,%u,%u,%u,%u,%u ee%u,%u,%u,%u,%u,%u,%u",
+    logger.printfln("set_energy_manager_daily_data_point: %d-%02d-%02d ei%u,%u,%u,%u,%u,%u,%u ee%u,%u,%u,%u,%u,%u,%u p%d,%d,%d",
                     2000 + year, month, day,
                     energy_import[0], energy_import[1], energy_import[2], energy_import[3], energy_import[4], energy_import[5], energy_import[6],
-                    energy_export[0], energy_export[1], energy_export[2], energy_export[3], energy_export[4], energy_export[5], energy_export[6]);
+                    energy_export[0], energy_export[1], energy_export[2], energy_export[3], energy_export[4], energy_export[5], energy_export[6],
+                    price_min, price_avg, price_max);
 #endif
 
     if (rc != TF_E_OK) {
@@ -884,6 +969,9 @@ bool EMEnergyAnalysis::set_energy_manager_daily_data_point(const struct tm *loca
     else {
         char energy_import_str[7][13] = {"null", "null", "null", "null", "null", "null", "null"};
         char energy_export_str[7][13] = {"null", "null", "null", "null", "null", "null", "null"};
+        char price_min_str[12] = "null";
+        char price_avg_str[12] = "null";
+        char price_max_str[12] = "null";
 
         for (int i = 0; i < 7; ++i) {
             if (energy_import[i] != UINT32_MAX) {
@@ -895,6 +983,18 @@ bool EMEnergyAnalysis::set_energy_manager_daily_data_point(const struct tm *loca
             }
         }
 
+        if (price_min != INT32_MAX) {
+            snprintf(price_min_str, sizeof(price_min_str), "%d", price_min);
+        }
+
+        if (price_avg != INT32_MAX) {
+            snprintf(price_avg_str, sizeof(price_avg_str), "%d", price_avg);
+        }
+
+        if (price_max != INT32_MAX) {
+            snprintf(price_max_str, sizeof(price_max_str), "%d", price_max);
+        }
+
         char *buf;
         int buf_written = asprintf(&buf,
                                    "{\"topic\":\"energy_manager/history_energy_manager_daily_changed\","
@@ -903,7 +1003,10 @@ bool EMEnergyAnalysis::set_energy_manager_daily_data_point(const struct tm *loca
                                     "\"month\":%u,"
                                     "\"day\":%u,"
                                     "\"energy_import\":[%s,%s,%s,%s,%s,%s,%s],"
-                                    "\"energy_export\":[%s,%s,%s,%s,%s,%s,%s]}}\n",
+                                    "\"energy_export\":[%s,%s,%s,%s,%s,%s,%s],"
+                                    "\"price_min\":%s,"
+                                    "\"price_avg\":%s,"
+                                    "\"price_max\":%s}}\n",
                                    2000U + year,
                                    month,
                                    day,
@@ -920,7 +1023,10 @@ bool EMEnergyAnalysis::set_energy_manager_daily_data_point(const struct tm *loca
                                    energy_export_str[3],
                                    energy_export_str[4],
                                    energy_export_str[5],
-                                   energy_export_str[6]);
+                                   energy_export_str[6],
+                                   price_min_str,
+                                   price_avg_str,
+                                   price_max_str);
 
         if (buf_written > 0) {
             ws.web_sockets.sendToAllOwned(buf, buf_written);
@@ -951,7 +1057,7 @@ struct [[gnu::packed]] Wallbox5minData {
 #if MODULE_EM_V1_AVAILABLE()
     uint8_t flags;  // v1: bit 0-2 = charger state, bit 7 = no data (read only)
 #elif MODULE_EM_V2_AVAILABLE()
-    uint16_t flags; // v2: bit 0-2 = charger state, bit 15 = no data (read only)
+    uint16_t flags; // v2: bit 0-2 = charger state, bit 3-4 = phases, bit 15 = no data (read only)
 #endif
     uint16_t power; // W
 };
@@ -1366,12 +1472,12 @@ void EMEnergyAnalysis::history_wallbox_daily_response(IChunkedResponse *response
 
 struct [[gnu::packed]] EnergyManager5MinData {
 #if MODULE_EM_V1_AVAILABLE()
-    uint8_t flags;  // v1: bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data
+    uint8_t flags;  // v1: bit 0 = 1p/3p, bit 1-2 = inputs, bit 3 = relay, bit 7 = no data (read only)
 #elif MODULE_EM_V2_AVAILABLE()
-    uint16_t flags; // v2: bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 15 = no data
+    uint16_t flags; // v2: bit 0-3 = inputs, bit 4-5 = SG ready, bit 6-7 = relays, bit 15 = no data (read only)
 #endif
     int32_t power[7]; // W
-    uint32_t price; // FIXME Unit? Use price for something.
+    uint32_t price_bits; // mct/kWh
 };
 
 static void energy_manager_5min_data_points_handler(void *do_not_use,
@@ -1433,6 +1539,8 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
                 for (int k = 0; k < 7; ++k) {
                     p->power[k] = INT32_MAX;
                 }
+
+                p->price_bits = UINT32_MAX;
             }
         }
 
@@ -1443,6 +1551,14 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
                 } else {
                     write_success = response->writef(",null");
                 }
+            }
+        }
+
+        if (write_success) {
+            if (p->price_bits != UINT32_MAX) {
+                write_success = response->writef(",%.3f", (double)(int32_t)p->price_bits / 1000.0); // mct/kWh -> ct/kWh
+            } else {
+                write_success = response->writef(",null");
             }
         }
     }
@@ -1632,7 +1748,7 @@ void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *re
 static void energy_manager_daily_data_points_handler(void *do_not_use,
                                                      uint16_t data_length,
                                                      uint16_t data_chunk_offset,
-                                                     uint32_t data_chunk_data[15], // FIXME Chunk data length changed from 14 to 15.
+                                                     uint32_t data_chunk_data[15],
                                                      void *user_data)
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
@@ -1673,8 +1789,8 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
     uint16_t actual_length = data_length - data_chunk_offset;
     uint16_t i;
 
-    if (actual_length > 14) { // FIXME Chunk data length changed from 14 to 15.
-        actual_length = 14;
+    if (actual_length > 15) {
+        actual_length = 15;
     }
 
     if (metadata->write_comma && write_success) {
@@ -1682,18 +1798,54 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
     }
 
     // the data is stored as:
-    // i0, e0, i1, i2, i3, i4, i5, i6, e1, e2, e3, e4, e5, e6
+    // i0, e0, i1, i2, i3, i4, i5, i6, e1, e2, e3, e4, e5, e6, p
     // but we want to report it as:
-    // i0, i1, i2, i3, i4, i5, i6, e0, e1, e2, e3, e4, e5, e6
+    // i0, i1, i2, i3, i4, i5, i6, e0, e1, e2, e3, e4, e5, e6, p
     uint32_t energy_export_0 = data_chunk_data[1];
     memmove(&data_chunk_data[1], &data_chunk_data[2], sizeof(uint32_t) * 6);
     data_chunk_data[7] = energy_export_0;
 
     for (i = 0; i < actual_length && write_success; ++i) {
-        if (data_chunk_data[i] != UINT32_MAX) {
-            write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // daWh -> kWh
-        } else {
-            write_success = response->write("null");
+        if (i == 14) {
+            if (data_chunk_data[i] != UINT32_MAX) {
+                int32_t price_min = price_from_10bit((data_chunk_data[i] >> 20) & 0x3FF);
+                int32_t price_avg = price_from_10bit((data_chunk_data[i] >> 10) & 0x3FF);
+                int32_t price_max = price_from_10bit( data_chunk_data[i]        & 0x3FF);
+
+                if (price_min != INT32_MAX) {
+                    write_success = response->writef("%d", price_min);
+                }
+                else {
+                    write_success = response->writef("null");
+                }
+
+                if (write_success) {
+                    if (price_avg != INT32_MAX) {
+                        write_success = response->writef(",%d", price_avg);
+                    }
+                    else {
+                        write_success = response->writef(",null");
+                    }
+                }
+
+                if (write_success) {
+                    if (price_max != INT32_MAX) {
+                        write_success = response->writef(",%d", price_max);
+                    }
+                    else {
+                        write_success = response->writef(",null");
+                    }
+                }
+            } else {
+                write_success = response->write("null,null,null");
+            }
+        }
+        else {
+            if (data_chunk_data[i] != UINT32_MAX) {
+                write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // daWh -> kWh
+            } else {
+                write_success = response->write("null");
+            }
         }
 
         if (write_success && i < actual_length - 1) {

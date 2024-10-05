@@ -265,10 +265,10 @@ void EMV2::get_input_output_states(bool *inputs, size_t *inputs_len, bool *outpu
     if (*outputs_len < 4) {
         *outputs_len = 0;
     } else {
-        outputs[0] = all_data.output_relay[0];
-        outputs[1] = all_data.output_relay[1];
-        outputs[2] = all_data.output_sg_ready[0];
-        outputs[3] = all_data.output_sg_ready[1];
+        outputs[0] = all_data.output_sg_ready[0];
+        outputs[1] = all_data.output_sg_ready[1];
+        outputs[2] = all_data.output_relay[0];
+        outputs[3] = all_data.output_relay[1];
         *outputs_len = 4;
     }
 }
