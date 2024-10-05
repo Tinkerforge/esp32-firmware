@@ -130,8 +130,8 @@ for model_spec in model_specs:
     spec_values.append(f'    {{\n        SunSpecModelID::{enum_key},\n        "{model_spec.model_name}",\n    }},\n')
 
     if model_spec.is_meter_like:
-        translation_values['en'].append(f'"model_{model_spec.model_id}": "{model_spec.display_name_en} [{model_spec.model_id}]"')
-        translation_values['de'].append(f'"model_{model_spec.model_id}": "{model_spec.display_name_de} [{model_spec.model_id}]"')
+        translation_values['en'].append(f'"model_{model_spec.model_id}": "{model_spec.display_name_en}"')
+        translation_values['de'].append(f'"model_{model_spec.model_id}": "{model_spec.display_name_de}"')
 
     model_infos.append(f'    {{model_id: {model_spec.model_id}, is_meter_like: {str(model_spec.is_meter_like).lower()}, is_supported: {str(model_spec.is_supported).lower()}}},\n')
     model_is_meter_like.append(f'    {model_spec.model_id}: {str(model_spec.is_meter_like).lower()},\n')

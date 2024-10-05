@@ -129,7 +129,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                     unique_id: unique_id,
                     manufacturer_name: scan_result.manufacturer_name,
                     model_name: scan_result.model_name,
-                    display_name: scan_result.model_name.startsWith(scan_result.manufacturer_name) ? scan_result.model_name.trim() : scan_result.manufacturer_name.trim() + ' ' + scan_result.model_name.trim(),
+                    display_name: ((scan_result.model_name.startsWith(scan_result.manufacturer_name) ? scan_result.model_name.trim() : scan_result.manufacturer_name.trim() + ' ' + scan_result.model_name.trim()) + ': ' + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)).substring(0, 65),
                     serial_number: scan_result.serial_number,
                     device_address: scan_result.device_address,
                     model_id: scan_result.model_id,
@@ -220,7 +220,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             <div class="d-flex w-100 justify-content-between">
                 <span class="text-left">{__("meters_sun_spec.content.config_device_address")}: {scan_result.device_address}</span>
                 <span class="text-center">{__("meters_sun_spec.content.config_serial_number")}: {scan_result.serial_number}</span>
-                <span class="text-right">{__("meters_sun_spec.content.config_model_id")}: {translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)} / {scan_result.model_instance}</span>
+                <span class="text-right">{__("meters_sun_spec.content.config_model_id")}: {translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)} [{scan_result.model_id}] / {scan_result.model_instance}</span>
             </div>
         </ListGroupItem>;
     }
@@ -387,7 +387,7 @@ export function init() {
 
                 for (let model_info of SUN_SPEC_MODEL_INFOS) {
                     if (model_info.is_supported) {
-                        model_ids.push([model_info.model_id.toString(), translate_unchecked(`meters_sun_spec.content.model_${model_info.model_id}`)]);
+                        model_ids.push([model_info.model_id.toString(), translate_unchecked(`meters_sun_spec.content.model_${model_info.model_id}`) + ` [${model_info.model_id}]`]);
                     }
                 }
 
