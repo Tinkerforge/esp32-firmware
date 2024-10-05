@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-09-18.      *
+ * This file was automatically generated on 2024-09-27.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -32,7 +32,7 @@ typedef void (*TF_WARPEnergyManagerV2_SDWallboxDataPointsLowLevelHandler)(struct
 typedef void (*TF_WARPEnergyManagerV2_SDWallboxDataPointsHandler)(struct TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t *data, uint16_t data_length, void *user_data);
 typedef void (*TF_WARPEnergyManagerV2_SDWallboxDailyDataPointsLowLevelHandler)(struct TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint16_t data_length, uint16_t data_chunk_offset, uint32_t data_chunk_data[15], void *user_data);
 typedef void (*TF_WARPEnergyManagerV2_SDWallboxDailyDataPointsHandler)(struct TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint32_t *data, uint16_t data_length, void *user_data);
-typedef void (*TF_WARPEnergyManagerV2_SDEnergyManagerDataPointsLowLevelHandler)(struct TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[33], void *user_data);
+typedef void (*TF_WARPEnergyManagerV2_SDEnergyManagerDataPointsLowLevelHandler)(struct TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[34], void *user_data);
 typedef void (*TF_WARPEnergyManagerV2_SDEnergyManagerDataPointsHandler)(struct TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t *data, uint16_t data_length, void *user_data);
 typedef void (*TF_WARPEnergyManagerV2_SDEnergyManagerDailyDataPointsLowLevelHandler)(struct TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint16_t data_length, uint16_t data_chunk_offset, uint32_t data_chunk_data[15], void *user_data);
 typedef void (*TF_WARPEnergyManagerV2_SDEnergyManagerDailyDataPointsHandler)(struct TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint32_t *data, uint16_t data_length, void *user_data);
@@ -601,7 +601,7 @@ int tf_warp_energy_manager_v2_register_sd_wallbox_daily_data_points_callback(TF_
  * Registers the given \c handler to the SD Energy Manager Data Points Low Level callback. The
  * \c user_data will be passed as the last parameter to the \c handler.
  *
- * Signature: \code void callback(uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[33], void *user_data) \endcode
+ * Signature: \code void callback(uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[34], void *user_data) \endcode
  *
  * TODO
  */
@@ -746,7 +746,7 @@ int tf_warp_energy_manager_v2_get_sd_information(TF_WARPEnergyManagerV2 *warp_en
  *
  * TODO
  */
-int tf_warp_energy_manager_v2_set_sd_wallbox_data_point(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status);
+int tf_warp_energy_manager_v2_set_sd_wallbox_data_point(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t flags, uint16_t power, uint8_t *ret_status);
 
 /**
  * \ingroup TF_WARPEnergyManagerV2
@@ -774,7 +774,7 @@ int tf_warp_energy_manager_v2_get_sd_wallbox_daily_data_points(TF_WARPEnergyMana
  *
  * TODO
  */
-int tf_warp_energy_manager_v2_set_sd_energy_manager_data_point(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, int32_t power_grid, const int32_t power_general[6], uint32_t price, uint8_t *ret_status);
+int tf_warp_energy_manager_v2_set_sd_energy_manager_data_point(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t flags, int32_t power_grid, const int32_t power_general[6], uint32_t price, uint8_t *ret_status);
 
 /**
  * \ingroup TF_WARPEnergyManagerV2

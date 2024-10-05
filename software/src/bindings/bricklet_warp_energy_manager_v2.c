@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-09-18.      *
+ * This file was automatically generated on 2024-09-27.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -69,7 +69,7 @@ static bool tf_warp_energy_manager_v2_callback_handler(void *device, uint8_t fid
             size_t _i;
             uint16_t data_length = tf_packet_buffer_read_uint16_t(payload);
             uint16_t data_chunk_offset = tf_packet_buffer_read_uint16_t(payload);
-            uint8_t data_chunk_data[33]; for (_i = 0; _i < 33; ++_i) data_chunk_data[_i] = tf_packet_buffer_read_uint8_t(payload);
+            uint8_t data_chunk_data[34]; for (_i = 0; _i < 34; ++_i) data_chunk_data[_i] = tf_packet_buffer_read_uint8_t(payload);
             hal_common->locked = true;
             fn(warp_energy_manager_v2, data_length, data_chunk_offset, data_chunk_data, user_data);
             hal_common->locked = false;
@@ -1029,7 +1029,7 @@ int tf_warp_energy_manager_v2_get_sd_information(TF_WARPEnergyManagerV2 *warp_en
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_warp_energy_manager_v2_set_sd_wallbox_data_point(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status) {
+int tf_warp_energy_manager_v2_set_sd_wallbox_data_point(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t flags, uint16_t power, uint8_t *ret_status) {
     if (warp_energy_manager_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1045,7 +1045,7 @@ int tf_warp_energy_manager_v2_set_sd_wallbox_data_point(TF_WARPEnergyManagerV2 *
     }
 
     bool _response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager_v2->tfp, TF_WARP_ENERGY_MANAGER_V2_FUNCTION_SET_SD_WALLBOX_DATA_POINT, 12, _response_expected);
+    tf_tfp_prepare_send(warp_energy_manager_v2->tfp, TF_WARP_ENERGY_MANAGER_V2_FUNCTION_SET_SD_WALLBOX_DATA_POINT, 13, _response_expected);
 
     uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager_v2->tfp);
 
@@ -1055,8 +1055,8 @@ int tf_warp_energy_manager_v2_set_sd_wallbox_data_point(TF_WARPEnergyManagerV2 *
     _send_buf[6] = (uint8_t)day;
     _send_buf[7] = (uint8_t)hour;
     _send_buf[8] = (uint8_t)minute;
-    _send_buf[9] = (uint8_t)flags;
-    power = tf_leconvert_uint16_to(power); memcpy(_send_buf + 10, &power, 2);
+    flags = tf_leconvert_uint16_to(flags); memcpy(_send_buf + 9, &flags, 2);
+    power = tf_leconvert_uint16_to(power); memcpy(_send_buf + 11, &power, 2);
 
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
@@ -1302,7 +1302,7 @@ int tf_warp_energy_manager_v2_get_sd_wallbox_daily_data_points(TF_WARPEnergyMana
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_warp_energy_manager_v2_set_sd_energy_manager_data_point(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, int32_t power_grid, const int32_t power_general[6], uint32_t price, uint8_t *ret_status) {
+int tf_warp_energy_manager_v2_set_sd_energy_manager_data_point(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t flags, int32_t power_grid, const int32_t power_general[6], uint32_t price, uint8_t *ret_status) {
     if (warp_energy_manager_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -1318,7 +1318,7 @@ int tf_warp_energy_manager_v2_set_sd_energy_manager_data_point(TF_WARPEnergyMana
     }
 
     bool _response_expected = true;
-    tf_tfp_prepare_send(warp_energy_manager_v2->tfp, TF_WARP_ENERGY_MANAGER_V2_FUNCTION_SET_SD_ENERGY_MANAGER_DATA_POINT, 38, _response_expected);
+    tf_tfp_prepare_send(warp_energy_manager_v2->tfp, TF_WARP_ENERGY_MANAGER_V2_FUNCTION_SET_SD_ENERGY_MANAGER_DATA_POINT, 39, _response_expected);
 
     size_t _i;
     uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(warp_energy_manager_v2->tfp);
@@ -1328,10 +1328,10 @@ int tf_warp_energy_manager_v2_set_sd_energy_manager_data_point(TF_WARPEnergyMana
     _send_buf[2] = (uint8_t)day;
     _send_buf[3] = (uint8_t)hour;
     _send_buf[4] = (uint8_t)minute;
-    _send_buf[5] = (uint8_t)flags;
-    power_grid = tf_leconvert_int32_to(power_grid); memcpy(_send_buf + 6, &power_grid, 4);
-    for (_i = 0; _i < 6; _i++) { int32_t tmp_power_general = tf_leconvert_int32_to(power_general[_i]); memcpy(_send_buf + 10 + (_i * sizeof(int32_t)), &tmp_power_general, sizeof(int32_t)); }
-    price = tf_leconvert_uint32_to(price); memcpy(_send_buf + 34, &price, 4);
+    flags = tf_leconvert_uint16_to(flags); memcpy(_send_buf + 5, &flags, 2);
+    power_grid = tf_leconvert_int32_to(power_grid); memcpy(_send_buf + 7, &power_grid, 4);
+    for (_i = 0; _i < 6; _i++) { int32_t tmp_power_general = tf_leconvert_int32_to(power_general[_i]); memcpy(_send_buf + 11 + (_i * sizeof(int32_t)), &tmp_power_general, sizeof(int32_t)); }
+    price = tf_leconvert_uint32_to(price); memcpy(_send_buf + 35, &price, 4);
 
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
@@ -2817,10 +2817,10 @@ int tf_warp_energy_manager_v2_register_sd_energy_manager_data_points_low_level_c
 }
 
 
-static void tf_warp_energy_manager_v2_sd_energy_manager_data_points_wrapper(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[33], void *user_data) {
+static void tf_warp_energy_manager_v2_sd_energy_manager_data_points_wrapper(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint16_t data_length, uint16_t data_chunk_offset, uint8_t data_chunk_data[34], void *user_data) {
     uint32_t stream_length = (uint32_t) data_length;
     uint32_t chunk_offset = (uint32_t) data_chunk_offset;
-    if (!tf_stream_out_callback(&warp_energy_manager_v2->sd_energy_manager_data_points_hlc, stream_length, chunk_offset, data_chunk_data, 33, tf_copy_items_uint8_t)) {
+    if (!tf_stream_out_callback(&warp_energy_manager_v2->sd_energy_manager_data_points_hlc, stream_length, chunk_offset, data_chunk_data, 34, tf_copy_items_uint8_t)) {
         return;
     }
 

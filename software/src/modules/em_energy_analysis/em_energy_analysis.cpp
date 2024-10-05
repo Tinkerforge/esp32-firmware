@@ -32,6 +32,12 @@
 #define DATA_INTERVAL_5MIN 5 // minutes
 #define MAX_PENDING_DATA_POINTS 250
 
+#if MODULE_EM_V1_AVAILABLE()
+#define FLAGS_NO_DATA 0x80
+#elif MODULE_EM_V2_AVAILABLE()
+#define FLAGS_NO_DATA 0x8000
+#endif
+
 //#define DEBUG_LOGGING
 
 static_assert(METERS_SLOTS <= 7, "Too many meters slots");
@@ -214,10 +220,9 @@ void EMEnergyAnalysis::collect_data_points()
             uint32_t last_update = charger.last_update;
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
-                uint8_t charger_state = charger.charger_state;
-
                 uint32_t uid = charger.uid;
-                uint8_t flags = charger_state; // bit 0-2 = charger state, bit 7 = no data (read only)
+                uint16_t flags = charger.charger_state; // v1: bit 0-2 = charger state, bit 7 = no data (read only)
+                                                        // v2: bit 0-2 = charger state, bit 15 = no data (read only)
                 uint16_t power = UINT16_MAX;
 
                 if (charger.meter_supported) {
@@ -252,7 +257,8 @@ void EMEnergyAnalysis::collect_data_points()
         }
 
         if (all_data_common->is_valid && !deadline_elapsed(all_data_common->last_update + MAX_DATA_AGE)) {
-            uint8_t flags = 0; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data (read only)
+            uint8_t flags = 0; // v1: bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data (read only)
+                               // v2: bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 15 = no data (read only)
             int32_t power[7] = {INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX}; // W
 
             bool inputs[4];
@@ -597,7 +603,7 @@ void EMEnergyAnalysis::save_persistent_data()
     }
 }
 
-bool EMEnergyAnalysis::set_wallbox_5min_data_point(const struct tm *utc, const struct tm *local, uint32_t uid, uint8_t flags, uint16_t power /* W */)
+bool EMEnergyAnalysis::set_wallbox_5min_data_point(const struct tm *utc, const struct tm *local, uint32_t uid, uint16_t flags, uint16_t power /* W */)
 {
     uint8_t status;
     uint8_t utc_year = utc->tm_year - 100;
@@ -741,9 +747,9 @@ bool EMEnergyAnalysis::set_wallbox_daily_data_point(const struct tm *local, uint
 }
 
 bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
-                                                       const struct tm *local,
-                                                       uint8_t flags,
-                                                       const int32_t power[7] /* W */)
+                                                          const struct tm *local,
+                                                          uint16_t flags,
+                                                          const int32_t power[7] /* W */)
 {
     uint8_t status;
     uint8_t utc_year = utc->tm_year - 100;
@@ -942,7 +948,11 @@ typedef struct {
 static StreamMetadata metadata_array[4];
 
 struct [[gnu::packed]] Wallbox5minData {
-    uint8_t flags; // bit 0-2 = charger state, bit 7 = no data (read only)
+#if MODULE_EM_V1_AVAILABLE()
+    uint8_t flags;  // v1: bit 0-2 = charger state, bit 7 = no data (read only)
+#elif MODULE_EM_V2_AVAILABLE()
+    uint16_t flags; // v2: bit 0-2 = charger state, bit 15 = no data (read only)
+#endif
     uint16_t power; // W
 };
 
@@ -997,7 +1007,7 @@ static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_len
     for (i = 0; i < actual_length && write_success; i += sizeof(Wallbox5minData)) {
         p = (Wallbox5minData *)&data_chunk_data[i];
 
-        if ((p->flags & 0x80 /* no data */) == 0) {
+        if ((p->flags & FLAGS_NO_DATA) == 0) {
             write_success = response->writef("%u", p->flags);
         } else {
             p->power = UINT16_MAX;
@@ -1355,7 +1365,11 @@ void EMEnergyAnalysis::history_wallbox_daily_response(IChunkedResponse *response
 }
 
 struct [[gnu::packed]] EnergyManager5MinData {
-    uint8_t flags; // bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data
+#if MODULE_EM_V1_AVAILABLE()
+    uint8_t flags;  // v1: bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 7 = no data
+#elif MODULE_EM_V2_AVAILABLE()
+    uint16_t flags; // v2: bit 0 = 1p/3p, bit 1-2 = input, bit 3 = relay, bit 15 = no data
+#endif
     int32_t power[7]; // W
     uint32_t price; // FIXME Unit? Use price for something.
 };
@@ -1363,7 +1377,7 @@ struct [[gnu::packed]] EnergyManager5MinData {
 static void energy_manager_5min_data_points_handler(void *do_not_use,
                                                     uint16_t data_length,
                                                     uint16_t data_chunk_offset,
-                                                    uint8_t data_chunk_data[33],
+                                                    uint8_t data_chunk_data[34], // v1: 33 byte, v2: 34 byte
                                                     void *user_data)
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
@@ -1411,7 +1425,7 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
         EnergyManager5MinData *p = (EnergyManager5MinData *)data_chunk_data;
 
         if (write_success) {
-            if ((p->flags & 0x80 /* no data */) == 0) {
+            if ((p->flags & FLAGS_NO_DATA) == 0) {
                 write_success = response->writef("%u", p->flags);
             } else {
                 write_success = response->writef("null");
@@ -1434,7 +1448,11 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
     }
 
     metadata->write_comma = true;
+#if MODULE_EM_V1_AVAILABLE()
     metadata->next_offset += 33;
+#elif MODULE_EM_V2_AVAILABLE()
+    metadata->next_offset += 34;
+#endif
 
     if (metadata->next_offset >= data_length) {
         if (metadata->utc_end_slots > 0) {

@@ -298,7 +298,7 @@ int EMV2::wem_get_sd_information(uint32_t *ret_sd_status, uint32_t *ret_lfs_stat
     return tf_warp_energy_manager_v2_get_sd_information(&device, ret_sd_status, ret_lfs_status, ret_sector_size, ret_sector_count, ret_card_type, ret_product_rev, ret_product_name, ret_manufacturer_id);
 }
 
-int EMV2::wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status)
+int EMV2::wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t flags, uint16_t power, uint8_t *ret_status)
 {
     return tf_warp_energy_manager_v2_set_sd_wallbox_data_point(&device, wallbox_id, year, month, day, hour, minute, flags, power, ret_status);
 }
@@ -318,7 +318,7 @@ int EMV2::wem_get_sd_wallbox_daily_data_points(uint32_t wallbox_id, uint8_t year
     return tf_warp_energy_manager_v2_get_sd_wallbox_daily_data_points(&device, wallbox_id, year, month, day, amount, ret_status);
 }
 
-int EMV2::wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, int32_t power_grid, const int32_t power_general[6], uint32_t price, uint8_t *ret_status)
+int EMV2::wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t flags, int32_t power_grid, const int32_t power_general[6], uint32_t price, uint8_t *ret_status)
 {
     return tf_warp_energy_manager_v2_set_sd_energy_manager_data_point(&device, year, month, day, hour, minute, flags, power_grid, power_general, price, ret_status);
 }
