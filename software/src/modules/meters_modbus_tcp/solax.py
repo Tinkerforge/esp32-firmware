@@ -51,7 +51,7 @@ specs = [
                 'value_type': 'S16',
             },
             {
-                'name': 'Battery Temperature [Ĉ]',
+                'name': 'Battery Temperature [°C]',
                 'value_id': 'Temperature',
                 'start_address': 24,
                 'value_type': 'S16',
