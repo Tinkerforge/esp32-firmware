@@ -39,6 +39,8 @@ import { MeterValueID    } from "../meters/meter_value_id";
 import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_manager/main";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
+import { InputText } from "../../ts/components/input_text";
+import { SOLAR_FORECAST_PLANES, SolarForecastState, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} hidden={false} />;
@@ -47,12 +49,13 @@ export function HeatingNavbar() {
 type HeatingConfig = API.getType["heating/config"];
 
 interface HeatingState {
+    heating_state: API.getType["heating/state"];
     dap_config: API.getType["day_ahead_prices/config"];
     dap_state:  API.getType["day_ahead_prices/state"];
     dap_prices: API.getType["day_ahead_prices/prices"];
 }
 
-export class Heating extends ConfigComponent<'heating/config', {}, HeatingState> {
+export class Heating extends ConfigComponent<'heating/config', {}, HeatingState & SolarForecastState> {
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
     uplot_legend_div_ref    = createRef();
@@ -87,6 +90,9 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
         super('heating/config',
               __("heating.script.save_failed"));
 
+        util.addApiEventListener("heating/state", () => {
+            this.setState({heating_state: API.get("heating/state")});
+        });
         util.addApiEventListener("day_ahead_prices/config", () => {
             this.setState({dap_config: API.get("day_ahead_prices/config")});
         });
@@ -100,6 +106,52 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
             // Update chart every time new price data comes in
             this.update_uplot();
         });
+
+        for (let plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; ++plane_index) {
+            util.addApiEventListener_unchecked(`solar_forecast/planes/${plane_index}/state`, () => {
+                let state = API.get_unchecked(`solar_forecast/planes/${plane_index}/state`);
+
+                this.setState((prevState) => ({
+                    plane_states: {
+                        ...prevState.plane_states,
+                        [plane_index]: state
+                    }
+                }));
+            });
+
+            util.addApiEventListener_unchecked(`solar_forecast/planes/${plane_index}/forecast`, () => {
+                let forecast = API.get_unchecked(`solar_forecast/planes/${plane_index}/forecast`);
+
+                this.setState((prevState) => ({
+                    plane_forecasts: {
+                        ...prevState.plane_forecasts,
+                        [plane_index]: forecast
+                    }
+                }));
+
+                this.update_uplot();
+            });
+
+            util.addApiEventListener_unchecked(`solar_forecast/planes/${plane_index}/config`, () => {
+                let config = API.get_unchecked(`solar_forecast/planes/${plane_index}/config`);
+
+                this.setState((prevState) => ({
+                    plane_configs: {
+                        ...prevState.plane_configs,
+                        [plane_index]: config
+                    }
+                }));
+
+                if (!this.isDirty()) {
+                    this.setState((prevState) => ({
+                        plane_configs: {
+                            ...prevState.plane_configs,
+                            [plane_index]: config
+                        }
+                    }));
+                }
+            });
+        }
     }
 
     get_price_timeframe() {
@@ -153,25 +205,35 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                 default_visibilty: [null, true],
                 lines_vertical: []
             }
-            let resolution_multiplier = this.state.dap_prices.resolution == 0 ? 15 : 60
+            const resolution_multiplier = this.state.dap_prices.resolution == 0 ? 15 : 60
             const grid_costs_and_taxes_and_supplier_markup = this.state.dap_config.grid_costs_and_taxes/1000.0 + this.state.dap_config.supplier_markup/1000.0;
             for (let i = 0; i < this.state.dap_prices.prices.length; i++) {
                 data.values[0].push(this.state.dap_prices.first_date*60 + i*60*resolution_multiplier);
                 data.values[1].push(this.state.dap_prices.prices[i]/1000.0 + grid_costs_and_taxes_and_supplier_markup);
             }
 
-            const num_per_day   = 24*60/resolution_multiplier;
+            const solar_forecast_today     = get_kwh_today(this.state);
+            const solar_forecast_tomorrow  = get_kwh_tomorrow(this.state);
+            const solar_forecast_threshold = this.state.summer_yield_forecast_threshold;
+            const current_month = new Date().getMonth();
+            const current_day   = new Date().getDate();
+            const is_summer = ((current_month == this.state.summer_start_month-1) && (current_day   >= this.state.summer_start_day  )) ||
+                              ((current_month == this.state.summer_end_month-1  ) && (current_day   <= this.state.summer_end_day    )) ||
+                              ((current_month >  this.state.summer_start_month-1) && (current_month <  this.state.summer_end_month-1));
+
+            const num_per_day   = this.get_price_num_per_day();
             const active_active = this.state.summer_active_time_active;
             const active_start  = this.state.summer_active_time_start/resolution_multiplier;
             const active_end    = this.state.summer_active_time_end/resolution_multiplier;
 
-            if (this.state.dap_prices.prices.length >= num_per_day*2) {
-                let avg_price_day1 = this.state.dap_prices.prices.slice(0, num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
-                let avg_price_day2 = this.state.dap_prices.prices.slice(num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
+            const active_today    = active_active && (!this.state.summer_yield_forecast_active || (is_summer && (solar_forecast_today >= solar_forecast_threshold)));
+            const active_tomorrow = active_active && (!this.state.summer_yield_forecast_active || (is_summer && (solar_forecast_tomorrow >= solar_forecast_threshold)));
 
+            if (this.state.dap_prices.prices.length >= num_per_day) {
+                const avg_price_day1 = this.state.dap_prices.prices.slice(0, num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
                 for (let i = 0; i < num_per_day; i++) {
-                    if (((i < active_start) || (i >= active_end)) && active_active) {
-                        data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
+                    if (((i < active_start) || (i >= active_end)) && active_today) {
+                        //data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
                     } else if (this.state.dap_prices.prices[i] < avg_price_day1*this.state.dpc_extended_threshold/100) {
                         if (this.state.dpc_extended_active) {
                             data.lines_vertical.push({'index': i, 'text': '', 'color': [0, 255, 0, 0.5]});
@@ -182,9 +244,12 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                         }
                     }
                 }
+            }
+            if (this.state.dap_prices.prices.length >= num_per_day*2) {
+                const avg_price_day2 = this.state.dap_prices.prices.slice(num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
                 for (let i = num_per_day; i < num_per_day*2; i++) {
-                    if ((((i-num_per_day) < active_start) || ((i-num_per_day) >= active_end)) && active_active) {
-                        data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
+                    if ((((i-num_per_day) < active_start) || ((i-num_per_day) >= active_end)) && active_tomorrow) {
+                        //data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
                     } else if (this.state.dap_prices.prices[i] < avg_price_day2*this.state.dpc_extended_threshold/100) {
                         if (this.state.dpc_extended_active) {
                             data.lines_vertical.push({'index': i, 'text': '', 'color': [0, 255, 0, 0.5]});
@@ -209,6 +274,25 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
         this.uplot_wrapper_ref.current.set_data(data);
     }
 
+    get_price_num_per_day() {
+        return 24*60/(this.state.dap_prices.resolution == 0 ? 15 : 60);
+    }
+
+    // TODO: This assumes that the data always consists of two days. Use time between function instead.
+    get_average_price_today() {
+        const num_per_day = this.get_price_num_per_day();
+        const grid_costs_and_taxes_and_supplier_markup = this.state.dap_config.grid_costs_and_taxes + this.state.dap_config.supplier_markup;
+        const avg = this.state.dap_prices.prices.slice(0, num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
+        return avg + grid_costs_and_taxes_and_supplier_markup;
+    }
+
+    get_average_price_tomorrow() {
+        const num_per_day = this.get_price_num_per_day();
+        const grid_costs_and_taxes_and_supplier_markup = this.state.dap_config.grid_costs_and_taxes + this.state.dap_config.supplier_markup;
+        const avg = this.state.dap_prices.prices.slice(num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
+        return avg + grid_costs_and_taxes_and_supplier_markup;
+    }
+
     get_date_from_minutes(minutes: number) {
         const h = Math.floor(minutes / 60);
         const m = minutes - h * 60;
@@ -229,7 +313,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
         return Heating.days.slice(0, 31);
     }
 
-    render(props: {}, state: Readonly<HeatingConfig>) {
+    render(props: {}, state: HeatingState & HeatingConfig) {
         if (!util.render_allowed())
             return <SubPage name="heating" />;
 
@@ -392,9 +476,9 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                             switch_label_inactive="Inaktiv"
                             unit="kWh"
                             checked={state.summer_yield_forecast_active}
-                            onClick={this.toggle('summer_yield_forecast_active')}
+                            onClick={this.toggle('summer_yield_forecast_active', this.update_uplot)}
                             value={state.summer_yield_forecast_threshold}
-                            onValue={this.set("summer_yield_forecast_threshold")}
+                            onValue={this.set("summer_yield_forecast_threshold", this.update_uplot)}
                             min={0}
                             max={1000}
                             switch_label_min_width="100px"
@@ -444,44 +528,104 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                             switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <FormRow label="Preisbasierter Heizplan" label_muted="Heizplan anhand dynamischer Preise: Rot = blockierender Betrieb, Grün = Einschaltempfehlung, Grau = Außerhalb der Aktivzeit">
+
+                    <FormSeparator heading="Status"/>
+                    <FormRow label="Preisbasierter Heizplan" label_muted="Heizplan anhand dynamischer Preise: Rot = blockierender Betrieb, Grün = Einschaltempfehlung">
                     <div class="card pl-1 pb-1">
-                    <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
-                        <UplotLoader
-                            ref={this.uplot_loader_ref}
-                            show={true}
-                            marker_class={'h4'}
-                            no_data={__("day_ahead_prices.content.no_data")}
-                            loading={__("day_ahead_prices.content.loading")}>
-                            <UplotWrapper
-                                ref={this.uplot_wrapper_ref}
-                                class="heating--chart pb-3"
-                                sub_page="heating"
-                                color_cache_group="heating.default"
+                        <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                            <UplotLoader
+                                ref={this.uplot_loader_ref}
                                 show={true}
-                                on_mount={() => this.update_uplot()}
-                                legend_time_label={__("day_ahead_prices.content.time")}
-                                legend_time_with_minutes={true}
-                                legend_div_ref={this.uplot_legend_div_ref}
-                                aspect_ratio={3}
-                                x_height={50}
-                                x_format={{hour: '2-digit', minute: '2-digit'}}
-                                x_padding_factor={0}
-                                x_include_date={true}
-                                y_min={0}
-                                y_max={5}
-                                y_unit={"ct/kWh"}
-                                y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
-                                y_digits={3}
-                                y_skip_upper={true}
-                                y_sync_ref={this.uplot_wrapper_flags_ref}
-                                only_show_visible={true}
-                                padding={[15, 5, null, null]}
-                            />
-                        </UplotLoader>
+                                marker_class={'h4'}
+                                no_data={__("day_ahead_prices.content.no_data")}
+                                loading={__("day_ahead_prices.content.loading")}>
+                                <UplotWrapper
+                                    ref={this.uplot_wrapper_ref}
+                                    class="heating--chart pb-3"
+                                    sub_page="heating"
+                                    color_cache_group="heating.default"
+                                    show={true}
+                                    on_mount={() => this.update_uplot()}
+                                    legend_time_label={__("day_ahead_prices.content.time")}
+                                    legend_time_with_minutes={true}
+                                    legend_div_ref={this.uplot_legend_div_ref}
+                                    aspect_ratio={3}
+                                    x_height={50}
+                                    x_format={{hour: '2-digit', minute: '2-digit'}}
+                                    x_padding_factor={0}
+                                    x_include_date={true}
+                                    y_unit={"ct/kWh"}
+                                    y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
+                                    y_digits={3}
+                                    y_skip_upper={true}
+                                    y_sync_ref={this.uplot_wrapper_flags_ref}
+                                    only_show_visible={true}
+                                    padding={[15, 5, null, null]}
+                                />
+                            </UplotLoader>
+                        </div>
                     </div>
-                </div>
-                </FormRow>
+                    </FormRow>
+                    <FormRow label="Durchschnittspreis">
+                        <div class="row no-gutters">
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">Heute</span></div>
+                                    <InputText
+                                        value={util.toLocaleFixed(this.get_average_price_today()/1000, 2) + " ct/kWh"}
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Morgen</span></div>
+                                    <InputText
+                                        value={util.toLocaleFixed(this.get_average_price_tomorrow()/1000, 2) + " ct/kWh"}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </FormRow>
+                    <FormRow label="Solarprognose">
+                        <div class="row no-gutters">
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">Heute</span></div>
+                                    <InputText
+                                        value={util.toLocaleFixed(get_kwh_today(this.state), 2) + " kWh"}
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Morgen</span></div>
+                                    <InputText
+                                        value={util.toLocaleFixed(get_kwh_tomorrow(this.state), 2)+ " kWh"}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </FormRow>
+                    <FormRow label="SG-Ready">
+                        <div class="row no-gutters">
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">Ausgang 1</span></div>
+                                    <InputText
+                                        value={state.heating_state.sg_ready_blocking_active ? 'Aktiv' : 'Inaktiv'}
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Ausgang 2</span></div>
+                                    <InputText
+                                        value={state.heating_state.sg_ready_extended_active ? 'Aktiv' : 'Inaktiv'}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </FormRow>
 
                     <FormSeparator heading="§14 EnWG"/>
                     <FormRow label="§14 EnWG">

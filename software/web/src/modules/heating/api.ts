@@ -23,3 +23,9 @@ export interface config {
     p14enwg_input: number;
     p14enwg_active_type: number;
 }
+
+export interface state {
+    sg_ready_blocking_active: boolean;
+    sg_ready_extended_active: boolean;
+    p14ewng_active: boolean;
+}
