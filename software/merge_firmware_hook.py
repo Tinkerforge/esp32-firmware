@@ -103,8 +103,8 @@ if env.GetProjectOption('custom_signed') == 'true':
             env.subst("$PROJECT_DIR/signature/sign.py"),
             env.GetProjectOption("custom_name"),
             env.subst("$BUILD_DIR/${PROGNAME}_merged.bin"),
-            "build/{}_merged.bin".format(firmware_basename)
-        ), f"Signing $BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin -> build{os.sep}{{os.sep}}_merged.bin")
+            f"build/{firmware_basename}_merged.bin"
+        ), f"Signing $BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin -> build{os.sep}{firmware_basename}_merged.bin")
     )
 else:
     env.AddPostAction(
