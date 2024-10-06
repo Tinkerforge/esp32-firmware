@@ -58,8 +58,6 @@ interface HeatingState {
 export class Heating extends ConfigComponent<'heating/config', {}, HeatingState & SolarForecastState> {
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
-    uplot_legend_div_ref    = createRef();
-    uplot_wrapper_flags_ref = createRef();
 
     summer_start_day:   number;
     summer_start_month: number;
@@ -186,17 +184,17 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
         // If we have not got any prices yet, use empty data
         if (this.state.dap_prices.prices.length == 0) {
             data = {
-                keys: [],
-                names: [],
-                values: [],
-                stacked: [],
-                paths: [],
+                keys: [null],
+                names: [null],
+                values: [null],
+                stacked: [null],
+                paths: [null],
             }
         // Else fill with time and the three different prices we want to show
         } else {
             data = {
-                keys: ['time', 'price'],
-                names: [__("day_ahead_prices.content.time"), __("day_ahead_prices.content.electricity_price")],
+                keys: [null, 'price'],
+                names: [null, __("day_ahead_prices.content.electricity_price")],
                 values: [[], [], [], []],
                 stacked: [null, true],
                 paths: [null, UplotPath.Step],
@@ -541,14 +539,13 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 loading={__("day_ahead_prices.content.loading")}>
                                 <UplotWrapper
                                     ref={this.uplot_wrapper_ref}
-                                    class="heating--chart pb-3"
+                                    class="heating-chart pb-3"
                                     sub_page="heating"
                                     color_cache_group="heating.default"
                                     show={true}
                                     on_mount={() => this.update_uplot()}
                                     legend_time_label={__("day_ahead_prices.content.time")}
                                     legend_time_with_minutes={true}
-                                    legend_div_ref={this.uplot_legend_div_ref}
                                     aspect_ratio={3}
                                     x_height={50}
                                     x_format={{hour: '2-digit', minute: '2-digit'}}
@@ -557,8 +554,6 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                     y_unit={"ct/kWh"}
                                     y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
                                     y_digits={3}
-                                    y_skip_upper={true}
-                                    y_sync_ref={this.uplot_wrapper_flags_ref}
                                     only_show_visible={true}
                                     padding={[15, 5, null, null]}
                                 />
