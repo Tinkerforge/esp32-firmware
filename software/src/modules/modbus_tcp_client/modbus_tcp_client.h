@@ -36,5 +36,4 @@ public:
 
 private:
     TFModbusTCPClientPool pool;
-    dns_gethostbyname_addrtype_lwip_ctx_async_data dns_data;
 };
