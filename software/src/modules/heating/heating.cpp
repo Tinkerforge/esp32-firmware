@@ -70,7 +70,9 @@ void Heating::pre_setup()
     }};
 
     state = Config::Object({
-
+        {"sg_ready_blocking_active", Config::Bool(false)},
+        {"sg_ready_extended_active", Config::Bool(false)},
+        {"p14enwg_active", Config::Bool(false)}
     });
 }
 
@@ -167,8 +169,11 @@ void Heating::update()
     // If p14enwg is triggered, we immediately set output 0 accordingly.
     // If it is not triggered it depends on the heating controller if it should be on or off.
     if (p14enwg_on) {
+        state.get("p14enwg_active")->updateBool(true);
         extended_logging("§14 EnWG blocks heating. Turning on SG ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         em_v2.set_sg_ready_output(0, sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
+    } else {
+        state.get("p14enwg_active")->updateBool(false);
     }
 
     // Get values from config
@@ -331,12 +336,14 @@ void Heating::update()
 
     const bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
     if (sg_ready1_on) {
+        state.get("sg_ready_blocking_active")->updateBool(true);
         extended_logging("Heating decision: Turning on SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         if (!sg_ready_output_1) {
             em_v2.set_sg_ready_output(1, sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED);
             last_sg_ready_change = rtc.timestamp_minutes();
         }
     } else {
+        state.get("sg_ready_blocking_active")->updateBool(false);
         extended_logging("Heating decision: Turning off SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         if (sg_ready_output_1) {
             em_v2.set_sg_ready_output(1, !(sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED));
@@ -348,12 +355,14 @@ void Heating::update()
     if (!p14enwg_on) {
         const bool sg_ready_output_0 = em_v2.get_sg_ready_output(0);
         if (sg_ready0_on) {
+            state.get("sg_ready_blocking_active")->updateBool(true);
             extended_logging("Heating decision: Turning on SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
             if (!sg_ready_output_0) {
                 em_v2.set_sg_ready_output(0, sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
                 last_sg_ready_change = rtc.timestamp_minutes();
             }
         } else {
+            state.get("sg_ready_blocking_active")->updateBool(false);
             extended_logging("Heating decision: Turning off SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
             if (sg_ready_output_0) {
                 em_v2.set_sg_ready_output(0, !(sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED));
