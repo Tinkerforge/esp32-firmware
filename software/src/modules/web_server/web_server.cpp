@@ -28,8 +28,31 @@
 #include "cool_string.h"
 #include "esp_httpd_priv.h"
 
-#define MAX_URI_HANDLERS 128
 
+#include "sdkconfig.h"
+#ifndef CONFIG_ESP_HTTPS_SERVER_ENABLE
+#define CONFIG_ESP_HTTPS_SERVER_ENABLE 0
+#endif
+#ifndef MODULE_CERTS_AVAILABLE
+#define MODULE_CERTS_AVAILABLE() 0
+#endif
+
+// HTTPS is available if
+// - the board has PSRAM,
+// - certificates are available and
+// - the HTTPS server is enabled in pio.
+#if (defined(BOARD_HAS_PSRAM) && MODULE_CERTS_AVAILABLE() && CONFIG_ESP_HTTPS_SERVER_ENABLE)
+#define HTTPS_AVAILABLE() 1
+#else
+#define HTTPS_AVAILABLE() 0
+#endif
+
+#if HTTPS_AVAILABLE()
+#include <esp_https_server.h>
+#endif
+
+
+#define MAX_URI_HANDLERS 128
 #define HTTPD_STACK_SIZE 7168
 
 void WebServer::post_setup()
@@ -38,30 +61,69 @@ void WebServer::post_setup()
         return;
     }
 
-    httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.lru_purge_enable = true;
-    config.stack_size = HTTPD_STACK_SIZE;
-    config.max_uri_handlers = MAX_URI_HANDLERS;
-    config.global_user_ctx = this;
-    // httpd_stop calls free on the pointer passed as global_user_ctx if we don't override the free_fn.
-    config.global_user_ctx_free_fn = [](void *foo){};
-    config.max_open_sockets = 10;
+#if HTTPS_AVAILABLE()
+    httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
 
-    config.enable_so_linger = true;
-    config.linger_timeout = 100;
+    size_t cert_crt_len = 0;
+    auto cert_crt = certs.get_cert(0, &cert_crt_len); // TODO: Get cert ID from network config
+    if (cert_crt == nullptr) {
+        logger.printfln("Certificate with ID 0 is not available");
+        return;
+    }
+
+    size_t cert_key_len = 0;
+    auto cert_key = certs.get_cert(1, &cert_key_len); // TODO: Get cert ID from network config
+    if (cert_key == nullptr) {
+        logger.printfln("Certificate with ID 1 is not available");
+        return;
+    }
+
+    // SSL config
+    config.transport_mode = HTTPD_SSL_TRANSPORT_SECURE; // TODO: Get transport mode from network config
+    config.port_secure    = 443; // TODO: Get from network config
+    config.port_insecure  = 80; // TODO: Get from network config
+    config.cacert_pem     = cert_crt.release();
+    config.cacert_len     = cert_crt_len + 1; // +1 since the length must include the null terminator
+    config.prvtkey_pem    = cert_key.release();
+    config.prvtkey_len    = cert_key_len + 1; // +1 since the length must include the null terminator
+#else
+    // Use fake ssl_config_t to be able to reuse code
+    typedef struct {
+        httpd_config_t httpd;
+    } fake_ssl_config_t;
+
+    fake_ssl_config_t config = {
+        .httpd = HTTPD_DEFAULT_CONFIG()
+    };
+#endif
+
+    config.httpd.lru_purge_enable = true;
+    config.httpd.stack_size = HTTPD_STACK_SIZE;
+    config.httpd.max_uri_handlers = MAX_URI_HANDLERS;
+    config.httpd.global_user_ctx = this;
+    // httpd_stop calls free on the pointer passed as global_user_ctx if we don't override the free_fn.
+    config.httpd.global_user_ctx_free_fn = [](void *foo){};
+    config.httpd.max_open_sockets = 10;
+    config.httpd.enable_so_linger = true;
+    config.httpd.linger_timeout = 100;
+
 #if MODULE_NETWORK_AVAILABLE()
-    config.server_port = network.config.get("web_server_port")->asUint();
+    config.httpd.server_port = network.config.get("web_server_port")->asUint();
 #endif
 
 #if MODULE_HTTP_AVAILABLE()
-    config.uri_match_fn = custom_uri_match;
+    config.httpd.uri_match_fn = custom_uri_match;
 #endif
 
     /*config.task_priority = tskIDLE_PRIORITY+7;
-    config.core_id = 1;*/
+    config.httpd.core_id = 1;*/
 
     // Start the httpd server
-    auto result = httpd_start(&this->httpd, &config);
+#if HTTPS_AVAILABLE()
+    auto result = httpd_ssl_start(&this->httpd, &config);
+#else
+    auto result = httpd_start(&this->httpd, &config.httpd);
+#endif
     if (result != ESP_OK) {
         httpd = nullptr;
         logger.printfln("Failed to start web server! %s (%d)", esp_err_to_name(result), result);
