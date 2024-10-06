@@ -28,6 +28,10 @@
 
 void ModbusTCPClient::setup()
 {
+    TFNetworkUtil::set_logln_callback([](const char *message) {
+        logger.printfln("%s", message);
+    });
+
     TFNetworkUtil::set_milliseconds_callback(millis);
 
     TFNetworkUtil::set_resolve_callback([this](const char *host_name, std::function<void(uint32_t host_address, int error_number)> &&callback) {
