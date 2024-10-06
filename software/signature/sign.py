@@ -51,7 +51,7 @@ def load_libsodium():
 
             break
         else:
-            raise Exception('cannot find libsodium library')
+            raise Exception('Cannot find libsodium library')
 
     if libsodium.sodium_init() < 0:
         raise Exception('libsodium sodium_init failed')
@@ -74,7 +74,7 @@ def keepassxc(config, prefix, action, args, entry, password=None, input=None):
         assert password != None
         full_input = password + '\n'
     else:
-        raise Exception(f'invalid protection: {protection}')
+        raise Exception(f'Invalid protection: {protection}')
 
     full_args += args + [path, entry]
 
@@ -107,21 +107,21 @@ def main():
     args = parser.parse_args()
 
     if not os.path.exists(args.input_path):
-        raise Exception(f'input file {args.input_path} is missing')
+        raise Exception(f'Input file {args.input_path} is missing')
 
     if os.path.exists(args.output_path):
         if not args.force_overwrite:
-            raise Exception(f'output file {args.output_path} already exists')
+            raise Exception(f'Output file {args.output_path} already exists')
 
         if os.path.samefile(args.input_path, args.output_path):
-            raise Exception(f'input file {args.input_path} and output file {args.output_path} are the same')
+            raise Exception(f'Input file {args.input_path} and output file {args.output_path} are the same')
 
-        print(f'removing existing output file {args.output_path} [--force-overwrite]')
+        print(f'Removing existing output file {args.output_path} [--force-overwrite]')
 
         try:
             os.remove(args.output_path)
         except Exception as e:
-            raise Exception(f'could not remove existing output file {args.output_path}: {e}')
+            raise Exception(f'Could not remove existing output file {args.output_path}: {e}')
 
     config = configparser.ConfigParser()
     config.read(make_path('config.ini'))
@@ -130,34 +130,34 @@ def main():
     publisher_bytes = config['publisher'].encode('utf-8')
 
     if len(publisher_bytes) < 1 or len(publisher_bytes) > 63:
-        raise Exception('signature publisher UTF-8 length is out of range')
+        raise Exception('Signature publisher UTF-8 length is out of range')
 
     publisher = repr(publisher_bytes)[2:-1].replace('"', '\\"')
 
     sodium_secret_key_path = make_keys_path(config['sodium_secret_key_path'])
 
-    print(f'reading sodium secret key entry from {sodium_secret_key_path}')
+    print(f'Reading sodium secret key entry from {sodium_secret_key_path}')
 
     if not os.path.exists(sodium_secret_key_path):
-        raise Exception(f'sodium secret key file {sodium_secret_key_path} is missing')
+        raise Exception(f'Sodium secret key file {sodium_secret_key_path} is missing')
 
     sodium_secret_key_password = args.sodium_secret_key_password
 
     if config['sodium_secret_key_protection'] == 'password' and sodium_secret_key_password == None:
-        print(f'enter password for sodium secret key file {sodium_secret_key_path}:')
+        print(f'Enter password for sodium secret key file {sodium_secret_key_path}:')
         sodium_secret_key_password = getpass.getpass(prompt='')
 
     sodium_secret_key_hex = keepassxc(config, 'sodium_secret_key', 'show', ['-s', '-a', 'password'], 'sodium_secret_key', password=sodium_secret_key_password)
 
     if sodium_secret_key_hex == None:
-        raise Exception(f'could not read sodium secret key entry from {sodium_secret_key_path}')
+        raise Exception(f'Could not read sodium secret key entry from {sodium_secret_key_path}')
 
     sodium_secret_key = bytes.fromhex(sodium_secret_key_hex)
 
     crypto_sign_SECRETKEYBYTES = libsodium.crypto_sign_secretkeybytes()
 
     if len(sodium_secret_key) != crypto_sign_SECRETKEYBYTES:
-        raise Exception('sodium secret key has wrong size')
+        raise Exception('Sodium secret key has wrong size')
 
     state = CryptoSignState()
 
@@ -168,7 +168,7 @@ def main():
         with open(args.input_path, 'rb') as f:
             input_data = bytearray(f.read())
     except Exception as e:
-        raise Exception(f'could not read input from {args.input_path}: {e}')
+        raise Exception(f'Could not read input from {args.input_path}: {e}')
 
     crypto_sign_BYTES = libsodium.crypto_sign_bytes()
     assert(crypto_sign_BYTES == 64)
@@ -201,15 +201,15 @@ def main():
         with open(args.output_path + '.tmp', 'wb') as f:
             f.write(input_data)
     except Exception as e:
-        raise Exception(f'could not write output to {args.output_path}.tmp: {e}')
+        raise Exception(f'Could not write output to {args.output_path}.tmp: {e}')
 
     try:
         os.replace(args.output_path + '.tmp', args.output_path)
     except Exception as e:
-        raise Exception(f'could not rename output file from {args.output_path}.tmp to {args.output_path}: {e}')
+        raise Exception(f'Could not rename output file from {args.output_path}.tmp to {args.output_path}: {e}')
 
     if not config.getboolean('gpg_sign'):
-        print('skipping GPG signature')
+        print('Skipping GPG signature')
     else:
         sha256sum = hashlib.sha256(input_data).hexdigest()
 
@@ -217,16 +217,16 @@ def main():
             with open(args.output_path + '.sha256.tmp', 'w', encoding='utf-8') as f:
                 f.write(f'{sha256sum}  {os.path.split(args.output_path)[-1]}\n')
         except Exception as e:
-            raise Exception(f'could not write checksum to {args.output_path}.sha256.tmp: {e}')
+            raise Exception(f'Could not write checksum to {args.output_path}.sha256.tmp: {e}')
 
         try:
             os.replace(args.output_path + '.sha256.tmp', args.output_path + '.sha256')
         except Exception as e:
-            raise Exception(f'could not rename checksum file from {args.output_path}.tmp to {args.output_path}.sha256: {e}')
+            raise Exception(f'Could not rename checksum file from {args.output_path}.tmp to {args.output_path}.sha256: {e}')
 
         gpg_keyring_passphrase_path = make_keys_path(config['gpg_keyring_passphrase_path'])
 
-        print(f'reading GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
+        print(f'Reading GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
 
         if not os.path.exists(gpg_keyring_passphrase_path):
             raise Exception(f'GPG keyring passphrase file {gpg_keyring_passphrase_path} is missing')
@@ -234,13 +234,13 @@ def main():
         gpg_keyring_passphrase_password = args.gpg_keyring_passphrase_password
 
         if config['gpg_keyring_passphrase_protection'] == 'password' and gpg_keyring_passphrase_password == None:
-            print(f'enter password for GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
+            print(f'Enter password for GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
             gpg_keyring_passphrase_password = getpass.getpass(prompt='')
 
         gpg_keyring_passphrase = keepassxc(config, 'gpg_keyring_passphrase', 'show', ['-s', '-a', 'password'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password)
 
         if gpg_keyring_passphrase == None:
-            raise Exception(f'could not read GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
+            raise Exception(f'Could not read GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
 
         gpg_keyring_passphrase = gpg_keyring_passphrase.strip()
 
@@ -261,9 +261,9 @@ def main():
                 '--detach-sign', args.output_path + '.sha256',
             ])
         except:
-            raise Exception(f'could not GPG sign {args.output_path}.sha256')
+            raise Exception(f'Could not GPG sign {args.output_path}.sha256')
 
-    print(f'successfully signed by {repr(publisher)}: {args.output_path}')
+    print(f'Successfully signed by {repr(publisher)}: {args.output_path}')
 
     # FIXME: force token unplugging now
 
@@ -272,5 +272,5 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        print(f'error: {e}')
+        print(f'Error: {e}')
         sys.exit(1)

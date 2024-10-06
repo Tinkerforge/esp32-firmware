@@ -51,7 +51,7 @@ def load_libsodium():
 
             break
         else:
-            raise Exception('cannot find libsodium library')
+            raise Exception('Cannot find libsodium library')
 
     if libsodium.sodium_init() < 0:
         raise Exception('libsodium sodium_init failed')
@@ -76,10 +76,10 @@ def main():
         with open(args.input_path, 'rb') as f:
             input_data = bytearray(f.read())
     except Exception as e:
-        raise Exception(f'could not read input from {args.input_path}: {e}')
+        raise Exception(f'Could not read input from {args.input_path}: {e}')
 
     if not config.getboolean('gpg_sign'):
-        print('skipping GPG verify')
+        print('Skipping GPG verify')
     else:
         gpg_public_key_path = make_keys_path(config['gpg_public_key_path'])
 
@@ -90,7 +90,7 @@ def main():
                 args.input_path + '.sha256.asc', args.input_path + '.sha256',
             ])
         except:
-            raise Exception('could not verify GPG signature')
+            raise Exception('Could not verify GPG signature')
 
         print('GPG signature is valid')
 
@@ -98,14 +98,14 @@ def main():
             with open(args.input_path + '.sha256', 'r') as f:
                 expected_sha256sum = f.read().split(' ')[0]
         except Exception as e:
-            raise Exception(f'could not read checksum from {args.input_path}.sha256: {e}')
+            raise Exception(f'Could not read checksum from {args.input_path}.sha256: {e}')
 
         actual_sha256sum = hashlib.sha256(input_data).hexdigest()
 
         if actual_sha256sum != expected_sha256sum:
-            raise Exception(f'checksum mismatch: {repr(actual_sha256sum)} != {repr(expected_sha256sum)}')
+            raise Exception(f'Checksum mismatch: {repr(actual_sha256sum)} != {repr(expected_sha256sum)}')
 
-        print('checksum is matching')
+        print('Checksum is matching')
 
     sodium_public_key_path = make_keys_path(config['sodium_public_key_path'])
 
@@ -117,7 +117,7 @@ def main():
     crypto_sign_PUBLICKEYBYTES = libsodium.crypto_sign_publickeybytes()
 
     if len(sodium_public_key) != crypto_sign_PUBLICKEYBYTES:
-        raise Exception('sodium public key has wrong size')
+        raise Exception('Sodium public key has wrong size')
 
     crypto_sign_BYTES = libsodium.crypto_sign_bytes()
     assert(crypto_sign_BYTES == 64)
@@ -128,21 +128,21 @@ def main():
     signature_info = bytearray(input_data[signature_info_offset:signature_info_offset + 0x1000])
 
     if signature_info[0:7] == bytes([0xff] * 7):
-        raise Exception('input file is not sodium signed')
+        raise Exception('Input file is not sodium signed')
 
     signature = bytes(signature_info[72:72 + crypto_sign_BYTES])
     signature_info[72:72 + crypto_sign_BYTES] = bytes([0x55] * crypto_sign_BYTES)
 
     if signature_info[4092:4096] != crc32(signature_info[0:4092]).to_bytes(4, byteorder='little'):
-        raise Exception('signature info is malformed')
+        raise Exception('Signature info is malformed')
 
     if signature_info[0:7] != bytes.fromhex('E6210F21EC1217'):
-        raise Exception('signature info is malformed')
+        raise Exception('Signature info is malformed')
 
     actual_publisher = signature_info[8:72].decode('utf-8').rstrip('\0')
 
     if actual_publisher != config['publisher']:
-        raise Exception(f'publisher mismatch: {repr(actual_publisher)} != {repr(config["publisher"])}')
+        raise Exception(f'Publisher mismatch: {repr(actual_publisher)} != {repr(config["publisher"])}')
 
     input_data[signature_info_offset + 72:signature_info_offset + 72 + crypto_sign_BYTES] = bytes([0x55] * crypto_sign_BYTES)
 
@@ -155,14 +155,14 @@ def main():
         raise Exception('libsodium crypto_sign_update failed')
 
     if libsodium.crypto_sign_final_verify(ctypes.byref(state), signature, sodium_public_key) < 0:
-        raise Exception(f'sodium signature by {repr(actual_publisher)} is NOT valid')
+        raise Exception(f'Sodium signature by {repr(actual_publisher)} is NOT valid')
 
-    print(f'sodium signature by {repr(actual_publisher)} is valid')
+    print(f'Sodium signature by {repr(actual_publisher)} is valid')
 
 
 if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        print(f'error: {e}')
+        print(f'Error: {e}')
         sys.exit(1)
