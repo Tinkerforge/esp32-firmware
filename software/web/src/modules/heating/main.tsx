@@ -237,11 +237,11 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         //data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
                     } else if (this.state.dap_prices.prices[i] < avg_price_day1*this.state.dpc_extended_threshold/100) {
                         if (this.state.dpc_extended_active) {
-                            data.lines_vertical.push({'index': i, 'text': '', 'color': [0, 255, 0, 0.5]});
+                            data.lines_vertical.push({'index': i, 'text': '', 'color': [40, 167, 69, 0.5]});
                         }
                     } else if(this.state.dap_prices.prices[i] > avg_price_day1*this.state.dpc_blocking_threshold/100) {
                         if (this.state.dpc_blocking_active) {
-                            data.lines_vertical.push({'index': i, 'text': '', 'color': [255, 0, 0, 0.5]});
+                            data.lines_vertical.push({'index': i, 'text': '', 'color': [220, 53, 69, 0.5]});
                         }
                     }
                 }
@@ -253,11 +253,11 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         //data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
                     } else if (this.state.dap_prices.prices[i] < avg_price_day2*this.state.dpc_extended_threshold/100) {
                         if (this.state.dpc_extended_active) {
-                            data.lines_vertical.push({'index': i, 'text': '', 'color': [0, 255, 0, 0.5]});
+                            data.lines_vertical.push({'index': i, 'text': '', 'color': [40, 167, 69, 0.5]});
                         }
                     } else if(this.state.dap_prices.prices[i] > avg_price_day2*this.state.dpc_blocking_threshold/100) {
                         if (this.state.dpc_blocking_active) {
-                            data.lines_vertical.push({'index': i, 'text': '', 'color': [255, 0, 0, 0.5]});
+                            data.lines_vertical.push({'index': i, 'text': '', 'color': [220, 53, 69, 0.5]});
                         }
                     }
                 }
