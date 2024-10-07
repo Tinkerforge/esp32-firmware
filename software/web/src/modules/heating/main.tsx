@@ -440,33 +440,31 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         </div>
                     </FormRow>
                     <FormRow label="Tägliche Aktivzeit" help={__("heating.content.active_time_help")}>
-                        <div class="pb-2">
-                            <Switch desc="Aktiviert einen Zeitraum, in dem die SG-Ready-Ausgänge gesteuert werden, damit die PV-Anlage im Sommermodus Vorrang hat, z.B. von 08:00 bis 20:00h"
-                                    checked={state.summer_active_time_active}
-                                    onClick={this.toggle('summer_active_time_active', this.update_uplot)}
-                            />
-                            <div class="row no-gutters">
-                                <div class="col-md-6">
-                                    <div class="input-group">
-                                        <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
-                                        <InputTime
-                                            className={"form-control-md heating-input-group-prepend"}
-                                            date={this.get_date_from_minutes(state.summer_active_time_start)}
-                                            showSeconds={false}
-                                            onDate={(d: Date) => this.setState({summer_active_time_start: this.get_minutes_from_date(d)}, this.update_uplot)}
-                                        />
-                                    </div>
+                        <Switch desc="Aktiviert einen Zeitraum, in dem die SG-Ready-Ausgänge gesteuert werden, damit die PV-Anlage im Sommermodus Vorrang hat, z.B. von 08:00 bis 20:00h"
+                                checked={state.summer_active_time_active}
+                                onClick={this.toggle('summer_active_time_active', this.update_uplot)}
+                        />
+                        <div class="row no-gutters">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
+                                    <InputTime
+                                        className={"form-control-md heating-input-group-prepend"}
+                                        date={this.get_date_from_minutes(state.summer_active_time_start)}
+                                        showSeconds={false}
+                                        onDate={(d: Date) => this.setState({summer_active_time_start: this.get_minutes_from_date(d)}, this.update_uplot)}
+                                    />
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="input-group">
-                                        <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
-                                            <InputTime
-                                            className={"form-control-md heating-input-group-prepend"}
-                                            date={this.get_date_from_minutes(state.summer_active_time_end)}
-                                            showSeconds={false}
-                                            onDate={(d: Date) => this.setState({summer_active_time_end: this.get_minutes_from_date(d)}, this.update_uplot)}
-                                        />
-                                    </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
+                                        <InputTime
+                                        className={"form-control-md heating-input-group-prepend"}
+                                        date={this.get_date_from_minutes(state.summer_active_time_end)}
+                                        showSeconds={false}
+                                        onDate={(d: Date) => this.setState({summer_active_time_end: this.get_minutes_from_date(d)}, this.update_uplot)}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -565,7 +563,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                     </div>
                     </FormRow>
                     <FormRow label="Durchschnittspreis">
-                        <div class="row no-gutters">
+                        <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
                                     <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">Heute</span></div>
@@ -585,7 +583,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         </div>
                     </FormRow>
                     <FormRow label="Solarprognose">
-                        <div class="row no-gutters">
+                        <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
                                     <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">Heute</span></div>
@@ -605,7 +603,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         </div>
                     </FormRow>
                     <FormRow label="SG-Ready">
-                        <div class="row no-gutters">
+                        <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
                                     <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">Ausgang 1</span></div>
