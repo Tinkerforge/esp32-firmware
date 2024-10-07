@@ -59,7 +59,11 @@ let x = {
             "add_charger_found": "Gefundene Wallboxen",
             "add_charger_count": /*SFN*/(x: number, max: number) => x + " von " + max + " Wallboxen konfiguriert"/*NF*/,
             "add_charger_rotation": "Phasenrotation",
-            "charger_rotation_help": <>Gibt an, wie die Wallbox in Relation zum Netzanschluss- bzw. PV-Überschuss-Zähler oder zu den anderen Wallboxen angeschlossen ist. Typischerweise werden nur rechtsdrehende Phasenrotationen verwendet.<br/><br/>Eine Wallbox, die, wenn sie einphasig lädt, die Netzanschlussphase L2 belastet, ist dann beispielsweise mit der Phasenrotation L231 angeschlossen.<br/><br/>Wenn die Phasenrotation aller oder auch nur eines Teils der gesteuerten Wallboxen bekannt ist, können mehr Fahrzeuge parallel geladen werden und PV- und Netzanschlusslimits besser ausgereizt werden: Eine Wallbox mit unbekannter Phasenrotation wird, wenn sie einphasig lädt, vom Lastmanagement so behandelt als ob sie alle drei Phasen belasten würde.</>,
+            "charger_rotation_help": <>
+                <p>Gibt an, wie die Wallbox in Relation zum Netzanschluss- bzw. PV-Überschuss-Zähler oder zu den anderen Wallboxen angeschlossen ist. Typischerweise werden nur rechtsdrehende Phasenrotationen verwendet.</p>
+                <p>Eine Wallbox, die, wenn sie einphasig lädt, die Netzanschlussphase L2 belastet, ist dann beispielsweise mit der Phasenrotation L231 angeschlossen.</p>
+                <p>Wenn die Phasenrotation aller oder auch nur eines Teils der gesteuerten Wallboxen bekannt ist, können mehr Fahrzeuge parallel geladen werden und PV- und Netzanschlusslimits besser ausgereizt werden: Eine Wallbox mit unbekannter Phasenrotation wird, wenn sie einphasig lädt, vom Lastmanagement so behandelt als ob sie alle drei Phasen belasten würde.</p>
+            </>,
             "rotation_0": "Unbekannt",
             "rotation_1": "L123",
             "rotation_2": "L132",

@@ -96,7 +96,7 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
                 {props.help ? <Collapse in={state.help_expanded} >
                                 <div>{/*Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse*/}
                                     <div class="card mt-2">
-                                        <div class="card-body p-3" style="background: #ffffe7;">
+                                        <div class="card-body p-3 form-row-help" style="background: #ffffe7;">
                                             {props.help}
                                         </div>
                                     </div>

@@ -59,7 +59,11 @@ let x = {
             "add_charger_found": "Discovered chargers",
             "add_charger_count": /*SFN*/(x: number, max: number) => x + " of " + max + " chargers configured"/*NF*/,
             "add_charger_rotation": "Phase rotation",
-            "charger_rotation_help": <>The chargers connection from the perspective of the grid or PV meter or the other chargers. Usually only positive sequence rotations are used.<br/><br/>A charger that only uses the grid phase L2 is then connected with the phase rotation L231.<br/><br/>If the rotation of some or all chargers is known, more vehicles can be charged in parallel and PV and grid limits can be maxed out: A charger with unknown phase rotation is assumed to be active on all three phases even if it is only charging on one phase.</>,
+            "charger_rotation_help": <>
+                <p>The chargers connection from the perspective of the grid or PV meter or the other chargers. Usually only positive sequence rotations are used.</p>
+                <p>A charger that only uses the grid phase L2 is then connected with the phase rotation L231.</p>
+                <p>If the rotation of some or all chargers is known, more vehicles can be charged in parallel and PV and grid limits can be maxed out: A charger with unknown phase rotation is assumed to be active on all three phases even if it is only charging on one phase.</p>
+            </>,
             "rotation_0": "Unknown",
             "rotation_1": "L123",
             "rotation_2": "L132",
