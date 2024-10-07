@@ -255,7 +255,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                 let x1 = self.valToPos(xd[i1] + xpad, 'x', true);
                                 let y = self.valToPos(0, 'y', true);
 
-                                if (y > ctx.canvas.height - (self.axes[0].size as number)) {
+                                if (y > ctx.canvas.height - this.props.x_height) {
                                     return;
                                 }
 
