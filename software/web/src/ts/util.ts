@@ -212,7 +212,7 @@ window.addEventListener("message", (e) => {
         if (iFrameSocketCb) {
             iFrameSocketCb(e);
         }
-    } else {
+    } else if (e.data && e.data.connection_id) {
         connection_id = e.data.connection_id;
     }
 });
