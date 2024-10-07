@@ -218,7 +218,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             loading={__("day_ahead_prices.content.loading")}>
                             <UplotWrapper
                                 ref={this.uplot_wrapper_ref}
-                                class="day-ahead-prices-chart pb-3"
+                                class="day-ahead-prices-chart pb-3 pt-2"
                                 sub_page="day_ahead_prices"
                                 color_cache_group="day_ahead_prices.default"
                                 show={true}
@@ -235,7 +235,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
                                 y_digits={3}
                                 only_show_visible={true}
-                                padding={[15, 5, null, null]}
+                                padding={[20, 20, null, null]}
                             />
                         </UplotLoader>
                     </div>

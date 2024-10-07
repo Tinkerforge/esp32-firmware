@@ -539,7 +539,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 loading={__("day_ahead_prices.content.loading")}>
                                 <UplotWrapper
                                     ref={this.uplot_wrapper_ref}
-                                    class="heating-chart pb-3"
+                                    class="heating-chart pt-3"
                                     sub_page="heating"
                                     color_cache_group="heating.default"
                                     show={true}
@@ -555,7 +555,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                     y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
                                     y_digits={3}
                                     only_show_visible={true}
-                                    padding={[15, 5, null, null]}
+                                    padding={[20, 20, null, 5]}
                                 />
                             </UplotLoader>
                         </div>

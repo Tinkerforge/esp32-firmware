@@ -490,7 +490,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                 y_label={__("solar_forecast.script.power") + " [W]"}
                                 y_digits={2}
                                 only_show_visible={true}
-                                padding={[null, 5, null, null]}
+                                padding={[null, 20, null, null]}
                             />
                         </UplotLoader>
                     </div>
