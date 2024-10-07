@@ -191,10 +191,6 @@ void Meters::pre_setup()
     generators.reserve(METER_CLASS_ID_COUNT);
     register_meter_generator(MeterClassID::None, &meter_generator_none);
 
-    last_reset_prototype = Config::Object({
-        {"last_reset", Config::Uint32(0)}
-    });
-
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_action(
@@ -270,7 +266,9 @@ void Meters::setup()
         // setup whether to support reset. This could for example depend on the
         // meter's configuration.
         if (meter->supports_reset()) {
-            meter_slot.last_reset = last_reset_prototype;
+            meter_slot.last_reset = Config::Object({
+                {"last_reset", Config::Uint32(0)}
+            });
             api.restorePersistentConfig(get_path(slot, Meters::PathType::LastReset), &meter_slot.last_reset);
         }
         meter_slot.meter = meter;

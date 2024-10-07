@@ -150,8 +150,6 @@ private:
 
     bool meters_feature_declared = false;
 
-    ConfigRoot last_reset_prototype;
-
     std::vector<std::tuple<MeterClassID, MeterGenerator *>> generators;
 
     size_t history_chars_per_value;
