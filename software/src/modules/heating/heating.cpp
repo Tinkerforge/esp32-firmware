@@ -228,7 +228,7 @@ void Heating::update()
         MeterValueAvailability meter_availability = meters.get_power(meter_slot_grid_power, &watt_current);
         if (meter_availability != MeterValueAvailability::Fresh) {
             extended_logging("Meter value not available (meter %d has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
-        } else if (watt_current > pv_excess_control_threshold) {
+        } else if ((-watt_current) > pv_excess_control_threshold) {
             extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, pv_excess_control_threshold);
             sg_ready1_on = sg_ready1_on || true;
         }
