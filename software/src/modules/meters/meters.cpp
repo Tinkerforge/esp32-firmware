@@ -173,11 +173,11 @@ void Meters::pre_setup()
 {
     for (MeterSlot &meter_slot : meter_slots) {
         meter_slot.value_ids = Config::Array({},
-            get_config_uint_max_prototype(),
+            Config::get_prototype_uint32_0(),
             0, METERS_MAX_VALUES_PER_METER, Config::type_id<Config::ConfUint>()
         );
         meter_slot.values = Config::Array({},
-            get_config_float_nan_prototype(),
+            Config::get_prototype_float_nan(),
             0, METERS_MAX_VALUES_PER_METER, Config::type_id<Config::ConfFloat>()
         );
 
@@ -1058,30 +1058,6 @@ String Meters::get_path(uint32_t slot, Meters::PathType path_type)
     path.concat(meters_path_postfixes[static_cast<uint32_t>(path_type)]);
 
     return path;
-}
-
-[[gnu::const]]
-const Config *Meters::get_config_bool_false_prototype() const
-{
-    return &config_bool_false_prototype;
-}
-
-[[gnu::const]]
-const Config *Meters::get_config_float_nan_prototype()
-{
-    if (config_float_nan_prototype.is_null()) {
-        config_float_nan_prototype = Config::Float(NAN);
-    }
-    return &config_float_nan_prototype;
-}
-
-[[gnu::const]]
-const Config *Meters::get_config_uint_max_prototype()
-{
-    if (config_uint_max_prototype.is_null()) {
-        config_uint_max_prototype = Config::Uint32(UINT32_MAX);
-    }
-    return &config_uint_max_prototype;
 }
 
 uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id)

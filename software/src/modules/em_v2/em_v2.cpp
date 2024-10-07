@@ -47,7 +47,7 @@ void EMV2::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
-    const Config *prototype_bool_false = new Config{Config::Bool(false)};
+    const Config *prototype_bool_false = Config::get_prototype_bool_false();
 
     // States
     em_common.state = Config::Object({
@@ -87,7 +87,7 @@ void EMV2::pre_setup()
 
     outputs_update = Config::Array(
         {Config::Uint8(255), Config::Uint8(255), Config::Uint8(255), Config::Uint8(255)}, // 2x SG Ready, 2x Relay
-        new Config{Config::Uint8(0)}, // The prototype's default value can be 0 because the array cannot be extended.
+        Config::get_prototype_uint8_0(), // The prototype's default value can be 0 because the array cannot be extended.
         4, 4, Config::type_id<Config::ConfUint>()
     );
 

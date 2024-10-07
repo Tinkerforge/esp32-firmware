@@ -100,7 +100,7 @@ void DayAheadPrices::pre_setup()
     prices = Config::Object({
         {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
         {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
-        {"prices",     Config::Array({}, new Config{Config::Int32(0)}, 0, 25 /*DST switchover*/ * 4 * 2, Config::type_id<Config::ConfInt>())}
+        {"prices",     Config::Array({}, Config::get_prototype_int32_0(), 0, 25 /*DST switchover*/ * 4 * 2, Config::type_id<Config::ConfInt>())}
     });
 }
 

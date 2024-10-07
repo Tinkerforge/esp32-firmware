@@ -45,7 +45,7 @@ void MeterAPI::setup(const Config &ephemeral_config)
     free(ids);
 
     push_values = Config::Array({},
-        meters.get_config_float_nan_prototype(),
+        Config::get_prototype_float_nan(),
         value_count_u16, value_count_u16, Config::type_id<Config::ConfFloat>()
     );
 }

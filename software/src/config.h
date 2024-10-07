@@ -794,6 +794,14 @@ public:
 
     String to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len) const;
     void to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len, StringBuilder *sb) const;
+
+    [[gnu::const]] static const Config *get_prototype_float_nan();
+    [[gnu::const]] static const Config *get_prototype_int16_0();
+    [[gnu::const]] static const Config *get_prototype_int32_0();
+    [[gnu::const]] static const Config *get_prototype_uint8_0();
+    [[gnu::const]] static const Config *get_prototype_uint16_0();
+    [[gnu::const]] static const Config *get_prototype_uint32_0();
+    [[gnu::const]] static const Config *get_prototype_bool_false();
 };
 
 struct ConfigRoot : public Config {

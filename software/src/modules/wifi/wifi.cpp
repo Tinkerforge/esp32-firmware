@@ -122,7 +122,7 @@ void Wifi::pre_setup()
                 Config::Uint8(0),
                 Config::Uint8(0)
                 },
-                new Config{Config::Uint8(0)},
+                Config::get_prototype_uint8_0(),
                 6,
                 6,
                 Config::type_id<Config::ConfUint>()

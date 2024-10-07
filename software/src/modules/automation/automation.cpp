@@ -110,7 +110,7 @@ void Automation::pre_setup()
         }
     };
 
-    const Config *conf_uint8_prototype = new Config{Config::Uint8(0)};
+    const Config *conf_uint8_prototype = Config::get_prototype_uint8_0();
 
     state = Config::Object({
         {"registered_triggers", Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},

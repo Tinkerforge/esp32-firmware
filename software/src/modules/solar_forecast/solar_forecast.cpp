@@ -102,7 +102,7 @@ void SolarForecast::pre_setup()
         plane.forecast = Config::Object({
             {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
             {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)}, // currently only 60 minutes supported
-            {"forecast",   Config::Array({}, new Config{Config::Uint32(0)}, 0, 49, Config::type_id<Config::ConfInt>())} // in watt hours, 48 hours + 1 for switch to DST
+            {"forecast",   Config::Array({}, Config::get_prototype_uint32_0(), 0, 49, Config::type_id<Config::ConfInt>())} // in watt hours, 48 hours + 1 for switch to DST
         });
 
         plane.index = index++;

@@ -109,10 +109,6 @@ public:
 
     String get_path(uint32_t slot, PathType path_type);
 
-    [[gnu::const]] const Config *get_config_bool_false_prototype() const;
-    [[gnu::const]] const Config *get_config_float_nan_prototype();
-    [[gnu::const]] const Config *get_config_uint_max_prototype();
-
 private:
     class MeterSlot final
     {
@@ -154,9 +150,6 @@ private:
 
     bool meters_feature_declared = false;
 
-    Config config_bool_false_prototype = Config::Bool(false);
-    Config config_float_nan_prototype;
-    Config config_uint_max_prototype;
     ConfigRoot last_reset_prototype;
 
     std::vector<std::tuple<MeterClassID, MeterGenerator *>> generators;

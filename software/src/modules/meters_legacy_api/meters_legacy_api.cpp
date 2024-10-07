@@ -76,6 +76,9 @@ void MetersLegacyAPI::setup()
 
     legacy_api_enabled = true;
 
+    const Config *config_prototype_float_nan  = Config::get_prototype_float_nan();
+    const Config *config_prototype_bool_false = Config::get_prototype_bool_false();
+
     // BEGIN from old meter.cpp pre_setup()
     legacy_state = Config::Object({
         {"state", Config::Uint8(0)}, // 0 - no energy meter, 1 - initialization error, 2 - meter available
@@ -90,15 +93,15 @@ void MetersLegacyAPI::setup()
 
     legacy_phases = Config::Object({
         {"phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            meters.get_config_bool_false_prototype(),
+            config_prototype_bool_false,
             3, 3, Config::type_id<Config::ConfBool>())},
         {"phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            meters.get_config_bool_false_prototype(),
+            config_prototype_bool_false,
             3, 3, Config::type_id<Config::ConfBool>())}
     });
 
     legacy_all_values = Config::Array({},
-        meters.get_config_float_nan_prototype(),
+        config_prototype_float_nan,
         0, METER_ALL_VALUES_LEGACY_COUNT, Config::type_id<Config::ConfFloat>()
     );
 
@@ -121,15 +124,15 @@ void MetersLegacyAPI::setup()
 
     legacy_phases_update = Config::Object({
         {"phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            meters.get_config_bool_false_prototype(),
+            config_prototype_bool_false,
             3, 3, Config::type_id<Config::ConfBool>())},
         {"phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            meters.get_config_bool_false_prototype(),
+            config_prototype_bool_false,
             3, 3, Config::type_id<Config::ConfBool>())}
     });
 
     legacy_all_values_update = Config::Array({},
-        meters.get_config_float_nan_prototype(),
+        config_prototype_float_nan,
         METER_ALL_VALUES_LEGACY_COUNT, METER_ALL_VALUES_LEGACY_COUNT, Config::type_id<Config::ConfFloat>());
     // END from old api_meter.cpp pre_setup()
 

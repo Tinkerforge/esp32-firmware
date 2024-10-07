@@ -29,7 +29,7 @@ void MetersAPI::pre_setup()
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
         {"value_ids", Config::Array({},
-            meters.get_config_uint_max_prototype(),
+            Config::get_prototype_uint32_0(),
             0, METERS_MAX_VALUES_PER_METER, Config::type_id<Config::ConfUint>()
         )},
     });

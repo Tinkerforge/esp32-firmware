@@ -536,16 +536,19 @@ void WebSockets::triggerHttpThread()
 
 void WebSockets::pre_setup() {
     state = Config::Object({
-        {"keep_alive_fds", Config::Array({}, new Config{Config::Int(-1)}, MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfInt>())},
-        {"keep_alive_pongs", Config::Array({}, new Config{Config::Uint(0)}, MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfUint>())},
+        {"keep_alive_fds", Config::Array({}, Config::get_prototype_int32_0(), MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfInt>())},
+        {"keep_alive_pongs", Config::Array({},Config::get_prototype_uint32_0(), MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfUint>())},
         {"worker_active", Config::Uint8(WEBSOCKET_WORKER_DONE)},
         {"last_worker_run", Config::Uint32(0)},
         {"queue_len", Config::Uint32(0)}
     });
 
+    Config *state_keep_alive_fds = static_cast<Config *>(state.get("keep_alive_fds"));
+    Config *state_keep_alive_pongs = static_cast<Config *>(state.get("keep_alive_pongs"));
+
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        state.get("keep_alive_fds")->add();
-        state.get("keep_alive_pongs")->add();
+        state_keep_alive_fds->add()->updateInt(-1); // Override default from shared prototype.
+        state_keep_alive_pongs->add();
         keep_alive_fds[i] = -1;
         keep_alive_last_pong[i] = 0;
     }

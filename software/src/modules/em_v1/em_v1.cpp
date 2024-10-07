@@ -69,7 +69,7 @@ void EMV1::pre_setup()
         {"contactor", Config::Bool(false)},
         {"contactor_check_state", Config::Uint8(0)},
         {"led_rgb", Config::Array({Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)},
-            new Config{Config::Uint8(0)}, 3, 3, Config::type_id<Config::ConfUint>())
+            Config::get_prototype_uint8_0(), 3, 3, Config::type_id<Config::ConfUint>())
         },
     });
 

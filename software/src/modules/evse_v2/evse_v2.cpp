@@ -79,7 +79,7 @@ void EVSEV2::pre_setup()
                 Config::Uint16(0),
                 Config::Uint16(0),
                 Config::Uint16(0),
-            }, new Config{Config::Uint16(0)}, 7, 7, Config::type_id<Config::ConfUint>())
+            }, Config::get_prototype_uint16_0(), 7, 7, Config::type_id<Config::ConfUint>())
         },
         {"voltages", Config::Array({
                 Config::Int16(0),
@@ -89,12 +89,12 @@ void EVSEV2::pre_setup()
                 Config::Int16(0),
                 Config::Int16(0),
                 Config::Int16(0),
-            }, new Config{Config::Int16(0)}, 7, 7, Config::type_id<Config::ConfInt>())
+            }, Config::get_prototype_int16_0(), 7, 7, Config::type_id<Config::ConfInt>())
         },
         {"resistances", Config::Array({
                 Config::Uint32(0),
                 Config::Uint32(0),
-            }, new Config{Config::Uint32(0)}, 2, 2, Config::type_id<Config::ConfUint>())
+            }, Config::get_prototype_uint32_0(), 2, 2, Config::type_id<Config::ConfUint>())
         },
         {"gpio", Config::Array({
             Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
@@ -103,7 +103,7 @@ void EVSEV2::pre_setup()
             Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
             Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
             Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
-            }, new Config{Config::Bool(false)}, 24, 24, Config::type_id<Config::ConfBool>())},
+            }, Config::get_prototype_bool_false(), 24, 24, Config::type_id<Config::ConfBool>())},
         {"charging_time", Config::Uint32(0)},
         {"time_since_state_change", Config::Uint32(0)},
         {"uptime", Config::Uint32(0)},

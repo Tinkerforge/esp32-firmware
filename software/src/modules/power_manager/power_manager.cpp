@@ -37,7 +37,7 @@ void PowerManager::pre_setup()
         {"external_control", Config::Uint32(EXTERNAL_CONTROL_STATE_DISABLED)},
     });
 
-    config_int32_zero_prototype = Config::Int32(0);
+    const Config *config_prototype_int32_0 = Config::get_prototype_int32_0();
 
     low_level_state = Config::Object({
         {"power_at_meter", Config::Float(0)},
@@ -48,7 +48,7 @@ void PowerManager::pre_setup()
                 Config::Int32(0),
                 Config::Int32(0),
             },
-            &config_int32_zero_prototype,
+            config_prototype_int32_0,
             3, 3, Config::type_id<Config::ConfInt>())
         },
         {"i_pp_max", Config::Array({
@@ -56,7 +56,7 @@ void PowerManager::pre_setup()
                 Config::Int32(0),
                 Config::Int32(0),
             },
-            &config_int32_zero_prototype,
+            config_prototype_int32_0,
             3, 3, Config::type_id<Config::ConfInt>())
         },
         {"i_pp_mavg", Config::Array({
@@ -64,7 +64,7 @@ void PowerManager::pre_setup()
                 Config::Int32(0),
                 Config::Int32(0),
             },
-            &config_int32_zero_prototype,
+            config_prototype_int32_0,
             3, 3, Config::type_id<Config::ConfInt>())
         },
         {"i_pp", Config::Array({
@@ -72,7 +72,7 @@ void PowerManager::pre_setup()
                 Config::Int32(0),
                 Config::Int32(0),
             },
-            &config_int32_zero_prototype,
+            config_prototype_int32_0,
             3, 3, Config::type_id<Config::ConfInt>())
         },
         {"overall_min_power", Config::Int32(0)},

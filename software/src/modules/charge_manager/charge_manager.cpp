@@ -164,6 +164,8 @@ void ChargeManager::pre_setup()
         {"allocation_interval", Config::Uint(10, 1, 60 * 60)},
     });
 
+    const Config *config_prototype_int32_0 = Config::get_prototype_int32_0();
+
     // This has to fit in the 6k WebSocket send buffer with 32 chargers with long names. (Currently 4076 bytes)
     // -> Be stingy with the key names. If we need more space we could switch to an array for all numbers.
     // This API only exists to communicate with the web interface and is not documented.
@@ -175,7 +177,7 @@ void ChargeManager::pre_setup()
                 Config::Int32(0),
                 Config::Int32(0)
             },
-            new Config{Config::Int32(0)},
+            config_prototype_int32_0,
             4, 4, Config::type_id<Config::ConfInt>())
         },
         {"l_min", Config::Array({
@@ -184,7 +186,7 @@ void ChargeManager::pre_setup()
                 Config::Int32(0),
                 Config::Int32(0)
             },
-            new Config{Config::Int32(0)},
+            config_prototype_int32_0,
             4, 4, Config::type_id<Config::ConfInt>())
         },
         {"l_spread", Config::Array({
@@ -193,7 +195,7 @@ void ChargeManager::pre_setup()
                 Config::Int32(0),
                 Config::Int32(0)
             },
-            new Config{Config::Int32(0)},
+            config_prototype_int32_0,
             4, 4, Config::type_id<Config::ConfInt>())
         },
         {"l_max_pv", Config::Int32(0)},
@@ -203,7 +205,7 @@ void ChargeManager::pre_setup()
                 Config::Int32(0),
                 Config::Int32(0)
             },
-            new Config{Config::Int32(0)},
+            config_prototype_int32_0,
             4, 4, Config::type_id<Config::ConfInt>())
         },
         {"chargers", Config::Array(
@@ -231,7 +233,7 @@ void ChargeManager::pre_setup()
                 Config::Int32(0),
                 Config::Int32(0)
             },
-            new Config{Config::Int32(0)},
+            config_prototype_int32_0,
             4, 4, Config::type_id<Config::ConfInt>())
         },
         {"wnd_max", Config::Array({
@@ -240,7 +242,7 @@ void ChargeManager::pre_setup()
                 Config::Int32(0),
                 Config::Int32(0)
             },
-            new Config{Config::Int32(0)},
+            config_prototype_int32_0,
             4, 4, Config::type_id<Config::ConfInt>())
         },
         {"chargers", Config::Array(
