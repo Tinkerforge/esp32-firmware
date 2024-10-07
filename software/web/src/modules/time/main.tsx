@@ -36,7 +36,6 @@ import { StatusSection } from "../../ts/components/status_section";
 import { Clock } from "react-feather";
 import { FormSeparator } from "src/ts/components/form_separator";
 import { OutputDatetime } from "src/ts/components/output_datetime";
-import { config } from "../ntp/api";
 
 export function TimeNavbar() {
     return <NavbarItem name="time" module="ntp" title={__("time.navbar.time")} symbol={<Clock />} />;
@@ -87,9 +86,10 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
         API.save("rtc/time", time, __("time.script.save_failed"));
     }
 
-    override async sendSave(t: "ntp/config", cfg: TimeConfig) {
+    override async sendSave(t: "ntp/config", cfg: API.getType["ntp/config"]) {
         super.sendSave(t, cfg);
-        API.save("rtc/config", cfg);
+        // API.save extracts the rtc config
+        API.save("rtc/config", this.state);
     }
 
     override async sendReset(t: "ntp/config") {
