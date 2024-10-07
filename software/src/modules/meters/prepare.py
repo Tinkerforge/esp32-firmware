@@ -208,7 +208,7 @@ with open('meter_value_id.cpp', 'w', encoding='utf-8') as f:
     f.write('\n'.join([f'    "{name}",' for name in value_id_name]) + '\n')
     f.write('};\n\n')
     f.write('const char *getMeterValueName(MeterValueID id)\n{\n')
-    f.write('    size_t idx = (size_t)id;\n\n')
+    f.write('    size_t idx = (size_t)id - 1;\n\n')
     f.write(f'    if (idx >= {len(value_id_name)}) {{\n')
     f.write('        return "Unknown";\n')
     f.write('    }\n\n')
@@ -226,7 +226,7 @@ static const uint8_t {name.lower()}LUT[{len(values)}] = {{{
 
 MeterValue{name} getMeterValue{name}(MeterValueID id)
 {{
-    size_t idx = (size_t)id;
+    size_t idx = (size_t)id - 1;
 
     if (idx >= {len(values)}) {{
         return MeterValue{name}::None;
