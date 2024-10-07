@@ -128,11 +128,16 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             }
             let resolution_multiplier = this.state.prices.resolution == 0 ? 15 : 60
             for (let i = 0; i < this.state.prices.prices.length; i++) {
-                data.values[0].push(this.state.prices.first_date*60 + i*60*resolution_multiplier);
-                data.values[1].push(this.state.prices.prices[i]/1000.0);
-                data.values[2].push(this.state.grid_costs_and_taxes/1000.0);
-                data.values[3].push(this.state.supplier_markup/1000.0);
+                data.values[0].push(this.state.prices.first_date * 60 + i * 60 * resolution_multiplier);
+                data.values[1].push(this.state.prices.prices[i] / 1000.0);
+                data.values[2].push(this.state.grid_costs_and_taxes / 1000.0);
+                data.values[3].push(this.state.supplier_markup / 1000.0);
             }
+
+            data.values[0].push(this.state.prices.first_date * 60 + this.state.prices.prices.length * 60 * resolution_multiplier - 1);
+            data.values[1].push(this.state.prices.prices[this.state.prices.prices.length - 1] / 1000.0);
+            data.values[2].push(this.state.grid_costs_and_taxes / 1000.0);
+            data.values[3].push(this.state.supplier_markup / 1000.0);
 
             // Add vertical line at current time
             const resolution_divisor = this.state.resolution == 0 ? 15 : 60;

@@ -347,12 +347,19 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
 
             let resolution_multiplier = 60;
             for (let i = 0; i < this.state.plane_forecasts[first_index].forecast.length; i++) {
-                data.values[0].push(this.state.plane_forecasts[first_index].first_date*60 + i*60*resolution_multiplier);
+                data.values[0].push(this.state.plane_forecasts[first_index].first_date * 60 + i * 60 * resolution_multiplier);
                 let j = 1;
                 for (const index in active_planes) {
                     data.values[j].push(this.state.plane_forecasts[index].forecast[i]);
                     j++;
                 }
+            }
+
+            data.values[0].push(this.state.plane_forecasts[first_index].first_date * 60 + this.state.plane_forecasts[first_index].forecast.length * 60 * resolution_multiplier - 1);
+            let j = 1;
+            for (const index in active_planes) {
+                data.values[j].push(this.state.plane_forecasts[index].forecast[this.state.plane_forecasts[first_index].forecast.length - 1]);
+                j++;
             }
         }
 
