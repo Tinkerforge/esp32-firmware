@@ -801,6 +801,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.stacked.push(true);
                     uplot_data.paths.push(UplotPath.Line);
                     uplot_data.extra_names.push(wb_state_names);
+                    uplot_data.y_axes.push('y');
                 }
             }
         }
@@ -1384,6 +1385,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.stacked.push(true);
                     uplot_data.filled.push(true);
                     uplot_data.paths.push(UplotPath.Bar);
+                    uplot_data.y_axes.push('y');
 
                     this.setState((prevState) => ({
                         wallbox_5min_cache_energy_total: {
