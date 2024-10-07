@@ -82,10 +82,11 @@ public:
 
     bool push_system_time(const timeval &time, Quality quality);
 
-    // Make public so that RtcBackends can copy the schema.
-    ConfigRoot time;
-
 private:
+    ConfigRoot time;
+    ConfigRoot time_update;
+    ConfigRoot config;
+
     void update_system_time_from_rtc();
     void update_rtc_from_system_time(int attempt);
 

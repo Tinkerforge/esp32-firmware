@@ -55,10 +55,18 @@ void Rtc::pre_setup()
         {"second", Config::Uint8(0)},
         {"weekday", Config::Uint8(0)},
     });
+
+    time_update = time;
+
+    config = Config::Object({
+        {"auto_sync", Config::Bool(true)},
+    });
 }
 
 void Rtc::setup()
 {
+    api.restorePersistentConfig("rtc/config", &config);
+
     initialized = true;
 }
 
@@ -71,6 +79,23 @@ static bool timestamp_acceptable(const struct timeval &time) {
 
 void Rtc::register_urls() {
     api.addState("rtc/time", &time, {}, true);
+
+    api.addPersistentConfig("rtc/config", &config);
+
+    api.addCommand("rtc/time_update", &time_update, {}, [this](String &/*errmsg*/) {
+        struct tm tm;
+        tm.tm_year = time_update.get("year")->asUint() - 1900;
+        tm.tm_mon  = time_update.get("month")->asUint() - 1;
+        tm.tm_mday = time_update.get("day")->asUint();
+        tm.tm_hour = time_update.get("hour")->asUint();
+        tm.tm_min  = time_update.get("minute")->asUint();
+        tm.tm_sec  = time_update.get("second")->asUint();
+        tm.tm_wday = time_update.get("weekday")->asUint();
+        struct timeval timeval;
+        timeval.tv_sec = timegm(&tm);
+
+        this->push_system_time(timeval, Rtc::Quality::Low);
+    }, true);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         struct timeval tv;
