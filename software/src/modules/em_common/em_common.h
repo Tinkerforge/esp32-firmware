@@ -151,7 +151,7 @@ public:
         return backend->wem_register_sd_energy_manager_daily_data_points_low_level_callback(handler, user_data);
     }
 
-    inline int wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, uint16_t power, uint8_t *ret_status)
+    inline int wem_set_sd_wallbox_data_point(uint32_t wallbox_id, uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t flags, uint16_t power, uint8_t *ret_status)
     {
         int rc = backend->wem_set_sd_wallbox_data_point(wallbox_id, year, month, day, hour, minute, flags, power, ret_status);
         check_bricklet_reachable(rc, "set_sd_wallbox_data_point");
@@ -179,7 +179,7 @@ public:
         return rc;
     }
 
-    inline int wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t flags, int32_t power_grid, const int32_t power_general[6], uint32_t price, uint8_t *ret_status)
+    inline int wem_set_sd_energy_manager_data_point(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint16_t flags, int32_t power_grid, const int32_t power_general[6], uint32_t price, uint8_t *ret_status)
     {
         int rc = backend->wem_set_sd_energy_manager_data_point(year, month, day, hour, minute, flags, power_grid, power_general, price, ret_status);
         check_bricklet_reachable(rc, "set_sd_energy_manager_data_point");
