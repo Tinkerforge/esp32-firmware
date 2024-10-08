@@ -42,6 +42,24 @@ struct Task {
     Task(std::function<void(void)> &&fn, uint64_t task_id, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once);
 };
 
+#define IS_WALL_CLOCK_TASK_ID(task_id) (task_id & (1ull << 63))
+
+struct WallClockTask {
+    // Is moved into the task queue to execute the WallClockTask.
+    std::unique_ptr<Task> runner_task;
+    // This is the runner_task's ID; duplicated to match currentTask against the WallClockTask IDs when moving the task back.
+    // All WallClockTask IDs have the highest bit set.
+    uint64_t task_id;
+
+    // A WallClockTask is executed at midnight (UTC) and then once every interval_minutes.
+    minutes_t interval_minutes;
+
+    // Additionally run this task when the system clock is synced for the first time.
+    bool run_on_first_sync;
+
+    WallClockTask(std::unique_ptr<Task> &&runner_task, uint64_t task_id, minutes_t interval_minutes, bool run_on_first_sync);
+};
+
 bool compare(const std::unique_ptr<Task> &a, const std::unique_ptr<Task> &b);
 
 class TaskQueue : public std::priority_queue<std::unique_ptr<Task>, std::vector<std::unique_ptr<Task>>, decltype(&compare)>
@@ -88,6 +106,8 @@ public:
     uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms);
     uint64_t scheduleWhenClockSynced(std::function<void(void)> &&fn);
 
+    uint64_t scheduleWallClock(std::function<void(void)> &&fn, minutes_t interval_minutes, millis_t execution_delay_ms, bool run_on_first_sync);
+
     enum class AwaitResult {
         Done,
         Timeout,
@@ -102,4 +122,9 @@ private:
     std::mutex task_mutex;
     TaskQueue tasks;
     std::unique_ptr<Task> currentTask = nullptr;
+
+    std::vector<WallClockTask> wall_clock_tasks;
+    bool wall_clock_worker_started = false;
+    void wall_clock_worker();
+    void run_wall_clock_task(uint64_t task_id);
 };
