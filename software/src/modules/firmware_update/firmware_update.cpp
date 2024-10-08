@@ -505,7 +505,7 @@ void FirmwareUpdate::register_urls()
             return;
         }
 
-        trigger_reboot("Firmware update", 1000);
+        trigger_reboot("Firmware update", 1_s);
 #else
         result = "Signature verification is disabled";
 #endif
@@ -1000,7 +1000,7 @@ void FirmwareUpdate::install_firmware(const char *url)
             logger.printfln("Firmware successfully installed");
             state.get("install_state")->updateEnum(InstallState::Rebooting);
             state.get("install_progress")->updateUint(0);
-            trigger_reboot("Firmware update", 1000);
+            trigger_reboot("Firmware update", 1_s);
             install_firmware_in_progress = false;
             break;
         }
