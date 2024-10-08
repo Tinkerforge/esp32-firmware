@@ -32,32 +32,34 @@
 #endif
 
 static const MeterValueID grid_value_ids[] = {
-    MeterValueID::PowerActiveLSumImExDiff,
     MeterValueID::EnergyActiveLSumExport,
     MeterValueID::EnergyActiveLSumImport,
+    MeterValueID::PowerActiveLSumImExDiff,
 };
 
 static const RCTValueSpec grid_rct_value_specs[] = {
-    {0x91617C58,  1.0f},   // Total grid power [W]
     {0x44D4C533, -0.001f}, // Total energy grid feed-in [Wh]
     {0x62FBE7DC,  0.001f}, // Total energy grid load [Wh]
+    {0x91617C58,  1.0f},   // Total grid power [W]
 };
 
 static const MeterValueID battery_value_ids[] = {
+    MeterValueID::CurrentDC,
     MeterValueID::PowerDCChaDisDiff,
     MeterValueID::EnergyDCCharge,
+    MeterValueID::VoltageDC,
     MeterValueID::Temperature,
     MeterValueID::StateOfCharge,
-    MeterValueID::VoltageDC,
     MeterValueID::EnergyDCDischarge,
 };
 
 static const RCTValueSpec battery_rct_value_specs[] = {
+    {0x21961B58,  -1.0f},   // Battery current [A]
     {0x400F015B,  -1.0f},   // Battery power [W]
     {0x5570401B,   0.001f}, // Total energy flow into battery [Wh]
+    {0x65EED11B,   1.0f},   // Battery voltage [V]
     {0x902AFAFB,   1.0f},   // Battery temperature [°C]
     {0x959930BF, 100.0f},   // Battery SOC [0.01 %]
-    {0xA7FA5C5D,   1.0f},   // Battery voltage [V]
     {0xA9033880,   0.001f}, // Total energy flow from battery [Wh]
 };
 
