@@ -38,9 +38,9 @@ static const MeterValueID grid_value_ids[] = {
 };
 
 static const RCTValueSpec grid_rct_value_specs[] = {
-    {0x91617C58, 1.0f},   // Total grid power [W]
-    {0x44D4C533, 0.001f}, // Total energy grid feed-in [Wh]
-    {0x62FBE7DC, 0.001f}, // Total energy grid load [Wh]
+    {0x91617C58,  1.0f},   // Total grid power [W]
+    {0x44D4C533, -0.001f}, // Total energy grid feed-in [Wh]
+    {0x62FBE7DC,  0.001f}, // Total energy grid load [Wh]
 };
 
 static const MeterValueID battery_value_ids[] = {
