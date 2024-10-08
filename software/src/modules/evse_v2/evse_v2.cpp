@@ -141,10 +141,8 @@ void EVSEV2::pre_setup()
     });
     ev_wakeup_update = ev_wakeup;
 
-    phase_auto_switch = Config::Object({
-        {"enabled", Config::Bool(false)}
-    });
-    phase_auto_switch_update = phase_auto_switch;
+    phase_auto_switch = ev_wakeup;
+    phase_auto_switch_update = ev_wakeup;
 
     phases_connected = Config::Object({
         {"phases", Config::Uint8(0)}
