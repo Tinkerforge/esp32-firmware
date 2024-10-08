@@ -74,7 +74,7 @@ void WarpEsp32I2c::setup()
         temp = temp * 25 / 4; // equivalent to * 6.25 centicelsius per LSB
 
         state.get("temperature")->updateInt(temp);
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 }
 
 void WarpEsp32I2c::register_urls()

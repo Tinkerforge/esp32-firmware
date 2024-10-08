@@ -89,7 +89,7 @@ void ModbusMeterSimulator::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->checkRS485State();
-    }, 10 * 1000, 10 * 1000);
+    }, 10_s, 10_s);
 }
 
 void ModbusMeterSimulator::register_urls()

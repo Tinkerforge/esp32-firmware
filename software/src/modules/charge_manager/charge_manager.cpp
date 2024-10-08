@@ -340,7 +340,7 @@ void ChargeManager::start_manager_task()
         //TODO: should we call update_charger_state_config(client_id); here? This is currently missing but smells weird.
     });
 
-    uint32_t cm_send_delay = 1000 / charger_count;
+    millis_t cm_send_delay = 1000_ms / millis_t{charger_count};
 
     task_scheduler.scheduleWithFixedDelay([this, charger_count]() mutable {
         static int i = 0;
@@ -352,7 +352,7 @@ void ChargeManager::start_manager_task()
         if(cm_networking.send_manager_update(i, charger_alloc.allocated_current, charger_alloc.cp_disconnect, charger_alloc.allocated_phases))
             ++i;
 
-    }, 0, cm_send_delay);
+    }, cm_send_delay);
 }
 
 void ChargeManager::setup()
@@ -481,10 +481,10 @@ void ChargeManager::setup()
             }
 
             this->state.get("state")->updateUint(result);
-        }, 0, 1000);
+        }, 1_s);
 
     if (config.get("enable_watchdog")->asBool()) {
-        task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1000, 1000);
+        task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1_s, 1_s);
     }
 
     if (config.get("verbose")->asBool()) {

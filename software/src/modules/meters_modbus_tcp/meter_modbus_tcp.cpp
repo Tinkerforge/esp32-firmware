@@ -547,7 +547,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             this->read_allowed = false;
             this->read_next();
         };
-    }, 2000, 1000);
+    }, 2_s, 1_s);
 }
 
 void MeterModbusTCP::pre_reboot()

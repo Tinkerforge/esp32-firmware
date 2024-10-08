@@ -30,7 +30,7 @@
 #include "modules/charge_manager/charge_manager_private.h"
 #include "metadata.h"
 
-#define UPDATE_INTERVAL 1000
+static constexpr auto UPDATE_INTERVAL = 1_s;
 #define PAGE_FRONT_TEXT_MAX_CHAR 6
 #define TILE_TYPES 8
 
@@ -155,7 +155,7 @@ void FrontPanel::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->check_bricklet_state();
-    }, 5 * 60 * 1000, 5 * 60 * 1000);
+    }, 5_m, 5_m);
 
     task_scheduler.scheduleOnce([this](){
         this->check_flash_metadata();
@@ -168,7 +168,7 @@ void FrontPanel::register_urls()
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update();
-    }, 100, UPDATE_INTERVAL);
+    }, 100_ms, UPDATE_INTERVAL);
 
     this->DeviceModule::register_urls();
 }

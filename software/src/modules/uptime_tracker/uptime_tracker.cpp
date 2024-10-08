@@ -97,7 +97,7 @@ void UptimeTracker::setup()
             data.checksum = internet_checksum((uint8_t *)&data.uptime, sizeof(uint32_t));
             if (tmp > data.uptime)
                 data.overflow_count++;
-        }, 0, 10000);
+        }, 10_s);
 }
 
 void UptimeTracker::register_urls()

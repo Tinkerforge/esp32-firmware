@@ -584,11 +584,11 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->triggerHttpThread();
-    }, 100, 100);
+    }, 100_ms, 100_ms);
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->updateDebugState();
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 
 #if MODULE_WATCHDOG_AVAILABLE()
     watchdog_handle = watchdog.add(
@@ -599,11 +599,11 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->pingActiveClients();
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 
     task_scheduler.scheduleWithFixedDelay([this](){
         checkActiveClients();
-    }, 100, 100);
+    }, 100_ms, 100_ms);
 
     if (state_path != nullptr) {
         api.addState(state_path, &state);

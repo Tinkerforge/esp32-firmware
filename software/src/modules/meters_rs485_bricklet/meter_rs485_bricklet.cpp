@@ -226,7 +226,7 @@ void MeterRS485Bricklet::setup(const Config &ephemeral_config)
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->tick();
-    }, 0, 10);
+    }, 10_ms);
 }
 
 bool MeterRS485Bricklet::reset()

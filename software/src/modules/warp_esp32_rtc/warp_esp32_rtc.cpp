@@ -96,7 +96,7 @@ void WarpEsp32Rtc::setup()
             rtc.register_backend(this);
 
         initialized = true; // FIXME: delayed initialization doesn't show in frontend
-    }, 0, 60 * 1000);
+    }, 1_m);
 }
 
 void WarpEsp32Rtc::set_time(const tm &date_time, int32_t microseconds)

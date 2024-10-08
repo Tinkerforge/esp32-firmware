@@ -97,8 +97,8 @@ void EMEnergyAnalysis::setup()
 
     all_data_common = em_common.get_all_data_common();
 
-    task_scheduler.scheduleWithFixedDelay([this]() {collect_data_points();    }, 15000, 10000);
-    task_scheduler.scheduleWithFixedDelay([this]() {set_pending_data_points();}, 15000,   100);
+    task_scheduler.scheduleWithFixedDelay([this]() {collect_data_points();    }, 15_s, 10_s);
+    task_scheduler.scheduleWithFixedDelay([this]() {set_pending_data_points();}, 15_s, 100_ms);
 
     task_scheduler.scheduleOnce([this]() {this->show_blank_value_id_update_warnings = true;}, 250_ms);
 }

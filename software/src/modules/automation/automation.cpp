@@ -158,7 +158,7 @@ void Automation::setup()
 
             last_min = time_struct.tm_min;
             was_synced = is_synced;
-        }, 0, 1000);
+        }, 1_s);
     }
 
     initialized = true;

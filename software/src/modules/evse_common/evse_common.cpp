@@ -299,7 +299,7 @@ void EvseCommon::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         backend->update_all_data();
-    }, 0, 250);
+    }, 250_ms);
 
 #if MODULE_POWER_MANAGER_AVAILABLE()
     power_manager.register_phase_switcher_backend(backend);
@@ -389,7 +389,7 @@ void EvseCommon::register_urls()
             backend->get_is_3phase() ? 3 : 1,
             backend->phase_switching_capable() && backend->can_switch_phases_now(!backend->get_is_3phase())
         );
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (!deadline_elapsed(last_current_update + 30000))
@@ -405,7 +405,7 @@ void EvseCommon::register_urls()
         }
         shutdown_logged = true;
         backend->set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, 0);
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 #endif
 
     // States
@@ -610,7 +610,7 @@ void EvseCommon::register_urls()
             } else if (!elapsed) {
                 was_triggered = false;
             }
-        }, 1000, 1000);
+        }, 1_s, 1_s);
     }
 
     api.addState("evse/automation_current", &automation_current);

@@ -90,7 +90,7 @@ void Kransteuerung::setup()
         tf_industrial_quad_relay_v2_get_value(&relay, task_value);
         tf_dual_button_v2_set_led_state(&left,  TF_DUAL_BUTTON_V2_LED_STATE_ON, task_value[1] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF);
         tf_dual_button_v2_set_led_state(&right, task_value[2] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF, task_value[3] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF);
-    }, 100, 100);
+    }, 100_ms, 100_ms);
 
     initialized = true;
 }

@@ -110,7 +110,7 @@ void MeterPvFaker::setup(const Config &ephemeral_config)
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         meters.update_all_values(this->slot, this->values);
-    }, 2000, 2000);
+    }, 2_s, 2_s);
 }
 
 void MeterPvFaker::update_illuminance(uint32_t illuminance)

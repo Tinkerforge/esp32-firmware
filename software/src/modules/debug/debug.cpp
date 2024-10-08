@@ -259,7 +259,7 @@ void Debug::setup()
         this->integrity_check_runs = 0;
         this->integrity_check_runtime_sum = 0;
         this->integrity_check_runtime_max = 0;
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 
     last_state_update = now_us();
 

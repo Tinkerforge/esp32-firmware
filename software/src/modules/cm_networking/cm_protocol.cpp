@@ -337,7 +337,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
 
             manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr);
         }
-    }, 100, 100);
+    }, 100_ms, 100_ms);
 }
 
 bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases)
@@ -447,7 +447,7 @@ void CMNetworking::register_client(std::function<void(uint16_t, bool, int8_t)> c
                         CM_COMMAND_FLAGS_CPDISC_IS_SET(command_pkt.v1.command_flags),
                         command_pkt.header.version >= 2 ? command_pkt.v2.allocated_phases : 0);
         //logger.printfln("Received command packet. Allocated current is %u", command_pkt.v1.allocated_current);
-    }, 100, 100);
+    }, 100_ms, 100_ms);
 }
 
 bool CMNetworking::send_client_update(uint32_t esp32_uid,

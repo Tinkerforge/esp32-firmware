@@ -68,7 +68,7 @@ void CMNetworking::register_urls()
 
         // Keep "enabled" updated because it is retrieved from the EVSE.
         mdns_service_txt_item_set("_tf-warp-cm", "_udp", "enabled", evse_common.get_management_enabled() ? "true" : "false");
-    }, 0, 10000);
+    }, 10_s);
 #endif
 }
 
@@ -86,7 +86,7 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
 {
     if ((this->needs_mdns & (1 << charger_idx)) != 0) {
         if (!periodic_scan_task_started)
-            task_scheduler.scheduleWithFixedDelay([this](){this->start_scan();}, 0, 60 * 1000);
+            task_scheduler.scheduleWithFixedDelay([this](){this->start_scan();}, 1_m);
         periodic_scan_task_started = true;
         return;
     }

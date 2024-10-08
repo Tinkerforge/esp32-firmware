@@ -135,7 +135,7 @@ void SolarForecast::register_urls()
     task_scheduler.scheduleWhenClockSynced([this]() {
         this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
             this->update();
-        }, 100, CHECK_INTERVAL);
+        }, 100_ms, millis_t{CHECK_INTERVAL});
     });
 }
 
@@ -175,7 +175,7 @@ void SolarForecast::next_update() {
     // but with the standard interval afterwards again
     this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
         this->update();
-    }, first_delay_ms, CHECK_INTERVAL);
+    }, millis_t{first_delay_ms}, millis_t{CHECK_INTERVAL});
 }
 
 esp_err_t SolarForecast::update_event_handler_impl(esp_http_client_event_t *event)
@@ -525,7 +525,7 @@ void SolarForecast::update()
             next_update();
         }
 
-    }, 100, 100);
+    }, 100_ms, 100_ms);
 }
 
 // Create API path including user configuration

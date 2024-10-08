@@ -173,7 +173,7 @@ void Wireguard::start_wireguard()
                 }
             }
         }
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 
     state.get("state")->updateUint(2);
 }
@@ -193,7 +193,7 @@ void Wireguard::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         start_wireguard();
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 }
 
 void Wireguard::register_urls()

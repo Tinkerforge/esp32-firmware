@@ -48,7 +48,7 @@ private:
 
     std::unique_ptr<unsigned char[]> cert = nullptr;
     esp_http_client_handle_t http_client = nullptr;
-    uint32_t last_update_begin;
+    micros_t last_update_begin;
     bool download_complete;
     char *json_buffer;
     uint32_t json_buffer_position;

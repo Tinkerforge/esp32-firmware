@@ -86,7 +86,7 @@ void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
 
         task_scheduler.scheduleWithFixedDelay([this](){
             update_all_values(nullptr);
-        }, 990, 990);
+        }, 990_ms, 990_ms);
 
         return;
     }

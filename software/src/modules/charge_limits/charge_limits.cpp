@@ -239,7 +239,7 @@ void ChargeLimits::register_urls()
 
         was_charging = charging;
 
-    }, 0, 1000);
+    }, 1_s);
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()

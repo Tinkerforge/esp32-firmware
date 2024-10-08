@@ -129,7 +129,7 @@ void WS::register_urls()
         int len = asprintf(&payload, "{\"topic\": \"info/keep_alive\", \"payload\": {\"uptime\": %lu}}\n", millis());
         if (len > 0)
             web_sockets.sendToAllOwned(payload, len);
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 }
 
 void WS::addCommand(size_t commandIdx, const CommandRegistration &reg)

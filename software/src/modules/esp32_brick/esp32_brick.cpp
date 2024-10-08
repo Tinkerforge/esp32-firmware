@@ -99,7 +99,7 @@ void ESP32Brick::setup()
     watchdog.reset(watchdog_handle);
 #endif
         led_blink(BLUE_LED, 2000, 1, 0);
-    }, 0, 100);
+    }, 100_ms);
 
     initialized = true;
 }

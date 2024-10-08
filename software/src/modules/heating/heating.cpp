@@ -26,7 +26,7 @@
 #include "build.h"
 
 
-#define HEATING_UPDATE_INTERVAL 1000*60
+static constexpr auto HEATING_UPDATE_INTERVAL = 1_m;
 
 #define HEATING_SG_READY_ACTIVE_CLOSED 0
 #define HEATING_SG_READY_ACTIVE_OPEN   1
@@ -91,7 +91,7 @@ void Heating::register_urls()
     task_scheduler.scheduleWhenClockSynced([this]() {
         task_scheduler.scheduleWithFixedDelay([this]() {
             this->update();
-        }, 0, HEATING_UPDATE_INTERVAL);
+        }, HEATING_UPDATE_INTERVAL);
     });
 }
 

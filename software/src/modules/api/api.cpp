@@ -139,7 +139,7 @@ void API::setup()
 
             reg.config->clear_updated(sent);
         }
-    }, 250, 250);
+    }, 250_ms, 250_ms);
 
     initialized = true;
 }

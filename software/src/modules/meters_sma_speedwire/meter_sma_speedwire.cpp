@@ -182,7 +182,7 @@ void MeterSMASpeedwire::setup(const Config & /*ephemeral_config*/)
     // Poll twice a second to reduce latency and packet backlog.
     task_scheduler.scheduleWithFixedDelay([this]() {
         parse_packet();
-    }, 0, 500);
+    }, 500_ms);
 }
 
 void MeterSMASpeedwire::parse_packet()

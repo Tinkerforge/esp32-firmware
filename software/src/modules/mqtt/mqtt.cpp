@@ -658,7 +658,7 @@ void Mqtt::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->resubscribe();
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 }
 
 void Mqtt::register_urls()

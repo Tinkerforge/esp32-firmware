@@ -181,7 +181,7 @@ void Co2Ampel::setup()
                 set_color(GREEN);
             }
         }
-    }, 0, 500);
+    }, 500_ms);
 
     initialized = true;
 }

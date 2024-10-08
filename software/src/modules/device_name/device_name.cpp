@@ -98,7 +98,7 @@ void DeviceName::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->updateDisplayType();
-    }, 0, 60000);
+    }, 60_s);
 
     initialized = true;
 }

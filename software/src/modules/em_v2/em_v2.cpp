@@ -27,6 +27,8 @@
 
 #include "gcc_warnings.h"
 
+static constexpr auto EM_TASK_DELAY = 250_ms;
+
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Weffc++"
@@ -164,7 +166,7 @@ void EMV2::setup()
     // Start this task even if a config error is set below: If only MeterEM::update_all_values runs, there will be 2.5 sec gaps in the meters data.
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update_all_data();
-    }, 0, EM_TASK_DELAY_MS);
+    }, 0, EM_TASK_DELAY);
 
 #if MODULE_AUTOMATION_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {

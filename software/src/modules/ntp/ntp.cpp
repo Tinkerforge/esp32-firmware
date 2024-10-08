@@ -58,7 +58,7 @@ extern "C" void sntp_sync_time(struct timeval *tv)
         task_scheduler.scheduleWithFixedDelay([](){
             if (deadline_elapsed(ntp.last_sync + 25_h))
                 ntp.set_synced(false);
-        }, 60 * 60 * 1000, 60 * 60 * 1000);
+        }, 1_h, 1_h);
     }
 }
 

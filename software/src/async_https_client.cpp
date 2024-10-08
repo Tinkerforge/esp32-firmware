@@ -279,7 +279,7 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
 
         task_scheduler.cancel(task_scheduler.currentTaskId());
         task_id = 0;
-    }, 0, 200);
+    }, 200_ms);
 }
 
 void AsyncHTTPSClient::download_async(const char *url, int cert_id, std::function<void(AsyncHTTPSClientEvent *event)> callback)

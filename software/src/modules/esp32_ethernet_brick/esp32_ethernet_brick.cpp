@@ -193,7 +193,7 @@ void ESP32EthernetBrick::setup()
     watchdog.reset(watchdog_handle);
 #endif
         led_blink(blue_led_pin, 2000, 1, 0);
-    }, 0, 100);
+    }, 100_ms);
 
     initialized = true;
 }

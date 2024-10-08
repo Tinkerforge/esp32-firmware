@@ -27,6 +27,8 @@
 
 #include "gcc_warnings.h"
 
+static constexpr auto EM_TASK_DELAY = 250_ms;
+
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Weffc++"
@@ -193,7 +195,7 @@ void EMV1::setup()
     // Start this task even if a config error is set below: If only MeterEM::update_all_values runs, there will be 2.5 sec gaps in the meters data.
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update_all_data();
-    }, 0, EM_TASK_DELAY_MS);
+    }, EM_TASK_DELAY);
 
     power_manager.register_phase_switcher_backend(this);
 

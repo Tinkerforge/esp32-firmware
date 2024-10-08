@@ -267,5 +267,5 @@ void EMCommon::start_network_check_task()
             if (is_error(ERROR_FLAGS_NETWORK_BIT_POS))
                 clr_error(ERROR_FLAGS_NETWORK_MASK);
         }
-    }, 0, 5000);
+    }, 5_s);
 }

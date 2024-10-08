@@ -1024,7 +1024,7 @@ void ModbusTcp::register_urls()
 
         task_scheduler.scheduleWithFixedDelay([this]() {
             this->update_regs();
-        }, 0, 500);
+        }, 500_ms);
     }
     else if (config_table == 1)
     {
@@ -1041,7 +1041,7 @@ void ModbusTcp::register_urls()
 
         task_scheduler.scheduleWithFixedDelay([this]() {
             this->update_bender_regs();
-        }, 0, 500);
+        }, 500_ms);
     }
     else if (config_table == 2)
     {
@@ -1058,7 +1058,7 @@ void ModbusTcp::register_urls()
 
         task_scheduler.scheduleWithFixedDelay([this]() {
             this->update_keba_regs();
-        }, 0, 500);
+        }, 500_ms);
     }
 }
 

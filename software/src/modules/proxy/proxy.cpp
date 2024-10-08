@@ -150,5 +150,5 @@ void Proxy::register_urls()
             error_counters.get(String(c))->get("TfpFrame")->updateUint(tfp_frame);
             error_counters.get(String(c))->get("TfpUnexpected")->updateUint(tfp_unexpected);
         }
-    }, 5000, 5000);
+    }, 5_s, 5_s);
 }

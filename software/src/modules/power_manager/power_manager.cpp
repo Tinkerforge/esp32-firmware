@@ -455,7 +455,7 @@ void PowerManager::setup()
         this->update_data();
         this->update_energy();
         this->update_phase_switcher();
-    }, PM_TASK_DELAY_MS, PM_TASK_DELAY_MS);
+    }, millis_t{PM_TASK_DELAY_MS}, millis_t{PM_TASK_DELAY_MS});
 }
 
 void PowerManager::register_urls()
@@ -535,7 +535,7 @@ void PowerManager::register_urls()
 
             state.get("external_control")->updateUint(ext_state);
             low_level_state.get("is_3phase")->updateBool(phase_switcher_backend->get_is_3phase());
-        }, 1000, 1000);
+        }, 1_s, 1_s);
     } else {
         api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](String &/*errmsg*/) {
             uint32_t external_control_state = state.get("external_control")->asUint();

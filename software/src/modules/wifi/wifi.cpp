@@ -629,7 +629,7 @@ void Wifi::setup()
     if (enable_ap) {
         task_scheduler.scheduleWithFixedDelay([this]() {
             state.get("ap_state")->updateInt(get_ap_state());
-        }, 5000, 5000);
+        }, 5_s, 5_s);
     }
 
     if (enable_sta) {
@@ -646,7 +646,7 @@ void Wifi::setup()
                 if (!apply_sta_config_and_connect(connection_state))
                     tries = 0;
             tries++;
-        }, 0, 10000);
+        }, 10_s);
     }
 
     if (ap_fallback_only) {
@@ -681,7 +681,7 @@ void Wifi::setup()
 #if MODULE_ETHERNET_AVAILABLE()
         || (ethernet.is_enabled() && ethernet.get_connection_state() != EthernetState::NotConnected)
 #endif
-        ? 30 * 1000 : 1000, 10 * 1000);
+        ? 30_s : 1_s, 10_s);
     }
 
     EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);

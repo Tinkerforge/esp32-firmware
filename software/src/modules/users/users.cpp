@@ -405,7 +405,7 @@ void Users::setup()
             case CHARGER_STATE_ERROR:
                 break;
         }
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 
     initialized = true;
 
@@ -654,7 +654,7 @@ void Users::register_urls()
     });
 
 #if MODULE_EVSE_LED_AVAILABLE()
-    task_scheduler.scheduleWithFixedDelay([](){check_waiting_for_start();}, 1000, 1000);
+    task_scheduler.scheduleWithFixedDelay([](){check_waiting_for_start();}, 1_s, 1_s);
 #endif
 }
 

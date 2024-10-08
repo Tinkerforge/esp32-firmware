@@ -28,9 +28,9 @@
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
-#define CHECK_FOR_DAP_TIMEOUT 15000
-#define CHECK_INTERVAL 15*60*1000
-#define PRICE_UPDATE_INTERVAL 60*1000
+static constexpr auto CHECK_FOR_DAP_TIMEOUT = 15_s;
+static constexpr auto CHECK_INTERVAL = 15_m;
+static constexpr auto PRICE_UPDATE_INTERVAL = 1_m;
 
 enum Region {
     REGION_DE,
@@ -124,14 +124,14 @@ void DayAheadPrices::register_urls()
     task_scheduler.scheduleWhenClockSynced([this]() {
         task_scheduler.scheduleWithFixedDelay([this]() {
             this->update();
-        }, 0, CHECK_INTERVAL);
+        }, CHECK_INTERVAL);
     });
 
     task_scheduler.scheduleWhenClockSynced([this]() {
         // TODO: Can we run this at xx:00, xx:15, xx:30 and xx:45?
         task_scheduler.scheduleWithFixedDelay([this]() {
             this->update_price();
-        }, 0, PRICE_UPDATE_INTERVAL);
+        }, PRICE_UPDATE_INTERVAL);
     });
 }
 
@@ -279,7 +279,7 @@ void DayAheadPrices::update()
         return;
     }
 
-    last_update_begin = millis();
+    last_update_begin = now_us();
 
     if(json_buffer == nullptr) {
         json_buffer = (char *)heap_caps_calloc_prefer(DAY_AHEAD_PRICE_MAX_JSON_LENGTH, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
@@ -359,7 +359,7 @@ void DayAheadPrices::update()
             task_scheduler.cancel(task_scheduler.currentTaskId());
         }
 
-    }, 100, 100);
+    }, 100_ms, 100_ms);
 }
 
 // Create API path that includes currently configured region and resolution

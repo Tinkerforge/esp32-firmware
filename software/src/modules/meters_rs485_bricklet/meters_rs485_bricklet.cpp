@@ -138,7 +138,7 @@ void MetersRS485Bricklet::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->checkRS485State();
-    }, 10 * 1000, 10 * 1000);
+    }, 10_s, 10_s);
 }
 
 void MetersRS485Bricklet::register_urls()

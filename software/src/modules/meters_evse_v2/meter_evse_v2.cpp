@@ -84,7 +84,7 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2MeterData *meter_data)
 
         task_scheduler.scheduleWithFixedDelay([this](){
             update_all_values(nullptr);
-        }, 990, 990);
+        }, 990_ms, 990_ms);
 
         return;
     }

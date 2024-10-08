@@ -121,11 +121,11 @@ void Rtc::register_urls() {
 
         time.get("second")->updateUint(tm.tm_sec);
         time.get("weekday")->updateUint(tm.tm_wday);
-    }, 0, 200);
+    }, 200_ms);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         update_system_time_from_rtc();
-    }, 0, ((micros_t)RTC_TO_SYS_INTERVAL).millis());
+    }, RTC_TO_SYS_INTERVAL);
 }
 
 void Rtc::update_system_time_from_rtc() {

@@ -373,7 +373,7 @@ void Meters::setup()
         }
 
         last_history_slot = current_history_slot;
-    }, 0, 500);
+    }, 500_ms);
 
     initialized = true;
 }

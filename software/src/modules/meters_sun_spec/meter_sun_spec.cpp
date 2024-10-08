@@ -68,7 +68,7 @@ void MeterSunSpec::setup(const Config &ephemeral_config)
             this->read_allowed = false;
             this->start_generic_read();
         };
-    }, 2000, 1000);
+    }, 2_s, 1_s);
 }
 
 void MeterSunSpec::pre_reboot()

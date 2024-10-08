@@ -431,11 +431,11 @@ void NFC::setup()
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->check_nfc_state();
-    }, 5 * 60 * 1000, 5 * 60 * 1000);
+    }, 5_m, 5_m);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update_seen_tags();
-    }, 0, 300);
+    }, 300_ms);
 }
 
 void NFC::register_urls()

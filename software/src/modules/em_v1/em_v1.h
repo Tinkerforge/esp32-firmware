@@ -33,8 +33,6 @@
 #include "modules/automation/automation_backend.h"
 #endif
 
-#define EM_TASK_DELAY_MS                    250
-
 typedef struct {
     EMAllDataCommon common;
 

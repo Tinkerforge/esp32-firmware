@@ -603,7 +603,7 @@ void RemoteAccess::register_urls() {
         if (!this->management_request_done) {
             this->resolve_management();
         }
-    }, 1000 * 30, 1000 * 30);
+    }, 30_s, 30_s);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
@@ -620,7 +620,7 @@ void RemoteAccess::register_urls() {
                 }
             }
         }
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         uint32_t state = 1;
@@ -637,7 +637,7 @@ void RemoteAccess::register_urls() {
                 logger.printfln("Management connection disconnected");
             }
         }
-    }, 1000, 1000);
+    }, 1_s, 1_s);
 }
 
 void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, ConfigRoot config, std::function<void(ConfigRoot config)> next_stage) {
@@ -1065,7 +1065,7 @@ void RemoteAccess::connect_management() {
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->run_management();
-    }, 0, 250);
+    }, 250_ms);
 }
 
 void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {

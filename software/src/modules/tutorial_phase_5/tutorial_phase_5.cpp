@@ -110,12 +110,12 @@ void TutorialPhase5::setup()
         state.get("button")->updateBool(button_state == TF_RGB_LED_BUTTON_BUTTON_STATE_PRESSED);
     }
 
-    // Start task with 1000 millisecond interval to read back current color
+    // Start task with 1 second interval to read back current color
     // value of the RGB LED Button Bricklet. This allows to externally change
     // the color value and make the ESP32 (Ethernet) Brick notice this.
     task_scheduler.scheduleWithFixedDelay([this]() {
         poll_bricklet_color();
-    }, 0, 1000);
+    }, 1_s);
 
     logger.printfln("Tutorial (Phase 5) module initialized");
 
