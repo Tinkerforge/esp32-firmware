@@ -26,7 +26,7 @@
 #include "build.h"
 #include "musl_libc_timegm.h"
 
-static constexpr micros_t RTC_TO_SYS_INTERVAL = 10_m;
+static constexpr minutes_t RTC_TO_SYS_INTERVAL = 10_m;
 
 void IRtcBackend::set_time(const timeval &time)
 {
@@ -125,7 +125,7 @@ void Rtc::register_urls() {
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         update_system_time_from_rtc();
-    }, 0, RTC_TO_SYS_INTERVAL.millis());
+    }, 0, ((micros_t)RTC_TO_SYS_INTERVAL).millis());
 }
 
 void Rtc::update_system_time_from_rtc() {

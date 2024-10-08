@@ -376,11 +376,11 @@ void ChargeManager::setup()
 
     this->ca_config = new CurrentAllocatorConfig();
 
-    ca_config->global_hysteresis                    = micros_t{low_level_config.get("global_hysteresis")->asUint()}   * 1_s;
-    ca_config->minimum_active_time                  = micros_t{low_level_config.get("min_active_time")->asUint()}     * 1_s;
-    ca_config->wakeup_time                          = micros_t{low_level_config.get("wakeup_time")->asUint()}         * 1_s;
-    ca_config->plug_in_time                         = micros_t{low_level_config.get("plug_in_time")->asUint()}        * 1_s;
-    ca_config->allocation_interval                  = micros_t{low_level_config.get("allocation_interval")->asUint()} * 1_s;
+    ca_config->global_hysteresis                    = seconds_t{low_level_config.get("global_hysteresis")->asUint()};
+    ca_config->minimum_active_time                  = seconds_t{low_level_config.get("min_active_time")->asUint()};
+    ca_config->wakeup_time                          = seconds_t{low_level_config.get("wakeup_time")->asUint()};
+    ca_config->plug_in_time                         = seconds_t{low_level_config.get("plug_in_time")->asUint()};
+    ca_config->allocation_interval                  = seconds_t{low_level_config.get("allocation_interval")->asUint()};
     ca_config->allocated_energy_rotation_threshold  = low_level_config.get("alloc_energy_rot_thres")->asUint();
     ca_config->enable_current_factor                = low_level_config.get("enable_current_factor_pct")->asUint() / 100.0f;
 

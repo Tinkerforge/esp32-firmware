@@ -413,7 +413,7 @@ void NFC::setup_auth_tags()
         tag->get("tag_id")->asString().toCharArray(auth_tags[i].tag_id, sizeof(auth_tags[i].tag_id));
     }
 
-    this->deadtime_post_start = micros_t{config.get("deadtime_post_start")->asUint()} * 1_s;
+    this->deadtime_post_start = seconds_t{config.get("deadtime_post_start")->asUint()};
 }
 
 void NFC::setup()

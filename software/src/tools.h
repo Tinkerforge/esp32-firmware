@@ -39,6 +39,28 @@ STRONG_INTEGER_TYPEDEF(int64_t, micros_t,
     explicit operator double () const { return (double)t; }
 )
 
+STRONG_INTEGER_TYPEDEF(int64_t, millis_t,
+    operator micros_t () const { return micros_t{t * 1000}; }
+)
+
+STRONG_INTEGER_TYPEDEF(int64_t, seconds_t,
+    operator micros_t () const { return micros_t{t * 1000 * 1000}; }
+    operator millis_t () const { return millis_t{t * 1000}; }
+)
+
+STRONG_INTEGER_TYPEDEF(int64_t, minutes_t,
+    operator micros_t  () const { return micros_t{ t * 60 * 1000 * 1000}; }
+    operator millis_t  () const { return millis_t{ t * 60 * 1000}; }
+    operator seconds_t () const { return seconds_t{t * 60}; }
+)
+
+STRONG_INTEGER_TYPEDEF(int64_t, hours_t,
+    operator micros_t  () const { return micros_t{ t * 60 * 60 * 1000 * 1000}; }
+    operator millis_t  () const { return millis_t{ t * 60 * 60 * 1000}; }
+    operator seconds_t () const { return seconds_t{t * 60 * 60}; }
+    operator minutes_t () const { return minutes_t{t * 60}; }
+)
+
 // These do not clash with the C++14 standard literals for durations:
 // https://en.cppreference.com/w/cpp/chrono/duration
 // because those don't start with a _
@@ -49,14 +71,14 @@ STRONG_INTEGER_TYPEDEF(int64_t, micros_t,
 // "if the overload set includes a literal operator with the parameter type unsigned long long,
 // the user-defined literal expression is treated as a function call operator ""X(n ULL),
 // where n is the literal without ud-suffix;"
-constexpr micros_t operator""_us  (unsigned long long int i) { return micros_t{(int64_t)i}; }
-constexpr micros_t operator""_ms  (unsigned long long int i) { return micros_t{(int64_t)i * 1000}; }
-constexpr micros_t operator""_s   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000}; }
+constexpr micros_t operator""_us   (unsigned long long int i) { return micros_t{(int64_t)i}; }
+constexpr millis_t operator""_ms   (unsigned long long int i) { return millis_t{(int64_t)i}; }
+constexpr seconds_t operator""_s   (unsigned long long int i) { return seconds_t{(int64_t)i}; }
 // _min would be nicer but confuses vscode
 // because Arduino.h defines _min to not
 // collide with std::min in case someone uses "using namespace std;" m(
-constexpr micros_t operator""_m   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60}; }
-constexpr micros_t operator""_h   (unsigned long long int i) { return micros_t{(int64_t)i * 1000 * 1000 * 60 * 60}; }
+constexpr minutes_t operator""_m   (unsigned long long int i) { return minutes_t{(int64_t)i}; }
+constexpr hours_t operator""_h   (unsigned long long int i) { return hours_t{(int64_t)i}; }
 
 #define MACRO_NAME_TO_STRING(x) #x
 

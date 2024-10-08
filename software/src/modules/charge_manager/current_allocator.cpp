@@ -387,7 +387,7 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 // Use the supported current in case the last allocation was able to fulfill the requested current.
 // In that case we want a fast ramp-up until we know the new limit of the charger (or don't have any current left)
 static int32_t get_requested_current(const ChargerState *state, const CurrentAllocatorConfig *cfg) {
-    if (state->last_alloc_fulfilled_reqd && !deadline_elapsed(state->ignore_phase_currents + micros_t{cfg->requested_current_threshold} * 1_s))
+    if (state->last_alloc_fulfilled_reqd && !deadline_elapsed(state->ignore_phase_currents + seconds_t{cfg->requested_current_threshold}))
         return state->supported_current;
 
     return state->requested_current;
@@ -1409,7 +1409,7 @@ int allocate_current(
             if ((charger_alloc.allocated_current < charger.allowed_current
                 || (charger_alloc.allocated_phases != 0 && charger_alloc.allocated_phases < charger.phases)
                 || (charger_alloc.allocated_phases == 0 && charger.is_charging))
-               && deadline_elapsed(charger_alloc.last_sent_config + 1_ms * (micros_t)TIMEOUT_MS)) {
+               && deadline_elapsed(charger_alloc.last_sent_config + millis_t{TIMEOUT_MS})) {
                 unreachable_evse_found = true;
                 LOCAL_LOG("EVSE of %s (%s) did not react in time. Expected %d mA @ %dp but is %d mA @ %dp",
                           get_charger_name(i),
@@ -1539,7 +1539,7 @@ int allocate_current(
                 charger.allocated_energy_this_rotation = 0;
             } else {
                 auto amps = (float)current_to_set / 1000.0f * phases_to_set;
-                auto amp_hours = amps * ((float)cfg->allocation_interval) / ((float)1_h);
+                auto amp_hours = amps * ((float)cfg->allocation_interval) / ((float)(micros_t)1_h);
                 auto watt_hours = amp_hours * 230.0f;
                 auto allocated_energy = watt_hours / 1000;
                 charger.allocated_energy_this_rotation += allocated_energy;
