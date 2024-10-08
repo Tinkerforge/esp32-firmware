@@ -20,20 +20,46 @@
 #pragma once
 
 #include <stdint.h>
+#include <TFGenericTCPClient.h>
 
 #include "modules/meters/imeter.h"
 #include "modules/meters/meter_value_id.h"
+#include "virtual_meter.enum.h"
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #include "gcc_warnings.h"
-    #pragma GCC diagnostic ignored "-Weffc++"
-#endif
+struct RCTValueSpec
+{
+    uint32_t id;
+    float scale_factor;
+};
+
+class RCTPowerClient final : public TFGenericTCPClient
+{
+public:
+    RCTPowerClient(uint32_t slot_) : slot(slot_) {}
+
+    void setup(const Config &ephemeral_config);
+    void read_next_value();
+
+private:
+    void close_hook() override;
+    void tick_hook() override;
+    bool receive_hook() override;
+
+    uint32_t slot;
+    VirtualMeter virtual_meter = VirtualMeter::None;
+    const RCTValueSpec *value_specs = nullptr;
+    size_t value_specs_length = 0;
+    size_t value_specs_index = 0;
+    bool wait_for_start = true;
+    uint8_t last_received_byte = 0;
+    uint8_t pending_response[12];
+    size_t pending_response_used = 0;
+};
 
 class MeterRCTPower final : public IMeter
 {
 public:
-    MeterRCTPower(uint32_t slot_) : slot(slot_) {}
+    MeterRCTPower(uint32_t slot) : client(slot) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(const Config &ephemeral_config) override;
@@ -44,9 +70,5 @@ public:
     //bool supports_currents() override       {return true;}
 
 private:
-    uint32_t slot;
+    RCTPowerClient client;
 };
-
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif

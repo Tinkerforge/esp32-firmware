@@ -21,6 +21,7 @@
 
 #include "module_dependencies.h"
 #include "meter_rct_power.h"
+#include "virtual_meter.enum.h"
 
 #include "gcc_warnings.h"
 
@@ -30,6 +31,7 @@ void MetersRCTPower::pre_setup()
         {"display_name",   Config::Str("", 0, 32)},
         {"host",           Config::Str("", 0, 64)},
         {"port",           Config::Uint16(8899)},
+        {"virtual_meter",  Config::Uint8(static_cast<uint8_t>(VirtualMeter::None))},
     });
 
     meters.register_meter_generator(get_class(), this);

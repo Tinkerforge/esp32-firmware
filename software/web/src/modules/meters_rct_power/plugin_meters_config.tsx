@@ -18,14 +18,15 @@
  */
 
 import { h, ComponentChildren } from "preact";
-import { __, translate_unchecked } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
+import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
-import * as API from "../../ts/api";
+import { VirtualMeter } from "./virtual_meter.enum";
 
 export type RCTPowerMetersConfig = [
     MeterClassID.RCTPower,
@@ -33,6 +34,7 @@ export type RCTPowerMetersConfig = [
         display_name: string;
         host: string;
         port: number;
+        virtual_meter: number;
     },
 ];
 
@@ -40,7 +42,7 @@ export function init() {
     return {
         [MeterClassID.RCTPower]: {
             name: __("meters_rct_power.content.meter_class"),
-            new_config: () => [MeterClassID.RCTPower, {display_name: "", host: "", port: 8899}] as MeterConfig,
+            new_config: () => [MeterClassID.RCTPower, {display_name: "", host: "", port: 8899, virtual_meter: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: RCTPowerMetersConfig, on_config: (config: RCTPowerMetersConfig) => void): ComponentChildren => {
                 return [
@@ -73,6 +75,19 @@ export function init() {
                             value={config[1].port}
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {port: v}));
+                            }} />
+                    </FormRow>,
+                    <FormRow label={__("meters_rct_power.content.virtual_meter")}>
+                        <InputSelect
+                            required
+                            items={[
+                                [VirtualMeter.Grid.toString(), __("meters_rct_power.content.virtual_meter_grid")],
+                                [VirtualMeter.Battery.toString(), __("meters_rct_power.content.virtual_meter_battery")],
+                            ]}
+                            placeholder={__("meters_rct_power.content.virtual_meter_select")}
+                            value={util.hasValue(config[1].virtual_meter) ? config[1].virtual_meter.toString() : undefined}
+                            onValue={(v) => {
+                                on_config(util.get_updated_union(config, {virtual_meter: parseInt(v)}));
                             }} />
                     </FormRow>,
                 ];
