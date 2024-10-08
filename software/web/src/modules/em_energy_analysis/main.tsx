@@ -978,7 +978,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                 ios[k][i] = undefined;
                             }
                             else {
-                                ios[k][i] = energy_manager_data.flags[i] & (1 << k);
+                                ios[k][i] = (energy_manager_data.flags[i] & (1 << k)) != 0 ? 1 : 0;
                             }
                         }
                     }
