@@ -168,17 +168,15 @@ void RemoteAccess::pre_setup() {
         {"cert_id", Config::Int8(-1)}
     })};
 
-    Config *cs = new Config {Config::Uint8(1)};
-
     connection_state = Config::Array(
-                {},
-                cs,
-                MAX_USERS * MAX_KEYS_PER_USER + 1,
-                MAX_USERS * MAX_KEYS_PER_USER + 1,
-                Config::type_id<Config::ConfUint>()
+        {},
+        Config::get_prototype_uint8_0(),
+        MAX_USERS * MAX_KEYS_PER_USER + 1,
+        MAX_USERS * MAX_KEYS_PER_USER + 1,
+        Config::type_id<Config::ConfUint>()
     );
     for(int i = 0; i < MAX_USERS * MAX_KEYS_PER_USER + 1; ++i) {
-        connection_state.add();
+        connection_state.add()->updateUint(1); // Set the default here so that the generic prototype can be used.
     }
 
     registration_state = Config::Object({
