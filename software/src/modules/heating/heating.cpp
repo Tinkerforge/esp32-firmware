@@ -230,7 +230,7 @@ void Heating::update()
             extended_logging("Meter value not available (meter %d has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
         } else if ((-watt_current) > pv_excess_control_threshold) {
             extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, pv_excess_control_threshold);
-            sg_ready1_on = sg_ready1_on || true;
+            sg_ready1_on |= true;
         }
     };
 
@@ -251,19 +251,19 @@ void Heating::update()
             if (dpc_extended_active) {
                 if (price_current.data < price_average.data * dpc_extended_threshold / 100.0) {
                     extended_logging("Price is below extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
-                    sg_ready1_on = true;
+                    sg_ready1_on |= true;
                 } else {
                     extended_logging("Price is above extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
-                    sg_ready1_on = false;
+                    sg_ready1_on |= false;
                 }
             }
             if (dpc_blocking_active) {
                 if (price_current.data > price_average.data * dpc_blocking_threshold / 100.0) {
-                    extended_logging("Price is below extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
-                    sg_ready1_on = true;
+                    extended_logging("Price is above blocking threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
+                    sg_ready0_on |= true;
                 } else {
-                    extended_logging("Price is above extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
-                    sg_ready1_on = false;
+                    extended_logging("Price is below blocking threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
+                    sg_ready0_on |= false;
                 }
             }
         }
@@ -336,14 +336,14 @@ void Heating::update()
 
     const bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
     if (sg_ready1_on) {
-        state.get("sg_ready_blocking_active")->updateBool(true);
+        state.get("sg_ready_extended_active")->updateBool(true);
         extended_logging("Heating decision: Turning on SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         if (!sg_ready_output_1) {
             em_v2.set_sg_ready_output(1, sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED);
             last_sg_ready_change = rtc.timestamp_minutes();
         }
     } else {
-        state.get("sg_ready_blocking_active")->updateBool(false);
+        state.get("sg_ready_extended_active")->updateBool(false);
         extended_logging("Heating decision: Turning off SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         if (sg_ready_output_1) {
             em_v2.set_sg_ready_output(1, !(sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED));
