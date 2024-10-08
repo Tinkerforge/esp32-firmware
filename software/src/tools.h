@@ -89,9 +89,11 @@ const char *tf_reset_reason();
 
 bool a_after_b(uint32_t a, uint32_t b);
 bool deadline_elapsed(uint32_t deadline_ms);
+uint32_t calculate_deadline(uint32_t delay);
 
 micros_t now_us();
 bool deadline_elapsed(micros_t deadline_us);
+micros_t calculate_deadline(micros_t delay);
 
 void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase);
 
