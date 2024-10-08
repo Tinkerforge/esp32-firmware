@@ -33,13 +33,13 @@
 struct Task {
     std::function<void(void)> fn;
     uint64_t task_id;
-    uint32_t next_deadline_ms;
-    uint32_t delay_ms;
+    micros_t next_deadline;
+    micros_t delay;
     TaskHandle_t awaited_by;
     bool once;
     bool cancelled;
 
-    Task(std::function<void(void)> &&fn, uint64_t task_id, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once);
+    Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, bool once);
 };
 
 #define IS_WALL_CLOCK_TASK_ID(task_id) (task_id & (1ull << 63))
@@ -102,8 +102,12 @@ public:
     };
 
     CancelResult cancel(uint64_t task_id);
-    uint64_t scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms);
-    uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms);
+    uint64_t scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms) {return this->scheduleOnce(std::forward<std::function<void(void)>>(fn), millis_t{delay_ms});}
+    uint64_t scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms = 0_ms);
+
+    uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t delay_ms) {return this->scheduleWithFixedDelay(std::forward<std::function<void(void)>>(fn), millis_t{0}, millis_t{delay_ms});}
+    uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms);
+    uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms) {return this->scheduleWithFixedDelay(std::forward<std::function<void(void)>>(fn), millis_t{first_delay_ms}, millis_t{delay_ms});}
     uint64_t scheduleWhenClockSynced(std::function<void(void)> &&fn);
 
     uint64_t scheduleWallClock(std::function<void(void)> &&fn, minutes_t interval_minutes, millis_t execution_delay_ms, bool run_on_first_sync);

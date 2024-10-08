@@ -24,11 +24,11 @@
 
 static uint64_t last_task_id = 0;
 
-Task::Task(std::function<void(void)> &&fn, uint64_t task_id, uint32_t first_run_delay_ms, uint32_t delay_ms, bool once) :
+Task::Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, bool once) :
         fn(std::forward<std::function<void(void)>>(fn)),
         task_id(task_id),
-        next_deadline_ms(millis() + first_run_delay_ms),
-        delay_ms(delay_ms),
+        next_deadline(now_us() + first_run_delay),
+        delay(delay),
         awaited_by(nullptr),
         once(once),
         cancelled(false) {
@@ -55,17 +55,7 @@ according to the weak ordering imposed by Compare.
 */
 bool compare(const std::unique_ptr<Task> &a, const std::unique_ptr<Task> &b)
 {
-    if (millis() > 0x7FFFFFFF) {
-        // We are close to a timer overflow
-        if (a->next_deadline_ms <= 0x7FFFFFFF && b->next_deadline_ms > 0x7FFFFFFF)
-            // b is close to the overflow, a is behind the overflow
-            return true;
-        if (b->next_deadline_ms <= 0x7FFFFFFF && a->next_deadline_ms > 0x7FFFFFFF)
-            // b is behind to the overflow, a is close to the overflow
-            return false;
-    }
-
-    return a->next_deadline_ms >= b->next_deadline_ms;
+    return a->next_deadline >= b->next_deadline;
 }
 
 // https://stackoverflow.com/a/36711682
@@ -115,7 +105,7 @@ void TaskScheduler::custom_loop()
             return;
         }
 
-        if (!deadline_elapsed(tasks.top()->next_deadline_ms)) {
+        if (!deadline_elapsed(tasks.top()->next_deadline)) {
             return;
         }
 
@@ -168,21 +158,21 @@ void TaskScheduler::custom_loop()
             return;
         }
 
-        this->currentTask->next_deadline_ms = millis() + this->currentTask->delay_ms;
+        this->currentTask->next_deadline = now_us() + this->currentTask->delay;
 
         tasks.push(std::move(this->currentTask));
     }
 }
 
-uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms)
+uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms)
 {
     std::lock_guard<std::mutex> l{this->task_mutex};
     uint64_t task_id = ++last_task_id;
-    tasks.emplace(new Task(std::forward<std::function<void(void)>>(fn), task_id, delay_ms, 0, true));
+    tasks.emplace(new Task(std::forward<std::function<void(void)>>(fn), task_id, delay_ms, 0_us, true));
     return task_id;
 }
 
-uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms)
+uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms)
 {
     std::lock_guard<std::mutex> l{this->task_mutex};
     uint64_t task_id = ++last_task_id;
@@ -201,25 +191,23 @@ uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn)
             this->cancel(this->currentTask->task_id);
             fn();
         }
-    }, 0, 1000);
+    }, 0_ms, 1_s);
 }
 
 uint64_t TaskScheduler::scheduleWallClock(std::function<void(void)> &&fn, minutes_t interval_minutes, millis_t execution_delay_ms, bool run_on_first_sync)
 {
-    uint32_t delay = ((micros_t)execution_delay_ms).millis();
-
     uint64_t task_id;
     {
         std::lock_guard<std::mutex> l{this->task_mutex};
         task_id = ++last_task_id | (1ull << 63ull);
-        auto runner_task = std::unique_ptr<Task>(new Task(std::forward<std::function<void(void)>>(fn), task_id, 0, delay, true));
+        auto runner_task = std::unique_ptr<Task>(new Task(std::forward<std::function<void(void)>>(fn), task_id, 0_us, execution_delay_ms, true));
 
         wall_clock_tasks.emplace_back(std::move(runner_task), task_id, interval_minutes, run_on_first_sync);
     }
 
     if (!wall_clock_worker_started) {
         wall_clock_worker_started = true;
-        this->scheduleWithFixedDelay([this](){this->wall_clock_worker();}, 0, 1000); // TODO: measure how long the worker takes in the common case! Then decide oversampling interval.
+        this->scheduleWithFixedDelay([this](){this->wall_clock_worker();}, 0_ms, 1_s); // TODO: measure how long the worker takes in the common case! Then decide oversampling interval.
     }
 
     return task_id;
@@ -343,16 +331,16 @@ void TaskScheduler::wall_clock_worker() {
     if (time_struct.tm_min == last_minute)
         return;
 
-    uint32_t minutes_since_midnight = (uint32_t)(time_struct.tm_hour * 60 + time_struct.tm_min);
+    auto minutes_since_midnight = minutes_t{time_struct.tm_hour * 60 + time_struct.tm_min};
 
     std::lock_guard<std::mutex> l{this->task_mutex};
-    uint32_t now = millis();
+    auto now = now_us();
 
     for (auto &task : wall_clock_tasks) {
         if (last_minute == -1 && !task.run_on_first_sync)
             continue;
 
-        if (last_minute != -1 && (minutes_since_midnight % (uint32_t)(int64_t)task.interval_minutes != 0))
+        if (last_minute != -1 && (minutes_since_midnight % task.interval_minutes) != 0_m)
             continue;
 
         if(!task.runner_task) {
@@ -361,7 +349,7 @@ void TaskScheduler::wall_clock_worker() {
             continue;
         }
 
-        task.runner_task->next_deadline_ms = now + task.runner_task->delay_ms;
+        task.runner_task->next_deadline = now + task.runner_task->delay;
         tasks.emplace(std::move(task.runner_task));
     }
 
