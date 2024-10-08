@@ -566,7 +566,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">Heute</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Heute</span></div>
                                     <InputText
                                         value={util.toLocaleFixed(this.get_average_price_today()/1000, 2) + " ct/kWh"}
                                     />
@@ -574,7 +574,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             </div>
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Morgen</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Morgen</span></div>
                                     <InputText
                                         value={util.toLocaleFixed(this.get_average_price_tomorrow()/1000, 2) + " ct/kWh"}
                                     />
@@ -586,7 +586,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">Heute</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Heute</span></div>
                                     <InputText
                                         value={util.toLocaleFixed(get_kwh_today(this.state), 2) + " kWh"}
                                     />
@@ -594,7 +594,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             </div>
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Morgen</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Morgen</span></div>
                                     <InputText
                                         value={util.toLocaleFixed(get_kwh_tomorrow(this.state), 2)+ " kWh"}
                                     />
@@ -606,7 +606,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">Ausgang 1</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Ausgang 1</span></div>
                                     <InputText
                                         value={state.heating_state.sg_ready_blocking_active ? 'Aktiv' : 'Inaktiv'}
                                     />
@@ -614,7 +614,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             </div>
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">Ausgang 2</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Ausgang 2</span></div>
                                     <InputText
                                         value={state.heating_state.sg_ready_extended_active ? 'Aktiv' : 'Inaktiv'}
                                     />
