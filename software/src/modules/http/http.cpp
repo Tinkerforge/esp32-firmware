@@ -202,8 +202,7 @@ WebServerRequestReturnProtect Http::run_response(WebServerRequest req, ResponseR
     task_scheduler.scheduleOnce(
         [this, &reg, &recv_buf, bytes_written, &buffered_response, response_owner_id] {
             api.callResponse(reg, recv_buf, bytes_written, &buffered_response, &response_ownership, response_owner_id);
-        },
-        0);
+        });
 
     String error = queued_response.wait();
 

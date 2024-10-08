@@ -540,7 +540,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
     task_scheduler.scheduleOnce([this]() {
         this->read_allowed = false;
         this->start_connection();
-    }, 1000);
+    }, 1_s);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (this->read_allowed) {

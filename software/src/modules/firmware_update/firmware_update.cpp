@@ -578,7 +578,7 @@ void FirmwareUpdate::register_urls()
     });
 
     server.on_HTTPThread("/flash_firmware", HTTP_POST, [this](WebServerRequest request) {
-        trigger_reboot("Firmware update", 1000);
+        trigger_reboot("Firmware update", 1_s);
         task_scheduler.await([this](){flash_firmware_in_progress = false;});
         return request.send(200, "text/plain", "Update OK");
     },

@@ -315,7 +315,7 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t milli
 
 TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, uint32_t millis_to_wait)
 {
-    return await(scheduleOnce(std::forward<std::function<void(void)>>(fn), 0), millis_to_wait);
+    return await(scheduleOnce(std::forward<std::function<void(void)>>(fn), 0_ms), millis_to_wait);
 }
 
 void TaskScheduler::wall_clock_worker() {

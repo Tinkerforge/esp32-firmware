@@ -819,7 +819,7 @@ static void gethostbyname_addrtype_lwip_ctx_async(const char */*hostname*/, cons
 
     task_scheduler.scheduleOnce([data]() {
         data->found_callback(data);
-    }, 0);
+    });
 }
 
 void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
@@ -875,7 +875,7 @@ void poke_localhost()
     esp_netif_tcpip_exec(poke_localhost_fn, nullptr);
 }
 
-void trigger_reboot(const char *initiator, uint32_t delay_ms)
+void trigger_reboot(const char *initiator, millis_t delay_ms)
 {
     logger.printfln("Reboot requested by %s.", initiator);
     task_scheduler.scheduleOnce([]() {

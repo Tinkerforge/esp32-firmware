@@ -93,7 +93,7 @@ void System::register_urls()
 
         task_scheduler.scheduleOnce([this](){
             factory_reset();
-        }, 3000);
+        }, 3_s);
     }, true);
 
     api.addCommand("config_reset", Config::Confirm(), {Config::confirm_key}, [this](String &result) {
@@ -122,6 +122,6 @@ void System::register_urls()
 
             API::removeAllConfig();
             ESP.restart();
-        }, 3000);
+        }, 3_s);
     }, true);
 }

@@ -81,7 +81,7 @@ private:
     dns_gethostbyname_addrtype_lwip_ctx_async_data host_data;
     micros_t last_successful_read = 0_us;
     micros_t successful_read_timeout = 1_m;
-    uint32_t connect_backoff_ms = 1000;
+    seconds_t connect_backoff = 1_s;
     int last_connect_errno = 0;
     bool resolve_error_printed = false;
 

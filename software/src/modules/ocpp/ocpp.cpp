@@ -157,7 +157,7 @@ void Ocpp::setup()
         task_scheduler.scheduleWithFixedDelay([this](){
             cp->tick();
         }, 100, 100);
-    }, 5000);
+    }, 5_s);
 }
 
 void Ocpp::register_urls()

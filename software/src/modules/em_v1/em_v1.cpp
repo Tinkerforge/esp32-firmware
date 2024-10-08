@@ -161,7 +161,7 @@ void EMV1::setup_energy_manager()
 
         task_scheduler.scheduleOnce([]() {
             trigger_reboot("Energy Manager");
-        }, 5 * 60 * 1000);
+        }, 5_m);
         return;
     }
 
@@ -213,7 +213,7 @@ void EMV1::setup()
             bool contactor_okay = all_data.contactor_check_state & 1;
             automation.trigger(AutomationTriggerID::EMContactorMonitoring, &contactor_okay, this);
         }
-    }, 0);
+    });
 #endif
 }
 

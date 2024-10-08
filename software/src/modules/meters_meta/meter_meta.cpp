@@ -273,7 +273,7 @@ void MeterMeta::on_values_change_double()
         task_scheduler.scheduleOnce([this]() {
             this->on_values_change_task_double();
             this->update_pending = false;
-        }, 0);
+        });
     }
 }
 

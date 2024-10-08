@@ -124,5 +124,5 @@ void DebugProtocol::check_debug()
         else if (debug) {
             check_debug();
         }
-    }, 10000);
+    }, 10_s);
 }

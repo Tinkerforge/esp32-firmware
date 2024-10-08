@@ -788,7 +788,7 @@ void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t
             }
 
             reg.callback(result);
-        }, 0);
+        });
 }
 
 String API::callCommand(const char *path, Config::ConfUpdate payload)

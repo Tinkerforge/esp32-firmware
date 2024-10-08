@@ -179,7 +179,7 @@ void Rtc::update_rtc_from_system_time(int attempt) {
         // Schedule this task to run directly after the next second.
         task_scheduler.scheduleOnce([this, attempt, time]() {
             this->update_rtc_from_system_time(attempt + 1);
-        }, ((1000 * 1000) - time.tv_usec + 999) / 1000);
+        }, millis_t{((1000 * 1000) - time.tv_usec + 999) / 1000});
         return;
     }
 
@@ -237,7 +237,7 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
     if (quality != Quality::RTC) {
         task_scheduler.scheduleOnce([this]() {
             this->update_rtc_from_system_time(0);
-        }, ((1000 * 1000) - time.tv_usec + 999) / 1000);
+        }, millis_t{((1000 * 1000) - time.tv_usec + 999) / 1000});
     }
     return true;
 }

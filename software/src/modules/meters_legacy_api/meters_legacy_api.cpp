@@ -138,7 +138,7 @@ void MetersLegacyAPI::setup()
 
     task_scheduler.scheduleOnce([this]() {
         this->show_blank_value_id_update_warnings = true;
-    }, 250);
+    }, 250_ms);
 }
 
 void MetersLegacyAPI::register_urls()

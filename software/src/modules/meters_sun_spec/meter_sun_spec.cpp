@@ -61,7 +61,7 @@ void MeterSunSpec::setup(const Config &ephemeral_config)
     task_scheduler.scheduleOnce([this]() {
         this->read_allowed = false;
         this->start_connection();
-    }, 1000);
+    }, 1_s);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (this->read_allowed) {
@@ -144,7 +144,7 @@ void MeterSunSpec::scan_start_delay()
 {
     task_scheduler.scheduleOnce([this](){
         this->scan_start();
-    }, 10000);
+    }, 10_s);
 }
 
 void MeterSunSpec::scan_start()
@@ -182,7 +182,7 @@ void MeterSunSpec::scan_read_delay()
 {
     task_scheduler.scheduleOnce([this](){
         this->start_generic_read();
-    }, 1000 + (esp_random() % 4000));
+    }, 1_s + (millis_t{esp_random() % 4000}));
 }
 
 void MeterSunSpec::scan_next()

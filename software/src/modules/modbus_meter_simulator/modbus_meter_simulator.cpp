@@ -143,19 +143,19 @@ void ModbusMeterSimulator::setupRS485()
     tf_rs485_register_modbus_slave_write_multiple_registers_request_callback(&bricklet, [](struct TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t *registers, uint16_t registers_length, void *user_data) {
         task_scheduler.scheduleOnce([request_id, starting_address, registers, registers_length, user_data]() {
             static_cast<ModbusMeterSimulator *>(user_data)->modbus_slave_write_multiple_registers_request_handler(request_id, starting_address, registers, registers_length);
-        }, 0);
+        });
     }, write_registers_callback_buffer, this);
 
     tf_rs485_register_modbus_slave_read_holding_registers_request_callback(&bricklet, [](TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data) {
         task_scheduler.scheduleOnce([request_id, starting_address, count, user_data]() {
             static_cast<ModbusMeterSimulator *>(user_data)->modbus_slave_read_holding_registers_request_handler(request_id, starting_address, count);
-        }, 0);
+        });
     }, this);
 
     tf_rs485_register_modbus_slave_read_input_registers_request_callback(&bricklet, [](TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data) {
         task_scheduler.scheduleOnce([request_id, starting_address, count, user_data]() {
             static_cast<ModbusMeterSimulator *>(user_data)->modbus_slave_read_input_registers_request_handler(request_id, starting_address, count);
-        }, 0);
+        });
     }, this);
 
     // Unused callbacks

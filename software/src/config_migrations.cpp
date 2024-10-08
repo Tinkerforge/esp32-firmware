@@ -365,8 +365,8 @@ static const ConfigMigration migrations[] = {
                             api.callCommand("evse/button_configuration_update", Config::ConfUpdateObject{{
                                 {"button", (uint32_t)new_button_cfg}
                             }});
-                        }, 1000);
-                    }, 0);
+                        }, 1_s);
+                    });
                 }
                 write_config_file("users/config", users_json);
             }

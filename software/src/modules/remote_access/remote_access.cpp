@@ -597,7 +597,7 @@ void RemoteAccess::register_urls() {
         this->resolve_management();
         this->connect_management();
         this->connection_state.get(0)->updateUint(1);
-    }, 5000);
+    }, 5_s);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (!this->management_request_done) {
@@ -680,7 +680,7 @@ void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_
                 case AsyncHTTPSClientEventType::Finished:
                     task_scheduler.scheduleOnce([this, next_stage, config]() {
                         next_stage(config);
-                    }, 0);
+                    });
                     break;
             }
         };
@@ -1006,7 +1006,7 @@ void RemoteAccess::connect_management() {
     if (!rtc.clock_synced(&tv)) {
         task_scheduler.scheduleOnce([this]() {
             this->connect_management();
-        }, 5000);
+        }, 5_s);
         return;
     }
 
@@ -1073,7 +1073,7 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
     if (!rtc.clock_synced(&tv)) {
         task_scheduler.scheduleOnce([this, i, local_port]() {
             this->connect_remote_access(i, local_port);
-        }, 5000);
+        }, 5_s);
         return;
     }
 

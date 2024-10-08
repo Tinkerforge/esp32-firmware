@@ -409,7 +409,7 @@ void PowerManager::setup()
             logger.printfln("No chargers configured. Won't try to distribute energy.");
             set_config_error(PM_CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK);
         }
-    }, 0);
+    });
 
     // The default configuration after a factory reset must be good enough for everything to run without crashing.
     if (!phase_switcher_backend->phase_switching_capable()) {

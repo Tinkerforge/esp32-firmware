@@ -144,7 +144,7 @@ void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
 
 void poke_localhost();
 
-void trigger_reboot(const char *initiator, uint32_t delay_ms = 0);
+void trigger_reboot(const char *initiator, millis_t delay_ms = 0_ms);
 
 time_t ms_until_datetime(int *year, int *month, int *day, int *hour, int *minutes, int *seconds);
 time_t ms_until_time(int h, int m);

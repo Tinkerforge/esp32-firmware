@@ -136,7 +136,7 @@ void EMV2::setup_energy_manager()
 
         task_scheduler.scheduleOnce([]() {
             trigger_reboot("Energy Manager");
-        }, 5 * 60 * 1000);
+        }, 5_m);
         return;
     }
 
@@ -172,7 +172,7 @@ void EMV2::setup()
             uint32_t index = i;
             automation.trigger(AutomationTriggerID::EMInput, &index, this);
         }
-    }, 0);
+    });
 #endif
 }
 

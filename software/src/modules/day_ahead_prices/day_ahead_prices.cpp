@@ -84,7 +84,7 @@ void DayAheadPrices::pre_setup()
             current_price_available = false;
             task_scheduler.scheduleOnce([this]() {
                 this->update();
-            }, 0);
+            });
         }
 
         return "";

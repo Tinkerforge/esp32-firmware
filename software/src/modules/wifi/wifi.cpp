@@ -215,7 +215,7 @@ void Wifi::apply_soft_ap_config_and_start()
             scan_start_time = millis();
             task_scheduler.scheduleOnce([this]() {
                 this->apply_soft_ap_config_and_start();
-            }, 500);
+            }, 500_ms);
             return;
         } else { // Scan already started
             int network_count = WiFi.scanComplete();
@@ -223,7 +223,7 @@ void Wifi::apply_soft_ap_config_and_start()
             if (network_count == WIFI_SCAN_RUNNING && !deadline_elapsed(scan_start_time + 10000)) {
                 task_scheduler.scheduleOnce([this]() {
                     this->apply_soft_ap_config_and_start();
-                }, 500);
+                }, 500_ms);
                 return;
             }
 
@@ -504,14 +504,14 @@ void Wifi::setup()
 
                 task_scheduler.scheduleOnce([this, now](){
                     state.get("connection_end")->updateUint(now);
-                }, 0);
+                });
             }
 
             task_scheduler.scheduleOnce([this](){
                 state.get("sta_ip")->updateString("0.0.0.0");
                 state.get("sta_subnet")->updateString("0.0.0.0");
                 state.get("sta_bssid")->updateString("");
-            }, 0);
+            });
 
             this->was_connected = false;
         },
@@ -526,7 +526,7 @@ void Wifi::setup()
 
             task_scheduler.scheduleOnce([this, now](){
                 state.get("connection_start")->updateUint(now);
-            }, 0);
+            });
         },
         ARDUINO_EVENT_WIFI_STA_CONNECTED);
 
@@ -544,7 +544,7 @@ void Wifi::setup()
                 state.get("sta_ip")->updateString(ip);
                 state.get("sta_subnet")->updateString(subnet.toString());
                 state.get("sta_bssid")->updateString(WiFi.BSSIDstr());
-            }, 0);
+            });
         },
         ARDUINO_EVENT_WIFI_STA_GOT_IP);
 
@@ -566,7 +566,7 @@ void Wifi::setup()
                 state.get("sta_ip")->updateString("0.0.0.0");
                 state.get("sta_subnet")->updateString("0.0.0.0");
                 state.get("sta_bssid")->updateString("");
-            }, 0);
+            });
         },
         ARDUINO_EVENT_WIFI_STA_LOST_IP);
 
@@ -755,7 +755,7 @@ void Wifi::check_for_scan_completion()
         logger.printfln("Scan in progress...");
         task_scheduler.scheduleOnce([this]() {
             this->check_for_scan_completion();
-        }, 500);
+        }, 500_ms);
         return;
     }
 
@@ -793,7 +793,7 @@ void Wifi::start_scan()
     if (WiFi.scanNetworks(true, true) != WIFI_SCAN_FAILED) {
         task_scheduler.scheduleOnce([this]() {
             this->check_for_scan_completion();
-        }, 2000);
+        }, 2_s);
         return;
     }
 
@@ -806,8 +806,8 @@ void Wifi::start_scan()
 
         task_scheduler.scheduleOnce([this]() {
             this->check_for_scan_completion();
-        }, 2000);
-    }, 6000);
+        }, 2_s);
+    }, 6_s);
 }
 
 void Wifi::register_urls()

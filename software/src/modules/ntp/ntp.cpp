@@ -53,7 +53,7 @@ extern "C" void sntp_sync_time(struct timeval *tv)
         logger.printfln("NTP synchronized at %lu,%03lu", secs, ms);
         task_scheduler.scheduleOnce([](){
             ntp.set_synced(true);
-        }, 0);
+        });
 
         task_scheduler.scheduleWithFixedDelay([](){
             if (deadline_elapsed(ntp.last_sync + 25_h))

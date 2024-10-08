@@ -205,7 +205,7 @@ void EVSEV2::post_setup()
         tf_evse_v2_get_button_press_boot_time(&device, true, &press_time);
         if (press_time != 0)
             logger.printfln("Reset boot button press time");
-    }, 40000);
+    }, 40_s);
 
     // Get all data once before announcing the EVSE feature.
     api.addFeature("cp_disconnect");
@@ -1072,7 +1072,7 @@ void EVSEV2::update_all_data()
         // We need to schedule this since the first call of update_all_data happens before automation is initialized.
         task_scheduler.scheduleOnce([this, gpio_enable]() {
             automation.trigger(AutomationTriggerID::EVSEShutdownInput, (void *)&gpio_enable, this);
-        }, 0);
+        });
         last_shutdown_input_state = shutdown_input_state;
     }
 
@@ -1084,7 +1084,7 @@ void EVSEV2::update_all_data()
         // We need to schedule this since the first call of update_all_data happens before automation is initialized.
         task_scheduler.scheduleOnce([this, gpio]() {
             automation.trigger(AutomationTriggerID::EVSEGPInput, (void *)&gpio[16], this);
-        }, 0);
+        });
         last_input_state = input_state;
     }
 #endif

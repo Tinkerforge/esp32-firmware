@@ -100,7 +100,7 @@ void EMEnergyAnalysis::setup()
     task_scheduler.scheduleWithFixedDelay([this]() {collect_data_points();    }, 15000, 10000);
     task_scheduler.scheduleWithFixedDelay([this]() {set_pending_data_points();}, 15000,   100);
 
-    task_scheduler.scheduleOnce([this]() {this->show_blank_value_id_update_warnings = true;}, 250);
+    task_scheduler.scheduleOnce([this]() {this->show_blank_value_id_update_warnings = true;}, 250_ms);
 }
 
 void EMEnergyAnalysis::register_urls()
@@ -1175,7 +1175,7 @@ static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_len
 
                         em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
                     }
-                }, 0);
+                });
             }
         }
         else {
@@ -1608,7 +1608,7 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
 
                         em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
                     }
-                }, 0);
+                });
             }
         }
         else {

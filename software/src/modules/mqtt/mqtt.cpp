@@ -364,7 +364,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
                 c.callback(copy_buf, topic_len, copy_buf + topic_len, data_len);
                 free(copy_buf);
                 esp_mqtt_client_enable_receive(client);
-            }, 0);
+            });
         } else
             c.callback(topic, topic_len, data, data_len);
 
@@ -453,12 +453,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         case MQTT_EVENT_CONNECTED:
             task_scheduler.scheduleOnce([mqtt](){
                 mqtt->onMqttConnect();
-            }, 0);
+            });
             break;
         case MQTT_EVENT_DISCONNECTED:
             task_scheduler.scheduleOnce([mqtt](){
                 mqtt->onMqttDisconnect();
-            }, 0);
+            });
             break;
         case MQTT_EVENT_DATA:
             if (event->current_data_offset != 0)
@@ -506,7 +506,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                         logger.printfln("Unknown error");
                         mqtt->state.get("last_error")->updateInt(0xFFFFFFFF);
                     }
-                }, 0);
+                });
                 break;
             }
         default:
@@ -722,7 +722,7 @@ void Mqtt::register_events()
 #if MODULE_DEBUG_AVAILABLE()
             debug.register_task("mqtt_task", MQTT_TASK_STACK_SIZE);
 #endif
-        }, 20000);
+        }, 20_s);
     }
 }
 

@@ -129,7 +129,7 @@ void Ethernet::setup()
 
             task_scheduler.scheduleOnce([this](){
                 state.get("connection_state")->updateEnum(connection_state);
-            }, 0);
+            });
         },
         ARDUINO_EVENT_ETH_START);
 
@@ -167,7 +167,7 @@ void Ethernet::setup()
                     logger.printfln_plain("         This can lead to connectivity issues and is not recommended.");
                 }
 #endif
-            }, 0);
+            });
         },
         ARDUINO_EVENT_ETH_CONNECTED);
 
@@ -187,7 +187,7 @@ void Ethernet::setup()
                 state.get("ip")->updateString(ip);
                 state.get("subnet")->updateString(subnet.toString());
                 state.get("connection_start")->updateUint(now);
-            }, 0);
+            });
         },
         ARDUINO_EVENT_ETH_GOT_IP);
 
@@ -209,7 +209,7 @@ void Ethernet::setup()
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
                 state.get("connection_end")->updateUint(now);
-            }, 0);
+            });
         },
         ARDUINO_EVENT_ETH_LOST_IP);
 
@@ -226,7 +226,7 @@ void Ethernet::setup()
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
                 state.get("connection_end")->updateUint(now);
-            }, 0);
+            });
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
 
@@ -241,7 +241,7 @@ void Ethernet::setup()
             task_scheduler.scheduleOnce([this, now](){
                 state.get("connection_state")->updateEnum(connection_state);
                 state.get("connection_end")->updateUint(now);
-            }, 0);
+            });
         },
         ARDUINO_EVENT_ETH_STOP);
 

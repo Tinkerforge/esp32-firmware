@@ -91,7 +91,7 @@ void FrontPanel::pre_setup()
             // if the display needs to be turned on/off.
             task_scheduler.scheduleOnce([this](){
                 this->check_bricklet_state();
-            }, 0);
+            });
 
             return "";
         }
@@ -159,7 +159,7 @@ void FrontPanel::setup()
 
     task_scheduler.scheduleOnce([this](){
         this->check_flash_metadata();
-    }, 15*1000); // We assume that the Bricklet has booted and read the metadata after 15s
+    }, 15_s); // We assume that the Bricklet has booted and read the metadata after 15s
 }
 
 void FrontPanel::register_urls()
@@ -671,7 +671,7 @@ void FrontPanel::check_flash_metadata()
     if (!initialized) {
         task_scheduler.scheduleOnce([this](){
             this->check_flash_metadata();
-        }, 15*1000);
+        }, 15_s);
         return;
     }
 

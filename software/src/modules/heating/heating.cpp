@@ -65,7 +65,7 @@ void Heating::pre_setup()
     }), [this](Config &update, ConfigSource source) -> String {
         task_scheduler.scheduleOnce([this]() {
             this->update();
-        }, 0);
+        });
         return "";
     }};
 

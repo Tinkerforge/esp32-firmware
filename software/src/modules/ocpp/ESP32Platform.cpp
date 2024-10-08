@@ -874,7 +874,7 @@ void platform_reset(bool hard)
         It should then restart the application software (if possible,
         otherwise restart the processor/controller).
     */
-    trigger_reboot("OCPP", 1000);
+    trigger_reboot("OCPP", 1_s);
 }
 
 void platform_register_stop_callback(void *ctx, void (*cb)(int32_t, StopReason, void *), void *user_data)

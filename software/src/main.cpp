@@ -98,7 +98,7 @@ static void register_default_urls() {
     });
 
     api.addCommand("reboot", Config::Null(), {}, [](String &/*errmsg*/) {
-        trigger_reboot("API", 1000);
+        trigger_reboot("API", 1_s);
     }, true);
 
     api.addState("info/modules", &modules);

@@ -60,7 +60,7 @@ void MqttAutoDiscovery::setup()
 
     task_scheduler.scheduleOnce([this](){
         this->announce_next_topic(0);
-    }, 1000);
+    }, 1_s);
 
     // <discovery_prefix>/+/<node_id>/+/config
     String discovery_topic;
@@ -163,11 +163,11 @@ void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_le
 
 void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 {
-    uint32_t delay_ms = 0;
+    seconds_t delay = 0_s;
 
     if (mqtt.state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected) {
         topic_num = 0;
-        delay_ms = 5 * 1000;
+        delay = 5_s;
     } else {
         // deal with one topic
         if (api.hasFeature(mqtt_discovery_topic_infos[topic_num].feature)) {
@@ -241,11 +241,11 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
         if (++topic_num >= TOPIC_COUNT) {
             topic_num = 0;
-            delay_ms = 15 * 60 * 1000;
+            delay = 15_m;
         }
     }
 
     task_scheduler.scheduleOnce([this, topic_num](){
         this->announce_next_topic(topic_num);
-    }, delay_ms);
+    }, delay);
 }

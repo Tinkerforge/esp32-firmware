@@ -294,7 +294,7 @@ void EvseCommon::setup()
 #if MODULE_AUTOMATION_AVAILABLE()
     task_scheduler.scheduleOnce([this]() {
         automation.trigger(AutomationTriggerID::ChargerState, nullptr, this);
-    }, 0);
+    });
 #endif
 
     task_scheduler.scheduleWithFixedDelay([this](){

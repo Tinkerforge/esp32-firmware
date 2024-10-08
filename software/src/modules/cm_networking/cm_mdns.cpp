@@ -177,7 +177,7 @@ void CMNetworking::start_scan()
     }
 
     scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 1000, INT8_MAX, [](mdns_search_once_t *search) {
-        task_scheduler.scheduleOnce([](){ cm_networking.check_results(); }, 0);
+        task_scheduler.scheduleOnce([](){ cm_networking.check_results(); });
     });
 }
 
