@@ -48,7 +48,7 @@ public:
     [[gnu::const]] const Config *get_errors_prototype() override;
 
 private:
-    ConfigRoot config_prototype;
+    Config config_prototype;
 
     std::vector<MeterMeta *> *child_meters = nullptr;
 };

@@ -37,7 +37,7 @@ MeterClassID MeterMeta::get_class() const
 void MeterMeta::setup(const Config &ephemeral_config)
 {
     // Cache config
-    mode           = static_cast<ConfigMode>(ephemeral_config.get("mode")->asUint());
+    mode           = ephemeral_config.get("mode")->asEnum<ConfigMode>();
     source_meter_a = ephemeral_config.get("source_meter_a")->asUint();
     source_meter_b = ephemeral_config.get("source_meter_b")->asUint();
     constant       = ephemeral_config.get("constant")->asInt();
@@ -56,6 +56,13 @@ void MeterMeta::register_events()
     if (source_meter_a == slot || (source_mode == SourceMode::Double && source_meter_b == slot)) {
         logger.printfln("Invalid source meter. Meta meter cannot listen to itself in slot %u. Slot A is %u, slot b is %u.", slot, source_meter_a, source_meter_b);
         return;
+    }
+
+    if (source_mode == SourceMode::Double) {
+        if (source_meter_a == source_meter_b) {
+            logger.printfln("Meter %u: Source meters A and B cannot be the same.", slot);
+            return;
+        }
     }
 
     uint32_t value_ids_missing = 2;
@@ -120,7 +127,7 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
     const Config *value_ids_a = api.getState(meters.get_path(source_meter_a, Meters::PathType::ValueIDs));
     size_t value_count_a = value_ids_a->count();
     if (value_count_a == 0) {
-        logger.printfln("Meter A value IDs not available yet.");
+        logger.printfln("Meter %u: Meter A value IDs not available yet.", slot);
         return EventResult::OK;
     }
 
@@ -131,7 +138,7 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
         value_count_b = value_ids_b->count();
 
         if (value_count_b == 0) {
-            logger.printfln("Meter B value IDs not available yet.");
+            logger.printfln("Meter %u: Meter B value IDs not available yet.", slot);
             return EventResult::OK;
         }
     }
@@ -182,18 +189,18 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
 
         for (size_t i = 0; i < ARRAY_SIZE(index_cache); i++) {
             if (index_cache[i] == UINT32_MAX) {
-                logger.printfln("Value ID %u in position %u not provided by meter", static_cast<uint32_t>(value_ids_pf2current[i]), i);
+                logger.printfln("Meter %u: Value ID %u in position %u not provided by meter", slot, static_cast<uint32_t>(value_ids_pf2current[i]), i);
                 return EventResult::OK; // Try again, if possible.
             }
             if (index_cache[i] > UINT8_MAX) {
-                logger.printfln("Index %u of value ID %u in position %u is out of range", index_cache[i], static_cast<uint32_t>(value_ids_pf2current[i]), i);
+                logger.printfln("Meter %u: Index %u of value ID %u in position %u is out of range", slot, index_cache[i], static_cast<uint32_t>(value_ids_pf2current[i]), i);
                 return EventResult::OK; // Try again, if possible.
             }
         }
 
         value_indices = static_cast<uint8_t(*)[][2]>(malloc(sizeof((*value_indices)[0][0]) * 2 * ARRAY_SIZE(value_ids_pf2current)));
         if (!value_indices) {
-            logger.printfln("Not enough memory for value_indices");
+            logger.printfln("Meter %u: Not enough memory for value_indices", slot);
             return EventResult::OK; // Try again, if possible.
         }
 

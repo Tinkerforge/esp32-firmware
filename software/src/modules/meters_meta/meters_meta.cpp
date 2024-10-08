@@ -25,26 +25,13 @@
 
 void MetersMeta::pre_setup()
 {
-    config_prototype = ConfigRoot{Config::Object({
+    config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"mode",           Config::Uint(0, 0, 4)},
         {"source_meter_a", Config::Uint(0, 0, METERS_SLOTS - 1)},
         {"source_meter_b", Config::Uint(1, 0, METERS_SLOTS - 1)},
         {"constant",       Config::Int32(0)},
-    }), [this](const Config &update, ConfigSource source) -> String {
-        MeterMeta::ConfigMode mode = static_cast<MeterMeta::ConfigMode>(update.get("mode")->asUint());
-
-        if (mode == MeterMeta::ConfigMode::Diff || mode == MeterMeta::ConfigMode::Sum) {
-            uint32_t meter_a = update.get("source_meter_a")->asUint();
-            uint32_t meter_b = update.get("source_meter_b")->asUint();
-
-            if (meter_a == meter_b) {
-                return "Source meters A and B cannot be the same.";
-            }
-        }
-
-        return "";
-    }};
+    });
 
     child_meters = new std::vector<MeterMeta *>;
 
