@@ -102,7 +102,6 @@ public:
     };
 
     CancelResult cancel(uint64_t task_id);
-    uint64_t scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms) {return this->scheduleOnce(std::forward<std::function<void(void)>>(fn), millis_t{delay_ms});}
     uint64_t scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms = 0_ms);
 
     uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t delay_ms) {return this->scheduleWithFixedDelay(std::forward<std::function<void(void)>>(fn), millis_t{0}, millis_t{delay_ms});}
