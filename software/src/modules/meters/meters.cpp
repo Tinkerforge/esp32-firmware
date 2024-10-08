@@ -220,6 +220,10 @@ void Meters::setup()
         config_prototypes[i] = {meter_class, *meter_generator->get_config_prototype()};
     }
 
+    const Config last_reset_prototype = Config::Object({
+        {"last_reset", Config::Uint32(0)}
+    });
+
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
         MeterSlot &meter_slot = meter_slots[slot];
 #ifdef METERS_SLOT_0_DEFAULT_CLASS
@@ -266,9 +270,7 @@ void Meters::setup()
         // setup whether to support reset. This could for example depend on the
         // meter's configuration.
         if (meter->supports_reset()) {
-            meter_slot.last_reset = Config::Object({
-                {"last_reset", Config::Uint32(0)}
-            });
+            meter_slot.last_reset = last_reset_prototype;
             api.restorePersistentConfig(get_path(slot, Meters::PathType::LastReset), &meter_slot.last_reset);
         }
         meter_slot.meter = meter;
