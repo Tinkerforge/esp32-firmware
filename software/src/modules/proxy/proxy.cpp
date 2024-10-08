@@ -29,14 +29,16 @@ extern TF_HAL hal;
 
 void Proxy::pre_setup()
 {
+    devices_prototype = Config::Object({
+        {"uid", Config::Str("", 0, 7)},
+        {"port", Config::Str("", 0, 1)},
+        {"name", Config::Str("", 0, 50)},
+        {"device_id", Config::Uint16(0)},
+    });
+
     devices = Config::Array(
         {},
-        new Config{Config::Object({
-            {"uid", Config::Str("", 0, 7)},
-            {"port", Config::Str("", 0, 1)},
-            {"name", Config::Str("", 0, 50)},
-            {"device_id", Config::Uint16(0)}
-        })},
+        &devices_prototype,
         0, 12, Config::type_id<Config::ConfObject>()
     );
 

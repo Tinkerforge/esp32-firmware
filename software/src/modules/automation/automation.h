@@ -67,6 +67,7 @@ public:
     ConfigVec get_configured_triggers(AutomationTriggerID number);
 
 private:
+    Config config_tasks_prototype;
     ConfigRoot config;
     ConfigRoot config_in_use;
     ConfigRoot state;

@@ -55,6 +55,7 @@ public:
 private:
     Config config_prototype;
 
+    Config table_custom_registers_prototype;
     std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> table_prototypes;
 
     ModbusTCP modbus;

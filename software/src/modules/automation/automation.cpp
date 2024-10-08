@@ -52,27 +52,26 @@ void Automation::pre_setup()
         })
     );
 
-    Config trigger_union = Config::Union<AutomationTriggerID>(
-                    *Config::Null(),
-                    AutomationTriggerID::None,
-                    trigger_prototypes.data(),
-                    trigger_prototypes.size());
-
-    Config action_union = Config::Union<AutomationActionID>(
-                    *Config::Null(),
-                    AutomationActionID::None,
-                    action_prototypes.data(),
-                    action_prototypes.size());
+    config_tasks_prototype = Config::Object({
+        {"trigger", Config::Union<AutomationTriggerID>(
+            *Config::Null(),
+            AutomationTriggerID::None,
+            trigger_prototypes.data(),
+            trigger_prototypes.size()
+        )},
+        {"action", Config::Union<AutomationActionID>(
+            *Config::Null(),
+            AutomationActionID::None,
+            action_prototypes.data(),
+            action_prototypes.size()
+        )},
+    });
 
     config = ConfigRoot{Config::Object({
             {"tasks", Config::Array(
                 {},
-                new Config{
-                    Config::Object({
-                        {"trigger", trigger_union},
-                        {"action", action_union}
-                    })
-                }, 0, 14, Config::type_id<Config::ConfObject>())
+                &config_tasks_prototype,
+                0, 14, Config::type_id<Config::ConfObject>())
             }
         }),
         [this](const Config &cfg, ConfigSource source) -> String {

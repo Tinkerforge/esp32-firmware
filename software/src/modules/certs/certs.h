@@ -42,6 +42,7 @@ public:
 private:
     void update_state();
 
+    Config state_certs_prototype;
     ConfigRoot state;
     ConfigRoot add;
     ConfigRoot remove;

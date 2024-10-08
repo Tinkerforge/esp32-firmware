@@ -34,18 +34,20 @@ void MetersModbusTCP::pre_setup()
 {
     table_prototypes.push_back({MeterModbusTCPTableID::None, *Config::Null()});
 
+    table_custom_registers_prototype = Config::Object({
+        {"rtype", Config::Uint8(static_cast<uint8_t>(ModbusRegisterType::HoldingRegister))},
+        {"addr", Config::Uint16(0)},
+        {"vtype", Config::Uint8(static_cast<uint8_t>(ModbusValueType::U16))},
+        {"off", Config::Float(0.0f)},
+        {"scale", Config::Float(1.0f)},
+        {"id", Config::Uint16(static_cast<uint8_t>(MeterValueID::NotSupported))},
+    });
+
     table_prototypes.push_back({MeterModbusTCPTableID::Custom, Config::Object({
         {"device_address", Config::Uint(1, 1, 247)},
         {"register_address_mode", Config::Uint8(static_cast<uint8_t>(ModbusRegisterAddressMode::Address))},
         {"registers", Config::Array({},
-            new Config{Config::Object({
-                {"rtype", Config::Uint8(static_cast<uint8_t>(ModbusRegisterType::HoldingRegister))},
-                {"addr", Config::Uint16(0)},
-                {"vtype", Config::Uint8(static_cast<uint8_t>(ModbusValueType::U16))},
-                {"off", Config::Float(0.0f)},
-                {"scale", Config::Float(1.0f)},
-                {"id", Config::Uint16(static_cast<uint8_t>(MeterValueID::NotSupported))},
-            })},
+            &table_custom_registers_prototype,
             0, METERS_MODBUS_TCP_MAX_CUSTOM_REGISTERS, Config::type_id<Config::ConfObject>()
         )}
     })});
@@ -103,17 +105,16 @@ void MetersModbusTCP::pre_setup()
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
-    Config table_union = Config::Union<MeterModbusTCPTableID>(
-        *Config::Null(),
-        MeterModbusTCPTableID::None,
-        table_prototypes.data(),
-        static_cast<uint8_t>(table_prototypes.size()));
-
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"host",           Config::Str("", 0, 64)},
         {"port",           Config::Uint16(502)},
-        {"table",          table_union},
+        {"table",          Config::Union<MeterModbusTCPTableID>(
+            *Config::Null(),
+            MeterModbusTCPTableID::None,
+            table_prototypes.data(),
+            static_cast<uint8_t>(table_prototypes.size())
+        )},
     });
 
     meters.register_meter_generator(get_class(), this);

@@ -64,6 +64,7 @@ public:
 
     void remove_username_file();
 
+    Config config_users_prototype;
     ConfigRoot config;
     ConfigRoot add;
     ConfigRoot modify;

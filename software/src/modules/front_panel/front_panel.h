@@ -26,6 +26,7 @@
 #include "module_available.h"
 
 #define FRONT_PANEL_TILES 6
+#define TILE_TYPES 8
 
 class FrontPanel : public DeviceModule<TF_WARPFrontPanel,
                                          tf_warp_front_panel_create,
@@ -101,5 +102,7 @@ private:
     String watt_hour_value_to_display_string(const uint32_t wh);
     String price_value_to_display_string(const int32_t price);
 
+    ConfUnionPrototype<TileType> tile_prototypes[TILE_TYPES];
+    Config config_tiles_prototype;
     ConfigRoot config;
 };

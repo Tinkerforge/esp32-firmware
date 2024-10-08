@@ -32,7 +32,6 @@
 
 static constexpr auto UPDATE_INTERVAL = 1_s;
 #define PAGE_FRONT_TEXT_MAX_CHAR 6
-#define TILE_TYPES 8
 
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
@@ -58,34 +57,32 @@ void FrontPanel::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
-    ConfUnionPrototype<TileType> *tile_prototypes = new ConfUnionPrototype<TileType>[TILE_TYPES]{
-        {TileType::EmptyTile,           *Config::Null()},
-        {TileType::Wallbox,             Config::Uint(0, 0, FRONT_PANEL_CONTROLLED_CHARGES)},
-        {TileType::ChargeManagement,    *Config::Null()},
-        {TileType::Meter,               Config::Uint(0, 0, FRONT_PANEL_METERS_SLOTS)},
-        {TileType::DayAheadPrices,      Config::Enum(DAPType::CurrentPrice, DAPType::CurrentPrice, DAPType::AveragePriveTomorrow)},
-        {TileType::SolarForecast,       Config::Enum(SFType::ForecastToday, SFType::ForecastToday, SFType::ForecastTomorrow)},
-        {TileType::EnergyManagerStatus, *Config::Null()},
-        {TileType::HeatingStatus,       *Config::Null()},
-    };
+    tile_prototypes[0] = {TileType::EmptyTile,           *Config::Null()};
+    tile_prototypes[1] = {TileType::Wallbox,             Config::Uint(0, 0, FRONT_PANEL_CONTROLLED_CHARGES)};
+    tile_prototypes[2] = {TileType::ChargeManagement,    *Config::Null()};
+    tile_prototypes[3] = {TileType::Meter,               Config::Uint(0, 0, FRONT_PANEL_METERS_SLOTS)};
+    tile_prototypes[4] = {TileType::DayAheadPrices,      Config::Enum(DAPType::CurrentPrice, DAPType::CurrentPrice, DAPType::AveragePriveTomorrow)};
+    tile_prototypes[5] = {TileType::SolarForecast,       Config::Enum(SFType::ForecastToday, SFType::ForecastToday, SFType::ForecastTomorrow)};
+    tile_prototypes[6] = {TileType::EnergyManagerStatus, *Config::Null()};
+    tile_prototypes[7] = {TileType::HeatingStatus,       *Config::Null()};
 
-    Config *tile_union = new Config{Config::Union<TileType>(
+    config_tiles_prototype = Config::Union<TileType>(
         *Config::Null(),
         TileType::EmptyTile,
         tile_prototypes,
         TILE_TYPES
-    )};
+    );
 
     config = ConfigRoot{Config::Object({
             {"enable", Config::Bool(true)},
             {"tiles", Config::Array({
-                    *tile_union,
-                    *tile_union,
-                    *tile_union,
-                    *tile_union,
-                    *tile_union,
-                    *tile_union
-                }, tile_union, FRONT_PANEL_TILES, FRONT_PANEL_TILES, Config::type_id<Config::ConfUnion>())}
+                    config_tiles_prototype,
+                    config_tiles_prototype,
+                    config_tiles_prototype,
+                    config_tiles_prototype,
+                    config_tiles_prototype,
+                    config_tiles_prototype,
+                }, &config_tiles_prototype, FRONT_PANEL_TILES, FRONT_PANEL_TILES, Config::type_id<Config::ConfUnion>())}
         }), [this](Config &cfg, ConfigSource source) -> String {
             // Schedule check_bricklet_state() here, since this checks
             // if the display needs to be turned on/off.

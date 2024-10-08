@@ -39,8 +39,10 @@ public:
     void setup() override;
     void register_urls() override;
 
+private:
     bool verified = false;
     uptime_data_t old_uptime{};
 
+    Config uptimes_prototype;
     ConfigRoot uptimes;
 };

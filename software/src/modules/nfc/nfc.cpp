@@ -44,25 +44,29 @@ void NFC::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
+    seen_tags_prototype = Config::Object({
+        {"tag_type", Config::Uint8(0)},
+        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
+        {"last_seen", Config::Uint32(0)}
+    });
+
     seen_tags = Config::Array(
         {},
-        new Config{Config::Object({
-            {"tag_type", Config::Uint8(0)},
-            {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
-            {"last_seen", Config::Uint32(0)}
-        })},
+        &seen_tags_prototype,
         0, TAG_LIST_LENGTH,
         Config::type_id<Config::ConfObject>()
     );
 
+    config_authorized_tags_prototype = Config::Object({
+        {"user_id", Config::Uint8(0)},
+        {"tag_type", Config::Uint(0, 0, 4)},
+        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
+    });
+
     config = ConfigRoot{Config::Object({
         {"authorized_tags", Config::Array(
             {},
-            new Config{Config::Object({
-                {"user_id", Config::Uint8(0)},
-                {"tag_type", Config::Uint(0, 0, 4)},
-                {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
-            })},
+            &config_authorized_tags_prototype,
             0, MAX_AUTHORIZED_TAGS,
             Config::type_id<Config::ConfObject>())
         },

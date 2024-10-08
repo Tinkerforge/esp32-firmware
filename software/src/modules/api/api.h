@@ -149,7 +149,6 @@ public:
 
     ConfigRoot features;
     ConfigRoot version;
-    ConfigRoot modified_prototype;
 
     uint8_t state_update_counter = 0;
 
@@ -157,4 +156,7 @@ private:
     bool already_registered(const char *path, size_t path_len, const char *api_type);
 
     void executeCommand(const CommandRegistration &reg, Config::ConfUpdate payload);
+
+    Config features_prototype;
+    Config modified_prototype;
 };

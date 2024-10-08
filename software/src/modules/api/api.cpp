@@ -41,9 +41,11 @@ API::API()
 
 void API::pre_setup()
 {
+    features_prototype = Config::Str("", 0, 32);
+
     features = Config::Array(
         {},
-        new Config{Config::Str("", 0, 32)},
+        &features_prototype,
         0, 20, Config::type_id<Config::ConfString>()
     );
 

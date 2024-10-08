@@ -62,13 +62,18 @@ static_assert(CHARGE_RECORD_SIZE == 16, "Unexpected size of ChargeStart + Charge
 
 void ChargeTracker::pre_setup()
 {
-    last_charges = Config::Array({},
-        new Config{Config::Object({
-            {"timestamp_minutes", Config::Uint32(0)},
-            {"charge_duration", Config::Uint32(0)},
-            {"user_id", Config::Uint8(0)},
-            {"energy_charged", Config::Float(0)}
-        })}, 0, CHARGE_RECORD_LAST_CHARGES_SIZE, Config::type_id<Config::ConfObject>());
+    last_charges_prototype = Config::Object({
+        {"timestamp_minutes", Config::Uint32(0)},
+        {"charge_duration", Config::Uint32(0)},
+        {"user_id", Config::Uint8(0)},
+        {"energy_charged", Config::Float(0)}
+    });
+
+    last_charges = Config::Array(
+        {},
+        &last_charges_prototype,
+        0, CHARGE_RECORD_LAST_CHARGES_SIZE, Config::type_id<Config::ConfObject>()
+    );
 
     current_charge = Config::Object({
         {"user_id", Config::Int16(-1)},

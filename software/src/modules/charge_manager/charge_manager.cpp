@@ -87,6 +87,12 @@ static PhaseRotation convert_phase_rotation(CMPhaseRotation pr) {
 
 void ChargeManager::pre_setup()
 {
+    config_chargers_prototype = Config::Object({
+        {"host", Config::Str("", 0, 64)},
+        {"name", Config::Str("", 0, 32)},
+        {"rot", Config::Uint((uint8_t)CMPhaseRotation::Unknown, (uint8_t)CMPhaseRotation::Unknown, (uint8_t)CMPhaseRotation::L312)}
+    });
+
     config = ConfigRoot{Config::Object({
         {"enable_charge_manager", Config::Bool(false)},
         {"enable_watchdog", Config::Bool(false)},
@@ -109,11 +115,7 @@ void ChargeManager::pre_setup()
         // See https://github.com/Tinkerforge/warp-charger/blob/master/tools/current_ramp/allowed_vs_effective_3.gp
         {"requested_current_margin", Config::Uint16(REQUESTED_CURRENT_MARGIN_DEFAULT)},
         {"chargers", Config::Array({},
-            new Config{Config::Object({
-                {"host", Config::Str("", 0, 64)},
-                {"name", Config::Str("", 0, 32)},
-                {"rot", Config::Uint((uint8_t)CMPhaseRotation::Unknown, (uint8_t)CMPhaseRotation::Unknown, (uint8_t)CMPhaseRotation::L312)}
-            })},
+            &config_chargers_prototype,
             0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
         )}
     }), [](Config &conf, ConfigSource source) -> String {
@@ -166,6 +168,18 @@ void ChargeManager::pre_setup()
 
     const Config *config_prototype_int32_0 = Config::get_prototype_int32_0();
 
+    state_chargers_prototype = Config::Object({
+        {"s",  Config::Uint(0, 0, 6)},  // "state" - 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
+        {"e",  Config::Uint8(0)},       // "error" - 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed, >= 192 client errors
+        {"ac", Config::Uint16(0)},      // "allocated_current" - last current limit send to the charger
+        {"ap", Config::Uint(0, 0, 3)},  // "allocated_phases" - last phase limit send to the charger
+        {"sc", Config::Uint16(0)},      // "supported_current" - maximum current supported by the charger
+        {"sp", Config::Uint(0, 0, 3)},  // "supported_phases" - maximum phases supported by the charger. Is 1 or 3 for a not phase-switchable charger. Bit 2 is set if it can be switched.
+        {"lu", Config::Uint32(0)},      // "last_update" - The last time we received a CM packet from this charger
+        {"n",  Config::Str("", 0, 32)}, // "name" - Configured display name. Has to be duplicated in case the config was written but we didn't reboot.
+        {"u",  Config::Uint32(0)}       // "uid" - The ESP's UID
+    });
+
     // This has to fit in the 6k WebSocket send buffer with 32 chargers with long names. (Currently 4076 bytes)
     // -> Be stingy with the key names. If we need more space we could switch to an array for all numbers.
     // This API only exists to communicate with the web interface and is not documented.
@@ -210,19 +224,25 @@ void ChargeManager::pre_setup()
         },
         {"chargers", Config::Array(
             {},
-            new Config{Config::Object({
-                {"s", Config::Uint(0, 0, 6)},      // "state" - 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
-                {"e", Config::Uint8(0)},      // "error" - 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed, >= 192 client errors
-                {"ac", Config::Uint16(0)},    // "allocated_current" - last current limit send to the charger
-                {"ap",  Config::Uint(0, 0, 3)},    // "allocated_phases" - last phase limit send to the charger
-                {"sc", Config::Uint16(0)},    // "supported_current" - maximum current supported by the charger
-                {"sp",  Config::Uint(0, 0, 3)},    // "supported_phases" - maximum phases supported by the charger. Is 1 or 3 for a not phase-switchable charger. Bit 2 is set if it can be switched.
-                {"lu", Config::Uint32(0)},    // "last_update" - The last time we've received a CM packet from this charger
-                {"n", Config::Str("", 0, 32)},// "name" - Configured display name. Has to be duplicated in case the config was written but we didn't reboot.
-                {"u", Config::Uint32(0)}     // "uid" - The ESPs UID
-            })},
+            &state_chargers_prototype,
             0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
         )}
+    });
+
+    low_level_state_chargers_prototype = Config::Object({
+        {"b",  Config::Uint(0, 0, 0x3F)},  /* "bits"
+                                                0 cp_disc_supported
+                                                1 cp_disc_state
+                                                2 phase_switch_supported
+                                                3 phases (2)
+                                                5 last_alloc_fulfilled_reqd*/
+        {"rc", Config::Uint16(0)},         // "requested_current" - either the supported current or (after requested_current_threshold is elapsed in state C) the max phase current + requested_current_margin
+        {"ae", Config::Uint(0, 9, 99999)}, // "allocated_energy" in Wh, values > 99999 Wh are truncated to 99999.
+        {"ar", Config::Uint(0, 9, 99999)}, // "allocated_energy_this_rotation" in Wh, values > 99999 Wh are truncated to 99999.
+        {"ls", Config::Uint32(0)},         // "last_switch" in millis
+        {"lp", Config::Uint32(0)},         // "last_plug_in" in millis
+        {"lw", Config::Uint32(0)},         // "last_wakeup" in millis
+        {"ip", Config::Uint32(0)},         // "ignore_phase_currents" in millis
     });
 
     low_level_state = Config::Object({
@@ -247,21 +267,7 @@ void ChargeManager::pre_setup()
         },
         {"chargers", Config::Array(
             {},
-            new Config{Config::Object({
-                {"b", Config::Uint(0, 0, 0x3F)},   /* "bits"
-                                                       0 cp_disc_supported
-                                                       1 cp_disc_state
-                                                       2 phase_switch_supported
-                                                       3 phases (2)
-                                                       5 last_alloc_fulfilled_reqd*/
-                {"rc", Config::Uint16(0)},    // "requested_current" - either the supported current or (after requested_current_threshold is elapsed in state C) the max phase current + requested_current_margin
-                {"ae", Config::Uint(0, 9, 99999)}, // "allocated_energy" in Wh, values > 99999 Wh are truncated to 99999.
-                {"ar", Config::Uint(0, 9, 99999)}, // "allocated_energy_this_rotation" in Wh, values > 99999 Wh are truncated to 99999.
-                {"ls", Config::Uint32(0)},         // "last_switch" in millis
-                {"lp", Config::Uint32(0)},         // "last_plug_in" in millis
-                {"lw", Config::Uint32(0)},         // "last_wakeup" in millis
-                {"ip", Config::Uint32(0)},         // "ignore_phase_currents" in millis
-            })},
+            &low_level_state_chargers_prototype,
             0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
         )}
     });

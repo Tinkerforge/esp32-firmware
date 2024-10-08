@@ -188,6 +188,7 @@ private:
     ConfigRoot management_enabled;
     ConfigRoot management_enabled_update;
     ConfigRoot state;
+    Config     slots_prototype;
     ConfigRoot slots;
     ConfigRoot hardware_configuration;
     ConfigRoot indicator_led;

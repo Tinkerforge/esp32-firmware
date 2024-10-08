@@ -45,14 +45,14 @@ void EvseCommon::pre_setup()
         {"button_pressed", Config::Bool(false)},
     });
 
-    Config *evse_charging_slot = new Config{Config::Object({
+    slots_prototype = Config::Object({
         {"max_current", Config::Uint16(0)},
         {"active", Config::Bool(false)},
         {"clear_on_disconnect", Config::Bool(false)}
-    })};
+    });
 
     slots = Config::Array({},
-        evse_charging_slot,
+        &slots_prototype,
         CHARGING_SLOT_COUNT, CHARGING_SLOT_COUNT,
         Config::type_id<Config::ConfObject>());
 

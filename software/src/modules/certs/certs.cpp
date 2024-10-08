@@ -36,12 +36,14 @@ static inline String get_cert_name_path(uint8_t cert_id) {
 
 void Certs::pre_setup()
 {
+    state_certs_prototype = Config::Object({
+        {"id", Config::Uint(0, 0, MAX_CERTS)},
+        {"name", Config::Str("", 0, MAX_CERT_NAME)},
+    });
+
     state = Config::Object({
         {"certs", Config::Array({},
-            new Config(Config::Object({
-                {"id", Config::Uint(0, 0, MAX_CERTS)},
-                {"name", Config::Str("", 0, MAX_CERT_NAME)},
-            })),
+            &state_certs_prototype,
             0, MAX_CERTS, Config::type_id<Config::ConfObject>())
         }
     });

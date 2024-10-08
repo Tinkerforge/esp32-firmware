@@ -35,15 +35,19 @@ static bool verify_data(uint8_t *data, uint16_t checksum)
 
 void UptimeTracker::pre_setup()
 {
-    uptimes = Config::Array({},
-        new Config{Config::Object({
-            {"reset_reason", Config::Uint8(0)},
-            {"boot_count", Config::Uint32(0)},
-            {"timestamp_min", Config::Uint32(0)},
-            {"uptime", Config::Uint32(0)},
-            {"uptime_overflows", Config::Uint32(0)}
-        })},
-        0, MAX_UPTIMES, Config::type_id<Config::ConfObject>());
+    uptimes_prototype = Config::Object({
+        {"reset_reason", Config::Uint8(0)},
+        {"boot_count", Config::Uint32(0)},
+        {"timestamp_min", Config::Uint32(0)},
+        {"uptime", Config::Uint32(0)},
+        {"uptime_overflows", Config::Uint32(0)},
+    });
+
+    uptimes = Config::Array(
+        {},
+        &uptimes_prototype,
+        0, MAX_UPTIMES, Config::type_id<Config::ConfObject>()
+    );
 }
 
 void UptimeTracker::setup()

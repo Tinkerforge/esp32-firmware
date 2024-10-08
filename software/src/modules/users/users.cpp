@@ -131,6 +131,15 @@ bool read_user_slot_info(UserSlotInfo *result)
 
 void Users::pre_setup()
 {
+    config_users_prototype = Config::Object({
+        {"id", Config::Uint8(0)},
+        {"roles", Config::Uint32(0)},
+        {"current", Config::Uint16(32000)},
+        {"display_name", Config::Str("", 0, USERNAME_LENGTH)},
+        {"username", Config::Str("", 0, USERNAME_LENGTH)},
+        {"digest_hash", Config::Str("", 0, 32)},
+    });
+
     config = Config::Object({
         {"users", Config::Array(
             {
@@ -143,14 +152,7 @@ void Users::pre_setup()
                     {"digest_hash", Config::Str("", 0, 32)}
                 })
             },
-            new Config(Config::Object({
-                {"id", Config::Uint8(0)},
-                {"roles", Config::Uint32(0)},
-                {"current", Config::Uint16(32000)},
-                {"display_name", Config::Str("", 0, USERNAME_LENGTH)},
-                {"username", Config::Str("", 0, USERNAME_LENGTH)},
-                {"digest_hash", Config::Str("", 0, 32)},
-            })),
+            &config_users_prototype,
             1, MAX_ACTIVE_USERS,
             Config::type_id<Config::ConfObject>()
         )},

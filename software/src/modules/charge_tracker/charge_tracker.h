@@ -61,4 +61,6 @@ public:
 private:
     bool repair_last(float);
     void repair_charges();
+
+    Config last_charges_prototype;
 };

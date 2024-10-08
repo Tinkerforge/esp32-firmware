@@ -91,6 +91,10 @@ public:
     void trigger_allocator_run() {next_allocation = 0_us;}
 
 private:
+    Config config_chargers_prototype;
+    Config state_chargers_prototype;
+    Config low_level_state_chargers_prototype;
+
     CurrentLimits limits, limits_post_allocation;
     Cost allocated_currents;
 
