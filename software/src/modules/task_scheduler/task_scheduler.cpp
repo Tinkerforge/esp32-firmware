@@ -346,6 +346,7 @@ void TaskScheduler::wall_clock_worker() {
     uint32_t minutes_since_midnight = (uint32_t)(time_struct.tm_hour * 60 + time_struct.tm_min);
 
     std::lock_guard<std::mutex> l{this->task_mutex};
+    uint32_t now = millis();
 
     for (auto &task : wall_clock_tasks) {
         if (last_minute == -1 && !task.run_on_first_sync)
@@ -360,7 +361,7 @@ void TaskScheduler::wall_clock_worker() {
             continue;
         }
 
-        task.runner_task->next_deadline_ms = millis() + task.runner_task->delay_ms;
+        task.runner_task->next_deadline_ms = now + task.runner_task->delay_ms;
         tasks.emplace(std::move(task.runner_task));
     }
 
