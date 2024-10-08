@@ -111,7 +111,7 @@ void RCTPowerClient::setup(const Config &ephemeral_config)
                                 error_number);
             });
         }
-    }, 1000, 5000);
+    }, 1_s, 5_s);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         TFGenericTCPClientConnectionStatus connection_status = get_connection_status();
@@ -119,11 +119,11 @@ void RCTPowerClient::setup(const Config &ephemeral_config)
         if (connection_status == TFGenericTCPClientConnectionStatus::Connected) {
             read_next_value();
         }
-    }, 1000, 250);
+    }, 1_s, 250_ms);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         tick();
-    }, 1000, 10);
+    }, 1_s, 10_ms);
 
     switch (virtual_meter) {
     case VirtualMeter::None:
@@ -215,7 +215,7 @@ void RCTPowerClient::tick_hook()
 
 bool RCTPowerClient::receive_hook()
 {
-    uint32_t deadline = calculate_deadline(10);
+    micros_t deadline = calculate_deadline(10_ms);
 
     while (sizeof(pending_response) - pending_response_used > 0) {
         if (deadline_elapsed(deadline)) {
