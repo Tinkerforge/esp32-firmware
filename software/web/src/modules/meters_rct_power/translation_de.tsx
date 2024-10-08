@@ -9,7 +9,11 @@ let x = {
             "host": "Host",
             "host_invalid": "Host ist ungültig",
             "port": "Port",
-            "port_muted": "typischerweise 8899"
+            "port_muted": "typischerweise 8899",
+            "virtual_meter": "Virtueller Zähler",
+            "virtual_meter_select": "Auswählen...",
+            "virtual_meter_grid": "Netzanschluss",
+            "virtual_meter_battery": "Speicher"
         }
     }
 }
