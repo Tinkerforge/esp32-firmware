@@ -120,6 +120,17 @@ void MetersModbusTCP::pre_setup()
         {"device_address", Config::Uint(247, 1, 247)},
     })});
 
+    Config siemens = Config::Object({
+        {"device_address", Config::Uint(1, 1, 247)},
+    });
+
+    table_prototypes.push_back({MeterModbusTCPTableID::SiemensPAC2200, siemens});
+    table_prototypes.push_back({MeterModbusTCPTableID::SiemensPAC3120, siemens});
+    table_prototypes.push_back({MeterModbusTCPTableID::SiemensPAC3200, siemens});
+    table_prototypes.push_back({MeterModbusTCPTableID::SiemensPAC3220, siemens});
+    table_prototypes.push_back({MeterModbusTCPTableID::SiemensPAC4200, siemens});
+    table_prototypes.push_back({MeterModbusTCPTableID::SiemensPAC4220, siemens});
+
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"host",           Config::Str("", 0, 64)},
