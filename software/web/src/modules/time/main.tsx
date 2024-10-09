@@ -128,16 +128,19 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label={__("time.content.enable")}>
-                        <Switch desc={__("time.content.enable_desc")}
-                                checked={state.enable}
-                                onClick={this.toggle('enable')}/>
+
+                    <FormRow label={__("time.content.live_date")}>
+                        <OutputDatetime date={date}
+                                        onClick={() => this.set_current_time()}
+                                        buttonText={__("time.content.set_time")}
+                                        disabled={this.state.auto_sync}
+                                        invalidDateText={__("time.content.time_not_set")}/>
                     </FormRow>
 
-                    <FormRow label={__("time.content.use_dhcp")}>
-                        <Switch desc={__("time.content.use_dhcp_desc")}
-                                checked={state.use_dhcp}
-                                onClick={this.toggle('use_dhcp')}/>
+                    <FormRow label={__("time.content.enable_auto_sync")}>
+                        <Switch desc={__("time.content.auto_sync_desc")} checked={state.auto_sync} onClick={() => {
+                                this.setState({"auto_sync": !state.auto_sync})
+                        }}/>
                     </FormRow>
 
                     <FormRow label={__("time.content.timezone")}>
@@ -174,6 +177,20 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                         <Button variant="primary" className="form-control" onClick={() => this.setState({timezone: Intl.DateTimeFormat().resolvedOptions().timeZone})}>{__("time.content.use_browser_timezone")}</Button>
                     </FormRow>
 
+                    <FormSeparator heading={__("time.content.ntp")}/>
+
+                    <FormRow label={__("time.content.enable")}>
+                        <Switch desc={__("time.content.enable_desc")}
+                                checked={state.enable}
+                                onClick={this.toggle('enable')}/>
+                    </FormRow>
+
+                    <FormRow label={__("time.content.use_dhcp")}>
+                        <Switch desc={__("time.content.use_dhcp_desc")}
+                                checked={state.use_dhcp}
+                                onClick={this.toggle('use_dhcp')}/>
+                    </FormRow>
+
                     <FormRow label={__("time.content.server")}>
                         <InputText required
                                    maxLength={64}
@@ -185,21 +202,6 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                         <InputText maxLength={64}
                                    value={state.server2}
                                    onValue={this.set("server2")}/>
-                    </FormRow>
-
-                    <FormSeparator heading="Systemzeit"/>
-
-                    <FormRow label={__("time.content.enable_auto_sync")}>
-                        <Switch desc={__("time.content.auto_sync_desc")} checked={state.auto_sync} onClick={() => {
-                                this.setState({"auto_sync": !state.auto_sync})
-                        }}/>
-                    </FormRow>
-                    <FormRow label={__("time.content.live_date")}>
-                        <OutputDatetime date={date}
-                                        onClick={() => this.set_current_time()}
-                                        buttonText={__("time.content.set_time")}
-                                        disabled={this.state.auto_sync}
-                                        invalidDateText={__("time.content.time_not_set")}/>
                     </FormRow>
                 </ConfigForm>
             </SubPage>
