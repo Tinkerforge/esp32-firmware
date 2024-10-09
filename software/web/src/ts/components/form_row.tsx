@@ -80,6 +80,9 @@ function walk(children: ComponentChildren): VNode<any> | null {
         if (typeof(c) == "string" || typeof(c) == "number")
             continue;
 
+        if (c.type == FormRow)
+            continue;
+
         if (components_using_id_context.indexOf(c.type) >= 0)
             return c;
 
