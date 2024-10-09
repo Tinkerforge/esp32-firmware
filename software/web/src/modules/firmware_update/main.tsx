@@ -303,7 +303,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                             {this.state.install_state == InstallState.InProgress
                                 ? <FormRow label={__("firmware_update.content.install_progress")}>
                                       <Progress class="mb-1" progress={this.state.install_progress / 100} />
-                                      <label class="mb-0">{__("firmware_update.content.installing_update")}</label>
+                                      <div class="mb-0">{__("firmware_update.content.installing_update")}</div>
                                   </FormRow>
                                 : <FormRow label={__("firmware_update.content.install_complete")}>
                                       <InputText value={translate_unchecked("firmware_update.script.install_state_" + this.state.install_state)} />

@@ -84,7 +84,7 @@ export function InputFile(props: InputFileProps) {
         </div>
         <div hidden={!uploading}>
             <Progress class="mb-1" progress={progress} />
-            <label class="mb-0">{props.uploading ? props.uploading : __("component.input_file.uploading")}</label>
+            <div class="mb-0">{props.uploading ? props.uploading : __("component.input_file.uploading")}</div>
         </div>
         </>
     );

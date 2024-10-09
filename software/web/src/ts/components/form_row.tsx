@@ -125,12 +125,7 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
             </div>
         }
 
-        return (
-            <div class="form-group row" hidden={props.hidden == undefined ? false : props.hidden}>
-                <div class={(props.labelColClasses === undefined ? "col-lg-4" : props.labelColClasses)}>
-                    <div class="row">
-                        <label for={child_using_id_context != null ? this.id : undefined} class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
-                            <div class="row mx-lg-0">
+        let label_content = <div class="row mx-lg-0">
                                 <div class={"col px-lg-0" + (props.symbol ? " d-flex-ni align-items-center" : "")}>
                                     {props.label_prefix ? props.label_prefix : undefined}
                                     {props.symbol ? <span class="col-auto px-1">{props.symbol}</span> : undefined}
@@ -140,7 +135,23 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
                                     {props.label_suffix ? props.label_suffix : undefined}
                                 </div>
                             </div>
-                        </label>
+
+        let label = null;
+        if (child_using_id_context != null) {
+            label = <label for={child_using_id_context != null ? this.id : undefined} class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
+                            {label_content}
+                    </label>
+        } else {
+            label = <div for={child_using_id_context != null ? this.id : undefined} class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
+                            {label_content}
+                    </div>
+        }
+
+        return (
+            <div class="form-group row" hidden={props.hidden == undefined ? false : props.hidden}>
+                <div class={(props.labelColClasses === undefined ? "col-lg-4" : props.labelColClasses)}>
+                    <div class="row">
+                        {label}
                         {props.help ? <span class={"col-auto pt-lg-col-form-label"} onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:(state.help_expanded ? "btn-dark" : "btn-outline-secondary"), style:"border-radius: 50%; transition: .35s;"} as any}/></span> : undefined}
                     </div>
                 </div>
