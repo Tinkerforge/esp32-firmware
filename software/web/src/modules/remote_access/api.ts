@@ -38,6 +38,6 @@ export interface register {
     keys: KeyObject[],
 }
 
-export interface get_login_salt extends config{}
-export interface get_secret_salt extends config{}
-export interface login extends register{}
+export type get_login_salt = config;
+export type get_secret_salt = config;
+export type login = register;
