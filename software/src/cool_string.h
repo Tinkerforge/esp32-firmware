@@ -7,6 +7,7 @@ class CoolString : public String
 {
 public:
     using String::String;
+    using String::operator=;
 
     void setLength(int len);
     unsigned int getCapacity();
