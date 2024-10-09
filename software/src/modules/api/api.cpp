@@ -816,10 +816,18 @@ String API::callCommand(const char *path, Config::ConfUpdate payload)
     return String("Unknown command ") + path;
 }
 
-const Config *API::getState(const String &path, bool log_if_not_found)
+const Config *API::getState(const char *path, bool log_if_not_found, size_t path_len)
 {
-    for (auto &reg : states) {
-        if (path.length() != reg.path_len || path != reg.path) {
+    if (!path) {
+        return nullptr;
+    }
+
+    if (!path_len) {
+        path_len = strlen(path);
+    }
+
+    for (const auto &reg : states) {
+        if (path_len != reg.path_len || strcmp(path, reg.path) != 0) {
             continue;
         }
 
@@ -827,14 +835,19 @@ const Config *API::getState(const String &path, bool log_if_not_found)
     }
 
     if (log_if_not_found) {
-        logger.printfln("State %s not found. Known states are:", path.c_str());
+        logger.printfln("State %s not found. Known states are:", path);
 
-        for (auto &reg : states) {
+        for (const auto &reg : states) {
             logger.printfln_plain("    %s,", reg.path);
         }
     }
 
     return nullptr;
+}
+
+const Config *API::getState(const String &path, bool log_if_not_found)
+{
+    return getState(path.c_str(), log_if_not_found, path.length());
 }
 
 void API::addFeature(const char *name)

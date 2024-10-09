@@ -96,6 +96,7 @@ public:
 
     void callResponse(ResponseRegistration &reg, char *payload, size_t len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
 
+    const Config *getState(const char *path, bool log_if_not_found = true, size_t path_len = 0);
     const Config *getState(const String &path, bool log_if_not_found = true);
 
     void addFeature(const char *name);
