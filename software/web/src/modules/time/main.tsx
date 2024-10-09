@@ -102,12 +102,12 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
     }
 
     render(props: {}, state: Readonly<TimeConfig>) {
-        if (!util.render_allowed() || !API.hasFeature("rtc"))
+        if (!util.render_allowed())
             return <SubPage name="time" />;
 
         if (this.first_render) {
             this.first_render = false;
-            if (API.hasFeature("rtc") && API.get("rtc/config").auto_sync && !API.get("ntp/state").synced) {
+            if (API.get("rtc/config").auto_sync && !API.get("ntp/state").synced) {
                 this.set_current_time();
             }
         }
