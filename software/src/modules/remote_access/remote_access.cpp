@@ -158,6 +158,7 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
 
 void RemoteAccess::pre_setup() {
     config = ConfigRoot{Config::Object({
+        {"uuid", Config::Str("", 0, 36)},
         {"enable", Config::Bool(false)},
         {"email", Config::Str("", 0, 64)},
         {"password", Config::Str("", 0, 32)},
@@ -889,6 +890,7 @@ void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> k
 
         this->config = new_config;
         this->config.get("password")->updateString(charger_password);
+        this->config.get("uuid")->updateString(resp_doc["charger_uuid"]);
         API::writeConfig("remote_access/config", &this->config);
         registration_state.get("message")->updateString("");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);
@@ -910,10 +912,10 @@ void RemoteAccess::resolve_management() {
     char json[250] = {};
     TFJsonSerializer serializer = TFJsonSerializer(json, 250);
     serializer.addObject();
-    serializer.addMemberNumber("id", local_uid_num);
-    serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
         serializer.addMemberObject("data");
-            serializer.addMemberObject("V1");
+            serializer.addMemberObject("V2");
+                serializer.addMemberString("id", config.get("uuid")->asEphemeralCStr());
+                serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
                 serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
                 serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
                 //TODO: Adapt this once we support more than one user.
