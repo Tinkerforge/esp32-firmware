@@ -282,20 +282,29 @@ bool RCTPowerClient::receive_hook()
         }
     }
 
-    uint16_t actual_checksum = crc16ccitt(pending_response, pending_response_used - 2);
-    uint16_t expected_checksum = ((uint16_t)pending_response[pending_response_used - 2] << 8) | pending_response[pending_response_used - 1];
-
-    if (actual_checksum != expected_checksum) {
-        logger.printfln("%s", "Received response with checksum mismatch, ignoring response");
-        wait_for_start = true;
-        pending_response_used = 0;
-        return true;
-    }
-
     uint32_t id = ((uint32_t)pending_response[2] << 24) |
                   ((uint32_t)pending_response[3] << 16) |
                   ((uint32_t)pending_response[4] <<  8) |
                   ((uint32_t)pending_response[5] <<  0);
+
+    uint16_t actual_checksum = crc16ccitt(pending_response, pending_response_used - 2);
+    uint16_t expected_checksum = ((uint16_t)pending_response[pending_response_used - 2] << 8) | pending_response[pending_response_used - 1];
+
+    if (actual_checksum != expected_checksum) {
+        for (size_t i = 0; i < value_specs_length; ++i) {
+            if (value_specs[i].id == id) {
+                logger.printfln("Received response [%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x] for ID 0x%08x with checksum mismatch (actual=0x%04x expected=0x%04x), ignoring response",
+                                pending_response[0], pending_response[1], pending_response[2], pending_response[3], pending_response[4], pending_response[5],
+                                pending_response[6], pending_response[7], pending_response[8], pending_response[9], pending_response[10], pending_response[11],
+                                id, actual_checksum, expected_checksum);
+                break;
+            }
+        }
+
+        wait_for_start = true;
+        pending_response_used = 0;
+        return true;
+    }
 
     union {
         float value;
@@ -307,11 +316,13 @@ bool RCTPowerClient::receive_hook()
     u.bytes[2] = pending_response[6 + 1];
     u.bytes[3] = pending_response[6 + 0];
 
-    debugfln("Received response for ID 0x%08x and value %f", id, u.value);
-
     for (size_t i = 0; i < value_specs_length; ++i) {
         if (value_specs[i].id == id) {
-            meters.update_value(slot, i, u.value * value_specs[i].scale_factor);
+            float value = u.value * value_specs[i].scale_factor;
+
+            debugfln("Received response for ID 0x%08x with value %f", id, u.value, value);
+
+            meters.update_value(slot, i, value);
             meters.finish_update(slot);
             break;
         }
