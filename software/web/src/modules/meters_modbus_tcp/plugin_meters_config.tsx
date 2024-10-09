@@ -153,6 +153,48 @@ type TableConfigSolaxHybridInverter = [
     },
 ];
 
+type TableConfigSiemensPAC2200 = [
+    MeterModbusTCPTableID.SiemensPAC2200,
+    {
+        device_address: number;
+    },
+];
+
+type TableConfigSiemensPAC3120 = [
+    MeterModbusTCPTableID.SiemensPAC3120,
+    {
+        device_address: number;
+    },
+];
+
+type TableConfigSiemensPAC3200 = [
+    MeterModbusTCPTableID.SiemensPAC3200,
+    {
+        device_address: number;
+    },
+];
+
+type TableConfigSiemensPAC3220 = [
+    MeterModbusTCPTableID.SiemensPAC3220,
+    {
+        device_address: number;
+    },
+];
+
+type TableConfigSiemensPAC4200 = [
+    MeterModbusTCPTableID.SiemensPAC4200,
+    {
+        device_address: number;
+    },
+];
+
+type TableConfigSiemensPAC4220 = [
+    MeterModbusTCPTableID.SiemensPAC4220,
+    {
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -164,7 +206,13 @@ type TableConfig = TableConfigNone |
                    TableConfigShellyProEM |
                    TableConfigShellyPro3EM |
                    TableConfigGoodweHybridInverter |
-                   TableConfigSolaxHybridInverter;
+                   TableConfigSolaxHybridInverter |
+                   TableConfigSiemensPAC2200 |
+                   TableConfigSiemensPAC3120 |
+                   TableConfigSiemensPAC3200 |
+                   TableConfigSiemensPAC3220 |
+                   TableConfigSiemensPAC4200 |
+                   TableConfigSiemensPAC4220;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -210,6 +258,24 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.SolaxHybridInverter:
             return [MeterModbusTCPTableID.SolaxHybridInverter, {virtual_meter: null, device_address: 1}];
+
+        case MeterModbusTCPTableID.SiemensPAC2200:
+            return [MeterModbusTCPTableID.SiemensPAC2200, {device_address: 1}];
+
+        case MeterModbusTCPTableID.SiemensPAC3120:
+            return [MeterModbusTCPTableID.SiemensPAC3120, {device_address: 1}];
+
+        case MeterModbusTCPTableID.SiemensPAC3200:
+            return [MeterModbusTCPTableID.SiemensPAC3200, {device_address: 1}];
+
+        case MeterModbusTCPTableID.SiemensPAC3220:
+            return [MeterModbusTCPTableID.SiemensPAC3220, {device_address: 1}];
+
+        case MeterModbusTCPTableID.SiemensPAC4200:
+            return [MeterModbusTCPTableID.SiemensPAC4200, {device_address: 1}];
+
+        case MeterModbusTCPTableID.SiemensPAC4220:
+            return [MeterModbusTCPTableID.SiemensPAC4220, {device_address: 1}];
 
         default:
             return [MeterModbusTCPTableID.None, {}];
@@ -431,6 +497,12 @@ export function init() {
                                 [MeterModbusTCPTableID.ShellyPro3EM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_3em")],
                                 [MeterModbusTCPTableID.GoodweHybridInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_hybrid_inverter")],
                                 [MeterModbusTCPTableID.SolaxHybridInverter.toString(), __("meters_modbus_tcp.content.table_solax_hybrid_inverter")],
+                                [MeterModbusTCPTableID.SiemensPAC2200.toString(), __("meters_modbus_tcp.content.table_siemens_pac2200")],
+                                [MeterModbusTCPTableID.SiemensPAC3120.toString(), __("meters_modbus_tcp.content.table_siemens_pac3120")],
+                                [MeterModbusTCPTableID.SiemensPAC3200.toString(), __("meters_modbus_tcp.content.table_siemens_pac3200")],
+                                [MeterModbusTCPTableID.SiemensPAC3220.toString(), __("meters_modbus_tcp.content.table_siemens_pac3220")],
+                                [MeterModbusTCPTableID.SiemensPAC4200.toString(), __("meters_modbus_tcp.content.table_siemens_pac4200")],
+                                [MeterModbusTCPTableID.SiemensPAC4220.toString(), __("meters_modbus_tcp.content.table_siemens_pac4220")],
                             ]}
                             placeholder={__("meters_modbus_tcp.content.table_select")}
                             value={util.hasValue(config[1].table) ? config[1].table[0].toString() : undefined}
@@ -450,7 +522,13 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.ShellyProEM
                   || config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM
                   || config[1].table[0] == MeterModbusTCPTableID.GoodweHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.SolaxHybridInverter)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.SolaxHybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC2200
+                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC3120
+                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC3200
+                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC3220
+                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC4200
+                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC4220)) {
                     let virtual_meter_items: [string, string][] = [];
                     let device_address_default: number = 1;
 
