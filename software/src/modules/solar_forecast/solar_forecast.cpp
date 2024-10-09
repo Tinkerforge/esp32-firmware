@@ -72,7 +72,7 @@ void SolarForecast::pre_setup()
     for (SolarForecastPlane &plane : planes) {
         plane.config = ConfigRoot{Config::Object({
             {"active", Config::Bool(false)},
-            {"name", Config::Str("#" + index, 0, 16)},
+            {"name", Config::Str(String("#") + index, 0, 16)},
             {"latitude", Config::Int(0, -900000, 900000)},    // in 1/10000 degrees
             {"longitude", Config::Int(0, -1800000, 1800000)}, // in 1/10000 degrees
             {"declination", Config::Uint(0, 0, 90)},          // in degrees
