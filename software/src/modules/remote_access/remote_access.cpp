@@ -521,7 +521,7 @@ void RemoteAccess::register_urls() {
         serializer.addMemberObject("charger");
 
         serializer.addMemberString("charger_pub", doc["mgmt_charger_public"]);
-        serializer.addMemberString("id", local_uid_str);
+        serializer.addMemberString("uid", local_uid_str);
 
         CoolString name = api.getState("info/display_name")->get("display_name")->asString();
         std::unique_ptr<char[]> encrypted_name = heap_alloc_array<char>(crypto_box_SEALBYTES + name.length());
@@ -857,8 +857,7 @@ void RemoteAccess::parse_secret(ConfigRoot config) {
 }
 
 void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> keys) {
-        StaticJsonDocument<32> resp_doc;
-
+        StaticJsonDocument<256> resp_doc;
         DeserializationError error = deserializeJson(resp_doc, response_body.begin(), response_body.length());
 
         if (error) {
