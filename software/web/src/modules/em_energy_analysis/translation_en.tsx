@@ -26,6 +26,8 @@ let x = {
             "state_sg_ready2": "SG Ready 2",
             "state_sg_ready_open": "Open",
             "state_sg_ready_closed": "Closed",
+            "state_sg_ready_inactive": "Inactive",
+            "state_sg_ready_active": "Active",
             "state_relay": "Relay",
             "state_relay1": "Relay 1",
             "state_relay2": "Relay 2",

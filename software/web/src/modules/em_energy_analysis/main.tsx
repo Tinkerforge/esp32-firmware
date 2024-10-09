@@ -148,19 +148,44 @@ const em_input_fills: {[id: number]: string} = {
     1: 'rgb( 40, 167,  69, 0.66)',
 };
 
-const em_sg_ready_names: {[id: number]: string} = {
-    0: __("em_energy_analysis.content.state_sg_ready_open"),
-    1: __("em_energy_analysis.content.state_sg_ready_closed"),
+const em_sg_ready1_strokes_active_closed: {[id: number]: string} = {
+    0: 'rgb(108, 117, 125)',
+    1: 'rgb(220,  53,  69)',
 };
 
-const em_sg_ready_strokes: {[id: number]: string} = {
+const em_sg_ready1_fills_active_closed: {[id: number]: string} = {
+    0: 'rgb(108, 117, 125, 0.66)',
+    1: 'rgb(220,  53,  69, 0.66)',
+};
+
+const em_sg_ready1_strokes_active_open: {[id: number]: string} = {
+    0: 'rgb(220,  53,  69)',
+    1: 'rgb(108, 117, 125)',
+};
+
+const em_sg_ready1_fills_active_open: {[id: number]: string} = {
+    0: 'rgb(220,  53,  69, 0.66)',
+    1: 'rgb(108, 117, 125, 0.66)',
+};
+
+const em_sg_ready2_strokes_active_closed: {[id: number]: string} = {
     0: 'rgb(108, 117, 125)',
     1: 'rgb( 40, 167,  69)',
 };
 
-const em_sg_ready_fills: {[id: number]: string} = {
+const em_sg_ready2_fills_active_closed: {[id: number]: string} = {
     0: 'rgb(108, 117, 125, 0.66)',
     1: 'rgb( 40, 167,  69, 0.66)',
+};
+
+const em_sg_ready2_strokes_active_open: {[id: number]: string} = {
+    0: 'rgb( 40, 167,  69)',
+    1: 'rgb(108, 117, 125)',
+};
+
+const em_sg_ready2_fills_active_open: {[id: number]: string} = {
+    0: 'rgb( 40, 167,  69, 0.66)',
+    1: 'rgb(108, 117, 125, 0.66)',
 };
 
 const em_relay_names: {[id: number]: string} = {
@@ -338,6 +363,8 @@ interface EMEnergyAnalysisState {
     wallbox_daily_cache_energy_total: {[id: number]: {[id: string]: number}};
     energy_manager_5min_cache_energy_total: {[id: string]: {import: number[/*meter_slot*/][/*timestamp_slot*/], export: number[/*meter_slot*/][/*timestamp_slot*/]}};
     energy_manager_daily_cache_energy_total: {[id: string]: {import: number[/*meter_slot*/], export: number[/*meter_slot*/]}};
+    sg_ready1_active_type: number; // 0 = closed, 1 = open
+    sg_ready2_active_type: number; // 0 = closed, 1 = open
 }
 
 interface Charger {
@@ -399,7 +426,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             wallbox_5min_cache_energy_total: {},
             wallbox_daily_cache_energy_total: {},
             energy_manager_5min_cache_energy_total: {},
-            energy_manager_daily_cache_energy_total: {}
+            energy_manager_daily_cache_energy_total: {},
+            sg_ready1_active_type: null,
+            sg_ready2_active_type: null,
         } as any;
 
         util.addApiEventListener('info/modules', () => {
@@ -639,6 +668,19 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let config = API.get("power_manager/config");
 
             this.setState({meter_slot_status: config.meter_slot_grid_power});
+        });
+
+        util.addApiEventListener_unchecked('heating/config', () => {
+            let config = API.get_unchecked("heating/config");
+
+            this.update_current_5min_cache();
+            this.update_current_daily_cache();
+
+            this.setState({
+                sg_ready1_active_type: config.sg_ready_blocking_active_type,
+                sg_ready2_active_type: config.sg_ready_extended_active_type
+
+            });
         });
     }
 
@@ -995,16 +1037,61 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.default_visibilty.push(false);
                 }
 
-                for (let k = 0; k < 2; ++k) {
-                    uplot_data.keys.push(`em_sg_ready${k + 1}`);
-                    uplot_data.names.push(translate_unchecked(`em_energy_analysis.content.state_sg_ready${k + 1}`));
-                    uplot_data.values.push(ios[4 + k]);
-                    uplot_data.paths.push(UplotPath.Line);
-                    uplot_data.value_names.push(em_sg_ready_names);
-                    uplot_data.value_strokes.push(em_sg_ready_strokes);
-                    uplot_data.value_fills.push(em_sg_ready_fills);
-                    uplot_data.default_visibilty.push(true);
+                let em_sg_ready1_names: {[id: number]: string} = {
+                    0: __("em_energy_analysis.content.state_sg_ready_open"),
+                    1: __("em_energy_analysis.content.state_sg_ready_closed"),
+                };
+
+                let em_sg_ready1_strokes = em_sg_ready1_strokes_active_closed;
+                let em_sg_ready1_fills = em_sg_ready1_fills_active_closed;
+
+                if (this.state.sg_ready1_active_type === 0 /* closed */) {
+                    em_sg_ready1_names[0] += " / " + __("em_energy_analysis.content.state_sg_ready_inactive");
+                    em_sg_ready1_names[1] += " / " + __("em_energy_analysis.content.state_sg_ready_active");
                 }
+                else if (this.state.sg_ready1_active_type === 1 /* open */) {
+                    em_sg_ready1_names[0] += " / " + __("em_energy_analysis.content.state_sg_ready_active");
+                    em_sg_ready1_names[1] += " / " + __("em_energy_analysis.content.state_sg_ready_inactive");
+                    em_sg_ready1_strokes = em_sg_ready1_strokes_active_open;
+                    em_sg_ready1_fills = em_sg_ready1_fills_active_open;
+                }
+
+                uplot_data.keys.push(`em_sg_ready1`);
+                uplot_data.names.push(translate_unchecked(`em_energy_analysis.content.state_sg_ready1`));
+                uplot_data.values.push(ios[4]);
+                uplot_data.paths.push(UplotPath.Line);
+                uplot_data.value_names.push(em_sg_ready1_names);
+                uplot_data.value_strokes.push(em_sg_ready1_strokes);
+                uplot_data.value_fills.push(em_sg_ready1_fills);
+                uplot_data.default_visibilty.push(true);
+
+                let em_sg_ready2_names: {[id: number]: string} = {
+                    0: __("em_energy_analysis.content.state_sg_ready_open"),
+                    1: __("em_energy_analysis.content.state_sg_ready_closed"),
+                };
+
+                let em_sg_ready2_strokes = em_sg_ready2_strokes_active_closed;
+                let em_sg_ready2_fills = em_sg_ready2_fills_active_closed;
+
+                if (this.state.sg_ready2_active_type === 0 /* closed */) {
+                    em_sg_ready2_names[0] += " / " + __("em_energy_analysis.content.state_sg_ready_inactive");
+                    em_sg_ready2_names[1] += " / " + __("em_energy_analysis.content.state_sg_ready_active");
+                }
+                else if (this.state.sg_ready2_active_type === 1 /* open */) {
+                    em_sg_ready2_names[0] += " / " + __("em_energy_analysis.content.state_sg_ready_active");
+                    em_sg_ready2_names[1] += " / " + __("em_energy_analysis.content.state_sg_ready_inactive");
+                    em_sg_ready2_strokes = em_sg_ready2_strokes_active_open;
+                    em_sg_ready2_fills = em_sg_ready2_fills_active_open;
+                }
+
+                uplot_data.keys.push(`em_sg_ready2`);
+                uplot_data.names.push(translate_unchecked(`em_energy_analysis.content.state_sg_ready2`));
+                uplot_data.values.push(ios[5]);
+                uplot_data.paths.push(UplotPath.Line);
+                uplot_data.value_names.push(em_sg_ready2_names);
+                uplot_data.value_strokes.push(em_sg_ready2_strokes);
+                uplot_data.value_fills.push(em_sg_ready2_fills);
+                uplot_data.default_visibilty.push(true);
 
                 for (let k = 0; k < 2; ++k) {
                     uplot_data.keys.push(`em_relay${k + 1}`);
