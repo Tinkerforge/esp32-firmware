@@ -37,3 +37,7 @@ export interface register {
     mgmt_psk: string,
     keys: KeyObject[],
 }
+
+export interface get_login_salt extends config{}
+export interface get_secret_salt extends config{}
+export interface login extends register{}

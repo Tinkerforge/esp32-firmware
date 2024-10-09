@@ -88,7 +88,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             this.resolve = resolve;
             this.reject = reject;
         });
-        await API.call_unchecked("remote_access/get_login_salt", cfg, __("remote_access.script.save_failed"));
+        await API.call("remote_access/get_login_salt", cfg, __("remote_access.script.save_failed"));
 
         const bs64LoginSalt = await getLoginSaltPromise;
         const encodedString = "data:application/octet-stream;base64," + bs64LoginSalt;
@@ -103,7 +103,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             this.resolve = resolve;
             this.reject = reject;
         });
-        await API.call_unchecked("remote_access/get_secret_salt", cfg, __("remote_access.script.save_failed"));
+        await API.call("remote_access/get_secret_salt", cfg, __("remote_access.script.save_failed"));
         const bs64Secret = await getSecretPromise;
         const encodedString = "data:application/octet-stream;base64," + bs64Secret;
         const res = await fetch(encodedString);
@@ -118,7 +118,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             this.reject = reject;
         });
 
-        API.call_unchecked("remote_access/login", data, __("remote_access.script.save_failed"));
+        API.call("remote_access/login", data, __("remote_access.script.save_failed"));
         return loginPromise;
     }
 
