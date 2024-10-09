@@ -46,12 +46,32 @@ const CoolString* Config::ConfString::getVal() const { return &string_buf[idx].v
 const Config::ConfString::Slot* Config::ConfString::getSlot() const { return &string_buf[idx]; }
 Config::ConfString::Slot* Config::ConfString::getSlot() { return &string_buf[idx]; }
 
-Config::ConfString::ConfString(const CoolString &val, uint16_t minChars, uint16_t maxChars)
+Config::ConfString::ConfString(const char *val, uint16_t minChars, uint16_t maxChars)
 {
     idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
     auto *slot = this->getSlot();
 
     slot->val = val;
+    slot->minChars = minChars;
+    slot->maxChars = maxChars;
+}
+
+Config::ConfString::ConfString(const String &val, uint16_t minChars, uint16_t maxChars)
+{
+    idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
+    auto *slot = this->getSlot();
+
+    slot->val = val;
+    slot->minChars = minChars;
+    slot->maxChars = maxChars;
+}
+
+Config::ConfString::ConfString(StringSumHelper &&val, uint16_t minChars, uint16_t maxChars)
+{
+    idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
+    auto *slot = this->getSlot();
+
+    slot->val = std::forward<StringSumHelper>(val);
     slot->minChars = minChars;
     slot->maxChars = maxChars;
 }

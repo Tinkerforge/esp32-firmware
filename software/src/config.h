@@ -85,7 +85,9 @@ struct Config {
         const CoolString *getVal() const;
         const Slot *getSlot() const;
 
-        ConfString(const CoolString &val, uint16_t min, uint16_t max);
+        ConfString(const char *val, uint16_t min, uint16_t max);
+        ConfString(const String &val, uint16_t min, uint16_t max);
+        ConfString(StringSumHelper &&val, uint16_t min, uint16_t max);
         ConfString(const ConfString &cpy);
         ~ConfString();
 
@@ -462,7 +464,15 @@ struct Config {
 
     bool is_null() const;
 
+    static Config Str(const char *s,
+                      uint16_t minChars,
+                      uint16_t maxChars);
+
     static Config Str(const String &s,
+                      uint16_t minChars,
+                      uint16_t maxChars);
+
+    static Config Str(StringSumHelper &&s,
                       uint16_t minChars,
                       uint16_t maxChars);
 

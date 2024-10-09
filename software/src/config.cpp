@@ -68,12 +68,28 @@ bool Config::is_null() const
     return value.tag == ConfVariant::Tag::EMPTY;
 }
 
+Config Config::Str(const char *s, uint16_t minChars, uint16_t maxChars)
+{
+    if (boot_stage < BootStage::PRE_SETUP)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
+    return Config{ConfString{s, minChars, maxChars}};
+}
+
 Config Config::Str(const String &s, uint16_t minChars, uint16_t maxChars)
 {
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    return Config{ConfString{CoolString(s), minChars, maxChars}};
+    return Config{ConfString{s, minChars, maxChars}};
+}
+
+Config Config::Str(StringSumHelper &&s, uint16_t minChars, uint16_t maxChars)
+{
+    if (boot_stage < BootStage::PRE_SETUP)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
+    return Config{ConfString{std::forward<StringSumHelper>(s), minChars, maxChars}};
 }
 
 Config Config::Float(float d, float min, float max)
