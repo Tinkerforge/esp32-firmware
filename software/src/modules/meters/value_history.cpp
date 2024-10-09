@@ -101,6 +101,10 @@ void ValueHistory::register_urls_empty(String base_url)
 
 void ValueHistory::add_sample(float sample)
 {
+    if (isnan(sample)) {
+        return;
+    }
+
     ++sample_count;
     sample_sum += sample;
 }
