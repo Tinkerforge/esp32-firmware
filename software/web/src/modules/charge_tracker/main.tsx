@@ -97,7 +97,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
     </ListGroupItem>
 }
 
-export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {status_ref?: RefObject<ChargeTrackerStatus>}, ChargeTrackerState & ChargeTrackerConfig> {
+export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {status_ref?: RefObject<ChargeTrackerStatus>}, ChargeTrackerState> {
     constructor() {
         super('charge_tracker/config',
               __("charge_tracker.script.save_failed"),

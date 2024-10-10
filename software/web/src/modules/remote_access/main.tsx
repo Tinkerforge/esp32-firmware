@@ -43,9 +43,7 @@ export function RemoteAccessNavbar() {
 }
 
 interface RemoteAccessState {
-    email: string,
     login_key: string,
-    password: string,
     status_modal_string: string,
 }
 

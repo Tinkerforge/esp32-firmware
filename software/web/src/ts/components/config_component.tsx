@@ -33,7 +33,14 @@ export interface ConfigComponentState {
     internal_isDirty: boolean;
 }
 
-export abstract class ConfigComponent<Config extends keyof ConfigMap, P = {}, S = {}> extends Component<P, API.getType[Config] & S & ConfigComponentState> {
+export abstract class ConfigComponent<Config extends keyof ConfigMap,
+                                      P = {},
+                                      // Make sure the additional state passed here does not overlap with the config's keys.
+                                      // Only check this if API.getType[Config] is not an array (such as meters/x/config) because Arrays have keys such as toString
+                                      // which are allowed to be overlapping.
+                                      S extends (API.getType[Config] extends any[] ? {} :
+                                                                                     (object & Partial<Record<keyof API.getType[Config], never>>)) = {}
+                                     > extends Component<P, API.getType[Config] & S & ConfigComponentState> {
     t: Config;
     error_string?: string;
     reboot_string?: string;
