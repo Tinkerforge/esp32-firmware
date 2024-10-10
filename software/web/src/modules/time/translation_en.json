@@ -10,7 +10,7 @@
             "synced": "Synchronized"
         },
         "content": {
-            "time": "Time Synchronization",
+            "time": "System time",
             "enable": "Time synchronization enabled",
             "enable_desc": "Synchronizes the internal clock over the network (NTP)",
             "use_dhcp": "Use DHCP",
