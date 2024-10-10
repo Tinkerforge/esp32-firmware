@@ -141,6 +141,8 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
             logger.printfln("Meter %u: Meter B value IDs not available yet.", slot);
             return EventResult::OK;
         }
+    } else {
+        value_count_b = 0; // Avoid a compiler warning about an uninitialized value when it is used. The compiler can't figure out that this can't actually happen.
     }
 
     if (mode == ConfigMode::Add || mode == ConfigMode::Mul) {
