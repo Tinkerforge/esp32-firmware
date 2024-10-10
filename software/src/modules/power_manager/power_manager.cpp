@@ -1028,10 +1028,10 @@ void PowerManager::update_energy()
                 }
 
                 // Update low-level state
-                state_i_meter  ->get(static_cast<uint16_t>(pm_phase))->updateInt(phase_current_meter_ma);
-                state_i_pp_max ->get(static_cast<uint16_t>(pm_phase))->updateInt(phase_preproc_max_ma->max);
-                state_i_pp_mavg->get(static_cast<uint16_t>(pm_phase))->updateInt(phase_preproc_mavg_val_ma);
-                state_i_pp     ->get(static_cast<uint16_t>(pm_phase))->updateInt(phase_preproc_ma);
+                state_i_meter  ->get(pm_phase)->updateInt(phase_current_meter_ma);
+                state_i_pp_max ->get(pm_phase)->updateInt(phase_preproc_max_ma->max);
+                state_i_pp_mavg->get(pm_phase)->updateInt(phase_preproc_mavg_val_ma);
+                state_i_pp     ->get(pm_phase)->updateInt(phase_preproc_ma);
 
                 // Current controller
                 int32_t current_error_ma = target_phase_current_ma - phase_preproc_ma;

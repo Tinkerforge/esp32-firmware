@@ -47,7 +47,7 @@ private:
     void handle_mqtt_values(const JsonArrayConst &array);
 
     uint32_t slot;
-    uint32_t declared_values_count = 0;
+    size_t   declared_values_count = 0;
     bool     accepting_updates = false;
 };
 

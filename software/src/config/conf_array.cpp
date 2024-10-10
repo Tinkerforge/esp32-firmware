@@ -37,7 +37,7 @@ void Config::ConfArray::freeSlotBuf(Config::ConfArray::Slot *buf)
     delete[] buf;
 }
 
-Config *Config::ConfArray::get(uint16_t i)
+Config *Config::ConfArray::get(size_t i)
 {
     auto *val = this->getVal();
     if (i >= val->size()) {
@@ -46,7 +46,7 @@ Config *Config::ConfArray::get(uint16_t i)
     }
     return &(*val)[i];
 }
-const Config *Config::ConfArray::get(uint16_t i) const
+const Config *Config::ConfArray::get(size_t i) const
 {
     const auto *val = this->getVal();
     if (i >= val->size()) {

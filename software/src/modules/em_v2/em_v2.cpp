@@ -197,7 +197,7 @@ void EMV2::register_urls()
                     set_relay_output(i, new_value);
                 }
                 // Reset update config entry
-                this->outputs_update.get(static_cast<uint16_t>(i + 2))->updateUint(255);
+                this->outputs_update.get(i + 2)->updateUint(255);
             }
         }
 
@@ -224,7 +224,7 @@ void EMV2::register_urls()
                     }
                 }
                 // Reset update config entry
-                this->outputs_update.get(static_cast<uint16_t>(i))->updateUint(255);
+                this->outputs_update.get(i)->updateUint(255);
             }
         }
     }, true);
@@ -430,7 +430,7 @@ void EMV2::update_all_data()
 
     Config *state_inputs = static_cast<Config *>(em_common.state.get("inputs"));
     bool *inputs = all_data.input;
-    for (uint16_t i = 0; i < ARRAY_SIZE(all_data.input); i++) {
+    for (size_t i = 0; i < ARRAY_SIZE(all_data.input); i++) {
         if (state_inputs->get(i)->updateBool(inputs[i])) {
             uint32_t index = i;
             AUTOMATION_TRIGGER(EMInput, &index);

@@ -242,7 +242,7 @@ Config::Wrap Config::get(const String &s)
     return wrap;
 }
 
-Config::Wrap Config::get(uint16_t i)
+Config::Wrap Config::get(size_t i)
 {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
@@ -266,7 +266,7 @@ const Config::ConstWrap Config::get(const String &s) const
     return wrap;
 }
 
-const Config::ConstWrap Config::get(uint16_t i) const
+const Config::ConstWrap Config::get(size_t i) const
 {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {

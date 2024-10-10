@@ -125,8 +125,8 @@ void MeterMqttMirror::handle_mqtt_value_ids(const JsonArrayConst &array)
         value_ids_match = false;
     } else {
         value_ids_match = true;
-        for (uint32_t i = 0; i < declared_values_count; i++) {
-            if (old_value_ids->get(static_cast<uint16_t>(i))->asUint() != static_cast<uint32_t>(value_ids[i])) {
+        for (size_t i = 0; i < declared_values_count; i++) {
+            if (old_value_ids->get(i)->asUint() != static_cast<uint32_t>(value_ids[i])) {
                 value_ids_match = false;
                 break;
             }

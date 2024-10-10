@@ -229,8 +229,8 @@ void Debug::setup()
             logger.printfln("Heap full. Largest block is %u bytes.", dram_info.largest_free_block);
         }
 
-        uint32_t task_count = this->task_handles.size();
-        for (uint16_t i = 0; i < task_count; i++) {
+        size_t task_count = this->task_handles.size();
+        for (size_t i = 0; i < task_count; i++) {
             uint32_t hwm = uxTaskGetStackHighWaterMark(this->task_handles[i]);
             Config *conf_task_hwm = static_cast<Config *>(this->state_hwm.get(i));
             if (conf_task_hwm->get("hwm")->updateUint(hwm) && hwm < 256) {
@@ -465,7 +465,7 @@ void Debug::register_events()
     uint32_t apb_clk = state_static.get("apb_clk")->asUint();
     Config *conf_spi_buses = static_cast<Config *>(state_static.get("spi_buses"));
 
-    for (uint16_t i = 0; i < 4; i++) {
+    for (uint32_t i = 0; i < 4; i++) {
         uint32_t spi_clk;
         uint32_t dummy_cyclelen;
         const char *spi_mode;

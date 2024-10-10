@@ -46,7 +46,7 @@ public:
 
     typedef strict_variant::variant<
         const char *,
-        uint16_t
+        size_t
     > ConfPath;
 
     int64_t registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(const Config *)> &&callback);

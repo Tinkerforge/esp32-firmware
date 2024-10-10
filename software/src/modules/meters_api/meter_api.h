@@ -51,7 +51,7 @@ private:
     uint32_t slot;
     ConfigRoot push_values;
 
-    uint32_t value_count;
+    size_t value_count;
     bool reset_supported = false;
 };
 

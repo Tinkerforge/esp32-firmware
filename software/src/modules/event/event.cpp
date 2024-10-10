@@ -48,17 +48,18 @@ int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> val
         Config *config = api.states[i].config;
 
         for (auto value : values) {
-            bool is_obj = strict_variant::get<const char *>(&value) != nullptr;
+            const char **obj_variant = strict_variant::get<const char *>(&value);
+            bool is_obj = obj_variant != nullptr;
             if (is_obj)
-                config = (Config *)config->get(*strict_variant::get<const char *>(&value));
+                config = (Config *)config->get(*obj_variant);
             else
-                config = (Config *)config->get(*strict_variant::get<uint16_t>(&value));
+                config = (Config *)config->get(*strict_variant::get<size_t>(&value));
 
             if (config == nullptr) {
                 if (is_obj)
-                    logger.printfln("Value %s in state %s not found", *strict_variant::get<const char *>(&value), path.c_str());
+                    logger.printfln("Value %s in state %s not found", *obj_variant, path.c_str());
                 else
-                    logger.printfln("Index %u in state %s not found", *strict_variant::get<uint16_t>(&value), path.c_str());
+                    logger.printfln("Index %u in state %s not found", *strict_variant::get<size_t>(&value), path.c_str());
                 return -1;
             }
         }

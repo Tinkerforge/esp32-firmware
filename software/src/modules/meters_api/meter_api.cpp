@@ -34,16 +34,16 @@ void MeterAPI::setup(const Config &ephemeral_config)
 {
     const Config *value_ids = static_cast<const Config *>(ephemeral_config.get("value_ids"));
     value_count = value_ids->count();
-    uint16_t value_count_u16 = static_cast<uint16_t>(value_count);
 
     MeterValueID *ids = static_cast<MeterValueID *>(malloc(value_count * sizeof(MeterValueID)));
-    for (uint16_t i = 0; i < value_count_u16; i++) {
-        ids[i] = static_cast<MeterValueID>(value_ids->get(i)->asUint());
+    for (size_t i = 0; i < value_count; i++) {
+        ids[i] = value_ids->get(i)->asEnum<MeterValueID>();
         this->reset_supported |= getMeterValueKind(ids[i]) == MeterValueKind::Resettable;
     }
     meters.declare_value_ids(slot, ids, value_count);
     free(ids);
 
+    uint16_t value_count_u16 = static_cast<uint16_t>(value_count);
     push_values = Config::Array({},
         Config::get_prototype_float_nan(),
         value_count_u16, value_count_u16, Config::type_id<Config::ConfFloat>()

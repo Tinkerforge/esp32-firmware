@@ -150,10 +150,10 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
         std::vector<struct value_id_pair> value_id_pairs;
         value_id_pairs.reserve(min(value_count_a, value_count_b));
 
-        for (uint16_t i_a = 0; i_a < value_count_a; i_a++) {
+        for (size_t i_a = 0; i_a < value_count_a; i_a++) {
             uint32_t value_id_a = value_ids_a->get(i_a)->asUint();
 
-            for (uint16_t i_b = 0; i_b < value_count_b; i_b++) {
+            for (size_t i_b = 0; i_b < value_count_b; i_b++) {
                 uint32_t value_id_b = value_ids_b->get(i_b)->asUint();
 
                 if (value_id_a == value_id_b) {

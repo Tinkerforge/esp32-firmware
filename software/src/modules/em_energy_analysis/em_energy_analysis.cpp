@@ -136,7 +136,7 @@ void EMEnergyAnalysis::register_events()
 
             uint32_t power_index;
             if (meters.get_cached_power_index(slot, &power_index)) {
-                event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {static_cast<uint16_t>(power_index)}, [this, slot](const Config *config_power) {
+                event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {power_index}, [this, slot](const Config *config_power) {
                     update_history_meter_power(slot, config_power->asFloat());
                     return EventResult::OK;
                 });

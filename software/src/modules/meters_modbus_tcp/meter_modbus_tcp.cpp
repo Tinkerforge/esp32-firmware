@@ -73,14 +73,14 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
 
             const Config *registers = static_cast<const Config *>(ephemeral_config.get("table")->get()->get("registers"));
-            uint16_t registers_count = static_cast<uint16_t>(registers->count());
+            size_t registers_count = registers->count();
 
             // FIXME: leaking this, because as of right now meter instances don't get destroied
             ValueSpec *customs_specs = new ValueSpec[registers_count];
             MeterValueID *customs_ids = new MeterValueID[registers_count];
             uint32_t *customs_index = new uint32_t[registers_count];
 
-            for (uint16_t i = 0; i < registers_count; ++i) {
+            for (size_t i = 0; i < registers_count; ++i) {
                 MeterValueID value_id = registers->get(i)->get("id")->asEnum<MeterValueID>();
 
                 customs_specs[i].name = getMeterValueName(value_id);

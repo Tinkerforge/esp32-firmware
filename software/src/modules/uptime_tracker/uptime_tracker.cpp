@@ -76,7 +76,7 @@ void UptimeTracker::setup()
                 uptimes.remove(0);
             uptimes.add();
 
-            uint8_t idx = uptimes.count() - 1;
+            size_t idx = uptimes.count() - 1;
 
             //timestamp_min initialized with 0. 0 means not synced
             if (rtc.clock_synced(&timestamp))

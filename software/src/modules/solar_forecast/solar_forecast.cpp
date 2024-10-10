@@ -573,7 +573,7 @@ DataReturn<uint32_t> SolarForecast::get_wh_today()
     for (const SolarForecastPlane &plane : planes) {
         if (plane.config.get("active")->asBool()) {
             const uint32_t first_date = plane.forecast.get("first_date")->asUint();
-            for (uint8_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
+            for (size_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
                 if (forecast_time_between(first_date, index, start, end)) {
                     wh += plane.forecast.get("forecast")->get(index)->asUint();
                     count++;
@@ -597,7 +597,7 @@ DataReturn<uint32_t> SolarForecast::get_wh_tomorrow()
     for (const SolarForecastPlane &plane : planes) {
         if (plane.config.get("active")->asBool()) {
             const uint32_t first_date = plane.forecast.get("first_date")->asUint();
-            for (uint8_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
+            for (size_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
                 if (forecast_time_between(first_date, index, start, end)) {
                     wh += plane.forecast.get("forecast")->get(index)->asUint();
                     count++;

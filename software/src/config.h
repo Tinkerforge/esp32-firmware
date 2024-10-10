@@ -207,8 +207,8 @@ struct Config {
         static Slot *allocSlotBuf(size_t elements);
         static void freeSlotBuf(Slot *buf);
 
-        Config *get(uint16_t i);
-        const Config *get(uint16_t i) const;
+        Config *get(size_t i);
+        const Config *get(size_t i) const;
         std::vector<Config> *getVal();
         const std::vector<Config> *getVal() const;
         const Slot *getSlot() const;
@@ -590,7 +590,7 @@ public:
     Wrap get(const String &s);
 
     // for ConfArray
-    Wrap get(uint16_t i);
+    Wrap get(size_t i);
 
     // for ConfUnion
     const ConstWrap get() const;
@@ -599,7 +599,7 @@ public:
     const ConstWrap get(const String &s) const;
 
     // for ConfArray
-    const ConstWrap get(uint16_t i) const;
+    const ConstWrap get(size_t i) const;
     Wrap add();
     bool removeLast();
     bool removeAll();
