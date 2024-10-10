@@ -340,7 +340,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                         this.setState({email: v});
                                     }} />
                     </FormRow>
-                    <FormRow label={__("remote_access.content.password")}>
+                    <FormRow label={__("remote_access.content.password")} label_muted={__("remote_access.content.password_muted")}>
                         <InputPassword required={this.state.enable}
                                         maxLength={64}
                                         value={this.state.password}

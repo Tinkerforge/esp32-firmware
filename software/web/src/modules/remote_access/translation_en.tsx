@@ -10,6 +10,7 @@ let x = {
             "remote_access": "Remote Access",
             "email": "Email",
             "password": "Password",
+            "password_muted": "only used for the registation process and will not be stored",
             "relay_host": "Relay server hostname",
             "relay_port": "Relay server port",
             "enable": "Enable remote access",
