@@ -39,7 +39,7 @@ void DeviceName::pre_setup()
 }
 
 #if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
-String getWarpDisplayName()
+String getWarpDisplayName(bool add_optional_hw=true)
 {
     String display_type = api.hasFeature("meter") ? " Pro" : " Smart";
 
@@ -47,17 +47,17 @@ String getWarpDisplayName()
         display_type += api.getState("evse/slots")->get(1)->get("max_current")->asUint() <= 20000 ? " 11" : " 22";
         display_type += "kW";
     } else {
-        display_type += " without EVSE";
+        display_type += " w/o EVSE";
     }
 
 #if BUILD_IS_WARP()
-    if (api.hasFeature("nfc")) {
+    if (add_optional_hw && api.hasFeature("nfc")) {
         display_type += " +NFC";
     }
 #endif
 
 #if BUILD_IS_WARP() || BUILD_IS_WARP2()
-    if (api.hasFeature("rtc")) {
+    if (add_optional_hw && api.hasFeature("rtc")) {
         display_type += " +RTC";
     }
 #endif
@@ -69,6 +69,16 @@ static bool isVowel(char c)
 {
     return (0x208222 >> (c & 0x1f)) & 1;
 }
+
+#if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
+String DeviceName::get20CharDisplayType() {
+    String display_type = BUILD_DISPLAY_NAME;
+    display_type += getWarpDisplayName(false);
+    display_type.replace("Charger", "");
+    display_type = display_type.substring(0, 20);
+    return display_type;
+}
+#endif
 
 void DeviceName::updateDisplayType()
 {

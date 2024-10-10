@@ -886,10 +886,10 @@ const char *platform_get_charge_point_vendor()
     return "Tinkerforge GmbH";
 }
 
-char model[20] = {0}; // FIXME: Check if this needs to be one byte longer. See https://github.com/Tinkerforge/tfocpp/blob/5f07d2a7821167bf09eb4422d80657bb77ef886e/src/ocpp/Messages.cpp#L377
+char model[21] = {0};
 const char *platform_get_charge_point_model()
 {
-    device_name.name.get("display_type")->asString().toCharArray(model, ARRAY_SIZE(model));
+    device_name.get20CharDisplayType().toCharArray(model, ARRAY_SIZE(model));
     return model;
 }
 
