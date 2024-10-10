@@ -87,7 +87,7 @@ struct Config {
 
         ConfString(const char *val, uint16_t min, uint16_t max);
         ConfString(const String &val, uint16_t min, uint16_t max);
-        ConfString(StringSumHelper &&val, uint16_t min, uint16_t max);
+        ConfString(String &&val, uint16_t min, uint16_t max);
         ConfString(const ConfString &cpy);
         ~ConfString();
 
@@ -472,7 +472,7 @@ struct Config {
                       uint16_t minChars,
                       uint16_t maxChars);
 
-    static Config Str(StringSumHelper &&s,
+    static Config Str(String &&s,
                       uint16_t minChars,
                       uint16_t maxChars);
 

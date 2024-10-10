@@ -66,12 +66,12 @@ Config::ConfString::ConfString(const String &val, uint16_t minChars, uint16_t ma
     slot->maxChars = maxChars;
 }
 
-Config::ConfString::ConfString(StringSumHelper &&val, uint16_t minChars, uint16_t maxChars)
+Config::ConfString::ConfString(String &&val, uint16_t minChars, uint16_t maxChars)
 {
     idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
     auto *slot = this->getSlot();
 
-    slot->val = std::forward<StringSumHelper>(val);
+    slot->val = std::forward<String>(val);
     slot->minChars = minChars;
     slot->maxChars = maxChars;
 }
