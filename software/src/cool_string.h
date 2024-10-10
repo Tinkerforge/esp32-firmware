@@ -15,3 +15,5 @@ public:
     void make_invalid();
     //char *releaseOwnership(size_t *len);
 };
+
+static_assert(sizeof(String) == sizeof(CoolString), "It is only safe to import operator= from the parent class if the child class doesn't add any member variables that must be assigned.");
