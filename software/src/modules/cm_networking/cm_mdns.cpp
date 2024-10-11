@@ -307,7 +307,8 @@ bool CMNetworking::get_scan_results(CoolString &result)
 
     size_t payload_size = build_scan_result_json(scan_results, nullptr, 0) + 1; // null terminator
 
-    result.reserve(payload_size);
+    if (!result.reserve(payload_size))
+        return false;
 
     build_scan_result_json(scan_results, result.begin(), payload_size);
     result.setLength(payload_size - 1);

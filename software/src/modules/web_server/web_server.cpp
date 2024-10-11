@@ -551,11 +551,15 @@ WebServerRequestReturnProtect WebServerRequest::requestAuthentication()
 String WebServerRequest::header(const char *header_name)
 {
     auto buf_len = httpd_req_get_hdr_value_len(req, header_name) + 1;
-    if (buf_len == 1)
+    if (buf_len == 1) {
         return "";
+    }
 
     CoolString result;
-    result.reserve(buf_len);
+    if (!result.reserve(buf_len)) {
+        return "";
+    }
+
     char *buf = result.begin();
     /* Copy null terminated value string into buffer */
     if (httpd_req_get_hdr_value_str(req, header_name, buf, buf_len) != ESP_OK) {
