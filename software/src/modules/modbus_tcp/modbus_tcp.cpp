@@ -236,20 +236,20 @@ struct [[gnu::packed]] bender_write_uid_s {
 struct [[gnu::packed]] keba_read_general_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1000;
-    uint32swapped_t charging_state;
-    uint32swapped_t padding;
-    uint32swapped_t cable_state;
-    uint32swapped_t error_code;
-    uint32swapped_t currents[3];
-    uint32swapped_t serial_number;
-    uint32swapped_t features;
-    uint32swapped_t firmware_version;
-    uint32swapped_t power;
-    uint16_t padding2[14];
-    uint32swapped_t total_energy;
-    uint32swapped_t padding3;
-    uint32swapped_t voltages[3];
-    uint32swapped_t power_factor;
+    /*1000*/ uint32swapped_t charging_state;
+    /*1002*/ uint32swapped_t padding;
+    /*1004*/ uint32swapped_t cable_state;
+    /*1006*/ uint32swapped_t error_code;
+    /*1008*/ uint32swapped_t currents[3];
+    /*1014*/ uint32swapped_t serial_number;
+    /*1016*/ uint32swapped_t features;
+    /*1018*/ uint32swapped_t firmware_version;
+    /*1020*/ uint32swapped_t power;
+    /*1022*/ uint16_t padding2[14];
+    /*1036*/ uint32swapped_t total_energy;
+    /*1038*/ uint32swapped_t padding3;
+    /*1040*/ uint32swapped_t voltages[3];
+    /*1046*/ uint32swapped_t power_factor;
 };
 
 struct [[gnu::packed]] keba_read_max_s {
@@ -263,26 +263,26 @@ struct [[gnu::packed]] keba_read_max_s {
 struct [[gnu::packed]] keba_read_charge_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 1500;
-    uint32swapped_t rfid_tag;
-    uint32swapped_t charged_energy;
+    /*1500*/ uint32swapped_t rfid_tag;
+    /*1502*/ uint32swapped_t charged_energy;
 };
 
 struct [[gnu::packed]] keba_write_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 5004;
-    uint16_t set_charging_current;
-    uint16_t padding[5];
-    uint16_t set_energy;
-    uint16_t padding2;
-    uint16_t unlock_plug;
-    uint16_t padding3;
-    uint16_t enable_station;
-    uint16_t padding4;
-    uint16_t failsafe_current;
-    uint16_t padding5;
-    uint16_t failsafe_timeout;
-    uint16_t padding6;
-    uint16_t failsafe_persist;
+    /*5004*/ uint16_t set_charging_current;
+    /*5005*/ uint16_t padding[5];
+    /*5010*/ uint16_t set_energy;
+    /*5011*/ uint16_t padding2;
+    /*5012*/ uint16_t unlock_plug;
+    /*5013*/ uint16_t padding3;
+    /*5014*/ uint16_t enable_station;
+    /*5015*/ uint16_t padding4;
+    /*5016*/ uint16_t failsafe_current;
+    /*5017*/ uint16_t padding5;
+    /*5018*/ uint16_t failsafe_timeout;
+    /*5019*/ uint16_t padding6;
+    /*5020*/ uint16_t failsafe_persist;
 };
 
 //-------------------
@@ -343,8 +343,8 @@ static bender_hems_s *bender_hems, *bender_hems_cpy;
 static bender_write_uid_s *bender_write_uid, *bender_write_uid_cpy;
 
 static keba_read_general_s *keba_read_general, *keba_read_general_cpy;
-static keba_read_charge_s *keba_read_charge, *keba_read_charge_cpy;
 static keba_read_max_s *keba_read_max, *keba_read_max_cpy;
+static keba_read_charge_s *keba_read_charge, *keba_read_charge_cpy;
 static keba_write_s *keba_write, *keba_write_cpy;
 
 static portMUX_TYPE mtx;
@@ -406,12 +406,12 @@ static void allocate_bender_table()
 
 static void allocate_keba_table()
 {
-    calloc_struct(&keba_read_charge);
-    calloc_struct(&keba_read_charge_cpy);
     calloc_struct(&keba_read_general);
     calloc_struct(&keba_read_general_cpy);
     calloc_struct(&keba_read_max);
     calloc_struct(&keba_read_max_cpy);
+    calloc_struct(&keba_read_charge);
+    calloc_struct(&keba_read_charge_cpy);
     calloc_struct(&keba_write);
     calloc_struct(&keba_write_cpy);
 }
@@ -487,9 +487,9 @@ void ModbusTcp::setup()
     {
         allocate_keba_table();
 
-        REGISTER_DESCRIPTOR(keba_read_charge);
         REGISTER_DESCRIPTOR(keba_read_general);
         REGISTER_DESCRIPTOR(keba_read_max);
+        REGISTER_DESCRIPTOR(keba_read_charge);
         REGISTER_DESCRIPTOR(keba_write);
     }
 
