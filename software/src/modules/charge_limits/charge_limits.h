@@ -42,6 +42,8 @@ public:
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 
+    float get_energy_limit();
+
     ConfigRoot config;
     ConfigRoot config_in_use;
     ConfigRoot state;

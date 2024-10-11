@@ -971,8 +971,10 @@ static uint32_t export_tag_id_as_uint32(const String &str)
 void ModbusTcp::update_keba_regs()
 {
     bool phase_switch_requested = false;
+    bool set_energy_change_requested = false;
     taskENTER_CRITICAL(&mtx);
         phase_switch_requested = keba_write_phase_switch->phase_switching_state != keba_write_phase_switch_cpy->phase_switching_state;
+        set_energy_change_requested = keba_write->set_energy != keba_write_cpy->set_energy;
 
         *keba_write_cpy = *keba_write;
         *keba_write_phase_switch_cpy = *keba_write_phase_switch;
@@ -985,6 +987,19 @@ void ModbusTcp::update_keba_regs()
 
         evse_common.set_modbus_current(keba_write_cpy->set_charging_current);
         evse_common.set_modbus_enabled(keba_write_cpy->enable_station == 1);
+#if MODULE_CHARGE_LIMITS_AVAILABLE()
+        /*
+            5010 - Set energy
+            In this register, the energy transmission (in 10 watt-hours) for the current or
+            the next charging session can be set. Once this value is reached, the charg-
+            ing session is terminated.
+        */
+        if (set_energy_change_requested) {
+            api.callCommand("charge_limits/override_energy", Config::ConfUpdateObject{{
+                {"energy_wh", (uint32_t)(keba_write_cpy->set_energy * 10)}
+            }});
+        }
+#endif
 #if MODULE_POWER_MANAGER_AVAILABLE()
         bool is_3p = power_manager.get_is_3phase();
         uint32_t external_control_state = api.getState("power_manager/state")->get("external_control")->asUint();

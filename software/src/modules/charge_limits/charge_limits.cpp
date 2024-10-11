@@ -120,6 +120,12 @@ void ChargeLimits::setup()
     initialized = true;
 }
 
+float ChargeLimits::get_energy_limit() {
+    float target = state.get("target_energy_kwh")->asFloat();
+    float start = state.get("start_energy_kwh")->asFloat();
+    return target - start;
+}
+
 void ChargeLimits::register_urls()
 {
     api.addPersistentConfig("charge_limits/default_limits", &config);
