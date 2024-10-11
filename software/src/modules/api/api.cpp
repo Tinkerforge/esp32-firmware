@@ -754,16 +754,18 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len)
     return result;
 }
 
-void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(String)> done_cb)
+void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(const String &errmsg)> done_cb)
 {
     if (running_in_main_task()) {
-        done_cb("callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!");
+        String err = "callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!";
+        done_cb(err);
         return;
     }
 
     char *cpy = (char *)malloc(len);
     if (cpy == nullptr) {
-        done_cb("callCommandNonBlocking: Failed to allocate payload copy!");
+        String err = "callCommandNonBlocking: Failed to allocate payload copy!";
+        done_cb(err);
         return;
     }
     memcpy(cpy, payload, len);
