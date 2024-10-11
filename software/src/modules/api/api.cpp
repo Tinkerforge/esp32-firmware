@@ -839,6 +839,15 @@ const Config *API::getState(const char *path, bool log_if_not_found, size_t path
         return nullptr;
     }
 
+    // If the requested path is in rodata, try a quick address check first.
+    if (string_is_in_rodata(path)) {
+        for (const auto &reg : states) {
+            if (path == reg.path) { // Address check
+                return reg.config;
+            }
+        }
+    }
+
     if (!path_len) {
         path_len = strlen(path);
     }
