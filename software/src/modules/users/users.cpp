@@ -335,7 +335,7 @@ void Users::setup()
     api.restorePersistentConfig("users/config", &config);
 
     if (!LittleFS.exists(USERNAME_FILE)) {
-        logger.printfln("Username list does not exist! Recreating now.");
+        logger.printfln("Username list for tracked charges does not exist! Recreating now.");
         create_username_file();
         for (int i = 0; i < config.get("users")->count(); ++i) {
             Config *user = (Config *)config.get("users")->get(i);
