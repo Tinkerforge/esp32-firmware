@@ -935,22 +935,33 @@ void ModbusTcp::update_keba_regs()
     taskEXIT_CRITICAL(&mtx);
 
     keba_read_general_cpy->features = fromUint(keba_get_features());
-    keba_read_general_cpy->firmware_version = fromUint(0x30A1B00);
+    keba_read_general_cpy->firmware_version = fromUint(0x30A1B00); //TODO: update?
 
     if (api.hasFeature("evse")) {
 
         evse_common.set_modbus_current(keba_write_cpy->set_charging_current);
-        evse_common.set_modbus_enabled(keba_write_cpy->enable_station == 1 ? true : false);
+        evse_common.set_modbus_enabled(keba_write_cpy->enable_station == 1);
 
-        if (api.getState("evse/state")->get("iec61851_state")->asUint() == 4)
+        auto iec_state = api.getState("evse/state")->get("iec61851_state")->asUint();
+
+        if (keba_write_cpy->enable_station == 0)
+            // The charging process is temporarily interrupted because the temperature is too high or the wallbox is in suspended mode.
+            keba_read_general_cpy->charging_state = fromUint(5);
+        else if (iec_state == 4)
+            // An error has occurred.
             keba_read_general_cpy->charging_state = fromUint(4);
         else
-            keba_read_general_cpy->charging_state = fromUint(api.getState("evse/state")->get("iec61851_state")->asUint() + 1);
-        if (api.getState("evse/state")->get("charger_state")->asUint() == 0)
-            keba_read_general_cpy->cable_state = fromUint(0);
-        else if (api.getState("evse/state")->get("charger_state")->asUint() == 1 || api.getState("evse/state")->get("charger_state")->asUint() == 2)
+            // 0 is start-up, 1 to 3 are IEC states A to C
+            keba_read_general_cpy->charging_state = fromUint(iec_state + 1);
+
+        if (iec_state == 0)
+            // Cable is connected to the charging station and locked
             keba_read_general_cpy->cable_state = fromUint(3);
-        else
+        else if (iec_state == 1)
+            // Cable is connected to the charging station and the electric vehicle (not locked)
+            keba_read_general_cpy->cable_state = fromUint(5);
+        else if (iec_state == 2 || iec_state == 3)
+            // Cable is connected to the charging station and the electric vehicle and locked (charging)
             keba_read_general_cpy->cable_state = fromUint(7);
 
         keba_read_max_cpy->max_current = fromUint(api.getState("evse/state")->get("allowed_charging_current")->asUint());
@@ -971,7 +982,8 @@ void ModbusTcp::update_keba_regs()
         else if (isnan(meter_start))
             keba_read_charge->charged_energy = fromUint(0);
         else
-            keba_read_charge->charged_energy = fromUint((uint32_t)((meter_absolute - meter_start) * 1000));
+            // Unit: 0.1 Wh
+            keba_read_charge->charged_energy = fromUint((uint32_t)((meter_absolute - meter_start) * 1000 * 10));
     }
 #endif
 #endif
@@ -991,10 +1003,12 @@ void ModbusTcp::update_keba_regs()
                 keba_read_general_cpy->currents[i] = fromUint(meter_all_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000);
                 keba_read_general_cpy->voltages[i] = fromUint(meter_all_values->get(i)->asFloat());
             }
-            keba_read_general_cpy->power_factor = fromUint(meter_all_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_FACTOR)->asFloat() * 1000);
+            // This register contains the current power factor (cos phi) in 0.1 %.
+            keba_read_general_cpy->power_factor = fromUint(meter_all_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_FACTOR)->asFloat() * 10);
         }
         keba_read_general_cpy->power = fromUint(api.getState("meter/values")->get("power")->asFloat() * 1000);
-        keba_read_general_cpy->total_energy = fromUint(api.getState("meter/values")->get("energy_abs")->asFloat() * 1000);
+        // Unit: 0.1 Wh
+        keba_read_general_cpy->total_energy = fromUint(api.getState("meter/values")->get("energy_abs")->asFloat() * 1000 * 10);
     }
 #endif
 
