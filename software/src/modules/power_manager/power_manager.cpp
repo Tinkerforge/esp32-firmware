@@ -157,9 +157,12 @@ void PowerManager::pre_setup()
             {"phases_wanted", Config::Uint(1)}
         }),
         [this](const Config *cfg) {
-            api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
+            const String err = api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
                 {"phases_wanted", cfg->get("phases_wanted")->asUint()}
             }});
+            if (!err.isEmpty()) {
+                logger.printfln("Automation couldn't set external_control_update: %s", err.c_str());
+            }
         }, nullptr, false);
 
     automation.register_action(
@@ -175,9 +178,12 @@ void PowerManager::pre_setup()
                 configured_mode = this->default_mode;
             }
 
-            api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
+            const String err = api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
                 {"mode", configured_mode}
             }});
+            if (!err.isEmpty()) {
+                logger.printfln("Automation couldn't switch charge mode: %s", err.c_str());
+            }
         },
         nullptr,
         false);

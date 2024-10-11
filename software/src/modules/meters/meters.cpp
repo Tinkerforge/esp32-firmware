@@ -199,7 +199,11 @@ void Meters::pre_setup()
             {"meter_slot", Config::Uint(0, 0, METERS_SLOTS - 1)}
         }),
         [this](const Config *config) {
-            api.callCommand(get_path(config->get("meter_slot")->asUint(), Meters::PathType::Reset).c_str(), {});
+            uint32_t meter_slot = config->get("meter_slot")->asUint();
+            const String err = api.callCommand(get_path(meter_slot, Meters::PathType::Reset).c_str(), {});
+            if (!err.isEmpty()) {
+                logger.printfln("Automation couldn't reset meter %u: %s", meter_slot, err.c_str());
+            }
         }
     );
 #endif
