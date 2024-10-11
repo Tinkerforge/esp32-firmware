@@ -31,10 +31,12 @@
 #include "tools.h"
 #include "config/owned_config.h"
 
+[[gnu::noreturn]] void config_main_thread_assertion_fail();
+
 #ifdef DEBUG_FS_ENABLE
 #define ASSERT_MAIN_THREAD() do { \
         if (!running_in_main_task()) { \
-            esp_system_abort("Accessing the config is only allowed in the main thread!"); \
+            config_main_thread_assertion_fail(); \
         } \
     } while (0)
 #else
@@ -585,20 +587,14 @@ public:
 
     // for ConfUnion
     Wrap get();
-
-    // for ConfObject
-    Wrap get(const String &s);
-
-    // for ConfArray
-    Wrap get(size_t i);
-
-    // for ConfUnion
     const ConstWrap get() const;
 
     // for ConfObject
+    Wrap get(const String &s);
     const ConstWrap get(const String &s) const;
 
     // for ConfArray
+    Wrap get(size_t i);
     const ConstWrap get(size_t i) const;
     Wrap add();
     bool removeLast();

@@ -58,6 +58,12 @@ size_t union_buf_size = 0;
 static ConfigRoot nullconf = Config{Config::ConfVariant{}};
 static ConfigRoot *confirmconf;
 
+[[gnu::noreturn]]
+void config_main_thread_assertion_fail()
+{
+    esp_system_abort("Accessing the config is only allowed in the main thread!");
+}
+
 bool Config::containsNull(const ConfUpdate *update)
 {
     return update->which() == 0;
@@ -208,11 +214,18 @@ Config Config::Int32(int32_t i)
     return Config::Int(i, std::numeric_limits<int32_t>::lowest(), std::numeric_limits<int32_t>::max());
 }
 
+[[gnu::noreturn]]
+[[gnu::noinline]]
+static void abort_on_union_get_failure()
+{
+    esp_system_abort("Config is not a union!");
+}
+
 Config::Wrap Config::get()
 {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfUnion>()) {
-        esp_system_abort("Config is not a union!");
+        abort_on_union_get_failure();
     }
     Wrap wrap(value.val.un.getVal());
 
@@ -223,33 +236,29 @@ const Config::ConstWrap Config::get() const
 {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfUnion>()) {
-        esp_system_abort("Config is not a union!");
+        abort_on_union_get_failure();
     }
     ConstWrap wrap(value.val.un.getVal());
 
     return wrap;
 }
 
+[[gnu::noinline]]
+[[gnu::noreturn]]
+static void abort_on_object_get_failure(const Config *conf, const char *key)
+{
+    char msg[64];
+    snprintf(msg, ARRAY_SIZE(msg), "%s is not a ConfObject! Tried to get '%s'.", conf->value.getVariantName(), key);
+    esp_system_abort(msg);
+}
+
 Config::Wrap Config::get(const String &s)
 {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfObject>()) {
-        char *message;
-        esp_system_abort(asprintf(&message, "Config key %s not in this node: is not an object!", s.c_str()) < 0 ? "" : message);
+        abort_on_object_get_failure(this, s.c_str());
     }
     Wrap wrap(value.val.o.get(s));
-
-    return wrap;
-}
-
-Config::Wrap Config::get(size_t i)
-{
-    ASSERT_MAIN_THREAD();
-    if (!this->is<Config::ConfArray>()) {
-        char *message;
-        esp_system_abort(asprintf(&message, "Config index %u not in this node: is not an array!", i) < 0 ? "" : message);
-    }
-    Wrap wrap(value.val.a.get(i));
 
     return wrap;
 }
@@ -258,10 +267,29 @@ const Config::ConstWrap Config::get(const String &s) const
 {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfObject>()) {
-        char *message;
-        esp_system_abort(asprintf(&message, "Config key %s not in this node: is not an object!", s.c_str()) < 0 ? "" : message);
+        abort_on_object_get_failure(this, s.c_str());
     }
     ConstWrap wrap(value.val.o.get(s));
+
+    return wrap;
+}
+
+[[gnu::noinline]]
+[[gnu::noreturn]]
+static void abort_on_array_get_failure(const Config *conf, size_t i)
+{
+    char msg[48];
+    snprintf(msg, ARRAY_SIZE(msg), "%s not a ConfArray! Tried to get %zu.", conf->value.getVariantName(), i);
+    esp_system_abort(msg);
+}
+
+Config::Wrap Config::get(size_t i)
+{
+    ASSERT_MAIN_THREAD();
+    if (!this->is<Config::ConfArray>()) {
+        abort_on_array_get_failure(this, i);
+    }
+    Wrap wrap(value.val.a.get(i));
 
     return wrap;
 }
@@ -270,12 +298,20 @@ const Config::ConstWrap Config::get(size_t i) const
 {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfArray>()) {
-        char *message;
-        esp_system_abort(asprintf(&message, "Config index %u not in this node: is not an array!", i) < 0 ? "" : message);
+        abort_on_array_get_failure(this, i);
     }
     ConstWrap wrap(value.val.a.get(i));
 
     return wrap;
+}
+
+[[gnu::noinline]]
+[[gnu::noreturn]]
+static void abort_on_array_add_max_failure(size_t max_elements)
+{
+    char msg[96];
+    snprintf(msg, ARRAY_SIZE(msg), "Tried to add to an ConfArray that already has the max allowed number of elements (%zu).", max_elements);
+    esp_system_abort(msg);
 }
 
 Config::Wrap Config::add()
@@ -292,8 +328,7 @@ Config::Wrap Config::add()
 
     const auto max_elements = slot->maxElements;
     if (children.size() >= max_elements) {
-        char *message;
-        esp_system_abort(asprintf(&message, "Tried to add to an ConfArray that already has the max allowed number of elements (%u).", max_elements) < 0 ? "" : message);
+        abort_on_array_add_max_failure(max_elements);
     }
 
     auto copy = *slot->prototype;
