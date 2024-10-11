@@ -305,8 +305,12 @@ void ChargeManager::pre_setup()
             {"current", Config::Uint(0)}
         }),
         [this](const Config *config) {
-            this->available_current.get("current")->updateUint(config->get("current")->asUint());
-            this->last_available_current_update = millis();
+            String err = api.callCommand("charge_manager/available_current_update", Config::ConfUpdateObject{{
+                {"current", config->get("current")->asUint()},
+            }});
+            if (!err.isEmpty()) {
+                logger.printfln("Automation couldn't set manager current: %s", err.c_str());
+            }
         },
         [this](const Config *config) -> String {
             uint32_t max_avail_current = this->get_maximum_available_current();
