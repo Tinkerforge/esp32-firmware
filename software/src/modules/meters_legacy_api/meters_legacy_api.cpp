@@ -156,10 +156,8 @@ void MetersLegacyAPI::register_urls()
     api.addState("meter/last_reset", &legacy_last_reset);
     // meter/error_counters registered in meters module
 
-    api.addCommand("meter/reset", Config::Null(), {}, [this](String &/*errmsg*/) {
-        String err = api.callCommand(meters.get_path(this->linked_meter_slot, Meters::PathType::Reset).c_str(), nullptr);
-        if (!err.isEmpty())
-            logger.printfln("Cannot reset meter %u (%s)", this->linked_meter_slot, err.c_str());
+    api.addCommand("meter/reset", Config::Null(), {}, [this](String &errmsg) {
+        errmsg = api.callCommand(meters.get_path(this->linked_meter_slot, Meters::PathType::Reset).c_str(), nullptr);
     }, true);
 
     api.addCommand("meter/state_update", &legacy_state_update, {}, [this](String &/*errmsg*/) {
