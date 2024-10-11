@@ -832,46 +832,71 @@ void ModbusTcp::update_regs()
 
 uint32_t keba_get_features()
 {
+    /*
+        ABCDEF
+        |||||0 - No RFID
+        |||||1 - RFID
+        ||||1 - Standard Energy Meter, not calibrated
+        ||||2 - MID
+        ||||3 - Eichrecht
+        |||0 - x-series
+        |||1 - c-series
+        ||1 - 13 A
+        ||2 - 16 A
+        ||3 - 20 A
+        ||4 - 32 A
+        |0 - Socket
+        |1 - Cable
+        3 - KC-P30
+    */
     static bool warned;
-    uint32_t features = 31;
-    features *= 10;
+    uint32_t features = 310000; // Report KC-P30 with cable
+
+    // Map current
     if (api.hasFeature("evse"))
     {
         switch (api.getState("evse/hardware_configuration")->get("jumper_configuration")->asUint())
         {
-        case 2:
-            features += 1;
-            break;
+            case 2: // 13 A
+                features += 1000;
+                break;
 
-        case 3:
-            features += 2;
-            break;
+            case 3: // 16 A
+                features += 2000;
+                break;
 
-        case 4:
-            features += 3;
-            break;
+            case 4: // 20 A
+                features += 3000;
+                break;
 
-        case 6:
-            features += 4;
-            break;
+            case 6: // 32 A
+                features += 4000;
+                break;
 
-        default:
-            logger.printfln("No matching keba cable configuration! It will be set to 0!");
-            break;
+            case 0: // 6 A
+            case 1: // 10 A
+            case 5: // 25 A
+            case 7: // Unused
+            case 8: // not configured
+            default:
+                logger.printfln("No matching keba cable configuration! It will be set to 0!");
+                break;
         }
     }
-    features *= 10;
-    features += 1;
-    features *= 10;
+    // Report c-series:
+    // x-series has a 4G modem and ISO15118 hardware support
+    features += 100;
     if (api.hasFeature("meter")) {
-        features += 2;
+        features += 20;
     } else {
+        // All keba boxes have some kind of energy meter.
+        // TODO: should we still report 10 (not calibrared meter) here for better compatibility?
         if (!warned) {
-            logger.printfln("Wallbox has no meter. Erros are expected!");
+            logger.printfln("Wallbox has no meter. Errors are expected!");
             warned = true;
         }
     }
-    features *= 10;
+
     if (api.hasFeature("nfc"))
         features += 1;
     return features;
