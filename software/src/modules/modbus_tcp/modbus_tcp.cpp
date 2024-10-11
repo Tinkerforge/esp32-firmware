@@ -29,6 +29,10 @@
 #include "module_dependencies.h"
 #include "build.h"
 
+#if MODULE_POWER_MANAGER_AVAILABLE()
+#include "modules/power_manager/power_manager.h"
+#endif
+
 extern uint32_t local_uid_num;
 
 // MODBUS TABLE CHANGELOG
@@ -267,6 +271,21 @@ struct [[gnu::packed]] keba_read_charge_s {
     /*1502*/ uint32swapped_t charged_energy;
 };
 
+struct [[gnu::packed]] keba_read_phase_switch_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint32_t OFFSET = 1550;
+    /*1550*/ uint32swapped_t phase_switching_source;
+    /*1552*/ uint32swapped_t phase_switching_state;
+};
+
+struct [[gnu::packed]] keba_read_failsafe_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint32_t OFFSET = 1600;
+    /*1600*/ uint32swapped_t failsafe_current;
+    /*1602*/ uint32swapped_t failsafe_timeout;
+};
+
+
 struct [[gnu::packed]] keba_write_s {
     static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
     static const uint32_t OFFSET = 5004;
@@ -284,6 +303,15 @@ struct [[gnu::packed]] keba_write_s {
     /*5019*/ uint16_t padding6;
     /*5020*/ uint16_t failsafe_persist;
 };
+
+struct [[gnu::packed]] keba_write_phase_switch_s {
+    static const mb_param_type_t TYPE = MB_PARAM_HOLDING;
+    static const uint32_t OFFSET = 5050;
+    /*5050*/ uint16_t phase_switching_source;
+    /*5051*/ uint16_t padding2;
+    /*5052*/ uint16_t phase_switching_state;
+};
+
 
 //-------------------
 // Discrete Inputs
@@ -345,7 +373,10 @@ static bender_write_uid_s *bender_write_uid, *bender_write_uid_cpy;
 static keba_read_general_s *keba_read_general, *keba_read_general_cpy;
 static keba_read_max_s *keba_read_max, *keba_read_max_cpy;
 static keba_read_charge_s *keba_read_charge, *keba_read_charge_cpy;
+static keba_read_phase_switch_s *keba_read_phase_switch, *keba_read_phase_switch_cpy;
+static keba_read_failsafe_s *keba_read_failsafe, *keba_read_failsafe_cpy;
 static keba_write_s *keba_write, *keba_write_cpy;
+static keba_write_phase_switch_s *keba_write_phase_switch, *keba_write_phase_switch_cpy;
 
 static portMUX_TYPE mtx;
 
@@ -412,8 +443,14 @@ static void allocate_keba_table()
     calloc_struct(&keba_read_max_cpy);
     calloc_struct(&keba_read_charge);
     calloc_struct(&keba_read_charge_cpy);
+    calloc_struct(&keba_read_phase_switch);
+    calloc_struct(&keba_read_phase_switch_cpy);
+    calloc_struct(&keba_read_failsafe);
+    calloc_struct(&keba_read_failsafe_cpy);
     calloc_struct(&keba_write);
     calloc_struct(&keba_write_cpy);
+    calloc_struct(&keba_write_phase_switch);
+    calloc_struct(&keba_write_phase_switch_cpy);
 }
 
 void ModbusTcp::setup()
@@ -490,7 +527,10 @@ void ModbusTcp::setup()
         REGISTER_DESCRIPTOR(keba_read_general);
         REGISTER_DESCRIPTOR(keba_read_max);
         REGISTER_DESCRIPTOR(keba_read_charge);
+        REGISTER_DESCRIPTOR(keba_read_phase_switch);
+        REGISTER_DESCRIPTOR(keba_read_failsafe);
         REGISTER_DESCRIPTOR(keba_write);
+        REGISTER_DESCRIPTOR(keba_write_phase_switch);
     }
 
     ESP_ERROR_CHECK(mbc_slave_start());
@@ -930,8 +970,12 @@ static uint32_t export_tag_id_as_uint32(const String &str)
 
 void ModbusTcp::update_keba_regs()
 {
+    bool phase_switch_requested = false;
     taskENTER_CRITICAL(&mtx);
+        phase_switch_requested = keba_write_phase_switch->phase_switching_state != keba_write_phase_switch_cpy->phase_switching_state;
+
         *keba_write_cpy = *keba_write;
+        *keba_write_phase_switch_cpy = *keba_write_phase_switch;
     taskEXIT_CRITICAL(&mtx);
 
     keba_read_general_cpy->features = fromUint(keba_get_features());
@@ -941,6 +985,21 @@ void ModbusTcp::update_keba_regs()
 
         evse_common.set_modbus_current(keba_write_cpy->set_charging_current);
         evse_common.set_modbus_enabled(keba_write_cpy->enable_station == 1);
+#if MODULE_POWER_MANAGER_AVAILABLE()
+        bool is_3p = power_manager.get_is_3phase();
+        uint32_t external_control_state = api.getState("power_manager/state")->get("external_control")->asUint();
+
+        if (phase_switch_requested
+         && external_control_state == EXTERNAL_CONTROL_STATE_AVAILABLE
+         && ((keba_write_phase_switch_cpy->phase_switching_state) == 1) != is_3p) {
+            api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
+             {"phases_wanted", (uint32_t)(keba_write_phase_switch_cpy->phase_switching_state == 1 ? 3 : 1)}
+            }});
+        }
+
+        keba_read_phase_switch_cpy->phase_switching_source = fromUint(external_control_state == EXTERNAL_CONTROL_STATE_DISABLED ? 0 : 3);
+        keba_read_phase_switch_cpy->phase_switching_state = fromUint(is_3p ? 3 : 1);
+#endif
 
         auto iec_state = api.getState("evse/state")->get("iec61851_state")->asUint();
 
@@ -1016,6 +1075,8 @@ void ModbusTcp::update_keba_regs()
         *keba_read_charge = *keba_read_charge_cpy;
         *keba_read_general = *keba_read_general_cpy;
         *keba_read_max = *keba_read_max_cpy;
+        *keba_read_phase_switch = *keba_read_phase_switch_cpy;
+        *keba_read_failsafe = *keba_read_failsafe_cpy;
     taskEXIT_CRITICAL(&mtx);
 }
 
