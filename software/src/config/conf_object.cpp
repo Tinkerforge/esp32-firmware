@@ -19,6 +19,8 @@
 
 #include "config/private.h"
 
+#include "tools/memory.h"
+
 bool Config::ConfObject::slotEmpty(size_t i)
 {
     return object_buf[i].schema == nullptr;
@@ -77,9 +79,6 @@ const Config *Config::ConfObject::get(const String &needle) const
 const Config::ConfObject::Slot *Config::ConfObject::getSlot() const { return &object_buf[idx]; }
 Config::ConfObject::Slot *Config::ConfObject::getSlot() { return &object_buf[idx]; }
 
-extern char _rodata_start;
-extern char _rodata_end;
-
 Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&val)
 {
     auto len = val.size();
@@ -90,8 +89,7 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
     for (int i = 0; i < len; ++i) {
         const char *key = val[i].first;
 
-        bool key_in_flash = (key >= &_rodata_start && key <= &_rodata_end);
-        if (!key_in_flash)
+        if (!string_is_in_rodata(key))
             esp_system_abort("ConfObject key not in flash! Please pass a string literal!");
 
         schema->keys[i].val = key;

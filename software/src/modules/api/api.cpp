@@ -29,11 +29,9 @@
 #include "build.h"
 #include "config_migrations.h"
 #include "tools.h"
+#include "tools/memory.h"
 
 extern TF_HAL hal;
-
-extern char _rodata_start;
-extern char _rodata_end;
 
 API::API()
 {
@@ -181,8 +179,7 @@ void API::addCommand(const char * const path, ConfigRoot *config, std::initializ
     {
         int i = 0;
         for(const char *k : keys_to_censor_in_debug_report){
-            bool key_in_flash = (k >= &_rodata_start && k <= &_rodata_end);
-            if (!key_in_flash)
+            if (!string_is_in_rodata(k))
                 esp_system_abort("Key to censor not in flash! Please pass a string literal!");
 
             ktc[i] = k;
@@ -239,8 +236,7 @@ void API::addState(const char * const path, ConfigRoot *config, std::initializer
     {
         int i = 0;
         for(const char *k : keys_to_censor){
-            bool key_in_flash = (k >= &_rodata_start && k <= &_rodata_end);
-            if (!key_in_flash)
+            if (!string_is_in_rodata(k))
                 esp_system_abort("Key to censor not in flash! Please pass a string literal!");
 
             ktc[i] = k;
@@ -364,8 +360,7 @@ void API::addResponse(const char * const path, ConfigRoot *config, std::initiali
     {
         int i = 0;
         for(const char *k : keys_to_censor_in_debug_report){
-            bool key_in_flash = (k >= &_rodata_start && k <= &_rodata_end);
-            if (!key_in_flash)
+            if (!string_is_in_rodata(k))
                 esp_system_abort("Key to censor not in flash! Please pass a string literal!");
 
             ktc[i] = k;
@@ -804,7 +799,7 @@ String API::callCommand(const char *path, Config::ConfUpdate payload)
     CommandRegistration *reg = nullptr;
 
     // If the called path is in rodata, try a quick address check first.
-    if (path < &_rodata_end) {
+    if (string_is_in_rodata(path)) {
         for (CommandRegistration &chk_reg : commands) {
             if (chk_reg.path == path) { // Address comparison
                 reg = &chk_reg;
