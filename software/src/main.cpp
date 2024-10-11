@@ -29,6 +29,7 @@
 #include "bindings/hal_common.h"
 #include "build.h"
 #include "tools.h"
+#include "tools/memory.h"
 
 #include "gcc_warnings.h"
 
@@ -241,6 +242,8 @@ void setup()
     if (!mount_or_format_spiffs()) {
         logger.printfln("Failed to mount SPIFFS.");
     }
+
+    check_memory_assumptions();
 
     boot_stage = BootStage::PRE_SETUP;
 
