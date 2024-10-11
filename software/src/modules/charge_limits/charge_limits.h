@@ -51,9 +51,6 @@ public:
     ConfigRoot override_duration;
     ConfigRoot override_energy;
 
-    uint32_t duration_left;
-    uint32_t energy_left;
-
 private:
     bool was_triggered = false;
 };
