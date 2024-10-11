@@ -801,21 +801,41 @@ String API::callCommand(const char *path, Config::ConfUpdate payload)
         return "Use char *, size_t overload of callCommand in non-main thread!";
     }
 
-    for (CommandRegistration &reg : commands) {
-        if (reg.path != path) {
-            continue;
+    CommandRegistration *reg = nullptr;
+
+    // If the called path is in rodata, try a quick address check first.
+    if (path < &_rodata_end) {
+        for (CommandRegistration &chk_reg : commands) {
+            if (chk_reg.path == path) { // Address comparison
+                reg = &chk_reg;
+                break;
+            }
+        }
+    }
+
+    // If the address check didn't find a match, try string comparison instead.
+    if (!reg) {
+        for (CommandRegistration &chk_reg : commands) {
+            if (strcmp(chk_reg.path, path) == 0) {
+                reg = &chk_reg;
+                break;
+            }
         }
 
-        String error = reg.config->update(&payload);
-
-        if (!error.isEmpty()) {
-            return error;
+        if (!reg) {
+            return StringSumHelper("Unknown command: ") + path;
         }
-        reg.callback(error);
+    }
+
+    String error = reg->config->update(&payload);
+
+    if (!error.isEmpty()) {
         return error;
     }
 
-    return String("Unknown command ") + path;
+    reg->callback(error);
+
+    return error;
 }
 
 const Config *API::getState(const char *path, bool log_if_not_found, size_t path_len)
