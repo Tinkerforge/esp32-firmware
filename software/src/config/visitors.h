@@ -796,8 +796,7 @@ struct from_update {
 
         const Config::ConfUpdateObject *obj = update->get<Config::ConfUpdateObject>();
         if (obj == nullptr) {
-            Serial.println(update->which());
-            return "ConfUpdate node was not an object.";
+            return StringSumHelper("ConfUpdate node was variant ") + update->which() + ", not an object.";
         }
 
         const auto size = x.getSlot()->schema->length;
@@ -835,8 +834,7 @@ struct from_update {
 
         const Config::ConfUpdateUnion *un = update->get<Config::ConfUpdateUnion>();
         if (un == nullptr) {
-            Serial.println(update->which());
-            return "ConfUpdate node was not a union.";
+            return StringSumHelper("ConfUpdate node was variant ") + update->which() + ", not a union.";
         }
 
         if (un->tag != as_const(x).getSlot()->tag) {
