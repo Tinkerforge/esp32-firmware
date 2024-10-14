@@ -197,8 +197,8 @@ static void manager_task(void *arg)
 
 void CMNetworking::register_manager(const char *const *const hosts,
                                     int charger_count,
-                                    std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *)> manager_callback,
-                                    std::function<void(uint8_t, uint8_t)> manager_error_callback)
+                                    const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *)> &manager_callback,
+                                    const std::function<void(uint8_t, uint8_t)> &manager_error_callback)
 {
     this->hosts = hosts;
     this->charger_count = charger_count;
@@ -384,7 +384,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     return true;
 }
 
-void CMNetworking::register_client(std::function<void(uint16_t, bool, int8_t)> client_callback)
+void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8_t)> &client_callback)
 {
     client_sock = create_socket(CHARGE_MANAGEMENT_PORT, false);
 

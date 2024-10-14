@@ -610,9 +610,9 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
     }
 }
 
-void WebSockets::onConnect_HTTPThread(std::function<void(WebSocketsClient)> fn)
+void WebSockets::onConnect_HTTPThread(std::function<void(WebSocketsClient)> &&fn)
 {
-    on_client_connect_fn = fn;
+    on_client_connect_fn = std::forward<std::function<void(WebSocketsClient)>>(fn);
 }
 
 // TODO: In a perfect world this function would be part of the WebSocketsClient class.
@@ -621,7 +621,7 @@ void WebSockets::onConnect_HTTPThread(std::function<void(WebSocketsClient)> fn)
 //       If we would do this the other way around, the interfaces would be nicer.
 //       However, in WebSockets we would need to keep a list of all WebSocketsClient instances and
 //       and maintain it (remove closed connections etc). This is not necessary now.
-void WebSockets::onBinaryDataReceived_HTTPThread(std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> fn)
+void WebSockets::onBinaryDataReceived_HTTPThread(std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> &&fn)
 {
-    on_binary_data_received_fn = fn;
+    on_binary_data_received_fn = std::forward<std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)>>(fn);
 }

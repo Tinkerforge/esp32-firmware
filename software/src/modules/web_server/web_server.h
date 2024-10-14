@@ -135,9 +135,9 @@ public:
     WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
     void onNotAuthorized_HTTPThread(wshCallback &&callback);
 
-    void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> auth_fn)
+    void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn)
     {
-        this->auth_fn = auth_fn;
+        this->auth_fn = std::forward<std::function<bool(WebServerRequest)>>(auth_fn);
     }
 
     httpd_handle_t httpd;

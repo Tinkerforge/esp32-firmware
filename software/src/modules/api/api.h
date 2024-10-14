@@ -90,7 +90,7 @@ public:
     String callCommand(CommandRegistration &reg, char *payload, size_t len);
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
-    void callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, std::function<void(const String &errmsg)> done_cb);
+    void callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, const std::function<void(const String &errmsg)> &done_cb);
 
     String callCommand(const char *path, Config::ConfUpdate payload);
 

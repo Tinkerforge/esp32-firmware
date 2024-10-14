@@ -436,10 +436,10 @@ int pdf_add_png_image_data(struct pdf_doc *pdf, struct pdf_object *page, float x
                        const uint8_t *data, size_t len);
 
 
-int pdf_add_write_callback(struct pdf_doc *pdf, std::function<ssize_t(const void *buf, size_t len)> cb);
-int pdf_add_stream_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t stream_num)> cb);
-int pdf_add_image_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t image_num)> cb);
-int pdf_add_page_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num)> cb);
+int pdf_add_write_callback(struct pdf_doc *pdf, std::function<ssize_t(const void *buf, size_t len)> &&cb);
+int pdf_add_stream_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t stream_num)> &&cb);
+int pdf_add_image_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t image_num)> &&cb);
+int pdf_add_page_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num)> &&cb);
 
 void pdf_notify_page(struct pdf_doc *pdf, uint32_t stream_count, uint32_t image_count);
 

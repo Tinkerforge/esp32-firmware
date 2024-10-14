@@ -77,16 +77,16 @@ public:
     AsyncHTTPSClient(bool use_cookies = false): use_cookies{use_cookies} {}
     ~AsyncHTTPSClient();
 
-    void download_async(const char *url, int cert_id, std::function<void(AsyncHTTPSClientEvent *event)> callback);
-    void post_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> callback);
-    void put_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> callback);
-    void delete_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> callback);
+    void download_async(const char *url, int cert_id, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
+    void post_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
+    void put_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
+    void delete_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
     void abort_async();
     void set_header(const char *key, const char *value);
     bool is_busy() const { return in_progress; }
 
 private:
-    void fetch(const char *url, int cert_id, esp_http_client_method_t method, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> callback);
+    void fetch(const char *url, int cert_id, esp_http_client_method_t method, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
     void error_abort(AsyncHTTPSClientEvent &event, AsyncHTTPSClientError reason);
     void parse_cookie(const char *cookie);
     static esp_err_t event_handler(esp_http_client_event_t *event);

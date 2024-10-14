@@ -1312,8 +1312,8 @@ int allocate_current(
     const bool cp_disconnect_requested,
     /*const TODO: move allocated_energy into charger allocation state so that this can be const once again*/ ChargerState *charger_state,
     const char * const *hosts,
-    const std::function<const char *(uint8_t)> get_charger_name,
-    const std::function<void(uint8_t)> clear_dns_cache_entry,
+    const std::function<const char *(uint8_t)> &get_charger_name,
+    const std::function<void(uint8_t)> &clear_dns_cache_entry,
 
     CurrentAllocatorState *ca_state,
     ChargerAllocationState *charger_allocation_state,
@@ -1625,7 +1625,7 @@ bool update_from_client_packet(
     ChargerState *charger_state,
     ChargerAllocationState *charger_allocation_state,
     const char * const *hosts,
-    const std::function<const char *(uint8_t)> get_charger_name
+    const std::function<const char *(uint8_t)> &get_charger_name
     )
 {
     // TODO: bounds check

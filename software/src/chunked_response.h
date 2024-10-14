@@ -58,7 +58,7 @@ protected:
     bool write_impl(const char *buf, size_t buf_size);
 
 private:
-    bool call(std::function<bool(void)> local_function);
+    bool call(std::function<bool(void)> &&local_function);
 
     IBaseChunkedResponse *internal;
     uint32_t timeout_ms;

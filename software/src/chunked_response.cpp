@@ -105,7 +105,7 @@ String QueuedChunkedResponse::wait()
     return end_error;
 }
 
-bool QueuedChunkedResponse::call(std::function<bool(void)> local_function)
+bool QueuedChunkedResponse::call(std::function<bool(void)> &&local_function)
 {
     std::unique_lock<std::mutex> lock(mutex);
 
@@ -122,7 +122,7 @@ bool QueuedChunkedResponse::call(std::function<bool(void)> local_function)
         return false;
     }
 
-    function = local_function;
+    function = std::forward<std::function<bool(void)>>(local_function);
     have_function = true;
 
     lock.unlock();

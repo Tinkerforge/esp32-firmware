@@ -2283,22 +2283,22 @@ int pdf_add_png_image_data(struct pdf_doc *pdf, struct pdf_object *page, float x
     return pdf_add_png_data(pdf, page, x, y, display_width, display_height, &info, colour_background_hint, data, len);
 }
 
-int pdf_add_write_callback(struct pdf_doc *pdf, std::function<ssize_t(const void *buf, size_t len)> cb) {
-    pdf->write_fn = cb;
+int pdf_add_write_callback(struct pdf_doc *pdf, std::function<ssize_t(const void *buf, size_t len)> &&cb) {
+    pdf->write_fn = std::forward<std::function<ssize_t(const void *buf, size_t len)>>(cb);
     return 0;
 }
 
-int pdf_add_stream_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t stream_num)> cb) {
-    pdf->stream_fn = cb;
+int pdf_add_stream_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t stream_num)> &&cb) {
+    pdf->stream_fn = std::forward<std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t stream_num)>>(cb);
     return 0;
 }
 
-int pdf_add_image_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t image_num)> cb) {
-    pdf->image_fn = cb;
+int pdf_add_image_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t image_num)> &&cb) {
+    pdf->image_fn = std::forward<std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t image_num)>>(cb);
     return 0;
 }
 
-int pdf_add_page_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num)> cb) {
-    pdf->page_fn = cb;
+int pdf_add_page_callback(struct pdf_doc *pdf, std::function<int(struct pdf_doc *pdf, uint32_t page_num)> &&cb) {
+    pdf->page_fn = std::forward<std::function<int(struct pdf_doc *pdf, uint32_t page_num)>>(cb);
     return 0;
 }
