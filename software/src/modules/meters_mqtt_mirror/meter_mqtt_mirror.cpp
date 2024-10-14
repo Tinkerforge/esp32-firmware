@@ -117,11 +117,14 @@ void MeterMqttMirror::handle_mqtt_value_ids(const JsonArrayConst &array)
     value_ids_path = "meters/";
     value_ids_path.concat(slot);
     value_ids_path.concat("/value_ids");
-    const Config *old_value_ids = api.getState(value_ids_path);
+    const Config *old_value_ids = api.getState(value_ids_path); // This may be longer than declared_values_count because of additional values from meter filters.
 
     bool value_ids_match;
 
-    if (old_value_ids->count() != declared_values_count) {
+    if (old_value_ids->count() < declared_values_count) {
+        logger.printfln("Unexpected amount of old value IDs: Got %zu but expected at least %zu.", old_value_ids->count(), declared_values_count);
+        value_ids_match = false;
+    } else if (array_size != declared_values_count) {
         value_ids_match = false;
     } else {
         value_ids_match = true;
