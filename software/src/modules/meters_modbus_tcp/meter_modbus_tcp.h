@@ -95,6 +95,7 @@ private:
     bool is_victron_energy_gx_inverter_meter() const;
     bool is_victron_energy_gx_load_meter() const;
     bool is_deye_hybrid_inverter_battery_meter() const;
+    bool is_shelly_pro_xem_monophase() const;
 
     uint32_t slot;
     Config *state;

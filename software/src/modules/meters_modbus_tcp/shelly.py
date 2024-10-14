@@ -18,6 +18,11 @@ monophase_values = [
         'value_type': 'F32LE',
     },
     {
+        'name': 'L1+L2+L3 active power [A]',
+        'value_id': 'PowerActiveLSumImExDiff',
+        'start_address': 'START_ADDRESS_VIRTUAL',
+    },
+    {
         'name': 'Channel 1 apparent power [VA]',
         'value_id': 'PowerApparentL1ImExSum',
         'start_address': 2009,
@@ -37,11 +42,21 @@ monophase_values = [
         'scale_factor': 0.001
     },
     {
+        'name': 'L1+L2+L3 total active energy - perpetual count [Wh]',
+        'value_id': 'EnergyActiveLSumImportResettable',
+        'start_address': 'START_ADDRESS_VIRTUAL',
+    },
+    {
         'name': 'Channel 1 total active returned energy - perpetual count [Wh]',
         'value_id': 'EnergyActiveL1ExportResettable',
         'start_address': 2312,
         'value_type': 'F32LE',
         'scale_factor': 0.001
+    },
+    {
+        'name': 'L1+L2+L3 total active returned energy - perpetual count [Wh]',
+        'value_id': 'EnergyActiveLSumExportResettable',
+        'start_address': 'START_ADDRESS_VIRTUAL',
     },
 ]
 
@@ -54,7 +69,9 @@ def make_monophase_values(channel, phase, start_address_offset):
 
         new_value['name'] = new_value['name'].replace('Channel 1', channel)
         new_value['value_id'] = new_value['value_id'].replace('L1', phase)
-        new_value['start_address'] += start_address_offset
+
+        if new_value['start_address'] != 'START_ADDRESS_VIRTUAL':
+            new_value['start_address'] += start_address_offset
 
         values.append(new_value)
 

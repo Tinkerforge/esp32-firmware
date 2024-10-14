@@ -50,6 +50,16 @@
 
 #define DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS             0u
 
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER                 2007u
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY          2310u
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_RETURNED_ENERGY 2312u
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_ACTIVE_POWER                 2027u
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_ENERGY          2330u
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_RETURNED_ENERGY 2332u
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_ACTIVE_POWER                 2047u
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY          2350u
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY 2352u
+
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
 
@@ -664,6 +674,13 @@ bool MeterModbusTCP::is_deye_hybrid_inverter_battery_meter() const
         && deye_hybrid_inverter_virtual_meter == DeyeHybridInverterVirtualMeter::Battery;
 }
 
+bool MeterModbusTCP::is_shelly_pro_xem_monophase() const
+{
+    return table_id == MeterModbusTCPTableID::ShellyProEM
+        || (table_id == MeterModbusTCPTableID::ShellyPro3EM
+            && shelly_pro_3em_device_profile == ShellyPro3EMDeviceProfile::Monophase);
+}
+
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result_code != Modbus::ResultCode::EX_SUCCESS) {
@@ -1030,6 +1047,19 @@ void MeterModbusTCP::read_done_callback()
                         + victron_energy_gx_ac_consumption_l3_power;
 
             meters.update_value(slot, table->index[read_index + 1], power);
+        }
+    }
+    else if (is_shelly_pro_xem_monophase()) {
+        if (register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_RETURNED_ENERGY
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_ACTIVE_POWER
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_ENERGY
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_RETURNED_ENERGY
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_ACTIVE_POWER
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY) {
+            meters.update_value(slot, table->index[read_index + 1], value);
         }
     }
 
