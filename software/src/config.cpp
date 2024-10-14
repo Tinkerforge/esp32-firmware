@@ -56,7 +56,7 @@ Config::ConfUnion::Slot *union_buf = nullptr;
 size_t union_buf_size = 0;
 
 static ConfigRoot nullconf = Config{Config::ConfVariant{}};
-static ConfigRoot *confirmconf;
+static ConfigRoot confirmconf;
 
 [[gnu::noinline]]
 [[gnu::noreturn]]
@@ -196,13 +196,13 @@ ConfigRoot *Config::Confirm()
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    if (confirmconf == nullptr) {
-        confirmconf = new ConfigRoot{Config::Object({
+    if (confirmconf.is_null()) {
+        confirmconf = ConfigRoot{Config::Object({
             {Config::confirm_key, Config::Bool(false)}
         })};
     }
 
-    return confirmconf;
+    return &confirmconf;
 }
 
 String Config::ConfirmKey()
@@ -526,8 +526,9 @@ inline bool Config::update_value<float, Config::ConfFloat>(float value, const ch
         String value_string(value);
         config_abort_on_type_error("update_value", this, value_type, &value_string);
     }
-    float old_value = get<ConfFloat>()->getVal();
-    get<ConfFloat>()->setVal(value);
+    ConfFloat *conf = get<ConfFloat>();
+    float old_value = conf->getVal();
+    conf->setVal(value);
 
     if (old_value != value)
         this->value.updated = 0xFF;
