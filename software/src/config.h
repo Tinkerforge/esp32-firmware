@@ -713,7 +713,7 @@ public:
     bool changeUnionVariant(T tag) {
         ASSERT_MAIN_THREAD();
         if (!this->is<ConfUnion>()) {
-            String tag_string(tag);
+            String tag_string(static_cast<int32_t>(tag));
             config_abort_on_type_error("changeUnionVariant", this, "ConfUnion", &tag_string);
         }
 
