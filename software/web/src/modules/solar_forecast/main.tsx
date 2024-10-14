@@ -480,7 +480,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                             loading={__("solar_forecast.content.loading")}>
                             <UplotWrapper
                                 ref={this.uplot_wrapper_ref}
-                                class="solar-forecast--chart pb-3"
+                                class="solar-forecast-chart pb-3"
                                 sub_page="solar_forecast"
                                 color_cache_group="solar_forecast.default"
                                 show={true}

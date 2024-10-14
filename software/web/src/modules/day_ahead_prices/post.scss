@@ -1,22 +1,22 @@
-.status-solar-forecast-chart {
+.status-day-ahead-prices-chart {
     position: relative;
     aspect-ratio: 1.33333;
 }
 
 @include media-breakpoint-up(md) {
-    .status-solar-forecast-chart {
+    .status-day-ahead-prices-chart {
         position: relative;
         aspect-ratio: 3;
     }
 }
 
-.solar-forecast-chart {
+.day-ahead-prices-chart {
     position: relative;
     aspect-ratio: 1.5;
 }
 
 @include media-breakpoint-up(md) {
-    .solar-forecast-chart {
+    .day-ahead-prices-chart {
         position: relative;
         aspect-ratio: 3;
     }
