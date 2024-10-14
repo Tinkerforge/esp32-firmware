@@ -36,6 +36,15 @@ void Config::ConfObject::freeSlotBuf(Config::ConfObject::Slot *buf)
     heap_caps_free(buf);
 }
 
+[[gnu::noinline]]
+[[gnu::noreturn]]
+static void abort_on_key_not_found(const char *needle)
+{
+    char msg[64];
+    snprintf(msg, ARRAY_SIZE(msg), "Config key %s not found!", needle);
+    esp_system_abort(msg);
+}
+
 Config *Config::ConfObject::get(const String &needle)
 {
     const auto *slot = this->getSlot();
@@ -43,17 +52,17 @@ Config *Config::ConfObject::get(const String &needle)
     const auto size = schema->length;
 
     const auto needle_length = needle.length();
+    const auto needle_cstr   = needle.c_str();
 
     for (size_t i = 0; i < size; ++i) {
         if (schema->keys[i].length != needle_length)
             continue;
 
-        if (memcmp(schema->keys[i].val, needle.c_str(), needle_length) == 0)
+        if (memcmp(schema->keys[i].val, needle_cstr, needle_length) == 0)
             return &slot->values[i];
     }
 
-    char *message;
-    esp_system_abort(asprintf(&message, "Config key %s not found!", needle.c_str()) < 0 ? "" : message);
+    abort_on_key_not_found(needle_cstr);
 }
 
 const Config *Config::ConfObject::get(const String &needle) const
@@ -63,17 +72,17 @@ const Config *Config::ConfObject::get(const String &needle) const
     const auto size = schema->length;
 
     const auto needle_length = needle.length();
+    const auto needle_cstr   = needle.c_str();
 
     for (size_t i = 0; i < size; ++i) {
         if (schema->keys[i].length != needle_length)
             continue;
 
-        if (memcmp(schema->keys[i].val, needle.c_str(), needle_length) == 0)
+        if (memcmp(schema->keys[i].val, needle_cstr, needle_length) == 0)
             return &slot->values[i];
     }
 
-    char *message;
-    esp_system_abort(asprintf(&message, "Config key %s not found!", needle.c_str()) < 0 ? "" : message);
+    abort_on_key_not_found(needle_cstr);
 }
 
 const Config::ConfObject::Slot *Config::ConfObject::getSlot() const { return &object_buf[idx]; }

@@ -19,6 +19,8 @@
 
 #include "owned_config.h"
 
+#include "tools.h"
+
 OwnedConfig::OwnedConfigWrap::OwnedConfigWrap(const OwnedConfig *_conf) : conf(_conf)
 {
 }
@@ -38,6 +40,15 @@ const OwnedConfig::OwnedConfigWrap OwnedConfig::get() const
     return wrap;
 }
 
+[[gnu::noinline]]
+[[gnu::noreturn]]
+static void abort_on_index_oob(size_t index, size_t size)
+{
+    char msg[64];
+    snprintf(msg, ARRAY_SIZE(msg), "Config index %zu out of bounds (vector size %zu)!", index, size);
+    esp_system_abort(msg);
+}
+
 const OwnedConfig::OwnedConfigWrap OwnedConfig::get(uint16_t i) const
 {
     if (!this->is<OwnedConfig::OwnedConfigArray>()) {
@@ -47,11 +58,19 @@ const OwnedConfig::OwnedConfigWrap OwnedConfig::get(uint16_t i) const
     const auto &elements = strict_variant::get<OwnedConfig::OwnedConfigArray>(&value)->elements;
 
     if (i >= elements.size()) {
-        char *message;
-        esp_system_abort(asprintf(&message, "Config index %u out of bounds (vector size %u)!", i, elements.size()) < 0 ? "" : message);
+        abort_on_index_oob(i, elements.size());
     }
 
     return OwnedConfig::OwnedConfigWrap(&elements[i]);
+}
+
+[[gnu::noinline]]
+[[gnu::noreturn]]
+static void abort_on_key_not_found(const char *key)
+{
+    char msg[64];
+    snprintf(msg, ARRAY_SIZE(msg), "Config key %s not found!", key);
+    esp_system_abort(msg);
 }
 
 const OwnedConfig::OwnedConfigWrap OwnedConfig::get(const String &key) const
@@ -69,8 +88,7 @@ const OwnedConfig::OwnedConfigWrap OwnedConfig::get(const String &key) const
             return OwnedConfig::OwnedConfigWrap(&val_pair.second);
     }
 
-    char *message;
-    esp_system_abort(asprintf(&message, "Config key %s not found!", key.c_str()) < 0 ? "" : message);
+    abort_on_key_not_found(key.c_str());
 }
 
 size_t OwnedConfig::count() const

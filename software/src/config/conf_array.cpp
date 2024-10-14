@@ -37,21 +37,30 @@ void Config::ConfArray::freeSlotBuf(Config::ConfArray::Slot *buf)
     delete[] buf;
 }
 
+[[gnu::noinline]]
+[[gnu::noreturn]]
+static void abort_on_index_oob(size_t index, const std::vector<Config> *val, const Config::ConfArray *this_arr)
+{
+    char msg[96];
+    auto slot = this_arr->getSlot();
+    snprintf(msg, ARRAY_SIZE(msg), "Config index %zu out of bounds (vector size %zu, minElements %u, maxElements %u)!", index, val->size(), slot->minElements, slot->maxElements);
+    esp_system_abort(msg);
+}
+
 Config *Config::ConfArray::get(size_t i)
 {
     auto *val = this->getVal();
     if (i >= val->size()) {
-        char *message;
-        esp_system_abort(asprintf(&message, "Config index %u out of bounds (vector size %u, minElements %u maxElements %u)!", i, val->size(), this->getSlot()->minElements, this->getSlot()->maxElements) < 0 ? "" : message);
+        abort_on_index_oob(i, val, this);
     }
     return &(*val)[i];
 }
+
 const Config *Config::ConfArray::get(size_t i) const
 {
     const auto *val = this->getVal();
     if (i >= val->size()) {
-        char *message;
-        esp_system_abort(asprintf(&message, "Config index %u out of bounds (vector size %u, minElements %u maxElements %u)!", i, val->size(), this->getSlot()->minElements, this->getSlot()->maxElements) < 0 ? "" : message);
+        abort_on_index_oob(i, val, this);
     }
     return &(*val)[i];
 }

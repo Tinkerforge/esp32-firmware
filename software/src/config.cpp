@@ -58,10 +58,36 @@ size_t union_buf_size = 0;
 static ConfigRoot nullconf = Config{Config::ConfVariant{}};
 static ConfigRoot *confirmconf;
 
+[[gnu::noinline]]
 [[gnu::noreturn]]
 void config_main_thread_assertion_fail()
 {
     esp_system_abort("Accessing the config is only allowed in the main thread!");
+}
+
+[[gnu::noinline]]
+[[gnu::noreturn]]
+void config_abort_on_type_error(const char *fn_name, const Config *config_is, const char *t_name_wanted, const String *content_new)
+{
+#ifdef DEBUG_FS_ENABLE
+    char msg[256];
+#else
+    char msg[88];
+#endif
+
+    size_t len = snprintf_u(msg, ARRAY_SIZE(msg), "%s: Config has wrong type. This is a %s, not a %s.", fn_name, config_is->value.getVariantName(), t_name_wanted);
+
+#ifdef DEBUG_FS_ENABLE
+    len += snprintf(msg + len, ARRAY_SIZE(msg) - len, " Content is %s.", config_is->to_string().c_str());
+
+    if (content_new) {
+        len += snprintf(msg + len, ARRAY_SIZE(msg) - len, " New value is %s.", content_new->c_str());
+    }
+#else
+    (void)len;
+#endif
+
+    esp_system_abort(msg);
 }
 
 bool Config::containsNull(const ConfUpdate *update)
@@ -497,14 +523,8 @@ template<>
 inline bool Config::update_value<float, Config::ConfFloat>(float value, const char *value_type) {
     ASSERT_MAIN_THREAD();
     if (!this->is<ConfFloat>()) {
-        char *message;
-        int result = -1;
-#ifndef DEBUG_FS_ENABLE
-        result = asprintf(&message, "update_value: Config has wrong type. This is a %s. new value is a %s", this->value.getVariantName(), value_type);
-#else
-        result = asprintf(&message, "update_value: Config has wrong type. This is a %s. new value is a %s\nContent is %s\nvalue is %s", this->value.getVariantName(), value_type, this->to_string().c_str(), String(value).c_str());
-#endif
-        esp_system_abort(result < 0 ? "" : message);
+        String value_string(value);
+        config_abort_on_type_error("update_value", this, value_type, &value_string);
     }
     float old_value = get<ConfFloat>()->getVal();
     get<ConfFloat>()->setVal(value);
