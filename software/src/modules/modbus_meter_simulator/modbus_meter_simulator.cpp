@@ -19,6 +19,8 @@
 
 #include "modbus_meter_simulator.h"
 
+#include <math.h>
+
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "bindings/hal_common.h"
@@ -274,14 +276,24 @@ void ModbusMeterSimulator::modbus_slave_read_input_registers_request_handler(uin
         return;
     }
 
+    bool at_least_one_fresh = false;
+
     for (uint32_t offset = 0; offset < count; offset += 2) {
         uint32_t cached_index = register_address2cached_index(starting_address + offset);
         float float_val;
-        meters.get_value_by_index(source_meter_slot, cached_index, &float_val);
+        MeterValueAvailability avl = meters.get_value_by_index(source_meter_slot, cached_index, &float_val, 2500_ms);
+        if (avl == MeterValueAvailability::Fresh) {
+            at_least_one_fresh = true;
+        } else {
+            float_val = NAN;
+        }
         convert_float_to_regs(regs + offset, float_val);
     }
 
-    int rc = tf_rs485_modbus_slave_answer_read_input_registers_request(&bricklet, request_id, regs, count);
-    if (rc != TF_E_OK)
-        logger.printfln("Answering read input registers request failed with code %i", rc);
+    if (at_least_one_fresh) {
+        int rc = tf_rs485_modbus_slave_answer_read_input_registers_request(&bricklet, request_id, regs, count);
+        if (rc != TF_E_OK) {
+            logger.printfln("Answering read input registers request failed with code %i", rc);
+        }
+    }
 }
