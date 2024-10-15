@@ -95,12 +95,23 @@ void PowerManager::pre_setup()
         {"guaranteed_power", Config::Uint(1380, 0, 22080)}, // in watt
         {"cloud_filter_mode", Config::Uint(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_OFF, CLOUD_FILTER_STRONG)},
     }), [](const Config &cfg, ConfigSource source) -> String {
+        const bool excess_charging_enable = cfg.get("excess_charging_enable")->asBool();
+
         if (cfg.get("phase_switching_mode")->asUint() == 3) { // external control
-            if (cfg.get("excess_charging_enable")->asBool() != false) {
+            if (excess_charging_enable) {
                 return "Can't enable excess charging when external control is enabled for phase switching.";
             }
             if (cfg.get("default_mode")->asUint() != MODE_FAST) {
                 return "Can't select any charging mode besides 'Fast' when external control is enabled for phase switching.";
+            }
+        }
+
+        if (excess_charging_enable) {
+            const uint32_t slot_grid    = cfg.get("meter_slot_grid_power"   )->asUint();
+            const uint32_t slot_battery = cfg.get("meter_slot_battery_power")->asUint();
+
+            if (slot_grid == slot_battery) {
+                return "Grid and battery storage cannot use the same power meter";
             }
         }
 

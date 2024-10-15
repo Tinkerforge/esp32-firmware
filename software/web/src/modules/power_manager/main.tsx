@@ -331,15 +331,29 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         mode_list.push([s.excess_charging_enable ? "3" : "3-disabled", __("power_manager.status.mode_min_pv")]);
         mode_list.push(["0", __("power_manager.status.mode_fast")]);
 
-        const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"));
+        let meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"));
+        for (let i = 0; i < meter_slots.length; i++) {
+            if (parseInt(meter_slots[i][0]) == s.meter_slot_battery_power) {
+                meter_slots[i][0] += "-disabled";
+                meter_slots[i][1] += " (" + __("power_manager.content.meter_slot_grid_power_in_use_by_battery") + ")";
+                break;
+            }
+        }
+
         let meter_slots_for_battery = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff, MeterValueID.PowerDCImExDiff, MeterValueID.PowerDCChaDisDiff], NoninternalMeterSelector.AnyValue, __("power_manager.content.meter_slot_battery_power_missing_value"));
+        for (let i = 0; i < meter_slots_for_battery.length; i++) {
+            if (parseInt(meter_slots_for_battery[i][0]) == s.meter_slot_grid_power) {
+                meter_slots_for_battery[i][0] += "-disabled";
+                meter_slots_for_battery[i][1] += " (" + __("power_manager.content.meter_slot_battery_power_in_use_by_grid") + ")";
+                break;
+            }
+        }
         meter_slots_for_battery.unshift(["255", __("power_manager.content.meter_slot_battery_power_none")]);
 
         let cm_config = API.get_unchecked("charge_manager/config");
         let cm_ok = cm_config?.enable_charge_manager && cm_config?.chargers.length >= 1;
 
         let is_em = API.hasModule("em_common");
-        let device_translation_suffix = is_em ? "em" : "wb";
 
         // On a charger, the power manager is enabled iff excess charging is enabled.
         let enabled = is_em ? s.enabled : s.excess_charging_enable;
