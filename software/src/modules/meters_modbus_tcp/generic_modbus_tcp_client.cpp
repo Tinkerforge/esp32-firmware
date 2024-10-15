@@ -60,7 +60,7 @@ void GenericModbusTCPClient::start_generic_read()
         return;
     }
 
-    size_t read_blocks = (generic_read_request.register_count + TF_MODBUS_TCP_CLIENT_MAX_REGISTER_COUNT - 1) / TF_MODBUS_TCP_CLIENT_MAX_REGISTER_COUNT;
+    size_t read_blocks = (generic_read_request.register_count + TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT - 1) / TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT;
     read_block_size = static_cast<uint16_t>((generic_read_request.register_count + read_blocks - 1) / read_blocks);
 
     read_next();
@@ -72,16 +72,16 @@ void GenericModbusTCPClient::read_next()
     uint16_t read_start_address = static_cast<uint16_t>(generic_read_request.start_address + registers_done_count);
     uint16_t registers_remaining = static_cast<uint16_t>(generic_read_request.register_count - registers_done_count);
     uint16_t read_count = registers_remaining < read_block_size ? registers_remaining : read_block_size;
-    TFModbusTCPClientRegisterType register_type;
+    TFModbusTCPDataType data_type;
 
     switch (generic_read_request.register_type) {
-    case ModbusRegisterType::HoldingRegister: register_type = TFModbusTCPClientRegisterType::HoldingRegister; break;
-    case ModbusRegisterType::InputRegister:   register_type = TFModbusTCPClientRegisterType::InputRegister;   break;
+    case ModbusRegisterType::HoldingRegister: data_type = TFModbusTCPDataType::HoldingRegister; break;
+    case ModbusRegisterType::InputRegister:   data_type = TFModbusTCPDataType::InputRegister;   break;
     default:
         esp_system_abort("generic_modbus_tcp_client: Unsupported register type to read.");
     }
 
-    static_cast<TFModbusTCPClient *>(client_ptr)->read_register(register_type, device_address, read_start_address, read_count, target_buffer, 2000,
+    static_cast<TFModbusTCPClient *>(client_ptr)->read(data_type, device_address, read_start_address, read_count, target_buffer, 2000,
     [this](TFModbusTCPClientTransactionResult result) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
             logger.printfln("Modbus read failed: %s (%d) client=%p host_name='%s' port=%u device_address=%u start_address=%u register_count=%u",

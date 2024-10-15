@@ -21,6 +21,7 @@
 
 #include <Arduino.h>
 #include <TFGenericTCPClient.h>
+#include "tools.h"
 
 class GenericTCPClientConnector
 {
@@ -48,7 +49,7 @@ private:
     const char *event_log_prefix_override;
     size_t event_log_prefix_override_len;
     TFGenericTCPClient *client;
-    uint32_t connect_backoff_ms = 1000;
+    millis_t connect_backoff = 1_s;
     TFGenericTCPClientConnectResult last_connect_result = TFGenericTCPClientConnectResult::Connected;
     int last_connect_error_number = 0;
     bool resolve_error_printed = false;
