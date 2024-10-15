@@ -753,7 +753,7 @@ void ModbusTcp::update_regs()
         auto tag = nfc.old_tags[0];
         auto injected_tag = nfc.old_tags[TAG_LIST_LENGTH - 1];
         char buf[NFC_TAG_ID_STRING_LENGTH + 1] = {0};
-        if (tag.last_seen > injected_tag.last_seen && injected_tag.last_seen > 0)
+        if ((tag.last_seen == 0 || tag.last_seen > injected_tag.last_seen) && injected_tag.last_seen > 0)
             tag = injected_tag;
         remove_separator(tag.tag_id, buf);
         swap_bytes(buf, 20);
