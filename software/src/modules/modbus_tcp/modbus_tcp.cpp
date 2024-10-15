@@ -973,11 +973,11 @@ void ModbusTcp::update_keba_regs()
     bool phase_switch_requested = false;
     bool set_energy_change_requested = false;
     taskENTER_CRITICAL(&mtx);
-        phase_switch_requested = keba_write_phase_switch->phase_switching_state != keba_write_phase_switch_cpy->phase_switching_state;
-        set_energy_change_requested = keba_write->set_energy != keba_write_cpy->set_energy;
-
         *keba_write_cpy = *keba_write;
         *keba_write_phase_switch_cpy = *keba_write_phase_switch;
+
+        keba_write->set_energy = 0xFFFE; // Don't use 0xFFFF as marker value in case someone sets a limit of 0xFFFF to clear the limit.
+        keba_write_phase_switch->phase_switching_state = 0xFFFF;
     taskEXIT_CRITICAL(&mtx);
 
     keba_read_general_cpy->features = fromUint(keba_get_features());
@@ -994,7 +994,7 @@ void ModbusTcp::update_keba_regs()
             the next charging session can be set. Once this value is reached, the charg-
             ing session is terminated.
         */
-        if (set_energy_change_requested) {
+        if (keba_write_cpy->set_energy != 0xFFFE) {
             api.callCommand("charge_limits/override_energy", Config::ConfUpdateObject{{
                 {"energy_wh", (uint32_t)(keba_write_cpy->set_energy * 10)}
             }});
@@ -1004,9 +1004,9 @@ void ModbusTcp::update_keba_regs()
         bool is_3p = power_manager.get_is_3phase();
         uint32_t external_control_state = api.getState("power_manager/state")->get("external_control")->asUint();
 
-        if (phase_switch_requested
+        if (keba_write_phase_switch_cpy->phase_switching_state != 0xFFFF
          && external_control_state == EXTERNAL_CONTROL_STATE_AVAILABLE
-         && ((keba_write_phase_switch_cpy->phase_switching_state) == 1) != is_3p) {
+         && (keba_write_phase_switch_cpy->phase_switching_state == 1) != is_3p) {
             api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
              {"phases_wanted", (uint32_t)(keba_write_phase_switch_cpy->phase_switching_state == 1 ? 3 : 1)}
             }});
