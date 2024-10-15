@@ -1165,10 +1165,6 @@ void ModbusTcp::register_urls()
             auto slots = api.getState("evse/slots");
             uint16_t current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
             uint16_t enable = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
-            taskENTER_CRITICAL(&mtx);
-                keba_write->set_charging_current = current;
-                keba_write->enable_station = enable;
-            taskEXIT_CRITICAL(&mtx);
         }
 
         task_scheduler.scheduleWithFixedDelay([this]() {
