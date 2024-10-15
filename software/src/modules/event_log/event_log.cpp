@@ -256,8 +256,6 @@ void EventLog::trace_drop(size_t count)
 
 void EventLog::write(const char *buf, size_t len)
 {
-    std::lock_guard<std::mutex> lock{event_buf_mutex};
-
     size_t to_write = TIMESTAMP_LEN + len + 1; // 24 for an ISO-8601 timestamp and a space; 1 for the \n
 
     char timestamp_buf[TIMESTAMP_LEN + 1] = {0};
@@ -278,19 +276,23 @@ void EventLog::write(const char *buf, size_t len)
         Serial.println("");
     }
 
-    if (event_buf.free() < to_write) {
-        drop(to_write - event_buf.free());
-    }
+    {
+        std::lock_guard<std::mutex> lock{event_buf_mutex};
 
-    for (int i = 0; i < TIMESTAMP_LEN; ++i) {
-        event_buf.push(timestamp_buf[i]);
-    }
+        if (event_buf.free() < to_write) {
+            drop(to_write - event_buf.free());
+        }
 
-    for (int i = 0; i < len; ++i) {
-        event_buf.push(buf[i]);
-    }
-    if (buf[len - 1] != '\n') {
-        event_buf.push('\n');
+        for (int i = 0; i < TIMESTAMP_LEN; ++i) {
+            event_buf.push(timestamp_buf[i]);
+        }
+
+        for (int i = 0; i < len; ++i) {
+            event_buf.push(buf[i]);
+        }
+        if (buf[len - 1] != '\n') {
+            event_buf.push('\n');
+        }
     }
 
 #if MODULE_WS_AVAILABLE()
