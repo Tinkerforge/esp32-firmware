@@ -970,8 +970,6 @@ static uint32_t export_tag_id_as_uint32(const String &str)
 
 void ModbusTcp::update_keba_regs()
 {
-    bool phase_switch_requested = false;
-    bool set_energy_change_requested = false;
     taskENTER_CRITICAL(&mtx);
         *keba_write_cpy = *keba_write;
         *keba_write_phase_switch_cpy = *keba_write_phase_switch;
@@ -1160,13 +1158,6 @@ void ModbusTcp::register_urls()
     }
     else if (config_table == 2)
     {
-        if (api.hasFeature("evse"))
-        {
-            auto slots = api.getState("evse/slots");
-            uint16_t current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
-            uint16_t enable = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
-        }
-
         task_scheduler.scheduleWithFixedDelay([this]() {
             this->update_keba_regs();
         }, 500_ms);
