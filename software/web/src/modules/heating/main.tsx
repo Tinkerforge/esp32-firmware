@@ -41,6 +41,7 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { SOLAR_FORECAST_PLANES, SolarForecastState, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
+import { DayAheadPricesState, get_average_price_today, get_average_price_tomorrow } from "../day_ahead_prices/main";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} hidden={false} />;
@@ -51,11 +52,9 @@ type HeatingConfig = API.getType["heating/config"];
 interface HeatingState {
     heating_state: API.getType["heating/state"];
     dap_config: API.getType["day_ahead_prices/config"];
-    dap_state:  API.getType["day_ahead_prices/state"];
-    dap_prices: API.getType["day_ahead_prices/prices"];
 }
 
-export class Heating extends ConfigComponent<'heating/config', {}, HeatingState & SolarForecastState> {
+export class Heating extends ConfigComponent<'heating/config', {}, HeatingState & SolarForecastState & DayAheadPricesState> {
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
 
@@ -91,6 +90,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
         util.addApiEventListener("heating/state", () => {
             this.setState({heating_state: API.get("heating/state")});
         });
+
         util.addApiEventListener("day_ahead_prices/config", () => {
             this.setState({dap_config: API.get("day_ahead_prices/config")});
         });
@@ -222,7 +222,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                               ((current_month == this.state.summer_end_month-1  ) && (current_day   <= this.state.summer_end_day    )) ||
                               ((current_month >  this.state.summer_start_month-1) && (current_month <  this.state.summer_end_month-1));
 
-            const num_per_day   = this.get_price_num_per_day();
+            const num_per_day   = 24*60/resolution_multiplier;
             const active_active = this.state.summer_active_time_active;
             const active_start  = this.state.summer_active_time_start/resolution_multiplier;
             const active_end    = this.state.summer_active_time_end/resolution_multiplier;
@@ -275,25 +275,6 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
         this.uplot_wrapper_ref.current.set_data(data);
     }
 
-    get_price_num_per_day() {
-        return 24*60/(this.state.dap_prices.resolution == 0 ? 15 : 60);
-    }
-
-    // TODO: This assumes that the data always consists of two days. Use time between function instead.
-    get_average_price_today() {
-        const num_per_day = this.get_price_num_per_day();
-        const grid_costs_and_taxes_and_supplier_markup = this.state.dap_config.grid_costs_and_taxes + this.state.dap_config.supplier_markup;
-        const avg = this.state.dap_prices.prices.slice(0, num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
-        return avg + grid_costs_and_taxes_and_supplier_markup;
-    }
-
-    get_average_price_tomorrow() {
-        const num_per_day = this.get_price_num_per_day();
-        const grid_costs_and_taxes_and_supplier_markup = this.state.dap_config.grid_costs_and_taxes + this.state.dap_config.supplier_markup;
-        const avg = this.state.dap_prices.prices.slice(num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
-        return avg + grid_costs_and_taxes_and_supplier_markup;
-    }
-
     get_date_from_minutes(minutes: number) {
         const h = Math.floor(minutes / 60);
         const m = minutes - h * 60;
@@ -312,6 +293,14 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
             default: console.log("Invalid month: " + month);
         }
         return Heating.days.slice(0, 31);
+    }
+
+    get_value_with_unit(value: number, unit: string, digits: number = 2, divisor: number = 1): string {
+        if (isNaN(value)) {
+            return "noch Unbekannt";
+        }
+
+        return util.toLocaleFixed(value / divisor, digits) + " " + unit;
     }
 
     render(props: {}, state: HeatingState & HeatingConfig) {
@@ -568,7 +557,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Heute</span></div>
                                     <InputText
-                                        value={util.toLocaleFixed(this.get_average_price_today()/1000, 2) + " ct/kWh"}
+                                        value={this.get_value_with_unit(get_average_price_today(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
                                     />
                                 </div>
                             </div>
@@ -576,7 +565,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Morgen</span></div>
                                     <InputText
-                                        value={util.toLocaleFixed(this.get_average_price_tomorrow()/1000, 2) + " ct/kWh"}
+                                        value={this.get_value_with_unit(get_average_price_tomorrow(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
                                     />
                                 </div>
                             </div>
@@ -588,7 +577,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Heute</span></div>
                                     <InputText
-                                        value={util.toLocaleFixed(get_kwh_today(this.state), 2) + " kWh"}
+                                        value={this.get_value_with_unit(get_kwh_today(this.state), "kWh", 2)}
                                     />
                                 </div>
                             </div>
@@ -596,7 +585,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Morgen</span></div>
                                     <InputText
-                                        value={util.toLocaleFixed(get_kwh_tomorrow(this.state), 2)+ " kWh"}
+                                        value={this.get_value_with_unit(get_kwh_tomorrow(this.state), "kWh", 2)}
                                     />
                                 </div>
                             </div>
