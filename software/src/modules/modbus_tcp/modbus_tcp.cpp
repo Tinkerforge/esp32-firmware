@@ -580,8 +580,8 @@ void ModbusTcp::update_bender_regs()
         }
     }
 
-    memcpy(bender_general_cpy->firmware_version, ".404", 4);
-    memcpy(bender_general_cpy->protocol_version, "0\0006.", 4);
+    memcpy(bender_general_cpy->firmware_version, ".404", 4); // register swapped 4.40
+    memcpy(bender_general_cpy->protocol_version, ".041", 4); // register swapped 0.14
 
     if (api.hasFeature("evse")) {
         switch (api.getState("evse/state")->get("charger_state")->asUint()) {
