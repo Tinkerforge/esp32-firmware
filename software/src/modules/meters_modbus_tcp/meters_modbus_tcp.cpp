@@ -105,6 +105,11 @@ void MetersModbusTCP::pre_setup()
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
+    table_prototypes.push_back({MeterModbusTCPTableID::FroniusGEN24PlusHybridInverter, Config::Object({
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(FroniusGEN24PlusHybridInverterVirtualMeter::None))},
+        {"device_address", Config::Uint(1, 1, 247)},
+    })});
+
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"host",           Config::Str("", 0, 64)},

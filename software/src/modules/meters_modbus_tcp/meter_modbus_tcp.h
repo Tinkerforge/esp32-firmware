@@ -41,6 +41,7 @@
 #include "shelly_em_monophase_mapping.enum.h"
 #include "goodwe_hybrid_inverter_virtual_meter.enum.h"
 #include "solax_hybrid_inverter_virtual_meter.enum.h"
+#include "fronius_gen24_plus_hybrid_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -96,6 +97,7 @@ private:
     bool is_victron_energy_gx_load_meter() const;
     bool is_deye_hybrid_inverter_battery_meter() const;
     bool is_shelly_pro_xem_monophase() const;
+    bool is_fronius_gen24_plus_hybrid_inverter_battery_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -154,6 +156,23 @@ private:
 
     // Solax
     SolaxHybridInverterVirtualMeter solax_hybrid_inverter_virtual_meter;
+
+    // Fronius
+    FroniusGEN24PlusHybridInverterVirtualMeter fronius_gen24_plus_hybrid_inverter_virtual_meter;
+    int16_t fronius_gen24_plus_hybrid_inverter_dca_sf;
+    int16_t fronius_gen24_plus_hybrid_inverter_dcv_sf;
+    int16_t fronius_gen24_plus_hybrid_inverter_dcw_sf;
+    int16_t fronius_gen24_plus_hybrid_inverter_dcwh_sf;
+    float fronius_gen24_plus_hybrid_inverter_charge_dca;
+    float fronius_gen24_plus_hybrid_inverter_charge_dcv;
+    float fronius_gen24_plus_hybrid_inverter_charge_dcw;
+    float fronius_gen24_plus_hybrid_inverter_charge_dcwh;
+    float fronius_gen24_plus_hybrid_inverter_discharge_dca;
+    float fronius_gen24_plus_hybrid_inverter_discharge_dcv;
+    float fronius_gen24_plus_hybrid_inverter_discharge_dcw;
+    float fronius_gen24_plus_hybrid_inverter_discharge_dcwh;
+    float fronius_gen24_plus_hybrid_inverter_chastate;
+    int16_t fronius_gen24_plus_hybrid_inverter_chastate_sf;
 };
 
 #if defined(__GNUC__)

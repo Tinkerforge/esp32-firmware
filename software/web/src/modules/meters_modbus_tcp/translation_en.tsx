@@ -27,6 +27,7 @@ let x = {
             "table_shelly_pro_3em": "Shelly Pro 3EM",
             "table_goodwe_hybrid_inverter": "GoodWe hybrid inverter (EH, ET, BH and BT series)",
             "table_solax_hybrid_inverter": "Solax Hybrid Inverter",
+            "table_fronius_gen24_plus_hybrid_inverter": "Fronius GEN24 Plus Hybrid Inverter",
             "virtual_meter": "Virtual meter",
             "virtual_meter_select": "Select...",
             "virtual_meter_inverter": "Inverter",

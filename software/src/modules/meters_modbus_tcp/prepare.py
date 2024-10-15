@@ -7,6 +7,7 @@ import alpha_ess
 import shelly
 import goodwe
 import solax
+import fronius
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -43,7 +44,7 @@ with open('Modbus Value Type.uint8.enum', 'w', encoding='utf-8') as f:
     for item in modbus_value_types:
         f.write(f'{item[0]} = {item[1]}\n')
 
-specs = sungrow.specs + solarmax.specs + victron_energy.specs + deye.specs + alpha_ess.specs + shelly.specs + goodwe.specs + solax.specs
+specs = sungrow.specs + solarmax.specs + victron_energy.specs + deye.specs + alpha_ess.specs + shelly.specs + goodwe.specs + solax.specs + fronius.specs
 spec_values = []
 
 for spec in specs:
