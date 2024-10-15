@@ -60,8 +60,63 @@
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY          2350u
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY 2352u
 
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCA_SF_ADDRESS         40266u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCV_SF_ADDRESS         40267u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCW_SF_ADDRESS         40268u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCWH_SF_ADDRESS        40269u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCA_ADDRESS     40323u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCV_ADDRESS     40324u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCW_ADDRESS     40325u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCWH_ADDRESS    40326u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCA_ADDRESS  40343u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCV_ADDRESS  40344u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCW_ADDRESS  40345u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCWH_ADDRESS 40346u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_ADDRESS       40362u
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_SF_ADDRESS    40376u
+
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
+
+
+static const float fronius_scale_factors[21] = {
+              0.0000000001f,    // 10^-10
+              0.000000001f,     // 10^-9
+              0.00000001f,      // 10^-8
+              0.0000001f,       // 10^-7
+              0.000001f,        // 10^-6
+              0.00001f,         // 10^-5
+              0.0001f,          // 10^-4
+              0.001f,           // 10^-3
+              0.01f,            // 10^-2
+              0.1f,             // 10^-1
+              1.0f,             // 10^0
+             10.0f,             // 10^1
+            100.0f,             // 10^2
+           1000.0f,             // 10^3
+          10000.0f,             // 10^4
+         100000.0f,             // 10^5
+        1000000.0f,             // 10^6
+       10000000.0f,             // 10^7
+      100000000.0f,             // 10^8
+     1000000000.0f,             // 10^9
+    10000000000.0f,             // 10^10
+};
+
+static float get_fronius_scale_factor(int16_t sf)
+{
+    if (sf < -10) {
+        if (sf == INT16_MIN) { // scale factor not implemented
+            return 1;
+        } else {
+            return NAN;
+        }
+    } else if (sf > 10) {
+        return NAN;
+    }
+
+    return fronius_scale_factors[sf + 10];
+}
 
 MeterClassID MeterModbusTCP::get_class() const
 {
@@ -542,6 +597,26 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::FroniusGEN24PlusHybridInverter:
+        fronius_gen24_plus_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<FroniusGEN24PlusHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+
+        switch (fronius_gen24_plus_hybrid_inverter_virtual_meter) {
+        case FroniusGEN24PlusHybridInverterVirtualMeter::None:
+            logger.printfln("No Fronius GEN24 Plus Hybrid Inverter Virtual Meter selected");
+            return;
+
+        case FroniusGEN24PlusHybridInverterVirtualMeter::Battery:
+            table = &fronius_gen24_plus_hybrid_inverter_battery_table;
+            break;
+
+        default:
+            logger.printfln("Unknown Fronius GEN24 Plus Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fronius_gen24_plus_hybrid_inverter_virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
@@ -685,6 +760,12 @@ bool MeterModbusTCP::is_shelly_pro_xem_monophase() const
     return table_id == MeterModbusTCPTableID::ShellyProEM
         || (table_id == MeterModbusTCPTableID::ShellyPro3EM
             && shelly_pro_3em_device_profile == ShellyPro3EMDeviceProfile::Monophase);
+}
+
+bool MeterModbusTCP::is_fronius_gen24_plus_hybrid_inverter_battery_meter() const
+{
+    return table_id == MeterModbusTCPTableID::FroniusGEN24PlusHybridInverter
+        && fronius_gen24_plus_hybrid_inverter_virtual_meter == FroniusGEN24PlusHybridInverterVirtualMeter::Battery;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -1078,6 +1159,78 @@ void MeterModbusTCP::read_done_callback()
          || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY
          || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY) {
             meters.update_value(slot, table->index[read_index + 1], value);
+        }
+    }
+    else if (is_fronius_gen24_plus_hybrid_inverter_battery_meter()) {
+        if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCA_SF_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_dca_sf = static_cast<int16_t>(register_buffer[register_buffer_index]);
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCV_SF_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_dcv_sf = static_cast<int16_t>(register_buffer[register_buffer_index]);
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCW_SF_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_dcw_sf = static_cast<int16_t>(register_buffer[register_buffer_index]);
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCWH_SF_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_dcwh_sf = static_cast<int16_t>(register_buffer[register_buffer_index]);
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCA_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_charge_dca = value;
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCV_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_charge_dcv = value;
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCW_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_charge_dcw = value;
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCWH_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_charge_dcwh = value;
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCA_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_discharge_dca = value;
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCV_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_discharge_dcv = value;
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCW_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_discharge_dcw = value;
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCWH_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_discharge_dcwh = value;
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_chastate = value;
+        }
+        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_SF_ADDRESS) {
+            fronius_gen24_plus_hybrid_inverter_chastate_sf = static_cast<int16_t>(register_buffer[register_buffer_index]);
+
+            float dca_scale_factor = get_fronius_scale_factor(fronius_gen24_plus_hybrid_inverter_dca_sf);
+            float dcv_scale_factor = get_fronius_scale_factor(fronius_gen24_plus_hybrid_inverter_dcv_sf);
+            float dcw_scale_factor = get_fronius_scale_factor(fronius_gen24_plus_hybrid_inverter_dcw_sf);
+            float dcwh_scale_factor = get_fronius_scale_factor(fronius_gen24_plus_hybrid_inverter_dcwh_sf);
+            float chastate_scale_factor = get_fronius_scale_factor(fronius_gen24_plus_hybrid_inverter_chastate_sf);
+
+            float charge_dca = fronius_gen24_plus_hybrid_inverter_charge_dca * dca_scale_factor;
+            float charge_dcv = fronius_gen24_plus_hybrid_inverter_charge_dcv * dcv_scale_factor;
+            float charge_dcw = fronius_gen24_plus_hybrid_inverter_charge_dcw * dcw_scale_factor;
+
+            float discharge_dca = fronius_gen24_plus_hybrid_inverter_discharge_dca * dca_scale_factor;
+            float discharge_dcv = fronius_gen24_plus_hybrid_inverter_discharge_dcv * dcv_scale_factor;
+            float discharge_dcw = fronius_gen24_plus_hybrid_inverter_discharge_dcw * dcw_scale_factor;
+
+            float current_charge_discharge_diff = charge_dca - discharge_dca; // One of the two value is always 0A
+            float voltage = std::max(charge_dcv, discharge_dcv); // In older versions one of the two values is always 0V. In newer versions they are the same
+            float power_charge_discharge_diff = charge_dcw - discharge_dcw; // One of the two value is always 0W
+            float state_of_charge = fronius_gen24_plus_hybrid_inverter_chastate * chastate_scale_factor;
+            float energy_charge = fronius_gen24_plus_hybrid_inverter_charge_dcwh * dcwh_scale_factor * 0.001f; // Is 0 in older versions while discharging
+            float energy_discharge = fronius_gen24_plus_hybrid_inverter_discharge_dcwh * dcwh_scale_factor * 0.001f; // Is 0 in older versions while charging
+
+            meters.update_value(slot, table->index[read_index + 1], current_charge_discharge_diff);
+            meters.update_value(slot, table->index[read_index + 2], voltage);
+            meters.update_value(slot, table->index[read_index + 3], power_charge_discharge_diff);
+            meters.update_value(slot, table->index[read_index + 4], state_of_charge);
+            meters.update_value(slot, table->index[read_index + 5], energy_charge);
+            meters.update_value(slot, table->index[read_index + 6], energy_discharge);
         }
     }
 

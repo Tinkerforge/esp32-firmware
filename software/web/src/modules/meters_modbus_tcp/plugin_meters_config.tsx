@@ -38,6 +38,7 @@ import { ShellyEMMonophaseChannel } from "./shelly_em_monophase_channel.enum";
 import { ShellyEMMonophaseMapping } from "./shelly_em_monophase_mapping.enum";
 import { GoodweHybridInverterVirtualMeter } from "./goodwe_hybrid_inverter_virtual_meter.enum";
 import { SolaxHybridInverterVirtualMeter } from "./solax_hybrid_inverter_virtual_meter.enum";
+import { FroniusGEN24PlusHybridInverterVirtualMeter } from "./fronius_gen24_plus_hybrid_inverter_virtual_meter.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
@@ -153,6 +154,14 @@ type TableConfigSolaxHybridInverter = [
     },
 ];
 
+type TableConfigFroniusGEN24PlusHybridInverter = [
+    MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -164,7 +173,8 @@ type TableConfig = TableConfigNone |
                    TableConfigShellyProEM |
                    TableConfigShellyPro3EM |
                    TableConfigGoodweHybridInverter |
-                   TableConfigSolaxHybridInverter;
+                   TableConfigSolaxHybridInverter |
+                   TableConfigFroniusGEN24PlusHybridInverter;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -210,6 +220,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.SolaxHybridInverter:
             return [MeterModbusTCPTableID.SolaxHybridInverter, {virtual_meter: null, device_address: 1}];
+
+        case MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter:
+            return [MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter, {virtual_meter: null, device_address: 1}];
 
         default:
             return [MeterModbusTCPTableID.None, {}];
@@ -423,6 +436,7 @@ export function init() {
                                 // Keep alphabetically sorted
                                 [MeterModbusTCPTableID.AlphaESSHybridInverter.toString(), __("meters_modbus_tcp.content.table_alpha_ess_hybrid_inverter")],
                                 [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
+                                [MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus_hybrid_inverter")],
                                 [MeterModbusTCPTableID.GoodweHybridInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_hybrid_inverter")],
                                 [MeterModbusTCPTableID.ShellyProEM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_em")],
                                 [MeterModbusTCPTableID.ShellyPro3EM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_3em")],
@@ -451,7 +465,8 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.ShellyProEM
                   || config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM
                   || config[1].table[0] == MeterModbusTCPTableID.GoodweHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.SolaxHybridInverter)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.SolaxHybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter)) {
                     let virtual_meter_items: [string, string][] = [];
                     let device_address_default: number = 1;
 
@@ -521,6 +536,11 @@ export function init() {
                             [SolaxHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [SolaxHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [SolaxHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                        ];
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter) {
+                        virtual_meter_items = [
+                            [FroniusGEN24PlusHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                         ];
                     }
 
