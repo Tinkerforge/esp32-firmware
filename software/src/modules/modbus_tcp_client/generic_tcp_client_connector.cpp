@@ -69,7 +69,7 @@ void GenericTCPClientConnector::connect_callback_common(TFGenericTCPClientConnec
         logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
                                  "Connected to %s:%u", host_name.c_str(), port);
 
-        connect_backoff_ms = 1000;
+        connect_backoff = 1_s;
         last_connect_result = TFGenericTCPClientConnectResult::Connected;
         last_connect_error_number = 0;
         resolve_error_printed = false;
@@ -113,17 +113,17 @@ void GenericTCPClientConnector::connect_callback_common(TFGenericTCPClientConnec
         if (result == TFGenericTCPClientConnectResult::ResolveFailed) {
             task_scheduler.scheduleOnce([this]() {
                 start_connection();
-            }, 10 * 1000);
+            }, 10_s);
         }
         else {
             task_scheduler.scheduleOnce([this]() {
                 start_connection();
-            }, connect_backoff_ms);
+            }, connect_backoff);
 
-            connect_backoff_ms *= 2;
+            connect_backoff += connect_backoff;
 
-            if (connect_backoff_ms > 16000) {
-                connect_backoff_ms = 16000;
+            if (connect_backoff > 16_s) {
+                connect_backoff = 16_s;
             }
         }
     }
