@@ -696,22 +696,7 @@ void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_
     if (https_client == nullptr) {
         https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
     }
-    switch (method) {
-        case HTTP_METHOD_GET:
-            https_client->download_async(url, config.get("cert_id")->asInt(), std::move(callback));
-            break;
-        case HTTP_METHOD_POST:
-            https_client->post_async(url, config.get("cert_id")->asInt(), body, body_size, std::move(callback));
-            break;
-        case HTTP_METHOD_PUT:
-            https_client->put_async(url, config.get("cert_id")->asInt(), body, body_size, std::move(callback));
-            break;
-        case HTTP_METHOD_DELETE:
-            https_client->delete_async(url, config.get("cert_id")->asInt(), body, body_size, std::move(callback));
-            break;
-        default:
-            break;
-    }
+    https_client->fetch(url, config.get("cert_id")->asInt(), method, body, body_size, callback);
 }
 
 void RemoteAccess::get_login_salt(ConfigRoot config) {
