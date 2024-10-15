@@ -527,7 +527,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
         wnd_max[phase] += current;
         wnd_max.pv += current;
 
-    trace("    %d (1p known rot) wnd_max (%d %d %d %d)", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
+        trace("    %d (1p known rot) wnd_max (%d %d %d %d)", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
     }
 
     ca_state->control_window_min = wnd_min;
