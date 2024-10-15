@@ -234,15 +234,14 @@ void ChargeManager::pre_setup()
                                                 0 cp_disc_supported
                                                 1 cp_disc_state
                                                 2 phase_switch_supported
-                                                3 phases (2)
-                                                5 last_alloc_fulfilled_reqd*/
+                                                3 phases (2)*/
         {"rc", Config::Uint16(0)},         // "requested_current" - either the supported current or (after requested_current_threshold is elapsed in state C) the max phase current + requested_current_margin
         {"ae", Config::Uint(0, 9, 99999)}, // "allocated_energy" in Wh, values > 99999 Wh are truncated to 99999.
         {"ar", Config::Uint(0, 9, 99999)}, // "allocated_energy_this_rotation" in Wh, values > 99999 Wh are truncated to 99999.
         {"ls", Config::Uint32(0)},         // "last_switch" in millis
         {"lp", Config::Uint32(0)},         // "last_plug_in" in millis
         {"lw", Config::Uint32(0)},         // "last_wakeup" in millis
-        {"ip", Config::Uint32(0)},         // "ignore_phase_currents" in millis
+        {"ip", Config::Uint32(0)},         // "use_supported_current" in millis
     });
 
     low_level_state = Config::Object({
@@ -661,7 +660,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     charger_cfg->get("lu")->updateUint(charger.last_update);
     charger_cfg->get("u")->updateUint(charger.uid);
 
-    uint8_t bits = (charger.last_alloc_fulfilled_reqd << 5) | (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;
+    uint8_t bits = (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;
     ll_charger_cfg->get("b")->updateUint(bits);
     ll_charger_cfg->get("rc")->updateUint(charger.requested_current);
     ll_charger_cfg->get("ae")->updateUint(charger.allocated_energy * 1000);
@@ -669,7 +668,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     ll_charger_cfg->get("ls")->updateUint(charger.last_switch.millis());
     ll_charger_cfg->get("lp")->updateUint(charger.last_plug_in.millis());
     ll_charger_cfg->get("lw")->updateUint(charger.last_wakeup.millis());
-    ll_charger_cfg->get("ip")->updateUint(charger.ignore_phase_currents.millis());
+    ll_charger_cfg->get("ip")->updateUint(charger.use_supported_current.millis());
 }
 
 uint32_t ChargeManager::get_maximum_available_current()

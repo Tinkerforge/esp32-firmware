@@ -103,10 +103,6 @@ struct ChargerState {
 
     PhaseRotation phase_rotation;
 
-    // True if the last allocation was >= the requested current at that time.
-    // On a false -> true transition, ignore_phase_currents will be set to now_us().
-    bool last_alloc_fulfilled_reqd;
-
     float allocated_energy;
     float allocated_energy_this_rotation;
     micros_t last_switch;
@@ -119,10 +115,9 @@ struct ChargerState {
 
     micros_t last_wakeup;
 
-    // If set, the last allocation was >= the requested current, but the one before it was not.
-    // (see last_alloc_fulfilled_reqd)
-    // Ignore phase currents in this case to give the charger time to react.
-    micros_t ignore_phase_currents;
+    // If set, the last allocation was less than the requested current.
+    // Ignore phase currents in this case for a faster ramp up.
+    micros_t use_supported_current;
 };
 
 struct ChargerAllocationState {

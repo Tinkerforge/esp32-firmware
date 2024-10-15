@@ -387,7 +387,7 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 // Use the supported current in case the last allocation was able to fulfill the requested current.
 // In that case we want a fast ramp-up until we know the new limit of the charger (or don't have any current left)
 static int32_t get_requested_current(const ChargerState *state, const CurrentAllocatorConfig *cfg) {
-    if (state->last_alloc_fulfilled_reqd && !deadline_elapsed(state->ignore_phase_currents + seconds_t{cfg->requested_current_threshold}))
+    if (!deadline_elapsed(state->use_supported_current + seconds_t{cfg->requested_current_threshold}))
         return state->supported_current;
 
     return state->requested_current;
@@ -1504,16 +1504,15 @@ int allocate_current(
                 charger.last_wakeup = now;
             }
 
-            // If we could not allocate the charger its requested current the last time
-            // but we can do this now (note that the requested current now does not have to be the same it was the last time!)
-            // and we've just increased the allocation (as opposed to the requested current decreased),
-            // we probably have more current available.
-            // Ignore the phase currents for some time for a faster ramp up.
-            if (!charger.last_alloc_fulfilled_reqd && current_to_set >= charger.requested_current && current_to_set > charger_alloc.allocated_current) {
-                trace("charger %d: requested current fulfilled. Will use supported current for 1 min.", i);
-                charger.ignore_phase_currents = now;
+            // If we can't allocate the requested current,
+            // ignore the requested current for some time.
+            // If there is more current available in the next iteration,
+            // use the supported current for a faster ramp up.
+            // The requested current will be the last allocation + margin until we can fulfill it.
+            if (current_to_set < charger.requested_current) {
+                //trace("charger %d: requested current not fulfilled. Will use supported current for 1 min.", i);
+                charger.use_supported_current = now;
             }
-            charger.last_alloc_fulfilled_reqd = current_to_set >= charger.requested_current;
 
             // The charger was just plugged in. If we've allocated phases to it for PLUG_IN_TIME, clear the timestamp
             // to reduce its priority.
