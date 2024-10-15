@@ -938,33 +938,33 @@ static int management_filter_in(struct pbuf* packet) {
 
     if (payload[9] != 0x11) {
         logger.printfln("Management blocked invalid incoming packet with protocol: 0x%X", payload[9]);
-        return -1;
+        return ERR_VAL;
     }
 
     int header_len = (payload[0] & 0xF) * 4;
     if (packet->len - (header_len + 8) != sizeof(management_command_packet)) {
         logger.printfln("Management blocked invalid incoming packet of size: %i", (packet->len - (header_len + 8)));
-        return -1;
+        return ERR_VAL;
     }
 
     int dest_port = payload[header_len] << 8;
     dest_port |= payload[header_len + 1];
     if (dest_port != 12345) {
         logger.printfln("Management blocked invalid incoming packet with destination port: %i.", dest_port);
-        return -1;
+        return ERR_VAL;
     }
-    return 0;
+    return ERR_OK;
 }
 
 static int management_filter_out(struct pbuf* packet) {
     uint8_t *payload = (uint8_t*)packet->payload;
 
     if (payload[9] == 0x1) {
-        return 0;
+        return ERR_OK;
     } else {
         logger.printfln("Management blocked outgoing packet");
     }
-    return -1;
+    return ERR_VAL;
 }
 
 bool port_valid(uint16_t port) {
