@@ -540,7 +540,8 @@ void PowerManager::register_urls()
             }
 
             state.get("external_control")->updateUint(ext_state);
-            low_level_state.get("is_3phase")->updateBool(phase_switcher_backend->get_is_3phase());
+            this->is_3phase = phase_switcher_backend->get_is_3phase();
+            low_level_state.get("is_3phase")->updateBool(this->is_3phase);
         }, 1_s, 1_s);
     } else {
         api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](String &/*errmsg*/) {
