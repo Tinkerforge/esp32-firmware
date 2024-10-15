@@ -2,6 +2,9 @@
 
 import sys
 import time
+import binascii
+import copy
+import math
 
 import pymodbus.client as ModbusClient
 from pymodbus import (
@@ -16,6 +19,7 @@ from pymodbus.constants import Endian
 
 class RegisterBlock:
     def __init__(self, name, reg_type, reg_offset, reg_count, payload_converter):
+        self.name = name
         self.reg_type = reg_type
         self.offset = reg_offset
         self.count = reg_count
@@ -46,22 +50,46 @@ class RegisterBlock:
         else:
             d = BinaryPayloadDecoder.fromRegisters(rr.registers, byteorder=Endian.BIG)
 
-        return [(name, fn(d)) for fn, name in self.payload_converter]
+        result = []
+        off = self.offset
+        for fn, name in self.payload_converter:
+            #breakpoint()
+            len_, val = fn(d)
+            if name != "_":
+                result.append((off, name, val))
+            off += len_
+
+        return result
 
 def u16(d):
-    return d.decode_16bit_uint()
+    return 1, d.decode_16bit_uint()
 
 def u32(d):
-    return d.decode_32bit_uint()
+    return 2, d.decode_32bit_uint()
 
 def f32(d):
-    return d.decode_32bit_float()
+    return 2, d.decode_32bit_float()
+
+
+def u16_block(len_, rjust=10):
+    return lambda d: (len_ * 2, " ".join(f'{x}'.rjust(rjust) for x in [d.decode_16bit_uint() for i in range(len_)]))
+
+def u32_block(len_, rjust=10):
+    return lambda d: (len_ * 2, " ".join(f'{x}'.rjust(rjust) for x in [d.decode_32bit_uint() for i in range(len_)]))
+
+def f32_block(len_, rjust=10):
+    return lambda d: (len_ * 2, " ".join(f'{x:.3f}'.rjust(rjust) for x in [d.decode_32bit_float() for i in range(len_)]))
+
 
 def bit(d):
-    return d.pop()
+    return 1, d.pop()
 
-def str_(len):
-    return lambda d: d.decode_string(len)
+def str_(len_):
+    def inner(d):
+        b = d.decode_string(len_)
+        return len_ // 2, f'{repr(b.strip(b'\x00').decode('ascii'))} (0x{b.hex(' ', 2).replace(' ', ' 0x')})'
+
+    return inner
 
 WARP_REGISTER_MAP = [
     RegisterBlock('input_regs', 'input', 0, 14, [
@@ -81,7 +109,8 @@ WARP_REGISTER_MAP = [
         (u32, "start_time_min"),
         (u32, "charging_time_sec"),
         (u32, "max_current"),
-* 20 * [(u32, "slots")],
+        (u32_block(10), 'slots_00'),
+        (u32_block(10), 'slots_10'),
     ]),
 
     RegisterBlock('meter_input_regs', 'input', 2000, 10, [
@@ -92,12 +121,19 @@ WARP_REGISTER_MAP = [
         (u32, "energy_this_charge"),
     ]),
 
-    RegisterBlock('meter_all_values_input_regs', 'input', 2100, 86, [
-* 43 * [(f32, "meter_values")],
+    RegisterBlock('meter_all_values_input_regs', 'input', 2100, 80, [
+        (f32_block(10), 'meter_values_00'),
+        (f32_block(10), 'meter_values_10'),
+        (f32_block(10), 'meter_values_20'),
+        (f32_block(10), 'meter_values_30'),
     ]),
 
-    RegisterBlock('meter_all_values_input_regs', 'input', 2100 + 86, 84, [
-* 42 * [(f32, "meter_values")],
+    RegisterBlock('meter_all_values_input_regs_2', 'input', 2100 + 80, 90, [
+        (f32_block(10), 'meter_values_40'),
+        (f32_block(10), 'meter_values_50'),
+        (f32_block(10), 'meter_values_60'),
+        (f32_block(10), 'meter_values_70'),
+        (f32_block(5), 'meter_values_80'),
     ]),
 
     RegisterBlock('nfc_input_regs', 'input', 4000, 12, [
@@ -199,7 +235,7 @@ KEBA_REGISTER_MAP = [
         (u16, "failsafe_persist"),
     ]),
 
-    RegisterBlock('keba_write_phase_switch', 'holding', 5050, 6, [
+    RegisterBlock('keba_write_phase_switch', 'holding', 5050, 3, [
         (u16, "phase_switching_source"),
         (u16, "_"),
         (u16, "phase_switching_state"),
@@ -234,7 +270,7 @@ BENDER_REGISTER_MAP = [
         (u16, "pluglock_detected"),
     ]),
 
-    RegisterBlock('bender_phases', 'holding', 100, 28, [
+    RegisterBlock('bender_phases', 'holding', 200, 28, [
  * 3 * [(u32, "energy")],
  * 3 * [(u32, "power")],
  * 3 * [(u32, "current")],
@@ -282,6 +318,19 @@ BENDER_REGISTER_MAP = [
     ]),
 ]
 
+class color:
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    INVERT = '\033[7m'
+    END = '\033[0m'
+
 def main():
     table = {
         'warp': WARP_REGISTER_MAP,
@@ -297,20 +346,51 @@ def main():
 
         client.connect()
 
+        regs = {}
+        last_regs = {}
         i = 0
         try:
             while True:
                 result = table[i].read(client)
-                for reg_name, reg_value in result:
-                    if reg_name == '_':
-                        continue
-                    print(reg_name, reg_value)
+                regs[table[i].name] = result
                 i += 1
 
+                max_offset_len = len(str(max([offset for v in regs.values() for offset, name, value in v])))
+                max_name_len = max([len(name) for v in regs.values() for offset, name, value in v])
+
                 if i == len(table):
+                    print("\033[H\033[2J", end="")
+                    for k, v in regs.items():
+                        print(f"=== {k} ===")
+                        for i, tup in enumerate(v):
+                            offset, name, value = tup
+                            off_indent = " " * (max_offset_len - len(str(offset)))
+                            name_indent = " " * (max_name_len - len(name))
+                            if k in last_regs and (not isinstance(value, float) or not math.isnan(value)) and value != last_regs[k][i][2]:
+                                if not isinstance(value, str):
+                                    value = color.INVERT + str(value) + color.END
+                                else:
+                                    last_value = last_regs[k][i][2]
+                                    l = max(len(last_value), len(value))
+                                    last_value = last_value.ljust(l)
+                                    value = value.ljust(l)
+                                    result = ""
+                                    for old_c, new_c in zip(last_value, value):
+                                        if old_c != new_c:
+                                            result += color.INVERT + new_c + color.END
+                                        else:
+                                            result += new_c
+                                    value = result.replace(color.END + color.INVERT, "")
+                            print(f"    {off_indent}{offset} {name}{name_indent} {value}")
+                        print("")
+
                     i = 0
                     time.sleep(1)
-        except Exception:
+                    last_regs = copy.deepcopy(regs)
+                    regs = {}
+
+        except Exception as e:
+            print(e)
             client.close()
             time.sleep(1)
 
