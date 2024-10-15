@@ -124,7 +124,7 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
         return;
     }
 
-    this->callback = std::forward<std::function<void(AsyncHTTPSClientEvent *event)>>(callback);
+    this->callback = std::move(callback);
     in_progress = true;
     abort_requested = false;
     received_len = 0;
@@ -284,22 +284,22 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
 
 void AsyncHTTPSClient::download_async(const char *url, int cert_id, std::function<void(AsyncHTTPSClientEvent *event)> &&callback)
 {
-    fetch(url, cert_id, HTTP_METHOD_GET, nullptr, 0, std::forward<std::function<void(AsyncHTTPSClientEvent *event)>>(callback));
+    fetch(url, cert_id, HTTP_METHOD_GET, nullptr, 0, std::move(callback));
 }
 
 void AsyncHTTPSClient::post_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback)
 {
-    fetch(url, cert_id, HTTP_METHOD_POST, body, body_size, std::forward<std::function<void(AsyncHTTPSClientEvent *event)>>(callback));
+    fetch(url, cert_id, HTTP_METHOD_POST, body, body_size, std::move(callback));
 }
 
 void AsyncHTTPSClient::put_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback)
 {
-    fetch(url, cert_id, HTTP_METHOD_PUT, body, body_size, std::forward<std::function<void(AsyncHTTPSClientEvent *event)>>(callback));
+    fetch(url, cert_id, HTTP_METHOD_PUT, body, body_size, std::move(callback));
 }
 
 void AsyncHTTPSClient::delete_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback)
 {
-    fetch(url, cert_id, HTTP_METHOD_DELETE, body, body_size, std::forward<std::function<void(AsyncHTTPSClientEvent *event)>>(callback));
+    fetch(url, cert_id, HTTP_METHOD_DELETE, body, body_size, std::move(callback));
 }
 
 void AsyncHTTPSClient::set_header(const char *key, const char *value) {

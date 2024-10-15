@@ -71,7 +71,7 @@ Config::ConfString::ConfString(String &&val, uint16_t minChars, uint16_t maxChar
     idx = nextSlot<Config::ConfString>(string_buf, string_buf_size);
     auto *slot = this->getSlot();
 
-    slot->val = std::forward<String>(val);
+    slot->val = std::move(val);
     slot->minChars = minChars;
     slot->maxChars = maxChars;
 }

@@ -180,7 +180,7 @@ void Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained 
 
     bool subscribed = esp_mqtt_client_subscribe(client, topic->c_str(), 0) >= 0;
 
-    this->commands.push_back({*topic, std::forward<SubscribeCallback>(callback), retained, callback_in_thread, starts_with_global_topic_prefix, subscribed});
+    this->commands.push_back({*topic, std::move(callback), retained, callback_in_thread, starts_with_global_topic_prefix, subscribed});
 }
 
 void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)

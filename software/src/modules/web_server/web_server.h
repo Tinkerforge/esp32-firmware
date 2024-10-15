@@ -103,9 +103,9 @@ struct WebServerHandler {
                      wshUploadErrorCallback &&uploadErrorCallback) : //uri(uri),
                                                                      //method(method),
                                                                      callbackInMainThread(callbackInMainThread),
-                                                                     callback(std::forward<wshCallback>(callback)),
-                                                                     uploadCallback(std::forward<wshUploadCallback>(uploadCallback)),
-                                                                     uploadErrorCallback(std::forward<wshUploadErrorCallback>(uploadErrorCallback)) {}
+                                                                     callback(std::move(callback)),
+                                                                     uploadCallback(std::move(uploadCallback)),
+                                                                     uploadErrorCallback(std::move(uploadErrorCallback)) {}
 
     bool callbackInMainThread;
     wshCallback callback;
@@ -137,7 +137,7 @@ public:
 
     void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn)
     {
-        this->auth_fn = std::forward<std::function<bool(WebServerRequest)>>(auth_fn);
+        this->auth_fn = std::move(auth_fn);
     }
 
     httpd_handle_t httpd;

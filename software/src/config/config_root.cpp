@@ -22,7 +22,7 @@
 
 ConfigRoot::ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {}
 
-ConfigRoot::ConfigRoot(Config cfg, Validator &&validator) : Config(cfg), validator(new Validator(std::forward<Validator>(validator))) {}
+ConfigRoot::ConfigRoot(Config cfg, Validator &&validator) : Config(cfg), validator(new Validator(std::move(validator))) {}
 
 String ConfigRoot::update_from_file(File &&file)
 {

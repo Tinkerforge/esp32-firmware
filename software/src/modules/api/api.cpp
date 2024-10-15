@@ -191,7 +191,7 @@ void API::addCommand(const char * const path, ConfigRoot *config, std::initializ
         path,
         ktc,
         config,
-        std::forward<std::function<void(String &)>>(callback),
+        std::move(callback),
         (uint8_t)path_len,
         (uint8_t)ktc_size,
         is_action,
@@ -211,7 +211,7 @@ void API::addCommand(const String &path, ConfigRoot *config, std::initializer_li
 
 void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
 {
-    this->addCommand(strdup(path.c_str()), config, keys_to_censor_in_debug_report, std::forward<std::function<void(String &)>>(callback), is_action);
+    this->addCommand(strdup(path.c_str()), config, keys_to_censor_in_debug_report, std::move(callback), is_action);
 }
 
 void API::addState(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, bool low_latency)
@@ -372,7 +372,7 @@ void API::addResponse(const char * const path, ConfigRoot *config, std::initiali
         path,
         ktc,
         config,
-        std::forward<std::function<void(IChunkedResponse *, Ownership *, uint32_t)>>(callback),
+        std::move(callback),
         (uint8_t)path_len,
         (uint8_t)ktc_size
     });
@@ -435,7 +435,7 @@ void API::removeAllConfig()
 void API::addTemporaryConfig(String path, Config *config, std::initializer_list<const char *> keys_to_censor, std::function<void(String &)> &&callback)
 {
     addState(path, config, keys_to_censor);
-    addCommand(path + "_update", config, std::forward<std::function<void(String &)>>(callback));
+    addCommand(path + "_update", config, std::move(callback));
 }
 */
 

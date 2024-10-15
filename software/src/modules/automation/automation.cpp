@@ -177,7 +177,7 @@ void Automation::register_action(AutomationActionID id, Config cfg, ActionCb &&c
     }
 
     action_prototypes.push_back({id, cfg});
-    action_map[id] = ActionValue{std::forward<ActionCb>(callback), std::forward<ValidatorCb>(validator), enable};
+    action_map[id] = ActionValue{std::move(callback), std::move(validator), enable};
 }
 
 void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb &&validator, bool enable)
@@ -188,7 +188,7 @@ void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorC
     }
 
     trigger_prototypes.push_back({id, cfg});
-    trigger_map[id] = TriggerValue{std::forward<ValidatorCb>(validator), enable};
+    trigger_map[id] = TriggerValue{std::move(validator), enable};
 }
 
 void Automation::set_enabled(AutomationActionID id, bool enable)

@@ -83,7 +83,7 @@ public:
                  const char *module_name,
                  std::function<void(void)> &&setup_function) :
         DeviceModuleBase(firmware, firmware_len, url_prefix, device_name, module_name),
-        setup_function(std::forward<std::function<void(void)>>(setup_function)) {}
+        setup_function(std::move(setup_function)) {}
 
     bool setup_device()
     {

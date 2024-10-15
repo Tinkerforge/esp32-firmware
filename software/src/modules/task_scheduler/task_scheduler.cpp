@@ -25,7 +25,7 @@
 static uint64_t last_task_id = 0;
 
 Task::Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, bool once) :
-        fn(std::forward<std::function<void(void)>>(fn)),
+        fn(std::move(fn)),
         task_id(task_id),
         next_deadline(now_us() + first_run_delay),
         delay(delay),
@@ -168,7 +168,7 @@ uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, millis_t de
 {
     std::lock_guard<std::mutex> l{this->task_mutex};
     uint64_t task_id = ++last_task_id;
-    tasks.emplace(new Task(std::forward<std::function<void(void)>>(fn), task_id, delay_ms, 0_us, true));
+    tasks.emplace(new Task(std::move(fn), task_id, delay_ms, 0_us, true));
     return task_id;
 }
 
@@ -176,7 +176,7 @@ uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, m
 {
     std::lock_guard<std::mutex> l{this->task_mutex};
     uint64_t task_id = ++last_task_id;
-    tasks.emplace(new Task(std::forward<std::function<void(void)>>(fn), task_id, first_delay_ms, delay_ms, false));
+    tasks.emplace(new Task(std::move(fn), task_id, first_delay_ms, delay_ms, false));
     return task_id;
 }
 
@@ -200,7 +200,7 @@ uint64_t TaskScheduler::scheduleWallClock(std::function<void(void)> &&fn, minute
     {
         std::lock_guard<std::mutex> l{this->task_mutex};
         task_id = ++last_task_id | (1ull << 63ull);
-        auto runner_task = std::unique_ptr<Task>(new Task(std::forward<std::function<void(void)>>(fn), task_id, 0_us, execution_delay_ms, true));
+        auto runner_task = std::unique_ptr<Task>(new Task(std::move(fn), task_id, 0_us, execution_delay_ms, true));
 
         wall_clock_tasks.emplace_back(std::move(runner_task), task_id, interval_minutes, run_on_first_sync);
     }
@@ -315,7 +315,7 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t milli
 
 TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, uint32_t millis_to_wait)
 {
-    return await(scheduleOnce(std::forward<std::function<void(void)>>(fn), 0_ms), millis_to_wait);
+    return await(scheduleOnce(std::move(fn), 0_ms), millis_to_wait);
 }
 
 void TaskScheduler::wall_clock_worker() {

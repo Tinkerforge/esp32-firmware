@@ -269,7 +269,7 @@ WebServerHandler *WebServer::on(const char *uri,
     return addHandler(uri,
                       method,
                       true,
-                      std::forward<wshCallback>(callback),
+                      std::move(callback),
                       wshUploadCallback(),
                       wshUploadErrorCallback());
 }
@@ -283,9 +283,9 @@ WebServerHandler *WebServer::on(const char *uri,
     return addHandler(uri,
                       method,
                       true,
-                      std::forward<wshCallback>(callback),
-                      std::forward<wshUploadCallback>(uploadCallback),
-                      std::forward<wshUploadErrorCallback>(uploadErrorCallback));
+                      std::move(callback),
+                      std::move(uploadCallback),
+                      std::move(uploadErrorCallback));
 }
 
 WebServerHandler *WebServer::on_HTTPThread(const char *uri,
@@ -295,7 +295,7 @@ WebServerHandler *WebServer::on_HTTPThread(const char *uri,
     return addHandler(uri,
                       method,
                       false,
-                      std::forward<wshCallback>(callback),
+                      std::move(callback),
                       wshUploadCallback(),
                       wshUploadErrorCallback());
 }
@@ -309,14 +309,14 @@ WebServerHandler *WebServer::on_HTTPThread(const char *uri,
     return addHandler(uri,
                       method,
                       false,
-                      std::forward<wshCallback>(callback),
-                      std::forward<wshUploadCallback>(uploadCallback),
-                      std::forward<wshUploadErrorCallback>(uploadErrorCallback));
+                      std::move(callback),
+                      std::move(uploadCallback),
+                      std::move(uploadErrorCallback));
 }
 
 void WebServer::onNotAuthorized_HTTPThread(wshCallback &&callback)
 {
-    this->on_not_authorized = std::forward<wshCallback>(callback);
+    this->on_not_authorized = std::move(callback);
 }
 
 WebServerHandler *WebServer::addHandler(const char *uri,
@@ -338,9 +338,9 @@ WebServerHandler *WebServer::addHandler(const char *uri,
     ll_handler.handler   = uploadCallback == nullptr ? low_level_handler : low_level_upload_handler;
 
     handlers.emplace_front(callbackInMainThread,
-                           std::forward<wshCallback>(callback),
-                           std::forward<wshUploadCallback>(uploadCallback),
-                           std::forward<wshUploadErrorCallback>(uploadErrorCallback));
+                           std::move(callback),
+                           std::move(uploadCallback),
+                           std::move(uploadErrorCallback));
     ++handler_count;
 
     WebServerHandler *result = &handlers.front();

@@ -81,7 +81,7 @@ int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> val
         // Store callback after possibly calling it,
         // because the function object is forwarded to the vector and cannot be used locally afterwards.
         if (store_callback) {
-            state_updates.push_back({eventID, i, config, std::forward<std::function<EventResult(const Config *)>>(callback)});
+            state_updates.push_back({eventID, i, config, std::move(callback)});
         }
 
         return eventID;

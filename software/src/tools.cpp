@@ -827,7 +827,7 @@ void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
                                                dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg,
                                                u8_t dns_addrtype)
 {
-    callback_arg->found_callback = std::forward<std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)>>(found_callback);
+    callback_arg->found_callback = std::move(found_callback);
     err_t err = dns_gethostbyname_addrtype_lwip_ctx(hostname, &callback_arg->addr, gethostbyname_addrtype_lwip_ctx_async, callback_arg, dns_addrtype);
 
     // Don't set the callback_arg's err if the result is not available yet.

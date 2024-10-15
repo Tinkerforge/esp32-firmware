@@ -122,7 +122,7 @@ bool QueuedChunkedResponse::call(std::function<bool(void)> &&local_function)
         return false;
     }
 
-    function = std::forward<std::function<bool(void)>>(local_function);
+    function = std::move(local_function);
     have_function = true;
 
     lock.unlock();

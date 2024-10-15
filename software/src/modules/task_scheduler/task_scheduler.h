@@ -107,14 +107,14 @@ public:
 
     // TODO Remove deprecated function. Marked as deprecated on 2024-10-09.
     [[gnu::deprecated("Use the millis_t overload of this function!")]]
-    uint64_t scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms) {return this->scheduleOnce(std::forward<std::function<void(void)>>(fn), millis_t{delay_ms});}
+    uint64_t scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms) {return this->scheduleOnce(std::move(fn), millis_t{delay_ms});}
 
-    uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t delay_ms) {return this->scheduleWithFixedDelay(std::forward<std::function<void(void)>>(fn), millis_t{0}, delay_ms);}
+    uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t delay_ms) {return this->scheduleWithFixedDelay(std::move(fn), millis_t{0}, delay_ms);}
     uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms);
 
     // TODO Remove deprecated function. Marked as deprecated on 2024-10-09.
     [[gnu::deprecated("Use the millis_t overload of this function!")]]
-    uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms) {return this->scheduleWithFixedDelay(std::forward<std::function<void(void)>>(fn), millis_t{first_delay_ms}, millis_t{delay_ms});}
+    uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms) {return this->scheduleWithFixedDelay(std::move(fn), millis_t{first_delay_ms}, millis_t{delay_ms});}
 
     uint64_t scheduleWhenClockSynced(std::function<void(void)> &&fn);
 
