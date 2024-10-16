@@ -29,6 +29,7 @@
 #include "semantic_version.h"
 #include "modules/charge_manager/charge_manager_private.h"
 #include "metadata.h"
+#include "build.h"
 
 static constexpr auto UPDATE_INTERVAL = 1_s;
 #define PAGE_FRONT_TEXT_MAX_CHAR 6
@@ -465,9 +466,8 @@ int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const Tile
 
 int FrontPanel::update_front_page_energy_manager_status(const uint8_t index, const TileType type, const uint8_t param)
 {
-    const SemanticVersion version;
     String str1 = "FW Ver";
-    String str2 = String(version.major) + '.' + String(version.minor) + '.' + String(version.patch);
+    String str2 = String(BUILD_VERSION_STRING);
 
     // TODO: Show error instead if energy manager has an error?
 
@@ -485,7 +485,6 @@ int FrontPanel::update_front_page_energy_manager_status(const uint8_t index, con
 
 int FrontPanel::update_front_page_heating_status(const uint8_t index, const TileType type, const uint8_t param)
 {
-    const SemanticVersion version;
     String str1 = "SG Rdy";
     String str2 = "--";
     uint32_t icon_index = SPRITE_ICON_HEATING;
