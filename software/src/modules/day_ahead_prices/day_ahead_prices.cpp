@@ -25,6 +25,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "tools.h"
+#include <cmath>
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
@@ -57,6 +58,7 @@ void DayAheadPrices::pre_setup()
         {"region", Config::Uint(REGION_DE, REGION_DE, REGION_LU)},
         {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
+        {"vat", Config::Uint(0, 0, 10000)}, // in %/100
         {"grid_costs_and_taxes", Config::Uint(0, 0, 99000)}, // in ct/1000 per kWh
         {"supplier_markup", Config::Uint(0, 0, 99000)},      // in ct/1000 per kWh
         {"supplier_base_fee", Config::Uint(0, 0, 99000)},    // in ct per month
@@ -94,7 +96,7 @@ void DayAheadPrices::pre_setup()
         {"last_sync",  Config::Uint32(0)}, // unix timestamp in minutes
         {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
         {"next_check", Config::Uint32(0)}, // unix timestamp in minutes
-        {"current_price", Config::Int32(0)} // in ct/1000 per kWh
+        {"current_price", Config::Int32(INT32_MAX)} // in ct/1000 per kWh
     });
 
     prices = Config::Object({
@@ -196,7 +198,7 @@ void DayAheadPrices::update_price()
     const uint32_t diff = rtc.timestamp_minutes() - prices.get("first_date")->asUint();
     const uint32_t index = diff/resolution_divisor;
     if (prices.get("prices")->count() <= index) {
-        state.get("current_price")->updateInt(0);
+        state.get("current_price")->updateInt(INT32_MAX);
         current_price_available = false;
     } else {
         state.get("current_price")->updateInt(prices.get("prices")->get(index)->asInt());
@@ -532,7 +534,7 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_tomorrow()
 
 DataReturn<int32_t> DayAheadPrices::get_current_price()
 {
-    return {current_price_available, state.get("current_price")->asInt()};
+    return {current_price_available, (int32_t)std::round(state.get("current_price")->asInt()*(1 + config.get("vat")->asUint()/10000.0))};
 }
 
 int32_t DayAheadPrices::get_grid_cost_plus_tax_plus_markup()
