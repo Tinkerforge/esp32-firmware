@@ -1090,8 +1090,8 @@ search_done:
                     ++lines_generated;
                 }
 
-                f.close();
                 if (current_charge >= (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE)) {
+                    f.close();
                     ++current_file;
                     current_charge = 0;
                 }
@@ -1101,13 +1101,17 @@ search_done:
                     break;
 
                 if (current_file == last_file && current_charge >= last_charge) {
+                    f.close();
                     break;
                 }
             }
-            if (!f)
-                f.close();
 
             *table_lines = table_lines_buffer;
+
+            // The HTTP task generating the PDF has a higher priority than the main loop and will starve it of CPU time.
+            // Suspend execution for a moment after every block so that the main loop has a chance to run.
+            vTaskDelay(1);
+
             return lines_generated;
         });
         free(display_name_cache);
