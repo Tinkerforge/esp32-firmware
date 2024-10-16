@@ -48,6 +48,7 @@ let x = {
             "type_2": "NFC Forum Type 2",
             "type_3": "NFC Forum Type 3",
             "type_4": "NFC Forum Type 4",
+            "type_5": "NFC Forum Type 5",
             "tag_id_invalid_feedback": "The BSSID must have three to ten groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB"
         },
         "automation": {
