@@ -1113,15 +1113,22 @@ void EVSEV2::update_all_data()
     // get_button_configuration
     button_configuration.get("button")->updateUint(button_cfg);
 
-#if MODULE_AUTOMATION_AVAILABLE()
-    if (button_pressed && !evse_common.button_state.get("button_pressed")->asBool())
-        automation.trigger(AutomationTriggerID::EVSEButton, nullptr, this);
-#endif
-
     // get_button_state
     evse_common.button_state.get("button_press_time")->updateUint(button_press_time);
     evse_common.button_state.get("button_release_time")->updateUint(button_release_time);
-    evse_common.button_state.get("button_pressed")->updateBool(button_pressed);
+    bool button_pressed_changed = evse_common.button_state.get("button_pressed")->updateBool(button_pressed);
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    if (button_pressed_changed && button_pressed) {
+        // Don't attempt to trigger actions during the setup stage because the automation rules are probably not loaded yet.
+        // Losing the button press during startup is probably acceptable.
+        if (boot_stage > BootStage::SETUP) {
+            automation.trigger(AutomationTriggerID::EVSEButton, nullptr, this);
+        }
+    }
+#else
+    (void)button_pressed_changed;
+#endif
 
     ev_wakeup.get("enabled")->updateBool(ev_wakeup_enabled);
     phase_auto_switch.get("enabled")->updateBool(phase_auto_switch_enabled);
