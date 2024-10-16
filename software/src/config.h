@@ -555,17 +555,17 @@ public:
     class Wrap
     {
         public:
-            Wrap(Config *_conf);
+            inline Wrap(Config *_conf) {conf = _conf;}
 
-            Config *operator->();
+            inline Config *operator->() {return conf;}
 
-            explicit operator Config*();
+            inline explicit operator Config*() {return conf;}
 
             // Allowing to call begin and end directly on
             // the wrapper makes it easier to use
             // range-based for loops.
-            std::vector<Config>::iterator begin();
-            std::vector<Config>::iterator end();
+            inline std::vector<Config>::iterator begin() {return conf->begin();}
+            inline std::vector<Config>::iterator end()   {return conf->end();  }
 
         private:
             Config *conf;
@@ -575,14 +575,14 @@ public:
     class ConstWrap
     {
         public:
-            ConstWrap(const Config *_conf);
+            inline ConstWrap(const Config *_conf) {conf = _conf;}
 
-            const Config *operator->() const;
+            inline const Config *operator->() const {return conf;}
 
-            explicit operator const Config*() const;
+            inline explicit operator const Config*() const {return conf;}
 
-            std::vector<Config>::const_iterator begin() const;
-            std::vector<Config>::const_iterator end() const;
+            inline std::vector<Config>::const_iterator begin() const {return conf->begin();}
+            inline std::vector<Config>::const_iterator end()   const {return conf->end();  }
 
         private:
             const Config *conf;
