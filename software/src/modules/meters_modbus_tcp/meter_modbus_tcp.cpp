@@ -1163,46 +1163,50 @@ void MeterModbusTCP::read_done_callback()
     }
     else if (is_fronius_gen24_plus_hybrid_inverter_battery_meter()) {
         if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCA_SF_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_dca_sf = static_cast<int16_t>(register_buffer[register_buffer_index]);
+            fronius_gen24_plus_hybrid_inverter_dca_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCV_SF_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_dcv_sf = static_cast<int16_t>(register_buffer[register_buffer_index]);
+            fronius_gen24_plus_hybrid_inverter_dcv_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCW_SF_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_dcw_sf = static_cast<int16_t>(register_buffer[register_buffer_index]);
+            fronius_gen24_plus_hybrid_inverter_dcw_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCWH_SF_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_dcwh_sf = static_cast<int16_t>(register_buffer[register_buffer_index]);
+            fronius_gen24_plus_hybrid_inverter_dcwh_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCA_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_charge_dca = value;
+            fronius_gen24_plus_hybrid_inverter_charge_dca = value; // SunSpec: uint16
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCV_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_charge_dcv = value;
+            fronius_gen24_plus_hybrid_inverter_charge_dcv = value; // SunSpec: uint16
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCW_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_charge_dcw = value;
+            fronius_gen24_plus_hybrid_inverter_charge_dcw = value; // SunSpec: uint16
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCWH_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_charge_dcwh = value;
+            // Is 0 in older versions while discharging. As this is an acc32 map 0 to NaN. This will make the
+            // meters framework ignore this value during discharging and keep the pervious value
+            fronius_gen24_plus_hybrid_inverter_charge_dcwh = c32.u == 0 ? NAN : value; // SunSpec: acc32
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCA_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_discharge_dca = value;
+            fronius_gen24_plus_hybrid_inverter_discharge_dca = value; // SunSpec: uint16
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCV_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_discharge_dcv = value;
+            fronius_gen24_plus_hybrid_inverter_discharge_dcv = value; // SunSpec: uint16
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCW_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_discharge_dcw = value;
+            fronius_gen24_plus_hybrid_inverter_discharge_dcw = value; // SunSpec: uint16
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCWH_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_discharge_dcwh = value;
+            // Is 0 in older versions while charging. As this is an acc32 map 0 to NaN. This will make the
+            // meters framework ignore this value during charging and keep the pervious value
+            fronius_gen24_plus_hybrid_inverter_discharge_dcwh = c32.u == 0 ? NAN : value; // SunSpec: acc32
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_chastate = value;
+            fronius_gen24_plus_hybrid_inverter_chastate = value; // SunSpec: uint16
         }
         else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_SF_ADDRESS) {
-            fronius_gen24_plus_hybrid_inverter_chastate_sf = static_cast<int16_t>(register_buffer[register_buffer_index]);
+            fronius_gen24_plus_hybrid_inverter_chastate_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
 
             float dca_scale_factor = get_fronius_scale_factor(fronius_gen24_plus_hybrid_inverter_dca_sf);
             float dcv_scale_factor = get_fronius_scale_factor(fronius_gen24_plus_hybrid_inverter_dcv_sf);
@@ -1222,8 +1226,8 @@ void MeterModbusTCP::read_done_callback()
             float voltage = std::max(charge_dcv, discharge_dcv); // In older versions one of the two values is always 0V. In newer versions they are the same
             float power_charge_discharge_diff = charge_dcw - discharge_dcw; // One of the two value is always 0W
             float state_of_charge = fronius_gen24_plus_hybrid_inverter_chastate * chastate_scale_factor;
-            float energy_charge = fronius_gen24_plus_hybrid_inverter_charge_dcwh * dcwh_scale_factor * 0.001f; // Is 0 in older versions while discharging
-            float energy_discharge = fronius_gen24_plus_hybrid_inverter_discharge_dcwh * dcwh_scale_factor * 0.001f; // Is 0 in older versions while charging
+            float energy_charge = fronius_gen24_plus_hybrid_inverter_charge_dcwh * dcwh_scale_factor * 0.001f;
+            float energy_discharge = fronius_gen24_plus_hybrid_inverter_discharge_dcwh * dcwh_scale_factor * 0.001f;
 
             meters.update_value(slot, table->index[read_index + 1], current_charge_discharge_diff);
             meters.update_value(slot, table->index[read_index + 2], voltage);
