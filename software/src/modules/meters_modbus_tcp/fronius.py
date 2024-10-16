@@ -4,89 +4,90 @@ specs = [
     {
         'name': 'Fronius GEN24 Plus Hybrid Inverter Battery',
         'register_type': 'HoldingRegister',
+        'start_address_offset': 1,
         'values': [
             {
                 'name': 'DCA_SF: Current Scale Factor',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40266,
+                'start_address': 40256,
                 'value_type': 'S16',  # SunSpec: sunssf
             },
             {
                 'name': 'DCV_SF: Voltage Scale Factor',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40267,
+                'start_address': 40257,
                 'value_type': 'S16',  # SunSpec: sunssf
             },
             {
                 'name': 'DCW_SF: Power Scale Factor',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40268,
+                'start_address': 40258,
                 'value_type': 'S16',  # SunSpec: sunssf
             },
             {
                 'name': 'DCWH_SF: Energy Scale Factor',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40269,
+                'start_address': 40259,
                 'value_type': 'S16',  # SunSpec: sunssf
             },
             {
                 'name': 'module/3/DCA: DC Charge Current [A]',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40323,
+                'start_address': 40313,
                 'value_type': 'U16',  # SunSpec: uint16
             },
             {
                 'name': 'module/3/DCV: DC Charge Voltage [V]',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40324,
+                'start_address': 40314,
                 'value_type': 'U16',  # SunSpec: uint16
             },
             {
                 'name': 'module/3/DCW: DC Charge Power [W]',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40325,
+                'start_address': 40315,
                 'value_type': 'U16',  # SunSpec: uint16
             },
             {
                 'name': 'module/3/DCWH: Lifetime Charge Energy [Wh]',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40326,
+                'start_address': 40316,
                 'value_type': 'U32BE',  # SunSpec: acc32
             },
             {
                 'name': 'module/4/DCA: DC Discharge Current [A]',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40343,
+                'start_address': 40333,
                 'value_type': 'U16',  # SunSpec: uint16
             },
             {
                 'name': 'module/4/DCV: DC Discharge Voltage [V]',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40344,
+                'start_address': 40334,
                 'value_type': 'U16',  # SunSpec: uint16
             },
             {
                 'name': 'module/4/DCW: DC Discharge Power [W]',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40345,
+                'start_address': 40335,
                 'value_type': 'U16',  # SunSpec: uint16
             },
             {
                 'name': 'module/4/DCWH: Lifetime Discharge Energy [Wh]',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40346,
+                'start_address': 40336,
                 'value_type': 'U32BE',  # SunSpec: acc32
             },
             {
                 'name': 'ChaState: Currently available energy as a percent of the capacity rating [%]',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40362,
+                'start_address': 40352,
                 'value_type': 'U16',  # SunSpec: uint16
             },
             {
                 'name': 'ChaState_SF: Scale factor for available energy percent',
                 'value_id': 'VALUE_ID_META',
-                'start_address': 40376,
+                'start_address': 40366,
                 'value_type': 'S16',  # SunSpec: sunssf
             },
             {
