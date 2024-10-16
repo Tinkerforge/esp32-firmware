@@ -34,7 +34,8 @@ let x = {
             "price_ct_per_kwh": "Preis [ct/kWh]",
             "current_price": "Current market price",
             "undefined": "Undefined",
-            "now": "Now"
+            "now": "Now",
+            "vat": "VAT"
         },
         "script": {
             "save_failed": "Failed to save the day ahead prices settings",

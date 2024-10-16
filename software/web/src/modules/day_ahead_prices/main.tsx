@@ -45,6 +45,26 @@ function day_ahead_price_time_between(state: DayAheadPricesState, config: DayAhe
     return (index_timestamp_seconds >= start) && (index_timestamp_seconds <= end);
 }
 
+export function get_price_from_index(state: DayAheadPricesState, config: DayAheadPricesConfig, index: number, incl_vat: boolean = true) {
+    if (incl_vat && (config.vat != 0)) {
+        return Math.round(state.dap_prices.prices[index] * (1 + config.vat / 10000.0));
+    }
+
+    return state.dap_prices.prices[index];
+}
+
+export function get_current_price(state: DayAheadPricesState, config: DayAheadPricesConfig, incl_vat: boolean = true) {
+    if (state.dap_state.current_price == 0x7fffffff) { // INT32_MAX = current price not available yet
+        return NaN
+    }
+
+    if (incl_vat) {
+        return Math.round(state.dap_state.current_price * (1 + config.vat / 10000.0));
+    }
+
+    return state.dap_state.current_price;
+}
+
 export function get_average_price_today(state: DayAheadPricesState, config: DayAheadPricesConfig, add_markup: boolean = true) {
     const start     = get_timestamp_today_00_00_in_seconds();
     const end       = start + 60*60*24 - 1;
@@ -52,7 +72,7 @@ export function get_average_price_today(state: DayAheadPricesState, config: DayA
     let price_count = 0;
     for (let index = 0; index < state.dap_prices.prices.length; index++) {
         if (day_ahead_price_time_between(state, config, index, start, end)) {
-            price_sum += state.dap_prices.prices[index];
+            price_sum += get_price_from_index(state, config, index);
             price_count++;
         }
     }
@@ -73,7 +93,7 @@ export function get_average_price_tomorrow(state: DayAheadPricesState, config: D
     let price_count = 0;
     for (let index = 0; index < state.dap_prices.prices.length; index++) {
         if (day_ahead_price_time_between(state, config, index, start, end)) {
-            price_sum += state.dap_prices.prices[index];
+            price_sum += get_price_from_index(state, config, index);
             price_count++;
         }
     }
@@ -182,13 +202,13 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             let resolution_multiplier = this.state.dap_prices.resolution == 0 ? 15 : 60
             for (let i = 0; i < this.state.dap_prices.prices.length; i++) {
                 data.values[0].push(this.state.dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
-                data.values[1].push(this.state.dap_prices.prices[i] / 1000.0);
+                data.values[1].push(get_price_from_index(this.state, this.state, i) / 1000.0);
                 data.values[2].push(this.state.grid_costs_and_taxes / 1000.0);
                 data.values[3].push(this.state.supplier_markup / 1000.0);
             }
 
             data.values[0].push(this.state.dap_prices.first_date * 60 + this.state.dap_prices.prices.length * 60 * resolution_multiplier - 1);
-            data.values[1].push(this.state.dap_prices.prices[this.state.dap_prices.prices.length - 1] / 1000.0);
+            data.values[1].push(get_price_from_index(this.state, this.state, this.state.dap_prices.prices.length - 1) / 1000.0);
             data.values[2].push(this.state.grid_costs_and_taxes / 1000.0);
             data.values[3].push(this.state.supplier_markup / 1000.0);
 
@@ -247,6 +267,10 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                     onValue={(v) => this.setState({resolution: parseInt(v)})}
                                 />
                             </FormRow>
+                            <FormRow label={__("day_ahead_prices.content.vat")} label_muted={__("day_ahead_prices.content.optional_muted")}>
+                                <InputFloat value={dap.vat} onValue={(v) => {this.setState({vat: v}, function() {this.update_uplot()})}} digits={2} unit={'%'} max={10000} min={0}/>
+                                <div class="invalid-feedback">{__("day_ahead_prices.content.price_invalid")}</div>
+                            </FormRow>
                             <FormRow label={__("day_ahead_prices.content.grid_fees_and_taxes")} label_muted={__("day_ahead_prices.content.optional_muted")}>
                                 <InputFloat value={dap.grid_costs_and_taxes} onValue={(v) => {this.setState({grid_costs_and_taxes: v}, function() {this.update_uplot()})}} digits={3} unit={'ct/kWh'} max={99000} min={0}/>
                                 <div class="invalid-feedback">{__("day_ahead_prices.content.price_invalid")}</div>
@@ -264,7 +288,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 </ConfigForm>
                 <FormSeparator heading={__("day_ahead_prices.content.day_ahead_market_prices_heading")}/>
                 <FormRow label={__("day_ahead_prices.content.current_price")}>
-                    <InputText value={(dap.dap_state.current_price/1000.0).toLocaleString() + " ct/kWh (" + this.get_price_timeframe() + ")"}/>
+                    <InputText value={(get_current_price(dap, dap)/1000.0).toLocaleString() + " ct/kWh (" + this.get_price_timeframe() + ")"}/>
                 </FormRow>
                 <div>
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}

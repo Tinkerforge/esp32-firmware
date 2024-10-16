@@ -41,7 +41,7 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { SOLAR_FORECAST_PLANES, SolarForecastState, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
-import { DayAheadPricesState, get_average_price_today, get_average_price_tomorrow } from "../day_ahead_prices/main";
+import { DayAheadPricesState, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} hidden={false} />;
@@ -207,11 +207,11 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
             const grid_costs_and_taxes_and_supplier_markup = this.state.dap_config.grid_costs_and_taxes / 1000.0 + this.state.dap_config.supplier_markup / 1000.0;
             for (let i = 0; i < this.state.dap_prices.prices.length; i++) {
                 data.values[0].push(this.state.dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
-                data.values[1].push(this.state.dap_prices.prices[i] / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
+                data.values[1].push(get_price_from_index(this.state, this.state.dap_config, i) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
             }
 
             data.values[0].push(this.state.dap_prices.first_date * 60 + this.state.dap_prices.prices.length * 60 * resolution_multiplier - 1);
-            data.values[1].push(this.state.dap_prices.prices[this.state.dap_prices.prices.length - 1] / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
+            data.values[1].push(get_price_from_index(this.state, this.state.dap_config, this.state.dap_prices.prices.length - 1) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
 
             const solar_forecast_today     = get_kwh_today(this.state);
             const solar_forecast_tomorrow  = get_kwh_tomorrow(this.state);

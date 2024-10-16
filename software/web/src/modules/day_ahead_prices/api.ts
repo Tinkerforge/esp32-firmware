@@ -4,6 +4,7 @@ export interface config {
     region: number;
     resolution: number;
     cert_id: number;
+    vat: number;
     grid_costs_and_taxes: number;
     supplier_markup: number;
     supplier_base_fee: number;

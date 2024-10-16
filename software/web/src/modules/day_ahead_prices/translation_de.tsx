@@ -34,7 +34,8 @@ let x = {
             "price_ct_per_kwh": "Preis [ct/kWh]",
             "current_price": "Aktueller Börsenpreis",
             "undefined": "Unbekannt",
-            "now": "Jetzt"
+            "now": "Jetzt",
+            "vat": "MwSt"
         },
         "script": {
             "save_failed": "Speichern der Strompreiseinstellungen fehlgeschlagen",
