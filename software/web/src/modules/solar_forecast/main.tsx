@@ -83,13 +83,20 @@ function get_kwh_now_to_midnight(state: SolarForecastState) {
     let end           = get_timestamp_today_00_00_in_seconds() + 60*60*24 - 1;
     let active_planes = get_active_planes(state);
     let wh            = 0.0;
+    let count         = 0
     for (const plane of active_planes) {
         for (let index = 0; index < state.plane_forecasts[plane].forecast.length; index++) {
             if (forecast_time_between(state, plane, index, start, end)) {
                 wh += state.plane_forecasts[plane].forecast[index] || 0.0;
+                count++;
             }
         }
     }
+
+    if (count == 0) {
+        return NaN;
+    }
+
     return wh/1000.0;
 }
 
@@ -98,13 +105,20 @@ export function get_kwh_today(state: SolarForecastState) {
     let end           = start + 60*60*24 - 1;
     let active_planes = get_active_planes(state);
     let wh            = 0.0;
+    let count         = 0;
     for (const plane of active_planes) {
         for (let index = 0; index < state.plane_forecasts[plane].forecast.length; index++) {
             if (forecast_time_between(state, plane, index, start, end)) {
                 wh += state.plane_forecasts[plane].forecast[index] || 0.0;
+                count++;
             }
         }
     }
+
+    if (count == 0) {
+        return NaN;
+    }
+
     return wh/1000.0;
 }
 
@@ -113,18 +127,22 @@ export function get_kwh_tomorrow(state: SolarForecastState) {
     let end           = start + 60*60*24 - 1;
     let active_planes = get_active_planes(state);
     let wh            = 0.0;
+    let count         = 0;
     for (const plane of active_planes) {
         for (let index = 0; index < state.plane_forecasts[plane].forecast.length; index++) {
             if (forecast_time_between(state, plane, index, start, end)) {
                 wh += state.plane_forecasts[plane].forecast[index] || 0.0;
+                count++;
             }
         }
     }
+
+    if (count == 0) {
+        return NaN;
+    }
+
     return wh/1000.0;
 }
-
-
-
 
 
 export function SolarForecastNavbar() {
