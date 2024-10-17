@@ -1039,16 +1039,16 @@ void EVSEV2::update_all_data()
     evse_common.low_level_state.get("led_state")->updateUint(led_state);
     evse_common.low_level_state.get("cp_pwm_duty_cycle")->updateUint(cp_pwm_duty_cycle);
 
-    for (int i = 0; i < ARRAY_SIZE(adc_values); ++i)
+    for (size_t i = 0; i < ARRAY_SIZE(adc_values); ++i)
         evse_common.low_level_state.get("adc_values")->get(i)->updateUint(adc_values[i]);
 
-    for (int i = 0; i < ARRAY_SIZE(voltages); ++i)
+    for (size_t i = 0; i < ARRAY_SIZE(voltages); ++i)
         evse_common.low_level_state.get("voltages")->get(i)->updateInt(voltages[i]);
 
-    for (int i = 0; i < ARRAY_SIZE(resistances); ++i)
+    for (size_t i = 0; i < ARRAY_SIZE(resistances); ++i)
         evse_common.low_level_state.get("resistances")->get(i)->updateUint(resistances[i]);
 
-    for (int i = 0; i < ARRAY_SIZE(gpio); ++i)
+    for (size_t i = 0; i < ARRAY_SIZE(gpio); ++i)
         evse_common.low_level_state.get("gpio")->get(i)->updateBool(gpio[i]);
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -1096,7 +1096,7 @@ void EVSEV2::update_all_data()
     evse_common.low_level_state.get("uptime")->updateUint(uptime);
     evse_common.low_level_state.get("time_since_dc_fault_check")->updateUint(time_since_dc_fault_check);
 
-    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
+    for (size_t i = 0; i < CHARGING_SLOT_COUNT; ++i) {
         evse_common.slots.get(i)->get("max_current")->updateUint(max_current[i]);
         evse_common.slots.get(i)->get("active")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[i]));
         evse_common.slots.get(i)->get("clear_on_disconnect")->updateBool(SLOT_CLEAR_ON_DISCONNECT(active_and_clear_on_disconnect[i]));

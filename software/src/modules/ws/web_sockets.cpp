@@ -558,7 +558,7 @@ void WebSockets::updateDebugState()
 {
     std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
     std::lock_guard<std::recursive_mutex> lock2{keep_alive_mutex};
-    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+    for (size_t i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         state.get("keep_alive_fds")->get(i)->updateInt(keep_alive_fds[i]);
         state.get("keep_alive_pongs")->get(i)->updateUint(keep_alive_last_pong[i]);
         state.get("worker_active")->updateUint(worker_active);

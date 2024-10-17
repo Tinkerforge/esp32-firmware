@@ -385,7 +385,7 @@ void API::addResponse(const char * const path, ConfigRoot *config, std::initiali
 
 bool API::hasFeature(const char *name)
 {
-    for (int i = 0; i < features.count(); ++i)
+    for (size_t i = 0; i < features.count(); ++i)
         if (features.get(i)->asString() == name)
             return true;
     return false;

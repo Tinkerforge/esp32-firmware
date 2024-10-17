@@ -519,7 +519,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
 
     if (has_meter_values) {
         auto meter_all_values = api.getState("meter/all_values");
-        for (int i = 0; i < 3; i++) {
+        for (size_t i = 0; i < 3; i++) {
             state_pkt.v1.line_voltages[i]      = meter_all_values->get(i + METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1)->asFloat();
             state_pkt.v1.line_currents[i]      = meter_all_values->get(i + METER_ALL_VALUES_CURRENT_L1_A            )->asFloat();
             state_pkt.v1.line_power_factors[i] = meter_all_values->get(i + METER_ALL_VALUES_POWER_FACTOR_L1         )->asFloat();

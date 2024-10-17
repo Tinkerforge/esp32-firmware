@@ -438,12 +438,14 @@ void EMV2::update_all_data()
     }
 
     Config *state_sg_ready = static_cast<Config *>(em_common.state.get("sg_ready_outputs"));
-    state_sg_ready->get(0)->updateBool(all_data.output_sg_ready[0]);
-    state_sg_ready->get(1)->updateBool(all_data.output_sg_ready[1]);
+    for (size_t i = 0; i < ARRAY_SIZE(all_data.output_sg_ready); i++) {
+        state_sg_ready->get(i)->updateBool(all_data.output_sg_ready[i]);
+    }
 
     Config *state_relays = static_cast<Config *>(em_common.state.get("relays"));
-    state_relays->get(0)->updateBool(all_data.output_relay[0]);
-    state_relays->get(1)->updateBool(all_data.output_relay[1]);
+    for (size_t i = 0; i < ARRAY_SIZE(all_data.output_relay); i++) {
+        state_relays->get(i)->updateBool(all_data.output_relay[i]);
+    }
 
 #if MODULE_METERS_EM_AVAILABLE()
     meters_em.update_from_em_all_data(all_data.common);

@@ -402,14 +402,14 @@ void ChargeManager::setup()
 
     auto default_current = config.get("default_available_current")->asUint();
     available_current.get("current")->updateUint(default_current);
-    for (int i = 0; i < config.get("chargers")->count(); ++i) {
+    for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
         state.get("chargers")->add();
         low_level_state.get("chargers")->add();
         state.get("chargers")->get(i)->get("n")->updateString(config.get("chargers")->get(i)->get("name")->asString());
     }
 
     size_t hosts_buf_size = 0;
-    for (int i = 0; i < config.get("chargers")->count(); ++i) {
+    for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
         hosts_buf_size += config.get("chargers")->get(i)->get("host")->asString().length() + 1; //null terminator
     }
 
@@ -417,7 +417,7 @@ void ChargeManager::setup()
     this->hosts = heap_alloc_array<const char *>(config.get("chargers")->count());
     size_t hosts_written = 0;
 
-    for (int i = 0; i < config.get("chargers")->count(); ++i) {
+    for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
         hosts[i] = hosts_buf + hosts_written;
         memcpy(hosts_buf + hosts_written, config.get("chargers")->get(i)->get("host")->asEphemeralCStr(), config.get("chargers")->get(i)->get("host")->asString().length());
         hosts_written += config.get("chargers")->get(i)->get("host")->asString().length();
@@ -430,7 +430,7 @@ void ChargeManager::setup()
     this->charger_state = (ChargerState*) heap_caps_calloc_prefer(this->charger_count, sizeof(ChargerState), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
     this->charger_allocation_state = (ChargerAllocationState*) heap_caps_calloc_prefer(this->charger_count, sizeof(ChargerAllocationState), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
-    for (int i = 0; i < config.get("chargers")->count(); ++i) {
+    for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
         charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());
     }
 

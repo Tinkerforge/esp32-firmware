@@ -604,7 +604,7 @@ void RemoteAccess::register_urls() {
     }, 30_s, 30_s);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
+        for (size_t i = 0; i < MAX_KEYS_PER_USER; i++) {
             uint32_t state = 1;
             if (this->remote_connections[i] != nullptr) {
                 state = this->remote_connections[i]->is_peer_up(nullptr, nullptr) ? 2 : 1;

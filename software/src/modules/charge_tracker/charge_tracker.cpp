@@ -856,7 +856,7 @@ void ChargeTracker::register_urls()
         String dev_name;
         auto await_result = task_scheduler.await([this, configured_users, &electricity_price, &dev_name]() mutable {
             electricity_price = this->config.get("electricity_price")->asUint();
-            for (int i = 0; i < users.config.get("users")->count(); ++i) {
+            for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
                 configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
             }
             dev_name = device_name.display_name.get("display_name")->asString();

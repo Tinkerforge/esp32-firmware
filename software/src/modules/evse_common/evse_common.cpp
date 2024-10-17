@@ -366,7 +366,7 @@ void EvseCommon::register_urls()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         uint16_t supported_current = 32000;
-        for (int i = 0; i < CHARGING_SLOT_COUNT; ++i) {
+        for (size_t i = 0; i < CHARGING_SLOT_COUNT; ++i) {
             if (i == CHARGING_SLOT_CHARGE_MANAGER)
                 continue;
             if (!slots.get(i)->get("active")->asBool())
