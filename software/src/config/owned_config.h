@@ -23,9 +23,12 @@
 #include <memory>
 #include <esp_system.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnonnull"
 #define STRICT_VARIANT_ASSUME_MOVE_NOTHROW true
 #include <strict_variant/variant.hpp>
 #include <strict_variant/mpl/find_with.hpp>
+#pragma GCC diagnostic pop
 
 #include "cool_string.h"
 
