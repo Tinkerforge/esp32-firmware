@@ -493,7 +493,7 @@ export function downloadToFile(content: BlobPart, fileType: string, extension: s
 
     const url = URL.createObjectURL(file);
 
-    if (Median.isNativeApp()) {
+    if (is_native_median_app()) {
         Median.share.downloadFile({url: url});
     } else {
         a.href = url
@@ -856,4 +856,16 @@ export function get_value_with_unit(value: number, unit: string, digits: number 
 	}
 
 	return toLocaleFixed(value / divisor, digits) + " " + unit;
+}
+
+export function is_native_median_app(): boolean {
+    // Put fake_native_median_app = true in developer console to
+    // get native app behavior in normal browser
+
+    // @ts-ignore
+    if (globalThis.fake_native_median_app !== 'undefined' && globalThis.fake_native_median_app) {
+        return true;
+    }
+
+    return Median.isNativeApp();
 }

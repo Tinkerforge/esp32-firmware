@@ -6,7 +6,7 @@ import { Home, Key } from "react-feather";
 import Median from "median-js-bridge";
 import { NavbarGroup } from "./navbar_group";
 import { RemoteCloseButton } from "./remote_close_button";
-import { range } from "../util";
+import { range, is_native_median_app } from "../util";
 
 interface NavbarProps {
     children: VNode<any> | VNode<any>[],
@@ -49,7 +49,7 @@ function generateAppMenu(elements:  VNode<any> | VNode<any>[], nesting?: number)
 }
 
 export function InnerNavbar(props: NavbarProps) {
-    if (Median.isNativeApp()) {
+    if (is_native_median_app()) {
         const appMenuItems = [{
             label: __("main.navbar_status"),
             url: "javascript:window.switchTo('status')",

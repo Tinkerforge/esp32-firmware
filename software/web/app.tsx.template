@@ -36,7 +36,6 @@ import Row from "react-bootstrap/Row";
 import Nav from "react-bootstrap/Nav";
 import Collapse from "react-bootstrap/Collapse";
 import Alert from "react-bootstrap/Alert";
-import Median from "median-js-bridge";
 {{{navbar_imports}}}
 {{{content_imports}}}
 {{{status_imports}}}
@@ -192,9 +191,9 @@ export class App extends Component<AppProps, AppState> {
 
     render() {
         return <>
-            <nav class="navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2" hidden={Median.isNativeApp()}>
+            <nav class="navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2" hidden={util.is_native_median_app()}>
                 <a href="#status"><img id="navbar-logo" class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
-                <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" hidden={Median.isNativeApp()} onClick={() => {this.setState({sidebar_open: !this.state.sidebar_open})}}>
+                <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" hidden={util.is_native_median_app()} onClick={() => {this.setState({sidebar_open: !this.state.sidebar_open})}}>
                     <Menu {...{class: "navbar-toggler-icon", style: "vertical-align: baseline;"} as any} />
                 </button>
                 {/* show inline status here? */}
