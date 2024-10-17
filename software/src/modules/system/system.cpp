@@ -110,8 +110,9 @@ void System::register_urls()
 #endif
 
 #if MODULE_USERS_AVAILABLE() && MODULE_CHARGE_TRACKER_AVAILABLE()
-            for(int i = 0; i < users.config.get("users")->count(); ++i) {
-                uint8_t id = users.config.get("users")->get(i)->get("id")->asUint();
+            Config *config_users = static_cast<Config *>(users.config.get("users"));
+            for (size_t i = 0; i < config_users->count(); ++i) {
+                uint8_t id = config_users->get(i)->get("id")->asUint();
                 if (id == 0) // skip anonymous user
                     continue;
                 if (!charge_tracker.is_user_tracked(id)) {
