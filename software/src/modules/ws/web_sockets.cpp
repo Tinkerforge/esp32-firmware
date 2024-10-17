@@ -556,14 +556,24 @@ void WebSockets::pre_setup() {
 
 void WebSockets::updateDebugState()
 {
-    std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-    std::lock_guard<std::recursive_mutex> lock2{keep_alive_mutex};
-    for (size_t i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        state.get("keep_alive_fds")->get(i)->updateInt(keep_alive_fds[i]);
-        state.get("keep_alive_pongs")->get(i)->updateUint(keep_alive_last_pong[i]);
-        state.get("worker_active")->updateUint(worker_active);
+    {
+        std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+
+        state.get("worker_active"  )->updateUint(worker_active);
         state.get("last_worker_run")->updateUint(last_worker_run);
-        state.get("queue_len")->updateUint(work_queue.size());
+        state.get("queue_len"      )->updateUint(work_queue.size());
+    }
+
+    {
+        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+
+        Config *state_keep_alive_fds   = static_cast<Config *>(state.get("keep_alive_fds"));
+        Config *state_keep_alive_pongs = static_cast<Config *>(state.get("keep_alive_pongs"));
+
+        for (size_t i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+            state_keep_alive_fds->get(i)->updateInt(keep_alive_fds[i]);
+            state_keep_alive_pongs->get(i)->updateUint(keep_alive_last_pong[i]);
+        }
     }
 }
 
