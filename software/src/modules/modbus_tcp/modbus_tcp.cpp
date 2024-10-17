@@ -624,7 +624,7 @@ void ModbusTcp::update_bender_regs()
         if (api.hasFeature("meter_all_values")) {
             auto meter_values = api.getState("meter/all_values");
 
-            for (int i = 0; i < 3; i++) {
+            for (size_t i = 0; i < 3; i++) {
                 bender_phases_cpy->current[i] = fromUint(meter_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000);
                 bender_phases_cpy->energy[i] =  fromUint(meter_values->get(i + METER_ALL_VALUES_IMPORT_KWH_L1)->asFloat() * 1000);
                 bender_phases_cpy->power[i] =  fromUint(meter_values->get(i + METER_ALL_VALUES_POWER_L1_W)->asFloat() * 1000);
@@ -775,7 +775,7 @@ void ModbusTcp::update_regs()
 
         auto slots = api.getState("evse/slots");
 
-        for (int i = 0; i < slots->count(); i++) {
+        for (size_t i = 0; i < slots->count(); i++) {
             uint32_t current = slots->get(i)->get("max_current")->asUint();
             uint32_t val = 0xFFFFFFFF;
 
@@ -849,7 +849,7 @@ void ModbusTcp::update_regs()
 
         auto meter_all_values = api.getState("meter/all_values");
 
-        for (int i = 0; i < 85; i++)
+        for (size_t i = 0; i < 85; i++)
             meter_all_values_input_regs_copy->meter_values[i] = fromFloat(meter_all_values->get(i)->asFloat());
     }
 #endif
@@ -1071,7 +1071,7 @@ void ModbusTcp::update_keba_regs()
     if (api.hasFeature("meter")) {
         if (api.hasFeature("meter_all_values")) {
             auto meter_all_values = api.getState("meter/all_values");
-            for (int i = 0; i < 3; i++) {
+            for (size_t i = 0; i < 3; i++) {
                 keba_read_general_cpy->currents[i] = fromUint(meter_all_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000);
                 keba_read_general_cpy->voltages[i] = fromUint(meter_all_values->get(i)->asFloat());
             }

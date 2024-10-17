@@ -177,14 +177,14 @@ void Users::pre_setup()
         if (config.get("users")->count() == MAX_ACTIVE_USERS)
             return "Can't add user. Already have the maximum number of active users.";
 
-        for(int i = 0; i < config.get("users")->count(); ++i)
+        for (size_t i = 0; i < config.get("users")->count(); ++i)
             if (config.get("users")->get(i)->get("username")->asString() == add.get("username")->asString())
                 return "Can't add user. A user with this username already exists.";
 
         {
             char username[33] = {0};
             File f = LittleFS.open(USERNAME_FILE, "r");
-            for(size_t i = 0; i < f.size(); i += USERNAME_ENTRY_LENGTH) {
+            for (size_t i = 0; i < f.size(); i += USERNAME_ENTRY_LENGTH) {
                 f.seek(i);
                 f.read((uint8_t *) username, USERNAME_LENGTH);
                 if (add.get("username")->asString() == username)
@@ -235,7 +235,7 @@ void Users::pre_setup()
         }
 
         Config *user = nullptr;
-        for(int i = 0; i < config.get("users")->count(); ++i) {
+        for (size_t i = 0; i < config.get("users")->count(); ++i) {
             if (config.get("users")->get(i)->get("id")->asUint() == id) {
                 user = (Config *)config.get("users")->get(i);
                 break;
@@ -253,7 +253,7 @@ void Users::pre_setup()
             return "Changing the username without updating the digest hash is not allowed!";
         }
 
-        for(int i = 0; i < config.get("users")->count(); ++i) {
+        for (size_t i = 0; i < config.get("users")->count(); ++i) {
             if (config.get("users")->get(i)->get("id")->asUint() == id)
                 continue;
 
@@ -296,7 +296,7 @@ void Users::pre_setup()
         if (remove.get("id")->asUint() == 0)
             return "The anonymous user can't be removed.";
 
-        for (int i = 0; i < config.get("users")->count(); ++i) {
+        for (size_t i = 0; i < config.get("users")->count(); ++i) {
             if (config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
                 return "";
             }
@@ -311,7 +311,7 @@ void Users::pre_setup()
         if (!update.get("enabled")->asBool())
             return "";
 
-        for (int i = 0; i < config.get("users")->count(); ++i) {
+        for (size_t i = 0; i < config.get("users")->count(); ++i) {
             if (!config.get("users")->get(i)->get("digest_hash")->asString().isEmpty())
                 return "";
         }
@@ -337,7 +337,7 @@ void Users::setup()
     if (!LittleFS.exists(USERNAME_FILE)) {
         logger.printfln("Username list for tracked charges does not exist! Recreating now.");
         create_username_file();
-        for (int i = 0; i < config.get("users")->count(); ++i) {
+        for (size_t i = 0; i < config.get("users")->count(); ++i) {
             Config *user = (Config *)config.get("users")->get(i);
             this->rename_user(user->get("id")->asUint(), user->get("username")->asString(), user->get("display_name")->asString());
         }
@@ -413,7 +413,7 @@ void Users::setup()
 
     if (config.get("http_auth_enabled")->asBool()) {
         bool user_with_password_found = false;
-        for (int i = 0; i < config.get("users")->count(); ++i) {
+        for (size_t i = 0; i < config.get("users")->count(); ++i) {
             if (!config.get("users")->get(i)->get("digest_hash")->asString().isEmpty()) {
                 user_with_password_found = true;
                 break;
@@ -442,7 +442,7 @@ void Users::setup()
 
             // If this times out, result stays false.
             task_scheduler.await([this, &req, &fields, &result]() {
-                for (int i = 0; i < config.get("users")->count(); ++i) {
+                for (size_t i = 0; i < config.get("users")->count(); ++i) {
                     if (config.get("users")->get(i)->get("username")->asString().equals(fields.username)) {
                         result = checkDigestAuthentication(fields, req.methodString(), fields.username.c_str(), config.get("users")->get(i)->get("digest_hash")->asEphemeralCStr(), nullptr, true, nullptr, nullptr, nullptr); // use of emphemeral C string ok
                         break;
@@ -538,7 +538,7 @@ void Users::register_urls()
         auto id = modify.get("id")->asUint();
 
         Config *user = nullptr;
-        for(int i = 0; i < config.get("users")->count(); ++i) {
+        for (size_t i = 0; i < config.get("users")->count(); ++i) {
             if (config.get("users")->get(i)->get("id")->asUint() == id) {
                 user = (Config *)config.get("users")->get(i);
                 break;
@@ -592,15 +592,15 @@ void Users::register_urls()
     }, true);
 
     api.addCommand("users/remove", &remove, {}, [this](String &/*errmsg*/) {
-        int idx = -1;
-        for(int i = 0; i < config.get("users")->count(); ++i) {
+        size_t idx = std::numeric_limits<size_t>::max();
+        for (size_t i = 0; i < config.get("users")->count(); ++i) {
             if (config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
                 idx = i;
                 break;
             }
         }
 
-        if (idx < 0) {
+        if (idx == std::numeric_limits<size_t>::max()) {
             logger.printfln("Can't remove user. User with this ID not found.");
             return;
         }
@@ -679,7 +679,7 @@ void Users::rename_user(uint8_t user_id, const String &username, const String &d
 void Users::remove_from_username_file(uint8_t user_id)
 {
     Config *users = (Config *)config.get("users");
-    for (int i = 0; i < users->count(); ++i) {
+    for (size_t i = 0; i < users->count(); ++i) {
         if (users->get(i)->get("id")->asUint() == user_id) {
             return;
         }
@@ -703,7 +703,7 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
 
     uint16_t current_limit = 0;
     Config *users = (Config *)config.get("users");
-    for (int i = 0; i < users->count(); ++i) {
+    for (size_t i = 0; i < users->count(); ++i) {
         if (users->get(i)->get("id")->asUint() != user_id)
             continue;
 

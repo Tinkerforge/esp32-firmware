@@ -75,7 +75,7 @@ void NFC::pre_setup()
         Config *tags = (Config *)cfg.get("authorized_tags");
 
         // Check tag_id format
-        for(int tag = 0; tag < tags->count(); ++tag) {
+        for (size_t tag = 0; tag < tags->count(); ++tag) {
             String id_copy = tags->get(tag)->get("tag_id")->asString();
             id_copy.toUpperCase();
             tags->get(tag)->get("tag_id")->updateString(id_copy);
@@ -97,7 +97,7 @@ void NFC::pre_setup()
             // can be loaded on start-up, fix the mappings instead of
             // returning an error.
             bool update_file = false;
-            for(int tag = 0; tag < tags->count(); ++tag) {
+            for (size_t tag = 0; tag < tags->count(); ++tag) {
                 uint8_t user_id = tags->get(tag)->get("user_id")->asUint();
                 if (!users.is_user_configured(user_id)) {
                     logger.printfln("Fixing NFC tag %s referencing a deleted user.", tags->get(tag)->get("tag_id")->asEphemeralCStr());
@@ -110,7 +110,7 @@ void NFC::pre_setup()
 
         } else {
             // Check user_id_mappings
-            for(int tag = 0; tag < tags->count(); ++tag) {
+            for (size_t tag = 0; tag < tags->count(); ++tag) {
                 uint8_t user_id = tags->get(tag)->get("user_id")->asUint();
                 if (!users.is_user_configured(user_id))
                     return String("Unknown user with ID ") + (int)user_id + ".";
@@ -248,7 +248,7 @@ void NFC::remove_user(uint8_t user_id)
 {
     Config *tags = (Config *)config.get("authorized_tags");
 
-    for (int i = 0; i < tags->count(); ++i) {
+    for (size_t i = 0; i < tags->count(); ++i) {
         if (tags->get(i)->get("user_id")->asUint() == user_id)
             tags->get(i)->get("user_id")->updateUint(0);
     }
@@ -339,7 +339,7 @@ void NFC::update_seen_tags()
     }
 
     // update state
-    for (int i = 0; i < TAG_LIST_LENGTH; ++i) {
+    for (size_t i = 0; i < TAG_LIST_LENGTH; ++i) {
         Config *seen_tag_state = static_cast<Config *>(seen_tags.get(i));
         tag_info_t *new_tag = new_tags + i;
 
@@ -409,7 +409,7 @@ void NFC::setup_auth_tags()
     auth_tags = heap_alloc_array<auth_tag_t>(auth_tag_count);
     memset(auth_tags.get(), 0, sizeof(auth_tag_t) * auth_tag_count);
 
-    for (int i = 0; i < auth_tag_count; ++i) {
+    for (size_t i = 0; i < auth_tag_count; ++i) {
         const auto tag = auth_tags_cfg->get(i);
 
         auth_tags[i].tag_type = tag->get("tag_type")->asUint();
