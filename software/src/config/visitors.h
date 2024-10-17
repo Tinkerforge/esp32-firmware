@@ -1018,11 +1018,11 @@ struct api_info {
     }
     void operator()(const Config::ConfInt &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"int\",\"val\":%d,\"min\":%d,\"max\":%d}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"int\",\"val\":%ld,\"min\":%ld,\"max\":%ld}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfUint &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"uint\",\"val\":%u,\"min\":%u,\"max\":%u}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"uint\",\"val\":%lu,\"min\":%lu,\"max\":%lu}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfBool &x)
     {

@@ -359,7 +359,7 @@ void PowerManager::setup()
 
     if (guaranteed_power_w < overall_min_power_w) {
         guaranteed_power_w = overall_min_power_w;
-        logger.printfln("Raising guaranteed power to %i based on minimum charge current set in charge manager.", guaranteed_power_w);
+        logger.printfln("Raising guaranteed power to %li based on minimum charge current set in charge manager.", guaranteed_power_w);
     }
 
     // Calculate constants and set up meter current filters if dynamic load management is enabled
@@ -496,7 +496,7 @@ void PowerManager::register_urls()
         just_switched_mode |= runtime_mode->updateUint(new_mode); // If this callback runs again before just_switched_mode was consumed, keep it true instead of overwriting it to false;
         mode = new_mode;
 
-        logger.printfln("Switched mode %u->%u", old_mode, mode);
+        logger.printfln("Switched mode %lu->%lu", old_mode, mode);
     }, false);
 
     api.addState("power_manager/external_control", &external_control);
@@ -576,11 +576,11 @@ void PowerManager::register_urls()
             uint32_t new_phases = external_control_update.get("phases_wanted")->asUint();
 
             if (!phases_wanted->updateUint(new_phases)) {
-                logger.printfln("Ignoring external control phase change request: Value is already %u.", new_phases);
+                logger.printfln("Ignoring external control phase change request: Value is already %lu.", new_phases);
                 return;
             }
 
-            logger.printfln("External control phase change request: switching from %u to %u", old_phases, new_phases);
+            logger.printfln("External control phase change request: switching from %lu to %lu", old_phases, new_phases);
         }, true);
     }
 }
@@ -604,7 +604,7 @@ void PowerManager::zero_limits()
 static void abort_on_invalid_history_length(int32_t history_length)
 {
     char msg[52]; // Message buffer must be on the stack to be included in a coredump.
-    snprintf(msg, ARRAY_SIZE(msg), "Invalid minmax filter history length %i", history_length);
+    snprintf(msg, ARRAY_SIZE(msg), "Invalid minmax filter history length %li", history_length);
     esp_system_abort(msg);
 }
 
@@ -910,7 +910,7 @@ void PowerManager::update_energy()
 
                         // Sanity check
                         if (cm_allocated_power_w < 0) {
-                            logger.printfln("Negative cm_allocated_power_w: %i", cm_allocated_power_w);
+                            logger.printfln("Negative cm_allocated_power_w: %li", cm_allocated_power_w);
                         }
                     } else {
                         // Some EVs may only be able to adjust their charge power in steps of 1500W,
@@ -971,7 +971,7 @@ void PowerManager::update_energy()
         cm_limits->spread.pv = pv_long_min_ma;
 
 #if ENABLE_PM_TRACE
-        trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, " PV m=%5iw avl=%5iw %5i<<%5i<%5i<%5i",
+        trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, " PV m=%5liw avl=%5liw %5li<<%5li<%5li<%5li",
             static_cast<int32_t>(power_at_meter_raw_w), power_available_w,
             pv_long_min_ma, current_pv_minmax_ma.min, pv_raw_ma, current_pv_minmax_ma.max);
 #endif
@@ -1063,7 +1063,7 @@ void PowerManager::update_energy()
 
                     // Sanity check
                     if (cm_allocated_phase_current_ma < 0) {
-                        logger.printfln("Negative cm_allocated_phase_current_ma: %i", cm_allocated_phase_current_ma);
+                        logger.printfln("Negative cm_allocated_phase_current_ma: %li", cm_allocated_phase_current_ma);
                     }
                 } else {
                     if (current_error_ma < 0) {
@@ -1105,7 +1105,7 @@ void PowerManager::update_energy()
                 cm_limits->spread[cm_phase] = phase_long_min_ma;
 
 #if ENABLE_PM_TRACE
-                trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "  L%u m=%5i p=%5i err=%5i adj=%5i %5i<<%5i<%5i",
+                trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "  L%u m=%5li p=%5li err=%5li adj=%5li %5li<<%5li<%5li",
                     cm_phase, phase_current_meter_ma, phase_preproc_ma, current_error_ma, current_adjust_ma,
                     phase_long_min_ma, phase_min_ma->min, phase_limit_raw_ma);
 #endif

@@ -516,7 +516,7 @@ void ChargeManager::check_watchdog()
 
     uint32_t default_available_current = config.get("default_available_current")->asUint();
 
-    logger.printfln("Watchdog triggered! Received no available current update for %d ms. Setting available current to %u mA", WATCHDOG_TIMEOUT_MS, default_available_current);
+    logger.printfln("Watchdog triggered! Received no available current update for %d ms. Setting available current to %lu mA", WATCHDOG_TIMEOUT_MS, default_available_current);
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.trigger(AutomationTriggerID::ChargeManagerWd, nullptr, this);

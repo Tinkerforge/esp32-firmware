@@ -66,7 +66,7 @@ protected:
     ModbusTCP *const modbus;
 
     String host_name;
-    IPAddress host_ip = IPAddress(0u);
+    IPAddress host_ip = IPAddress(0ul);
     uint16_t port = 0;
     uint8_t device_address = 0;
 

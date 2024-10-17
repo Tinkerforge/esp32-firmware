@@ -457,7 +457,7 @@ void RemoteAccess::register_urls() {
         serializer.addMemberArray("keys");
         char buf[50];
         {
-            int i = 0;
+            size_t i = 0;
             // JsonArray already has reference semantics. No need for &.
             for (const auto key : doc["keys"].as<JsonArray>()) {
                 serializer.addObject();
@@ -465,7 +465,7 @@ void RemoteAccess::register_urls() {
                 std::snprintf(buf, 50, "10.123.%i.2", i);
                 serializer.addMemberString("charger_address", buf);
                 serializer.addMemberString("charger_public", key["charger_public"]);
-                serializer.addMemberNumber("connection_no", i);
+                serializer.addMemberNumber("connection_no", (uint32_t)i);
                 std::snprintf(buf, 50, "10.123.%i.3", i);
                 serializer.addMemberString("web_address", buf);
                 CoolString wg_key = CoolString{key["web_private"].as<String>()};
@@ -485,7 +485,7 @@ void RemoteAccess::register_urls() {
                 // TODO: maybe base64 encode?
                 serializer.addMemberArray("web_private");
                 for (size_t a = 0; a < crypto_box_SEALBYTES + wg_key.length(); a++) {
-                    serializer.addNumber(output[a]);
+                    serializer.addNumber((uint8_t)output[a]);
                 }
                 serializer.endArray();
 
@@ -503,7 +503,7 @@ void RemoteAccess::register_urls() {
                 // TODO: maybe base64 encode?
                 serializer.addMemberArray("psk");
                 for (size_t a = 0; a < crypto_box_SEALBYTES + psk.length(); a++) {
-                    serializer.addNumber(encrypted_psk[a]);
+                    serializer.addNumber((uint8_t)encrypted_psk[a]);
                 }
                 serializer.endArray();
 
@@ -534,7 +534,7 @@ void RemoteAccess::register_urls() {
 
         serializer.addMemberArray("name");
         for (size_t a = 0; a < crypto_box_SEALBYTES + name.length(); a++) {
-            serializer.addNumber(encrypted_name[a]);
+            serializer.addNumber((uint8_t)encrypted_name[a]);
         }
         serializer.endArray();
 
@@ -547,7 +547,7 @@ void RemoteAccess::register_urls() {
         size_t size = serializer.end();
 
         char url[128];
-        snprintf(url, 128, "https://%s:%u/api/charger/add", new_config.get("relay_host")->asEphemeralCStr(), new_config.get("relay_port")->asUint());
+        snprintf(url, 128, "https://%s:%lu/api/charger/add", new_config.get("relay_host")->asEphemeralCStr(), new_config.get("relay_port")->asUint());
 
         std::queue<WgKey> key_cache;
 
@@ -710,7 +710,7 @@ void RemoteAccess::get_login_salt(ConfigRoot config) {
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
     registration_state.get("message")->updateString("");
     char url[196] = {};
-    sprintf(url, "https://%s:%u/api/auth/get_login_salt?email=%s", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint(), config.get("email")->asEphemeralCStr());
+    sprintf(url, "https://%s:%lu/api/auth/get_login_salt?email=%s", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint(), config.get("email")->asEphemeralCStr());
     std::function<void(ConfigRoot)> next_stage = [this] (ConfigRoot cfg) {
         this->parse_login_salt(cfg);
     };
@@ -754,7 +754,7 @@ void RemoteAccess::login(ConfigRoot config, CoolString &login_key) {
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
     registration_state.get("message")->updateString("");
     char url[128] = {};
-    sprintf(url, "https://%s:%u/api/auth/login", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint());
+    sprintf(url, "https://%s:%lu/api/auth/login", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint());
 
     String body;
     DynamicJsonDocument doc(512);
@@ -785,7 +785,7 @@ void RemoteAccess::get_secret(ConfigRoot config) {
     registration_state.get("message")->updateString("");
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
     char url[128] = {};
-    snprintf(url, 128, "https://%s:%u/api/user/get_secret", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint());
+    snprintf(url, 128, "https://%s:%lu/api/user/get_secret", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint());
 
     run_request_with_next_stage(url, HTTP_METHOD_GET, nullptr, 0, config, [this](ConfigRoot cfg) {
         this->parse_secret(cfg);
@@ -912,8 +912,8 @@ void RemoteAccess::resolve_management() {
                 serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
                 //TODO: Adapt this once we support more than one user.
                 serializer.addMemberArray("configured_connections");
-                    for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
-                        serializer.addNumber(i);
+                    for (size_t i = 0; i < MAX_KEYS_PER_USER; i++) {
+                        serializer.addNumber((uint32_t)i);
                     }
                 serializer.endArray();
             serializer.endObject();
@@ -1207,7 +1207,7 @@ void RemoteAccess::run_management() {
                     return;
                 }
                 if (remote_connections[command->connection_no] == nullptr) {
-                    logger.printfln("Opening connection %u", command->connection_no);
+                    logger.printfln("Opening connection %li", command->connection_no);
                 }
 
                 uint16_t local_port = 51821;
@@ -1230,7 +1230,7 @@ void RemoteAccess::run_management() {
             if (remote_connections[command->connection_no] == nullptr) {
                 break;
             }
-            logger.printfln("Closing connection %u", command->connection_no);
+            logger.printfln("Closing connection %li", command->connection_no);
             remote_connections[command->connection_no]->end();
             delete remote_connections[command->connection_no];
             remote_connections[command->connection_no] = nullptr;

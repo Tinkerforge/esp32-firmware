@@ -769,7 +769,7 @@ static const ConfigMigration migrations[] = {
                         json["requested_current_margin"] = 3000;
                         write_config_file("charge_manager/config", json);
                     } else {
-                        logger.printfln("CM migration: Not resetting custom requested_current_margin of %u.", requested_current_margin_old);
+                        logger.printfln("CM migration: Not resetting custom requested_current_margin of %lu.", requested_current_margin_old);
                     }
                 } else {
                     logger.printfln("CM migration skipped, requested_current_margin not present");

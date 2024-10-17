@@ -127,7 +127,7 @@ void MeterSunSpec::read_done_callback()
     if (!values_declared) {
         size_t registers_to_read = 0;
         if (!model_parser->detect_values(generic_read_request.data, quirks, &registers_to_read)) {
-            logger.printfln("Detecting values of model %u in slot %u failed.", model_id, slot);
+            logger.printfln("Detecting values of model %u in slot %lu failed.", model_id, slot);
             return;
         }
         values_declared = true;
@@ -135,7 +135,7 @@ void MeterSunSpec::read_done_callback()
     }
 
     if (!model_parser->parse_values(generic_read_request.data, quirks)) {
-        logger.printfln("Ignoring inconsistent data set for model %u in slot %u.", model_id, slot);
+        logger.printfln("Ignoring inconsistent data set for model %u in slot %lu.", model_id, slot);
         // TODO: Read again if parsing failed?
     }
 }
@@ -249,7 +249,7 @@ void MeterSunSpec::scan_next()
                     }
                     else {
                         if (block_length != model_parser->get_model_length()) {
-                            logger.printfln("Configured SunSpec model found but has incorrect length. Expected %u, got %u.", model_parser->get_model_length(), block_length);
+                            logger.printfln("Configured SunSpec model found but has incorrect length. Expected %lu, got %zu.", model_parser->get_model_length(), block_length);
                             scan_start_delay();
                         }
                         else {
@@ -321,7 +321,7 @@ void MeterSunSpec::scan_next()
                         }
 
                         if (quirks) {
-                            logger.printfln("Enabling quirks mode 0x%02x for %.32s device.", quirks, m->Mn);
+                            logger.printfln("Enabling quirks mode 0x%02lx for %.32s device.", quirks, m->Mn);
                         }
                     }
                 }

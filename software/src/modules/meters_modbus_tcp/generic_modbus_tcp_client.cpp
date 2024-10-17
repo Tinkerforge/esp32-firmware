@@ -50,7 +50,7 @@ void GenericModbusTCPClient::stop_connection()
         disconnect_callback();
     }
 
-    host_ip = IPAddress(0u);
+    host_ip = IPAddress(0ul);
     last_successful_read = 0_us;
 }
 
@@ -138,7 +138,7 @@ void GenericModbusTCPClient::read_next()
     // Return value doesn't matter. The caller discards it.
     cbTransaction read_done_cb = [this](Modbus::ResultCode result_code, uint16_t /*transaction_id*/, void * /*data*/)->bool {
         if (result_code != Modbus::ResultCode::EX_SUCCESS) {
-            logger.printfln("read%creg failed: %s (0x%02x) host=%s port=%u device_address=%u start_address=%u register_count=%u",
+            logger.printfln("read%creg failed: %s (0x%02lx) host=%s port=%u device_address=%u start_address=%u register_count=%u",
                             generic_read_request.register_type == ModbusRegisterType::HoldingRegister ? 'H' : 'I',
                             get_modbus_result_code_name(result_code),
                             static_cast<uint32_t>(result_code),

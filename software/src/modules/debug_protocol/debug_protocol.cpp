@@ -93,7 +93,7 @@ void DebugProtocol::loop()
             return;
         }
 
-        sb.printf("\"%u", last_debug);
+        sb.printf("\"%lu", last_debug);
 
         for (IDebugProtocolBackend *backend : backends) {
             sb.putc(',');

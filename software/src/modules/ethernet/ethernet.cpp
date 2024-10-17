@@ -90,7 +90,7 @@ void Ethernet::print_con_duration()
         uint32_t now = millis();
         uint32_t connected_for = now - last_connected;
         if (connected_for < 0x7FFFFFFF) {
-            logger.printfln("Was connected for %u seconds.", connected_for / 1000);
+            logger.printfln("Was connected for %lu seconds.", connected_for / 1000);
         } else {
             logger.printfln("Was connected for a long time.");
         }
@@ -136,7 +136,7 @@ void Ethernet::setup()
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             uint32_t link_speed = ETH.linkSpeed();
             bool full_duplex    = ETH.fullDuplex();
-            logger.printfln("Connected: %u Mbps %s Duplex, MAC: %s", link_speed, full_duplex ? "Full" : "Half", ETH.macAddress().c_str());
+            logger.printfln("Connected: %lu Mbps %s Duplex, MAC: %s", link_speed, full_duplex ? "Full" : "Half", ETH.macAddress().c_str());
 
             IPAddress ip, subnet, gateway, dns, dns2;
             ip.fromString(config_in_use.get("ip")->asEphemeralCStr());

@@ -315,7 +315,7 @@ void Mqtt::onMqttDisconnect()
         uint32_t connected_for = now - last_connected_ms;
         state.get("connection_end")->updateUint(now);
         if (connected_for < 0x7FFFFFFF) {
-            logger.printfln("Was connected for %u seconds.", connected_for / 1000);
+            logger.printfln("Was connected for %lu seconds.", connected_for / 1000);
         } else {
             logger.printfln("Was connected for a long time.");
         }

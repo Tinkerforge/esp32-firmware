@@ -642,11 +642,11 @@ void EVSEV2::get_debug_line(StringBuilder *sb)
              "%u,%u,%u,%u,%u,%u,%u,%u,,"
              "%u,%c,%u,%u,,"
              "%.3f,%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
-             "%u,%u,%u,%u,%u,%u,,"
-             "%u,%u,%u,%u,%u,,"
+             "%lu,%lu,%lu,%lu,%lu,%lu,,"
+             "%u,%u,%lu,%lu,%lu,,"
              "%u,%u,%u,%u,%u,%u,%u,,"
              "%d,%d,%d,%d,%d,%d,%d,,"
-             "%u,%u,,"
+             "%lu,%lu,,"
              "%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,,"
              "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u",
              iec61851_state,

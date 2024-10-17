@@ -378,10 +378,10 @@ void EVSE::get_debug_line(StringBuilder *sb)
     sb->printf(","
              "%u,%u,%u,%u,%u,%u,%u,,"
              "%u,%c,%u,,"
-             "%u,%u,%u,%u,%u,,"
+             "%u,%u,%lu,%lu,%lu,,"
              "%u,%u,,"
              "%d,%d,%d,,"
-             "%u,%u,,"
+             "%lu,%lu,,"
              "%c,%c,%c,%c,%c,,"
              "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u",
              iec61851_state,

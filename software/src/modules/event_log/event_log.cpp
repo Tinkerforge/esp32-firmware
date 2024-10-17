@@ -36,7 +36,7 @@ void EventLog::pre_init()
 #endif
 
     printfln_plain("    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
-    printfln_plain("         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
+    printfln_plain("         %luK RAM SYSTEM   %lu HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     printfln_plain("READY.");
     printfln("Last reset reason was: %s", tf_reset_reason());
 }

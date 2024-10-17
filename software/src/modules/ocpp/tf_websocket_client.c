@@ -883,7 +883,7 @@ static int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t cli
     }
 
     if (xSemaphoreTakeRecursive(client->lock, lock_timeout) != pdPASS) {
-        ESP_LOGE(TAG, "Could not lock ws-client within %d timeout", lock_timeout);
+        ESP_LOGE(TAG, "Could not lock ws-client within %lu timeout", lock_timeout);
         return ESP_FAIL;
     }
 

@@ -665,7 +665,7 @@ void API::register_urls()
             char buf[100] = {0};
 
             tf_hal_get_error_counters(&hal, c, &spitfp_checksum, &spitfp_frame, &tfp_frame, &tfp_unexpected);
-            snprintf(buf, sizeof(buf), "%c{\"port\": \"%c\", \"SpiTfpChecksum\": %u, \"SpiTfpFrame\": %u, \"TfpFrame\": %u, \"TfpUnexpected\": %u}", c == 'A' ? ' ': ',', c,
+            snprintf(buf, sizeof(buf), "%c{\"port\": \"%c\", \"SpiTfpChecksum\": %lu, \"SpiTfpFrame\": %lu, \"TfpFrame\": %lu, \"TfpUnexpected\": %lu}", c == 'A' ? ' ': ',', c,
                      spitfp_checksum,
                      spitfp_frame,
                      tfp_frame,

@@ -220,7 +220,7 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
     if (firmware_info.block_found) {
         if (firmware_info.expected_checksum != firmware_info.actual_checksum) {
             if (log) {
-                logger.printfln("Failed to update: Firmware info page corrupted! Expected checksum %x, actual checksum %x",
+                logger.printfln("Failed to update: Firmware info page corrupted! Expected checksum %lx, actual checksum %lx",
                                 firmware_info.expected_checksum, firmware_info.actual_checksum);
             }
 
@@ -260,8 +260,8 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
 
                 json_ptr->addObject();
                 json_ptr->addMemberNumber("error", static_cast<uint8_t>(InstallState::Downgrade));
-                json_ptr->addMemberStringF("firmware_version", "%u.%u.%u%s+%x", firmware_info.block.fw_version[0], firmware_info.block.fw_version[1], firmware_info.block.fw_version[2], info_beta, firmware_info.block.fw_build_time);
-                json_ptr->addMemberStringF("installed_version", "%u.%u.%u%s+%x", BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, build_beta, build_timestamp());
+                json_ptr->addMemberStringF("firmware_version", "%u.%u.%u%s+%lx", firmware_info.block.fw_version[0], firmware_info.block.fw_version[1], firmware_info.block.fw_version[2], info_beta, firmware_info.block.fw_build_time);
+                json_ptr->addMemberStringF("installed_version", "%u.%u.%u%s+%lx", BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, build_beta, build_timestamp());
                 json_ptr->endObject();
                 json_ptr->end();
             }

@@ -50,19 +50,19 @@ enum class PhaseRotation {
 };
 
 struct Cost {
-    int pv = 0;
-    int l1 = 0;
-    int l2 = 0;
-    int l3 = 0;
+    int32_t pv = 0;
+    int32_t l1 = 0;
+    int32_t l2 = 0;
+    int32_t l3 = 0;
 
     Cost () : pv(0), l1(0), l2(0), l3(0) {}
-    Cost (int pv, int l1, int l2, int l3) : pv(pv), l1(l1), l2(l2), l3(l3) {}
+    Cost (int32_t pv, int32_t l1, int32_t l2, int32_t l3) : pv(pv), l1(l1), l2(l2), l3(l3) {}
 
-    int &operator[](size_t idx) { return *(&pv + idx); }
-    const int &operator[](size_t idx) const { return *(&pv + idx); }
+    int32_t &operator[](size_t idx) { return *(&pv + idx); }
+    const int32_t &operator[](size_t idx) const { return *(&pv + idx); }
 
-    int &operator[](GridPhase p) { return *(&pv + (int)p); }
-    const int &operator[](GridPhase p) const { return *(&pv + (int)p); }
+    int32_t &operator[](GridPhase p) { return *(&pv + (int32_t)p); }
+    const int32_t &operator[](GridPhase p) const { return *(&pv + (int32_t)p); }
 
     // Looks strange but seems to be best practice:
     // https://en.cppreference.com/w/cpp/language/operators#Binary_arithmetic_operators
@@ -94,11 +94,11 @@ struct Cost {
         return lhs;
     }
 };
-static_assert(sizeof(Cost) == 4 * sizeof(int), "Unexpected size of Cost");
+static_assert(sizeof(Cost) == 4 * sizeof(int32_t), "Unexpected size of Cost");
 
 struct CurrentLimits {
     Cost raw;
     Cost min;
     Cost spread;
-    int max_pv;
+    int32_t max_pv;
 };

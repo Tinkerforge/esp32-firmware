@@ -703,7 +703,7 @@ void FrontPanel::check_flash_metadata()
     // This print will help to identify which part is not up-to-date
     if (!metadata_ok) {
         logger.printfln(
-            "Flash metadata mismatch. Version: %u vs %u vs %u, Length: %u vs %u vs %u, Checksum: %x vs %x vs %x",
+            "Flash metadata mismatch. Version: %lu vs %lu vs %u, Length: %lu vs %lu vs %u, Checksum: %lx vs %lx vs %x",
             version_flash,  version_bricklet,  METADATA_VERSION,
             length_flash,   length_bricklet,   METADATA_LENGTH,
             checksum_flash, checksum_bricklet, METADATA_CHECKSUM

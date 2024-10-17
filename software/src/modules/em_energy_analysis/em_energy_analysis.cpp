@@ -127,7 +127,7 @@ void EMEnergyAnalysis::register_events()
 
             if (count == 0) {
                 if (show_blank_value_id_update_warnings) {
-                    logger.printfln("Ignoring blank value IDs update from meter in slot %u.", slot);
+                    logger.printfln("Ignoring blank value IDs update from meter in slot %lu.", slot);
                 }
                 return EventResult::OK;
             }
@@ -136,12 +136,12 @@ void EMEnergyAnalysis::register_events()
 
             uint32_t power_index;
             if (meters.get_cached_power_index(slot, &power_index)) {
-                event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {power_index}, [this, slot](const Config *config_power) {
+                event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {(size_t)power_index}, [this, slot](const Config *config_power) {
                     update_history_meter_power(slot, config_power->asFloat());
                     return EventResult::OK;
                 });
             } else {
-                logger.printfln("Meter in slot %u doesn't provide power.", slot);
+                logger.printfln("Meter in slot %lu doesn't provide power.", slot);
             }
 
             return EventResult::Deregister;
@@ -704,7 +704,7 @@ bool EMEnergyAnalysis::set_wallbox_5min_data_point(const struct tm *utc, const s
         int buf_written = asprintf(&buf,
                                    "{\"topic\":\"energy_manager/history_wallbox_5min_changed\","
                                     "\"payload\":{"
-                                    "\"uid\":%u,"
+                                    "\"uid\":%lu,"
                                     "\"year\":%u,"
                                     "\"month\":%u,"
                                     "\"day\":%u,"
@@ -771,7 +771,7 @@ bool EMEnergyAnalysis::set_wallbox_daily_data_point(const struct tm *local, uint
         int buf_written = asprintf(&buf,
                                    "{\"topic\":\"energy_manager/history_wallbox_daily_changed\","
                                     "\"payload\":{"
-                                    "\"uid\":%u,"
+                                    "\"uid\":%lu,"
                                     "\"year\":%u,"
                                     "\"month\":%u,"
                                     "\"day\":%u,"
@@ -848,7 +848,7 @@ bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
 
         for (int i = 0; i < 7; ++i) {
             if (power[i] != INT32_MAX) {
-                snprintf(power_str[i], sizeof(power_str[i]), "%d", power[i]);
+                snprintf(power_str[i], sizeof(power_str[i]), "%ld", power[i]);
             }
         }
 
@@ -896,8 +896,8 @@ bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
     }
 }
 
-#define PRICE_UINT10_MAX 1023
-#define PRICE_INT10_MAX  911
+#define PRICE_UINT10_MAX 1023l
+#define PRICE_INT10_MAX  911l
 #define PRICE_INT10_MIN  (PRICE_INT10_MAX - PRICE_UINT10_MAX)
 
 static uint32_t price_to_10bit(int32_t price)
@@ -984,15 +984,15 @@ bool EMEnergyAnalysis::set_energy_manager_daily_data_point(const struct tm *loca
         }
 
         if (price_min != INT32_MAX) {
-            snprintf(price_min_str, sizeof(price_min_str), "%d", price_min);
+            snprintf(price_min_str, sizeof(price_min_str), "%ld", price_min);
         }
 
         if (price_avg != INT32_MAX) {
-            snprintf(price_avg_str, sizeof(price_avg_str), "%d", price_avg);
+            snprintf(price_avg_str, sizeof(price_avg_str), "%ld", price_avg);
         }
 
         if (price_max != INT32_MAX) {
-            snprintf(price_max_str, sizeof(price_max_str), "%d", price_max);
+            snprintf(price_max_str, sizeof(price_max_str), "%ld", price_max);
         }
 
         char *buf;
@@ -1085,7 +1085,7 @@ static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_len
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("Failed to get wallbox 5min data point: seqnum %u, stream out of sync (%u != %u)", metadata->seqnum, metadata->next_offset, data_chunk_offset);
+        logger.printfln("Failed to get wallbox 5min data point: seqnum %lu, stream out of sync (%u != %u)", metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
             write_success = response->write("]");
@@ -1160,10 +1160,10 @@ static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_len
 
                     if (rc != TF_E_OK || status != 0) {
                         if (rc != TF_E_OK) {
-                            logger.printfln("Failed to continue getting wallbox 5min data point: seqnum %u, error %d", metadata->seqnum, rc);
+                            logger.printfln("Failed to continue getting wallbox 5min data point: seqnum %lu, error %d", metadata->seqnum, rc);
                         }
                         else if (status != 0) {
-                            logger.printfln("Failed to continue getting wallbox 5min data point: seqnum %u, status (%s, %u)", metadata->seqnum, get_data_status_string(status), status);
+                            logger.printfln("Failed to continue getting wallbox 5min data point: seqnum %lu, status (%s, %u)", metadata->seqnum, get_data_status_string(status), status);
                         }
 
                         OwnershipGuard ownership_guard2(metadata->response_ownership, metadata->response_owner_id);
@@ -1283,12 +1283,12 @@ void EMEnergyAnalysis::history_wallbox_5min_response(IChunkedResponse *response,
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get wallbox 5min data point: seqnum %u, error %d", seqnum, rc);
-                logger.printfln("Failed to get wallbox 5min data point: seqnum %u, error %d", seqnum, rc);
+                response->writef("Failed to get wallbox 5min data point: seqnum %lu, error %d", seqnum, rc);
+                logger.printfln("Failed to get wallbox 5min data point: seqnum %lu, error %d", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get wallbox 5min data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
-                logger.printfln("Failed to get wallbox 5min data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                response->writef("Failed to get wallbox 5min data point: seqnum %lu, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                logger.printfln("Failed to get wallbox 5min data point: seqnum %lu, status (%s, %u)", seqnum, get_data_status_string(status), status);
             }
 
             response->flush();
@@ -1342,7 +1342,7 @@ static void wallbox_daily_data_points_handler(void *do_not_use,
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("Failed to get wallbox daily data point: seqnum %u, stream out of sync (%u != %u)",
+        logger.printfln("Failed to get wallbox daily data point: seqnum %lu, stream out of sync (%u != %u)",
                         metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
@@ -1443,12 +1443,12 @@ void EMEnergyAnalysis::history_wallbox_daily_response(IChunkedResponse *response
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get wallbox daily data point: seqnum %u, error %d", seqnum, rc);
-                logger.printfln("Failed to get wallbox daily data point: seqnum %u, error %d", seqnum, rc);
+                response->writef("Failed to get wallbox daily data point: seqnum %lu, error %d", seqnum, rc);
+                logger.printfln("Failed to get wallbox daily data point: seqnum %lu, error %d", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get wallbox daily data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
-                logger.printfln("Failed to get wallbox daily data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                response->writef("Failed to get wallbox daily data point: seqnum %lu, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                logger.printfln("Failed to get wallbox daily data point: seqnum %lu, status (%s, %u)", seqnum, get_data_status_string(status), status);
             }
 
             response->flush();
@@ -1507,7 +1507,7 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("Failed to get energy manager 5min data point: seqnum %u, stream out of sync (%u != %u)",
+        logger.printfln("Failed to get energy manager 5min data point: seqnum %lu, stream out of sync (%u != %u)",
                         metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
@@ -1593,10 +1593,10 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
 
                     if (rc != TF_E_OK || status != 0) {
                         if (rc != TF_E_OK) {
-                            logger.printfln("Failed to continue getting energy manager 5min data point: seqnum %u, error %d", metadata->seqnum, rc);
+                            logger.printfln("Failed to continue getting energy manager 5min data point: seqnum %lu, error %d", metadata->seqnum, rc);
                         }
                         else if (status != 0) {
-                            logger.printfln("Failed to continue getting energy manager 5min data point: seqnum %u, status (%s, %u)", metadata->seqnum, get_data_status_string(status), status);
+                            logger.printfln("Failed to continue getting energy manager 5min data point: seqnum %lu, status (%s, %u)", metadata->seqnum, get_data_status_string(status), status);
                         }
 
                         OwnershipGuard ownership_guard2(metadata->response_ownership, metadata->response_owner_id);
@@ -1714,12 +1714,12 @@ void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *re
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get energy manager 5min data point: seqnum %u, error %d", seqnum, rc);
-                logger.printfln("Failed to get energy manager 5min data point: seqnum %u, error %d", seqnum, rc);
+                response->writef("Failed to get energy manager 5min data point: seqnum %lu, error %d", seqnum, rc);
+                logger.printfln("Failed to get energy manager 5min data point: seqnum %lu, error %d", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get energy manager 5min data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
-                logger.printfln("Failed to get energy manager 5min data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                response->writef("Failed to get energy manager 5min data point: seqnum %lu, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                logger.printfln("Failed to get energy manager 5min data point: seqnum %lu, status (%s, %u)", seqnum, get_data_status_string(status), status);
             }
 
             response->flush();
@@ -1772,7 +1772,7 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
     }
 
     if (metadata->next_offset != data_chunk_offset) {
-        logger.printfln("Failed to get energy manager daily data point: seqnum %u, stream out of sync (%u != %u)",
+        logger.printfln("Failed to get energy manager daily data point: seqnum %lu, stream out of sync (%u != %u)",
                         metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
         if (write_success) {
@@ -1898,12 +1898,12 @@ void EMEnergyAnalysis::history_energy_manager_daily_response(IChunkedResponse *r
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get energy manager daily data point: seqnum %u, error %d", seqnum, rc);
-                logger.printfln("Failed to get energy manager daily data point: seqnum %u, error %d", seqnum, rc);
+                response->writef("Failed to get energy manager daily data point: seqnum %lu, error %d", seqnum, rc);
+                logger.printfln("Failed to get energy manager daily data point: seqnum %lu, error %d", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get energy manager daily data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
-                logger.printfln("Failed to get energy manager daily data point: seqnum %u, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                response->writef("Failed to get energy manager daily data point: seqnum %lu, status (%s, %u)", seqnum, get_data_status_string(status), status);
+                logger.printfln("Failed to get energy manager daily data point: seqnum %lu, status (%s, %u)", seqnum, get_data_status_string(status), status);
             }
 
             response->flush();

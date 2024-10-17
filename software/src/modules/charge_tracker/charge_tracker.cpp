@@ -269,7 +269,7 @@ void ChargeTracker::removeOldRecords()
 
     while (this->last_charge_record - this->first_charge_record >= 30) {
         String name = chargeRecordFilename(this->first_charge_record);
-        logger.printfln("Got %u charge records. Dropping the first one (%s)", this->last_charge_record - this->first_charge_record, name.c_str());
+        logger.printfln("Got %lu charge records. Dropping the first one (%s)", this->last_charge_record - this->first_charge_record, name.c_str());
         {
             File f = LittleFS.open(name, "r");
             size_t size = f.size();
@@ -367,10 +367,10 @@ bool ChargeTracker::setupRecords()
     uint32_t first = found_blobs[0];
     uint32_t last = found_blobs[found_blob_counter - 1];
 
-    logger.printfln("Found %u record%s: first is %u, last is %u", found_blob_counter, found_blob_counter == 1 ? "" : "s", first, last);
+    logger.printfln("Found %u record%s: first is %lu, last is %lu", found_blob_counter, found_blob_counter == 1 ? "" : "s", first, last);
     for (int i = 0; i < found_blob_counter - 1; ++i) {
         if (found_blobs[i] + 1 != found_blobs[i + 1]) {
-            logger.printfln("Non-consecutive charge records found! (Next after %u is %u. Expected was %u", found_blobs[i], found_blobs[i+1], found_blobs[i] + 1);
+            logger.printfln("Non-consecutive charge records found! (Next after %lu is %lu. Expected was %lu", found_blobs[i], found_blobs[i+1], found_blobs[i] + 1);
             return false;
         }
 
@@ -618,7 +618,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
             memcpy(buf, ">=10000", ARRAY_SIZE(">=10000"));
             buf += ARRAY_SIZE(">=10000");
         } else {
-            buf += 1 + sprintf_u(buf, "%d%c%02d", cost / 100, english ? '.' : ',', cost % 100);
+            buf += 1 + sprintf_u(buf, "%ld%c%02ld", cost / 100, english ? '.' : ',', cost % 100);
         }
     }
     return buf;
@@ -722,7 +722,7 @@ void ChargeTracker::repair_charges()
         buf[0] = buf[256];
     }
     if (num_repaired != 0) {
-        logger.printfln("Repaired %u charge-entries.", num_repaired);
+        logger.printfln("Repaired %lu charge-entries.", num_repaired);
     }
 }
 
@@ -975,7 +975,7 @@ search_done:
         stats_head += 1 + written;
 
         if (electricity_price != 0) {
-            written = sprintf_u(stats_head, "%s: %d.%02d€ (%.2f ct/kWh)%s",
+            written = sprintf_u(stats_head, "%s: %ld.%02ld€ (%.2f ct/kWh)%s",
                             english ? "Total cost" : "Gesamtkosten",
                             charged_cost_sum / 100, charged_cost_sum % 100,
                             electricity_price / 100.0f,

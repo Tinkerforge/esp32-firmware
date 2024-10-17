@@ -85,7 +85,7 @@ struct timeval RtcBricklet::get_time()
 
     struct timeval time;
     time.tv_usec = static_cast<suseconds_t>(ts % 1000) * 1000;
-    time.tv_sec  = static_cast<time_t>(ts / 1000);
+    time.tv_sec  = ts / 1000;
 
     // Unix timestamps start at 1970-01-01, the RTC starts at year 00 (i.e. 2000). Add the unix timestamp of 2000-01-01 00:00:00
     time.tv_sec += 946684800;

@@ -180,7 +180,7 @@ void Heating::update()
     const uint8_t minimum_control_holding_time = config.get("minimum_control_holding_time")->asUint();
     const uint32_t minutes = rtc.timestamp_minutes();
     if(minutes < (last_sg_ready_change + minimum_control_holding_time)) {
-        extended_logging("Minimum control holding time not reached. Current time: %dmin, last change: %dmin, minimum holding time: %dmin.", minutes, last_sg_ready_change, minimum_control_holding_time);
+        extended_logging("Minimum control holding time not reached. Current time: %ldmin, last change: %ldmin, minimum holding time: %dmin.", minutes, last_sg_ready_change, minimum_control_holding_time);
         return;
     }
 
@@ -227,9 +227,9 @@ void Heating::update()
         float watt_current = 0;
         MeterValueAvailability meter_availability = meters.get_power(meter_slot_grid_power, &watt_current);
         if (meter_availability != MeterValueAvailability::Fresh) {
-            extended_logging("Meter value not available (meter %d has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
+            extended_logging("Meter value not available (meter %ld has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
         } else if ((-watt_current) > pv_excess_control_threshold) {
-            extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, pv_excess_control_threshold);
+            extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %ldW.", (int)watt_current, pv_excess_control_threshold);
             sg_ready1_on |= true;
         }
     };
@@ -250,19 +250,19 @@ void Heating::update()
         } else {
             if (dpc_extended_active) {
                 if (price_current.data < price_average.data * dpc_extended_threshold / 100.0) {
-                    extended_logging("Price is below extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
+                    extended_logging("Price is below extended threshold. Average price: %ldmct, current price: %ldmct, threshold: %lu%%.", price_average.data, price_current.data, dpc_extended_threshold);
                     sg_ready1_on |= true;
                 } else {
-                    extended_logging("Price is above extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
+                    extended_logging("Price is above extended threshold. Average price: %ldmct, current price: %ldmct, threshold: %lu%%.", price_average.data, price_current.data, dpc_extended_threshold);
                     sg_ready1_on |= false;
                 }
             }
             if (dpc_blocking_active) {
                 if (price_current.data > price_average.data * dpc_blocking_threshold / 100.0) {
-                    extended_logging("Price is above blocking threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
+                    extended_logging("Price is above blocking threshold. Average price: %ldmct, current price: %ldmct, threshold: %lu%%.", price_average.data, price_current.data, dpc_blocking_threshold);
                     sg_ready0_on |= true;
                 } else {
-                    extended_logging("Price is below blocking threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
+                    extended_logging("Price is below blocking threshold. Average price: %ldmct, current price: %ldmct, threshold: %lu%%.", price_average.data, price_current.data, dpc_blocking_threshold);
                     sg_ready0_on |= false;
                 }
             }
@@ -270,7 +270,7 @@ void Heating::update()
     };
 
     if (!is_summer) { // Winter
-        extended_logging("It is winter. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
+        extended_logging("It is winter. Current month: %d, summer start month: %ld, summer end month: %ld, current day: %d, summer start day: %ld, summer end day: %ld.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
         if (!dpc_extended_active && !dpc_blocking_active && !pv_excess_control_active) {
             extended_logging("It is winter but no winter control active.");
         } else {
@@ -278,21 +278,21 @@ void Heating::update()
             handle_pv_excess();
         }
     } else { // Summer
-        extended_logging("It is summer. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
+        extended_logging("It is summer. Current month: %d, summer start month: %ld, summer end month: %ld, current day: %d, summer start day: %ld, summer end day: %ld.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
         bool blocked = false;
         bool is_morning = false;
         bool is_evening = false;
         if (summer_active_time_active) {
             if (current_minutes <= summer_active_time_start) { // if is between 00:00 and summer_active_time_start
-                extended_logging("We are outside morning active time. Current time: %d, active time morning start: %d.", current_minutes, summer_active_time_start);
+                extended_logging("We are outside morning active time. Current time: %d, active time morning start: %ld.", current_minutes, summer_active_time_start);
                 blocked    = true;
                 is_morning = true;
             } else if(summer_active_time_end <= current_minutes) { // if is between summer_active_time_end and 23:59
-                extended_logging("We are outside evening active time. Current time: %d, active time evening end: %d.", current_minutes, summer_active_time_end);
+                extended_logging("We are outside evening active time. Current time: %d, active time evening end: %ld.", current_minutes, summer_active_time_end);
                 blocked    = true;
                 is_evening = true;
             } else {
-                extended_logging("We are in active time. Current time: %d, active time morning: %d, active time evening: %d.", current_minutes, summer_active_time_start, summer_active_time_end);
+                extended_logging("We are in active time. Current time: %d, active time morning: %ld, active time evening: %ld.", current_minutes, summer_active_time_start, summer_active_time_end);
             }
         }
 
@@ -313,10 +313,10 @@ void Heating::update()
                 extended_logging("Expected PV yield not available. Ignoring yield forecast.");
             } else {
                 if (wh_expected.data/1000 < summer_yield_forecast_threshold) {
-                    extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", wh_expected.data/1000, summer_yield_forecast_threshold);
+                    extended_logging("Expected PV yield %ldkWh is below threshold of %lukWh.", wh_expected.data/1000, summer_yield_forecast_threshold);
                     blocked = false;
                 } else {
-                    extended_logging("Expected PV yield %dkWh is above or equal to threshold of %dkWh.", wh_expected.data/1000, summer_yield_forecast_threshold);
+                    extended_logging("Expected PV yield %ldkWh is above or equal to threshold of %lukWh.", wh_expected.data/1000, summer_yield_forecast_threshold);
                 }
             }
         }

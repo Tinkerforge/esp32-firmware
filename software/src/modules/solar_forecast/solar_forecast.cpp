@@ -256,10 +256,10 @@ void SolarForecast::deserialize_data()
         download_state = SF_DOWNLOAD_STATE_ERROR;
     } else {
         JsonObject js_message = json_doc["message"];
-        JsonInteger code      = js_message["code"];
+        int code              = js_message["code"];
         if (code != 0) {
             JsonString text = js_message["text"];
-            logger.printfln("Solar Forecast server returned error code %ld (%s)", code, text.c_str());
+            logger.printfln("Solar Forecast server returned error code %d (%s)", code, text.c_str());
             if(code == 429) { // 429 = rate limit reached
                 logger.printfln("Solar Forecast rate limit reached, next solar forecast API call will be in 2 hours");
                 next_sync_forced = rtc.timestamp_minutes() + 120;
@@ -277,9 +277,9 @@ void SolarForecast::deserialize_data()
             JsonString place         = js_info["place"];
             plane_current->state.get("place")->updateString(place.c_str());
 
-            JsonInteger limit        = js_ratelimit["limit"];
-            JsonInteger remaining    = js_ratelimit["remaining"];
-            JsonInteger period       = js_ratelimit["period"];
+            int limit        = js_ratelimit["limit"];
+            int remaining    = js_ratelimit["remaining"];
+            int period       = js_ratelimit["period"];
             state.get("rate_limit")->updateInt(limit);
             state.get("rate_remaining")->updateInt(remaining);
             if (remaining == 0) {

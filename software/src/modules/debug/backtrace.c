@@ -41,7 +41,7 @@ size_t strn_backtrace(char *strn, size_t remaining, size_t skip_frames)
             if (skip_frames > 0) {
                 skip_frames--;
             } else {
-                size_t written = snprintf(strn + total_written, remaining, "0x%08x:0x%08x ", esp_cpu_process_stack_pc(frame.pc), frame.sp);
+                size_t written = snprintf(strn + total_written, remaining, "0x%08lx:0x%08lx ", esp_cpu_process_stack_pc(frame.pc), frame.sp);
                 if (written <= 0) {
                     return total_written;
                 }
