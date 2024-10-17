@@ -1,0 +1,25 @@
+From 0679c61e0075edf5636046669bbb8c721ef187ba Mon Sep 17 00:00:00 2001
+From: Erik Fleckstein <erik@tinkerforge.com>
+Date: Wed, 16 Oct 2024 11:26:14 +0200
+Subject: [PATCH] wifi: set STA failure_retry_cnt to 3.
+
+See https://github.com/Tinkerforge/esp32-firmware/issues/234
+---
+ libraries/WiFi/src/STA.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/libraries/WiFi/src/STA.cpp b/libraries/WiFi/src/STA.cpp
+index 582d5c52..5649bd53 100644
+--- a/libraries/WiFi/src/STA.cpp
++++ b/libraries/WiFi/src/STA.cpp
+@@ -381,6 +381,7 @@ bool STAClass::connect(const char *ssid, const char *passphrase, int32_t channel
+   conf.sta.sort_method = _sortMethod;
+   conf.sta.threshold.rssi = -127;
+   conf.sta.pmf_cfg.capable = true;
++  conf.sta.failure_retry_cnt = 3;
+   if (ssid != NULL && ssid[0] != 0) {
+     _wifi_strncpy((char *)conf.sta.ssid, ssid, 32);
+     if (passphrase != NULL && passphrase[0] != 0) {
+-- 
+2.47.0
+

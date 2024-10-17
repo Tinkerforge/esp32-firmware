@@ -1,6 +1,6 @@
-From 5e9b62f68a51e8bc3ff6a18bd5accaaf015f0298 Mon Sep 17 00:00:00 2001
+From 755af6231fadae5b36dcce54c2ed3c2e36662c94 Mon Sep 17 00:00:00 2001
 From: Erik Fleckstein <erik@tinkerforge.com>
-Date: Tue, 27 Aug 2024 10:10:45 +0200
+Date: Thu, 10 Oct 2024 16:22:32 +0200
 Subject: [PATCH] ssl_tls: Add work-around for broken asymmetric buffers.
 
 ---
@@ -8,13 +8,13 @@ Subject: [PATCH] ssl_tls: Add work-around for broken asymmetric buffers.
  1 file changed, 13 insertions(+), 2 deletions(-)
 
 diff --git a/library/ssl_tls.c b/library/ssl_tls.c
-index c667a2923..fd5948329 100644
+index c5e06491c..4fa0b5c44 100644
 --- a/library/ssl_tls.c
 +++ b/library/ssl_tls.c
-@@ -5015,6 +5015,17 @@ const char *mbedtls_ssl_get_version(const mbedtls_ssl_context *ssl)
+@@ -3160,6 +3160,17 @@ size_t mbedtls_ssl_get_output_record_size_limit(const mbedtls_ssl_context *ssl)
  size_t mbedtls_ssl_get_input_max_frag_len(const mbedtls_ssl_context *ssl)
  {
-     size_t max_len = MBEDTLS_SSL_MAX_CONTENT_LEN;
+     size_t max_len = MBEDTLS_SSL_IN_CONTENT_LEN;
 +
 +    /*
 +     * The buffer management is broken somewhere resulting in an input buffer
@@ -28,9 +28,9 @@ index c667a2923..fd5948329 100644
 +
      size_t read_mfl;
  
-     /* Use the configured MFL for the client if we're past SERVER_HELLO_DONE */
-@@ -5024,8 +5035,8 @@ size_t mbedtls_ssl_get_input_max_frag_len(const mbedtls_ssl_context *ssl)
-     }
+ #if defined(MBEDTLS_SSL_PROTO_TLS1_2)
+@@ -3171,8 +3182,8 @@ size_t mbedtls_ssl_get_input_max_frag_len(const mbedtls_ssl_context *ssl)
+ #endif
  
      /* Check if a smaller max length was negotiated */
 -    if (ssl->session_out != NULL) {
@@ -41,5 +41,5 @@ index c667a2923..fd5948329 100644
              max_len = read_mfl;
          }
 -- 
-2.46.0
+2.47.0
 
