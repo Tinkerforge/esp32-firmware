@@ -25,6 +25,11 @@
 
 #include "module.h"
 #include "config.h"
+#include "module_available.h"
+
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
 
 // TODO: We can reduce this again after reducing data on weekend on API server
 #define DAY_AHEAD_PRICE_MAX_JSON_LENGTH 4096*2
@@ -37,6 +42,9 @@ enum DAPDownloadState {
 };
 
 class DayAheadPrices final : public IModule
+#if MODULE_AUTOMATION_AVAILABLE()
+                          , public IAutomationBackend
+#endif
 {
 private:
     void update();
@@ -77,4 +85,8 @@ public:
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot prices;
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    bool has_triggered(const Config *conf, void *data) override;
+#endif
 };

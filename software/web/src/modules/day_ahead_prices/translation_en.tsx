@@ -35,7 +35,35 @@ let x = {
             "current_price": "Current market price",
             "undefined": "Undefined",
             "now": "Now",
-            "vat": "VAT"
+            "vat": "VAT",
+            "vat_help": <>
+                <p>Hier wird die MwSt für den Netto-Börsenpreis angegeben. Es gibt drei Möglichkeiten für die optionalen Einstellungen:</p>
+                <p>
+                    <ul>
+                        <li>Alles auf 0 lassen: Es wird der Netto-Börsenpreis angezeigt</li>
+                        <li>MwSt auf 0 lassen und Bei den Gebühren den Nettopreis eintragen: Es wird der Netto-Strompreis inkl. Gebühren angezeigt</li>
+                        <li>MwSt korrekt eintragen und die Gebühren als Bruttopreis eintragen: Es wird der Brutto-Strompreis inkl. Gebühren angezeigt</li>
+                    </ul>
+                </p>
+            </>
+        },
+        "automation": {
+            "automation_trigger_text": /*FFN*/(type: number, comparison: number, value: number) => {
+                if (type == 0) {// average
+                    if (comparison == 0) { // greater
+                        return (<>Wenn der aktuelle Strompreis größer als {value}% des Strompreis-Tagesdurchschnitt ist,{" "}</>)
+                    } else if (comparison == 1) { // less
+                        return (<>Wenn der aktuelle Strompreis kleiner als {value}% des Strompreis-Tagesdurchschnitt ist,{" "}</>)
+                    }
+                } else if (type == 1) { // absolute
+                    if (comparison == 0) { // greater
+                        return (<>Wenn der aktuelle Strompreis größer als {value} ct ist,{" "}</>)
+                    } else if (comparison == 1) { // less
+                        return (<>Wenn der aktuelle Strompreis kleiner als {value} ct ist,{" "}</>)
+                    }
+                }
+                return (<>Unbekannt,{" "}</>)
+            }/*NF*/
         },
         "script": {
             "save_failed": "Failed to save the day ahead prices settings",

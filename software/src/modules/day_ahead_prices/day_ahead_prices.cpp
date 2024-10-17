@@ -104,6 +104,17 @@ void DayAheadPrices::pre_setup()
         {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
         {"prices",     Config::Array({}, Config::get_prototype_int32_0(), 0, 25 /*DST switchover*/ * 4 * 2, Config::type_id<Config::ConfInt>())}
     });
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_trigger(
+        AutomationTriggerID::DayAheadPriceNow,
+        Config::Object({
+            {"type", Config::Int32(INT32_MAX)},
+            {"comparison", Config::Int32(INT32_MAX)},
+            {"value", Config::Int32(INT32_MAX)},
+        })
+    );
+#endif
 }
 
 void DayAheadPrices::setup()
@@ -194,6 +205,8 @@ static esp_err_t update_event_handler(esp_http_client_event_t *event)
 
 void DayAheadPrices::update_price()
 {
+    static int32_t last_price = INT32_MAX;
+
     const uint32_t resolution_divisor = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
     const uint32_t diff = rtc.timestamp_minutes() - prices.get("first_date")->asUint();
     const uint32_t index = diff/resolution_divisor;
@@ -204,6 +217,16 @@ void DayAheadPrices::update_price()
         state.get("current_price")->updateInt(prices.get("prices")->get(index)->asInt());
         current_price_available = true;
     }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    if (boot_stage > BootStage::SETUP) {
+        int32_t current_price = state.get("current_price")->asInt();
+        if ((current_price != INT32_MAX) && (current_price != last_price)) {
+            automation.trigger(AutomationTriggerID::DayAheadPriceNow, &current_price, this);
+            last_price = current_price;
+        }
+    }
+#endif
 }
 
 void DayAheadPrices::update()
@@ -541,3 +564,33 @@ int32_t DayAheadPrices::get_grid_cost_plus_tax_plus_markup()
 {
     return config.get("grid_costs_and_taxes")->asUint() + config.get("supplier_markup")->asUint();
 }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+bool DayAheadPrices::has_triggered(const Config *conf, void *data)
+{
+    if (conf->getTag<AutomationTriggerID>() == AutomationTriggerID::DayAheadPriceNow) {
+        const Config *cfg = static_cast<const Config *>(conf->get());
+        const int32_t current_price = *(int32_t *)data;
+        const int32_t type = cfg->get("type")->asInt();
+        const int32_t comparison = cfg->get("comparison")->asInt();
+        const int32_t value = cfg->get("value")->asInt();
+
+        if (type == 0) {// average
+            auto avg = get_average_price_today();
+            if (comparison == 0) { // greater
+                return avg.data_available && (current_price > (avg.data*value/100));
+            } else if (comparison == 1) { // less
+                return avg.data_available && (current_price < (avg.data*value/100));
+            }
+        } else if (type == 1) { // absolute
+            if (comparison == 0) { // greater
+                return current_price > (value*1000);
+            } else if (comparison == 1) { // less
+                return current_price < (value*1000);
+            }
+        }
+    }
+
+    return false;
+}
+#endif
