@@ -1,47 +1,45 @@
-From bd8c0377eac15db67cac1746bebc411aeed94933 Mon Sep 17 00:00:00 2001
+From 84d66d04511edab3be8c2f62f982f342326522e4 Mon Sep 17 00:00:00 2001
 From: Erik Fleckstein <erik@tinkerforge.com>
-Date: Mon, 13 Nov 2023 13:09:19 +0100
+Date: Wed, 16 Oct 2024 10:49:53 +0200
 Subject: [PATCH] Remove automatic reconnect if first connect after startup
  fails.
 
 ---
- libraries/WiFi/src/WiFiGeneric.cpp | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ libraries/WiFi/src/STA.cpp | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/libraries/WiFi/src/WiFiGeneric.cpp b/libraries/WiFi/src/WiFiGeneric.cpp
-index 3760285d..d182adc6 100644
---- a/libraries/WiFi/src/WiFiGeneric.cpp
-+++ b/libraries/WiFi/src/WiFiGeneric.cpp
-@@ -1036,8 +1036,6 @@ void WiFiGenericClass::removeEvent(wifi_event_id_t id)
-  */
- esp_err_t WiFiGenericClass::_eventCallback(arduino_event_t *event)
- {
--    static bool first_connect = true;
--
-     if(!event) return ESP_OK;                                                       //Null would crash this function
+diff --git a/libraries/WiFi/src/STA.cpp b/libraries/WiFi/src/STA.cpp
+index 443d2621..582d5c52 100644
+--- a/libraries/WiFi/src/STA.cpp
++++ b/libraries/WiFi/src/STA.cpp
+@@ -106,7 +106,6 @@ static void _onStaArduinoEvent(arduino_event_t *ev) {
+   if (_sta_network_if == NULL || ev->event_id < ARDUINO_EVENT_WIFI_STA_START || ev->event_id > ARDUINO_EVENT_WIFI_STA_LOST_IP) {
+     return;
+   }
+-  static bool first_connect = true;
+   log_v("Arduino STA Event: %d - %s", ev->event_id, Network.eventName(ev->event_id));
  
-     log_d("Arduino Event: %d - %s", event->event_id, WiFi.eventName(event->event_id));
-@@ -1065,7 +1063,7 @@ esp_err_t WiFiGenericClass::_eventCallback(arduino_event_t *event)
-         log_w("Reason: %u - %s", reason, WiFi.disconnectReasonName((wifi_err_reason_t)reason));
-         if(reason == WIFI_REASON_NO_AP_FOUND) {
-             WiFiSTAClass::_setStatus(WL_NO_SSID_AVAIL);
--        } else if((reason == WIFI_REASON_AUTH_FAIL) && !first_connect){
-+        } else if((reason == WIFI_REASON_AUTH_FAIL)){
-             WiFiSTAClass::_setStatus(WL_CONNECT_FAILED);
-         } else if(reason == WIFI_REASON_BEACON_TIMEOUT || reason == WIFI_REASON_HANDSHAKE_TIMEOUT) {
-             WiFiSTAClass::_setStatus(WL_CONNECTION_LOST);
-@@ -1079,11 +1077,6 @@ esp_err_t WiFiGenericClass::_eventCallback(arduino_event_t *event)
-         bool DoReconnect = false;
-         if(reason == WIFI_REASON_ASSOC_LEAVE) {                                     //Voluntarily disconnected. Don't reconnect!
-         }
--        else if(first_connect) {                                                    //Retry once for all failure reasons
--            first_connect = false;
--            DoReconnect = true;
--            log_d("WiFi Reconnect Running");
--        }
-         else if(WiFi.getAutoReconnect() && _isReconnectableReason(reason)) {
-             DoReconnect = true;
-             log_d("WiFi AutoReconnect Running");
+   if (ev->event_id == ARDUINO_EVENT_WIFI_STA_START) {
+@@ -135,7 +134,7 @@ static void _onStaArduinoEvent(arduino_event_t *ev) {
+     log_w("Reason: %u - %s", reason, WiFi.STA.disconnectReasonName((wifi_err_reason_t)reason));
+     if (reason == WIFI_REASON_NO_AP_FOUND) {
+       _sta_network_if->_setStatus(WL_NO_SSID_AVAIL);
+-    } else if ((reason == WIFI_REASON_AUTH_FAIL) && !first_connect) {
++    } else if ((reason == WIFI_REASON_AUTH_FAIL)) {
+       _sta_network_if->_setStatus(WL_CONNECT_FAILED);
+     } else if (reason == WIFI_REASON_BEACON_TIMEOUT || reason == WIFI_REASON_HANDSHAKE_TIMEOUT) {
+       _sta_network_if->_setStatus(WL_CONNECTION_LOST);
+@@ -147,10 +146,6 @@ static void _onStaArduinoEvent(arduino_event_t *ev) {
+ 
+     bool DoReconnect = false;
+     if (reason == WIFI_REASON_ASSOC_LEAVE) {  //Voluntarily disconnected. Don't reconnect!
+-    } else if (first_connect) {               //Retry once for all failure reasons
+-      first_connect = false;
+-      DoReconnect = true;
+-      log_d("WiFi Reconnect Running");
+     } else if (_sta_network_if->getAutoReconnect() && _is_staReconnectableReason(reason)) {
+       DoReconnect = true;
+       log_d("WiFi AutoReconnect Running");
 -- 
-2.42.0
+2.47.0
 
