@@ -1,85 +1,141 @@
-From dcd4c7d30c90b14c2fa51626d7e8406289df42c6 Mon Sep 17 00:00:00 2001
+From d759800b7c6b6d56a8bb6a33781a6635f2de733f Mon Sep 17 00:00:00 2001
 From: Erik Fleckstein <erik@tinkerforge.com>
-Date: Mon, 13 Nov 2023 09:55:16 +0100
+Date: Thu, 10 Oct 2024 10:35:51 +0200
 Subject: [PATCH] Disable unused components.
 
 ---
- CMakeLists.txt             |  4 ++--
- tools/update-components.sh | 18 +++++++++---------
- 2 files changed, 11 insertions(+), 11 deletions(-)
+ main/idf_component.yml | 118 ++++++++++++++++++++---------------------
+ 1 file changed, 59 insertions(+), 59 deletions(-)
 
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 63540cc..1a68e70 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -2,8 +2,8 @@
- # CMakeLists in this exact order for cmake to work correctly
- cmake_minimum_required(VERSION 3.5)
+diff --git a/main/idf_component.yml b/main/idf_component.yml
+index 4414085..7c17b48 100644
+--- a/main/idf_component.yml
++++ b/main/idf_component.yml
+@@ -1,65 +1,65 @@
+ dependencies:
+   # Required IDF version
+   idf: ">=5.3"
+-  espressif/esp32-camera:
+-    version: "master"
+-    git: https://github.com/espressif/esp32-camera.git
+-    require: public
+-    rules:
+-      - if: "target in [esp32, esp32s2, esp32s3]"
+-      - if: "$COMPONENTS_SUBSET in [full, all]"
+-  espressif/esp-tflite-micro:
+-    version: ">=1.2.0"
+-    require: public
+-    rules:
+-      - if: "target not in [esp32c2]"
+-      - if: "$COMPONENTS_SUBSET in [full, all]"
+-  # ESP-DL for ESP32, ESP32S2 and ESP32-S3
+-  espressif/esp-dl-old:
+-    version: "af7808ba09448ce82c704455975d4cf1e4305fd7"
+-    git: https://github.com/espressif/esp-dl.git
+-    require: public
+-    rules:
+-      - if: "target in [esp32s3, esp32s2, esp32]"
+-      - if: "$COMPONENTS_SUBSET in [full, all]"
+-  # ESP-DL for ESP32-P4
+-  espressif/esp-dl:
+-    version: "master"
+-    git: https://github.com/espressif/esp-dl.git
+-    path: esp-dl
+-    require: public
+-    rules:
+-      - if: "target in [esp32p4]"
+-      - if: "$COMPONENTS_SUBSET in [full, all]"
+-  # ESP-DL Face Detection for ESP32-P4
+-  espressif/human_face_detect:
+-    version: "master"
+-    git: https://github.com/espressif/esp-dl.git
+-    path: models/human_face_detect
+-    require: public
+-    rules:
+-      - if: "target in [esp32p4]"
+-      - if: "$COMPONENTS_SUBSET in [full, all]"
+-  # ESP-DL Pedestrian Detection for ESP32-P4
+-  espressif/pedestrian_detect:
+-    version: "master"
+-    git: https://github.com/espressif/esp-dl.git
+-    path: models/pedestrian_detect
+-    require: public
+-    rules:
+-      - if: "target in [esp32p4]"
+-      - if: "$COMPONENTS_SUBSET in [full, all]"
+-  espressif/esp-sr:
+-    version: ">=1.4.2"
+-    rules:
+-      - if: "target in [esp32s3]"
+-      - if: "$COMPONENTS_SUBSET in [full, all]"
+-  espressif/esp_matter:
+-    version: "^1.3.0"
+-    require: public
+-    rules:
+-      - if: "target not in [esp32c2, esp32h2, esp32p4]"
+-      - if: "$COMPONENTS_SUBSET in [full, all]"
++  # espressif/esp32-camera:
++  #   version: "master"
++  #   git: https://github.com/espressif/esp32-camera.git
++  #   require: public
++  #   rules:
++  #     - if: "target in [esp32, esp32s2, esp32s3]"
++  #     - if: "$COMPONENTS_SUBSET in [full, all]"
++  # espressif/esp-tflite-micro:
++  #   version: ">=1.2.0"
++  #   require: public
++  #   rules:
++  #     - if: "target not in [esp32c2]"
++  #     - if: "$COMPONENTS_SUBSET in [full, all]"
++  # # ESP-DL for ESP32, ESP32S2 and ESP32-S3
++  # espressif/esp-dl-old:
++  #   version: "af7808ba09448ce82c704455975d4cf1e4305fd7"
++  #   git: https://github.com/espressif/esp-dl.git
++  #   require: public
++  #   rules:
++  #     - if: "target in [esp32s3, esp32s2, esp32]"
++  #     - if: "$COMPONENTS_SUBSET in [full, all]"
++  # # ESP-DL for ESP32-P4
++  # espressif/esp-dl:
++  #   version: "master"
++  #   git: https://github.com/espressif/esp-dl.git
++  #   path: esp-dl
++  #   require: public
++  #   rules:
++  #     - if: "target in [esp32p4]"
++  #     - if: "$COMPONENTS_SUBSET in [full, all]"
++  # # ESP-DL Face Detection for ESP32-P4
++  # espressif/human_face_detect:
++  #   version: "master"
++  #   git: https://github.com/espressif/esp-dl.git
++  #   path: models/human_face_detect
++  #   require: public
++  #   rules:
++  #     - if: "target in [esp32p4]"
++  #     - if: "$COMPONENTS_SUBSET in [full, all]"
++  # # ESP-DL Pedestrian Detection for ESP32-P4
++  # espressif/pedestrian_detect:
++  #   version: "master"
++  #   git: https://github.com/espressif/esp-dl.git
++  #   path: models/pedestrian_detect
++  #   require: public
++  #   rules:
++  #     - if: "target in [esp32p4]"
++  #     - if: "$COMPONENTS_SUBSET in [full, all]"
++  # espressif/esp-sr:
++  #   version: ">=1.4.2"
++  #   rules:
++  #     - if: "target in [esp32s3]"
++  #     - if: "$COMPONENTS_SUBSET in [full, all]"
++  # espressif/esp_matter:
++  #   version: "^1.3.0"
++  #   require: public
++  #   rules:
++  #     - if: "target not in [esp32c2, esp32h2, esp32p4]"
++  #     - if: "$COMPONENTS_SUBSET in [full, all]"
  
--set(RMAKER_PATH ${CMAKE_SOURCE_DIR}/components/esp-rainmaker)
--set(EXTRA_COMPONENT_DIRS ${RMAKER_PATH}/components/esp-insights/components ${RMAKER_PATH}/components)
-+#set(RMAKER_PATH ${CMAKE_SOURCE_DIR}/components/esp-rainmaker)
-+#set(EXTRA_COMPONENT_DIRS ${RMAKER_PATH}/components/esp-insights/components ${RMAKER_PATH}/components)
- 
- include($ENV{IDF_PATH}/tools/cmake/project.cmake)
- project(arduino-lib-builder)
-diff --git a/tools/update-components.sh b/tools/update-components.sh
-index bd0e394..bf0b25f 100755
---- a/tools/update-components.sh
-+++ b/tools/update-components.sh
-@@ -57,7 +57,7 @@ if [ $? -ne 0 ]; then exit 1; fi
- #
- echo "Updating ESP32 Camera..."
- if [ ! -d "$AR_COMPS/esp32-camera" ]; then
--	git clone $CAMERA_REPO_URL "$AR_COMPS/esp32-camera"
-+	true #git clone $CAMERA_REPO_URL "$AR_COMPS/esp32-camera"
- else
- 	git -C "$AR_COMPS/esp32-camera" fetch && \
- 	git -C "$AR_COMPS/esp32-camera" pull --ff-only
-@@ -69,9 +69,9 @@ if [ $? -ne 0 ]; then exit 1; fi
- #
- echo "Updating ESP-DL..."
- if [ ! -d "$AR_COMPS/esp-dl" ]; then
--	git clone $DL_REPO_URL "$AR_COMPS/esp-dl" && \
--	git -C "$AR_COMPS/esp-dl" reset --hard 0632d2447dd49067faabe9761d88fa292589d5d9
--	if [ $? -ne 0 ]; then exit 1; fi
-+	true #git clone $DL_REPO_URL "$AR_COMPS/esp-dl" && \
-+	true #git -C "$AR_COMPS/esp-dl" reset --hard 0632d2447dd49067faabe9761d88fa292589d5d9
-+	true #if [ $? -ne 0 ]; then exit 1; fi
- fi
- 
- #
-@@ -93,9 +93,9 @@ if [ $? -ne 0 ]; then exit 1; fi
- #
- echo "Updating ESP-RainMaker..."
- if [ ! -d "$AR_COMPS/esp-rainmaker" ]; then
--    git clone $RMAKER_REPO_URL "$AR_COMPS/esp-rainmaker" && \
--	git -C "$AR_COMPS/esp-rainmaker" reset --hard d8e93454f495bd8a414829ec5e86842b373ff555 && \
--    git -C "$AR_COMPS/esp-rainmaker" submodule update --init --recursive
-+    true #git clone $RMAKER_REPO_URL "$AR_COMPS/esp-rainmaker" && \
-+	true #git -C "$AR_COMPS/esp-rainmaker" reset --hard d8e93454f495bd8a414829ec5e86842b373ff555 && \
-+    true #git -C "$AR_COMPS/esp-rainmaker" submodule update --init --recursive
- fi
- if [ $? -ne 0 ]; then exit 1; fi
- 
-@@ -104,7 +104,7 @@ if [ $? -ne 0 ]; then exit 1; fi
- #
- echo "Updating ESP-DSP..."
- if [ ! -d "$AR_COMPS/espressif__esp-dsp" ]; then
--	git clone $DSP_REPO_URL "$AR_COMPS/espressif__esp-dsp"
-+	true #git clone $DSP_REPO_URL "$AR_COMPS/espressif__esp-dsp"
- else
- 	git -C "$AR_COMPS/espressif__esp-dsp" fetch && \
- 	git -C "$AR_COMPS/espressif__esp-dsp" pull --ff-only
-@@ -116,7 +116,7 @@ if [ $? -ne 0 ]; then exit 1; fi
- #
- echo "Updating TinyUSB..."
- if [ ! -d "$AR_COMPS/arduino_tinyusb/tinyusb" ]; then
--	git clone $TINYUSB_REPO_URL "$AR_COMPS/arduino_tinyusb/tinyusb"
-+	true #git clone $TINYUSB_REPO_URL "$AR_COMPS/arduino_tinyusb/tinyusb"
- else
- 	git -C "$AR_COMPS/arduino_tinyusb/tinyusb" fetch && \
- 	git -C "$AR_COMPS/arduino_tinyusb/tinyusb" pull --ff-only
+   # esp-sr: "^1.3.1"
+   # esp32-camera: "^2.0.4"
 -- 
-2.42.0
+2.47.0
 

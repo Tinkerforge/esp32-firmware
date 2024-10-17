@@ -1,22 +1,21 @@
-From 1366fff78bcb821a57b5767a1b06c24ade01a569 Mon Sep 17 00:00:00 2001
+From 277003ad7b72d8001b9e3593313ed26945bf0e44 Mon Sep 17 00:00:00 2001
 From: Erik Fleckstein <erik@tinkerforge.com>
-Date: Mon, 17 Apr 2023 12:50:32 +0200
+Date: Thu, 10 Oct 2024 15:43:05 +0200
 Subject: [PATCH] dns: Add dns_removehost.
 
 ---
- src/core/dns.c         | 22 +++++++++++++++++++---
+ src/core/dns.c         | 16 ++++++++++++++++
  src/include/lwip/dns.h |  2 ++
- 2 files changed, 21 insertions(+), 3 deletions(-)
+ 2 files changed, 18 insertions(+)
 
 diff --git a/src/core/dns.c b/src/core/dns.c
-index bd02aa83..5a0ad78e 100644
+index 0b135ab7..7afeb489 100644
 --- a/src/core/dns.c
 +++ b/src/core/dns.c
-@@ -408,6 +408,22 @@ dns_clear_cache(void)
- {
+@@ -411,6 +411,22 @@ dns_clear_cache(void)
    memset(dns_table, 0, sizeof(struct dns_table_entry) * DNS_TABLE_SIZE);
  }
-+
+ 
 +err_t
 +dns_removehost(const char *hostname, const ip_addr_t *addr)
 +{
@@ -26,28 +25,29 @@ index bd02aa83..5a0ad78e 100644
 +
 +  for (i = 0; i < DNS_TABLE_SIZE; ++i) {
 +    if (((hostname == NULL) || (lwip_strnicmp(hostname, dns_table[i].name, sizeof(dns_table[i].name)) == 0))
-+        && ((addr == NULL) || ip_addr_cmp(addr, &dns_table[i].ipaddr))) {
++        && ((addr == NULL) || ip_addr_cmp(addr, dns_table[i].ipaddr))) {
 +      memset(&dns_table[i], 0, sizeof(struct dns_table_entry));
 +    }
 +  }
 +  return ERR_OK;
 +}
- #endif
-
++
  /**
+  * @ingroup dns
+  * Obtain one of the currently configured DNS server.
 diff --git a/src/include/lwip/dns.h b/src/include/lwip/dns.h
-index 7c9933ea..0d96b6ef 100644
+index 964daafb..955fffb4 100644
 --- a/src/include/lwip/dns.h
 +++ b/src/include/lwip/dns.h
-@@ -116,6 +116,8 @@ void             dns_clear_servers(bool keep_fallback);
+@@ -113,6 +113,8 @@ err_t            dns_gethostbyname_addrtype(const char *hostname, ip_addr_t *add
+                                    u8_t dns_addrtype);
  void             dns_clear_cache(void);
- #endif
-
+ 
 +err_t            dns_removehost(const char *hostname, const ip_addr_t *addr);
 +
  #if DNS_LOCAL_HOSTLIST
  size_t         dns_local_iterate(dns_found_callback iterator_fn, void *iterator_arg);
  err_t          dns_local_lookup(const char *hostname, ip_addr_t *addr, u8_t dns_addrtype);
---
-2.40.0
+-- 
+2.47.0
 

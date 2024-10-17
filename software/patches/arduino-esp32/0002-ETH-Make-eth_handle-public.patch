@@ -1,6 +1,6 @@
-From 0cd6d432a38a5ff1a89f34778fec9df78236fd08 Mon Sep 17 00:00:00 2001
+From 2b8d6d219b740426a957a525ea43392fefc5fd7b Mon Sep 17 00:00:00 2001
 From: Erik Fleckstein <erik@tinkerforge.com>
-Date: Fri, 3 Dec 2021 14:02:41 +0100
+Date: Wed, 16 Oct 2024 10:41:08 +0200
 Subject: [PATCH] ETH: Make eth_handle public.
 
 ---
@@ -8,18 +8,19 @@ Subject: [PATCH] ETH: Make eth_handle public.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/libraries/Ethernet/src/ETH.h b/libraries/Ethernet/src/ETH.h
-index 918cd357..824b066d 100644
+index 14d2d042..10ab283b 100644
 --- a/libraries/Ethernet/src/ETH.h
 +++ b/libraries/Ethernet/src/ETH.h
-@@ -57,7 +57,7 @@ typedef enum { ETH_PHY_LAN8720, ETH_PHY_TLK110, ETH_PHY_RTL8201, ETH_PHY_DP83848
- #define ETH_PHY_IP101 ETH_PHY_TLK110
+@@ -182,8 +182,8 @@ protected:
+ public:
+   void _onEthEvent(int32_t event_id, void *event_data);
  
- class ETHClass {
--    private:
-+    public:
-         bool initialized;
-         bool staticIP;
- #if ESP_IDF_VERSION_MAJOR > 3
+-private:
+   esp_eth_handle_t _eth_handle;
++private:
+   uint8_t _eth_index;
+   eth_phy_type_t _phy_type;
+   esp_eth_netif_glue_handle_t _glue_handle;
 -- 
-2.33.1
+2.47.0
 

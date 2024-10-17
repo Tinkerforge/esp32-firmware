@@ -5,13 +5,13 @@ Subject: [PATCH] mdns: Place static buffer to assemble packets on stack
  instead
 
 ---
- components/mdns/mdns.c | 2 +-
+ mdns.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/components/mdns/mdns.c b/components/mdns/mdns.c
+diff --git a/mdns.c b/mdns.c
 index b658b16ea1..97600c5ee1 100644
---- a/components/mdns/mdns.c
-+++ b/components/mdns/mdns.c
+--- a/mdns.c
++++ b/mdns.c
 @@ -1138,7 +1138,7 @@ static uint8_t _mdns_append_answer(uint8_t * packet, uint16_t * index, mdns_out_
   */
  static void _mdns_dispatch_tx_packet(mdns_tx_packet_t * p)
