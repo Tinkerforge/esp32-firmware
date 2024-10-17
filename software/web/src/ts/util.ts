@@ -849,3 +849,11 @@ export function blobToBase64(blob: Blob): Promise<string> {
         reader.readAsDataURL(blob);
     });
 }
+
+export function get_value_with_unit(value: number, unit: string, digits: number = 2, divisor: number = 1, value_not_ok: string = __("util.not_yet_known")) {
+	if (isNaN(value)) {
+		return value_not_ok;
+	}
+
+	return toLocaleFixed(value / divisor, digits) + " " + unit;
+}

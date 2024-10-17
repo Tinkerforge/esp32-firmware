@@ -267,7 +267,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                     onValue={(v) => this.setState({resolution: parseInt(v)})}
                                 />
                             </FormRow>
-                            <FormRow label={__("day_ahead_prices.content.vat")} label_muted={__("day_ahead_prices.content.optional_muted")}>
+                            <FormRow label={__("day_ahead_prices.content.vat")} label_muted={__("day_ahead_prices.content.optional_muted")} help={__("day_ahead_prices.content.vat_help")}>
                                 <InputFloat value={dap.vat} onValue={(v) => {this.setState({vat: v}, function() {this.update_uplot()})}} digits={2} unit={'%'} max={10000} min={0}/>
                                 <div class="invalid-feedback">{__("day_ahead_prices.content.price_invalid")}</div>
                             </FormRow>
@@ -288,8 +288,28 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 </ConfigForm>
                 <FormSeparator heading={__("day_ahead_prices.content.day_ahead_market_prices_heading")}/>
                 <FormRow label={__("day_ahead_prices.content.current_price")}>
-                    <InputText value={(get_current_price(dap, dap)/1000.0).toLocaleString() + " ct/kWh (" + this.get_price_timeframe() + ")"}/>
+                    <InputText value={util.get_value_with_unit(get_current_price(dap, dap), "ct/kWh", 2, 1000) + " (" + this.get_price_timeframe() + ")"}/>
                 </FormRow>
+                <FormRow label="Durchschnittspreis">
+                        <div class="row mx-n1">
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Heute</span></div>
+                                    <InputText
+                                        value={util.get_value_with_unit(get_average_price_today(dap, dap), "ct/kWh", 2, 1000)}
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Morgen</span></div>
+                                    <InputText
+                                        value={util.get_value_with_unit(get_average_price_tomorrow(dap, dap), "ct/kWh", 2, 1000)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </FormRow>
                 <div>
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader

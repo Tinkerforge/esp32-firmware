@@ -92,7 +92,8 @@ let x = {
         "upload_timeout": "Upload timed out",
         "download_abort": "Download aborted",
         "download_error": "Download error",
-        "download_timeout": "Download timed out"
+        "download_timeout": "Download timed out",
+        "not_yet_known": "Not yet known"
     },
     "reset": {
         "reset_modal": "Reset Config",

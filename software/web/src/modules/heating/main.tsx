@@ -295,14 +295,6 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
         return Heating.days.slice(0, 31);
     }
 
-    get_value_with_unit(value: number, unit: string, digits: number = 2, divisor: number = 1): string {
-        if (isNaN(value)) {
-            return "noch Unbekannt";
-        }
-
-        return util.toLocaleFixed(value / divisor, digits) + " " + unit;
-    }
-
     render(props: {}, state: HeatingState & HeatingConfig) {
         if (!util.render_allowed())
             return <SubPage name="heating" />;
@@ -557,7 +549,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Heute</span></div>
                                     <InputText
-                                        value={this.get_value_with_unit(get_average_price_today(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
+                                        value={util.get_value_with_unit(get_average_price_today(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
                                     />
                                 </div>
                             </div>
@@ -565,7 +557,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Morgen</span></div>
                                     <InputText
-                                        value={this.get_value_with_unit(get_average_price_tomorrow(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
+                                        value={util.get_value_with_unit(get_average_price_tomorrow(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
                                     />
                                 </div>
                             </div>
@@ -577,7 +569,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Heute</span></div>
                                     <InputText
-                                        value={this.get_value_with_unit(get_kwh_today(this.state), "kWh", 2)}
+                                        value={util.get_value_with_unit(get_kwh_today(this.state), "kWh", 2)}
                                     />
                                 </div>
                             </div>
@@ -585,7 +577,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Morgen</span></div>
                                     <InputText
-                                        value={this.get_value_with_unit(get_kwh_tomorrow(this.state), "kWh", 2)}
+                                        value={util.get_value_with_unit(get_kwh_tomorrow(this.state), "kWh", 2)}
                                     />
                                 </div>
                             </div>

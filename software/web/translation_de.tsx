@@ -92,7 +92,8 @@ let x = {
         "upload_timeout": "Timeout beim Hochladen",
         "download_abort": "Download abgebrochen",
         "download_error": "Fehler beim Herunterladen",
-        "download_timeout": "Timeout beim Herunterladen"
+        "download_timeout": "Timeout beim Herunterladen",
+        "not_yet_known": "Noch Unbekannt"
     },
     "reset": {
         "reset_modal": "Zurücksetzen",

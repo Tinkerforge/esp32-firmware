@@ -480,13 +480,29 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 </ConfigForm>
                 <FormSeparator heading={__("solar_forecast.content.solar_forecast_chart_heading")}/>
                 <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date().getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
-                    <InputText value={does_forecast_exist(this.state) ? get_kwh_now_to_midnight(this.state) + " kWh" : __("solar_forecast.content.unknown_not_yet")}/>
+                    <InputText
+                        value={util.get_value_with_unit(get_kwh_now_to_midnight(this.state), "kWh", 2)}
+                    />
                 </FormRow>
-                <FormRow label={__("solar_forecast.content.solar_forecast_today_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
-                    <InputText value={does_forecast_exist(this.state) ? get_kwh_today(this.state)           + " kWh" : __("solar_forecast.content.unknown_not_yet")}/>
-                </FormRow>
-                <FormRow label={__("solar_forecast.content.solar_forecast_tomorrow_label")} label_muted={__("solar_forecast.content.solar_forecast_tomorrow_label_muted")}>
-                    <InputText value={does_forecast_exist(this.state) ? get_kwh_tomorrow(this.state)        + " kWh" : __("solar_forecast.content.unknown_not_yet")}/>
+                <FormRow label={__("solar_forecast.content.solar_forecast")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
+                    <div class="row mx-n1">
+                        <div class="col-md-6 px-1">
+                            <div class="input-group">
+                                <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_today_label")}</span></div>
+                                <InputText
+                                    value={util.get_value_with_unit(get_kwh_today(this.state), "kWh", 2)}
+                                />
+                            </div>
+                        </div>
+                        <div class="col-md-6 px-1">
+                            <div class="input-group">
+                                <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_tomorrow_label")}</span></div>
+                                <InputText
+                                    value={util.get_value_with_unit(get_kwh_tomorrow(this.state), "kWh", 2)}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </FormRow>
                 <div>
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
