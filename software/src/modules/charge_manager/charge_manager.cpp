@@ -403,9 +403,9 @@ void ChargeManager::setup()
     auto default_current = config.get("default_available_current")->asUint();
     available_current.get("current")->updateUint(default_current);
     for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
-        state.get("chargers")->add();
         low_level_state.get("chargers")->add();
-        state.get("chargers")->get(i)->get("n")->updateString(config.get("chargers")->get(i)->get("name")->asString());
+        auto state_last_charger = state.get("chargers")->add();
+        state_last_charger->get("n")->updateString(config.get("chargers")->get(i)->get("name")->asString());
     }
 
     size_t hosts_buf_size = 0;

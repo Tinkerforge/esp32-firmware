@@ -575,8 +575,7 @@ void Users::register_urls()
 
     api.addState("users/config", &config, {"digest_hash"});
     api.addCommand("users/add", &add, {"digest_hash"}, [this](String &/*errmsg*/) {
-        config.get("users")->add();
-        Config *user = (Config *)config.get("users")->get(config.get("users")->count() - 1);
+        auto user = config.get("users")->add();
 
         user->get("id")->updateUint(add.get("id")->asUint());
         user->get("roles")->updateUint(add.get("roles")->asUint());

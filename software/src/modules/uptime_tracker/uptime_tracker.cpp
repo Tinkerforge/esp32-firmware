@@ -74,18 +74,16 @@ void UptimeTracker::setup()
         {
             if (uptimes.count() >= MAX_UPTIMES)
                 uptimes.remove(0);
-            uptimes.add();
-
-            size_t idx = uptimes.count() - 1;
+            auto last_uptime = uptimes.add();
 
             //timestamp_min initialized with 0. 0 means not synced
             if (rtc.clock_synced(&timestamp))
-                uptimes.get(idx)->get("timestamp_min")->updateUint((timestamp.tv_sec - millis() / 1000) / 60);
+                last_uptime->get("timestamp_min")->updateUint((timestamp.tv_sec - millis() / 1000) / 60);
 
-            uptimes.get(idx)->get("reset_reason")->updateUint(esp_reset_reason());
-            uptimes.get(idx)->get("uptime")->updateUint(old_uptime.uptime);
-            uptimes.get(idx)->get("uptime_overflows")->updateUint(old_uptime.overflow_count);
-            uptimes.get(idx)->get("boot_count")->updateUint(data.boot_count);
+            last_uptime->get("reset_reason")->updateUint(esp_reset_reason());
+            last_uptime->get("uptime")->updateUint(old_uptime.uptime);
+            last_uptime->get("uptime_overflows")->updateUint(old_uptime.overflow_count);
+            last_uptime->get("boot_count")->updateUint(data.boot_count);
 
             api.writeConfig("info/last_boots", &uptimes);
 

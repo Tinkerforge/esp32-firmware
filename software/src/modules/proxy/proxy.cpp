@@ -123,12 +123,12 @@ void Proxy::setup()
     uint16_t device_id;
 
     while (tf_hal_get_device_info(&hal, i, uid, &port_name, &device_id) == TF_E_OK) {
-        devices.add();
+        auto last_device = devices.add();
 
-        devices.get(devices.count() - 1)->get("uid")->updateString(String(uid));
-        devices.get(devices.count() - 1)->get("port")->updateString(String(port_name));
-        devices.get(devices.count() - 1)->get("name")->updateString(String(tf_get_device_display_name(device_id)));
-        devices.get(devices.count() - 1)->get("device_id")->updateUint(device_id);
+        last_device->get("uid")->updateString(uid);
+        last_device->get("port")->updateString(String(port_name));
+        last_device->get("name")->updateString(tf_get_device_display_name(device_id));
+        last_device->get("device_id")->updateUint(device_id);
         ++i;
     }
 

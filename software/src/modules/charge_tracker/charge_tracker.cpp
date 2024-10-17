@@ -427,11 +427,11 @@ void ChargeTracker::readNRecords(File *f, size_t records_to_read)
         memcpy(&cs, buf, sizeof(cs));
         memcpy(&ce, buf + sizeof(cs), sizeof(ce));
 
-        last_charges.add();
-        last_charges.get(last_charges.count() - 1)->get("timestamp_minutes")->updateUint(cs.timestamp_minutes);
-        last_charges.get(last_charges.count() - 1)->get("charge_duration")->updateUint(ce.charge_duration);
-        last_charges.get(last_charges.count() - 1)->get("user_id")->updateUint(cs.user_id);
-        last_charges.get(last_charges.count() - 1)->get("energy_charged")->updateFloat(charged_invalid(cs, ce) ? NAN : ce.meter_end - cs.meter_start);
+        auto last_charge = last_charges.add();
+        last_charge->get("timestamp_minutes")->updateUint(cs.timestamp_minutes);
+        last_charge->get("charge_duration")->updateUint(ce.charge_duration);
+        last_charge->get("user_id")->updateUint(cs.user_id);
+        last_charge->get("energy_charged")->updateFloat(charged_invalid(cs, ce) ? NAN : ce.meter_end - cs.meter_start);
     }
 }
 
