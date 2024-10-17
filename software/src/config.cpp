@@ -205,11 +205,6 @@ ConfigRoot *Config::Confirm()
     return &confirmconf;
 }
 
-String Config::ConfirmKey()
-{
-    return Config::confirm_key;
-}
-
 Config Config::Uint8(uint8_t u)
 {
     return Config::Uint(u, std::numeric_limits<uint8_t>::lowest(), std::numeric_limits<uint8_t>::max());
@@ -278,26 +273,36 @@ static void abort_on_object_get_failure(const Config *conf, const char *key)
     esp_system_abort(msg);
 }
 
-Config::Wrap Config::get(const String &s)
+Config::Wrap Config::get(const char *s, size_t s_len)
 {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfObject>()) {
-        abort_on_object_get_failure(this, s.c_str());
+        abort_on_object_get_failure(this, s);
     }
-    Wrap wrap(value.val.o.get(s));
+    Wrap wrap(value.val.o.get(s, s_len));
 
     return wrap;
 }
 
-const Config::ConstWrap Config::get(const String &s) const
+const Config::ConstWrap Config::get(const char *s, size_t s_len) const
 {
     ASSERT_MAIN_THREAD();
     if (!this->is<Config::ConfObject>()) {
-        abort_on_object_get_failure(this, s.c_str());
+        abort_on_object_get_failure(this, s);
     }
-    ConstWrap wrap(value.val.o.get(s));
+    ConstWrap wrap(value.val.o.get(s, s_len));
 
     return wrap;
+}
+
+Config::Wrap Config::get(const String &s)
+{
+    return get(s.c_str(), s.length());
+}
+
+const Config::ConstWrap Config::get(const String &s) const
+{
+    return get(s.c_str(), s.length());
 }
 
 [[gnu::noinline]]

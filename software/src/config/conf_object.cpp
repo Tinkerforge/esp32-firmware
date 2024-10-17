@@ -19,6 +19,8 @@
 
 #include "config/private.h"
 
+#include "event_log_prefix.h"
+#include "main_dependencies.h"
 #include "tools/memory.h"
 
 bool Config::ConfObject::slotEmpty(size_t i)
@@ -45,44 +47,68 @@ static void abort_on_key_not_found(const char *needle)
     esp_system_abort(msg);
 }
 
-Config *Config::ConfObject::get(const String &needle)
+Config *Config::ConfObject::get(const char *needle, size_t needle_len)
 {
     const auto *slot = this->getSlot();
     const auto schema = slot->schema;
     const auto size = schema->length;
+    const auto keys = schema->keys;
 
-    const auto needle_length = needle.length();
-    const auto needle_cstr   = needle.c_str();
+    if (string_is_in_rodata(needle)) {
+        for (size_t i = 0; i < size; ++i) {
+            if (keys[i].val == needle) { // Address comparison, not string comparison
+                return &slot->values[i];
+            }
+        }
+
+        logger.printfln("Key '%s' in rodata but not in keys.", needle);
+    }
+
+    if (!needle_len) {
+        needle_len = strlen(needle);
+    }
 
     for (size_t i = 0; i < size; ++i) {
-        if (schema->keys[i].length != needle_length)
+        if (keys[i].length != needle_len)
             continue;
 
-        if (memcmp(schema->keys[i].val, needle_cstr, needle_length) == 0)
+        if (memcmp(keys[i].val, needle, needle_len) == 0)
             return &slot->values[i];
     }
 
-    abort_on_key_not_found(needle_cstr);
+    abort_on_key_not_found(needle);
 }
 
-const Config *Config::ConfObject::get(const String &needle) const
+const Config *Config::ConfObject::get(const char *needle, size_t needle_len) const
 {
     const auto *slot = this->getSlot();
     const auto schema = slot->schema;
     const auto size = schema->length;
+    const auto keys = schema->keys;
 
-    const auto needle_length = needle.length();
-    const auto needle_cstr   = needle.c_str();
+    if (string_is_in_rodata(needle)) {
+        for (size_t i = 0; i < size; ++i) {
+            if (keys[i].val == needle) { // Address comparison, not string comparison
+                return &slot->values[i];
+            }
+        }
+
+        logger.printfln("Key '%s' in rodata but not in keys.", needle);
+    }
+
+    if (!needle_len) {
+        needle_len = strlen(needle);
+    }
 
     for (size_t i = 0; i < size; ++i) {
-        if (schema->keys[i].length != needle_length)
+        if (keys[i].length != needle_len)
             continue;
 
-        if (memcmp(schema->keys[i].val, needle_cstr, needle_length) == 0)
+        if (memcmp(keys[i].val, needle, needle_len) == 0)
             return &slot->values[i];
     }
 
-    abort_on_key_not_found(needle_cstr);
+    abort_on_key_not_found(needle);
 }
 
 const Config::ConfObject::Slot *Config::ConfObject::getSlot() const { return &object_buf[idx]; }

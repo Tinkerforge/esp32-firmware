@@ -241,8 +241,8 @@ struct Config {
         static Slot *allocSlotBuf(size_t elements);
         static void freeSlotBuf(Slot *buf);
 
-        Config *get(const String &s);
-        const Config *get(const String &s) const;
+        Config *get(const char *s, size_t s_len);
+        const Config *get(const char *s, size_t s_len) const;
         const Slot *getSlot() const;
         Slot *getSlot();
 
@@ -537,7 +537,7 @@ public:
 
     static ConfigRoot *Confirm();
     // Just for convenience.
-    static String ConfirmKey();
+    static const char *ConfirmKey() {return Config::confirm_key;}
     static constexpr const char *confirm_key = "do_i_know_what_i_am_doing";
 
     static Config Uint8(uint8_t u);
@@ -593,10 +593,24 @@ public:
     const ConstWrap get() const;
 
     // for ConfObject
+    Wrap get(const char *s, size_t s_len = 0);
+    const ConstWrap get(const char *s, size_t s_len = 0) const;
     Wrap get(const String &s);
     const ConstWrap get(const String &s) const;
 
     // for ConfArray
+               Wrap get(int8_t )       = delete;
+    const ConstWrap get(int8_t ) const = delete;
+               Wrap get(int16_t)       = delete;
+    const ConstWrap get(int16_t) const = delete;
+               Wrap get(long   )       = delete;
+    const ConstWrap get(long   ) const = delete;
+    inline            Wrap get(int      i)       {return get(static_cast<size_t>(i));} // These casts should be safe, as negative values become huge positive values,
+    inline const ConstWrap get(int      i) const {return get(static_cast<size_t>(i));} // and the nested get() performs an array bounds check.
+    inline            Wrap get(uint8_t  i)       {return get(static_cast<size_t>(i));}
+    inline const ConstWrap get(uint8_t  i) const {return get(static_cast<size_t>(i));}
+    inline            Wrap get(uint16_t i)       {return get(static_cast<size_t>(i));}
+    inline const ConstWrap get(uint16_t i) const {return get(static_cast<size_t>(i));}
     Wrap get(size_t i);
     const ConstWrap get(size_t i) const;
     Wrap add();
