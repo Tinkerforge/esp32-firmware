@@ -101,4 +101,4 @@ extern "C" int tf_event_log_vprintfln(const char *fmt, va_list args);
 
 // To directly print from external C code, add
 // extern int tf_event_log_printfln(const char *fmt, ...);
-extern "C" int tf_event_log_printfln(const char *fmt, ...);
+extern "C" [[gnu::format(__printf__, 1, 2)]] int tf_event_log_printfln(const char *fmt, ...);
