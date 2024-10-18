@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2022 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,8 +46,16 @@ type DeepKeys<T, S extends string> =
 
 let active_translation: Translation = translation['en'];
 
-export function select_language() {
-    for (let language of navigator.languages) {
+// get_languages can be overwritten by a module that can provide a function that returnes a user-specified preferred language.
+// If no such module exists the languages preferred by the browser are used.
+let get_languages: () => readonly string[] = () => navigator.languages;
+export function update_languages_function(f: () => readonly string[]) {
+    get_languages = f;
+}
+
+export function select_language(callback: () => void = () => {}) {
+    const languages = get_languages();
+    for (let language of languages) {
         language = language.substr(0, 2);
 
         if (language in translation) {
@@ -56,9 +65,9 @@ export function select_language() {
 
         console.log("Sorry, got no translation for " + language);
     }
-}
 
-select_language();
+    callback();
+}
 
 function translate<S extends string>(key: string): GetDictValue<S, Translation> {
     let key_parts = key.split(".");

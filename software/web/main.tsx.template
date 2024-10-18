@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
 {{{preact_debug}}}
 import { h, render } from "preact";
 import * as util from "./ts/util";
-import { __ /*, select_language*/ } from "./ts/translation";
+import { __ } from "./ts/translation";
 import { init_async_modal } from "./ts/components/async_modal";
 import { App } from "./app";
 {{{module_imports}}}
@@ -45,13 +46,6 @@ window.addEventListener("pageshow", () => {
     document.title = __("main.title");
 
     init_async_modal();
-
-    // Disabled for now.
-    // We somehow have to force preact to re-render all components for this to work.
-    /*window.addEventListener('languagechange', () => {
-        console.log("language change!");
-        select_language();
-    });*/
 });
 
 render(<App init={init} />, document.getElementById("app"));

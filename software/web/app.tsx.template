@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
 
 import * as util from "./ts/util";
 import { h, Fragment, Component, createRef, RefObject } from "preact";
-import { __ } from "./ts/translation";
+import { __, select_language } from "./ts/translation";
 import { NavbarItem } from "./ts/components/navbar_item";
 import { NavbarGroup } from "./ts/components/navbar_group";
 import { PageHeader } from "./ts/components/page_header";
@@ -190,6 +191,8 @@ export class App extends Component<AppProps, AppState> {
     }
 
     render() {
+        window.addEventListener('languagechange', () => select_language(() => this.forceUpdate()));
+
         return <>
             <nav class={util.is_native_median_app() ? "": "navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2"} hidden={util.is_native_median_app()}>
                 <a href="#status"><img id="navbar-logo" class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>

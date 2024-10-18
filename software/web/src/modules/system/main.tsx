@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +20,8 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment } from "preact";
-import { __ } from "../../ts/translation";
+import { h } from "preact";
+import { __, update_languages_function, select_language} from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
@@ -55,6 +56,21 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
         util.addApiEventListener('info/version', () => {
             this.setState({version: API.get('info/version')});
         });
+
+        update_languages_function(() =>  {
+            let i18n_config = API.get("system/i18n_config");
+
+            if (!i18n_config || i18n_config.detect_browser_language) {
+                return navigator.languages;
+            }
+
+            switch (i18n_config.language) {
+                case Language.German:  return ["de"].concat(navigator.languages);
+                case Language.English: return ["en"].concat(navigator.languages);
+            }
+        });
+
+        util.addApiEventListener('system/i18n_config', () => select_language());
     }
 
     render(props: {}, state: SystemI18nConfig) {
