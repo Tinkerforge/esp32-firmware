@@ -19,6 +19,8 @@
 
 #include "remote_access.h"
 
+#include "module_dependencies.h"
+
 #include <lwip/err.h>
 #include <lwip/sockets.h>
 #include <lwip/sys.h>
@@ -33,7 +35,7 @@
 #include <TFJson.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+
 #include "build.h"
 #include "tools.h"
 #include "esp_tls_errors.h"

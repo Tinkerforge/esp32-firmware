@@ -19,12 +19,14 @@
 
 #include "wifi.h"
 
+#include "module_dependencies.h"
+
 #include <WiFi.h>
 #include <esp_wifi.h>
 #include <esp_eap_client.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+
 #include "tools.h"
 #include "build.h"
 #include "string_builder.h"
