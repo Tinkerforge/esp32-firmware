@@ -32,7 +32,14 @@
 
 //#include "gcc_warnings.h"
 
-#define LOCAL_LOG(fmt, ...) if(local_log) local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), "    " fmt "%c", __VA_ARGS__, '\0');
+#define LOCAL_LOG_FULL(indent, fmt, ...) \
+    do { \
+        if(local_log) { \
+            local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), indent fmt "%c" __VA_OPT__(,) __VA_ARGS__, '\0'); \
+        } \
+    } while (0)
+
+#define LOCAL_LOG(fmt, ...) LOCAL_LOG_FULL("    ", fmt __VA_OPT__(,) __VA_ARGS__)
 
 #define TIMEOUT_MS 32000
 
@@ -1336,10 +1343,9 @@ int allocate_current(
 
     bool print_local_log = false;
     char *local_log = cfg->distribution_log.get();
-    if (local_log)
-        local_log += snprintf_u(local_log, cfg->distribution_log_len - (local_log - cfg->distribution_log.get()), "Allocating current%c", '\0');
-
     bool vehicle_connected = false;
+
+    LOCAL_LOG_FULL("", "Allocating current");
 
     assert(cfg->charger_count > 0 && cfg->charger_count <= MAX_CONTROLLED_CHARGERS);
     int32_t current_array[MAX_CONTROLLED_CHARGERS] = {0};
