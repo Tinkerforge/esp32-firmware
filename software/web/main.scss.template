@@ -113,7 +113,19 @@ body {
 }
 
 .alert_placeholder {
-    position: fixed; top: $navbar-height; left: 0px; right: 0px; z-index: 9999;
+    position: fixed;
+    top: $navbar-height;
+    left: 0px;
+    right: 0px;
+    z-index: 9999;
+}
+
+.alert_placeholder-app {
+    position: fixed;
+    top: 0;
+    left: 0px;
+    right: 0px;
+    z-index: 9999;
 }
 
 .custom-alert {
