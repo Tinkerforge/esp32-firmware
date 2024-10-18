@@ -260,7 +260,7 @@ bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int level
 
     File source;
 
-    while (source = root.openNextFile()) {
+    while ((source = root.openNextFile())) {
         if (source.isDirectory()) {
             if (levels <= 0) {
                 logger.printfln("Skipping over directory %s. Depth limit exceeded.", root_name.c_str());
@@ -650,7 +650,7 @@ bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_d
 {
     File root = LittleFS.open(dir);
     File file;
-    while (file = root.openNextFile()) {
+    while ((file = root.openNextFile())) {
         if (skip_directories && file.isDirectory()) {
             continue;
         }

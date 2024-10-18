@@ -325,7 +325,7 @@ bool ChargeTracker::setupRecords()
     size_t found_blobs_size = ARRAY_SIZE(found_blobs);
     int found_blob_counter = 0;
 
-    while (f = folder.openNextFile()) {
+    while ((f = folder.openNextFile())) {
         String name = String(f.name());
         if (f.isDirectory()) {
             logger.printfln("Unexpected directory %s in charge record folder", name.c_str());
