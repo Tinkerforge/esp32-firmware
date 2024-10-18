@@ -40,8 +40,7 @@ export function FrontPanelNavbar() {
             name="front_panel"
             title={__("front_panel.navbar.front_panel")}
             hidden={false} // Module/Feature-Check
-            symbol={<Monitor/>
-            }
+            symbol={<Monitor/>}
         />
     );
 }
@@ -145,7 +144,7 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
                 <div class="col-md-12">
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <span class="input-group-text">Einstellung</span>
+                            <span class="input-group-text">{__("front_panel.content.setting")}</span>
                         </div>
                         <InputSelect
                             className="front-panel-input-group-prepend"
