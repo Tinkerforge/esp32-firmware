@@ -18,6 +18,7 @@
  */
 
 import { h, Component, ComponentChildren } from "preact";
+import * as util from "../util";
 
 export interface PageHeaderProps {
     children?: ComponentChildren;
@@ -31,7 +32,7 @@ export class PageHeader extends Component<PageHeaderProps, any> {
         return (
             // this row/col combination is necessary here to create a div that is
             // full width to cover the page header shadow after the sm breakpoint
-            <div class="row sticky-under-top mb-3 pt-3">
+            <div class={"row mb-3 pt-3 " + (util.is_native_median_app() ? "sticky-top-app" : "sticky-under-top")}>
                 <div class="col">
                     <div class="row d-flex flex-wrap justify-content-between pb-2 border-bottom tab-header-shadow">
                         <h1 class={"page-header " + (this.props.titleClass ? this.props.titleClass : "col")}>{this.props.title}</h1>

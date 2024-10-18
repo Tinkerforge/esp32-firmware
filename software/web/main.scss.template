@@ -151,6 +151,12 @@ body {
 }
 
 @supports (position: sticky) {
+    .sticky-top-app {
+        position: sticky;
+        top: 0;
+        z-index: 1010;
+        background: white;
+    }
   @media (max-width: 575.98px) {
         .sticky-under-top {
             position: sticky;

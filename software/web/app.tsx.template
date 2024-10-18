@@ -191,9 +191,9 @@ export class App extends Component<AppProps, AppState> {
 
     render() {
         return <>
-            <nav class="navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2" hidden={util.is_native_median_app()}>
+            <nav class={util.is_native_median_app() ? "": "navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2"} hidden={util.is_native_median_app()}>
                 <a href="#status"><img id="navbar-logo" class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
-                <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" hidden={util.is_native_median_app()} onClick={() => {this.setState({sidebar_open: !this.state.sidebar_open})}}>
+                <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" onClick={() => {this.setState({sidebar_open: !this.state.sidebar_open})}}>
                     <Menu {...{class: "navbar-toggler-icon", style: "vertical-align: baseline;"} as any} />
                 </button>
                 {/* show inline status here? */}
@@ -210,7 +210,7 @@ export class App extends Component<AppProps, AppState> {
                 }}>
                 <Row>
                     <Collapse in={this.state.sidebar_open}>
-                    <nav id="sidebar-menu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar navbar-collapse">
+                    <nav hidden={util.is_native_median_app()} id="sidebar-menu" class={util.is_native_median_app() ? "" : "col-md-3 col-lg-2 d-md-block bg-light sidebar navbar-collapse"}>
                         <div class="sidebar-sticky pt-3 pb-3">
                             <InnerNavbar mode={this.state.mode} visible={this.state.visible}>
                                 {{{navbar}}}
@@ -218,7 +218,7 @@ export class App extends Component<AppProps, AppState> {
                         </div>
                     </nav>
                     </Collapse>
-                    <main id="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style={this.state.visible ? undefined : "visibility: hidden;"}>
+                    <main id="main" class={util.is_native_median_app() ? "col px-4": "col-md-9 ml-sm-auto col-lg-10 px-md-4"} style={this.state.visible ? undefined : "visibility: hidden;"}>
                         <Tab.Content>
                             <div class="alert_placeholder">
                                 {util.get_alerts().map((alert) => <Alert className="custom-alert" key={alert.id} variant={alert.variant} onClose={() => util.remove_alert(alert.id)} dismissible><strong>{alert.title}</strong> {alert.text}</Alert>)}

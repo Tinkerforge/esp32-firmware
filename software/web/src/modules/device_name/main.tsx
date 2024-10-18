@@ -35,13 +35,13 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
 
     render(props: {}, state: Readonly<API.getType['info/display_name']>) {
         if (!util.render_allowed() || !API.hasModule("device_name"))
-            return <StatusSection name="device_name" class="sticky-under-top" />;
+            return <StatusSection name="device_name" class={util.is_native_median_app() ? "sticky-top-app" : "sticky-under-top"} />;
 
         document.title = API.get("info/display_name").display_name + " - " + __("main.title");
 
         const hide_save = state.display_name == API.get('info/display_name').display_name;
 
-        return <StatusSection name="device_name" class="sticky-under-top">
+        return <StatusSection name="device_name" class={util.is_native_median_app() ? "sticky-app" : "sticky-under-top"}>
             <PageHeader title={__("device_name.status.status")} titleClass="col-4" childrenClass="col-8">
                 <form onSubmit={(e: Event) => {
                     e.preventDefault();

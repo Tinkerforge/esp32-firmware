@@ -19,6 +19,7 @@
 
 import { h, Component, Fragment, ComponentChildren } from "preact";
 import { __ } from "../translation";
+import * as util from "../util";
 
 interface ConfigFormState {
     saveInProgress: boolean;
@@ -78,7 +79,7 @@ export class ConfigForm extends Component<ConfigFormProps, ConfigFormState> {
 
         return (
             <>
-                <div class={"row sticky-under-top mb-3 " + (props.small ? "pt-4" : "pt-3")}>
+                <div class={"row mb-3 " + (util.is_native_median_app() ? "sticky-top-app " : "sticky-under-top ") + (props.small ? "pt-4" : "pt-3")}>
                     <div class={"col border-bottom tab-header-shadow" + (props.small ? "" : " pb-2")}>
                         <div class="row no-gutters">
                             {props.small ?
