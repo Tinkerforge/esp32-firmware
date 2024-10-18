@@ -20,6 +20,7 @@
 #include "tools.h"
 
 #include <Arduino.h>
+#include <esp_efuse.h>
 #include <esp_system.h>
 #include <esp_timer.h>
 #include <freertos/task.h>
@@ -97,7 +98,7 @@ void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
     uint32_t blocks[8] = {0};
 
     for (int32_t block3Address = EFUSE_BLK3_RDATA0_REG, i = 0; block3Address <= EFUSE_BLK3_RDATA7_REG; block3Address += 4, ++i) {
-        blocks[i] = REG_GET_FIELD(block3Address, EFUSE_BLK3_DOUT0);
+        blocks[i] = esp_efuse_read_reg(EFUSE_BLK3, i);
     }
 
     uint32_t passphrase[4] = {0};

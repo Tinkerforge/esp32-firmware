@@ -40,9 +40,12 @@ static bool getMD5(uint8_t * data, uint16_t len, char * output){//33 bytes or mo
     memset(_buf, 0x00, 16);
 
     mbedtls_md5_init(&_ctx);
-    mbedtls_md5_starts_ret(&_ctx);
-    mbedtls_md5_update_ret(&_ctx, data, len);
-    mbedtls_md5_finish_ret(&_ctx, _buf);
+    if (!mbedtls_md5_starts(&_ctx))
+        return false;
+    if (!mbedtls_md5_update(&_ctx, data, len))
+        return false;
+    if (!mbedtls_md5_finish(&_ctx, _buf))
+        return false;
     for(i = 0; i < 16; i++) {
         sprintf(output + (i * 2), "%02x", _buf[i]);
     }

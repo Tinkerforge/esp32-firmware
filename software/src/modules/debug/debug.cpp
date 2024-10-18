@@ -23,6 +23,7 @@
 #include <esp_debug_helpers.h>
 #include <esp_system.h>
 #include <esp_task.h>
+#include <esp_flash.h>
 #include <LittleFS.h>
 #include <lwipopts.h>
 #include <soc/rtc.h>
@@ -198,13 +199,13 @@ void Debug::pre_setup()
 
     task_handles.reserve(16);
     register_task(xTaskGetCurrentTaskHandle(),      getArduinoLoopTaskStackSize());
-    register_task(xTaskGetIdleTaskHandleForCPU(0),  sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
-    register_task(xTaskGetIdleTaskHandleForCPU(1),  sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
+    register_task(xTaskGetIdleTaskHandleForCore(0),  sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
+    register_task(xTaskGetIdleTaskHandleForCore(1),  sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
     register_task(xTimerGetTimerDaemonTaskHandle(), sizeof(StackType_t) * configTIMER_TASK_STACK_DEPTH);
     register_task("esp_timer",                      ESP_TASK_TIMER_STACK);
 
 // Copied from esp_ipc.c
-#if CONFIG_COMPILER_OPTIMIZATION_NONE
+#if defined(CONFIG_COMPILER_OPTIMIZATION_NONE) && CONFIG_COMPILER_OPTIMIZATION_NONE
 #define IPC_STACK_SIZE (CONFIG_ESP_IPC_TASK_STACK_SIZE + 0x100)
 #else
 #define IPC_STACK_SIZE (CONFIG_ESP_IPC_TASK_STACK_SIZE)

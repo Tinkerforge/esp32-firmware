@@ -21,6 +21,7 @@
 
 #include <LittleFS.h>
 #include <esp_core_dump.h>
+#include <esp_flash.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
