@@ -27,7 +27,7 @@ let x = {
             "reboot": "Reboot",
             "reboot_desc": null,
 
-            "system_language": "system language",
+            "system_language": "System language",
             "system_language_help": "Sets the system language to the specified language. If \"Auto-detect browser language\" is disabled, the browser's language settings are ignored and the specified system language is also used on the website.",
             "german": "German",
             "english": "English",
