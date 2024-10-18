@@ -179,7 +179,7 @@ int check(int rc, const char *msg)
     return rc;
 }
 
-int vprintf_dev_null(const char *format, va_list ap)
+int vprintf_dev_null(const char *fmt, va_list args)
 {
     return 0;
 }
@@ -956,29 +956,29 @@ time_t ms_until_time(int h, int m)
 	return delay;
 }
 
-size_t sprintf_u(char *buf, const char *format, ...)
+size_t sprintf_u(char *buf, const char *fmt, ...)
 {
     va_list args;
-    va_start(args, format);
-    int res = vsprintf(buf, format, args);
+    va_start(args, fmt);
+    int res = vsprintf(buf, fmt, args);
     va_end(args);
 
     return res < 0 ? 0 : static_cast<size_t>(res);
 }
 
-size_t snprintf_u(char *buf, size_t len, const char *format, ...)
+size_t snprintf_u(char *buf, size_t len, const char *fmt, ...)
 {
     va_list args;
-    va_start(args, format);
-    int res = vsnprintf(buf, len, format, args);
+    va_start(args, fmt);
+    int res = vsnprintf(buf, len, fmt, args);
     va_end(args);
 
     return res < 0 ? 0 : static_cast<size_t>(res);
 }
 
-size_t vsnprintf_u(char *buf, size_t len, const char *format, va_list args)
+size_t vsnprintf_u(char *buf, size_t len, const char *fmt, va_list args)
 {
-    int res = vsnprintf(buf, len, format, args);
+    int res = vsnprintf(buf, len, fmt, args);
 
     return res < 0 ? 0 : static_cast<size_t>(res);
 }
