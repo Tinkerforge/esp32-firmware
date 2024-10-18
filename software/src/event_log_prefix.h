@@ -36,10 +36,12 @@ static size_t event_log_prefix_len = 0;
 static const char *event_log_prefix = get_module_offset_and_length(__BASE_FILE__, &event_log_prefix_len);
 #endif
 
-#define printfln(...) printfln_prefixed(event_log_prefix, event_log_prefix_len, __VA_ARGS__)
+#define vprintfln(fmt, ...) vprintfln_prefixed(event_log_prefix, event_log_prefix_len, fmt __VA_OPT__(,) __VA_ARGS__)
+#define printfln(fmt, ...) printfln_prefixed(event_log_prefix, event_log_prefix_len, fmt __VA_OPT__(,) __VA_ARGS__)
 
-#define printfln_plain(...) printfln_prefixed(nullptr, 0, __VA_ARGS__)
+#define printfln_plain(fmt, ...) printfln_prefixed(nullptr, 0, fmt __VA_OPT__(,) __VA_ARGS__)
 
-#define tracefln(...) tracefln_prefixed(event_log_prefix, event_log_prefix_len, __VA_ARGS__)
+#define vtracefln(fmt, ...) vtracefln_prefixed(event_log_prefix, event_log_prefix_len, fmt __VA_OPT__(,) __VA_ARGS__)
+#define tracefln(fmt, ...) tracefln_prefixed(event_log_prefix, event_log_prefix_len, fmt __VA_OPT__(,) __VA_ARGS__)
 
 extern size_t event_log_alignment;

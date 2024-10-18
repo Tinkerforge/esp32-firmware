@@ -147,7 +147,7 @@ void EventLog::trace_write(const char *buf, size_t len)
 #endif
 }
 
-int EventLog::tracefln_plain(const char *fmt, va_list args)
+int EventLog::vtracefln_plain(const char *fmt, va_list args)
 {
 #if defined(BOARD_HAS_PSRAM)
     char buf[768];
@@ -173,7 +173,7 @@ int EventLog::tracefln_plain(const char *fmt, ...)
 #if defined(BOARD_HAS_PSRAM)
     va_list args;
     va_start(args, fmt);
-    int result = tracefln_plain(fmt, args);
+    int result = vtracefln_plain(fmt, args);
     va_end(args);
 
     return result;
@@ -182,7 +182,7 @@ int EventLog::tracefln_plain(const char *fmt, ...)
 #endif
 }
 
-int EventLog::tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
+int EventLog::vtracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
 {
 #if defined(BOARD_HAS_PSRAM)
     char buf[768];
@@ -233,7 +233,7 @@ int EventLog::tracefln_prefixed(const char *prefix, size_t prefix_len, const cha
 #if defined(BOARD_HAS_PSRAM)
     va_list args;
     va_start(args, fmt);
-    int result = tracefln_prefixed(prefix, prefix_len, fmt, args);
+    int result = vtracefln_prefixed(prefix, prefix_len, fmt, args);
     va_end(args);
 
     return result;
@@ -322,7 +322,7 @@ void EventLog::write(const char *buf, size_t len)
 #endif
 }
 
-int EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
+int EventLog::vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
 {
     char buf[256];
     auto buf_size = ARRAY_SIZE(buf);
@@ -368,7 +368,7 @@ int EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const cha
 {
     va_list args;
     va_start(args, fmt);
-    int result = printfln_prefixed(prefix, prefix_len, fmt, args);
+    int result = vprintfln_prefixed(prefix, prefix_len, fmt, args);
     va_end(args);
 
     return result;
@@ -431,14 +431,14 @@ void EventLog::register_urls()
 
 int tf_event_log_vprintfln(const char *fmt, va_list args)
 {
-    return logger.printfln_prefixed("external code", 13, fmt, args);
+    return logger.vprintfln_prefixed("external code", 13, fmt, args);
 }
 
 int tf_event_log_printfln(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    int result = logger.printfln_prefixed("external code", 13, fmt, args);
+    int result = logger.vprintfln_prefixed("external code", 13, fmt, args);
     va_end(args);
 
     return result;

@@ -22,16 +22,16 @@
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 
-int header_printfln(const char *prefix, const char *fmt, va_list args)
+int header_vprintfln(const char *prefix, const char *fmt, va_list args)
 {
-    return logger.printfln_prefixed(prefix, strlen(prefix), fmt, args);
+    return logger.vprintfln_prefixed(prefix, strlen(prefix), fmt, args);
 }
 
 int header_printfln(const char *prefix, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    int result = header_printfln(prefix, fmt, args);
+    int result = header_vprintfln(prefix, fmt, args);
     va_end(args);
 
     return result;

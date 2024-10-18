@@ -59,10 +59,10 @@ public:
     void trace_write_prefixed(const char *buf);
     void trace_write_prefixed(const char *buf, size_t len);
 
-    int tracefln_plain(const char *fmt, va_list args);
+    int vtracefln_plain(const char *fmt, va_list args);
     [[gnu::format(__printf__, 2, 3)]] int tracefln_plain(const char *fmt, ...);
 
-    int tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
+    int vtracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
     [[gnu::format(__printf__, 4, 5)]] int tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...);
 
     #define tf_trace(fmt, ...) tracefln("[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
@@ -79,7 +79,7 @@ public:
 
     void write(const char *buf, size_t len);
 
-    int printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
+    int vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
     [[gnu::format(__printf__, 4, 5)]] int printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...);
 
     #define tf_dbg(fmt, ...) printfln("[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)

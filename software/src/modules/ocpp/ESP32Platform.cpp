@@ -236,7 +236,7 @@ void platform_printfln(int level, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    logger.printfln(fmt, args);
+    logger.vprintfln(fmt, args);
     va_end(args);
 }
 

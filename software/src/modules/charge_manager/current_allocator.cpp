@@ -40,9 +40,9 @@
 
 #define ENABLE_CA_TRACE 1
 #if ENABLE_CA_TRACE
-#define trace(...) logger.tracefln_plain(__VA_ARGS__)
+#define trace(fmt, ...) logger.tracefln_plain(fmt __VA_OPT__(,) __VA_ARGS__)
 #else
-#define trace(...)
+#define trace(fmt, ...) do {} while (0)
 #endif
 
 static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */

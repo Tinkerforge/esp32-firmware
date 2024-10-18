@@ -31,10 +31,12 @@ static constexpr auto HEATING_UPDATE_INTERVAL = 1_m;
 #define HEATING_SG_READY_ACTIVE_CLOSED 0
 #define HEATING_SG_READY_ACTIVE_OPEN   1
 
-#define extended_logging(...) \
-    if(extended_logging_active) { \
-        logger.tracefln(__VA_ARGS__); \
-    }
+#define extended_logging(fmt, ...) \
+    do { \
+        if (extended_logging_active) { \
+            logger.tracefln(fmt __VA_OPT__(,) __VA_ARGS__); \
+        } \
+    } while (0)
 
 void Heating::pre_setup()
 {
