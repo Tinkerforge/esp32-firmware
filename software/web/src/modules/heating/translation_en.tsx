@@ -31,7 +31,7 @@ let x = {
             "extended_logging_activate": "Activates extended logging",
             "extended_logging_description": "More information about the control decisions in the event log",
             "minimum_holding_time": "Minimum Holding Time",
-            "minimum_holding_time_description": "How long should a start command be valid for",
+            "minimum_holding_time_muted": "for SG Ready output 1 and SG Ready output 2",
             "minutes": "Minutes",
             "month": "Month",
             "day": "Day",
@@ -39,41 +39,42 @@ let x = {
             "winter_start": "Winter Start",
             "winter_end": "Winter End",
             "dpc_low": "Dynamic Price Control",
+            "dpc_low_muted": "under % of daily average",
             "dpc_high": "Dynamic Price Control",
-            "dpc_extended_activate": "Einschaltempfehlung für die Heizung bei unterschreiten der Preisschwelle",
+            "dpc_high_muted": "over % of daily average",
+            "dpc_extended_activate": "Activate SG Ready output 2 when price falls below threshold",
             "dpc_extended_help": <>
-                <p>Diese Einstellung steuert die Einschaltempfehlung (SG-Ready-Ausgang 2).</p>
-                <p>Wenn die dynamische Preissteuerung für niedrige Preise aktiviert ist, wird der Heizung eine Einschaltempfehlung gegeben sobald der Strompreis x% oder weniger vom Tagesdurchschnitt entspricht.</p>
-                <p>Beispiel: Angenommen der Durchschnittsstrompreis für einen Tag liegt bei 10ct und die Schwelle ist auf 80% konfiguriert. In diesem Fall würde der Heizung über den Tag verteilt eine Einschaltempfehlung gegeben, in den Zeiträumen wo der Preis 8ct oder niedriger ist.</p>
+                <p>This setting controls the activation recommendation (SG Ready output 2).</p>
+                <p>If the dynamic price control for low prices is enabled, SG Ready output 2 will be activated as soom as the electricity price is x% or less of the daily average.</p>
+                <p>Example: Assume that the average electricity price for a day is 10ct and the threshold is configured to 80%. In that case the Heating would be activated through SG Ready output 2 in the periods of time where the price is 8ct or less.</p>
             </>,
-            "dpc_blocking_activate": "Blockiert die Heizung bei überschreiten der Preisschwelle",
+            "dpc_blocking_activate": "Block the heating (SG Ready output 1) when price threshold is exceeded",
             "dpc_blocking_help": <>
-                <p>Diese Einstellung steuert den blockierenden Betrieb (SG-Ready-Ausgang 1).</p>
-                <p>Wenn die dynamische Preissteuerung für hohe Preise aktiviert ist, wird der Heizung in den blockierenden Betrieb gebracht sobald der Strompreis x% oder mehr vom Tagesdurchschnitt entspricht.</p>
-                <p>Beispiel: Angenommen der Durchschnittsstrompreis für einen Tag liegt bei 10ct und die Schwelle ist auf 120% konfiguriert. In diesem Fall würde der Heizung über den Tag verteilt blockiert werden, in den Zeiträumen wo der Preis 12ct oder höher ist.</p>
+                <p>This setting controls the blocking operation (SG Ready output 1).</p>
+                <p>This setting controls SG Ready output 1.</p>
+                <p>If the dynamic price control for high prices is enabled, SG Ready output 1 will be activated as soom as the electricity price is x% or more of the daily average.</p>
+                <p>Example: Assume that the average electricity price for a day is 10ct and the threshold is configured to 120%. In that case the Heating would be blocked through SG Ready output 1 in the periods of time where the price is 12ct or above.</p>
             </>,
-            "average_price_threshold": "Price Threshold",
-            "average_price_threshold_extended_description": "Liegt der Tagesdurchschnitt unter der Schwelle, wird SG Ready zur Sollwerterhöhung geschaltet",
-            "average_price_threshold_blocking_description": "Liegt der Tagesdurchschnitt über der Schwelle, wird SG Ready zur Blockierung geschaltet",
-            //"dpc_activate": "Enables optimization of heating control based on dynamic electricity price",
-            //"average_price_threshold_description": "If the daily average price is below the threshold, a start command will be given to the heating",
             "pv_excess_control": "PV Excess Control",
             "pv_excess_control_activate": "Enables optimization of heating control based on PV excess",
             "pv_excess_control_help": <>
-                <p>Diese Einstellung steuert die Einschaltempfehlung (SG-Ready-Ausgang 2).</p>
-                <p>Wenn die PV-Überschuss-Steuerung aktiviert ist, wird der Heizung eine Einschaltempfehlung gegeben sobald der Überschuss am Netzanschluss den eingestellt Wert überschreitet.</p>
-                <p>Beispiel: Verbraucht die Leistung im laufenden Betrieb ca. 1500W, dann dann sollte hier auch 1500W eingetragen werden. In dem Fall würde die Einschaltempfehlung automatisch gegeben, wenn ein entsprechender PV-Überschuss vorhanden ist.</p>
+                <p>This setting controls the blocking operation (SG Ready output 1).</p>
+                <p>If pv excess control is enabled, SG Ready output 1 will be activated as soon as the pv excess at the grid connection exceeds the configured value.</p>
+                <p>Example: If the heating uses about 1500W when running, then you should configure 1500W here, such that SG Ready output 1 is automatically activated when a corresponding pv excess is available.</p>
             </>,
             "pv_excess_threshold": "PV Excess Threshold",
             "pv_excess_threshold_description": "At what wattage of PV excess should a start command be given to the heating",
             "summer_mode": "Summer Mode",
             "summer_start": "Summer Start",
             "summer_end": "Summer End",
+            "summer_settings": "Summer settings",
             "block_time": "Block Time",
+            "active_time": "Daily active time",
+            "active_time_desc": "Activates a time period in which the sg redy outputs are controlled so that the PV system has priority in summer mode, e.g. from 08:00h to 20:00h",
             "active_time_help": <>
-                <p>Diese Einstellung steuert die Einschaltempfehlung (SG-Ready-Ausgang 2).</p>
-                <p>Wenn die Blockzierzeit aktiviert ist und die aktuelle Uhrzeit innerhalb der Blockierzeit liegt, wird keine Einschaltempfehlung gegeben. Somit kann in der Sommerzeit verhindert werden dass morgens teurer Strom eingekauft wird, wenn Tagsüber die PV-Anlage Strom liefert.</p>
-                <p>Hinweis: Die Blockierzeit kann über eine PV-Ertragsprognose optimiert werden (siehe unten).</p>
+                <p>This setting controls the activation recommendation (SG Ready output 2).</p>
+                <p>If the block time is enabled and the current time is within the block time, no activation recommendation is given. This way, it can be prevented that expensive electricity is purchased in the morning when the PV system is supplying electricity during the day.</p>
+                <p>Note: The block time can be optimized using a PV yield forecast (see below).</p>
             </>,
             "enable_daily_block_period": "Enable Daily Block Period",
             "from": "From",
@@ -82,23 +83,49 @@ let x = {
             "evening": "Block Time Evening",
             "pv_yield_forecast": "PV Yield Forecast",
             "pv_yield_forecast_activate": "Block only if expected yield is above configured blocking threshold",
+            "pv_yield_forecast_muted": "if the expected PV yield is below the configured value, the active time is extended to 24h, so that the cheap electricity tariffs can also be used at night.",
             "pv_yield_forecast_help": <>
-                <p>Diese Einstellung steuert die Einschaltempfehlung (SG-Ready-Ausgang 2).</p>
-                <p>Wenn die PV-Ertragsprognose aktiviert ist, kann der Heizung eine Einschaltempfehlung auch außerhalb der Aktivzeit gegeben werden, wenn die PV-Ertragsprognose (Summe des Ertrags von einem Tag in kWh) die eingetellte Schwelle unterschreitet.</p>
-                <p>Beispiel: Es ist 05:00 morgens und die Aktivzeit ist von 06:00 bis 18:00. Die PV-Ertragsprognose ist aktiviert und die Schwelle ist auf 50kWh eingestellt, die Prognose sagt allerdings nur einen Ertrag von 10kWh voraus. In diesem Fall würde trotz der Uhrzeit außerhalb der Aktivzeit eine Einschaltempfehlung an die Heizung gesendet, wenn der Strom günstig ist.</p>
-                <p>Die Idee ist es, Nachts den günstigen Strom zu nutzen wenn bekannt ist das am Tag die Sonne nicht scheinen wird.</p>
+                <p>This setting controls the activation recommendation (SG Ready output 2).</p>
+                <p>If the PV yield forecast is enabled, an activation recommendation can be given to the heating even outside the active time if the PV yield forecast (sum of the yield from one day in kWh) falls below the configured threshold.</p>
+                <p>Example: It is 05:00 in the morning and the active time is from 06:00 to 18:00. The PV yield forecast is enabled and the threshold is set to 50kWh, but the forecast only predicts a yield of 10kWh. In this case, an activation recommendation would be sent to the heating even outside the active time if the electricity is cheap.</p>
+                <p>The idea is to use the cheap electricity at night when it is known that the sun will not shine during the day.</p>
             </>,
             "blocking_threshold": "Blocking Threshold",
             "blocking_threshold_description": "At what kWh yield forecast should the start command be blocked based on time",
             "p14_enwg_control_activate": "Activates control of heating based on §14 EnWG (only relevant for Germany)",
             "input": "Input",
+            "output": "Output",
             "throttled_if_input": "Throttled if Input",
             "closed": "Closed",
             "opened": "Opened",
             "meter_slot_grid_power": "Power meter",
             "meter_slot_grid_power_muted": "typically at the grid connection",
             "meter_slot_grid_power_select": "Select...",
-            "meter_slot_grid_power_none": "No power meter configured"
+            "meter_slot_grid_power_none": "No power meter configured",
+            "sg_ready_output": "SG Ready Output",
+            "sg_ready_output1_muted": "Output 1 is used for blocking operation (SG Ready state 1).",
+            "sg_ready_output2_muted": "Output 2 is used for the activation recommendation (SG Ready state 3).",
+            "general_settings": "General Settings",
+            "active": "Active",
+            "inactive": "Inactive",
+            "watt": "Watt",
+            "price_based_heating_plan": "Price-based Heating Plan",
+            "price_based_heating_plan_muted": "Heating plan based on dynamic prices: Red = blocking operation, Green = activation recommendation",
+            "status": "Status",
+            "today": "Today",
+            "tomorrow": "Tomorrow",
+            "january": "January",
+            "february": "February",
+            "march": "March",
+            "april": "April",
+            "may": "May",
+            "june": "June",
+            "july": "July",
+            "august": "August",
+            "september": "September",
+            "october": "October",
+            "november": "November",
+            "december": "December"
         },
         "script": {
             "save_failed": "Failed to save the heating settings",

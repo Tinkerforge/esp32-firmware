@@ -69,18 +69,18 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
     ]);
 
     static months: [string, string][] = [
-        ["1", "Januar"],
-        ["2", "Februar"],
-        ["3", "März"],
-        ["4", "April"],
-        ["5", "Mai"],
-        ["6", "Juni"],
-        ["7", "Juli"],
-        ["8", "August"],
-        ["9", "September"],
-        ["10", "Oktober"],
-        ["11", "November"],
-        ["12", "Dezember"]
+        ["1",  __("heating.content.january")],
+        ["2",  __("heating.content.february")],
+        ["3",  __("heating.content.march")],
+        ["4",  __("heating.content.april")],
+        ["5",  __("heating.content.may")],
+        ["6",  __("heating.content.june")],
+        ["7",  __("heating.content.july")],
+        ["8",  __("heating.content.august")],
+        ["9",  __("heating.content.september")],
+        ["10", __("heating.content.october")],
+        ["11", __("heating.content.november")],
+        ["12", __("heating.content.december")]
     ];
 
     constructor() {
@@ -321,7 +321,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             onValue={(v) => this.setState({meter_slot_grid_power: parseInt(v)})}
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.minimum_holding_time")} label_muted="für SG-Ready-Ausgang 1 und SG-Ready-Ausgang 2">
+                    <FormRow label={__("heating.content.minimum_holding_time")} label_muted={__("heating.content.minimum_holding_time_muted")}>
                         <InputNumber
                             unit={__("heating.content.minutes")}
                             value={state.minimum_control_holding_time}
@@ -330,7 +330,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             max={60}
                         />
                     </FormRow>
-                    <FormRow label="SG-Ready-Ausgang 1" label_muted="Ausgang 1 wird für den blockierenden Betrieb verwendet (SG Ready Zustand 1).">
+                    <FormRow label={__("heating.content.sg_ready_output") + " 1"} label_muted={__("heating.content.sg_ready_output1_muted")}>
                         <InputSelect
                             items={[
                                 ["0", __("heating.content.closed")],
@@ -340,7 +340,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             onValue={(v) => this.setState({sg_ready_blocking_active_type: parseInt(v)})}
                         />
                     </FormRow>
-                    <FormRow label="SG-Ready-Ausgang 2" label_muted="Ausgang 2 wird für die Einschaltempfehlung verwendet (SG Ready Zustand 3).">
+                    <FormRow label={__("heating.content.sg_ready_output") + " 2"} label_muted={__("heating.content.sg_ready_output1_muted")}>
                         <InputSelect
                             items={[
                                 ["0", __("heating.content.closed")],
@@ -357,7 +357,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         />
                     </FormRow>
 
-                    <FormSeparator heading="Sommereinstellungen"/>
+                    <FormSeparator heading={__("heating.content.summer_settings")}/>
                     <FormRow label={__("heating.content.summer_start")} label_muted="">
                         <div class="row no-gutters">
                             <div class="col-md-6">
@@ -420,8 +420,8 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label="Tägliche Aktivzeit" help={__("heating.content.active_time_help")}>
-                        <Switch desc="Aktiviert einen Zeitraum, in dem die SG-Ready-Ausgänge gesteuert werden, damit die PV-Anlage im Sommermodus Vorrang hat, z.B. von 08:00 bis 20:00h"
+                    <FormRow label={__("heating.content.active_time")} help={__("heating.content.active_time_help")}>
+                        <Switch desc={__("heating.content.active_time_desc")}
                                 checked={state.summer_active_time_active}
                                 onClick={this.toggle('summer_active_time_active', this.update_uplot)}
                         />
@@ -440,7 +440,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             <div class="col-md-6">
                                 <div class="input-group">
                                     <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
-                                        <InputTime
+                                    <InputTime
                                         className={"form-control-md heating-input-group-prepend"}
                                         date={this.get_date_from_minutes(state.summer_active_time_end)}
                                         showSeconds={false}
@@ -450,7 +450,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label={__("heating.content.pv_yield_forecast")} label_muted="liegt der erwartete PV-Ertrag unter dem eingestellten Wert, erweitert sich die Aktivzeit auf 24h, so dass die günstigen Stromtarife auch Nachts genutzt werden könnenl" help={__("heating.content.pv_yield_forecast_help")}>
+                    <FormRow label={__("heating.content.pv_yield_forecast")} label_muted={__("heating.content.pv_yield_forecast_muted")} help={__("heating.content.pv_yield_forecast_help")}>
                         <SwitchableInputNumber
                             switch_label_active="Aktiv"
                             switch_label_inactive="Inaktiv"
@@ -465,12 +465,12 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         />
                     </FormRow>
 
-                    <FormSeparator heading="Allgemeine Einstellungen"/>
+                    <FormSeparator heading={__("heating.content.general_settings")}/>
                     <FormRow label={__("heating.content.pv_excess_control")} help={__("heating.content.pv_excess_control_help")}>
                         <SwitchableInputNumber
-                            switch_label_active="Aktiv"
-                            switch_label_inactive="Inaktiv"
-                            unit="Watt"
+                            switch_label_active={__("heating.content.active")}
+                            switch_label_inactive={__("heating.content.inactive")}
+                            unit={__("heating.content.watt")}
                             checked={state.pv_excess_control_active}
                             onClick={this.toggle('pv_excess_control_active')}
                             value={state.pv_excess_control_threshold}
@@ -480,10 +480,10 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.dpc_low")} label_muted="unter % Tagesdurchschnitt" help={__("heating.content.dpc_extended_help")}>
+                    <FormRow label={__("heating.content.dpc_low")} label_muted={__("heating.content.dpc_low_muted")} help={__("heating.content.dpc_extended_help")}>
                         <SwitchableInputNumber
-                            switch_label_active="Aktiv"
-                            switch_label_inactive="Inaktiv"
+                            switch_label_active={__("heating.content.active")}
+                            switch_label_inactive={__("heating.content.inactive")}
                             unit="%"
                             checked={state.dpc_extended_active}
                             onClick={this.toggle('dpc_extended_active', this.update_uplot)}
@@ -494,10 +494,10 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.dpc_high")} label_muted="über % Tagesdurchschnitt" help={__("heating.content.dpc_blocking_help")}>
+                    <FormRow label={__("heating.content.dpc_high")} label_muted={__("heating.content.dpc_high_muted")} help={__("heating.content.dpc_blocking_help")}>
                         <SwitchableInputNumber
-                            switch_label_active="Aktiv"
-                            switch_label_inactive="Inaktiv"
+                            switch_label_active={__("heating.content.active")}
+                            switch_label_inactive={__("heating.content.inactive")}
                             unit="%"
                             checked={state.dpc_blocking_active}
                             onClick={this.toggle('dpc_blocking_active', this.update_uplot)}
@@ -509,8 +509,8 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         />
                     </FormRow>
 
-                    <FormSeparator heading="Status"/>
-                    <FormRow label="Preisbasierter Heizplan" label_muted="Heizplan anhand dynamischer Preise: Rot = blockierender Betrieb, Grün = Einschaltempfehlung">
+                    <FormSeparator heading={__("heating.content.status")} />
+                    <FormRow label={__("heating.content.price_based_heating_plan")} label_muted={__("heating.content.price_based_heating_plan_muted")}>
                     <div class="card pl-1 pb-1">
                         <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                             <UplotLoader
@@ -547,7 +547,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Heute</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.today")}</span></div>
                                     <InputText
                                         value={util.get_value_with_unit(get_average_price_today(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
                                     />
@@ -555,7 +555,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             </div>
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Morgen</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.tomorrow")}</span></div>
                                     <InputText
                                         value={util.get_value_with_unit(get_average_price_tomorrow(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
                                     />
@@ -567,7 +567,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Heute</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.today")}</span></div>
                                     <InputText
                                         value={util.get_value_with_unit(get_kwh_today(this.state), "kWh", 2)}
                                     />
@@ -575,7 +575,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             </div>
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Morgen</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.tomorrow")}</span></div>
                                     <InputText
                                         value={util.get_value_with_unit(get_kwh_tomorrow(this.state), "kWh", 2)}
                                     />
@@ -587,17 +587,17 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Ausgang 1</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 1"}</span></div>
                                     <InputText
-                                        value={state.heating_state.sg_ready_blocking_active ? 'Aktiv' : 'Inaktiv'}
+                                        value={state.heating_state.sg_ready_blocking_active ? __("heating.content.active") : __("heating.content.inactive")}
                                     />
                                 </div>
                             </div>
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Ausgang 2</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 2"}</span></div>
                                     <InputText
-                                        value={state.heating_state.sg_ready_extended_active ? 'Aktiv' : 'Inaktiv'}
+                                        value={state.heating_state.sg_ready_extended_active ? __("heating.content.active") : __("heating.content.inactive")}
                                     />
                                 </div>
                             </div>
