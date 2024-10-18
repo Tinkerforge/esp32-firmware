@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -175,7 +176,11 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
             if (static_info) { // No static info? Skip topic.
                 const String &client_name = mqtt.client_name;
                 const String &topic_prefix = mqtt.global_topic_prefix;
+#if MODULE_SYSTEM_AVAILABLE()
+                const char *name = (system_.get_system_language() == System::Language::English) ? mqtt_discovery_topic_infos[topic_num].name_en : mqtt_discovery_topic_infos[topic_num].name_de;
+#else
                 const char *name = mqtt_discovery_topic_infos[topic_num].name_de;
+#endif
 
                 // FIXME: convert to StringBuilder and TFJson
                 String payload;
