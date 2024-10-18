@@ -22,6 +22,7 @@
 #include "module.h"
 #include "config.h"
 #include "tools.h"
+#include "header_logger.h"
 #include "bindings/base58.h"
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
@@ -31,8 +32,6 @@ extern TF_HAL hal;
 
 #define BOOTLOADER_MODE_FIRMWARE 1
 #define FIRMWARE_DEVICE_IDENTIFIER_OFFSET 8
-
-int device_module_printfln(const char *fmt, ...);
 
 class DeviceModuleBase : public IModule
 {
@@ -94,9 +93,9 @@ public:
 
         if (!log_message_printed) {
             if (tfp == nullptr && mandatory)
-                device_module_printfln("No %s Bricklet found. Disabling %s support.", device_name, module_name);
+                header_printfln("device_module", "No %s Bricklet found. Disabling %s support.", device_name, module_name);
             else if (tfp != nullptr && !mandatory)
-                device_module_printfln("%s Bricklet found. Enabling %s support.", device_name, module_name);
+                header_printfln("device_module", "%s Bricklet found. Enabling %s support.", device_name, module_name);
         }
         log_message_printed = true;
 
@@ -108,11 +107,11 @@ public:
         int result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, false);
 
         if (result != 0) {
-            device_module_printfln("Flashing %s Bricklet failed (%d)", device_name, result);
-            device_module_printfln("Retrying once.");
+            header_printfln("device_module", "Flashing %s Bricklet failed (%d)", device_name, result);
+            header_printfln("device_module", "Retrying once.");
             result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, false);
             if (result != 0) {
-                device_module_printfln("Flashing %s Bricklet failed twice (%d). Disabling completely.", device_name, result);
+                header_printfln("device_module", "Flashing %s Bricklet failed twice (%d). Disabling completely.", device_name, result);
                 device_found = false;
                 return false;
             }
@@ -125,7 +124,7 @@ public:
         result = init_function(&device, uid, &hal);
 
         if (result != TF_E_OK) {
-            device_module_printfln("Failed to initialize %s Bricklet (%d). Disabling %s support.", device_name, result, module_name);
+            header_printfln("device_module", "Failed to initialize %s Bricklet (%d). Disabling %s support.", device_name, result, module_name);
             return false;
         }
 
