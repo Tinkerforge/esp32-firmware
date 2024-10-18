@@ -19,7 +19,7 @@
 #include "ntp.h"
 
 #include <time.h>
-#include <esp_sntp.h>
+#include <lwip/apps/sntp.h>
 #include <lwip/inet.h>
 #include <esp_netif.h>
 
@@ -30,17 +30,12 @@
 
 extern "C" void sntp_sync_time(struct timeval *tv)
 {
-    if (sntp_get_sync_mode() != SNTP_SYNC_MODE_IMMED) {
-        logger.printfln("This sync mode is not supported.");
-        return;
-    }
-
 #if MODULE_RTC_AVAILABLE()
     rtc.push_system_time(*tv, Rtc::Quality::High);
 #elif
     settimeofday(&time, NULL);
 #endif
-    sntp_set_sync_status(SNTP_SYNC_STATUS_COMPLETED);
+
     ntp.time_synced_NTPThread();
 }
 
@@ -115,7 +110,6 @@ void NTP::setup()
             }
 
             sntp_setoperatingmode(SNTP_OPMODE_POLL);
-            sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
 
             // Always set first two NTP server slots and don't leave any room for
             // servers received via DHCP. If NTP via DHCP is enabled and NTP
@@ -126,7 +120,6 @@ void NTP::setup()
             sntp_setservername(1, opts->server2.isEmpty() ? opts->server1.c_str() : opts->server2.c_str());
 
             sntp_init();
-
             return ESP_OK;
         }, &sntp_opts);
     }
