@@ -21,16 +21,13 @@
 
 #include "module.h"
 #include "config.h"
+#include "language.enum.h"
 
 class System final : public IModule
 {
 public:
-    enum class Language : uint8_t {
-        German  = 0,
-        English = 1
-    };
+    System() {}
 
-    System(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;

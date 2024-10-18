@@ -1,7 +1,4 @@
-const enum Language {
-    German  = 0,
-    English = 1,
-}
+import { Language } from "./language.enum";
 
 export interface i18n_config {
     language: Language;

@@ -19,7 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment, Component } from "preact";
+import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -31,6 +31,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
 import { Switch } from "../../ts/components/switch";
+import { Language } from "./language.enum";
 
 export function SystemNavbar() {
     return <NavbarItem name="system" module="system" title={__("system.navbar.system")} symbol={<Settings />} />;
@@ -81,10 +82,10 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                                 <div class="input-group">
                                     <InputSelect
                                         items={[
-                                            ["0", __("system.content.german")],
-                                            ["1", __("system.content.english")]
+                                            [Language.German.toString(), __("system.content.german")],
+                                            [Language.English.toString(), __("system.content.english")]
                                         ]}
-                                        value={state.language}
+                                        value={state.language.toString()}
                                         onValue={(v) => this.setState({language: parseInt(v)})}
                                     />
                                 </div>

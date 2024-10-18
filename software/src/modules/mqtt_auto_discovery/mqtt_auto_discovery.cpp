@@ -177,7 +177,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
                 const String &client_name = mqtt.client_name;
                 const String &topic_prefix = mqtt.global_topic_prefix;
 #if MODULE_SYSTEM_AVAILABLE()
-                const char *name = (system_.get_system_language() == System::Language::English) ? mqtt_discovery_topic_infos[topic_num].name_en : mqtt_discovery_topic_infos[topic_num].name_de;
+                const char *name = (system_.get_system_language() == Language::English) ? mqtt_discovery_topic_infos[topic_num].name_en : mqtt_discovery_topic_infos[topic_num].name_de;
 #else
                 const char *name = mqtt_discovery_topic_infos[topic_num].name_de;
 #endif

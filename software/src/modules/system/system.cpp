@@ -68,7 +68,7 @@ void System::factory_reset(bool restart_esp)
         ESP.restart();
 }
 
-System::Language System::get_system_language()
+Language System::get_system_language()
 {
     return i18n_config.get("language")->asEnum<Language>();
 }
