@@ -29,10 +29,10 @@
 #define TILE_TYPES 8
 
 class FrontPanel : public DeviceModule<TF_WARPFrontPanel,
-                                         tf_warp_front_panel_create,
-                                         tf_warp_front_panel_get_bootloader_mode,
-                                         tf_warp_front_panel_reset,
-                                         tf_warp_front_panel_destroy>
+                                       tf_warp_front_panel_create,
+                                       tf_warp_front_panel_get_bootloader_mode,
+                                       tf_warp_front_panel_reset,
+                                       tf_warp_front_panel_destroy>
 {
 public:
     enum class LEDPattern : uint8_t {

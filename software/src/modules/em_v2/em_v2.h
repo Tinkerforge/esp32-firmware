@@ -41,14 +41,14 @@ typedef struct {
 } EnergyManagerV2AllData;
 
 class EMV2 final : public DeviceModule<TF_WARPEnergyManagerV2,
-                                                tf_warp_energy_manager_v2_create,
-                                                tf_warp_energy_manager_v2_get_bootloader_mode,
-                                                tf_warp_energy_manager_v2_reset,
-                                                tf_warp_energy_manager_v2_destroy>,
-                            public IEMBackend //,
-                            //public IDebugProtocolBackend
+                                       tf_warp_energy_manager_v2_create,
+                                       tf_warp_energy_manager_v2_get_bootloader_mode,
+                                       tf_warp_energy_manager_v2_reset,
+                                       tf_warp_energy_manager_v2_destroy>,
+                   public IEMBackend
+               //, public IDebugProtocolBackend
 #if MODULE_AUTOMATION_AVAILABLE()
-                          , public IAutomationBackend
+                 , public IAutomationBackend
 #endif
 {
 public:

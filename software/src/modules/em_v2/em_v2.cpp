@@ -35,11 +35,11 @@ static constexpr auto EM_TASK_DELAY = 250_ms;
 #endif
 
 EMV2::EMV2() : DeviceModule(warp_energy_manager_v2_bricklet_firmware_bin_data,
-                                              warp_energy_manager_v2_bricklet_firmware_bin_length,
-                                              "energy_manager",
-                                              "WARP Energy Manager 2.0",
-                                              "Energy Manager V2",
-                                              [this](){this->setup_energy_manager();}) {}
+                            warp_energy_manager_v2_bricklet_firmware_bin_length,
+                            "energy_manager",
+                            "WARP Energy Manager 2.0",
+                            "Energy Manager V2",
+                            [this](){this->setup_energy_manager();}) {}
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
