@@ -81,7 +81,7 @@ void GenericModbusTCPClient::read_next()
         esp_system_abort("generic_modbus_tcp_client: Unsupported register type to read.");
     }
 
-    static_cast<TFModbusTCPClient *>(client_ptr)->read(data_type, device_address, read_start_address, read_count, target_buffer, 2000,
+    static_cast<TFModbusTCPClient *>(client_ptr)->read(data_type, device_address, read_start_address, read_count, target_buffer, 2000000,
     [this](TFModbusTCPClientTransactionResult result) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
             logger.printfln("Modbus read failed: %s (%d) client=%p host_name='%s' port=%u device_address=%u start_address=%u register_count=%u",

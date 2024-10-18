@@ -105,7 +105,7 @@ private:
     size_t scan_read_retries;
     micros_t scan_read_delay_deadline;
     uint16_t scan_read_buffer[68];
-    uint32_t scan_read_timeout = 1000;
+    int64_t scan_read_timeout_us = 1000000;
     uint16_t scan_read_timeout_burst;
     uint32_t scan_read_cookie = 0;
     ModbusDeserializer scan_deserializer;
