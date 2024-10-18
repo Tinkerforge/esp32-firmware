@@ -54,8 +54,13 @@ let x = {
             "remaining_requests_label_muted": "How many more times can the solar forecast be queried from the API in this interval",
             "next_api_call_label": "Next API call",
             "next_api_call_label_muted": "When will the solar forecast be queried next",
-            "unknown": "Unknown"
-
+            "unknown": "Unknown",
+            "not_set_for_this_plane": "Solar forecast has not yet been queried for this plane.",
+            "address_of_pv_plane": "Address of the PV plane:",
+            "last_update_attempt": "last update attempt:",
+            "last_successful_update": "last successful update:",
+            "next_update": "next update:",
+            "resolution": "Accuracy of about 1km is OK"
         },
         "script": {
             "power": "Power",

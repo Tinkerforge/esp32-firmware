@@ -54,7 +54,13 @@ let x = {
             "remaining_requests_label_muted": "Wie oft darf die Solarprognose von der API in diesem Intervall noch abgefragt werden",
             "next_api_call_label": "Nächster API-Aufruf",
             "next_api_call_label_muted": "Wann wird die Solarprognose das nächste mal abgefragt",
-            "unknown": "Unbekannt"
+            "unknown": "Unbekannt",
+            "not_set_for_this_plane": "Solarprognose für diese Fläche wurde noch nicht abgefragt.",
+            "address_of_pv_plane": "Adresse der PV-Fläche:",
+            "last_update_attempt": "letzter Abfrageversuch:",
+            "last_successful_update": "letzte erfolgreiche Abfrage:",
+            "next_update": "näcste Abfrage:",
+            "resolution": "Genauigkeit von ca. 1km ist OK"
         },
         "script": {
             "power": "Leistung",

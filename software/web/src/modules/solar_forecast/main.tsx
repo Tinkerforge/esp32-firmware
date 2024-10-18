@@ -395,13 +395,13 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
             let plane_state = state.plane_states[plane_index];
             if (plane_state.last_check == 0) {
                 // Darauf hinweisen das noch nicht gespeichert wurde falls isDirty()
-                return <div class="form-group row"><span class="col-12">Solarprognose für diese Fläche wurde noch nicht abgefragt.</span></div>;
+                return <div class="form-group row"><span class="col-12">{__("solar_forecast.content.not_set_for_this_plane")}</span></div>;
             } else {
                 return <div>
-                        <div class="form-group row"><span class="col-4">Adresse der PV-Fläche: </span><span class="col-8"> {plane_state.place} (Genauigkeit von ca. 1km ist OK)</span></div>
-                        <div class="form-group row"><span class="col-4">letzter Abfrageversuch:</span><span class="col-8">{new Date(plane_state.last_check*60*1000).toLocaleString()}</span></div>
-                        <div class="form-group row"><span class="col-4">letzte erfolgreiche Abfrage:</span><span class="col-8">{new Date(plane_state.last_sync*60*1000).toLocaleString()}</span></div>
-                        <div class="form-group row"><span class="col-4">nächste Abfrage:</span><span class="col-8">{new Date(plane_state.next_check*60*1000).toLocaleString()}</span></div>
+                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.address_of_pv_plane")}</span><span class="col-8"> {plane_state.place} ({__("solar_forecast.content.resolution")})</span></div>
+                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_update_attempt")}</span><span class="col-8">{new Date(plane_state.last_check*60*1000).toLocaleString()}</span></div>
+                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_successful_update")}</span><span class="col-8">{new Date(plane_state.last_sync*60*1000).toLocaleString()}</span></div>
+                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.next_update")}</span><span class="col-8">{new Date(plane_state.next_check*60*1000).toLocaleString()}</span></div>
                        </div>;
             }
         }
