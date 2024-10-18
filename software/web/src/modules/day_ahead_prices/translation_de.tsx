@@ -16,7 +16,7 @@ let x = {
             "grid_fees_plus_taxes": "Netzentgelte + Steuern",
             "surcharge": "Preisaufschlag",
             "day_ahead_prices_muted": <>Die Daten werden von <a href="https://www.entsoe.eu/about/" target="_blank">ENTSO-E</a> bereitgestellt und über api.warp-charger.com bezogen.</>,
-            "day_ahead_prices_desc": "Aktiviert das automatischer herunterladen der Day-Ahead-Börsenstrompreise. Für dieses Feature muss die Wallbox Zugriff zum Internet haben.",
+            "day_ahead_prices_desc": "Aktiviert das automatischer herunterladen der Day-Ahead-Börsenstrompreise. Für dieses Feature muss das Gerät Zugriff zum Internet haben.",
             "region": "Bereich",
             "germany": "Deutschland",
             "austria": "Österreich",
@@ -33,6 +33,7 @@ let x = {
             "day_ahead_market_prices_heading": "Day-Ahead-Börsenpreise",
             "price_ct_per_kwh": "Preis [ct/kWh]",
             "current_price": "Aktueller Börsenpreis",
+            "average_price": "Durchschnittspreis",
             "undefined": "Unbekannt",
             "now": "Jetzt",
             "vat": "MwSt",
@@ -48,7 +49,7 @@ let x = {
             </>
         },
         "automation": {
-            "automation_trigger_text": /*FFN*/(type: number, comparison: number, value: number) => {
+            "trigger_text": /*FFN*/(type: number, comparison: number, value: number) => {
                 if (type == 0) {// average
                     if (comparison == 0) { // greater
                         return (<>Wenn der aktuelle Börsenstrompreis größer als {value}% des Tagesdurchschnitt ist,{" "}</>)
@@ -63,7 +64,16 @@ let x = {
                     }
                 }
                 return (<>Unbekannt,{" "}</>)
-            }/*NF*/
+            }/*NF*/,
+            "comparative_value": "Vergleichswert",
+            "comparative_value_muted": "Der Vergleich findet auf dem Netto-Börsenstrompreis statt (ohne Netzentgelte, Steuern, Preisaufschläge etc.)",
+            "comparative_value_percent": "Prozentueller Vergleich zum Tagesdurchschnitt",
+            "comparative_value_absolute": "Vergleich zum absoluten Wert in Cent",
+            "comparison": "Vergleich",
+            "comparison_greater_than": "Größer als",
+            "comparison_less_than": "Kleiner als",
+            "value": "Wert",
+            "current_electricity_price": "Aktueller Strompreis"
         },
         "script": {
             "save_failed": "Speichern der Strompreiseinstellungen fehlgeschlagen",

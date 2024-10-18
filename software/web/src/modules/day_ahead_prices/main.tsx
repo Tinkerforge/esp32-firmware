@@ -290,26 +290,26 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 <FormRow label={__("day_ahead_prices.content.current_price")}>
                     <InputText value={util.get_value_with_unit(get_current_price(dap, dap), "ct/kWh", 2, 1000) + " (" + this.get_price_timeframe() + ")"}/>
                 </FormRow>
-                <FormRow label="Durchschnittspreis">
-                        <div class="row mx-n1">
-                            <div class="col-md-6 px-1">
-                                <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Heute</span></div>
-                                    <InputText
-                                        value={util.get_value_with_unit(get_average_price_today(dap, dap), "ct/kWh", 2, 1000)}
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-md-6 px-1">
-                                <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">Morgen</span></div>
-                                    <InputText
-                                        value={util.get_value_with_unit(get_average_price_tomorrow(dap, dap), "ct/kWh", 2, 1000)}
-                                    />
-                                </div>
+                <FormRow label={__("day_ahead_prices.content.average_price")}>
+                    <div class="row mx-n1">
+                        <div class="col-md-6 px-1">
+                            <div class="input-group">
+                                <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("today")}</span></div>
+                                <InputText
+                                    value={util.get_value_with_unit(get_average_price_today(dap, dap), "ct/kWh", 2, 1000)}
+                                />
                             </div>
                         </div>
-                    </FormRow>
+                        <div class="col-md-6 px-1">
+                            <div class="input-group">
+                                <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("tomorrow")}</span></div>
+                                <InputText
+                                    value={util.get_value_with_unit(get_average_price_tomorrow(dap, dap), "ct/kWh", 2, 1000)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </FormRow>
                 <div>
                     <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader

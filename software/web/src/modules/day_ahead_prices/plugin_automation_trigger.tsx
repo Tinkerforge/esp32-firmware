@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Mattias Schäffersmann <mattias@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,16 +46,16 @@ export type DayAheadPriceNowAutomationTrigger = [
 ];
 
 function get_day_ahead_prices_now_table_children(trigger: DayAheadPriceNowAutomationTrigger) {
-    return __("day_ahead_prices.automation.automation_trigger_text")(trigger[1].type, trigger[1].comparison, trigger[1].value);
+    return __("day_ahead_prices.automation.trigger_text")(trigger[1].type, trigger[1].comparison, trigger[1].value);
 }
 
 function get_day_ahead_prices_now_edit_children(trigger: DayAheadPriceNowAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void): ComponentChildren {
     return [
-        <FormRow label="Vergleichswert" label_muted="Der Vergleich findet auf dem Netto-Börsenstrompreis statt (ohne Netzentgelte, Steuern, Preisaufschläge etc.)">
+        <FormRow label={__("day_ahead_prices.automation.comparative_value")} label_muted={__("day_ahead_prices.automation.comparative_value_muted")}>
             <InputSelect
                 items={[
-                    ['0', "Prozentueller Vergleich zum Tagesdurchschnitt"],
-                    ['1', "Vergleich zum absoluten Wert in Cent"]
+                    ['0', __("day_ahead_prices.automation.comparative_value_percent")],
+                    ['1', __("day_ahead_prices.automation.comparative_value_absolute")]
                 ]}
                 value={trigger[1].type.toString()}
                 onValue={(v) => {
@@ -63,17 +63,17 @@ function get_day_ahead_prices_now_edit_children(trigger: DayAheadPriceNowAutomat
                 }}
             />
         </FormRow>,
-        <FormRow label="Vergleich">
+        <FormRow label={__("day_ahead_prices.automation.comparison")}>
             <InputSelect
                 items={[
-                    ['0', "Größer als"],
-                    ['1', "Kleiner als"]
+                    ['0', __("day_ahead_prices.automation.comparison_greater_than")],
+                    ['1', __("day_ahead_prices.automation.comparison_less_than")]
                 ]}
                 value={trigger[1].comparison.toString()}
                 onValue={(v) => on_trigger(util.get_updated_union(trigger, {comparison: parseInt(v)}))}
             />
         </FormRow>,
-        <FormRow label="Wert">
+        <FormRow label={__("day_ahead_prices.automation.value")}>
             <InputNumber
                 required
                 min={-10000}
@@ -101,7 +101,7 @@ export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.DayAheadPriceNow]: {
-                name: "Aktueller Strompreis",
+                name: __("day_ahead_prices.automation.current_electricity_price"),
                 new_config: new_day_ahead_prices_now_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_day_ahead_prices_now_table_children,
