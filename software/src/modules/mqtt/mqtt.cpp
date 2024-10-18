@@ -598,19 +598,20 @@ void Mqtt::setup()
 
     esp_mqtt_client_config_t mqtt_cfg = {};
 
-    mqtt_cfg.host = config.get("broker_host")->asEphemeralCStr();
-    mqtt_cfg.port = config.get("broker_port")->asUint();
-    mqtt_cfg.client_id = config.get("client_name")->asEphemeralCStr();
-    mqtt_cfg.username = config.get("broker_username")->asEphemeralCStr();
-    mqtt_cfg.password = config.get("broker_password")->asEphemeralCStr();
-    mqtt_cfg.task_stack = MQTT_TASK_STACK_SIZE;
-    mqtt_cfg.buffer_size = MQTT_RECV_BUFFER_SIZE;
-    mqtt_cfg.out_buffer_size = MQTT_SEND_BUFFER_SIZE;
-    mqtt_cfg.network_timeout_ms = 3000;
-    mqtt_cfg.message_retransmit_timeout = 800;
+    mqtt_cfg.broker.address.hostname = config.get("broker_host")->asEphemeralCStr();
+    mqtt_cfg.broker.address.port = config.get("broker_port")->asUint();
+    mqtt_cfg.credentials.client_id = config.get("client_name")->asEphemeralCStr();
+    mqtt_cfg.credentials.username = config.get("broker_username")->asEphemeralCStr();
+    mqtt_cfg.credentials.authentication.password = config.get("broker_password")->asEphemeralCStr();
+    mqtt_cfg.task.stack_size = MQTT_TASK_STACK_SIZE;
+    mqtt_cfg.buffer.size = MQTT_RECV_BUFFER_SIZE;
+    mqtt_cfg.buffer.out_size = MQTT_SEND_BUFFER_SIZE;
+    mqtt_cfg.network.timeout_ms = 3000;
+    mqtt_cfg.session.message_retransmit_timeout = 800;
     // + 1 to undo the -1 in the config's definition.
-    mqtt_cfg.transport = (esp_mqtt_transport_t)(config.get("protocol")->asUint() + 1);
-    bool encrypted = mqtt_cfg.transport == MQTT_TRANSPORT_OVER_SSL || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS;
+    auto transport = (esp_mqtt_transport_t)(config.get("protocol")->asUint() + 1);
+    mqtt_cfg.broker.address.transport = transport;
+    bool encrypted = transport == MQTT_TRANSPORT_OVER_SSL || transport == MQTT_TRANSPORT_OVER_WSS;
     int cert_id = config.get("cert_id")->asInt();
 
     if (encrypted && cert_id != -1) {
@@ -622,7 +623,7 @@ void Mqtt::setup()
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
-        mqtt_cfg.cert_pem = (const char *)cert.release();
+        mqtt_cfg.broker.verification.certificate = (const char *)cert.release();
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
@@ -631,7 +632,7 @@ void Mqtt::setup()
 #endif
     }
     else if (encrypted) {
-        mqtt_cfg.crt_bundle_attach = esp_crt_bundle_attach;
+        mqtt_cfg.broker.verification.crt_bundle_attach = esp_crt_bundle_attach;
     }
 
     int client_cert_id = config.get("client_cert_id")->asInt();
@@ -645,7 +646,7 @@ void Mqtt::setup()
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
-        mqtt_cfg.client_cert_pem = (const char *)cert.release();
+        mqtt_cfg.credentials.authentication.certificate = (const char *)cert.release();
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
@@ -665,7 +666,7 @@ void Mqtt::setup()
             return;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
-        mqtt_cfg.client_key_pem = (const char *)cert.release();
+        mqtt_cfg.credentials.authentication.key = (const char *)cert.release();
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
@@ -674,9 +675,9 @@ void Mqtt::setup()
 #endif
     }
 
-    if ((mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WS || mqtt_cfg.transport == MQTT_TRANSPORT_OVER_WSS) && config.get("path")->asString().length() > 0) {
-        mqtt_cfg.path = config.get("path")->asEphemeralCStr();
-        logger.printfln("Using path %s", mqtt_cfg.path);
+    if ((transport == MQTT_TRANSPORT_OVER_WS || transport == MQTT_TRANSPORT_OVER_WSS) && config.get("path")->asString().length() > 0) {
+        mqtt_cfg.broker.address.path = config.get("path")->asEphemeralCStr();
+        logger.printfln("Using path %s", mqtt_cfg.broker.address.path);
     }
 
     // Set connection state here. Otherwise, it will stay stay "not configured" until the first connection attempt.
