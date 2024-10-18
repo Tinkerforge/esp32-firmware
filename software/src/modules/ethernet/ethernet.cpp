@@ -19,15 +19,20 @@
 
 #include "ethernet.h"
 
-#define ETH_ADDR        0
-#define ETH_POWER_PIN   5
-#define ETH_TYPE        ETH_PHY_KSZ8081
+#define ETH_PHY_TYPE  ETH_PHY_KSZ8081
+#define ETH_PHY_ADDR  0
+#define ETH_PHY_MDC   23
+#define ETH_PHY_MDIO  18
+#define ETH_PHY_POWER 5
+#define ETH_CLK_MODE  ETH_CLOCK_GPIO0_IN
 
 #include <ETH.h>
+#include <WiFiGeneric.h> // for calculateSubnetCIDR
 #include <esp_eth.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+
 #include "build.h"
 #include "tools.h"
 
@@ -121,7 +126,7 @@ void Ethernet::setup()
     connection_state = EthernetState::NotConnected;
     state.get("connection_state")->updateEnum(connection_state);
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             logger.printfln("Started");
             ETH.setHostname(hostname.c_str());
 
@@ -133,7 +138,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_START);
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             uint32_t link_speed = ETH.linkSpeed();
             bool full_duplex    = ETH.fullDuplex();
             logger.printfln("Connected: %lu Mbps %s Duplex, MAC: %s", link_speed, full_duplex ? "Full" : "Half", ETH.macAddress().c_str());
@@ -148,7 +153,7 @@ void Ethernet::setup()
             if (link_speed < 100)
                 delay(40); // 10MBit usually needs at least 19ms extra. Give it 40ms to be safe.
 
-            if (ip != 0) {
+            if ((uint32_t)ip != 0) {
                 ETH.config(ip, gateway, subnet, dns, dns2);
             } else {
                 ETH.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
@@ -171,7 +176,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_CONNECTED);
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             auto ip = ETH.localIP().toString();
             auto subnet = ETH.subnetMask();
             logger.printfln("Got IP address: %s/%u", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet));
@@ -191,12 +196,12 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_GOT_IP);
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Got IPv6 address: %s.", ETH.localIPv6().toString().c_str());
+    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            logger.printfln("Got IPv6 address: TODO PRINT ADDRESS.");
         },
         ARDUINO_EVENT_ETH_GOT_IP6);
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             logger.printfln("Lost IP address.");
             this->print_con_duration();
 
@@ -213,7 +218,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_LOST_IP);
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             logger.printfln("Disconnected");
             this->print_con_duration();
 
@@ -230,7 +235,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             logger.printfln("Stopped");
             this->print_con_duration();
 
@@ -245,7 +250,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_STOP);
 
-    ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_PHY_MDC, ETH_PHY_MDIO, ETH_TYPE);
+    ETH.begin();
 }
 
 void Ethernet::register_urls()
@@ -253,12 +258,12 @@ void Ethernet::register_urls()
     api.addPersistentConfig("ethernet/config", &config);
     api.addState("ethernet/state", &state);
     api.addCommand("ethernet/force_reset", Config::Null(), {}, [this](String &/*errmsg*/) {
-        esp_eth_stop(ETH.eth_handle);
+        esp_eth_stop(ETH._eth_handle);
         pinMode(5, OUTPUT);
         digitalWrite(5, LOW);
         delay(100);
         digitalWrite(5, HIGH);
-        esp_eth_start(ETH.eth_handle);
+        esp_eth_start(ETH._eth_handle);
     }, true);
 }
 

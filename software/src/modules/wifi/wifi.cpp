@@ -21,7 +21,7 @@
 
 #include <WiFi.h>
 #include <esp_wifi.h>
-#include <esp_wpa2.h>
+#include <esp_eap_client.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -340,29 +340,28 @@ bool Wifi::apply_sta_config_and_connect(WifiState current_state)
     EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
     switch (eap_config_id) {
         case EapConfigID::None:
-            WiFi.begin(ssid, passphrase, 0, bssid_lock ? bssid : nullptr, true, (uint8_t)3);
+            WiFi.begin(ssid, passphrase, 0, bssid_lock ? bssid : nullptr, true);
             break;
 
-            case EapConfigID::TLS:
-                {
-                    WiFi.begin(ssid,
-                            wpa2_auth_method_t::WPA2_AUTH_TLS,
-                            eap_identity.c_str(),
-                            nullptr,
-                            nullptr,
-                            (char *)ca_cert.get(),
-                            ca_cert_len,
-                            (char *)client_cert.get(),
-                            client_cert_len,
-                            (char *)client_key.get(),
-                            client_key_len,
-                            "",
-                            0,
-                            bssid_lock ? bssid : nullptr,
-                            true,
-                            3);
-                }
-                break;
+        case EapConfigID::TLS:
+            WiFi.begin(ssid,
+                    wpa2_auth_method_t::WPA2_AUTH_TLS,
+                    eap_identity.c_str(),
+                    nullptr,
+                    nullptr,
+                    (const char *)ca_cert.get(),
+                    //ca_cert_len,
+                    (const char *)client_cert.get(),
+                    //client_cert_len,
+                    (const char *)client_key.get(),
+                    //client_key_len,
+                    //"",
+                    //0,
+                    -1,
+                    0,
+                    bssid_lock ? bssid : nullptr,
+                    true);
+            break;
         /**
          * The auth method can be hardcoded here because arduino is not controlling the actual method and we need to
          * set the username and password.
@@ -374,17 +373,18 @@ bool Wifi::apply_sta_config_and_connect(WifiState current_state)
                     eap_identity.c_str(),
                     eap_username.c_str(),
                     eap_password.c_str(),
-                    (char *)ca_cert.get(),
-                    ca_cert_len,
+                    (const char *)ca_cert.get(),
+                    //ca_cert_len,
                     nullptr,
-                    0,
+                    //0,
                     nullptr,
-                    0,
-                    nullptr,
+                    //0,
+                    //nullptr,
+                    //0,
+                    -1,
                     0,
                     bssid_lock ? bssid : nullptr,
-                    true,
-                    3);
+                    true);
             break;
 
         default:
@@ -549,7 +549,7 @@ void Wifi::setup()
         ARDUINO_EVENT_WIFI_STA_GOT_IP);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Got IPv6 address: %s.", WiFi.localIPv6().toString().c_str());
+            logger.printfln("Got IPv6 address: TODO PRINT ADDRESS.");
         },
         ARDUINO_EVENT_WIFI_STA_GOT_IP6);
 
