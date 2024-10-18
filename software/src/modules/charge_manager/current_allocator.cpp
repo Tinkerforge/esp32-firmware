@@ -76,11 +76,11 @@ static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array
         else
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), " %6.3f@%dp;%.3fkWh", current_array[i] / 1000.0f, phases_array[i], charger_state[i].allocated_energy_this_rotation);
     }
-    logger.printfln(buf);
+    logger.printfln("%s", buf);
 }
 
 static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
-    #if ENABLE_CA_TRACE
+#if ENABLE_CA_TRACE
     char buf[768] = {};
     trace("%d: raw(%d %d %d %d) min(%d %d %d %d) spread(%d %d %d %d) max_pv %d",
            stage,
@@ -109,12 +109,12 @@ static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array
         else
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[%2zu %5d@%dp;%4dWh]", i, current_array[i], phases_array[i], (int32_t)(charger_state[i].allocated_energy_this_rotation * 1000.0f));
     }
-    trace(buf);
-    #endif
+    trace("%s", buf);
+#endif
 }
 
 static void trace_sort_fn(int stage, int matched, int *idx_array, size_t charger_count) {
-    #if ENABLE_CA_TRACE
+#if ENABLE_CA_TRACE
     char buf[200];
     memset(buf, 0, sizeof(buf));
     char *ptr = buf;
@@ -125,7 +125,7 @@ static void trace_sort_fn(int stage, int matched, int *idx_array, size_t charger
     for(int i = 0; i < charger_count; ++i)
         ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "%d %s", idx_array[i], i == (matched - 1) ? "| " : "");
     trace("%s", buf);
-    #endif
+#endif
 }
 
 #define trace_sort(x) trace_sort_fn(x, matched, idx_array, charger_count)
