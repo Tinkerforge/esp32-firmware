@@ -112,8 +112,6 @@ let x = {
             "price_based_heating_plan": "Preisbasierter Heizplan",
             "price_based_heating_plan_muted": "Heizplan anhand dynamischer Preise: Rot = blockierender Betrieb, Grün = Einschaltempfehlung",
             "status": "Status",
-            "today": "Heute",
-            "tomorrow": "Morgen",
             "january": "Januar",
             "february": "Februar",
             "march": "März",

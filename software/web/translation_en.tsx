@@ -104,5 +104,7 @@ let x = {
         "reset_modal_confirm": "Reset"
     },
     "days": "days",
-    "day": "day"
+    "day": "day",
+    "today": "Today",
+    "tomorrow": "Tomorrow"
 }

@@ -112,8 +112,6 @@ let x = {
             "price_based_heating_plan": "Price-based Heating Plan",
             "price_based_heating_plan_muted": "Heating plan based on dynamic prices: Red = blocking operation, Green = activation recommendation",
             "status": "Status",
-            "today": "Today",
-            "tomorrow": "Tomorrow",
             "january": "January",
             "february": "February",
             "march": "March",

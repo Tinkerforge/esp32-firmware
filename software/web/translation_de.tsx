@@ -104,5 +104,7 @@ let x = {
         "reset_modal_confirm": "Zurücksetzen"
     },
     "days": "Tage",
-    "day": "Tag"
+    "day": "Tag",
+    "today": "Heute",
+    "tomorrow": "Morgen"
 }

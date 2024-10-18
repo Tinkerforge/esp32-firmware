@@ -547,7 +547,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.today")}</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("today")}</span></div>
                                     <InputText
                                         value={util.get_value_with_unit(get_average_price_today(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
                                     />
@@ -555,7 +555,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             </div>
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.tomorrow")}</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("tomorrow")}</span></div>
                                     <InputText
                                         value={util.get_value_with_unit(get_average_price_tomorrow(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
                                     />
@@ -567,7 +567,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.today")}</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("today")}</span></div>
                                     <InputText
                                         value={util.get_value_with_unit(get_kwh_today(this.state), "kWh", 2)}
                                     />
@@ -575,7 +575,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             </div>
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.tomorrow")}</span></div>
+                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("tomorrow")}</span></div>
                                     <InputText
                                         value={util.get_value_with_unit(get_kwh_tomorrow(this.state), "kWh", 2)}
                                     />
