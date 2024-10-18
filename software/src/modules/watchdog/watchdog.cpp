@@ -93,7 +93,7 @@ void Watchdog::pre_setup()
         "watchdog_task",
         WATCHDOG_STACK_SIZE,
         nullptr,
-        ESP_TASK_PRIO_MAX,
+        ESP_TASK_PRIO_MAX - 1,
         xStack,
         &xTaskBuffer,
         1);
