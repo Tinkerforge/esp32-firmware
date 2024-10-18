@@ -21,6 +21,7 @@
 
 #include <Arduino.h>
 #include <time.h>
+#include <inttypes.h>
 #include <TFJson.h>
 
 #include "event_log_prefix.h"
@@ -35,9 +36,9 @@ void EventLog::pre_init()
     trace_buf.setup();
 #endif
 
-    printfln_plain("    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
-    printfln_plain("         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
-    printfln_plain("READY.");
+    printfln_prefixed(nullptr, 0, "    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
+    printfln_prefixed(nullptr, 0, "         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
+    printfln_prefixed(nullptr, 0, "READY.");
     printfln("Last reset reason was: %s", tf_reset_reason());
 }
 
@@ -46,342 +47,6 @@ void EventLog::pre_setup()
     boot_id = Config::Object({
         {"boot_id", Config::Uint32(0)}
     });
-}
-
-void EventLog::post_setup()
-{
-    // Entropy is created by the wifi modem.
-    auto id = esp_random();
-    boot_id.get("boot_id")->updateUint(id);
-}
-
-void EventLog::get_timestamp(char buf[TIMESTAMP_LEN + 1])
-{
-    struct timeval tv_now;
-    struct tm timeinfo;
-
-    if (rtc.clock_synced(&tv_now)) {
-        localtime_r(&tv_now.tv_sec, &timeinfo);
-
-        // ISO 8601 allows omitting the T between date and time. Also  ',' is the preferred decimal sign.
-        int written = strftime(buf, TIMESTAMP_LEN + 1, "%F %T", &timeinfo);
-        snprintf(buf + written, TIMESTAMP_LEN + 1 - written, ",%03ld ", tv_now.tv_usec / 1000);
-    } else {
-        auto now = millis();
-        auto secs = now / 1000;
-        auto ms = now % 1000;
-        auto to_write = snprintf_u(nullptr, 0, "%lu", secs) + 5; // + 5 for the decimal sign, fractional part and one space
-        auto start = TIMESTAMP_LEN - to_write;
-
-        for (int i = 0; i < start; ++i)
-            buf[i] = ' ';
-        snprintf(buf + start, to_write + 1, "%lu,%03lu ", secs, ms); // + 1 for the null terminator
-    }
-
-    buf[TIMESTAMP_LEN] = '\0';
-}
-
-void EventLog::trace_timestamp() {
-#if defined(BOARD_HAS_PSRAM)
-    // completely written in get_timestamp
-    char timestamp_buf[TIMESTAMP_LEN + 1];
-    this->get_timestamp(timestamp_buf);
-
-    timestamp_buf[TIMESTAMP_LEN] = '\n';
-    this->trace_write(timestamp_buf, TIMESTAMP_LEN + 1);
-#endif
-}
-
-void EventLog::trace_write_prefixed(const char *buf) {
-#if defined(BOARD_HAS_PSRAM)
-    this->trace_write(buf, strlen(buf));
-#endif
-}
-
-void EventLog::trace_write_prefixed(const char *buf, size_t len)
-{
-#if defined(BOARD_HAS_PSRAM)
-    if (len >= 2 && buf[len - 2] == '\r' && buf[len - 1] == '\n') {
-        len -= 2;
-    }
-
-    bool drop_line = trace_buf.free() < (len + 1);
-
-    char timestamp_buf[TIMESTAMP_LEN + 1];
-    this->get_timestamp(timestamp_buf);
-
-    trace_buf.push_n(timestamp_buf, TIMESTAMP_LEN);
-
-    trace_buf.push_n(buf, len);
-    if (buf[len - 1] != '\n') {
-        trace_buf.push('\n');
-    }
-
-    if (drop_line)
-        trace_buf.pop_until('\n');
-#endif
-}
-
-void EventLog::trace_write(const char *buf) {
-#if defined(BOARD_HAS_PSRAM)
-    this->trace_write(buf, strlen(buf));
-#endif
-}
-
-void EventLog::trace_write(const char *buf, size_t len)
-{
-#if defined(BOARD_HAS_PSRAM)
-    if (len >= 2 && buf[len - 2] == '\r' && buf[len - 1] == '\n') {
-        len -= 2;
-    }
-
-    bool drop_line = trace_buf.free() < (len + 1);
-
-    trace_buf.push_n(buf, len);
-    if (buf[len - 1] != '\n') {
-        trace_buf.push('\n');
-    }
-
-    if (drop_line)
-        trace_buf.pop_until('\n');
-#endif
-}
-
-int EventLog::vtracefln_plain(const char *fmt, va_list args)
-{
-#if defined(BOARD_HAS_PSRAM)
-    char buf[768];
-    auto buf_size = ARRAY_SIZE(buf);
-    auto written = 0;
-
-    written += vsnprintf_u(buf + written, buf_size - written, fmt, args);
-    if (written >= buf_size) {
-        trace_write("Next log message was truncated. Bump EventLog::printfln buffer size!", 68); // Don't include termination in write request.
-        written = buf_size - 1; // Don't include termination, which vsnprintf always leaves in.
-    }
-
-    trace_write(buf, written);
-
-    return written;
-#else
-    return 0;
-#endif
-}
-
-int EventLog::tracefln_plain(const char *fmt, ...)
-{
-#if defined(BOARD_HAS_PSRAM)
-    va_list args;
-    va_start(args, fmt);
-    int result = vtracefln_plain(fmt, args);
-    va_end(args);
-
-    return result;
-#else
-    return 0;
-#endif
-}
-
-int EventLog::vtracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
-{
-#if defined(BOARD_HAS_PSRAM)
-    char buf[768];
-    auto buf_size = ARRAY_SIZE(buf);
-    auto written = 0;
-
-    *(buf + written) = '|';
-    ++written;
-
-    *(buf + written) = ' ';
-    ++written;
-
-    if (prefix != nullptr && prefix_len < buf_size) {
-        memcpy(buf + written, prefix, prefix_len);
-        written += prefix_len;
-    }
-
-    while (written < event_log_alignment + 2) {
-        *(buf + written) = ' ';
-        ++written;
-    }
-
-    *(buf + written) = ' ';
-    ++written;
-
-    *(buf + written) = '|';
-    ++written;
-
-    *(buf + written) = ' ';
-    ++written;
-
-    written += vsnprintf_u(buf + written, buf_size - written, fmt, args);
-    if (written >= buf_size) {
-        trace_write_prefixed("Next log message was truncated. Bump EventLog::printfln buffer size!", 68); // Don't include termination in write request.
-        written = buf_size - 1; // Don't include termination, which vsnprintf always leaves in.
-    }
-
-    trace_write_prefixed(buf, written);
-
-    return written;
-#else
-    return 0;
-#endif
-}
-
-int EventLog::tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...)
-{
-#if defined(BOARD_HAS_PSRAM)
-    va_list args;
-    va_start(args, fmt);
-    int result = vtracefln_prefixed(prefix, prefix_len, fmt, args);
-    va_end(args);
-
-    return result;
-#else
-    return 0;
-#endif
-}
-
-void EventLog::trace_drop(size_t count)
-{
-#if defined(BOARD_HAS_PSRAM)
-    char c = '\n';
-    for (int i = 0; i < count; ++i)
-        trace_buf.pop(&c);
-
-    while (trace_buf.used() > 0 && c != '\n')
-        trace_buf.pop(&c);
-#endif
-}
-
-void EventLog::write(const char *buf, size_t len)
-{
-    size_t to_write = TIMESTAMP_LEN + len + 1; // 24 for an ISO-8601 timestamp and a space; 1 for the \n
-
-    char timestamp_buf[TIMESTAMP_LEN + 1] = {0};
-    this->get_timestamp(timestamp_buf);
-
-    // Strip away \r\n.
-    // We only use \n as line endings for the serial output as well as the event log.
-    // Removing \r\n by reducing the length works,
-    // because if a message does not end in \n we add the \n below.
-    if (len >= 2 && buf[len - 2] == '\r' && buf[len - 1] == '\n') {
-        len -= 2;
-    }
-
-    Serial.print(timestamp_buf);
-    Serial.write(buf, len);
-
-    if (buf[len - 1] != '\n') {
-        Serial.println("");
-    }
-
-    {
-        std::lock_guard<std::mutex> lock{event_buf_mutex};
-
-        if (event_buf.free() < to_write) {
-            drop(to_write - event_buf.free());
-        }
-
-        for (int i = 0; i < TIMESTAMP_LEN; ++i) {
-            event_buf.push(timestamp_buf[i]);
-        }
-
-        for (int i = 0; i < len; ++i) {
-            event_buf.push(buf[i]);
-        }
-        if (buf[len - 1] != '\n') {
-            event_buf.push('\n');
-        }
-    }
-
-#if MODULE_WS_AVAILABLE()
-    size_t req_len = 0;
-    {
-        TFJsonSerializer json{nullptr, 0};
-        json.addString(buf, len, false);
-        req_len = json.end();
-    }
-
-    CoolString payload;
-    if (!payload.reserve(2 + TIMESTAMP_LEN + req_len + 1)) // 2 - \"\"; 1 - \0
-        return;
-
-    payload += '"';
-
-    payload.concat(timestamp_buf);
-
-    {
-        TFJsonSerializer json{payload.begin() + payload.length(), req_len + 1};
-        json.addString(buf, len, false);
-        payload.setLength(payload.length() + json.end());
-    }
-
-    payload += '"';
-    ws.pushRawStateUpdate(payload, "event_log/message");
-#endif
-}
-
-int EventLog::vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
-{
-    char buf[256];
-    auto buf_size = ARRAY_SIZE(buf);
-    auto written = 0;
-
-    *(buf + written) = '|';
-    ++written;
-
-    *(buf + written) = ' ';
-    ++written;
-
-    if (prefix != nullptr && prefix_len < buf_size) {
-        memcpy(buf + written, prefix, prefix_len);
-        written += prefix_len;
-    }
-
-    while (written < event_log_alignment + 2) {
-        *(buf + written) = ' ';
-        ++written;
-    }
-
-    *(buf + written) = ' ';
-    ++written;
-
-    *(buf + written) = '|';
-    ++written;
-
-    *(buf + written) = ' ';
-    ++written;
-
-    written += vsnprintf_u(buf + written, buf_size - written, fmt, args);
-    if (written >= buf_size) {
-        write("Next log message was truncated. Bump EventLog::printfln buffer size!", 68); // Don't include termination in write request.
-        written = buf_size - 1; // Don't include termination, which vsnprintf always leaves in.
-    }
-
-    write(buf, written);
-
-    return written;
-}
-
-int EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    int result = vprintfln_prefixed(prefix, prefix_len, fmt, args);
-    va_end(args);
-
-    return result;
-}
-
-void EventLog::drop(size_t count)
-{
-    char c = '\n';
-    for (int i = 0; i < count; ++i)
-        event_buf.pop(&c);
-
-    while (event_buf.used() > 0 && c != '\n')
-        event_buf.pop(&c);
 }
 
 #define CHUNK_SIZE 1024
@@ -429,6 +94,346 @@ void EventLog::register_urls()
     api.addState("event_log/boot_id", &boot_id);
 }
 
+void EventLog::post_setup()
+{
+    // Entropy is created by the wifi modem.
+    auto id = esp_random();
+    boot_id.get("boot_id")->updateUint(id);
+}
+
+void EventLog::format_timestamp(char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */])
+{
+    struct timeval tv_now;
+    struct tm timeinfo;
+
+    if (rtc.clock_synced(&tv_now)) {
+        localtime_r(&tv_now.tv_sec, &timeinfo);
+
+        // ISO 8601 allows omitting the T between date and time. Also  ',' is the preferred decimal sign.
+        size_t written = strftime(buf, EVENT_LOG_TIMESTAMP_LENGTH + 1, "%F %T", &timeinfo);
+        snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", tv_now.tv_usec / 1000);
+    } else {
+        uint32_t now = millis();
+        uint32_t secs = now / 1000;
+        uint32_t ms = now % 1000;
+        size_t to_write = snprintf_u(nullptr, 0, "%" PRIu32, secs) + 4; // +4 for the decimal sign and fractional part
+        size_t start = EVENT_LOG_TIMESTAMP_LENGTH - to_write;
+
+        for (size_t i = 0; i < start; ++i) {
+            buf[i] = ' ';
+        }
+
+        snprintf(buf + start, to_write + 1, "%" PRIu32 ",%03" PRIu32, secs, ms); // +1 for the NUL-terminator
+    }
+
+    buf[EVENT_LOG_TIMESTAMP_LENGTH] = '\0';
+}
+
+size_t EventLog::vsnprintf_prefixed(char *buf, size_t buf_len, const char *prefix, size_t prefix_len, const char *fmt, va_list args)
+{
+    if (buf_len < EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */) {
+        return 0;
+    }
+
+    size_t written = 0;
+
+    format_timestamp(buf);
+    written += EVENT_LOG_TIMESTAMP_LENGTH;
+
+    if (written + 3 <= buf_len) {
+        buf[written++] = ' ';
+        buf[written++] = '|';
+        buf[written++] = ' ';
+    }
+
+    if (prefix != nullptr && written + prefix_len <= buf_len) {
+        memcpy(buf + written, prefix, prefix_len);
+        written += prefix_len;
+    }
+
+    while (written < buf_len && written < EVENT_LOG_TIMESTAMP_LENGTH + 3 + event_log_alignment) {
+        buf[written++] = ' ';
+    }
+
+    if (written + 3 <= buf_len) {
+        buf[written++] = ' ';
+        buf[written++] = '|';
+        buf[written++] = ' ';
+    }
+
+    if (written < buf_len) {
+        written += vsnprintf_u(buf + written, buf_len - written, fmt, args);
+    }
+
+    return written;
+}
+
+void EventLog::drop(size_t count)
+{
+    char c = '\n';
+
+    for (int i = 0; i < count; ++i) {
+        event_buf.pop(&c);
+    }
+
+    while (event_buf.used() > 0 && c != '\n'){
+        event_buf.pop(&c);
+    }
+}
+
+size_t EventLog::println_plain(const char *buf, size_t len)
+{
+    // Strip away \r\n. We only use \n as line endings for the serial
+    // output as well as the event log. Removing \r\n by reducing the length
+    // works, because if a message does not end in \n we add the \n below.
+    if (len >= 2 && buf[len - 2] == '\r' && buf[len - 1] == '\n') {
+        len -= 2;
+    }
+
+    Serial.write(buf, len);
+
+    if (buf[len - 1] != '\n') {
+        Serial.println("");
+    }
+
+    {
+        std::lock_guard<std::mutex> lock{event_buf_mutex};
+
+        if (event_buf.free() < len + 1 /* \n */) {
+            drop(len + 1 /* \n */ - event_buf.free());
+        }
+
+        for (size_t i = 0; i < len; ++i) {
+            event_buf.push(buf[i]);
+        }
+
+        if (buf[len - 1] != '\n') {
+            event_buf.push('\n');
+        }
+    }
+
+#if MODULE_WS_AVAILABLE()
+    size_t json_len;
+
+    {
+        TFJsonSerializer json{nullptr, 0};
+        json.addString(buf, len, false);
+        json_len = json.end();
+    }
+
+    CoolString payload;
+
+    if (payload.reserve(1 /* " */ + json_len + 1 /* " */ + 1 /* \0 */)) {
+        payload += '"';
+
+        {
+            TFJsonSerializer json{payload.begin() + payload.length(), json_len + 1 /* \0 */};
+            json.addString(buf, len, false);
+            payload.setLength(payload.length() + json.end());
+        }
+
+        payload += '"';
+
+        ws.pushRawStateUpdate(payload, "event_log/message");
+    }
+#endif
+
+    if (buf[len - 1] != '\n') {
+        return len + 1;
+    }
+
+    return len;
+}
+
+size_t EventLog::vprintfln_plain(const char *fmt, va_list args)
+{
+    size_t written = 0;
+    char buf[256];
+    size_t buf_len = ARRAY_SIZE(buf);
+
+    written += vsnprintf_u(buf, buf_len, fmt, args);
+
+    if (written >= buf_len) {
+        printfln_plain("Next log message was truncated. Bump EventLog::vprintfln_plain buffer size!");
+        written = buf_len - 1; // Don't include termination, which vsnprintf always leaves in.
+    }
+
+    println_plain(buf, written);
+
+    return written;
+}
+
+size_t EventLog::printfln_plain(const char *fmt, ...)
+{
+    size_t written = 0;
+    va_list args;
+
+    va_start(args, fmt);
+    written += vprintfln_plain(fmt, args);
+    va_end(args);
+
+    return written;
+}
+
+size_t EventLog::vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
+{
+    size_t written = 0;
+    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 256];
+    size_t buf_len = ARRAY_SIZE(buf);
+
+    written += vsnprintf_prefixed(buf, buf_len, prefix, prefix_len, fmt, args);
+
+    if (written >= buf_len) {
+        printfln_prefixed(prefix, prefix_len, "Next log message was truncated. Bump EventLog::vprintfln_prefixed buffer size!");
+        written = buf_len - 1; // Don't include termination, which vsnprintf always leaves in
+    }
+
+    println_plain(buf, written);
+
+    return written;
+}
+
+size_t EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...)
+{
+    size_t written = 0;
+    va_list args;
+
+    va_start(args, fmt);
+    written += vprintfln_prefixed(prefix, prefix_len, fmt, args);
+    va_end(args);
+
+    return written;
+}
+
+size_t EventLog::traceln_plain(const char *buf, size_t len)
+{
+#if defined(BOARD_HAS_PSRAM)
+    // Strip away \r\n. We only use \n as line endings for the serial
+    // output as well as the event log. Removing \r\n by reducing the length
+    // works, because if a message does not end in \n we add the \n below.
+    if (len >= 2 && buf[len - 2] == '\r' && buf[len - 1] == '\n') {
+        len -= 2;
+    }
+
+    {
+        std::lock_guard<std::mutex> lock{trace_buf_mutex};
+        bool drop_line = trace_buf.free() < (len + 1 /* \n */);
+
+        trace_buf.push_n(buf, len);
+
+        if (buf[len - 1] != '\n') {
+            trace_buf.push('\n');
+        }
+
+        if (drop_line) {
+            trace_buf.pop_until('\n');
+        }
+    }
+
+    return len;
+#else
+    (void)buf;
+    (void)len;
+
+    return 0;
+#endif
+}
+
+void EventLog::trace_drop(size_t count)
+{
+#if defined(BOARD_HAS_PSRAM)
+    char c = '\n';
+
+    for (int i = 0; i < count; ++i) {
+        trace_buf.pop(&c);
+    }
+
+    while (trace_buf.used() > 0 && c != '\n'){
+        trace_buf.pop(&c);
+    }
+#else
+    (void)count;
+#endif
+}
+
+void EventLog::trace_timestamp()
+{
+#if defined(BOARD_HAS_PSRAM)
+    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */];
+
+    format_timestamp(buf);
+    traceln_plain(buf, EVENT_LOG_TIMESTAMP_LENGTH);
+#endif
+}
+
+size_t EventLog::vtracefln_plain(const char *fmt, va_list args)
+{
+    size_t written = 0;
+#if defined(BOARD_HAS_PSRAM)
+    char buf[256];
+    size_t buf_len = ARRAY_SIZE(buf);
+
+    written += vsnprintf_u(buf, buf_len, fmt, args);
+
+    if (written >= buf_len) {
+        tracefln_plain("Next log message was truncated. Bump EventLog::vtracefln_plain buffer size!");
+        written = buf_len - 1; // Don't include termination, which vsnprintf always leaves in
+    }
+
+    traceln_plain(buf, written);
+#endif
+
+    return written;
+}
+
+size_t EventLog::tracefln_plain(const char *fmt, ...)
+{
+    size_t written = 0;
+#if defined(BOARD_HAS_PSRAM)
+    va_list args;
+
+    va_start(args, fmt);
+    written += vtracefln_plain(fmt, args);
+    va_end(args);
+#endif
+
+    return written;
+}
+
+size_t EventLog::vtracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
+{
+    size_t written = 0;
+#if defined(BOARD_HAS_PSRAM)
+    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 256];
+    size_t buf_len = ARRAY_SIZE(buf);
+
+    written += vsnprintf_prefixed(buf, buf_len, prefix, prefix_len, fmt, args);
+
+    if (written >= buf_len) {
+        tracefln_prefixed(prefix, prefix_len, "Next log message was truncated. Bump EventLog::vtracefln_prefixed buffer size!");
+        written = buf_len - 1; // Don't include termination, which vsnprintf always leaves in.
+    }
+
+    traceln_plain(buf, written);
+#endif
+
+    return written;
+}
+
+size_t EventLog::tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...)
+{
+    size_t written = 0;
+#if defined(BOARD_HAS_PSRAM)
+    va_list args;
+
+    va_start(args, fmt);
+    written += vtracefln_prefixed(prefix, prefix_len, fmt, args);
+    va_end(args);
+#endif
+
+    return written;
+}
+
 int tf_event_log_vprintfln(const char *fmt, va_list args)
 {
     return logger.vprintfln_prefixed("external code", 13, fmt, args);
@@ -436,10 +441,12 @@ int tf_event_log_vprintfln(const char *fmt, va_list args)
 
 int tf_event_log_printfln(const char *fmt, ...)
 {
+    size_t written = 0;
     va_list args;
+
     va_start(args, fmt);
-    int result = logger.vprintfln_prefixed("external code", 13, fmt, args);
+    written += logger.vprintfln_prefixed("external code", 13, fmt, args);
     va_end(args);
 
-    return result;
+    return written;
 }

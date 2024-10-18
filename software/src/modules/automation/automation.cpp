@@ -37,7 +37,7 @@ void Automation::pre_setup()
             {"message", Config::Str("", 0, 64)}
         }),
         [this](const Config *cfg) {
-            logger.printfln_plain("    %s", cfg->get("message")->asString().c_str());
+            logger.printfln_continue("%s", cfg->get("message")->asString().c_str());
         }
     );
 

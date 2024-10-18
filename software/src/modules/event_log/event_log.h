@@ -28,23 +28,54 @@
 #include "ringbuffer.h"
 #include "malloc_tools.h"
 
-// Length of a timestamp with two spaces at the end. For example "2022-02-11 12:34:56,789"
+// Length of an ISO 8601 timestamp. For example "2022-02-11 12:34:56,789"
 // Also change in frontend when changing here!
-#define TIMESTAMP_LEN 24
+#define EVENT_LOG_TIMESTAMP_LENGTH 23
 
 class EventLog final : public IModule
 {
 public:
+    EventLog() {}
+
+    void pre_init() override;
+    void pre_setup() override;
+    void register_urls() override;
+
+    void post_setup();
+
+    void format_timestamp(char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */]);
+    size_t vsnprintf_prefixed(char *buf, size_t buf_len, const char *prefix, size_t prefix_len, const char *fmt, va_list args);
+
+    void drop(size_t count);
+
+    size_t println_plain(const char *buf, size_t len);
+    size_t vprintfln_plain(const char *fmt, va_list args);
+    [[gnu::format(__printf__, 2, 3)]] size_t printfln_plain(const char *fmt, ...);
+
+    size_t vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
+    [[gnu::format(__printf__, 4, 5)]] size_t printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...);
+
+    void trace_drop(size_t count);
+    void trace_timestamp();
+
+    size_t traceln_plain(const char *buf, size_t len);
+    size_t vtracefln_plain(const char *fmt, va_list args);
+    [[gnu::format(__printf__, 2, 3)]] size_t tracefln_plain(const char *fmt, ...);
+
+    size_t vtracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
+    [[gnu::format(__printf__, 4, 5)]] size_t tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...);
+
+private:
     std::mutex event_buf_mutex;
     TF_PackedRingbuffer<char,
-                  10000,
-                  uint32_t,
+                        10000,
+                        uint32_t,
 #if defined(BOARD_HAS_PSRAM)
-                  malloc_psram,
+                        malloc_psram,
 #else
-                  malloc_32bit_addressed,
+                        malloc_32bit_addressed,
 #endif
-                  heap_caps_free> event_buf;
+                        heap_caps_free> event_buf;
 
 #if defined(BOARD_HAS_PSRAM)
     std::mutex trace_buf_mutex;
@@ -54,41 +85,6 @@ public:
                   heap_caps_free> trace_buf;
 #endif
 
-    void trace_write(const char *buf);
-    void trace_write(const char *buf, size_t len);
-    void trace_write_prefixed(const char *buf);
-    void trace_write_prefixed(const char *buf, size_t len);
-
-    int vtracefln_plain(const char *fmt, va_list args);
-    [[gnu::format(__printf__, 2, 3)]] int tracefln_plain(const char *fmt, ...);
-
-    int vtracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
-    [[gnu::format(__printf__, 4, 5)]] int tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...);
-
-    #define tf_trace(fmt, ...) tracefln("[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
-
-    void trace_timestamp();
-    void trace_drop(size_t count);
-
-
-    void pre_init() override;
-    void pre_setup() override;
-    void register_urls() override;
-
-    void post_setup();
-
-    void write(const char *buf, size_t len);
-
-    int vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
-    [[gnu::format(__printf__, 4, 5)]] int printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...);
-
-    #define tf_dbg(fmt, ...) printfln("[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
-
-    void drop(size_t count);
-
-    void get_timestamp(char buf[TIMESTAMP_LEN + 1]);
-
-private:
     ConfigRoot boot_id;
 };
 

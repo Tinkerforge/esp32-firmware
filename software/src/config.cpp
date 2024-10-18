@@ -668,7 +668,7 @@ void Config::save_to_file(File &file)
             logger.printfln("JSON doc overflow while writing file %s! Doc capacity is %u. Truncated doc follows.", file.name(), capacity);
             String str;
             serializeJson(doc, str);
-            logger.write(str.c_str(), str.length());
+            logger.printfln("%s", str.c_str());
         }
     }
     serializeJson(doc, file);
@@ -691,7 +691,7 @@ void Config::write_to_stream_except(Print &output, const char *const *keys_to_ce
             logger.printfln("JSON doc overflow while writing to stream! Doc capacity is %u. Truncated doc follows.", capacity);
             String str;
             serializeJson(doc, str);
-            logger.write(str.c_str(), str.length());
+            logger.printfln("%s", str.c_str());
         }
     }
     serializeJson(doc, output);
@@ -716,7 +716,7 @@ String Config::to_string_except(const char *const *keys_to_censor, size_t keys_t
             logger.printfln("JSON doc overflow while converting to string! Doc capacity is zero but needed %u.", json_size(false));
         } else {
             logger.printfln("JSON doc overflow while converting to string! Doc capacity is %u. Truncated doc follows.", capacity);
-            logger.write(result.c_str(), result.length());
+            logger.printfln("%s", result.c_str());
         }
     }
     return result;
@@ -736,7 +736,7 @@ void Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_
             logger.printfln("JSON doc overflow while converting to string! Doc capacity is zero but needed %u.", json_size(false));
         } else {
             logger.printfln("JSON doc overflow while converting to string! Doc capacity is %u. Truncated doc follows.", capacity);
-            logger.write(ptr, written);
+            logger.printfln("%s", ptr);
         }
     }
 }

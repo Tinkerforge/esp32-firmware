@@ -864,7 +864,7 @@ const Config *API::getState(const char *path, bool log_if_not_found, size_t path
         logger.printfln("State %s not found. Known states are:", path);
 
         for (const auto &reg : states) {
-            logger.printfln_plain("    %s,", reg.path);
+            logger.printfln_continue("%s,", reg.path);
         }
     }
 

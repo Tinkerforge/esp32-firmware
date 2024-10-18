@@ -294,9 +294,9 @@ void Wifi::apply_soft_ap_config_and_start()
         logger.printfln("Had to configure soft AP IP address %d times.", ap_config_attempts);
     }
     logger.printfln("Soft AP started");
-    logger.printfln_plain("    SSID: %s", ap_config_in_use.get("ssid")->asEphemeralCStr());
-    logger.printfln_plain("    MAC address: %s", WiFi.softAPmacAddress().c_str());
-    logger.printfln_plain("    IP address: %s", ip.toString().c_str());
+    logger.printfln_continue("SSID: %s", ap_config_in_use.get("ssid")->asEphemeralCStr());
+    logger.printfln_continue("MAC address: %s", WiFi.softAPmacAddress().c_str());
+    logger.printfln_continue("IP address: %s", ip.toString().c_str());
 }
 
 bool Wifi::apply_sta_config_and_connect()
