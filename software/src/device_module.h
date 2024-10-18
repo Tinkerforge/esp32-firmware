@@ -60,7 +60,7 @@ protected:
 
     const uint8_t *firmware;
     const size_t firmware_len;
-    String url_prefix;
+    const char *url_prefix;
     const char *device_name;
     const char *module_name;
 
