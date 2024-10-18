@@ -22,10 +22,11 @@
 #include <stdint.h>
 #include <string.h>
 #include "esp_debug_helpers.h"
-#include "soc/soc_memory_types.h"
+#include "esp_memory_utils.h"
 #include "freertos/projdefs.h"
 #include "freertos/portable.h"
-#include "freertos/xtensa_context.h"
+#include <xtensa_context.h>
+#include "esp_cpu_utils.h"
 
 size_t strn_backtrace(char *strn, size_t remaining, size_t skip_frames)
 {

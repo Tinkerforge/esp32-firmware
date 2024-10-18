@@ -22,6 +22,7 @@
 #include <Arduino.h>
 #include <SPIFFS.h>
 #include <esp_spiffs.h>
+#include <esp_efuse.h>
 #include <LittleFS.h>
 #include <esp_littlefs.h>
 #include <esp_netif.h>
@@ -107,7 +108,7 @@ void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
     uint32_t blocks[8] = {0};
 
     for (int32_t block3Address = EFUSE_BLK3_RDATA0_REG, i = 0; block3Address <= EFUSE_BLK3_RDATA7_REG; block3Address += 4, ++i) {
-        blocks[i] = REG_GET_FIELD(block3Address, EFUSE_BLK3_DOUT0);
+        blocks[i] = esp_efuse_read_reg(EFUSE_BLK3, i);
     }
 
     uint32_t passphrase[4] = {0};

@@ -134,7 +134,7 @@ void CMNetworking::check_results()
 {
     {
         std::lock_guard<std::mutex> lock{scan_results_mutex};
-        if (!mdns_query_async_get_results(scan, 0, &scan_results))
+        if (!mdns_query_async_get_results(scan, 0, &scan_results, nullptr))
             return; // This should never happen as check_results is only called if we are notified the search has finished.
     }
 
