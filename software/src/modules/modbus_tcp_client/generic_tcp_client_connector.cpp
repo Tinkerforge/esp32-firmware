@@ -137,7 +137,6 @@ void GenericTCPClientConnector::disconnect_callback_common(TFGenericTCPClientDis
     if (reason == TFGenericTCPClientDisconnectReason::Requested) {
         logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
                                  "Disconnected from %s:%u", host_name.c_str(), port);
-        disconnect_callback();
     }
     else if (error_number >= 0) {
         logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
@@ -152,4 +151,6 @@ void GenericTCPClientConnector::disconnect_callback_common(TFGenericTCPClientDis
                                  host_name.c_str(), port,
                                  get_tf_generic_tcp_client_disconnect_reason_name(reason));
     }
+
+    disconnect_callback();
 }
