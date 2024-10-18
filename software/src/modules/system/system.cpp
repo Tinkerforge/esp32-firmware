@@ -68,13 +68,30 @@ void System::factory_reset(bool restart_esp)
         ESP.restart();
 }
 
+System::Language System::get_system_language()
+{
+    return i18n_config.get("language")->asEnum<Language>();
+}
+
+void System::pre_setup()
+{
+    i18n_config = ConfigRoot{Config::Object({
+        {"language", Config::Enum(Language::German, Language::German, Language::English)},
+        {"detect_browser_language", Config::Bool(true)}
+    })};
+}
+
 void System::setup()
 {
+    api.restorePersistentConfig("system/i18n_config", &i18n_config);
+
     initialized = true;
 }
 
 void System::register_urls()
 {
+    api.addPersistentConfig("system/i18n_config", &i18n_config);
+
     server.on_HTTPThread("/recovery", HTTP_GET, [](WebServerRequest req) {
         req.addResponseHeader("Content-Encoding", "gzip");
         req.addResponseHeader("ETag", "dontcachemeplease");

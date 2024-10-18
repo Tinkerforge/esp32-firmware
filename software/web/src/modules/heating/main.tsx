@@ -340,7 +340,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                             onValue={(v) => this.setState({sg_ready_blocking_active_type: parseInt(v)})}
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.sg_ready_output") + " 2"} label_muted={__("heating.content.sg_ready_output1_muted")}>
+                    <FormRow label={__("heating.content.sg_ready_output") + " 2"} label_muted={__("heating.content.sg_ready_output2_muted")}>
                         <InputSelect
                             items={[
                                 ["0", __("heating.content.closed")],

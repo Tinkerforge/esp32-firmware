@@ -20,16 +20,26 @@
 #pragma once
 
 #include "module.h"
+#include "config.h"
 
 class System final : public IModule
 {
 public:
+    enum class Language : uint8_t {
+        German  = 0,
+        English = 1
+    };
+
     System(){}
+    void pre_setup() override;
     void setup() override;
     void register_urls() override;
 
     void factory_reset(bool restart_esp = true);
 
+    Language get_system_language();
+
 private:
     bool factory_reset_running = false;
+    ConfigRoot i18n_config;
 };
