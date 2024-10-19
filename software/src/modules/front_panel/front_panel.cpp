@@ -301,6 +301,15 @@ int FrontPanel::update_front_page_empty_tile(const uint8_t index, const TileType
     );
 }
 
+const char* FrontPanel::get_i18n_string(const char *key_en, const char *key_de)
+{
+#if MODULE_SYSTEM_AVAILABLE()
+    return (system_.get_system_language() == Language::English) ? key_en : key_de;
+#else
+    return key_de;
+#endif
+}
+
 int FrontPanel::update_front_page_wallbox(const uint8_t index, const TileType type, const uint8_t param)
 {
     String str1 = "Box " + String(param);
@@ -353,7 +362,7 @@ int FrontPanel::update_front_page_charge_management(const uint8_t index, const T
 
 int FrontPanel::update_front_page_meter(const uint8_t index, const TileType type, const uint8_t param)
 {
-    String str1 = "Bezug";
+    String str1 = get_i18n_string("Import", "Bezug");
     String str2 = "-- kW";
     uint32_t icon_index = SPRITE_ICON_ENERGY;
 
@@ -368,7 +377,7 @@ int FrontPanel::update_front_page_meter(const uint8_t index, const TileType type
         } else if (watt < 0) {
             icon_index = SPRITE_ICON_ENERGY_EXPORT;
             watt = -watt;
-            str1 = "Einsp.";
+            str1 = get_i18n_string("FeedIn", "Einsp.");
         }
 
         str2 = watt_value_to_display_string(watt);
@@ -388,22 +397,22 @@ int FrontPanel::update_front_page_meter(const uint8_t index, const TileType type
 
 int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const TileType type, const DAPType param)
 {
-    String str1 = "Preis";
+    String str1 = get_i18n_string("Price", "Preis");
     String str2 = "-- ct";
 
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
     DataReturn<int32_t> price = {false, 0};
     switch (param) {
         case DAPType::CurrentPrice:
-            str1 = "Preis";
+            str1 = get_i18n_string("Price", "Preis");
             price = day_ahead_prices.get_current_price();
             break;
         case DAPType::AveragePriveToday:
-            str1 = "Heute";
+            str1 = get_i18n_string("Today", "Heute");
             price = day_ahead_prices.get_average_price_today();
             break;
         case DAPType::AveragePriveTomorrow:
-            str1 = "Morgen";
+            str1 = get_i18n_string("Tmrw", "Morgen");
             price = day_ahead_prices.get_average_price_tomorrow();
             break;
     }
@@ -434,11 +443,11 @@ int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const Tile
     DataReturn<uint32_t> kwh{};
     switch (param) {
         case SFType::ForecastToday:
-            str1 = "Heute";
+            str1 = get_i18n_string("Today", "Heute");
             kwh = solar_forecast.get_wh_today();
             break;
         case SFType::ForecastTomorrow:
-            str1 = "Morgen";
+            str1 = get_i18n_string("Tmrw", "Morgen");
             kwh = solar_forecast.get_wh_tomorrow();
             break;
     }
@@ -495,7 +504,7 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
         switch (status) {
             case Heating::Status::Idle:
                 str1 = "SG Rdy";
-                str2 = "Aus";
+                str2 = get_i18n_string("Off", "Aus");
                 icon_index = SPRITE_ICON_HEATING;
                 break;
             case Heating::Status::Blocking:
@@ -510,7 +519,7 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
                 break;
             case Heating::Status::Extended:
                 str1 = "SG Rdy";
-                str2 = "Ein";
+                str2 = get_i18n_string("On", "Ein");
                 icon_index = SPRITE_ICON_HEATING_HOT;
                 break;
         }
