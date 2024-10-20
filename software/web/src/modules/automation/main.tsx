@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -87,7 +88,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             }
 
             let trigger_component = automation_trigger_components[i];
-            let name = trigger_component.name;
+            let name = trigger_component.translation_name();
 
             if (this.state.enabled_triggers.indexOf(parseInt(i)) < 0) {
                 name += " [";
@@ -105,7 +106,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             }
 
             let action_component = automation_action_components[i];
-            let name = action_component.name;
+            let name = action_component.translation_name();
 
             if (this.state.enabled_actions.indexOf(parseInt(i)) < 0) {
                 name += " [";

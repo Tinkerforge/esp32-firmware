@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -174,28 +175,28 @@ export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.EMInputThree]: {
-                name: __("energy_manager.automation.input")(3),
+                translation_name: () => __("energy_manager.automation.input")(3),
                 new_config: new_em_input_three_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_em_input_three_table_children,
                 get_edit_children: get_em_input_three_edit_children,
             },
             [AutomationTriggerID.EMInputFour]: {
-                name: __("energy_manager.automation.input")(4),
+                translation_name: () => __("energy_manager.automation.input")(4),
                 new_config: new_em_input_four_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_em_input_four_table_children,
                 get_edit_children: get_em_input_four_edit_children,
             },
             [AutomationTriggerID.EMPhaseSwitch]: {
-                name: __("em_v1.automation.phase_switch"),
+                translation_name: () => __("em_v1.automation.phase_switch"),
                 new_config: new_em_phase_switch_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_em_phase_switch_table_children,
                 get_edit_children: get_em_phase_switch_edit_children,
             },
             [AutomationTriggerID.EMContactorMonitoring]: {
-                name: __("em_v1.automation.contactor_monitoring"),
+                translation_name: () => __("em_v1.automation.contactor_monitoring"),
                 new_config: new_em_contactor_monitoring_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_em_contactor_monitoring_table_children,

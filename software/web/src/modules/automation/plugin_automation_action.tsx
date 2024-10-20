@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -65,7 +66,7 @@ export function init(): InitResult {
     return {
         action_components: {
             [AutomationActionID.Print]: {
-                name: __("automation.automation.print_action"),
+                translation_name: () => __("automation.automation.print_action"),
                 new_config: new_print_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_print_edit_children,

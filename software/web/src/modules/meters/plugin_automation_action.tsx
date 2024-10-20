@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -76,7 +77,7 @@ export function init(): InitResult {
     return {
         action_components: {
             [AutomationActionID.MeterReset]: {
-                name: __("meters.automation.meter_reset"),
+                translation_name: () => __("meters.automation.meter_reset"),
                 new_config: new_meter_reset_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_meter_reset_edit_children,

@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,7 +47,7 @@ export function init(): InitResult {
     return {
         action_components: {
             // [AutomationActionID.ChargeTrackerReset]: {
-            //     name: __("charge_tracker.automation.charge_tracker_reset"),
+            //     translation_name: () => __("charge_tracker.automation.charge_tracker_reset"),
             //     get_table_children: get_charge_tracker_reset_table_children,
             //     get_edit_children: get_charge_tracker_reset_edit_chidren,
             //     new_config: new_charge_tracker_reset_config,

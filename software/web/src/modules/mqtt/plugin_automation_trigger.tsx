@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -110,7 +111,7 @@ export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.MQTT]: {
-                name: __("mqtt.automation.automation_trigger_mqtt"),
+                translation_name: () => __("mqtt.automation.automation_trigger_mqtt"),
                 new_config: new_mqtt_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_edit_children: get_mqtt_edit_children,

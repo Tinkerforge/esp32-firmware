@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -99,7 +100,7 @@ export function init(): InitResult {
     return {
         action_components: {
             [AutomationActionID.EMRelaySwitch]: {
-                name: __("energy_manager.automation.switch_relay"),
+                translation_name: () => __("energy_manager.automation.switch_relay"),
                 new_config: new_em_relay_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_table_children: get_em_relay_table_children,

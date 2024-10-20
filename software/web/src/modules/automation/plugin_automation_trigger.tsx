@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -196,14 +197,14 @@ export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.Cron]: {
-                name: __("automation.automation.cron"),
+                translation_name: () => __("automation.automation.cron"),
                 new_config: new_cron_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_edit_children: get_cron_edit_children,
                 get_table_children: get_cron_table_children,
             },
             [AutomationTriggerID.HTTP]: {
-                name: __("automation.automation.http"),
+                translation_name: () => __("automation.automation.http"),
                 new_config: new_http_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_edit_children: get_http_edit_children,

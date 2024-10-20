@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2024 Mattias Schäffersmann <mattias@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -79,7 +80,7 @@ export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.EMInput]: {
-                name: __("em_v2.automation.input_switches"),
+                translation_name: () => __("em_v2.automation.input_switches"),
                 new_config: new_em_input_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_em_input_table_children,

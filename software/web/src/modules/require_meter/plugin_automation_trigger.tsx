@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,7 +47,7 @@ export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.RequireMeter]: {
-                name: __("require_meter.automation.require_meter"),
+                translation_name: () => __("require_meter.automation.require_meter"),
                 new_config: new_require_meter_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_require_meter_table_children,

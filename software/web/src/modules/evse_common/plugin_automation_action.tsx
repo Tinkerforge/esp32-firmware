@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -204,14 +205,14 @@ export function init(): InitResult {
     return {
         action_components: {
             [AutomationActionID.SetCurrent]: {
-                name: __("evse.automation.action_allowed_charging_current"),
+                translation_name: () => __("evse.automation.action_allowed_charging_current"),
                 new_config: new_set_current_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_set_current_edit_children,
                 get_table_children: get_set_current_table_children,
             },
             [AutomationActionID.LED]: {
-                name: __("evse.automation.led_indication"),
+                translation_name: () => __("evse.automation.led_indication"),
                 new_config: new_led_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_led_edit_children,

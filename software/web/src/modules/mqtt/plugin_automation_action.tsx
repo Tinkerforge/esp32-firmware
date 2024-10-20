@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -111,7 +112,7 @@ export function init(): InitResult {
     return {
         action_components: {
             [AutomationActionID.MQTT]: {
-                name: __("mqtt.automation.mqtt"),
+                translation_name: () => __("mqtt.automation.mqtt"),
                 new_config: new_mqtt_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_mqtt_edit_children,

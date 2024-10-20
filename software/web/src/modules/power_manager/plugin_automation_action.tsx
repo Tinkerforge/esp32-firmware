@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -212,28 +213,28 @@ export function init(): InitResult {
     return {
         action_components: {
             [AutomationActionID.PMPhaseSwitch]: {
-                name: __("power_manager.automation.set_phases"),
+                translation_name: () => __("power_manager.automation.set_phases"),
                 new_config: new_pm_phase_switch_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_table_children: get_pm_phase_switch_table_children,
                 get_edit_children: get_pm_phase_switch_edit_children,
             },
             [AutomationActionID.PMChargeModeSwitch]: {
-                name: __("power_manager.automation.charge_mode_switch"),
+                translation_name: () => __("power_manager.automation.charge_mode_switch"),
                 new_config: new_pm_charge_mode_switch_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_table_children: get_pm_charge_mode_switch_table_children,
                 get_edit_children: get_pm_charge_mode_switch_edit_children,
             },
             [AutomationActionID.PMLimitMaxCurrent]: {
-                name: __("power_manager.automation.limit_max_current"),
+                translation_name: () => __("power_manager.automation.limit_max_current"),
                 new_config: new_pm_limit_max_current_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_pm_limit_max_current_edit_children,
                 get_table_children: get_pm_limit_max_current_table_children,
             },
             [AutomationActionID.PMBlockCharge]: {
-                name: __("power_manager.automation.block_charge"),
+                translation_name: () => __("power_manager.automation.block_charge"),
                 new_config: new_pm_block_charge_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_pm_block_charge_edit_children,

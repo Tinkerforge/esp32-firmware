@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -117,14 +118,14 @@ export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.ChargerState]: {
-                name: __("evse.automation.state_change"),
+                translation_name: () => __("evse.automation.state_change"),
                 new_config: new_iec_change_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_edit_children: get_iec_change_edit_children,
                 get_table_children: get_iec_change_table_children,
             },
             [AutomationTriggerID.EVSEExternalCurrentWd]: {
-                name: __("evse.automation.external_current_wd"),
+                translation_name: () => __("evse.automation.external_current_wd"),
                 new_config: new_external_current_wd_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_edit_children: get_external_current_wd_edit_children,

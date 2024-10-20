@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -101,14 +102,14 @@ export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.PMPowerAvailable]: {
-                name: __("power_manager.automation.power_available"),
+                translation_name: () => __("power_manager.automation.power_available"),
                 new_config: new_pm_power_available_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_pm_power_available_table_children,
                 get_edit_children: get_pm_power_available_edit_children,
             },
             [AutomationTriggerID.PMGridPowerDraw]: {
-                name: __("power_manager.automation.grid_power_draw"),
+                translation_name: () => __("power_manager.automation.grid_power_draw"),
                 new_config: new_pm_grid_power_draw_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_pm_grid_power_draw_table_children,

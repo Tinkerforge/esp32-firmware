@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,7 +27,7 @@ export type AutomationTrigger = Task["trigger"];
 export type AutomationAction = Task["action"];
 
 export interface AutomationTriggerComponent {
-    name: string,
+    translation_name: () => string,
     new_config: () => AutomationTrigger,
     clone_config: (trigger: AutomationTrigger) => AutomationTrigger,
     get_edit_children: (trigger: AutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) => ComponentChildren,
@@ -35,7 +36,7 @@ export interface AutomationTriggerComponent {
 }
 
 export interface AutomationActionComponent {
-    name: string,
+    translation_name: () => string,
     new_config: () => AutomationAction,
     clone_config: (action: AutomationAction) => AutomationAction,
     get_edit_children: (action: AutomationAction, on_action: (action: AutomationAction) => void) => ComponentChildren,

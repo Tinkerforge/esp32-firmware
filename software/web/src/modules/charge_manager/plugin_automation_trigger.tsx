@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,7 +47,7 @@ export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.ChargeManagerWd]: {
-                name: __("charge_manager.automation.charge_manager_wd"),
+                translation_name: () => __("charge_manager.automation.charge_manager_wd"),
                 clone_config: (action: AutomationTrigger) => [action[0], {...action[1]}] as AutomationTrigger,
                 new_config: new_charge_manager_wd_config,
                 get_table_children: get_charge_manager_wd_table_children,

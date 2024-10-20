@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2024 Mattias Schäffersmann <mattias@tinkerforge.com>
+ * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -80,7 +81,7 @@ export function init(): InitResult {
     return {
         action_components: {
             [AutomationActionID.EMSGReadySwitch]: {
-                name: __("em_v2.automation.sgready_switch"),
+                translation_name: () => __("em_v2.automation.sgready_switch"),
                 new_config: new_em_sgready_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_table_children: get_em_sgready_table_children,

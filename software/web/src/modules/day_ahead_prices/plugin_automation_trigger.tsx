@@ -101,7 +101,7 @@ export function init(): InitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.DayAheadPriceNow]: {
-                name: __("day_ahead_prices.automation.current_electricity_price"),
+                translation_name: () => __("day_ahead_prices.automation.current_electricity_price"),
                 new_config: new_day_ahead_prices_now_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_day_ahead_prices_now_table_children,
