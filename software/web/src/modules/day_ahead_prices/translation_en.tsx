@@ -25,7 +25,7 @@ let x = {
             "resolution_muted": "Which resolution for market prices does the electricity provider use.",
             "minutes15": "15 minutes",
             "minutes60": "60 minutes",
-            "optional_muted": "Optional: Only used for correct display of the price, not for control",
+            "optional_muted": "Optional: Only used for correct display of the price, not for control.",
             "euro_divided_by_month": "€/Month",
             "grid_fees_and_taxes": "Grid fees and taxes",
             "electricity_provider_surcharge": "Electricity provider surcharge",
@@ -37,8 +37,10 @@ let x = {
             "undefined": "Undefined",
             "now": "Now",
             "vat": "VAT",
-            "vat_help": <>
-                <p>Here the VAT for the net market price is set. There are three sensible options for the optional settings:</p>
+            "extra_costs_help": <>
+                <p>The day ahead prices are only a part of the electricity costs. Additional fixed taxes, grid fees, and surcharges apply.</p>
+                <p>The VAT refers to the VAT that applies to the day ahead price (currently 19% in DE). Further additional costs can be found in the electricity provider's invoice.</p>
+                <p>There are three sensible options for the optional settings:</p>
                 <p>
                     <ul>
                         <li>Leave everything at 0: The net market price is displayed.</li>
@@ -46,7 +48,10 @@ let x = {
                         <li>Enter VAT correctly and enter the gross price for the fees: The gross electricity price including fees is displayed.</li>
                     </ul>
                 </p>
-            </>
+                <p>For control, only the dynamic net day ahead prices are used, regardless of the additional costs.</p>
+            </>,
+            "incl_all_costs": "incl. all costs",
+            "extra_costs": "Extra costs"
         },
         "automation": {
             "trigger_text": /*FFN*/(type: number, comparison: number, value: number) => {

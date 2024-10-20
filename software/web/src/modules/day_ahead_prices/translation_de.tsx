@@ -25,7 +25,7 @@ let x = {
             "resolution_muted": "Welche Auflösung für Börsenstrompreise verwendet der Stromanbieter.",
             "minutes15": "15 Minuten",
             "minutes60": "60 Minuten",
-            "optional_muted": "Optional: Wird nur für die korrekte Darstellung des Preises verwendet, nicht für die Regelung",
+            "optional_muted": "Optional: Wird nur für die korrekte Darstellung des Preises verwendet, nicht für die Regelung.",
             "euro_divided_by_month": "€/Monat",
             "grid_fees_and_taxes": "Netzentgelte und Steuern",
             "electricity_provider_surcharge": "Stromanbieter Preisaufschlag",
@@ -37,8 +37,10 @@ let x = {
             "undefined": "Unbekannt",
             "now": "Jetzt",
             "vat": "MwSt",
-            "vat_help": <>
-                <p>Hier wird die MwSt für den Netto-Börsenpreis angegeben. Es gibt drei sinnvolle Möglichkeiten für die optionalen Einstellungen:</p>
+            "extra_costs_help": <>
+                <p>Die dynamischen Börsenstrompreise sind nur ein Teil der Stromkosten. Es fallen zusätzliche fixe Steuern, Netzentgelte und Aufschläge an.</p>
+                <p>Die MwSt bezieht sich auf die MwSt die auf den Börstenstrompreis anfällt (in DE aktuell 19%). Weitere Zusatzkosten können in der Rechnung des Stromanbieters nachgeschaut werden.</p>
+                <p>Es gibt drei sinnvolle Möglichkeiten für die optionalen Einstellungen:</p>
                 <p>
                     <ul>
                         <li>Alles auf 0 lassen: Es wird der Netto-Börsenpreis angezeigt.</li>
@@ -46,7 +48,10 @@ let x = {
                         <li>MwSt korrekt eintragen und bei den Gebühren den Bruttopreis eintragen: Es wird der Brutto-Strompreis inkl. Gebühren angezeigt.</li>
                     </ul>
                 </p>
-            </>
+                <p>Zur Regelung werden unabhängig von den Zusatzkosten immer nur die dynamischen Netto-Börsenpsreise verwendet.</p>
+            </>,
+            "incl_all_costs": "inkl. aller Kosten",
+            "extra_costs": "Zusatzkosten"
         },
         "automation": {
             "trigger_text": /*FFN*/(type: number, comparison: number, value: number) => {
