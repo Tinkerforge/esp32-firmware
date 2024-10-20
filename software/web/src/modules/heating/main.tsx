@@ -63,25 +63,29 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
     summer_end_day:     number;
     summer_end_month:   number;
 
-    static days: [string, string][] = [...Array(31).keys()].map((i) => [
-        (i+1).toString(),
-        (i+1).toString()
-    ]);
+    static days(): [string, string][] {
+        return [...Array(31).keys()].map((i) => [
+            (i+1).toString(),
+            (i+1).toString()
+        ]);
+    }
 
-    static months: [string, string][] = [
-        ["1",  __("heating.content.january")],
-        ["2",  __("heating.content.february")],
-        ["3",  __("heating.content.march")],
-        ["4",  __("heating.content.april")],
-        ["5",  __("heating.content.may")],
-        ["6",  __("heating.content.june")],
-        ["7",  __("heating.content.july")],
-        ["8",  __("heating.content.august")],
-        ["9",  __("heating.content.september")],
-        ["10", __("heating.content.october")],
-        ["11", __("heating.content.november")],
-        ["12", __("heating.content.december")]
-    ];
+    static months(): [string, string][] {
+        return [
+            ["1",  __("heating.content.january")],
+            ["2",  __("heating.content.february")],
+            ["3",  __("heating.content.march")],
+            ["4",  __("heating.content.april")],
+            ["5",  __("heating.content.may")],
+            ["6",  __("heating.content.june")],
+            ["7",  __("heating.content.july")],
+            ["8",  __("heating.content.august")],
+            ["9",  __("heating.content.september")],
+            ["10", __("heating.content.october")],
+            ["11", __("heating.content.november")],
+            ["12", __("heating.content.december")]
+        ];
+    }
 
     constructor() {
         super('heating/config',
@@ -287,12 +291,12 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
 
     month_to_days(month: number): [string, string][] {
         switch(month) {
-            case 1: case 3: case 5: case 7: case 8: case 10: case 12: return Heating.days.slice(0, 31);
-            case 4: case 6: case 9: case 11:                          return Heating.days.slice(0, 30);
-            case 2:                                                   return Heating.days.slice(0, 28);
+            case 1: case 3: case 5: case 7: case 8: case 10: case 12: return Heating.days().slice(0, 31);
+            case 4: case 6: case 9: case 11:                          return Heating.days().slice(0, 30);
+            case 2:                                                   return Heating.days().slice(0, 28);
             default: console.log("Invalid month: " + month);
         }
-        return Heating.days.slice(0, 31);
+        return Heating.days().slice(0, 31);
     }
 
     render(props: {}, state: HeatingState & HeatingConfig) {
@@ -365,7 +369,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                     <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
                                     <InputSelect
                                         className="heating-input-group-prepend"
-                                        items={Heating.months}
+                                        items={Heating.months()}
                                         value={state.summer_start_month}
                                         onValue={(v) => {
                                             this.setState({summer_start_month: parseInt(v)});
@@ -396,7 +400,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                     <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
                                     <InputSelect
                                         className="heating-input-group-prepend"
-                                        items={Heating.months}
+                                        items={Heating.months()}
                                         value={state.summer_end_month}
                                         onValue={(v) => {
                                             this.setState({summer_end_month: parseInt(v)});
