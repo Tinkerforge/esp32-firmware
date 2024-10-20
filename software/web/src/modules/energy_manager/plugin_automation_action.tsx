@@ -85,12 +85,11 @@ function get_em_relay_edit_children(action: EMRelayAutomationAction, on_action: 
 
 function new_em_relay_config(): AutomationAction {
     const em_version = API.get("energy_manager/state").em_version;
-    const relay_count = em_version; // Amount of relays matches em_version.
 
     return [
         AutomationActionID.EMRelaySwitch,
         {
-            index: relay_count == 1 ? 0 : -2,
+            index: 0,
             closed: true,
         },
     ];

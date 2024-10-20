@@ -70,7 +70,7 @@ function new_em_input_config(): AutomationTrigger {
     return [
         AutomationTriggerID.EMInput,
         {
-            index: -2,
+            index: 0,
             closed: true,
         },
     ];

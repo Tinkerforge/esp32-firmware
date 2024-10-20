@@ -10,7 +10,7 @@ let x = {
             "sgready_index": "SG Ready output",
             "sgready_action_text": /*FFN*/(index: number, state: boolean) => {
                 let ret = state ? <><b>close</b></> : <><b>open</b></>
-                return <>{ret} SG Ready output {index}.</>
+                return <>{ret} SG Ready output {index+1}.</>
             }/*NF*/
         }
     }

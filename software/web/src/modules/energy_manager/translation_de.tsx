@@ -27,7 +27,7 @@ let x = {
             "relay_state_open": "Offen",
             "relay_state_closed": "Geschlossen",
             "relay_action_text": /*FFN*/(index: number, state: boolean) => {
-                const index_text = index >= 0 ? " " + index.toString() : "";
+                const index_text = index >= 0 ? " " + (index+1).toString() : "";
                 let ret = state ? <><b>schließen</b></> : <><b>öffnen</b></>
                 return <>Relais{index_text} {ret}.</>
             }/*NF*/

@@ -50,7 +50,7 @@ function get_em_sgready_edit_children(action: EMSGReadyAutomationAction, on_acti
             <InputNumber
                 required
                 min={1}
-                max={4}
+                max={2}
                 value={action[1].index + 1}
                 onValue={(v) => {on_action(util.get_updated_union(action, {index: v - 1}));}}
             />
@@ -71,7 +71,7 @@ function new_em_sgready_config(): AutomationAction {
     return [
         AutomationActionID.EMSGReadySwitch,
         {
-            index: -2,
+            index: 0,
             closed: true,
         },
     ];
