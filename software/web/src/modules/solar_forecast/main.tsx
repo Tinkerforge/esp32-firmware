@@ -411,7 +411,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 <ConfigForm
                     id="plane_configs_config_form"
                     title={__("solar_forecast.content.solar_forecast")}
-                    isModified={this.isModified()}
+                    isModified={false}
                     isDirty={this.isDirty()}
                     onSave={this.save}
                     onReset={this.reset}

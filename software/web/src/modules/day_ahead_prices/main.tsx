@@ -252,10 +252,10 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             <SubPage name="day_ahead_prices">
                 <ConfigForm id="day_ahead_prices_config_form"
                             title={__("day_ahead_prices.content.day_ahead_prices")}
-                            isModified={this.isModified()}
+                            isModified={false}
                             isDirty={this.isDirty()}
                             onSave={this.save}
-                            onReset={undefined}
+                            onReset={this.reset}
                             onDirtyChange={this.setDirty}>
                     <FormRow label={__("day_ahead_prices.content.day_ahead_prices")} label_muted={__("day_ahead_prices.content.day_ahead_prices_muted")}>
                         <Switch desc={__("day_ahead_prices.content.day_ahead_prices_desc")}

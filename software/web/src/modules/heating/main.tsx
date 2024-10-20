@@ -312,7 +312,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
             <SubPage name="heating">
                 <ConfigForm id="heating_config_form"
                             title={__("heating.content.heating")}
-                            isModified={this.isModified()}
+                            isModified={false}
                             isDirty={this.isDirty()}
                             onSave={this.save}
                             onReset={this.reset}

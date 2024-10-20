@@ -87,7 +87,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
             <SubPage name="system">
                 <ConfigForm id="system_config_form"
                             title={__("system.content.system")}
-                            isModified={this.isModified()}
+                            isModified={false}
                             isDirty={this.isDirty()}
                             onSave={this.save}
                             onReset={this.reset}
