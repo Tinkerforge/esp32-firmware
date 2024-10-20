@@ -48,7 +48,7 @@ export function FrontPanelNavbar() {
 type FrontPanelConfig = API.getType["front_panel/config"];
 
 export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
-    static options_tile: [string, string][] = [
+    static options_tile(): [string, string][] { return [
         ["0", __("front_panel.content.empty_tile")],
         ["1", __("front_panel.content.wallbox")],
         ["2", __("front_panel.content.charge_management")],
@@ -57,27 +57,27 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
         ["5", __("front_panel.content.solar_forecast")],
         ["6", __("front_panel.content.energy_manager_status")],
         ["7", __("front_panel.content.heating_status")],
-    ]
+    ]}
 
-    static options_wallbox: [string, string][] = [...Array(32).keys()].map((i) => [
+    static options_wallbox(): [string, string][] { return [...Array(32).keys()].map((i) => [
         i.toString(),
         __("front_panel.content.wallbox") + " " + i
-    ]);
+    ])}
 
-    static options_meter: [string, string][] = [...Array(7).keys()].map((i) => [
+    static options_meter(): [string, string][] { return [...Array(7).keys()].map((i) => [
         i.toString(), __("front_panel.content.meter") + " " + i
-    ]);
+    ])}
 
-    static options_day_ahead_prices: [string, string][] = [
+    static options_day_ahead_prices(): [string, string][] { return [
         ["0", __("front_panel.content.current_electricity_price")],
         ["1", __("front_panel.content.average_price_today")],
         ["2", __("front_panel.content.average_price_tomorrow")],
-    ]
+    ]}
 
-    static options_solar_forecast: [string, string][] = [
+    static options_solar_forecast(): [string, string][] { return [
         ["0", __("front_panel.content.pv_yield_forecast_today")],
         ["1", __("front_panel.content.pv_yield_forecast_tomorrow")],
-    ]
+    ]}
 
     constructor() {
         super('front_panel/config',
@@ -200,7 +200,7 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
                                     {tile_index != 0 && <FormSeparator first={true}/>}
                                     <FormRow symbol={get_tile_symbol(tile_index)} label={__("front_panel.content.tile") + " " + (tile_index+1)}>
                                         <InputSelect
-                                            items={FrontPanel.options_tile}
+                                            items={FrontPanel.options_tile()}
                                             value={state.tiles[tile_index][0]}
                                             onValue={(v) => {
                                                 let tiles = state.tiles;
@@ -209,10 +209,10 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
                                             }
                                         />
                                     </FormRow>
-                                    {state.tiles[tile_index][0] === 1 && (this.get_tile_config(tile_index, FrontPanel.options_wallbox))}
-                                    {state.tiles[tile_index][0] === 3 && (this.get_tile_config(tile_index, FrontPanel.options_meter))}
-                                    {state.tiles[tile_index][0] === 4 && (this.get_tile_config(tile_index, FrontPanel.options_day_ahead_prices))}
-                                    {state.tiles[tile_index][0] === 5 && (this.get_tile_config(tile_index, FrontPanel.options_solar_forecast))}
+                                    {state.tiles[tile_index][0] === 1 && (this.get_tile_config(tile_index, FrontPanel.options_wallbox()))}
+                                    {state.tiles[tile_index][0] === 3 && (this.get_tile_config(tile_index, FrontPanel.options_meter()))}
+                                    {state.tiles[tile_index][0] === 4 && (this.get_tile_config(tile_index, FrontPanel.options_day_ahead_prices()))}
+                                    {state.tiles[tile_index][0] === 5 && (this.get_tile_config(tile_index, FrontPanel.options_solar_forecast()))}
                                 </div>
                             })}
                         </div>
