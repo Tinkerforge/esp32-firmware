@@ -307,7 +307,7 @@ class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState>
 export function init() {
     return {
         [MeterClassID.API]: {
-            name: __("meters_api.content.meter_class"),
+            name: () => __("meters_api.content.meter_class"),
             new_config: () => [MeterClassID.API, {display_name: "", value_ids: new Array<number>()}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: APIMetersConfig, on_config: (config: APIMetersConfig) => void): ComponentChildren => {

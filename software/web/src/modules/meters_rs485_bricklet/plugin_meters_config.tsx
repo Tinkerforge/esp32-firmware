@@ -38,7 +38,7 @@ export type RS485BrickletMetersConfig = [
 export function init() {
     return {
         [MeterClassID.RS485Bricklet]: {
-            name: __("meters_rs485_bricklet.content.meter_class"),
+            name: () => __("meters_rs485_bricklet.content.meter_class"),
             new_config: () => [MeterClassID.RS485Bricklet, {display_name: "", type_override: 255}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: RS485BrickletMetersConfig, on_config: (config: RS485BrickletMetersConfig) => void): ComponentChildren => {

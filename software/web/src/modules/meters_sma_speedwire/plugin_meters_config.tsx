@@ -36,7 +36,7 @@ export type SMASpeedwireMetersConfig = [
 export function init() {
     return {
         [MeterClassID.SMASpeedwire]: {
-            name: __("meters_sma_speedwire.content.meter_class"),
+            name: () => __("meters_sma_speedwire.content.meter_class"),
             new_config: () => [MeterClassID.SMASpeedwire, {display_name: ""}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: SMASpeedwireMetersConfig, on_config: (config: SMASpeedwireMetersConfig) => void): ComponentChildren => {

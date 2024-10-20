@@ -23,7 +23,7 @@ import { ComponentChildren } from "preact";
 export type MeterConfig = API.getType["meters/0/config"];
 
 export type MeterConfigPlugin = {
-    name: string
+    name: () => string
     new_config: () => MeterConfig
     clone_config: (config: MeterConfig) => MeterConfig
     get_edit_children: (config: MeterConfig, on_config: (config: MeterConfig) => void) => ComponentChildren

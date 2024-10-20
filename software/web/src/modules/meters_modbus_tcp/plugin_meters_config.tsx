@@ -381,7 +381,7 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
 export function init() {
     return {
         [MeterClassID.ModbusTCP]: {
-            name: __("meters_modbus_tcp.content.meter_class"),
+            name: () => __("meters_modbus_tcp.content.meter_class"),
             new_config: () => [MeterClassID.ModbusTCP, {display_name: "", host: "", port: 502, table: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: ModbusTCPMetersConfig, on_config: (config: ModbusTCPMetersConfig) => void): ComponentChildren => {

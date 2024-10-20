@@ -46,7 +46,7 @@ export type MetaMetersConfig = [
 export function init() {
     return {
         [MeterClassID.Meta]: {
-            name: __("meters_meta.content.meter_class"),
+            name: () => __("meters_meta.content.meter_class"),
             new_config: () => [MeterClassID.Meta, {display_name: "Meta", mode: 0, source_meter_a: 0, source_meter_b: 1, constant: 0}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: MetaMetersConfig, on_config: (config: MetaMetersConfig) => void): ComponentChildren => {

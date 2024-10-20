@@ -963,7 +963,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                         }
 
                                         for (let meter_class in config_plugins) {
-                                            classes.push([meter_class.toString(), config_plugins[meter_class].name])
+                                            classes.push([meter_class.toString(), config_plugins[meter_class].name()])
                                         }
 
                                         let rows: ComponentChild[] = [<>
@@ -1041,7 +1041,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                 }
 
                                 for (let meter_class in config_plugins) {
-                                    classes.push([meter_class.toString(), config_plugins[meter_class].name])
+                                    classes.push([meter_class.toString(), config_plugins[meter_class].name()])
                                 }
 
                                 let rows: ComponentChild[] = [

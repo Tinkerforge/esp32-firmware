@@ -36,7 +36,7 @@ export type EVSEV2MetersConfig = [
 export function init() {
     return {
         [MeterClassID.EVSEV2]: {
-            name: __("meters_evse_v2.content.meter_class"),
+            name: () => __("meters_evse_v2.content.meter_class"),
             new_config: () => [MeterClassID.EVSEV2, {display_name: ""}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: EVSEV2MetersConfig, on_config: (config: EVSEV2MetersConfig) => void): ComponentChildren => {

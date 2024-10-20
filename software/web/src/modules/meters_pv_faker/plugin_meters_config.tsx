@@ -41,7 +41,7 @@ export type PvFakerMetersConfig = [
 export function init() {
     return {
         [MeterClassID.PvFaker]: {
-            name: __("meters_pv_faker.content.meter_class"),
+            name: () => __("meters_pv_faker.content.meter_class"),
             new_config: () => [MeterClassID.PvFaker, {display_name: "PV Faker", topic: "esp32/UKK/ambient_light/state", peak_power: 30000, zero_at_lux: 100, peak_at_lux: 105000}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: PvFakerMetersConfig, on_config: (config: PvFakerMetersConfig) => void): ComponentChildren => {

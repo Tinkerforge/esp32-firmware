@@ -379,7 +379,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
 export function init() {
     return {
         [MeterClassID.SunSpec]: {
-            name: __("meters_sun_spec.content.meter_class"),
+            name: () => __("meters_sun_spec.content.meter_class"),
             new_config: () => [MeterClassID.SunSpec, {display_name: "", host: "", port: 502, device_address: null, manufacturer_name: null, model_name: null, serial_number: null, model_id: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: SunSpecMetersConfig, on_config: (config: SunSpecMetersConfig) => void): ComponentChildren => {

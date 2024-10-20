@@ -41,7 +41,7 @@ export type MqttMirrorMetersConfig = [
 export function init() {
     return {
         [MeterClassID.MqttMirror]: {
-            name: __("meters_mqtt_mirror.content.meter_class"),
+            name: () => __("meters_mqtt_mirror.content.meter_class"),
             new_config: () => [MeterClassID.MqttMirror, {display_name: "", auto: true, meter_path: "source/abc/meters/0", value_ids: ""}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: MqttMirrorMetersConfig, on_config: (config: MqttMirrorMetersConfig) => void): ComponentChildren => {
