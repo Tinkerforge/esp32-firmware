@@ -18,6 +18,8 @@
  */
 
 import { h, Component, ComponentChildren } from "preact";
+import { Collapse } from "react-bootstrap";
+import { HelpCircle } from "react-feather";
 
 interface FormSeparatorProps {
     heading?: string;
@@ -25,16 +27,31 @@ interface FormSeparatorProps {
     first?: boolean;
     extraClasses?: string;
     children?: ComponentChildren;
+    help?: ComponentChildren;
 }
 
 export class FormSeparator extends Component<FormSeparatorProps, {}> {
-    render(props: FormSeparatorProps) {
+    render(props: FormSeparatorProps, state: {help_expanded: boolean}) {
         return (
-            <div class={"row mb-3 " + (!props.first ? "pt-3" : "pt-0") + " " + (props.extraClasses === undefined ? "" : props.extraClasses)}>
-                <div class={"d-flex border-bottom " + (props.colClasses === undefined ? "col" : props.colClasses)}>
-                    {props.heading ? <span class="h3">{props.heading}</span> : undefined}
+            <div>
+            <div class={"row " + (state.help_expanded ? "mb-1 " : "mb-3 ") + (!props.first ? "pt-3" : "pt-0") + " " + (props.extraClasses === undefined ? "" : props.extraClasses)}>
+                <div class={"d-flex " + ((!state.help_expanded) ? "border-bottom " : "")  + (props.colClasses === undefined ? "col" : props.colClasses)}>
+                    {props.heading && <span class="h3">{props.heading}</span>}
+                    {props.help && <div class="ml-2 d-flex"><span class={"col-auto pt-lg-col-form-label"} onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:(state.help_expanded ? "btn-dark" : "btn-outline-secondary"), style:"border-radius: 50%; transition: .35s;"} as any}/></span></div>}
                     {props.children}
                 </div>
+            </div>
+            <Collapse in={state.help_expanded}>
+                <div>{/*Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse*/}
+                    <div class="pb-3">
+                        <div class="card">
+                            <div class="card-body p-3 form-row-help" style="background: #ffffe7;">
+                                {props.help}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Collapse>
             </div>
         );
     }
