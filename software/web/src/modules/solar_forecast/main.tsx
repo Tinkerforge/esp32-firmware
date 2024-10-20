@@ -422,61 +422,57 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                 onClick={this.toggle('enable')}
                         />
                     </FormRow>
-                    <Collapse in={state.enable}>
-                        <div class="mb-3">
-                            <FormRow label={__("solar_forecast.content.planes")}>
-                                <div></div>
-                            </FormRow>
-                                <Table columnNames={[__("solar_forecast.content.table_name"), __("solar_forecast.content.table_latitude"), __("solar_forecast.content.table_longitude"), __("solar_forecast.content.table_declination"), __("solar_forecast.content.table_azimuth"), __("solar_forecast.content.table_kwp")]}
-                                    tableTill="lg"
-                                    rows={get_active_planes(this.state).map((active_plane_index) => {
-                                        let plane_config = state.plane_configs[active_plane_index];
-                                        return {
-                                            extraShow: this.state.extra_show[active_plane_index],
-                                            extraValue: get_plane_info(active_plane_index),
-                                            columnValues: [
-                                                    <span class="text-nowrap">
-                                                <Button size="sm" onClick={() => {
-                                                    this.setState({extra_show: state.extra_show.map((show, i) => active_plane_index == i ? !show : show)});
-                                                }}>
-                                                        <ChevronRight {...{id:`solar-forecast-${active_plane_index}-chevron`, class: state.extra_show[active_plane_index] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
-                                                </Button>
-                                                <span class="ml-1 mr-1">{plane_config.name}</span>
-                                                    </span>
-                                                ,
-                                                util.toLocaleFixed(plane_config.latitude / 10000, 4) + "°",
-                                                util.toLocaleFixed(plane_config.longitude / 10000, 4) + "°",
-                                                plane_config.declination + "°",
-                                                plane_config.azimuth + "°",
-                                                util.toLocaleFixed(plane_config.wp / 1000, 3) + " kWp",
-                                            ],
-                                            editTitle: __("solar_forecast.content.edit_plane_config_title"),
-                                            onEditShow: async () => this.setState({plane_config_tmp: {...plane_config}}),
-                                            onEditGetChildren: () => this.on_get_children(),
-                                            onEditSubmit: async () => {
-                                                this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: state.plane_config_tmp}});
-                                                this.setDirty(true);
-                                            },
-                                            onRemoveClick: async () => {
-                                                this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: {active: false, name: "#" + active_plane_index, latitude: 0, longitude: 0, declination: 0, azimuth: 0, wp: 0}}});
-                                                this.setDirty(true);
-                                            }}
-                                        })
-                                    }
-                                    addEnabled={get_active_planes(this.state).length < SOLAR_FORECAST_PLANES}
-                                    addTitle={__("solar_forecast.content.add_plane_config_title")}
-                                    addMessage={get_active_planes(this.state).length == SOLAR_FORECAST_PLANES ? __("solar_forecast.content.add_plane_config_done") : __("solar_forecast.content.add_plane_config_prefix") + (get_active_planes(this.state).length + 1) + __("solar_forecast.content.add_plane_config_infix") + SOLAR_FORECAST_PLANES + __("solar_forecast.content.add_plane_config_postfix")}
-                                    onAddShow={async () => {
-                                        this.setState({plane_config_tmp: {active: true, name: "#" + get_next_free_plane_index(this.state), latitude: 0, longitude: 0, declination: 0, azimuth: 0, wp: 0}})
-                                    }}
-                                    onAddGetChildren={() => this.on_get_children()}
-                                    onAddSubmit={async () => {
-                                        this.setState({plane_configs: {...state.plane_configs, [get_next_free_plane_index(this.state)]: state.plane_config_tmp}});
-                                        this.setDirty(true);
-                                    }}
-                                />
-                        </div>
-                    </Collapse>
+                    <FormRow label={__("solar_forecast.content.planes")}>
+                        <div></div>
+                    </FormRow>
+                    <Table columnNames={[__("solar_forecast.content.table_name"), __("solar_forecast.content.table_latitude"), __("solar_forecast.content.table_longitude"), __("solar_forecast.content.table_declination"), __("solar_forecast.content.table_azimuth"), __("solar_forecast.content.table_kwp")]}
+                        tableTill="lg"
+                        rows={get_active_planes(this.state).map((active_plane_index) => {
+                            let plane_config = state.plane_configs[active_plane_index];
+                            return {
+                                extraShow: this.state.extra_show[active_plane_index],
+                                extraValue: get_plane_info(active_plane_index),
+                                columnValues: [
+                                        <span class="text-nowrap">
+                                    <Button size="sm" onClick={() => {
+                                        this.setState({extra_show: state.extra_show.map((show, i) => active_plane_index == i ? !show : show)});
+                                    }}>
+                                            <ChevronRight {...{id:`solar-forecast-${active_plane_index}-chevron`, class: state.extra_show[active_plane_index] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
+                                    </Button>
+                                    <span class="ml-1 mr-1">{plane_config.name}</span>
+                                        </span>
+                                    ,
+                                    util.toLocaleFixed(plane_config.latitude / 10000, 4) + "°",
+                                    util.toLocaleFixed(plane_config.longitude / 10000, 4) + "°",
+                                    plane_config.declination + "°",
+                                    plane_config.azimuth + "°",
+                                    util.toLocaleFixed(plane_config.wp / 1000, 3) + " kWp",
+                                ],
+                                editTitle: __("solar_forecast.content.edit_plane_config_title"),
+                                onEditShow: async () => this.setState({plane_config_tmp: {...plane_config}}),
+                                onEditGetChildren: () => this.on_get_children(),
+                                onEditSubmit: async () => {
+                                    this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: state.plane_config_tmp}});
+                                    this.setDirty(true);
+                                },
+                                onRemoveClick: async () => {
+                                    this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: {active: false, name: "#" + active_plane_index, latitude: 0, longitude: 0, declination: 0, azimuth: 0, wp: 0}}});
+                                    this.setDirty(true);
+                                }}
+                            })
+                        }
+                        addEnabled={get_active_planes(this.state).length < SOLAR_FORECAST_PLANES}
+                        addTitle={__("solar_forecast.content.add_plane_config_title")}
+                        addMessage={get_active_planes(this.state).length == SOLAR_FORECAST_PLANES ? __("solar_forecast.content.add_plane_config_done") : __("solar_forecast.content.add_plane_config_prefix") + (get_active_planes(this.state).length + 1) + __("solar_forecast.content.add_plane_config_infix") + SOLAR_FORECAST_PLANES + __("solar_forecast.content.add_plane_config_postfix")}
+                        onAddShow={async () => {
+                            this.setState({plane_config_tmp: {active: true, name: "#" + get_next_free_plane_index(this.state), latitude: 0, longitude: 0, declination: 0, azimuth: 0, wp: 0}})
+                        }}
+                        onAddGetChildren={() => this.on_get_children()}
+                        onAddSubmit={async () => {
+                            this.setState({plane_configs: {...state.plane_configs, [get_next_free_plane_index(this.state)]: state.plane_config_tmp}});
+                            this.setDirty(true);
+                        }}
+                    />
                 </ConfigForm>
                 <FormSeparator heading={__("solar_forecast.content.solar_forecast_chart_heading")}/>
                 <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date().getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
