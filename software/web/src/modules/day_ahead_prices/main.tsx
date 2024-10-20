@@ -53,16 +53,22 @@ export function get_price_from_index(state: DayAheadPricesState, config: DayAhea
     return state.dap_prices.prices[index];
 }
 
-export function get_current_price(state: DayAheadPricesState, config: DayAheadPricesConfig, incl_vat: boolean = true) {
+export function get_current_price(state: DayAheadPricesState, config: DayAheadPricesConfig, incl_vat: boolean = true, incl_tax_and_markup: boolean = true) {
     if (state.dap_state.current_price == 0x7fffffff) { // INT32_MAX = current price not available yet
         return NaN
     }
 
+    let price = state.dap_state.current_price;
+
     if (incl_vat) {
-        return Math.round(state.dap_state.current_price * (1 + config.vat / 10000.0));
+        price = Math.round(state.dap_state.current_price * (1 + config.vat / 10000.0));
     }
 
-    return state.dap_state.current_price;
+    if (incl_tax_and_markup) {
+        price += config.grid_costs_and_taxes + config.supplier_markup;
+    }
+
+    return price;
 }
 
 export function get_average_price_today(state: DayAheadPricesState, config: DayAheadPricesConfig, add_markup: boolean = true) {
@@ -229,6 +235,19 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             return <SubPage name="day_ahead_prices" />;
         }
 
+        function get_current_price_string() {
+            let str = util.get_value_with_unit(get_current_price(dap, dap, false, false), "ct/kWh", 2, 1000);
+            if ((dap.vat != 0) || (dap.grid_costs_and_taxes) != 0 || (dap.supplier_markup != 0)) {
+                str += " (";
+                str += util.get_value_with_unit(get_current_price(dap, dap, true, true), "ct/kWh", 2, 1000);
+                str += " ";
+                str += __("day_ahead_prices.content.incl_all_costs");
+                str += ")";
+            }
+
+            return str;
+        }
+
         return (
             <SubPage name="day_ahead_prices">
                 <ConfigForm id="day_ahead_prices_config_form"
@@ -287,10 +306,10 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     </Collapse>
                 </ConfigForm>
                 <FormSeparator heading={__("day_ahead_prices.content.day_ahead_market_prices_heading")}/>
-                <FormRow label={__("day_ahead_prices.content.current_price")}>
-                    <InputText value={util.get_value_with_unit(get_current_price(dap, dap), "ct/kWh", 2, 1000) + " (" + this.get_price_timeframe() + ")"}/>
+                <FormRow label={__("day_ahead_prices.content.current_price")} label_muted={this.get_price_timeframe()}>
+                    <InputText value={get_current_price_string()}/>
                 </FormRow>
-                <FormRow label={__("day_ahead_prices.content.average_price")}>
+                <FormRow label={__("day_ahead_prices.content.average_price")} label_muted={((dap.vat != 0) || (dap.grid_costs_and_taxes) != 0 || (dap.supplier_markup != 0)) ? __("day_ahead_prices.content.incl_all_costs") : ""}>
                     <div class="row mx-n1">
                         <div class="col-md-6 px-1">
                             <div class="input-group">
