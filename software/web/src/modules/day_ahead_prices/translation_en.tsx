@@ -52,15 +52,15 @@ let x = {
             "trigger_text": /*FFN*/(type: number, comparison: number, value: number) => {
                 if (type == 0) {// average
                     if (comparison == 0) { // greater
-                        return (<>If the current market price is greater than {value}% of the daily average,{" "}</>)
+                        return (<>If the current market price is <b>greater</b> than <b>{value} %</b> of the daily average,{" "}</>)
                     } else if (comparison == 1) { // less
-                        return (<>If the current market price is less than {value}% of the daily average,{" "}</>)
+                        return (<>If the current market price is <b>less</b> than <b>{value} %</b> of the daily average,{" "}</>)
                     }
                 } else if (type == 1) { // absolute
                     if (comparison == 0) { // greater
-                        return (<>If the current market price is greater than {value} ct,{" "}</>)
+                        return (<>If the current market price is <b>greater</b> than <b>{value} ct</b>,{" "}</>)
                     } else if (comparison == 1) { // less
-                        return (<>If the current market price is less than {value} ct,{" "}</>)
+                        return (<>If the current market price is <b>less</b> than <b>{value} ct</b>,{" "}</>)
                     }
                 }
                 return (<>Unknown,{" "}</>)

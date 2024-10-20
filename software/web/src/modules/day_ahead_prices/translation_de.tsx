@@ -52,15 +52,15 @@ let x = {
             "trigger_text": /*FFN*/(type: number, comparison: number, value: number) => {
                 if (type == 0) {// average
                     if (comparison == 0) { // greater
-                        return (<>Wenn der aktuelle Börsenstrompreis größer als {value}% des Tagesdurchschnitt ist,{" "}</>)
+                        return (<>Wenn der aktuelle Börsenstrompreis <b>größer</b> als <b>{value} %</b> des Tagesdurchschnitt ist,{" "}</>)
                     } else if (comparison == 1) { // less
-                        return (<>Wenn der aktuelle Börsenstrompreis kleiner als {value}% des Tagesdurchschnitt ist,{" "}</>)
+                        return (<>Wenn der aktuelle Börsenstrompreis <b>kleiner</b> als <b>{value} %</b> des Tagesdurchschnitt ist,{" "}</>)
                     }
                 } else if (type == 1) { // absolute
                     if (comparison == 0) { // greater
-                        return (<>Wenn der aktuelle Börsenstrompreis größer als {value} ct ist,{" "}</>)
+                        return (<>Wenn der aktuelle Börsenstrompreis <b>größer</b> als <b>{value} ct</b> ist,{" "}</>)
                     } else if (comparison == 1) { // less
-                        return (<>Wenn der aktuelle Börsenstrompreis kleiner als {value} ct ist,{" "}</>)
+                        return (<>Wenn der aktuelle Börsenstrompreis <b>kleiner</b> als <b>{value} ct</b> ist,{" "}</>)
                     }
                 }
                 return (<>Unbekannt,{" "}</>)
