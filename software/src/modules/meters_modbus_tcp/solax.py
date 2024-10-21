@@ -50,31 +50,31 @@ specs = [
             },
             {
                 'name': 'Grid Power Factor Total Meter [0.01]',
-                'value_id': 'PowerFactorLSumDirectional',  # FIXME: direction?
+                'value_id': 'PowerFactorLSumDirectional',
                 'start_address': 0xC4,
                 'value_type': 'S16',
-                'scale_factor': 0.01,
+                'scale_factor': -0.01,
             },
             {
                 'name': 'Grid Power Factor R Meter [0.01]',
-                'value_id': 'PowerFactorL1Directional',  # FIXME: direction?
+                'value_id': 'PowerFactorL1Directional',
                 'start_address': 0xC5,
                 'value_type': 'S16',
-                'scale_factor': 0.01,
+                'scale_factor': -0.01,
             },
             {
                 'name': 'Grid Power Factor S Meter [0.01]',
-                'value_id': 'PowerFactorL2Directional',  # FIXME: direction?
+                'value_id': 'PowerFactorL2Directional',
                 'start_address': 0xC6,
                 'value_type': 'S16',
-                'scale_factor': 0.01,
+                'scale_factor': -0.01,
             },
             {
                 'name': 'Grid Power Factor T Meter [0.01]',
-                'value_id': 'PowerFactorL3Directional',  # FIXME: direction?
+                'value_id': 'PowerFactorL3Directional',
                 'start_address': 0xC7,
                 'value_type': 'S16',
-                'scale_factor': 0.01,
+                'scale_factor': -0.01,
             },
             {
                 'name': 'Grid Frequency Meter [0.01 Hz]',
@@ -113,28 +113,28 @@ specs = [
             },
             {
                 'name': 'Grid Current Total Meter [0.1 A]',
-                'value_id': 'CurrentLSumImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentLSumImExSum',
                 'start_address': 0xCD,
                 'value_type': 'S16',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Grid Current R Meter [0.1 A]',
-                'value_id': 'CurrentL1ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL1ImExSum',
                 'start_address': 0xCE,
                 'value_type': 'S16',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Grid Current S Meter [0.1 A]',
-                'value_id': 'CurrentL2ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL2ImExSum',
                 'start_address': 0xCF,
                 'value_type': 'S16',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Grid Current T Meter [0.1 A]',
-                'value_id': 'CurrentL3ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL3ImExSum',
                 'start_address': 0xD0,
                 'value_type': 'S16',
                 'scale_factor': 0.1,
