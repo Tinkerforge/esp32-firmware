@@ -279,7 +279,28 @@ void Mqtt::onMqttConnect()
     last_connected_ms = millis();
     state.get("connection_start")->updateUint(last_connected_ms);
     was_connected = true;
-    logger.printfln("Connected to broker.");
+
+    const char *schema = "";
+    bool print_path = false;
+    // + 1 to undo the -1 in the config's definition.
+    switch (this->config.get("protocol")->asUint() + 1) {
+        case MQTT_TRANSPORT_OVER_TCP:
+            schema = "mqtt://";
+            break;
+        case MQTT_TRANSPORT_OVER_SSL:
+            schema = "mqtts://";
+            break;
+        case MQTT_TRANSPORT_OVER_WS:
+            schema = "ws://";
+            print_path = true;
+            break;
+        case MQTT_TRANSPORT_OVER_WSS:
+            schema = "wss://";
+            print_path = true;
+            break;
+    }
+    logger.printfln("Connected to broker at %s%s:%u%s.", schema, this->config.get("broker_host")->asEphemeralCStr(), this->config.get("broker_port")->asUint(), print_path ? this->config.get("broker_path")->asEphemeralCStr() : "");
+
     this->state.get("connection_state")->updateEnum(MqttConnectionState::Connected);
 
     for (size_t i = 0; i < api.commands.size(); ++i) {
