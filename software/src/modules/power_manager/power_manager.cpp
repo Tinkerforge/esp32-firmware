@@ -29,6 +29,8 @@
 
 #define ENABLE_PM_TRACE 1
 
+#define METER_SLOT_BATTERY_NO_BATTERY (255)
+
 void PowerManager::pre_setup()
 {
     // States
@@ -87,7 +89,7 @@ void PowerManager::pre_setup()
         {"excess_charging_enable", Config::Bool(false)},
         {"default_mode", Config::Uint(0, 0, 3)},
         {"meter_slot_grid_power", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
-        {"meter_slot_battery_power", Config::Uint(255, 0, 255)},
+        {"meter_slot_battery_power", Config::Uint(METER_SLOT_BATTERY_NO_BATTERY, 0, METER_SLOT_BATTERY_NO_BATTERY)},
         {"battery_mode", Config::Uint(0, 0, static_cast<uint32_t>(BatteryMode::BatteryModeMax))},
         {"battery_inverted", Config::Bool(false)},
         {"battery_deadzone", Config::Uint(100, 0, 9999)}, // in watt
@@ -408,11 +410,13 @@ void PowerManager::setup()
         power_meter_available = true;
     }
 
-    if (meters.get_power(meter_slot_battery_power, &unused_power) == MeterValueAvailability::Unavailable) {
-        meter_slot_battery_power = UINT32_MAX;
-        logger.printfln("Battery storage configured but meter can't provide power values.");
-    } else {
-        have_battery = true;
+    if (meter_slot_battery_power < METER_SLOT_BATTERY_NO_BATTERY) {
+        if (meters.get_power(meter_slot_battery_power, &unused_power) == MeterValueAvailability::Unavailable) {
+            meter_slot_battery_power = std::numeric_limits<decltype(meter_slot_battery_power)>::max();
+            logger.printfln("Battery storage configured but meter can't provide power values.");
+        } else {
+            have_battery = true;
+        }
     }
 #endif
     if (excess_charging_enabled && !power_meter_available) {
