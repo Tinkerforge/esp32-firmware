@@ -305,6 +305,33 @@ size_t EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const 
     return written;
 }
 
+void EventLog::trace_drop(size_t count)
+{
+#if defined(BOARD_HAS_PSRAM)
+    char c = '\n';
+
+    for (int i = 0; i < count; ++i) {
+        trace_buf.pop(&c);
+    }
+
+    while (trace_buf.used() > 0 && c != '\n'){
+        trace_buf.pop(&c);
+    }
+#else
+    (void)count;
+#endif
+}
+
+void EventLog::trace_timestamp()
+{
+#if defined(BOARD_HAS_PSRAM)
+    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */];
+
+    format_timestamp(buf);
+    traceln_plain(buf, EVENT_LOG_TIMESTAMP_LENGTH);
+#endif
+}
+
 size_t EventLog::traceln_plain(const char *buf, size_t len)
 {
 #if defined(BOARD_HAS_PSRAM)
@@ -336,33 +363,6 @@ size_t EventLog::traceln_plain(const char *buf, size_t len)
     (void)len;
 
     return 0;
-#endif
-}
-
-void EventLog::trace_drop(size_t count)
-{
-#if defined(BOARD_HAS_PSRAM)
-    char c = '\n';
-
-    for (int i = 0; i < count; ++i) {
-        trace_buf.pop(&c);
-    }
-
-    while (trace_buf.used() > 0 && c != '\n'){
-        trace_buf.pop(&c);
-    }
-#else
-    (void)count;
-#endif
-}
-
-void EventLog::trace_timestamp()
-{
-#if defined(BOARD_HAS_PSRAM)
-    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */];
-
-    format_timestamp(buf);
-    traceln_plain(buf, EVENT_LOG_TIMESTAMP_LENGTH);
 #endif
 }
 
