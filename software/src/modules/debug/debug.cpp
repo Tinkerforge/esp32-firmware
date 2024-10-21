@@ -65,7 +65,9 @@ static void malloc_failed_hook(size_t size, uint32_t caps, const char *function_
     if (strcmp(task_name, "loopTask") == 0 || strcmp(task_name, "httpd") == 0 || strcmp(task_name, "wifi") == 0) {
         malloc_failed_log_detailed(size, caps, function_name, task_name);
     } else {
-        logger.printfln("malloc_failed_hook from other task: %s", task_name);
+        logger.print_timestamp();
+        logger.println_plain("malloc_failed_hook from other task", 34);
+        logger.println_plain(task_name, strlen(task_name));
 
         esp_backtrace_print(INT32_MAX);
     }

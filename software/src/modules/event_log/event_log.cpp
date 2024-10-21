@@ -168,7 +168,7 @@ size_t EventLog::vsnprintf_prefixed(char *buf, size_t buf_len, const char *prefi
     return written;
 }
 
-void EventLog::drop(size_t count)
+void EventLog::print_drop(size_t count)
 {
     char c = '\n';
 
@@ -179,6 +179,14 @@ void EventLog::drop(size_t count)
     while (event_buf.used() > 0 && c != '\n'){
         event_buf.pop(&c);
     }
+}
+
+void EventLog::print_timestamp()
+{
+    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */];
+
+    format_timestamp(buf);
+    println_plain(buf, EVENT_LOG_TIMESTAMP_LENGTH);
 }
 
 size_t EventLog::println_plain(const char *buf, size_t len)
@@ -200,7 +208,7 @@ size_t EventLog::println_plain(const char *buf, size_t len)
         std::lock_guard<std::mutex> lock{event_buf_mutex};
 
         if (event_buf.free() < len + 1 /* \n */) {
-            drop(len + 1 /* \n */ - event_buf.free());
+            print_drop(len + 1 /* \n */ - event_buf.free());
         }
 
         for (size_t i = 0; i < len; ++i) {

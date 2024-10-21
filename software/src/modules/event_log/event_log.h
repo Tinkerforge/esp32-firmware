@@ -46,7 +46,8 @@ public:
     void format_timestamp(char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */]);
     size_t vsnprintf_prefixed(char *buf, size_t buf_len, const char *prefix, size_t prefix_len, const char *fmt, va_list args);
 
-    void drop(size_t count);
+    void print_drop(size_t count);
+    void print_timestamp();
 
     size_t println_plain(const char *buf, size_t len);
     size_t vprintfln_plain(const char *fmt, va_list args);
