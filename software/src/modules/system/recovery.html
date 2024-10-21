@@ -42,10 +42,14 @@
 </form>
 <script>
 
-let connection_id = undefined;
-if (location.pathname.indexOf("/wg-") !== -1) {
-    connection_id = location.pathname.replace("/recovery", "");
-    console.log("connection_id", connection_id);
+function connection_prefix() {
+    let connection_id = undefined;
+
+    if (location.pathname.indexOf("/wg-") !== -1) {
+        connection_id = location.pathname.replace("/recovery", "");
+    }
+
+    return connection_id ? connection_id : "";
 }
 
 function update() {
@@ -122,13 +126,13 @@ function update() {
             progress.innerHTML = (e.loaded / e.total * 100).toFixed(2) + "% (" + e.loaded + " / " + e.total + ")";
     }, false);
 
-    xhr.open("POST", `${connection_id ? connection_id : ""}/flash_firmware`, true);
+    xhr.open("POST", `${connection_prefix()}/flash_firmware`, true);
     xhr.send(firmware);
 }
 
 function reboot() {
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", `${connection_id ? connection_id : ""}/force_reboot`);
+    xhr.open("GET", `${connection_prefix()}/force_reboot`);
     xhr.timeout = 2000;
     xhr.send();
 }
@@ -144,7 +148,7 @@ function factory_reset() {
     let abort = new AbortController();
     let timeout = setTimeout(() => abort.abort(), 3000);
 
-    fetch(`${connection_id ? connection_id : ""}/factory_reset`, {
+    fetch(`${connection_prefix()}/factory_reset`, {
         signal: abort.signal,
         method: "PUT",
         credentials: 'same-origin',
@@ -165,7 +169,7 @@ function factory_reset() {
 }
 
 function get(url, continuation) {
-    fetch(`${connection_id ? connection_id : ""}${url}`, {
+    fetch(`${connection_prefix()}${url}`, {
         method: "GET",
         credentials: 'same-origin'
     })
@@ -197,7 +201,7 @@ function call_api() {
     let s = document.getElementById('api').value;
     let payload = JSON.parse(s);
 
-    var url = (connection_id ? connection_id : "") + payload["url"];
+    var url = connection_prefix() + payload["url"];
 
     let opts = {
         method: payload["method"],
