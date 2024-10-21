@@ -185,6 +185,7 @@ static void register_default_urls() {
     api.addState("info/modules", &modules);
 
     server.on_HTTPThread("/force_reboot", HTTP_GET, [](WebServerRequest request) {
+        esp_unregister_shutdown_handler(pre_reboot);
         ESP.restart();
         return request.send(200, "text/plain", "Forced reboot.");
     });
