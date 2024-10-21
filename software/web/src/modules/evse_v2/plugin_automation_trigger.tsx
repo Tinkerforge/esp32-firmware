@@ -138,7 +138,7 @@ export function init(): InitResult {
                 get_table_children: get_evse_shutdown_table_children,
             },
             [AutomationTriggerID.EVSEGPInput]: {
-                translation_ name: () => __("evse.automation.automation_trigger_gp_input"),
+                translation_name: () => __("evse.automation.automation_trigger_gp_input"),
                 new_config: new_evse_gp_input_config,
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_edit_children: get_evse_gp_input_edit_children,
