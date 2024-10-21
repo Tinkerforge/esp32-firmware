@@ -59,7 +59,10 @@ export function select_language(callback: () => void = () => {}) {
         language = language.substr(0, 2);
 
         if (language in translation) {
-            active_translation = translation[language];
+            if (active_translation != translation[language]) {
+                active_translation = translation[language];
+                window.dispatchEvent(new Event('languagechange'));
+            }
             break;
         }
 
