@@ -75,7 +75,7 @@ void EventLog::register_urls()
 
 #if defined(BOARD_HAS_PSRAM)
     server.on_HTTPThread("/trace_log", HTTP_GET, [this](WebServerRequest request) {
-        //std::lock_guard<std::mutex> lock{event_buf_mutex};
+        std::lock_guard<std::mutex> lock{trace_buf_mutex};
 
         request.beginChunkedResponse(200);
 
