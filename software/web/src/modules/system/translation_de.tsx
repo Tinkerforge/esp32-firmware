@@ -28,7 +28,7 @@ let x = {
             "reboot_desc": null,
 
             "system_language": "Systemsprache",
-            "system_language_help": "Setzt die Systemsprache auf die angegebene Sprache. Wenn \"Browsersprache automatisch erkennen\" deaktiviert ist, werden die Spracheinstellungen des Browsers ignoriert und auf der Webseite auch die angegebene Systemsprache genutzt.",
+            "system_language_help": "Setzt die Systemsprache auf die angegebene Sprache. Wenn \"Browsersprache automatisch erkennen\" deaktiviert ist, werden die Spracheinstellungen des Browsers ignoriert und auf der Webseite wird auch die angegebene Systemsprache genutzt.",
             "german": "Deutsch",
             "english": "Englisch",
             "detect_browser_language": "Browsersprache automatisch erkennen"
