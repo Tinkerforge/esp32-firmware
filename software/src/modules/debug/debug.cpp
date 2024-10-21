@@ -54,7 +54,8 @@ static void malloc_failed_log_detailed(size_t size, uint32_t caps, const char *f
     size_t backtrace_len = strn_backtrace(backtrace_buf, sizeof(backtrace_buf), 1);
 
     logger.printfln("malloc_failed_hook sz=%u frBl=%u frTot=%u caps=0x%x fn=%s t=%s", size, ram_info.largest_free_block, ram_info.total_free_bytes, caps, function_name, task_name);
-    logger.println_plain(backtrace_buf, backtrace_len);
+    logger.print_plain(backtrace_buf, backtrace_len);
+    logger.print_plain("\n", 1);
 }
 
 // Called on affected task's stack, which might be small.
@@ -66,8 +67,9 @@ static void malloc_failed_hook(size_t size, uint32_t caps, const char *function_
         malloc_failed_log_detailed(size, caps, function_name, task_name);
     } else {
         logger.print_timestamp();
-        logger.println_plain("malloc_failed_hook from other task", 34);
-        logger.println_plain(task_name, strlen(task_name));
+        logger.print_plain("malloc_failed_hook from other task\n", 35);
+        logger.print_plain(task_name, strlen(task_name));
+        logger.print_plain("\n", 1);
 
         esp_backtrace_print(INT32_MAX);
     }

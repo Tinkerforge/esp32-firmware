@@ -176,47 +176,34 @@ void EventLog::print_drop(size_t count)
         event_buf.pop(&c);
     }
 
-    while (event_buf.used() > 0 && c != '\n'){
+    while (event_buf.used() > 0 && c != '\n') {
         event_buf.pop(&c);
     }
 }
 
 void EventLog::print_timestamp()
 {
-    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */];
+    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \n | \0 */];
 
     format_timestamp(buf);
-    println_plain(buf, EVENT_LOG_TIMESTAMP_LENGTH);
+    buf[EVENT_LOG_TIMESTAMP_LENGTH] = '\n';
+
+    print_plain(buf, EVENT_LOG_TIMESTAMP_LENGTH + 1);
 }
 
-size_t EventLog::println_plain(const char *buf, size_t len)
+size_t EventLog::print_plain(const char *buf, size_t len)
 {
-    // Strip away \r\n. We only use \n as line endings for the serial
-    // output as well as the event log. Removing \r\n by reducing the length
-    // works, because if a message does not end in \n we add the \n below.
-    if (len >= 2 && buf[len - 2] == '\r' && buf[len - 1] == '\n') {
-        len -= 2;
-    }
-
     Serial.write(buf, len);
-
-    if (buf[len - 1] != '\n') {
-        Serial.println("");
-    }
 
     {
         std::lock_guard<std::mutex> lock{event_buf_mutex};
 
-        if (event_buf.free() < len + 1 /* \n */) {
-            print_drop(len + 1 /* \n */ - event_buf.free());
+        if (event_buf.free() < len) {
+            print_drop(len - event_buf.free());
         }
 
         for (size_t i = 0; i < len; ++i) {
             event_buf.push(buf[i]);
-        }
-
-        if (buf[len - 1] != '\n') {
-            event_buf.push('\n');
         }
     }
 
@@ -246,10 +233,6 @@ size_t EventLog::println_plain(const char *buf, size_t len)
     }
 #endif
 
-    if (buf[len - 1] != '\n') {
-        return len + 1;
-    }
-
     return len;
 }
 
@@ -266,7 +249,13 @@ size_t EventLog::vprintfln_plain(const char *fmt, va_list args)
         written = buf_len - 1; // Don't include termination, which vsnprintf always leaves in.
     }
 
-    println_plain(buf, written);
+    // The IDF might log messages ending with "\r\n" via tf_event_log_[v]printfln
+    if (written >= 2 && buf[written - 2] == '\r' && buf[written - 1] == '\n') {
+        written -= 2;
+    }
+
+    buf[written++] = '\n'; // At this point written < buf_len is guaranteed
+    print_plain(buf, written);
 
     return written;
 }
@@ -296,7 +285,13 @@ size_t EventLog::vprintfln_prefixed(const char *prefix, size_t prefix_len, const
         written = buf_len - 1; // Don't include termination, which vsnprintf always leaves in
     }
 
-    println_plain(buf, written);
+    // The IDF might log messages ending with "\r\n" via tf_event_log_[v]printfln
+    if (written >= 2 && buf[written - 2] == '\r' && buf[written - 1] == '\n') {
+        written -= 2;
+    }
+
+    buf[written++] = '\n'; // At this point written < buf_len is guaranteed
+    print_plain(buf, written);
 
     return written;
 }
@@ -322,7 +317,7 @@ void EventLog::trace_drop(size_t count)
         trace_buf.pop(&c);
     }
 
-    while (trace_buf.used() > 0 && c != '\n'){
+    while (trace_buf.used() > 0 && c != '\n') {
         trace_buf.pop(&c);
     }
 #else
@@ -333,36 +328,25 @@ void EventLog::trace_drop(size_t count)
 void EventLog::trace_timestamp()
 {
 #if defined(BOARD_HAS_PSRAM)
-    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */];
+    char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \n | \0 */];
 
     format_timestamp(buf);
-    traceln_plain(buf, EVENT_LOG_TIMESTAMP_LENGTH);
+    buf[EVENT_LOG_TIMESTAMP_LENGTH] = '\n';
+
+    trace_plain(buf, EVENT_LOG_TIMESTAMP_LENGTH + 1);
 #endif
 }
 
-size_t EventLog::traceln_plain(const char *buf, size_t len)
+size_t EventLog::trace_plain(const char *buf, size_t len)
 {
 #if defined(BOARD_HAS_PSRAM)
-    // Strip away \r\n. We only use \n as line endings for the serial
-    // output as well as the event log. Removing \r\n by reducing the length
-    // works, because if a message does not end in \n we add the \n below.
-    if (len >= 2 && buf[len - 2] == '\r' && buf[len - 1] == '\n') {
-        len -= 2;
-    }
+    std::lock_guard<std::mutex> lock{trace_buf_mutex};
+    bool drop_line = trace_buf.free() < len;
 
-    {
-        std::lock_guard<std::mutex> lock{trace_buf_mutex};
-        bool drop_line = trace_buf.free() < (len + 1 /* \n */);
+    trace_buf.push_n(buf, len);
 
-        trace_buf.push_n(buf, len);
-
-        if (buf[len - 1] != '\n') {
-            trace_buf.push('\n');
-        }
-
-        if (drop_line) {
-            trace_buf.pop_until('\n');
-        }
+    if (drop_line) {
+        trace_buf.pop_until('\n');
     }
 
     return len;
@@ -388,7 +372,13 @@ size_t EventLog::vtracefln_plain(const char *fmt, va_list args)
         written = buf_len - 1; // Don't include termination, which vsnprintf always leaves in
     }
 
-    traceln_plain(buf, written);
+    // The IDF might log messages ending with "\r\n" via tf_event_log_[v]printfln
+    if (written >= 2 && buf[written - 2] == '\r' && buf[written - 1] == '\n') {
+        written -= 2;
+    }
+
+    buf[written++] = '\n'; // At this point written < buf_len is guaranteed
+    trace_plain(buf, written);
 #endif
 
     return written;
@@ -422,7 +412,13 @@ size_t EventLog::vtracefln_prefixed(const char *prefix, size_t prefix_len, const
         written = buf_len - 1; // Don't include termination, which vsnprintf always leaves in.
     }
 
-    traceln_plain(buf, written);
+    // The IDF might log messages ending with "\r\n" via tf_event_log_[v]printfln
+    if (written >= 2 && buf[written - 2] == '\r' && buf[written - 1] == '\n') {
+        written -= 2;
+    }
+
+    buf[written++] = '\n'; // At this point written < buf_len is guaranteed
+    trace_plain(buf, written);
 #endif
 
     return written;

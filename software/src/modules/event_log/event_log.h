@@ -48,8 +48,8 @@ public:
 
     void print_drop(size_t count);
     void print_timestamp();
+    size_t print_plain(const char *buf, size_t len);
 
-    size_t println_plain(const char *buf, size_t len);
     size_t vprintfln_plain(const char *fmt, va_list args);
     [[gnu::format(__printf__, 2, 3)]] size_t printfln_plain(const char *fmt, ...);
 
@@ -58,8 +58,8 @@ public:
 
     void trace_drop(size_t count);
     void trace_timestamp();
+    size_t trace_plain(const char *buf, size_t len);
 
-    size_t traceln_plain(const char *buf, size_t len);
     size_t vtracefln_plain(const char *fmt, va_list args);
     [[gnu::format(__printf__, 2, 3)]] size_t tracefln_plain(const char *fmt, ...);
 

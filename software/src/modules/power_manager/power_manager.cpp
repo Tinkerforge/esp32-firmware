@@ -1118,7 +1118,8 @@ void PowerManager::update_energy()
     }
 
 #if ENABLE_PM_TRACE
-    logger.traceln_plain(trace_log, trace_log_len);
+    trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "\n");
+    logger.trace_plain(trace_log, trace_log_len);
 #endif
 
     // Calculate long-term minimum over one-minute blocks
