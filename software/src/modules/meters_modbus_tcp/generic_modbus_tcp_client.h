@@ -29,7 +29,7 @@
 class GenericModbusTCPClient : protected GenericTCPClientPoolConnector
 {
 protected:
-    struct read_request {
+    struct ReadRequest {
         ModbusRegisterType register_type;
         size_t start_address;
         size_t register_count;
@@ -41,12 +41,11 @@ protected:
 
     GenericModbusTCPClient(TFModbusTCPClientPool *pool) : GenericTCPClientPoolConnector("gen_mbtcp_client", pool) {}
 
-    void stop_connection() override;
+    void connect_callback() override;
     void start_generic_read();
 
     uint8_t device_address = 0;
-
-    read_request generic_read_request;
+    ReadRequest generic_read_request;
 
 private:
     void read_next();

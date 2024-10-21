@@ -30,24 +30,20 @@
 
 #include "gcc_warnings.h"
 
-void GenericModbusTCPClient::stop_connection()
+void GenericModbusTCPClient::connect_callback()
 {
-    GenericTCPClientPoolConnector::stop_connection();
-
-    last_successful_read = 0_us;
+    last_successful_read = now_us();
 }
 
 void GenericModbusTCPClient::start_generic_read()
 {
-    if (client_ptr == nullptr) {
-        logger.printfln("Connection lost, reconnecting to '%s'", host_name.c_str());
-        start_connection();
+    if (connected_client == nullptr) {
         return;
     }
 
-    if (last_successful_read != 0_us && deadline_elapsed(last_successful_read + successful_read_timeout)) {
+    if (deadline_elapsed(last_successful_read + successful_read_timeout)) {
         logger.printfln("Last successful read occurred too long ago, reconnecting to '%s'", host_name.c_str());
-        start_connection();
+        force_reconnect();
         return;
     }
 
@@ -81,13 +77,13 @@ void GenericModbusTCPClient::read_next()
         esp_system_abort("generic_modbus_tcp_client: Unsupported register type to read.");
     }
 
-    static_cast<TFModbusTCPClient *>(client_ptr)->read(data_type, device_address, read_start_address, read_count, target_buffer, 2000000,
+    static_cast<TFModbusTCPClient *>(connected_client)->read(data_type, device_address, read_start_address, read_count, target_buffer, 2000000,
     [this](TFModbusTCPClientTransactionResult result) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
             logger.printfln("Modbus read failed: %s (%d) client=%p host_name='%s' port=%u device_address=%u start_address=%u register_count=%u",
                             get_tf_modbus_tcp_client_transaction_result_name(result),
                             static_cast<int>(result),
-                            static_cast<void *>(client_ptr),
+                            static_cast<void *>(connected_client),
                             host_name.c_str(),
                             port,
                             device_address,

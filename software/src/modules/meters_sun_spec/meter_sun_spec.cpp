@@ -78,6 +78,8 @@ void MeterSunSpec::pre_reboot()
 
 void MeterSunSpec::connect_callback()
 {
+    GenericModbusTCPClient::connect_callback();
+
     scan_start();
 }
 

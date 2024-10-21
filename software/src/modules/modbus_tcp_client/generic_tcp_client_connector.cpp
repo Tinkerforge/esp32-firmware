@@ -33,34 +33,22 @@
 
 void GenericTCPClientConnector::start_connection()
 {
-    start_connection_common();
+    keep_connected = true;
 
-    client->connect(host_name.c_str(), port,
-    [this](TFGenericTCPClientConnectResult result, int error_number) {
-        if (result == TFGenericTCPClientConnectResult::Connected) {
-            client_ptr = client;
-        }
-
-        connect_callback_common(result, error_number);
-    },
-    [this](TFGenericTCPClientDisconnectReason reason, int error_number) {
-        client_ptr = nullptr;
-
-        disconnect_callback_common(reason, error_number);
-    });
+    connect_internal();
 }
 
 void GenericTCPClientConnector::stop_connection()
 {
-    if (client_ptr != nullptr) {
-        client->disconnect();
-        client_ptr = nullptr;
-    }
+    keep_connected = false;
+
+    disconnect_internal();
 }
 
-void GenericTCPClientConnector::start_connection_common()
+void GenericTCPClientConnector::force_reconnect()
 {
     stop_connection();
+    start_connection();
 }
 
 void GenericTCPClientConnector::connect_callback_common(TFGenericTCPClientConnectResult result, int error_number)
@@ -112,12 +100,16 @@ void GenericTCPClientConnector::connect_callback_common(TFGenericTCPClientConnec
 
         if (result == TFGenericTCPClientConnectResult::ResolveFailed) {
             task_scheduler.scheduleOnce([this]() {
-                start_connection();
+                if (keep_connected) {
+                    connect_internal();
+                }
             }, 10_s);
         }
         else {
             task_scheduler.scheduleOnce([this]() {
-                start_connection();
+                if (keep_connected) {
+                    connect_internal();
+                }
             }, connect_backoff);
 
             connect_backoff += connect_backoff;
@@ -153,4 +145,32 @@ void GenericTCPClientConnector::disconnect_callback_common(TFGenericTCPClientDis
     }
 
     disconnect_callback();
+
+    if (keep_connected) {
+        connect_internal();
+    }
+}
+
+void GenericTCPClientConnector::connect_internal()
+{
+    client->connect(host_name.c_str(), port,
+    [this](TFGenericTCPClientConnectResult result, int error_number) {
+        if (result == TFGenericTCPClientConnectResult::Connected) {
+            connected_client = client;
+        }
+
+        connect_callback_common(result, error_number);
+    },
+    [this](TFGenericTCPClientDisconnectReason reason, int error_number) {
+        connected_client = nullptr;
+
+        disconnect_callback_common(reason, error_number);
+    });
+}
+
+void GenericTCPClientConnector::disconnect_internal()
+{
+    if (connected_client != nullptr) {
+        connected_client->disconnect();
+    }
 }

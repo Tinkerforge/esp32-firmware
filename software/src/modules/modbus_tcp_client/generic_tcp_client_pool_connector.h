@@ -29,8 +29,8 @@ protected:
     GenericTCPClientPoolConnector(const char *event_log_prefix_override_, TFGenericTCPClientPool *pool_) :
         GenericTCPClientConnector(event_log_prefix_override_, nullptr), pool(pool_) {}
 
-    void start_connection() override;
-    void stop_connection() override;
+    void connect_internal() override;
+    void disconnect_internal() override;
 
 private:
     TFGenericTCPClientPool *pool;

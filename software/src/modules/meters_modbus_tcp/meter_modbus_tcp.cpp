@@ -571,6 +571,8 @@ void MeterModbusTCP::pre_reboot()
 
 void MeterModbusTCP::connect_callback()
 {
+    GenericModbusTCPClient::connect_callback();
+
     generic_read_request.data[0] = register_buffer;
     generic_read_request.data[1] = nullptr;
     generic_read_request.read_twice = false;

@@ -30,25 +30,27 @@ protected:
         event_log_prefix_override(event_log_prefix_override_), event_log_prefix_override_len(strlen(event_log_prefix_override_)), client(client_) {}
     virtual ~GenericTCPClientConnector() = default;
 
-    virtual void start_connection();
-    virtual void stop_connection();
+    void start_connection();
+    void stop_connection();
+    void force_reconnect();
 
-    void start_connection_common();
     void connect_callback_common(TFGenericTCPClientConnectResult result, int error_number);
     void disconnect_callback_common(TFGenericTCPClientDisconnectReason reason, int error_number);
 
-    String host_name;
-    uint16_t port = 0;
-
-    TFGenericTCPClient *client_ptr = nullptr;
-
-private:
+    virtual void connect_internal();
+    virtual void disconnect_internal();
     virtual void connect_callback() = 0;
     virtual void disconnect_callback() = 0;
 
+    String host_name;
+    uint16_t port = 0;
+    TFGenericTCPClient *connected_client = nullptr;
+
+private:
     const char *event_log_prefix_override;
     size_t event_log_prefix_override_len;
     TFGenericTCPClient *client;
+    bool keep_connected = false;
     millis_t connect_backoff = 1_s;
     TFGenericTCPClientConnectResult last_connect_result = TFGenericTCPClientConnectResult::Connected;
     int last_connect_error_number = 0;

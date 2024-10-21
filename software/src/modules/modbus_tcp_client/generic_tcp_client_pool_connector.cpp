@@ -21,32 +21,30 @@
 
 #include "gcc_warnings.h"
 
-void GenericTCPClientPoolConnector::start_connection()
+void GenericTCPClientPoolConnector::connect_internal()
 {
-    start_connection_common();
-
     pool->acquire(host_name.c_str(), port,
     [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolHandle *handle_) {
         if (result == TFGenericTCPClientConnectResult::Connected) {
             handle = handle_;
-            client_ptr = handle_->client;
+            connected_client = handle_->client;
         }
 
         connect_callback_common(result, error_number);
     },
     [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolHandle *handle_) {
-        client_ptr = nullptr;
         handle = nullptr;
+        connected_client = nullptr;
 
         disconnect_callback_common(reason, error_number);
     });
 }
 
-void GenericTCPClientPoolConnector::stop_connection()
+void GenericTCPClientPoolConnector::disconnect_internal()
 {
-    if (client_ptr != nullptr) {
+    if (connected_client != nullptr) {
         pool->release(handle);
         handle = nullptr;
-        client_ptr = nullptr;
+        connected_client = nullptr;
     }
 }
