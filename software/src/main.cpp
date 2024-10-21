@@ -93,50 +93,6 @@ static WebServerRequestReturnProtect send_index_html(WebServerRequest &request) 
     return request.send(200, "text/html; charset=utf-8", index_html_data, index_html_length);
 }
 
-static void register_default_urls() {
-    server.on_HTTPThread("/", HTTP_GET, [](WebServerRequest request) {
-        return send_index_html(request);
-    });
-
-    api.addCommand("reboot", Config::Null(), {}, [](String &/*errmsg*/) {
-        trigger_reboot("API", 1_s);
-    }, true);
-
-    api.addState("info/modules", &modules);
-
-    server.on_HTTPThread("/force_reboot", HTTP_GET, [](WebServerRequest request) {
-        ESP.restart();
-        return request.send(200, "text/plain", "Forced reboot.");
-    });
-
-    server.onNotAuthorized_HTTPThread([](WebServerRequest request) {
-        if (request.uri() == "/") {
-            return send_index_html(request);
-        } else if (request.uri() == "/login_state") {
-            // Force Safari to send credentials proactively.
-            // This still is broken for the ws:// handler,
-            // however there seems to be no way to force safari to proactively send credentials for it.
-            // See https://bugs.webkit.org/show_bug.cgi?id=80362
-            // Pressing cancel instead of logging in works at least on macOS.
-            if (is_safari(request.header("User-Agent"))) {
-                return request.requestAuthentication();
-            }
-
-            return request.send(200, "text/plain", "Not logged in");
-        } else {
-            return request.requestAuthentication();
-        }
-    });
-
-    server.on_HTTPThread("/credential_check", HTTP_GET, [](WebServerRequest request) {
-        return request.send(200, "text/plain", "Credentials okay");
-    });
-
-    server.on_HTTPThread("/login_state", HTTP_GET, [](WebServerRequest request) {
-        return request.send(200, "text/plain", "Logged in");
-    });
-}
-
 #define PRE_REBOOT_MAX_DURATION (5 * 60 * 1000)
 
 static const char *pre_reboot_message = "Pre-reboot stage lasted longer than five minutes";
@@ -215,6 +171,51 @@ static void pre_reboot()
 #if MODULE_WATCHDOG_AVAILABLE()
 static int watchdog_handle;
 #endif
+
+
+static void register_default_urls() {
+    server.on_HTTPThread("/", HTTP_GET, [](WebServerRequest request) {
+        return send_index_html(request);
+    });
+
+    api.addCommand("reboot", Config::Null(), {}, [](String &/*errmsg*/) {
+        trigger_reboot("API", 1_s);
+    }, true);
+
+    api.addState("info/modules", &modules);
+
+    server.on_HTTPThread("/force_reboot", HTTP_GET, [](WebServerRequest request) {
+        ESP.restart();
+        return request.send(200, "text/plain", "Forced reboot.");
+    });
+
+    server.onNotAuthorized_HTTPThread([](WebServerRequest request) {
+        if (request.uri() == "/") {
+            return send_index_html(request);
+        } else if (request.uri() == "/login_state") {
+            // Force Safari to send credentials proactively.
+            // This still is broken for the ws:// handler,
+            // however there seems to be no way to force safari to proactively send credentials for it.
+            // See https://bugs.webkit.org/show_bug.cgi?id=80362
+            // Pressing cancel instead of logging in works at least on macOS.
+            if (is_safari(request.header("User-Agent"))) {
+                return request.requestAuthentication();
+            }
+
+            return request.send(200, "text/plain", "Not logged in");
+        } else {
+            return request.requestAuthentication();
+        }
+    });
+
+    server.on_HTTPThread("/credential_check", HTTP_GET, [](WebServerRequest request) {
+        return request.send(200, "text/plain", "Credentials okay");
+    });
+
+    server.on_HTTPThread("/login_state", HTTP_GET, [](WebServerRequest request) {
+        return request.send(200, "text/plain", "Logged in");
+    });
+}
 
 void setup()
 {
