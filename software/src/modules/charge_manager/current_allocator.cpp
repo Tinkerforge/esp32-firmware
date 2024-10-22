@@ -777,7 +777,7 @@ static bool can_activate(const Cost check_phase, const Cost new_cost, const Cost
 // - (in *minimum) the minimum cost to keep this charger active
 // - (in *enable)  the cost to enable this charger
 // - (as return value) the enable current of each of the phases that the charger would be active on
-static int get_enable_cost(const ChargerState *state, bool activate_3p, Cost *minimum, Cost *enable, const CurrentAllocatorConfig *cfg) {
+static int get_enable_cost(const ChargerState *state, bool activate_3p, bool have_active_chargers, Cost *minimum, Cost *enable, const CurrentAllocatorConfig *cfg) {
     auto min_1p = cfg->minimum_current_1p;
     auto min_3p = cfg->minimum_current_3p;
 
@@ -790,15 +790,15 @@ static int get_enable_cost(const ChargerState *state, bool activate_3p, Cost *mi
     int enable_current;
 
     if (activate_3p) {
-        enable_current = ena_3p;
+        enable_current = have_active_chargers ? ena_3p : min_3p;
         new_cost = Cost{3 * min_3p, min_3p, min_3p, min_3p};
         new_enable_cost = Cost{3 * ena_3p, ena_3p, ena_3p, ena_3p};
     } else if (state->phase_rotation == PhaseRotation::Unknown) {
-        enable_current = ena_1p;
+        enable_current = have_active_chargers ? ena_1p : min_1p;
         new_cost = Cost{min_1p, min_1p, min_1p, min_1p};
         new_enable_cost = Cost{ena_1p, ena_1p, ena_1p, ena_1p};
     } else {
-        enable_current = ena_1p;
+        enable_current = have_active_chargers ? ena_1p : min_1p;
 
         auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
 
@@ -827,7 +827,7 @@ static bool try_activate(const ChargerState *state, bool activate_3p, bool have_
     Cost new_cost;
     Cost new_enable_cost;
 
-    get_enable_cost(state, activate_3p, &new_cost, &new_enable_cost, cfg);
+    get_enable_cost(state, activate_3p, have_active_chargers, &new_cost, &new_enable_cost, cfg);
 
     // If there are no chargers active, don't require the enable cost on PV.
     // Still require the enable cost on the phases:
@@ -1138,7 +1138,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         if (!state->is_charging) {
             trace("7: %d not charging", idx_array[i]);
             Cost enable_cost;
-            auto enable_current = get_enable_cost(state, allocated_phases == 3, nullptr, &enable_cost, cfg);
+            auto enable_current = get_enable_cost(state, allocated_phases == 3, true, nullptr, &enable_cost, cfg);
             current = std::min(current, std::max(0, enable_current - allocated_current));
         }
 
@@ -1259,6 +1259,10 @@ static bool stage_9_sort(const ChargerState *left_state, const ChargerState *rig
 void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
+    bool have_active_chargers = ca_state->control_window_min.pv != 0;
+
+    trace(have_active_chargers ? "9: have active chargers." : "9: don't have active chargers.");
+
     filter(allocated_phases == 0 && (state->wants_to_charge_low_priority || (state->wants_to_charge && state->last_wakeup != 0_us)));
 
     if (matched == 0)
@@ -1290,14 +1294,14 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         bool activate_3p = is_fixed_3p || is_unknown_rot_switchable;
 
         Cost enable_cost;
-        auto enable_current = get_enable_cost(state, activate_3p, nullptr, &enable_cost, cfg);
+        auto enable_current = get_enable_cost(state, activate_3p, have_active_chargers, nullptr, &enable_cost, cfg);
 
         if (cost_exceeds_limits(enable_cost, limits, 9)) {
             if (!is_unknown_rot_switchable)
                 continue;
             // Retry enabling unknown_rot_switchable charger with one phase only
             activate_3p = false;
-            enable_current = get_enable_cost(state, activate_3p, nullptr, &enable_cost, cfg);
+            enable_current = get_enable_cost(state, activate_3p, have_active_chargers, nullptr, &enable_cost, cfg);
             if (cost_exceeds_limits(enable_cost, limits, 9))
                 continue;
         }
