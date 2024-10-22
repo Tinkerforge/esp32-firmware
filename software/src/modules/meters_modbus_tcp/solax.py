@@ -14,14 +14,14 @@ specs = [
                 'name': 'Feedin Energy Total [0.01 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 0x48,
-                'value_type': 'S32LE',
+                'value_type': 'U32LE',
                 'scale_factor': 0.01,
             },
             {
                 'name': 'Consume Energy Total [0.01 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 0x4A,
-                'value_type': 'S32LE',
+                'value_type': 'U32LE',
                 'scale_factor': 0.01,
             },
             {
