@@ -700,19 +700,19 @@ MeterValueAvailability Meters::get_currents(uint32_t slot, float currents[INDEX_
     const MeterSlot &meter_slot = meter_slots[slot];
     const ConfigRoot &values = meter_slot.values;
 
-    uint32_t currents_unavailable = 0;
+    uint32_t currents_available = 0;
     for (uint32_t i = 0; i < INDEX_CACHE_CURRENT_COUNT; i++) {
         uint32_t cached_index = meter_slot.index_cache_currents[i];
 
         if (cached_index == UINT32_MAX) {
-            currents_unavailable++;
             currents[i] = NAN;
         } else {
+            currents_available++;
             currents[i] = values.get(cached_index)->asFloat();
         }
     }
 
-    if (currents_unavailable > 0) {
+    if (currents_available == 0) {
         if (meter_slot.meter->supports_currents()) {
             return MeterValueAvailability::CurrentlyUnknown;
         } else {

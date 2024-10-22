@@ -116,7 +116,28 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         let is_warp3          = API.get_unchecked("evse/hardware_configuration")?.evse_version >= 30;
         let show_1p_current   = energyManagerMode || warpUltimateMode || is_warp3 || API.hasFeature("phase_switch");
 
-        const meter_slots = get_noninternal_meter_slots([MeterValueID.CurrentL1ImExDiff, MeterValueID.CurrentL2ImExDiff, MeterValueID.CurrentL3ImExDiff], NoninternalMeterSelector.AllValues, __("charge_manager.content.dlm_meter_slot_grid_currents_missing_values"));
+        let meter_slots = get_noninternal_meter_slots([MeterValueID.CurrentL1ImExDiff], NoninternalMeterSelector.AllValues, __("charge_manager.content.dlm_meter_slot_grid_currents_missing_values"));
+        for (let i in meter_slots) {
+            let meter = meter_slots[i];
+            let slot = meter[0];
+            if (slot.endsWith("-disabled")) {
+                continue;
+            }
+
+            const value_ids = API.get_unchecked(`meters/${i}/value_ids`) as Readonly<number[]>;
+            const have_L2 = value_ids.indexOf(MeterValueID.CurrentL2ImExDiff) >= 0;
+            const have_L3 = value_ids.indexOf(MeterValueID.CurrentL3ImExDiff) >= 0;
+
+            if (have_L2) {
+                if (have_L3) {
+                    // Have all phases, no comment
+                } else {
+                    meter_slots[i][1] += " (" + __("charge_manager.content.dlm_meter_slot_grid_currents_two_phase") + ")";
+                }
+            } else {
+                meter_slots[i][1] += " (" + __("charge_manager.content.dlm_meter_slot_grid_currents_single_phase") + ")";
+            }
+        }
 
         let verbose = <FormRow label={__("charge_manager.content.verbose")}>
                 <Switch desc={__("charge_manager.content.verbose_desc")}

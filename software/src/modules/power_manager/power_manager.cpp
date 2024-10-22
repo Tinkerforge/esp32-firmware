@@ -1006,7 +1006,7 @@ void PowerManager::update_energy()
             int32_t phase_current_meter_ma = currents_at_meter_raw_ma[pm_phase];
 
             if (phase_current_meter_ma == INT32_MAX) {
-                if (!printed_skipping_currents_update) {
+                if (!printed_skipping_currents_update && cm_phase == 1) {
                     logger.printfln("Dynamic load management unavailable because current values are not available yet.");
                     printed_skipping_currents_update = true;
                 }
@@ -1014,7 +1014,7 @@ void PowerManager::update_energy()
                 cm_limits->raw[cm_phase] = 0;
                 cm_limits->min[cm_phase] = 0;
             } else {
-                if (printed_skipping_currents_update) {
+                if (printed_skipping_currents_update && cm_phase == 1) {
                     logger.printfln("Dynamic load management available because current values are now available.");
                     printed_skipping_currents_update = false;
                 }
