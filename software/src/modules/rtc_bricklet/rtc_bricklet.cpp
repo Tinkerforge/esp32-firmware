@@ -41,14 +41,10 @@ void RtcBricklet::setup()
 
     if (!device_found)
         return;
-}
-
-void RtcBricklet::register_urls()
-{
-    if (!device_found)
-        return;
 
     rtc.register_backend(this);
+
+    initialized = true;
 }
 
 void RtcBricklet::set_time(const tm &date_time, int32_t microseconds)

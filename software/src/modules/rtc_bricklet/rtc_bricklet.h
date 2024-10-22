@@ -35,7 +35,6 @@ public:
     RtcBricklet();
 
     void setup() override;
-    void register_urls() override;
 
     void setup_rtc();
 

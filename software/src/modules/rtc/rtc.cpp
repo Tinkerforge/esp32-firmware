@@ -150,9 +150,6 @@ void Rtc::update_system_time_from_rtc() {
 
 void Rtc::register_backend(IRtcBackend *_backend)
 {
-    if (boot_stage < BootStage::REGISTER_URLS)
-        esp_system_abort("Registering RTC backends before the register URLs stage is not allowed!");
-
     if (_backend == nullptr)
         return;
 
@@ -162,6 +159,7 @@ void Rtc::register_backend(IRtcBackend *_backend)
     if (backends.size() > 1)
         return;
 
+    update_system_time_from_rtc();
     api.addFeature("rtc");
 }
 
