@@ -93,8 +93,8 @@ private:
     std::vector<IRtcBackend *> backends;
 
     Quality last_sync_quality = Quality::None;
-    micros_t last_sync = 0_us;
-    micros_t last_sync_ok_deadline = 0_us;
+    micros_t last_sync = -1000_h;
+    micros_t last_sync_ok_deadline = -1000_h;
 
     std::recursive_mutex push_system_time_mutex;
 };
