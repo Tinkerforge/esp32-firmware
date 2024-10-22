@@ -208,11 +208,17 @@ size_t EventLog::print_plain(const char *buf, size_t len)
     }
 
 #if MODULE_WS_AVAILABLE()
+    size_t stripped_len = len;
+
+    if (len >= 1 && buf[len - 1] == '\n') {
+        stripped_len = len - 1;
+    }
+
     size_t json_len;
 
     {
         TFJsonSerializer json{nullptr, 0};
-        json.addString(buf, len, false);
+        json.addString(buf, stripped_len, false);
         json_len = json.end();
     }
 
@@ -223,7 +229,7 @@ size_t EventLog::print_plain(const char *buf, size_t len)
 
         {
             TFJsonSerializer json{payload.begin() + payload.length(), json_len + 1 /* \0 */};
-            json.addString(buf, len, false);
+            json.addString(buf, stripped_len, false);
             payload.setLength(payload.length() + json.end());
         }
 
