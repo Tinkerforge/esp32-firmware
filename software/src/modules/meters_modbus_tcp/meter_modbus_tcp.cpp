@@ -984,7 +984,19 @@ void MeterModbusTCP::read_done_callback()
         break;
     }
 
-    value = (value + table->specs[read_index].offset) * table->specs[read_index].scale_factor;
+    value += table->specs[read_index].offset;
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+    if (value != 0.0f) { // Really compare exactly for 0.0f
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+        // Don't convert 0.0f into -0.0f if the scale factor is negative
+        value *= table->specs[read_index].scale_factor;
+    }
 
     if (is_sungrow_grid_meter()) {
         if (register_start_address == SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS) {
