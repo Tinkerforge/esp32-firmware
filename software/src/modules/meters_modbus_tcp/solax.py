@@ -1,5 +1,18 @@
 specs = [
     {
+        'name': 'Solax Hybrid Inverter',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Energy Total To Grid [0.1 kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 0x52,
+                'value_type': 'U32LE',
+                'scale_factor': 0.1,
+            },
+        ],
+    },
+    {
         'name': 'Solax Hybrid Inverter Grid',
         'register_type': 'InputRegister',
         'values': [

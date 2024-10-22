@@ -523,6 +523,10 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             logger.printfln("No Solax Hybrid Inverter Virtual Meter selected");
             return;
 
+        case SolaxHybridInverterVirtualMeter::Inverter:
+            table = &solax_hybrid_inverter_table;
+            break;
+
         case SolaxHybridInverterVirtualMeter::Grid:
             table = &solax_hybrid_inverter_grid_table;
             break;
