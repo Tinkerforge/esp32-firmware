@@ -219,11 +219,12 @@ bool Mqtt::publish(const String &topic, const String &payload, bool retain)
     if (client == nullptr || this->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected)
         return false;
 
-#if defined(BOARD_HAS_PSRAM)
-    return esp_mqtt_client_enqueue(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain, true) >= 0;
-#else
+// enqueue uses an unbounded queue! IDF 5.3 adds a limit for the queue. Until then use publish even though it blocks the main thread.
+//#if defined(BOARD_HAS_PSRAM)
+//    return esp_mqtt_client_enqueue(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain, true) >= 0;
+//#else
     return esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain) >= 0;
-#endif
+//#endif
 }
 
 bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
