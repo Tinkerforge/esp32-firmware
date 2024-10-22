@@ -21,18 +21,17 @@
 
 #include <TFGenericTCPClientPool.h>
 
-#include "generic_tcp_client_connector.h"
+#include "generic_tcp_client_connector_base.h"
 
-class GenericTCPClientPoolConnector : protected GenericTCPClientConnector
+class GenericTCPClientPoolConnector : protected GenericTCPClientConnectorBase
 {
 protected:
     GenericTCPClientPoolConnector(const char *event_log_prefix_override_, TFGenericTCPClientPool *pool_) :
-        GenericTCPClientConnector(event_log_prefix_override_, nullptr), pool(pool_) {}
+        GenericTCPClientConnectorBase(event_log_prefix_override_), pool(pool_) {}
 
+private:
     void connect_internal() override;
     void disconnect_internal() override;
 
-private:
     TFGenericTCPClientPool *pool;
-    TFGenericTCPClientPoolHandle *handle = nullptr;
 };

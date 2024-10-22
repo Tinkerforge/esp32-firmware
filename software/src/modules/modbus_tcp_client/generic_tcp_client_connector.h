@@ -19,40 +19,18 @@
 
 #pragma once
 
-#include <Arduino.h>
-#include <TFGenericTCPClient.h>
-#include "tools.h"
+#include "generic_tcp_client_connector_base.h"
 
-class GenericTCPClientConnector
+class GenericTCPClientConnector : protected GenericTCPClientConnectorBase
 {
 protected:
-    GenericTCPClientConnector(const char *event_log_prefix_override_, TFGenericTCPClient *client_) :
-        event_log_prefix_override(event_log_prefix_override_), event_log_prefix_override_len(strlen(event_log_prefix_override_)), client(client_) {}
-    virtual ~GenericTCPClientConnector() = default;
-
-    void start_connection();
-    void stop_connection();
-    void force_reconnect();
-
-    void connect_callback_common(TFGenericTCPClientConnectResult result, int error_number);
-    void disconnect_callback_common(TFGenericTCPClientDisconnectReason reason, int error_number);
-
-    virtual void connect_internal();
-    virtual void disconnect_internal();
-    virtual void connect_callback() = 0;
-    virtual void disconnect_callback() = 0;
-
-    String host_name;
-    uint16_t port = 0;
-    TFGenericTCPClient *connected_client = nullptr;
+    GenericTCPClientConnector(const char *event_log_prefix_override_, TFGenericTCPClient *client_, TFGenericTCPSharedClient *shared_client_) :
+        GenericTCPClientConnectorBase(event_log_prefix_override_), client(client_), shared_client(shared_client_) {}
 
 private:
-    const char *event_log_prefix_override;
-    size_t event_log_prefix_override_len;
+    virtual void connect_internal();
+    virtual void disconnect_internal();
+
     TFGenericTCPClient *client;
-    bool keep_connected = false;
-    millis_t connect_backoff = 1_s;
-    TFGenericTCPClientConnectResult last_connect_result = TFGenericTCPClientConnectResult::Connected;
-    int last_connect_error_number = 0;
-    bool resolve_error_printed = false;
+    TFGenericTCPSharedClient *shared_client;
 };
