@@ -159,7 +159,15 @@ void Rtc::register_backend(IRtcBackend *_backend)
     if (backends.size() > 1)
         return;
 
+    bool not_synced = last_sync < 0_us;
     update_system_time_from_rtc();
+    if (not_synced && last_sync >= 0_us) {
+        auto now = millis();
+        auto secs = now / 1000;
+        auto ms = now % 1000;
+        logger.printfln("System time set from RTC at %lu,%03lu", secs, ms);
+    }
+
     api.addFeature("rtc");
 }
 
