@@ -86,9 +86,18 @@ if not args.no_serial:
             time.sleep(0.1)
             with serial.Serial(port, 115200, timeout=1) as ser:
                 while ser.is_open:
-                    sys.stdout.buffer.write(ser.read())
+                    data = ser.read()
+                    if not data: # Read timed out
+                        continue
+                    data += ser.read_all()
+
+                    if data.find(b'\x00\xc0\xc0\x01\x08\x04\x00') >= 0:
+                        print("ff: Firmware upload detected. Exiting.", file=sys.stderr, flush=True)
+                        sys.exit(1)
+
+                    sys.stdout.buffer.write(data)
                     sys.stdout.flush()
         except KeyboardInterrupt:
             sys.exit(0)
-        except:
+        except Exception:
             pass
