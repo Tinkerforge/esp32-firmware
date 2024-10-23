@@ -650,6 +650,42 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::FoxESSHybridInverter:
+        fox_ess_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<FoxESSHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+
+        switch (fox_ess_hybrid_inverter_virtual_meter) {
+        case FoxESSHybridInverterVirtualMeter::None:
+            logger.printfln("No Fox ESS Hybrid Inverter Virtual Meter selected");
+            return;
+
+        case FoxESSHybridInverterVirtualMeter::Inverter:
+            table = &fox_ess_hybrid_inverter_table;
+            break;
+
+        case FoxESSHybridInverterVirtualMeter::Grid:
+            table = &fox_ess_hybrid_inverter_grid_table;
+            break;
+
+        case FoxESSHybridInverterVirtualMeter::Battery:
+            table = &fox_ess_hybrid_inverter_battery_table;
+            break;
+
+        case FoxESSHybridInverterVirtualMeter::Load:
+            table = &fox_ess_hybrid_inverter_load_table;
+            break;
+
+        case FoxESSHybridInverterVirtualMeter::BackupLoad:
+            table = &fox_ess_hybrid_inverter_backup_load_table;
+            break;
+
+        default:
+            logger.printfln("Unknown Fox ESS Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fox_ess_hybrid_inverter_virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;

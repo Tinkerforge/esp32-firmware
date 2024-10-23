@@ -43,6 +43,7 @@
 #include "solax_hybrid_inverter_virtual_meter.enum.h"
 #include "fronius_gen24_plus_hybrid_inverter_virtual_meter.enum.h"
 #include "hailei_hybrid_inverter_virtual_meter.enum.h"
+#include "fox_ess_hybrid_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -152,7 +153,7 @@ private:
     ShellyEMMonophaseChannel shelly_pro_3em_monophase_channel;
     ShellyEMMonophaseMapping shelly_pro_3em_monophase_mapping;
 
-    // GoodWe
+    // Goodwe
     GoodweHybridInverterVirtualMeter goodwe_hybrid_inverter_virtual_meter;
 
     // Solax
@@ -177,6 +178,9 @@ private:
 
     // Hailei
     HaileiHybridInverterVirtualMeter hailei_hybrid_inverter_virtual_meter;
+
+    // Fox ESS
+    FoxESSHybridInverterVirtualMeter fox_ess_hybrid_inverter_virtual_meter;
 };
 
 #if defined(__GNUC__)

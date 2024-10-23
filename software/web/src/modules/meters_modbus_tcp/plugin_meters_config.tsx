@@ -40,6 +40,7 @@ import { GoodweHybridInverterVirtualMeter } from "./goodwe_hybrid_inverter_virtu
 import { SolaxHybridInverterVirtualMeter } from "./solax_hybrid_inverter_virtual_meter.enum";
 import { FroniusGEN24PlusHybridInverterVirtualMeter } from "./fronius_gen24_plus_hybrid_inverter_virtual_meter.enum";
 import { HaileiHybridInverterVirtualMeter } from "./hailei_hybrid_inverter_virtual_meter.enum";
+import { FoxESSHybridInverterVirtualMeter } from "./fox_ess_hybrid_inverter_virtual_meter.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
@@ -171,6 +172,14 @@ type TableConfigHaileiHybridInverter = [
     },
 ];
 
+type TableConfigFoxESSHybridInverter = [
+    MeterModbusTCPTableID.FoxESSHybridInverter,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -184,7 +193,8 @@ type TableConfig = TableConfigNone |
                    TableConfigGoodweHybridInverter |
                    TableConfigSolaxHybridInverter |
                    TableConfigFroniusGEN24PlusHybridInverter |
-                   TableConfigHaileiHybridInverter;
+                   TableConfigHaileiHybridInverter |
+                   TableConfigFoxESSHybridInverter;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -236,6 +246,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.HaileiHybridInverter:
             return [MeterModbusTCPTableID.HaileiHybridInverter, {virtual_meter: null, device_address: 85}];
+
+        case MeterModbusTCPTableID.FoxESSHybridInverter:
+            return [MeterModbusTCPTableID.FoxESSHybridInverter, {virtual_meter: null, device_address: 247}];
 
         default:
             return [MeterModbusTCPTableID.None, {}];
@@ -449,6 +462,7 @@ export function init() {
                                 // Keep alphabetically sorted
                                 [MeterModbusTCPTableID.AlphaESSHybridInverter.toString(), __("meters_modbus_tcp.content.table_alpha_ess_hybrid_inverter")],
                                 [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
+                                [MeterModbusTCPTableID.FoxESSHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus_hybrid_inverter")],
                                 [MeterModbusTCPTableID.GoodweHybridInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_hybrid_inverter")],
                                 [MeterModbusTCPTableID.HaileiHybridInverter.toString(), __("meters_modbus_tcp.content.table_hailei_hybrid_inverter")],
@@ -481,7 +495,8 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.GoodweHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SolaxHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.HaileiHybridInverter)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.HaileiHybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.FoxESSHybridInverter)) {
                     let virtual_meter_items: [string, string][] = [];
                     let device_address_default: number = 1;
 
@@ -566,6 +581,17 @@ export function init() {
                         ];
 
                         device_address_default = 85;
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.FoxESSHybridInverter) {
+                        virtual_meter_items = [
+                            [FoxESSHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [FoxESSHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [FoxESSHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [FoxESSHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [FoxESSHybridInverterVirtualMeter.BackupLoad.toString(), __("meters_modbus_tcp.content.virtual_meter_backup_load")],
+                        ];
+
+                        device_address_default = 247;
                     }
 
                     if (virtual_meter_items.length > 0) {

@@ -29,6 +29,7 @@ let x = {
             "table_solax_hybrid_inverter": "Solax Hybrid-Wechselrichter",
             "table_fronius_gen24_plus_hybrid_inverter": "Fronius GEN24 Plus Hybrid-Wechselrichter",
             "table_hailei_hybrid_inverter": "Hailei Hybrid-Wechselrichter (TPH-Serie)",
+            "table_fox_ess_hybrid_inverter": "Fox ESS Hybrid-Wechselrichter",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_select": "Auswählen...",
             "virtual_meter_inverter": "Wechselrichter",
