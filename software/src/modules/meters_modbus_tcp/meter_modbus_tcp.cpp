@@ -1082,7 +1082,7 @@ void MeterModbusTCP::read_done_callback()
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
-    if (value != 0.0f) { // Really compare exactly for 0.0f
+    if (value != 0.0f) { // Really compare exactly with 0.0f
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif
