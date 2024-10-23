@@ -666,10 +666,15 @@ void Config::save_to_file(File &file)
             logger.printfln("JSON doc overflow while writing file %s! Doc capacity is zero but needed %u.", file.name(), json_size(false));
         } else {
             logger.printfln("JSON doc overflow while writing file %s! Doc capacity is %u. Truncated doc follows.", file.name(), capacity);
+
             String str;
             serializeJson(doc, str);
-            str += "\n";
-            logger.print_plain(str.c_str(), str.length());
+            char *wbuffer = str.begin();
+            size_t len = str.length();
+
+            // Overwrite zero-termination with newline. This is safe because print_plain doen't require termination and the container String is discarded afterwards.
+            wbuffer[len] = '\n';
+            logger.print_plain(wbuffer, len + 1);
         }
     }
     serializeJson(doc, file);
@@ -690,10 +695,15 @@ void Config::write_to_stream_except(Print &output, const char *const *keys_to_ce
             logger.printfln("JSON doc overflow while writing to stream! Doc capacity is zero but needed %u.", json_size(false));
         } else {
             logger.printfln("JSON doc overflow while writing to stream! Doc capacity is %u. Truncated doc follows.", capacity);
+
             String str;
             serializeJson(doc, str);
-            str += "\n";
-            logger.print_plain(str.c_str(), str.length());
+            char *wbuffer = str.begin();
+            size_t len = str.length();
+
+            // Overwrite zero-termination with newline. This is safe because print_plain doen't require termination and the container String is discarded afterwards.
+            wbuffer[len] = '\n';
+            logger.print_plain(wbuffer, len + 1);
         }
     }
     serializeJson(doc, output);
@@ -718,7 +728,14 @@ String Config::to_string_except(const char *const *keys_to_censor, size_t keys_t
             logger.printfln("JSON doc overflow while converting to string! Doc capacity is zero but needed %u.", json_size(false));
         } else {
             logger.printfln("JSON doc overflow while converting to string! Doc capacity is %u. Truncated doc follows.", capacity);
-            logger.print_plain((result + "\n").c_str(), result.length() + 1);
+
+            char *wbuffer = result.begin();
+            size_t len = result.length();
+
+            // Temporarily overwrite zero-termination with newline, to avoid copying the whole string to add the newline. This is safe because print_plain doesn't require termination.
+            wbuffer[len] = '\n';
+            logger.print_plain(wbuffer, len + 1);
+            wbuffer[len] = 0;
         }
     }
     return result;
@@ -741,6 +758,12 @@ void Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_
             logger.print_plain(ptr, written);
             logger.print_plain("\n", 1);
         }
+    }
+
+    if (sb->getRemainingLength() == 0) {
+        logger.printfln("StringBuilder overflow while converting JSON to string! Doc size is %zu. Truncated string follows.", doc.size());
+        logger.print_plain(ptr, written);
+        logger.print_plain("\n", 1);
     }
 }
 
