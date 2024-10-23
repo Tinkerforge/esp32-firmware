@@ -606,6 +606,11 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             logger.printfln("No Fronius GEN24 Plus Hybrid Inverter Virtual Meter selected");
             return;
 
+        case FroniusGEN24PlusHybridInverterVirtualMeter::InverterUnused:
+        case FroniusGEN24PlusHybridInverterVirtualMeter::GridUnused:
+            logger.printfln("Invalid Fronius GEN24 Plus Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fronius_gen24_plus_hybrid_inverter_virtual_meter));
+            return;
+
         case FroniusGEN24PlusHybridInverterVirtualMeter::Battery:
             table = &fronius_gen24_plus_hybrid_inverter_battery_table;
             break;
