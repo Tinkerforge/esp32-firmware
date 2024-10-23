@@ -25,7 +25,7 @@ let x = {
             "table_alpha_ess_hybrid_inverter": "Alpha ESS Hybrid-Wechselrichter",
             "table_shelly_pro_em": "Shelly Pro EM",
             "table_shelly_pro_3em": "Shelly Pro 3EM",
-            "table_goodwe_hybrid_inverter": "GoodWe Hybrid-Wechselrichter (EH-, ET-, BH- und BT-Serie)",
+            "table_goodwe_hybrid_inverter": "Goodwe Hybrid-Wechselrichter (EH-, ET-, BH- und BT-Serie)",
             "table_solax_hybrid_inverter": "Solax Hybrid-Wechselrichter",
             "table_fronius_gen24_plus_hybrid_inverter": "Fronius GEN24 Plus Hybrid-Wechselrichter",
             "table_hailei_hybrid_inverter": "Hailei Hybrid-Wechselrichter (TPH-Serie)",
