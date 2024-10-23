@@ -19,6 +19,7 @@
  */
 
 import { h, Fragment, VNode } from "preact";
+import { signal, Signal } from "@preact/signals-core";
 
 {{{translation}}}
 
@@ -44,8 +45,6 @@ type DeepKeys<T, S extends string> =
             : keyof T & string
     : ""
 
-let active_translation: Translation = translation['en'];
-
 // get_languages can be overwritten by a module that can provide a function that returnes a user-specified preferred language.
 // If no such module exists the languages preferred by the browser are used.
 let get_languages: () => readonly string[] = () => navigator.languages;
@@ -53,29 +52,32 @@ export function update_languages_function(f: () => readonly string[]) {
     get_languages = f;
 }
 
-export function select_language(callback: () => void = () => {}) {
+let active_language: Signal<string> = signal("en");
+function update_active_language() {
     const languages = get_languages();
     for (let language of languages) {
         language = language.substr(0, 2);
 
         if (language in translation) {
-            if (active_translation != translation[language]) {
-                active_translation = translation[language];
-                window.dispatchEvent(new Event('languagechange'));
+            if (active_language.value != language) {
+                active_language.value = language;
             }
-            break;
+            return;
         }
 
         console.log("Sorry, got no translation for " + language);
     }
 
-    callback();
+    if (active_language.value != 'en') {
+        active_language.value = 'en';
+    }
 }
+window.addEventListener('languagechange', update_active_language);
 
 function translate<S extends string>(key: string): GetDictValue<S, Translation> {
-    let key_parts = key.split(".");
-    let subtranslation: any = active_translation;
+    let subtranslation: any = translation[active_language.value];
 
+    let key_parts = key.split(".");
     while (subtranslation !== undefined && key_parts.length > 0) {
         subtranslation = subtranslation[key_parts.shift() as any];
     }
