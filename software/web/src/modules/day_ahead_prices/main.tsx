@@ -39,46 +39,54 @@ function get_timestamp_today_00_00_in_seconds() {
     return Math.floor(new Date().setHours(0, 0, 0, 0) / 1000);
 }
 
-function day_ahead_price_time_between(state: DayAheadPricesState, config: DayAheadPricesConfig, index: number, start: number, end: number) {
-    const resolution_multiplier = state.dap_prices.resolution == 0 ? 15 : 60;
-    const index_timestamp_seconds = (state.dap_prices.first_date + index*resolution_multiplier)*60;
+function day_ahead_price_time_between(index: number, start: number, end: number) {
+    const dap_prices = API.get("day_ahead_prices/prices");
+    const resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60;
+    const index_timestamp_seconds = (dap_prices.first_date + index*resolution_multiplier)*60;
     return (index_timestamp_seconds >= start) && (index_timestamp_seconds <= end);
 }
 
-export function get_price_from_index(state: DayAheadPricesState, config: DayAheadPricesConfig, index: number, incl_vat: boolean = true) {
-    if (incl_vat && (config.vat != 0)) {
-        return Math.round(state.dap_prices.prices[index] * (1 + config.vat / 10000.0));
+export function get_price_from_index(index: number, incl_vat: boolean = true) {
+    const dap_prices = API.get("day_ahead_prices/prices");
+    const dap_config = API.get("day_ahead_prices/config");
+
+    if (incl_vat && (dap_config.vat != 0)) {
+        return Math.round(dap_prices.prices[index] * (1 + dap_config.vat / 10000.0));
     }
 
-    return state.dap_prices.prices[index];
+    return dap_prices.prices[index];
 }
 
-export function get_current_price(state: DayAheadPricesState, config: DayAheadPricesConfig, incl_vat: boolean = true, incl_tax_and_markup: boolean = true) {
-    if (state.dap_state.current_price == 0x7fffffff) { // INT32_MAX = current price not available yet
+export function get_current_price(incl_vat: boolean = true, incl_tax_and_markup: boolean = true) {
+    const dap_state  = API.get("day_ahead_prices/state");
+    const dap_config = API.get("day_ahead_prices/config");
+
+    if (dap_state.current_price == 0x7fffffff) { // INT32_MAX = current price not available yet
         return NaN
     }
 
-    let price = state.dap_state.current_price;
+    let price = dap_state.current_price;
 
     if (incl_vat) {
-        price = Math.round(state.dap_state.current_price * (1 + config.vat / 10000.0));
+        price = Math.round(dap_state.current_price * (1 + dap_config.vat / 10000.0));
     }
 
     if (incl_tax_and_markup) {
-        price += config.grid_costs_and_taxes + config.supplier_markup;
+        price += dap_config.grid_costs_and_taxes + dap_config.supplier_markup;
     }
 
     return price;
 }
 
-export function get_average_price_today(state: DayAheadPricesState, config: DayAheadPricesConfig, add_markup: boolean = true) {
-    const start     = get_timestamp_today_00_00_in_seconds();
-    const end       = start + 60*60*24 - 1;
-    let price_sum   = 0.0;
-    let price_count = 0;
-    for (let index = 0; index < state.dap_prices.prices.length; index++) {
-        if (day_ahead_price_time_between(state, config, index, start, end)) {
-            price_sum += get_price_from_index(state, config, index);
+export function get_average_price_today(add_markup: boolean = true) {
+    const dap_prices = API.get("day_ahead_prices/prices");
+    const start      = get_timestamp_today_00_00_in_seconds();
+    const end        = start + 60*60*24 - 1;
+    let price_sum    = 0.0;
+    let price_count  = 0;
+    for (let index = 0; index < dap_prices.prices.length; index++) {
+        if (day_ahead_price_time_between(index, start, end)) {
+            price_sum += get_price_from_index(index);
             price_count++;
         }
     }
@@ -87,19 +95,21 @@ export function get_average_price_today(state: DayAheadPricesState, config: DayA
         return NaN;
     }
 
+    const dap_config = API.get("day_ahead_prices/config");
     const price_avg = price_sum / price_count;
-    const grid_costs_and_taxes_and_supplier_markup = config.grid_costs_and_taxes + config.supplier_markup;
+    const grid_costs_and_taxes_and_supplier_markup = dap_config.grid_costs_and_taxes + dap_config.supplier_markup;
     return price_avg + (add_markup ? grid_costs_and_taxes_and_supplier_markup : 0);
 }
 
-export function get_average_price_tomorrow(state: DayAheadPricesState, config: DayAheadPricesConfig, add_markup: boolean = true) {
-    const start     = get_timestamp_today_00_00_in_seconds() + 60*60*24;
-    const end       = start + 60*60*24 - 1;
-    let price_sum   = 0.0;
-    let price_count = 0;
-    for (let index = 0; index < state.dap_prices.prices.length; index++) {
-        if (day_ahead_price_time_between(state, config, index, start, end)) {
-            price_sum += get_price_from_index(state, config, index);
+export function get_average_price_tomorrow(add_markup: boolean = true) {
+    const dap_prices = API.get("day_ahead_prices/prices");
+    const start      = get_timestamp_today_00_00_in_seconds() + 60*60*24;
+    const end        = start + 60*60*24 - 1;
+    let price_sum    = 0.0;
+    let price_count  = 0;
+    for (let index = 0; index < dap_prices.prices.length; index++) {
+        if (day_ahead_price_time_between(index, start, end)) {
+            price_sum += get_price_from_index(index);
             price_count++;
         }
     }
@@ -109,8 +119,9 @@ export function get_average_price_tomorrow(state: DayAheadPricesState, config: D
         return NaN;
     }
 
+    const dap_config = API.get("day_ahead_prices/config");
     const price_avg = price_sum / price_count;
-    const grid_costs_and_taxes_and_supplier_markup = config.grid_costs_and_taxes + config.supplier_markup;
+    const grid_costs_and_taxes_and_supplier_markup = dap_config.grid_costs_and_taxes + dap_config.supplier_markup;
     return price_avg + (add_markup ? grid_costs_and_taxes_and_supplier_markup : 0);
 }
 
@@ -131,7 +142,7 @@ export function DayAheadPricesNavbar() {
 
 type DayAheadPricesConfig = API.getType["day_ahead_prices/config"];
 
-export interface DayAheadPricesState {
+interface DayAheadPricesState {
     dap_state:  API.getType["day_ahead_prices/state"];
     dap_prices: API.getType["day_ahead_prices/prices"];
 }
@@ -208,13 +219,13 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             let resolution_multiplier = this.state.dap_prices.resolution == 0 ? 15 : 60
             for (let i = 0; i < this.state.dap_prices.prices.length; i++) {
                 data.values[0].push(this.state.dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
-                data.values[1].push(get_price_from_index(this.state, this.state, i) / 1000.0);
+                data.values[1].push(get_price_from_index(i) / 1000.0);
                 data.values[2].push(this.state.grid_costs_and_taxes / 1000.0);
                 data.values[3].push(this.state.supplier_markup / 1000.0);
             }
 
             data.values[0].push(this.state.dap_prices.first_date * 60 + this.state.dap_prices.prices.length * 60 * resolution_multiplier - 1);
-            data.values[1].push(get_price_from_index(this.state, this.state, this.state.dap_prices.prices.length - 1) / 1000.0);
+            data.values[1].push(get_price_from_index(this.state.dap_prices.prices.length - 1) / 1000.0);
             data.values[2].push(this.state.grid_costs_and_taxes / 1000.0);
             data.values[3].push(this.state.supplier_markup / 1000.0);
 
@@ -236,10 +247,10 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
         }
 
         function get_current_price_string() {
-            let str = util.get_value_with_unit(get_current_price(dap, dap, false, false), "ct/kWh", 2, 1000);
+            let str = util.get_value_with_unit(get_current_price(false, false), "ct/kWh", 2, 1000);
             if ((dap.vat != 0) || (dap.grid_costs_and_taxes) != 0 || (dap.supplier_markup != 0)) {
                 str += " (";
-                str += util.get_value_with_unit(get_current_price(dap, dap, true, true), "ct/kWh", 2, 1000);
+                str += util.get_value_with_unit(get_current_price(true, true), "ct/kWh", 2, 1000);
                 str += " ";
                 str += __("day_ahead_prices.content.incl_all_costs");
                 str += ")";
@@ -312,7 +323,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             <div class="input-group">
                                 <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("today")}</span></div>
                                 <InputText
-                                    value={util.get_value_with_unit(get_average_price_today(dap, dap), "ct/kWh", 2, 1000)}
+                                    value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
                                 />
                             </div>
                         </div>
@@ -320,7 +331,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             <div class="input-group">
                                 <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("tomorrow")}</span></div>
                                 <InputText
-                                    value={util.get_value_with_unit(get_average_price_tomorrow(dap, dap), "ct/kWh", 2, 1000)}
+                                    value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
                                 />
                             </div>
                         </div>
