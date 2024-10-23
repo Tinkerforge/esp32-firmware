@@ -42,6 +42,7 @@
 #include "goodwe_hybrid_inverter_virtual_meter.enum.h"
 #include "solax_hybrid_inverter_virtual_meter.enum.h"
 #include "fronius_gen24_plus_hybrid_inverter_virtual_meter.enum.h"
+#include "hailei_hybrid_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -173,6 +174,9 @@ private:
     float fronius_gen24_plus_hybrid_inverter_discharge_dcwh;
     float fronius_gen24_plus_hybrid_inverter_chastate;
     int16_t fronius_gen24_plus_hybrid_inverter_chastate_sf;
+
+    // Hailei
+    HaileiHybridInverterVirtualMeter hailei_hybrid_inverter_virtual_meter;
 };
 
 #if defined(__GNUC__)

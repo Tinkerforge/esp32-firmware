@@ -28,6 +28,7 @@ let x = {
             "table_goodwe_hybrid_inverter": "GoodWe Hybrid-Wechselrichter (EH-, ET-, BH- und BT-Serie)",
             "table_solax_hybrid_inverter": "Solax Hybrid-Wechselrichter",
             "table_fronius_gen24_plus_hybrid_inverter": "Fronius GEN24 Plus Hybrid-Wechselrichter",
+            "table_hailei_hybrid_inverter": "Hailei Hybrid-Wechselrichter (TPH-Serie)",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_select": "Auswählen...",
             "virtual_meter_inverter": "Wechselrichter",

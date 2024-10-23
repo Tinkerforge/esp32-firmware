@@ -622,6 +622,34 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::HaileiHybridInverter:
+        hailei_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<HaileiHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+
+        switch (hailei_hybrid_inverter_virtual_meter) {
+        case HaileiHybridInverterVirtualMeter::None:
+            logger.printfln("No Hailei Hybrid Inverter Virtual Meter selected");
+            return;
+
+        case HaileiHybridInverterVirtualMeter::Inverter:
+            table = &hailei_hybrid_inverter_table;
+            break;
+
+        case HaileiHybridInverterVirtualMeter::Grid:
+            table = &hailei_hybrid_inverter_grid_table;
+            break;
+
+        case HaileiHybridInverterVirtualMeter::Battery:
+            table = &hailei_hybrid_inverter_battery_table;
+            break;
+
+        default:
+            logger.printfln("Unknown Hailei Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(hailei_hybrid_inverter_virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;

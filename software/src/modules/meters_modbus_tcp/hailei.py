@@ -1,8 +1,8 @@
-# This is the same register table as Hailei
+# This is the same register table as Alpha ESS
 
 specs = [
     {
-        'name': 'Alpha ESS Hybrid Inverter',
+        'name': 'Hailei Hybrid Inverter',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -99,7 +99,7 @@ specs = [
         ],
     },
     {
-        'name': 'Alpha ESS Hybrid Inverter Grid',
+        'name': 'Hailei Hybrid Inverter Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -277,7 +277,7 @@ specs = [
         ],
     },
     {
-        'name': 'Alpha ESS Hybrid Inverter Battery',
+        'name': 'Hailei Hybrid Inverter Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
