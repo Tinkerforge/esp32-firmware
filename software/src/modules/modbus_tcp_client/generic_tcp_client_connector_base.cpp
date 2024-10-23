@@ -147,6 +147,8 @@ void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClien
     disconnect_callback();
 
     if (keep_connected) {
-        connect_internal();
+        task_scheduler.scheduleOnce([this]() {
+            connect_internal();
+        });
     }
 }
