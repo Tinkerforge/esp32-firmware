@@ -51,10 +51,10 @@ git clone https://github.com/Tinkerforge/esp32-firmware
 
 ```bash
 cd ~
-git clone --branch release/v4.4 https://github.com/espressif/esp32-arduino-lib-builder
+git clone --branch release/v5.3 https://github.com/espressif/esp32-arduino-lib-builder
 cd esp32-arduino-lib-builder
 ../esp32-firmware/software/lib-builder/apply_patches.py . ../esp32-firmware/software/patches/lib-builder-pre
-./build.sh -t esp32 -b menuconfig
+AR_BRANCH="tf-20241023" ./build.sh -t esp32 -b menuconfig # replace branch name with the one you want to build.
 # press [s] [return] [return] to write sdkconfig, [q] to quit
 cp sdkconfig sdkconfig.vanilla
 ```
@@ -64,6 +64,7 @@ cp sdkconfig sdkconfig.vanilla
 ```bash
 cd ~/esp32-arduino-lib-builder
 ../esp32-firmware/software/lib-builder/apply_patches.py . ../esp32-firmware/software/patches/lib-builder
+# TODO apply .rawpatch files with patch --no-backup-if-mismatch < foo.rawpatch in the correct managed component directory
 ```
 
 **Replace .esp32brick with .esp32ethernetbrick in the next sections for ESP32 Ethernet, WARP2, WARP3 and WEM firmwares**
