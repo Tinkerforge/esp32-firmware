@@ -40,9 +40,10 @@ import { CollapsedSection } from "../../ts/components/collapsed_section";
 
 export const SOLAR_FORECAST_PLANES = 6;
 
-function get_next_free_plane_index(state: SolarForecastState) {
+function get_next_free_plane_index() {
     for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
-        if (!state.plane_configs[i].active) {
+        const plane_config = API.get_unchecked(`solar_forecast/planes/${i}/config`);
+        if (!plane_config.active) {
             return i;
         }
     }
@@ -50,19 +51,21 @@ function get_next_free_plane_index(state: SolarForecastState) {
     return -1;
 }
 
-function get_active_planes(state: SolarForecastState) {
+function get_active_planes() {
     let active_planes = [];
     for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
-        if (state.plane_configs[i].active) {
+        const plane_config = API.get_unchecked(`solar_forecast/planes/${i}/config`);
+        if (plane_config.active) {
             active_planes.push(i);
         }
     }
     return active_planes;
 }
 
-function does_forecast_exist(state: SolarForecastState) {
+function does_forecast_exist() {
     for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
-        if (state.plane_forecasts[i].forecast.length > 0) {
+        const plane_forecast = API.get_unchecked(`solar_forecast/planes/${i}/forecast`);
+        if (plane_forecast.length > 0) {
             return true;
         }
     }
@@ -73,21 +76,22 @@ function get_timestamp_today_00_00_in_seconds() {
     return Math.floor(new Date().setHours(0, 0, 0, 0) / 1000);
 }
 
-function forecast_time_between(state: SolarForecastState, plane: number, index: number, start: number, end: number) {
-    let index_timestamp_seconds = (state.plane_forecasts[plane].first_date + index*60)*60;
+function forecast_time_between(first_date: number, index: number, start: number, end: number) {
+    let index_timestamp_seconds = (first_date + index*60)*60;
     return (index_timestamp_seconds >= start) && (index_timestamp_seconds <= end);
 }
 
-function get_kwh_now_to_midnight(state: SolarForecastState) {
+function get_kwh_now_to_midnight() {
     let start         = Math.floor(new Date().setMinutes(0, 0, 0) / 1000);
     let end           = get_timestamp_today_00_00_in_seconds() + 60*60*24 - 1;
-    let active_planes = get_active_planes(state);
+    let active_planes = get_active_planes();
     let wh            = 0.0;
     let count         = 0
     for (const plane of active_planes) {
-        for (let index = 0; index < state.plane_forecasts[plane].forecast.length; index++) {
-            if (forecast_time_between(state, plane, index, start, end)) {
-                wh += state.plane_forecasts[plane].forecast[index] || 0.0;
+        const plane_forecast = API.get_unchecked(`solar_forecast/planes/${plane}/forecast`);
+        for (let index = 0; index < plane_forecast.forecast.length; index++) {
+            if (forecast_time_between(plane_forecast.forecast[index].first_date, index, start, end)) {
+                wh += plane_forecast.forecast[index] || 0.0;
                 count++;
             }
         }
@@ -100,16 +104,17 @@ function get_kwh_now_to_midnight(state: SolarForecastState) {
     return wh/1000.0;
 }
 
-export function get_kwh_today(state: SolarForecastState) {
+export function get_kwh_today() {
     let start         = get_timestamp_today_00_00_in_seconds();
     let end           = start + 60*60*24 - 1;
-    let active_planes = get_active_planes(state);
+    let active_planes = get_active_planes();
     let wh            = 0.0;
     let count         = 0;
     for (const plane of active_planes) {
-        for (let index = 0; index < state.plane_forecasts[plane].forecast.length; index++) {
-            if (forecast_time_between(state, plane, index, start, end)) {
-                wh += state.plane_forecasts[plane].forecast[index] || 0.0;
+        const plane_forecast = API.get_unchecked(`solar_forecast/planes/${plane}/forecast`);
+        for (let index = 0; index < plane_forecast.forecast.length; index++) {
+            if (forecast_time_between(plane_forecast.forecast[index].first_date, index, start, end)) {
+                wh += plane_forecast.forecast[index] || 0.0;
                 count++;
             }
         }
@@ -122,16 +127,17 @@ export function get_kwh_today(state: SolarForecastState) {
     return wh/1000.0;
 }
 
-export function get_kwh_tomorrow(state: SolarForecastState) {
+export function get_kwh_tomorrow() {
     let start         = get_timestamp_today_00_00_in_seconds() + 60*60*24;
     let end           = start + 60*60*24 - 1;
-    let active_planes = get_active_planes(state);
+    let active_planes = get_active_planes();
     let wh            = 0.0;
     let count         = 0;
     for (const plane of active_planes) {
-        for (let index = 0; index < state.plane_forecasts[plane].forecast.length; index++) {
-            if (forecast_time_between(state, plane, index, start, end)) {
-                wh += state.plane_forecasts[plane].forecast[index] || 0.0;
+        const plane_forecast = API.get_unchecked(`solar_forecast/planes/${plane}/forecast`);
+        for (let index = 0; index < plane_forecast.forecast.length; index++) {
+            if (forecast_time_between(plane_forecast.forecast[index].first_date, index, start, end)) {
+                wh += plane_forecast.forecast[index] || 0.0;
                 count++;
             }
         }
@@ -152,19 +158,16 @@ export function SolarForecastNavbar() {
 type PlaneConfig = (API.getType['planes/0/plane_config'])
 type SolarForecastConfig = API.getType["solar_forecast/config"];
 
-export interface SolarForecastState {
+interface SolarForecastState {
     state: API.getType["solar_forecast/state"];
     plane_states: {[plane_index: number]: Readonly<API.getType['planes/0/plane_state']>};
     plane_configs: {[plane_index: number]: PlaneConfig};
     plane_forecasts: {[plane_index: number]: API.getType['planes/0/plane_forecast']};
-}
-
-interface SolarForecastStateInternal {
     plane_config_tmp: PlaneConfig;
     extra_show: boolean[];
 }
 
-export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, SolarForecastState & SolarForecastStateInternal> {
+export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, SolarForecastState> {
     uplot_loader_ref  = createRef();
     uplot_wrapper_ref = createRef();
 
@@ -386,7 +389,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
         this.uplot_wrapper_ref.current.set_data(data);
     }
 
-    render(props: {}, state: SolarForecastState & SolarForecastStateInternal & SolarForecastConfig) {
+    render(props: {}, state: SolarForecastState & SolarForecastConfig) {
         if (!util.render_allowed()) {
             return <SubPage name="solar_forecast" />;
         }
@@ -427,7 +430,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                     </FormRow>
                     <Table columnNames={[__("solar_forecast.content.table_name"), __("solar_forecast.content.table_latitude"), __("solar_forecast.content.table_longitude"), __("solar_forecast.content.table_declination"), __("solar_forecast.content.table_azimuth"), __("solar_forecast.content.table_kwp")]}
                         tableTill="lg"
-                        rows={get_active_planes(this.state).map((active_plane_index) => {
+                        rows={get_active_planes().map((active_plane_index) => {
                             let plane_config = state.plane_configs[active_plane_index];
                             return {
                                 extraShow: this.state.extra_show[active_plane_index],
@@ -461,15 +464,15 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                                 }}
                             })
                         }
-                        addEnabled={get_active_planes(this.state).length < SOLAR_FORECAST_PLANES}
+                        addEnabled={get_active_planes().length < SOLAR_FORECAST_PLANES}
                         addTitle={__("solar_forecast.content.add_plane_config_title")}
-                        addMessage={get_active_planes(this.state).length == SOLAR_FORECAST_PLANES ? __("solar_forecast.content.add_plane_config_done") : __("solar_forecast.content.add_plane_config_prefix") + (get_active_planes(this.state).length + 1) + __("solar_forecast.content.add_plane_config_infix") + SOLAR_FORECAST_PLANES + __("solar_forecast.content.add_plane_config_postfix")}
+                        addMessage={get_active_planes().length == SOLAR_FORECAST_PLANES ? __("solar_forecast.content.add_plane_config_done") : __("solar_forecast.content.add_plane_config_prefix") + (get_active_planes().length + 1) + __("solar_forecast.content.add_plane_config_infix") + SOLAR_FORECAST_PLANES + __("solar_forecast.content.add_plane_config_postfix")}
                         onAddShow={async () => {
-                            this.setState({plane_config_tmp: {active: true, name: "#" + get_next_free_plane_index(this.state), latitude: 0, longitude: 0, declination: 0, azimuth: 0, wp: 0}})
+                            this.setState({plane_config_tmp: {active: true, name: "#" + get_next_free_plane_index(), latitude: 0, longitude: 0, declination: 0, azimuth: 0, wp: 0}})
                         }}
                         onAddGetChildren={() => this.on_get_children()}
                         onAddSubmit={async () => {
-                            this.setState({plane_configs: {...state.plane_configs, [get_next_free_plane_index(this.state)]: state.plane_config_tmp}});
+                            this.setState({plane_configs: {...state.plane_configs, [get_next_free_plane_index()]: state.plane_config_tmp}});
                             this.setDirty(true);
                         }}
                     />
@@ -477,7 +480,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 <FormSeparator heading={__("solar_forecast.content.solar_forecast_chart_heading")}/>
                 <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date().getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
                     <InputText
-                        value={util.get_value_with_unit(get_kwh_now_to_midnight(this.state), "kWh", 2)}
+                        value={util.get_value_with_unit(get_kwh_now_to_midnight(), "kWh", 2)}
                     />
                 </FormRow>
                 <FormRow label={__("solar_forecast.content.solar_forecast")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
@@ -486,7 +489,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                             <div class="input-group">
                                 <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_today_label")}</span></div>
                                 <InputText
-                                    value={util.get_value_with_unit(get_kwh_today(this.state), "kWh", 2)}
+                                    value={util.get_value_with_unit(get_kwh_today(), "kWh", 2)}
                                 />
                             </div>
                         </div>
@@ -494,7 +497,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                             <div class="input-group">
                                 <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_tomorrow_label")}</span></div>
                                 <InputText
-                                    value={util.get_value_with_unit(get_kwh_tomorrow(this.state), "kWh", 2)}
+                                    value={util.get_value_with_unit(get_kwh_tomorrow(), "kWh", 2)}
                                 />
                             </div>
                         </div>
