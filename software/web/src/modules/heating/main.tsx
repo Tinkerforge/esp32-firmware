@@ -40,8 +40,8 @@ import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
-import { SOLAR_FORECAST_PLANES, SolarForecastState, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
-import { DayAheadPricesState, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
+import { SOLAR_FORECAST_PLANES, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
+import { get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} hidden={false} />;
@@ -54,7 +54,7 @@ interface HeatingState {
     dap_config: API.getType["day_ahead_prices/config"];
 }
 
-export class Heating extends ConfigComponent<'heating/config', {}, HeatingState & SolarForecastState & DayAheadPricesState> {
+export class Heating extends ConfigComponent<'heating/config', {}, HeatingState> {
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
 
@@ -95,71 +95,18 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
             this.setState({heating_state: API.get("heating/state")});
         });
 
-        util.addApiEventListener("day_ahead_prices/config", () => {
-            this.setState({dap_config: API.get("day_ahead_prices/config")});
-        });
-
-        util.addApiEventListener("day_ahead_prices/state", () => {
-            this.setState({dap_state: API.get("day_ahead_prices/state")});
-        });
-
         util.addApiEventListener("day_ahead_prices/prices", () => {
-            this.setState({dap_prices: API.get("day_ahead_prices/prices")});
             // Update chart every time new price data comes in
             this.update_uplot();
         });
-
-        for (let plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; ++plane_index) {
-            util.addApiEventListener_unchecked(`solar_forecast/planes/${plane_index}/state`, () => {
-                let state = API.get_unchecked(`solar_forecast/planes/${plane_index}/state`);
-
-                this.setState((prevState) => ({
-                    plane_states: {
-                        ...prevState.plane_states,
-                        [plane_index]: state
-                    }
-                }));
-            });
-
-            util.addApiEventListener_unchecked(`solar_forecast/planes/${plane_index}/forecast`, () => {
-                let forecast = API.get_unchecked(`solar_forecast/planes/${plane_index}/forecast`);
-
-                this.setState((prevState) => ({
-                    plane_forecasts: {
-                        ...prevState.plane_forecasts,
-                        [plane_index]: forecast
-                    }
-                }));
-
-                this.update_uplot();
-            });
-
-            util.addApiEventListener_unchecked(`solar_forecast/planes/${plane_index}/config`, () => {
-                let config = API.get_unchecked(`solar_forecast/planes/${plane_index}/config`);
-
-                this.setState((prevState) => ({
-                    plane_configs: {
-                        ...prevState.plane_configs,
-                        [plane_index]: config
-                    }
-                }));
-
-                if (!this.isDirty()) {
-                    this.setState((prevState) => ({
-                        plane_configs: {
-                            ...prevState.plane_configs,
-                            [plane_index]: config
-                        }
-                    }));
-                }
-            });
-        }
     }
 
     get_price_timeframe() {
+        const dap_prices = API.get("day_ahead_prices/prices");
+
         let time = new Date();
         let s = ""
-        if(this.state.dap_prices.resolution == 0) {
+        if(dap_prices.resolution == 0) {
             time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
             time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
             time.setMinutes(Math.floor(time.getMinutes() / 15) * 15);
@@ -183,10 +130,12 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
             return;
         }
 
+        const dap_prices = API.get("day_ahead_prices/prices");
+        const dap_config = API.get("day_ahead_prices/config");
         let data: UplotData;
 
         // If we have not got any prices yet, use empty data
-        if (this.state.dap_prices.prices.length == 0) {
+        if (dap_prices.prices.length == 0) {
             data = {
                 keys: [null],
                 names: [null],
@@ -207,18 +156,18 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                 default_visibilty: [null, true],
                 lines_vertical: []
             }
-            const resolution_multiplier = this.state.dap_prices.resolution == 0 ? 15 : 60
+            const resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60
             const grid_costs_and_taxes_and_supplier_markup = this.state.dap_config.grid_costs_and_taxes / 1000.0 + this.state.dap_config.supplier_markup / 1000.0;
-            for (let i = 0; i < this.state.dap_prices.prices.length; i++) {
-                data.values[0].push(this.state.dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
-                data.values[1].push(get_price_from_index(this.state, this.state.dap_config, i) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
+            for (let i = 0; i < dap_prices.prices.length; i++) {
+                data.values[0].push(dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
+                data.values[1].push(get_price_from_index(i) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
             }
 
-            data.values[0].push(this.state.dap_prices.first_date * 60 + this.state.dap_prices.prices.length * 60 * resolution_multiplier - 1);
-            data.values[1].push(get_price_from_index(this.state, this.state.dap_config, this.state.dap_prices.prices.length - 1) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
+            data.values[0].push(dap_prices.first_date * 60 + dap_prices.prices.length * 60 * resolution_multiplier - 1);
+            data.values[1].push(get_price_from_index(dap_prices.prices.length - 1) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
 
-            const solar_forecast_today     = get_kwh_today(this.state);
-            const solar_forecast_tomorrow  = get_kwh_tomorrow(this.state);
+            const solar_forecast_today     = get_kwh_today();
+            const solar_forecast_tomorrow  = get_kwh_tomorrow();
             const solar_forecast_threshold = this.state.summer_yield_forecast_threshold;
             const current_month = new Date().getMonth();
             const current_day   = new Date().getDate();
@@ -234,32 +183,32 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
             const active_today    = active_active && (!this.state.summer_yield_forecast_active || (is_summer && (solar_forecast_today >= solar_forecast_threshold)));
             const active_tomorrow = active_active && (!this.state.summer_yield_forecast_active || (is_summer && (solar_forecast_tomorrow >= solar_forecast_threshold)));
 
-            if (this.state.dap_prices.prices.length >= num_per_day) {
-                const avg_price_day1 = this.state.dap_prices.prices.slice(0, num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
+            if (dap_prices.prices.length >= num_per_day) {
+                const avg_price_day1 = dap_prices.prices.slice(0, num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
                 for (let i = 0; i < num_per_day; i++) {
                     if (((i < active_start) || (i >= active_end)) && active_today) {
                         //data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
-                    } else if (this.state.dap_prices.prices[i] < avg_price_day1*this.state.dpc_extended_threshold/100) {
+                    } else if (dap_prices.prices[i] < avg_price_day1*this.state.dpc_extended_threshold/100) {
                         if (this.state.dpc_extended_active) {
                             data.lines_vertical.push({'index': i, 'text': '', 'color': [40, 167, 69, 0.5]});
                         }
-                    } else if(this.state.dap_prices.prices[i] > avg_price_day1*this.state.dpc_blocking_threshold/100) {
+                    } else if(dap_prices.prices[i] > avg_price_day1*this.state.dpc_blocking_threshold/100) {
                         if (this.state.dpc_blocking_active) {
                             data.lines_vertical.push({'index': i, 'text': '', 'color': [220, 53, 69, 0.5]});
                         }
                     }
                 }
             }
-            if (this.state.dap_prices.prices.length >= num_per_day*2) {
-                const avg_price_day2 = this.state.dap_prices.prices.slice(num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
+            if (dap_prices.prices.length >= num_per_day*2) {
+                const avg_price_day2 = dap_prices.prices.slice(num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
                 for (let i = num_per_day; i < num_per_day*2; i++) {
                     if ((((i-num_per_day) < active_start) || ((i-num_per_day) >= active_end)) && active_tomorrow) {
                         //data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
-                    } else if (this.state.dap_prices.prices[i] < avg_price_day2*this.state.dpc_extended_threshold/100) {
+                    } else if (dap_prices.prices[i] < avg_price_day2*this.state.dpc_extended_threshold/100) {
                         if (this.state.dpc_extended_active) {
                             data.lines_vertical.push({'index': i, 'text': '', 'color': [40, 167, 69, 0.5]});
                         }
-                    } else if(this.state.dap_prices.prices[i] > avg_price_day2*this.state.dpc_blocking_threshold/100) {
+                    } else if(dap_prices.prices[i] > avg_price_day2*this.state.dpc_blocking_threshold/100) {
                         if (this.state.dpc_blocking_active) {
                             data.lines_vertical.push({'index': i, 'text': '', 'color': [220, 53, 69, 0.5]});
                         }
@@ -268,8 +217,8 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
             }
 
             // Add vertical line at current time
-            const resolution_divisor = this.state.dap_prices.resolution == 0 ? 15 : 60;
-            const diff = Math.floor(Date.now() / 60000) - this.state.dap_prices.first_date;
+            const resolution_divisor = dap_prices.resolution == 0 ? 15 : 60;
+            const diff = Math.floor(Date.now() / 60000) - dap_prices.first_date;
             const index = Math.floor(diff / resolution_divisor);
             data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now"), 'color': [64, 64, 64, 0.2]});
         }
@@ -553,7 +502,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("today")}</span></div>
                                     <InputText
-                                        value={util.get_value_with_unit(get_average_price_today(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
+                                        value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
                                     />
                                 </div>
                             </div>
@@ -561,7 +510,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("tomorrow")}</span></div>
                                     <InputText
-                                        value={util.get_value_with_unit(get_average_price_tomorrow(this.state, this.state.dap_config), "ct/kWh", 2, 1000)}
+                                        value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
                                     />
                                 </div>
                             </div>
@@ -573,7 +522,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("today")}</span></div>
                                     <InputText
-                                        value={util.get_value_with_unit(get_kwh_today(this.state), "kWh", 2)}
+                                        value={util.get_value_with_unit(get_kwh_today(), "kWh", 2)}
                                     />
                                 </div>
                             </div>
@@ -581,7 +530,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState 
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("tomorrow")}</span></div>
                                     <InputText
-                                        value={util.get_value_with_unit(get_kwh_tomorrow(this.state), "kWh", 2)}
+                                        value={util.get_value_with_unit(get_kwh_tomorrow(), "kWh", 2)}
                                     />
                                 </div>
                             </div>
