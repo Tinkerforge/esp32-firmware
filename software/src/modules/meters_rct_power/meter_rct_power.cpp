@@ -104,6 +104,10 @@ void RCTPowerClient::setup(const Config &ephemeral_config)
         logger.printfln("No Virtual Meter selected");
         return;
 
+    case VirtualMeter::InverterUnused:
+        logger.printfln("Invalid Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));
+        return;
+
     case VirtualMeter::Grid:
         value_specs = grid_rct_value_specs;
         value_specs_length = ARRAY_SIZE(grid_rct_value_specs);
