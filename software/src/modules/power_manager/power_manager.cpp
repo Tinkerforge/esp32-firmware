@@ -996,10 +996,11 @@ void PowerManager::update_energy()
     Config *state_i_pp_mavg = static_cast<Config *>(low_level_state.get("i_pp_mavg"));
     Config *state_i_pp      = static_cast<Config *>(low_level_state.get("i_pp"));
 
-    for (size_t cm_phase = 1; cm_phase < 4; cm_phase++) {
+    for (size_t cm_phase = 1; cm_phase <= 3; cm_phase++) {
         if (!dynamic_load_enabled) {
-            cm_limits->raw[cm_phase] = max_current_limited_ma;
-            cm_limits->min[cm_phase] = max_current_limited_ma;
+            cm_limits->raw[cm_phase]    = max_current_limited_ma;
+            cm_limits->min[cm_phase]    = max_current_limited_ma;
+            cm_limits->spread[cm_phase] = max_current_limited_ma;
         } else {
             size_t pm_phase = cm_phase - 1; // PM is 0-based but CM is 1-based because of PV@0
 
