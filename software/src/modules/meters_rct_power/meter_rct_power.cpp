@@ -87,38 +87,10 @@ static uint16_t crc16ccitt(uint8_t *buffer, size_t length)
 
 void RCTPowerClient::setup(const Config &ephemeral_config)
 {
-    String host = ephemeral_config.get("host")->asString();
-    uint16_t port = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
     virtual_meter = ephemeral_config.get("virtual_meter")->asEnum<VirtualMeter>();
 
-    task_scheduler.scheduleWithFixedDelay([this, host, port]() {
-        TFGenericTCPClientConnectionStatus connection_status = get_connection_status();
-
-        if (connection_status == TFGenericTCPClientConnectionStatus::Disconnected) {
-            connect(host.c_str(), port,
-            [host, port](TFGenericTCPClientConnectResult result, int error_number) {
-                logger.printfln("Connected to %s:%u: %s / %s (%d)",
-                                host.c_str(),
-                                port,
-                                get_tf_generic_tcp_client_connect_result_name(result),
-                                strerror(error_number),
-                                error_number);
-            },
-            [host, port](TFGenericTCPClientDisconnectReason reason, int error_number) {
-                logger.printfln("Disconnected from %s:%u: %s / %s (%d)",
-                                host.c_str(),
-                                port,
-                                get_tf_generic_tcp_client_disconnect_reason_name(reason),
-                                strerror(error_number),
-                                error_number);
-            });
-        }
-    }, 1_s, 5_s);
-
     task_scheduler.scheduleWithFixedDelay([this]() {
-        TFGenericTCPClientConnectionStatus connection_status = get_connection_status();
-
-        if (connection_status == TFGenericTCPClientConnectionStatus::Connected) {
+        if (get_connection_status() == TFGenericTCPClientConnectionStatus::Connected) {
             read_next_value();
         }
     }, 1_s, 250_ms);
@@ -352,5 +324,20 @@ MeterClassID MeterRCTPower::get_class() const
 
 void MeterRCTPower::setup(const Config &ephemeral_config)
 {
+    host_name = ephemeral_config.get("host")->asString();
+    port = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
+
     client.setup(ephemeral_config);
+
+    task_scheduler.scheduleOnce([this]() {
+        start_connection();
+    }, 1_s);
+}
+
+void MeterRCTPower::connect_callback()
+{
+}
+
+void MeterRCTPower::disconnect_callback()
+{
 }
