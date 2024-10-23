@@ -86,6 +86,8 @@ cd ~/esp32-arduino-lib-builder
 
 ### Test built libs:
 
+TODO UPDATE
+
 ```bash
 cd ~/esp32-firmware/software/packages
 
@@ -114,6 +116,8 @@ pio run -e warp
 
 ### Add built libs to arduino-esp32 Repo:
 
+TODO UPDATE
+
 ```bash
 (git clone https://github.com/Tinkerforge/arduino-esp32)
 # Go to https://github.com/Tinkerforge/arduino-esp32, switch to "release/v2.x" and click "sync fork" (so that our "release/v2.x" == espressif's "release/v2.x")
@@ -128,14 +132,9 @@ git add .
 git commit -m "Add libs for warp-x.y.z."
 ```
 
-### Apply patches to arduino-esp32
-
-```bash
-cd ~/arduino-esp32
-../esp32-firmware/software/lib-builder/apply_patches.py . ../esp32-firmware/software/patches/arduino-esp32
-```
-
 ### Push arduino-esp32
+
+TODO UPDATE
 
 ```bash
 cd ~/arduino-esp32
@@ -143,6 +142,8 @@ git push -u origin warp-x.y.z #or warp2-x.y.z for ESP32 Ethernet Brick)
 ```
 
 ### Update packages
+
+TODO UPDATE
 
 ```bash
 cd ~/esp32-firmware/software
