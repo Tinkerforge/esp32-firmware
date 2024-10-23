@@ -15,8 +15,8 @@ export interface state_static {
     dram_benchmark: number;
     iram_benchmark: number;
     psram_benchmark: number;
-    flash_benchmark: number;
-    flash_mode: string;
+    rodata_benchmark: number;
+    text_benchmark: number;
 }
 
 export interface state_fast {

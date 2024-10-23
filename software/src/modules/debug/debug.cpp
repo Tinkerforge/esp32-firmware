@@ -42,6 +42,8 @@
 static float benchmark_area(uint32_t *start_address, size_t max_length);
 static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_clk, uint32_t *dummy_cyclelen, const char **spi_mode);
 
+extern uint32_t _rodata_start;
+extern uint32_t _rodata_end;
 extern uint32_t _text_start;
 
 [[gnu::noinline]]
@@ -89,31 +91,18 @@ void Debug::pre_setup()
     psram_size = 4 * 1024 * 1024;
 #endif
 
-    String flash_mode;
-    switch (esp_flash_default_chip->read_mode) {
-        case SPI_FLASH_SLOWRD:  flash_mode = "slowrd";  break;
-        case SPI_FLASH_FASTRD:  flash_mode = "fastrd";  break;
-        case SPI_FLASH_DOUT:    flash_mode = "dout";    break;
-        case SPI_FLASH_DIO:     flash_mode = "dio";     break;
-        case SPI_FLASH_QOUT:    flash_mode = "qout";    break;
-        case SPI_FLASH_QIO:     flash_mode = "qio";     break;
-        case SPI_FLASH_OPI_STR: flash_mode = "opi_str"; break;
-        case SPI_FLASH_OPI_DTR: flash_mode = "opi_dtr"; break;
-        case SPI_FLASH_READ_MODE_MAX:
-        default: flash_mode = static_cast<int>(esp_flash_default_chip->read_mode);
-    }
+    rtc_cpu_freq_config_t cpu_freq_conf;
+    rtc_clk_cpu_freq_get_config(&cpu_freq_conf);
+
+    float dram_speed   = static_cast<float>(cpu_freq_conf.freq_mhz * 1000000 * 4) / 1048576.0f; // DRAM speed cannot be measured accurately, but we know that it can deliver 4 bytes per CPU clock cycle.
+    float iram_speed   = benchmark_area(reinterpret_cast<uint32_t *>(0x40080000), 128*1024);
+    float rodata_speed = benchmark_area(&_rodata_start, 128*1024); // 128KiB at the beginning of the readonly-data
+    float text_speed   = benchmark_area(&_text_start,   128*1024); // 128KiB at the beginning of the code
 
     float psram_speed = 0;
 #if defined(BOARD_HAS_PSRAM)
     psram_speed = benchmark_area(reinterpret_cast<uint32_t *>(0x3FB00000), 128*1024); // 128KiB inside the fourth MiB
 #endif
-
-    float dram_speed  = benchmark_area(reinterpret_cast<uint32_t *>(0x3FFAE000), 200*1024);
-    float iram_speed  = benchmark_area(reinterpret_cast<uint32_t *>(0x40080000), 128*1024);
-    float flash_speed = benchmark_area(&_text_start, 128*1024); // 128KiB at the beginning of the code
-
-    rtc_cpu_freq_config_t cpu_freq_conf;
-    rtc_clk_cpu_freq_get_config(&cpu_freq_conf);
 
     state_spi_bus_prototype = Config::Object({
         {"clk",          Config::Uint32(0)},
@@ -132,11 +121,11 @@ void Debug::pre_setup()
             &state_spi_bus_prototype,
             0, 4, Config::type_id<Config::ConfObject>()
         )},
-        {"dram_benchmark",  Config::Float(dram_speed)},
-        {"iram_benchmark",  Config::Float(iram_speed)},
-        {"psram_benchmark", Config::Float(psram_speed)},
-        {"flash_benchmark", Config::Float(flash_speed)},
-        {"flash_mode",      Config::Str(flash_mode, 0, 8)},
+        {"dram_benchmark",   Config::Float(dram_speed)},
+        {"iram_benchmark",   Config::Float(iram_speed)},
+        {"psram_benchmark",  Config::Float(psram_speed)},
+        {"rodata_benchmark", Config::Float(rodata_speed)},
+        {"text_benchmark",   Config::Float(text_speed)},
     });
 
     for (uint32_t i = 0; i < 4; i++) {

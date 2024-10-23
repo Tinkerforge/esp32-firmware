@@ -203,44 +203,50 @@ export class Debug extends Component {
 
                 <FormRow label="">
                     <div class="row">
-                        <div class="mb-1 col-12 col-sm-3">
+                        <div class="mb-1 col-12 col-sm-4">
                             <p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-3">
+                        <div class="mb-1 col-12 col-sm-4">
                             <p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-3">
+                        <div class="mb-1 col-12 col-sm-4">
                             <p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-3">
-                            <p class="mb-0 form-label text-center">{__("debug.content.flash")}</p>
-                        </div>
                     </div>
                 </FormRow>
 
-                <FormRow label={__("debug.content.speed_benchmark")}>
+                <FormRow label={__("debug.content.ram_benchmark")}>
                     <div class="row">
-                        <div class="mb-1 col-12 col-sm-3">
+                        <div class="mb-1 col-12 col-sm-4">
                             <OutputFloat value={state_static.dram_benchmark} digits={1} scale={0} unit="MiB/s" />
                         </div>
-                        <div class="mb-1 col-12 col-sm-3">
+                        <div class="mb-1 col-12 col-sm-4">
                             <OutputFloat value={state_static.iram_benchmark} digits={1} scale={0} unit="MiB/s" />
                         </div>
-                        <div class="mb-1 col-12 col-sm-3">
+                        <div class="mb-1 col-12 col-sm-4">
                             <OutputFloat value={state_static.psram_benchmark} digits={1} scale={0} unit="MiB/s" />
-                        </div>
-                        <div class="mb-1 col-12 col-sm-3">
-                            <OutputFloat value={state_static.flash_benchmark} digits={1} scale={0} unit="MiB/s" />
                         </div>
                     </div>
                 </FormRow>
 
-                <FormRow label={__("debug.content.memory_mode")} label_muted={__("debug.content.memory_mode_muted")}>
+                <FormRow label="">
                     <div class="row">
-                        <div class="mb-1 col-12 col-sm-9">
+                        <div class="mb-1 col-12 col-sm-6">
+                            <p class="mb-0 form-label text-center">{__("debug.content.flash_rodata")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-3">
-                            <InputText value={state_static.flash_mode} />
+                        <div class="mb-1 col-12 col-sm-6">
+                            <p class="mb-0 form-label text-center">{__("debug.content.flash_text")}</p>
+                        </div>
+                    </div>
+                </FormRow>
+
+                <FormRow label={__("debug.content.flash_benchmark")}>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-6">
+                            <OutputFloat value={state_static.rodata_benchmark} digits={1} scale={0} unit="MiB/s" />
+                        </div>
+                        <div class="mb-1 col-12 col-sm-6">
+                            <OutputFloat value={state_static.text_benchmark} digits={1} scale={0} unit="MiB/s" />
                         </div>
                     </div>
                 </FormRow>

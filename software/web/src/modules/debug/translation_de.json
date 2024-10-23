@@ -59,10 +59,10 @@
             "spi3": "SPI3 (VSPI)",
 
             "memory_speed_header": "Speichergeschwindigkeit",
-            "flash": "Flash",
-            "speed_benchmark": "Geschwindigkeitsbenchmark",
-            "memory_mode": "Speichermodus",
-            "memory_mode_muted": "behauptet der Code",
+            "ram_benchmark": "RAM-Benchmark",
+            "flash_benchmark": "Flash-Benchmark",
+            "flash_rodata": "Daten",
+            "flash_text": "Code",
 
             "websocket_header": "Websockets",
             "websocket_connection": "WebSocket-Verbindung",
