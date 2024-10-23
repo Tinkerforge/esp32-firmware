@@ -24,6 +24,7 @@
 
 #include "modules/meters/imeter.h"
 #include "modules/meters/meter_value_id.h"
+#include "modules/modbus_tcp_client/generic_tcp_client_connector.h"
 #include "virtual_meter.enum.h"
 
 struct RCTValueSpec
@@ -58,10 +59,10 @@ private:
     micros_t bootloader_last_detected = 0_s;
 };
 
-class MeterRCTPower final : public IMeter
+class MeterRCTPower final : protected GenericTCPClientConnector, public IMeter
 {
 public:
-    MeterRCTPower(uint32_t slot) : client(slot) {}
+    MeterRCTPower(uint32_t slot) : GenericTCPClientConnector("meter_rct_power", &client, &shared_client), client(slot), shared_client(&client) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(const Config &ephemeral_config) override;
@@ -71,6 +72,10 @@ public:
     bool supports_energy_export() override  {return true;}
     //bool supports_currents() override       {return true;}
 
+    void connect_callback() override;
+    void disconnect_callback() override;
+
 private:
     RCTPowerClient client;
+    TFGenericTCPSharedClient shared_client;
 };
