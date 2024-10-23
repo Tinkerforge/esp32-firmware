@@ -79,7 +79,7 @@ void MetersModbusTCP::pre_setup()
 
     table_prototypes.push_back({MeterModbusTCPTableID::AlphaESSHybridInverter, Config::Object({
         {"virtual_meter", Config::Uint8(static_cast<uint8_t>(AlphaESSHybridInverterVirtualMeter::None))},
-        {"device_address", Config::Uint(1, 1, 247)},
+        {"device_address", Config::Uint(85, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::ShellyProEM, Config::Object({
