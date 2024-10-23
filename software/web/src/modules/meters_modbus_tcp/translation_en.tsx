@@ -29,7 +29,7 @@ let x = {
             "table_solax_hybrid_inverter": "Solax hybrid inverter",
             "table_fronius_gen24_plus_hybrid_inverter": "Fronius GEN24 Plus hybrid inverter",
             "table_hailei_hybrid_inverter": "Hailei hybrid inverter (TPH series)",
-            "table_fox_ess_hybrid_inverter": "Fox ESS hybrid inverter",
+            "table_fox_ess_h3_hybrid_inverter": "Fox ESS H3 hybrid inverter",
             "virtual_meter": "Virtual meter",
             "virtual_meter_select": "Select...",
             "virtual_meter_inverter": "Inverter",

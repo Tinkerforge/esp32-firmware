@@ -1,6 +1,6 @@
 specs = [
     {
-        'name': 'Fox ESS Hybrid Inverter',
+        'name': 'Fox ESS H3 Hybrid Inverter',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -80,7 +80,7 @@ specs = [
         ],
     },
     {
-        'name': 'Fox ESS Hybrid Inverter Grid',
+        'name': 'Fox ESS H3 Hybrid Inverter Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -121,7 +121,7 @@ specs = [
         ],
     },
     {
-        'name': 'Fox ESS Hybrid Inverter Battery',
+        'name': 'Fox ESS H3 Hybrid Inverter Battery',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -175,7 +175,7 @@ specs = [
         ],
     },
     {
-        'name': 'Fox ESS Hybrid Inverter Load',
+        'name': 'Fox ESS H3 Hybrid Inverter Load',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -209,7 +209,7 @@ specs = [
         ],
     },
     {
-        'name': 'Fox ESS Hybrid Inverter Backup Load',
+        'name': 'Fox ESS H3 Hybrid Inverter Backup Load',
         'register_type': 'HoldingRegister',
         'values': [
             {

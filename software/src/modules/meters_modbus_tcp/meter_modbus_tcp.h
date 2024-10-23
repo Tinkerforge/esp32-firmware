@@ -43,7 +43,7 @@
 #include "solax_hybrid_inverter_virtual_meter.enum.h"
 #include "fronius_gen24_plus_hybrid_inverter_virtual_meter.enum.h"
 #include "hailei_hybrid_inverter_virtual_meter.enum.h"
-#include "fox_ess_hybrid_inverter_virtual_meter.enum.h"
+#include "fox_ess_h3_hybrid_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -179,8 +179,8 @@ private:
     // Hailei
     HaileiHybridInverterVirtualMeter hailei_hybrid_inverter_virtual_meter;
 
-    // Fox ESS
-    FoxESSHybridInverterVirtualMeter fox_ess_hybrid_inverter_virtual_meter;
+    // Fox ESS H3
+    FoxESSH3HybridInverterVirtualMeter fox_ess_h3_hybrid_inverter_virtual_meter;
 };
 
 #if defined(__GNUC__)
