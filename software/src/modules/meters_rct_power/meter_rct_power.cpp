@@ -302,7 +302,12 @@ bool RCTPowerClient::receive_hook()
 
     for (size_t i = 0; i < value_specs_length; ++i) {
         if (value_specs[i].id == id) {
-            float value = u.value * value_specs[i].scale_factor;
+            float value = u.value;
+
+            if (value != 0.0f) { // Really compare exactly with 0.0f
+                // Don't convert 0.0f into -0.0f if the scale factor is negative
+                value *= value_specs[i].scale_factor;
+            }
 
             debugfln("Received response for ID 0x%08x with value %f", id, u.value, value);
 
