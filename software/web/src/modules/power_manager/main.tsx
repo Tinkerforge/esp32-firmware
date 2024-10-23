@@ -358,12 +358,8 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         // On a charger, the power manager is enabled iff excess charging is enabled.
         let enabled = is_em ? s.enabled : s.excess_charging_enable;
 
-        let can_switch_phases = false;
-        if (is_em) {
-            can_switch_phases = API.get_unchecked('energy_manager/config')?.contactor_installed;
-        } else if (API.hasFeature("evse")) {
-            can_switch_phases = API.get_unchecked('evse/hardware_configuration')?.evse_version >= 30;
-        }
+        let can_switch_phases = is_em && API.get_unchecked('energy_manager/config')?.contactor_installed
+            || API.hasFeature("evse") && API.get_unchecked('evse/hardware_configuration')?.evse_version >= 30;
 
         let debug_mode = API.hasModule("debug");
 
