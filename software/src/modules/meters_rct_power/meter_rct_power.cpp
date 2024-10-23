@@ -162,6 +162,10 @@ void RCTPowerClient::read_next_value()
         return;
     }
 
+    if (!deadline_elapsed(bootloader_last_detected + 2_s)) {
+        return; // Bootloader sends its magic number every 500ms
+    }
+
     if (value_specs_index >= value_specs_length) {
         value_specs_index = 0;
     }
@@ -209,6 +213,8 @@ void RCTPowerClient::close_hook()
     wait_for_start = true;
     last_received_byte = 0;
     pending_response_used = 0;
+    bootloader_magic_number = 0;
+    bootloader_last_detected = 0_s;
 }
 
 void RCTPowerClient::tick_hook()
@@ -238,6 +244,12 @@ bool RCTPowerClient::receive_hook()
         if (result == 0) {
             disconnect(TFGenericTCPClientDisconnectReason::DisconnectedByPeer, -1);
             return false;
+        }
+
+        bootloader_magic_number = (bootloader_magic_number << 8) | received_byte;
+
+        if (bootloader_magic_number == 0x50F705AB) {
+            bootloader_last_detected = now_us();
         }
 
         debugfln("received_byte %u 0x%02x %s| last_received_byte %u 0x%02x %s",
@@ -330,7 +342,6 @@ bool RCTPowerClient::receive_hook()
 
     wait_for_start = true;
     pending_response_used = 0;
-
     return true;
 }
 

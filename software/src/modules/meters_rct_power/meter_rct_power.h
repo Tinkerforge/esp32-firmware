@@ -54,6 +54,8 @@ private:
     uint8_t last_received_byte = 0;
     uint8_t pending_response[12];
     size_t pending_response_used = 0;
+    uint32_t bootloader_magic_number = 0;
+    micros_t bootloader_last_detected = 0_s;
 };
 
 class MeterRCTPower final : public IMeter
