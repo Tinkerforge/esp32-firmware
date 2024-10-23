@@ -30,7 +30,7 @@ let x = {
             "grid_fees_and_taxes": "Grid fees and taxes",
             "electricity_provider_surcharge": "Electricity provider surcharge",
             "electricity_provider_base_fee": "Electricity provider base fee",
-            "day_ahead_market_prices_heading": "Day-Ahead Market Prices",
+            "day_ahead_market_prices_heading": "Status",
             "price_ct_per_kwh": "Price [ct/kWh]",
             "current_price": "Current market price",
             "average_price": "Average price",

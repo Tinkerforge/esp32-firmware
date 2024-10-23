@@ -39,7 +39,7 @@ let x = {
             "table_latitude": "Breitengrad",
             "table_longitude": "Längengrad",
             "time": "Zeit",
-            "solar_forecast_chart_heading": "Solarprognose-Chart",
+            "solar_forecast_chart_heading": "Status",
             "solar_forecast_now_label": "Solarprognose ab jetzt",
             "solar_forecast_today_label": "Heute",
             "solar_forecast_today_label_muted": "00:00 bis 23:59",
