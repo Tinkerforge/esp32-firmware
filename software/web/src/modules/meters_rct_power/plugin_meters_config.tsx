@@ -41,7 +41,7 @@ export type RCTPowerMetersConfig = [
 export function init() {
     return {
         [MeterClassID.RCTPower]: {
-            name: __("meters_rct_power.content.meter_class"),
+            name: () => __("meters_rct_power.content.meter_class"),
             new_config: () => [MeterClassID.RCTPower, {display_name: "", host: "", port: 8899, virtual_meter: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: RCTPowerMetersConfig, on_config: (config: RCTPowerMetersConfig) => void): ComponentChildren => {
