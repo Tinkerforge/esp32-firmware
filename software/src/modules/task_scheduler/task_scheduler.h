@@ -145,9 +145,6 @@ private:
     void run_wall_clock_task(uint64_t task_id);
 };
 
-extern thread_local const char *_task_scheduler_file;
-extern thread_local int _task_scheduler_line;
-
 #define scheduleOnce _task_scheduler_context(__FILE__, __LINE__)->scheduleOnce
 #define scheduleWithFixedDelay _task_scheduler_context(__FILE__, __LINE__)->scheduleWithFixedDelay
 #define scheduleWhenClockSynced _task_scheduler_context(__FILE__, __LINE__)->scheduleWhenClockSynced
