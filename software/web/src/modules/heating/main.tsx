@@ -157,7 +157,7 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                 lines_vertical: []
             }
             const resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60
-            const grid_costs_and_taxes_and_supplier_markup = this.state.dap_config.grid_costs_and_taxes / 1000.0 + this.state.dap_config.supplier_markup / 1000.0;
+            const grid_costs_and_taxes_and_supplier_markup = dap_config.grid_costs_and_taxes / 1000.0 + dap_config.supplier_markup / 1000.0;
             for (let i = 0; i < dap_prices.prices.length; i++) {
                 data.values[0].push(dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
                 data.values[1].push(get_price_from_index(i) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
