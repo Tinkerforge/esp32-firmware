@@ -337,10 +337,25 @@ void MeterRCTPower::setup(const Config &ephemeral_config)
     port = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
 
     client.setup(ephemeral_config);
+}
 
-    task_scheduler.scheduleOnce([this]() {
-        start_connection();
-    }, 1_s);
+void MeterRCTPower::register_events()
+{
+    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
+        if (connected->asBool()) {
+            start_connection();
+        }
+        else {
+            stop_connection();
+        }
+
+        return EventResult::OK;
+    });
+}
+
+void MeterRCTPower::pre_reboot()
+{
+    stop_connection();
 }
 
 void MeterRCTPower::connect_callback()
