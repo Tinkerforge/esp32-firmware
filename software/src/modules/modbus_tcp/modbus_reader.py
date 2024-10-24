@@ -27,36 +27,56 @@ class RegisterBlock:
 
     def read(self, client: ModbusClient.ModbusTcpClient):
         coils = False
+        max_read = 0
         if self.reg_type == 'coil':
-            rr = client.read_coils(self.offset, self.count)
+            read_fn = lambda offset, count: client.read_coils(offset, count)
             coils = True
+            max_read = 2000
         elif self.reg_type == 'discrete':
-            rr = client.read_discrete_inputs(self.offset, self.count)
+            read_fn = lambda offset, count: client.read_discrete_inputs(offset, count)
             coils = True
+            max_read = 2000
         elif self.reg_type == 'holding':
-            rr = client.read_holding_registers(self.offset, self.count)
+            read_fn = lambda offset, count: client.read_holding_registers(offset, count)
+            max_read = 124
         elif self.reg_type == 'input':
-            rr = client.read_input_registers(self.offset, self.count)
+            read_fn = lambda offset, count: client.read_input_registers(offset, count)
+            max_read = 124
 
-        if rr.isError():
-            print(f"Received Modbus library error({rr})")
-            raise Exception(rr)
-        if isinstance(rr, ExceptionResponse):
-            print(f"Received Modbus library exception ({rr})")
-            return []
+        read_regs = []
 
-        if coils:
-            d = rr.bits
-        else:
-            d = BinaryPayloadDecoder.fromRegisters(rr.registers, byteorder=Endian.BIG)
+        count = self.count
+        offset = self.offset
+        while count > 0:
+            to_read = min(max_read, count)
+
+            rr = read_fn(offset, to_read)
+
+            if rr.isError():
+                print(f"Received Modbus library error({rr})")
+                raise Exception(rr)
+            if isinstance(rr, ExceptionResponse):
+                print(f"Received Modbus library exception ({rr})")
+                return []
+
+            count -= to_read
+            offset += to_read
+
+            if coils:
+                read_regs += rr.bits
+            else:
+                read_regs += rr.registers
+
+        if not coils:
+            read_regs = BinaryPayloadDecoder.fromRegisters(read_regs, byteorder=Endian.BIG)
 
         result = []
         off = self.offset
         for fn, name in self.payload_converter:
             #breakpoint()
-            len_, val = fn(d)
+            len_, val = fn(read_regs)
             if name != "_":
-                result.append((off, name, val))
+                result.append([off, name, val])
             off += len_
 
         return result
@@ -71,25 +91,21 @@ def f32(d):
     return 2, d.decode_32bit_float()
 
 
-def u16_block(len_, rjust=10):
-    return lambda d: (len_ * 2, " ".join(f'{x}'.rjust(rjust) for x in [d.decode_16bit_uint() for i in range(len_)]))
+def u16_block(len_):
+    return lambda d: (len_ * 2, [d.decode_16bit_uint() for i in range(len_)])
 
-def u32_block(len_, rjust=10):
-    return lambda d: (len_ * 2, " ".join(f'{x}'.rjust(rjust) for x in [d.decode_32bit_uint() for i in range(len_)]))
+def u32_block(len_):
+    return lambda d: (len_ * 2, [d.decode_32bit_uint() for i in range(len_)])
 
-def f32_block(len_, rjust=10):
-    return lambda d: (len_ * 2, " ".join(f'{x:.3f}'.rjust(rjust) for x in [d.decode_32bit_float() for i in range(len_)]))
+def f32_block(len_):
+    return lambda d: (len_ * 2, [d.decode_32bit_float() for i in range(len_)])
 
 
 def bit(d):
     return 1, d.pop()
 
 def str_(len_):
-    def inner(d):
-        b = d.decode_string(len_)
-        return len_ // 2, f'{repr(b.strip(b'\x00').decode('ascii'))} (0x{b.hex(' ', 2).replace(' ', ' 0x')})'
-
-    return inner
+    return lambda d: (len_ // 2, d.decode_string(len_))
 
 WARP_REGISTER_MAP = [
     RegisterBlock('input_regs', 'input', 0, 14, [
@@ -109,8 +125,7 @@ WARP_REGISTER_MAP = [
         (u32, "start_time_min"),
         (u32, "charging_time_sec"),
         (u32, "max_current"),
-        (u32_block(10), 'slots_00'),
-        (u32_block(10), 'slots_10'),
+        (u32_block(20), 'slots'),
     ]),
 
     RegisterBlock('meter_input_regs', 'input', 2000, 10, [
@@ -121,19 +136,8 @@ WARP_REGISTER_MAP = [
         (u32, "energy_this_charge"),
     ]),
 
-    RegisterBlock('meter_all_values_input_regs', 'input', 2100, 80, [
-        (f32_block(10), 'meter_values_00'),
-        (f32_block(10), 'meter_values_10'),
-        (f32_block(10), 'meter_values_20'),
-        (f32_block(10), 'meter_values_30'),
-    ]),
-
-    RegisterBlock('meter_all_values_input_regs_2', 'input', 2100 + 80, 90, [
-        (f32_block(10), 'meter_values_40'),
-        (f32_block(10), 'meter_values_50'),
-        (f32_block(10), 'meter_values_60'),
-        (f32_block(10), 'meter_values_70'),
-        (f32_block(5), 'meter_values_80'),
+    RegisterBlock('meter_all_values_input_regs', 'input', 2100, 170, [
+        (f32_block(85), 'meter_values'),
     ]),
 
     RegisterBlock('nfc_input_regs', 'input', 4000, 12, [
@@ -153,7 +157,7 @@ WARP_REGISTER_MAP = [
     ]),
 
     RegisterBlock('meter_holding_regs', 'holding', 2000, 2, [
-        (u32, "trigger_reset")
+        (u32, "trigger_reset"),
     ]),
 
     RegisterBlock('discrete_inputs', 'discrete', 0, 6, [
@@ -186,42 +190,42 @@ KEBA_REGISTER_MAP = [
         (u32, "_"),
         (u32, "cable_state"),
         (u32, "error_code"),
- * 3 * [(u32, "currents")],
+        (u32_block(3), "currents"),
         (u32, "serial_number"),
         (u32, "features"),
         (u32, "firmware_version"),
         (u32, "power"),
- * 7 * [(u32, "_")],
+        (u32_block(7), "_"),
         (u32, "total_energy"),
         (u32, "_"),
- * 3 * [(u32, "voltages")],
+        (u32_block(3), "voltages"),
         (u32, "power_factor"),
     ]),
 
     RegisterBlock('keba_read_max', 'holding', 1100, 12, [
         (u32, "max_current"),
- * 4 * [(u32, "_")],
-        (u32, "max_hardware_current")
+        (u32_block(4), "_"),
+        (u32, "max_hardware_current"),
     ]),
 
     RegisterBlock('keba_read_charge', 'holding', 1500, 4, [
         (u32, "rfid_tag"),
-        (u32, "charged_energy")
+        (u32, "charged_energy"),
     ]),
 
     RegisterBlock('keba_read_phase_switch', 'holding', 1550, 4, [
         (u32, "phase_switching_source"),
-        (u32, "phase_switching_state")
+        (u32, "phase_switching_state"),
     ]),
 
     RegisterBlock('keba_read_failsafe', 'holding', 1600, 4, [
         (u32, "failsafe_current"),
-        (u32, "failsafe_timeout")
+        (u32, "failsafe_timeout"),
     ]),
 
     RegisterBlock('keba_write', 'holding', 5004, 17, [
         (u16, "set_charging_current"),
- * 5 * [(u16, "_")],
+        (u16_block(5), "_"),
         (u16, "set_energy"),
         (u16, "_"),
         (u16, "unlock_plug"),
@@ -248,13 +252,13 @@ BENDER_REGISTER_MAP = [
         (str_(4), "firmware_version"),
         (u32, "_"),
         (u16, "ocpp_cp_state"),
- * 4 * [(u32, "errorcodes")],
- * 7 * [(u16, "_")],
+        (u32_block(4), "errorcodes"),
+        (u16_block(7), "_"),
         (str_(4), "protocol_version"),
         (u16, "vehicle_state"),
         (u16, "vehicle_state_hex"),
         (u16, "chargepoint_available"),
- * 6 * [(u16, "_")],
+        (u16_block(6), "_"),
         (u16, "safe_current"),
         (u16, "comm_timeout"),
         (u16, "hardware_curr_limit"),
@@ -271,29 +275,29 @@ BENDER_REGISTER_MAP = [
     ]),
 
     RegisterBlock('bender_phases', 'holding', 200, 28, [
- * 3 * [(u32, "energy")],
- * 3 * [(u32, "power")],
- * 3 * [(u32, "current")],
+        (u32_block(3), "energy"),
+        (u32_block(3), "power"),
+        (u32_block(3), "current"),
         (u32, "total_energy"),
         (u32, "total_power"),
- * 3 * [(u32, "voltage")],
+        (u32_block(3), "voltage"),
     ]),
 
     RegisterBlock('bender_dlm', 'holding', 600, 36, [
         (u16, "dlm_mode"),
- * 9 * [(u16, "_")],
- * 3 * [(u16, "evse_limit")],
- * 3 * [(u16, "operator_evse_limit")],
- * 4 * [(u16, "_")],
+        (u16_block(9), "_"),
+        (u16_block(3), "evse_limit"),
+        (u16_block(3), "operator_evse_limit"),
+        (u16_block(4), "_"),
         (u16, "external_meter_support"),
         (u16, "number_of_slaves"),
- * 8 * [(u16, "_")],
- * 3 * [(u16, "overall_current_applied")],
- * 3 * [(u16, "overall_current_available")],
+        (u16_block(8), "_"),
+        (u16_block(3), "overall_current_applied"),
+        (u16_block(3), "overall_current_available"),
     ]),
 
     RegisterBlock('bender_charge', 'holding', 700, 46, [
- * 9 * [(u16, "_")],
+        (u16_block(9), "_"),
         (u16, "wh_charged"),
         (u16, "current_signaled"),
         (u32, "start_time"),
@@ -305,8 +309,8 @@ BENDER_REGISTER_MAP = [
         (u32, "charged_energy"),
         (u32, "charge_duration_new"),
         (str_(20), "user_id"),
-* 10 * [(u16, "_")],
-        (str_(12), "evcc_id")
+        (u16_block(10), "_"),
+        (str_(12), "evcc_id"),
     ]),
 
     RegisterBlock('bender_hems', 'holding', 1000, 1, [
@@ -339,6 +343,11 @@ class color:
     INVERT = '\033[7m'
     END = '\033[0m'
 
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
 def main():
     table = {
         'warp': WARP_REGISTER_MAP,
@@ -368,6 +377,20 @@ def main():
                     print(f"=== {k} ===")
                     for i, tup in enumerate(v):
                         offset, name, value = tup
+
+                        if isinstance(value, bytes):
+                            value = f'{repr(value.strip(b'\x00').decode('ascii'))} (0x{value.hex(' ', 2).replace(' ', ' 0x')})'
+                            regs[k][i][2] = value
+                        elif isinstance(value, list):
+                            value = "\n".join(" ".join(f'{x:.3f}'.rjust(14) if isinstance(x, float) else f'{x:d}'.rjust(10) for x in y) for y in chunks(value, 10))
+                            regs[k][i][2] = value
+                        elif isinstance(value, float):
+                            value = f'{value:.3f}'.rjust(14)
+                            regs[k][i][2] = value
+                        elif isinstance(value, int):
+                            value = f'{value:d}'.rjust(10)
+                            regs[k][i][2] = value
+
                         off_indent = " " * (max_offset_len - len(str(offset)))
                         name_indent = " " * (max_name_len - len(name))
                         if k in last_regs and (not isinstance(value, float) or not math.isnan(value)) and value != last_regs[k][i][2]:
@@ -385,6 +408,9 @@ def main():
                                     else:
                                         result += new_c
                                 value = result.replace(color.END + color.INVERT, "")
+                        indent = len(f'    {off_indent}{offset} {name}{name_indent} ')
+                        if isinstance(value, str):
+                            value = value.replace("\n", "\n" + " " * indent)
                         print(f"    {off_indent}{offset} {name}{name_indent} {value}")
                     print("")
 
