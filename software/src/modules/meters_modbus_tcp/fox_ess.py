@@ -26,42 +26,42 @@ specs = [
             },
             {
                 'name': 'Grid Current Phase R [0.1 A]',
-                'value_id': 'CurrentL1ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL1ImExDiff',
                 'start_address': 31009,
                 'value_type': 'S16',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Grid Current Phase S [0.1 A]',
-                'value_id': 'CurrentL2ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL2ImExDiff',
                 'start_address': 31010,
                 'value_type': 'S16',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Grid Current Phase T [0.1 A]',
-                'value_id': 'CurrentL3ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL3ImExDiff',
                 'start_address': 31011,
                 'value_type': 'S16',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Grid Power Phase R [W]',
-                'value_id': 'PowerActiveL1Export',
+                'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 31012,
-                'value_type': 'U16',
+                'value_type': 'S16',
             },
             {
                 'name': 'Grid Power Phase S [W]',
-                'value_id': 'PowerActiveL2Export',
+                'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 31013,
-                'value_type': 'U16',
+                'value_type': 'S16',
             },
             {
                 'name': 'Grid Power Phase T [W]',
-                'value_id': 'PowerActiveL3Export',
+                'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 31014,
-                'value_type': 'U16',
+                'value_type': 'S16',
             },
             {
                 'name': 'Grid Frequency [0.01 Hz]',
