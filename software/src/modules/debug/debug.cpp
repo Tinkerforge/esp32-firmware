@@ -566,6 +566,43 @@ void Debug::register_task(TaskHandle_t handle, uint32_t stack_size)
     conf->get("stack_size")->updateUint(stack_size);
 }
 
+void Debug::deregister_task(const char *task_name)
+{
+    size_t task_count = state_hwm.count();
+    for (size_t i = 0; i < task_count; i++) {
+        if (state_hwm.get(i)->get("task_name")->asString() == task_name) {
+            deregister_task_internal(i);
+            return;
+        }
+    }
+
+    logger.printfln("Cannot deregister task: Name '%s' not found.", task_name);
+}
+
+void Debug::deregister_task(TaskHandle_t handle)
+{
+    if (!handle) {
+        logger.printfln("deregister_task called with invalid handle.");
+        return;
+    }
+
+    size_t task_count = task_handles.size();
+    for (size_t i = 0; i < task_count; i++) {
+        if (task_handles[i] == handle) {
+            deregister_task_internal(i);
+            return;
+        }
+    }
+
+    logger.printfln("Cannot deregister task: Handle not found.");
+}
+
+void Debug::deregister_task_internal(size_t i)
+{
+    task_handles.erase(task_handles.begin() + static_cast<int>(i));
+    state_hwm.remove(i);
+}
+
 static float benchmark_area(uint32_t *start_address, size_t max_length)
 {
     uint32_t *end_address = start_address + (max_length / 4);

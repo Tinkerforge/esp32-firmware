@@ -44,8 +44,12 @@ public:
 
     void register_task(const char *task_name, uint32_t stack_size, TaskAvailability availability = ExpectPresent);
     void register_task(TaskHandle_t handle, uint32_t stack_size);
+    void deregister_task(const char *task_name);
+    void deregister_task(TaskHandle_t handle);
 
 private:
+    void deregister_task_internal(size_t index);
+
     ConfigRoot state_static;
     ConfigRoot state_fast;
     ConfigRoot state_slow;
