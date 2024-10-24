@@ -318,6 +318,14 @@ BENDER_REGISTER_MAP = [
     ]),
 ]
 
+def read_all_regs(client, table):
+    regs = {}
+    for block in table:
+        result = block.read(client)
+        regs[block.name] = result
+
+    return regs
+
 class color:
     PURPLE = '\033[95m'
     CYAN = '\033[96m'
@@ -346,48 +354,42 @@ def main():
 
         client.connect()
 
-        regs = {}
         last_regs = {}
-        i = 0
+
         try:
             while True:
-                result = table[i].read(client)
-                regs[table[i].name] = result
-                i += 1
+                regs = read_all_regs(client, table)
 
                 max_offset_len = len(str(max([offset for v in regs.values() for offset, name, value in v])))
                 max_name_len = max([len(name) for v in regs.values() for offset, name, value in v])
 
-                if i == len(table):
-                    print("\033[H\033[2J", end="")
-                    for k, v in regs.items():
-                        print(f"=== {k} ===")
-                        for i, tup in enumerate(v):
-                            offset, name, value = tup
-                            off_indent = " " * (max_offset_len - len(str(offset)))
-                            name_indent = " " * (max_name_len - len(name))
-                            if k in last_regs and (not isinstance(value, float) or not math.isnan(value)) and value != last_regs[k][i][2]:
-                                if not isinstance(value, str):
-                                    value = color.INVERT + str(value) + color.END
-                                else:
-                                    last_value = last_regs[k][i][2]
-                                    l = max(len(last_value), len(value))
-                                    last_value = last_value.ljust(l)
-                                    value = value.ljust(l)
-                                    result = ""
-                                    for old_c, new_c in zip(last_value, value):
-                                        if old_c != new_c:
-                                            result += color.INVERT + new_c + color.END
-                                        else:
-                                            result += new_c
-                                    value = result.replace(color.END + color.INVERT, "")
-                            print(f"    {off_indent}{offset} {name}{name_indent} {value}")
-                        print("")
+                print("\033[H\033[2J", end="")
+                for k, v in regs.items():
+                    print(f"=== {k} ===")
+                    for i, tup in enumerate(v):
+                        offset, name, value = tup
+                        off_indent = " " * (max_offset_len - len(str(offset)))
+                        name_indent = " " * (max_name_len - len(name))
+                        if k in last_regs and (not isinstance(value, float) or not math.isnan(value)) and value != last_regs[k][i][2]:
+                            if not isinstance(value, str):
+                                value = color.INVERT + str(value) + color.END
+                            else:
+                                last_value = last_regs[k][i][2]
+                                l = max(len(last_value), len(value))
+                                last_value = last_value.ljust(l)
+                                value = value.ljust(l)
+                                result = ""
+                                for old_c, new_c in zip(last_value, value):
+                                    if old_c != new_c:
+                                        result += color.INVERT + new_c + color.END
+                                    else:
+                                        result += new_c
+                                value = result.replace(color.END + color.INVERT, "")
+                        print(f"    {off_indent}{offset} {name}{name_indent} {value}")
+                    print("")
 
-                    i = 0
-                    time.sleep(1)
-                    last_regs = copy.deepcopy(regs)
-                    regs = {}
+                time.sleep(1)
+                last_regs = copy.deepcopy(regs)
 
         except Exception as e:
             print(e)
