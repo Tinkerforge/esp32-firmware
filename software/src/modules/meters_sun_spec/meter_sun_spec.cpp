@@ -58,17 +58,26 @@ void MeterSunSpec::setup(const Config &ephemeral_config)
         return;
     }
 
-    task_scheduler.scheduleOnce([this]() {
-        read_allowed = false;
-        start_connection();
-    }, 1_s);
-
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (read_allowed) {
             read_allowed = false;
             start_generic_read();
         }
     }, 2_s, 1_s);
+}
+
+void MeterSunSpec::register_events()
+{
+    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
+        if (connected->asBool()) {
+            start_connection();
+        }
+        else {
+            stop_connection();
+        }
+
+        return EventResult::OK;
+    });
 }
 
 void MeterSunSpec::pre_reboot()

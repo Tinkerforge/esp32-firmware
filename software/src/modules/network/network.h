@@ -29,6 +29,12 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
 
     ConfigRoot config;
+    ConfigRoot state;
+
+private:
+    bool ethernet_connected = false;
+    bool wifi_connected = false;
 };

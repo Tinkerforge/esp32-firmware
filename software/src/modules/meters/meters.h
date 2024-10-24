@@ -80,6 +80,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
     void pre_reboot() override;
 
     void register_meter_generator(MeterClassID meter_class, MeterGenerator *generator);

@@ -25,6 +25,8 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "modules/ethernet/ethernet_state.enum.h"
+#include "modules/wifi/wifi_state.enum.h"
 
 extern char local_uid_str[32];
 
@@ -34,6 +36,10 @@ void Network::pre_setup()
         {"hostname", Config::Str("replaceme", 0, 32)},
         {"enable_mdns", Config::Bool(true)},
         {"web_server_port", Config::Uint16(80)}
+    });
+
+    state = Config::Object({
+        {"connected", Config::Bool(false)}
     });
 }
 
@@ -49,6 +55,7 @@ void Network::setup()
 void Network::register_urls()
 {
     api.addPersistentConfig("network/config", &config);
+    api.addState("network/state", &state);
 
     if (!config.get("enable_mdns")->asBool()) {
         return;
@@ -71,5 +78,24 @@ void Network::register_urls()
 
 #if MODULE_DEBUG_AVAILABLE()
     debug.register_task("mdns", CONFIG_MDNS_TASK_STACK_SIZE);
+#endif
+}
+
+void Network::register_events()
+{
+#if MODULE_ETHERNET_AVAILABLE()
+    event.registerEvent("ethernet/state", {"connection_state"}, [this](const Config *connection_state) {
+        ethernet_connected = connection_state->asEnum<EthernetState>() == EthernetState::Connected;
+        state.get("connected")->updateBool(ethernet_connected || wifi_connected);
+        return EventResult::OK;
+    });
+#endif
+
+#if MODULE_WIFI_AVAILABLE()
+    event.registerEvent("wifi/state", {"connection_state"}, [this](const Config *connection_state) {
+        wifi_connected = connection_state->asEnum<WifiState>() == WifiState::Connected;
+        state.get("connected")->updateBool(ethernet_connected || wifi_connected);
+        return EventResult::OK;
+    });
 #endif
 }

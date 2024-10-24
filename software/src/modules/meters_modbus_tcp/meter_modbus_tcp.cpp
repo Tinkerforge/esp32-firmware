@@ -717,17 +717,26 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         meters.declare_value_ids(slot, table->ids, table->ids_length);
     }
 
-    task_scheduler.scheduleOnce([this]() {
-        read_allowed = false;
-        start_connection();
-    }, 1_s);
-
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (read_allowed) {
             read_allowed = false;
             read_next();
         }
     }, 2_s, 1_s);
+}
+
+void MeterModbusTCP::register_events()
+{
+    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
+        if (connected->asBool()) {
+            start_connection();
+        }
+        else {
+            stop_connection();
+        }
+
+        return EventResult::OK;
+    });
 }
 
 void MeterModbusTCP::pre_reboot()

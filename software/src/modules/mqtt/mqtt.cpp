@@ -726,31 +726,30 @@ void Mqtt::register_events()
     }
 
     // Start MQTT client here to make sure all handlers are already registered.
-
-    // Start immediately if we already have a working ethernet connection. WiFi takes a bit longer.
-    // Wait 20 secs to not spam the event log with a failed connection attempt.
-    bool start_immediately = false;
-#if MODULE_ETHERNET_AVAILABLE()
-    start_immediately = ethernet.get_connection_state() == EthernetState::Connected;
-#endif
-    if (start_immediately) {
-        esp_mqtt_client_start(client);
-#if MODULE_DEBUG_AVAILABLE()
-        debug.register_task("mqtt_task", MQTT_TASK_STACK_SIZE);
-#endif
-    } else {
-        task_scheduler.scheduleOnce([this]() {
+    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
+        if (connected->asBool()) {
             esp_mqtt_client_start(client);
 #if MODULE_DEBUG_AVAILABLE()
             debug.register_task("mqtt_task", MQTT_TASK_STACK_SIZE);
 #endif
-        }, 20_s);
-    }
+        }
+        else {
+#if MODULE_DEBUG_AVAILABLE()
+            debug.deregister_task("mqtt_task");
+#endif
+            esp_mqtt_client_stop(client);
+        }
+
+        return EventResult::OK;
+    });
 }
 
 void Mqtt::pre_reboot()
 {
     if (client != nullptr) {
+#if MODULE_DEBUG_AVAILABLE()
+        debug.deregister_task("mqtt_task");
+#endif
         esp_mqtt_client_stop(client);
     }
 }

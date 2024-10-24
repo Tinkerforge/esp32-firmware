@@ -77,6 +77,7 @@ public:
 
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(const Config &ephemeral_config) override;
+    void register_events() override;
     void pre_reboot() override;
 
     bool supports_power()         override {return true;}

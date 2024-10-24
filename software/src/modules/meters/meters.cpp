@@ -504,6 +504,13 @@ void Meters::register_urls()
 #endif
 }
 
+void Meters::register_events()
+{
+    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+        meter_slots[slot].meter->register_events();
+    }
+}
+
 void Meters::pre_reboot()
 {
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
