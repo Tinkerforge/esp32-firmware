@@ -671,14 +671,6 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             table = &fox_ess_h3_hybrid_inverter_battery_table;
             break;
 
-        case FoxESSH3HybridInverterVirtualMeter::Load:
-            table = &fox_ess_h3_hybrid_inverter_load_table;
-            break;
-
-        case FoxESSH3HybridInverterVirtualMeter::BackupLoad:
-            table = &fox_ess_h3_hybrid_inverter_backup_load_table;
-            break;
-
         default:
             logger.printfln("Unknown Fox ESS H3 Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fox_ess_h3_hybrid_inverter_virtual_meter));
             return;
