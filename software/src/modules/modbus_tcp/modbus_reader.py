@@ -27,15 +27,15 @@ class RegisterBlock:
 
     def read(self, client: ModbusClient.ModbusTcpClient):
         coils = False
-        if self.reg_type == 0x01 or self.reg_type == 'coil':
+        if self.reg_type == 'coil':
             rr = client.read_coils(self.offset, self.count)
             coils = True
-        elif self.reg_type == 0x02 or self.reg_type == 'discrete':
+        elif self.reg_type == 'discrete':
             rr = client.read_discrete_inputs(self.offset, self.count)
             coils = True
-        elif self.reg_type == 0x03 or self.reg_type == 'holding':
+        elif self.reg_type == 'holding':
             rr = client.read_holding_registers(self.offset, self.count)
-        elif self.reg_type == 0x04 or self.reg_type == 'input':
+        elif self.reg_type == 'input':
             rr = client.read_input_registers(self.offset, self.count)
 
         if rr.isError():
