@@ -173,11 +173,9 @@ void Debug::pre_setup()
 
     task_handles.reserve(16);
     register_task(xTaskGetCurrentTaskHandle(),      getArduinoLoopTaskStackSize());
-    register_task(xTaskGetCurrentTaskHandle(),      getArduinoLoopTaskStackSize());
     register_task(xTaskGetIdleTaskHandleForCPU(0),  sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
     register_task(xTaskGetIdleTaskHandleForCPU(1),  sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
     register_task(xTimerGetTimerDaemonTaskHandle(), sizeof(StackType_t) * configTIMER_TASK_STACK_DEPTH);
-    register_task("esp_timer",                      ESP_TASK_TIMER_STACK);
     register_task("esp_timer",                      ESP_TASK_TIMER_STACK);
 
 // Copied from esp_ipc.c
