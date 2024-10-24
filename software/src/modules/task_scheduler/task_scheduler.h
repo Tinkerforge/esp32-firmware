@@ -36,10 +36,12 @@ struct Task {
     micros_t next_deadline;
     micros_t delay;
     TaskHandle_t awaited_by;
+    const char *file;
+    int line;
     bool once;
     bool cancelled;
 
-    Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, bool once);
+    Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, const char *file, int line, bool once);
 };
 
 #define IS_WALL_CLOCK_TASK_ID(task_id) (task_id & (1ull << 63))
@@ -128,6 +130,8 @@ public:
 
     AwaitResult await(std::function<void(void)> &&fn, uint32_t millis_to_wait = 10000);
 
+    TaskScheduler *_task_scheduler_context(const char *f, int l);
+
 private:
     AwaitResult await(uint64_t task_id, uint32_t millis_to_wait = 10000);
 
@@ -140,3 +144,12 @@ private:
     void wall_clock_worker();
     void run_wall_clock_task(uint64_t task_id);
 };
+
+extern thread_local const char *_task_scheduler_file;
+extern thread_local int _task_scheduler_line;
+
+#define scheduleOnce _task_scheduler_context(__FILE__, __LINE__)->scheduleOnce
+#define scheduleWithFixedDelay _task_scheduler_context(__FILE__, __LINE__)->scheduleWithFixedDelay
+#define scheduleWhenClockSynced _task_scheduler_context(__FILE__, __LINE__)->scheduleWhenClockSynced
+#define scheduleWallClock _task_scheduler_context(__FILE__, __LINE__)->scheduleWallClock
+#define await _task_scheduler_context(__FILE__, __LINE__)->await

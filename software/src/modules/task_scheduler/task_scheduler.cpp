@@ -19,17 +19,28 @@
 
 #include "task_scheduler.h"
 
+#undef scheduleOnce
+#undef scheduleWithFixedDelay
+#undef scheduleWhenClockSynced
+#undef scheduleWallClock
+#undef await
+
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 
 static uint64_t last_task_id = 0;
 
-Task::Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, bool once) :
+thread_local const char *_task_scheduler_file;
+thread_local int _task_scheduler_line;
+
+Task::Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, const char *file, int line, bool once) :
         fn(std::move(fn)),
         task_id(task_id),
         next_deadline(now_us() + first_run_delay),
         delay(delay),
         awaited_by(nullptr),
+        file(file),
+        line(line),
         once(once),
         cancelled(false) {
 }
@@ -100,7 +111,7 @@ void TaskScheduler::custom_loop()
     // while the task_mutex is locked.
 
     {
-        std::lock_guard<std::mutex> l{this->task_mutex};
+        std::lock_guard<std::mutex> lock{this->task_mutex};
         if (tasks.empty()) {
             return;
         }
@@ -132,7 +143,7 @@ void TaskScheduler::custom_loop()
     }
 
     {
-        std::lock_guard<std::mutex> l{this->task_mutex};
+        std::lock_guard<std::mutex> lock{this->task_mutex};
         defer {this->currentTask = nullptr;};
 
         if (this->currentTask->awaited_by != nullptr) {
@@ -166,17 +177,17 @@ void TaskScheduler::custom_loop()
 
 uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms)
 {
-    std::lock_guard<std::mutex> l{this->task_mutex};
+    std::lock_guard<std::mutex> lock{this->task_mutex};
     uint64_t task_id = ++last_task_id;
-    tasks.emplace(new Task(std::move(fn), task_id, delay_ms, 0_us, true));
+    tasks.emplace(new Task(std::move(fn), task_id, delay_ms, 0_us, _task_scheduler_file, _task_scheduler_line, true));
     return task_id;
 }
 
 uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms)
 {
-    std::lock_guard<std::mutex> l{this->task_mutex};
+    std::lock_guard<std::mutex> lock{this->task_mutex};
     uint64_t task_id = ++last_task_id;
-    tasks.emplace(new Task(std::move(fn), task_id, first_delay_ms, delay_ms, false));
+    tasks.emplace(new Task(std::move(fn), task_id, first_delay_ms, delay_ms, _task_scheduler_file, _task_scheduler_line, false));
     return task_id;
 }
 
@@ -198,9 +209,9 @@ uint64_t TaskScheduler::scheduleWallClock(std::function<void(void)> &&fn, minute
 {
     uint64_t task_id;
     {
-        std::lock_guard<std::mutex> l{this->task_mutex};
+        std::lock_guard<std::mutex> lock{this->task_mutex};
         task_id = ++last_task_id | (1ull << 63ull);
-        auto runner_task = std::unique_ptr<Task>(new Task(std::move(fn), task_id, 0_us, execution_delay_ms, true));
+        auto runner_task = std::unique_ptr<Task>(new Task(std::move(fn), task_id, 0_us, execution_delay_ms, _task_scheduler_file, _task_scheduler_line, true));
 
         wall_clock_tasks.emplace_back(std::move(runner_task), task_id, interval_minutes, run_on_first_sync);
     }
@@ -215,7 +226,7 @@ uint64_t TaskScheduler::scheduleWallClock(std::function<void(void)> &&fn, minute
 
 TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id)
 {
-    std::lock_guard<std::mutex> l{this->task_mutex};
+    std::lock_guard<std::mutex> lock{this->task_mutex};
     if (IS_WALL_CLOCK_TASK_ID(task_id)) {
         size_t i = 0;
         bool task_scheduled = false;
@@ -247,7 +258,7 @@ uint64_t TaskScheduler::currentTaskId()
         return 0;
     }
 
-    std::lock_guard<std::mutex> l{this->task_mutex};
+    std::lock_guard<std::mutex> lock{this->task_mutex};
     if (this->currentTask != nullptr)
         return this->currentTask->task_id;
     return 0;
@@ -268,7 +279,7 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t milli
     }
 
     {
-        std::lock_guard<std::mutex> l{this->task_mutex};
+        std::lock_guard<std::mutex> lock{this->task_mutex};
         // The awaited task either
         // - is in the queue
         // - is currently running, i.e. not in the queue but in this->currentTask
@@ -333,7 +344,7 @@ void TaskScheduler::wall_clock_worker() {
 
     auto minutes_since_midnight = minutes_t{time_struct.tm_hour * 60 + time_struct.tm_min};
 
-    std::lock_guard<std::mutex> l{this->task_mutex};
+    std::lock_guard<std::mutex> lock{this->task_mutex};
     auto now = now_us();
 
     for (auto &task : wall_clock_tasks) {
@@ -354,4 +365,10 @@ void TaskScheduler::wall_clock_worker() {
     }
 
     last_minute = time_struct.tm_min;
+}
+
+TaskScheduler *TaskScheduler::_task_scheduler_context(const char *f, int l) {
+    _task_scheduler_file = f;
+    _task_scheduler_line = l;
+    return this;
 }
