@@ -59,14 +59,13 @@ public:
 
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(const Config &ephemeral_config) override;
+    void register_events() override;
 
     bool supports_power()         override {return true;}
     bool supports_energy_import() override {return true;}
     bool supports_energy_imexsum()override {return true;}
     bool supports_energy_export() override {return true;}
     bool supports_currents()      override {return true;}
-
-    void register_events();
 
     EventResult on_value_ids_change(const Config *value_ids);
     void on_values_change_single(const Config *source_values);

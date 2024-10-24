@@ -33,19 +33,7 @@ void MetersMeta::pre_setup()
         {"constant",       Config::Int32(0)},
     });
 
-    child_meters = new std::vector<MeterMeta *>;
-
     meters.register_meter_generator(get_class(), this);
-}
-
-void MetersMeta::register_events()
-{
-    for (MeterMeta *meter : *child_meters) {
-        meter->register_events();
-    }
-
-    delete child_meters;
-    child_meters = nullptr;
 }
 
 MeterClassID MetersMeta::get_class() const
@@ -55,9 +43,7 @@ MeterClassID MetersMeta::get_class() const
 
 IMeter *MetersMeta::new_meter(uint32_t slot, Config *state, Config *errors)
 {
-    MeterMeta *new_meter = new MeterMeta(slot);
-    child_meters->push_back(new_meter);
-    return new_meter;
+    return new MeterMeta(slot);
 }
 
 const Config *MetersMeta::get_config_prototype()
