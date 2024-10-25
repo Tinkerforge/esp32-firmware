@@ -1045,7 +1045,7 @@ void EVSEV2::update_all_data()
                 case /*0b1110*/ 12: print_contactor_error(err, 0, 0, 0, 1); break;
                 // case /*0b1111*/  0: break; // contactor aux not active and phase switch aux not active -> OK
 
-                default: logger.printfln("Contactor error (%u): Unkown error", err); break; // Impossible to reach
+                default: logger.printfln("Contactor error (%u): Unknown error", err); break; // Impossible to reach
             }
 #endif
         } else {
