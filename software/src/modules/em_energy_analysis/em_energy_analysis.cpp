@@ -153,18 +153,18 @@ void EMEnergyAnalysis::update_history_meter_power(uint32_t slot, float power /* 
 {
     uint32_t now = millis();
 
-    if (!isnan(history_meter_power_value[slot]) && !isnan(power)) {
+    if (!isnan(history_meter_power_value[slot])) {
         uint32_t duration_ms;
 
         if (now >= history_meter_power_timestamp[slot]) {
             duration_ms = now - history_meter_power_timestamp[slot];
         } else {
-            duration_ms = UINT32_MAX - history_meter_power_timestamp[slot] + now;
+            duration_ms = UINT32_MAX - history_meter_power_timestamp[slot] + now + 1;
         }
 
-        double power_avg_w = ((double)history_meter_power_value[slot] + (double)power) / 2.0;
+        double power_last_interval_w = (double)history_meter_power_value[slot];
         double duration_s = (double)duration_ms / 1000.0;
-        double energy_ws = power_avg_w * duration_s;
+        double energy_ws = power_last_interval_w * duration_s;
 
         history_meter_power_sum[slot] += energy_ws;
         history_meter_power_duration[slot] += duration_s;
