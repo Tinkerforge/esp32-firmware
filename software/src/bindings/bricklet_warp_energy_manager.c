@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-09-06.      *
+ * This file was automatically generated on 2024-10-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -2096,7 +2096,7 @@ int tf_warp_energy_manager_get_led_state(TF_WARPEnergyManager *warp_energy_manag
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_warp_energy_manager_get_data_storage(TF_WARPEnergyManager *warp_energy_manager, uint8_t page, uint8_t ret_data[63]) {
+int tf_warp_energy_manager_get_data_storage(TF_WARPEnergyManager *warp_energy_manager, uint8_t page, uint8_t *ret_status, uint8_t ret_data[63]) {
     if (warp_energy_manager == NULL) {
         return TF_E_NULL;
     }
@@ -2132,9 +2132,10 @@ int tf_warp_energy_manager_get_data_storage(TF_WARPEnergyManager *warp_energy_ma
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager->tfp);
-        if (_error_code != 0 || _length != 63) {
+        if (_error_code != 0 || _length != 64) {
             tf_packet_buffer_remove(_recv_buf, _length);
         } else {
+            if (ret_status != NULL) { *ret_status = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_data != NULL) { for (_i = 0; _i < 63; ++_i) ret_data[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 63); }
         }
         tf_tfp_packet_processed(warp_energy_manager->tfp);
@@ -2149,7 +2150,7 @@ int tf_warp_energy_manager_get_data_storage(TF_WARPEnergyManager *warp_energy_ma
 
     _result = tf_tfp_finish_send(warp_energy_manager->tfp, _result, _deadline);
 
-    if (_error_code == 0 && _length != 63) {
+    if (_error_code == 0 && _length != 64) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 

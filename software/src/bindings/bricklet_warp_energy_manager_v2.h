@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-09-27.      *
+ * This file was automatically generated on 2024-10-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -388,6 +388,21 @@ typedef struct TF_WARPEnergyManagerV2 {
  * \ingroup TF_WARPEnergyManagerV2
  */
 #define TF_WARP_ENERGY_MANAGER_V2_LED_PATTERN_BREATHING 3
+
+/**
+ * \ingroup TF_WARPEnergyManagerV2
+ */
+#define TF_WARP_ENERGY_MANAGER_V2_DATA_STORAGE_STATUS_OK 0
+
+/**
+ * \ingroup TF_WARPEnergyManagerV2
+ */
+#define TF_WARP_ENERGY_MANAGER_V2_DATA_STORAGE_STATUS_NOT_FOUND 1
+
+/**
+ * \ingroup TF_WARPEnergyManagerV2
+ */
+#define TF_WARP_ENERGY_MANAGER_V2_DATA_STORAGE_STATUS_BUSY 2
 
 /**
  * \ingroup TF_WARPEnergyManagerV2
@@ -823,7 +838,7 @@ int tf_warp_energy_manager_v2_get_date_time(TF_WARPEnergyManagerV2 *warp_energy_
  *
  * TODO
  */
-int tf_warp_energy_manager_v2_get_data_storage(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t page, uint8_t ret_data[63]);
+int tf_warp_energy_manager_v2_get_data_storage(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint8_t page, uint8_t *ret_status, uint8_t ret_data[63]);
 
 /**
  * \ingroup TF_WARPEnergyManagerV2

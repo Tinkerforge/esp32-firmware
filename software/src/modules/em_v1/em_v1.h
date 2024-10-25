@@ -96,7 +96,7 @@ protected:
     int wem_set_date_time(uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t days, uint8_t days_of_week, uint8_t month, uint16_t year) override;
     int wem_get_date_time(uint8_t *ret_seconds, uint8_t *ret_minutes, uint8_t *ret_hours, uint8_t *ret_days, uint8_t *ret_days_of_week, uint8_t *ret_month, uint16_t *ret_year) override;
     int wem_set_data_storage(uint8_t page, const uint8_t data[63]) override;
-    int wem_get_data_storage(uint8_t page, uint8_t ret_data[63]) override;
+    int wem_get_data_storage(uint8_t page, uint8_t *status, uint8_t ret_data[63]) override;
     int wem_reset_energy_meter_relative_energy() override;
     int wem_get_energy_meter_detailed_values(float *ret_values, uint16_t *ret_values_length) override;
 

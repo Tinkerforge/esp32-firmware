@@ -357,9 +357,9 @@ int EMV1::wem_set_data_storage(uint8_t page, const uint8_t data[63])
     return tf_warp_energy_manager_set_data_storage(&device, page, data);
 }
 
-int EMV1::wem_get_data_storage(uint8_t page, uint8_t ret_data[63])
+int EMV1::wem_get_data_storage(uint8_t page, uint8_t *status, uint8_t ret_data[63])
 {
-    return tf_warp_energy_manager_get_data_storage(&device, page, ret_data);
+    return tf_warp_energy_manager_get_data_storage(&device, page, status, ret_data);
 }
 
 int EMV1::wem_reset_energy_meter_relative_energy()

@@ -508,8 +508,28 @@ static_assert(sizeof(PersistentDataV2) == 104);
 bool EMEnergyAnalysis::load_persistent_data()
 {
     uint8_t buf[DATA_STORAGE_PAGE_SIZE * DATA_STORAGE_PAGE_COUNT] = {0};
+
     for (uint8_t page = 0; page < DATA_STORAGE_PAGE_COUNT; ++page) {
-        if (em_common.wem_get_data_storage(page, buf + (DATA_STORAGE_PAGE_SIZE * page)) != TF_E_OK) {
+        uint8_t status = WEM_DATA_STORAGE_STATUS_BUSY;
+
+        if (em_common.wem_get_data_storage(page, &status, buf + (DATA_STORAGE_PAGE_SIZE * page)) != TF_E_OK) {
+            return false;
+        }
+
+        switch (status) {
+        case WEM_DATA_STORAGE_STATUS_BUSY:
+            logger.printfln("Persistent data not available yet, trying again later");
+            return false;
+
+        case WEM_DATA_STORAGE_STATUS_NOT_FOUND:
+            logger.printfln("Persistent data not found, first boot?");
+            return true;
+
+        case WEM_DATA_STORAGE_STATUS_OK:
+            break;
+
+        default:
+            logger.printfln("Persistent data has unknown status, trying again later: %d", status);
             return false;
         }
     }
@@ -548,17 +568,17 @@ void EMEnergyAnalysis::load_persistent_data_v1(uint8_t *buf)
     memset(&zero_v1, 0, sizeof(zero_v1));
 
     if (memcmp(&data_v1, &zero_v1, sizeof(data_v1)) == 0) {
-        logger.printfln("Persistent data v1 missing, first boot?");
-        return; // all zero, first boot
+        logger.printfln("Persistent data v1 all zero, first boot?");
+        return;
     }
 
     if (internet_checksum((uint8_t *)&data_v1, sizeof(data_v1)) != 0) {
-        logger.printfln("Checksum mismatch while reading persistent data v1");
+        logger.printfln("Checksum mismatch for persistent data v1");
         return;
     }
 
     if (data_v1.version != 1) {
-        logger.printfln("Unexpected version %u while reading persistent data v1", data_v1.version);
+        logger.printfln("Unexpected version %u for persistent data v1", data_v1.version);
         return;
     }
 
@@ -576,17 +596,17 @@ void EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
     memset(&zero_v2, 0, sizeof(zero_v2));
 
     if (memcmp(&data_v2, &zero_v2, sizeof(data_v2)) == 0) {
-        logger.printfln("Persistent data v2 missing, first boot?");
-        return; // all zero, first boot with v2 firmware
+        logger.printfln("Persistent data v2 all zero, first boot?");
+        return;
     }
 
     if (internet_checksum((uint8_t *)&data_v2, sizeof(data_v2)) != 0) {
-        logger.printfln("Checksum mismatch while reading persistent data v2");
+        logger.printfln("Checksum mismatch for persistent data v2");
         return;
     }
 
     if (data_v2.version != 2) {
-        logger.printfln("Unexpected version %u while reading persistent data v2", data_v2.version);
+        logger.printfln("Unexpected version %u for persistent data v2", data_v2.version);
         return;
     }
 
