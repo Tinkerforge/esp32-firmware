@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2024-10-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -209,24 +209,29 @@ int tf_nfc_get_response_expected(TF_NFC *nfc, uint8_t function_id, bool *ret_res
                 *ret_response_expected = (nfc->response_expected[1] & (1 << 6)) != 0;
             }
             break;
-        case TF_NFC_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_NFC_FUNCTION_CARDEMU_SET_TAG_ID:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (nfc->response_expected[1] & (1 << 7)) != 0;
             }
             break;
-        case TF_NFC_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_NFC_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (nfc->response_expected[2] & (1 << 0)) != 0;
             }
             break;
-        case TF_NFC_FUNCTION_RESET:
+        case TF_NFC_FUNCTION_SET_STATUS_LED_CONFIG:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (nfc->response_expected[2] & (1 << 1)) != 0;
             }
             break;
-        case TF_NFC_FUNCTION_WRITE_UID:
+        case TF_NFC_FUNCTION_RESET:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (nfc->response_expected[2] & (1 << 2)) != 0;
+            }
+            break;
+        case TF_NFC_FUNCTION_WRITE_UID:
+            if (ret_response_expected != NULL) {
+                *ret_response_expected = (nfc->response_expected[2] & (1 << 3)) != 0;
             }
             break;
         default:
@@ -351,32 +356,39 @@ int tf_nfc_set_response_expected(TF_NFC *nfc, uint8_t function_id, bool response
                 nfc->response_expected[1] &= ~(1 << 6);
             }
             break;
-        case TF_NFC_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_NFC_FUNCTION_CARDEMU_SET_TAG_ID:
             if (response_expected) {
                 nfc->response_expected[1] |= (1 << 7);
             } else {
                 nfc->response_expected[1] &= ~(1 << 7);
             }
             break;
-        case TF_NFC_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_NFC_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (response_expected) {
                 nfc->response_expected[2] |= (1 << 0);
             } else {
                 nfc->response_expected[2] &= ~(1 << 0);
             }
             break;
-        case TF_NFC_FUNCTION_RESET:
+        case TF_NFC_FUNCTION_SET_STATUS_LED_CONFIG:
             if (response_expected) {
                 nfc->response_expected[2] |= (1 << 1);
             } else {
                 nfc->response_expected[2] &= ~(1 << 1);
             }
             break;
-        case TF_NFC_FUNCTION_WRITE_UID:
+        case TF_NFC_FUNCTION_RESET:
             if (response_expected) {
                 nfc->response_expected[2] |= (1 << 2);
             } else {
                 nfc->response_expected[2] &= ~(1 << 2);
+            }
+            break;
+        case TF_NFC_FUNCTION_WRITE_UID:
+            if (response_expected) {
+                nfc->response_expected[2] |= (1 << 3);
+            } else {
+                nfc->response_expected[2] &= ~(1 << 3);
             }
             break;
         default:
@@ -1928,6 +1940,126 @@ int tf_nfc_simple_get_tag_id_low_level(TF_NFC *nfc, uint8_t index, uint8_t *ret_
     _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
 
     if (_error_code == 0 && _length != 16) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_nfc_cardemu_set_tag_id(TF_NFC *nfc, uint8_t tag_id_length, const uint8_t tag_id_data[7]) {
+    if (nfc == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_nfc_get_response_expected(nfc, TF_NFC_FUNCTION_CARDEMU_SET_TAG_ID, &_response_expected);
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_CARDEMU_SET_TAG_ID, 8, _response_expected);
+
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(nfc->tfp);
+
+    _send_buf[0] = (uint8_t)tag_id_length;
+    memcpy(_send_buf + 1, tag_id_data, 7);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(nfc->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_nfc_cardemu_get_tag_id(TF_NFC *nfc, uint8_t *ret_tag_id_length, uint8_t ret_tag_id_data[7]) {
+    if (nfc == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (nfc->magic != 0x5446 || nfc->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = nfc->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_tfp_prepare_send(nfc->tfp, TF_NFC_FUNCTION_CARDEMU_GET_TAG_ID, 0, _response_expected);
+
+    size_t _i;
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(nfc->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(nfc->tfp);
+        if (_error_code != 0 || _length != 8) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_tag_id_length != NULL) { *ret_tag_id_length = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_tag_id_data != NULL) { for (_i = 0; _i < 7; ++_i) ret_tag_id_data[_i] = tf_packet_buffer_read_uint8_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 7); }
+        }
+        tf_tfp_packet_processed(nfc->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(nfc->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 8) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 

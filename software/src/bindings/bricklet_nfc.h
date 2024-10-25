@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2024-10-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -188,6 +188,16 @@ typedef struct TF_NFC {
 /**
  * \ingroup TF_NFC
  */
+#define TF_NFC_FUNCTION_CARDEMU_SET_TAG_ID 30
+
+/**
+ * \ingroup TF_NFC
+ */
+#define TF_NFC_FUNCTION_CARDEMU_GET_TAG_ID 31
+
+/**
+ * \ingroup TF_NFC
+ */
 #define TF_NFC_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
@@ -313,6 +323,11 @@ typedef struct TF_NFC {
  * \ingroup TF_NFC
  */
 #define TF_NFC_TAG_TYPE_TYPE4 4
+
+/**
+ * \ingroup TF_NFC
+ */
+#define TF_NFC_TAG_TYPE_TYPE5 5
 
 /**
  * \ingroup TF_NFC
@@ -880,7 +895,7 @@ int tf_nfc_reader_get_state(TF_NFC *nfc, uint8_t *ret_state, bool *ret_idle);
  *
  * Writes NDEF formated data.
  *
- * This function currently supports NFC Forum Type 2 and 4.
+ * This function currently supports NFC Forum Type 2, 4, 5 and Mifare Classic.
  *
  * The general approach for writing a NDEF message is as follows:
  *
@@ -900,7 +915,7 @@ int tf_nfc_reader_write_ndef_low_level(TF_NFC *nfc, uint16_t ndef_length, uint16
  *
  * Reads NDEF formated data from a tag.
  *
- * This function currently supports NFC Forum Type 1, 2, 3 and 4.
+ * This function currently supports NFC Forum Type 1, 2, 3, 4, 5 and Mifare Classic.
  *
  * The general approach for reading a NDEF message is as follows:
  *
@@ -961,6 +976,7 @@ int tf_nfc_reader_authenticate_mifare_classic_page(TF_NFC *nfc, uint16_t page, u
  * * NFC Forum Type 2 page size: 4 byte
  * * NFC Forum Type 3 page size: 16 byte
  * * NFC Forum Type 4: No pages, page = file selection (CC or NDEF, see below)
+ * * NFC Forum Type 5 page size: 4 byte
  *
  * The general approach for writing to a tag is as follows:
  *
@@ -996,6 +1012,7 @@ int tf_nfc_reader_write_page_low_level(TF_NFC *nfc, uint16_t page, uint16_t data
  * * NFC Forum Type 2 page size: 4 byte
  * * NFC Forum Type 3 page size: 16 byte
  * * NFC Forum Type 4: No pages, page = file selection (CC or NDEF, see below)
+ * * NFC Forum Type 5 page size: 4 byte
  *
  * The general approach for reading a tag is as follows:
  *
@@ -1227,9 +1244,33 @@ int tf_nfc_get_maximum_timeout(TF_NFC *nfc, uint16_t *ret_timeout);
 /**
  * \ingroup TF_NFC
  *
+ * Returns the tag type and tag ID from simple mode sorted by last seen time for a given index.
+ *
+ * Up to eight tags are saved.
+ *
  * .. versionadded:: 2.0.6$nbsp;(Plugin)
  */
 int tf_nfc_simple_get_tag_id_low_level(TF_NFC *nfc, uint8_t index, uint8_t *ret_tag_type, uint8_t *ret_tag_id_length, uint8_t ret_tag_id_data[10], uint32_t *ret_last_seen);
+
+/**
+ * \ingroup TF_NFC
+ *
+ * Sets the tag ID for cardemu mode. The tag ID can either have a length of 4 or 7.
+ *
+ * Set a length of 0 for random tag ID (default)
+ *
+ * .. versionadded:: 2.1.0$nbsp;(Plugin)
+ */
+int tf_nfc_cardemu_set_tag_id(TF_NFC *nfc, uint8_t tag_id_length, const uint8_t tag_id_data[7]);
+
+/**
+ * \ingroup TF_NFC
+ *
+ * Returns the tag ID and length as set by {@link tf_nfc_cardemu_set_tag_id}.
+ *
+ * .. versionadded:: 2.1.0$nbsp;(Plugin)
+ */
+int tf_nfc_cardemu_get_tag_id(TF_NFC *nfc, uint8_t *ret_tag_id_length, uint8_t ret_tag_id_data[7]);
 
 /**
  * \ingroup TF_NFC
@@ -1396,7 +1437,7 @@ int tf_nfc_reader_get_tag_id(TF_NFC *nfc, uint8_t *ret_tag_type, uint8_t *ret_ta
  *
  * Writes NDEF formated data.
  *
- * This function currently supports NFC Forum Type 2 and 4.
+ * This function currently supports NFC Forum Type 2, 4, 5 and Mifare Classic.
  *
  * The general approach for writing a NDEF message is as follows:
  *
@@ -1430,6 +1471,7 @@ int tf_nfc_reader_read_ndef(TF_NFC *nfc, uint8_t *ret_ndef, uint16_t *ret_ndef_l
  * * NFC Forum Type 2 page size: 4 byte
  * * NFC Forum Type 3 page size: 16 byte
  * * NFC Forum Type 4: No pages, page = file selection (CC or NDEF, see below)
+ * * NFC Forum Type 5 page size: 4 byte
  *
  * The general approach for writing to a tag is as follows:
  *
@@ -1498,6 +1540,10 @@ int tf_nfc_p2p_read_ndef(TF_NFC *nfc, uint8_t *ret_ndef, uint16_t *ret_ndef_leng
 
 /**
  * \ingroup TF_NFC
+ *
+ * Returns the tag type and tag ID from simple mode sorted by last seen time for a given index.
+ *
+ * Up to eight tags are saved.
  *
  * .. versionadded:: 2.0.6$nbsp;(Plugin)
  */
