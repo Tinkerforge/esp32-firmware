@@ -155,19 +155,19 @@ specs = [
             },
             {
                 'name': 'Summe der Scheinleistung [VA]',
-                'value_id': 'PowerApparentLSumImExDiff',
+                'value_id': 'PowerApparentLSumImExDiff',  # FIXME: direction?
                 'start_address': 63,
                 'value_type': 'F32LE',
             },
             {
                 'name': 'Summe der Wirkleistung [W]',
-                'value_id': 'PowerActiveLSumImExDiff',
+                'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
                 'start_address': 65,
                 'value_type': 'F32LE',
             },
             {
-                'name': 'Summe der Blindleistung [W]',
-                'value_id': 'PowerReactiveLSumIndCapDiff',
+                'name': 'Summe der Blindleistung [var]',
+                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: direction?
                 'start_address': 67,
                 'value_type': 'F32LE',
             },
@@ -199,21 +199,21 @@ specs = [
             },
             {
                 'name': 'Blindarbeit Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveLSumInductive',  # FIXME
+                'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
                 'start_address': 817,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'Blindarbeit Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveLSumCapacitive',  # FIXME
+                'value_id': 'EnergyReactiveLSumCapacitive',  # FIXME: direction?
                 'start_address': 825,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'Scheinarbeit Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentLSumImExSum',  # FIXME
+                'value_id': 'EnergyApparentLSumImExSum',  # FIXME: sum?
                 'start_address': 833,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -234,21 +234,21 @@ specs = [
             },
             {
                 'name': 'L1 Blindarbeit Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL1Inductive',  # FIXME
+                'value_id': 'EnergyReactiveL1Inductive',  # FIXME: direction?
                 'start_address': 857,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L1 Blindarbeit Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL1Capacitive',  # FIXME
+                'value_id': 'EnergyReactiveL1Capacitive',  # FIXME: direction?
                 'start_address': 865,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L1 Scheinarbeit Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentL1ImExSum',  # FIXME
+                'value_id': 'EnergyApparentL1ImExSum',  # FIXME: sum?
                 'start_address': 873,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -268,14 +268,14 @@ specs = [
                 'scale_factor': 0.001,
             },
             {
-                'name': 'L2 Blindarbeit Bezug Tarif 1 [varh]',
+                'name': 'L2 Blindarbeit Bezug Tarif 1 [varh]',  # FIXME: direction?
                 'value_id': 'EnergyReactiveL2Inductive',
                 'start_address': 897,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
-                'name': 'L2 Blindarbeit Abgabe Tarif 1 [varh]',
+                'name': 'L2 Blindarbeit Abgabe Tarif 1 [varh]',  # FIXME: direction?
                 'value_id': 'EnergyReactiveL2Capacitive',
                 'start_address': 905,
                 'value_type': 'F64LE',
@@ -283,7 +283,7 @@ specs = [
             },
             {
                 'name': 'L2 Scheinarbeit Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentL2ImExSum',  # FIXME
+                'value_id': 'EnergyApparentL2ImExSum',  # FIXME: sum?
                 'start_address': 913,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -304,21 +304,21 @@ specs = [
             },
             {
                 'name': 'L3 Blindarbeit Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL3Inductive',
+                'value_id': 'EnergyReactiveL3Inductive',  # FIXME: direction?
                 'start_address': 937,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L3 Blindarbeit Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL3Capacitive',
+                'value_id': 'EnergyReactiveL3Capacitive',  # FIXME: direction?
                 'start_address': 945,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L3 Scheinarbeit Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentL3ImExSum',  # FIXME
+                'value_id': 'EnergyApparentL3ImExSum',  # FIXME: sum?
                 'start_address': 953,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -517,19 +517,19 @@ specs = [
             },
             {
                 'name': 'Summe der Scheinleistung [VA]',
-                'value_id': 'PowerApparentLSumImExDiff',
+                'value_id': 'PowerApparentLSumImExDiff',  # FIXME: direction?
                 'start_address': 63,
                 'value_type': 'F32LE',
             },
             {
                 'name': 'Summe der Wirkleistung [W]',
-                'value_id': 'PowerActiveLSumImExDiff',
+                'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
                 'start_address': 65,
                 'value_type': 'F32LE',
             },
             {
-                'name': 'Summe der Blindleistung [W]',
-                'value_id': 'PowerReactiveLSumIndCapDiff',
+                'name': 'Summe der Blindleistung [var]',
+                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: direction?
                 'start_address': 67,
                 'value_type': 'F32LE',
             },
@@ -561,21 +561,21 @@ specs = [
             },
             {
                 'name': 'Blindarbeit Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveLSumInductiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveLSumInductiveResettable',  # FIXME: direction?
                 'start_address': 817,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'Blindarbeit Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME: direction?
                 'start_address': 825,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'Scheinarbeit Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentLSumImExSumResettable',  # FIXME
+                'value_id': 'EnergyApparentLSumImExSumResettable',  # FIXME: sum?
                 'start_address': 833,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -596,21 +596,21 @@ specs = [
             },
             {
                 'name': 'L1 Blindarbeit Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL1InductiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveL1InductiveResettable',  # FIXME: direction?
                 'start_address': 857,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L1 Blindarbeit Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL1CapacitiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveL1CapacitiveResettable',  # FIXME: direction?
                 'start_address': 865,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L1 Scheinarbeit Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentL1ImExSumResettable',  # FIXME
+                'value_id': 'EnergyApparentL1ImExSumResettable',  # FIXME: sum?
                 'start_address': 873,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -631,21 +631,21 @@ specs = [
             },
             {
                 'name': 'L2 Blindarbeit Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL2InductiveResettable',
+                'value_id': 'EnergyReactiveL2InductiveResettable',  # FIXME: direction?
                 'start_address': 897,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L2 Blindarbeit Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL2CapacitiveResettable',
+                'value_id': 'EnergyReactiveL2CapacitiveResettable',  # FIXME: direction?
                 'start_address': 905,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L2 Scheinarbeit Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentL2ImExSumResettable',  # FIXME
+                'value_id': 'EnergyApparentL2ImExSumResettable',  # FIXME: sum?
                 'start_address': 913,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -666,21 +666,21 @@ specs = [
             },
             {
                 'name': 'L3 Blindarbeit Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL3InductiveResettable',
+                'value_id': 'EnergyReactiveL3InductiveResettable',  # FIXME: direction?
                 'start_address': 937,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L3 Blindarbeit Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL3CapacitiveResettable',
+                'value_id': 'EnergyReactiveL3CapacitiveResettable',  # FIXME: direction?
                 'start_address': 945,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L3 Scheinarbeit Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentL3ImExSumResettable',  # FIXME
+                'value_id': 'EnergyApparentL3ImExSumResettable',  # FIXME: sum?
                 'start_address': 953,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -879,19 +879,19 @@ specs = [
             },
             {
                 'name': 'Summe der Scheinleistung [VA]',
-                'value_id': 'PowerApparentLSumImExDiff',
+                'value_id': 'PowerApparentLSumImExDiff',  # FIXME: direction?
                 'start_address': 63,
                 'value_type': 'F32LE',
             },
             {
                 'name': 'Summe der Wirkleistung [W]',
-                'value_id': 'PowerActiveLSumImExDiff',
+                'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
                 'start_address': 65,
                 'value_type': 'F32LE',
             },
             {
-                'name': 'Summe der Blindleistung [W]',
-                'value_id': 'PowerReactiveLSumIndCapDiff',
+                'name': 'Summe der Blindleistung [var]',
+                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: direction?
                 'start_address': 67,
                 'value_type': 'F32LE',
             },
@@ -917,21 +917,21 @@ specs = [
             },
             {
                 'name': 'Blindarbeit Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveLSumInductiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveLSumInductiveResettable',  # FIXME: direction?
                 'start_address': 817,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'Blindarbeit Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME: direction?
                 'start_address': 825,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'Scheinarbeit Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentLSumImExSumResettable',  # FIXME
+                'value_id': 'EnergyApparentLSumImExSumResettable',  # FIXME: sum?
                 'start_address': 833,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -1094,19 +1094,19 @@ specs = [
             },
             {
                 'name': 'Summe der Scheinleistung [VA]',
-                'value_id': 'PowerApparentLSumImExDiff',
+                'value_id': 'PowerApparentLSumImExDiff',  # FIXME: direction?
                 'start_address': 63,
                 'value_type': 'F32LE',
             },
             {
                 'name': 'Summe der Wirkleistung [W]',
-                'value_id': 'PowerActiveLSumImExDiff',
+                'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
                 'start_address': 65,
                 'value_type': 'F32LE',
             },
             {
-                'name': 'Summe der Blindleistung [W]',
-                'value_id': 'PowerReactiveLSumIndCapDiff',
+                'name': 'Summe der Blindleistung [var]',
+                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: direction?
                 'start_address': 67,
                 'value_type': 'F32LE',
             },
@@ -1174,21 +1174,21 @@ specs = [
             },
             {
                 'name': 'Bezogene Blindenergie Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveLSumInductiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveLSumInductiveResettable',  # FIXME: direction?
                 'start_address': 817,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'Gelieferte Blindenergie Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME: direction?
                 'start_address': 825,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'Scheinenergie Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentLSumImExSumResettable',  # FIXME
+                'value_id': 'EnergyApparentLSumImExSumResettable',  # FIXME sum?
                 'start_address': 833,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -1351,19 +1351,19 @@ specs = [
             },
             {
                 'name': 'Gesamtscheinleistung [VA]',
-                'value_id': 'PowerApparentLSumImExDiff',
+                'value_id': 'PowerApparentLSumImExDiff',  # FIXME: direction?
                 'start_address': 63,
                 'value_type': 'F32LE',
             },
             {
                 'name': 'Gesamtwirkleistung [W]',
-                'value_id': 'PowerActiveLSumImExDiff',
+                'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
                 'start_address': 65,
                 'value_type': 'F32LE',
             },
             {
-                'name': 'Gesamtwirkleistung [W]',
-                'value_id': 'PowerReactiveLSumIndCapDiff',
+                'name': 'Gesamtwirkleistung [var]',
+                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: direction?
                 'start_address': 67,
                 'value_type': 'F32LE',
             },
@@ -1395,21 +1395,21 @@ specs = [
             },
             {
                 'name': 'Blindenergie Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveLSumInductiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveLSumInductiveResettable',  # FIXME: direction?
                 'start_address': 817,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'Blindenergie Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveLSumCapacitiveResettable',  # FIXME: direction?
                 'start_address': 825,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'Scheinenergie Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentLSumImExSumResettable',  # FIXME
+                'value_id': 'EnergyApparentLSumImExSumResettable',  # FIXME: sum?
                 'start_address': 833,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -1430,21 +1430,21 @@ specs = [
             },
             {
                 'name': 'L1 Blindenergie Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL1InductiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveL1InductiveResettable',  # FIXME: direction?
                 'start_address': 857,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L1 Blindenergie Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL1CapacitiveResettable',  # FIXME
+                'value_id': 'EnergyReactiveL1CapacitiveResettable',  # FIXME: direction?
                 'start_address': 865,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L1 Scheinenergie Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentL1ImExSumResettable',  # FIXME
+                'value_id': 'EnergyApparentL1ImExSumResettable',  # FIXME: sum?
                 'start_address': 873,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -1465,21 +1465,21 @@ specs = [
             },
             {
                 'name': 'L2 Blindenergie Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL2InductiveResettable',
+                'value_id': 'EnergyReactiveL2InductiveResettable',  # FIXME: direction?
                 'start_address': 897,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L2 Blindenergie Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL2CapacitiveResettable',
+                'value_id': 'EnergyReactiveL2CapacitiveResettable',  # FIXME: direction?
                 'start_address': 905,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L2 Scheinenergie Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentL2ImExSumResettable',  # FIXME
+                'value_id': 'EnergyApparentL2ImExSumResettable',  # FIXME: sum?
                 'start_address': 913,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -1500,21 +1500,21 @@ specs = [
             },
             {
                 'name': 'L3 Blindenergie Bezug Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL3InductiveResettable',
+                'value_id': 'EnergyReactiveL3InductiveResettable',  # FIXME: direction?
                 'start_address': 937,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L3 Blindenergie Abgabe Tarif 1 [varh]',
-                'value_id': 'EnergyReactiveL3CapacitiveResettable',
+                'value_id': 'EnergyReactiveL3CapacitiveResettable',  # FIXME: direction?
                 'start_address': 945,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
             },
             {
                 'name': 'L3 Scheinenergie Tarif 1 [VAh]',
-                'value_id': 'EnergyApparentL3ImExSumResettable',  # FIXME
+                'value_id': 'EnergyApparentL3ImExSumResettable',  # FIXME: sum?
                 'start_address': 953,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
