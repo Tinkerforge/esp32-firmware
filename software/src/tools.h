@@ -34,31 +34,31 @@
 #include "strong_typedef.h"
 
 STRONG_INTEGER_TYPEDEF(int64_t, micros_t,
-    inline uint32_t millis() const {return (uint32_t)(t / 1000); }
-    explicit operator float  () const { return (float) t; }
-    explicit operator double () const { return (double)t; }
+    constexpr inline uint32_t millis() const {return (uint32_t)(t / 1000); }
+    constexpr explicit operator float  () const { return (float) t; }
+    constexpr explicit operator double () const { return (double)t; }
 )
 
 STRONG_INTEGER_TYPEDEF(int64_t, millis_t,
-    operator micros_t () const { return micros_t{t * 1000}; }
+    constexpr operator micros_t () const { return micros_t{t * 1000}; }
 )
 
 STRONG_INTEGER_TYPEDEF(int64_t, seconds_t,
-    operator micros_t () const { return micros_t{t * 1000 * 1000}; }
-    operator millis_t () const { return millis_t{t * 1000}; }
+    constexpr operator micros_t () const { return micros_t{t * 1000 * 1000}; }
+    constexpr operator millis_t () const { return millis_t{t * 1000}; }
 )
 
 STRONG_INTEGER_TYPEDEF(int64_t, minutes_t,
-    operator micros_t  () const { return micros_t{ t * 60 * 1000 * 1000}; }
-    operator millis_t  () const { return millis_t{ t * 60 * 1000}; }
-    operator seconds_t () const { return seconds_t{t * 60}; }
+    constexpr operator micros_t  () const { return micros_t{ t * 60 * 1000 * 1000}; }
+    constexpr operator millis_t  () const { return millis_t{ t * 60 * 1000}; }
+    constexpr operator seconds_t () const { return seconds_t{t * 60}; }
 )
 
 STRONG_INTEGER_TYPEDEF(int64_t, hours_t,
-    operator micros_t  () const { return micros_t{ t * 60 * 60 * 1000 * 1000}; }
-    operator millis_t  () const { return millis_t{ t * 60 * 60 * 1000}; }
-    operator seconds_t () const { return seconds_t{t * 60 * 60}; }
-    operator minutes_t () const { return minutes_t{t * 60}; }
+    constexpr operator micros_t  () const { return micros_t{ t * 60 * 60 * 1000 * 1000}; }
+    constexpr operator millis_t  () const { return millis_t{ t * 60 * 60 * 1000}; }
+    constexpr operator seconds_t () const { return seconds_t{t * 60 * 60}; }
+    constexpr operator minutes_t () const { return minutes_t{t * 60}; }
 )
 
 // These do not clash with the C++14 standard literals for durations:
