@@ -797,7 +797,7 @@ void ModbusTcp::update_regs()
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
         int32_t user_id = api.getState("charge_tracker/current_charge")->get("user_id")->asInt();
         charging = user_id != -1;
-        evse_input_regs_copy->current_user = fromUint(charging ? UINT32_MAX : (uint32_t)user_id);
+        evse_input_regs_copy->current_user = fromUint(charging ? (uint32_t)user_id : UINT32_MAX);
         if (charging) {
             evse_input_regs_copy->start_time_min = fromUint(api.getState("charge_tracker/current_charge")->get("timestamp_minutes")->asUint());
             evse_input_regs_copy->charging_time_sec = fromUint((api.getState("evse/low_level_state")->get("uptime")->asUint() - api.getState("charge_tracker/current_charge")->get("evse_uptime_start")->asUint()) / 1000);
