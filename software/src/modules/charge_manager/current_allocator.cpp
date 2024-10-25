@@ -1292,13 +1292,20 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
         bool is_unknown_rot_switchable = state->phase_rotation == PhaseRotation::Unknown && state->phase_switch_supported;
-        bool activate_3p = is_fixed_3p || is_unknown_rot_switchable;
+
+        // If we ignore that the hysteresis is not elapsed yet (see above)
+        // and this charger had three phases allocated in the last iteration,
+        // we have to be able to allocate three phases again or not wake it up.
+        // A phase switch is not allowed while the hysteresis is not elapsed!
+        bool force_3p = !ca_state->global_hysteresis_elapsed && state->phases == 3;
+
+        bool activate_3p = is_fixed_3p || is_unknown_rot_switchable || force_3p;
 
         Cost enable_cost;
         auto enable_current = get_enable_cost(state, activate_3p, have_active_chargers, nullptr, &enable_cost, cfg);
 
         if (cost_exceeds_limits(enable_cost, limits, 9)) {
-            if (!is_unknown_rot_switchable)
+            if (!is_unknown_rot_switchable || force_3p)
                 continue;
             // Retry enabling unknown_rot_switchable charger with one phase only
             activate_3p = false;
