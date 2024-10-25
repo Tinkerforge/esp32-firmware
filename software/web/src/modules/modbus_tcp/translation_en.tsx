@@ -265,7 +265,7 @@ let x = {
                         <td>
                             Controls the LED in the charger's front button.
                             <ul>
-                                <li>-1: EVSE controls LED</li>
+                                <li>0xFFFFFFFF: EVSE controls LED</li>
                                 <li>0: LED off</li>
                                 <li>1 to 254: LED dimmed</li>
                                 <li>255: LED on</li>

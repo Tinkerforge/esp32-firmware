@@ -267,7 +267,7 @@ let x = {
                         <td>
                             Steuert die LED des Tasters in der Wallbox-Front.
                             <ul>
-                                <li>-1: EVSE kontrolliert LED</li>
+                                <li>0xFFFFFFFF: EVSE kontrolliert LED</li>
                                 <li>0: LED aus</li>
                                 <li>1 bis 254: LED gedimmt</li>
                                 <li>255: LED an</li>
