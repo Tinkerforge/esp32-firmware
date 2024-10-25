@@ -784,6 +784,9 @@ void ModbusTcp::update_regs()
             }
             evse_input_regs_copy->slots[i] = fromUint(val);
         }
+        for (size_t i = slots->count(); i < CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE; ++i) {
+            evse_input_regs_copy->slots[i] = fromUint(0xFFFFFFFF);
+        }
 
         evse_input_regs_copy->max_current = fromUint(api.getState("evse/state")->get("allowed_charging_current")->asUint());
         evse_input_regs_copy->start_time_min = fromUint(0);
