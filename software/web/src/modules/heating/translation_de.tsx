@@ -94,7 +94,7 @@ let x = {
             "blocking_threshold_description": "Ab wieviel kWh Ertragsprognose soll der Anlaufbefehl anhand Uhrzeit blockiert werden",
             "p14_enwg_control_activate": "Aktiviert die Kontrolle der Heizung nach §14 EnWG",
             "input": "Eingang",
-            "output": "Output",
+            "output": "Ausgang",
             "throttled_if_input": "Drosselung",
             "closed": "Aktiv wenn geschlossen",
             "opened": "Aktiv wenn geöffnet",
