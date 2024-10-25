@@ -41,6 +41,9 @@ import { SolaxHybridInverterVirtualMeter } from "./solax_hybrid_inverter_virtual
 import { FroniusGEN24PlusHybridInverterVirtualMeter } from "./fronius_gen24_plus_hybrid_inverter_virtual_meter.enum";
 import { HaileiHybridInverterVirtualMeter } from "./hailei_hybrid_inverter_virtual_meter.enum";
 import { FoxESSH3HybridInverterVirtualMeter } from "./fox_ess_h3_hybrid_inverter_virtual_meter.enum";
+import { CarloGavazziPhase } from "./carlo_gavazzi_phase.enum";
+import { CarloGavazziEM270VirtualMeter } from "./carlo_gavazzi_em270_virtual_meter.enum";
+import { CarloGavazziEM280VirtualMeter } from "./carlo_gavazzi_em280_virtual_meter.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
@@ -222,6 +225,95 @@ type TableConfigSiemensPAC4220 = [
     },
 ];
 
+type TableConfigCarloGavazziEM24DIN = [
+    MeterModbusTCPTableID.CarloGavazziEM24DIN,
+    {
+        device_address: number;
+    },
+];
+
+type TableConfigCarloGavazziEM24E1 = [
+    MeterModbusTCPTableID.CarloGavazziEM24E1,
+    {
+        device_address: number;
+    },
+];
+
+type TableConfigCarloGavazziEM100 = [
+    MeterModbusTCPTableID.CarloGavazziEM100,
+    {
+        device_address: number;
+        phase: number;
+    },
+];
+
+type TableConfigCarloGavazziET100 = [
+    MeterModbusTCPTableID.CarloGavazziET100,
+    {
+        device_address: number;
+        phase: number;
+    },
+];
+
+type TableConfigCarloGavazziEM210 = [
+    MeterModbusTCPTableID.CarloGavazziEM210,
+    {
+        device_address: number;
+    },
+];
+
+type TableConfigCarloGavazziEM270 = [
+    MeterModbusTCPTableID.CarloGavazziEM270,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
+type TableConfigCarloGavazziEM280 = [
+    MeterModbusTCPTableID.CarloGavazziEM280,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
+type TableConfigCarloGavazziEM300 = [
+    MeterModbusTCPTableID.CarloGavazziEM300,
+    {
+        device_address: number;
+    },
+];
+
+type TableConfigCarloGavazziET300 = [
+    MeterModbusTCPTableID.CarloGavazziET300,
+    {
+        device_address: number;
+    },
+];
+
+type TableConfigCarloGavazziEM510 = [
+    MeterModbusTCPTableID.CarloGavazziEM510,
+    {
+        device_address: number;
+        phase: number;
+    },
+];
+
+type TableConfigCarloGavazziEM530 = [
+    MeterModbusTCPTableID.CarloGavazziEM530,
+    {
+        device_address: number;
+    },
+];
+
+type TableConfigCarloGavazziEM540 = [
+    MeterModbusTCPTableID.CarloGavazziEM540,
+    {
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -242,7 +334,19 @@ type TableConfig = TableConfigNone |
                    TableConfigSiemensPAC3200 |
                    TableConfigSiemensPAC3220 |
                    TableConfigSiemensPAC4200 |
-                   TableConfigSiemensPAC4220;
+                   TableConfigSiemensPAC4220 |
+                   TableConfigCarloGavazziEM24DIN |
+                   TableConfigCarloGavazziEM24E1 |
+                   TableConfigCarloGavazziEM100 |
+                   TableConfigCarloGavazziET100 |
+                   TableConfigCarloGavazziEM210 |
+                   TableConfigCarloGavazziEM270 |
+                   TableConfigCarloGavazziEM280 |
+                   TableConfigCarloGavazziEM300 |
+                   TableConfigCarloGavazziET300 |
+                   TableConfigCarloGavazziEM510 |
+                   TableConfigCarloGavazziEM530 |
+                   TableConfigCarloGavazziEM540;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -315,6 +419,42 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.SiemensPAC4220:
             return [MeterModbusTCPTableID.SiemensPAC4220, {device_address: 1}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM24DIN:
+            return [MeterModbusTCPTableID.CarloGavazziEM24DIN, {device_address: 1}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM24E1:
+            return [MeterModbusTCPTableID.CarloGavazziEM24E1, {device_address: 1}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM100:
+            return [MeterModbusTCPTableID.CarloGavazziEM100, {device_address: 1, phase: null}];
+
+        case MeterModbusTCPTableID.CarloGavazziET100:
+            return [MeterModbusTCPTableID.CarloGavazziET100, {device_address: 1, phase: null}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM210:
+            return [MeterModbusTCPTableID.CarloGavazziEM210, {device_address: 1}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM270:
+            return [MeterModbusTCPTableID.CarloGavazziEM270, {virtual_meter: null, device_address: 1}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM280:
+            return [MeterModbusTCPTableID.CarloGavazziEM280, {virtual_meter: null, device_address: 1}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM300:
+            return [MeterModbusTCPTableID.CarloGavazziEM300, {device_address: 1}];
+
+        case MeterModbusTCPTableID.CarloGavazziET300:
+            return [MeterModbusTCPTableID.CarloGavazziET300, {device_address: 1}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM510:
+            return [MeterModbusTCPTableID.CarloGavazziEM510, {device_address: 1, phase: null}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM530:
+            return [MeterModbusTCPTableID.CarloGavazziEM530, {device_address: 1}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM540:
+            return [MeterModbusTCPTableID.CarloGavazziEM540, {device_address: 1}];
 
         default:
             return [MeterModbusTCPTableID.None, {}];
@@ -527,6 +667,18 @@ export function init() {
                             items={[
                                 // Keep alphabetically sorted
                                 [MeterModbusTCPTableID.AlphaESSHybridInverter.toString(), __("meters_modbus_tcp.content.table_alpha_ess_hybrid_inverter")],
+                                [MeterModbusTCPTableID.CarloGavazziEM24DIN.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em24_din")],
+                                [MeterModbusTCPTableID.CarloGavazziEM24E1.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em24_e1")],
+                                [MeterModbusTCPTableID.CarloGavazziEM100.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em100")],
+                                [MeterModbusTCPTableID.CarloGavazziET100.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_et100")],
+                                [MeterModbusTCPTableID.CarloGavazziEM210.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em210")],
+                                [MeterModbusTCPTableID.CarloGavazziEM270.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em270")],
+                                [MeterModbusTCPTableID.CarloGavazziEM280.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em280")],
+                                [MeterModbusTCPTableID.CarloGavazziEM300.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em300")],
+                                [MeterModbusTCPTableID.CarloGavazziET300.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_et300")],
+                                [MeterModbusTCPTableID.CarloGavazziEM510.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em510")],
+                                [MeterModbusTCPTableID.CarloGavazziEM530.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em530")],
+                                [MeterModbusTCPTableID.CarloGavazziEM540.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em540")],
                                 [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FoxESSH3HybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus_hybrid_inverter")],
@@ -574,7 +726,19 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC3200
                   || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC3220
                   || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC4200
-                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC4220)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC4220
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM24DIN
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM24E1
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM100
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziET100
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM210
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM270
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM280
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM300
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziET300
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM510
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM530
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM540)) {
                     let virtual_meter_items: [string, string][] = [];
                     let device_address_default: number = 1;
 
@@ -669,6 +833,20 @@ export function init() {
 
                         device_address_default = 247;
                     }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM270) {
+                        virtual_meter_items = [
+                            [CarloGavazziEM270VirtualMeter.Meter.toString(), __("meters_modbus_tcp.content.virtual_meter_meter")],
+                            [CarloGavazziEM270VirtualMeter.CurrentTransformer1.toString(), __("meters_modbus_tcp.content.virtual_meter_current_transformer_1")],
+                            [CarloGavazziEM270VirtualMeter.CurrentTransformer2.toString(), __("meters_modbus_tcp.content.virtual_meter_current_transformer_2")],
+                        ];
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM280) {
+                        virtual_meter_items = [
+                            [CarloGavazziEM280VirtualMeter.Meter.toString(), __("meters_modbus_tcp.content.virtual_meter_meter")],
+                            [CarloGavazziEM280VirtualMeter.CurrentTransformer1.toString(), __("meters_modbus_tcp.content.virtual_meter_current_transformer_1")],
+                            [CarloGavazziEM280VirtualMeter.CurrentTransformer2.toString(), __("meters_modbus_tcp.content.virtual_meter_current_transformer_2")],
+                        ];
+                    }
 
                     if (virtual_meter_items.length > 0) {
                         edit_children.push(
@@ -756,6 +934,26 @@ export function init() {
                                     value={util.hasValue(config[1].table[1]) && util.hasValue((config[1].table[1] as any).monophase_mapping) ? (config[1].table[1] as any).monophase_mapping.toString() : undefined}
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {monophase_mapping: parseInt(v)})}));
+                                    }} />
+                            </FormRow>);
+                    }
+
+                    if (config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM100
+                     || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziET100
+                     || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM510) {
+                        edit_children.push(
+                            <FormRow label={__("meters_modbus_tcp.content.carlo_gavazzi_phase")}>
+                                <InputSelect
+                                    required
+                                    items={[
+                                        [CarloGavazziPhase.L1.toString(), __("meters_modbus_tcp.content.carlo_gavazzi_phase_l1")],
+                                        [CarloGavazziPhase.L2.toString(), __("meters_modbus_tcp.content.carlo_gavazzi_phase_l2")],
+                                        [CarloGavazziPhase.L3.toString(), __("meters_modbus_tcp.content.carlo_gavazzi_phase_l3")],
+                                    ]}
+                                    placeholder={__("meters_modbus_tcp.content.carlo_gavazzi_phase_select")}
+                                    value={util.hasValue(config[1].table[1]) && util.hasValue((config[1].table[1] as any).phase) ? (config[1].table[1] as any).phase.toString() : undefined}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {phase: parseInt(v)})}));
                                     }} />
                             </FormRow>);
                     }

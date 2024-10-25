@@ -131,6 +131,37 @@ void MetersModbusTCP::pre_setup()
     table_prototypes.push_back({MeterModbusTCPTableID::SiemensPAC4200, siemens});
     table_prototypes.push_back({MeterModbusTCPTableID::SiemensPAC4220, siemens});
 
+    Config carlo_gavazzi = Config::Object({
+        {"device_address", Config::Uint(1, 1, 247)},
+    });
+
+    Config carlo_gavazzi_single_phase = Config::Object({
+        {"device_address", Config::Uint(1, 1, 247)},
+        {"phase", Config::Uint8(static_cast<uint8_t>(CarloGavazziPhase::None))},
+    });
+
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM24DIN, carlo_gavazzi});
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM24E1, carlo_gavazzi});
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM100, carlo_gavazzi_single_phase});
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziET100, carlo_gavazzi_single_phase});
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM210, carlo_gavazzi});
+
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM270, Config::Object({
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(CarloGavazziEM270VirtualMeter::None))},
+        {"device_address", Config::Uint(1, 1, 247)},
+    })});
+
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM280, Config::Object({
+        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(CarloGavazziEM280VirtualMeter::None))},
+        {"device_address", Config::Uint(1, 1, 247)},
+    })});
+
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM300, carlo_gavazzi});
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziET300, carlo_gavazzi});
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM510, carlo_gavazzi_single_phase});
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM530, carlo_gavazzi});
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM540, carlo_gavazzi});
+
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"host",           Config::Str("", 0, 64)},

@@ -75,6 +75,13 @@
 #define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_ADDRESS       NUMBER_TO_ADDRESS(40352u)
 #define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_SF_ADDRESS    NUMBER_TO_ADDRESS(40366u)
 
+#define CARLO_GAVAZZI_EM100_OR_ET100_W               0x04
+#define CARLO_GAVAZZI_EM100_OR_ET100_KWH_PLUS_TOTAL  0x10
+#define CARLO_GAVAZZI_EM100_OR_ET100_KWH_MINUS_TOTAL 0x20
+#define CARLO_GAVAZZI_EM510_W                        0x04
+#define CARLO_GAVAZZI_EM510_KWH_PLUS_TOTAL           0x10
+#define CARLO_GAVAZZI_EM510_KWH_MINUS_TOTAL          0x20
+
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
 
@@ -152,6 +159,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
                 customs_specs[i].register_type = registers->get(i)->get("rtype")->asEnum<ModbusRegisterType>();
                 customs_specs[i].start_address = registers->get(i)->get("addr")->asUint();
                 customs_specs[i].value_type = registers->get(i)->get("vtype")->asEnum<ModbusValueType>();
+                customs_specs[i].drop_sign = false; // FIXME: expose in API?
                 customs_specs[i].offset = registers->get(i)->get("off")->asFloat();
                 customs_specs[i].scale_factor = registers->get(i)->get("scale")->asFloat();
 
@@ -708,6 +716,190 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         table = &siemens_pac4220_table;
         break;
 
+    case MeterModbusTCPTableID::CarloGavazziEM24DIN:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 11));
+        table = &carlo_gavazzi_em24_din_table;
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziEM24E1:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        table = &carlo_gavazzi_em24_e1_table;
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziEM100:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        carlo_gavazzi_em100_phase = ephemeral_config.get("table")->get()->get("phase")->asEnum<CarloGavazziPhase>();
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
+
+        switch (carlo_gavazzi_em100_phase) {
+        case CarloGavazziPhase::None:
+            logger.printfln("No Carlo Gavazzi EM100 Phase selected");
+            return;
+
+        case CarloGavazziPhase::L1:
+            table = &carlo_gavazzi_em100_and_et100_at_l1_table;
+            break;
+
+        case CarloGavazziPhase::L2:
+            table = &carlo_gavazzi_em100_and_et100_at_l2_table;
+            break;
+
+        case CarloGavazziPhase::L3:
+            table = &carlo_gavazzi_em100_and_et100_at_l3_table;
+            break;
+
+        default:
+            logger.printfln("Unknown Carlo Gavazzi EM100 Phase: %u", static_cast<uint8_t>(carlo_gavazzi_em100_phase));
+            return;
+        }
+
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziET100:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        carlo_gavazzi_et100_phase = ephemeral_config.get("table")->get()->get("phase")->asEnum<CarloGavazziPhase>();
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
+
+        switch (carlo_gavazzi_et100_phase) {
+        case CarloGavazziPhase::None:
+            logger.printfln("No Carlo Gavazzi ET100 Phase selected");
+            return;
+
+        case CarloGavazziPhase::L1:
+            table = &carlo_gavazzi_em100_and_et100_at_l1_table;
+            break;
+
+        case CarloGavazziPhase::L2:
+            table = &carlo_gavazzi_em100_and_et100_at_l2_table;
+            break;
+
+        case CarloGavazziPhase::L3:
+            table = &carlo_gavazzi_em100_and_et100_at_l3_table;
+            break;
+
+        default:
+            logger.printfln("Unknown Carlo Gavazzi ET100 Phase: %u", static_cast<uint8_t>(carlo_gavazzi_et100_phase));
+            return;
+        }
+
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziEM210:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 61));
+        table = &carlo_gavazzi_em210_table;
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziEM270:
+        carlo_gavazzi_em270_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<CarloGavazziEM270VirtualMeter>();
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+
+        switch (carlo_gavazzi_em270_virtual_meter) {
+        case CarloGavazziEM270VirtualMeter::None:
+            logger.printfln("No Carlo Gavazzi EM270 Virtual Meter selected");
+            return;
+
+        case CarloGavazziEM270VirtualMeter::Meter:
+            table = &carlo_gavazzi_em270_and_em280_meter_table;
+            break;
+
+        case CarloGavazziEM270VirtualMeter::CurrentTransformer1:
+            table = &carlo_gavazzi_em270_and_em280_current_transformer_1_table;
+            break;
+
+        case CarloGavazziEM270VirtualMeter::CurrentTransformer2:
+            table = &carlo_gavazzi_em270_and_em280_current_transformer_2_table;
+            break;
+
+        default:
+            logger.printfln("Unknown Carlo Gavazzi EM270 Virtual Meter: %u", static_cast<uint8_t>(carlo_gavazzi_em270_virtual_meter));
+            return;
+        }
+
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziEM280:
+        carlo_gavazzi_em280_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<CarloGavazziEM280VirtualMeter>();
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+
+        switch (carlo_gavazzi_em280_virtual_meter) {
+        case CarloGavazziEM280VirtualMeter::None:
+            logger.printfln("No Carlo Gavazzi EM280 Virtual Meter selected");
+            return;
+
+        case CarloGavazziEM280VirtualMeter::Meter:
+            table = &carlo_gavazzi_em270_and_em280_meter_table;
+            break;
+
+        case CarloGavazziEM280VirtualMeter::CurrentTransformer1:
+            table = &carlo_gavazzi_em270_and_em280_current_transformer_1_table;
+            break;
+
+        case CarloGavazziEM280VirtualMeter::CurrentTransformer2:
+            table = &carlo_gavazzi_em270_and_em280_current_transformer_2_table;
+            break;
+
+        default:
+            logger.printfln("Unknown Carlo Gavazzi EM280 Virtual Meter: %u", static_cast<uint8_t>(carlo_gavazzi_em280_virtual_meter));
+            return;
+        }
+
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziEM300:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
+        table = &carlo_gavazzi_em300_table;
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziET300:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
+        table = &carlo_gavazzi_et300_table;
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziEM510:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        carlo_gavazzi_em510_phase = ephemeral_config.get("table")->get()->get("phase")->asEnum<CarloGavazziPhase>();
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
+
+        switch (carlo_gavazzi_em510_phase) {
+        case CarloGavazziPhase::None:
+            logger.printfln("No Carlo Gavazzi EM510 Phase selected");
+            return;
+
+        case CarloGavazziPhase::L1:
+            table = &carlo_gavazzi_em510_at_l1_table;
+            break;
+
+        case CarloGavazziPhase::L2:
+            table = &carlo_gavazzi_em510_at_l2_table;
+            break;
+
+        case CarloGavazziPhase::L3:
+            table = &carlo_gavazzi_em510_at_l3_table;
+            break;
+
+        default:
+            logger.printfln("Unknown Carlo Gavazzi EM510 Phase: %u", static_cast<uint8_t>(carlo_gavazzi_em510_phase));
+            return;
+        }
+
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziEM530:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        table = &carlo_gavazzi_em530_and_em540_table;
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziEM540:
+        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        table = &carlo_gavazzi_em530_and_em540_table;
+        break;
+
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
@@ -800,7 +992,7 @@ void MeterModbusTCP::read_next()
         for (size_t i = read_index + 1; i < table->specs_length; ++i) {
             if (generic_read_request.register_type == table->specs[i].register_type
              && generic_read_request.start_address + generic_read_request.register_count == table->specs[i].start_address
-             && generic_read_request.register_count + MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[i].value_type) <= METER_MODBUS_TCP_REGISTER_BUFFER_SIZE) {
+             && generic_read_request.register_count + MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[i].value_type) <= max_register_count) {
                 generic_read_request.register_count += MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[i].value_type);
                 continue;
             }
@@ -866,6 +1058,17 @@ bool MeterModbusTCP::is_fronius_gen24_plus_hybrid_inverter_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::FroniusGEN24PlusHybridInverter
         && fronius_gen24_plus_hybrid_inverter_virtual_meter == FroniusGEN24PlusHybridInverterVirtualMeter::Battery;
+}
+
+bool MeterModbusTCP::is_carlo_gavazzi_em100_or_et100() const
+{
+    return table_id == MeterModbusTCPTableID::CarloGavazziEM100
+        || table_id == MeterModbusTCPTableID::CarloGavazziET100;
+}
+
+bool MeterModbusTCP::is_carlo_gavazzi_em510() const
+{
+    return table_id == MeterModbusTCPTableID::CarloGavazziEM510;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -1171,6 +1374,10 @@ void MeterModbusTCP::read_done_callback()
         break;
     }
 
+    if (table->specs[read_index].drop_sign) {
+        value = fabs(value);
+    }
+
     value += table->specs[read_index].offset;
 
 #if defined(__GNUC__)
@@ -1335,6 +1542,20 @@ void MeterModbusTCP::read_done_callback()
             meters.update_value(slot, table->index[read_index + 4], state_of_charge);
             meters.update_value(slot, table->index[read_index + 5], energy_charge);
             meters.update_value(slot, table->index[read_index + 6], energy_discharge);
+        }
+    }
+    else if (is_carlo_gavazzi_em100_or_et100()) {
+        if (register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_W
+         || register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_KWH_PLUS_TOTAL
+         || register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_KWH_MINUS_TOTAL) {
+            meters.update_value(slot, table->index[read_index + 1], value);
+        }
+    }
+    else if (is_carlo_gavazzi_em510()) {
+        if (register_start_address == CARLO_GAVAZZI_EM510_W
+         || register_start_address == CARLO_GAVAZZI_EM510_KWH_PLUS_TOTAL
+         || register_start_address == CARLO_GAVAZZI_EM510_KWH_MINUS_TOTAL) {
+            meters.update_value(slot, table->index[read_index + 1], value);
         }
     }
 

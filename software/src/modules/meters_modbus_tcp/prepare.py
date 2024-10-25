@@ -12,6 +12,7 @@ import fronius
 import hailei
 import fox_ess
 import siemens
+import carlo_gavazzi
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -48,7 +49,8 @@ with open('Modbus Value Type.uint8.enum', 'w', encoding='utf-8') as f:
     for item in modbus_value_types:
         f.write(f'{item[0]} = {item[1]}\n')
 
-specs = sungrow.specs + solarmax.specs + victron_energy.specs + deye.specs + alpha_ess.specs + shelly.specs + goodwe.specs + solax.specs + fronius.specs + hailei.specs + fox_ess.specs + siemens.specs
+specs = sungrow.specs + solarmax.specs + victron_energy.specs + deye.specs + alpha_ess.specs + shelly.specs + goodwe.specs \
+      + solax.specs + fronius.specs + hailei.specs + fox_ess.specs + siemens.specs + carlo_gavazzi.specs
 spec_values = []
 
 for spec in specs:
@@ -82,6 +84,7 @@ for spec in specs:
                 f'        ModbusRegisterType::{value.get("register_type", spec["register_type"])},\n'
                 f'        {value["start_address"] - start_address_offset if value["start_address"] != "START_ADDRESS_VIRTUAL" else "START_ADDRESS_VIRTUAL"},\n'
                 f'        ModbusValueType::{value.get("value_type", "None")},\n'
+                f'        {"true" if value.get("drop_sign", False) else "false"},\n'
                 f'        {value.get("offset", 0.0)}f,\n'
                 f'        {value.get("scale_factor", 1.0)}f,\n'
                 '    },'
