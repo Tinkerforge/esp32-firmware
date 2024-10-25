@@ -1002,7 +1002,52 @@ void EVSEV2::update_all_data()
 
     if (contactor_error_changed) {
         if (contactor_error != 0) {
+#if BUILD_IS_WARP2()
             logger.printfln("Contactor error %u PE error %u", contactor_error >> 1, contactor_error & 1);
+#elif BUILD_IS_WARP3()
+            if (contactor_error & 1) {
+                logger.printfln("Contactor error: PE error");
+            }
+
+            auto print_contactor_error = [](const uint8_t error, const bool contactor, const bool phase_switch, const bool contactor_aux, const bool phase_switch_aux) {
+                logger.printfln("Contactor error (%u): Set C1 to '%s' and C2 to '%s' [%s] but see AuxC1 as '%s' and AuxC2 as '%s'",
+                                error,
+                                contactor        ? "closed" : "open",
+                                phase_switch     ? "closed" : "open",
+                                !contactor       ? "no charging" : (contactor_aux ? "3-phase charging" : "1-phase charging"),
+                                contactor_aux    ? "closed" : "open",
+                                phase_switch_aux ? "closed" : "open");
+            };
+
+
+            // bit3: contactor, bit2: phase_switch, bit1: contactor aux, bit0: phase_switch aux
+            const uint8_t err = contactor_error >> 1;
+            switch (err) {
+                // contactor active + 3phase
+                case /*0b0000*/  0: ; break; // contactor aux and phase switch aux active -> OK
+                case /*0b0001*/  1: print_contactor_error(err, 1, 1, 1, 0); break;
+                case /*0b0010*/  2: print_contactor_error(err, 1, 1, 0, 1); break;
+                case /*0b0011*/  3: print_contactor_error(err, 1, 1, 0, 0); break;
+
+                // contactor active + 1phase
+                case /*0b0100*/  4: print_contactor_error(err, 1, 0, 1, 1); break;
+                // case /*0b0101*/ 0: break; // contactor aux active and phase switch aux not active -> OK
+                case /*0b0110*/  5: print_contactor_error(err, 1, 0, 0, 1); break;
+                case /*0b0111*/  6: print_contactor_error(err, 1, 0, 0, 0); break;
+
+                // contactor not active (1/3phase not relevant)
+                case /*0b1000*/  7: print_contactor_error(err, 0, 1, 1, 1); break;
+                case /*0b1001*/  8: print_contactor_error(err, 0, 1, 1, 0); break;
+                case /*0b1010*/  9: print_contactor_error(err, 0, 1, 0, 1); break;
+                // case /*0b1011*/  0: break; // contactor aux not active and phase switch aux not active -> OK
+                case /*0b1100*/ 10: print_contactor_error(err, 0, 0, 1, 1); break;
+                case /*0b1101*/ 11: print_contactor_error(err, 0, 0, 1, 0); break;
+                case /*0b1110*/ 12: print_contactor_error(err, 0, 0, 0, 1); break;
+                // case /*0b1111*/  0: break; // contactor aux not active and phase switch aux not active -> OK
+
+                default: logger.printfln("Contactor error (%u): Unkown error", err); break; // Impossible to reach
+            }
+#endif
         } else {
             logger.printfln("Contactor/PE error cleared");
         }
