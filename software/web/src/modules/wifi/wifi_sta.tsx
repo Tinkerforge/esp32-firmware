@@ -44,7 +44,6 @@ type WifiSTAState = {
     scan_error: string;
     scan_results: Readonly<WifiInfo[]>;
     passphrase_required: boolean;
-    passphrase_placeholder: string;
 };
 
 type WifiInfo = Exclude<API.getType['wifi/scan_results'], string>[0];
@@ -70,7 +69,6 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         super('wifi/sta_config',
               __("wifi.script.sta_save_failed"),
               __("wifi.script.sta_reboot_content_changed"), {
-                passphrase_placeholder: __("component.input_password.unchanged"),
                 passphrase_required: false,
                 scan_show: false,
                 scan_running: false,
@@ -187,7 +185,6 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                 ssid: ap.ssid,
                                 bssid: this.string_to_bssid(ap.bssid),
                                 passphrase_required: passphrase_required,
-                                passphrase_placeholder: passphrase_required ? __("component.input_password.required") : __("component.input_password.unchanged"),
                                 enable_sta: true,
                                 bssid_lock: enable_bssid_lock
                             });
@@ -477,7 +474,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                             required={state.passphrase_required && state.wpa_eap_config[0] == EapConfigID.None}
                                             onValue={this.set("passphrase")}
                                             value={state.passphrase}
-                                            placeholder={state.passphrase_placeholder} />
+                                            placeholder={state.passphrase_required ? __("component.input_password.required") : __("component.input_password.unchanged")} />
                             </FormRow>
                         </div>
                     </Collapse>
