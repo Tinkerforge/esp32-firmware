@@ -370,7 +370,7 @@ void Heating::update()
             state.get("sg_ready_blocking_active")->updateBool(false);
             extended_logging("Heating decision: Turning off SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
             const bool new_value = sg_ready0_type != HEATING_SG_READY_ACTIVE_CLOSED;
-            if (sg_ready_output_0 == new_value) {
+            if (sg_ready_output_0 != new_value) {
                 em_v2.set_sg_ready_output(0, new_value);
                 last_sg_ready_change = rtc.timestamp_minutes();
             }
