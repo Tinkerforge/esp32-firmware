@@ -90,7 +90,7 @@ function get_kwh_now_to_midnight() {
     for (const plane of active_planes) {
         const plane_forecast = API.get_unchecked(`solar_forecast/planes/${plane}/forecast`);
         for (let index = 0; index < plane_forecast.forecast.length; index++) {
-            if (forecast_time_between(plane_forecast.forecast[index].first_date, index, start, end)) {
+            if (forecast_time_between(plane_forecast.first_date, index, start, end)) {
                 wh += plane_forecast.forecast[index] || 0.0;
                 count++;
             }
@@ -113,7 +113,7 @@ export function get_kwh_today() {
     for (const plane of active_planes) {
         const plane_forecast = API.get_unchecked(`solar_forecast/planes/${plane}/forecast`);
         for (let index = 0; index < plane_forecast.forecast.length; index++) {
-            if (forecast_time_between(plane_forecast.forecast[index].first_date, index, start, end)) {
+            if (forecast_time_between(plane_forecast.first_date, index, start, end)) {
                 wh += plane_forecast.forecast[index] || 0.0;
                 count++;
             }
@@ -136,7 +136,7 @@ export function get_kwh_tomorrow() {
     for (const plane of active_planes) {
         const plane_forecast = API.get_unchecked(`solar_forecast/planes/${plane}/forecast`);
         for (let index = 0; index < plane_forecast.forecast.length; index++) {
-            if (forecast_time_between(plane_forecast.forecast[index].first_date, index, start, end)) {
+            if (forecast_time_between(plane_forecast.first_date, index, start, end)) {
                 wh += plane_forecast.forecast[index] || 0.0;
                 count++;
             }
