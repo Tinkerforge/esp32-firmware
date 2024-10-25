@@ -25,8 +25,14 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+
+#if MODULE_ETHERNET_AVAILABLE()
 #include "modules/ethernet/ethernet_state.enum.h"
+#endif
+
+#if MODULE_WIFI_AVAILABLE()
 #include "modules/wifi/wifi_state.enum.h"
+#endif
 
 extern char local_uid_str[32];
 
