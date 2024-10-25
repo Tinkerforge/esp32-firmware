@@ -53,6 +53,7 @@
 #endif
 
 static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
+static constexpr micros_t KEEP_ACTIVE_AFTER_PHASE_SWITCH_TIME = 1_m;
 
 static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
     char buf[768] = {};
@@ -260,7 +261,7 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
 // - it wants to charge (i.e. a vehicle is plugged in and no other slot blocks) or is charging (i.e. is in state C)
 // - we are not currently attempting to wake up a "full" vehicle
 static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
-    return allocated_phases > 0 && (state->wants_to_charge || state->is_charging) && state->last_wakeup == 0_us;
+    return allocated_phases > 0 && (state->wants_to_charge || state->is_charging || state->wants_to_charge_low_priority && !deadline_elapsed(state->last_switch + KEEP_ACTIVE_AFTER_PHASE_SWITCH_TIME)) && state->last_wakeup == 0_us;
 }
 
 // Stage 1: Rotate chargers
