@@ -378,9 +378,6 @@ void SolarForecast::update()
         return;
     }
 
-    logger.printfln("Solar Forecast update started for plane %d", plane_current->index);
-
-
 #ifdef SOLAR_FORECAST_USE_TEST_DATA
     if(json_buffer == nullptr) {
         json_buffer = (char *)heap_caps_calloc_prefer(SOLAR_FORECAST_MAX_JSON_LENGTH, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
