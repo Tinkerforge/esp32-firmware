@@ -19,7 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { createRef, h, Fragment } from "preact";
+import { createRef, h, Fragment, Component, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -37,6 +37,7 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { StatusSection } from "../../ts/components/status_section";
 
 export const SOLAR_FORECAST_PLANES = 6;
 
@@ -167,7 +168,7 @@ interface SolarForecastState {
     extra_show: boolean[];
 }
 
-export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, SolarForecastState> {
+export class SolarForecast extends ConfigComponent<"solar_forecast/config", {status_ref?: RefObject<SolarForecastStatus>}, SolarForecastState> {
     uplot_loader_ref  = createRef();
     uplot_wrapper_ref = createRef();
 
@@ -548,6 +549,43 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {}, 
                 </CollapsedSection>
             </SubPage>
         );
+    }
+}
+
+export class SolarForecastStatus extends Component
+{
+    render() {
+        const config = API.get('solar_forecast/config')
+        if (!util.render_allowed() || !config.enable)
+            return <StatusSection name="solar_forecast" />
+
+        return <StatusSection name="solar_forecast">
+            <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date().getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
+                <InputText
+                    value={util.get_value_with_unit(get_kwh_now_to_midnight(), "kWh", 2)}
+                />
+            </FormRow>
+            <FormRow label={__("solar_forecast.content.solar_forecast")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
+                <div class="row mx-n1">
+                    <div class="col-md-6 px-1">
+                        <div class="input-group">
+                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_today_label")}</span></div>
+                            <InputText
+                                value={util.get_value_with_unit(get_kwh_today(), "kWh", 2)}
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-6 px-1">
+                        <div class="input-group">
+                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_tomorrow_label")}</span></div>
+                            <InputText
+                                value={util.get_value_with_unit(get_kwh_tomorrow(), "kWh", 2)}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </FormRow>
+        </StatusSection>;
     }
 }
 
