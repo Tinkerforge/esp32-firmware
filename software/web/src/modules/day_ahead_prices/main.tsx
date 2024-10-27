@@ -19,7 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { createRef, h } from "preact";
+import { Component, createRef, h, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -34,6 +34,7 @@ import { InputFloat } from "../../ts/components/input_float";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
+import { StatusSection } from "../../ts/components/status_section";
 
 function get_timestamp_today_00_00_in_seconds() {
     return Math.floor(new Date().setHours(0, 0, 0, 0) / 1000);
@@ -125,6 +126,46 @@ export function get_average_price_tomorrow(add_markup: boolean = true) {
     return price_avg + (add_markup ? grid_costs_and_taxes_and_supplier_markup : 0);
 }
 
+function get_current_price_string() {
+    const dap_config = API.get("day_ahead_prices/config");
+
+    let str = util.get_value_with_unit(get_current_price(false, false), "ct/kWh", 2, 1000);
+    if ((dap_config.vat != 0) || (dap_config.grid_costs_and_taxes) != 0 || (dap_config.supplier_markup != 0)) {
+        str += " (";
+        str += util.get_value_with_unit(get_current_price(true, true), "ct/kWh", 2, 1000);
+        str += " ";
+        str += __("day_ahead_prices.content.incl_all_costs");
+        str += ")";
+    }
+
+    return str;
+}
+
+
+function get_price_timeframe() {
+    const dap_config = API.get("day_ahead_prices/config");
+
+    let time = new Date();
+    let s = ""
+    if(dap_config.resolution == 0) {
+        time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
+        time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
+        time.setMinutes(Math.floor(time.getMinutes() / 15) * 15);
+        s += time.toLocaleTimeString() + '-';
+        time.setMinutes(time.getMinutes() + 15);
+        s += time.toLocaleTimeString()
+    } else {
+        time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
+        time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
+        time.setMinutes(Math.floor(time.getMinutes() / 60) * 60);
+        s += time.toLocaleTimeString() + '-';
+        time.setMinutes(time.getMinutes() + 60);
+        s += time.toLocaleTimeString()
+    }
+
+    return s
+}
+
 export function DayAheadPricesNavbar() {
     return (
         <NavbarItem
@@ -147,7 +188,7 @@ interface DayAheadPricesState {
     dap_prices: API.getType["day_ahead_prices/prices"];
 }
 
-export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {}, DayAheadPricesState> {
+export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {status_ref?: RefObject<DayAheadPricesStatus>}, DayAheadPricesState> {
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
 
@@ -163,28 +204,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             // Update chart every time new price data comes in
             this.update_uplot();
         });
-    }
-
-    get_price_timeframe() {
-        let time = new Date();
-        let s = ""
-        if(this.state.resolution == 0) {
-            time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
-            time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
-            time.setMinutes(Math.floor(time.getMinutes() / 15) * 15);
-            s += time.toLocaleTimeString() + '-';
-            time.setMinutes(time.getMinutes() + 15);
-            s += time.toLocaleTimeString()
-        } else {
-            time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
-            time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
-            time.setMinutes(Math.floor(time.getMinutes() / 60) * 60);
-            s += time.toLocaleTimeString() + '-';
-            time.setMinutes(time.getMinutes() + 60);
-            s += time.toLocaleTimeString()
-        }
-
-        return s
     }
 
     update_uplot() {
@@ -246,19 +265,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             return <SubPage name="day_ahead_prices" />;
         }
 
-        function get_current_price_string() {
-            let str = util.get_value_with_unit(get_current_price(false, false), "ct/kWh", 2, 1000);
-            if ((dap.vat != 0) || (dap.grid_costs_and_taxes) != 0 || (dap.supplier_markup != 0)) {
-                str += " (";
-                str += util.get_value_with_unit(get_current_price(true, true), "ct/kWh", 2, 1000);
-                str += " ";
-                str += __("day_ahead_prices.content.incl_all_costs");
-                str += ")";
-            }
-
-            return str;
-        }
-
         return (
             <SubPage name="day_ahead_prices">
                 <ConfigForm id="day_ahead_prices_config_form"
@@ -314,7 +320,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     </FormRow>
                 </ConfigForm>
                 <FormSeparator heading={__("day_ahead_prices.content.day_ahead_market_prices_heading")}/>
-                <FormRow label={__("day_ahead_prices.content.current_price")} label_muted={this.get_price_timeframe()}>
+                <FormRow label={__("day_ahead_prices.content.current_price")} label_muted={get_price_timeframe()}>
                     <InputText value={get_current_price_string()}/>
                 </FormRow>
                 <FormRow label={__("day_ahead_prices.content.average_price")} label_muted={((dap.vat != 0) || (dap.grid_costs_and_taxes) != 0 || (dap.supplier_markup != 0)) ? __("day_ahead_prices.content.incl_all_costs") : ""}>
@@ -371,6 +377,41 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 </div>
             </SubPage>
         );
+    }
+}
+
+export class DayAheadPricesStatus extends Component
+{
+    render() {
+        const config = API.get('day_ahead_prices/config')
+        if (!util.render_allowed() || !config.enable)
+            return <StatusSection name="day_ahead_prices" />
+
+        return <StatusSection name="day_ahead_prices">
+            <FormRow label={__("day_ahead_prices.content.current_price")} label_muted={get_price_timeframe()}>
+                <InputText value={get_current_price_string()}/>
+            </FormRow>
+            <FormRow label={__("day_ahead_prices.content.average_price")} label_muted={((config.vat != 0) || (config.grid_costs_and_taxes) != 0 || (config.supplier_markup != 0)) ? __("day_ahead_prices.content.incl_all_costs") : ""}>
+                <div class="row mx-n1">
+                    <div class="col-md-6 px-1">
+                        <div class="input-group">
+                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("today")}</span></div>
+                            <InputText
+                                value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-6 px-1">
+                        <div class="input-group">
+                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("tomorrow")}</span></div>
+                            <InputText
+                                value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </FormRow>
+        </StatusSection>;
     }
 }
 
