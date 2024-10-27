@@ -19,7 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment, createRef } from "preact";
+import { h, Fragment, createRef, Component, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { METERS_SLOTS } from "../../build";
 import { Switch } from "../../ts/components/switch";
@@ -42,6 +42,7 @@ import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wr
 import { InputText } from "../../ts/components/input_text";
 import { SOLAR_FORECAST_PLANES, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
 import { get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
+import { StatusSection } from "src/ts/components/status_section";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} hidden={false} />;
@@ -54,7 +55,7 @@ interface HeatingState {
     dap_config: API.getType["day_ahead_prices/config"];
 }
 
-export class Heating extends ConfigComponent<'heating/config', {}, HeatingState> {
+export class Heating extends ConfigComponent<'heating/config', {status_ref?: RefObject<HeatingStatus>}, HeatingState> {
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
 
@@ -589,6 +590,40 @@ export class Heating extends ConfigComponent<'heating/config', {}, HeatingState>
                 </ConfigForm>
             </SubPage>
         );
+    }
+}
+
+export class HeatingStatus extends Component
+{
+    render() {
+        const config = API.get('heating/config')
+        if (!util.render_allowed() || (!config.summer_active_time_active && !config.summer_yield_forecast_active && !config.dpc_extended_active && !config.pv_excess_control_active))
+            return <StatusSection name="heating" />
+
+        const state = API.get('heating/state')
+
+        return <StatusSection name="heating">
+            <FormRow label="SG-Ready">
+                <div class="row mx-n1">
+                    <div class="col-md-6 px-1">
+                        <div class="input-group">
+                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 1"}</span></div>
+                            <InputText
+                                value={state.sg_ready_blocking_active ? __("heating.content.active") : __("heating.content.inactive")}
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-6 px-1">
+                        <div class="input-group">
+                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 2"}</span></div>
+                            <InputText
+                                value={state.sg_ready_extended_active ? __("heating.content.active") : __("heating.content.inactive")}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </FormRow>
+        </StatusSection>;
     }
 }
 
