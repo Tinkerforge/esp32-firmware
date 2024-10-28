@@ -261,7 +261,7 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
 // - it wants to charge (i.e. a vehicle is plugged in and no other slot blocks) or is charging (i.e. is in state C)
 // - we are not currently attempting to wake up a "full" vehicle
 static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
-    return allocated_phases > 0 && (state->wants_to_charge || state->is_charging || state->wants_to_charge_low_priority && !deadline_elapsed(state->last_switch + KEEP_ACTIVE_AFTER_PHASE_SWITCH_TIME)) && state->last_wakeup == 0_us;
+    return allocated_phases > 0 && (state->wants_to_charge || state->is_charging || (state->wants_to_charge_low_priority && !deadline_elapsed(state->last_switch + KEEP_ACTIVE_AFTER_PHASE_SWITCH_TIME))) && state->last_wakeup == 0_us;
 }
 
 // Stage 1: Rotate chargers
