@@ -989,11 +989,8 @@ void ModbusTcp::update_keba_regs()
 
     if (api.hasFeature("evse")) {
         write_allowed = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
-        logger.printfln("write allowed %d", write_allowed);
         if (write_allowed) {
             // Not strictly necessary because the slots are disabled, but read-only means read-only.
-            logger.printfln("set_modbus_current %d", keba_write_cpy->set_charging_current);
-            logger.printfln("set_modbus_enabled %d", keba_write_cpy->enable_station == 1);
             evse_common.set_modbus_current(keba_write_cpy->set_charging_current);
             evse_common.set_modbus_enabled(keba_write_cpy->enable_station == 1);
         }
