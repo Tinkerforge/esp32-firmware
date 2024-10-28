@@ -18,7 +18,7 @@ monophase_values = [
         'value_type': 'F32LE',
     },
     {
-        'name': 'L1+L2+L3 active power [A]',
+        'name': 'L1+L2+L3 active power [W]',
         'value_id': 'PowerActiveLSumImExDiff',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },

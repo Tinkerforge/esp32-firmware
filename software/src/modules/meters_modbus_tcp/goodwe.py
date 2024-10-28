@@ -384,14 +384,14 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
-                'name': 'R Phase Power Factor [0.01]',
+                'name': 'S Phase Power Factor [0.01]',
                 'value_id': 'PowerFactorL2',
                 'start_address': 36011,
                 'value_type': 'U16',
                 'scale_factor': 0.01,
             },
             {
-                'name': 'R Phase Power Factor [0.01]',
+                'name': 'T Phase Power Factor [0.01]',
                 'value_id': 'PowerFactorL3',
                 'start_address': 36012,
                 'value_type': 'U16',
