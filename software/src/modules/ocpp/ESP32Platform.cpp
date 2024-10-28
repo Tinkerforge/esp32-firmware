@@ -155,7 +155,7 @@ void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials
     if (network.connected) {
         tf_websocket_client_start(client);
         client_running = true;
-    )
+    }
 
     return client;
 }
@@ -189,7 +189,7 @@ void platform_reconnect(void *ctx)
     if (network.connected) {
         tf_websocket_client_start(client);
         client_running = true;
-    )
+    }
 }
 
 void platform_destroy(void *ctx)
