@@ -290,7 +290,7 @@ specs = [
             },
             {
                 'name': 'L3 Wirkarbeit Bezug Tarif 1 [Wh]',
-                'value_id': 'EnergyActiveL2Import',
+                'value_id': 'EnergyActiveL3Import',
                 'start_address': 921,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -652,7 +652,7 @@ specs = [
             },
             {
                 'name': 'L3 Wirkarbeit Bezug Tarif 1 [Wh]',
-                'value_id': 'EnergyActiveL2ImportResettable',
+                'value_id': 'EnergyActiveL3ImportResettable',
                 'start_address': 921,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
@@ -1486,7 +1486,7 @@ specs = [
             },
             {
                 'name': 'L3 Wirkenergie Bezug Tarif 1 [Wh]',
-                'value_id': 'EnergyActiveL2ImportResettable',
+                'value_id': 'EnergyActiveL3ImportResettable',
                 'start_address': 921,
                 'value_type': 'F64LE',
                 'scale_factor': 0.001,
