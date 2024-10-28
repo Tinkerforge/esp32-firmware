@@ -1074,17 +1074,22 @@ bool MeterModbusTCP::is_carlo_gavazzi_em510() const
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        logger.printfln("Modbus error reading %s / %s (address: %zu, number: %zu): %s [%d]",
-                        get_meter_modbus_tcp_table_id_name(table_id),
-                        table->specs[read_index].name,
-                        table->specs[read_index].start_address,
-                        table->specs[read_index].start_address + 1,
-                        get_tf_modbus_tcp_client_transaction_result_name(generic_read_request.result),
-                        static_cast<int>(generic_read_request.result));
+        if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
+            auto modbus_timeout = errors->get("modbus_timeout");
+            modbus_timeout->updateUint(modbus_timeout->asUint() + 1);
+        }
+        else {
+            logger.printfln("Modbus error reading %s / %s (address: %zu, number: %zu): %s [%d]",
+                            get_meter_modbus_tcp_table_id_name(table_id),
+                            table->specs[read_index].name,
+                            table->specs[read_index].start_address,
+                            table->specs[read_index].start_address + 1,
+                            get_tf_modbus_tcp_client_transaction_result_name(generic_read_request.result),
+                            static_cast<int>(generic_read_request.result));
+        }
 
         read_allowed = true;
         register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
         return;
     }
 

@@ -77,6 +77,7 @@ private:
     [[gnu::format(__printf__, 2, 3)]] void scan_printfln(const char *fmt, ...);
 
     Config config_prototype;
+    Config errors_prototype;
 
     TFModbusTCPClient client;
     ConfigRoot scan_config;

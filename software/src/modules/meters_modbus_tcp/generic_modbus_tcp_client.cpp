@@ -80,15 +80,17 @@ void GenericModbusTCPClient::read_next()
     static_cast<TFModbusTCPSharedClient *>(connected_client)->read(data_type, device_address, read_start_address, read_count, target_buffer, 2000000,
     [this](TFModbusTCPClientTransactionResult result) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            logger.printfln("Modbus read failed: %s (%d) client=%p host_name='%s' port=%u device_address=%u start_address=%u register_count=%u",
-                            get_tf_modbus_tcp_client_transaction_result_name(result),
-                            static_cast<int>(result),
-                            static_cast<void *>(connected_client),
-                            host_name.c_str(),
-                            port,
-                            device_address,
-                            generic_read_request.start_address,
-                            generic_read_request.register_count);
+            if (result != TFModbusTCPClientTransactionResult::Timeout) {
+                logger.printfln("Modbus read failed: %s (%d) client=%p host_name='%s' port=%u device_address=%u start_address=%u register_count=%u",
+                                get_tf_modbus_tcp_client_transaction_result_name(result),
+                                static_cast<int>(result),
+                                static_cast<void *>(connected_client),
+                                host_name.c_str(),
+                                port,
+                                device_address,
+                                generic_read_request.start_address,
+                                generic_read_request.register_count);
+            }
 
             generic_read_request.result = result;
             generic_read_request.done_callback();

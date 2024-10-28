@@ -174,6 +174,10 @@ void MetersModbusTCP::pre_setup()
         )},
     });
 
+    errors_prototype = Config::Object({
+        {"modbus_timeout", Config::Uint32(0)},
+    });
+
     meters.register_meter_generator(get_class(), this);
 }
 
@@ -200,5 +204,5 @@ const Config *MetersModbusTCP::get_state_prototype()
 
 const Config *MetersModbusTCP::get_errors_prototype()
 {
-    return Config::Null();
+    return &errors_prototype;
 }

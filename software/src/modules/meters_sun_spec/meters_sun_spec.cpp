@@ -61,6 +61,10 @@ void MetersSunSpec::pre_setup()
         {"model_instance", Config::Uint16(0)},
     });
 
+    errors_prototype = Config::Object({
+        {"modbus_timeout", Config::Uint32(0)},
+    });
+
     meters.register_meter_generator(get_class(), this);
 
     scan_config = ConfigRoot{Config::Object({
@@ -652,7 +656,7 @@ const Config *MetersSunSpec::get_state_prototype()
 [[gnu::const]]
 const Config *MetersSunSpec::get_errors_prototype()
 {
-    return Config::Null();
+    return &errors_prototype;
 }
 
 MetersSunSpec::ScanState MetersSunSpec::scan_get_next_state_after_read_error()

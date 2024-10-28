@@ -131,7 +131,16 @@ void MeterSunSpec::read_done_callback()
     read_allowed = true;
 
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        logger.printfln("Modbus read error: %s (%d)", get_tf_modbus_tcp_client_transaction_result_name(generic_read_request.result), static_cast<int>(generic_read_request.result));
+        if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
+            auto modbus_timeout = errors->get("modbus_timeout");
+            modbus_timeout->updateUint(modbus_timeout->asUint() + 1);
+        }
+        else {
+            logger.printfln("Modbus read error: %s (%d)",
+                            get_tf_modbus_tcp_client_transaction_result_name(generic_read_request.result),
+                            static_cast<int>(generic_read_request.result));
+        }
+
         return;
     }
 
