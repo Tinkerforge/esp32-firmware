@@ -981,13 +981,22 @@ void ModbusTcp::update_keba_regs()
         keba_write_phase_switch->phase_switching_state = 0xFFFF;
     taskEXIT_CRITICAL(&mtx);
 
+    keba_read_general_cpy->serial_number = fromUint(local_uid_num);
     keba_read_general_cpy->features = fromUint(keba_get_features());
-    keba_read_general_cpy->firmware_version = fromUint(0x30A1B00); //TODO: update?
+    keba_read_general_cpy->firmware_version = fromUint(0x30A1B00); //3.10.27 is the last firmware version without support for the failsafe registers. We don't implement those, so report .27.
+
+    bool write_allowed = false;
 
     if (api.hasFeature("evse")) {
-
-        evse_common.set_modbus_current(keba_write_cpy->set_charging_current);
-        evse_common.set_modbus_enabled(keba_write_cpy->enable_station == 1);
+        write_allowed = api.getState("evse/slots")->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
+        logger.printfln("write allowed %d", write_allowed);
+        if (write_allowed) {
+            // Not strictly necessary because the slots are disabled, but read-only means read-only.
+            logger.printfln("set_modbus_current %d", keba_write_cpy->set_charging_current);
+            logger.printfln("set_modbus_enabled %d", keba_write_cpy->enable_station == 1);
+            evse_common.set_modbus_current(keba_write_cpy->set_charging_current);
+            evse_common.set_modbus_enabled(keba_write_cpy->enable_station == 1);
+        }
 #if MODULE_CHARGE_LIMITS_AVAILABLE()
         /*
             5010 - Set energy
@@ -995,7 +1004,7 @@ void ModbusTcp::update_keba_regs()
             the next charging session can be set. Once this value is reached, the charg-
             ing session is terminated.
         */
-        if (keba_write_cpy->set_energy != 0xFFFE) {
+        if (write_allowed && keba_write_cpy->set_energy != 0xFFFE) {
             api.callCommand("charge_limits/override_energy", Config::ConfUpdateObject{{
                 {"energy_wh", (uint32_t)(keba_write_cpy->set_energy * 10)}
             }});
@@ -1005,7 +1014,8 @@ void ModbusTcp::update_keba_regs()
         bool is_3p = power_manager.get_is_3phase();
         uint32_t external_control_state = api.getState("power_manager/state")->get("external_control")->asUint();
 
-        if (keba_write_phase_switch_cpy->phase_switching_state != 0xFFFF
+        if (write_allowed
+         && keba_write_phase_switch_cpy->phase_switching_state != 0xFFFF
          && external_control_state == EXTERNAL_CONTROL_STATE_AVAILABLE
          && (keba_write_phase_switch_cpy->phase_switching_state == 1) != is_3p) {
             api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
@@ -1019,7 +1029,7 @@ void ModbusTcp::update_keba_regs()
 
         auto iec_state = api.getState("evse/state")->get("iec61851_state")->asUint();
 
-        if (keba_write_cpy->enable_station == 0)
+        if (write_allowed && evse_common.get_slots().get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 0)
             // The charging process is temporarily interrupted because the temperature is too high or the wallbox is in suspended mode.
             keba_read_general_cpy->charging_state = fromUint(5);
         else if (iec_state == 4)
@@ -1029,19 +1039,20 @@ void ModbusTcp::update_keba_regs()
             // 0 is start-up, 1 to 3 are IEC states A to C
             keba_read_general_cpy->charging_state = fromUint(iec_state + 1);
 
-        if (iec_state == 0)
-            // Cable is connected to the charging station and locked
-            keba_read_general_cpy->cable_state = fromUint(3);
-        else if (iec_state == 1)
+        if (iec_state == 1)
             // Cable is connected to the charging station and the electric vehicle (not locked)
             keba_read_general_cpy->cable_state = fromUint(5);
         else if (iec_state == 2 || iec_state == 3)
             // Cable is connected to the charging station and the electric vehicle and locked (charging)
             keba_read_general_cpy->cable_state = fromUint(7);
+        else
+            // Cable is connected to the charging station and locked (not to the electric vehicle).
+            keba_read_general_cpy->cable_state = fromUint(3);
 
         keba_read_max_cpy->max_current = fromUint(api.getState("evse/state")->get("allowed_charging_current")->asUint());
 
-        keba_read_max_cpy->max_hardware_current = fromUint(api.getState("evse/slots")->get(CHARGING_SLOT_INCOMING_CABLE)->get("max_current")->asUint());
+        keba_read_max_cpy->max_hardware_current = fromUint(min(api.getState("evse/slots")->get(CHARGING_SLOT_INCOMING_CABLE)->get("max_current")->asUint(),
+                                                               api.getState("evse/slots")->get(CHARGING_SLOT_OUTGOING_CABLE)->get("max_current")->asUint()));
     }
 
 #if MODULE_METERS_LEGACY_API_AVAILABLE()
