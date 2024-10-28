@@ -22,7 +22,7 @@
 #include "module.h"
 #include "config.h"
 
-#define I2C_MASTER_PORT 0
+#define I2C_MASTER_PORT I2C_NUM_0
 
 class WarpEsp32I2c final : public IModule
 {
