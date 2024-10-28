@@ -50,7 +50,7 @@ void EventLog::pre_init()
     printfln_prefixed(nullptr, 0, "    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
     printfln_prefixed(nullptr, 0, "         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     printfln_prefixed(nullptr, 0, "READY.");
-    printfln_prefixed("event_log", 9, "Last reset reason was: %s", tf_reset_reason());
+    printfln_prefixed(nullptr, 0, "Last reset reason was: %s", tf_reset_reason());
 }
 
 void EventLog::pre_setup()
