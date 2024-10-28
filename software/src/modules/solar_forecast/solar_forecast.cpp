@@ -355,6 +355,10 @@ void SolarForecast::update()
         return;
     }
 
+    if (!network.connected) {
+        return;
+    }
+
     // Only update if NTP is available
     struct timeval tv_now;
     if (!rtc.clock_synced(&tv_now)) {

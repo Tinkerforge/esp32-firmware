@@ -33,6 +33,7 @@ public:
 
     ConfigRoot config;
     ConfigRoot state;
+    bool connected = false;
 
 private:
     bool ethernet_connected = false;

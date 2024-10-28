@@ -74,7 +74,8 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
-tf_websocket_client_handle_t client;
+static tf_websocket_client_handle_t client;
+static bool client_running = false;
 static std::unique_ptr<String[]> auth_headers;
 static size_t auth_headers_count = 0;
 static size_t next_auth_header = 0;
@@ -151,7 +152,10 @@ void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials
     client = tf_websocket_client_init(&websocket_cfg);
     tf_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
 
-    tf_websocket_client_start(client);
+    if (network.connected) {
+        tf_websocket_client_start(client);
+        client_running = true;
+    )
 
     return client;
 }
@@ -163,12 +167,18 @@ bool platform_has_fixed_cable(int connectorId)
 
 void platform_disconnect(void *ctx)
 {
-    tf_websocket_client_close(client, pdMS_TO_TICKS(1000));
+    if (client_running) {
+        tf_websocket_client_close(client, pdMS_TO_TICKS(1000));
+        client_running = false;
+    }
 }
 
 void platform_reconnect(void *ctx)
 {
-    tf_websocket_client_stop(client);
+    if (client_running) {
+        tf_websocket_client_stop(client);
+        client_running = false;
+    }
 
     // Try next set of credentials if available.
     if (auth_headers_count > 0) {
@@ -176,7 +186,10 @@ void platform_reconnect(void *ctx)
         next_auth_header = (next_auth_header + 1) % auth_headers_count;
     }
 
-    tf_websocket_client_start(client);
+    if (network.connected) {
+        tf_websocket_client_start(client);
+        client_running = true;
+    )
 }
 
 void platform_destroy(void *ctx)

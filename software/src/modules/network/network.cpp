@@ -92,7 +92,8 @@ void Network::register_events()
 #if MODULE_ETHERNET_AVAILABLE()
     event.registerEvent("ethernet/state", {"connection_state"}, [this](const Config *connection_state) {
         ethernet_connected = connection_state->asEnum<EthernetState>() == EthernetState::Connected;
-        state.get("connected")->updateBool(ethernet_connected || wifi_connected);
+        connected = ethernet_connected || wifi_connected;
+        state.get("connected")->updateBool(connected);
         return EventResult::OK;
     });
 #endif
@@ -100,7 +101,8 @@ void Network::register_events()
 #if MODULE_WIFI_AVAILABLE()
     event.registerEvent("wifi/state", {"connection_state"}, [this](const Config *connection_state) {
         wifi_connected = connection_state->asEnum<WifiState>() == WifiState::Connected;
-        state.get("connected")->updateBool(ethernet_connected || wifi_connected);
+        connected = ethernet_connected || wifi_connected;
+        state.get("connected")->updateBool(connected);
         return EventResult::OK;
     });
 #endif
