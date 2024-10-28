@@ -19,6 +19,17 @@
 
 #include "event_log.h"
 
+#undef vprintfln
+#undef vprintfln_continue
+#undef  printfln
+#undef  printfln_continue
+#undef  printfln_debug
+#undef vtracefln
+#undef vtracefln_continue
+#undef  tracefln
+#undef  tracefln_continue
+#undef  tracefln_debug
+
 #include <Arduino.h>
 #include <time.h>
 #include <inttypes.h>
@@ -39,7 +50,7 @@ void EventLog::pre_init()
     printfln_prefixed(nullptr, 0, "    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
     printfln_prefixed(nullptr, 0, "         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     printfln_prefixed(nullptr, 0, "READY.");
-    printfln("Last reset reason was: %s", tf_reset_reason());
+    printfln_prefixed("event_log", 9, "Last reset reason was: %s", tf_reset_reason());
 }
 
 void EventLog::pre_setup()

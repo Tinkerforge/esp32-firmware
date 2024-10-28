@@ -37,15 +37,3 @@ static size_t event_log_prefix_len  = strlen_with_event_log_alignment(event_log_
 static size_t event_log_prefix_len  = 0;
 static const char *event_log_prefix = get_module_offset_and_length(__BASE_FILE__, &event_log_prefix_len);
 #endif
-
-#define vprintfln(fmt, args)          vprintfln_prefixed(event_log_prefix, event_log_prefix_len, fmt, args)
-#define vprintfln_continue(fmt, args) vprintfln_prefixed(nullptr, 0, "    " fmt, args)
-#define  printfln(fmt, ...)            printfln_prefixed(event_log_prefix, event_log_prefix_len, fmt __VA_OPT__(,) __VA_ARGS__)
-#define  printfln_continue(fmt, ...)   printfln_prefixed(nullptr, 0, "    " fmt __VA_OPT__(,) __VA_ARGS__)
-#define  printfln_debug(fmt, ...)      printfln_prefixed(event_log_prefix, event_log_prefix_len, "[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
-
-#define vtracefln(fmt, args)          vtracefln_prefixed(event_log_prefix, event_log_prefix_len, fmt, args)
-#define vtracefln_continue(fmt, args) vtracefln_prefixed(nullptr, 0, "    " fmt, args)
-#define  tracefln(fmt, ...)            tracefln_prefixed(event_log_prefix, event_log_prefix_len, fmt __VA_OPT__(,) __VA_ARGS__)
-#define  tracefln_continue(fmt, ...)   tracefln_prefixed(nullptr, 0, "    " fmt __VA_OPT__(,) __VA_ARGS__)
-#define  tracefln_debug(fmt, ...)      tracefln_prefixed(event_log_prefix, event_log_prefix_len, "[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)

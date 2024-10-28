@@ -66,6 +66,19 @@ public:
     size_t vtracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
     [[gnu::format(__printf__, 4, 5)]] size_t tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...);
 
+    // The following functions are intentionally not implemented.
+    // They are just here for IDE auto-completion to pick them up
+    [[gnu::format(__printf__, 2, 3)]] size_t vprintfln(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] size_t vprintfln_continue(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] size_t printfln(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] size_t printfln_continue(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] size_t printfln_debug(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] size_t vtracefln(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] size_t vtracefln_continue(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] size_t tracefln(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] size_t tracefln_continue(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] size_t tracefln_debug(const char *fmt, ...);
+
 private:
     std::mutex event_buf_mutex;
     TF_PackedRingbuffer<char,
@@ -88,6 +101,17 @@ private:
 
     ConfigRoot boot_id;
 };
+
+#define vprintfln(fmt, args)          vprintfln_prefixed(event_log_prefix, event_log_prefix_len, fmt, args)
+#define vprintfln_continue(fmt, args) vprintfln_prefixed(nullptr, 0, "    " fmt, args)
+#define  printfln(fmt, ...)            printfln_prefixed(event_log_prefix, event_log_prefix_len, fmt __VA_OPT__(,) __VA_ARGS__)
+#define  printfln_continue(fmt, ...)   printfln_prefixed(nullptr, 0, "    " fmt __VA_OPT__(,) __VA_ARGS__)
+#define  printfln_debug(fmt, ...)      printfln_prefixed(event_log_prefix, event_log_prefix_len, "[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
+#define vtracefln(fmt, args)          vtracefln_prefixed(event_log_prefix, event_log_prefix_len, fmt, args)
+#define vtracefln_continue(fmt, args) vtracefln_prefixed(nullptr, 0, "    " fmt, args)
+#define  tracefln(fmt, ...)            tracefln_prefixed(event_log_prefix, event_log_prefix_len, fmt __VA_OPT__(,) __VA_ARGS__)
+#define  tracefln_continue(fmt, ...)   tracefln_prefixed(nullptr, 0, "    " fmt __VA_OPT__(,) __VA_ARGS__)
+#define  tracefln_debug(fmt, ...)      tracefln_prefixed(event_log_prefix, event_log_prefix_len, "[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
 
 // To capture ESP-IDF log messages, use
 // esp_log_set_vprintf(tf_event_log_vprintfln);
