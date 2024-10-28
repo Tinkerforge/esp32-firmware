@@ -17,13 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "bricklet_bindings_constants.h"
 #include "em_common.h"
-#include "module_dependencies.h"
 
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "bricklet_bindings_constants.h"
 #include "bindings/errors.h"
 #include "build.h"
-#include "event_log_prefix.h"
 #include "musl_libc_timegm.h"
 
 EMCommon::EMCommon()
