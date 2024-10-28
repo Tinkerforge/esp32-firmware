@@ -120,7 +120,7 @@ inverter_values = [
         'variant': 'String',
     },
     {
-        'name': 'Total Active Power [W]',
+        'name': 'Total Active Power Export [W]',
         'value_id': 'PowerActiveLSumExport',
         'start_address': 5031,
         'value_type': 'U32LE',
