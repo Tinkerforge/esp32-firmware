@@ -92,14 +92,10 @@ bool deadline_elapsed(uint32_t deadline_ms)
     return a_after_b(millis(), deadline_ms);
 }
 
+// implement TFTools/Micros.h now_us
 micros_t now_us()
 {
     return micros_t{esp_timer_get_time()};
-}
-
-bool deadline_elapsed(micros_t deadline_us)
-{
-    return deadline_us < now_us();
 }
 
 void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
