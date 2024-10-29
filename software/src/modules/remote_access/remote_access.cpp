@@ -593,8 +593,6 @@ void RemoteAccess::register_urls() {
 
     task_scheduler.scheduleOnce([this]() {
         this->resolve_management();
-        this->connect_management();
-        this->connection_state.get(0)->updateUint(1);
     }, 5_s);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
@@ -928,6 +926,8 @@ void RemoteAccess::resolve_management() {
     auto callback = [this](ConfigRoot cfg) {
         management_request_done = true;
         https_client = nullptr;
+        this->connect_management();
+        this->connection_state.get(0)->updateUint(1);
     };
     run_request_with_next_stage(url.c_str(), HTTP_METHOD_PUT, json, len, config, callback);
 }
