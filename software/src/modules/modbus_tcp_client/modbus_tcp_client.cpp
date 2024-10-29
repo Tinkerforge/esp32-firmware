@@ -33,8 +33,6 @@ void ModbusTCPClient::setup()
         logger.vprintfln(fmt, args);
     };
 
-    TFNetworkUtil::microseconds = esp_timer_get_time;
-
     TFNetworkUtil::resolve = [this](const char *host_name, std::function<void(uint32_t host_address, int error_number)> &&callback) {
         dns_gethostbyname_addrtype_lwip_ctx_async_data *outer_data = new dns_gethostbyname_addrtype_lwip_ctx_async_data;
 

@@ -38,6 +38,8 @@
 class MetersSunSpec final : public IModule, public MeterGenerator
 {
 public:
+    MetersSunSpec() : client(TFModbusTCPByteOrder::Host) {}
+
     // for IModule
     void pre_setup() override;
     void register_urls() override;
@@ -106,7 +108,7 @@ private:
     size_t scan_read_retries;
     micros_t scan_read_delay_deadline;
     uint16_t scan_read_buffer[68];
-    int64_t scan_read_timeout_us = 1000000;
+    micros_t scan_read_timeout = 1_s;
     uint16_t scan_read_timeout_burst;
     uint32_t scan_read_cookie = 0;
     ModbusDeserializer scan_deserializer;

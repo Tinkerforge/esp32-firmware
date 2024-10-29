@@ -27,7 +27,7 @@
 class ModbusTCPClient final : public IModule
 {
 public:
-    ModbusTCPClient() {}
+    ModbusTCPClient() : pool(TFModbusTCPByteOrder::Host) {}
 
     void setup() override;
     void loop() override;
