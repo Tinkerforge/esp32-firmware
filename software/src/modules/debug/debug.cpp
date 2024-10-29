@@ -332,10 +332,12 @@ void Debug::register_urls()
     api.addState("debug/state_slow", &state_slow);
     api.addState("debug/state_hwm", &state_hwm);
 
+#ifdef DEBUG_FS_ENABLE
     server.on_HTTPThread("/debug/crash", HTTP_GET, [](WebServerRequest req) {
         esp_system_abort("Crash requested");
         return req.send(200);
     });
+#endif
 
     server.on_HTTPThread("/debug/state_sizes", HTTP_GET, [](WebServerRequest req) {
         char buf[3072]; // on httpd stack, which is large enough
