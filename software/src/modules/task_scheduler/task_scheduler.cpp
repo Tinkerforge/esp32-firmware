@@ -104,6 +104,9 @@ Task *TaskQueue::findByTaskID(uint64_t task_id)
     return it->get();
 }
 
+COREDUMP_RTC_DATA_ATTR const char *task_fn_file;
+COREDUMP_RTC_DATA_ATTR int task_fn_line;
+
 void TaskScheduler::custom_loop()
 {
     // We can't use defer to clean up currentTask on function level,
@@ -133,6 +136,9 @@ void TaskScheduler::custom_loop()
         }
     }
 
+    task_fn_file = this->currentTask->file;
+    task_fn_line = this->currentTask->line;
+
     // Run task without holding the lock.
     // This allows a task to schedule tasks (could also be done with a recursive mutex)
     // but also allows other threads to schedule tasks while one is executed.
@@ -141,6 +147,9 @@ void TaskScheduler::custom_loop()
     } else {
         this->currentTask->fn();
     }
+
+    task_fn_file = nullptr;
+    task_fn_line = 0;
 
     {
         std::lock_guard<std::mutex> lock{this->task_mutex};
