@@ -34,6 +34,10 @@ void MetersRCTPower::pre_setup()
         {"virtual_meter",  Config::Uint8(static_cast<uint8_t>(VirtualMeter::None))},
     });
 
+    errors_prototype = Config::Object({
+        {"checksum_mismatch", Config::Uint32(0)},
+    });
+
     meters.register_meter_generator(get_class(), this);
 }
 
@@ -42,9 +46,9 @@ MeterClassID MetersRCTPower::get_class() const
     return MeterClassID::RCTPower;
 }
 
-IMeter *MetersRCTPower::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
+IMeter *MetersRCTPower::new_meter(uint32_t slot, Config *state, Config *errors)
 {
-    return new MeterRCTPower(slot);
+    return new MeterRCTPower(slot, state, errors);
 }
 
 const Config *MetersRCTPower::get_config_prototype()
@@ -59,5 +63,5 @@ const Config *MetersRCTPower::get_state_prototype()
 
 const Config *MetersRCTPower::get_errors_prototype()
 {
-    return Config::Null();
+    return &errors_prototype;
 }

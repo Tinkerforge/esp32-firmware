@@ -36,7 +36,7 @@ struct RCTValueSpec
 class RCTPowerClient final : public TFGenericTCPClient
 {
 public:
-    RCTPowerClient(uint32_t slot_) : slot(slot_) {}
+    RCTPowerClient(uint32_t slot_, Config *state_, Config *errors_) : slot(slot_), state(state_), errors(errors_) {}
 
     void setup(const Config &ephemeral_config);
     void read_next_value();
@@ -47,6 +47,8 @@ private:
     bool receive_hook() override;
 
     uint32_t slot;
+    Config *state;
+    Config *errors;
     VirtualMeter virtual_meter = VirtualMeter::None;
     const RCTValueSpec *value_specs = nullptr;
     size_t value_specs_length = 0;
@@ -62,7 +64,7 @@ private:
 class MeterRCTPower final : protected GenericTCPClientConnector, public IMeter
 {
 public:
-    MeterRCTPower(uint32_t slot) : GenericTCPClientConnector("meter_rct_power", &client, &shared_client), client(slot), shared_client(&client) {}
+    MeterRCTPower(uint32_t slot, Config *state, Config *errors) : GenericTCPClientConnector("meter_rct_power", &client, &shared_client), client(slot, state, errors), shared_client(&client) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(const Config &ephemeral_config) override;

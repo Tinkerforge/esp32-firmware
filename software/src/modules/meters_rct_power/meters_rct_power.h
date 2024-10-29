@@ -45,7 +45,8 @@ public:
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
 private:
-    ConfigRoot config_prototype;
+    Config config_prototype;
+    Config errors_prototype;
 };
 
 #if defined(__GNUC__)

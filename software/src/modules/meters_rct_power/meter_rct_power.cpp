@@ -26,9 +26,9 @@
 #include "tools.h"
 
 #if 0
-#define debugfln(...) logger.printfln(__VA_ARGS__)
+#define debugfln(fmt, ...) logger.printfln(fmt __VA_OPT__(,) __VA_ARGS__)
 #else
-#define debugfln(...) do {} while (0)
+#define debugfln(fmt, ...) do {} while (0)
 #endif
 
 static const MeterValueID grid_value_ids[] = {
@@ -281,10 +281,13 @@ bool RCTPowerClient::receive_hook()
     if (actual_checksum != expected_checksum) {
         for (size_t i = 0; i < value_specs_length; ++i) {
             if (value_specs[i].id == id) {
-                logger.printfln("Received response [%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x] for ID 0x%08x with checksum mismatch (actual=0x%04x expected=0x%04x), ignoring response",
-                                pending_response[0], pending_response[1], pending_response[2], pending_response[3], pending_response[4], pending_response[5],
-                                pending_response[6], pending_response[7], pending_response[8], pending_response[9], pending_response[10], pending_response[11],
-                                id, actual_checksum, expected_checksum);
+                debugfln("Received response [%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x] for ID 0x%08x with checksum mismatch (actual=0x%04x expected=0x%04x), ignoring response",
+                         pending_response[0], pending_response[1], pending_response[2], pending_response[3], pending_response[4], pending_response[5],
+                         pending_response[6], pending_response[7], pending_response[8], pending_response[9], pending_response[10], pending_response[11],
+                         id, actual_checksum, expected_checksum);
+
+                auto checksum_mismatch = errors->get("checksum_mismatch");
+                checksum_mismatch->updateUint(checksum_mismatch->asUint() + 1);
                 break;
             }
         }
@@ -313,7 +316,7 @@ bool RCTPowerClient::receive_hook()
                 value *= value_specs[i].scale_factor;
             }
 
-            debugfln("Received response for ID 0x%08x with value %f", id, u.value, value);
+            debugfln("Received response for ID 0x%08x with value %f [%f]", id, u.value, value);
 
             meters.update_value(slot, i, value);
             meters.finish_update(slot);
