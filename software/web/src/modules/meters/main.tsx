@@ -187,11 +187,14 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
 type MetersConfig = API.getType['meters/0/config'];
 
 export class Meters extends ConfigComponent<'meters/0/config', MetersProps, MetersState> {
+    live_processing = false;
     live_initialized = false;
     live_data: CachedData = {timestamps: [], samples: []};
-    pending_live_data: CachedData;
+    pending_live_data: CachedData = {timestamps: [], samples: []};
+    history_processing = false;
     history_initialized = false;
     history_data: CachedData = {timestamps: [], samples: []};
+    pending_history_data: CachedData = {timestamps: [], samples: []};
     uplot_loader_live_ref = createRef();
     uplot_loader_history_ref = createRef();
     uplot_wrapper_live_ref = createRef();
@@ -221,12 +224,14 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             this.live_data.samples.push([]);
+            this.pending_live_data.samples.push([]);
             this.history_data.samples.push([]);
+            this.pending_history_data.samples.push([]);
         }
 
         util.addApiEventListener('info/modules', () => {
-            this.update_live_cache();
-            this.update_history_cache();
+            this.initialize_live_cache();
+            this.initialize_history_cache();
         });
 
         util.addApiEventListener_unchecked('evse/meter_config', () => {
@@ -318,11 +323,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         }
 
         util.addApiEventListener("meters/live_samples", () => {
-            if (!this.live_initialized) {
-                // received live_samples before live cache initialization
-                this.update_live_cache();
-                return;
-            }
+            this.initialize_live_cache();
 
             let now = Date.now();
             let live = API.get("meters/live_samples");
@@ -335,49 +336,32 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
             }
 
             if (this.pending_live_data.timestamps.length >= 5) {
-                this.live_data.timestamps = array_append(this.live_data.timestamps, this.pending_live_data.timestamps, 720);
-
-                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-                    this.live_data.samples[meter_slot] = array_append(this.live_data.samples[meter_slot], this.pending_live_data.samples[meter_slot], 720);
-                }
-
-                this.pending_live_data.timestamps = [];
-                this.pending_live_data.samples = [];
-
-                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-                    this.pending_live_data.samples.push([]);
-                }
-
-                if (this.state.chart_selected == "live") {
+                if (this.merge_pending_live_data() && this.state.chart_selected == "live") {
                     this.update_live_uplot();
                 }
             }
         });
 
         util.addApiEventListener("meters/history_samples", () => {
-            if (!this.history_initialized) {
-                // received history_samples before history cache initialization
-                this.update_history_cache();
-                return;
-            }
+            this.initialize_history_cache();
 
             let now = Date.now();
             let history = API.get("meters/history_samples");
-            let history_samples: number[][] = new Array(METERS_SLOTS);
+            let history_extra = calculate_history_data(now, 0, history.samples);
+
+            this.pending_history_data.timestamps.push(...history_extra.timestamps);
 
             for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-                if (history.samples[meter_slot] !== null) {
-                    history_samples[meter_slot] = array_append(this.history_data.samples[meter_slot], history.samples[meter_slot], 720);
+                this.pending_history_data.samples[meter_slot].push(...history_extra.samples[meter_slot]);
+            }
+
+            if (this.merge_pending_history_data()) {
+                if (this.state.chart_selected.startsWith("history_")) {
+                    this.update_history_uplot();
                 }
+
+                this.update_status_uplot();
             }
-
-            this.history_data = calculate_history_data(now, 0, history_samples);
-
-            if (this.state.chart_selected.startsWith("history_")) {
-                this.update_history_uplot();
-            }
-
-            this.update_status_uplot();
         });
     }
 
@@ -387,22 +371,29 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         }
     }
 
-    update_live_cache() {
-        this.update_live_cache_async()
+    initialize_live_cache() {
+        if (this.live_processing || this.live_initialized) {
+            return;
+        }
+
+        this.live_processing = true;
+
+        this.initialize_live_cache_async()
             .then((success: boolean) => {
                 if (!success) {
                     window.setTimeout(() => {
-                        this.update_live_cache();
+                        this.initialize_live_cache();
                     }, 100);
 
                     return;
                 }
 
+                this.live_processing = false;
                 this.update_live_uplot();
             });
     }
 
-    async update_live_cache_async() {
+    async initialize_live_cache_async() {
         let now = Date.now();
         let response: string = '';
 
@@ -417,7 +408,24 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
         this.live_initialized = true;
         this.live_data = calculate_live_data(now, payload.offset, payload.samples_per_second, payload.samples);
-        this.pending_live_data = {timestamps: [], samples: []}
+
+        this.merge_pending_live_data();
+        return true;
+    }
+
+    merge_pending_live_data() {
+        if (!this.live_initialized) {
+            return false;
+        }
+
+        this.live_data.timestamps = array_append(this.live_data.timestamps, this.pending_live_data.timestamps, 720);
+
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            this.live_data.samples[meter_slot] = array_append(this.live_data.samples[meter_slot], this.pending_live_data.samples[meter_slot], 720);
+        }
+
+        this.pending_live_data.timestamps = [];
+        this.pending_live_data.samples = [];
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             this.pending_live_data.samples.push([]);
@@ -426,23 +434,30 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         return true;
     }
 
-    update_history_cache() {
-        this.update_history_cache_async()
+    initialize_history_cache() {
+        if (this.history_processing || this.history_initialized) {
+            return;
+        }
+
+        this.history_processing = true;
+
+        this.initialize_history_cache_async()
             .then((success: boolean) => {
                 if (!success) {
                     window.setTimeout(() => {
-                        this.update_history_cache();
+                        this.initialize_history_cache();
                     }, 100);
 
                     return;
                 }
 
+                this.history_processing = false;
                 this.update_history_uplot();
                 this.update_status_uplot();
             });
     }
 
-    async update_history_cache_async() {
+    async initialize_history_cache_async() {
         let now = Date.now();
         let response: string = '';
 
@@ -457,6 +472,28 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
         this.history_initialized = true;
         this.history_data = calculate_history_data(now, payload.offset, payload.samples);
+
+        this.merge_pending_history_data();
+        return true;
+    }
+
+    merge_pending_history_data() {
+        if (!this.history_initialized) {
+            return false;
+        }
+
+        this.history_data.timestamps = array_append(this.history_data.timestamps, this.pending_history_data.timestamps, 720);
+
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            this.history_data.samples[meter_slot] = array_append(this.history_data.samples[meter_slot], this.pending_history_data.samples[meter_slot], 720);
+        }
+
+        this.pending_history_data.timestamps = [];
+        this.pending_history_data.samples = [];
+
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            this.pending_history_data.samples.push([]);
+        }
 
         return true;
     }
