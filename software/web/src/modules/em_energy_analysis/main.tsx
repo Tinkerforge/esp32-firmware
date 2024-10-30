@@ -341,9 +341,10 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                     </div>
                 </div>
             </FormRow>
-            <FormRow label={__("em_energy_analysis.status.current_power")} label_muted={get_meter_name(this.state.meter_configs, this.state.meter_slot)}>
-                <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
-            </FormRow>
+            {power !== undefined ?
+                <FormRow label={__("em_energy_analysis.status.current_power")} label_muted={get_meter_name(this.state.meter_configs, this.state.meter_slot)}>
+                    <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
+                </FormRow> : undefined}
         </StatusSection>;
     }
 }
