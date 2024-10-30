@@ -98,6 +98,12 @@ micros_t now_us()
     return micros_t{esp_timer_get_time()};
 }
 
+// implement TFTools/Tools.h now_us
+[[gnu::noreturn]] void system_abort(const char *message)
+{
+    esp_system_abort(message);
+}
+
 void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
 {
     uint32_t blocks[8] = {0};
