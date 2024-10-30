@@ -41,13 +41,11 @@ let x = {
                 <p>The day ahead prices are only a part of the electricity costs. Additional fixed taxes, grid fees, and surcharges apply.</p>
                 <p>The VAT refers to the VAT that applies to the day ahead price (currently 19% in DE). Further additional costs can be found in the electricity provider's invoice.</p>
                 <p>There are three sensible options for the optional settings:</p>
-                <p>
-                    <ul>
-                        <li>Leave everything at 0: The net market price is displayed.</li>
-                        <li>Leave VAT at 0 and enter the net price for the fees: The net electricity price including fees is displayed.</li>
-                        <li>Enter VAT correctly and enter the gross price for the fees: The gross electricity price including fees is displayed.</li>
-                    </ul>
-                </p>
+                <ul>
+                    <li>Leave everything at 0: The net market price is displayed.</li>
+                    <li>Leave VAT at 0 and enter the net price for the fees: The net electricity price including fees is displayed.</li>
+                    <li>Enter VAT correctly and enter the gross price for the fees: The gross electricity price including fees is displayed.</li>
+                </ul>
                 <p>For control, only the dynamic net day ahead prices are used, regardless of the additional costs.</p>
             </>,
             "incl_all_costs": "incl. all costs",
