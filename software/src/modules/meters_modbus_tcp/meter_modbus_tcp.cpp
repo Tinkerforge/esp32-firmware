@@ -1075,8 +1075,8 @@ void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
-            auto modbus_timeout = errors->get("modbus_timeout");
-            modbus_timeout->updateUint(modbus_timeout->asUint() + 1);
+            auto timeout = errors->get("timeout");
+            timeout->updateUint(timeout->asUint() + 1);
         }
         else {
             logger.printfln("Modbus error reading %s / %s (address: %zu, number: %zu): %s [%d]",

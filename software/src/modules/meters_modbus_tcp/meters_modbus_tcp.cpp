@@ -175,7 +175,7 @@ void MetersModbusTCP::pre_setup()
     });
 
     errors_prototype = Config::Object({
-        {"modbus_timeout", Config::Uint32(0)},
+        {"timeout", Config::Uint32(0)},
     });
 
     meters.register_meter_generator(get_class(), this);
