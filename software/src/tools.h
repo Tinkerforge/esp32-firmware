@@ -208,7 +208,7 @@ private:
 };
 
 // Remove seperator for nfc tags
-void remove_separator(const char *const in, char *out);
+int remove_separator(const char *const in, char *out);
 
 // minimal C++11 allocator with debug output
 template <class Tp>

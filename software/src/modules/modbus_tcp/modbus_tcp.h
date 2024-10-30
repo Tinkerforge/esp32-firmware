@@ -21,6 +21,8 @@
 
 #include "module.h"
 #include "config.h"
+#include <TFModbusTCPServer.h>
+#include <memory>
 
 class ModbusTcp final : public IModule
 {
@@ -29,6 +31,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
     void pre_reboot() override;
 
 private:
@@ -36,7 +39,49 @@ private:
     void update_bender_regs();
     void update_keba_regs();
 
+    void start_server();
+    void fillCache();
+
+    void getWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
+    void getWarpDiscreteInputs(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
+    void getWarpInputRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+    void getWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+
+    void setWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
+    void setWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+
     ConfigRoot config;
 
     bool started = false;
+
+    TFModbusTCPServer server;
+
+    struct Cache {
+        const Config *evse_state;
+        const Config *evse_slots;
+        const Config *evse_ll_state;
+        const Config *evse_indicator_led;
+        const Config *current_charge;
+        const Config *meter_state;
+        const Config *meter_values;
+        const Config *meter_phases;
+        const Config *meter_all_values;
+
+        bool has_feature_evse;
+        bool has_feature_meter;
+        bool has_feature_meter_phases;
+        bool has_feature_meter_all_values;
+        bool has_feature_charge_tracker;
+        bool has_feature_nfc;
+    };
+
+    union TwoRegs {
+        uint32_t u;
+        float f;
+        struct {uint16_t upper; uint16_t lower;} regs;
+    };
+    TwoRegs getWarpInputRegister(uint16_t address, void *ctx);
+    TwoRegs getWarpHoldingRegister(uint16_t address);
+
+    std::unique_ptr<Cache> cache;
 };

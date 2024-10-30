@@ -1036,7 +1036,7 @@ bool OwnershipGuard::have_ownership()
     return acquired;
 }
 
-void remove_separator(const char *const in, char *out)
+int remove_separator(const char *const in, char *out)
 {
     int written = 0;
     size_t s = strlen(in);
@@ -1047,6 +1047,7 @@ void remove_separator(const char *const in, char *out)
         ++written;
     }
     out[written] = '\0';
+    return written;
 }
 
 int strncmp_with_same_len(const char *left, const char *right, size_t right_len)

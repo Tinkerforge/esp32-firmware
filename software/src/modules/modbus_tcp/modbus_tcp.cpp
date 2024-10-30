@@ -40,6 +40,74 @@ extern uint32_t local_uid_num;
 // 2 - Add coils 1000, 1001
 #define MODBUS_TABLE_VERSION 2
 
+
+template<typename T>
+struct Option {
+public:
+    template<typename U = std::is_trivially_copy_constructible<T>, typename std::enable_if<U::value>::type...>
+    Option(T t): val(t), have_val(true) {}
+
+               // val has to be initialized if it is a primitive type.
+    Option() : val(), have_val(false) {}
+
+    T &unwrap() {
+        return expect("unwrapped Option without value!");
+    }
+
+    const T &unwrap() const {
+        return expect("unwrapped Option without value!");
+    }
+
+    T &unwrap_or(T &default_value) {
+        if (!have_val)
+            return default_value;
+        return val;
+    }
+
+    const T &unwrap_or(const T &default_value) const {
+        if (!have_val)
+            return default_value;
+        return val;
+    }
+
+    T &expect(const char *message) {
+        if (!have_val)
+            esp_system_abort(message);
+        return val;
+    }
+
+    const T &expect(const char *message) const {
+        if (!have_val)
+            esp_system_abort(message);
+        return val;
+    }
+
+    T &insert(const T &default_value) {
+        val = default_value;
+        have_val = true;
+        return val;
+    }
+
+    bool is_some() const {
+        return have_val;
+    }
+
+    bool is_none() const {
+        return !have_val;
+    }
+
+    void clear() {
+        have_val = false;
+    }
+
+private:
+    T val;
+    bool have_val;
+};
+
+
+
+
 template<typename T>
 static void calloc_struct(T **out)
 {
@@ -380,7 +448,7 @@ static keba_write_phase_switch_s *keba_write_phase_switch, *keba_write_phase_swi
 
 static portMUX_TYPE mtx;
 
-ModbusTcp::ModbusTcp()
+ModbusTcp::ModbusTcp() : server(TFModbusTCPByteOrder::Network)
 {
 }
 
@@ -392,7 +460,7 @@ void ModbusTcp::pre_setup()
         {"table", Config::Uint16(0)},
     });
 }
-
+/*
 static void allocate_table()
 {
     calloc_struct(&input_regs);
@@ -452,6 +520,446 @@ static void allocate_keba_table()
     calloc_struct(&keba_write_phase_switch);
     calloc_struct(&keba_write_phase_switch_cpy);
 }
+*/
+
+static inline void swap_bytes(char *str, size_t len)
+{
+    char tmp;
+    for (int i = 0; i < len; i += 2) {
+        tmp = str[i];
+        str[i] = str[i + 1];
+        str[i + 1] = tmp;
+    }
+}
+
+// TODO this requires the NFC module!
+static inline void fillTagCache(Option<NFC::tag_info_t> &tag) {
+    if (tag.is_none()) {
+        const auto &seen_tag = nfc.old_tags[0];
+        const auto &injected_tag = nfc.old_tags[TAG_LIST_LENGTH - 1];
+        if ((seen_tag.last_seen == 0 || seen_tag.last_seen > injected_tag.last_seen) && injected_tag.last_seen > 0)
+            tag = {injected_tag};
+        else
+            tag = {seen_tag};
+
+        int written = remove_separator(tag.unwrap().tag_id, tag.unwrap().tag_id);
+        memset(tag.unwrap().tag_id + written, 0, sizeof(tag.unwrap().tag_id) - written);
+        //swap_bytes(tag.unwrap().tag_id, 20);
+    }
+}
+
+static inline uint32_t swapBytes(uint32_t x) {
+    return ((x & 0x000000FF) << 24)
+         | ((x & 0x0000FF00) << 8)
+         | ((x & 0x00FF0000) >> 8)
+         | ((x & 0xFF000000) >> 24);
+}
+
+#define FILL_FEATURE_CACHE(x) \
+    if (!cache->has_feature_##x)\
+        cache->has_feature_##x = api.hasFeature(#x);
+
+#define REQUIRE(x) if(!cache->has_feature_##x) break
+
+ModbusTcp::TwoRegs ModbusTcp::getWarpInputRegister(uint16_t reg, void *ctx_ptr) {
+    struct Ctx{
+        Option<float> energy_abs = {};
+        Option<NFC::tag_info_t> tag = {};
+    };
+    Ctx *ctx = (Ctx*) ctx_ptr;
+
+    ModbusTcp::TwoRegs val{0};
+
+    switch (reg) {
+        case 0: val.u = MODBUS_TABLE_VERSION; break;
+        case 2: val.u = BUILD_VERSION_MAJOR; break;
+        case 4: val.u = BUILD_VERSION_MINOR; break;
+        case 6: val.u = BUILD_VERSION_PATCH; break;
+        case 8: val.u = build_timestamp(); break;
+        case 10: val.u = local_uid_num; break;
+        case 12: val.u = (uint32_t)(int64_t)(now_us() / 1_s); break;
+
+        case 1000: REQUIRE(evse); val.u = cache->evse_state->get("iec61851_state")->asUint(); break;
+        case 1002: REQUIRE(evse); val.u = cache->evse_state->get("charger_state")->asUint(); break;
+                    // We want to return UINT32_MAX if nobody is charging right now.
+                    // If nobody is charging, the user_id is -1 which is UINT32_MAX when casted to uint32_t.
+        case 1004: REQUIRE(charge_tracker); val.u = (uint32_t)cache->current_charge->get("user_id")->asInt(); break;
+                    // timestamp_minutes is 0 if nobody is charging or if there was no time sync when the charge started.
+        case 1006: REQUIRE(charge_tracker); val.u = cache->current_charge->get("timestamp_minutes")->asUint(); break;
+        case 1008: REQUIRE(evse); REQUIRE(charge_tracker); {
+                uint32_t now = cache->evse_ll_state->get("uptime")->asUint();
+                uint32_t start = cache->current_charge->get("evse_uptime_start")->asUint();
+                if (now >= start)
+                    val.u = now - start;
+                else
+                    val.u = UINT32_MAX - start + now + 1;
+            }
+            break;
+        case 1010: REQUIRE(evse); val.u = cache->evse_state->get("allowed_charging_current")->asUint(); break;
+        //1012... handled below
+
+        case 2000: REQUIRE(meter); val.u = cache->meter_state->get("type")->asUint(); break;
+        case 2002: REQUIRE(meter); val.f = cache->meter_values->get("power")->asFloat(); break;
+        case 2004: REQUIRE(meter); val.f = ctx->energy_abs.is_some() ? ctx->energy_abs.unwrap() : ctx->energy_abs.insert(cache->meter_values->get("energy_abs")->asFloat()); break;
+        case 2006: REQUIRE(meter); val.f = cache->meter_values->get("energy_rel")->asFloat(); break;
+        case 2008: REQUIRE(meter); REQUIRE(charge_tracker); {
+                auto en_abs = ctx->energy_abs.is_some() ? ctx->energy_abs.unwrap() : ctx->energy_abs.insert(cache->meter_values->get("energy_abs")->asFloat());
+                val.f = en_abs - cache->current_charge->get("meter_start")->asFloat();
+            }
+            break;
+        //2100... handled below
+        //4000... handled below
+        case 4010: REQUIRE(nfc); {
+                fillTagCache(ctx->tag);
+                val.u = ctx->tag.unwrap().last_seen;
+            }
+            break;
+
+        default: val.u = 0xAAAAAAAA; break;
+    }
+
+    // RANGES
+    if (cache->has_feature_evse && reg >= 1012 && reg < 1012 + 2 * CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE) {
+        size_t slot_idx = (reg - 1012) / 2;
+        if (slot_idx < cache->evse_slots->count()) {
+            auto slot = cache->evse_slots->get(slot_idx);
+            val.u = slot->get("active")->asBool() ? slot->get("max_current")->asUint() : 0xFFFFFFFF;
+        } else {
+            val.u = 0xFFFFFFFF;
+        }
+    } else if (cache->has_feature_meter_all_values && reg >= 2100 && reg < 2100 + 2 * 85) {
+        auto value_idx = (reg - 2100) / 2;
+        val.f = cache->meter_all_values->get(value_idx)->asFloat();
+    } else if (cache->has_feature_nfc && reg >= 4000 && reg < 4000 + NFC_TAG_ID_LENGTH) {
+        fillTagCache(ctx->tag);
+        auto value_idx = (reg - 4000) * 2;
+        memcpy(&val, ctx->tag.unwrap().tag_id + value_idx, 4);
+        // the ID is already in network order, but this function should return values in host order.
+        val.u = swapBytes(val.u);
+    }
+
+    return val;
+}
+
+void ModbusTcp::getWarpInputRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
+    struct {
+        Option<float> energy_abs = {};
+        Option<NFC::tag_info_t> tag = {};
+    } ctx;
+
+    FILL_FEATURE_CACHE(evse)
+    FILL_FEATURE_CACHE(meter)
+    FILL_FEATURE_CACHE(meter_all_values)
+    FILL_FEATURE_CACHE(charge_tracker)
+    FILL_FEATURE_CACHE(nfc)
+
+    int i = 0;
+    while (i < data_count) {
+        uint16_t reg = (i + start_address) & (~1);
+
+        TwoRegs val = this->getWarpInputRegister(reg, &ctx);
+
+        val.u = swapBytes(val.u);
+
+        // TODO: comment
+        if (i == 0 && (start_address % 2) == 1) {
+            data_values[i] = val.regs.lower;
+            ++i;
+        } else if (i == data_count - 1) {
+            data_values[i] = val.regs.upper;
+            ++i;
+        } else {
+            data_values[i] = val.regs.upper;
+            data_values[i + 1] = val.regs.lower;
+            i += 2;
+        }
+    }
+}
+
+ModbusTcp::TwoRegs ModbusTcp::getWarpHoldingRegister(uint16_t reg) {
+    TwoRegs val{0};
+
+    switch (reg) {
+        case 0: val.u = 0; break;
+
+        case 1000: REQUIRE(evse); {
+                auto slot = cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE);
+                val.u = slot->get("active")->asBool() ? slot->get("max_current")->asUint() : 0xFFFFFFFF;
+            } break;
+        case 1002: REQUIRE(evse); {
+                auto slot = cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP);
+                val.u = slot->get("active")->asBool() ? slot->get("max_current")->asUint() : 0xFFFFFFFF;
+            } break;
+                    // We want to return UINT32_MAX if the EVSE controls the LED.
+                    // (uint32_t)(-1) is UINT32_MAX.
+        case 1004: REQUIRE(evse); val.u = (uint32_t)cache->evse_indicator_led->get("indication")->asInt(); break;
+        case 1006: REQUIRE(evse); val.u = cache->evse_indicator_led->get("duration")->asUint(); break;
+
+        case 2000: REQUIRE(meter); val.u = 0; break;
+        default: val.u = 0xAAAAAAAA; break;
+    }
+    return val;
+}
+
+void ModbusTcp::getWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
+    FILL_FEATURE_CACHE(evse)
+    FILL_FEATURE_CACHE(meter)
+
+    int i = 0;
+    while (i < data_count) {
+        uint16_t reg = (i + start_address) & (~1);
+
+        ModbusTcp::TwoRegs val = this->getWarpHoldingRegister(reg);
+
+        val.u = swapBytes(val.u);
+
+        // TODO: comment
+        if (i == 0 && (start_address % 2) == 1) {
+            data_values[i] = val.regs.lower;
+            ++i;
+        } else if (i == data_count - 1) {
+            data_values[i] = val.regs.upper;
+            ++i;
+        } else {
+            data_values[i] = val.regs.upper;
+            data_values[i + 1] = val.regs.lower;
+            i += 2;
+        }
+    }
+}
+
+void ModbusTcp::getWarpDiscreteInputs(uint16_t start_address, uint16_t data_count, uint8_t *data_values) {
+    FILL_FEATURE_CACHE(evse)
+    FILL_FEATURE_CACHE(meter)
+    FILL_FEATURE_CACHE(meter_phases)
+    FILL_FEATURE_CACHE(meter_all_values)
+    FILL_FEATURE_CACHE(nfc)
+
+    int i = 0;
+    while (i < data_count) {
+        size_t byte_idx = i / 8;
+        size_t bit_idx = i % 8;
+
+        bool result = false;
+
+        switch (i + start_address) {
+            case 0: result = cache->has_feature_evse; break;
+            case 1: result = cache->has_feature_meter; break;
+            case 2: result = cache->has_feature_meter_phases; break;
+            case 3: result = cache->has_feature_meter_all_values; break;
+            case 5: result = cache->has_feature_nfc; break;
+
+            case 2100: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_connected")->get(0)->asBool(); break;
+            case 2101: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_connected")->get(1)->asBool(); break;
+            case 2102: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_connected")->get(2)->asBool(); break;
+            case 2103: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_active")->get(0)->asBool(); break;
+            case 2104: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_active")->get(1)->asBool(); break;
+            case 2105: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_active")->get(2)->asBool(); break;
+
+            default: break;
+        }
+
+        if (result)
+            data_values[byte_idx] |= (1 << bit_idx);
+        else
+            data_values[byte_idx] &= ~(1 << bit_idx);
+        ++i;
+    }
+}
+
+void ModbusTcp::getWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values) {
+    FILL_FEATURE_CACHE(evse)
+
+    int i = 0;
+    while (i < data_count) {
+        size_t byte_idx = i / 8;
+        size_t bit_idx = i % 8;
+
+        bool result = false;
+
+        switch (i + start_address) {
+            case 1000: REQUIRE(evse); {
+                    auto slot = cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE);
+                    result = !slot->get("active")->asBool() || slot->get("max_current")->asUint() > 0;
+                } break;
+            case 1001: REQUIRE(evse); {
+                    auto slot = cache->evse_slots->get(CHARGING_SLOT_AUTOSTART_BUTTON);
+                    result = !slot->get("active")->asBool() || slot->get("max_current")->asUint() > 0;
+                } break;
+
+            default: break;
+        }
+
+        if (result)
+            data_values[byte_idx] |= (1 << bit_idx);
+        else
+            data_values[byte_idx] &= ~(1 << bit_idx);
+        ++i;
+    }
+}
+
+void ModbusTcp::setWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values) {
+    FILL_FEATURE_CACHE(evse)
+
+    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
+        return;
+
+    int i = 0;
+    while (i < data_count) {
+        size_t byte_idx = i / 8;
+        size_t bit_idx = i % 8;
+
+        bool coil = data_values[byte_idx] & (1 << bit_idx);
+
+        switch (i + start_address) {
+            case 1000: REQUIRE(evse); evse_common.set_modbus_enabled(coil); break;
+            case 1001: REQUIRE(evse); api.callCommand(coil ? "evse/start_charging" : "evse/stop_charging", nullptr); break;
+
+            default: break;
+        }
+
+        ++i;
+    }
+}
+
+void ModbusTcp::setWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
+    FILL_FEATURE_CACHE(evse)
+    FILL_FEATURE_CACHE(meter)
+
+    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
+        return;
+
+    int i = 0;
+    while (i < data_count) {
+        uint16_t reg = (i + start_address) & (~1);
+
+        TwoRegs val;
+
+        if (i == 0 && (start_address % 2) == 1) {
+            val.regs.lower = data_values[i];
+            TwoRegs old_val = this->getWarpHoldingRegister(reg);
+            old_val.u = swapBytes(old_val.u);
+            val.regs.upper = old_val.regs.upper;
+            ++i;
+        } else if (i == data_count - 1) {
+            val.regs.upper = data_values[i];
+            TwoRegs old_val = this->getWarpHoldingRegister(reg);
+            old_val.u = swapBytes(old_val.u);
+            val.regs.lower = old_val.regs.lower;
+            ++i;
+        } else {
+            val.regs.upper = data_values[i];
+            val.regs.lower = data_values[i + 1];
+            i += 2;
+        }
+
+        val.u = swapBytes(val.u);
+
+        switch (reg) {
+            case 0: if (val.u == 0x012EB007) trigger_reboot("Modbus TCP"); break;
+
+            case 1000: REQUIRE(evse); evse_common.set_modbus_enabled(val.u > 0); break;
+            case 1002: REQUIRE(evse); evse_common.set_modbus_current(val.u); break;
+            case 1004: REQUIRE(evse); {
+                    // Only accept evse led write if both indication and duration are written in one request.
+                    // i was already incremented above, so we only need 2 more bytes.
+                    if (data_count - i < 2) {
+                        logger.printfln("Received write to EVSE LED indication but without duration! Please write all 4 registers in one request.");
+                        break;
+                    }
+                    TwoRegs duration;
+                    duration.regs.upper = data_values[i];
+                    duration.regs.lower = data_values[i + 1];
+                    duration.u = swapBytes(duration.u);
+                    i += 2;
+                    evse_led.set_api(EvseLed::Blink(val.u), duration.u);
+                } break;
+            // 1006 handled above.
+
+            case 2000: REQUIRE(meter); if (val.u == 0x3E12E5E7) api.callCommand("meter/reset", {}); break;
+            default: val.u = 0xAAAAAAAA; break;
+        }
+
+    }
+}
+
+void ModbusTcp::start_server() {
+    cache = std::unique_ptr<Cache>(new Cache());
+    fillCache();
+
+    server.start(
+        0, config.get("port")->asUint(),
+        [](uint32_t peer_address, uint16_t port) {
+            logger.printfln("client connected: peer_address=%u port=%u", peer_address, port);
+        },
+        [](uint32_t peer_address, uint16_t port, TFModbusTCPServerDisconnectReason reason, int error_number) {
+            logger.printfln("client disconnected: peer_address=%u port=%u reason=%s error_number=%d", peer_address, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
+        },
+        [this](uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values) {
+            logger.printfln("received %s %u to %u (len %u)", get_tf_modbus_tcp_function_code_name(function_code), start_address, start_address + data_count, data_count);
+            if (function_code == TFModbusTCPFunctionCode::WriteSingleRegister || function_code == TFModbusTCPFunctionCode::WriteMultipleRegisters) {
+                uint16_t *ptr = (uint16_t *)data_values;
+                for (size_t i = 0; i < data_count; ++i) {
+                    logger.printfln_continue("%u: %u", start_address + i, ptr[i]);
+                }
+            } else if (function_code == TFModbusTCPFunctionCode::WriteSingleCoil || function_code == TFModbusTCPFunctionCode::WriteMultipleCoils) {
+                uint8_t *ptr = (uint8_t *)data_values;
+                for (size_t i = 0; i < data_count; ++i) {
+                    logger.printfln_continue("%u: %u", start_address + i, ((ptr[i / 8] & (1 << (i % 8))) != 0) ? 1 : 0);
+                }
+            }
+
+            switch(function_code) {
+                case TFModbusTCPFunctionCode::ReadCoils:
+                    this->getWarpCoils(start_address, data_count, (uint8_t *) data_values);
+                    break;
+                case TFModbusTCPFunctionCode::ReadDiscreteInputs:
+                    this->getWarpDiscreteInputs(start_address, data_count, (uint8_t *) data_values);
+                    break;
+                case TFModbusTCPFunctionCode::ReadHoldingRegisters:
+                    this->getWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
+                    break;
+                case TFModbusTCPFunctionCode::ReadInputRegisters:
+                    this->getWarpInputRegisters(start_address, data_count, (uint16_t *) data_values);
+                    break;
+                case TFModbusTCPFunctionCode::WriteMultipleCoils:
+                    this->setWarpCoils(start_address, data_count, (uint8_t *) data_values);
+                    break;
+                case TFModbusTCPFunctionCode::WriteMultipleRegisters:
+                    this->setWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
+                    break;
+                case TFModbusTCPFunctionCode::WriteSingleCoil:
+                case TFModbusTCPFunctionCode::WriteSingleRegister:
+                    esp_system_abort("WriteSingleCoils/Registers should not be passed to receive_cb!");
+                    break;
+            }
+
+            return TFModbusTCPExceptionCode::Success;
+        }
+    );
+}
+
+void ModbusTcp::fillCache() {
+    if (cache == nullptr)
+        return;
+
+    if (boot_stage < BootStage::REGISTER_EVENTS)
+        return;
+
+    cache->evse_state = api.getState("evse/state");
+    cache->evse_slots = api.getState("evse/slots");
+    cache->evse_ll_state = api.getState("evse/low_level_state");
+    cache->evse_indicator_led = api.getState("evse/indicator_led");
+    cache->current_charge = api.getState("charge_tracker/current_charge");
+    cache->meter_state = api.getState("meter/state");
+    cache->meter_values = api.getState("meter/values");
+    cache->meter_phases = api.getState("meter/phases");
+    cache->meter_all_values = api.getState("meter/all_values");
+}
+
+void ModbusTcp::register_events() {
+    fillCache();
+}
 
 void ModbusTcp::setup()
 {
@@ -462,6 +970,12 @@ void ModbusTcp::setup()
         return;
     }
 
+    start_server();
+
+    task_scheduler.scheduleWithFixedDelay([this](){
+        server.tick();
+    }, 10_ms);
+/*
     void *modbus_handle = NULL;
     esp_err_t err = mbc_slave_init_tcp(&modbus_handle);
     if (err != ESP_OK || modbus_handle == NULL)
@@ -534,7 +1048,7 @@ void ModbusTcp::setup()
     }
 
     ESP_ERROR_CHECK(mbc_slave_start());
-
+*/
     started = true;
     initialized = true;
 }
@@ -623,13 +1137,20 @@ void ModbusTcp::update_bender_regs()
     if (api.hasFeature("meter")) {
         if (api.hasFeature("meter_all_values")) {
             auto meter_values = api.getState("meter/all_values");
-
+            /*
+                TODO
+                For maintaining backwards compatibility with previous systems,
+                where the METER_TOTAL_ENERG and METER_TOTAL_POW registers were not present,
+                the Total Power and Total Energy values can also be read from the Power and Energy registers corresponding to L1.
+                In that case, the Power and Energy registers for L2 and L3 will return 0xffffffff.
+            */
             for (size_t i = 0; i < 3; i++) {
                 bender_phases_cpy->current[i] = fromUint(meter_values->get(i + METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000);
                 bender_phases_cpy->energy[i] =  fromUint(meter_values->get(i + METER_ALL_VALUES_IMPORT_KWH_L1)->asFloat() * 1000);
-                bender_phases_cpy->power[i] =  fromUint(meter_values->get(i + METER_ALL_VALUES_POWER_L1_W)->asFloat() * 1000);
-                bender_phases_cpy->voltage[i] = fromUint(meter_values->get(i)->asFloat() * 1000);
+                bender_phases_cpy->power[i] =  fromUint(meter_values->get(i + METER_ALL_VALUES_POWER_L1_W)->asFloat());
+                bender_phases_cpy->voltage[i] = fromUint(meter_values->get(i)->asFloat());
             }
+            // TODO is import correct here (and above?)
             bender_phases_cpy->total_energy = fromUint(meter_values->get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat() * 1000);
             bender_phases_cpy->total_power = fromUint(meter_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_W)->asFloat());
         }
@@ -661,15 +1182,6 @@ void ModbusTcp::update_bender_regs()
     taskEXIT_CRITICAL(&mtx);
 }
 
-static inline void swap_bytes(char *str, size_t len)
-{
-    char tmp;
-    for (int i = 0; i < len; i += 2) {
-        tmp = str[i];
-        str[i] = str[i + 1];
-        str[i + 1] = tmp;
-    }
-}
 
 void ModbusTcp::update_regs()
 {
@@ -996,7 +1508,7 @@ void ModbusTcp::update_keba_regs()
         }
 #if MODULE_CHARGE_LIMITS_AVAILABLE()
         /*
-            5010 - Set energy
+            5010 - Set energym
             In this register, the energy transmission (in 10 watt-hours) for the current or
             the next charging session can be set. Once this value is reached, the charg-
             ing session is terminated.
@@ -1112,72 +1624,73 @@ void ModbusTcp::register_urls()
         return;
     }
 
-    spinlock_initialize(&mtx);
+    // spinlock_initialize(&mtx);
 
-    uint32_t config_table = config.get("table")->asUint();
+    // uint32_t config_table = config.get("table")->asUint();
 
-    if (config_table == 0) {
-        uint16_t allowed_current = 32000;
-        bool enable_charging = false;
-        bool autostart_button = false;
+    // if (config_table == 0) {
+    //     uint16_t allowed_current = 32000;
+    //     bool enable_charging = false;
+    //     bool autostart_button = false;
 
-        if (api.hasFeature("evse")) {
-            auto slots = api.getState("evse/slots");
-            allowed_current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint();
-            enable_charging = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;
-            autostart_button = slots->get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->asUint() == 32000;
-        }
+    //     if (api.hasFeature("evse")) {
+    //         auto slots = api.getState("evse/slots");
+    //         allowed_current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint();
+    //         enable_charging = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000;
+    //         autostart_button = slots->get(CHARGING_SLOT_AUTOSTART_BUTTON)->get("max_current")->asUint() == 32000;
+    //     }
 
-        taskENTER_CRITICAL(&mtx);
-            input_regs->table_version = fromUint(MODBUS_TABLE_VERSION);
-            input_regs->box_id = fromUint(local_uid_num);
-            input_regs->firmware_major = fromUint(BUILD_VERSION_MAJOR);
-            input_regs->firmware_minor = fromUint(BUILD_VERSION_MINOR);
-            input_regs->firmware_patch = fromUint(BUILD_VERSION_PATCH);
-            input_regs->firmware_build_ts = fromUint(build_timestamp());
+    //     taskENTER_CRITICAL(&mtx);
+    //         input_regs->table_version = fromUint(MODBUS_TABLE_VERSION);
+    //         input_regs->box_id = fromUint(local_uid_num);
+    //         input_regs->firmware_major = fromUint(BUILD_VERSION_MAJOR);
+    //         input_regs->firmware_minor = fromUint(BUILD_VERSION_MINOR);
+    //         input_regs->firmware_patch = fromUint(BUILD_VERSION_PATCH);
+    //         input_regs->firmware_build_ts = fromUint(build_timestamp());
 
-            evse_holding_regs->allowed_current = fromUint(allowed_current);
-            evse_holding_regs->enable_charging = fromUint(enable_charging);
+    //         evse_holding_regs->allowed_current = fromUint(allowed_current);
+    //         evse_holding_regs->enable_charging = fromUint(enable_charging);
 
-            evse_coils->autostart_button = autostart_button;
-            evse_coils_copy->autostart_button = autostart_button;
+    //         evse_coils->autostart_button = autostart_button;
+    //         evse_coils_copy->autostart_button = autostart_button;
 
-            evse_coils->enable_charging = enable_charging;
-            evse_coils_copy->enable_charging = enable_charging;
-        taskEXIT_CRITICAL(&mtx);
+    //         evse_coils->enable_charging = enable_charging;
+    //         evse_coils_copy->enable_charging = enable_charging;
+    //     taskEXIT_CRITICAL(&mtx);
 
-        task_scheduler.scheduleWithFixedDelay([this]() {
-            this->update_regs();
-        }, 500_ms);
-    }
-    else if (config_table == 1)
-    {
-        if (api.hasFeature("evse"))
-        {
-            auto slots = api.getState("evse/slots");
-            uint16_t current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
-            uint16_t enable = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 1 : 0;
-            taskENTER_CRITICAL(&mtx);
-                bender_hems->hems_limit = current;
-                bender_general->chargepoint_available = enable;
-            taskEXIT_CRITICAL(&mtx);
-        }
+    //     task_scheduler.scheduleWithFixedDelay([this]() {
+    //         this->update_regs();
+    //     }, 500_ms);
+    // }
+    // else if (config_table == 1)
+    // {
+    //     if (api.hasFeature("evse"))
+    //     {
+    //         auto slots = api.getState("evse/slots");
+    //         uint16_t current = slots->get(CHARGING_SLOT_MODBUS_TCP)->get("max_current")->asUint() / 1000;
+    //         // Read or set the Charge Point availability. 0 = Operative. 1 = Inoperative.
+    //         uint16_t enable = slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE)->get("max_current")->asUint() == 32000 ? 0 : 1;
+    //         taskENTER_CRITICAL(&mtx);
+    //             bender_hems->hems_limit = current;
+    //             bender_general->chargepoint_available = enable;
+    //         taskEXIT_CRITICAL(&mtx);
+    //     }
 
-        task_scheduler.scheduleWithFixedDelay([this]() {
-            this->update_bender_regs();
-        }, 500_ms);
-    }
-    else if (config_table == 2)
-    {
-        task_scheduler.scheduleWithFixedDelay([this]() {
-            this->update_keba_regs();
-        }, 500_ms);
-    }
+    //     task_scheduler.scheduleWithFixedDelay([this]() {
+    //         this->update_bender_regs();
+    //     }, 500_ms);
+    // }
+    // else if (config_table == 2)
+    // {
+    //     task_scheduler.scheduleWithFixedDelay([this]() {
+    //         this->update_keba_regs();
+    //     }, 500_ms);
+    // }
 }
 
 void ModbusTcp::pre_reboot()
 {
-    if (started) {
-        ESP_ERROR_CHECK(mbc_slave_destroy());
-    }
+    // if (started) {
+    //     ESP_ERROR_CHECK(mbc_slave_destroy());
+    // }
 }
