@@ -608,6 +608,10 @@ ModbusTcp::TwoRegs ModbusTcp::getWarpInputRegister(uint16_t reg, void *ctx_ptr) 
             }
             break;
         //2100... handled below
+
+        case 3100: REQUIRE(phase_switch); val.u = power_manager.get_is_3phase() ? 3 : 1; break;
+        case 3102: REQUIRE(phase_switch); val.u = cache->power_manager_state->get("external_control")->asUint(); break;
+
         //4000... handled below
         case 4010: REQUIRE(nfc); {
                 fillTagCache(ctx->tag);
@@ -652,6 +656,7 @@ void ModbusTcp::getWarpInputRegisters(uint16_t start_address, uint16_t data_coun
     FILL_FEATURE_CACHE(meter_all_values)
     FILL_FEATURE_CACHE(charge_tracker)
     FILL_FEATURE_CACHE(nfc)
+    FILL_FEATURE_CACHE(phase_switch)
 
     int i = 0;
     while (i < data_count) {
@@ -696,6 +701,9 @@ ModbusTcp::TwoRegs ModbusTcp::getWarpHoldingRegister(uint16_t reg) {
         case 1006: REQUIRE(evse); val.u = cache->evse_indicator_led->get("duration")->asUint(); break;
 
         case 2000: REQUIRE(meter); val.u = 0; break;
+
+        case 3100: REQUIRE(phase_switch); val.u = cache->power_manager_external_control->get("phases_wanted")->asUint(); break;
+
         default: val.u = 0xAAAAAAAA; break;
     }
     return val;
@@ -747,6 +755,7 @@ void ModbusTcp::getWarpDiscreteInputs(uint16_t start_address, uint16_t data_coun
             case 1: result = cache->has_feature_meter; break;
             case 2: result = cache->has_feature_meter_phases; break;
             case 3: result = cache->has_feature_meter_all_values; break;
+            case 4: result = cache->has_feature_phase_switch; break;
             case 5: result = cache->has_feature_nfc; break;
 
             case 2100: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_connected")->get(0)->asBool(); break;
@@ -825,6 +834,7 @@ void ModbusTcp::setWarpCoils(uint16_t start_address, uint16_t data_count, uint8_
 void ModbusTcp::setWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(meter)
+    FILL_FEATURE_CACHE(phase_switch)
 
     if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
         return;
@@ -877,6 +887,16 @@ void ModbusTcp::setWarpHoldingRegisters(uint16_t start_address, uint16_t data_co
             // 1006 handled above.
 
             case 2000: REQUIRE(meter); if (val.u == 0x3E12E5E7) api.callCommand("meter/reset", {}); break;
+            case 3100: REQUIRE(phase_switch); {
+                    if (cache->power_manager_state->get("external_control")->asUint() == 0) {
+                        String err = api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
+                            {"phases_wanted", val.u}
+                        }});
+                        if (err != "") {
+                            logger.printfln("Failed to switch phases: %s", err.c_str());
+                        }
+                    }
+                } break;
             default: val.u = 0xAAAAAAAA; break;
         }
 
@@ -955,6 +975,8 @@ void ModbusTcp::fillCache() {
     cache->meter_values = api.getState("meter/values");
     cache->meter_phases = api.getState("meter/phases");
     cache->meter_all_values = api.getState("meter/all_values");
+    cache->power_manager_state = api.getState("power_manager/state");
+    cache->power_manager_external_control = api.getState("power_manager/external_control");
 }
 
 void ModbusTcp::register_events() {

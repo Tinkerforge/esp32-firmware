@@ -206,11 +206,25 @@ let x = {
                         <td>See <a href="https://docs.warp-charger.com/docs/mqtt_http/api_reference/meter/#meter_all_values_any">API Documentation</a></td>
                     </tr>
                     <tr>
-                        <td>3000</td>
-                        <td>CP-State</td>
+                        <td>3100</td>
+                        <td>Phases connected</td>
                         <td>uint32</td>
-                        <td>cp_disc</td>
-                        <td>Not implemented yet!</td>
+                        <td>phase_switch</td>
+                        <td>The number of phases connected to the vehicle</td>
+                    </tr>
+                    <tr>
+                        <td>3102</td>
+                        <td>Phase switch state</td>
+                        <td>uint32</td>
+                        <td>phase_switch</td>
+                        <td>The current state of the phase switch control:
+                            <ul>
+                                <li>0: Ready to switch phases.</li>
+                                <li>1: Phase switch disabled in settings.</li>
+                                <li>2: Phase switch enabled, but currently not available.</li>
+                                <li>3: Currently switching phases. Commands will be ignored.</li>
+                            </ul>
+                        </td>
                     </tr>
                     <tr>
                         <td>4000 to 4009</td>
@@ -292,11 +306,11 @@ let x = {
                         <td>Resets the relative energy value (input register 2006). Password: 0x3E12E5E7</td>
                     </tr>
                     <tr>
-                        <td>3000</td>
-                        <td>Trigger CP disconnect</td>
+                        <td>3100</td>
+                        <td>Trigger phase switch</td>
                         <td>uint32</td>
-                        <td>cp_disc</td>
-                        <td>Not implemented yet!</td>
+                        <td>phase_switch</td>
+                        <td>1 for single-phase charging. 3 for three-phase charging.</td>
                     </tr>
                 </tbody>
                 <thead>
@@ -337,10 +351,10 @@ let x = {
                     </tr>
                     <tr>
                         <td>4</td>
-                        <td>Feature "cp_disc" available</td>
+                        <td>Feature "phase_switch" available</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>Not implemented yet!</td>
+                        <td>Hardware and configuration support switching between single- and three-phase charging.</td>
                     </tr>
                     <tr>
                         <td>5</td>

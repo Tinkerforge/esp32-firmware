@@ -66,6 +66,8 @@ private:
         const Config *meter_values;
         const Config *meter_phases;
         const Config *meter_all_values;
+        const Config *power_manager_state;
+        const Config *power_manager_external_control;
 
         bool has_feature_evse;
         bool has_feature_meter;
@@ -73,6 +75,7 @@ private:
         bool has_feature_meter_all_values;
         bool has_feature_charge_tracker;
         bool has_feature_nfc;
+        bool has_feature_phase_switch;
     };
 
     union TwoRegs {

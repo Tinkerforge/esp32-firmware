@@ -208,11 +208,25 @@ let x = {
                         <td>Siehe <a href="https://docs.warp-charger.com/docs/mqtt_http/api_reference/meter/#meter_all_values_any">API-Dokumentation</a></td>
                     </tr>
                     <tr>
-                        <td>3000</td>
-                        <td>CP-Unterbrechung</td>
+                        <td>3100</td>
+                        <td>Verbundene Phasen</td>
                         <td>uint32</td>
-                        <td>cp_disc</td>
-                        <td>Noch nicht implementiert!</td>
+                        <td>phase_switch</td>
+                        <td>Gibt an wie viele Phasen mit dem Fahrzeug verbunden sind (1 oder 3).</td>
+                    </tr>
+                    <tr>
+                        <td>3102</td>
+                        <td>Zustand der Phasenumschaltung</td>
+                        <td>uint32</td>
+                        <td>phase_switch</td>
+                        <td>Aktueller Zustand der Phasenumschaltung:
+                            <ul>
+                                <li>0: Phasenumschaltung ist bereit für Kommandos.</li>
+                                <li>1: Phasenumschaltung ist über die Einstellungen deaktiviert.</li>
+                                <li>2: Phasenumschaltung ist aktiviert aber aktuell nicht verfügbar.</li>
+                                <li>3: Phasenumschaltung wird gerade durchgeführt; ankommende Kommandos werden ignoriert.</li>
+                            </ul>
+                        </td>
                     </tr>
                     <tr>
                         <td>4000 bis 4009</td>
@@ -294,11 +308,11 @@ let x = {
                         <td>Setzt den relativen Energiewert zurück (Input Register 2006). Passwort: 0x3E12E5E7</td>
                     </tr>
                     <tr>
-                        <td>3000</td>
-                        <td>CP-Trennung auslösen</td>
+                        <td>3100</td>
+                        <td>Phasenumschaltung auslösen</td>
                         <td>uint32</td>
-                        <td>cp_disc</td>
-                        <td>Noch nicht implementiert!</td>
+                        <td>phase_switch</td>
+                        <td>1 für einphasiges Laden. 3 für dreiphasiges Laden.</td>
                     </tr>
                 </tbody>
                 <thead>
@@ -339,10 +353,10 @@ let x = {
                     </tr>
                     <tr>
                         <td>4</td>
-                        <td>Feature "cp_disc" verfügbar</td>
+                        <td>Feature "phase_switch" verfügbar</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>Noch nicht implementiert!</td>
+                        <td>Hardware und Konfiguration erlauben eine Phasenumschaltung-</td>
                     </tr>
                     <tr>
                         <td>5</td>

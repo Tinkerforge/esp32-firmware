@@ -193,6 +193,11 @@ WARP_REGISTER_MAP = [
         (f32_block(85), 'meter_values'),
     ]),
 
+    RegisterBlock('phase_switch_input_regs', 'input', 3100, 4, [
+        (u32(), "phases_connected"),
+        (u32(), "external_control_state"),
+    ]),
+
     RegisterBlock('nfc_input_regs', 'input', 4000, 12, [
         (str_(20), "tag_id"),
         (u32(), "tag_id_age"),
@@ -213,12 +218,17 @@ WARP_REGISTER_MAP = [
         (u32(), "trigger_reset"),
     ]),
 
+    RegisterBlock('phase_switch_holding_regs', 'holding', 3100, 2, [
+        (u32(), "phases_wanted"),
+    ]),
+
+
     RegisterBlock('discrete_inputs', 'discrete', 0, 6, [
         (bit(), "evse"),
         (bit(), "meter"),
         (bit(), "meter_phases"),
         (bit(), "meter_all_values"),
-        (bit(), "cp_disconnect"),
+        (bit(), "phase_switch"),
         (bit(), "nfc"),
     ]),
 
