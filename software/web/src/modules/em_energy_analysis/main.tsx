@@ -33,6 +33,7 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotWrapper, UplotData, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { UplotFlagsWrapper } from "../../ts/components/uplot_wrapper_3rd";
+import { get_price_from_index } from "../day_ahead_prices/main";
 import uPlot from "uplot";
 import { MeterConfig } from "../meters/types";
 import { get_meter_power_index } from "../meters/main";
@@ -399,6 +400,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     energy_manager_daily_cache: {[id: string]: EnergyManagerDailyData} = {};
     cache_limit = 100;
     chargers: Charger[] = [];
+    day_ahead_price_update_timestamp = 0;
 
     constructor() {
         super();
@@ -665,6 +667,16 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         });
 
+        util.addApiEventListener('day_ahead_prices/prices', () => {
+            this.day_ahead_price_update_timestamp = Date.now();
+            this.schedule_uplot_update();
+        });
+
+        util.addApiEventListener('day_ahead_prices/config', () => {
+            this.day_ahead_price_update_timestamp = Date.now();
+            this.schedule_uplot_update();
+        });
+
         util.addApiEventListener("power_manager/config", () => {
             let config = API.get("power_manager/config");
 
@@ -749,7 +761,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         else {
             let energy_manager_data = this.energy_manager_5min_cache[key];
 
-            if (energy_manager_data && uplot_data.update_timestamp < energy_manager_data.update_timestamp) {
+            if (energy_manager_data && (uplot_data.update_timestamp < energy_manager_data.update_timestamp || uplot_data.update_timestamp < this.day_ahead_price_update_timestamp)) {
                 needs_update = true;
             }
 
@@ -805,12 +817,52 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 }
             }
 
-            if (!energy_manager_data.price_empty) {
-                timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.price.length);
+            timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.price.length);
+            let price = undefined;
+            let price_empty = energy_manager_data.price_empty;
 
+            if (util.is_date_today(date)) {
+                let dap_prices = API.get("day_ahead_prices/prices");
+
+                if (dap_prices.prices.length > 0) {
+                    let dap_config = API.get("day_ahead_prices/config");
+                    let resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60;
+                    let grid_costs_and_taxes_and_supplier_markup = dap_config.grid_costs_and_taxes / 1000.0 + dap_config.supplier_markup / 1000.0;
+                    let first_date = dap_prices.first_date * 60;
+                    let last_date = first_date + dap_prices.prices.length * 60 * resolution_multiplier; // exclusive range
+                    let timestamp_base = date.getTime() / 1000;
+
+                    for (let timestamp_slot = timestamp_slot_count - 1; timestamp_slot >= 0; --timestamp_slot) {
+                        let timestamp = timestamp_base + timestamp_slot * 300; // seconds
+
+                        if (timestamp < first_date || timestamp >= last_date) {
+                            continue; // no future price data available
+                        }
+
+                        if (energy_manager_data.price[timestamp_slot] !== null) {
+                            break; // history price data available
+                        }
+
+                        if (price === undefined) {
+                            price = energy_manager_data.price.concat(); // copy before modifying
+                        }
+
+                        let index = Math.floor((timestamp - first_date) / (60 * resolution_multiplier));
+
+                        price[timestamp_slot] = get_price_from_index(index) / 1000.0 + grid_costs_and_taxes_and_supplier_markup;
+                        price_empty = false;
+                    }
+                }
+            }
+
+            if (price === undefined) {
+                price = energy_manager_data.price;
+            }
+
+            if (!price_empty) {
                 uplot_data.keys.push('em_price');
                 uplot_data.names.push(__("em_energy_analysis.script.price"));
-                uplot_data.values.push(energy_manager_data.price);
+                uplot_data.values.push(price);
                 uplot_data.extras.push(null);
                 uplot_data.stacked.push(false);
                 uplot_data.paths.push(UplotPath.Step);
