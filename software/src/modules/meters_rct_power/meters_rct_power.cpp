@@ -35,10 +35,16 @@ void MetersRCTPower::pre_setup()
     });
 
     errors_prototype = Config::Object({
+        {"timeout",           Config::Uint32(0)},
         {"checksum_mismatch", Config::Uint32(0)},
     });
 
     meters.register_meter_generator(get_class(), this);
+}
+
+void MetersRCTPower::loop()
+{
+    pool.tick();
 }
 
 MeterClassID MetersRCTPower::get_class() const
@@ -48,7 +54,7 @@ MeterClassID MetersRCTPower::get_class() const
 
 IMeter *MetersRCTPower::new_meter(uint32_t slot, Config *state, Config *errors)
 {
-    return new MeterRCTPower(slot, state, errors);
+    return new MeterRCTPower(slot, state, errors, &pool);
 }
 
 const Config *MetersRCTPower::get_config_prototype()

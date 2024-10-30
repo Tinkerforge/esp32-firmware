@@ -20,51 +20,18 @@
 #pragma once
 
 #include <stdint.h>
-#include <TFGenericTCPClient.h>
 
 #include "modules/meters/imeter.h"
-#include "modules/meters/meter_value_id.h"
-#include "modules/modbus_tcp_client/generic_tcp_client_connector.h"
+#include "modules/modbus_tcp_client/generic_tcp_client_pool_connector.h"
+#include "rct_power_client.h"
+#include "rct_power_client_pool.h"
 #include "virtual_meter.enum.h"
 
-struct RCTValueSpec
-{
-    uint32_t id;
-    float scale_factor;
-};
-
-class RCTPowerClient final : public TFGenericTCPClient
+class MeterRCTPower final : protected GenericTCPClientPoolConnector, public IMeter
 {
 public:
-    RCTPowerClient(uint32_t slot_, Config *state_, Config *errors_) : slot(slot_), state(state_), errors(errors_) {}
-
-    void setup(const Config &ephemeral_config);
-    void read_next_value();
-
-private:
-    void close_hook() override;
-    void tick_hook() override;
-    bool receive_hook() override;
-
-    uint32_t slot;
-    Config *state;
-    Config *errors;
-    VirtualMeter virtual_meter = VirtualMeter::None;
-    const RCTValueSpec *value_specs = nullptr;
-    size_t value_specs_length = 0;
-    size_t value_specs_index = 0;
-    bool wait_for_start = true;
-    uint8_t last_received_byte = 0;
-    uint8_t pending_response[12];
-    size_t pending_response_used = 0;
-    uint32_t bootloader_magic_number = 0;
-    micros_t bootloader_last_detected = 0_s;
-};
-
-class MeterRCTPower final : protected GenericTCPClientConnector, public IMeter
-{
-public:
-    MeterRCTPower(uint32_t slot, Config *state, Config *errors) : GenericTCPClientConnector("meter_rct_power", &client, &shared_client), client(slot, state, errors), shared_client(&client) {}
+    MeterRCTPower(uint32_t slot_, Config *state_, Config *errors_, RCTPowerClientPool *pool) :
+        GenericTCPClientPoolConnector("meter_rct_power", pool), slot(slot_), state(state_), errors(errors_) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(const Config &ephemeral_config) override;
@@ -76,10 +43,17 @@ public:
     bool supports_energy_export() override  {return true;}
     //bool supports_currents() override       {return true;}
 
+private:
     void connect_callback() override;
     void disconnect_callback() override;
+    void read_next();
 
-private:
-    RCTPowerClient client;
-    TFGenericTCPSharedClient shared_client;
+    uint32_t slot;
+    Config *state;
+    Config *errors;
+    VirtualMeter virtual_meter      = VirtualMeter::None;
+    const RCTValueSpec *value_specs = nullptr;
+    size_t value_specs_length       = 0;
+    size_t value_specs_index        = 0;
+    bool read_allowed               = false;
 };

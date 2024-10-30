@@ -24,6 +24,7 @@
 #include "module.h"
 #include "modules/meters/meter_generator.h"
 #include "config.h"
+#include "rct_power_client_pool.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -36,6 +37,7 @@ class MetersRCTPower final : public IModule, public MeterGenerator
 public:
     // for IModule
     void pre_setup() override;
+    void loop() override;
 
     // for MeterGenerator
     [[gnu::const]] MeterClassID get_class() const override;
@@ -47,6 +49,7 @@ public:
 private:
     Config config_prototype;
     Config errors_prototype;
+    RCTPowerClientPool pool;
 };
 
 #if defined(__GNUC__)
