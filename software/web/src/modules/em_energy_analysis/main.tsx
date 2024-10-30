@@ -832,7 +832,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     let last_date = first_date + dap_prices.prices.length * 60 * resolution_multiplier; // exclusive range
                     let timestamp_base = date.getTime() / 1000;
 
-                    for (let timestamp_slot = timestamp_slot_count - 1; timestamp_slot >= 0; --timestamp_slot) {
+                    for (let timestamp_slot = energy_manager_data.price.length - 1; timestamp_slot >= 0; --timestamp_slot) {
                         let timestamp = timestamp_base + timestamp_slot * 300; // seconds
 
                         if (timestamp < first_date || timestamp >= last_date) {
