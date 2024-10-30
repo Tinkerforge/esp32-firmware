@@ -97,7 +97,7 @@ export function get_meter_power_index(value_ids: Readonly<number[]>) {
     return idx;
 }
 
-function calculate_live_data(offset: number, samples_per_second: number, samples: number[/*meter_slot*/][]): CachedData {
+function calculate_live_data(now: number, offset: number, samples_per_second: number, samples: number[/*meter_slot*/][]): CachedData {
     let timestamp_slot_count: number = 0;
 
     if (samples_per_second == 0) { // implies atmost one sample
@@ -111,7 +111,6 @@ function calculate_live_data(offset: number, samples_per_second: number, samples
     }
 
     let data: CachedData = {timestamps: new Array(timestamp_slot_count), samples: new Array(METERS_SLOTS)};
-    let now = Date.now();
     let start: number;
     let step: number;
 
@@ -142,7 +141,7 @@ function calculate_live_data(offset: number, samples_per_second: number, samples
     return data;
 }
 
-function calculate_history_data(offset: number, samples: number[/*meter_slot*/][]): CachedData {
+function calculate_history_data(now: number, offset: number, samples: number[/*meter_slot*/][]): CachedData {
     const HISTORY_MINUTE_INTERVAL = 4;
 
     let timestamp_slot_count: number = 0;
@@ -154,7 +153,6 @@ function calculate_history_data(offset: number, samples: number[/*meter_slot*/][
     }
 
     let data: CachedData = {timestamps: new Array(timestamp_slot_count), samples: new Array(METERS_SLOTS)};
-    let now = Date.now();
     let step = HISTORY_MINUTE_INTERVAL * 60 * 1000;
 
     // (timestamp_slot_count - 1) because step defines the gaps between two samples.
@@ -326,8 +324,9 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 return;
             }
 
+            let now = Date.now();
             let live = API.get("meters/live_samples");
-            let live_extra = calculate_live_data(0, live.samples_per_second, live.samples);
+            let live_extra = calculate_live_data(now, 0, live.samples_per_second, live.samples);
 
             this.pending_live_data.timestamps.push(...live_extra.timestamps);
 
@@ -362,6 +361,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 return;
             }
 
+            let now = Date.now();
             let history = API.get("meters/history_samples");
             let history_samples: number[][] = new Array(METERS_SLOTS);
 
@@ -371,7 +371,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 }
             }
 
-            this.history_data = calculate_history_data(0, history_samples);
+            this.history_data = calculate_history_data(now, 0, history_samples);
 
             if (this.state.chart_selected.startsWith("history_")) {
                 this.update_history_uplot();
@@ -403,6 +403,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
     }
 
     async update_live_cache_async() {
+        let now = Date.now();
         let response: string = '';
 
         try {
@@ -415,7 +416,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         let payload = JSON.parse(response);
 
         this.live_initialized = true;
-        this.live_data = calculate_live_data(payload.offset, payload.samples_per_second, payload.samples);
+        this.live_data = calculate_live_data(now, payload.offset, payload.samples_per_second, payload.samples);
         this.pending_live_data = {timestamps: [], samples: []}
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
@@ -442,6 +443,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
     }
 
     async update_history_cache_async() {
+        let now = Date.now();
         let response: string = '';
 
         try {
@@ -454,7 +456,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         let payload = JSON.parse(response);
 
         this.history_initialized = true;
-        this.history_data = calculate_history_data(payload.offset, payload.samples);
+        this.history_data = calculate_history_data(now, payload.offset, payload.samples);
 
         return true;
     }
