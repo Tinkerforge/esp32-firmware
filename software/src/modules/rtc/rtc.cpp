@@ -83,7 +83,7 @@ void Rtc::register_urls() {
     api.addPersistentConfig("rtc/config", &config);
 
     api.addCommand("rtc/time_update", &time_update, {}, [this](String &/*errmsg*/) {
-        struct tm tm;
+        struct tm tm{};
         tm.tm_year = time_update.get("year")->asUint() - 1900;
         tm.tm_mon  = time_update.get("month")->asUint() - 1;
         tm.tm_mday = time_update.get("day")->asUint();
@@ -91,20 +91,20 @@ void Rtc::register_urls() {
         tm.tm_min  = time_update.get("minute")->asUint();
         tm.tm_sec  = time_update.get("second")->asUint();
         tm.tm_wday = time_update.get("weekday")->asUint();
-        struct timeval timeval;
+        struct timeval timeval{};
         timeval.tv_sec = timegm(&tm);
 
         this->push_system_time(timeval, Rtc::Quality::Low);
     }, true);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        struct timeval tv;
+        struct timeval tv{};
         gettimeofday(&tv, nullptr);
 
         if (!timestamp_acceptable(tv))
             return;
 
-        tm tm;
+        struct tm tm{};
         gmtime_r(&tv.tv_sec, &tm);
 
         time.get("year")->updateUint(tm.tm_year + 1900);
