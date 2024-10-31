@@ -50,6 +50,9 @@ private:
     void setWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
     void setWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
 
+    void getKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+    void setKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+
     ConfigRoot config;
 
     bool started = false;
@@ -78,6 +81,13 @@ private:
         bool has_feature_phase_switch;
     };
 
+    enum RegisterTable {
+        WARP,
+        BENDER,
+        KEBA
+    };
+    RegisterTable table;
+
     union TwoRegs {
         uint32_t u;
         float f;
@@ -85,6 +95,8 @@ private:
     };
     TwoRegs getWarpInputRegister(uint16_t address, void *ctx);
     TwoRegs getWarpHoldingRegister(uint16_t address);
+
+    TwoRegs getKebaHoldingRegister(uint16_t reg);
 
     std::unique_ptr<Cache> cache;
 };
