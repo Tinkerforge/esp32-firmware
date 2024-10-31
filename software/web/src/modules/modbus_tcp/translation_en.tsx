@@ -11,7 +11,7 @@ let x = {
             "full_access": "Read/write access",
             "table": "Register table",
             "tf": "WARP Charger",
-            "bender_emulate": "Bender CC613 compatible",
+            "bender_emulate": "Open Modbus Charge Control Interface (OMCCI); Bender CC613 compatible",
             "keba_emulate": "Keba C-series compatible",
             "modbus_tcp": "Modbus/TCP",
             "enable": "Modbus/TCP mode",

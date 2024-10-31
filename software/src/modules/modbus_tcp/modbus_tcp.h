@@ -53,6 +53,9 @@ private:
     void getKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
     void setKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
 
+    void getBenderHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+    void setBenderHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+
     ConfigRoot config;
 
     bool started = false;
@@ -97,6 +100,7 @@ private:
     TwoRegs getWarpHoldingRegister(uint16_t address);
 
     TwoRegs getKebaHoldingRegister(uint16_t reg);
+    TwoRegs getBenderHoldingRegister(uint16_t reg);
 
     std::unique_ptr<Cache> cache;
 };
