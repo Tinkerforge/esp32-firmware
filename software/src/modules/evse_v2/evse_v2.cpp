@@ -304,7 +304,7 @@ void EVSEV2::post_register_urls()
 void EVSEV2::register_events()
 {
     // Register callback in the events stage so that it doesn't keep firing during the setup stage.
-    tf_evse_v2_register_energy_meter_values_callback(&device, energy_meter_values_callback, this);
+    tf_evse_v2_register_energy_meter_values_callback(&device, energy_meter_values_callback, nullptr);
 }
 
 void EVSEV2::factory_reset()
@@ -1254,8 +1254,6 @@ uint8_t EVSEV2::get_energy_meter_type()
 
 static void energy_meter_values_callback(struct TF_EVSEV2 * /*evse_v2*/, float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data)
 {
-    //EVSEV2 *_this = static_cast<EVSEV2 *>(user_data);
-
 #if MODULE_METERS_EVSE_V2_AVAILABLE()
     meters_evse_v2.energy_meter_values_callback(power, current);
 #endif
