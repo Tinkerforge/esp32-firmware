@@ -97,9 +97,8 @@ void EMEnergyAnalysis::setup()
 
     all_data_common = em_common.get_all_data_common();
 
-    task_scheduler.scheduleWithFixedDelay([this]() {collect_data_points();    }, 15_s, 10_s);
+    task_scheduler.scheduleWallClock([this]() {collect_data_points();}, 5_m, 100_ms, true);
     task_scheduler.scheduleWithFixedDelay([this]() {set_pending_data_points();}, 15_s, 100_ms);
-
     task_scheduler.scheduleOnce([this]() {this->show_blank_value_id_update_warnings = true;}, 250_ms);
 }
 
@@ -211,6 +210,7 @@ void EMEnergyAnalysis::collect_data_points()
     gmtime_r(&tv.tv_sec, &utc);
     localtime_r(&tv.tv_sec, &local);
 
+    // Even with scheduleWallClock still need to check if the slot has not already be written before the last boot
     uint32_t current_5min_slot = ((utc.tm_year * 366 + utc.tm_yday) * 24 + utc.tm_hour) * 12 + utc.tm_min / 5;
 
     if (current_5min_slot != last_history_5min_slot) {
