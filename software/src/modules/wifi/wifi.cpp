@@ -301,12 +301,7 @@ void Wifi::apply_soft_ap_config_and_start()
 
 bool Wifi::apply_sta_config_and_connect()
 {
-    return apply_sta_config_and_connect(get_connection_state());
-}
-
-bool Wifi::apply_sta_config_and_connect(WifiState current_state)
-{
-    if (current_state == WifiState::Connected) {
+    if (get_connection_state() == WifiState::Connected) {
         return false;
     }
 
@@ -634,16 +629,17 @@ void Wifi::setup()
 
     if (enable_sta) {
         task_scheduler.scheduleWithFixedDelay([this]() {
-            WifiState connection_state = get_connection_state();
-            state.get("connection_state")->updateEnum(connection_state);
+            state.get("connection_state")->updateEnum(get_connection_state());
+        }, 1_s);
 
+        task_scheduler.scheduleWithFixedDelay([this]() {
             int rssi = -127;
             esp_wifi_sta_get_rssi(&rssi); // Ignore failure, rssi is still -127.
             state.get("sta_rssi")->updateInt(rssi);
 
             static int tries = 0;
             if (tries < 3 || tries % 3 == 2)
-                if (!apply_sta_config_and_connect(connection_state))
+                if (!apply_sta_config_and_connect())
                     tries = 0;
             tries++;
         }, 10_s);

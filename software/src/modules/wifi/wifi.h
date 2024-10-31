@@ -52,7 +52,6 @@ public:
 private:
     void apply_soft_ap_config_and_start();
     bool apply_sta_config_and_connect();
-    bool apply_sta_config_and_connect(WifiState current_state);
 
     int get_ap_state();
 
