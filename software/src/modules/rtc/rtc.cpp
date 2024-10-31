@@ -216,7 +216,6 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
         case Quality::RTC:
         case Quality::Low:
             max_age = 10_m;
-            max_age = 10_m;
             break;
         case Quality::High:
         case Quality::Force:
