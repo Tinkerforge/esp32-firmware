@@ -36,6 +36,8 @@ public:
     bool connected = false;
 
 private:
+    void update_connected();
+
     bool ethernet_connected = false;
     bool wifi_connected = false;
 };
