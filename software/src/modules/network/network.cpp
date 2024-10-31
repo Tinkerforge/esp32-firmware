@@ -99,7 +99,13 @@ void Network::register_events()
 
 #if MODULE_WIFI_AVAILABLE()
     event.registerEvent("wifi/state", {"connection_state"}, [this](const Config *connection_state) {
-        wifi_connected = connection_state->asEnum<WifiState>() == WifiState::Connected;
+        wifi_sta_connected = connection_state->asEnum<WifiState>() == WifiState::Connected;
+        update_connected();
+        return EventResult::OK;
+    });
+
+    event.registerEvent("wifi/state", {"ap_sta_count"}, [this](const Config *ap_sta_count) {
+        wifi_ap_sta_count = ap_sta_count->asUint();
         update_connected();
         return EventResult::OK;
     });
@@ -108,14 +114,15 @@ void Network::register_events()
 
 void Network::update_connected()
 {
-    connected = ethernet_connected || wifi_connected;
+    connected = ethernet_connected || wifi_sta_connected || wifi_ap_sta_count > 0;
     auto state_connected = state.get("connected");
 
     if (state_connected->asBool() != connected) {
-        logger.printfln("Network got %s (ethernet=%d, wifi=%d)",
+        logger.printfln("Network got %s (ethernet=%d, wifi_sta=%d, wifi_ap=%d)",
                         connected ? "connected" : "disconnected",
                         static_cast<int>(ethernet_connected),
-                        static_cast<int>(wifi_connected));
+                        static_cast<int>(wifi_sta_connected),
+                        wifi_ap_sta_count > 0 ? 1 : 0);
     }
 
     state_connected->updateBool(connected);

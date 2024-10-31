@@ -39,5 +39,6 @@ private:
     void update_connected();
 
     bool ethernet_connected = false;
-    bool wifi_connected = false;
+    bool wifi_sta_connected = false;
+    uint32_t wifi_ap_sta_count = 0;
 };

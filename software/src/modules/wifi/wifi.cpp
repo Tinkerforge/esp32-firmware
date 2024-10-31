@@ -80,6 +80,7 @@ void Wifi::pre_setup()
         {"connection_end", Config::Uint(0)},
         {"ap_state", Config::Int(0)},
         {"ap_bssid", Config::Str("", 0, 20)},
+        {"ap_sta_count", Config::Uint(0)},
         {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
         {"sta_subnet", Config::Str("0.0.0.0", 7, 15)},
         {"sta_rssi", Config::Int8(-127)},
@@ -564,6 +565,46 @@ void Wifi::setup()
             });
         },
         ARDUINO_EVENT_WIFI_STA_LOST_IP);
+
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            logger.printfln("STA with MAC address %02X:%02X:%02X:%02X:%02X:%02X connected to AP",
+                            info.wifi_ap_staconnected.mac[0],
+                            info.wifi_ap_staconnected.mac[1],
+                            info.wifi_ap_staconnected.mac[2],
+                            info.wifi_ap_staconnected.mac[3],
+                            info.wifi_ap_staconnected.mac[4],
+                            info.wifi_ap_staconnected.mac[5]);
+
+            task_scheduler.scheduleOnce([this]() {
+                auto ap_sta_count = state.get("ap_sta_count");
+                ap_sta_count->updateUint(ap_sta_count->asUint() + 1);
+            });
+
+        },
+        ARDUINO_EVENT_WIFI_AP_STACONNECTED);
+
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            logger.printfln("STA with MAC address %02X:%02X:%02X:%02X:%02X:%02X disconnected from AP",
+                            info.wifi_ap_staconnected.mac[0],
+                            info.wifi_ap_staconnected.mac[1],
+                            info.wifi_ap_staconnected.mac[2],
+                            info.wifi_ap_staconnected.mac[3],
+                            info.wifi_ap_staconnected.mac[4],
+                            info.wifi_ap_staconnected.mac[5]);
+
+            task_scheduler.scheduleOnce([this]() {
+                auto ap_sta_count = state.get("ap_sta_count");
+                uint32_t ap_sta_count_value = ap_sta_count->asUint();
+
+                if (ap_sta_count_value == 0) {
+                    logger.printfln("Unexpected disconnect from AP, STA count was already zero");
+                }
+                else {
+                    ap_sta_count->updateUint(ap_sta_count_value - 1);
+                }
+            });
+        },
+        ARDUINO_EVENT_WIFI_AP_STADISCONNECTED);
 
     bool enable_ap = ap_config_in_use.get("enable_ap")->asBool();
     bool enable_sta = sta_config_in_use.get("enable_sta")->asBool();
