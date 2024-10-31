@@ -374,7 +374,7 @@ void PowerManager::setup()
         int32_t max_possible_ma = circuit_breaker_trip_point_ma - largest_consumer_current_ma;
         target_phase_current_ma = std::min(max_possible_ma, current_limit_ma) * (100 - safety_margin_pct) / 100;
 
-        phase_current_max_increase_ma = target_phase_current_ma / 4;
+        phase_current_max_increase_ma = target_phase_current_ma / 2; // Cap maximum ramp-up for safety. Might not be necessary.
 
         constexpr size_t min_filter_length = 4 * 60 * 1000 / PM_TASK_DELAY_MS; // 4min
         constexpr size_t preproc_filter_length = 10 * 1000 / PM_TASK_DELAY_MS; // 10s
