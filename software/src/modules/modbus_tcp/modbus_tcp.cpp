@@ -33,6 +33,8 @@
 #include "modules/power_manager/power_manager.h"
 #endif
 
+#include <TFTools/Option.h>
+
 extern uint32_t local_uid_num;
 
 // MODBUS TABLE CHANGELOG
@@ -40,73 +42,6 @@ extern uint32_t local_uid_num;
 // 2 - Add coils 1000, 1001
 // 3 - Add phase switch
 #define MODBUS_TABLE_VERSION 3
-
-
-template<typename T>
-struct Option {
-public:
-    template<typename U = std::is_trivially_copy_constructible<T>, typename std::enable_if<U::value>::type...>
-    Option(T t): val(t), have_val(true) {}
-
-               // val has to be initialized if it is a primitive type.
-    Option() : val(), have_val(false) {}
-
-    T &unwrap() {
-        return expect("unwrapped Option without value!");
-    }
-
-    const T &unwrap() const {
-        return expect("unwrapped Option without value!");
-    }
-
-    T &unwrap_or(T &default_value) {
-        if (!have_val)
-            return default_value;
-        return val;
-    }
-
-    const T &unwrap_or(const T &default_value) const {
-        if (!have_val)
-            return default_value;
-        return val;
-    }
-
-    T &expect(const char *message) {
-        if (!have_val)
-            esp_system_abort(message);
-        return val;
-    }
-
-    const T &expect(const char *message) const {
-        if (!have_val)
-            esp_system_abort(message);
-        return val;
-    }
-
-    T &insert(const T &default_value) {
-        val = default_value;
-        have_val = true;
-        return val;
-    }
-
-    bool is_some() const {
-        return have_val;
-    }
-
-    bool is_none() const {
-        return !have_val;
-    }
-
-    void clear() {
-        have_val = false;
-    }
-
-private:
-    T val;
-    bool have_val;
-};
-
-
 
 static uint8_t hextouint(const char c)
 {
