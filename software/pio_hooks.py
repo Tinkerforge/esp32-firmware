@@ -105,29 +105,32 @@ def write_firmware_info(display_name, major, minor, patch, beta, build_time):
     with open(os.path.join(env.subst("$BUILD_DIR"), "firmware_info.bin"), "wb") as f:
         f.write(buf)
 
-def generate_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_mods_upper, backend_module_instance_names):
-    if backend_module:
-        module_name = backend_module.space
+def generate_module_dependencies(info_path, module, modules, all_modules_upper):
+    if module:
+        module_name = module.space
     else:
         module_name = f'[{info_path}]'
 
     has_dependencies = False
+    wants_module_list = False
+    dep_modules = []
+    all_optional_modules_upper = []
 
     if os.path.exists(info_path):
         config = configparser.ConfigParser()
         config.read(info_path)
         if config.has_section('Dependencies'):
             has_dependencies = True
-            required_mods = []
-            available_optional_mods = []
-            all_optional_mods_upper = []
+            wants_module_list = config['Dependencies'].getboolean('ModuleList', False)
+            required_modules = []
+            available_optional_modules = []
 
             allow_nonexist = config['Dependencies'].getboolean('AllowNonexist', False)
 
             known_keys = set(['requires', 'optional', 'conflicts', 'after', 'before', 'modulelist'])
             unknown_keys = set(config['Dependencies'].keys()).difference(known_keys)
             if len(unknown_keys) > 0:
-                print(f"Dependency error: '{backend_module.under}/module.ini contains unknown keys {unknown_keys}  ", file=sys.stderr)
+                print(f"Dependency error: '{module.under}/module.ini contains unknown keys {unknown_keys}  ", file=sys.stderr)
                 sys.exit(1)
 
             requires = config['Dependencies'].get('Requires', "")
@@ -137,14 +140,14 @@ def generate_module_dependencies_header(info_path, header_path_prefix, backend_m
             if len(requires) != old_len:
                 print(f"List of required modules for module '{module_name}' contains duplicates.", file=sys.stderr)
             for req_name in requires:
-                req_module, _ = find_backend_module_space(backend_modules, req_name)
+                req_module, _ = find_module_space(modules, req_name)
                 if not req_module:
-                    if '_'.join(req_name.split(' ')).upper() in all_mods_upper:
+                    if '_'.join(req_name.split(' ')).upper() in all_modules_upper:
                         print(f"Dependency error: Module '{module_name}' requires module '{req_name}', which is available but not enabled for this environment.", file=sys.stderr)
                     else:
                         print(f"Dependency error: Module '{module_name}' requires module '{req_name}', which does not exist.", file=sys.stderr)
                     sys.exit(1)
-                required_mods.append(req_module)
+                required_modules.append(req_module)
 
             optional = config['Dependencies'].get('Optional')
             if optional is not None:
@@ -158,17 +161,17 @@ def generate_module_dependencies_header(info_path, header_path_prefix, backend_m
                         print(f"Dependency error: Module '{module_name}' cannot list itself as optional.", file=sys.stderr)
                         sys.exit(1)
                     opt_name_upper = '_'.join(opt_name.split(' ')).upper()
-                    opt_module, _ = find_backend_module_space(backend_modules, opt_name)
+                    opt_module, _ = find_module_space(modules, opt_name)
                     if not opt_module:
-                        if not allow_nonexist and opt_name_upper not in all_mods_upper:
+                        if not allow_nonexist and opt_name_upper not in all_modules_upper:
                             print(f"Dependency error: Optional module '{opt_name}' wanted by module '{module_name}' does not exist.", file=sys.stderr)
                             sys.exit(1)
                     else:
-                        if opt_module in required_mods:
+                        if opt_module in required_modules:
                             print(f"Dependency error: Optional module '{opt_name}' wanted by module '{module_name}' is already listed as required.", file=sys.stderr)
                             sys.exit(1)
-                        available_optional_mods.append(opt_module)
-                    all_optional_mods_upper.append(opt_name_upper)
+                        available_optional_modules.append(opt_module)
+                    all_optional_modules_upper.append(opt_name_upper)
 
             conflicts = config['Dependencies'].get('Conflicts')
             if conflicts is not None:
@@ -181,17 +184,17 @@ def generate_module_dependencies_header(info_path, header_path_prefix, backend_m
                     if conflict_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot list itself as conflicting.", file=sys.stderr)
                         sys.exit(1)
-                    conflict_module, index = find_backend_module_space(backend_modules, conflict_name)
+                    conflict_module, index = find_module_space(modules, conflict_name)
                     if index < 0:
-                        if not allow_nonexist and '_'.join(conflict_name.split(' ')).upper() not in all_mods_upper:
+                        if not allow_nonexist and '_'.join(conflict_name.split(' ')).upper() not in all_modules_upper:
                             print(f"Dependency error: Module '{conflict_name}' in 'Conflicts' list of module '{module_name}' does not exist.", file=sys.stderr)
                             sys.exit(1)
                     elif conflict_module:
                         print(f"Dependency error: Module '{module_name}' conflicts with module '{conflict_name}'.", file=sys.stderr)
                         sys.exit(1)
 
-            if backend_module:
-                cur_module_index = backend_modules.index(backend_module)
+            if module:
+                cur_module_index = modules.index(module)
 
             after = config['Dependencies'].get('After')
             if after is not None:
@@ -204,9 +207,9 @@ def generate_module_dependencies_header(info_path, header_path_prefix, backend_m
                     if after_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot require to be loaded after itself.", file=sys.stderr)
                         sys.exit(1)
-                    _, index = find_backend_module_space(backend_modules, after_name)
+                    _, index = find_module_space(modules, after_name)
                     if index < 0:
-                        if not allow_nonexist and '_'.join(after_name.split(' ')).upper() not in all_mods_upper:
+                        if not allow_nonexist and '_'.join(after_name.split(' ')).upper() not in all_modules_upper:
                             print(f"Dependency error: Module '{after_name}' in 'After' list of module '{module_name}' does not exist.", file=sys.stderr)
                             sys.exit(1)
                     elif index > cur_module_index:
@@ -224,51 +227,89 @@ def generate_module_dependencies_header(info_path, header_path_prefix, backend_m
                     if before_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot require to be loaded before itself.", file=sys.stderr)
                         sys.exit(1)
-                    _, index = find_backend_module_space(backend_modules, before_name)
+                    _, index = find_module_space(modules, before_name)
                     if index < 0:
-                        if not allow_nonexist and '_'.join(before_name.split(' ')).upper() not in all_mods_upper:
+                        if not allow_nonexist and '_'.join(before_name.split(' ')).upper() not in all_modules_upper:
                             print(f"Dependency error: Module '{before_name}' in 'Before' list of module '{module_name}' does not exist.", file=sys.stderr)
                             sys.exit(1)
                     elif index < cur_module_index:
                         print(f"Dependency error: Module '{module_name}' must be loaded before module '{before_name}'.", file=sys.stderr)
                         sys.exit(1)
 
-            dep_mods = required_mods + available_optional_mods
-            backend_mods_upper = [x.upper for x in backend_modules]
+            dep_modules = required_modules + available_optional_modules
 
-            defines  = ''.join(['#define MODULE_{}_AVAILABLE() {}\n'.format(x, "1" if x in backend_mods_upper else "0") for x in all_optional_mods_upper])
-            includes = ''.join([f'#include "modules/{x.under}/{x.under}.h"\n' for x in dep_mods])
-            decls    = ''.join([f'extern {x.camel} {backend_module_instance_names[x.space]};\n' for x in dep_mods])
+    return has_dependencies, wants_module_list, dep_modules, all_optional_modules_upper
 
-            available_h_content  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n'
-            available_h_content += '#pragma once\n'
+def generate_backend_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_backend_modules_upper, backend_module_instance_names):
+    if backend_module:
+        module_name = backend_module.space
+    else:
+        module_name = f'[{info_path}]'
 
-            dependencies_h_content  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n'
-            dependencies_h_content += '#pragma once\n\n'
-            dependencies_h_content += '#if __INCLUDE_LEVEL__ > 1\n'
-            dependencies_h_content += f'#error "Don\'t include {os.path.split(header_path_prefix)[-1]}dependencies.h in headers, only in sources! Use {os.path.split(header_path_prefix)[-1]}available.h in headers if you want to check whether a module is compiled in"\n'
-            dependencies_h_content += '#endif\n\n'
-            dependencies_h_content += f'#include "{os.path.split(header_path_prefix)[-1]}available.h"\n'
+    has_dependencies, wants_module_list, dep_modules, all_optional_modules_upper = generate_module_dependencies(info_path, backend_module, backend_modules, all_backend_modules_upper)
 
-            if defines:
-                available_h_content += '\n' + defines
-            if includes:
-                dependencies_h_content += '\n' + includes
-            if decls:
-                dependencies_h_content += '\n' + decls
+    if has_dependencies:
+        backend_modules_upper = [x.upper for x in backend_modules]
 
-            if config['Dependencies'].getboolean('ModuleList', False):
-                dependencies_h_content += '\n'
-                dependencies_h_content += '#include "config.h"\n'
-                dependencies_h_content += 'extern Config modules;\n'
+        defines  = ''.join(['#define MODULE_{}_AVAILABLE() {}\n'.format(x, "1" if x in backend_modules_upper else "0") for x in all_optional_modules_upper])
+        includes = ''.join([f'#include "modules/{x.under}/{x.under}.h"\n' for x in dep_modules])
+        decls    = ''.join([f'extern {x.camel} {backend_module_instance_names[x.space]};\n' for x in dep_modules])
 
-            tfutil.write_file_if_different(header_path_prefix + 'available.h', available_h_content)
-            tfutil.write_file_if_different(header_path_prefix + 'dependencies.h', dependencies_h_content)
+        available_h_content  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n'
+        available_h_content += '#pragma once\n'
 
-    if not has_dependencies:
+        dependencies_h_content  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n'
+        dependencies_h_content += '#pragma once\n\n'
+        dependencies_h_content += '#if __INCLUDE_LEVEL__ > 1\n'
+        dependencies_h_content += f'#error "Don\'t include {os.path.split(header_path_prefix)[-1]}dependencies.h in headers, only in sources! Use {os.path.split(header_path_prefix)[-1]}available.h in headers if you want to check whether a module is compiled in"\n'
+        dependencies_h_content += '#endif\n\n'
+        dependencies_h_content += f'#include "{os.path.split(header_path_prefix)[-1]}available.h"\n'
+
+        if defines:
+            available_h_content += '\n' + defines
+        if includes:
+            dependencies_h_content += '\n' + includes
+        if decls:
+            dependencies_h_content += '\n' + decls
+
+        if wants_module_list:
+            dependencies_h_content += '\n'
+            dependencies_h_content += '#include "config.h"\n'
+            dependencies_h_content += 'extern Config modules;\n'
+
+        tfutil.write_file_if_different(header_path_prefix + 'available.h', available_h_content)
+        tfutil.write_file_if_different(header_path_prefix + 'dependencies.h', dependencies_h_content)
+    else:
         try:
             os.remove(header_path_prefix + 'available.h')
+        except FileNotFoundError:
+            pass
+
+        try:
             os.remove(header_path_prefix + 'dependencies.h')
+        except FileNotFoundError:
+            pass
+
+def generate_frontend_module_available_file(info_path, file_path_prefix, frontend_module, frontend_modules, all_frontend_modules_upper):
+    if frontend_module:
+        module_name = frontend_module.space
+    else:
+        module_name = f'[{info_path}]'
+
+    has_dependencies, wants_module_list, dep_modules, all_optional_modules_upper = generate_module_dependencies(info_path, frontend_module, frontend_modules, all_frontend_modules_upper)
+
+    if has_dependencies:
+        frontend_modules_upper = [x.upper for x in frontend_modules]
+        defines = ''.join(['//#define MODULE_{}_AVAILABLE {}\n'.format(x, "1" if x in frontend_modules_upper else "0") for x in all_optional_modules_upper])
+        available_inc_content  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n'
+
+        if defines:
+            available_inc_content += '\n' + defines
+
+        tfutil.write_file_if_different(file_path_prefix + 'available.inc', available_inc_content)
+    else:
+        try:
+            os.remove(file_path_prefix + 'available.inc')
         except FileNotFoundError:
             pass
 
@@ -443,17 +484,17 @@ def repair_firmware_update_dir():
     except:
         pass
 
-def find_backend_module_space(backend_modules, name_space):
+def find_module_space(modules, name_space):
     index = 0
-    for backend_module in backend_modules:
-        if backend_module.space == name_space:
-            return backend_module, index
+    for module in modules:
+        if module.space == name_space:
+            return module, index
         index += 1
 
     name_upper = '_'.join(name_space.split(' ')).upper()
-    for backend_module in backend_modules:
-        if backend_module.upper == name_upper:
-            print(f"Dependency error: Encountered incorrectly capitalized backend module '{name_space}'", file=sys.stderr)
+    for module in modules:
+        if module.upper == name_upper:
+            print(f"Dependency error: Encountered incorrectly capitalized module '{name_space}'", file=sys.stderr)
             sys.exit(1)
 
     return None, -1
@@ -825,14 +866,14 @@ def main():
 
     env.Replace(SRC_FILTER=[' '.join(build_src_filter)])
 
-    all_mods = []
+    all_backend_modules_upper = []
     for existing_backend_module in os.listdir(os.path.join('src', 'modules')):
         if not os.path.isdir(os.path.join('src', 'modules', existing_backend_module)):
             continue
 
-        all_mods.append(existing_backend_module.upper())
+        all_backend_modules_upper.append(existing_backend_module.upper())
 
-    backend_mods_upper = [x.upper for x in backend_modules]
+    backend_modules_upper = [x.upper for x in backend_modules]
     identifier_backlist = ["system"]
 
     tfutil.specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
@@ -895,9 +936,9 @@ def main():
         info_path = os.path.join(mod_path, 'module.ini')
         header_path_prefix = os.path.join(mod_path, 'module_')
 
-        generate_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_mods, backend_module_instance_names)
+        generate_backend_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_backend_modules_upper, backend_module_instance_names)
 
-    generate_module_dependencies_header('src/main_dependencies.ini', 'src/main_', None, backend_modules, all_mods, backend_module_instance_names)
+    generate_backend_module_dependencies_header('src/main_dependencies.ini', 'src/main_', None, backend_modules, all_backend_modules_upper, backend_module_instance_names)
 
     # Handle frontend modules
     main_ts_entries = []
@@ -977,6 +1018,20 @@ def main():
 
     check_translation(translation)
     translation = hyphenate_translation(translation)
+
+    all_frontend_modules_upper = []
+    for existing_frontkend_module in os.listdir(os.path.join('web', 'src', 'modules')):
+        if not os.path.isdir(os.path.join('web', 'src', 'modules', existing_frontkend_module)):
+            continue
+
+        all_frontend_modules_upper.append(existing_frontkend_module.upper())
+
+    for frontend_module in frontend_modules:
+        mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
+        info_path = os.path.join(mod_path, 'module.ini')
+        file_path_prefix = os.path.join(mod_path, 'module_')
+
+        generate_frontend_module_available_file(info_path, file_path_prefix, frontend_module, frontend_modules, all_frontend_modules_upper)
 
     global missing_hyphenations
     if len(missing_hyphenations) > 0:

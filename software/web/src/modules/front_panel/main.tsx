@@ -30,7 +30,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Monitor } from "react-feather";
 import { Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
-import { FormSeparator } from "src/ts/components/form_separator";
+import { FormSeparator } from "../../ts/components/form_separator";
 
 const FRONT_PANEL_TILES = 6;
 

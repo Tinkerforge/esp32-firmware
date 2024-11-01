@@ -27,18 +27,16 @@ import { FormRow } from "../../ts/components/form_row";
 import { Button, Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
-import { OutputFloat } from "src/ts/components/output_float";
+import { OutputFloat } from "../../ts/components/output_float";
 import { Switch } from "../../ts/components/switch";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
-
 import { MeterValueID } from "../meters/meter_value_id";
 import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_manager/main";
 import type { ChargeManagerStatus } from "./main"
-import { FormSeparator } from "src/ts/components/form_separator";
-
+import { FormSeparator } from "../../ts/components/form_separator";
 import { ChargeManagerDebug } from "./debug";
-import { CollapsedSection } from "src/ts/components/collapsed_section";
+import { CollapsedSection } from "../../ts/components/collapsed_section";
 
 type ChargeManagerConfig = API.getType["charge_manager/config"];
 

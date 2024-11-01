@@ -26,7 +26,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { InputText } from "src/ts/components/input_text";
+import { InputText } from "../../ts/components/input_text";
 
 export type CronAutomationTrigger = [
     AutomationTriggerID.Cron,

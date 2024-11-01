@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "module_available.inc"
+
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { METERS_SLOTS } from "../../build";
@@ -33,7 +35,9 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotWrapper, UplotData, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { UplotFlagsWrapper } from "../../ts/components/uplot_wrapper_3rd";
+//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
 import { get_price_from_index } from "../day_ahead_prices/main";
+//#endif
 import uPlot from "uplot";
 import { MeterConfig } from "../meters/types";
 import { get_meter_power_index } from "../meters/main";
@@ -400,7 +404,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     energy_manager_daily_cache: {[id: string]: EnergyManagerDailyData} = {};
     cache_limit = 100;
     chargers: Charger[] = [];
+//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
     day_ahead_price_update_timestamp = 0;
+//#endif
 
     constructor() {
         super();
@@ -667,6 +673,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         });
 
+//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
         util.addApiEventListener('day_ahead_prices/prices', () => {
             this.day_ahead_price_update_timestamp = Date.now();
             this.schedule_uplot_update();
@@ -676,6 +683,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             this.day_ahead_price_update_timestamp = Date.now();
             this.schedule_uplot_update();
         });
+//#endif
 
         util.addApiEventListener("power_manager/config", () => {
             let config = API.get("power_manager/config");
@@ -761,7 +769,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         else {
             let energy_manager_data = this.energy_manager_5min_cache[key];
 
-            if (energy_manager_data && (uplot_data.update_timestamp < energy_manager_data.update_timestamp || uplot_data.update_timestamp < this.day_ahead_price_update_timestamp)) {
+            if (energy_manager_data && (uplot_data.update_timestamp < energy_manager_data.update_timestamp
+//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
+                || uplot_data.update_timestamp < this.day_ahead_price_update_timestamp
+//#endif
+            )) {
                 needs_update = true;
             }
 
@@ -820,6 +832,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let price = undefined;
             let price_empty = energy_manager_data.price_empty;
 
+//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
             if (util.is_date_today(date)) {
                 let dap_prices = API.get("day_ahead_prices/prices");
 
@@ -853,6 +866,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     }
                 }
             }
+//#endif
 
             if (price === undefined) {
                 price = energy_manager_data.price;

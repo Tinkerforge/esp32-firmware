@@ -32,8 +32,7 @@ import { Button, Card } from "react-bootstrap";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Download, Terminal } from "react-feather";
-import { InputNumber } from "src/ts/components/input_number";
-
+import { InputNumber } from "../../ts/components/input_number";
 
 const CMDOutFloat = (props: any) => <OutputFloat maxFractionalDigitsOnPage={3} maxUnitLengthOnPage={2} {...props}/>
 const CMDCardOutFloat = (props: any) => <OutputFloat maxUnitLengthOnPage={3.5} {...props}/>

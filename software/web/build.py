@@ -3,12 +3,16 @@ import sys
 import shutil
 import subprocess
 from base64 import b64encode
-
 import argparse
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'software')
+
+from software.tfpp import tfpp
 
 JS_ANALYZE = False
 
-BUILD_DIR = 'build'
+BUILD_DIR = '../build'
 
 HTML_MINIFIER_TERSER_OPTIONS = [
     '--collapse-boolean-attributes',
@@ -41,6 +45,29 @@ def main():
     build_args = parser.parse_args()
 
     try:
+        shutil.rmtree('src_tfpp')
+    except FileNotFoundError:
+        pass
+
+    print('tfpp...')
+    for root, dirs, files in os.walk('./src'):
+        for name in files:
+            src_path = os.path.join(root, name)
+            src_tfpp_path = src_path.replace('./src/', './src_tfpp/')
+
+            if src_path.endswith('.ts') or src_path.endswith('.tsx'):
+                try:
+                    tfpp(src_path, src_tfpp_path)
+                except Exception as e:
+                    print(f'Error: {e}', file=sys.stderr)
+                    exit(42)
+            else:
+                os.makedirs(os.path.split(src_tfpp_path)[0], exist_ok=True)
+                shutil.copy2(src_path, src_tfpp_path)
+
+    os.chdir('src_tfpp')
+
+    try:
         shutil.rmtree(BUILD_DIR)
     except FileNotFoundError:
         pass
@@ -59,12 +86,12 @@ def main():
     args = [
         'npx',
         'esbuild',
-        'src/main.tsx',
+        'main.tsx',
         '--metafile={}'.format(os.path.join(BUILD_DIR, 'meta.json')),
         '--bundle',
         '--target=es6',
-        '--alias:argon2-browser=./node_modules/argon2-browser/dist/argon2-bundled.min.js',
-        '--alias:jquery=./node_modules/jquery/dist/jquery.slim.min',
+        '--alias:argon2-browser=../node_modules/argon2-browser/dist/argon2-bundled.min.js',
+        '--alias:jquery=../node_modules/jquery/dist/jquery.slim.min',
         '--outfile={0}'.format(os.path.join(BUILD_DIR, 'bundle.min.js'))
     ]
 
@@ -89,7 +116,7 @@ def main():
         args += ['--no-source-map']
 
     args += [
-        'src/main.scss',
+        'main.scss',
         os.path.join(BUILD_DIR, 'main.css')
     ]
 
@@ -125,7 +152,7 @@ def main():
         HTML_MINIFIER_TERSER_OPTIONS + [
         '-o',
         os.path.join(BUILD_DIR, 'index.min.html'),
-        'src/index.html'
+        'index.html'
     ], shell=sys.platform == 'win32')
 
 if __name__ == '__main__':

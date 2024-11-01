@@ -29,9 +29,8 @@ import { Collapse, ListGroup, ListGroupItem } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
-
 import type { ChargeManagerStatus } from "./main"
-import { InputFloat } from "src/ts/components/input_float";
+import { InputFloat } from "../../ts/components/input_float";
 
 type ChargeManagerConfig = API.getType["charge_manager/config"];
 type ChargerConfig = ChargeManagerConfig["chargers"][0];

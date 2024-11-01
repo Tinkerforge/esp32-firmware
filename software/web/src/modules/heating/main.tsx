@@ -42,7 +42,7 @@ import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wr
 import { InputText } from "../../ts/components/input_text";
 import { SOLAR_FORECAST_PLANES, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
 import { get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
-import { StatusSection } from "src/ts/components/status_section";
+import { StatusSection } from "../../ts/components/status_section";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} hidden={false} />;

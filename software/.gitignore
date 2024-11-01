@@ -33,6 +33,8 @@ web/src/ts/branding.ts
 web/src/ts/translation.tsx
 web/src/ts/translation.json
 web/src/modules/*/*.enum.ts
+web/src/modules/*/module_available.inc
+web/src_tfpp/
 web/**/*.embedded.ts
 coredump_py_gdb_cmds
 api_info.json

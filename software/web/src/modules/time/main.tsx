@@ -34,8 +34,8 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { Clock } from "react-feather";
-import { FormSeparator } from "src/ts/components/form_separator";
-import { OutputDatetime } from "src/ts/components/output_datetime";
+import { FormSeparator } from "../../ts/components/form_separator";
+import { OutputDatetime } from "../../ts/components/output_datetime";
 
 export function TimeNavbar() {
     return <NavbarItem name="time" module="ntp" title={__("time.navbar.time")} symbol={<Clock />} />;
