@@ -817,7 +817,6 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 }
             }
 
-            timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.price.length);
             let price = undefined;
             let price_empty = energy_manager_data.price_empty;
 
@@ -860,6 +859,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
 
             if (!price_empty) {
+                timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.price.length);
+
                 uplot_data.keys.push('em_price');
                 uplot_data.names.push(__("em_energy_analysis.script.price"));
                 uplot_data.values.push(price);
