@@ -1390,7 +1390,7 @@ def main():
         if os.path.isfile(path):
             index_html_src_paths.append(path)
 
-    for root, dirs, files in sorted(os.walk('web/src')):
+    for root, dirs, files in sorted(os.walk('web/src', followlinks=True)):
         for name in sorted(files):
             index_html_src_paths.append(os.path.join(root, name))
 
