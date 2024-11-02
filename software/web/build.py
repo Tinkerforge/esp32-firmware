@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import subprocess
+import pathlib
 from base64 import b64encode
 import argparse
 import tinkerforge_util as tfutil
@@ -42,6 +43,7 @@ def main():
     parser.add_argument('--js-source-map', action='store_true')
     parser.add_argument('--css-source-map', action='store_true')
     parser.add_argument('--no-minify', action='store_true')
+    parser.add_argument('modules', nargs='+')
     args = parser.parse_args()
 
     try:
@@ -50,12 +52,16 @@ def main():
         pass
 
     print('tfpp...')
-    for root, dirs, files in os.walk('./src', followlinks=True):
+    for root, dirs, files in pathlib.Path('src').walk(follow_symlinks=True):
         for name in files:
-            src_path = os.path.join(root, name)
-            src_tfpp_path = src_path.replace('./src/', './src_tfpp/')
+            src_path = root / name
 
-            if src_path.endswith('.ts') or src_path.endswith('.tsx'):
+            if src_path.parts[:2] == ('src', 'modules') and src_path.parts[2] not in args.modules:
+                continue
+
+            src_tfpp_path = pathlib.Path('src_tfpp', *src_path.parts[1:])
+
+            if src_path.suffix in ['.ts', '.tsx']:
                 try:
                     tfpp(src_path, src_tfpp_path)
                 except Exception as e:

@@ -1419,9 +1419,17 @@ def main():
         except FileNotFoundError:
             pass
 
+        build_py_args = []
+
+        if frontend_debug:
+            build_py_args += ['--js-source-map', '--css-source-map', '--no-minify']
+
+        for frontend_module in frontend_modules:
+            build_py_args.append(frontend_module.under)
+
         with tfutil.ChangedDirectory('web'):
             try:
-                check_call([env.subst('$PYTHONEXE'), "-u", "build.py"] + ([] if not frontend_debug else ['--js-source-map', '--css-source-map', '--no-minify']))
+                check_call([env.subst('$PYTHONEXE'), "-u", "build.py"] + build_py_args)
             except subprocess.CalledProcessError as e:
                 if e.returncode != 42:
                     print(e, file=sys.stderr)
