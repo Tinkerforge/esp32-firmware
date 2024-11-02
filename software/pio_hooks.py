@@ -831,7 +831,7 @@ def main():
             print("Backend module '{}' not found.".format(backend_module.space))
             sys.exit(1)
 
-        for root, dirs, files in os.walk(mod_path):
+        for root, dirs, files in os.walk(mod_path, followlinks=True):
             for name in files:
                 include_bindings(os.path.join(root, name))
 
@@ -848,7 +848,7 @@ def main():
             with tfutil.ChangedDirectory(mod_path):
                 check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
 
-    for root, dirs, files in os.walk('src'):
+    for root, dirs, files in os.walk('src', followlinks=True):
         root_path = PurePath(root)
         root_parents = [root_path] + list(root_path.parents)
 
