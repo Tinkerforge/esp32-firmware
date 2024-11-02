@@ -42,7 +42,7 @@ def main():
     parser.add_argument('--js-source-map', action='store_true')
     parser.add_argument('--css-source-map', action='store_true')
     parser.add_argument('--no-minify', action='store_true')
-    build_args = parser.parse_args()
+    args = parser.parse_args()
 
     try:
         shutil.rmtree('src_tfpp')
@@ -83,7 +83,7 @@ def main():
     ], shell=sys.platform == 'win32')
 
     print('esbuild...')
-    args = [
+    esbuild_args = [
         'npx',
         'esbuild',
         'main.tsx',
@@ -96,31 +96,31 @@ def main():
     ]
 
     if JS_ANALYZE:
-        args += ['--analyze']
+        esbuild_args += ['--analyze']
 
-    if build_args.js_source_map:
-        args += ['--sourcemap=inline']
+    if args.js_source_map:
+        esbuild_args += ['--sourcemap=inline']
 
-    if not build_args.no_minify:
-        args += ['--minify']
+    if not args.no_minify:
+        esbuild_args += ['--minify']
 
-    subprocess.check_call(args, shell=sys.platform == 'win32')
+    subprocess.check_call(esbuild_args, shell=sys.platform == 'win32')
 
     print('sass...')
-    args = [
+    scss_args = [
         'npx',
         'sass',
     ]
 
-    if not build_args.css_source_map:
-        args += ['--no-source-map']
+    if not args.css_source_map:
+        scss_args += ['--no-source-map']
 
-    args += [
+    scss_args += [
         'main.scss',
         os.path.join(BUILD_DIR, 'main.css')
     ]
 
-    subprocess.check_call(args, shell=sys.platform == 'win32')
+    subprocess.check_call(scss_args, shell=sys.platform == 'win32')
 
     print('postcss...')
     subprocess.check_call([
@@ -131,7 +131,7 @@ def main():
         os.path.join(BUILD_DIR, 'main.min.css')
     ], shell=sys.platform == 'win32')
 
-    if build_args.css_source_map:
+    if args.css_source_map:
         with open(os.path.join(BUILD_DIR, 'main.min.css'), 'r', encoding='utf-8') as f:
             css_src = f.read()
 
