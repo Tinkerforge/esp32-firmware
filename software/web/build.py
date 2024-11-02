@@ -13,7 +13,7 @@ from software.tfpp import tfpp
 
 JS_ANALYZE = False
 
-BUILD_DIR = '../build'
+BUILD_DIR = pathlib.Path('..', 'build')
 
 HTML_MINIFIER_TERSER_OPTIONS = [
     '--collapse-boolean-attributes',
@@ -68,17 +68,17 @@ def main():
                     print(f'Error: {e}', file=sys.stderr)
                     exit(42)
             else:
-                os.makedirs(os.path.split(src_tfpp_path)[0], exist_ok=True)
+                src_tfpp_path.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(src_path, src_tfpp_path)
 
     os.chdir('src_tfpp')
 
     try:
-        shutil.rmtree(BUILD_DIR)
+        shutil.rmtree(str(BUILD_DIR))
     except FileNotFoundError:
         pass
 
-    os.makedirs(BUILD_DIR)
+    BUILD_DIR.mkdir(parents=True)
 
     print('tsc...')
     subprocess.check_call([
@@ -93,12 +93,12 @@ def main():
         'npx',
         'esbuild',
         'main.tsx',
-        '--metafile={}'.format(os.path.join(BUILD_DIR, 'meta.json')),
+        f'--metafile={BUILD_DIR / "meta.json"}',
         '--bundle',
         '--target=es6',
         '--alias:argon2-browser=../node_modules/argon2-browser/dist/argon2-bundled.min.js',
         '--alias:jquery=../node_modules/jquery/dist/jquery.slim.min',
-        '--outfile={0}'.format(os.path.join(BUILD_DIR, 'bundle.min.js'))
+        f'--outfile={BUILD_DIR / "bundle.min.js"}'
     ]
 
     if JS_ANALYZE:
@@ -123,7 +123,7 @@ def main():
 
     scss_args += [
         'main.scss',
-        os.path.join(BUILD_DIR, 'main.css')
+        str(BUILD_DIR / 'main.css')
     ]
 
     subprocess.check_call(scss_args, shell=sys.platform == 'win32')
@@ -132,24 +132,20 @@ def main():
     subprocess.check_call([
         'npx',
         'postcss',
-        os.path.join(BUILD_DIR, 'main.css'),
+        str(BUILD_DIR / 'main.css'),
         '-o',
-        os.path.join(BUILD_DIR, 'main.min.css')
+        str(BUILD_DIR / 'main.min.css')
     ], shell=sys.platform == 'win32')
 
     if args.css_source_map:
-        with open(os.path.join(BUILD_DIR, 'main.min.css'), 'r', encoding='utf-8') as f:
-            css_src = f.read()
+        css_src = (BUILD_DIR / 'main.min.css').read_text(encoding='utf-8')
+        css_map = b64encode((BUILD_DIR / 'main.min.css.map').read_bytes()).decode('ascii')
 
-        with open(os.path.join(BUILD_DIR, 'main.min.css.map'), 'rb') as f:
-            css_map = b64encode(f.read()).decode('ascii')
+        (BUILD_DIR / 'main.min.css.map').unlink()
 
-        os.remove(os.path.join(BUILD_DIR, 'main.min.css.map'))
+        css_src = css_src.replace('sourceMappingURL=main.min.css.map', f'sourceMappingURL=data:text/json;base64,{css_map}')
 
-        css_src = css_src.replace('sourceMappingURL=main.min.css.map', 'sourceMappingURL=data:text/json;base64,{0}'.format(css_map))
-
-        with open(os.path.join(BUILD_DIR, 'main.min.css'), 'w', encoding='utf-8') as f:
-            f.write(css_src)
+        (BUILD_DIR / 'main.min.css').write_text(css_src, encoding='utf-8')
 
     print('html-minifier-terser...')
     subprocess.check_call([
@@ -157,7 +153,7 @@ def main():
         'html-minifier-terser'] +
         HTML_MINIFIER_TERSER_OPTIONS + [
         '-o',
-        os.path.join(BUILD_DIR, 'index.min.html'),
+        str(BUILD_DIR / 'index.min.html'),
         'index.html'
     ], shell=sys.platform == 'win32')
 

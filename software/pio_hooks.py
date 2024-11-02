@@ -14,7 +14,7 @@ import time
 import re
 import json
 import glob
-from pathlib import PurePath
+import pathlib
 from base64 import b64encode
 from zlib import crc32
 from collections import namedtuple
@@ -33,7 +33,7 @@ def check_call(*args, **kwargs):
         sys.exit(1)
 
 def get_changelog_version(name):
-    path = os.path.join('changelog_{}.txt'.format(name))
+    path = f'changelog_{name}.txt'
     versions = []
 
     with open(path, 'r', encoding='utf-8') as f:
@@ -102,8 +102,7 @@ def write_firmware_info(display_name, major, minor, patch, beta, build_time):
     buf[76] = int(beta) # since version 2
     buf[4092:4096] = crc32(buf[0:4092]).to_bytes(4, byteorder='little')
 
-    with open(os.path.join(env.subst("$BUILD_DIR"), "firmware_info.bin"), "wb") as f:
-        f.write(buf)
+    pathlib.Path(env.subst('$BUILD_DIR'), 'firmware_info.bin').write_bytes(buf)
 
 def generate_module_dependencies(info_path, module, modules, all_modules_upper):
     if module:
@@ -800,7 +799,7 @@ def main():
         backend_modules.append(util.FlavoredName("Debug").get())
 
     with tfutil.ChangedDirectory('src'):
-        excluded_bindings = [PurePath(x).as_posix() for x in glob.glob('bindings/brick_*') + glob.glob('bindings/bricklet_*')]
+        excluded_bindings = [pathlib.PurePath(x).as_posix() for x in glob.glob('bindings/brick_*') + glob.glob('bindings/bricklet_*')]
 
     excluded_bindings.remove('bindings/bricklet_unknown.h')
     excluded_bindings.remove('bindings/bricklet_unknown.c')
@@ -849,10 +848,10 @@ def main():
                 check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
 
     for root, dirs, files in os.walk('src', followlinks=True):
-        root_path = PurePath(root)
+        root_path = pathlib.PurePath(root)
         root_parents = [root_path] + list(root_path.parents)
 
-        if PurePath('src', 'bindings') in root_parents or PurePath('src', 'modules') in root_parents:
+        if pathlib.PurePath('src', 'bindings') in root_parents or pathlib.PurePath('src', 'modules') in root_parents:
             continue
 
         for name in files:
