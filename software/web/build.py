@@ -52,9 +52,9 @@ def main():
         pass
 
     print('tfpp...')
-    for root, dirs, files in pathlib.Path('src').walk(follow_symlinks=True):
+    for root, dirs, files in os.walk('src', followlinks=True):
         for name in files:
-            src_path = root / name
+            src_path = pathlib.Path(root) / name
 
             if src_path.parts[:2] == ('src', 'modules') and src_path.parts[2] not in args.modules:
                 continue
