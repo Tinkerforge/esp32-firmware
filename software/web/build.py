@@ -50,7 +50,7 @@ def main():
         pass
 
     print('tfpp...')
-    for root, dirs, files in os.walk('./src'):
+    for root, dirs, files in os.walk('./src', followlinks=True):
         for name in files:
             src_path = os.path.join(root, name)
             src_tfpp_path = src_path.replace('./src/', './src_tfpp/')
