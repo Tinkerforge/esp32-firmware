@@ -1020,11 +1020,11 @@ def main():
     translation = hyphenate_translation(translation)
 
     all_frontend_modules_upper = []
-    for existing_frontkend_module in os.listdir(os.path.join('web', 'src', 'modules')):
-        if not os.path.isdir(os.path.join('web', 'src', 'modules', existing_frontkend_module)):
+    for existing_frontend_module in os.listdir(os.path.join('web', 'src', 'modules')):
+        if not os.path.isdir(os.path.join('web', 'src', 'modules', existing_frontend_module)):
             continue
 
-        all_frontend_modules_upper.append(existing_frontkend_module.upper())
+        all_frontend_modules_upper.append(existing_frontend_module.upper())
 
     for frontend_module in frontend_modules:
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
