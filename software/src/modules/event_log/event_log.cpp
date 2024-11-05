@@ -78,7 +78,13 @@ void EventLog::register_urls()
                 event_buf.peek_offset((char *)(chunk_buf.get() + i), index + i);
             }
 
-            request.sendChunk(chunk_buf.get(), to_write);
+            int result = request.sendChunk(chunk_buf, to_write);
+            if (result != ESP_OK) {
+                if (result != ESP_ERR_HTTPD_RESP_SEND) { // Don't log connection closed during transfer. This happens when the front-end is reloaded after a websocket reconnect.
+                    Serial.printf("/event_log sendChunk failed: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned int>(result)); // Can't write to the event log while holding the event_buf_mutex.
+                }
+                break;
+            }
         }
 
         return request.endChunkedResponse();
