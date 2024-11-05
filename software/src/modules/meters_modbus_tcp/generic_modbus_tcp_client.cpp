@@ -33,6 +33,9 @@
 void GenericModbusTCPClient::connect_callback()
 {
     last_successful_read = now_us();
+
+    last_read_result = TFModbusTCPClientTransactionResult::Success;
+    last_read_result_burst_length = 0;
 }
 
 void GenericModbusTCPClient::start_generic_read()
@@ -82,18 +85,27 @@ void GenericModbusTCPClient::read_next()
     }
 
     static_cast<TFModbusTCPSharedClient *>(connected_client)->read(data_type, device_address, read_start_address, read_count, target_buffer, 2_s,
-    [this](TFModbusTCPClientTransactionResult result) {
+    [this, data_type, read_start_address, read_count](TFModbusTCPClientTransactionResult result) {
+        if (last_read_result == result) {
+            ++last_read_result_burst_length;
+        }
+        else {
+            last_read_result = result;
+            last_read_result_burst_length = 1;
+        }
+
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            if (result != TFModbusTCPClientTransactionResult::Timeout) {
-                logger.printfln("Modbus read failed: %s (%d) client=%p host_name='%s' port=%u device_address=%u start_address=%u register_count=%u",
-                                get_tf_modbus_tcp_client_transaction_result_name(result),
-                                static_cast<int>(result),
-                                static_cast<void *>(connected_client),
+            if (result != TFModbusTCPClientTransactionResult::Timeout || (last_read_result_burst_length % 10) == 0) {
+                logger.printfln("Modbus read error (host='%s' port=%u dtype=%d devaddr=%u regaddr=%u regcnt=%u burstlen=%zu): %s (%d)",
                                 host_name.c_str(),
                                 port,
+                                static_cast<int>(data_type),
                                 device_address,
-                                generic_read_request.start_address,
-                                generic_read_request.register_count);
+                                read_start_address,
+                                read_count,
+                                last_read_result_burst_length,
+                                get_tf_modbus_tcp_client_transaction_result_name(result),
+                                static_cast<int>(result));
             }
 
             generic_read_request.result = result;

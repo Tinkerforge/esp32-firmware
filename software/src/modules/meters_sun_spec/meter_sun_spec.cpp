@@ -135,11 +135,6 @@ void MeterSunSpec::read_done_callback()
             auto timeout = errors->get("timeout");
             timeout->updateUint(timeout->asUint() + 1);
         }
-        else {
-            logger.printfln("Modbus read error: %s (%d)",
-                            get_tf_modbus_tcp_client_transaction_result_name(generic_read_request.result),
-                            static_cast<int>(generic_read_request.result));
-        }
 
         return;
     }
@@ -208,7 +203,11 @@ void MeterSunSpec::scan_read_delay()
 void MeterSunSpec::scan_next()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        logger.printfln("Modbus read error during scan: %s (%d)", get_tf_modbus_tcp_client_transaction_result_name(generic_read_request.result), static_cast<int>(generic_read_request.result));
+        if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
+            auto timeout = errors->get("timeout");
+            timeout->updateUint(timeout->asUint() + 1);
+        }
+
         scan_read_delay();
         return;
     }
@@ -359,6 +358,6 @@ void MeterSunSpec::scan_next()
             break;
 
         default:
-            esp_system_abort("Invalid state.");
+            esp_system_abort("meter_sun_spec: Invalid state during scan");
     }
 }

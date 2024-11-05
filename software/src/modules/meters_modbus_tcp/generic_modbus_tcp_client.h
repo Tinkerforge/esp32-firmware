@@ -56,4 +56,7 @@ private:
     uint8_t read_buffer_num;
     uint16_t read_block_size;
     uint16_t registers_done_count;
+
+    TFModbusTCPClientTransactionResult last_read_result = TFModbusTCPClientTransactionResult::Success;
+    size_t last_read_result_burst_length = 0;
 };

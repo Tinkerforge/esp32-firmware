@@ -1078,15 +1078,6 @@ void MeterModbusTCP::read_done_callback()
             auto timeout = errors->get("timeout");
             timeout->updateUint(timeout->asUint() + 1);
         }
-        else {
-            logger.printfln("Modbus error reading %s / %s (address: %zu, number: %zu): %s [%d]",
-                            get_meter_modbus_tcp_table_id_name(table_id),
-                            table->specs[read_index].name,
-                            table->specs[read_index].start_address,
-                            table->specs[read_index].start_address + 1,
-                            get_tf_modbus_tcp_client_transaction_result_name(generic_read_request.result),
-                            static_cast<int>(generic_read_request.result));
-        }
 
         read_allowed = true;
         register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
