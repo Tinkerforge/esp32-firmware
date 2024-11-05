@@ -126,7 +126,7 @@ void WebServer::post_setup()
 #endif
     if (result != ESP_OK) {
         httpd = nullptr;
-        logger.printfln("Failed to start web server! %s (%d)", esp_err_to_name(result), result);
+        logger.printfln("Failed to start web server: %s (0x%X)", esp_err_to_name(result), result);
         return;
     }
 
@@ -448,13 +448,13 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
 {
     auto result = httpd_resp_set_type(req, content_type);
     if (result != ESP_OK) {
-        printf("Failed to set response type: %d\n", result);
+        printf("Failed to set response type: %s (0x%X)\n", esp_err_to_name(result), result);
         return WebServerRequestReturnProtect{};
     }
 
     result = httpd_resp_set_status(req, httpStatusCodeToString(code));
     if (result != ESP_OK) {
-        printf("Failed to set response status: %d\n", result);
+        printf("Failed to set response status: %s (0x%X)\n", esp_err_to_name(result), result);
         return WebServerRequestReturnProtect{};
     }
 
@@ -493,7 +493,7 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
     }
 
     if (result != ESP_OK) {
-        printf("Failed to send response: %d\n", result);
+        printf("Failed to send response: %s (0x%X)\n", esp_err_to_name(result), result);
     }
     return WebServerRequestReturnProtect{};
 }
@@ -502,13 +502,13 @@ void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_t
 {
     auto result = httpd_resp_set_type(req, content_type);
     if (result != ESP_OK) {
-        printf("Failed to set response type: %d\n", result);
+        printf("Failed to set response type: %s (0x%X)\n", esp_err_to_name(result), result);
         return;
     }
 
     result = httpd_resp_set_status(req, httpStatusCodeToString(code));
     if (result != ESP_OK) {
-        printf("Failed to set response status: %d\n", result);
+        printf("Failed to set response status: %s (0x%X)\n", esp_err_to_name(result), result);
         return;
     }
 }
@@ -517,7 +517,7 @@ int WebServerRequest::sendChunk(const char *chunk, ssize_t chunk_len)
 {
     auto result = httpd_resp_send_chunk(req, chunk, chunk_len);
     if (result != ESP_OK) {
-        printf("Failed to send response chunk: %d\n", result);
+        printf("Failed to send response chunk: %s (0x%X)\n", esp_err_to_name(result), result);
     }
     return result;
 }
@@ -526,7 +526,7 @@ WebServerRequestReturnProtect WebServerRequest::endChunkedResponse()
 {
     auto result = httpd_resp_send_chunk(req, nullptr, 0);
     if (result != ESP_OK) {
-        printf("Failed to end chunked response: %d\n", result);
+        printf("Failed to end chunked response: %s (0x%X)\n", esp_err_to_name(result), result);
     }
     return WebServerRequestReturnProtect{};
 }
@@ -535,7 +535,7 @@ void WebServerRequest::addResponseHeader(const char *field, const char *value)
 {
     auto result = httpd_resp_set_hdr(req, field, value);
     if (result != ESP_OK) {
-        printf("Failed to set response header: %d\n", result);
+        printf("Failed to set response header: %s (0x%X)\n", esp_err_to_name(result), result);
         return;
     }
 }
