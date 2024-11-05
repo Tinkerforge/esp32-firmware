@@ -126,4 +126,5 @@ private:
     uint32_t last_connected_ms = 0;
     bool was_connected = false;
     bool global_topic_prefix_subscribed = false;
+    bool initial_network_event_seen = false;
 };

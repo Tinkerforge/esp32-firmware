@@ -735,10 +735,17 @@ void Mqtt::register_events()
         }
         else {
 #if MODULE_DEBUG_AVAILABLE()
-            debug.deregister_task("mqtt_task");
+            // This event will trigger during start-up and may send a 'disconnected' event in an already disconnected state.
+            // The following esp_mqtt_client_stop doesn't care, but deregistering a task that doesn't exist will log a warning.
+            // Only handle 'disconnected' events if they’re not the very first event.
+            if (this->initial_network_event_seen) {
+                debug.deregister_task("mqtt_task");
+            }
 #endif
             esp_mqtt_client_stop(client);
         }
+
+        this->initial_network_event_seen = true;
 
         return EventResult::OK;
     });
