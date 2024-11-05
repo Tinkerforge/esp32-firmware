@@ -39,7 +39,8 @@ protected:
         std::function<void(void)> done_callback;
     };
 
-    GenericModbusTCPClient(TFModbusTCPClientPool *pool) : GenericTCPClientPoolConnector("gen_mbtcp_client", pool) {}
+    GenericModbusTCPClient(const char *event_log_prefix_override_, TFModbusTCPClientPool *pool) :
+        GenericTCPClientPoolConnector(event_log_prefix_override_, pool) {}
 
     void connect_callback() override;
     void start_generic_read();

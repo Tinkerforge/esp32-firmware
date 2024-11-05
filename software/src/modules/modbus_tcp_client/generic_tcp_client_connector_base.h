@@ -28,7 +28,8 @@ class GenericTCPClientConnectorBase
 {
 protected:
     GenericTCPClientConnectorBase(const char *event_log_prefix_override_) :
-        event_log_prefix_override(event_log_prefix_override_), event_log_prefix_override_len(strlen(event_log_prefix_override_)) {}
+        event_log_prefix_override(event_log_prefix_override_),
+        event_log_prefix_override_len(strlen(event_log_prefix_override_)) {}
     virtual ~GenericTCPClientConnectorBase() {}
 
     void start_connection();
@@ -41,6 +42,8 @@ protected:
     virtual void connect_callback() = 0;
     virtual void disconnect_callback() = 0;
 
+    const char *event_log_prefix_override;
+    size_t event_log_prefix_override_len;
     String host_name;
     uint16_t port = 0;
     TFGenericTCPSharedClient *connected_client = nullptr;
@@ -48,9 +51,6 @@ protected:
 private:
     virtual void connect_internal() = 0;
     virtual void disconnect_internal() = 0;
-
-    const char *event_log_prefix_override;
-    size_t event_log_prefix_override_len;
     bool keep_connected = false;
     millis_t connect_backoff = 1_s;
     TFGenericTCPClientConnectResult last_connect_result = TFGenericTCPClientConnectResult::Connected;
