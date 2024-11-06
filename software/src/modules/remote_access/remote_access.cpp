@@ -116,8 +116,6 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     int ret = dns_gethostbyname_addrtype_lwip_ctx(dest_host, &ip, nullptr, nullptr, LWIP_DNS_ADDRTYPE_IPV4);
     if (ret == ERR_VAL) {
         logger.printfln("No DNS server is configured!");
-    } else if (ret != ERR_OK) {
-        return ret;
     }
 
     if (ret != ESP_OK || ip.type != IPADDR_TYPE_V4) {
