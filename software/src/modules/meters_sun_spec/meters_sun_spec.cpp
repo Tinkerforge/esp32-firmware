@@ -63,6 +63,7 @@ void MetersSunSpec::pre_setup()
 
     errors_prototype = Config::Object({
         {"timeout", Config::Uint32(0)},
+        {"inconsistency", Config::Uint32(0)},
     });
 
     meters.register_meter_generator(get_class(), this);

@@ -150,7 +150,8 @@ void MeterSunSpec::read_done_callback()
     }
 
     if (!model_parser->parse_values(generic_read_request.data, quirks)) {
-        logger.printfln("Ignoring inconsistent data set for model %u in slot %u.", model_id, slot);
+        auto inconsistency = errors->get("inconsistency");
+        inconsistency->updateUint(inconsistency->asUint() + 1);
         // TODO: Read again if parsing failed?
     }
 }
