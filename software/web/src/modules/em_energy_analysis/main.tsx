@@ -405,7 +405,9 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     cache_limit = 100;
     chargers: Charger[] = [];
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
-    day_ahead_price_update_timestamp = 0;
+    day_ahead_prices_update_timestamp = 0;
+    day_ahead_prices_first_timestamp: number = null;
+    day_ahead_prices_last_timestamp: number = null;
 //#endif
 
     constructor() {
@@ -675,13 +677,11 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
         util.addApiEventListener('day_ahead_prices/prices', () => {
-            this.day_ahead_price_update_timestamp = Date.now();
-            this.schedule_uplot_update();
+            this.update_day_ahead_prices_cache();
         });
 
         util.addApiEventListener('day_ahead_prices/config', () => {
-            this.day_ahead_price_update_timestamp = Date.now();
-            this.schedule_uplot_update();
+            this.update_day_ahead_prices_cache();
         });
 //#endif
 
@@ -768,12 +768,16 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         }
         else {
             let energy_manager_data = this.energy_manager_5min_cache[key];
+            let date_timestamp = date.getTime() / 1000;
 
-            if (energy_manager_data && (uplot_data.update_timestamp < energy_manager_data.update_timestamp
+            if ((energy_manager_data && uplot_data.update_timestamp < energy_manager_data.update_timestamp)
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
-                || uplot_data.update_timestamp < this.day_ahead_price_update_timestamp
+             || (this.day_ahead_prices_first_timestamp !== null
+              && date_timestamp >= this.day_ahead_prices_first_timestamp
+              && date_timestamp < this.day_ahead_prices_last_timestamp
+              && uplot_data.update_timestamp < this.day_ahead_prices_update_timestamp)
 //#endif
-            )) {
+            ) {
                 needs_update = true;
             }
 
@@ -812,6 +816,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         let timestamp_slot_count: number = 0;
         let energy_manager_data = this.energy_manager_5min_cache[key];
+        let price = undefined;
+        let price_empty = true;
 
         if (energy_manager_data) {
             for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
@@ -829,61 +835,64 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 }
             }
 
-            let price = undefined;
-            let price_empty = energy_manager_data.price_empty;
-
-//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
-            if (util.is_date_today(date)) {
-                let dap_prices = API.get("day_ahead_prices/prices");
-
-                if (dap_prices.prices.length > 0) {
-                    let dap_config = API.get("day_ahead_prices/config");
-                    let resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60;
-                    let grid_costs_and_taxes_and_supplier_markup = dap_config.grid_costs_and_taxes / 1000.0 + dap_config.supplier_markup / 1000.0;
-                    let first_date = dap_prices.first_date * 60;
-                    let last_date = first_date + dap_prices.prices.length * 60 * resolution_multiplier; // exclusive range
-                    let timestamp_base = date.getTime() / 1000;
-
-                    for (let timestamp_slot = energy_manager_data.price.length - 1; timestamp_slot >= 0; --timestamp_slot) {
-                        let timestamp = timestamp_base + timestamp_slot * 300; // seconds
-
-                        if (timestamp < first_date || timestamp >= last_date) {
-                            continue; // no future price data available
-                        }
-
-                        if (energy_manager_data.price[timestamp_slot] !== null) {
-                            break; // history price data available
-                        }
-
-                        if (price === undefined) {
-                            price = energy_manager_data.price.concat(); // copy before modifying
-                        }
-
-                        let index = Math.floor((timestamp - first_date) / (60 * resolution_multiplier));
-
-                        price[timestamp_slot] = get_price_from_index(index) / 1000.0 + grid_costs_and_taxes_and_supplier_markup;
-                        price_empty = false;
-                    }
-                }
-            }
-//#endif
-
-            if (price === undefined) {
-                price = energy_manager_data.price;
-            }
+            price = energy_manager_data.price.concat(); // copy before adding future prices
+            price_empty = energy_manager_data.price_empty;
 
             if (!price_empty) {
                 timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.price.length);
-
-                uplot_data.keys.push('em_price');
-                uplot_data.names.push(__("em_energy_analysis.script.price"));
-                uplot_data.values.push(price);
-                uplot_data.extras.push(null);
-                uplot_data.stacked.push(false);
-                uplot_data.paths.push(UplotPath.Step);
-                uplot_data.extra_names.push(null);
-                uplot_data.y_axes.push('y2');
             }
+        }
+
+//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
+        let dap_prices = API.get("day_ahead_prices/prices");
+
+        if (dap_prices.prices.length > 0) {
+            let dap_config = API.get("day_ahead_prices/config");
+            let resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60;
+            let grid_costs_and_taxes_and_supplier_markup = dap_config.grid_costs_and_taxes / 1000.0 + dap_config.supplier_markup / 1000.0;
+            let first_timestamp = dap_prices.first_date * 60;
+            let last_timestamp = first_timestamp + dap_prices.prices.length * 60 * resolution_multiplier; // exclusive range
+            let timestamp_base = date.getTime() / 1000;
+
+            timestamp_slot_count = Math.max(timestamp_slot_count, 24 * 12);
+
+            if (price === undefined) {
+                price = new Array(timestamp_slot_count);
+                price.fill(null);
+            }
+
+            while (price.length < timestamp_slot_count) {
+                price.push(null);
+            }
+
+            for (let timestamp_slot = timestamp_slot_count - 1; timestamp_slot >= 0; --timestamp_slot) {
+                let timestamp = timestamp_base + timestamp_slot * 300; // seconds
+
+                if (timestamp < first_timestamp || timestamp >= last_timestamp) {
+                    continue; // no future price data available
+                }
+
+                if (price[timestamp_slot] !== null) {
+                    break; // history price data available
+                }
+
+                let index = Math.floor((timestamp - first_timestamp) / (60 * resolution_multiplier));
+
+                price[timestamp_slot] = get_price_from_index(index) / 1000.0 + grid_costs_and_taxes_and_supplier_markup;
+                price_empty = false;
+            }
+        }
+//#endif
+
+        if (!price_empty) {
+            uplot_data.keys.push('em_price');
+            uplot_data.names.push(__("em_energy_analysis.script.price"));
+            uplot_data.values.push(price);
+            uplot_data.extras.push(null);
+            uplot_data.stacked.push(false);
+            uplot_data.paths.push(UplotPath.Step);
+            uplot_data.extra_names.push(null);
+            uplot_data.y_axes.push('y2');
         }
 
         for (let charger of this.chargers) {
@@ -1769,6 +1778,26 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
         return true;
     }
+
+//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
+    update_day_ahead_prices_cache() {
+        let dap_prices = API.get("day_ahead_prices/prices");
+
+        if (dap_prices.prices.length > 0) {
+            let dap_config = API.get("day_ahead_prices/config");
+            let resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60;
+            this.day_ahead_prices_first_timestamp = dap_prices.first_date * 60;
+            this.day_ahead_prices_last_timestamp = this.day_ahead_prices_first_timestamp + dap_prices.prices.length * 60 * resolution_multiplier; // exclusive range
+        }
+        else {
+            this.day_ahead_prices_first_timestamp = null;
+            this.day_ahead_prices_last_timestamp = null;
+        }
+
+        this.day_ahead_prices_update_timestamp = Date.now();
+        this.schedule_uplot_update();
+    }
+//#endif
 
     async update_wallbox_daily_cache_all(date: Date) {
         let all: Promise<boolean>[] = [];
