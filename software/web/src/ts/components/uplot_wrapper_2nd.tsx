@@ -276,6 +276,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 },
             },
             legend: {
+                live: !util.is_native_median_app(),
                 mount: (self: uPlot, legend: HTMLElement) => {
                     if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
                         this.props.legend_div_ref.current.appendChild(legend);

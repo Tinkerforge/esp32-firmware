@@ -301,7 +301,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                                             legend_time_label={__("em_energy_analysis.script.time_5min")}
                                             legend_time_with_minutes={true}
                                             aspect_ratio={3}
-                                            x_height={30}
+                                            x_height={35}
                                             x_format={{hour: '2-digit', minute: '2-digit'}}
                                             x_padding_factor={0}
                                             x_include_date={false}
@@ -2367,7 +2367,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         legend_time_with_minutes={true}
                                         legend_div_ref={this.uplot_legend_div_5min_power_ref}
                                         aspect_ratio={3}
-                                        x_height={30}
+                                        x_height={35}
                                         x_format={{hour: '2-digit', minute: '2-digit'}}
                                         x_padding_factor={0}
                                         x_include_date={false}
@@ -2387,8 +2387,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         y2_skip_upper={true}
                                         padding={[0, 5, null, null]}/>
                         <div class="pb-4">
-                            <div class="uplot u-hz u-time-in-legend-alone" ref={this.uplot_legend_div_5min_flags_ref} style="width: 100%; visibility: hidden;" />
-                            <div class="uplot u-hz u-hide-first-series-in-legend" ref={this.uplot_legend_div_5min_power_ref} style="width: 100%; visibility: hidden;" />
+                            <div class={"uplot u-hz" + (util.is_native_median_app() ? "" : " u-time-in-legend-alone") + " u-hide-marker-in-legend u-hide-empty-legend"} ref={this.uplot_legend_div_5min_flags_ref} style="width: 100%; visibility: hidden;" />
+                            <div class={"uplot u-hz" + (util.is_native_median_app() ? "" : " u-hide-first-series-in-legend")} ref={this.uplot_legend_div_5min_power_ref} style="width: 100%; visibility: hidden;" />
                         </div>
                     </UplotLoader>
                     <UplotLoader ref={this.uplot_loader_daily_ref}
@@ -2405,7 +2405,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         legend_time_label={__("em_energy_analysis.script.time_daily")}
                                         legend_time_with_minutes={false}
                                         aspect_ratio={3}
-                                        x_height={30}
+                                        x_height={35}
                                         x_format={{month: '2-digit', day: '2-digit'}}
                                         x_padding_factor={0.015}
                                         x_include_date={false}

@@ -556,7 +556,11 @@ body {
     display: block;
 }
 
-.u-time-in-legend-alone .u-legend .u-marker {
+.u-hide-marker-in-legend .u-legend .u-marker {
+    display: none;
+}
+
+.u-hide-empty-legend .u-legend tbody:empty {
     display: none;
 }
 

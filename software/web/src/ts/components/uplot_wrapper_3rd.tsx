@@ -163,14 +163,15 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     },
                 },
             },
-            padding: [null, 5, 0, null],
             legend: {
+                live: !util.is_native_median_app(),
                 mount: (self: uPlot, legend: HTMLElement) => {
                     if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
                         this.props.legend_div_ref.current.appendChild(legend);
                     }
                 },
             },
+            padding: [null, 5, 0, null],
             plugins: [
                 uPlotTimelinePlugin({
                     fill: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_fills && this.data.value_fills[seriesIdx] ? this.data.value_fills[seriesIdx][value] : 'rgb(0, 0, 0, 0.1)',

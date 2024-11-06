@@ -664,7 +664,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                             legend_time_label={__("meters.script.time")}
                                             legend_time_with_seconds={true}
                                             aspect_ratio={3}
-                                            x_height={30}
+                                            x_height={35}
                                             x_format={{hour: '2-digit', minute: '2-digit'}}
                                             x_padding_factor={0}
                                             x_include_date={false}
