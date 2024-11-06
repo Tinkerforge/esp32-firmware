@@ -210,8 +210,6 @@ const em_relay_fills: {[id: number]: string} = {
 
 interface EMEnergyAnalysisStatusState {
     force_render: number,
-    meter_slot: number,
-    meter_configs: {[meter_slot: number]: MeterConfig},
 }
 
 function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
@@ -252,7 +250,6 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
 
         this.state = {
             force_render: 0,
-            meter_slot: 0,
         } as any;
 
         util.addApiEventListener('info/modules', () => {
@@ -262,25 +259,6 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
             }
 
             this.setState({force_render: Date.now()});
-        });
-
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
-                let config = API.get_unchecked(`meters/${meter_slot}/config`);
-
-                this.setState((prevState) => ({
-                    meter_configs: {
-                        ...prevState.meter_configs,
-                        [meter_slot]: config
-                    }
-                }));
-            });
-        }
-
-        util.addApiEventListener("power_manager/config", () => {
-            let config = API.get("power_manager/config");
-
-            this.setState({meter_slot: config.meter_slot_grid_power});
         });
     }
 
@@ -297,15 +275,6 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
     render() {
         if (!util.render_allowed() || !API.hasFeature("energy_manager"))
             return <StatusSection name="em_energy_analysis" />;
-
-        let value_ids = API.get_unchecked(`meters/${this.state.meter_slot}/value_ids`);
-        let values = API.get_unchecked(`meters/${this.state.meter_slot}/values`);
-        let power: number = undefined;
-        let power_idx = get_meter_power_index(value_ids);
-
-        if (power_idx >= 0 && values && values.length > 0) {
-            power = values[power_idx];
-        }
 
         return <StatusSection name="em_energy_analysis">
             <FormRow label={__("em_energy_analysis.status.power_history")}>
@@ -346,10 +315,6 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                     </div>
                 </div>
             </FormRow>
-            {power !== undefined ?
-                <FormRow label={__("em_energy_analysis.status.current_power")} label_muted={get_meter_name(this.state.meter_configs, this.state.meter_slot)}>
-                    <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
-                </FormRow> : undefined}
         </StatusSection>;
     }
 }
@@ -1264,22 +1229,24 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             names: [null],
             values: [null],
             stacked: [null],
-            filled: [null],
             paths: [null],
         };
 
         let timestamp_slot_count: number = 0;
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
-        if (energy_manager_data && !energy_manager_data.power_empty[this.state.meter_slot_status]) {
-            timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power[this.state.meter_slot_status].length)
+        if (energy_manager_data) {
+            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                if (!energy_manager_data.power_empty[meter_slot]) {
+                    timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power[this.state.meter_slot_status].length)
 
-            uplot_data.keys.push('em_power_' + this.state.meter_slot_status);
-            uplot_data.names.push(get_meter_name(this.state.meter_configs, this.state.meter_slot_status));
-            uplot_data.values.push(energy_manager_data.power[this.state.meter_slot_status]);
-            uplot_data.stacked.push(false);
-            uplot_data.filled.push(true);
-            uplot_data.paths.push(UplotPath.Line);
+                    uplot_data.keys.push('em_power_' + meter_slot);
+                    uplot_data.names.push(get_meter_name(this.state.meter_configs, meter_slot));
+                    uplot_data.values.push(energy_manager_data.power[meter_slot]);
+                    uplot_data.stacked.push(false);
+                    uplot_data.paths.push(UplotPath.Line);
+                }
+            }
         }
 
         let timestamps: number[] = new Array(timestamp_slot_count);
