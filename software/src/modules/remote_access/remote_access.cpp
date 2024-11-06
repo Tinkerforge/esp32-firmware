@@ -117,7 +117,7 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     if (ret == ERR_VAL) {
         logger.printfln("No DNS server is configured!");
     } else if (ret != ERR_OK) {
-        logger.printfln("Error during DNS resolve!");
+        return ret;
     }
 
     if (ret != ESP_OK || ip.type != IPADDR_TYPE_V4) {
