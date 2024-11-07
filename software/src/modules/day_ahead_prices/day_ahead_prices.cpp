@@ -29,8 +29,7 @@
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
-static constexpr auto CHECK_FOR_DAP_TIMEOUT = 15_s;
-static constexpr auto CHECK_INTERVAL = 15_m;
+static constexpr auto CHECK_INTERVAL = 1_m;
 static constexpr auto PRICE_UPDATE_INTERVAL = 15_m;
 
 enum Region {
@@ -145,61 +144,6 @@ void DayAheadPrices::register_urls()
     }, PRICE_UPDATE_INTERVAL, 0_ms, true);
 }
 
-esp_err_t DayAheadPrices::update_event_handler_impl(esp_http_client_event_t *event)
-{
-    if (download_complete) {
-        return ESP_OK;
-    }
-
-    switch (event->event_id) {
-    case HTTP_EVENT_ERROR: {
-        logger.printfln("HTTP error while downloading json");
-        download_state = DAP_DOWNLOAD_STATE_ERROR;
-        download_complete = true;
-        break;
-    }
-
-    case HTTP_EVENT_ON_DATA: {
-        int code = esp_http_client_get_status_code(http_client);
-        // Check status code
-        if (code != 200) {
-            logger.printfln("HTTP error while downloading json: %d", code);
-            download_state = DAP_DOWNLOAD_STATE_ERROR;
-            download_complete = true;
-            break;
-        }
-
-        // Check length
-        if((event->data_len + json_buffer_position) > (DAY_AHEAD_PRICE_MAX_JSON_LENGTH - 1)) {
-            logger.printfln("JSON buffer too small");
-            download_state = DAP_DOWNLOAD_STATE_ERROR;
-            download_complete = true;
-            break;
-        }
-
-        // Copy data to temporary buffer
-        memcpy(json_buffer + json_buffer_position, event->data, event->data_len);
-        json_buffer_position += event->data_len;
-        break;
-    }
-
-    case HTTP_EVENT_ON_FINISH:
-        json_buffer[json_buffer_position] = '\0';
-        download_complete = true;
-        break;
-
-    default:
-        break;
-    }
-
-    return ESP_OK;
-}
-
-static esp_err_t update_event_handler(esp_http_client_event_t *event)
-{
-    return static_cast<DayAheadPrices *>(event->user_data)->update_event_handler_impl(event);
-}
-
 void DayAheadPrices::update_price()
 {
     static int32_t last_price = INT32_MAX;
@@ -228,7 +172,7 @@ void DayAheadPrices::update_price()
 
 void DayAheadPrices::update()
 {
-    if (http_client != nullptr) {
+    if (config.get("enable")->asBool() == false) {
         return;
     }
 
@@ -236,11 +180,11 @@ void DayAheadPrices::update()
         return;
     }
 
-    if (config.get("enable")->asBool() == false) {
+    if (!network.connected) {
         return;
     }
 
-    if (!network.connected) {
+    if (download_state == DAP_DOWNLOAD_STATE_PENDING) {
         return;
     }
 
@@ -259,52 +203,6 @@ void DayAheadPrices::update()
         return;
     }
 
-    esp_http_client_config_t http_config = {};
-
-    http_config.event_handler = update_event_handler;
-    http_config.user_data = this;
-    http_config.is_async = true;
-    http_config.timeout_ms = 500;
-
-    const int cert_id = config.get("cert_id")->asInt();
-
-    if (cert_id < 0) {
-        http_config.crt_bundle_attach = esp_crt_bundle_attach;
-    }
-    else {
-#if MODULE_CERTS_AVAILABLE()
-        size_t cert_len = 0;
-
-        cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
-
-        if (cert == nullptr) {
-            logger.printfln("Certificate with ID %d is not available", cert_id);
-            download_state = DAP_DOWNLOAD_STATE_ERROR;
-            return;
-        }
-
-        http_config.cert_pem = (const char *)cert.get();
-#else
-        // defense in depth: it should not be possible to arrive here because in case
-        // that the certs module is not available the cert_id should always be -1
-        logger.printfln("Can't use custom certificate: certs module is not built into this firmware!");
-        return;
-#endif
-    }
-
-    {
-        // esp_http_client_init copies the url.
-        String api_url_with_path = get_api_url_with_path();
-        http_config.url = api_url_with_path.c_str();
-        http_client = esp_http_client_init(&http_config);
-    }
-
-    if (http_client == nullptr) {
-        logger.printfln("Error while creating HTTP client");
-        cert.reset();
-        return;
-    }
-
     last_update_begin = now_us();
 
     if(json_buffer == nullptr) {
@@ -314,78 +212,121 @@ void DayAheadPrices::update()
         json_buffer_position = 0;
     }
 
-    // Start async JSON download and check every 100ms
-    download_complete = false;
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        // Check for global timeout
-        if (deadline_elapsed(last_update_begin + CHECK_FOR_DAP_TIMEOUT)) {
-            logger.printfln("API server %s did not respond in time", config.get("api_url")->asString().c_str());
+    https_client.download_async(get_api_url_with_path().c_str(), config.get("cert_id")->asInt(), [this](AsyncHTTPSClientEvent *event) {
+        switch (event->type) {
+        case AsyncHTTPSClientEventType::Error:
+            switch (event->error) {
+            case AsyncHTTPSClientError::NoHTTPSURL:
+                logger.printfln("No HTTPS update URL");
+                break;
+
+            case AsyncHTTPSClientError::Busy:
+                logger.printfln("HTTP client is busy");
+                break;
+
+            case AsyncHTTPSClientError::NoCert:
+                logger.printfln("Certificate with ID %d is not available", config.get("cert_id")->asInt());
+                break;
+
+            case AsyncHTTPSClientError::NoResponse:
+                logger.printfln("Server %s did not respond", get_api_url_with_path().c_str());
+                break;
+
+            case AsyncHTTPSClientError::ShortRead:
+                logger.printfln("Day ahead price download ended prematurely");
+                break;
+
+            case AsyncHTTPSClientError::HTTPError:
+                logger.printfln("HTTP error while downloading day ahead prices");
+                break;
+
+            case AsyncHTTPSClientError::HTTPClientInitFailed:
+                logger.printfln("Error while creating HTTP client");
+                break;
+
+            case AsyncHTTPSClientError::HTTPClientError:
+                logger.printfln("Error while downloading day ahead prices: %s", esp_err_to_name(event->error_http_client));
+                break;
+
+            case AsyncHTTPSClientError::HTTPStatusError:
+                logger.printfln("HTTP error while downloading day ahead prices: %d", event->error_http_status);
+                break;
+
+            // use default to prevent warnings since we dont use a body, cookies or headers here
+            default:
+                logger.printfln("Uncovered error, this should never happen!");
+                break;
+            }
+
             download_state = DAP_DOWNLOAD_STATE_ERROR;
-            download_complete = true;
-        }
+            handle_cleanup();
+            break;
 
-        if (!download_complete) {
-            // If download is not complete start a new download
-            esp_err_t err = esp_http_client_perform(http_client);
+        case AsyncHTTPSClientEventType::Data:
+            memcpy(json_buffer + json_buffer_position, event->data_chunk, event->data_chunk_len);
+            json_buffer_position += event->data_chunk_len;
+            break;
 
-            if (err == ESP_ERR_HTTP_EAGAIN) {
-                // Nothing to do, just wait for more data
-            } else if (err != ESP_OK) {
-                logger.printfln("Error while downloading json: %s", esp_err_to_name(err));
-                download_state = DAP_DOWNLOAD_STATE_ERROR;
-                download_complete = true;
-            } else if (download_state == DAP_DOWNLOAD_STATE_PENDING) {
-                // If we reach here the download finished and no error occurred during the download
+        case AsyncHTTPSClientEventType::Aborted:
+            if (download_state == DAP_DOWNLOAD_STATE_PENDING) {
+                logger.printfln("Update check aborted");
+                download_state = DAP_DOWNLOAD_STATE_ABORTED;
+            }
+            handle_cleanup();
+
+            break;
+
+        case AsyncHTTPSClientEventType::Finished:
+            json_buffer[json_buffer_position] = '\0';
+            handle_new_data();
+            handle_cleanup();
+
+            if (download_state == DAP_DOWNLOAD_STATE_PENDING) {
                 download_state = DAP_DOWNLOAD_STATE_OK;
-                download_complete = true;
+            }
+
+            break;
+        }
+    });
+}
+
+void DayAheadPrices::handle_cleanup()
+{
+    heap_caps_free(json_buffer);
+    json_buffer = nullptr;
+    json_buffer_position = 0;
+}
+
+void DayAheadPrices::handle_new_data()
+{
+    // Deserialize json received from API
+    DynamicJsonDocument json_doc{DAY_AHEAD_PRICE_MAX_ARDUINO_JSON_BUFFER_SIZE};
+    DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
+    if (error) {
+        logger.printfln("Error during JSON deserialization: %s", error.c_str());
+        download_state = DAP_DOWNLOAD_STATE_ERROR;
+    } else {
+        // Put data from json into day_ahead_prices/state object
+        JsonArray js_prices = json_doc["prices"].as<JsonArray>();
+        auto p = prices.get("prices");
+        p->removeAll();
+        int count = 0;
+        int max_count = this->get_max_price_values();
+        for(JsonVariant v : js_prices) {
+            p->add()->updateInt(v.as<int>());
+            count++;
+            if(count >= max_count) {
+                break;
             }
         }
 
-        if (download_complete) {
-            if(download_state == DAP_DOWNLOAD_STATE_OK) {
-                // Deserialize json received from API
-                DynamicJsonDocument json_doc{DAY_AHEAD_PRICE_MAX_ARDUINO_JSON_BUFFER_SIZE};
-                DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
-                if (error) {
-                    logger.printfln("Error during JSON deserialization: %s", error.c_str());
-                    download_state = DAP_DOWNLOAD_STATE_ERROR;
-                } else {
-                    // Put data from json into day_ahead_prices/state object
-                    JsonArray js_prices = json_doc["prices"].as<JsonArray>();
-                    auto p = prices.get("prices");
-                    p->removeAll();
-                    int count = 0;
-                    int max_count = this->get_max_price_values();
-                    for(JsonVariant v : js_prices) {
-                        p->add()->updateInt(v.as<int>());
-                        count++;
-                        if(count >= max_count) {
-                            break;
-                        }
-                    }
-
-                    const uint32_t current_minutes = rtc.timestamp_minutes();
-                    state.get("last_sync")->updateUint(current_minutes);
-                    state.get("last_check")->updateUint(current_minutes);
-                    state.get("next_check")->updateUint(json_doc["next_date"].as<int>()/60);
-                    prices.get("first_date")->updateUint(json_doc["first_date"].as<int>()/60);
-                    this->update_price();
-                }
-            }
-
-            // Cleanup
-            esp_http_client_close(http_client);
-            esp_http_client_cleanup(http_client);
-            http_client = nullptr;
-            cert.reset();
-            heap_caps_free(json_buffer);
-            json_buffer = nullptr;
-            json_buffer_position = 0;
-
-            task_scheduler.cancel(task_scheduler.currentTaskId());
-        }
-
-    }, 100_ms, 100_ms);
+        const uint32_t current_minutes = rtc.timestamp_minutes();
+        state.get("last_sync")->updateUint(current_minutes);
+        state.get("last_check")->updateUint(current_minutes);
+        state.get("next_check")->updateUint(json_doc["next_date"].as<int>()/60);
+        prices.get("first_date")->updateUint(json_doc["first_date"].as<int>()/60);
+        this->update_price();
+    }
 }
 
 // Create API path that includes currently configured region and resolution
