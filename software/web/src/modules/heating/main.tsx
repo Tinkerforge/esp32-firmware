@@ -497,7 +497,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         </div>
                     </div>
                     </FormRow>
-                    <FormRow label="Durchschnittspreis">
+                    <FormRow label={__("heating.content.average_price")}>
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
@@ -517,7 +517,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label="Solarprognose">
+                    <FormRow label={__("heating.content.solar_forecast")}>
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
@@ -603,7 +603,7 @@ export class HeatingStatus extends Component
         const state = API.get('heating/state')
 
         return <StatusSection name="heating">
-            <FormRow label="SG Ready">
+            <FormRow label="SG Ready" label_muted={__("heating.content.sg_ready_muted")}>
                 <div class="row mx-n1">
                     <div class="col-md-6 px-1">
                         <div class="input-group">

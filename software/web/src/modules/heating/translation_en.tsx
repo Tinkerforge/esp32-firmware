@@ -125,7 +125,10 @@ let x = {
             "november": "November",
             "december": "December",
             "blocked": "Blocked",
-            "extended": "Extended"
+            "extended": "Extended",
+            "sg_ready_muted": "Output 1 and output 2",
+            "average_price": "Average price",
+            "solar_forecast": "Solar forecast"
         },
         "script": {
             "save_failed": "Failed to save the heating settings",

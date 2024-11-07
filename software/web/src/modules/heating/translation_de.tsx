@@ -125,7 +125,10 @@ let x = {
             "november": "November",
             "december": "Dezember",
             "blocked": "Blockiert",
-            "extended": "Erweitert"
+            "extended": "Erweitert",
+            "sg_ready_muted": "Ausgang 1 und Ausgang 2",
+            "average_price": "Durchschnittspreis",
+            "solar_forecast": "Solarprognose"
         },
         "script": {
             "save_failed": "Speichern der Heizungseinstellungen fehlgeschlagen",
