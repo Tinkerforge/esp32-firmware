@@ -31,7 +31,7 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 static constexpr auto CHECK_FOR_DAP_TIMEOUT = 15_s;
 static constexpr auto CHECK_INTERVAL = 15_m;
-static constexpr auto PRICE_UPDATE_INTERVAL = 1_m;
+static constexpr auto PRICE_UPDATE_INTERVAL = 15_m;
 
 enum Region {
     REGION_DE,
@@ -141,10 +141,9 @@ void DayAheadPrices::register_urls()
     });
 
     task_scheduler.scheduleWhenClockSynced([this]() {
-        // TODO: Can we run this at xx:00, xx:15, xx:30 and xx:45?
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        task_scheduler.scheduleWallClock([this]() {
             this->update_price();
-        }, PRICE_UPDATE_INTERVAL);
+        }, PRICE_UPDATE_INTERVAL, 0_ms, true);
     });
 }
 
