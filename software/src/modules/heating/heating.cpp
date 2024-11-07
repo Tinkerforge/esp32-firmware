@@ -218,6 +218,7 @@ void Heating::update()
 
     bool sg_ready0_on = false;
     bool sg_ready1_on = false;
+    bool no_block     = false;
 
     // PV excess handling for winter and summer
     auto handle_pv_excess = [&] () {
@@ -231,6 +232,7 @@ void Heating::update()
         } else if ((-watt_current) > pv_excess_control_threshold) {
             extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, pv_excess_control_threshold);
             sg_ready1_on |= true;
+            no_block = true; // if pv excess is active, we don't ever want to block
         }
     };
 
@@ -254,7 +256,11 @@ void Heating::update()
                     sg_ready1_on |= true;
                 } else {
                     extended_logging("Price is above extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
-                    sg_ready1_on |= false;
+                    if (!no_block) {
+                        sg_ready1_on |= false;
+                    } else {
+                        extended_logging("PV excess is available. Not blocking.");
+                    }
                 }
             }
             if (dpc_blocking_active) {
