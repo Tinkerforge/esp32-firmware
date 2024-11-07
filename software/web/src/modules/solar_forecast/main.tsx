@@ -362,7 +362,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
 
             for (const index in active_planes) {
                 data.keys.push('plane' + index);
-                data.names.push(__("solar_forecast.content.plane") + ' ' + this.state.plane_configs[index].name);
+                data.names.push(this.state.plane_configs[index].name);
                 data.values.push([]);
                 data.filled.push(true);
             }
