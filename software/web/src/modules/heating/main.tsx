@@ -537,7 +537,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label="SG-Ready">
+                    <FormRow label="SG Ready">
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
@@ -603,7 +603,7 @@ export class HeatingStatus extends Component
         const state = API.get('heating/state')
 
         return <StatusSection name="heating">
-            <FormRow label="SG-Ready">
+            <FormRow label="SG Ready">
                 <div class="row mx-n1">
                     <div class="col-md-6 px-1">
                         <div class="input-group">
