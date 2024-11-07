@@ -22,7 +22,9 @@ let x = {
             "prepare_login": "Preparing login",
             "logging_in": "Logging in user",
             "prepare_encryption": "Preparing encryption",
-            "registration": null
+            "registration": null,
+            "login_failed": "Login failed:",
+            "wrong_credentials": "Wrong username or password"
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",

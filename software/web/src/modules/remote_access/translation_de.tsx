@@ -22,7 +22,9 @@ let x = {
             "prepare_login": "Bereite Login vor",
             "logging_in": "Logge Benutzer ein",
             "prepare_encryption": "Bereite Verschlüsselung vor",
-            "registration": null
+            "registration": null,
+            "login_failed": "Login Fehlgeschlagen:",
+            "wrong_credentials": "Nutzername oder Passwort falsch"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",
