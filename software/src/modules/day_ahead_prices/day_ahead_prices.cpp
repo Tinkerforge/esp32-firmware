@@ -140,11 +140,9 @@ void DayAheadPrices::register_urls()
         }, CHECK_INTERVAL);
     });
 
-    task_scheduler.scheduleWhenClockSynced([this]() {
-        task_scheduler.scheduleWallClock([this]() {
-            this->update_price();
-        }, PRICE_UPDATE_INTERVAL, 0_ms, true);
-    });
+    task_scheduler.scheduleWallClock([this]() {
+        this->update_price();
+    }, PRICE_UPDATE_INTERVAL, 0_ms, true);
 }
 
 esp_err_t DayAheadPrices::update_event_handler_impl(esp_http_client_event_t *event)
