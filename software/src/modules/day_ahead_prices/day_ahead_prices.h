@@ -50,6 +50,7 @@ class DayAheadPrices final : public IModule
 {
 private:
     void update();
+    void retry_update(millis_t delay);
     void update_price();
     String get_api_url_with_path();
     int get_max_price_values();
@@ -62,6 +63,7 @@ private:
     uint32_t json_buffer_position;
     bool current_price_available = false;
     AsyncHTTPSClient https_client;
+    uint64_t task_id;
 
     DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
 

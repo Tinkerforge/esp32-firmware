@@ -27,8 +27,6 @@
 #include "tools.h"
 #include <cmath>
 
-extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
-
 static constexpr auto CHECK_INTERVAL = 1_m;
 static constexpr auto PRICE_UPDATE_INTERVAL = 15_m;
 
@@ -134,7 +132,7 @@ void DayAheadPrices::register_urls()
     api.addState("day_ahead_prices/prices",            &prices);
 
     task_scheduler.scheduleWhenClockSynced([this]() {
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
             this->update();
         }, CHECK_INTERVAL);
     });
@@ -170,6 +168,18 @@ void DayAheadPrices::update_price()
 #endif
 }
 
+void DayAheadPrices::retry_update(millis_t delay)
+{
+    // Cancel current task
+    task_scheduler.cancel(task_id);
+
+    // And schedule a new one that will run after the given delay,
+    // but with the standard interval afterwards again
+    this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+        this->update();
+    }, delay, CHECK_INTERVAL);
+}
+
 void DayAheadPrices::update()
 {
     if (config.get("enable")->asBool() == false) {
@@ -181,6 +191,7 @@ void DayAheadPrices::update()
     }
 
     if (!network.connected) {
+        retry_update(1_s);
         return;
     }
 
@@ -191,6 +202,7 @@ void DayAheadPrices::update()
     // Only update if clock is synced
     struct timeval tv_now;
     if (!rtc.clock_synced(&tv_now)) {
+        retry_update(1_s);
         return;
     }
 
@@ -202,8 +214,6 @@ void DayAheadPrices::update()
         download_state = DAP_DOWNLOAD_STATE_ERROR;
         return;
     }
-
-    last_update_begin = now_us();
 
     if(json_buffer == nullptr) {
         json_buffer = (char *)heap_caps_calloc_prefer(DAY_AHEAD_PRICE_MAX_JSON_LENGTH, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
