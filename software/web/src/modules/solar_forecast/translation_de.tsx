@@ -59,7 +59,7 @@ let x = {
             "address_of_pv_plane": "Adresse der PV-Fläche:",
             "last_update_attempt": "letzter Abfrageversuch:",
             "last_successful_update": "letzte erfolgreiche Abfrage:",
-            "next_update": "näcste Abfrage:",
+            "next_update": "nächste Abfrage:",
             "resolution": "Genauigkeit von ca. 1km ist OK"
         },
         "script": {
