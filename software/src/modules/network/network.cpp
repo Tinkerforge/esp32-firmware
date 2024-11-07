@@ -24,6 +24,7 @@
 #include "mdns.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "string_builder.h"
 #include "build.h"
 
 #if MODULE_ETHERNET_AVAILABLE()
@@ -115,15 +116,35 @@ void Network::register_events()
 void Network::update_connected()
 {
     connected = ethernet_connected || wifi_sta_connected || wifi_ap_sta_count > 0;
-    auto state_connected = state.get("connected");
 
-    if (state_connected->asBool() != connected) {
-        logger.printfln("Network got %s (ethernet=%d, wifi_sta=%d, wifi_ap=%d)",
-                        connected ? "connected" : "disconnected",
-                        static_cast<int>(ethernet_connected),
-                        static_cast<int>(wifi_sta_connected),
-                        wifi_ap_sta_count > 0 ? 1 : 0);
+    if (state.get("connected")->updateBool(connected)) {
+        if (connected) {
+            char connections_str[16];
+            StringWriter str = StringWriter(connections_str, ARRAY_SIZE(connections_str));
+            bool needs_comma = false;
+
+            if (ethernet_connected) {
+                str.puts("LAN");
+                needs_comma = true;
+            }
+            if (wifi_sta_connected) {
+                if (needs_comma) {
+                    str.puts(", ");
+                } else {
+                    needs_comma = true;
+                }
+                str.puts("WiFi");
+            }
+            if (wifi_ap_sta_count > 0) {
+                if (needs_comma) {
+                    str.puts(", ");
+                }
+                str.puts("AP");
+            }
+
+            logger.printfln("Network connected (%s)", connections_str);
+        } else {
+            logger.printfln("Network disconnected");
+        }
     }
-
-    state_connected->updateBool(connected);
 }
