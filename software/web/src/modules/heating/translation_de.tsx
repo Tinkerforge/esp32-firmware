@@ -123,7 +123,9 @@ let x = {
             "september": "September",
             "october": "Oktober",
             "november": "November",
-            "december": "Dezember"
+            "december": "Dezember",
+            "blocked": "Blockiert",
+            "extended": "Erweitert"
         },
         "script": {
             "save_failed": "Speichern der Heizungseinstellungen fehlgeschlagen",

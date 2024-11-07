@@ -607,7 +607,7 @@ export class HeatingStatus extends Component
                 <div class="row mx-n1">
                     <div class="col-md-6 px-1">
                         <div class="input-group">
-                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 1"}</span></div>
+                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.blocked")}</span></div>
                             <InputText
                                 value={state.sg_ready_blocking_active ? __("heating.content.active") : __("heating.content.inactive")}
                             />
@@ -615,7 +615,7 @@ export class HeatingStatus extends Component
                     </div>
                     <div class="col-md-6 px-1">
                         <div class="input-group">
-                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 2"}</span></div>
+                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.extended")}</span></div>
                             <InputText
                                 value={state.sg_ready_extended_active ? __("heating.content.active") : __("heating.content.inactive")}
                             />

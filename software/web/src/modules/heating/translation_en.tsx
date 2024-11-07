@@ -123,7 +123,9 @@ let x = {
             "september": "September",
             "october": "October",
             "november": "November",
-            "december": "December"
+            "december": "December",
+            "blocked": "Blocked",
+            "extended": "Extended"
         },
         "script": {
             "save_failed": "Failed to save the heating settings",
