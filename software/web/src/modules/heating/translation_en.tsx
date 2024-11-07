@@ -12,7 +12,7 @@ let x = {
             "control_signal_description": <>
                 <div>
                     "SG Ready" is used as the control signal for the heating.
-                    The SEB has two potential-free switching outputs for this purpose:
+                    Two potential-free switching outputs are available for this purpose:
                 </div>
                 <div>
                     <ul>

@@ -12,7 +12,7 @@ let x = {
             "control_signal_description": <>
                 <div>
                     Als Steuersignal für die Heizung wird "SG Ready" verwendet.
-                    Der SEB hat dafür zwei potentialfreie Schaltausgänge:
+                    Dafür sind zwei potentialfreie Schaltausgänge vorhanden:
                 </div>
                 <div>
                     <ul>
