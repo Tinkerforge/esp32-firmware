@@ -79,7 +79,7 @@ def keepassxc(config, prefix, action, args, entry, password=None, input=None):
         full_kwargs['input'] = full_input
 
     try:
-        return subprocess.check_output(full_args, **full_kwargs)
+        return subprocess.check_output(full_args, **full_kwargs).strip()
     except:
         return None
 
