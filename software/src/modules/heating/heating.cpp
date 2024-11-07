@@ -91,9 +91,9 @@ void Heating::register_urls()
     api.addState("heating/state",             &state);
 
     task_scheduler.scheduleWhenClockSynced([this]() {
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        task_scheduler.scheduleWallClock([this]() {
             this->update();
-        }, HEATING_UPDATE_INTERVAL);
+        }, HEATING_UPDATE_INTERVAL, 0_ms, true);
     });
 }
 
