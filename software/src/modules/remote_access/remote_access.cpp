@@ -646,7 +646,7 @@ void RemoteAccess::register_events() {
     });
 }
 
-void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, ConfigRoot config, std::function<void(ConfigRoot config)> next_stage) {
+void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, ConfigRoot config, std::function<void(ConfigRoot config)> &&next_stage) {
     response_body = String();
 
     std::function<void(AsyncHTTPSClientEvent *event)> callback = [this, next_stage, config](AsyncHTTPSClientEvent *event) {
@@ -696,7 +696,7 @@ void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_
     if (https_client == nullptr) {
         https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
     }
-    https_client->fetch(url, config.get("cert_id")->asInt(), method, body, body_size, callback);
+    https_client->fetch(url, config.get("cert_id")->asInt(), method, body, body_size, std::move(callback));
 }
 
 void RemoteAccess::get_login_salt(ConfigRoot config) {
@@ -704,11 +704,11 @@ void RemoteAccess::get_login_salt(ConfigRoot config) {
     registration_state.get("message")->updateString("");
     char url[196] = {};
     sprintf(url, "https://%s:%u/api/auth/get_login_salt?email=%s", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint(), config.get("email")->asEphemeralCStr());
-    std::function<void(ConfigRoot)> next_stage = [this] (ConfigRoot cfg) {
-        this->parse_login_salt(cfg);
-    };
+
     https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
-    run_request_with_next_stage(url, HTTP_METHOD_GET, nullptr, 0, config, next_stage);
+    run_request_with_next_stage(url, HTTP_METHOD_GET, nullptr, 0, config, [this] (ConfigRoot cfg) {
+        this->parse_login_salt(cfg);
+    });
 }
 
 void RemoteAccess::parse_login_salt(ConfigRoot config) {

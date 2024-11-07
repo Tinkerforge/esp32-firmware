@@ -62,7 +62,7 @@ private:
     void connect_remote_access(uint8_t i, uint16_t local_port);
     void run_management();
     void handle_response_chunk(const AsyncHTTPSClientEvent *event);
-    void run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, ConfigRoot config, std::function<void(ConfigRoot config)> next_stage);
+    void run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, ConfigRoot config, std::function<void(ConfigRoot config)> &&next_stage);
     void get_login_salt(ConfigRoot config);
     void parse_login_salt(ConfigRoot config);
     void get_secret(ConfigRoot config);
