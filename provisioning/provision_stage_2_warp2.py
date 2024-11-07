@@ -448,7 +448,12 @@ def main(stage3):
     print("Wallbox QR code data:")
     print("    WARP{} Charger {}".format(qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant]))
     print("    {} kW".format(qr_power))
-    print("    {:1.1f} m".format(int(qr_cable_len) / 10.0))
+
+    if qr_cable_len == 'CC':
+        print("    Custom Cable")
+    else:
+        print("    {:1.1f} m".format(int(qr_cable_len) / 10.0))
+
     print("    HW Version: {}".format(qr_hw_version))
     print("    Serial: {}".format(qr_serial))
     print("    Build month: {}".format(qr_built))
