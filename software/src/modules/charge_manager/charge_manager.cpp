@@ -605,6 +605,11 @@ bool ChargeManager::is_control_pilot_disconnect_supported(uint32_t last_update_c
     return true;
 }
 
+const String &ChargeManager::get_charger_host(uint8_t idx)
+{
+    return this->config.get("chargers")->get(idx)->get("host")->asString();
+}
+
 const char *ChargeManager::get_charger_name(uint8_t idx)
 {
     return this->state.get("chargers")->get(idx)->get("n")->asEphemeralCStr();

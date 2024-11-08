@@ -55,6 +55,7 @@ public:
     bool is_control_pilot_disconnect_supported(uint32_t last_update_cutoff);
     void set_allocated_current_callback(std::function<void(uint32_t)> &&callback);
 
+    const String &get_charger_host(uint8_t idx);
     const char *get_charger_name(uint8_t idx);
 
 #if MODULE_AUTOMATION_AVAILABLE()
