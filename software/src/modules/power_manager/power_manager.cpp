@@ -914,7 +914,7 @@ void PowerManager::update_energy()
 
                         // Sanity check
                         if (cm_allocated_power_w < 0) {
-                            logger.printfln("Negative cm_allocated_power_w: %i", cm_allocated_power_w);
+                            logger.printfln("Negative cm_allocated_power_w: %i  PV current is %i", cm_allocated_power_w, cm_allocated_currents->pv);
                         }
                     } else {
                         // Some EVs may only be able to adjust their charge power in steps of 1500W,
