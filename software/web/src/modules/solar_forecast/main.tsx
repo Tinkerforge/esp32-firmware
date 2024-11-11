@@ -27,30 +27,18 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { Button, Collapse } from "react-bootstrap";
 import { InputFloat } from "../../ts/components/input_float";
-import { Sunrise, Info, ChevronRight } from "react-feather";
+import { Sunrise } from "react-feather";
 import { Table } from "../../ts/components/table";
 import { InputNumber } from "../../ts/components/input_number";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
+import { UplotData, UplotWrapper } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { StatusSection } from "../../ts/components/status_section";
 
-export const SOLAR_FORECAST_PLANES = 6;
-
-function get_next_free_plane_index() {
-    for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
-        const plane_config = API.get_unchecked(`solar_forecast/planes/${i}/config`);
-        if (!plane_config.active) {
-            return i;
-        }
-    }
-
-    return -1;
-}
+const SOLAR_FORECAST_PLANES = 6;
 
 function get_active_planes() {
     let active_planes = [];
