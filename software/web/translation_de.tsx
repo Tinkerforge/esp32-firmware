@@ -93,7 +93,7 @@ let x = {
         "download_abort": "Download abgebrochen",
         "download_error": "Fehler beim Herunterladen",
         "download_timeout": "Timeout beim Herunterladen",
-        "not_yet_known": "Noch Unbekannt"
+        "not_yet_known": "Noch unbekannt"
     },
     "reset": {
         "reset_modal": "Zurücksetzen",
