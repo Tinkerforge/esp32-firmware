@@ -453,7 +453,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                         tableTill="lg"
                         rows={get_active_unsaved_planes().map((active_plane_index) => {
                             let plane_config = state.plane_configs[active_plane_index];
-                            console.log(plane_config, active_plane_index);
                             return {
                                 extraShow: this.state.extra_show[active_plane_index],
                                 extraValue: get_plane_info(active_plane_index),
