@@ -40,8 +40,8 @@ import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
-import { SOLAR_FORECAST_PLANES, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
-import { get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
+import { SOLAR_FORECAST_PLANES, is_solar_forecast_enabled, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
+import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
 import { StatusSection } from "../../ts/components/status_section";
 
 export function HeatingNavbar() {
@@ -258,6 +258,10 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
 
         const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"));
 
+        const solar_forecast_enabled   = is_solar_forecast_enabled();
+        const day_ahead_prices_enabled = is_day_ahead_prices_enabled();
+        const meter_available          = meter_slots.length > 0;
+
         return (
             <SubPage name="heating">
                 <ConfigForm id="heating_config_form"
@@ -269,7 +273,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onDirtyChange={this.setDirty}>
                     <FormRow label={__("heating.content.meter_slot_grid_power")} label_muted={__("heating.content.meter_slot_grid_power_muted")}>
                         <InputSelect
-                            placeholder={meter_slots.length > 0 ? __("heating.content.meter_slot_grid_power_select") : __("heating.content.meter_slot_grid_power_none")}
+                            placeholder={meter_available ? __("heating.content.meter_slot_grid_power_select") : __("heating.content.meter_slot_grid_power_none")}
                             items={meter_slots}
                             value={state.meter_slot_grid_power}
                             onValue={(v) => this.setState({meter_slot_grid_power: parseInt(v)})}
@@ -404,8 +408,11 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label={__("heating.content.pv_yield_forecast")} label_muted={__("heating.content.pv_yield_forecast_muted")} help={__("heating.content.pv_yield_forecast_help")}>
+                    <FormRow label={__("heating.content.pv_yield_forecast")}
+                             label_muted={__("heating.content.pv_yield_forecast_muted")}
+                             help={<>{!solar_forecast_enabled && __("heating.content.solar_forecast_needs_activation")} {__("heating.content.pv_yield_forecast_help")}</>}>
                         <SwitchableInputNumber
+                            disabled={!solar_forecast_enabled}
                             switch_label_active="Aktiv"
                             switch_label_inactive="Inaktiv"
                             unit="kWh"
@@ -420,8 +427,10 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     </FormRow>
 
                     <FormSeparator heading={__("heating.content.general_settings")}/>
-                    <FormRow label={__("heating.content.pv_excess_control")} help={__("heating.content.pv_excess_control_help")}>
+                    <FormRow label={__("heating.content.pv_excess_control")}
+                             help={<>{!meter_available && __("heating.content.meter_needs_activation")} {__("heating.content.pv_excess_control_help")}</>}>
                         <SwitchableInputNumber
+                            disabled={!meter_available}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.watt")}
@@ -434,8 +443,11 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.dpc_low")} label_muted={__("heating.content.dpc_low_muted")} help={__("heating.content.dpc_extended_help")}>
+                    <FormRow label={__("heating.content.dpc_low")}
+                             label_muted={__("heating.content.dpc_low_muted")}
+                             help={<>{!day_ahead_prices_enabled && __("heating.content.day_ahead_prices_needs_activation")} {__("heating.content.dpc_extended_help")}</>}>
                         <SwitchableInputNumber
+                            disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit="%"
@@ -448,8 +460,11 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.dpc_high")} label_muted={__("heating.content.dpc_high_muted")} help={__("heating.content.dpc_blocking_help")}>
+                    <FormRow label={__("heating.content.dpc_high")}
+                             label_muted={__("heating.content.dpc_high_muted")}
+                             help={<>{!day_ahead_prices_enabled && __("heating.content.day_ahead_prices_needs_activation")} {__("heating.content.dpc_blocking_help")}</>}>
                         <SwitchableInputNumber
+                            disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit="%"

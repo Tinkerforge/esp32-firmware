@@ -47,6 +47,10 @@ function day_ahead_price_time_between(index: number, start: number, end: number)
     return (index_timestamp_seconds >= start) && (index_timestamp_seconds <= end);
 }
 
+export function is_day_ahead_prices_enabled() {
+    return API.get("day_ahead_prices/config").enable;
+}
+
 export function get_price_from_index(index: number, incl_vat: boolean = true) {
     const dap_prices = API.get("day_ahead_prices/prices");
     const dap_config = API.get("day_ahead_prices/config");

@@ -128,7 +128,16 @@ let x = {
             "extended": "Erweitert",
             "sg_ready_muted": "Ausgang 1 und Ausgang 2",
             "average_price": "Durchschnittspreis",
-            "solar_forecast": "Solarprognose"
+            "solar_forecast": "Solarprognose",
+            "solar_forecast_needs_activation": <>
+                <p style="color:red;">Für diese Konfiguration muss die <a href="#solar_forecast" onClick={() => {window.scrollTo(0, 0); return true;}}>Solarprognose</a> aktiviert werden.</p>
+            </>,
+            "day_ahead_prices_needs_activation": <>
+                <p style="color:red;">Für diese Konfiguration müssen die <a href="#day_ahead_prices" onClick={() => {window.scrollTo(0, 0); return true;}}>dynamischen Strompreise</a> aktiviert werden.</p>
+            </>,
+            "meter_needs_activation": <>
+                <p style="color:red;">Für diese Konfiguration mus ein Stromzähler ausgewählt werden.</p>
+            </>
         },
         "script": {
             "save_failed": "Speichern der Heizungseinstellungen fehlgeschlagen",

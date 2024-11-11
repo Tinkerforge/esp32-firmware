@@ -105,6 +105,10 @@ function get_kwh_now_to_midnight() {
     return wh/1000.0;
 }
 
+export function is_solar_forecast_enabled() {
+    return API.get("solar_forecast/config").enable;
+}
+
 export function get_kwh_today() {
     let start         = get_timestamp_today_00_00_in_seconds();
     let end           = start + 60*60*24 - 1;
