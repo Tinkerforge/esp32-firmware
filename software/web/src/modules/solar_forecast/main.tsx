@@ -169,7 +169,6 @@ interface SolarForecastState {
     plane_configs: {[plane_index: number]: PlaneConfig};
     plane_forecasts: {[plane_index: number]: API.getType['planes/0/plane_forecast']};
     plane_config_tmp: PlaneConfig;
-    extra_show: boolean[];
 }
 
 export class SolarForecast extends ConfigComponent<"solar_forecast/config", {status_ref?: RefObject<SolarForecastStatus>}, SolarForecastState> {
@@ -179,11 +178,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
     constructor() {
         super('solar_forecast/config',
               __("solar_forecast.script.save_failed"),
-              undefined, {
-                  extra_show: new Array<boolean>(SOLAR_FORECAST_PLANES),
-              });
-
-        this.state.extra_show.fill(false);
+              undefined, {});
 
         util.addApiEventListener("solar_forecast/state", () => {
             this.setState({state: API.get("solar_forecast/state")});
@@ -458,18 +453,9 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                         rows={get_active_unsaved_planes().map((active_plane_index) => {
                             let plane_config = state.plane_configs[active_plane_index];
                             return {
-                                extraShow: this.state.extra_show[active_plane_index],
                                 extraValue: get_plane_info(active_plane_index),
                                 columnValues: [
-                                    <span class="text-nowrap">
-                                        <Button size="sm" onClick={() => {
-                                            this.setState({extra_show: state.extra_show.map((show, i) => active_plane_index == i ? !show : show)});
-                                        }}>
-                                            <ChevronRight {...{id:`solar-forecast-${active_plane_index}-chevron`, class: state.extra_show[active_plane_index] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
-                                        </Button>
-                                        <span class="ml-1 mr-1">{plane_config.name}</span>
-                                    </span>
-                                    ,
+                                    plane_config.name,
                                     util.toLocaleFixed(plane_config.latitude / 10000, 4) + "°",
                                     util.toLocaleFixed(plane_config.longitude / 10000, 4) + "°",
                                     plane_config.declination + "°",

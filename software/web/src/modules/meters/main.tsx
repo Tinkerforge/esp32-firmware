@@ -43,7 +43,7 @@ import { InputTime } from "../../ts/components/input_time";
 import { InputText } from "../../ts/components/input_text";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
-import { HelpCircle, Zap, ZapOff, ChevronRight, BarChart2 } from "react-feather";
+import { HelpCircle, Zap, ZapOff, BarChart2 } from "react-feather";
 
 export function MetersNavbar() {
     return <NavbarItem name="meters" module="meters" title={__("meters.navbar.meters")} symbol={<BarChart2 />} />;
@@ -76,7 +76,6 @@ interface MetersState {
     addMeter: MeterConfig;
     editMeterSlot: number;
     editMeter: MeterConfig;
-    extraShow: boolean[/*meter_slot*/];
 }
 
 export function get_meter_power_index(value_ids: Readonly<number[]>) {
@@ -217,10 +216,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                   addMeter: [MeterClassID.None, null],
                   editMeterSlot: null,
                   editMeter: [MeterClassID.None, null],
-                  extraShow: new Array<boolean>(7),
               });
-
-        this.state.extraShow.fill(false);
 
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             this.live_data.samples.push([]);
@@ -960,12 +956,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
                                 return {
                                     columnValues: [
-                                        <span class="row mx-n1 align-items-center"><span class="col-auto px-1"><Button className="mr-2" size="sm"
-                                            onClick={() => {
-                                                this.setState({extraShow: state.extraShow.map((show, i) => meter_slot == i ? !show : show)});
-                                            }}>
-                                            <ChevronRight {...{id:`meter-${meter_slot}-chevron`, class: state.extraShow[meter_slot] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
-                                            </Button></span><span class="col px-1">{get_meter_name(state.configs_table, meter_slot)}</span></span>,
+                                        get_meter_name(state.configs_table, meter_slot),
                                         util.hasValue(power) ? util.toLocaleFixed(power, 0) + " W" : undefined,
                                         util.hasValue(energy_import) ? util.toLocaleFixed(energy_import, 3) + " kWh" : undefined,
                                         util.hasValue(energy_export) ? util.toLocaleFixed(energy_export, 3) + " kWh" : undefined,
@@ -977,7 +968,6 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                             )}
                                         </ButtonGroup>
                                     ],
-                                    extraShow: this.state.extraShow[meter_slot],
                                     extraFieldName: __("meters.content.detailed_values"),
                                     extraValue: extraValue,
                                     fieldWithBox: [true, true, true, true, false],

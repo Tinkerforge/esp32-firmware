@@ -20,7 +20,7 @@
 import { __ } from "../translation";
 import { h, Component, Fragment, ComponentChild, ComponentChildren } from "preact";
 import { Card, Button, Collapse } from "react-bootstrap";
-import { Plus, Edit3, Trash2 } from "react-feather";
+import { Plus, Edit3, Trash2, ChevronRight } from "react-feather";
 import { FormRow } from "./form_row";
 import { ItemModal } from "./item_modal";
 import * as util from "../../ts/util";
@@ -28,7 +28,6 @@ import * as util from "../../ts/util";
 export interface TableRow {
     key?: string;
     columnValues: ComponentChild[];
-    extraShow?: boolean;
     extraFieldName?: string;
     extraValue?: ComponentChild;
     extraKey?: string;
@@ -68,6 +67,7 @@ export interface TableProps {
 interface TableState {
     showAddModal: boolean;
     showEditModal: number;
+    showRowExtra: boolean[/*row_index*/];
 }
 
 const value_or_else = (value: ComponentChild, replacement: ComponentChild): ComponentChild => {
@@ -85,6 +85,7 @@ export class Table extends Component<TableProps, TableState> {
         this.state = {
             showAddModal: false,
             showEditModal: null,
+            showRowExtra: [],
         } as any;
     }
 
@@ -128,8 +129,18 @@ export class Table extends Component<TableProps, TableState> {
                     <tbody>
                         {props.rows.map((row, i) => <>
                             <tr key={row.key}>
-                                {row.columnValues.map((value) => (
-                                    <td class={row.extraValue ? " pb-0" : ""} style={"word-wrap: break-word; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>{value}</td>
+                                {row.columnValues.map((value, k) => (
+                                    <td class={row.extraValue ? "pb-0" : ""} style={"word-wrap: break-word; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>
+                                        {row.extraValue && k == 0 ?
+                                            <span class="row mx-n1 align-items-center"><span class="col-auto px-1"><Button className="mr-2" size="sm"
+                                                onClick={() => {
+                                                    let showRowExtra = state.showRowExtra.concat();
+                                                    showRowExtra[i] = !showRowExtra[i];
+                                                    this.setState({showRowExtra: showRowExtra});
+                                                }}>
+                                                <ChevronRight {...{class: state.showRowExtra[i] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
+                                                </Button></span><span class="col px-1">{value}</span></span> : value}
+                                    </td>
                                 ))}
                                 <td class={row.extraValue ? "pb-0" : undefined} style={"width: 1%; white-space: nowrap; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>
                                     <Button variant="primary"
@@ -153,7 +164,7 @@ export class Table extends Component<TableProps, TableState> {
                             {row.extraValue ?
                                 <tr key={row.extraKey} class="table-extra-value">
                                     <td colSpan={props.columnNames.length + 1} class="pt-0" style="border-top: none;">
-                                        <Collapse in={row.extraShow}>
+                                        <Collapse in={state.showRowExtra[i]}>
                                             <div>
                                                 <Card style="margin-top: 0.75rem;"><Card.Body className="p-2d5 pb-0">{row.extraValue}</Card.Body></Card>
                                             </div>
@@ -187,11 +198,26 @@ export class Table extends Component<TableProps, TableState> {
                 <div class={`d-block d-${props.tableTill ? props.tableTill : 'sm'}-none table-card-mode`}>
                     {props.rows.map((row, i) => {
                         let card_fields = this.get_card_fields(row);
-                        let needs_body = card_fields.length > 0 || (row.extraValue && row.extraShow);
+                        let needs_body = card_fields.length > 0 || (row.extraValue && state.showRowExtra[i]);
 
                         return <><Card className="mb-3">
                         <div class="card-header d-flex justify-content-between align-items-center p-2d5" style={needs_body ? "" : "border-bottom: 0;"}>
-                            <h5 class="text-break" style="margin-bottom: 0;">{util.hasValue(row.fieldValues) ? row.fieldValues[0] : row.columnValues[0]}</h5>
+                            <h5 class="text-break" style="margin-bottom: 0;">
+                                {row.extraValue ?
+                                    <span class="row mx-n1 align-items-center">
+                                        <span class="col-auto px-1"><Button className="mr-2" size="sm"
+                                            onClick={() => {
+                                                let showRowExtra = state.showRowExtra.concat();
+                                                showRowExtra[i] = !showRowExtra[i];
+                                                this.setState({showRowExtra: showRowExtra});
+                                            }}>
+                                            <ChevronRight {...{class: state.showRowExtra[i] ? "rotated-chevron" : "unrotated-chevron"} as any}/>
+                                            </Button>
+                                        </span>
+                                        <span class="col px-1">{util.hasValue(row.fieldValues) ? row.fieldValues[0] : row.columnValues[0]}</span>
+                                    </span>
+                                    : util.hasValue(row.fieldValues) ? row.fieldValues[0] : row.columnValues[0]}
+                            </h5>
                             <div style="white-space: nowrap; vertical-align: middle;">
                                 <Button variant="primary"
                                         size="sm"
@@ -216,7 +242,7 @@ export class Table extends Component<TableProps, TableState> {
                             <Card.Body className="p-2d5 pb-0">
                                 {card_fields}
                                 {row.extraValue ?
-                                    <Collapse in={row.extraShow}>
+                                    <Collapse in={state.showRowExtra[i]}>
                                         <div>
                                             {row.extraFieldName ?
                                                 <FormRow label={row.extraFieldName}>
