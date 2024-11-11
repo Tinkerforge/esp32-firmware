@@ -23,6 +23,7 @@
 #include <esp_http_client.h>
 #include <ArduinoJson.h>
 
+#include "async_https_client.h"
 #include "module.h"
 #include "config.h"
 
@@ -33,6 +34,7 @@
 enum SFDownloadState {
     SF_DOWNLOAD_STATE_OK,
     SF_DOWNLOAD_STATE_PENDING,
+    SF_DOWNLOAD_STATE_ABORTED,
     SF_DOWNLOAD_STATE_ERROR
 };
 
@@ -72,22 +74,22 @@ private:
     };
 
     void update();
+    void retry_update(millis_t delay);
     void update_price();
     String get_path(const SolarForecastPlane &plane, const PathType path_type);
     String get_api_url_with_path(const SolarForecastPlane &plane);
-    void deserialize_data();
     uint32_t get_timestamp_today_00_00_in_minutes();
     bool forecast_time_between(const uint32_t first_date, const uint32_t index, const uint32_t start, const uint32_t end);
+    void handle_new_data();
+    void handle_cleanup();
 
     SolarForecastPlane *plane_current;
 
-    std::unique_ptr<unsigned char[]> cert = nullptr;
-    esp_http_client_handle_t http_client = nullptr;
     uint32_t last_update_begin;
-    bool download_complete;
     char *json_buffer;
     uint32_t json_buffer_position;
     uint32_t next_sync_forced = 0;
+    AsyncHTTPSClient https_client;
 
     SFDownloadState download_state = SF_DOWNLOAD_STATE_OK;
     SolarForecastPlane planes[SOLAR_FORECAST_PLANES];
