@@ -71,7 +71,7 @@ struct AsyncHTTPSClientEvent
     };
 };
 
-class AsyncHTTPSClient
+class AsyncHTTPSClient final
 {
 public:
     AsyncHTTPSClient(bool use_cookies = false): use_cookies{use_cookies} {}
@@ -87,7 +87,8 @@ public:
 
 private:
     void fetch(const char *url, int cert_id, esp_http_client_method_t method, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
-    void error_abort(AsyncHTTPSClientEvent &event, AsyncHTTPSClientError reason);
+    void error_abort(AsyncHTTPSClientError error, esp_err_t error_http_client = ESP_OK, int error_http_status = -1);
+    void clear();
     void parse_cookie(const char *cookie);
     static esp_err_t event_handler(esp_http_client_event_t *event);
 
@@ -102,6 +103,5 @@ private:
     uint32_t last_async_alive = 0;
     size_t received_len = 0;
     bool use_cookies;
-
     uint64_t task_id = 0;
 };
