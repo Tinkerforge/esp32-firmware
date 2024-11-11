@@ -210,7 +210,12 @@ static std::unique_ptr<char []> decode_base64(const CoolString &input, size_t bu
 
 void RemoteAccess::handle_response_chunk(const AsyncHTTPSClientEvent *event) {
     if (response_body.length() == 0) {
-        response_body.reserve(event->data_complete_len);
+        if (event->data_complete_len < 0) {
+            response_body.reserve(1024);
+        }
+        else {
+            response_body.reserve(event->data_complete_len);
+        }
     }
     response_body.concat((const uint8_t*)event->data_chunk, (unsigned int)event->data_chunk_len);
 }

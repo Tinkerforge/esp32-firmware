@@ -79,7 +79,7 @@ public:
 
 private:
     bool is_vehicle_blocking_update() const;
-    InstallState handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk, size_t chunk_len, size_t remaining_len, size_t complete_len, TFJsonSerializer *json_ptr);
+    InstallState handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk, size_t chunk_len, size_t complete_len, bool is_complete, TFJsonSerializer *json_ptr);
     InstallState check_firmware_info(bool detect_downgrade, bool log, TFJsonSerializer *json_ptr);
     void check_for_update();
     void install_firmware(const char *url);

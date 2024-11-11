@@ -273,7 +273,7 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
     return InstallState::InProgress;
 }
 
-InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len, size_t remaining_len, size_t complete_len, TFJsonSerializer *json_ptr)
+InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len, size_t complete_len, bool is_complete, TFJsonSerializer *json_ptr)
 {
     if (chunk_offset == 0) {
 #if signature_sodium_public_key_length != 0
@@ -360,7 +360,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
         return InstallState::FlashShortWrite;
     }
 
-    if (remaining_len == 0) {
+    if (is_complete) {
 #if signature_sodium_public_key_length != 0
         signature_info.block.publisher[ARRAY_SIZE(signature_info.block.publisher) - 1] = '\0';
 
@@ -604,7 +604,7 @@ void FirmwareUpdate::register_urls()
         char json_buf[256] = "";
         TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
-        InstallState result = handle_firmware_chunk(offset, data, len, remaining, request.contentLength(), &json);
+        InstallState result = handle_firmware_chunk(offset, data, len, request.contentLength(), remaining == 0, &json);
 
         if (result != InstallState::InProgress) {
             if (json_buf[0] == '\0') {
@@ -968,6 +968,13 @@ void FirmwareUpdate::install_firmware(const char *url)
             break;
 
         case AsyncHTTPSClientEventType::Data:
+            if (event->data_complete_len < 0) {
+                logger.printfln("Firmware file size is unknown");
+                state.get("install_state")->updateEnum(InstallState::FirmwareSizeUnknown);
+                https_client.abort_async();
+                return;
+            }
+
             if (event->data_complete_len <= FIRMWARE_OFFSET) {
                 logger.printfln("Firmware file is too small: %u", event->data_complete_len);
                 state.get("install_state")->updateEnum(InstallState::FirmwareTooSmall);
@@ -975,7 +982,7 @@ void FirmwareUpdate::install_firmware(const char *url)
                 return;
             }
 
-            result = handle_firmware_chunk(event->data_chunk_offset, (uint8_t *)event->data_chunk, event->data_chunk_len, event->data_remaining_len, event->data_complete_len, nullptr);
+            result = handle_firmware_chunk(event->data_chunk_offset, (uint8_t *)event->data_chunk, event->data_chunk_len, (size_t)event->data_complete_len, event->data_is_complete, nullptr);
 
             if (result != InstallState::InProgress) {
                 https_client.abort_async();

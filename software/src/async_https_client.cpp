@@ -64,9 +64,6 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
         if (!strcmp("set-cookie", event->header_key)) {
             that->parse_cookie(event->header_value);
         }
-        if (that->complete_len == -1) {
-            that->complete_len = (ssize_t)esp_http_client_get_content_length(that->http_client);
-        }
         break;
 
     case HTTP_EVENT_ON_DATA:
@@ -85,16 +82,12 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
             break;
         }
 
-        if (that->received_len == 0) {
-            that->complete_len = (ssize_t)esp_http_client_get_content_length(that->http_client);
-        }
-
         async_event.type = AsyncHTTPSClientEventType::Data;
         async_event.data_chunk_offset = that->received_len;
         async_event.data_chunk = event->data;
         async_event.data_chunk_len = event->data_len;
-        async_event.data_complete_len = that->complete_len;
-        async_event.data_remaining_len = that->complete_len - that->received_len - event->data_len;
+        async_event.data_complete_len = (ssize_t)esp_http_client_get_content_length(that->http_client);
+        async_event.data_is_complete = esp_http_client_is_complete_data_received(that->http_client);
 
         that->received_len += event->data_len;
 
@@ -128,7 +121,7 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
     in_progress = true;
     abort_requested = false;
     received_len = 0;
-    complete_len = -1;
+
     if (body != nullptr) {
         owned_body = String(body, body_size);
     }
@@ -216,8 +209,7 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
                         return;
                     }
 
-                    if (err == ESP_OK && (complete_len == -1 || received_len != complete_len)) {
-                        in_progress = false;
+                    if (err == ESP_OK && !esp_http_client_is_complete_data_received(http_client)) {
                         short_read = true;
                     }
                 }

@@ -73,6 +73,7 @@ let x = {
             "install_state_24": "Starte neu",
             "install_state_25": "Teil-Download aufgetreten",
             "install_state_26": "Installation wird nicht unterstüzt",
+            "install_state_27": "Größe der Firmware-Datei ist unbekannt",
             "build_time": /*SFN*/(build_time: string) => `erstellt ${build_time}`/*NF*/,
             "publisher": /*SFN*/(publisher: string) => `von ${publisher}`/*NF*/,
             "install_failed": "Installation fehlgeschlagen"

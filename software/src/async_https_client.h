@@ -65,8 +65,8 @@ struct AsyncHTTPSClientEvent
             size_t data_chunk_offset;
             const void *data_chunk;
             size_t data_chunk_len;
-            size_t data_remaining_len;
-            ssize_t data_complete_len;
+            ssize_t data_complete_len; // -1 if chunked response
+            bool data_is_complete;
         };
     };
 };
@@ -101,7 +101,6 @@ private:
     esp_http_client_handle_t http_client = nullptr;
     uint32_t last_async_alive = 0;
     size_t received_len = 0;
-    ssize_t complete_len = -1;
     bool use_cookies;
 
     uint64_t task_id = 0;
