@@ -60,8 +60,9 @@ Config *Config::ConfObject::get(const char *needle, size_t needle_len)
                 return &slot->values[i];
             }
         }
-
+#ifdef DEBUG_FS_ENABLE
         logger.printfln("Key '%s' in rodata but not in keys.", needle);
+#endif
     }
 
     if (!needle_len) {
@@ -92,8 +93,9 @@ const Config *Config::ConfObject::get(const char *needle, size_t needle_len) con
                 return &slot->values[i];
             }
         }
-
+#ifdef DEBUG_FS_ENABLE
         logger.printfln("Key '%s' in rodata but not in keys.", needle);
+#endif
     }
 
     if (!needle_len) {
