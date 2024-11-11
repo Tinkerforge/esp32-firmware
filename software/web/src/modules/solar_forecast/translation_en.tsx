@@ -8,6 +8,7 @@ let x = {
         },
         "content": {
             "solar_forecast": "Solar Forecast",
+            "enable_solar_forecast": "Solar forecast enabled",
             "planes": "PV planes",
             "plane": "PV plane",
             "no_data": "No data available!",
@@ -30,7 +31,7 @@ let x = {
             "add_plane_config_postfix": ")",
             "add_plane_config_done": "All PV planes added (6 of 6)",
             "edit_plane_config_title": "Edit PV plane",
-            "solar_forecast_desc": "Enable solar forecast",
+            "solar_forecast_desc": "Automatic download of solar forecast. For this feature the device requires Internet access.",
             "solar_forecast_muted": "",
             "table_name": "Name",
             "table_azimuth": "Azimuth",

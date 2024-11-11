@@ -8,6 +8,7 @@ let x = {
         },
         "content": {
             "day_ahead_prices": "Day Ahead Prices",
+            "enable_day_ahead_prices": "Day ahead prices enabled",
             "price_invalid": "The price must be set in cent per kWh, not euro per kWh.",
             "no_data": "No data available!",
             "loading": "Loading data...",
@@ -16,7 +17,7 @@ let x = {
             "grid_fees_plus_taxes": "Grid fees and taxes",
             "surcharge": "Surcharge",
             "day_ahead_prices_muted": <>The data is provided by <a href="https://www.entsoe.eu/about/" target="_blank">ENTSO-E</a> and fetched from api.warp-charger.com.</>,
-            "day_ahead_prices_desc": "Enables automatic download of day-ahead market prices. For this feature the device requires internet access",
+            "day_ahead_prices_desc": "Automatic download of day ahead market prices. For this feature the device requires Internet access.",
             "region": "Region",
             "germany": "Germany",
             "austria": "Austria",

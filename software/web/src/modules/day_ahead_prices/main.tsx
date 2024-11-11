@@ -278,7 +278,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label={__("day_ahead_prices.content.day_ahead_prices")} label_muted={__("day_ahead_prices.content.day_ahead_prices_muted")}>
+                    <FormRow label={__("day_ahead_prices.content.enable_day_ahead_prices")} label_muted={__("day_ahead_prices.content.day_ahead_prices_muted")}>
                         <Switch desc={__("day_ahead_prices.content.day_ahead_prices_desc")}
                                 checked={dap.enable}
                                 onClick={this.toggle('enable')}

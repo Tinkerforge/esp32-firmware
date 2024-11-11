@@ -8,6 +8,7 @@ let x = {
         },
         "content": {
             "day_ahead_prices": "Dynamischer Strompreis",
+            "enable_day_ahead_prices": "Dynamischer Strompreis aktiviert",
             "price_invalid": "Der Preis muss in Cent pro kWh, nicht in Euro pro kWh angegeben werden.",
             "no_data": "Keine Daten vorhanden!",
             "loading": "Lade Daten...",
@@ -16,7 +17,7 @@ let x = {
             "grid_fees_plus_taxes": "Netzentgelte + Steuern",
             "surcharge": "Preisaufschlag",
             "day_ahead_prices_muted": <>Die Daten werden von <a href="https://www.entsoe.eu/about/" target="_blank">ENTSO-E</a> bereitgestellt und über api.warp-charger.com bezogen.</>,
-            "day_ahead_prices_desc": "Aktiviert das automatischer herunterladen der Day-Ahead-Börsenstrompreise. Für dieses Feature muss das Gerät Zugriff zum Internet haben.",
+            "day_ahead_prices_desc": "Lädt automatisch die Day-Ahead-Börsenstrompreise herunter. Für diese Funktion muss das Gerät Zugriff auf das Internet haben.",
             "region": "Bereich",
             "germany": "Deutschland",
             "austria": "Österreich",

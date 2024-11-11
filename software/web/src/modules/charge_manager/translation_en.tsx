@@ -11,11 +11,11 @@ let x = {
             "available_current": "Available current"
         },
         "navbar": {
-            "charge_manager_settings": "Charge management",
+            "charge_manager_settings": "Charge Management",
             "charge_manager_chargers": "Chargers"
         },
         "content": {
-            "charge_manager_settings": "Charge management",
+            "charge_manager_settings": "Charge Management",
             "charge_manager_chargers": "Chargers",
             "enable_charge_manager": "Charge management mode",
             "enable_charge_manager_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
@@ -71,8 +71,8 @@ let x = {
             "rotation_4": "L213",
             "rotation_5": "L321",
             "rotation_6": "L312",
-            "rotation_right": "positive sequence",
-            "rotation_left": "negative sequence",
+            "rotation_right": "Positive sequence",
+            "rotation_left": "Negative sequence",
             "add_charger_rotation_select": "Select...",
 
             "edit_charger_title": "Edit charger",

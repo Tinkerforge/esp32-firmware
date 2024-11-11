@@ -71,8 +71,8 @@ let x = {
             "rotation_4": "L213",
             "rotation_5": "L321",
             "rotation_6": "L312",
-            "rotation_right": "rechtsdrehend",
-            "rotation_left": "linksdrehend",
+            "rotation_right": "Rechtsdrehend",
+            "rotation_left": "Linksdrehend",
             "add_charger_rotation_select": "Auswählen...",
 
             "edit_charger_title": "Wallbox bearbeiten",

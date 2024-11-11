@@ -18,7 +18,7 @@ let x = {
         },
         "navbar": {
             "power_manager_settings": "Settings",
-            "pv_excess_settings": "PV excess charging"
+            "pv_excess_settings": "PV Excess Charging"
         },
         "content": {
             "page_header": "Energy Manager",
@@ -40,7 +40,7 @@ let x = {
             "external_control": "External control (EVCC)",
             "external_control_notification": "External control for phase switching is active. This will disable all settings related to PV excess charging.",
 
-            "header_excess_charging": "Photovoltaic excess charging",
+            "header_excess_charging": "Photovoltaic Excess Charging",
             "enable_excess_charging": "Excess charging enabled",
             "enable_excess_charging_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "enable_excess_charging_desc": "Will adjust the power consumption of controlled chargers, depending on the power generation of a photovoltaic system and the charge mode.",
