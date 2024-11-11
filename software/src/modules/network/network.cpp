@@ -124,7 +124,7 @@ void Network::update_connected()
             bool needs_comma = false;
 
             if (ethernet_connected) {
-                str.puts("LAN");
+                str.puts("Ethernet");
                 needs_comma = true;
             }
             if (wifi_sta_connected) {
