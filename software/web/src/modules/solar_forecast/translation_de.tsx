@@ -58,15 +58,15 @@ let x = {
             "unknown": "Unbekannt",
             "not_set_for_this_plane": "Solarprognose für diese Fläche wurde noch nicht abgefragt.",
             "address_of_pv_plane": "Adresse der PV-Fläche:",
-            "last_update_attempt": "letzter Abfrageversuch:",
-            "last_successful_update": "letzte erfolgreiche Abfrage:",
-            "next_update": "nächste Abfrage:",
+            "last_update_attempt": "Letzter Abfrageversuch:",
+            "last_successful_update": "Letzte erfolgreiche Abfrage:",
+            "next_update": "Nächste Abfrage:",
             "resolution": "Genauigkeit von ca. 1km ist OK"
         },
         "script": {
             "power": "Leistung",
-            "save_failed": "Speichern der Solarprognoseeinstellungen fehlgeschlagen",
-            "reboot_content_changed": "Solarprognoseeinstellungen"
+            "save_failed": "Speichern der Solarprognose-Einstellungen fehlgeschlagen",
+            "reboot_content_changed": "Solarprognose-Einstellungen"
         }
     }
 }

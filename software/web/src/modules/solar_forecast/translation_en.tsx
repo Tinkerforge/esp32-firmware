@@ -58,9 +58,9 @@ let x = {
             "unknown": "Unknown",
             "not_set_for_this_plane": "Solar forecast has not yet been queried for this plane.",
             "address_of_pv_plane": "Address of the PV plane:",
-            "last_update_attempt": "last update attempt:",
-            "last_successful_update": "last successful update:",
-            "next_update": "next update:",
+            "last_update_attempt": "Last update attempt:",
+            "last_successful_update": "Last successful update:",
+            "next_update": "Next update:",
             "resolution": "Accuracy of about 1km is OK"
         },
         "script": {
