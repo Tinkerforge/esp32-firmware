@@ -931,7 +931,7 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     // If there is exactly one charger active, the window minimum should be the charger's 1p minimum current,
     // or it is already active with three phases in which case this stage will do nothing.
-    bool have_active_chargers = ca_state->control_window_min.pv != min_1p;
+    bool have_active_chargers = ca_state->control_window_min.pv > min_1p;
     auto check_min = have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN;
 
     trace(have_active_chargers ? "5: have active chargers." : "5: don't have active chargers.");
