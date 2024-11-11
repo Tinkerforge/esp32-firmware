@@ -119,7 +119,7 @@ void Network::update_connected()
 
     if (state.get("connected")->updateBool(connected)) {
         if (connected) {
-            char connections_str[16];
+            char connections_str[24];
             StringWriter str = StringWriter(connections_str, ARRAY_SIZE(connections_str));
             bool needs_comma = false;
 
