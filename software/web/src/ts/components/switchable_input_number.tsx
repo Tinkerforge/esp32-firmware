@@ -74,7 +74,7 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                 ref={input}
                 id={id}
                 type="number"
-                disabled={!props.checked}
+                disabled={!props.checked || props.disabled}
                 onInput={(e) => {
                         // Chrome prints a console warning if NaN is assigned as an input's value; null works.
                         let value = parseInt((e.target as HTMLInputElement).value, 10);
@@ -89,11 +89,11 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
             <div class="input-group-append">
                 {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}
                 <Button variant="primary"
-                        disabled={!props.checked}
+                        disabled={!props.checked || props.disabled}
                         className="form-control px-1"
                         style="margin-right: .125rem !important;"
                         onClick={() => {
-                            if (!props.checked) {
+                            if (!props.checked || props.disabled) {
                                 return;
                             }
                             if (util.hasValue(props.value) && !isNaN(props.value)) {
@@ -108,10 +108,10 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                     <Minus/>
                 </Button>
                 <Button variant="primary"
-                        disabled={!props.checked}
+                        disabled={!props.checked || props.disabled}
                         className="form-control px-1 rounded-right"
                         onClick={() => {
-                            if (!props.checked) {
+                            if (!props.checked || props.disabled) {
                                 return;
                             }
                             if (util.hasValue(props.value) && !isNaN(props.value)) {
