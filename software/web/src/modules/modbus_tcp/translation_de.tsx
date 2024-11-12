@@ -39,7 +39,7 @@ let x = {
                         <td>Version der Registertabelle</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Aktuelle Version: 2</td>
+                        <td>Aktuelle Version: 3</td>
                     </tr>
                     <tr>
                         <td>2</td>

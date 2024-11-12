@@ -39,7 +39,7 @@ let x = {
                         <td>Modbus table version</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Current version: 2</td>
+                        <td>Current version: 3</td>
                     </tr>
                     <tr>
                         <td>2</td>
