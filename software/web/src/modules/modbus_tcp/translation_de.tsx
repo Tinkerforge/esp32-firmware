@@ -12,7 +12,7 @@ let x = {
             "table": "Registertabelle",
             "tf": "WARP Charger",
             "bender_emulate": "Open Modbus Charge Control Interface (OMCCI); Kompatibel zu Bender CC613",
-            "keba_emulate": "Kompatibel zu Keba C-Series",
+            "keba_emulate": "Kompatibel zu Keba P30 C-Series",
             "modbus_tcp": "Modbus/TCP",
             "enable": "Modbus/TCP-Modus",
             "port": "Port",
