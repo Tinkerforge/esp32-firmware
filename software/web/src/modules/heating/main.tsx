@@ -609,9 +609,9 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
 export class HeatingStatus extends Component
 {
     render() {
-        const config = API.get('heating/config')
-        if (!util.render_allowed() || (!config.summer_active_time_active && !config.summer_yield_forecast_active && !config.dpc_extended_active && !config.pv_excess_control_active))
+        if (!util.render_allowed()) {
             return <StatusSection name="heating" />
+        }
 
         const state = API.get('heating/state')
 
