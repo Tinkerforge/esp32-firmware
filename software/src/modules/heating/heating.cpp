@@ -201,141 +201,142 @@ void Heating::update()
     const bool     pv_excess_control_active        = config.get("pv_excess_control_active")->asBool();
     const uint32_t pv_excess_control_threshold     = config.get("pv_excess_control_threshold")->asUint();
 
-    if(!summer_active_time_active && !summer_yield_forecast_active && !dpc_extended_active && !pv_excess_control_active) {
-        extended_logging("No control active.");
-        return;
-    }
-
-    const time_t now              = time(NULL);
-    const struct tm *current_time = localtime(&now);
-    const int current_month       = current_time->tm_mon + 1;
-    const int current_day         = current_time->tm_mday;
-    const int current_minutes     = current_time->tm_hour * 60 + current_time->tm_min;
-
-    const bool is_summer = ((current_month == summer_start_month) && (current_day >= summer_start_day )) ||
-                           ((current_month == summer_end_month  ) && (current_day <= summer_end_day   )) ||
-                           ((current_month > summer_start_month ) && (current_month < summer_end_month));
-
     bool sg_ready0_on = false;
     bool sg_ready1_on = false;
-    bool no_block     = false;
 
-    // PV excess handling for winter and summer
-    auto handle_pv_excess = [&] () {
-        if (!pv_excess_control_active) {
-            return;
-        }
-        float watt_current = 0;
-        MeterValueAvailability meter_availability = meters.get_power(meter_slot_grid_power, &watt_current);
-        if (meter_availability != MeterValueAvailability::Fresh) {
-            extended_logging("Meter value not available (meter %d has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
-        } else if ((-watt_current) > pv_excess_control_threshold) {
-            extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, pv_excess_control_threshold);
-            sg_ready1_on |= true;
-            no_block = true; // if pv excess is active, we don't ever want to block
-        }
-    };
+    if(!summer_active_time_active && !summer_yield_forecast_active && !dpc_extended_active && !dpc_blocking_active && !pv_excess_control_active) {
+        extended_logging("No control active.");
+    } else {
+        const time_t now              = time(NULL);
+        const struct tm *current_time = localtime(&now);
+        const int current_month       = current_time->tm_mon + 1;
+        const int current_day         = current_time->tm_mday;
+        const int current_minutes     = current_time->tm_hour * 60 + current_time->tm_min;
 
-    // Dynamic price handling for winter and summer
-    auto handle_dynamic_price = [&] () {
-        if (!dpc_extended_active && !dpc_blocking_active) {
-            return;
-        }
+        const bool is_summer = ((current_month == summer_start_month) && (current_day >= summer_start_day )) ||
+                               ((current_month == summer_end_month  ) && (current_day <= summer_end_day   )) ||
+                               ((current_month > summer_start_month ) && (current_month < summer_end_month));
 
-        const auto price_average = day_ahead_prices.get_average_price_today();
-        const auto price_current = day_ahead_prices.get_current_price();
 
-        if (!price_average.data_available) {
-            extended_logging("Average price for today not available. Ignoring dynamic price control.");
-        } else if (!price_current.data_available) {
-            extended_logging("Current price not available. Ignoring dynamic price control.");
-        } else {
-            if (dpc_extended_active) {
-                if (price_current.data < price_average.data * dpc_extended_threshold / 100.0) {
-                    extended_logging("Price is below extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
-                    sg_ready1_on |= true;
-                } else {
-                    extended_logging("Price is above extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
-                    if (!no_block) {
-                        sg_ready1_on |= false;
+        bool no_block = false;
+
+        // PV excess handling for winter and summer
+        auto handle_pv_excess = [&] () {
+            if (!pv_excess_control_active) {
+                return;
+            }
+            float watt_current = 0;
+            MeterValueAvailability meter_availability = meters.get_power(meter_slot_grid_power, &watt_current);
+            if (meter_availability != MeterValueAvailability::Fresh) {
+                extended_logging("Meter value not available (meter %d has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
+            } else if ((-watt_current) > pv_excess_control_threshold) {
+                extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, pv_excess_control_threshold);
+                sg_ready1_on |= true;
+                no_block = true; // if pv excess is active, we don't ever want to block
+            }
+        };
+
+        // Dynamic price handling for winter and summer
+        auto handle_dynamic_price = [&] () {
+            if (!dpc_extended_active && !dpc_blocking_active) {
+                return;
+            }
+
+            const auto price_average = day_ahead_prices.get_average_price_today();
+            const auto price_current = day_ahead_prices.get_current_price();
+
+            if (!price_average.data_available) {
+                extended_logging("Average price for today not available. Ignoring dynamic price control.");
+            } else if (!price_current.data_available) {
+                extended_logging("Current price not available. Ignoring dynamic price control.");
+            } else {
+                if (dpc_extended_active) {
+                    if (price_current.data < price_average.data * dpc_extended_threshold / 100.0) {
+                        extended_logging("Price is below extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
+                        sg_ready1_on |= true;
                     } else {
-                        extended_logging("PV excess is available. Not blocking.");
+                        extended_logging("Price is above extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
+                        if (!no_block) {
+                            sg_ready1_on |= false;
+                        } else {
+                            extended_logging("PV excess is available. Not blocking.");
+                        }
+                    }
+                }
+                if (dpc_blocking_active) {
+                    if (price_current.data > price_average.data * dpc_blocking_threshold / 100.0) {
+                        extended_logging("Price is above blocking threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
+                        sg_ready0_on |= true;
+                    } else {
+                        extended_logging("Price is below blocking threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
+                        sg_ready0_on |= false;
                     }
                 }
             }
-            if (dpc_blocking_active) {
-                if (price_current.data > price_average.data * dpc_blocking_threshold / 100.0) {
-                    extended_logging("Price is above blocking threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
-                    sg_ready0_on |= true;
-                } else {
-                    extended_logging("Price is below blocking threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
-                    sg_ready0_on |= false;
-                }
-            }
-        }
-    };
+        };
 
-    if (!is_summer) { // Winter
-        extended_logging("It is winter. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
-        if (!dpc_extended_active && !dpc_blocking_active && !pv_excess_control_active) {
-            extended_logging("It is winter but no winter control active.");
-        } else {
-            handle_dynamic_price();
-            handle_pv_excess();
-        }
-    } else { // Summer
-        extended_logging("It is summer. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
-        bool blocked = false;
-        bool is_morning = false;
-        bool is_evening = false;
-        if (summer_active_time_active) {
-            if (current_minutes <= summer_active_time_start) { // if is between 00:00 and summer_active_time_start
-                extended_logging("We are outside morning active time. Current time: %d, active time morning start: %d.", current_minutes, summer_active_time_start);
-                blocked    = true;
-                is_morning = true;
-            } else if(summer_active_time_end <= current_minutes) { // if is between summer_active_time_end and 23:59
-                extended_logging("We are outside evening active time. Current time: %d, active time evening end: %d.", current_minutes, summer_active_time_end);
-                blocked    = true;
-                is_evening = true;
-            } else {
-                extended_logging("We are in active time. Current time: %d, active time morning: %d, active time evening: %d.", current_minutes, summer_active_time_start, summer_active_time_end);
-            }
-        }
-
-        // If we are outside active time and px excess control is active,
-        // we check the expected px excess and unblock if it is below the threshold.
-        if (blocked && summer_yield_forecast_active) {
-            extended_logging("We are outside active time and yield forecast is active.");
-            DataReturn<uint32_t> wh_expected = {false, 0};
-            if (is_morning) {
-                wh_expected = solar_forecast.get_wh_today();
-            } else if (is_evening) {
-                wh_expected = solar_forecast.get_wh_tomorrow();
-            } else {
-                extended_logging("We are outside active time but not in morning or evening. Ignoring yield forecast.");
-            }
-
-            if(!wh_expected.data_available) {
-                extended_logging("Expected PV yield not available. Ignoring yield forecast.");
-            } else {
-                if (wh_expected.data/1000 < summer_yield_forecast_threshold) {
-                    extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", wh_expected.data/1000, summer_yield_forecast_threshold);
-                    blocked = false;
-                } else {
-                    extended_logging("Expected PV yield %dkWh is above or equal to threshold of %dkWh.", wh_expected.data/1000, summer_yield_forecast_threshold);
-                }
-            }
-        }
-
-        if (blocked) {
-            extended_logging("We are outside of the active time.");
-            sg_ready1_on = false;
-        } else {
-            if (!dpc_extended_active && !pv_excess_control_active) {
-                extended_logging("It is summer but no summer control active.");
+        if (!is_summer) { // Winter
+            extended_logging("It is winter. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
+            if (!dpc_extended_active && !dpc_blocking_active && !pv_excess_control_active) {
+                extended_logging("It is winter but no winter control active.");
             } else {
                 handle_dynamic_price();
                 handle_pv_excess();
+            }
+        } else { // Summer
+            extended_logging("It is summer. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
+            bool blocked = false;
+            bool is_morning = false;
+            bool is_evening = false;
+            if (summer_active_time_active) {
+                if (current_minutes <= summer_active_time_start) { // if is between 00:00 and summer_active_time_start
+                    extended_logging("We are outside morning active time. Current time: %d, active time morning start: %d.", current_minutes, summer_active_time_start);
+                    blocked    = true;
+                    is_morning = true;
+                } else if(summer_active_time_end <= current_minutes) { // if is between summer_active_time_end and 23:59
+                    extended_logging("We are outside evening active time. Current time: %d, active time evening end: %d.", current_minutes, summer_active_time_end);
+                    blocked    = true;
+                    is_evening = true;
+                } else {
+                    extended_logging("We are in active time. Current time: %d, active time morning: %d, active time evening: %d.", current_minutes, summer_active_time_start, summer_active_time_end);
+                }
+            }
+
+            // If we are outside active time and px excess control is active,
+            // we check the expected px excess and unblock if it is below the threshold.
+            if (blocked && summer_yield_forecast_active) {
+                extended_logging("We are outside active time and yield forecast is active.");
+                DataReturn<uint32_t> wh_expected = {false, 0};
+                if (is_morning) {
+                    wh_expected = solar_forecast.get_wh_today();
+                } else if (is_evening) {
+                    wh_expected = solar_forecast.get_wh_tomorrow();
+                } else {
+                    extended_logging("We are outside active time but not in morning or evening. Ignoring yield forecast.");
+                }
+
+                if(!wh_expected.data_available) {
+                    extended_logging("Expected PV yield not available. Ignoring yield forecast.");
+                } else {
+                    if (wh_expected.data/1000 < summer_yield_forecast_threshold) {
+                        extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", wh_expected.data/1000, summer_yield_forecast_threshold);
+                        blocked = false;
+                    } else {
+                        extended_logging("Expected PV yield %dkWh is above or equal to threshold of %dkWh.", wh_expected.data/1000, summer_yield_forecast_threshold);
+                    }
+                }
+            }
+
+            if (blocked) {
+                extended_logging("We are outside of the active time.");
+                sg_ready1_on = false;
+            } else {
+                if (!dpc_extended_active && !pv_excess_control_active) {
+                    extended_logging("It is summer but no summer control active.");
+                } else {
+                    handle_dynamic_price();
+                    handle_pv_excess();
+                }
             }
         }
     }
