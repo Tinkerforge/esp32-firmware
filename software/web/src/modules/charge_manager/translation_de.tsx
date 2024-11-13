@@ -121,7 +121,6 @@ let x = {
             "managed_disabled": "Lastmanagement-Einstellungen werden ignoriert: Wallbox steuert nur sich selbst oder ist fremdgesteuert.",
 
             "charge_manager_debug": "Debug",
-            "protocol": "Lastmanagement-Protokoll",
             "debug_description": "Protokoll erstellen",
             "debug_description_muted": "zur Diagnose bei Problemen",
             "debug_start": "Start",

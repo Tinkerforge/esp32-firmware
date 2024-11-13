@@ -189,12 +189,6 @@ export function ChargeManagerDebug(props: {dynamicLoadConfig: API.getType['power
                 />
             </FormRow>
 
-
-            <FormSeparator heading={__("charge_manager.content.protocol")} first={true} />
-            <CMDFormRow label="Trace log" labelColClasses="col-lg-4" contentColClasses="col-lg-8">
-                <Button variant="primary" className="form-control" onClick={async () => util.downloadToFile(await util.download("/trace_log"), "charge-manager-trace-log", "txt", "text/plain")}><span class="ml-1 mr-2">Download</span> <Download/></Button>
-            </CMDFormRow>
-
             <FormSeparator heading="Limits" />
 
             <CMDFormRow label="Hysteresis" labelColClasses="col-lg-2" contentColClasses="col-lg-10">

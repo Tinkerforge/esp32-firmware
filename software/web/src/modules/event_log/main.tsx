@@ -176,6 +176,14 @@ export class EventLog extends Component<{}, EventLogState> {
             debug_log += await util.download("/debug_report").then(blob => blob.text());
             debug_log += "\n\n";
             debug_log += this.state.log;
+
+            let trace_log = (await util.download("/trace_log").then(blob => blob.text())).replace(/\s+$/, "");
+
+            if (trace_log.length > 0) {
+                debug_log += "\n\n___TRACE_LOG_START___\n\n";
+                debug_log += trace_log + "\n";
+            }
+
             try {
                 let blob = await util.download("/coredump/coredump.elf");
                 let base64 = await blobToBase64(blob);
