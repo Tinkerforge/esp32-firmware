@@ -393,6 +393,41 @@ let x = {
                         <td>Ein NFC Bricklet ist verbaut und aktiv.</td>
                     </tr>
                     <tr>
+                        <td>6</td>
+                        <td>Feature "evse_shutdown_input" verfügbar</td>
+                        <td>bool</td>
+                        <td>---</td>
+                        <td>Der Ladecontroller verfügt über einen Abschalteingang.</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>Feature "evse_gp_input" verfügbar</td>
+                        <td>bool</td>
+                        <td>---</td>
+                        <td>Der Ladecontroller verfügt über einen konfigurierbaren Eingang.</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>Feature "evse_gp_output" verfügbar</td>
+                        <td>bool</td>
+                        <td>---</td>
+                        <td>Der Ladecontroller verfügt über einen konfigurierbaren Ausgang.</td>
+                    </tr>
+                    <tr>
+                        <td>1100</td>
+                        <td>Zustand des Abschalteingangs. 0 - geschlossen, 1 - geöffnet</td>
+                        <td>bool</td>
+                        <td>evse_shutdown_input</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>1101</td>
+                        <td>Zustand des konfigurierbaren Eingangs. 0 - geschlossen, 1 - geöffnet</td>
+                        <td>bool</td>
+                        <td>evse_gp_input</td>
+                        <td></td>
+                    </tr>
+                    <tr>
                         <td>2100</td>
                         <td>Phase L1 angeschlossen</td>
                         <td>bool</td>
@@ -457,6 +492,13 @@ let x = {
                         <td>false bzw. 0 zum Blockieren des Ladevorgangs. true bzw. 1 zum Freigeben. Setzt die Ladefreigabe, die
                             auch (je nach Konfiguration) vom Taster, den Start/Stop-Buttons auf der Webinterface-Statusseite
                             und der evse/[start/stop]_charging-API verwendet wird.</td>
+                    </tr>
+                    <tr>
+                        <td>1100</td>
+                        <td>Setzt den Zustand des konfigurierbaren Ausgangs. 0 - Verbunden mit Masse, 1 - Hochohmig</td>
+                        <td>bool</td>
+                        <td>evse_gp_output</td>
+                        <td></td>
                     </tr>
                 </tbody>
             </>

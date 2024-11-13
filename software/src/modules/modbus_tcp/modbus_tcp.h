@@ -69,6 +69,8 @@ private:
         const Config *evse_slots;
         const Config *evse_ll_state;
         const Config *evse_indicator_led;
+        const Config *evse_gp_output;
+        const Config *evse_hardware_configuration;
         const Config *current_charge;
         const Config *meter_state;
         const Config *meter_values;

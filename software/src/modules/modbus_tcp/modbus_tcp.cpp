@@ -419,6 +419,28 @@ TFModbusTCPExceptionCode ModbusTcp::getWarpDiscreteInputs(uint16_t start_address
             case 3: result = cache->has_feature_meter_all_values; break;
             case 4: result = cache->has_feature_phase_switch; break;
             case 5: result = cache->has_feature_nfc; break;
+            case 6: REQUIRE(evse); result = cache->evse_hardware_configuration->get("evse_version")->asUint() >= 20; break;
+            case 7: REQUIRE(evse); {
+                auto version = cache->evse_hardware_configuration->get("evse_version")->asUint();
+                result = version >= 20 && version < 30;
+            } break;
+            case 8: REQUIRE(evse); {
+                auto version = cache->evse_hardware_configuration->get("evse_version")->asUint();
+                result = version >= 20 && version < 30;
+            } break;
+
+            case 1100: REQUIRE(evse); {
+                auto version = cache->evse_hardware_configuration->get("evse_version")->asUint();
+                if (version >= 20 && version < 30)
+                    result = cache->evse_ll_state->get("gpio")->get(5)->asBool();
+                else if (version >= 30)
+                    result = cache->evse_ll_state->get("gpio")->get(18)->asBool();
+            } break;
+            case 1101: REQUIRE(evse); {
+                auto version = cache->evse_hardware_configuration->get("evse_version")->asUint();
+                if (version >= 20 && version < 30)
+                    result = cache->evse_ll_state->get("gpio")->get(16)->asBool();
+            } break;
 
             case 2100: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_connected")->get(0)->asBool(); break;
             case 2101: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_connected")->get(1)->asBool(); break;
@@ -459,6 +481,10 @@ TFModbusTCPExceptionCode ModbusTcp::getWarpCoils(uint16_t start_address, uint16_
                     auto slot = cache->evse_slots->get(CHARGING_SLOT_AUTOSTART_BUTTON);
                     result = !slot->get("active")->asBool() || slot->get("max_current")->asUint() > 0;
                 } break;
+            case 1100: REQUIRE(evse); {
+                    if (cache->evse_gp_output != nullptr)
+                        result = cache->evse_gp_output->get("gp_output")->asUint() > 0;
+                } break;
 
             default: return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
@@ -492,6 +518,15 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpCoils(uint16_t start_address, uint16_
                     String err = api.callCommand(coil ? "evse/start_charging" : "evse/stop_charging", nullptr);
                     if (err != "") {
                         logger.printfln("Failed to %s charging: %s", coil ? "start" : "stop", err.c_str());
+                    }
+                } break;
+
+            case 1100: REQUIRE(evse); {
+                    String err = api.callCommand("evse/gp_output_update", Config::ConfUpdateObject{{
+                        {"gp_output", coil ? 1 : 0}
+                    }});
+                    if (err != "") {
+                        logger.printfln("Failed to update GP output: %s", err.c_str());
                     }
                 } break;
 
@@ -1007,6 +1042,8 @@ void ModbusTcp::fillCache() {
     cache->evse_slots = api.getState("evse/slots");
     cache->evse_ll_state = api.getState("evse/low_level_state");
     cache->evse_indicator_led = api.getState("evse/indicator_led");
+    cache->evse_gp_output = api.getState("evse/gp_output", false); // Don't log if missing: Only WARP2 has this API.
+    cache->evse_hardware_configuration = api.getState("evse/hardware_configuration");
     cache->current_charge = api.getState("charge_tracker/current_charge");
     cache->meter_state = api.getState("meter/state");
     cache->meter_values = api.getState("meter/values");

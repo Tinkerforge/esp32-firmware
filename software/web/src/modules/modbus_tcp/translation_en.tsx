@@ -391,6 +391,41 @@ let x = {
                         <td>A NFC Bricklet is connected and active.</td>
                     </tr>
                     <tr>
+                        <td>6</td>
+                        <td>Feature "evse_shutdown_input" available</td>
+                        <td>bool</td>
+                        <td>---</td>
+                        <td>The charge controller has a shutdown input.</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>Feature "evse_gp_input" available</td>
+                        <td>bool</td>
+                        <td>---</td>
+                        <td>The charge controller has a general purpose input.</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>Feature "evse_gp_output" available</td>
+                        <td>bool</td>
+                        <td>---</td>
+                        <td>The charge controller has a general purpose output.</td>
+                    </tr>
+                    <tr>
+                        <td>1100</td>
+                        <td>State of the shutdown input. 0 - closed, 1 - open</td>
+                        <td>bool</td>
+                        <td>evse_shutdown_input</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>1101</td>
+                        <td>State of the general purpose input. 0 - closed, 1 - open</td>
+                        <td>bool</td>
+                        <td>evse_gp_input</td>
+                        <td></td>
+                    </tr>
+                    <tr>
                         <td>2100</td>
                         <td>Phase L1 connected</td>
                         <td>bool</td>
@@ -453,6 +488,13 @@ let x = {
                         <td>evse</td>
                         <td>false or 0 to block charging. true or 1 to allow charging. Sets the same charge release that is used via the
                             web interface, the API or (depending on the button configuration) the button.</td>
+                    </tr>
+                    <tr>
+                        <td>1100</td>
+                        <td>Sets the state of the general purpose output. 0 - connected to ground, 1 - high impedance</td>
+                        <td>bool</td>
+                        <td>evse_gp_output</td>
+                        <td></td>
                     </tr>
                 </tbody>
             </>
