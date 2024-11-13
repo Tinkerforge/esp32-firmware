@@ -67,7 +67,6 @@ let x = {
             "charging_current": "Ladestromgrenzen",
             "charging_current_muted": "Minimum der Ladestromgrenzen",
             "reset_slot": "Zurücksetzen",
-            "low_level_state": "Low-Level-Zustand",
             "led_state": "LED-Zustand",
             "led_state_off": "Aus",
             "led_state_on": "An",

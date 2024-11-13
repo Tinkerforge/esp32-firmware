@@ -534,7 +534,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                         </UplotLoader>
                     </div>
                 </div>
-                <CollapsedSection label={__("solar_forecast.content.more_information")}>
+                <CollapsedSection>
                     <FormRow label={__("solar_forecast.content.rate_limit_label")} label_muted={__("solar_forecast.content.rate_limit_label_muted")}>
                         <InputText value={this.state.state.rate_limit === -1 ? __("solar_forecast.content.unknown_not_yet") : this.state.state.rate_limit}/>
                     </FormRow>

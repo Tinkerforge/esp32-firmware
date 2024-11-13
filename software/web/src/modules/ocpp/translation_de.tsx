@@ -35,8 +35,6 @@ let x = {
             "confirm_reset": "Zurücksetzen",
             "reset_failed": "Zurücksetzen des OCPP-Zustands fehlgeschlagen",
 
-            "debug": "Debug",
-
             "charge_point_state": "Ladepunktzustand",
             "charge_point_status": "Ladepunkt-OCPP-Status",
             "next_profile_eval": "Nächste Ladeprofilauswertung",

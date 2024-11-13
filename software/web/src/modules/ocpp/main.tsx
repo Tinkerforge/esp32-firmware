@@ -155,7 +155,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                         </Button>
                     </FormRow>
 
-                    <CollapsedSection label={__("ocpp.content.debug")}>
+                    <CollapsedSection>
                         <FormRow label={__("ocpp.content.charge_point_state")}>
                             <InputText value={translate_unchecked(`ocpp.content.charge_point_state_${state.state.charge_point_state}`)} />
                         </FormRow>
@@ -243,7 +243,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                         </FormRow>
                     </CollapsedSection>
 
-                    <CollapsedSection label={__("ocpp.content.configuration")}>
+                    <CollapsedSection heading={__("ocpp.content.configuration")}>
                         {(Object.keys(state.configuration) as Array<keyof typeof state.configuration>).map((k, i) => (
                             ocpp_debug ?
                                 <FormRow label={k.replace(/([a-z])([A-Z])/g, "$1\u00AD$2")}>

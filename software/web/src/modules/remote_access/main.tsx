@@ -348,7 +348,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                         hideClear
                                         placeholder="" />
                     </FormRow>
-                    <CollapsedSection label={__("remote_access.content.advanced_settings")}>
+                    <CollapsedSection heading={__("remote_access.content.advanced_settings")}>
                         <FormRow label={__("remote_access.content.relay_host")}>
                             <InputText required
                                     maxLength={64}

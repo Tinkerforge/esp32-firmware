@@ -334,7 +334,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                     :
                         null
                     }
-                    <CollapsedSection label="Debug">
+                    <CollapsedSection>
                         <ChargeManagerDebug dynamicLoadConfig={state.dynamicLoadConfig}/>
                     </CollapsedSection>
                     </ConfigForm>

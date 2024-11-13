@@ -28,7 +28,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { EVSE_SLOT_MODBUS_TCP } from "../evse_common/api";
-import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { FormSeparator } from "../../ts/components/form_separator";
 import { NavbarItem } from "../../ts/components/navbar_item";
 
 export function ModbusTcpNavbar() {
@@ -76,11 +76,12 @@ export class ModbusTcp extends ConfigComponent<'modbus_tcp/config', {}, config> 
         if (!util.render_allowed())
             return <SubPage name="modbus_tcp" />;
 
-        let docu = <CollapsedSection label={__("modbus_tcp.content.table_docu")}>
+        let docu = <>
+            <FormSeparator heading={__("modbus_tcp.content.table_docu")} />
             <table class="table table-bordered table-sm">
                 {__("modbus_tcp.content.table_content")}
             </table>
-        </CollapsedSection>
+        </>;
 
         return (
             <SubPage name="modbus_tcp">

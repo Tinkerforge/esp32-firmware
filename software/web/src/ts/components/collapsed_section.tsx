@@ -22,7 +22,7 @@ import { Button, Collapse } from "react-bootstrap";
 import { __ } from "../../ts/translation";
 
 interface CollapsedSectionProps {
-    label: string;
+    heading?: string;
     children: ComponentChildren;
 }
 
@@ -36,7 +36,7 @@ export class CollapsedSection extends Component<CollapsedSectionProps, Collapsed
             <>
             <div class="row mb-3 pt-3">
                 <div class="col border-bottom d-flex justify-content-between">
-                    <span class="h3">{props.label}</span>
+                    <span class="h3">{props.heading || __("component.collapsed_section.heading")}</span>
                     <Button variant="primary"
                             className="mb-2"
                             onClick={() => this.setState({show: !state.show})}>

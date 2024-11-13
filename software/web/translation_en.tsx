@@ -54,6 +54,7 @@ let x = {
             "wireguard": "the WireGuard connection"
         },
         "collapsed_section": {
+            "heading": "Details",
             "show": "Show",
             "hide": "Hide"
         },

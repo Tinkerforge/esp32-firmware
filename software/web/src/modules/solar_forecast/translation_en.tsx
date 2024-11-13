@@ -48,7 +48,6 @@ let x = {
             "solar_forecast_tomorrow_label_muted": "00:00 to 23:59",
             "time_to": "to",
             "unknown_not_yet": "Unknown (Solar forecast has not been queried yet)",
-            "more_information": "More information",
             "rate_limit_label": "Query limit",
             "rate_limit_label_muted": "How often can the solar forecast be queried from the API (in a 2-hour interval)",
             "remaining_requests_label": "Remaining queries",

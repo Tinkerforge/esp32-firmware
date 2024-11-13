@@ -67,7 +67,6 @@ let x = {
             "charging_current": "Charging current limits",
             "charging_current_muted": "minimum of the charging current limits",
             "reset_slot": "Reset",
-            "low_level_state": "Low-level state",
             "led_state": "LED state",
             "led_state_off": "Off",
             "led_state_on": "On",
