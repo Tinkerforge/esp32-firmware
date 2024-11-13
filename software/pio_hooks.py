@@ -675,6 +675,7 @@ def main():
     build_lines.append('#define BUILD_FIRMWARE_UPDATE_URL "{}"'.format(firmware_update_url))
     build_lines.append('#define BUILD_DAY_AHEAD_PRICE_API_URL "{}"'.format(day_ahead_price_api_url))
     build_lines.append('#define BUILD_SOLAR_FORECAST_API_URL "{}"'.format(solar_forecast_api_url))
+    build_lines.append('#define BUILD_IS_SIGNED() {}'.format("1" if signed else "0"))
     build_lines.append('uint32_t build_timestamp();')
     build_lines.append('const char *build_timestamp_hex_str();')
     build_lines.append('const char *build_version_full_str();')

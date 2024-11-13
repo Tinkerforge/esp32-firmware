@@ -25,7 +25,9 @@
 #include "module_dependencies.h"
 #include "build.h"
 
+#if !BUILD_IS_SIGNED()
 #define SOLAR_FORECAST_USE_TEST_DATA
+#endif
 
 #define CHECK_FOR_SF_TIMEOUT 15000
 #define CHECK_INTERVAL 2*60*60*1000
