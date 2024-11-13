@@ -1,2 +1,2 @@
-<unknown>: 1.0.0 (<unknown>)
+2024-11-13: 1.0.0 (85cbdfc8)
 - Initial release
