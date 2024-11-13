@@ -280,6 +280,12 @@ let x = {
                         <td>evse</td>
                         <td>
                             Steuert die LED des Tasters in der Wallbox-Front.
+                            <strong>
+                            Blinkmuster und -dauer müssen mit einem Modbus-Befehl geschrieben werden!
+                            Falls auch die Farbe gesetzt werden soll (nur WARP3), müssen die Register 1004 bis einschließlich 1013 in einem Befehl geschrieben werden.
+                            </strong>
+                            Damit die LED kontrolliert werden kann muss die Option "Status-LED-Steuerung" aktiviert sein.
+
                             <ul>
                                 <li>0xFFFFFFFF: EVSE kontrolliert LED</li>
                                 <li>0: LED aus</li>
@@ -299,6 +305,27 @@ let x = {
                         <td>evse</td>
                         <td>Die Dauer in Millisekunden für die das in Register 1004 gesetzte Blinkmuster angezeigt werden soll.
                             Maximal 65535 ms werden unterstützt.</td>
+                    </tr>
+                    <tr>
+                        <td>1008</td>
+                        <td>Front-LED-Blinkfarbwert (Hue)</td>
+                        <td>uint32</td>
+                        <td>evse</td>
+                        <td>Der Farbwert der Farbe (im <a href="https://de.wikipedia.org/wiki/HSV-Farbraum">HSV-Farbraum</a>) in der das im Register 1004 gesetzte Blinkmuster angezeigt werden soll. Nur Werte zwischen 0 und 359 (°) sind erlaubt. Die Farbe kann nur bei einem WARP3 Charger gesetzt werden. WARP und WARP2 Charger besitzen eine einfarbig blaue LED.</td>
+                    </tr>
+                    <tr>
+                        <td>1010</td>
+                        <td>Front-LED-Blinkfarbsättigung (Saturation)</td>
+                        <td>uint32</td>
+                        <td>evse</td>
+                        <td>Die Farbsättigung der Farbe (im <a href="https://de.wikipedia.org/wiki/HSV-Farbraum">HSV-Farbraum</a>) in der das im Register 1004 gesetzte Blinkmuster angezeigt werden soll. Nur Werte zwischen 0 und 255 sind erlaubt. Die Farbe kann nur bei einem WARP3 Charger gesetzt werden. WARP und WARP2 Charger besitzen eine einfarbig blaue LED.</td>
+                    </tr>
+                    <tr>
+                        <td>1012</td>
+                        <td>Front-LED-Blinkfarbhelligkeit (Value)</td>
+                        <td>uint32</td>
+                        <td>evse</td>
+                        <td>Die Helligkeit der Farbe (im <a href="https://de.wikipedia.org/wiki/HSV-Farbraum">HSV-Farbraum</a>) in der das im Register 1004 gesetzte Blinkmuster angezeigt werden soll. Nur Werte zwischen 0 und 255 sind erlaubt. Die Farbe kann nur bei einem WARP3 Charger gesetzt werden. WARP und WARP2 Charger besitzen eine einfarbig blaue LED.</td>
                     </tr>
                     <tr>
                         <td>2000</td>

@@ -278,6 +278,12 @@ let x = {
                         <td>evse</td>
                         <td>
                             Controls the LED in the charger's front button.
+                            <strong>
+                            Blink pattern and duration must be written with a single modbus command!
+                            To also set the blink color (only WARP3), registers 1004 to and including 1013 must be written with a single command.
+                            </strong>
+                            The setting "Status LED control" must be enabled to be able to control the LED.
+
                             <ul>
                                 <li>0xFFFFFFFF: EVSE controls LED</li>
                                 <li>0: LED off</li>
@@ -297,6 +303,27 @@ let x = {
                         <td>evse</td>
                         <td>The duration in milliseconds that the blink pattern set in register 1004 shall be shown. At most 65536 ms
                             are supported.</td>
+                    </tr>
+                    <tr>
+                        <td>1008</td>
+                        <td>Front LED blink hue</td>
+                        <td>uint32</td>
+                        <td>evse</td>
+                        <td>Hue of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 359 (°) are allowed. The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</td>
+                    </tr>
+                    <tr>
+                        <td>1010</td>
+                        <td>Front LED blink saturation</td>
+                        <td>uint32</td>
+                        <td>evse</td>
+                        <td>Saturation of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 255 are allowed. The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</td>
+                    </tr>
+                    <tr>
+                        <td>1012</td>
+                        <td>Front LED blink value</td>
+                        <td>uint32</td>
+                        <td>evse</td>
+                        <td>Value of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 255 are allowed. The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</td>
                     </tr>
                     <tr>
                         <td>2000</td>

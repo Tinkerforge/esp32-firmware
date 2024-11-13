@@ -38,7 +38,7 @@ extern uint32_t local_uid_num;
 // MODBUS TABLE CHANGELOG
 // 1 - Initial release
 // 2 - Add coils 1000, 1001
-// 3 - Add phase switch
+// 3 - Add phase switch, EVSE LED color
 #define MODBUS_TABLE_VERSION 3
 
 static uint8_t hextouint(const char c)
@@ -555,17 +555,31 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpHoldingRegisters(uint16_t start_addre
                     // Only accept evse led write if both indication and duration are written in one request.
                     // i was already incremented above, so we only need 2 more bytes.
                     if (data_count - i < 2) {
-                        logger.printfln("Received write to EVSE LED indication but without duration! Please write all 4 registers in one request.");
+                        logger.printfln("Received write to EVSE LED indication but without duration! Please write all 4 registers starting at 1004 in one request.");
                         break;
                     }
-                    TwoRegs duration;
-                    duration.regs.upper = data_values[i];
-                    duration.regs.lower = data_values[i + 1];
-                    duration.u = swapBytes(duration.u);
+
+                    uint16_t duration = swapBytes(data_values[i + 1]);
                     i += 2;
-                    evse_led.set_api(EvseLed::Blink(val.u), duration.u);
+
+                    uint16_t h = 0;
+                    uint8_t s = 0;
+                    uint8_t v = 0;
+
+                    if (data_count - i >= 6) {
+                        h = swapBytes(data_values[i + 1]);
+                        i += 2;
+                        s = data_values[i + 1] >> 8;
+                        i += 2;
+                        v = data_values[i + 1] >> 8;
+                        i += 2;
+                    }
+                    evse_led.set_api(EvseLed::Blink(val.u), duration, h, s, v);
                 } break;
-            // 1006 handled above.
+            case 1006: REQUIRE(evse); logger.printfln("Received write to EVSE LED duration but without indication! Please write all 4 registers starting at 1004 in one request."); break;
+            case 1008: REQUIRE(evse); logger.printfln("Received write to EVSE LED hue but without indication! Please write all 10 registers starting at 1004 in one request."); break;
+            case 1010: REQUIRE(evse); logger.printfln("Received write to EVSE LED saturation but without indication! Please write all 10 registers starting at 1004 in one request."); break;
+            case 1012: REQUIRE(evse); logger.printfln("Received write to EVSE LED value but without indication! Please write all 10 registers starting at 1004 in one request."); break;
 
             case 2000: REQUIRE(meter); {
                     if (val.u == 0x3E12E5E7) {
