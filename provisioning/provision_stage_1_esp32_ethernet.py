@@ -33,7 +33,7 @@ def main():
         fatal_error("Usage: {} firmware_type".format(sys.argv[0]))
 
     firmware_type = sys.argv[1]
-    if firmware_type not in ["esp32_ethernet", "warp2", "energy_manager"]:
+    if firmware_type not in ["esp32_ethernet", "warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker"]:
         fatal_error("Unknown firmware type {}".format(firmware_type))
 
     result = {"start": now()}
@@ -55,6 +55,10 @@ def main():
         ssid = "warp2-" + uid
     elif firmware_type == 'energy_manager':
         ssid = "wem-" + uid
+    elif firmware_type == 'energy_manager_v2':
+        ssid = "wem2-" + uid
+    elif firmware_type == 'smart_energy_broker':
+        ssid = "seb-" + uid
     else:
         ssid = "esp32-" + uid
 
@@ -125,7 +129,7 @@ def main():
     except Exception as e:
         fatal_error("Failed to read firmware version!")
 
-    if firmware_type in ("warp2", "energy_manager"):
+    if firmware_type in ["warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker"]:
         try:
             with urllib.request.urlopen("http://192.168.123.123/hidden_proxy/enable", timeout=10) as f:
                 f.read()
@@ -139,7 +143,7 @@ def main():
     result["ethernet_test_successful"] = True
     print("Connected. Testing bricklet ports")
 
-    test_bricklet_ports(ipcon, ESP_ETHERNET_DEVICE_ID, firmware_type in ("warp2", "energy_manager"))
+    test_bricklet_ports(ipcon, ESP_ETHERNET_DEVICE_ID, firmware_type in ["warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker"])
     result["bricklet_port_test_successful"] = True
 
     led0 = input("Does the status LED blink blue? [y/n]")
@@ -167,10 +171,10 @@ def main():
 
     label_success = "n"
     while label_success != "y":
-        run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "3" if firmware_type in ("warp2", "energy_manager") else "1"])
+        run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "3" if firmware_type in ["warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker"] else "1"])
         label_prompt = "Stick one label on the ESP, put ESP{} in the ESD bag. Press n to retry printing the label{}. [y/n]".format(
-                " and the other two labels" if firmware_type in ("warp2", "energy_manager") else "",
-                "s" if firmware_type in ("warp2", "energy_manager") else "")
+                " and the other two labels" if firmware_type in ["warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker"] else "",
+                "s" if firmware_type in ["warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker"] else "")
 
         label_success = input(label_prompt)
         while label_success not in ("y", "n"):
