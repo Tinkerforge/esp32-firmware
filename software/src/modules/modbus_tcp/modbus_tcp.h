@@ -24,6 +24,8 @@
 #include <TFModbusTCPServer.h>
 #include <memory>
 
+#include <TFTools/Option.h>
+
 class ModbusTcp final : public IModule
 {
 public:
@@ -42,19 +44,19 @@ private:
     void start_server();
     void fillCache();
 
-    void getWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
-    void getWarpDiscreteInputs(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
-    void getWarpInputRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
-    void getWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+    TFModbusTCPExceptionCode getWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
+    TFModbusTCPExceptionCode getWarpDiscreteInputs(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
+    TFModbusTCPExceptionCode getWarpInputRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+    TFModbusTCPExceptionCode getWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
 
-    void setWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
-    void setWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+    TFModbusTCPExceptionCode setWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
+    TFModbusTCPExceptionCode setWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
 
-    void getKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
-    void setKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+    TFModbusTCPExceptionCode getKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+    TFModbusTCPExceptionCode setKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
 
-    void getBenderHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
-    void setBenderHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+    TFModbusTCPExceptionCode getBenderHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
+    TFModbusTCPExceptionCode setBenderHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
 
     ConfigRoot config;
 
@@ -96,10 +98,10 @@ private:
         float f;
         struct {uint16_t upper; uint16_t lower;} regs;
     };
-    TwoRegs getWarpInputRegister(uint16_t address, void *ctx);
-    TwoRegs getWarpHoldingRegister(uint16_t address);
+    Option<TwoRegs> getWarpInputRegister(uint16_t address, void *ctx);
+    Option<TwoRegs> getWarpHoldingRegister(uint16_t address);
 
-    TwoRegs getKebaHoldingRegister(uint16_t reg);
+    Option<TwoRegs> getKebaHoldingRegister(uint16_t reg);
     TwoRegs getBenderHoldingRegister(uint16_t reg);
 
     std::unique_ptr<Cache> cache;

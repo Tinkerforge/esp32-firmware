@@ -33,8 +33,6 @@
 #include "modules/power_manager/power_manager.h"
 #endif
 
-#include <TFTools/Option.h>
-
 extern uint32_t local_uid_num;
 
 // MODBUS TABLE CHANGELOG
@@ -187,7 +185,7 @@ static inline uint16_t swapBytes(uint16_t x) {
 
 #define REQUIRE(x) if(!cache->has_feature_##x) break
 
-ModbusTcp::TwoRegs ModbusTcp::getWarpInputRegister(uint16_t reg, void *ctx_ptr) {
+Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpInputRegister(uint16_t reg, void *ctx_ptr) {
     struct Ctx{
         Option<float> energy_abs = {};
         Option<NFC::tag_info_t> tag = {};
@@ -195,6 +193,8 @@ ModbusTcp::TwoRegs ModbusTcp::getWarpInputRegister(uint16_t reg, void *ctx_ptr) 
     Ctx *ctx = (Ctx*) ctx_ptr;
 
     ModbusTcp::TwoRegs val{0};
+
+    bool report_illegal_data_address = false;
 
     switch (reg) {
         case 0: val.u = MODBUS_TABLE_VERSION; break;
@@ -255,33 +255,48 @@ ModbusTcp::TwoRegs ModbusTcp::getWarpInputRegister(uint16_t reg, void *ctx_ptr) 
             }
             break;
 
-        default: val.u = 0xAAAAAAAA; break;
+        default: report_illegal_data_address = true; break;
     }
 
     // RANGES
-    if (cache->has_feature_evse && reg >= 1012 && reg < 1012 + 2 * CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE) {
-        size_t slot_idx = (reg - 1012) / 2;
-        if (slot_idx < cache->evse_slots->count()) {
-            auto slot = cache->evse_slots->get(slot_idx);
-            val.u = slot->get("active")->asBool() ? slot->get("max_current")->asUint() : 0xFFFFFFFF;
-        } else {
-            val.u = 0xFFFFFFFF;
+    if (reg >= 1012 && reg < 1012 + 2 * CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE) {
+        report_illegal_data_address = false;
+
+        if (cache->has_feature_evse) {
+            size_t slot_idx = (reg - 1012) / 2;
+            if (slot_idx < cache->evse_slots->count()) {
+                auto slot = cache->evse_slots->get(slot_idx);
+                val.u = slot->get("active")->asBool() ? slot->get("max_current")->asUint() : 0xFFFFFFFF;
+            } else {
+                val.u = 0xFFFFFFFF;
+            }
         }
-    } else if (cache->has_feature_meter_all_values && reg >= 2100 && reg < 2100 + 2 * 85) {
-        auto value_idx = (reg - 2100) / 2;
-        val.f = cache->meter_all_values->get(value_idx)->asFloat();
-    } else if (cache->has_feature_nfc && reg >= 4000 && reg < 4000 + NFC_TAG_ID_LENGTH) {
-        fillTagCache(ctx->tag);
-        auto value_idx = (reg - 4000) * 2;
-        memcpy(&val, ctx->tag.unwrap().tag_id + value_idx, 4);
-        // the ID is already in network order, but this function should return values in host order.
-        val.u = swapBytes(val.u);
+    } else if (reg >= 2100 && reg < 2100 + 2 * 85) {
+        report_illegal_data_address = false;
+
+        if (cache->has_feature_meter_all_values) {
+            auto value_idx = (reg - 2100) / 2;
+            val.f = cache->meter_all_values->get(value_idx)->asFloat();
+        }
+    } else if (reg >= 4000 && reg < 4000 + NFC_TAG_ID_LENGTH) {
+        report_illegal_data_address = false;
+
+        if (cache->has_feature_nfc) {
+            fillTagCache(ctx->tag);
+            auto value_idx = (reg - 4000) * 2;
+            memcpy(&val, ctx->tag.unwrap().tag_id + value_idx, 4);
+            // the ID is already in network order, but this function should return values in host order.
+            val.u = swapBytes(val.u);
+        }
     }
 
-    return val;
+    if (report_illegal_data_address)
+        return {};
+
+    return {val};
 }
 
-void ModbusTcp::getWarpInputRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
+TFModbusTCPExceptionCode ModbusTcp::getWarpInputRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
     struct {
         Option<float> energy_abs = {};
         Option<NFC::tag_info_t> tag = {};
@@ -297,7 +312,11 @@ void ModbusTcp::getWarpInputRegisters(uint16_t start_address, uint16_t data_coun
     while (i < data_count) {
         uint16_t reg = (i + start_address) & (~1);
 
-        TwoRegs val = this->getWarpInputRegister(reg, &ctx);
+        Option<TwoRegs> opt = this->getWarpInputRegister(reg, &ctx);
+        if (opt.is_none())
+            return TFModbusTCPExceptionCode::IllegalDataAddress;
+
+        TwoRegs val = opt.unwrap();
 
         val.u = swapBytes(val.u);
 
@@ -314,9 +333,11 @@ void ModbusTcp::getWarpInputRegisters(uint16_t start_address, uint16_t data_coun
             i += 2;
         }
     }
+
+    return TFModbusTCPExceptionCode::Success;
 }
 
-ModbusTcp::TwoRegs ModbusTcp::getWarpHoldingRegister(uint16_t reg) {
+Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpHoldingRegister(uint16_t reg) {
     TwoRegs val{0};
 
     switch (reg) {
@@ -339,12 +360,12 @@ ModbusTcp::TwoRegs ModbusTcp::getWarpHoldingRegister(uint16_t reg) {
 
         case 3100: REQUIRE(phase_switch); val.u = cache->power_manager_external_control->get("phases_wanted")->asUint(); break;
 
-        default: val.u = 0xAAAAAAAA; break;
+        default: return {};
     }
-    return val;
+    return {val};
 }
 
-void ModbusTcp::getWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
+TFModbusTCPExceptionCode ModbusTcp::getWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(meter)
 
@@ -352,7 +373,11 @@ void ModbusTcp::getWarpHoldingRegisters(uint16_t start_address, uint16_t data_co
     while (i < data_count) {
         uint16_t reg = (i + start_address) & (~1);
 
-        ModbusTcp::TwoRegs val = this->getWarpHoldingRegister(reg);
+        Option<ModbusTcp::TwoRegs> opt = this->getWarpHoldingRegister(reg);
+        if (opt.is_none())
+            return TFModbusTCPExceptionCode::IllegalDataAddress;
+
+        auto val = opt.unwrap();
 
         val.u = swapBytes(val.u);
 
@@ -369,9 +394,11 @@ void ModbusTcp::getWarpHoldingRegisters(uint16_t start_address, uint16_t data_co
             i += 2;
         }
     }
+
+    return TFModbusTCPExceptionCode::Success;
 }
 
-void ModbusTcp::getWarpDiscreteInputs(uint16_t start_address, uint16_t data_count, uint8_t *data_values) {
+TFModbusTCPExceptionCode ModbusTcp::getWarpDiscreteInputs(uint16_t start_address, uint16_t data_count, uint8_t *data_values) {
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(meter)
     FILL_FEATURE_CACHE(meter_phases)
@@ -400,7 +427,7 @@ void ModbusTcp::getWarpDiscreteInputs(uint16_t start_address, uint16_t data_coun
             case 2104: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_active")->get(1)->asBool(); break;
             case 2105: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_active")->get(2)->asBool(); break;
 
-            default: break;
+            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
 
         if (result)
@@ -409,9 +436,11 @@ void ModbusTcp::getWarpDiscreteInputs(uint16_t start_address, uint16_t data_coun
             data_values[byte_idx] &= ~(1 << bit_idx);
         ++i;
     }
+
+    return TFModbusTCPExceptionCode::Success;
 }
 
-void ModbusTcp::getWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values) {
+TFModbusTCPExceptionCode ModbusTcp::getWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values) {
     FILL_FEATURE_CACHE(evse)
 
     int i = 0;
@@ -431,7 +460,7 @@ void ModbusTcp::getWarpCoils(uint16_t start_address, uint16_t data_count, uint8_
                     result = !slot->get("active")->asBool() || slot->get("max_current")->asUint() > 0;
                 } break;
 
-            default: break;
+            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
 
         if (result)
@@ -440,13 +469,15 @@ void ModbusTcp::getWarpCoils(uint16_t start_address, uint16_t data_count, uint8_
             data_values[byte_idx] &= ~(1 << bit_idx);
         ++i;
     }
+
+    return TFModbusTCPExceptionCode::Success;
 }
 
-void ModbusTcp::setWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values) {
+TFModbusTCPExceptionCode ModbusTcp::setWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values) {
     FILL_FEATURE_CACHE(evse)
 
     if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
-        return;
+        return TFModbusTCPExceptionCode::Success;
 
     int i = 0;
     while (i < data_count) {
@@ -459,20 +490,22 @@ void ModbusTcp::setWarpCoils(uint16_t start_address, uint16_t data_count, uint8_
             case 1000: REQUIRE(evse); evse_common.set_modbus_enabled(coil); break;
             case 1001: REQUIRE(evse); api.callCommand(coil ? "evse/start_charging" : "evse/stop_charging", nullptr); break;
 
-            default: break;
+            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
 
         ++i;
     }
+
+    return TFModbusTCPExceptionCode::Success;
 }
 
-void ModbusTcp::setWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
+TFModbusTCPExceptionCode ModbusTcp::setWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(meter)
     FILL_FEATURE_CACHE(phase_switch)
 
     if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
-        return;
+        return TFModbusTCPExceptionCode::Success;
 
     int i = 0;
     while (i < data_count) {
@@ -482,13 +515,21 @@ void ModbusTcp::setWarpHoldingRegisters(uint16_t start_address, uint16_t data_co
 
         if (i == 0 && (start_address % 2) == 1) {
             val.regs.lower = data_values[i];
-            TwoRegs old_val = this->getWarpHoldingRegister(reg);
+            Option<TwoRegs> opt = this->getWarpHoldingRegister(reg);
+            if (opt.is_none())
+                return TFModbusTCPExceptionCode::IllegalDataAddress;
+
+            auto old_val = opt.unwrap();
             old_val.u = swapBytes(old_val.u);
             val.regs.upper = old_val.regs.upper;
             ++i;
         } else if (i == data_count - 1) {
             val.regs.upper = data_values[i];
-            TwoRegs old_val = this->getWarpHoldingRegister(reg);
+            Option<TwoRegs> opt = this->getWarpHoldingRegister(reg);
+            if (opt.is_none())
+                return TFModbusTCPExceptionCode::IllegalDataAddress;
+
+            auto old_val = opt.unwrap();
             old_val.u = swapBytes(old_val.u);
             val.regs.lower = old_val.regs.lower;
             ++i;
@@ -532,20 +573,20 @@ void ModbusTcp::setWarpHoldingRegisters(uint16_t start_address, uint16_t data_co
                         }
                     }
                 } break;
-            default: val.u = 0xAAAAAAAA; break;
+            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
 
     }
+
+    return TFModbusTCPExceptionCode::Success;
 }
 
-void ModbusTcp::setKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
+TFModbusTCPExceptionCode ModbusTcp::setKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(phase_switch)
 
-    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool()) {
-        logger.printfln_debug();
-        return;
-    }
+    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
+        return TFModbusTCPExceptionCode::Success;
 
     int i = 0;
     while (i < data_count) {
@@ -578,20 +619,20 @@ void ModbusTcp::setKebaHoldingRegisters(uint16_t start_address, uint16_t data_co
                     }
                 } break;
 
-            default: val = 0xAAAA; break;
+            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
         ++i;
     }
+
+    return TFModbusTCPExceptionCode::Success;
 }
 
-void ModbusTcp::setBenderHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
+TFModbusTCPExceptionCode ModbusTcp::setBenderHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(phase_switch)
 
-    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool()) {
-        logger.printfln_debug();
-        return;
-    }
+    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
+        return TFModbusTCPExceptionCode::Success;
 
     int i = 0;
     while (i < data_count) {
@@ -603,13 +644,15 @@ void ModbusTcp::setBenderHoldingRegisters(uint16_t start_address, uint16_t data_
         switch (reg) {
             case 124: REQUIRE(evse); evse_common.set_modbus_enabled(val == 0); break;
             case 1000: REQUIRE(evse); evse_common.set_modbus_current(val * 1000); break;
-            default: val = 0xAAAA; break;
+            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
         ++i;
     }
+
+    return TFModbusTCPExceptionCode::Success;
 }
 
-void ModbusTcp::getKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
+TFModbusTCPExceptionCode ModbusTcp::getKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(meter)
     FILL_FEATURE_CACHE(meter_all_values)
@@ -619,7 +662,11 @@ void ModbusTcp::getKebaHoldingRegisters(uint16_t start_address, uint16_t data_co
     while (i < data_count) {
         uint16_t reg = (i + start_address) & (~1);
 
-        ModbusTcp::TwoRegs val = this->getKebaHoldingRegister(reg);
+        Option<ModbusTcp::TwoRegs> opt = this->getKebaHoldingRegister(reg);
+        if (opt.is_none())
+            return TFModbusTCPExceptionCode::IllegalDataAddress;
+
+        auto val = opt.unwrap();
 
         val.u = swapBytes(val.u);
 
@@ -636,9 +683,11 @@ void ModbusTcp::getKebaHoldingRegisters(uint16_t start_address, uint16_t data_co
             i += 2;
         }
     }
+
+    return TFModbusTCPExceptionCode::Success;
 }
 
-ModbusTcp::TwoRegs ModbusTcp::getKebaHoldingRegister(uint16_t reg) {
+Option<ModbusTcp::TwoRegs> ModbusTcp::getKebaHoldingRegister(uint16_t reg) {
     TwoRegs val{0};
 
     switch (reg) {
@@ -656,6 +705,7 @@ ModbusTcp::TwoRegs ModbusTcp::getKebaHoldingRegister(uint16_t reg) {
                     // 0 is start-up, 1 to 3 are IEC states A to C
                     val.u = iec_state + 1;
             } break;
+        case 1002: val.u = 0; break; // unused, but we don't want to return an error here to support reading the block 1000 - 1021 in one request.
         case 1004: REQUIRE(evse); {
                 auto iec_state = cache->evse_state->get("iec61851_state")->asUint();
 
@@ -715,13 +765,13 @@ ModbusTcp::TwoRegs ModbusTcp::getKebaHoldingRegister(uint16_t reg) {
         case 1600: break; // failsafe
         case 1602: break; // failsafe
 
-        default: val.u = 0xAAAAAAAA; break;
+        default: return {};
     }
 
-    return val;
+    return {val};
 }
 
-void ModbusTcp::getBenderHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
+TFModbusTCPExceptionCode ModbusTcp::getBenderHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(meter_all_values)
 
@@ -746,8 +796,13 @@ void ModbusTcp::getBenderHoldingRegisters(uint16_t start_address, uint16_t data_
             i += 2;
         }
     }
+
+    return TFModbusTCPExceptionCode::Success;
 }
 
+/* Bender docs:
+   If there are gaps with undefined register numbers in this range, value '0' will be returned.
+*/
 ModbusTcp::TwoRegs ModbusTcp::getBenderHoldingRegister(uint16_t reg) {
     ModbusTcp::TwoRegs val{0};
 
@@ -827,7 +882,7 @@ ModbusTcp::TwoRegs ModbusTcp::getBenderHoldingRegister(uint16_t reg) {
             }
             break;
 #endif
-        default: val.u = 0x41414141; break;
+        default: break;
     }
 
     return val;
@@ -865,8 +920,7 @@ void ModbusTcp::start_server() {
                 case TFModbusTCPFunctionCode::ReadCoils:
                     switch (table) {
                         case RegisterTable::WARP:
-                            this->getWarpCoils(start_address, data_count, (uint8_t *) data_values);
-                            break;
+                            return this->getWarpCoils(start_address, data_count, (uint8_t *) data_values);
                         case RegisterTable::BENDER:
                         case RegisterTable::KEBA:
                             break;
@@ -875,8 +929,7 @@ void ModbusTcp::start_server() {
                 case TFModbusTCPFunctionCode::ReadDiscreteInputs:
                     switch (table) {
                         case RegisterTable::WARP:
-                            this->getWarpDiscreteInputs(start_address, data_count, (uint8_t *) data_values);
-                            break;
+                            return this->getWarpDiscreteInputs(start_address, data_count, (uint8_t *) data_values);
                         case RegisterTable::BENDER:
                         case RegisterTable::KEBA:
                             break;
@@ -885,21 +938,17 @@ void ModbusTcp::start_server() {
                 case TFModbusTCPFunctionCode::ReadHoldingRegisters:
                     switch (table) {
                         case RegisterTable::WARP:
-                            this->getWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                            break;
+                            return this->getWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
                         case RegisterTable::BENDER:
-                            this->getBenderHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                            break;
+                            return this->getBenderHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
                         case RegisterTable::KEBA:
-                            this->getKebaHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                            break;
+                            return this->getKebaHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
                     }
                     break;
                 case TFModbusTCPFunctionCode::ReadInputRegisters:
                     switch (table) {
                         case RegisterTable::WARP:
-                            this->getWarpInputRegisters(start_address, data_count, (uint16_t *) data_values);
-                            break;
+                            return this->getWarpInputRegisters(start_address, data_count, (uint16_t *) data_values);
                         case RegisterTable::BENDER:
                         case RegisterTable::KEBA:
                             break;
@@ -908,8 +957,7 @@ void ModbusTcp::start_server() {
                 case TFModbusTCPFunctionCode::WriteMultipleCoils:
                     switch (table) {
                         case RegisterTable::WARP:
-                            this->setWarpCoils(start_address, data_count, (uint8_t *) data_values);
-                            break;
+                            return this->setWarpCoils(start_address, data_count, (uint8_t *) data_values);
                         case RegisterTable::BENDER:
                         case RegisterTable::KEBA:
                             break;
@@ -918,14 +966,11 @@ void ModbusTcp::start_server() {
                 case TFModbusTCPFunctionCode::WriteMultipleRegisters:
                     switch (table) {
                         case RegisterTable::WARP:
-                            this->setWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                            break;
+                            return this->setWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
                         case RegisterTable::BENDER:
-                            this->setBenderHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                            break;
+                            return this->setBenderHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
                         case RegisterTable::KEBA:
-                            this->setKebaHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                            break;
+                            return this->setKebaHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
                     }
                     break;
                 case TFModbusTCPFunctionCode::WriteSingleCoil:
@@ -934,7 +979,7 @@ void ModbusTcp::start_server() {
                     break;
             }
 
-            return TFModbusTCPExceptionCode::Success;
+            return TFModbusTCPExceptionCode::IllegalFunction;
         }
     );
 }
