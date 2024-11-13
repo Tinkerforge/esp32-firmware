@@ -21,7 +21,7 @@ COPIES_FORMAT = '^C{0}\r'
 
 def print_esp32_label(ssid, passphrase, copies, stdout):
     # check SSID
-    if re.match('^(esp32|warp|warp2|warp3|wem)-[{0}]{{3,6}}$'.format(BASE58), ssid) == None:
+    if re.match('^(esp32|warp|warp2|warp3|wem|wem2|seb)-[{0}]{{3,6}}$'.format(BASE58), ssid) == None:
         raise Exception('Invalid SSID: {0}'.format(ssid))
 
     # check passphrase
