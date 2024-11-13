@@ -605,10 +605,8 @@ TFModbusTCPExceptionCode ModbusTcp::setKebaHoldingRegisters(uint16_t start_addre
         uint16_t reg = i + start_address;
         uint16_t val = swapBytes(data_values[i]);
 
-        logger.printfln_debug("%u %u", reg, val);
-
         switch (reg) {
-            case 5004: REQUIRE(evse); logger.printfln_debug("setting modbus current to %u", val); evse_common.set_modbus_current(val); break;
+            case 5004: REQUIRE(evse); evse_common.set_modbus_current(val); break;
             case 5010: REQUIRE(evse); {
                     String err = api.callCommand("charge_limits/override_energy", Config::ConfUpdateObject{{
                         {"energy_wh", (uint32_t)(val * 10)}
@@ -655,8 +653,6 @@ TFModbusTCPExceptionCode ModbusTcp::setBenderHoldingRegisters(uint16_t start_add
     while (i < data_count) {
         uint16_t reg = i + start_address;
         uint16_t val = swapBytes(data_values[i]);
-
-        logger.printfln_debug("%u %u", reg, val);
 
         switch (reg) {
             case 124: REQUIRE(evse); evse_common.set_modbus_enabled(val == 0); break;
@@ -759,12 +755,10 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getKebaHoldingRegister(uint16_t reg) {
 
         case 1500: REQUIRE(nfc); {
                 auto auth_type = cache->current_charge->get("authorization_type")->asUint();
-                logger.printfln_debug("auth type %u", auth_type);
+
                 if (auth_type == 2 || auth_type == 3) {
                     const auto &tag_id = cache->current_charge->get("authorization_info")->get("tag_id")->asString();
-                    logger.printfln_debug("tag_id %s", tag_id.c_str());
                     val.u  = export_tag_id_as_uint32(tag_id);
-                    logger.printfln_debug("val %x", val.u);
                 }
             } break;
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
@@ -920,19 +914,6 @@ void ModbusTcp::start_server() {
             logger.printfln("client disconnected: peer_address=%u port=%u reason=%s error_number=%d", peer_address, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
         },
         [this](uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values) {
-            logger.printfln("received %s %u to %u (len %u)", get_tf_modbus_tcp_function_code_name(function_code), start_address, start_address + data_count, data_count);
-            if (function_code == TFModbusTCPFunctionCode::WriteSingleRegister || function_code == TFModbusTCPFunctionCode::WriteMultipleRegisters) {
-                uint16_t *ptr = (uint16_t *)data_values;
-                for (size_t i = 0; i < data_count; ++i) {
-                    logger.printfln_continue("%u: %u", start_address + i, ptr[i]);
-                }
-            } else if (function_code == TFModbusTCPFunctionCode::WriteSingleCoil || function_code == TFModbusTCPFunctionCode::WriteMultipleCoils) {
-                uint8_t *ptr = (uint8_t *)data_values;
-                for (size_t i = 0; i < data_count; ++i) {
-                    logger.printfln_continue("%u: %u", start_address + i, ((ptr[i / 8] & (1 << (i % 8))) != 0) ? 1 : 0);
-                }
-            }
-
             switch(function_code) {
                 case TFModbusTCPFunctionCode::ReadCoils:
                     switch (table) {
