@@ -24,7 +24,13 @@ let x = {
             "prepare_encryption": "Bereite Verschlüsselung vor",
             "registration": null,
             "login_failed": "Login Fehlgeschlagen:",
-            "wrong_credentials": "Nutzername oder Passwort falsch"
+            "wrong_credentials": "Nutzername oder Passwort falsch",
+            "add_user": "Nutzer hinzufügen",
+            "user": "Nutzer",
+            "user_add_message": /*SFN*/ (user_count: number, max_users: number) => `${user_count} von ${max_users} Nutzern konfiguriert.`/*NF*/,
+            "all_users_in_use": "Alle Nutzer in benutzung",
+            "note": "Notiz",
+            "note_muted": <>wird auf <a href="https://my.warp-charger.com/" target="_blank">my.warp-charger.com</a> angezeigt. Optional</>
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",

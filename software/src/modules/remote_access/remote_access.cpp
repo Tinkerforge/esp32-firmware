@@ -177,6 +177,14 @@ void RemoteAccess::pre_setup() {
         )}
     })};
 
+    registration_config = ConfigRoot{Config::Object({
+        {"enable", Config::Bool(false)},
+        {"relay_host", Config::Str("", 0, 32)},
+        {"relay_port", Config::Uint16(443)},
+        {"email", Config::Str("", 0, 64)},
+        {"cert_id", Config::Int8(-1)},
+    })};
+
     connection_state = Config::Array(
         {},
         Config::get_prototype_uint8_0(),
@@ -254,15 +262,14 @@ void RemoteAccess::register_urls() {
             return request.send(500, "text/plain; charset=utf-8", "Failed to read request body");
         }
 
-        ConfigRoot new_config = config;
         {
-            String error = new_config.update_from_cstr(req_body.get(), content_len);
+            String error = registration_config.update_from_cstr(req_body.get(), content_len);
             if (error != "") {
                 return request.send(400, "text/plain; charset=utf-8", error.c_str());
             }
         }
 
-        this->get_login_salt(new_config);
+        this->get_login_salt(registration_config);
         return request.send(200);
     });
 
@@ -276,15 +283,14 @@ void RemoteAccess::register_urls() {
             return request.send(500, "text/plain; charset=utf-8", "Failed to read request body");
         }
 
-        ConfigRoot new_config = config;
         {
-            String error = new_config.update_from_cstr(req_body.get(), content_len);
+            String error = registration_config.update_from_cstr(req_body.get(), content_len);
             if (error != "") {
                 return request.send(400, "text/plain; charset=utf-8", error.c_str());
             }
         }
 
-        this->get_secret(new_config);
+        this->get_secret(registration_config);
 
         return request.send(200);
     });
@@ -312,22 +318,27 @@ void RemoteAccess::register_urls() {
             }
         }
 
-        ConfigRoot new_config = this->config;
-
         {
-            String error = new_config.update_from_json(doc["config"], true, ConfigSource::API);
+            String error = registration_config.update_from_json(doc["config"], true, ConfigSource::API);
             if (error != "") {
                 return request.send(400, "text/plain; charset=utf-8", error.c_str());
             }
         }
 
         CoolString login_key = doc["login_key"];
-        this->login(new_config, login_key);
+        this->login(registration_config, login_key);
 
         return request.send(200);
     });
 
     server.on("/remote_access/register", HTTP_PUT, [this](WebServerRequest request) {
+        if (config.get("users")->count() != 0) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(400, "text/plain; charset=utf-8", "Charger already registered");
+        }
+
         // TODO: Maybe don't run the registration in the request handler. Start a task instead?
         auto content_len = request.contentLength();
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
@@ -360,10 +371,8 @@ void RemoteAccess::register_urls() {
             }
         }
 
-        ConfigRoot new_config = this->config;
-
         {
-            String error = new_config.update_from_json(doc["config"], true, ConfigSource::API);
+            String error = registration_config.update_from_json(doc["config"], true, ConfigSource::API);
             if (error != "") {
                 https_client = nullptr;
                 encrypted_secret = nullptr;
@@ -372,7 +381,7 @@ void RemoteAccess::register_urls() {
             }
         }
 
-        if (!new_config.get("enable")->asBool()) {
+        if (!registration_config.get("enable")->asBool()) {
             TFJsonSerializer test_serializer = TFJsonSerializer(nullptr, 0);
             test_serializer.addObject();
             test_serializer.addMemberNumber("id", local_uid_num);
@@ -409,7 +418,10 @@ void RemoteAccess::register_urls() {
             };
             this->run_request_with_next_stage(url.c_str(), HTTP_METHOD_DELETE, delete_buf.get(), size, config, callback);
 
-            config = new_config;
+            config.get("users")->removeAll();
+            config.get("uuid")->updateString("");
+            config.get("enable")->updateBool(false);
+            config.get("password")->updateString("");
             API::writeConfig("remote_access/config", &config);
 
             remove_key(0, 0);
@@ -560,7 +572,7 @@ void RemoteAccess::register_urls() {
         size_t size = serializer.end();
 
         char url[128];
-        snprintf(url, 128, "https://%s:%u/api/charger/add", new_config.get("relay_host")->asEphemeralCStr(), new_config.get("relay_port")->asUint());
+        snprintf(url, 128, "https://%s:%u/api/charger/add", registration_config.get("relay_host")->asEphemeralCStr(), registration_config.get("relay_port")->asUint());
 
         std::queue<WgKey> key_cache;
 
@@ -592,10 +604,18 @@ void RemoteAccess::register_urls() {
             }
         }
 
-        auto next_stage = [this, key_cache](ConfigRoot cfg) {
-            this->parse_registration(cfg, key_cache);
+        uint8_t public_key[50];
+        size_t olen;
+        mbedtls_base64_encode(public_key, 50, &olen, (uint8_t*)pk, crypto_box_PUBLICKEYBYTES);
+        auto next_stage = [this, key_cache, public_key, olen](ConfigRoot cfg) {
+            CoolString pub_key((char*)public_key, olen);
+            this->parse_registration(cfg, key_cache, pub_key);
         };
-        this->run_request_with_next_stage(url, HTTP_METHOD_PUT, ptr.get(), size, new_config, next_stage);
+        this->run_request_with_next_stage(url, HTTP_METHOD_PUT, ptr.get(), size, registration_config, next_stage);
+
+        return request.send(200);
+    });
+
 
         return request.send(200);
     });
@@ -853,7 +873,7 @@ void RemoteAccess::parse_secret(ConfigRoot config) {
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);
 }
 
-void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> keys) {
+void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> keys, CoolString public_key) {
         StaticJsonDocument<256> resp_doc;
         DeserializationError error = deserializeJson(resp_doc, response_body.begin(), response_body.length());
 
@@ -884,9 +904,18 @@ void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> k
                 key.pub.c_str());
         }
 
-        this->config = new_config;
+        this->config.get("relay_host")->updateString(new_config.get("relay_host")->asString());
+        this->config.get("relay_port")->updateUint(new_config.get("relay_port")->asUint());
+        this->config.get("enable")->updateBool(new_config.get("enable")->asBool());
+        this->config.get("cert_id")->updateInt(new_config.get("cert_id")->asInt());
         this->config.get("password")->updateString(charger_password);
         this->config.get("uuid")->updateString(resp_doc["charger_uuid"]);
+
+        this->config.get("users")->add();
+        this->config.get("users")->get(0)->get("email")->updateString(new_config.get("email")->asString());
+        this->config.get("users")->get(0)->get("id")->updateUint(1);
+        this->config.get("users")->get(0)->get("public_key")->updateString(public_key);
+
         API::writeConfig("remote_access/config", &this->config);
         registration_state.get("message")->updateString("");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);

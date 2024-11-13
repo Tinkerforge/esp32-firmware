@@ -37,6 +37,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { Container, Modal, Row, Spinner } from "react-bootstrap";
+import { Table, TableRow } from "ts/components/table";
 
 export function RemoteAccessNavbar() {
     return <NavbarItem name="remote_access" module="remote_access" title={__("remote_access.navbar.remote_access")} symbol={<Smartphone />} />;
@@ -45,6 +46,11 @@ export function RemoteAccessNavbar() {
 interface RemoteAccessState {
     login_key: string,
     status_modal_string: string,
+    addUser: {
+        email: string,
+        password: string,
+        note: string,
+    }
 }
 
 export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, RemoteAccessState> {
@@ -80,7 +86,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         this.setState({status_modal_string: ""});
     }
 
-    async get_login_salt(cfg: config) {
+    async get_login_salt(cfg: util.NoExtraProperties<API.getType["remote_access/register"]["config"]>) {
         this.setState({status_modal_string: __("remote_access.content.prepare_login")});
         const getLoginSaltPromise: Promise<string> = new Promise((resolve, reject) => {
             this.resolve = resolve;
@@ -95,7 +101,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         return new Uint8Array(await res.arrayBuffer());
     }
 
-    async get_secret_salt(cfg: config) {
+    async get_secret_salt(cfg: util.NoExtraProperties<API.getType["remote_access/register"]["config"]>) {
         this.setState({status_modal_string: __("remote_access.content.prepare_encryption")});
         const getSecretPromise: Promise<string> = new Promise((resolve, reject) => {
             this.resolve = resolve;
@@ -145,8 +151,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         util.reboot();
     }
 
-    async registerCharger(cfg: config) {
-
+    async registerCharger(cfg: util.NoExtraProperties<API.getType["remote_access/register"]["config"]>) {
         if (!cfg.enable) {
             const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
                 config: cfg,
@@ -173,7 +178,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         }
 
         const loginHash = await hash({
-            pass: this.state.password,
+            pass: this.state.addUser.password,
             salt: loginSalt,
             time: 2,
             mem: 19 * 1024,
@@ -239,7 +244,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         }
 
         const secret_key = await hash({
-            pass: this.state.password,
+            pass: this.state.addUser.password,
             salt: secretSalt,
             // Takes about 1.5 seconds on a Nexus 4
             time: 2, // the number of iterations
@@ -283,7 +288,13 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
 
     override async sendReset(topic: "remote_access/config") {
         const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
-            config: {...API.get("remote_access/config"), enable: false},
+            config: {
+                enable: false,
+                relay_host: "",
+                relay_port: 443,
+                email: "",
+                cert_id: this.state.cert_id,
+            },
             login_key: "",
             secret_key: "",
             mgmt_charger_public: "",
@@ -303,6 +314,19 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         const cert_items: [string, string][] = [["-1", __("remote_access.content.not_used")]];
         for (const cert of cert_config.certs) {
             cert_items.push([cert.id.toString(), cert.name]);
+        }
+
+        let users: TableRow[] = [];
+        for (const user of this.state.users) {
+            const row: TableRow = {
+                columnValues: [user.email],
+                onRemoveClick: async () => {
+                    API.call("remote_access/remove_user", {
+                        id: user.id,
+                    });
+                },
+            }
+            users.push(row);
         }
 
         return <>
@@ -338,23 +362,50 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                     this.setState({enable: !this.state.enable});
                                 }} />
                     </FormRow>
+                    <FormRow label={__("remote_access.content.user")}>
+                        <Table columnNames={[__("remote_access.content.email")]}
+                            rows={users}
+                            addEnabled={users.length < 5 && this.state.enable}
+                            addTitle={__("remote_access.content.add_user")}
+                            onAddShow={async () => this.setState({addUser: {email: "", password: "", note: ""}})}
+                            addMessage={users.length < 5 ? __("remote_access.content.user_add_message")(users.length, 5) : __("remote_access.content.all_users_in_use")}
+                            onAddGetChildren={() => {
+                                return <>
                     <FormRow label={__("remote_access.content.email")}>
-                        <InputText value={this.state.email}
-                                    required
+                                        <InputText value={this.state.addUser.email} required
                                     maxLength={64}
                                     onValue={(v) => {
-                                        this.setState({email: v});
+                                                this.setState({addUser: {...this.state.addUser, email: v}})
                                     }} />
                     </FormRow>
                     <FormRow label={__("remote_access.content.password")} label_muted={__("remote_access.content.password_muted")}>
-                        <InputPassword required={this.state.enable}
+                                        <InputPassword required
+                                            value={this.state.addUser.password}
                                         maxLength={64}
-                                        value={this.state.password}
                                         onValue={(v) => {
-                                            this.setState({password: v});
+                                                this.setState({addUser: {...this.state.addUser, password: v}})
                                         }}
                                         hideClear
                                         placeholder="" />
+                                    </FormRow>
+                                    <FormRow label={__("remote_access.content.note")} label_muted={__("remote_access.content.note_muted")}>
+                                        <InputText value={this.state.addUser.note} onValue={(v) => this.setState({addUser: {...this.state.addUser, note: v}})}/>
+                                    </FormRow>
+                                    </>
+                            }}
+                            onAddSubmit={async () => {
+                                if (users.length === 0) {
+                                    const config: util.NoExtraProperties<API.getType["remote_access/register"]["config"]> = {
+                                        enable: this.state.enable,
+                                        email: this.state.addUser.email,
+                                        relay_host: this.state.relay_host,
+                                        relay_port: this.state.relay_port,
+                                        cert_id: this.state.cert_id,
+                                    };
+                                    await this.registerCharger(config);
+                                }
+                            }}
+                        />
                     </FormRow>
                     <CollapsedSection heading={__("remote_access.content.advanced_settings")}>
                         <FormRow label={__("remote_access.content.relay_host")}>

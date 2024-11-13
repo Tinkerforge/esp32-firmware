@@ -1,8 +1,7 @@
 
 export interface config {
     enable: boolean,
-    uuid: string
-    email: string,
+    uuid: string,
     password: string,
     relay_host: string,
     relay_port: number,
@@ -14,6 +13,10 @@ interface user {
     id: number,
     email: string,
     public_key: string
+}
+
+export interface remove_user {
+    id: number,
 }
 
 interface KeyObject {
@@ -37,7 +40,7 @@ export interface registration_state {
 }
 
 export interface register {
-    config: config,
+    config: registration_config,
     login_key: string,
     secret_key: string,
     mgmt_charger_public: string,
@@ -46,6 +49,22 @@ export interface register {
     keys: KeyObject[],
 }
 
-export type get_login_salt = config;
-export type get_secret_salt = config;
+export interface add_user {
+    pub_key: string,
+    note: string,
+    email: string,
+    login_key: number[],
+    wg_keys: KeyObject[],
+}
+
+interface registration_config {
+    enable: boolean,
+    relay_host: string,
+    relay_port: number,
+    email: string,
+    cert_id: number,
+}
+
+export type get_login_salt = registration_config;
+export type get_secret_salt = registration_config;
 export type login = register;

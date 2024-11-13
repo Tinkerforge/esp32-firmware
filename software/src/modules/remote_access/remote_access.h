@@ -67,7 +67,7 @@ private:
     void parse_login_salt(ConfigRoot config);
     void get_secret(ConfigRoot config);
     void parse_secret(ConfigRoot config);
-    void parse_registration(ConfigRoot config, std::queue<WgKey> keys);
+    void parse_registration(ConfigRoot config, std::queue<WgKey> keys, CoolString public_key);
     void login(ConfigRoot config, CoolString &login_key);
     int setup_inner_socket();
     WireGuard *management = nullptr;
@@ -88,6 +88,7 @@ private:
     ConfigRoot connection_state;
     ConfigRoot registration_state;
     ConfigRoot users_config_prototype;
+    ConfigRoot registration_config;
 };
 
 enum management_command_id {

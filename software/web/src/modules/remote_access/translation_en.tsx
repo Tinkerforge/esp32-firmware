@@ -24,7 +24,13 @@ let x = {
             "prepare_encryption": "Preparing encryption",
             "registration": null,
             "login_failed": "Login failed:",
-            "wrong_credentials": "Wrong username or password"
+            "wrong_credentials": "Wrong username or password",
+            "add_user": "Add user",
+            "user": "Users",
+            "user_add_message": /*SFN*/ (user_count: number, max_users: number) => `${user_count} of ${max_users} users configured.`/*NF*/,
+            "all_users_in_use": "All users are currently in use",
+            "note": "Note",
+            "note_muted": <>will be shown at <a href="https://my.warp-charger.com/" target="_blank">my.warp-charger.com</a>. Optional</>
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",
