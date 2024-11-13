@@ -488,7 +488,12 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpCoils(uint16_t start_address, uint16_
 
         switch (i + start_address) {
             case 1000: REQUIRE(evse); evse_common.set_modbus_enabled(coil); break;
-            case 1001: REQUIRE(evse); api.callCommand(coil ? "evse/start_charging" : "evse/stop_charging", nullptr); break;
+            case 1001: REQUIRE(evse); {
+                    String err = api.callCommand(coil ? "evse/start_charging" : "evse/stop_charging", nullptr);
+                    if (err != "") {
+                        logger.printfln("Failed to %s charging: %s", coil ? "start" : "stop", err.c_str());
+                    }
+                } break;
 
             default: return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
@@ -562,7 +567,14 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpHoldingRegisters(uint16_t start_addre
                 } break;
             // 1006 handled above.
 
-            case 2000: REQUIRE(meter); if (val.u == 0x3E12E5E7) api.callCommand("meter/reset", {}); break;
+            case 2000: REQUIRE(meter); {
+                    if (val.u == 0x3E12E5E7) {
+                        String err = api.callCommand("meter/reset", {});
+                        if (err != "") {
+                            logger.printfln("Failed to reset energy meter: %s", err.c_str());
+                        }
+                    }
+                } break;
             case 3100: REQUIRE(phase_switch); {
                     if (cache->power_manager_state->get("external_control")->asUint() == 0) {
                         String err = api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
@@ -597,9 +609,14 @@ TFModbusTCPExceptionCode ModbusTcp::setKebaHoldingRegisters(uint16_t start_addre
 
         switch (reg) {
             case 5004: REQUIRE(evse); logger.printfln_debug("setting modbus current to %u", val); evse_common.set_modbus_current(val); break;
-            case 5010: REQUIRE(evse); api.callCommand("charge_limits/override_energy", Config::ConfUpdateObject{{
-                    {"energy_wh", (uint32_t)(val * 10)}
-                }});
+            case 5010: REQUIRE(evse); {
+                    String err = api.callCommand("charge_limits/override_energy", Config::ConfUpdateObject{{
+                        {"energy_wh", (uint32_t)(val * 10)}
+                    }});
+                    if (err != "")  {
+                        logger.printfln("Failed to set energy limit: %s", err.c_str());
+                    }
+                }
                 break;
             case 5012: break; // We can't unlock the connector.
             case 5014: REQUIRE(evse); evse_common.set_modbus_enabled(val > 0); break;
