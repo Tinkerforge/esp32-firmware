@@ -295,10 +295,12 @@ void EVSEV2::post_register_urls()
         is_in_bootloader(tf_evse_v2_set_control_pilot_disconnect(&device, control_pilot_disconnect_update.get("disconnect")->asBool(), nullptr));
     }, true);
 
+#if BUILD_IS_WARP2()
     api.addState("evse/gp_output", &gp_output);
     api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()));
     }, true);
+#endif
 }
 
 void EVSEV2::register_events()
@@ -1216,7 +1218,9 @@ void EVSEV2::update_all_data()
 
     evse_common.require_meter_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_REQUIRE_METER]));
 
+#if BUILD_IS_WARP2()
     gp_output.get("gp_output")->updateUint(gpio[10] ? TF_EVSE_V2_OUTPUT_CONNECTED_TO_GROUND : TF_EVSE_V2_OUTPUT_HIGH_IMPEDANCE);
+#endif
 
     evse_common.low_level_state.get("temperature")->updateInt(temperature);
     evse_common.low_level_state.get("phases_current")->updateUint(phases_current);
