@@ -157,14 +157,24 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
 }
 
 void RemoteAccess::pre_setup() {
+    users_config_prototype = Config::Object({
+        {"id", Config::Uint8(0)},
+        {"email", Config::Str("", 0, 64)},
+        {"public_key", Config::Str("", 0, 44)}
+    });
+
     config = ConfigRoot{Config::Object({
         {"uuid", Config::Str("", 0, 36)},
         {"enable", Config::Bool(false)},
-        {"email", Config::Str("", 0, 64)},
         {"password", Config::Str("", 0, 32)},
         {"relay_host", Config::Str("my.warp-charger.com", 0, 64)},
         {"relay_port", Config::Uint16(443)},
-        {"cert_id", Config::Int8(-1)}
+        {"cert_id", Config::Int8(-1)},
+        {"users", Config::Array(
+            {},
+            &users_config_prototype,
+            0, MAX_USERS, Config::type_id<Config::ConfObject>()
+        )}
     })};
 
     connection_state = Config::Array(
@@ -196,15 +206,16 @@ void RemoteAccess::setup() {
     logger.printfln("Remote Access is enabled trying to connect");
 }
 
-static std::unique_ptr<char []> decode_base64(const CoolString &input, size_t buffer_size) {
-    std::unique_ptr<char []> out = heap_alloc_array<char>(buffer_size);
+static std::unique_ptr<uint8_t []> decode_base64(const CoolString &input, size_t buffer_size) {
+    std::unique_ptr<uint8_t []> out = heap_alloc_array<uint8_t>(buffer_size);
     if (out == nullptr) {
         return out;
     }
     size_t _unused = 0;
-    int ret = mbedtls_base64_decode((unsigned char *)out.get(), buffer_size, &_unused, (unsigned char *)input.c_str(), input.length());
+    int ret = mbedtls_base64_decode(out.get(), buffer_size, &_unused, (unsigned char *)input.c_str(), input.length());
     if (ret != 0) {
         logger.printfln("Error while decoding: %i", ret);
+        return nullptr;
     }
     return out;
 }
@@ -419,7 +430,7 @@ void RemoteAccess::register_urls() {
 
         // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
         // Also validate the decoded lengths!
-        std::unique_ptr<char[]> secret_key       = decode_base64(doc["secret_key"],   crypto_secretbox_KEYBYTES);
+        std::unique_ptr<uint8_t[]> secret_key       = decode_base64(doc["secret_key"],   crypto_secretbox_KEYBYTES);
         if (secret_key == nullptr) {
             https_client = nullptr;
             encrypted_secret = nullptr;
@@ -894,9 +905,32 @@ void RemoteAccess::resolve_management() {
     url += relay_port;
     url += "/api/management";
 
+
+    const CoolString &uuid = config.get("uuid")->asString();
+
     char json[250] = {};
     TFJsonSerializer serializer = TFJsonSerializer(json, 250);
     serializer.addObject();
+
+    bool old_api;
+    if (uuid.length() == 0) {
+        old_api = true;
+        serializer.addMemberNumber("id", local_uid_num);
+        serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
+        serializer.addMemberObject("data");
+            serializer.addMemberObject("V1");
+                serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
+                serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
+                //TODO: Adapt this once we support more than one user.
+                serializer.addMemberArray("configured_connections");
+                    for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
+                        serializer.addNumber(i);
+                    }
+                serializer.endArray();
+            serializer.endObject();
+        serializer.endObject();
+    } else {
+        old_api = false;
         serializer.addMemberObject("data");
             serializer.addMemberObject("V2");
                 serializer.addMemberString("id", config.get("uuid")->asEphemeralCStr());
@@ -911,6 +945,8 @@ void RemoteAccess::resolve_management() {
                 serializer.endArray();
             serializer.endObject();
         serializer.endObject();
+    }
+
     serializer.endObject();
     size_t len = serializer.end();
 
@@ -918,7 +954,25 @@ void RemoteAccess::resolve_management() {
         https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
     }
     https_client->set_header("Content-Type", "application/json");
-    auto callback = [this](ConfigRoot cfg) {
+    auto callback = [this, old_api](ConfigRoot cfg) {
+        if (old_api) {
+            StaticJsonDocument<250> resp;
+            {
+                DeserializationError error = deserializeJson(resp, response_body.c_str());
+                if (error) {
+                    char err_str[64];
+                    snprintf(err_str, 64, "Error while deserializing management response: %s", error.c_str());
+                    registration_state.get("message")->updateString(err_str);
+                    registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+                    https_client = nullptr;
+                    return;
+                }
+                response_body = "";
+            }
+            config.get("uuid")->updateString(resp["uuid"]);
+            api.writeConfig("remote_access/config", &config);
+        }
+
         management_request_done = true;
         https_client = nullptr;
         this->connect_management();

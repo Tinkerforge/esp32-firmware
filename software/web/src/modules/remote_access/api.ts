@@ -1,11 +1,19 @@
 
 export interface config {
     enable: boolean,
+    uuid: string
     email: string,
     password: string,
     relay_host: string,
     relay_port: number,
     cert_id: number,
+    users: user[],
+}
+
+interface user {
+    id: number,
+    email: string,
+    public_key: string
 }
 
 interface KeyObject {

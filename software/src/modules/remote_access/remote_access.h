@@ -84,10 +84,10 @@ private:
     std::unique_ptr<uint8_t[]> encrypted_secret = nullptr;
     std::unique_ptr<uint8_t[]> secret_nonce = nullptr;
 
-
     ConfigRoot config;
     ConfigRoot connection_state;
     ConfigRoot registration_state;
+    ConfigRoot users_config_prototype;
 };
 
 enum management_command_id {
