@@ -377,8 +377,10 @@ void ChargeManager::setup()
     // disabled.
     api.restorePersistentConfig("charge_manager/low_level_config", &low_level_config);
 
+    // Always set initialized so that the front-end is displayed.
+    initialized = true;
+
     if (!config.get("enable_charge_manager")->asBool() || config.get("chargers")->count() == 0) {
-        initialized = true;
         return;
     }
     state.get("state")->updateUint(1);
@@ -503,8 +505,6 @@ void ChargeManager::setup()
         ca_config->distribution_log = nullptr;
         ca_config->distribution_log_len = 0;
     }
-
-    initialized = true;
 }
 
 void ChargeManager::check_watchdog()
