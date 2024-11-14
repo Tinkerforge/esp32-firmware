@@ -131,8 +131,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         }))
             return;
 
-        let energyManagerMode = API.hasModule("em_common") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
-        if (!energyManagerMode)
+        if (API.hasModule("evse_common"))
             await API.save_unchecked('evse/management_enabled', {"enabled": this.state.managementEnabled}, translate_unchecked("charge_manager.script.save_failed"));
 
         let new_cfg: ChargeManagerConfig = {...API.get("charge_manager/config"),
@@ -160,8 +159,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             }))
             return;
 
-        let energyManagerMode = API.hasModule("em_common") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
-        if (!energyManagerMode)
+        if (API.hasModule("em_common"))
             await API.save_unchecked('evse/management_enabled', {"enabled": false}, translate_unchecked("charge_manager.script.save_failed"));
 
         await super.sendReset(t);
