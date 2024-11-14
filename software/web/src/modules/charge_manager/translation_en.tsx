@@ -138,17 +138,11 @@ let x = {
             "target_constant_current_muted": "Chargers will be throttled if this current is exceeded to make sure the largest consumer will not exceed the expected peak current."
         },
         "automation": {
-          "charge_manager_wd": "Charge manager watchdog triggered",
-          "automation_trigger_text": <>When the <b>charge manager watchdog</b> gets triggered, </>,
-          "set_charge_manager": "Set available current for charge manager",
-          "automation_action_text": /*FFN*/(current: string) => {
-            return (
-              <>
-                set the current that is available for the <b>charge manager</b> to <b>{current} A</b>.
-              </>
-            );
-          }/*NF*/,
-          "max_current": "Maximum current"
+            "charge_manager_wd": "Charge manager watchdog triggered",
+            "automation_trigger_text": <>When the <b>charge manager watchdog</b> gets triggered, </>,
+            "set_charge_manager": "Set available current for charge manager",
+            "automation_action_text": /*FFN*/(current: string) => <>set the current that is available for the <b>charge manager</b> to <b>{current} A</b>.</>/*NF*/,
+            "max_current": "Maximum current"
         },
         "script": {
             "charge_state_0": "No vehicle connected",
