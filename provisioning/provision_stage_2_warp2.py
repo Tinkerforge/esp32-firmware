@@ -26,13 +26,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
-from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+from .tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from .tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+from .tinkerforge.bricklet_nfc import SimpleGetTagID
+from .tinkerforge.bricklet_evse_v2 import BrickletEVSEV2
 
-from provision_common.provision_common import *
-from provision_common.bricklet_nfc import SimpleGetTagID
-from provision_common.bricklet_evse_v2 import BrickletEVSEV2
-from provision_stage_3_warp2 import Stage3
+from .provision_common.provision_common import *
+from .provision_stage_3_warp2 import Stage3
 
 evse = None
 power_off_on_error = True

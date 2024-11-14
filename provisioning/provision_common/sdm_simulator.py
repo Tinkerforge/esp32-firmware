@@ -4,8 +4,8 @@
 HOST = "localhost"
 PORT = 4223
 
-from tinkerforge.ip_connection import IPConnection
-from tinkerforge.bricklet_rs485 import BrickletRS485
+from ..tinkerforge.ip_connection import IPConnection
+from ..tinkerforge.bricklet_rs485 import BrickletRS485
 
 import time
 import sys

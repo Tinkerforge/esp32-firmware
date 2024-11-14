@@ -12,21 +12,22 @@ import traceback
 import subprocess
 import datetime
 
-from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
-from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
-from tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
-from tinkerforge.bricklet_industrial_dual_analog_in_v2 import BrickletIndustrialDualAnalogInV2
-from tinkerforge.bricklet_industrial_dual_ac_in import BrickletIndustrialDualACIn
-from tinkerforge.bricklet_rs485 import BrickletRS485
-from tinkerforge.bricklet_io4_v2 import BrickletIO4V2
-from tinkerforge.bricklet_warp_energy_manager import BrickletWARPEnergyManager
+from .tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from .tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+from .tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
+from .tinkerforge.bricklet_industrial_dual_analog_in_v2 import BrickletIndustrialDualAnalogInV2
+from .tinkerforge.bricklet_industrial_dual_ac_in import BrickletIndustrialDualACIn
+from .tinkerforge.bricklet_rs485 import BrickletRS485
+from .tinkerforge.bricklet_io4_v2 import BrickletIO4V2
+from .tinkerforge.bricklet_warp_energy_manager import BrickletWARPEnergyManager
 
-from provision_common.provision_common import *
-from provision_common.sdm_simulator import SDMSimulator
+from .provision_common.provision_common import *
+from .provision_common.sdm_simulator import SDMSimulator
 
-from provision_stage_2_warp2 import ContentTypeRemover, factory_reset, connect_to_ethernet
+from .provision_stage_2_warp2 import ContentTypeRemover, factory_reset, connect_to_ethernet
 
 WARP_CHARGER_GIT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'warp-charger')
+FIRMWARES_GIT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'firmwares')
 
 def get_next_serial_number():
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'staging-password.txt'), 'r') as f:
@@ -80,14 +81,14 @@ class EnergyManagerTester:
             github_reachable = False
 
         if github_reachable:
-            with ChangedDirectory(os.path.join("..", "..", "firmwares")):
+            with ChangedDirectory(FIRMWARES_GIT_PATH):
                 run(["git", "pull"])
 
-        wem_bricklet_directory = os.path.join("..", "..", "firmwares", "bricklets", "warp_energy_manager")
+        wem_bricklet_directory = os.path.join(FIRMWARES_GIT_PATH, "bricklets", "warp_energy_manager")
         wem_bricklet_path = os.readlink(os.path.join(wem_bricklet_directory, "bricklet_warp_energy_manager_firmware_latest.zbin"))
         wem_bricklet_path = os.path.join(wem_bricklet_directory, wem_bricklet_path)
 
-        wem_brick_directory = os.path.join("..", "..", "firmwares", "bricks", "warp_energy_manager")
+        wem_brick_directory = os.path.join(FIRMWARES_GIT_PATH, "bricks", "warp_energy_manager")
         wem_brick_path = os.readlink(os.path.join(wem_brick_directory, "brick_warp_energy_manager_firmware_latest.bin"))
         wem_brick_path = os.path.join(wem_brick_directory, wem_brick_path)
 

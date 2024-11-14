@@ -12,21 +12,22 @@ import traceback
 import subprocess
 import datetime
 
-from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
-from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
-from tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
-from tinkerforge.bricklet_industrial_dual_analog_in_v2 import BrickletIndustrialDualAnalogInV2
-from tinkerforge.bricklet_industrial_dual_ac_in import BrickletIndustrialDualACIn
-from tinkerforge.bricklet_rs485 import BrickletRS485
-from tinkerforge.bricklet_io4_v2 import BrickletIO4V2
-from tinkerforge.bricklet_warp_energy_manager import BrickletWARPEnergyManager
+from .tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from .tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+from .tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
+from .tinkerforge.bricklet_industrial_dual_analog_in_v2 import BrickletIndustrialDualAnalogInV2
+from .tinkerforge.bricklet_industrial_dual_ac_in import BrickletIndustrialDualACIn
+from .tinkerforge.bricklet_rs485 import BrickletRS485
+from .tinkerforge.bricklet_io4_v2 import BrickletIO4V2
+from .tinkerforge.bricklet_warp_energy_manager import BrickletWARPEnergyManager
 
-from provision_common.provision_common import *
-from provision_common.sdm_simulator import SDMSimulator
+from .provision_common.provision_common import *
+from .provision_common.sdm_simulator import SDMSimulator
 
-from provision_stage_2_warp2 import ContentTypeRemover, factory_reset, connect_to_ethernet
+from .provision_stage_2_warp2 import ContentTypeRemover, factory_reset, connect_to_ethernet
 
 WARP_CHARGER_GIT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'warp-charger')
+FIRMWARES_GIT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'firmwares')
 
 def get_next_serial_number(prefix):
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'staging-password.txt'), 'r') as f:
@@ -87,28 +88,30 @@ class EnergyManagerTester:
 
         self.result["start"] = now()
 
-        self.rgb_led.set_rgb_value(0, 0, 255)
-        self.iqr.set_selected_value(0, 1)
+        #self.rgb_led.set_rgb_value(0, 0, 255)
+        #self.iqr.set_selected_value(0, 1)
 
         github_reachable = True
         try:
             with urllib.request.urlopen('https://github.com/Tinkerforge/firmwares', timeout=5.0) as req:
-                req.recv()
-        except:
+                req.read()
+        except Exception as e:
+            print(e)
             print("github.com not reachable: Will not pull firmwares git.")
             github_reachable = False
 
         if github_reachable:
-            with ChangedDirectory(os.path.join("..", "..", "firmwares")):
+            with ChangedDirectory(FIRMWARES_GIT_PATH):
                 run(["git", "pull"])
 
-        wem_bricklet_directory = os.path.join("..", "..", "firmwares", "bricklets", "warp_energy_manager_v2")
+        """
+        wem_bricklet_directory = os.path.join(FIRMWARES_GIT_PATH, "bricklets", "warp_energy_manager_v2")
         wem_bricklet_path = os.readlink(os.path.join(wem_bricklet_directory, "bricklet_warp_energy_manager_v2_firmware_latest.zbin"))
         wem_bricklet_path = os.path.join(wem_bricklet_directory, wem_bricklet_path)
 
-        wem_brick_directory = os.path.join("..", "..", "firmwares", "bricks", self.brick_firmware_basename)
+        wem_brick_directory = os.path.join(FIRMWARES_GIT_PATH, "bricks", self.brick_firmware_basename)
         wem_brick_path = os.readlink(os.path.join(wem_brick_directory, "brick_{0}_firmware_latest.bin".format(self.brick_firmware_basename)))
-        wem_brick_path = os.path.join(wem_brick_directory, wem_brick_path)
+        wem_brick_path = os.path.join(wem_brick_directory, wem_brick_path)"""
 
         pattern = r"^WIFI:S:(wem2|seb)-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58)
         qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
@@ -204,13 +207,13 @@ class EnergyManagerTester:
         self.wem.set_rgb_value(0, 0, 255)"""
 
     def fatal_error(self, string):
-        self.rgb_led.set_rgb_value(255, 0, 0)
+        """self.rgb_led.set_rgb_value(255, 0, 0)
 
         # Depending on the error, the WEM Bricklet might not be initialize yet
         try:
             self.wem.set_rgb_value(255, 0, 0)
         except:
-            pass
+            pass"""
         fatal_error(string)
 
     def test_voltage_supply(self):

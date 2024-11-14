@@ -19,12 +19,11 @@ import time
 import traceback
 import urllib.request
 
-from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from .tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 
+from .provision_common.provision_common import *
 
 ESP_ETHERNET_DEVICE_ID = 115
-
-from provision_common.provision_common import *
 
 def main():
     common_init('/dev/ttyUSB0')

@@ -18,10 +18,10 @@ import threading
 import time
 import urllib.request
 
-from tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
-from tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+from .tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from .tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 
-from provision_common.provision_common import *
+from .provision_common.provision_common import *
 
 def main():
     if len(sys.argv) != 4:

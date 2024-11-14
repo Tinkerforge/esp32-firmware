@@ -9,21 +9,21 @@ import tkinter as tk
 
 import cv2 # sudo pip3 install openvc-python
 
-from tinkerforge.ip_connection import IPConnection
-from tinkerforge.device_factory import create_device
-from tinkerforge.brick_master import BrickMaster
-from tinkerforge.bricklet_industrial_dual_relay import BrickletIndustrialDualRelay
-from tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
-from tinkerforge.bricklet_industrial_dual_ac_relay import BrickletIndustrialDualACRelay
-from tinkerforge.bricklet_energy_monitor import BrickletEnergyMonitor
-from tinkerforge.bricklet_servo_v2 import BrickletServoV2
-from tinkerforge.bricklet_led_strip_v2 import BrickletLEDStripV2
-from tinkerforge.bricklet_color_v2 import BrickletColorV2
-from tinkerforge.bricklet_piezo_speaker_v2 import BrickletPiezoSpeakerV2
+from .tinkerforge.ip_connection import IPConnection
+from .tinkerforge.device_factory import create_device
+from .tinkerforge.brick_master import BrickMaster
+from .tinkerforge.bricklet_industrial_dual_relay import BrickletIndustrialDualRelay
+from .tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
+from .tinkerforge.bricklet_industrial_dual_ac_relay import BrickletIndustrialDualACRelay
+from .tinkerforge.bricklet_energy_monitor import BrickletEnergyMonitor
+from .tinkerforge.bricklet_servo_v2 import BrickletServoV2
+from .tinkerforge.bricklet_led_strip_v2 import BrickletLEDStripV2
+from .tinkerforge.bricklet_color_v2 import BrickletColorV2
+from .tinkerforge.bricklet_piezo_speaker_v2 import BrickletPiezoSpeakerV2
+from .tinkerforge.bricklet_nfc import BrickletNFC
 
-from provision_common.bricklet_nfc import BrickletNFC
-from provision_common.inventory import Inventory
-from provision_common.provision_common import FatalError, fatal_error, green
+from .provision_common.inventory import Inventory
+from .provision_common.provision_common import FatalError, fatal_error, green
 
 IPCON_HOST = 'localhost'
 IPCON_TIMEOUT = 1.0 # seconds
