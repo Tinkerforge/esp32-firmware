@@ -159,7 +159,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             }))
             return;
 
-        if (API.hasModule("em_common"))
+        if (API.hasModule("evse_common"))
             await API.save_unchecked('evse/management_enabled', {"enabled": false}, translate_unchecked("charge_manager.script.save_failed"));
 
         await super.sendReset(t);
