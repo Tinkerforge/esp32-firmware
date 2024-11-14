@@ -1,5 +1,9 @@
 #!/usr/bin/python3 -u
 
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
+
 import os
 import sys
 import time
@@ -9,12 +13,12 @@ from pathlib import Path
 import termios
 import fcntl
 
-from .tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58, Error
-from .tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
-from .tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
-from .tinkerforge.bricklet_temperature_v2 import BrickletTemperatureV2
+from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58, Error
+from provisioning.tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
+from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+from provisioning.tinkerforge.bricklet_temperature_v2 import BrickletTemperatureV2
 
-from .provision_common.provision_common import *
+from provisioning.provision_common.provision_common import *
 
 SERIAL_SETTLE_DELAY = 2
 

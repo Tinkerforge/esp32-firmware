@@ -1,5 +1,9 @@
 #!/usr/bin/python3 -u
 
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
+
 import contextlib
 from contextlib import contextmanager
 import datetime
@@ -18,10 +22,10 @@ import threading
 import time
 import urllib.request
 
-from .tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
-from .tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 
-from .provision_common.provision_common import *
+from provisioning.provision_common.provision_common import *
 
 def main():
     if len(sys.argv) != 4:

@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
+
 
 HOST = "localhost"
 PORT = 4223
 
-from ..tinkerforge.ip_connection import IPConnection
-from ..tinkerforge.bricklet_rs485 import BrickletRS485
+from provisioning.tinkerforge.ip_connection import IPConnection
+from provisioning.tinkerforge.bricklet_rs485 import BrickletRS485
 
 import time
 import sys

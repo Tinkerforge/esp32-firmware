@@ -1,5 +1,3 @@
-#!/usr/bin/python3 -u
-
 from collections import namedtuple
 import contextlib
 from contextlib import contextmanager
@@ -21,8 +19,8 @@ import traceback
 import urllib.request
 import csv
 
-from ..tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
-from ..tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 
 rnd = secrets.SystemRandom()
 

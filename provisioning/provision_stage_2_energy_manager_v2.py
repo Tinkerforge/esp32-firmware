@@ -1,5 +1,9 @@
 #!/usr/bin/python3 -u
 
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
+
 from contextlib import contextmanager
 import getpass
 import json
@@ -12,19 +16,19 @@ import traceback
 import subprocess
 import datetime
 
-from .tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
-from .tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
-from .tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
-from .tinkerforge.bricklet_industrial_dual_analog_in_v2 import BrickletIndustrialDualAnalogInV2
-from .tinkerforge.bricklet_industrial_dual_ac_in import BrickletIndustrialDualACIn
-from .tinkerforge.bricklet_rs485 import BrickletRS485
-from .tinkerforge.bricklet_io4_v2 import BrickletIO4V2
-from .tinkerforge.bricklet_warp_energy_manager import BrickletWARPEnergyManager
+from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+from provisioning.tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
+from provisioning.tinkerforge.bricklet_industrial_dual_analog_in_v2 import BrickletIndustrialDualAnalogInV2
+from provisioning.tinkerforge.bricklet_industrial_dual_ac_in import BrickletIndustrialDualACIn
+from provisioning.tinkerforge.bricklet_rs485 import BrickletRS485
+from provisioning.tinkerforge.bricklet_io4_v2 import BrickletIO4V2
+from provisioning.tinkerforge.bricklet_warp_energy_manager import BrickletWARPEnergyManager
 
-from .provision_common.provision_common import *
-from .provision_common.sdm_simulator import SDMSimulator
+from provisioning.provision_common.provision_common import *
+from provisioning.provision_common.sdm_simulator import SDMSimulator
 
-from .provision_stage_2_warp2 import ContentTypeRemover, factory_reset, connect_to_ethernet
+from provisioning.provision_stage_2_warp2 import ContentTypeRemover, factory_reset, connect_to_ethernet
 
 WARP_CHARGER_GIT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'warp-charger')
 FIRMWARES_GIT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'firmwares')

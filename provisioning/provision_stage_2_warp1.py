@@ -1,5 +1,9 @@
 #!/usr/bin/python3 -u
 
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
+
 import contextlib
 from contextlib import contextmanager
 import datetime
@@ -21,9 +25,9 @@ import urllib.request
 import csv
 import traceback
 
-from .tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
-from .tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
-from .tinkerforge.bricklet_evse import BrickletEVSE
+from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
+from provisioning.tinkerforge.bricklet_evse import BrickletEVSE
 
 rnd = secrets.SystemRandom()
 

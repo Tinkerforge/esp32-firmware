@@ -1,5 +1,9 @@
 #!/usr/bin/python3 -u
 
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
+
 import contextlib
 from contextlib import contextmanager
 import datetime
@@ -19,7 +23,7 @@ import time
 import traceback
 import urllib.request
 
-from .tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
+from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 
 ESP_DEVICE_ID = 113
 

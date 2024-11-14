@@ -1,9 +1,15 @@
+#!/usr/bin/python3 -u
+
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
+
 import sys
 import time
 import zipfile
 
-from .tinkerforge.ip_connection import IPConnection
-from .tinkerforge.bricklet_unknown import BrickletUnknown
+from provisioning.tinkerforge.ip_connection import IPConnection
+from provisioning.tinkerforge.bricklet_unknown import BrickletUnknown
 
 def fail(s):
     print(s)
