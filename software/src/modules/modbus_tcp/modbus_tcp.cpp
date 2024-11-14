@@ -952,7 +952,7 @@ void ModbusTcp::start_server() {
     cache = std::unique_ptr<Cache>(new Cache());
     fillCache();
 
-    table = config.get("table")->asEnum<RegisterTable>();
+    auto table = config.get("table")->asEnum<RegisterTable>();
 
     server.start(
         0, config.get("port")->asUint(),
@@ -962,7 +962,7 @@ void ModbusTcp::start_server() {
         [](uint32_t peer_address, uint16_t port, TFModbusTCPServerDisconnectReason reason, int error_number) {
             logger.printfln("client disconnected: peer_address=%u port=%u reason=%s error_number=%d", peer_address, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
         },
-        [this](uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values) {
+        [this, table](uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values) {
             switch(function_code) {
                 case TFModbusTCPFunctionCode::ReadCoils:
                     switch (table) {
@@ -1029,6 +1029,18 @@ void ModbusTcp::start_server() {
             return TFModbusTCPExceptionCode::IllegalFunction;
         }
     );
+
+    this->tick_task = task_scheduler.scheduleWithFixedDelay([this](){
+        server.tick();
+    }, 10_ms);
+}
+
+void ModbusTcp::stop_server() {
+    // We are running in the main task -> cancel can't return WillBeCancelled
+    task_scheduler.cancel(this->tick_task);
+
+    server.stop();
+    cache = nullptr;
 }
 
 void ModbusTcp::fillCache() {
@@ -1054,7 +1066,12 @@ void ModbusTcp::fillCache() {
 }
 
 void ModbusTcp::register_events() {
-    fillCache();
+    event.registerEvent("modbus_tcp/config", {}, [this](const Config *config) {
+        this->stop_server();
+        if (config->get("enable")->asBool())
+            this->start_server();
+        return EventResult::OK;
+    });
 }
 
 void ModbusTcp::setup()
@@ -1068,10 +1085,6 @@ void ModbusTcp::setup()
 
     start_server();
 
-    task_scheduler.scheduleWithFixedDelay([this](){
-        server.tick();
-    }, 10_ms);
-
     started = true;
     initialized = true;
 }
@@ -1079,13 +1092,9 @@ void ModbusTcp::setup()
 void ModbusTcp::register_urls()
 {
     api.addPersistentConfig("modbus_tcp/config", &config);
-
-    if (!config.get("enable")->asBool()) {
-        return;
-    }
 }
 
 void ModbusTcp::pre_reboot()
 {
-    server.stop();
+    stop_server();
 }

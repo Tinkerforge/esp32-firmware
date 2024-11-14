@@ -47,8 +47,7 @@ interface config {
 export class ModbusTcp extends ConfigComponent<'modbus_tcp/config', {}, config> {
     constructor() {
         super('modbus_tcp/config',
-                __("modbus_tcp.script.save_failed"),
-                __("modbus_tcp.script.reboot_content_changed"));
+                __("modbus_tcp.script.save_failed"));
 
         util.addApiEventListener('evse/slots', () => {
             this.setState({evse_enable: API.get('evse/slots')[EVSE_SLOT_MODBUS_TCP].active});

@@ -42,6 +42,7 @@ private:
     void update_keba_regs();
 
     void start_server();
+    void stop_server();
     void fillCache();
 
     TFModbusTCPExceptionCode getWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
@@ -93,7 +94,6 @@ private:
         BENDER,
         KEBA
     };
-    RegisterTable table;
 
     union TwoRegs {
         uint32_t u;
@@ -107,4 +107,5 @@ private:
     TwoRegs getBenderHoldingRegister(uint16_t reg);
 
     std::unique_ptr<Cache> cache;
+    uint64_t tick_task;
 };
