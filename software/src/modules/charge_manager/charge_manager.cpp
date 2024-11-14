@@ -526,7 +526,7 @@ void ChargeManager::check_watchdog()
     last_available_current_update = millis();
 }
 
-bool ChargeManager::get_charger_count()
+size_t ChargeManager::get_charger_count()
 {
     return charger_count;
 }
