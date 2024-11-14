@@ -34,12 +34,14 @@ static constexpr auto HEATING_UPDATE_INTERVAL = 1_m;
 #define extended_logging(fmt, ...) \
     do { \
         if (extended_logging_active) { \
-            logger.tracefln(fmt __VA_OPT__(,) __VA_ARGS__); \
+            logger.tracefln(this->trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
         } \
     } while (0)
 
 void Heating::pre_setup()
 {
+    this->trace_buffer_index = logger.alloc_trace_buffer("heating", 1 << 20);
+
     config = ConfigRoot{Config::Object({
         {"sg_ready_blocking_active_type", Config::Uint(0, 0, 1)},
         {"sg_ready_extended_active_type", Config::Uint(0, 0, 1)},

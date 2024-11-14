@@ -32,6 +32,8 @@ private:
     ConfigRoot state;
     uint32_t last_sg_ready_change = 0;
 
+    size_t trace_buffer_index;
+
 public:
     enum class Status : uint8_t {
         Idle,

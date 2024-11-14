@@ -27,13 +27,21 @@
 
 extern size_t event_log_alignment;
 
-const char *get_module_offset_and_length(const char *path, size_t *out_length);
-size_t strlen_with_event_log_alignment(const char *c);
+const char *get_module_offset_and_length(const char *path, size_t *out_length, bool check_len);
+size_t strlen_with_event_log_alignment(const char *c, bool check_len);
 
 #ifdef EVENT_LOG_PREFIX
 static const char *event_log_prefix = EVENT_LOG_PREFIX;
-static size_t event_log_prefix_len  = strlen_with_event_log_alignment(event_log_prefix);
+static size_t event_log_prefix_len  = strlen_with_event_log_alignment(event_log_prefix, true);
 #else
 static size_t event_log_prefix_len  = 0;
-static const char *event_log_prefix = get_module_offset_and_length(__BASE_FILE__, &event_log_prefix_len);
+static const char *event_log_prefix = get_module_offset_and_length(__BASE_FILE__, &event_log_prefix_len, true);
+#endif
+
+#ifdef TRACE_LOG_PREFIX
+static const char *trace_log_prefix = TRACE_LOG_PREFIX;
+static size_t trace_log_prefix_len  = strlen_with_event_log_alignment(trace_log_prefix, false);
+#else
+static size_t trace_log_prefix_len  = 0;
+static const char *trace_log_prefix = get_module_offset_and_length(__BASE_FILE__, &trace_log_prefix_len, false);
 #endif

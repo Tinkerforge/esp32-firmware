@@ -174,19 +174,21 @@ public:
 };
 
 
-template <typename T, size_t SIZE, void*(*malloc_fn)(size_t), void(*free_fn)(void*)>
+template <typename T, void*(*malloc_fn)(size_t), void(*free_fn)(void*)>
 class TF_Ringbuffer {
-    static_assert((SIZE & (SIZE - 1)) == 0, "TF_Ringbuffer: SIZE must be power of two");
-
 public:
-    TF_Ringbuffer() : start(0), end(0)
+    TF_Ringbuffer() : start(0), end(0), buf_size(0)
     {
+
     }
 
-    void setup()
+    void setup(size_t size)
     {
-        auto buf_size = sizeof(T) * SIZE;
-        buffer = (T *)malloc_fn(buf_size);
+        if ((size & (size - 1)) != 0)
+            esp_system_abort("TF_Ringbuffer: size must be power of two");
+
+        this->buf_size = size;
+        buffer = (T *)malloc_fn(sizeof(T) * buf_size);
     }
 
     void clear()
@@ -201,13 +203,12 @@ public:
 
     inline size_t size()
     {
-        return SIZE - 1;
+        return buf_size - 1;
     }
 
     inline size_t used()
     {
-        // SIZE is a power of two. The compiler will optimize this to & (SIZE - 1) or use extui (Extract Unsigned Immediate) if SIZE <= 16.
-        return (SIZE + end - start) % SIZE;
+        return mod_size(buf_size + end - start);
     }
 
     inline size_t free()
@@ -218,11 +219,11 @@ public:
     void push(T val)
     {
         buffer[end] = val;
-        end = (end + 1) % SIZE;
+        end = mod_size(end + 1);
 
         // This is true if we've just overwritten the oldest item
         if (end == start) {
-            start = (start + 1) % SIZE;
+            start = mod_size(start + 1);
         }
     }
 
@@ -236,7 +237,7 @@ public:
         }
 
         *val = buffer[start];
-        start = (start + 1) % SIZE;
+        start = mod_size(start + 1);
 
         return true;
     }
@@ -263,7 +264,7 @@ public:
             return false;
         }
 
-        size_t idx = (SIZE + start + offset) % SIZE;
+        size_t idx = mod_size(buf_size + start + offset);
         *val = buffer[idx];
 
         return true;
@@ -275,8 +276,8 @@ public:
 
         bool fits = n < free();
 
-        while (end + n > SIZE) {
-            size_t to_write = SIZE - end;
+        while (end + n > buf_size) {
+            size_t to_write = buf_size - end;
             memcpy(buffer + end, val, to_write);
             val += to_write;
             n -= to_write;
@@ -284,10 +285,10 @@ public:
         }
 
         memcpy(buffer + end, val, n);
-        end = (end + n) % SIZE;
+        end = mod_size(end + n);
 
         if (!fits) {
-            start = (end + 1) % SIZE;
+            start = mod_size(end + 1);
         }
     }
 
@@ -295,7 +296,7 @@ public:
     {
         while (!empty()) {
             bool found = buffer[start] == needle;
-            start = (start + 1) % SIZE;
+            start = mod_size(start + 1);
 
             if (found) {
                 return;
@@ -313,7 +314,7 @@ public:
             *second_len = 0;
         } else {
             *first = buffer + start;
-            *first_len = SIZE - start;
+            *first_len = buf_size - start;
             *second = buffer;
             *second_len = end;
         }
@@ -323,5 +324,12 @@ public:
     size_t start;
     // index of first invalid element
     size_t end;
+    size_t buf_size;
     T *buffer;
+
+private:
+    [[gnu::always_inline]]
+    inline size_t mod_size(size_t x) {
+        return x & (buf_size - 1);
+    }
 };

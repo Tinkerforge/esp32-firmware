@@ -43,14 +43,34 @@
 void EventLog::pre_init()
 {
     event_buf.setup();
-#if defined(BOARD_HAS_PSRAM)
-    trace_buf.setup();
-#endif
 
     printfln_prefixed(nullptr, 0, "    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
     printfln_prefixed(nullptr, 0, "         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     printfln_prefixed(nullptr, 0, "READY.");
     printfln_prefixed(nullptr, 0, "Last reset reason was: %s", tf_reset_reason());
+}
+
+size_t EventLog::alloc_trace_buffer(const char *name, size_t size) {
+#if defined(BOARD_HAS_PSRAM)
+    if (boot_stage > BootStage::PRE_SETUP){
+        return -1; // TODO esp_system_abort here?
+    }
+
+    if (this->trace_buffer_size_allocd + trace_buffer_size_allocd > MAX_TRACE_BUFFERS_SIZE){
+        return -1; // TODO esp_system_abort here?
+    }
+
+    if (trace_buffers_in_use == trace_buffers.size()){
+        return -1;  // TODO esp_system_abort here?
+    }
+
+    trace_buffers[trace_buffers_in_use].name = name;
+    trace_buffers[trace_buffers_in_use].buf.setup(size);
+    ++trace_buffers_in_use;
+    return trace_buffers_in_use - 1;
+#else
+    return -1;
+#endif
 }
 
 void EventLog::pre_setup()
@@ -92,17 +112,20 @@ void EventLog::register_urls()
 
 #if defined(BOARD_HAS_PSRAM)
     server.on_HTTPThread("/trace_log", HTTP_GET, [this](WebServerRequest request) {
-        std::lock_guard<std::mutex> lock{trace_buf_mutex};
-
         request.beginChunkedResponse(200);
 
-        char *first_chunk, *second_chunk;
-        size_t first_len, second_len;
-        trace_buf.get_chunks(&first_chunk, &first_len, &second_chunk, &second_len);
+        for (size_t i = 0; i < trace_buffers_in_use; ++i) {
+            auto &trace_buffer = trace_buffers[i];
+            std::lock_guard<std::mutex> lock{trace_buffer.mutex};
 
-        request.sendChunk(first_chunk, first_len);
-        if (second_len > 0)
-            request.sendChunk(second_chunk, second_len);
+            char *first_chunk, *second_chunk;
+            size_t first_len, second_len;
+            trace_buffer.buf.get_chunks(&first_chunk, &first_len, &second_chunk, &second_len);
+
+            request.sendChunk(first_chunk, first_len);
+            if (second_len > 0)
+                request.sendChunk(second_chunk, second_len);
+        }
 
         return request.endChunkedResponse();
     });
@@ -163,7 +186,7 @@ size_t EventLog::vsnprintf_prefixed(char *buf, size_t buf_len, const char *prefi
         buf[written++] = ' ';
     }
 
-    if (prefix != nullptr && written + prefix_len <= buf_len) {
+    if (prefix != nullptr && prefix_len > 0 && written + prefix_len <= buf_len) {
         memcpy(buf + written, prefix, prefix_len);
         written += prefix_len;
     }
@@ -331,24 +354,39 @@ size_t EventLog::printfln_prefixed(const char *prefix, size_t prefix_len, const 
     return written;
 }
 
-void EventLog::trace_drop(size_t count)
+size_t EventLog::get_trace_buffer_idx(const char *name) {
+    for (size_t i = 0; i < trace_buffers_in_use; ++i) {
+        if (trace_buffers[i].name != name) // TODO rodata check
+            continue;
+        return i;
+    }
+
+    return -1;
+}
+
+void EventLog::trace_drop(size_t trace_buf_idx, size_t count)
 {
 #if defined(BOARD_HAS_PSRAM)
     char c = '\n';
 
+    if (trace_buf_idx == -1)
+        return;
+
+    auto *trace_buffer = &this->trace_buffers[trace_buf_idx];
+
     for (int i = 0; i < count; ++i) {
-        trace_buf.pop(&c);
+        trace_buffer->buf.pop(&c);
     }
 
-    while (trace_buf.used() > 0 && c != '\n') {
-        trace_buf.pop(&c);
+    while (trace_buffer->buf.used() > 0 && c != '\n') {
+        trace_buffer->buf.pop(&c);
     }
 #else
     (void)count;
 #endif
 }
 
-void EventLog::trace_timestamp()
+void EventLog::trace_timestamp(size_t trace_buf_idx)
 {
 #if defined(BOARD_HAS_PSRAM)
     char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \n | \0 */];
@@ -356,20 +394,25 @@ void EventLog::trace_timestamp()
     format_timestamp(buf);
     buf[EVENT_LOG_TIMESTAMP_LENGTH] = '\n';
 
-    trace_plain(buf, EVENT_LOG_TIMESTAMP_LENGTH + 1);
+    trace_plain(trace_buf_idx, buf, EVENT_LOG_TIMESTAMP_LENGTH + 1);
 #endif
 }
 
-size_t EventLog::trace_plain(const char *buf, size_t len)
+size_t EventLog::trace_plain(size_t trace_buf_idx, const char *buf, size_t len)
 {
 #if defined(BOARD_HAS_PSRAM)
-    std::lock_guard<std::mutex> lock{trace_buf_mutex};
-    bool drop_line = trace_buf.free() < len;
+    if (trace_buf_idx == -1)
+        return 0;
 
-    trace_buf.push_n(buf, len);
+    auto *trace_buffer = &this->trace_buffers[trace_buf_idx];
+
+    std::lock_guard<std::mutex> lock{trace_buffer->mutex};
+    bool drop_line = trace_buffer->buf.free() < len;
+
+    trace_buffer->buf.push_n(buf, len);
 
     if (drop_line) {
-        trace_buf.pop_until('\n');
+        trace_buffer->buf.pop_until('\n');
     }
 
     return len;
@@ -381,7 +424,7 @@ size_t EventLog::trace_plain(const char *buf, size_t len)
 #endif
 }
 
-size_t EventLog::vtracefln_plain(const char *fmt, va_list args)
+size_t EventLog::vtracefln_plain(size_t trace_buf_idx, const char *fmt, va_list args)
 {
     size_t written = 0;
 #if defined(BOARD_HAS_PSRAM)
@@ -391,7 +434,7 @@ size_t EventLog::vtracefln_plain(const char *fmt, va_list args)
     written += vsnprintf_u(buf, buf_len, fmt, args);
 
     if (written >= buf_len) {
-        tracefln_plain("Next log message was truncated. Bump EventLog::vtracefln_plain buffer size!");
+        tracefln_plain(trace_buf_idx, "Next log message was truncated. Bump EventLog::vtracefln_plain buffer size!");
         written = buf_len - 1; // Don't include termination, which vsnprintf always leaves in
     }
 
@@ -401,27 +444,27 @@ size_t EventLog::vtracefln_plain(const char *fmt, va_list args)
     }
 
     buf[written++] = '\n'; // At this point written < buf_len is guaranteed
-    trace_plain(buf, written);
+    trace_plain(trace_buf_idx, buf, written);
 #endif
 
     return written;
 }
 
-size_t EventLog::tracefln_plain(const char *fmt, ...)
+size_t EventLog::tracefln_plain(size_t trace_buf_idx, const char *fmt, ...)
 {
     size_t written = 0;
 #if defined(BOARD_HAS_PSRAM)
     va_list args;
 
     va_start(args, fmt);
-    written += vtracefln_plain(fmt, args);
+    written += vtracefln_plain(trace_buf_idx, fmt, args);
     va_end(args);
 #endif
 
     return written;
 }
 
-size_t EventLog::vtracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args)
+size_t EventLog::vtracefln_prefixed(size_t trace_buf_idx, const char *prefix, size_t prefix_len, const char *fmt, va_list args)
 {
     size_t written = 0;
 #if defined(BOARD_HAS_PSRAM)
@@ -431,7 +474,7 @@ size_t EventLog::vtracefln_prefixed(const char *prefix, size_t prefix_len, const
     written += vsnprintf_prefixed(buf, buf_len, prefix, prefix_len, fmt, args);
 
     if (written >= buf_len) {
-        tracefln_prefixed(prefix, prefix_len, "Next log message was truncated. Bump EventLog::vtracefln_prefixed buffer size!");
+        tracefln_prefixed(trace_buf_idx, prefix, prefix_len, "Next log message was truncated. Bump EventLog::vtracefln_prefixed buffer size!");
         written = buf_len - 1; // Don't include termination, which vsnprintf always leaves in.
     }
 
@@ -441,20 +484,20 @@ size_t EventLog::vtracefln_prefixed(const char *prefix, size_t prefix_len, const
     }
 
     buf[written++] = '\n'; // At this point written < buf_len is guaranteed
-    trace_plain(buf, written);
+    trace_plain(trace_buf_idx, buf, written);
 #endif
 
     return written;
 }
 
-size_t EventLog::tracefln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...)
+size_t EventLog::tracefln_prefixed(size_t trace_buf_idx, const char *prefix, size_t prefix_len, const char *fmt, ...)
 {
     size_t written = 0;
 #if defined(BOARD_HAS_PSRAM)
     va_list args;
 
     va_start(args, fmt);
-    written += vtracefln_prefixed(prefix, prefix_len, fmt, args);
+    written += vtracefln_prefixed(trace_buf_idx, prefix, prefix_len, fmt, args);
     va_end(args);
 #endif
 

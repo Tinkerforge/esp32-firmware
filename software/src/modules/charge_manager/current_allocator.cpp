@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define TRACE_LOG_PREFIX "charge_manager"
 
 #include <assert.h>
 #include <string.h> // For strlen
@@ -45,12 +46,7 @@
 
 #define PRINT_COST(x) logger.printfln("%s %d %d %d %d", #x, x[0], x[1], x[2], x[3])
 
-#define ENABLE_CA_TRACE 1
-#if ENABLE_CA_TRACE
-#define trace(fmt, ...) logger.tracefln_plain(fmt __VA_OPT__(,) __VA_ARGS__)
-#else
-#define trace(fmt, ...) do {} while (0)
-#endif
+#define trace(fmt, ...) logger.tracefln_plain(charge_manager.trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__)
 
 static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
 static constexpr micros_t KEEP_ACTIVE_AFTER_PHASE_SWITCH_TIME = 1_m;
@@ -88,7 +84,7 @@ static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array
 }
 
 static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
-#if ENABLE_CA_TRACE
+#if BOARD_HAS_PSRAM
     char buf[768] = {};
     trace("%d: raw(%d %d %d %d) min(%d %d %d %d) spread(%d %d %d %d) max_pv %d",
            stage,
@@ -122,7 +118,7 @@ static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array
 }
 
 static void trace_sort_fn(int stage, int matched, int *idx_array, size_t charger_count) {
-#if ENABLE_CA_TRACE
+#if BOARD_HAS_PSRAM
     char buf[200];
     memset(buf, 0, sizeof(buf));
     char *ptr = buf;
@@ -1341,8 +1337,8 @@ int allocate_current(
     uint32_t *allocated_current
     )
 {
-#if ENABLE_CA_TRACE
-    logger.trace_timestamp();
+#if BOARD_HAS_PSRAM
+    logger.trace_timestamp(charge_manager.trace_buffer_index);
 #endif
 
     // TODO use enum for this. See charge_manager.cpp state definition for constants.

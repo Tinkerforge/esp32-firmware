@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define TRACE_LOG_PREFIX "charge_manager"
+
 #include <type_traits>
 
 #include "power_manager.h"
@@ -1120,7 +1122,7 @@ void PowerManager::update_energy()
 
 #if ENABLE_PM_TRACE
     trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "\n");
-    logger.trace_plain(trace_log, trace_log_len);
+    logger.trace_plain(charge_manager.trace_buffer_index, trace_log, trace_log_len);
 #endif
 
     // Calculate long-term minimum over one-minute blocks

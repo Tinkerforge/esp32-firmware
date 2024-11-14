@@ -80,6 +80,8 @@ public:
     size_t charger_count = 0;
     ChargerState *charger_state = nullptr;
 
+    size_t trace_buffer_index;
+
     uint32_t get_maximum_available_current();
 
     CurrentLimits *get_limits() {
