@@ -31,7 +31,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Switch } from "../../ts/components/switch";
 import { __ } from "../../ts/translation";
 import "./wireguard";
-import { config, RegistrationState } from "./api";
+import { add_user, config, RegistrationState } from "./api";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
@@ -280,6 +280,133 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             this.setState({status_modal_string: ""});
         }
     }
+    async runAddUser(user: add_user) {
+        this.setState({status_modal_string: __("remote_access.content.registration")});
+        const registrationPromise: Promise<void> = new Promise((resolve, reject) => {
+            this.resolve = resolve;
+            this.reject = reject;
+        });
+
+        await API.call("remote_access/add_user", user, __("remote_access.script.save_failed"));
+        await registrationPromise;
+
+        this.setState({status_modal_string: ""});
+    }
+
+    async addUser() {
+        const cfg : util.NoExtraProperties<API.getType["remote_access/register"]["config"]> = {
+            enable: this.state.enable,
+            relay_host: this.state.relay_host,
+            relay_port: this.state.relay_port,
+            email: this.state.addUser.email,
+            cert_id: this.state.cert_id,
+        }
+
+        let loginSalt: Uint8Array;
+        try {
+            loginSalt = await this.get_login_salt(cfg);
+        } catch (err) {
+            console.error(err);
+            util.add_alert("registration", "danger", "Failed to login:", "Wrong user or password");
+            this.setState({status_modal_string: ""});
+            return;
+        }
+
+        const loginHash = await hash({
+            pass: this.state.addUser.password,
+            salt: loginSalt,
+            time: 2,
+            mem: 19 * 1024,
+            hashLen: 24,
+            parallelism: 1,
+            type: ArgonType.Argon2id
+        });
+        const loginKey = (await util.blobToBase64(new Blob([loginHash.hash]))).replace("data:application/octet-stream;base64,", "");
+
+        try {
+            await this.login({
+                config: cfg,
+                login_key: loginKey,
+                note: "",
+                secret_key: "",
+                mgmt_charger_public: "",
+                mgmt_charger_private: "",
+                mgmt_psk: "",
+                keys: []
+            });
+        } catch (err) {
+            console.error(`Failed to login: ${err}`);
+
+            // scrape the status code from the error message and only display wrong username or password in case it
+            // really is an authorization error.
+            const errString = err as string;
+            const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
+            if (errCode === "401") {
+                util.add_alert("registration", "danger", __("remote_access.content.login_failed"), __("remote_access.content.wrong_credentials"));
+            } else {
+                util.add_alert("registration", "danger", __("remote_access.content.login_failed"), errString);
+            }
+            this.setState({status_modal_string: ""});
+            return;
+        }
+
+        let secretSalt: Uint8Array;
+        try {
+            secretSalt = await this.get_secret_salt(cfg);
+        } catch (err) {
+            console.error(`Failed to get secret salt: ${err}`);
+            util.add_alert("registration", "danger", "Failed to get secret-salt:", err);
+            this.setState({status_modal_string: ""});
+            return;
+        }
+
+        const keys: util.NoExtraProperties<API.getType["remote_access/register"]["keys"]> = [];
+
+        for (const i of util.range(0, 5)) {
+            const charger_keypair = (window as any).wireguard.generateKeypair();
+            const web_keypair = (window as any).wireguard.generateKeypair();
+
+            const psk: string = (window as any).wireguard.generatePresharedKey();
+
+            keys.push({
+                charger_public: charger_keypair.publicKey,
+                charger_private: charger_keypair.privateKey,
+                web_public: web_keypair.publicKey,
+                web_private: web_keypair.privateKey,
+                psk: psk,
+            });
+        }
+
+        const secret_key = await hash({
+            pass: this.state.addUser.password,
+            salt: secretSalt,
+            // Takes about 1.5 seconds on a Nexus 4
+            time: 2, // the number of iterations
+            mem: 19 * 1024, // used memory, in KiB
+            hashLen: 32, // desired hash length
+            parallelism: 1, // desired parallelism (it won't be computed in parallel, however)
+            type: ArgonType.Argon2id,
+        })
+
+        const secret_key_blob = new Blob([secret_key.hash]);
+        const secret_key_string = await util.blobToBase64(secret_key_blob);
+
+        const add_user_data: add_user = {
+            secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
+            login_key: loginKey,
+            note: this.state.addUser.note,
+            email: this.state.addUser.email,
+            wg_keys: keys,
+        }
+
+        try {
+            await this.runAddUser(add_user_data);
+        } catch (err) {
+            console.error(`Failed to register charger: ${err}`);
+            util.add_alert("registration", "danger", "Failed to register", err);
+            this.setState({status_modal_string: ""});
+        }
+    }
 
     override async sendSave(topic: "remote_access/config", cfg: config): Promise<void> {
         await this.registerCharger(cfg);
@@ -407,6 +534,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                         cert_id: this.state.cert_id,
                                     };
                                     await this.registerCharger(config);
+                                } else {
+                                    await this.addUser();
                                 }
                             }}
                         />

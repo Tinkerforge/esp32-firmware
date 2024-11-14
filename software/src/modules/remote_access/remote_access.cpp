@@ -44,7 +44,7 @@ extern char local_uid_str[32];
 extern uint32_t local_uid_num;
 
 #define MAX_KEYS_PER_USER 5
-#define MAX_USERS 1
+#define MAX_USERS 5
 #define WG_KEY_LENGTH 44
 #define KEY_SIZE (3 * WG_KEY_LENGTH)
 #define KEY_DIRECTORY "/remote-access-keys"
@@ -645,6 +645,296 @@ void RemoteAccess::register_urls() {
         return request.send(200);
     });
 
+    server.on("/remote_access/add_user", HTTP_PUT, [this](WebServerRequest request) {
+        size_t content_len = request.contentLength();
+        std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
+        if (req_body == nullptr) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(500, "text/plain; charset=utf-8", "Low memory");
+        }
+        if (request.receive(req_body.get(), content_len) <= 0) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(500, "text/plain; charset=utf-8", "Failed to read request body");
+        }
+
+        uint32_t next_user_id;
+        for (uint32_t i = 1; i < MAX_USERS + 1; i++) {
+            next_user_id = i;
+            bool found = false;
+            for (auto &user : config.get("users")) {
+                if (user.get("id")->asUint() == i) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                break;
+            }
+        }
+
+        // TODO: use TFJsonDeserializer?
+        StaticJsonDocument<768> doc;
+        {
+            DeserializationError error = deserializeJson(doc, req_body.get(), content_len);
+
+            if (error) {
+                char err_str[64];
+                snprintf(err_str, 64, "Failed to deserialize request body: %s", error.c_str());
+                https_client = nullptr;
+                encrypted_secret = nullptr;
+                secret_nonce = nullptr;
+                return request.send(400, "text/plain; charset=utf-8", err_str);
+            }
+        }
+
+        // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
+        // Also validate the decoded lengths!
+        std::unique_ptr<uint8_t[]> secret_key       = decode_base64(doc["secret_key"],   crypto_secretbox_KEYBYTES);
+        if (secret_key == nullptr) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(500, "text/plain; charset=utf-8", "Low memory");
+        }
+
+        if (sodium_init() < 0) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            logger.printfln("Failed to initialize libsodium");
+            return request.send(500, "text/plain; charset=utf-8", "Failed to initialize crypto");
+        }
+
+        char secret[crypto_box_SECRETKEYBYTES];
+        int ret = crypto_secretbox_open_easy((unsigned char *)secret, (unsigned char *)encrypted_secret.get(), crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES, (unsigned char*)secret_nonce.get(), (unsigned char*)secret_key.get());
+        if (ret != 0) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            logger.printfln("Failed to decrypt secret");
+            return request.send(500, "text/plain; charset=utf-8", "Failed to decrypt secret");
+        }
+
+        unsigned char pk[crypto_box_PUBLICKEYBYTES];
+        ret = crypto_scalarmult_base(pk, (unsigned char *)secret);
+        if (ret < 0) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            logger.printfln("Failed to derive public-key");
+            return request.send(500, "text/plain; charset=utf-8", "Failed to derive public-key");
+        }
+
+        const String &note = doc["note"];
+        size_t encrypted_note_size = note.length() + crypto_box_SEALBYTES;
+        size_t bs64_note_size = 4 * ((note.length() + crypto_box_SEALBYTES) / 3) + 5;
+        const CoolString &name = api.getState("info/display_name")->get("display_name")->asString();
+        size_t encrypted_name_size = name.length() + crypto_box_SEALBYTES;
+        size_t bs64_name_size = 4 * (encrypted_name_size / 3) + 5;
+        size_t json_size = 4200 + bs64_note_size + bs64_name_size;
+        auto json = heap_alloc_array<char>(json_size);
+        if (json == nullptr) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(500, "text/plain; charset=utf-8", "Low memory");
+        }
+
+        TFJsonSerializer serializer = TFJsonSerializer(json.get(), json_size);
+        serializer.addObject();
+
+        std::unique_ptr<uint8_t []> encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
+        if (encrypted_note == nullptr) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(500, "text/plain; charset=utf-8", "Low memory");
+        }
+
+        if (crypto_box_seal(encrypted_note.get(), (uint8_t*)note.c_str(), note.length(), pk)) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+             return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt note");
+        }
+
+        auto bs64_note = heap_alloc_array<char>(bs64_note_size);
+        size_t olen;
+        mbedtls_base64_encode((uint8_t*)bs64_note.get(), bs64_note_size, &olen, encrypted_note.get(), note.length() + crypto_box_SEALBYTES);
+
+        serializer.addMemberString("note", bs64_note.get());
+
+        std::unique_ptr<uint8_t[]> encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
+        if (encrypted_name == nullptr) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(500, "text/plain; charset=utf-8", "Low memory");
+        }
+
+        if (crypto_box_seal(encrypted_name.get(), (uint8_t*)name.c_str(), name.length(), pk)) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt name");
+        }
+
+        auto bs64_name = heap_alloc_array<char>(bs64_name_size);
+        mbedtls_base64_encode((uint8_t*)bs64_name.get(), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
+
+        serializer.addMemberString("charger_name", bs64_name.get());
+
+        serializer.addMemberString("charger_id", config.get("uuid")->asEphemeralCStr());
+        serializer.addMemberString("charger_password", config.get("password")->asEphemeralCStr());
+        serializer.addMemberString("email", doc["email"]);
+
+        serializer.addMemberObject("user_auth");
+        serializer.addMemberString("LoginKey", doc["login_key"]);
+        CoolString login_key = doc["login_key"];
+        serializer.endObject();
+
+        serializer.addMemberArray("wg_keys");
+        char buf[50];
+        int i = 0;
+        for (auto key : doc["wg_keys"].as<JsonArray>()) {
+            serializer.addObject();
+            int connection_number = next_user_id * MAX_KEYS_PER_USER + i;
+            std::snprintf(buf, 50, "10.123.%i.2", connection_number);
+            serializer.addMemberString("charger_address", buf);
+            std::snprintf(buf, 50, "10.123.%i.3", connection_number);
+            serializer.addMemberString("web_address", buf);
+            serializer.addMemberString("charger_public", key["charger_public"]);
+
+            uint8_t psk[32];
+            for (int a = 0; a < 32; a++) {
+                psk[a] = key["psk"][a];
+            }
+            uint8_t encrypted_psk[32 + crypto_box_SEALBYTES];
+            if (crypto_box_seal(encrypted_psk, psk, 32, pk)) {
+                https_client = nullptr;
+                encrypted_secret = nullptr;
+                secret_nonce = nullptr;
+                return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt psk");
+            }
+            serializer.addMemberArray("psk");
+            for (int a = 0; a < 32 + crypto_box_SEALBYTES; a++) {
+                serializer.addNumber(encrypted_psk[a]);
+            }
+            serializer.endArray();
+
+            uint8_t web_private[32];
+            for (int a = 0; a < 32; a++) {
+                web_private[a] = key["web_private"][a];
+            }
+            uint8_t encrypted_web_private[32 + crypto_box_SEALBYTES];
+            if (crypto_box_seal(encrypted_web_private, web_private, 32, pk)) {
+                https_client = nullptr;
+                encrypted_secret = nullptr;
+                secret_nonce = nullptr;
+                return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt web_private");
+            }
+            serializer.addMemberArray("web_private");
+            for (int a = 0; a < 32 + crypto_box_SEALBYTES; a++) {
+                serializer.addNumber(encrypted_web_private[a]);
+            }
+            serializer.endArray();
+
+            serializer.addMemberNumber("connection_no", connection_number);
+            i++;
+            serializer.endObject();
+        }
+        serializer.endArray();
+        serializer.endObject();
+        uint32_t size = serializer.end();
+
+        char url[128];
+        snprintf(url, 128, "https://%s:%u/api/charger/allow_user", registration_config.get("relay_host")->asEphemeralCStr(), registration_config.get("relay_port")->asUint());
+
+        std::queue<WgKey> key_cache;
+        int a = 0;
+        for (const auto key : doc["keys"].as<JsonArray>()) {
+            WgKey k = {
+                key["charger_private"],
+                key["psk"],
+                key["web_public"]
+            };
+            key_cache.push(
+                WgKey {
+                key["charger_private"],
+                key["psk"],
+                key["web_public"]
+                }
+            );
+            ++a;
+            // Ignore rest of keys if there were sent more than we support.
+            if (a == MAX_KEYS_PER_USER)
+                break;
+        }
+
+        uint8_t public_key[50];
+        mbedtls_base64_encode(public_key, 50, &olen, (uint8_t*)pk, crypto_box_PUBLICKEYBYTES);
+        CoolString pub_key(public_key, olen);
+
+        ConfigRoot user = config;
+        CoolString email = doc["email"];
+
+        if (https_client == nullptr) {
+            https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
+        }
+
+        https_client->set_header("Content-Type", "application/json");
+        auto next_stage = [this, key_cache, pub_key, next_user_id, email](ConfigRoot cfg) {
+            this->parse_add_user(cfg, key_cache, pub_key, email, next_user_id);
+        };
+        this->run_request_with_next_stage(url, HTTP_METHOD_PUT, json.get(), size, user, next_stage);
+
+        return request.send(200);
+    });
+
+    server.on("/remote_access/remove_user", HTTP_PUT, [this](WebServerRequest request) {
+        size_t content_len = request.contentLength();
+        std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
+        if (req_body == nullptr) {
+            return request.send(500, "text/plain; charset=utf-8", "Low memory");
+        }
+        if (request.receive(req_body.get(), content_len) <= 0) {
+            return request.send(500, "text/plain; charset=utf-8", "Failed to read request body");
+        }
+
+        // TODO: use TFJsonDeserializer?
+        StaticJsonDocument<768> doc;
+
+        {
+            DeserializationError error = deserializeJson(doc, req_body.get(), content_len);
+
+            if (error) {
+                char err_str[64];
+                snprintf(err_str, 64, "Failed to deserialize request body: %s", error.c_str());
+                return request.send(400, "text/plain; charset=utf-8", err_str);
+            }
+        }
+
+        uint32_t req_id = doc["id"];
+        int idx = 0;
+        for (const auto user : config.get("users")) {
+            if (user.get("id")->asUint() == req_id) {
+                break;
+            }
+            idx++;
+        }
+        if (idx >= config.get("users")->count()) {
+                return request.send(400, "text/plain; charset=utf-8", "User does not exist");
+        }
+
+        config.get("users")->remove(idx);
+        for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
+            remove_key(req_id, i);
+        }
+
+        api.writeConfig("remote_access/config", &config);
 
         return request.send(200);
     });
@@ -952,6 +1242,25 @@ void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> k
         encrypted_secret = nullptr;
         secret_nonce = nullptr;
         response_body = "";
+}
+
+void RemoteAccess::parse_add_user(ConfigRoot cfg, std::queue<WgKey> key_cache, CoolString pub_key, CoolString email, uint32_t next_user_id) {
+    for (int i = 0; !key_cache.empty() && i < MAX_KEYS_PER_USER; i++, key_cache.pop()) {
+        const WgKey &key = key_cache.front();
+        store_key(next_user_id, i,
+            key.priv.c_str(),
+            key.psk.c_str(),
+            key.pub.c_str());
+    }
+
+    this->config.get("users")->add();
+    uint32_t last_idx = this->config.get("users")->count() - 1;
+    this->config.get("users")->get(last_idx)->get("email")->updateString(email);
+    this->config.get("users")->get(last_idx)->get("id")->updateUint(next_user_id);
+    this->config.get("users")->get(last_idx)->get("public_key")->updateString(pub_key);
+    api.writeConfig("remote_access/config", &this->config);
+    registration_state.get("message")->updateString("");
+    registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);
 }
 
 void RemoteAccess::resolve_management() {

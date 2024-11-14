@@ -68,6 +68,7 @@ private:
     void get_secret(ConfigRoot config);
     void parse_secret(ConfigRoot config);
     void parse_registration(ConfigRoot config, std::queue<WgKey> keys, CoolString public_key);
+    void parse_add_user(ConfigRoot cfg, std::queue<WgKey> key_cache, CoolString pub_key, CoolString email, uint32_t next_user_id);
     void login(ConfigRoot config, CoolString &login_key);
     int setup_inner_socket();
     WireGuard *management = nullptr;
