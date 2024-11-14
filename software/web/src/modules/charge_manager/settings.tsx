@@ -70,7 +70,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                 safety_margin_pct: this.state.dynamicLoadConfig.safety_margin_pct,
             }, __("power_manager.script.save_failed"));
         } catch (e) {
-            console.log("charge_manager save failed", e);
+            console.log("charge_manager save failed because of power_manager/dynamic_load_config", e);
         }
 
         let {enable_charge_manager, chargers, maximum_available_current, ...new_values} = cfg;
