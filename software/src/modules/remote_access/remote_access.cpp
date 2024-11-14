@@ -432,7 +432,14 @@ void RemoteAccess::register_urls() {
             return request.send(200); // TODO result json?
         }
 
-        std::unique_ptr<char[]> ptr = heap_alloc_array<char>(5000);
+        const CoolString &note = doc["note"];
+        size_t encrypted_note_size = crypto_box_SEALBYTES + note.length();
+        size_t bs64_note_size = 4 * (encrypted_note_size / 3) + 5;
+        const CoolString &name = api.getState("info/display_name")->get("display_name")->asString();
+        size_t encrypted_name_size = crypto_box_SEALBYTES + name.length();
+        size_t bs64_name_size = 4 * (encrypted_name_size / 3) + 5;
+        size_t json_size = 5000 + bs64_name_size + bs64_note_size;
+        std::unique_ptr<char[]> ptr = heap_alloc_array<char>(json_size);
         if (ptr == nullptr) {
             https_client = nullptr;
             encrypted_secret = nullptr;
@@ -477,7 +484,7 @@ void RemoteAccess::register_urls() {
             return request.send(500, "text/plain; charset=utf-8", "Failed to derive public-key");
         }
 
-        TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), 5000);
+        TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), json_size);
         serializer.addObject();
         serializer.addMemberArray("keys");
         char buf[50];
@@ -546,28 +553,51 @@ void RemoteAccess::register_urls() {
 
         serializer.addMemberString("charger_pub", doc["mgmt_charger_public"]);
         serializer.addMemberString("uid", local_uid_str);
+        serializer.addMemberString("wg_charger_ip", "10.123.123.2");
+        serializer.addMemberString("wg_server_ip", "10.123.123.3");
+        serializer.addMemberString("psk", doc["mgmt_psk"]);
 
-        CoolString name = api.getState("info/display_name")->get("display_name")->asString();
-        std::unique_ptr<char[]> encrypted_name = heap_alloc_array<char>(crypto_box_SEALBYTES + name.length());
+        serializer.endObject();
+
+        std::unique_ptr<uint8_t[]> encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
         if (encrypted_name == nullptr) {
             https_client = nullptr;
             encrypted_secret = nullptr;
             secret_nonce = nullptr;
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
-        crypto_box_seal((unsigned char *)encrypted_name.get(), (unsigned char *)name.c_str(), name.length(), (unsigned char *)pk);
-
-        serializer.addMemberArray("name");
-        for (size_t a = 0; a < crypto_box_SEALBYTES + name.length(); a++) {
-            serializer.addNumber(encrypted_name[a]);
+        crypto_box_seal(encrypted_name.get(), (unsigned char *)name.c_str(), name.length(), (unsigned char *)pk);
+        auto bs64_name = heap_alloc_array<char>(bs64_name_size);
+        if (bs64_name == nullptr) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
-        serializer.endArray();
+        size_t olen;
+        mbedtls_base64_encode((uint8_t*)bs64_name.get(), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
 
-        serializer.addMemberString("wg_charger_ip", "10.123.123.2");
-        serializer.addMemberString("wg_server_ip", "10.123.123.3");
-        serializer.addMemberString("psk", doc["mgmt_psk"]);
+        serializer.addMemberString("name", bs64_name.get());
 
-        serializer.endObject();
+        auto encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
+        if (encrypted_name == nullptr) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(500, "text/plain; charset=utf-8", "Low memory");
+        }
+        crypto_box_seal(encrypted_note.get(), (uint8_t*)note.c_str(), note.length(), pk);
+        auto bs64_note = heap_alloc_array<char>(bs64_note_size);
+        if (bs64_note == nullptr) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(500, "text/plain; charset=utf-8", "Low memory");
+        }
+        mbedtls_base64_encode((uint8_t*)bs64_note.get(), bs64_note_size, &olen, encrypted_note.get(), encrypted_note_size);
+
+        serializer.addMemberString("note", bs64_name.get());
+
         serializer.endObject();
         size_t size = serializer.end();
 
@@ -605,7 +635,6 @@ void RemoteAccess::register_urls() {
         }
 
         uint8_t public_key[50];
-        size_t olen;
         mbedtls_base64_encode(public_key, 50, &olen, (uint8_t*)pk, crypto_box_PUBLICKEYBYTES);
         auto next_stage = [this, key_cache, public_key, olen](ConfigRoot cfg) {
             CoolString pub_key((char*)public_key, olen);

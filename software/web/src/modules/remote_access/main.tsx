@@ -155,6 +155,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         if (!cfg.enable) {
             const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
                 config: cfg,
+                note: "",
                 login_key: "",
                 secret_key: "",
                 mgmt_charger_public: "",
@@ -191,6 +192,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         try {
             await this.login({
                 config: cfg,
+                note: "",
                 login_key: loginKey,
                 secret_key: "",
                 mgmt_charger_public: "",
@@ -261,6 +263,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
 
         const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
             config: cfg,
+            note: this.state.addUser.note,
             login_key: this.state.login_key,
             secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
             mgmt_charger_public: mg_charger_keypair.publicKey,
@@ -295,6 +298,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 email: "",
                 cert_id: this.state.cert_id,
             },
+            note: "",
             login_key: "",
             secret_key: "",
             mgmt_charger_public: "",

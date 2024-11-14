@@ -43,6 +43,7 @@ export interface register {
     config: registration_config,
     login_key: string,
     secret_key: string,
+    note: string,
     mgmt_charger_public: string,
     mgmt_charger_private: string,
     mgmt_psk: string,
@@ -50,10 +51,10 @@ export interface register {
 }
 
 export interface add_user {
-    pub_key: string,
+    secret_key: string,
     note: string,
     email: string,
-    login_key: number[],
+    login_key: string,
     wg_keys: KeyObject[],
 }
 
