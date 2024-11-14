@@ -80,6 +80,9 @@ void NFC::pre_setup()
             id_copy.toUpperCase();
             tags->get(tag)->get("tag_id")->updateString(id_copy);
 
+            if (id_copy.length() != 0 && id_copy.length() % 3 != 2)
+                return "Tag ID has unexpected length. Expected format is hex bytes separated by colons. For example \"01:23:ab:3d\".";
+
             for(int i = 0; i < id_copy.length(); ++i) {
                 char c = id_copy.charAt(i);
                 if ((i % 3 != 2) && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')))
@@ -127,6 +130,9 @@ void NFC::pre_setup()
         String id_copy = cfg.get("tag_id")->asString();
         id_copy.toUpperCase();
         cfg.get("tag_id")->updateString(id_copy);
+
+        if (id_copy.length() != 0 && id_copy.length() % 3 != 2)
+            return "Tag ID has unexpected length. Expected format is hex bytes separated by colons. For example \"01:23:ab:3d\".";
 
         for(int i = 0; i < id_copy.length(); ++i) {
             char c = id_copy.charAt(i);
