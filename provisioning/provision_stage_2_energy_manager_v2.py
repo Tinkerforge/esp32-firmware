@@ -140,7 +140,7 @@ class EnergyManagerTester:
         event_log = connect_to_ethernet(self.ssid, "event_log").decode('utf-8')
         print(event_log)
 
-        macs = re.findall(re.compile(r'Ethernet MAC: ((?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2})'), event_log)
+        macs = re.findall(re.compile(r'ethernet         \| Connected: 100 Mbps Full Duplex, MAC: ((?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2})'), event_log)
         if len(macs) == 0:
             self.fatal_error("Failed to find MAC address in event log!")
         self.mac = macs[0]
@@ -343,9 +343,18 @@ class EnergyManagerTester:
         production_date = datetime.datetime.now().strftime('%Y-%m')
 
         print('Printing labels...')
-        arguments = [
-            os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-wem-label.py'),
-            self.sku,
+
+        if self.sku == 'SEB':
+            arguments = [
+                os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-seb-label.py'),
+            ]
+        else:
+            arguments = [
+                os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-wem-label.py'),
+                self.sku,
+            ]
+
+        arguments += [
             self.hw_version,
             serial_number,
             production_date,
@@ -411,7 +420,7 @@ class EnergyManagerTester:
             json.dump(self.result, f, indent=4)
 
         print('Done!')
-        self.rgb_led.set_rgb_value(0, 255, 0)
+        #self.rgb_led.set_rgb_value(0, 255, 0)
 
 if __name__ == "__main__":
     try:
