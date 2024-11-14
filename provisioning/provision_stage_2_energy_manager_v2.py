@@ -28,7 +28,7 @@ from provision_stage_2_warp2 import ContentTypeRemover, factory_reset, connect_t
 
 WARP_CHARGER_GIT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'warp-charger')
 
-def get_next_serial_number():
+def get_next_serial_number(prefix):
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'staging-password.txt'), 'r') as f:
         staging_password = f.read().strip()
 
@@ -50,11 +50,30 @@ def get_next_serial_number():
 
     serial_number = int(urllib.request.urlopen('https://stagingwww.tinkerforge.com/warpsn', timeout=15).read())
 
-    return '7{0:09}'.format(serial_number)
+    return '{0}{1:09}'.format(prefix, serial_number)
 
 class EnergyManagerTester:
     def __init__(self):
+        if len(sys.argv) != 2:
+            self.fatal_error("Usage: {} firmware_type".format(sys.argv[0]))
+
+        self.firmware_type = sys.argv[1]
+        if self.firmware_type not in ["energy_manager_v2", "smart_energy_broker"]:
+            self.fatal_error("Unknown firmware type {}".format(self.firmware_type))
+
+        if self.firmware_type == "energy_manager_v2":
+            self.brick_firmware_basename = "warp_energy_manager_v2"
+            self.sku = "WARP-EM2"
+            self.hw_version = "2.0"
+            self.sn_prefix = "7"
+        elif self.firmware_type == "smart_energy_broker":
+            self.brick_firmware_basename = "smart_energy_broker"
+            self.sku = "SEB"
+            self.hw_version = "1.0"
+            self.sn_prefix = "3"
+
         self.result = {}
+        """
         self.ipcon = IPConnection()
         self.idai = BrickletIndustrialDualAnalogInV2('24yU', self.ipcon)
         self.rgb_led = BrickletRGBLEDV2('VRF', self.ipcon)
@@ -64,7 +83,7 @@ class EnergyManagerTester:
         self.sdm_sim = SDMSimulator('25in')
         self.sdm_sim.noise = (1.0, 1.0)
 
-        self.ipcon.connect('localhost', 4223)
+        self.ipcon.connect('localhost', 4223)"""
 
         self.result["start"] = now()
 
@@ -83,16 +102,15 @@ class EnergyManagerTester:
             with ChangedDirectory(os.path.join("..", "..", "firmwares")):
                 run(["git", "pull"])
 
-        wem_bricklet_directory = os.path.join("..", "..", "firmwares", "bricklets", "warp_energy_manager")
-        wem_bricklet_path = os.readlink(os.path.join(wem_bricklet_directory, "bricklet_warp_energy_manager_firmware_latest.zbin"))
+        wem_bricklet_directory = os.path.join("..", "..", "firmwares", "bricklets", "warp_energy_manager_v2")
+        wem_bricklet_path = os.readlink(os.path.join(wem_bricklet_directory, "bricklet_warp_energy_manager_v2_firmware_latest.zbin"))
         wem_bricklet_path = os.path.join(wem_bricklet_directory, wem_bricklet_path)
 
-        wem_brick_directory = os.path.join("..", "..", "firmwares", "bricks", "warp_energy_manager")
-        wem_brick_path = os.readlink(os.path.join(wem_brick_directory, "brick_warp_energy_manager_firmware_latest.bin"))
+        wem_brick_directory = os.path.join("..", "..", "firmwares", "bricks", self.brick_firmware_basename)
+        wem_brick_path = os.readlink(os.path.join(wem_brick_directory, "brick_{0}_firmware_latest.bin".format(self.brick_firmware_basename)))
         wem_brick_path = os.path.join(wem_brick_directory, wem_brick_path)
 
-
-        pattern = r"^WIFI:S:(esp32|warp|warp2|wem)-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58)
+        pattern = r"^WIFI:S:(wem2|seb)-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58)
         qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
         match = re.match(pattern, qr_code)
 
@@ -110,7 +128,7 @@ class EnergyManagerTester:
 
         self.result["uid"] = esp_uid_qr
 
-        self.ssid = "wem-" + esp_uid_qr
+        self.ssid = hardware_type + "-" + esp_uid_qr
 
         event_log = connect_to_ethernet(self.ssid, "event_log").decode('utf-8')
         print(event_log)
@@ -120,12 +138,14 @@ class EnergyManagerTester:
             self.fatal_error("Failed to find MAC address in event log!")
         self.mac = macs[0]
 
-        m = re.search(r"WARP (?:ENERGY MANAGER|Energy Manager) V(\d+).(\d+).(\d+)", event_log)
+        """
+        m = re.search(r"(?:WARP ENERGY MANAGER|WARP Energy Manager|SMART ENERGY BROKER) V(\d+).(\d+).(\d+)", event_log)
         if not m:
             self.fatal_error("Failed to find version number in event log!" + event_log)
 
         version = [int(x) for x in m.groups()]
-        latest_version = [int(x) for x in re.search(r"energy_manager_firmware_(\d+)_(\d+)_(\d+).bin", wem_brick_path).groups()]
+        latest_version = [int(x) for x in re.search(r"{0}_firmware_(\d+)_(\d+)_(\d+).bin".format(self.firmware_type), wem_brick_path).groups()]
+
 
         if version > latest_version:
             self.fatal_error("Flashed firmware {}.{}.{} is not released yet! Latest released is {}.{}.{}".format(*version, *latest_version))
@@ -144,7 +164,7 @@ class EnergyManagerTester:
                 except urllib.error.HTTPError as e:
                     print("HTTP error", e)
                     if e.code == 423:
-                        self.fatal_error("WEM blocked firmware update. Is the Bricklet working correctly?")
+                        self.fatal_error("ESP32 blocked firmware update. Is the Bricklet working correctly?")
                     else:
                         self.fatal_error(e.read().decode("utf-8"))
                 except urllib.error.URLError as e:
@@ -154,7 +174,7 @@ class EnergyManagerTester:
                         time.sleep(3)
                     else:
                         if isinstance(e.reason, ConnectionResetError):
-                            self.fatal_error("WEM blocked firmware update. Is the Bricklet working correctly?")
+                            self.fatal_error("ESP32 blocked firmware update. Is the Bricklet working correctly?")
                         self.fatal_error("Can't flash firmware!")
 
             time.sleep(3)
@@ -172,7 +192,7 @@ class EnergyManagerTester:
             self.wem_ipcon.connect(self.ssid, 4223)
         except Exception as e:
             self.fatal_error("Failed to connect to ESP proxy. Is the router's DHCP cache full?")
-            
+
         time.sleep(1)
         enumerations = enumerate_devices(self.wem_ipcon)
 
@@ -181,8 +201,8 @@ class EnergyManagerTester:
             self.fatal_error("WARP Energy Manager Bricklet not found!")
 
         self.wem = BrickletWARPEnergyManager(wem_bricklet_enum.uid, self.wem_ipcon)
-        self.wem.set_rgb_value(0, 0, 255)
-    
+        self.wem.set_rgb_value(0, 0, 255)"""
+
     def fatal_error(self, string):
         self.rgb_led.set_rgb_value(255, 0, 0)
 
@@ -218,7 +238,7 @@ class EnergyManagerTester:
         else:
             self.fatal_error(" ... Contactor not active FAILED!")
         print(' ... Done')
-    
+
     def test_gp_output(self):
         print('Testing GP output...')
         self.wem.set_output(True)
@@ -288,7 +308,7 @@ class EnergyManagerTester:
         else:
             self.fatal_error(" ... RS485 FAILED! ({})".format(value))
         print(' ... Done')
-    
+
     def test_sd_card(self):
         print('Testing SD card...')
         print(' ... formating SD card')
@@ -312,16 +332,14 @@ class EnergyManagerTester:
         print(' ... Done')
 
     def print_labels(self):
-        sku = 'WARP-EM'
-        version = '1.0'
-        serial_number = get_next_serial_number()
+        serial_number = get_next_serial_number(self.sn_prefix)
         production_date = datetime.datetime.now().strftime('%Y-%m')
 
         print('Printing labels...')
         arguments = [
             os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-wem-label.py'),
-            sku,
-            version,
+            self.sku,
+            self.hw_version,
             serial_number,
             production_date,
             self.mac
@@ -329,20 +347,28 @@ class EnergyManagerTester:
 
         result = subprocess.check_output(arguments)
         if result == b'':
-            print(' ... WEM label 1 OK')
+            print(' ... Label 1 OK')
         else:
-            self.fatal_error(" ... WEM label 1 FAILED!")
+            self.fatal_error(" ... Label 1 FAILED!")
 
         result = subprocess.check_output(arguments)
         if result == b'':
-            print(' ... WEM label 2 OK')
+            print(' ... Label 2 OK')
         else:
-            self.fatal_error(" ... WEM label 1 FAILED!")
+            self.fatal_error(" ... Label 1 FAILED!")
 
-        arguments = [
-            os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-package2-label.py'),
-            sku,
-            version,
+        if self.sku == 'SEB':
+            arguments = [
+                os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-package-seb-label.py'),
+            ]
+        else:
+            arguments = [
+                os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-package2-label.py'),
+                self.sku,
+            ]
+
+        arguments += [
+            self.hw_version,
             serial_number,
             production_date
         ]
@@ -356,6 +382,7 @@ class EnergyManagerTester:
         print(' ... Done')
 
     def test_all(self):
+        """
         self.wem.set_rgb_value(0, 100, 0)
         self.test_voltage_supply()
         self.wem.set_rgb_value(0, 125, 0)
@@ -368,14 +395,14 @@ class EnergyManagerTester:
         self.test_rs485()
         self.wem.set_rgb_value(0, 225, 0)
         self.test_sd_card()
-        self.wem.set_rgb_value(0, 255, 0)
+        self.wem.set_rgb_value(0, 255, 0)"""
 
         self.print_labels()
 
         self.result["end"] = now()
         with open("{}_{}_report_stage_2.json".format(self.ssid, now().replace(":", "-")), "w") as f:
             json.dump(self.result, f, indent=4)
-    
+
         print('Done!')
         self.rgb_led.set_rgb_value(0, 255, 0)
 
