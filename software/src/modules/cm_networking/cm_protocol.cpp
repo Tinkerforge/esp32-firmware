@@ -312,7 +312,9 @@ void CMNetworking::register_manager(const char *const *const hosts,
                                 inet_ntoa(source_addr.sin_addr),
                                 len,
                                 validation_error.c_str());
-                manager_error_callback(charger_idx, CM_NETWORKING_ERROR_INVALID_HEADER);
+                if (manager_error_callback) {
+                    manager_error_callback(charger_idx, CM_NETWORKING_ERROR_INVALID_HEADER);
+                }
                 return;
             }
 
@@ -328,14 +330,18 @@ void CMNetworking::register_manager(const char *const *const hosts,
             last_seen_seq_num[charger_idx] = state_pkt.header.seq_num;
 
             if (!CM_STATE_FLAGS_MANAGED_IS_SET(state_pkt.v1.state_flags)) {
-                manager_error_callback(charger_idx, CM_NETWORKING_ERROR_NOT_MANAGED);
                 logger.printfln("%s (%s) reports managed is not activated!",
                     charge_manager.get_charger_name(charger_idx),
                     inet_ntoa(source_addr.sin_addr));
+                if (manager_error_callback) {
+                    manager_error_callback(charger_idx, CM_NETWORKING_ERROR_NOT_MANAGED);
+                }
                 return;
             }
 
-            manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr);
+            if (manager_callback) {
+                manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr);
+            }
         }
     }, 100_ms, 100_ms);
 }
@@ -343,13 +349,6 @@ void CMNetworking::register_manager(const char *const *const hosts,
 bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases)
 {
     static uint16_t next_seq_num = 1;
-
-    if (manager_sock < 0)
-        return true;
-
-    resolve_hostname(client_id);
-    if (!is_resolved(client_id))
-        return true;
 
     struct cm_command_packet command_pkt;
     command_pkt.header.magic = CM_PACKET_MAGIC;
@@ -363,7 +362,19 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
 
     command_pkt.v2.allocated_phases = allocated_phases;
 
-    int err = sendto(manager_sock, &command_pkt, sizeof(command_pkt), MSG_DONTWAIT, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
+    return send_command_packet(client_id, &command_pkt);
+}
+
+bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *command_pkt)
+{
+    if (manager_sock < 0)
+        return true;
+
+    resolve_hostname(client_id);
+    if (!is_resolved(client_id))
+        return true;
+
+    int err = sendto(manager_sock, command_pkt, sizeof(decltype(*command_pkt)), MSG_DONTWAIT, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
     if (err < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -443,9 +454,11 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
         manager_addr = temp_addr;
         manager_addr_valid = true;
 
-        client_callback(command_pkt.v1.allocated_current,
-                        CM_COMMAND_FLAGS_CPDISC_IS_SET(command_pkt.v1.command_flags),
-                        command_pkt.header.version >= 2 ? command_pkt.v2.allocated_phases : 0);
+        if (client_callback) {
+            client_callback(command_pkt.v1.allocated_current,
+                            CM_COMMAND_FLAGS_CPDISC_IS_SET(command_pkt.v1.command_flags),
+                            command_pkt.header.version >= 2 ? command_pkt.v2.allocated_phases : 0);
+        }
         //logger.printfln("Received command packet. Allocated current is %u", command_pkt.v1.allocated_current);
     }, 100_ms, 100_ms);
 }
@@ -548,7 +561,17 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     state_pkt.v3.phases = phases;
     state_pkt.v3.phases |= can_switch_phases_now << CM_STATE_V3_CAN_PHASE_SWITCH_BIT_POS;
 
-    int err = sendto(client_sock, &state_pkt, sizeof(state_pkt), 0, (sockaddr *)&manager_addr, sizeof(manager_addr));
+    return send_state_packet(&state_pkt);
+}
+
+bool CMNetworking::send_state_packet(const cm_state_packet *state_pkt)
+{
+    if (!manager_addr_valid) {
+        //logger.printfln("Manager addr not valid.");
+        return false;
+    }
+
+    int err = sendto(client_sock, state_pkt, sizeof(decltype(*state_pkt)), 0, (sockaddr *)&manager_addr, sizeof(manager_addr));
     if (err < 0) {
         if (errno != EAGAIN && errno != EWOULDBLOCK)
             logger.printfln("Failed to send state: %s (%d)", strerror(errno), errno);

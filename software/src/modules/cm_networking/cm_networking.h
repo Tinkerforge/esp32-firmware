@@ -85,6 +85,9 @@ public:
     mdns_result_t *scan_results = nullptr;
 
 private:
+    bool send_command_packet(uint8_t charger_idx, cm_command_packet *command_pkt);
+    bool send_state_packet(const cm_state_packet *state_pkt);
+
     int manager_sock;
 
     #define RESOLVE_STATE_UNKNOWN 0
