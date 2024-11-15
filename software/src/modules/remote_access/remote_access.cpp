@@ -503,7 +503,7 @@ void RemoteAccess::register_urls() {
                 CoolString wg_key = CoolString{key["web_private"].as<String>()};
 
                 // TODO optimize: this is always 44 bytes + crypto_box_SEALBYTES -> stack alloc
-                char output[44];
+                char output[44 + crypto_box_SEALBYTES];
 
                 ret = crypto_box_seal((unsigned char *)output, (unsigned char *)wg_key.c_str(), wg_key.length(), pk);
                 if (ret < 0) {
@@ -522,7 +522,7 @@ void RemoteAccess::register_urls() {
                 serializer.endArray();
 
                 CoolString psk = key["psk"];
-                char encrypted_psk[44];
+                char encrypted_psk[44 + crypto_box_SEALBYTES];
                 ret = crypto_box_seal((unsigned char*)encrypted_psk, (unsigned char*)psk.c_str(), psk.length(), pk);
                 if (ret < 0) {
                     https_client = nullptr;
@@ -734,7 +734,7 @@ void RemoteAccess::register_urls() {
         const CoolString &name = api.getState("info/display_name")->get("display_name")->asString();
         size_t encrypted_name_size = name.length() + crypto_box_SEALBYTES;
         size_t bs64_name_size = 4 * (encrypted_name_size / 3) + 5;
-        size_t json_size = 4200 + bs64_note_size + bs64_name_size;
+        size_t json_size = 4500 + bs64_note_size + bs64_name_size;
         auto json = heap_alloc_array<char>(json_size);
         if (json == nullptr) {
             https_client = nullptr;
@@ -808,36 +808,30 @@ void RemoteAccess::register_urls() {
             serializer.addMemberString("web_address", buf);
             serializer.addMemberString("charger_public", key["charger_public"]);
 
-            uint8_t psk[32];
-            for (int a = 0; a < 32; a++) {
-                psk[a] = key["psk"][a];
-            }
-            uint8_t encrypted_psk[32 + crypto_box_SEALBYTES];
-            if (crypto_box_seal(encrypted_psk, psk, 32, pk)) {
+            CoolString psk = key["psk"];
+            uint8_t encrypted_psk[44 + crypto_box_SEALBYTES];
+            if (crypto_box_seal(encrypted_psk, (uint8_t*)psk.c_str(), 44, pk)) {
                 https_client = nullptr;
                 encrypted_secret = nullptr;
                 secret_nonce = nullptr;
                 return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt psk");
             }
             serializer.addMemberArray("psk");
-            for (int a = 0; a < 32 + crypto_box_SEALBYTES; a++) {
+            for (int a = 0; a < 44 + crypto_box_SEALBYTES; a++) {
                 serializer.addNumber(encrypted_psk[a]);
             }
             serializer.endArray();
 
-            uint8_t web_private[32];
-            for (int a = 0; a < 32; a++) {
-                web_private[a] = key["web_private"][a];
-            }
-            uint8_t encrypted_web_private[32 + crypto_box_SEALBYTES];
-            if (crypto_box_seal(encrypted_web_private, web_private, 32, pk)) {
+            CoolString web_private = key["web_private"];
+            uint8_t encrypted_web_private[44 + crypto_box_SEALBYTES];
+            if (crypto_box_seal(encrypted_web_private, (uint8_t*)web_private.c_str(), 44, pk)) {
                 https_client = nullptr;
                 encrypted_secret = nullptr;
                 secret_nonce = nullptr;
                 return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt web_private");
             }
             serializer.addMemberArray("web_private");
-            for (int a = 0; a < 32 + crypto_box_SEALBYTES; a++) {
+            for (int a = 0; a < 44 + crypto_box_SEALBYTES; a++) {
                 serializer.addNumber(encrypted_web_private[a]);
             }
             serializer.endArray();
