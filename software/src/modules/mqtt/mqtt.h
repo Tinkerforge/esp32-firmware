@@ -128,3 +128,5 @@ private:
     bool global_topic_prefix_subscribed = false;
     bool initial_network_event_seen = false;
 };
+
+#include "module_available_end.h"

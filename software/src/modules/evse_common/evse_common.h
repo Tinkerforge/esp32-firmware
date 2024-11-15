@@ -227,3 +227,5 @@ private:
 
     bool use_imexsum = false;
 };
+
+#include "module_available_end.h"

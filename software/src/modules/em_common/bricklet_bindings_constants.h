@@ -48,3 +48,5 @@
 #define WEM_DATA_STORAGE_STATUS_BUSY        TF_WARP_ENERGY_MANAGER_V2_DATA_STORAGE_STATUS_BUSY
 
 #endif
+
+#include "module_available_end.h"

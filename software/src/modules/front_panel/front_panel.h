@@ -107,3 +107,5 @@ private:
     Config config_tiles_prototype;
     ConfigRoot config;
 };
+
+#include "module_available_end.h"

@@ -251,25 +251,38 @@ def generate_backend_module_dependencies_header(info_path, header_path_prefix, b
         backend_modules_upper = [x.upper for x in backend_modules]
 
         defines  = ''.join(['#define MODULE_{}_AVAILABLE() {}\n'.format(x, "1" if x in backend_modules_upper else "0") for x in all_optional_modules_upper])
+        undefs  = ''.join(['#undef MODULE_{}_AVAILABLE\n'.format(x) for x in all_optional_modules_upper])
         includes = ''.join([f'#include "modules/{x.under}/{x.under}.h"\n' for x in dep_modules])
         decls    = ''.join([f'extern {x.camel} {backend_module_instance_names[x.space]};\n' for x in dep_modules])
 
         available_h_content  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n'
-        available_h_content += '#pragma once\n'
+        available_h_content += '#ifdef MODULE_DEPENDENCIES_H_INCLUDED\n'
+        available_h_content += '#error "Any module available header (transitively?) included after module_dependencies.h include! Swap order!"\n'
+        available_h_content += '#endif\n'
+        available_h_content += '#ifdef MODULE_AVAILABLE_H\n'
+        available_h_content += '#error "Overlapping module available header includes! include module_available_end.h at the end of headers including module_available.h!"\n'
+        available_h_content += '#endif\n'
+        available_h_content += '#define MODULE_AVAILABLE_H\n'
+
+        available_end_h_content = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n'
+        available_end_h_content += '#undef MODULE_AVAILABLE_H\n'
 
         dependencies_h_content  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n'
-        dependencies_h_content += '#pragma once\n\n'
         dependencies_h_content += '#if __INCLUDE_LEVEL__ > 1\n'
         dependencies_h_content += f'#error "Don\'t include {os.path.split(header_path_prefix)[-1]}dependencies.h in headers, only in sources! Use {os.path.split(header_path_prefix)[-1]}available.h in headers if you want to check whether a module is compiled in"\n'
         dependencies_h_content += '#endif\n\n'
-        dependencies_h_content += f'#include "{os.path.split(header_path_prefix)[-1]}available.h"\n'
 
         if defines:
             available_h_content += '\n' + defines
+        if undefs:
+            available_end_h_content += '\n' + undefs
         if includes:
             dependencies_h_content += '\n' + includes
         if decls:
             dependencies_h_content += '\n' + decls
+
+        dependencies_h_content += f'\n\n#include "{os.path.split(header_path_prefix)[-1]}available.h"\n'
+        dependencies_h_content += f'#define MODULE_DEPENDENCIES_H_INCLUDED\n'
 
         if wants_module_list:
             dependencies_h_content += '\n'
@@ -278,6 +291,7 @@ def generate_backend_module_dependencies_header(info_path, header_path_prefix, b
 
         tfutil.write_file_if_different(header_path_prefix + 'available.h', available_h_content)
         tfutil.write_file_if_different(header_path_prefix + 'dependencies.h', dependencies_h_content)
+        tfutil.write_file_if_different(header_path_prefix + 'available_end.h', available_end_h_content)
     else:
         try:
             os.remove(header_path_prefix + 'available.h')

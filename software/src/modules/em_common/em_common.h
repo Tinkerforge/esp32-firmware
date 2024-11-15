@@ -243,3 +243,5 @@ private:
     uint32_t config_error_flags = 0;
     bool     bricklet_reachable = true;
 };
+
+#include "module_available_end.h"

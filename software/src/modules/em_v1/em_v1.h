@@ -151,3 +151,5 @@ private:
     // Config cache
     bool     contactor_installed      = false;
 };
+
+#include "module_available_end.h"

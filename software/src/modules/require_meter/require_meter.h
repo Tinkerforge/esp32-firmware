@@ -48,3 +48,5 @@ public:
     bool has_triggered(const Config *conf, void *data);
 #endif
 };
+
+#include "module_available_end.h"

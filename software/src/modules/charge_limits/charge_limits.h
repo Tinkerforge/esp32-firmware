@@ -54,3 +54,5 @@ public:
 private:
     bool was_triggered = false;
 };
+
+#include "module_available_end.h"

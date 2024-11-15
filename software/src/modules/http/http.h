@@ -81,3 +81,5 @@ private:
 
     Ownership response_ownership;
 };
+
+#include "module_available_end.h"

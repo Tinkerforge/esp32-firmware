@@ -101,3 +101,5 @@ public:
     tag_info_t *old_tags = nullptr;
     tag_info_t *new_tags = nullptr;
 };
+
+#include "module_available_end.h"

@@ -114,3 +114,5 @@ private:
     CurrentAllocatorConfig *ca_config = nullptr;
     CurrentAllocatorState *ca_state = nullptr;
 };
+
+#include "module_available_end.h"

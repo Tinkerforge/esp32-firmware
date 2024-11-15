@@ -120,3 +120,5 @@ private:
 
     ConfigRoot outputs_update;
 };
+
+#include "module_available_end.h"

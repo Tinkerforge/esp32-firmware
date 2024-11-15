@@ -137,3 +137,5 @@ private:
     ConfigRoot gp_output;
     ConfigRoot gp_output_update;
 };
+
+#include "module_available_end.h"

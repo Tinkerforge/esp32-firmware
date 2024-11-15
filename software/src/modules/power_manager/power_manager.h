@@ -236,3 +236,5 @@ private:
     TristateBool automation_drawing_power_last   = TristateBool::Undefined;
     TristateBool automation_power_available_last = TristateBool::Undefined;
 };
+
+#include "module_available_end.h"
