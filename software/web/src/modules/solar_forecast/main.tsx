@@ -465,7 +465,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                         }
                         addEnabled={get_active_unsaved_planes().length < SOLAR_FORECAST_PLANES}
                         addTitle={__("solar_forecast.content.add_plane_config_title")}
-                        addMessage={get_active_unsaved_planes().length == SOLAR_FORECAST_PLANES ? __("solar_forecast.content.add_plane_config_done") : __("solar_forecast.content.add_plane_config_prefix") + (get_active_unsaved_planes().length + 1) + __("solar_forecast.content.add_plane_config_infix") + SOLAR_FORECAST_PLANES + __("solar_forecast.content.add_plane_config_postfix")}
+                        addMessage={get_active_unsaved_planes().length == SOLAR_FORECAST_PLANES ? __("solar_forecast.content.add_plane_config_done") : __("solar_forecast.content.add_plane_config_count")(get_active_unsaved_planes().length, SOLAR_FORECAST_PLANES)}
                         onAddShow={async () => {
                             this.setState({plane_config_tmp: {active: true, name: "#" + get_next_free_unsaved_plane_index(), latitude: 0, longitude: 0, declination: 0, azimuth: 0, wp: 0}})
                         }}
