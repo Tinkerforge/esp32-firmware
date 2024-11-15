@@ -592,15 +592,18 @@ void RemoteAccess::register_urls() {
         return;
     }
 
-    task_scheduler.scheduleOnce([this]() {
-        this->resolve_management();
-    }, 5_s);
-
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        if (!this->management_request_done) {
-            this->resolve_management();
+    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
+        if (connected->asBool()) {
+            this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+                if (!this->management_request_done) {
+                    this->resolve_management();
+                }
+            }, 0_s, 30_s);
+        } else {
+            task_scheduler.cancel(this->task_id);
         }
-    }, 30_s, 30_s);
+        return EventResult::OK;
+    });
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         for (size_t i = 0; i < MAX_KEYS_PER_USER; i++) {

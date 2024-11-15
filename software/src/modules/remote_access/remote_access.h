@@ -76,6 +76,7 @@ private:
     int inner_socket = -1;
     uint16_t in_seq_number = 0;
     bool management_request_done = false;
+    uint64_t task_id;
 
     std::unique_ptr<AsyncHTTPSClient> https_client;
     String response_body;
