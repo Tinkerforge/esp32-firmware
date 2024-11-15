@@ -801,7 +801,7 @@ void RemoteAccess::register_urls() {
         int i = 0;
         for (auto key : doc["wg_keys"].as<JsonArray>()) {
             serializer.addObject();
-            int connection_number = next_user_id * MAX_KEYS_PER_USER + i;
+            int connection_number = (next_user_id - 1) * MAX_KEYS_PER_USER + i;
             std::snprintf(buf, 50, "10.123.%i.2", connection_number);
             serializer.addMemberString("charger_address", buf);
             std::snprintf(buf, 50, "10.123.%i.3", connection_number);
@@ -1288,10 +1288,12 @@ void RemoteAccess::resolve_management() {
             serializer.addMemberObject("V1");
                 serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
                 serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
-                //TODO: Adapt this once we support more than one user.
                 serializer.addMemberArray("configured_connections");
-                    for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
-                        serializer.addNumber(i);
+                    for (auto &user : config.get("users")) {
+                        uint32_t user_id = user.get("id")->asUint() - 1;
+                        for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
+                            serializer.addNumber((user_id * MAX_KEYS_PER_USER) + i);
+                        }
                     }
                 serializer.endArray();
             serializer.endObject();
@@ -1304,10 +1306,12 @@ void RemoteAccess::resolve_management() {
                 serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
                 serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
                 serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
-                //TODO: Adapt this once we support more than one user.
                 serializer.addMemberArray("configured_connections");
-                    for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
-                        serializer.addNumber(i);
+                    for (auto &user : config.get("users")) {
+                        uint32_t user_id = user.get("id")->asUint() - 1;
+                        for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
+                            serializer.addNumber((user_id * MAX_KEYS_PER_USER) + i);
+                        }
                     }
                 serializer.endArray();
             serializer.endObject();
@@ -1612,7 +1616,7 @@ void RemoteAccess::run_management() {
     }
 
     management_command *command = &command_packet->command;
-    if (static_cast<uint32_t>(command->connection_no) >= MAX_KEYS_PER_USER) {
+    if (static_cast<uint32_t>(command->connection_no) >= MAX_KEYS_PER_USER * MAX_USERS) {
         return;
     }
 
