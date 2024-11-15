@@ -14,7 +14,7 @@ def main():
             print('Aborted!')
             return
 
-        m = re.fullmatch('WIFI:S:((?:esp32|warp|warp2|warp3|wem)-[{0}]{{3,6}});T:WPA;P:([{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}});;'.format(BASE58), qr_code)
+        m = re.fullmatch('WIFI:S:((?:esp32|warp|warp2|warp3|wem|seb)-[{0}]{{3,6}});T:WPA;P:([{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}}-[{0}]{{4}});;'.format(BASE58), qr_code)
 
         if m == None:
             print('Invalid ESP32 label: {0}'.format(qr_code))
