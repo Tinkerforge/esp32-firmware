@@ -26,12 +26,9 @@
 #include <math.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
 #include "build.h"
 
-#if MODULE_POWER_MANAGER_AVAILABLE()
-#include "modules/power_manager/power_manager.h"
-#endif
+#include "module_dependencies.h"
 
 extern uint32_t local_uid_num;
 

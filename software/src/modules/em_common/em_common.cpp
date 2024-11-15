@@ -20,11 +20,12 @@
 #include "em_common.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
 #include "bricklet_bindings_constants.h"
 #include "bindings/errors.h"
 #include "build.h"
 #include "musl_libc_timegm.h"
+
+#include "module_dependencies.h"
 
 EMCommon::EMCommon()
 {

@@ -21,8 +21,9 @@
 
 #include <Arduino.h>
 
-#include "module_dependencies.h"
 #include "tools.h"
+
+#include "module_dependencies.h"
 
 // This is here so I stop commiting changes meant for debugging
 #ifndef CHARGE_LIMITS_TIME_MODIFIER

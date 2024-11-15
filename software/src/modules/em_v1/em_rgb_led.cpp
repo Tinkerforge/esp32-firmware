@@ -19,8 +19,9 @@
 
 #include "em_rgb_led.h"
 
-#include "module_dependencies.h"
 #include "em_v1.h"
+
+#include "module_dependencies.h"
 
 #include "gcc_warnings.h"
 
