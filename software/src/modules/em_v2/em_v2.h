@@ -19,14 +19,14 @@
 
 #pragma once
 
-#include "module_available.h"
-
 #include "bindings/bricklet_warp_energy_manager_v2.h"
 #include "config.h"
 #include "device_module.h"
 //#include "modules/debug_protocol/debug_protocol_backend.h"
 #include "modules/em_common/em_common.h"
 #include "modules/em_common/structs.h"
+
+#include "module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"

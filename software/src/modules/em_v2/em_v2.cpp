@@ -18,12 +18,13 @@
  */
 
 #include "em_v2.h"
-#include "module_dependencies.h"
 
 #include "bindings/errors.h"
 #include "event_log_prefix.h"
 #include "tools.h"
 #include "warp_energy_manager_v2_bricklet_firmware_bin.embedded.h"
+
+#include "module_dependencies.h"
 
 #include "gcc_warnings.h"
 
