@@ -303,8 +303,15 @@ void DayAheadPrices::update()
             break;
 
         case AsyncHTTPSClientEventType::Finished:
-            json_buffer[json_buffer_position] = '\0';
-            handle_new_data();
+            if(json_buffer == nullptr) {
+                logger.printfln("JSON Buffer was not allocated correctly");
+
+                download_state = DAP_DOWNLOAD_STATE_ERROR;
+                break;
+            } else {
+                json_buffer[json_buffer_position] = '\0';
+                handle_new_data();
+            }
             handle_cleanup();
 
             if (download_state == DAP_DOWNLOAD_STATE_PENDING) {
@@ -318,7 +325,9 @@ void DayAheadPrices::update()
 
 void DayAheadPrices::handle_cleanup()
 {
-    heap_caps_free(json_buffer);
+    if (json_buffer != nullptr) {
+        heap_caps_free(json_buffer);
+    }
     json_buffer = nullptr;
     json_buffer_position = 0;
 }
