@@ -438,6 +438,26 @@ void SolarForecast::update()
             break;
 
         case AsyncHTTPSClientEventType::Data:
+            if(json_buffer == nullptr) {
+                logger.printfln("JSON Buffer was not allocated correctly");
+                next_sync_forced = rtc.timestamp_minutes() + 30;
+
+                download_state = SF_DOWNLOAD_STATE_ERROR;
+                handle_cleanup();
+                next_update();
+                break;
+            }
+
+            if(json_buffer_position + event->data_chunk_len >= SOLAR_FORECAST_MAX_JSON_LENGTH) {
+                logger.printfln("JSON Buffer overflow");
+                next_sync_forced = rtc.timestamp_minutes() + 30;
+
+                download_state = SF_DOWNLOAD_STATE_ERROR;
+                handle_cleanup();
+                next_update();
+                break;
+            }
+
             memcpy(json_buffer + json_buffer_position, event->data_chunk, event->data_chunk_len);
             json_buffer_position += event->data_chunk_len;
             break;
