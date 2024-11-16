@@ -417,6 +417,24 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             return -1;
         }
 
+        function get_next_update_string() {
+            let next_api_call = state.state.next_api_call;
+            let now = Date.now()/(60*1000); // in minutes
+            if ((state.state.next_api_call == 0) || (get_active_planes().length == 0) || (next_api_call < now)) {
+                return __("util.not_yet_known");
+            } else {
+                let diff    = next_api_call - now;
+                let hours   = Math.floor(diff / 60);
+                let minutes = Math.floor(diff % 60);
+                let update_string = (hours == 0) ? `${minutes}m`:`${hours}h ${minutes}m`;
+                if ((state.state.rate_limit != -1) && (state.state.rate_remaining != -1)) {
+                    update_string += " " + __("solar_forecast.content.remaining_queries")(state.state.rate_remaining, state.state.rate_limit);
+                }
+
+                return update_string;
+            }
+        }
+
         return (
             <SubPage name="solar_forecast">
                 <ConfigForm
@@ -477,6 +495,9 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     />
                 </ConfigForm>
                 <FormSeparator heading={__("solar_forecast.content.solar_forecast_chart_heading")}/>
+                <FormRow label={__("solar_forecast.content.next_update_in")} help={__("solar_forecast.content.next_update_in_help")}>
+                        <InputText value={get_next_update_string()}/>
+                    </FormRow>
                 <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date().getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
                     <InputText
                         value={util.get_value_with_unit(get_kwh_now_to_midnight(), "kWh", 2)}
@@ -534,17 +555,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                         </UplotLoader>
                     </div>
                 </div>
-                <CollapsedSection>
-                    <FormRow label={__("solar_forecast.content.rate_limit_label")} label_muted={__("solar_forecast.content.rate_limit_label_muted")}>
-                        <InputText value={this.state.state.rate_limit === -1 ? __("solar_forecast.content.unknown_not_yet") : this.state.state.rate_limit}/>
-                    </FormRow>
-                    <FormRow label={__("solar_forecast.content.remaining_requests_label")} label_muted={__("solar_forecast.content.remaining_requests_label_muted")}>
-                        <InputText value={this.state.state.rate_remaining === -1 ?  __("solar_forecast.content.unknown_not_yet") : this.state.state.rate_remaining}/>
-                    </FormRow>
-                    <FormRow label={__("solar_forecast.content.next_api_call_label")} label_muted={__("solar_forecast.content.next_api_call_label_muted")}>
-                        <InputText value={this.state.state.next_api_call === 0 ? __("solar_forecast.content.unknown") : new Date(this.state.state.next_api_call*60*1000).toLocaleString()}/>
-                    </FormRow>
-                </CollapsedSection>
             </SubPage>
         );
     }

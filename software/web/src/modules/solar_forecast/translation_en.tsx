@@ -58,7 +58,10 @@ let x = {
             "last_update_attempt": "Last update attempt:",
             "last_successful_update": "Last successful update:",
             "next_update": "Next update:",
-            "resolution": "Accuracy of about 1km is OK"
+            "resolution": "Accuracy of about 1km is OK",
+            "next_update_in": "Next update in:",
+            "next_update_in_help": "The solar forecast may be queried twelve times in a two-hour interval. Each plane is queried individually. It shows when the next query is planned and how many queries are still allowed in the current interval.",
+            "remaining_queries": /*SFN*/(x: number, max: number) => "(Remaining queries: " + x + " of " + max + ")"/*NF*/
         },
         "script": {
             "power": "Power",

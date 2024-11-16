@@ -58,7 +58,10 @@ let x = {
             "last_update_attempt": "Letzter Abfrageversuch:",
             "last_successful_update": "Letzte erfolgreiche Abfrage:",
             "next_update": "Nächste Abfrage:",
-            "resolution": "Genauigkeit von ca. 1km ist OK"
+            "resolution": "Genauigkeit von ca. 1km ist OK",
+            "next_update_in": "Nächste Abfrage in:",
+            "next_update_in_help": "Die Solarpgrognose darf zwölf mal in einem Intervall von zwei Stunden abgefragt werden. Jede Fläche wird einzeln abgefragt. Es wird angezeigt wann die nächste Abfrage geplant ist und wie viele Abfragen im aktuellen Intervall noch erlaubt sind.",
+            "remaining_queries": /*SFN*/(x: number, max: number) => "(verbleibende Abfragen: " + x + " von " + max + ")"/*NF*/
         },
         "script": {
             "power": "Leistung",
