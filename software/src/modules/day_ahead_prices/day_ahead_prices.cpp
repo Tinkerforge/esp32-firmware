@@ -273,6 +273,22 @@ void DayAheadPrices::update()
             break;
 
         case AsyncHTTPSClientEventType::Data:
+            if(json_buffer == nullptr) {
+                logger.printfln("JSON Buffer was not allocated correctly");
+
+                download_state = DAP_DOWNLOAD_STATE_ERROR;
+                handle_cleanup();
+                break;
+            }
+
+            if(json_buffer_position + event->data_chunk_len >= DAY_AHEAD_PRICE_MAX_JSON_LENGTH) {
+                logger.printfln("JSON Buffer overflow");
+
+                download_state = DAP_DOWNLOAD_STATE_ERROR;
+                handle_cleanup();
+                break;
+            }
+
             memcpy(json_buffer + json_buffer_position, event->data_chunk, event->data_chunk_len);
             json_buffer_position += event->data_chunk_len;
             break;
