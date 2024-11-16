@@ -281,7 +281,9 @@ void SolarForecast::handle_new_data()
 
 void SolarForecast::handle_cleanup()
 {
-    heap_caps_free(json_buffer);
+    if (json_buffer != nullptr) {
+        heap_caps_free(json_buffer);
+    }
     json_buffer = nullptr;
     json_buffer_position = 0;
 }
@@ -474,8 +476,17 @@ void SolarForecast::update()
             break;
 
         case AsyncHTTPSClientEventType::Finished:
-            json_buffer[json_buffer_position] = '\0';
-            handle_new_data();
+            if(json_buffer == nullptr) {
+                logger.printfln("JSON Buffer was not allocated correctly");
+                next_sync_forced = rtc.timestamp_minutes() + 30;
+
+                download_state = SF_DOWNLOAD_STATE_ERROR;
+                break;
+            } else {
+                json_buffer[json_buffer_position] = '\0';
+                handle_new_data();
+            }
+
             handle_cleanup();
 
             if (download_state == SF_DOWNLOAD_STATE_PENDING) {
