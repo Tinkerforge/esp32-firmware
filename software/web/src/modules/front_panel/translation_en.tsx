@@ -24,7 +24,8 @@ let x = {
             "average_price_tomorrow": "Average price tomorrow",
             "pv_yield_forecast_today": "PV yield forecast today",
             "pv_yield_forecast_tomorrow": "PV yield forecast tomorrow",
-            "setting": "Setting"
+            "setting": "Setting",
+            "unconfigured": "unconfigured"
         },
         "script": {
             "save_failed": "Failed to save the display settings",

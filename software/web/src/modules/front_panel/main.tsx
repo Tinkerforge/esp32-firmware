@@ -31,6 +31,9 @@ import { Monitor } from "react-feather";
 import { Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormSeparator } from "../../ts/components/form_separator";
+import { MeterValueID } from "../meters/meter_value_id";
+import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_manager/main";
+import { get_managed_chargers } from "../charge_manager/chargers";
 
 const FRONT_PANEL_TILES = 6;
 
@@ -59,14 +62,43 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
         ["7", __("front_panel.content.heating_status")],
     ]}
 
-    static options_wallbox(): [string, string][] { return [...Array(32).keys()].map((i) => [
+    static options_wallbox_unknown(): [string, string][] { return [...Array(32).keys()].map((i) => [
         i.toString(),
-        __("front_panel.content.wallbox") + " " + i
+        __("front_panel.content.wallbox") + " " + i + " (" + __("front_panel.content.unconfigured") + ")"
     ])}
 
-    static options_meter(): [string, string][] { return [...Array(7).keys()].map((i) => [
-        i.toString(), __("front_panel.content.meter") + " " + i
+    static options_wallbox(): [string, string][] {
+        const wallboxes = get_managed_chargers();
+        let wallbox_slots = FrontPanel.options_wallbox_unknown();
+
+        wallboxes.forEach((wallbox) => {
+            const index = wallbox_slots.findIndex(([id]) => id === wallbox[0]);
+            if (index !== -1) {
+                wallbox_slots[index] = wallbox;
+            }
+        });
+
+        return wallbox_slots;
+    }
+
+
+    static options_meter_unkown(): [string, string][] { return [...Array(7).keys()].map((i) => [
+        i.toString(), __("front_panel.content.meter") + " " + i + " (" + __("front_panel.content.unconfigured") + ")"
     ])}
+
+    static options_meter(): [string, string][] {
+        const active_meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"));
+        let meter_slots = FrontPanel.options_meter_unkown();
+
+        active_meter_slots.forEach((slot) => {
+            const index = meter_slots.findIndex(([id]) => id === slot[0]);
+            if (index !== -1) {
+                meter_slots[index] = slot;
+            }
+        });
+
+        return meter_slots;
+    }
 
     static options_day_ahead_prices(): [string, string][] { return [
         ["0", __("front_panel.content.current_electricity_price")],

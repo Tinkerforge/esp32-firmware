@@ -44,6 +44,15 @@ interface ChargersState {
     scanResult: Readonly<ScanCharger[]>
 }
 
+export function get_managed_chargers(): [string, string][] {
+    if (!API.get("charge_manager/config").enable_charge_manager) {
+        return [];
+    }
+
+    return API.get("charge_manager/config").chargers.map((charger, index) => [index.toString(), charger.name])
+}
+
+
 export class ChargeManagerChargers extends ConfigComponent<'charge_manager/config', {status_ref?: RefObject<ChargeManagerStatus>}, ChargersState> {
     intervalID: number = null;
 
