@@ -185,15 +185,21 @@ void RemoteAccess::pre_setup() {
         {"cert_id", Config::Int8(-1)},
     })};
 
+    connection_state_prototype = Config::Object({
+        {"state", Config::Uint8(1)},
+        {"user", Config::Uint8(255)},
+        {"connection", Config::Uint8(255)},
+    });
+
     connection_state = Config::Array(
         {},
-        Config::get_prototype_uint8_0(),
-        MAX_USERS * MAX_KEYS_PER_USER + 1,
-        MAX_USERS * MAX_KEYS_PER_USER + 1,
+        &connection_state_prototype,
+        MAX_KEYS_PER_USER + 1,
+        MAX_KEYS_PER_USER + 1,
         Config::type_id<Config::ConfUint>()
     );
-    for(int i = 0; i < MAX_USERS * MAX_KEYS_PER_USER + 1; ++i) {
-        connection_state.add()->updateUint(1); // Set the default here so that the generic prototype can be used.
+    for(int i = 0; i < MAX_KEYS_PER_USER + 1; ++i) {
+        connection_state.add()->get("state")->updateUint(1); // Set the default here so that the generic prototype can be used.
     }
 
     registration_state = Config::Object({
@@ -849,7 +855,7 @@ void RemoteAccess::register_urls() {
 
         std::queue<WgKey> key_cache;
         int a = 0;
-        for (const auto key : doc["keys"].as<JsonArray>()) {
+        for (const auto key : doc["wg_keys"].as<JsonArray>()) {
             WgKey k = {
                 key["charger_private"],
                 key["psk"],
@@ -940,15 +946,17 @@ void RemoteAccess::register_urls() {
     task_scheduler.scheduleWithFixedDelay([this]() {
         for (size_t i = 0; i < MAX_KEYS_PER_USER; i++) {
             uint32_t state = 1;
-            if (this->remote_connections[i] != nullptr) {
-                state = this->remote_connections[i]->is_peer_up(nullptr, nullptr) ? 2 : 1;
+            if (this->remote_connections[i].conn != nullptr) {
+                state = this->remote_connections[i].conn->is_peer_up(nullptr, nullptr) ? 2 : 1;
             }
 
-            if (this->connection_state.get(i + 1)->updateUint(state)) { // 0 is the management connection
+            if (this->connection_state.get(i + 1)->get("state")->updateUint(state)) { // 0 is the management connection
+                uint32_t conn = this->connection_state.get(i + 1)->get("connection")->asUint();
+                uint32_t user = this->connection_state.get(i + 1)->get("user")->asUint();
                 if (state == 2) {
-                    logger.printfln("Connection %i connected", i);
-                } else if (state == 1) {
-                    logger.printfln("Connection %i disconnected", i);
+                    logger.printfln("Connection %u for user %u connected", conn, user);
+                } else if (state == 1 && conn != 255 && user != 255) {
+                    logger.printfln("Connection %u for user %u disconnected", conn, user);
                 }
             }
         }
@@ -960,7 +968,7 @@ void RemoteAccess::register_urls() {
             state = management->is_peer_up(nullptr, nullptr) ? 2 : 1;
         }
 
-        if (this->connection_state.get(0)->updateUint(state)) {
+        if (this->connection_state.get(0)->get("state")->updateUint(state)) {
             if (state == 2) {
                 logger.printfln("Management connection connected");
             } else {
@@ -1341,7 +1349,7 @@ void RemoteAccess::resolve_management() {
         management_request_done = true;
         https_client = nullptr;
         this->connect_management();
-        this->connection_state.get(0)->updateUint(1);
+        this->connection_state.get(0)->get("state")->updateUint(1);
     };
     run_request_with_next_stage(url.c_str(), HTTP_METHOD_PUT, json, len, config, callback);
 }
@@ -1513,7 +1521,9 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
     char psk[WG_KEY_LENGTH + 1];
     char remote_public_key[WG_KEY_LENGTH + 1];
 
-    if (!get_key(1, i, private_key, psk, remote_public_key)) {
+    uint8_t conn_id = i % MAX_KEYS_PER_USER;
+    uint8_t user_id = i / MAX_KEYS_PER_USER;
+    if (!get_key(user_id + 1, conn_id, private_key, psk, remote_public_key)) {
         logger.printfln("Can't connect to web interface: no WireGuard key installed!");
         return;
     }
@@ -1521,12 +1531,19 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
     // Only used for BLOCKING! DNS resolve. TODO Make this non-blocking in Wireguard-ESP32-Arduino/src/WireGuard.cpp!
     auto remote_host = config.get("relay_host")->asEphemeralCStr();
 
-    if (remote_connections[i] != nullptr) {
-        delete remote_connections[i];
+    uint8_t conn_idx = get_connection(i);
+    if (conn_idx == 255) {
+        logger.printfln("No free conn found");
+        return;
     }
-    remote_connections[i] = new WireGuard();
+    remote_connections[conn_idx].id = i;
+    WireGuard **conn = &remote_connections[conn_idx].conn;
+    if (*conn != nullptr) {
+        delete *conn;
+    }
+    *conn = new WireGuard();
 
-    remote_connections[i]->begin(internal_ip,
+    (*conn)->begin(internal_ip,
              internal_subnet,
              local_port,
              internal_gateway,
@@ -1538,6 +1555,8 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
              allowed_subnet,
              false,
              psk);
+    connection_state.get(conn_idx + 1)->get("user")->updateUint(user_id);
+    connection_state.get(conn_idx + 1)->get("connection")->updateUint(conn_id);
 }
 
 int RemoteAccess::setup_inner_socket() {
@@ -1573,6 +1592,23 @@ int RemoteAccess::setup_inner_socket() {
     }
 
     return 0;
+}
+
+uint8_t RemoteAccess::get_connection(uint8_t conn_id) {
+    uint8_t first_free_idx = 255;
+    for (uint8_t i = 0; i < 5; i++) {
+        if (remote_connections[i].id == conn_id) {
+            return i;
+        } else if (remote_connections[i].conn == nullptr && first_free_idx == 255) {
+            first_free_idx = i;
+        }
+    }
+
+    if (first_free_idx != 255) {
+        return first_free_idx;
+    } else {
+        return 255;
+    }
 }
 
 void RemoteAccess::run_management() {
@@ -1614,14 +1650,26 @@ void RemoteAccess::run_management() {
         return;
     }
 
+    uint8_t conn_idx = get_connection(command->connection_no);
+    if (conn_idx == 255) {
+        logger.printfln("No free connection found");
+        return;
+    }
+    WireGuard **conn = &remote_connections[conn_idx].conn;
     switch (command->command_id) {
         case management_command_id::Connect:
             {
-                if (remote_connections[command->connection_no] != nullptr && remote_connections[command->connection_no]->is_peer_up(nullptr, nullptr)) {
+                remote_connections[conn_idx].id = command->connection_no;
+                if (conn == nullptr) {
                     return;
                 }
-                if (remote_connections[command->connection_no] == nullptr) {
-                    logger.printfln("Opening connection %u", command->connection_no);
+                if (*conn != nullptr && (*conn)->is_peer_up(nullptr, nullptr)) {
+                    return;
+                }
+                if ((*conn) == nullptr) {
+                    uint32_t conn_id = command->connection_no % MAX_KEYS_PER_USER;
+                    uint32_t user_id = command->connection_no / MAX_KEYS_PER_USER;
+                    logger.printfln("Opening connection %u for user %u", conn_id, user_id);
                 }
 
                 uint16_t local_port = 51821;
@@ -1631,8 +1679,8 @@ void RemoteAccess::run_management() {
                 memcpy(&response.connection_uuid, &command->connection_uuid, 16);
 
                 CoolString remote_host = config.get("relay_host")->asString();
-                if (remote_connections[command->connection_no] != nullptr) {
-                    remote_connections[command->connection_no]->end();
+                if (*conn != nullptr) {
+                    (*conn)->end();
                 }
                 local_port = find_next_free_port(local_port);
                 create_sock_and_send_to(&response, sizeof(response), remote_host.c_str(), 51820, &local_port);
@@ -1641,13 +1689,17 @@ void RemoteAccess::run_management() {
             break;
 
         case management_command_id::Disconnect:
-            if (remote_connections[command->connection_no] == nullptr) {
+            remote_connections[conn_idx].id = 255;
+            if (conn == nullptr || *conn == nullptr) {
+                logger.printfln("Not found");
                 break;
             }
-            logger.printfln("Closing connection %u", command->connection_no);
-            remote_connections[command->connection_no]->end();
-            delete remote_connections[command->connection_no];
-            remote_connections[command->connection_no] = nullptr;
+            logger.printfln("Closing connection %u for user %u", connection_state.get(conn_idx + 1)->get("connection")->asUint(), connection_state.get(conn_idx + 1)->get("user")->asUint());
+            (*conn)->end();
+            delete *conn;
+            *conn = nullptr;
+            connection_state.get(conn_idx + 1)->get("user")->updateUint(255);
+            connection_state.get(conn_idx + 1)->get("connection")->updateUint(255);
             break;
     }
 }

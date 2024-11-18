@@ -41,6 +41,11 @@ enum class RegistrationState {
     Error,
 };
 
+struct Connections {
+    uint8_t id;
+    WireGuard *conn;
+};
+
 struct WgKey {
     String priv;
     String psk;
@@ -59,6 +64,7 @@ public:
 private:
     void resolve_management();
     void connect_management();
+    uint8_t get_connection(uint8_t conn_id);
     void connect_remote_access(uint8_t i, uint16_t local_port);
     void run_management();
     void handle_response_chunk(const AsyncHTTPSClientEvent *event);
@@ -72,7 +78,7 @@ private:
     void login(ConfigRoot config, CoolString &login_key);
     int setup_inner_socket();
     WireGuard *management = nullptr;
-    WireGuard *remote_connections[5] = {};
+    Connections remote_connections[5] = {};
 
     String jwt;
     int inner_socket = -1;
@@ -87,6 +93,7 @@ private:
 
     ConfigRoot config;
     ConfigRoot connection_state;
+    ConfigRoot connection_state_prototype;
     ConfigRoot registration_state;
     ConfigRoot users_config_prototype;
     ConfigRoot registration_config;
