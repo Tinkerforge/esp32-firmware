@@ -66,9 +66,13 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
 
     return (
         <div class="row no-gutters input-group rounded">
-            <div class="input-group-prepend input-group-text custom-control custom-switch" style={"padding-left: 2.75rem; padding-right: 0.5rem; border-bottom-right-radius: 0; border-top-right-radius: 0; " + (props.switch_label_min_width ? ("min-width: " + props.switch_label_min_width) : "")}>
+            <div class="d-none d-sm-block input-group-prepend input-group-text custom-control custom-switch" style={"padding-left: 2.75rem; padding-right: 0.5rem; border-bottom-right-radius: 0; border-top-right-radius: 0; " + (props.switch_label_min_width ? ("min-width: " + props.switch_label_min_width) : "")}>
                 <input type="checkbox" class="custom-control-input" id={label_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
                 <label class="custom-control-label" for={label_id}>{props.checked ? props.switch_label_active : props.switch_label_inactive}</label>
+            </div>
+            <div class="d-block d-sm-none input-group-prepend input-group-text custom-control custom-switch" style={"padding-left: 2.75rem; padding-right: 0.5rem; border-bottom-right-radius: 0; border-top-right-radius: 0;"}>
+                <input type="checkbox" class="custom-control-input" id={label_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
+                <label class="custom-control-label" for={label_id}></label>
             </div>
             <input class="form-control no-spin"
                 ref={input}
