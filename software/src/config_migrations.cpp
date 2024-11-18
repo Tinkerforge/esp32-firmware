@@ -482,7 +482,7 @@ static const ConfigMigration migrations[] = {
                 write_config_file("remote_access/config", cfg);
             }
         }
-    }
+    },
 #endif
 
 #if BUILD_IS_ENERGY_MANAGER()
