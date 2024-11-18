@@ -91,7 +91,9 @@ let x = {
 
             "mode_disabled": "Disabled",
             "mode_manager": "Charge manager / PV excess charging",
+            "mode_manager_em_with_ps": "Charge manager / PV excess charging / Phase switching",
             "mode_managed": "Externally controlled",
+            "mode_managed_em_with_ps": "Externally controlled / Phase switching only",
 
             "managed_boxes": "Managed chargers",
 
@@ -135,7 +137,13 @@ let x = {
             "expected_peak_current_muted": "Short-term expected peak current including the additional safety margin.",
 
             "target_constant_current": "Target constant current",
-            "target_constant_current_muted": "Chargers will be throttled if this current is exceeded to make sure the largest consumer will not exceed the expected peak current."
+            "target_constant_current_muted": "Chargers will be throttled if this current is exceeded to make sure the largest consumer will not exceed the expected peak current.",
+
+            "em_controlled_charger": "Charger for phase switching",
+            "em_controlled_charger_muted": "The charger connected to this Energy Manager's contactor.",
+            "em_no_ps_charger": "None",
+            "em_proxy_warning_not_enough": "The single charger, for which this Energy Manager performs phase switching, must be configured here.",
+            "em_proxy_warning_too_many": "The Energy Manager can perform phase switching only for a single charger and there must not be any other chargers connected to the Energy Manager's contactor."
         },
         "automation": {
             "charge_manager_wd": "Charge manager watchdog triggered",
@@ -187,7 +195,14 @@ let x = {
 
             "mode_explainer_0": "This WARP Charger is not part of a charge management group. PV excess charging is disabled.",
             "mode_explainer_1": "This WARP Charger is part of a charge management group with other WARP Chargers and/or a WARP Energy Manager. Another device controls this group to make sure the configured current is never exceeded.",
-            "mode_explainer_2": "This WARP Charger either uses the PV excess charging or controls a charge management group with other WARP Chargers to make sure the configured current is never exceeded."
+            "mode_explainer_2": "This WARP Charger either uses the PV excess charging or controls a charge management group with other WARP Chargers to make sure the configured current is never exceeded.",
+
+            "mode_explainer_0_em": "This Energy Manager does not control any chargers.",
+            "mode_explainer_2_em": "This Energy Manager controls one or more WARP chargers.",
+
+            "mode_explainer_0_em_with_ps": "This Energy Manager does not control any chargers. Phase switching is disabled.",
+            "mode_explainer_1_em_with_ps": "This Energy Manager is controlled by another Energy Manager or WARP Charger and performs phase switching for a single controlled charger that is connected to its contactor.",
+            "mode_explainer_2_em_with_ps": "This Energy Manager controls one or more WARP chargers and can perform phase switching for a single controlled charger that is connected to its contactor."
         }
     }
 }

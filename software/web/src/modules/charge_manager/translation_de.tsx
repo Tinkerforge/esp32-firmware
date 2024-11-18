@@ -91,7 +91,9 @@ let x = {
 
             "mode_disabled": "Deaktiviert",
             "mode_manager": "Lastmanager / PV-Überschussladen",
+            "mode_manager_em_with_ps": "Lastmanager / PV-Überschussladen / Phasenumschaltung",
             "mode_managed": "Fremdgesteuert",
+            "mode_managed_em_with_ps": "Fremdgesteuert / nur Phasenumschaltung",
 
             "managed_boxes": "Kontrollierte Wallboxen",
 
@@ -135,8 +137,13 @@ let x = {
             "expected_peak_current_muted": "Kurzzeitig erwarteter Spitzenstrom unter Berücksichtigung der zusätzlichen Sicherheitsmarge.",
 
             "target_constant_current": "Zielstrom",
-            "target_constant_current_muted": "Wallboxen werden limitiert, wenn dieser Strom überschritten wird, damit der größte Verbraucher nicht den erwarteten Spitzenstrom überschreitet."
+            "target_constant_current_muted": "Wallboxen werden limitiert, wenn dieser Strom überschritten wird, damit der größte Verbraucher nicht den erwarteten Spitzenstrom überschreitet.",
 
+            "em_controlled_charger": "Wallbox für Phasenumschaltung",
+            "em_controlled_charger_muted": "Die Wallbox, die mit dem Schütz dieses Energy Managers verbunden ist.",
+            "em_no_ps_charger": "Keine",
+            "em_proxy_warning_not_enough": "Die eine Wallbox, für die der Energy Manager Phasenumschaltungen durchführt, muss hier konfiguriert werden.",
+            "em_proxy_warning_too_many": "Der Energy Manager kann Phasenumschaltungen nur für eine Wallbox durchführen und es dürfen keine weiteren Wallboxen am Schütz des Energy Managers angeschlossen sein."
         },
         "automation": {
             "charge_manager_wd": "Lastmanagement-Watchdog ausgelöst",
@@ -188,7 +195,14 @@ let x = {
 
             "mode_explainer_0": "Dieser WARP Charger ist nicht Teil eines Lastmanagement-Verbunds mit anderen WARP Chargern und/oder einem WARP Energy Manager. PV-Überschussladen ist deaktiviert.",
             "mode_explainer_1": "Dieser WARP Charger ist Teil eines Lastmanagement-Verbunds mit anderen WARP Chargern und/oder einem WARP Energy Manager. Ein anderes Gerät steuert diesen Lastmanagement-Verbund, um sicherzustellen, dass nie mehr als der verfügbare Strom bezogen wird.",
-            "mode_explainer_2": "Dieser WARP Charger verwendet entweder das PV-Überschussladen oder er steuert einen Lastmanagement-Verbund mit anderen WARP Chargern um sicherzustellen, dass nie mehr als der verfügbare Strom bezogen wird."
+            "mode_explainer_2": "Dieser WARP Charger verwendet entweder das PV-Überschussladen oder er steuert einen Lastmanagement-Verbund mit anderen WARP Chargern um sicherzustellen, dass nie mehr als der verfügbare Strom bezogen wird.",
+
+            "mode_explainer_0_em": "Dieser Energy Manager steuert keine Wallboxen.",
+            "mode_explainer_2_em": "Dieser Energy Manager steuert einen oder mehrere WARP Charger.",
+
+            "mode_explainer_0_em_with_ps": "Dieser Energy Manager steuert keine Wallboxen. Phasenumschaltung ist deaktiviert.",
+            "mode_explainer_1_em_with_ps": "Dieser Energy Manager wird von einem anderen Energy Manager oder WARP Charger gesteuert und führt Phasenumschaltungen für eine einzige mit seinem Schütz verbundene Wallbox durch.",
+            "mode_explainer_2_em_with_ps": "Dieser Energy Manager steuert einen oder mehrere WARP Charger und kann Phasenumschaltungen für eine einzige mit seinem Schütz verbundene Wallbox durchführen."
         }
     }
 }

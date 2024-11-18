@@ -41,9 +41,6 @@
 #if MODULE_EM_COMMON_AVAILABLE()
 static void apply_energy_manager_config(Config &conf)
 {
-    bool has_chargers = conf.get("chargers")->count() > 0;
-    conf.get("enable_charge_manager")->updateBool(has_chargers);
-
     conf.get("enable_watchdog")->updateBool(false);
     conf.get("default_available_current")->updateUint(0);
 }

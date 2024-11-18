@@ -341,6 +341,11 @@ void CMNetworking::register_manager(const char *const *const hosts,
 
             if (manager_callback) {
                 manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr);
+            } else {
+#if MODULE_EM_PHASE_SWITCHER_AVAILABLE()
+                em_phase_switcher.filter_state_packet(charger_idx, &state_pkt);
+#endif
+                this->send_state_packet(&state_pkt);
             }
         }
     }, 50_ms, 50_ms);
@@ -373,6 +378,10 @@ bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *com
     resolve_hostname(client_id);
     if (!is_resolved(client_id))
         return true;
+
+#if MODULE_EM_PHASE_SWITCHER_AVAILABLE()
+    em_phase_switcher.filter_command_packet(client_id, command_pkt);
+#endif
 
     int err = sendto(manager_sock, command_pkt, sizeof(decltype(*command_pkt)), MSG_DONTWAIT, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
 
@@ -458,6 +467,8 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
             client_callback(command_pkt.v1.allocated_current,
                             CM_COMMAND_FLAGS_CPDISC_IS_SET(command_pkt.v1.command_flags),
                             command_pkt.header.version >= 2 ? command_pkt.v2.allocated_phases : 0);
+        } else {
+            this->send_command_packet(0, &command_pkt);
         }
         //logger.printfln("Received command packet. Allocated current is %u", command_pkt.v1.allocated_current);
     }, 100_ms, 100_ms);
