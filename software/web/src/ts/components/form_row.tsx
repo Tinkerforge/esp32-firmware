@@ -53,6 +53,7 @@ export interface FormRowProps {
     error?: ComponentChildren;
     small?: boolean;
     symbol?: h.JSX.Element;
+    class?: string;
 }
 
 let id_counter = 0;
@@ -151,7 +152,7 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
         }
 
         return (
-            <div class="form-group row" hidden={props.hidden == undefined ? false : props.hidden}>
+            <div class={"form-group row " + (props.class === undefined ? "" : props.class)} hidden={props.hidden == undefined ? false : props.hidden}>
                 <div class={(props.labelColClasses === undefined ? "col-lg-4" : props.labelColClasses)}>
                     <div class="row">
                         {label}
