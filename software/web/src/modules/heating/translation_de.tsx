@@ -19,30 +19,8 @@ let x = {
             "minute": "Minute",
             "dpc_low": "für günstigste",
             "dpc_high": "Blockieren für die teuersten",
-            "dpc_extended_help": <>
-                <p>Diese Einstellung steuert die Einschaltempfehlung (SG-Ready-Ausgang 2).</p>
-                <p>Wenn die dynamische Preissteuerung für niedrige Preise aktiviert ist, wird der Heizung eine Einschaltempfehlung gegeben sobald der Strompreis x% oder weniger vom Tagesdurchschnitt entspricht.</p>
-                <p>Beispiel: Angenommen der Durchschnittsstrompreis für einen Tag liegt bei 10ct und die Schwelle ist auf 80% konfiguriert. In diesem Fall würde der Heizung über den Tag verteilt eine Einschaltempfehlung gegeben, in den Zeiträumen wo der Preis 8ct oder niedriger ist.</p>
-            </>,
-            "dpc_blocking_help": <>
-                <p>Diese Einstellung steuert den blockierenden Betrieb (SG-Ready-Ausgang 1).</p>
-                <p>Wenn die dynamische Preissteuerung für hohe Preise aktiviert ist, wird der Heizung in den blockierenden Betrieb gebracht sobald der Strompreis x% oder mehr vom Tagesdurchschnitt entspricht.</p>
-                <p>Beispiel: Angenommen der Durchschnittsstrompreis für einen Tag liegt bei 10ct und die Schwelle ist auf 120% konfiguriert. In diesem Fall würde der Heizung über den Tag verteilt blockiert werden, in den Zeiträumen wo der Preis 12ct oder höher ist.</p>
-                <p>Hinweis: Falls gleichzeitig die PV-Überschuss-Steuerung aktiviert ist und ein ausreichender PV-Überschuss vorhanden ist, wird diese Einstellung ingoriert.</p>
-            </>,
             "pv_excess_control": "bei PV-Überschuss ab",
-            "pv_excess_control_help": <>
-                <p>Diese Einstellung steuert die Einschaltempfehlung (SG-Ready-Ausgang 2).</p>
-                <p>Wenn die PV-Überschuss-Steuerung aktiviert ist, wird der Heizung eine Einschaltempfehlung gegeben sobald der Überschuss am Netzanschluss den eingestellt Wert überschreitet.</p>
-                <p>Beispiel: Verbraucht die Heizung im laufenden Betrieb ca. 1500W, dann dann sollte hier auch 1500W eingetragen werden. In dem Fall würde die Einschaltempfehlung automatisch gegeben, wenn ein entsprechender PV-Überschuss vorhanden ist.</p>
-            </>,
             "pv_yield_forecast": "PV-Ertragsprognose unter",
-            "pv_yield_forecast_help": <>
-                <p>Diese Einstellung steuert die Einschaltempfehlung (SG-Ready-Ausgang 2).</p>
-                <p>Wenn die PV-Ertragsprognose aktiviert ist, kann der Heizung eine Einschaltempfehlung auch außerhalb der Aktivzeit gegeben werden, wenn die PV-Ertragsprognose (Summe des Ertrags von einem Tag in kWh) die eingetellte Schwelle unterschreitet.</p>
-                <p>Beispiel: Es ist 05:00 morgens und die Aktivzeit ist von 06:00 bis 18:00. Die PV-Ertragsprognose ist aktiviert und die Schwelle ist auf 50kWh eingestellt, die Prognose sagt allerdings nur einen Ertrag von 10kWh voraus. In diesem Fall würde trotz der Uhrzeit außerhalb der Aktivzeit eine Einschaltempfehlung an die Heizung gesendet, wenn der Strom günstig ist.</p>
-                <p>Die Idee ist es, Nachts den günstigen Strom zu nutzen wenn bekannt ist das am Tag die Sonne nicht scheinen wird.</p>
-            </>,
             "p14_enwg_control_activate": "Aktiviert die Kontrolle der Heizung nach §14 EnWG",
             "input": "Eingang",
             "output": "Ausgang",
@@ -99,7 +77,7 @@ let x = {
                 <p>Wenn die PV-Überschuss-Steuerung aktiviert ist, wird die Heizung in den erweiterten Betrieb gebracht sobald der Überschuss am Netzanschluss den eingestellten Wert überschreitet.</p>
                 <p>Wenn die Dynamische-Strompreis-Steuerung aktiviert ist, wird die Heizung zusätzlich für die günstigsten x Stunden am Tag in den erweiterten Betrieb gebracht.</p>
                 <p>Wenn die PV-Ertragsprognosen-Steuerung aktiviert ist und die Prognose größer als die eingestellte Enerige ausfällt, entfällt die Dynamische-Strompreis-Steuerung und es wird ausschließlich PV-Überschuss genutzt.</p>
-                <p>Beispiel-Konfiguration: Erweiterter Betrieb bei PV-Überschuss <b>ab 1200W</b> oder für <b>günstigste 4 Stunden pro Tag</b> aber nur wenn PV-Ertragsprognose <b>unter 10 kWh/Tag</b></p>.
+                <p>Beispiel-Konfiguration: Erweiterter Betrieb bei PV-Überschuss <b>ab 1200W</b> oder für <b>günstigste 4 Stunden pro Tag</b> aber nur wenn PV-Ertragsprognose <b>unter 10 kWh/Tag</b>.</p>
                 <p>In diesem Beispiel würde bei einem PV-Überschuss von 1200W, ungeachtet der folgenden Einstellungen, der erweiterte Betrieb aktiviert. Zusätzlich würde für die 4 günstigsten Stunden am Tag der erweiterte Betrieb aktiviert, aber nur falls die PV-Ertragsprognose weniger als 10 kWh für den Tag vorher gesagt hat. Falls ein höherer Ertrag erwartet wird, wird kein erweiterter Betrieb aktiviert.</p>
                 <p>Ziel dieser Einstellungen: Wenn ein hoher PV-Ertrag erwartet wird keinen Strom aus dem Netz für den erweiterten Betrieb bezogen, trotz dass der Strompreis günstig ist.</p>
             </>,
@@ -112,7 +90,8 @@ let x = {
             "or": "oder",
             "but_only_if": "aber nur wenn",
             "kwh_per_day": "kWh/Tag",
-            "h_per_day": "h/Tag"
+            "h_per_day": "h/Tag",
+            "for_the_most_expensive": "bei den teuersten"
         },
         "script": {
             "save_failed": "Speichern der Heizungseinstellungen fehlgeschlagen",

@@ -19,30 +19,8 @@ let x = {
             "minute": "Minute",
             "dpc_low": "for cheapest",
             "dpc_high": "Blocking for the most expensive",
-            "dpc_extended_help": <>
-                <p>This setting controls the activation recommendation (SG Ready output 2).</p>
-                <p>If the dynamic price control for low prices is enabled, SG Ready output 2 will be activated as soom as the electricity price is x% or less of the daily average.</p>
-                <p>Example: Assume that the average electricity price for a day is 10ct and the threshold is configured to 80%. In that case the Heating would be activated through SG Ready output 2 in the periods of time where the price is 8ct or less.</p>
-            </>,
-            "dpc_blocking_help": <>
-                <p>This setting controls the blocking operation (SG Ready output 1).</p>
-                <p>This setting controls SG Ready output 1.</p>
-                <p>If the dynamic price control for high prices is enabled, SG Ready output 1 will be activated as soom as the electricity price is x% or more of the daily average.</p>
-                <p>Example: Assume that the average electricity price for a day is 10ct and the threshold is configured to 120%. In that case the Heating would be blocked through SG Ready output 1 in the periods of time where the price is 12ct or above.</p>
-            </>,
             "pv_excess_control": "if PV excess is above",
-            "pv_excess_control_help": <>
-                <p>This setting controls the blocking operation (SG Ready output 1).</p>
-                <p>If pv excess control is enabled, SG Ready output 1 will be activated as soon as the pv excess at the grid connection exceeds the configured value.</p>
-                <p>Example: If the heating uses about 1500W when running, then you should configure 1500W here, such that SG Ready output 1 is automatically activated when a corresponding pv excess is available.</p>
-            </>,
             "pv_yield_forecast": "PV yield is below",
-            "pv_yield_forecast_help": <>
-                <p>This setting controls the activation recommendation (SG Ready output 2).</p>
-                <p>If the PV yield forecast is enabled, an activation recommendation can be given to the heating even outside the active time if the PV yield forecast (sum of the yield from one day in kWh) falls below the configured threshold.</p>
-                <p>Example: It is 05:00 in the morning and the active time is from 06:00 to 18:00. The PV yield forecast is enabled and the threshold is set to 50kWh, but the forecast only predicts a yield of 10kWh. In this case, an activation recommendation would be sent to the heating even outside the active time if the electricity is cheap.</p>
-                <p>The idea is to use the cheap electricity at night when it is known that the sun will not shine during the day.</p>
-            </>,
             "p14_enwg_control_activate": "Activates control of heating based on §14 EnWG (only relevant for Germany)",
             "input": "Input",
             "output": "Output",
@@ -112,7 +90,8 @@ let x = {
             "or": "or",
             "but_only_if": "but only if",
             "kwh_per_day": "kWh/day",
-            "h_per_day": "h/day"
+            "h_per_day": "h/day",
+            "for_the_most_expensive": "for the most expensive"
         },
         "script": {
             "save_failed": "Failed to save the heating settings",
