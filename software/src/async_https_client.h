@@ -87,7 +87,6 @@ public:
     void fetch(const char *url, int cert_id, esp_http_client_method_t method, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
 
 private:
-    void fetch(const char *url, int cert_id, esp_http_client_method_t method, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
     void error_abort(AsyncHTTPSClientError error, esp_err_t error_http_client = ESP_OK, int error_http_status = -1);
     void clear();
     void parse_cookie(const char *cookie);
