@@ -35,10 +35,12 @@ export class FormSeparator extends Component<FormSeparatorProps, {}> {
         return (
             <div>
             <div class={"row " + (state.help_expanded ? "mb-1 " : "mb-3 ") + (!props.first ? "pt-3" : "pt-0") + " " + (props.extraClasses === undefined ? "" : props.extraClasses)}>
-                <div class={"d-flex " + ((!state.help_expanded) ? "border-bottom " : "")  + (props.colClasses === undefined ? "col" : props.colClasses)}>
-                    {props.heading && <span class="h3">{props.heading}</span>}
-                    {props.help && <div class="ml-2 d-flex"><span class={"col-auto pt-lg-col-form-label"} onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:(state.help_expanded ? "btn-dark" : "btn-outline-secondary"), style:"border-radius: 50%; transition: .35s;"} as any}/></span></div>}
-                    {props.children}
+                <div class={((!state.help_expanded) ? "border-bottom " : "")  + (props.colClasses === undefined ? "col" : props.colClasses)}>
+                    <div class="row align-items-center">
+                        {props.heading && <span class="h3 col-auto">{props.heading}</span>}
+                        {props.help && <span class="col" style="margin-bottom: 0.5rem;" onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class: (state.help_expanded ? "btn-dark" : "btn-outline-secondary"), style:"border-radius: 50%; transition: .35s; vertical-align:"} as any}/></span>}
+                        {props.children}
+                    </div>
                 </div>
             </div>
             <Collapse in={state.help_expanded}>
