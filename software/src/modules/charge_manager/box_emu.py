@@ -255,20 +255,21 @@ class Charger:
         try:
             data, self.manager_addr = self._sock.recvfrom(command_len)
         except BlockingIOError:
-            return
+            return False
         if len(data) != command_len:
-            return
+            return False
 
         magic, length, seq_num, version, allocated_current, command_flags, allocated_phases = struct.unpack(command_format, data)
 
         if version != self.expected_command_version:
-            return
+            return False
 
         self.req_seq_num = seq_num
         self.req_version = version
         self.req_allocated_current = allocated_current
         self.req_should_disconnect_cp = ((command_flags & 0x40) >> 6) == 1
         self.req_allocated_phases = allocated_phases
+        return True
 
 if __name__ == "__main__":
     from PyQt5.QtWidgets import *
@@ -295,7 +296,7 @@ if __name__ == "__main__":
 
             self.send_timer = QTimer()
             self.send_timer.timeout.connect(lambda: self.send())
-            self.send_timer.start(1000)
+            self.send_timer.start(2500)
 
         def addRow(self, title_or_widget, widget=None):
             if widget is None:
@@ -449,7 +450,9 @@ if __name__ == "__main__":
             self.resp_iec61851_state.setCurrentIndex(self.state.iec61851_state)
 
         def receive(self):
-            self.state.recv()
+            if self.state.recv():
+                self.send_timer.start(2500)
+                self.send()
 
         def send(self):
             self.state.tick()

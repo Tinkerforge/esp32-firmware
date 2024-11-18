@@ -348,6 +348,35 @@ void EvseCommon::setup_evse()
     backend->set_initialized(true);
 }
 
+void EvseCommon::send_cm_client_update() {
+#if MODULE_CM_NETWORKING_AVAILABLE()
+    uint16_t supported_current = 32000;
+    for (size_t i = 0; i < CHARGING_SLOT_COUNT; ++i) {
+        if (i == CHARGING_SLOT_CHARGE_MANAGER)
+            continue;
+        if (!slots.get(i)->get("active")->asBool())
+            continue;
+        supported_current = min(supported_current, (uint16_t)slots.get(i)->get("max_current")->asUint());
+    }
+
+    cm_networking.send_client_update(
+        local_uid_num,
+        state.get("iec61851_state")->asUint(),
+        state.get("charger_state")->asUint(),
+        low_level_state.get("time_since_state_change")->asUint(),
+        state.get("error_state")->asUint(),
+        low_level_state.get("uptime")->asUint(),
+        low_level_state.get("charging_time")->asUint(),
+        slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint(),
+        supported_current,
+        management_enabled.get("enabled")->asBool(),
+        backend->get_control_pilot_disconnect(),
+        backend->get_is_3phase() ? 3 : 1,
+        backend->phase_switching_capable() && backend->can_switch_phases_now(!backend->get_is_3phase())
+    );
+#endif
+}
+
 void EvseCommon::register_urls()
 {
 #if MODULE_CM_NETWORKING_AVAILABLE()
@@ -362,34 +391,22 @@ void EvseCommon::register_urls()
         if (phases_requested != 0 && phases != phases_requested) {
             backend->switch_phases_3phase(phases_requested == 3);
         }
+
+        // Decouple send via deadline: If we would send a client update immediately,
+        // the sent data would be stale, because we have to read back with update_all_data first.
+        // Only update the deadline if it is more than 300_ms in the future:
+        // If for some reason we receive manager packets faster than one every 300_ms,
+        // we still have to send client updates.
+        next_cm_send_deadline = std::min(now_us() + 300_ms, next_cm_send_deadline);
     });
 
     task_scheduler.scheduleWithFixedDelay([this](){
-        uint16_t supported_current = 32000;
-        for (size_t i = 0; i < CHARGING_SLOT_COUNT; ++i) {
-            if (i == CHARGING_SLOT_CHARGE_MANAGER)
-                continue;
-            if (!slots.get(i)->get("active")->asBool())
-                continue;
-            supported_current = min(supported_current, (uint16_t)slots.get(i)->get("max_current")->asUint());
-        }
+        if (!deadline_elapsed(next_cm_send_deadline))
+            return;
 
-        cm_networking.send_client_update(
-            local_uid_num,
-            state.get("iec61851_state")->asUint(),
-            state.get("charger_state")->asUint(),
-            low_level_state.get("time_since_state_change")->asUint(),
-            state.get("error_state")->asUint(),
-            low_level_state.get("uptime")->asUint(),
-            low_level_state.get("charging_time")->asUint(),
-            slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint(),
-            supported_current,
-            management_enabled.get("enabled")->asBool(),
-            backend->get_control_pilot_disconnect(),
-            backend->get_is_3phase() ? 3 : 1,
-            backend->phase_switching_capable() && backend->can_switch_phases_now(!backend->get_is_3phase())
-        );
-    }, 1_s, 1_s);
+        send_cm_client_update();
+        next_cm_send_deadline = now_us() + 2500_ms;
+    }, 100_ms, 100_ms);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (!deadline_elapsed(last_current_update + 30000))

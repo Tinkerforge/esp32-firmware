@@ -225,6 +225,9 @@ private:
     ConfigRoot meter_config;
     uint32_t charger_meter_slot = 0;
 
+    micros_t next_cm_send_deadline = 0_us;
+    void send_cm_client_update();
+
     bool use_imexsum = false;
 };
 
