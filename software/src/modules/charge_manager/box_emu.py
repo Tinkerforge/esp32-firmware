@@ -292,7 +292,7 @@ if __name__ == "__main__":
 
             self.recv_timer = QTimer()
             self.recv_timer.timeout.connect(lambda: self.receive())
-            self.recv_timer.start(100)
+            self.recv_timer.start(10)
 
             self.send_timer = QTimer()
             self.send_timer.timeout.connect(lambda: self.send())
