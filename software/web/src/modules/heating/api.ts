@@ -1,22 +1,15 @@
 export interface config {
     sg_ready_blocking_active_type: number;
     sg_ready_extended_active_type: number;
-    minimum_control_holding_time: number;
+    minimum_holding_time: number;
     meter_slot_grid_power: number;
     extended_logging_active: boolean;
-    summer_start_day: number;
-    summer_start_month: number;
-    summer_end_day: number;
-    summer_end_month: number;
-    summer_active_time_active: boolean;
-    summer_active_time_start: number;
-    summer_active_time_end: number;
-    summer_yield_forecast_active: boolean;
-    summer_yield_forecast_threshold: number;
-    dpc_extended_active: boolean;
-    dpc_extended_threshold: number;
-    dpc_blocking_active: boolean;
-    dpc_blocking_threshold: number;
+    yield_forecast_active: boolean;
+    yield_forecast_threshold: number;
+    extended_active: boolean;
+    extended_hours: number;
+    blocking_active: boolean;
+    blocking_hours: number;
     pv_excess_control_active: boolean;
     pv_excess_control_threshold: number;
     p14enwg_active: boolean;
@@ -28,4 +21,7 @@ export interface state {
     sg_ready_blocking_active: boolean;
     sg_ready_extended_active: boolean;
     p14ewng_active: boolean;
+    remaining_holding_time: number;
 }
+
+export interface reset_holding_time {}

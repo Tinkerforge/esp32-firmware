@@ -45,22 +45,15 @@ void Heating::pre_setup()
     config = ConfigRoot{Config::Object({
         {"sg_ready_blocking_active_type", Config::Uint(0, 0, 1)},
         {"sg_ready_extended_active_type", Config::Uint(0, 0, 1)},
-        {"minimum_control_holding_time", Config::Uint(15, 0, 60)},
+        {"minimum_holding_time", Config::Uint(15, 10, 60)},
         {"meter_slot_grid_power", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
         {"extended_logging_active", Config::Bool(false)},
-        {"summer_start_day", Config::Uint(15, 1, 31)},
-        {"summer_start_month", Config::Uint(3, 1, 12)},
-        {"summer_end_day", Config::Uint(1, 1, 31)},
-        {"summer_end_month", Config::Uint(11, 1, 12)},
-        {"summer_active_time_active", Config::Bool(false)},
-        {"summer_active_time_start", Config::Int(8*60)}, // localtime in minutes since 00:00
-        {"summer_active_time_end", Config::Int(20*60)}, // localtime in minutes since 00:00
-        {"summer_yield_forecast_active", Config::Bool(false)},
-        {"summer_yield_forecast_threshold", Config::Uint(0)},
-        {"dpc_extended_active", Config::Bool(false)},
-        {"dpc_extended_threshold", Config::Uint(80, 0, 100)},
-        {"dpc_blocking_active", Config::Bool(false)},
-        {"dpc_blocking_threshold", Config::Uint(120, 100, 1000)},
+        {"yield_forecast_active", Config::Bool(false)},
+        {"yield_forecast_threshold", Config::Uint(0)},
+        {"extended_active", Config::Bool(false)},
+        {"extended_hours", Config::Uint(4, 0, 24)},
+        {"blocking_active", Config::Bool(false)},
+        {"blocking_hours", Config::Uint(0, 0, 24)},
         {"pv_excess_control_active", Config::Bool(false)},
         {"pv_excess_control_threshold", Config::Uint(0)},
         {"p14enwg_active", Config::Bool(false)},
@@ -76,7 +69,8 @@ void Heating::pre_setup()
     state = Config::Object({
         {"sg_ready_blocking_active", Config::Bool(false)},
         {"sg_ready_extended_active", Config::Bool(false)},
-        {"p14enwg_active", Config::Bool(false)}
+        {"p14enwg_active", Config::Bool(false)},
+        {"remaining_holding_time", Config::Int(-1, -1, 60)}
     });
 }
 
@@ -91,6 +85,10 @@ void Heating::register_urls()
 {
     api.addPersistentConfig("heating/config", &config);
     api.addState("heating/state",             &state);
+    api.addCommand("heating/reset_holding_time", Config::Null(), {}, [this](String &/*errmsg*/) {
+        this->last_sg_ready_change = 0;
+        this->update();
+    }, true);
 
     task_scheduler.scheduleWallClock([this]() {
         this->update();
@@ -99,12 +97,12 @@ void Heating::register_urls()
 
 bool Heating::is_active()
 {
-    const bool dpc_extended_active          = config.get("dpc_extended_active")->asBool();
-    const bool pv_excess_control_active     = config.get("pv_excess_control_active")->asBool();
-    const bool summer_active_time_active    = config.get("summer_active_time_active")->asBool();
-    const bool summer_yield_forecast_active = config.get("summer_yield_forecast_active")->asBool();
+    const bool extended_active          = config.get("extended_active")->asBool();
+    const bool blocking_active          = config.get("blocking_active")->asBool();
+    const bool pv_excess_control_active = config.get("pv_excess_control_active")->asBool();
+    const bool yield_forecast_active    = config.get("yield_forecast_active")->asBool();
 
-    if(!summer_active_time_active && !summer_yield_forecast_active && !dpc_extended_active && !pv_excess_control_active) {
+    if(!yield_forecast_active && !extended_active && !blocking_active && !pv_excess_control_active) {
         return false;
     }
 
@@ -145,6 +143,7 @@ void Heating::update()
     // Only update if clock is synced. Heating control depends on time of day.
     struct timeval tv_now;
     if (!rtc.clock_synced(&tv_now)) {
+        state.get("remaining_holding_time")->updateInt(-1);
         extended_logging("Clock not synced. Skipping update.");
         return;
     }
@@ -179,46 +178,45 @@ void Heating::update()
     }
 
     // Get values from config
-    const uint8_t minimum_control_holding_time = config.get("minimum_control_holding_time")->asUint();
+    const uint8_t minimum_holding_time = config.get("minimum_holding_time")->asUint();
     const uint32_t minutes = rtc.timestamp_minutes();
-    if(minutes < (last_sg_ready_change + minimum_control_holding_time)) {
-        extended_logging("Minimum control holding time not reached. Current time: %dmin, last change: %dmin, minimum holding time: %dmin.", minutes, last_sg_ready_change, minimum_control_holding_time);
+    uint32_t remaining_holding_time = 0;
+    if (minutes >= last_sg_ready_change) {
+        uint32_t time_since_last_change = minutes - last_sg_ready_change;
+        if(time_since_last_change < minimum_holding_time) {
+            remaining_holding_time = minimum_holding_time - time_since_last_change;
+        }
+    }
+    state.get("remaining_holding_time")->updateInt(remaining_holding_time);
+
+    if (remaining_holding_time > 0) {
+        extended_logging("Minimum control holding time not reached. Current time: %dmin, last change: %dmin, minimum holding time: %dmin.", minutes, last_sg_ready_change, minimum_holding_time);
         return;
     }
 
-    const uint32_t meter_slot_grid_power           = config.get("meter_slot_grid_power")->asUint();
-    const uint32_t summer_start_day                = config.get("summer_start_day")->asUint();
-    const uint32_t summer_start_month              = config.get("summer_start_month")->asUint();
-    const uint32_t summer_end_day                  = config.get("summer_end_day")->asUint();
-    const uint32_t summer_end_month                = config.get("summer_end_month")->asUint();
-    const bool     summer_active_time_active       = config.get("summer_active_time_active")->asBool();
-    const int32_t  summer_active_time_start        = config.get("summer_active_time_start")->asInt();
-    const int32_t  summer_active_time_end          = config.get("summer_active_time_end")->asInt();
-    const bool     summer_yield_forecast_active    = config.get("summer_yield_forecast_active")->asBool();
-    const uint32_t summer_yield_forecast_threshold = config.get("summer_yield_forecast_threshold")->asUint();
-    const bool     dpc_extended_active             = config.get("dpc_extended_active")->asBool();
-    const uint32_t dpc_extended_threshold          = config.get("dpc_extended_threshold")->asUint();
-    const bool     dpc_blocking_active             = config.get("dpc_blocking_active")->asBool();
-    const uint32_t dpc_blocking_threshold          = config.get("dpc_blocking_threshold")->asUint();
-    const bool     pv_excess_control_active        = config.get("pv_excess_control_active")->asBool();
-    const uint32_t pv_excess_control_threshold     = config.get("pv_excess_control_threshold")->asUint();
+    const uint32_t meter_slot_grid_power       = config.get("meter_slot_grid_power")->asUint();
+    const bool     yield_forecast_active       = config.get("yield_forecast_active")->asBool();
+    const uint32_t yield_forecast_threshold    = config.get("yield_forecast_threshold")->asUint();
+    const bool     extended_active             = config.get("extended_active")->asBool();
+    const uint32_t extended_hours              = config.get("extended_hours")->asUint();
+    const bool     blocking_active             = config.get("blocking_active")->asBool();
+    const uint32_t blocking_hours              = config.get("blocking_hours")->asUint();
+    const bool     pv_excess_control_active    = config.get("pv_excess_control_active")->asBool();
+    const uint32_t pv_excess_control_threshold = config.get("pv_excess_control_threshold")->asUint();
 
     bool sg_ready0_on = false;
     bool sg_ready1_on = false;
 
-    if(!summer_active_time_active && !summer_yield_forecast_active && !dpc_extended_active && !dpc_blocking_active && !pv_excess_control_active) {
+    if(!yield_forecast_active && !extended_active && !blocking_active && !pv_excess_control_active) {
         extended_logging("No control active.");
     } else {
-        const time_t now              = time(NULL);
-        const struct tm *current_time = localtime(&now);
-        const int current_month       = current_time->tm_mon + 1;
-        const int current_day         = current_time->tm_mday;
-        const int current_minutes     = current_time->tm_hour * 60 + current_time->tm_min;
-
-        const bool is_summer = ((current_month == summer_start_month) && (current_day >= summer_start_day )) ||
-                               ((current_month == summer_end_month  ) && (current_day <= summer_end_day   )) ||
-                               ((current_month > summer_start_month ) && (current_month < summer_end_month));
-
+        const time_t now                      = time(NULL);
+        const struct tm *current_time         = localtime(&now);
+        const uint16_t minutes_since_midnight = current_time->tm_hour * 60 + current_time->tm_min;
+        if (minutes_since_midnight >= 24*60) {
+            extended_logging("Too many minutes since midnight: %d.", minutes_since_midnight);
+            return;
+        }
 
         bool no_block = false;
 
@@ -240,107 +238,68 @@ void Heating::update()
 
         // Dynamic price handling for winter and summer
         auto handle_dynamic_price = [&] () {
-            if (!dpc_extended_active && !dpc_blocking_active) {
+            if (!extended_active && !blocking_active) {
                 return;
             }
 
-            const auto price_average = day_ahead_prices.get_average_price_today();
-            const auto price_current = day_ahead_prices.get_current_price();
-
-            if (!price_average.data_available) {
-                extended_logging("Average price for today not available. Ignoring dynamic price control.");
-            } else if (!price_current.data_available) {
-                extended_logging("Current price not available. Ignoring dynamic price control.");
-            } else {
-                if (dpc_extended_active) {
-                    if (price_current.data < price_average.data * dpc_extended_threshold / 100.0) {
-                        extended_logging("Price is below extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
-                        sg_ready1_on |= true;
-                    } else {
-                        extended_logging("Price is above extended threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_extended_threshold);
-                        if (!no_block) {
-                            sg_ready1_on |= false;
-                        } else {
-                            extended_logging("PV excess is available. Not blocking.");
-                        }
-                    }
+            if (extended_active) {
+                const auto cheap = day_ahead_prices.get_cheap_hours_today(extended_hours);
+                if (!cheap.data_available) {
+                    extended_logging("Cheap hours not available. Ignoring extended control.");
+                } else if (cheap.data[minutes_since_midnight/15]) {
+                    extended_logging("Current time is in cheap hours.");
+                    sg_ready1_on |= true;
+                } else {
+                    extended_logging("Current time is not in cheap hours.");
+                    sg_ready1_on |= false;
                 }
-                if (dpc_blocking_active) {
-                    if (price_current.data > price_average.data * dpc_blocking_threshold / 100.0) {
-                        extended_logging("Price is above blocking threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
-                        sg_ready0_on |= true;
-                    } else {
-                        extended_logging("Price is below blocking threshold. Average price: %dmct, current price: %dmct, threshold: %d%%.", price_average.data, price_current.data, dpc_blocking_threshold);
-                        sg_ready0_on |= false;
-                    }
+            }
+            if (blocking_active) {
+                const auto expensive = day_ahead_prices.get_expensive_hours_today(blocking_hours);
+                if (!expensive.data_available) {
+                    extended_logging("Expensive hours not available. Ignoring blocking control.");
+                } else if (expensive.data[minutes_since_midnight/15]) {
+                    extended_logging("Current time is in expensive hours.");
+                    sg_ready0_on |= true;
+                } else {
+                    extended_logging("Current time is not in expensive hours.");
+                    sg_ready0_on |= false;
                 }
             }
         };
 
-        if (!is_summer) { // Winter
-            extended_logging("It is winter. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
-            if (!dpc_extended_active && !dpc_blocking_active && !pv_excess_control_active) {
-                extended_logging("It is winter but no winter control active.");
+        auto is_expected_yield_high = [&] () {
+            // we check the expected pv excess and unblock if it is below the threshold.
+            if (!yield_forecast_active) {
+                extended_logging("Yield forecast is inactive.");
+                return false;
+            }
+
+            extended_logging("Yield forecast is active.");
+            DataReturn<uint32_t> wh_expected = solar_forecast.get_wh_today();
+
+            if(!wh_expected.data_available) {
+                extended_logging("Expected PV yield not available. Ignoring yield forecast.");
             } else {
-                handle_dynamic_price();
-                handle_pv_excess();
-            }
-        } else { // Summer
-            extended_logging("It is summer. Current month: %d, summer start month: %d, summer end month: %d, current day: %d, summer start day: %d, summer end day: %d.", current_month, summer_start_month, summer_end_month, current_day, summer_start_day, summer_end_day);
-            bool blocked = false;
-            bool is_morning = false;
-            bool is_evening = false;
-            if (summer_active_time_active) {
-                if (current_minutes <= summer_active_time_start) { // if is between 00:00 and summer_active_time_start
-                    extended_logging("We are outside morning active time. Current time: %d, active time morning start: %d.", current_minutes, summer_active_time_start);
-                    blocked    = true;
-                    is_morning = true;
-                } else if(summer_active_time_end <= current_minutes) { // if is between summer_active_time_end and 23:59
-                    extended_logging("We are outside evening active time. Current time: %d, active time evening end: %d.", current_minutes, summer_active_time_end);
-                    blocked    = true;
-                    is_evening = true;
+                if (wh_expected.data/1000 < yield_forecast_threshold) {
+                    extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", wh_expected.data/1000, yield_forecast_threshold);
                 } else {
-                    extended_logging("We are in active time. Current time: %d, active time morning: %d, active time evening: %d.", current_minutes, summer_active_time_start, summer_active_time_end);
+                    extended_logging("Expected PV yield %dkWh is above or equal to threshold of %dkWh.", wh_expected.data/1000, yield_forecast_threshold);
+                    return true;
                 }
             }
 
-            // If we are outside active time and px excess control is active,
-            // we check the expected px excess and unblock if it is below the threshold.
-            if (blocked && summer_yield_forecast_active) {
-                extended_logging("We are outside active time and yield forecast is active.");
-                DataReturn<uint32_t> wh_expected = {false, 0};
-                if (is_morning) {
-                    wh_expected = solar_forecast.get_wh_today();
-                } else if (is_evening) {
-                    wh_expected = solar_forecast.get_wh_tomorrow();
-                } else {
-                    extended_logging("We are outside active time but not in morning or evening. Ignoring yield forecast.");
-                }
+            return false;
+        };
 
-                if(!wh_expected.data_available) {
-                    extended_logging("Expected PV yield not available. Ignoring yield forecast.");
-                } else {
-                    if (wh_expected.data/1000 < summer_yield_forecast_threshold) {
-                        extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", wh_expected.data/1000, summer_yield_forecast_threshold);
-                        blocked = false;
-                    } else {
-                        extended_logging("Expected PV yield %dkWh is above or equal to threshold of %dkWh.", wh_expected.data/1000, summer_yield_forecast_threshold);
-                    }
-                }
-            }
-
-            if (blocked) {
-                extended_logging("We are outside of the active time.");
-                sg_ready1_on = false;
-            } else {
-                if (!dpc_extended_active && !pv_excess_control_active) {
-                    extended_logging("It is summer but no summer control active.");
-                } else {
-                    handle_dynamic_price();
-                    handle_pv_excess();
-                }
-            }
+        const bool pv_yield_high = is_expected_yield_high();
+        if (pv_yield_high) {
+            extended_logging("Day ahead prices are ignored because of expected PV yield.");
+            sg_ready1_on = false;
+        } else {
+            handle_dynamic_price();
         }
+        handle_pv_excess();
     }
 
     const bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
@@ -351,6 +310,7 @@ void Heating::update()
         if (sg_ready_output_1 != new_value) {
             em_v2.set_sg_ready_output(1, new_value);
             last_sg_ready_change = rtc.timestamp_minutes();
+            state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asInt());
         }
     } else {
         state.get("sg_ready_extended_active")->updateBool(false);
@@ -359,6 +319,7 @@ void Heating::update()
         if (sg_ready_output_1 != new_value) {
             em_v2.set_sg_ready_output(1, new_value);
             last_sg_ready_change = rtc.timestamp_minutes();
+            state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asInt());
         }
     }
 
@@ -372,6 +333,7 @@ void Heating::update()
             if (sg_ready_output_0 != new_value) {
                 em_v2.set_sg_ready_output(0, new_value);
                 last_sg_ready_change = rtc.timestamp_minutes();
+                state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asUint());
             }
         } else {
             state.get("sg_ready_blocking_active")->updateBool(false);
@@ -380,6 +342,7 @@ void Heating::update()
             if (sg_ready_output_0 != new_value) {
                 em_v2.set_sg_ready_output(0, new_value);
                 last_sg_ready_change = rtc.timestamp_minutes();
+                state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asUint());
             }
         }
     }

@@ -41,6 +41,7 @@ import { InputText } from "../../ts/components/input_text";
 import { is_solar_forecast_enabled, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
 import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
 import { StatusSection } from "../../ts/components/status_section";
+import { Button } from "react-bootstrap";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} hidden={false} />;
@@ -167,52 +168,53 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
 
             const solar_forecast_today     = get_kwh_today();
             const solar_forecast_tomorrow  = get_kwh_tomorrow();
-            const solar_forecast_threshold = this.state.summer_yield_forecast_threshold;
-            const current_month = new Date().getMonth();
-            const current_day   = new Date().getDate();
-            const is_summer = ((current_month == this.state.summer_start_month-1) && (current_day   >= this.state.summer_start_day  )) ||
-                              ((current_month == this.state.summer_end_month-1  ) && (current_day   <= this.state.summer_end_day    )) ||
-                              ((current_month >  this.state.summer_start_month-1) && (current_month <  this.state.summer_end_month-1));
-
-            const num_per_day   = 24*60/resolution_multiplier;
-            const active_active = this.state.summer_active_time_active;
-            const active_start  = this.state.summer_active_time_start/resolution_multiplier;
-            const active_end    = this.state.summer_active_time_end/resolution_multiplier;
-
-            const active_today    = active_active && (!this.state.summer_yield_forecast_active || (is_summer && (solar_forecast_today >= solar_forecast_threshold)));
-            const active_tomorrow = active_active && (!this.state.summer_yield_forecast_active || (is_summer && (solar_forecast_tomorrow >= solar_forecast_threshold)));
+            const solar_forecast_threshold = this.state.yield_forecast_threshold;
+            const hour_multiplier = 60/resolution_multiplier;
+            const num_per_day     = 24*hour_multiplier;
+            const extended        = this.state.extended_active ? this.state.extended_hours*hour_multiplier : 0;
+            const blocking        = this.state.blocking_active ? this.state.blocking_hours*hour_multiplier : 0;
 
             if (dap_prices.prices.length >= num_per_day) {
-                const avg_price_day1 = dap_prices.prices.slice(0, num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
-                for (let i = 0; i < num_per_day; i++) {
-                    if (((i < active_start) || (i >= active_end)) && active_today) {
-                        //data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
-                    } else if (dap_prices.prices[i] < avg_price_day1*this.state.dpc_extended_threshold/100) {
-                        if (this.state.dpc_extended_active) {
-                            data.lines_vertical.push({'index': i, 'text': '', 'color': [40, 167, 69, 0.5]});
-                        }
-                    } else if(dap_prices.prices[i] > avg_price_day1*this.state.dpc_blocking_threshold/100) {
-                        if (this.state.dpc_blocking_active) {
-                            data.lines_vertical.push({'index': i, 'text': '', 'color': [220, 53, 69, 0.5]});
-                        }
-                    }
-                }
+                const cheap_hours = data.values[1]
+                    .slice(0, num_per_day)
+                    .map((price, index) => ({ price, index }))
+                    .sort((a, b) => a.price - b.price)
+                    .slice(0, extended)
+                    .map(item => item.index);
+                const expensive_hours = data.values[1]
+                    .slice(0, num_per_day)
+                    .map((price, index) => ({ price, index }))
+                    .sort((a, b) => b.price - a.price)
+                    .slice(0, blocking)
+                    .map(item => item.index);
+
+                cheap_hours.forEach(index => {
+                    data.lines_vertical.push({'index': index, 'text': '', 'color': [40, 167, 69, 0.5]});
+                });
+                expensive_hours.forEach(index => {
+                    data.lines_vertical.push({'index': index, 'text': '', 'color': [220, 53, 69, 0.5]});
+                });
             }
             if (dap_prices.prices.length >= num_per_day*2) {
-                const avg_price_day2 = dap_prices.prices.slice(num_per_day).reduce((a, b) => a + b, 0) / num_per_day;
-                for (let i = num_per_day; i < num_per_day*2; i++) {
-                    if ((((i-num_per_day) < active_start) || ((i-num_per_day) >= active_end)) && active_tomorrow) {
-                        //data.lines_vertical.push({'index': i, 'text': '', 'color': [196, 196, 196, 0.5]});
-                    } else if (dap_prices.prices[i] < avg_price_day2*this.state.dpc_extended_threshold/100) {
-                        if (this.state.dpc_extended_active) {
-                            data.lines_vertical.push({'index': i, 'text': '', 'color': [40, 167, 69, 0.5]});
-                        }
-                    } else if(dap_prices.prices[i] > avg_price_day2*this.state.dpc_blocking_threshold/100) {
-                        if (this.state.dpc_blocking_active) {
-                            data.lines_vertical.push({'index': i, 'text': '', 'color': [220, 53, 69, 0.5]});
-                        }
-                    }
-                }
+                const cheap_hours = data.values[1]
+                    .slice(num_per_day, num_per_day*2)
+                    .map((price, index) => ({ price, index }))
+                    .sort((a, b) => a.price - b.price)
+                    .slice(0, extended)
+                    .map(item => item.index);
+                const expensive_hours = data.values[1]
+                    .slice(num_per_day, num_per_day*2)
+                    .map((price, index) => ({ price, index }))
+                    .sort((a, b) => b.price - a.price)
+                    .slice(0, blocking)
+                    .map(item => item.index);
+
+                cheap_hours.forEach(index => {
+                    data.lines_vertical.push({'index': index + num_per_day, 'text': '', 'color': [40, 167, 69, 0.5]});
+                });
+                expensive_hours.forEach(index => {
+                    data.lines_vertical.push({'index': index + num_per_day, 'text': '', 'color': [220, 53, 69, 0.5]});
+                });
             }
 
             // Add vertical line at current time
@@ -251,14 +253,21 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
         if (!util.render_allowed())
             return <SubPage name="heating" />;
 
-        let days_summer_start = this.month_to_days(state.summer_start_month);
-        let days_summer_end = this.month_to_days(state.summer_end_month);
-
         const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"));
 
         const solar_forecast_enabled   = is_solar_forecast_enabled();
         const day_ahead_prices_enabled = is_day_ahead_prices_enabled();
         const meter_available          = meter_slots.length > 0;
+
+        function get_remaining_minutes() {
+            if (state.heating_state.remaining_holding_time == -1) {
+                return __("util.not_yet_known");
+            } else if (state.heating_state.remaining_holding_time == 1) {
+                return "1 " + __("heating.content.minute");
+            } else {
+                return state.heating_state.remaining_holding_time + " " + __("heating.content.minutes");
+            }
+        }
 
         return (
             <SubPage name="heating">
@@ -280,13 +289,27 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     <FormRow label={__("heating.content.minimum_holding_time")} label_muted={__("heating.content.minimum_holding_time_muted")}>
                         <InputNumber
                             unit={__("heating.content.minutes")}
-                            value={state.minimum_control_holding_time}
-                            onValue={this.set("minimum_control_holding_time")}
-                            min={0}
+                            value={state.minimum_holding_time}
+                            onValue={this.set("minimum_holding_time")}
+                            min={10}
                             max={60}
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.sg_ready_output") + " 1"} label_muted={__("heating.content.sg_ready_output1_muted")}>
+                    <FormRow label={__("heating.content.remaining_holding_time")} label_muted={__("heating.content.remaining_holding_time_muted")}>
+                        <InputText
+                            readonly={true}
+                            value={get_remaining_minutes()}>
+                            <div class="input-group-append">
+                                <Button
+                                    className="form-control rounded-right"
+                                    variant="primary"
+                                    onClick={() => API.call('heating/reset_holding_time', {}, "")}>
+                                    {__("heating.content.update_now")}
+                                </Button>
+                            </div>
+                        </InputText>
+                    </FormRow>
+                    <FormRow label={__("heating.content.sg_ready_output") + " 1"} label_muted={__("heating.content.sg_ready_output1_muted")} help={__("heating.content.sg_ready_output1_help")}>
                         <InputSelect
                             items={[
                                 ["0", __("heating.content.closed")],
@@ -296,7 +319,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={(v) => this.setState({sg_ready_blocking_active_type: parseInt(v)})}
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.sg_ready_output") + " 2"} label_muted={__("heating.content.sg_ready_output2_muted")}>
+                    <FormRow label={__("heating.content.sg_ready_output") + " 2"} label_muted={__("heating.content.sg_ready_output2_muted")} help={__("heating.content.sg_ready_output2_help")}>
                         <InputSelect
                             items={[
                                 ["0", __("heating.content.closed")],
@@ -312,119 +335,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                 onClick={this.toggle('extended_logging_active')}
                         />
                     </FormRow>
-
-                    <FormSeparator heading={__("heating.content.summer_settings")}/>
-                    <FormRow label={__("heating.content.summer_start")} label_muted="">
-                        <div class="row no-gutters">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
-                                    <InputSelect
-                                        className="heating-input-group-prepend"
-                                        items={Heating.months()}
-                                        value={state.summer_start_month}
-                                        onValue={(v) => {
-                                            this.setState({summer_start_month: parseInt(v)});
-                                            days_summer_start = this.month_to_days(parseInt(v));
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
-                                    <InputSelect
-                                        className="heating-input-group-prepend"
-                                        items={days_summer_start}
-                                        value={state.summer_start_day}
-                                        onValue={(v) => {
-                                            this.setState({summer_start_day: parseInt(v)})
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </FormRow>
-                    <FormRow label={__("heating.content.summer_end")} label_muted="">
-                        <div class="row no-gutters">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-prepand"><span class="heating-fixed-size input-group-text">{__("heating.content.month")}</span></div>
-                                    <InputSelect
-                                        className="heating-input-group-prepend"
-                                        items={Heating.months()}
-                                        value={state.summer_end_month}
-                                        onValue={(v) => {
-                                            this.setState({summer_end_month: parseInt(v)});
-                                            days_summer_end = this.month_to_days(parseInt(v));
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.day")}</span></div>
-                                    <InputSelect
-                                        className="heating-input-group-prepend"
-                                        items={days_summer_end}
-                                        value={state.summer_end_day}
-                                        onValue={(v) => {
-                                            this.setState({summer_end_day: parseInt(v)})
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </FormRow>
-                    <FormRow label={__("heating.content.active_time")} help={__("heating.content.active_time_help")}>
-                        <Switch desc={__("heating.content.active_time_desc")}
-                                checked={state.summer_active_time_active}
-                                onClick={this.toggle('summer_active_time_active', this.update_uplot)}
-                        />
-                        <div class="row no-gutters">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.from")}</span></div>
-                                    <InputTime
-                                        className={"form-control-md heating-input-group-prepend"}
-                                        date={this.get_date_from_minutes(state.summer_active_time_start)}
-                                        showSeconds={false}
-                                        onDate={(d: Date) => this.setState({summer_active_time_start: this.get_minutes_from_date(d)}, this.update_uplot)}
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <div class="input-group-prepend heating-input-group-append"><span class="heating-fixed-size input-group-text">{__("heating.content.to")}</span></div>
-                                    <InputTime
-                                        className={"form-control-md heating-input-group-prepend"}
-                                        date={this.get_date_from_minutes(state.summer_active_time_end)}
-                                        showSeconds={false}
-                                        onDate={(d: Date) => this.setState({summer_active_time_end: this.get_minutes_from_date(d)}, this.update_uplot)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </FormRow>
-                    <FormRow label={__("heating.content.pv_yield_forecast")}
-                             label_muted={__("heating.content.pv_yield_forecast_muted")}
-                             help={<>{!solar_forecast_enabled && __("heating.content.solar_forecast_needs_activation")} {__("heating.content.pv_yield_forecast_help")}</>}>
-                        <SwitchableInputNumber
-                            disabled={!solar_forecast_enabled}
-                            switch_label_active="Aktiv"
-                            switch_label_inactive="Inaktiv"
-                            unit="kWh"
-                            checked={state.summer_yield_forecast_active}
-                            onClick={this.toggle('summer_yield_forecast_active', this.update_uplot)}
-                            value={state.summer_yield_forecast_threshold}
-                            onValue={this.set("summer_yield_forecast_threshold", this.update_uplot)}
-                            min={0}
-                            max={1000}
-                            switch_label_min_width="100px"
-                        />
-                    </FormRow>
-
-                    <FormSeparator heading={__("heating.content.general_settings")}/>
+                    <FormSeparator heading={__("heating.content.extended_operation")} help={__("heating.content.extended_operation_help")}/>
                     <FormRow label={__("heating.content.pv_excess_control")}
                              help={<>{!meter_available && __("heating.content.meter_needs_activation")} {__("heating.content.pv_excess_control_help")}</>}>
                         <SwitchableInputNumber
@@ -432,7 +343,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.watt")}
-                            checked={state.pv_excess_control_active}
+                            checked={state.pv_excess_control_active && meter_available}
                             onClick={this.toggle('pv_excess_control_active')}
                             value={state.pv_excess_control_threshold}
                             onValue={this.set("pv_excess_control_threshold")}
@@ -441,41 +352,62 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_min_width="100px"
                         />
                     </FormRow>
+                    <FormRow label={__("heating.content.or")} small={true}>
+                        <div></div>
+                    </FormRow>
                     <FormRow label={__("heating.content.dpc_low")}
-                             label_muted={__("heating.content.dpc_low_muted")}
-                             help={<>{!day_ahead_prices_enabled && __("heating.content.day_ahead_prices_needs_activation")} {__("heating.content.dpc_extended_help")}</>}>
+                             help={<>{!day_ahead_prices_enabled && __("heating.content.day_ahead_prices_needs_activation")} {__("heating.content.dpc_extended_help")}</>}
+                             class="mb-xs-1 mb-md-0">
                         <SwitchableInputNumber
                             disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
-                            unit="%"
-                            checked={state.dpc_extended_active}
-                            onClick={this.toggle('dpc_extended_active', this.update_uplot)}
-                            value={state.dpc_extended_threshold}
-                            onValue={(v) => {this.setState({dpc_extended_threshold: v}, this.update_uplot)}}
+                            unit={__("heating.content.h_per_day")}
+                            checked={state.extended_active && day_ahead_prices_enabled}
+                            onClick={this.toggle('extended_active', this.update_uplot)}
+                            value={state.extended_hours}
+                            onValue={(v) => {this.setState({extended_hours: v}, this.update_uplot)}}
                             min={0}
-                            max={100}
+                            max={24 - state.blocking_hours}
                             switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.dpc_high")}
-                             label_muted={__("heating.content.dpc_high_muted")}
+                    <FormRow label={__("heating.content.but_only_if")} small={true} class="mb-0 mb-xs-1">
+                        <div></div>
+                    </FormRow>
+                    <FormRow label={__("heating.content.pv_yield_forecast")}
+                             help={<>{!solar_forecast_enabled && __("heating.content.solar_forecast_needs_activation")} {__("heating.content.pv_yield_forecast_help")}</>}>
+                        <SwitchableInputNumber
+                            disabled={!solar_forecast_enabled || !state.extended_active}
+                            switch_label_active={__("heating.content.active")}
+                            switch_label_inactive={__("heating.content.inactive")}
+                            unit={__("heating.content.kwh_per_day")}
+                            checked={state.yield_forecast_active && state.extended_active && solar_forecast_enabled}
+                            onClick={this.toggle('yield_forecast_active', this.update_uplot)}
+                            value={state.yield_forecast_threshold}
+                            onValue={this.set("yield_forecast_threshold", this.update_uplot)}
+                            min={0}
+                            max={1000}
+                            switch_label_min_width="100px"
+                        />
+                    </FormRow>
+                    <FormSeparator heading={__("heating.content.blocking_operation")} help={__("heating.content.blocking_operation_help")}/>
+                    <FormRow label="bei den teuersten"
                              help={<>{!day_ahead_prices_enabled && __("heating.content.day_ahead_prices_needs_activation")} {__("heating.content.dpc_blocking_help")}</>}>
                         <SwitchableInputNumber
                             disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
-                            unit="%"
-                            checked={state.dpc_blocking_active}
-                            onClick={this.toggle('dpc_blocking_active', this.update_uplot)}
-                            value={state.dpc_blocking_threshold}
-                            onValue={(v) => {this.setState({dpc_blocking_threshold: v}, this.update_uplot)}}
-                            min={100}
-                            max={1000}
+                            unit={__("heating.content.h_per_day")}
+                            checked={state.blocking_active && day_ahead_prices_enabled}
+                            onClick={this.toggle('blocking_active', this.update_uplot)}
+                            value={state.blocking_hours}
+                            onValue={(v) => {this.setState({blocking_hours: v}, this.update_uplot)}}
+                            min={0}
+                            max={24 - state.extended_hours}
                             switch_label_min_width="100px"
                         />
                     </FormRow>
-
                     <FormSeparator heading={__("heating.content.status")} />
                     <FormRow label={__("heating.content.price_based_heating_plan")} label_muted={__("heating.content.price_based_heating_plan_muted")}>
                     <div class="card pl-1 pb-1">
@@ -590,7 +522,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={(v) => this.setState({p14enwg_input: parseInt(v)})}
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.throttled_if_input")}>
+                    <FormRow label="Blockierender Betrieb">
                         <InputSelect
                             items={[
                                 ["0", __("heating.content.closed")],
