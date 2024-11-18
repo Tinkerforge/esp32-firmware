@@ -461,13 +461,22 @@ if __name__ == "__main__":
 
     def main():
         app = QApplication([])
-        window = QWidget()
+        window = QScrollArea()
+        window.setWidgetResizable(True)
+        widget = QWidget()
 
-        window.setWindowTitle(",".join(sys.argv[1:]))
+        top_level = QWidget()
+        top_top_level_layout = QVBoxLayout()
+        top_top_level_layout.addWidget(window)
+        top_top_level_layout.setContentsMargins(0,0,0,0)
 
-        chargers = len(sys.argv) - 1
-        cols = math.ceil(chargers / 13)
-        rows = math.ceil(chargers / cols)
+        window.setWidget(widget)
+
+        top_level.setWindowTitle(",".join(sys.argv[1:]))
+
+        charger_count = len(sys.argv) - 1
+        cols = math.ceil(charger_count / 13)
+        rows = math.ceil(charger_count / cols)
 
         top_level_layout = QGridLayout()
 
@@ -483,8 +492,9 @@ if __name__ == "__main__":
             if col == rows - 1:
                 last_row_counter += chargers[-1].row_counter
 
-        window.setLayout(top_level_layout)
-        window.show()
+        widget.setLayout(top_level_layout)
+        top_level.setLayout(top_top_level_layout)
+        top_level.show()
         app.exec_()
 
     main()
