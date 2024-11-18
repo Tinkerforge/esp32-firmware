@@ -251,7 +251,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         if (!util.render_allowed())
             return <SubPage name="charge_manager_chargers" />;
 
-        const MAX_CONTROLLED_CHARGERS = API.hasModule("esp32_ethernet_brick") ? 32 : 10;
+        const MAX_CONTROLLED_CHARGERS = API.hasModule("esp32_ethernet_brick") ? 64 : 10;
 
         let energyManagerMode = API.hasModule("em_common") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
 

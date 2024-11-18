@@ -274,8 +274,8 @@ void CMNetworking::register_manager(const char *const *const hosts,
 
         // Try to receive up to four packets in one go to catch up on the backlog.
         // Don't receive every available packet to smooth out bursts of packets.
-        static_assert(MAX_CONTROLLED_CHARGERS <= 32);
-        for (int poll_ctr = 0; poll_ctr < 4; ++poll_ctr) {
+        static_assert(MAX_CONTROLLED_CHARGERS <= 64);
+        for (int poll_ctr = 0; poll_ctr < 10; ++poll_ctr) {
             if (!xQueueReceive(manager_queue, &item, 0))
                 return;
 
@@ -343,7 +343,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
                 manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr);
             }
         }
-    }, 100_ms, 100_ms);
+    }, 50_ms, 50_ms);
 }
 
 bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases)

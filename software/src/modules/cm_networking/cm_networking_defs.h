@@ -23,7 +23,7 @@
 #include <stddef.h>
 
 #if defined(BOARD_HAS_PSRAM)
-#define MAX_CONTROLLED_CHARGERS 32
+#define MAX_CONTROLLED_CHARGERS 64
 #else
 #define MAX_CONTROLLED_CHARGERS 10
 #endif

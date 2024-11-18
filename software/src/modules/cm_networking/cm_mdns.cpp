@@ -84,7 +84,7 @@ static void dns_callback(const char *host, const ip_addr_t *ip, void *args)
 
 void CMNetworking::resolve_hostname(uint8_t charger_idx)
 {
-    if ((this->needs_mdns & (1 << charger_idx)) != 0) {
+    if ((this->needs_mdns & (1ull << charger_idx)) != 0) {
         if (!periodic_scan_task_started)
             task_scheduler.scheduleWithFixedDelay([this](){this->start_scan();}, 1_m);
         periodic_scan_task_started = true;
@@ -223,7 +223,7 @@ void CMNetworking::resolve_via_mdns(mdns_result_t *entry)
 {
     if (entry->addr && entry->addr->addr.type == IPADDR_TYPE_V4) {
         for (size_t i = 0; i < charger_count; ++i) {
-            if ((this->needs_mdns & (1 << i)) == 0)
+            if ((this->needs_mdns & (1ull << i)) == 0)
                 continue;
 
             String host = String(this->hosts[i]);

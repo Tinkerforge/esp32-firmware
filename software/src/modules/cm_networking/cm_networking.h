@@ -99,8 +99,8 @@ private:
     const char *const *hosts = nullptr;
     int charger_count = 0;
     // one bit per charger
-    uint32_t needs_mdns = 0;
-    static_assert(MAX_CONTROLLED_CHARGERS <= 32);
+    uint64_t needs_mdns = 0;
+    static_assert(MAX_CONTROLLED_CHARGERS <= 64);
 
     int client_sock;
     bool manager_addr_valid = false;
