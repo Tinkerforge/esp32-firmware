@@ -348,13 +348,13 @@ void SolarForecast::update()
     }
 
     // Copy test data to temporary buffer
-    logger.printfln("JSON copy test");
+    logger.printfln("Using test data");
     memcpy(json_buffer + json_buffer_position, test_data.c_str(), test_data.length());
     json_buffer_position += test_data.length();
     json_buffer[json_buffer_position] = '\0';
 
     handle_new_data();
-
+    handle_cleanup();
     next_update();
 
     return;
