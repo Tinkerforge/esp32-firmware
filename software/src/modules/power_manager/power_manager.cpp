@@ -908,7 +908,7 @@ void PowerManager::update_energy()
                 } else {
                     // Excess charging uses an adaptive P controller to adjust available power.
                     int32_t p_adjust_w;
-                    const int32_t cm_allocated_power_w = cm_allocated_currents->pv * 230 / 1000; // ma -> watt
+                    int32_t cm_allocated_power_w = cm_allocated_currents->pv * 230 / 1000; // ma -> watt
 
                     if (cm_allocated_power_w <= 0) {
                         // When no power was allocated to any charger, use p=1 so that the threshold for switching on can be reached properly.
@@ -916,7 +916,8 @@ void PowerManager::update_energy()
 
                         // Sanity check
                         if (cm_allocated_power_w < 0) {
-                            logger.printfln("Negative cm_allocated_power_w: %i  PV current is %i", cm_allocated_power_w, cm_allocated_currents->pv);
+                            logger.printfln("Negative cm_allocated_power_w: %i  cm_allocated_currents(%i %i %i %i)", cm_allocated_power_w, cm_allocated_currents->pv, cm_allocated_currents->l1, cm_allocated_currents->l2, cm_allocated_currents->l3);
+                            cm_allocated_power_w = 0;
                         }
                     } else {
                         // Some EVs may only be able to adjust their charge power in steps of 1500W,
@@ -1070,7 +1071,8 @@ void PowerManager::update_energy()
 
                     // Sanity check
                     if (cm_allocated_phase_current_ma < 0) {
-                        logger.printfln("Negative cm_allocated_phase_current_ma: %i", cm_allocated_phase_current_ma);
+                        logger.printfln("Negative cm_allocated_phase_current_ma: cm_allocated_currents(%i %i %i %i)", cm_allocated_currents->pv, cm_allocated_currents->l1, cm_allocated_currents->l2, cm_allocated_currents->l3);
+                        cm_allocated_phase_current_ma = 0;
                     }
                 } else {
                     if (current_error_ma < 0) {
