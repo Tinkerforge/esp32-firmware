@@ -1324,7 +1324,6 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
 int allocate_current(
     const CurrentAllocatorConfig *cfg,
-    const bool seen_all_chargers,
     CurrentLimits *limits,
     const bool cp_disconnect_requested,
     /*const TODO: move allocated_energy into charger allocation state so that this can be const once again*/ ChargerState *charger_state,
@@ -1343,13 +1342,6 @@ int allocate_current(
 
     // TODO use enum for this. See charge_manager.cpp state definition for constants.
     int result = 1;
-
-    if (!seen_all_chargers) {
-        trace("Did not see all chargers yet!");
-        limits->raw = Cost{0, 0, 0, 0};
-        limits->min = Cost{0, 0, 0, 0};
-        limits->max_pv = 0;
-    }
 
     bool print_local_log = false;
     char *local_log = cfg->distribution_log.get();

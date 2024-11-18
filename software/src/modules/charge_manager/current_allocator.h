@@ -29,7 +29,6 @@ struct cm_state_v3;
 
 int allocate_current(
         const CurrentAllocatorConfig *cfg,
-        const bool seen_all_chargers,
         CurrentLimits *limits,
         const bool cp_disconnect_requested,
         /*const TODO: move allocated_energy into charger allocation state so that charger_state can be const once again*/ ChargerState *charger_state,

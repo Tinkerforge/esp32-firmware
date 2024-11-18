@@ -460,11 +460,16 @@ void ChargeManager::setup()
 
             uint32_t allocated_current = 0;
 
+            if (!seen_all_chargers()) {
+                limits.raw = Cost{0, 0, 0, 0};
+                limits.min = Cost{0, 0, 0, 0};
+                limits.max_pv = 0;
+            }
+
             this->limits_post_allocation = this->limits;
 
             int result = allocate_current(
                 this->ca_config,
-                this->seen_all_chargers(),
                 &this->limits_post_allocation,
                 this->control_pilot_disconnect.get("disconnect")->asBool(),
                 this->charger_state,
