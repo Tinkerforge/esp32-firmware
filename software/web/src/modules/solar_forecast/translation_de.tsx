@@ -37,7 +37,7 @@ let x = {
             "table_kwp": "kWp",
             "table_latitude": "Breitengrad",
             "table_longitude": "Längengrad",
-            "time": "Zeit",
+            "time": "Uhrzeit",
             "solar_forecast_chart_heading": "Status",
             "solar_forecast_now_label": "PV-Ertragsprognose ab jetzt",
             "solar_forecast_today_label": "Heute",

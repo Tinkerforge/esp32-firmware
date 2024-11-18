@@ -12,7 +12,7 @@ let x = {
             "price_invalid": "Der Preis muss in Cent pro kWh, nicht in Euro pro kWh angegeben werden.",
             "no_data": "Keine Daten vorhanden!",
             "loading": "Lade Daten...",
-            "time": "Zeit",
+            "time": "Uhrzeit",
             "electricity_price": "Strompreis",
             "grid_fees_plus_taxes": "Netzentgelte + Steuern",
             "surcharge": "Preisaufschlag",

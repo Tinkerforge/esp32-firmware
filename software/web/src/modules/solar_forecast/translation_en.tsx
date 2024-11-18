@@ -37,7 +37,7 @@ let x = {
             "table_kwp": "kWp",
             "table_latitude": "Latitude",
             "table_longitude": "Longitude",
-            "time": "Time",
+            "time": "Time of day",
             "solar_forecast_chart_heading": "Status",
             "solar_forecast_now_label": "Solar forecast from now",
             "solar_forecast_today_label": "Today",

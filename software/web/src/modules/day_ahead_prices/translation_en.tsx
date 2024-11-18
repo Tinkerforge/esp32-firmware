@@ -12,7 +12,7 @@ let x = {
             "price_invalid": "The price must be set in cent per kWh, not euro per kWh.",
             "no_data": "No data available!",
             "loading": "Loading data...",
-            "time": "Time",
+            "time": "Time of day",
             "electricity_price": "Electricity price",
             "grid_fees_plus_taxes": "Grid fees and taxes",
             "surcharge": "Surcharge",
