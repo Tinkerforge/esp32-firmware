@@ -42,13 +42,13 @@ int CMNetworking::create_socket(uint16_t port, bool blocking)
 
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (sock < 0) {
-        logger.printfln("Unable to create socket: errno %d", errno);
+        logger.printfln("Unable to create socket for port %hu: %s (%d)", port, strerror(errno), errno);
         return -1;
     }
 
     int err = bind(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
     if (err < 0) {
-        logger.printfln("Socket unable to bind: errno %d", errno);
+        logger.printfln("Socket unable to bind to port %hu: %s (%d)", port, strerror(errno), errno);
         return -1;
     }
 
@@ -57,13 +57,13 @@ int CMNetworking::create_socket(uint16_t port, bool blocking)
 
     int flags = fcntl(sock, F_GETFL, 0);
     if (flags < 0) {
-        logger.printfln("Failed to get flags from socket: errno %d", errno);
+        logger.printfln("Failed to get flags from socket for port %hu: %s (%d)", port, strerror(errno), errno);
         return -1;
     }
 
     err = fcntl(sock, F_SETFL, flags | O_NONBLOCK);
     if (err < 0) {
-        logger.printfln("Failed to set O_NONBLOCK flag: errno %d", errno);
+        logger.printfln("Failed to set O_NONBLOCK flag for port %hu: %s (%d)", port, strerror(errno), errno);
         return -1;
     }
 
