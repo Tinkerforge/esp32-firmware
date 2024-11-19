@@ -150,7 +150,8 @@ export class Table extends Component<TableProps, TableState> {
                                                 await row.onEditShow();
                                                 this.setState({showEditModal: i});
                                             }}
-                                            disabled={!row.onEditShow}>
+                                            disabled={!row.onEditShow}
+                                            hidden={!row.onEditShow}>
                                         <Edit3/>
                                     </Button>
                                     <Button variant="danger"
