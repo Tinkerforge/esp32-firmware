@@ -9,6 +9,7 @@ This is only relevant if you want to build updates for https://github.com/Tinker
 (see https://wiki.archlinux.org/title/systemd-nspawn#Create_a_Debian_or_Ubuntu_environment)
 
 Install debootstrap and ubuntu-keyring.
+
 ```bash
 sudo debootstrap --include=systemd-container --components=main,universe jammy esp32-lib-builder http://archive.ubuntu.com/ubuntu
 sudo systemd-nspawn -D ./esp32-lib-builder
@@ -16,6 +17,7 @@ passwd
 # set password
 logout
 ```
+
 ### Boot container
 
 ```bash
@@ -51,7 +53,7 @@ git clone https://github.com/Tinkerforge/esp32-firmware
 cd ~
 git clone --branch release/v4.4 https://github.com/espressif/esp32-arduino-lib-builder
 cd esp32-arduino-lib-builder
-~/esp32-firmware/software/lib-builder/apply_patches.py ~/esp32-arduino-lib-builder ~/esp32-firmware/software/patches/lib-builder-pre
+../esp32-firmware/software/lib-builder/apply_patches.py . ../esp32-firmware/software/patches/lib-builder-pre
 ./build.sh -t esp32 -b menuconfig
 # press [s] [return] [return] to write sdkconfig, [q] to quit
 cp sdkconfig sdkconfig.vanilla
@@ -60,7 +62,8 @@ cp sdkconfig sdkconfig.vanilla
 ### Apply patches to ESP-IDF and components
 
 ```bash
-~/esp32-firmware/software/lib-builder/apply_patches.py ~/esp32-arduino-lib-builder ~/esp32-firmware/software/patches/lib-builder
+cd ~/esp32-arduino-lib-builder
+../esp32-firmware/software/lib-builder/apply_patches.py . ../esp32-firmware/software/patches/lib-builder
 ```
 
 **Replace .esp32brick with .esp32ethernetbrick in the next sections for ESP32 Ethernet, WARP2, WARP3 and WEM firmwares**
@@ -68,21 +71,22 @@ cp sdkconfig sdkconfig.vanilla
 ### To modify settings:
 
 ```bash
-~/esp32-firmware/software/lib-builder/menuconfig.py ~/esp32-arduino-lib-builder ~/esp32-firmware/software/lib-builder/defconfig.esp32brick
-# press [s] [return] to write sdkconfig (don't change the filename!), ~/esp32-firmware/software/lib-builder/defconfig.esp32brick will be updated automatically
+cd ~/esp32-arduino-lib-builder
+../esp32-firmware/software/lib-builder/menuconfig.py . ../esp32-firmware/software/lib-builder/defconfig.esp32brick
+# press [s] [return] [return] to write sdkconfig (don't change the filename!), [q] to quit, ~/esp32-firmware/software/lib-builder/defconfig.esp32brick will be updated automatically
 ```
-
 
 ### To build the libs:
 
 ```bash
-~/esp32-firmware/software/lib-builder/build_idf_libs.py ~/esp32-arduino-lib-builder ~/esp32-firmware/software/lib-builder/defconfig.esp32brick
+cd ~/esp32-arduino-lib-builder
+../esp32-firmware/software/lib-builder/build_idf_libs.py . ../esp32-firmware/software/lib-builder/defconfig.esp32brick
 ```
 
 ### Test built libs:
 
 ```bash
-cd ~/esp32-firmware/software/packages/
+cd ~/esp32-firmware/software/packages
 
 # Copy the latest package; Directories ending in -dev are not cleaned up by the firmware build scripts. Remember to use warp2-x.y.z if building WARP2, WARP3 or WEM firmwares (i.e. something that runs on an ESP with ethernet and PSRAM)
 cp -r arduino-esp32#warp-x.y.z_commit_id arduino-esp32#warp-x.y.z-dev
@@ -107,7 +111,6 @@ platform_packages = platformio/framework-arduinoespressif32 @ symlink://packages
 pio run -e warp
 ```
 
-
 ### Add built libs to arduino-esp32 Repo:
 
 ```bash
@@ -127,17 +130,20 @@ git commit -m "Add libs for warp-x.y.z."
 ### Apply patches to arduino-esp32
 
 ```bash
-~/esp32-firmware/software/lib-builder/apply_patches.py ~/arduino-esp32 ../patches/arduino-esp32
+cd ~/arduino-esp32
+../esp32-firmware/software/lib-builder/apply_patches.py . ../esp32-firmware/software/patches/arduino-esp32
 ```
 
 ### Push arduino-esp32
 
 ```bash
+cd ~/arduino-esp32
 git push -u origin warp-x.y.z #or warp2-x.y.z for ESP32 Ethernet Brick)
 ```
 
 ### Update packages
 
 ```bash
+cd ~/esp32-firmware/software
 python manage_packages.py
 ```
