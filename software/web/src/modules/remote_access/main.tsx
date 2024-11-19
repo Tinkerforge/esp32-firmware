@@ -488,7 +488,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                             onDirtyChange={this.setDirty}>
                     <FormRow label={__("remote_access.content.enable")}>
                         <Switch checked={this.state.enable}
-                                desc={__("remote_access.content.enable_desc")}
+                                desc={__("remote_access.content.enable_desc")(this.state.relay_host)}
                                 onClick={() => {
                                     this.setState({enable: !this.state.enable});
                                 }} />
@@ -510,19 +510,19 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                     }} />
                     </FormRow>
                     <FormRow label={__("remote_access.content.password")} label_muted={__("remote_access.content.password_muted")}>
-                                        <InputPassword required
-                                            value={this.state.addUser.password}
-                                        maxLength={64}
-                                        onValue={(v) => {
-                                                this.setState({addUser: {...this.state.addUser, password: v}})
-                                        }}
-                                        hideClear
-                                        placeholder="" />
-                                    </FormRow>
-                                    <FormRow label={__("remote_access.content.note")} label_muted={__("remote_access.content.note_muted")}>
-                                        <InputText value={this.state.addUser.note} onValue={(v) => this.setState({addUser: {...this.state.addUser, note: v}})}/>
-                                    </FormRow>
-                                    </>
+                        <InputPassword required
+                            value={this.state.addUser.password}
+                        maxLength={64}
+                        onValue={(v) => {
+                                this.setState({addUser: {...this.state.addUser, password: v}})
+                        }}
+                        hideClear
+                        placeholder="" />
+                    </FormRow>
+                    <FormRow label={__("remote_access.content.note")} label_muted={__("remote_access.content.note_muted")(this.state.relay_host)}>
+                        <InputText value={this.state.addUser.note} onValue={(v) => this.setState({addUser: {...this.state.addUser, note: v}})}/>
+                    </FormRow>
+                    </>
                             }}
                             onAddSubmit={async () => {
                                 if (users.length === 0) {

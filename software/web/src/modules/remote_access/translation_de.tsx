@@ -14,7 +14,7 @@ let x = {
             "relay_host": "Relay-Server-Hostname",
             "relay_port": "Relay-Server-Port",
             "enable": "Fernzugriff aktiviert",
-            "enable_desc": <>Für den Fernzugriff wird ein <a href="https://my.warp-charger.com/">my.warp-charger.com</a>-Account benötigt.</>,
+            "enable_desc": /*FFN*/ (host: string) => <>Für den Fernzugriff wird ein <a href={`https://${host}/`}>{host}</a>-Account benötigt.</> /*NF*/,
             "cert": "TLS-Zertifikat",
             "not_used": "Eingebettetes Zertifikatsbundle",
             "status_modal_header": "Registrierung wird durchgeführt",
@@ -30,7 +30,7 @@ let x = {
             "user_add_message": /*SFN*/ (user_count: number, max_users: number) => `${user_count} von ${max_users} Nutzern konfiguriert.`/*NF*/,
             "all_users_in_use": "Alle Nutzer in benutzung",
             "note": "Notiz",
-            "note_muted": <>wird auf <a href="https://my.warp-charger.com/" target="_blank">my.warp-charger.com</a> angezeigt. Optional</>
+            "note_muted": /*FFN*/(host: string) => <>wird auf <a href={`https://${host}/`} target="_blank">{host}</a> angezeigt. Optional</>/*NF*/
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",

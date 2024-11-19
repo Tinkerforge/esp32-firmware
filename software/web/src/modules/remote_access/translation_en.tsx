@@ -14,7 +14,7 @@ let x = {
             "relay_host": "Relay server hostname",
             "relay_port": "Relay server port",
             "enable": "Remote access enabled",
-            "enable_desc": <>A <a href="https://my.warp-charger.com/">my.warp-charger.com</a> account is required for the remote access.</>,
+            "enable_desc": /*FFN*/ (host: string) => <>A <a href={`https://${host}/`}>{host}</a> account is required for the remote access.</> /*NF*/,
             "cert": "TLS certificate",
             "not_used": "Embedded certificate-bundle",
             "status_modal_header": "Registration progess",
@@ -30,7 +30,7 @@ let x = {
             "user_add_message": /*SFN*/ (user_count: number, max_users: number) => `${user_count} of ${max_users} users configured.`/*NF*/,
             "all_users_in_use": "All users are currently in use",
             "note": "Note",
-            "note_muted": <>will be shown at <a href="https://my.warp-charger.com/" target="_blank">my.warp-charger.com</a>. Optional</>
+            "note_muted": /*FFN*/(host: string) => <>will be shown at <a href={`https://${host}/`} target="_blank">{host}</a>. Optional</>/*NF*/
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",
