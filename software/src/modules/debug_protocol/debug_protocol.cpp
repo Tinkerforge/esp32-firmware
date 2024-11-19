@@ -35,9 +35,6 @@ void DebugProtocol::register_urls()
 {
     // TODO: Make this an API command?
     server.on("/debug_protocol/start", HTTP_GET, [this](WebServerRequest request) {
-        last_debug_keep_alive = millis();
-        check_debug();
-
         StringBuilder sb;
         size_t payload_len = debug_header_prefix_len;
 
@@ -58,6 +55,13 @@ void DebugProtocol::register_urls()
 
         sb.putc('"');
         ws.pushRawStateUpdateEnd(&sb);
+
+        last_debug_keep_alive = millis();
+
+        if (debug)
+            return request.send(200);
+
+        check_debug();
 
         debug = true;
         return request.send(200);
