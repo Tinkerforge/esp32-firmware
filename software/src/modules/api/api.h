@@ -119,7 +119,7 @@ public:
     template<typename T>
     [[gnu::deprecated("Pass bool low_latecy instead of interval_ms. Use 'false' or default for a 1000ms interval or 'true' for a 250ms interval.")]]
     void addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, T interval_ms) {
-        addState(path, config, keys_to_censor, interval_ms < 1000);
+        addState(path, config, keys_to_censor, {}, interval_ms < 1000);
     }
     template<typename T>
     [[gnu::deprecated("Please remove the interval_ms parameter.")]]

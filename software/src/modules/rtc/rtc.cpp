@@ -78,7 +78,7 @@ static bool timestamp_acceptable(const struct timeval &time) {
 }
 
 void Rtc::register_urls() {
-    api.addState("rtc/time", &time, {}, true);
+    api.addState("rtc/time", &time, {}, {}, true);
 
     api.addPersistentConfig("rtc/config", &config);
 
