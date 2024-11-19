@@ -221,9 +221,7 @@ void RemoteAccess::handle_response_chunk(const AsyncHTTPSClientEvent *event) {
 }
 
 void RemoteAccess::register_urls() {
-    api.addState("remote_access/config", &config, {
-        "password"
-    });
+    api.addState("remote_access/config", &config, {"password"}, {"email"});
 
     api.addState("remote_access/state", &connection_state);
     api.addState("remote_access/registration_state", &registration_state);
