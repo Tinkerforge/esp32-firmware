@@ -396,6 +396,9 @@ static const char *debug_header_prefix =
     "energy_meter_type,"
     "ENERGY_METER,"
     "power,"
+    "voltage_0,"
+    "voltage_1,"
+    "voltage_2,"
     "current_0,"
     "current_1,"
     "current_2,"
@@ -640,10 +643,21 @@ void EVSEV2::get_debug_line(StringBuilder *sb)
         return;
     }
 
+    float all_values[METER_ALL_VALUES_RESETTABLE_COUNT];
+    uint16_t all_values_len = 0;
+    rc = tf_evse_v2_get_all_energy_meter_values(&device, all_values, &all_values_len);
+
+    if (rc != TF_E_OK) {
+        logger.printfln("get_all_energy_meter_values %d", rc);
+        is_in_bootloader(rc);
+        sb->puts("get_all_energy_meter_values failed");
+        return;
+    }
+
     sb->printf(","
              "%u,%u,%u,%u,%u,%u,%u,%u,,"
              "%u,%c,%u,%u,,"
-             "%.3f,%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
+             "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
              "%u,%u,%u,%u,%u,%u,,"
              "%u,%u,%u,%u,%u,,"
              "%u,%u,%u,%u,%u,%u,%u,,"
@@ -666,6 +680,9 @@ void EVSEV2::get_debug_line(StringBuilder *sb)
              energy_meter_type,
 
              power,
+             all_values[0],
+             all_values[1],
+             all_values[2],
              currents[0],
              currents[1],
              currents[2],
