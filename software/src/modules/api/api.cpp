@@ -192,8 +192,8 @@ void API::addCommand(const char * const path, ConfigRoot *config, std::initializ
         ktc,
         config,
         std::move(callback),
-        (uint8_t)path_len,
-        (uint8_t)ktc_size,
+        path_len,
+        ktc_size,
         is_action,
     });
 
@@ -214,7 +214,7 @@ void API::addCommand(const String &path, ConfigRoot *config, std::initializer_li
     this->addCommand(strdup(path.c_str()), config, keys_to_censor_in_debug_report, std::move(callback), is_action);
 }
 
-void API::addState(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, bool low_latency)
+void API::addState(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, std::initializer_list<const char *> keys_to_censor_in_debug_report, bool low_latency)
 {
     size_t path_len = strlen(path);
 
@@ -226,6 +226,12 @@ void API::addState(const char * const path, ConfigRoot *config, std::initializer
     size_t ktc_size = keys_to_censor.size();
     if (ktc_size > std::numeric_limits<decltype(StateRegistration::keys_to_censor_len)>::max()) {
         logger.printfln("State %s: keys_to_censor too long!", path);
+        return;
+    }
+
+    size_t ktc_debug_size = keys_to_censor_in_debug_report.size() + ktc_size;
+    if (ktc_debug_size > std::numeric_limits<decltype(StateRegistration::keys_to_censor_in_debug_report_len)>::max()) {
+        logger.printfln("State %s: keys_to_censor_in_debug_report (includes keys_to_censor!) too long!", path);
         return;
     }
 
@@ -244,12 +250,33 @@ void API::addState(const char * const path, ConfigRoot *config, std::initializer
         }
     }
 
+    auto ktc_debug = ktc_debug_size == 0 ? nullptr : new const char *[ktc_debug_size];
+    {
+        int i = 0;
+        for(const char *k : keys_to_censor){
+            if (!string_is_in_rodata(k))
+                esp_system_abort("Key to censor not in flash! Please pass a string literal!");
+
+            ktc_debug[i] = k;
+            ++i;
+        }
+        for(const char *k : keys_to_censor_in_debug_report){
+            if (!string_is_in_rodata(k))
+                esp_system_abort("Key to censor not in flash! Please pass a string literal!");
+
+            ktc_debug[i] = k;
+            ++i;
+        }
+    }
+
     states.push_back({
         path,
         ktc,
+        ktc_debug,
         config,
-        (uint8_t)path_len,
-        (uint8_t)ktc_size,
+        path_len,
+        ktc_size,
+        ktc_debug_size,
         low_latency
     });
 
@@ -260,9 +287,9 @@ void API::addState(const char * const path, ConfigRoot *config, std::initializer
     }
 }
 
-void API::addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, bool low_latency)
+void API::addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, std::initializer_list<const char *> keys_to_censor_in_debug_report, bool low_latency)
 {
-    this->addState(strdup(path.c_str()), config, keys_to_censor, low_latency);
+    this->addState(strdup(path.c_str()), config, keys_to_censor, keys_to_censor_in_debug_report, low_latency);
 }
 
 bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor)
@@ -680,7 +707,7 @@ void API::register_urls()
             result += ",\n \"";
             result += reg.path;
             result += "\": ";
-            result += reg.config->to_string_except(reg.keys_to_censor, reg.keys_to_censor_len);
+            result += reg.config->to_string_except(reg.keys_to_censor_in_debug_report, reg.keys_to_censor_in_debug_report_len);
         }
 
         for (auto &reg : commands) {

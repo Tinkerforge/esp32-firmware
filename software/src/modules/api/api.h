@@ -30,16 +30,20 @@
 #include "tools.h"
 #include "modules/web_server/web_server.h"
 
+// Will be stored in IRAM -> use 32 bit integers even if a bool would be sufficient
 struct StateRegistration {
     const char *const path;
     const char *const *const keys_to_censor;
+    const char *const *const keys_to_censor_in_debug_report;
     ConfigRoot *const config;
 
     const size_t path_len;
     const size_t keys_to_censor_len;
+    const size_t keys_to_censor_in_debug_report_len;
     const uint32_t low_latency;
 };
 
+// Will be stored in IRAM -> use 32 bit integers even if a bool would be sufficient
 struct CommandRegistration {
     const char *const path;
     const char *const *const keys_to_censor_in_debug_report;
@@ -105,8 +109,8 @@ public:
     void addCommand(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(String &errmsg)> &&callback, bool is_action);
     void addCommand(const String &path,      ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(String &errmsg)> &&callback, bool is_action);
 
-    void addState(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {}, bool low_latency = false);
-    void addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {}, bool low_latency = false);
+    void addState(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {}, std::initializer_list<const char *> keys_to_censor_in_debug_report = {}, bool low_latency = false);
+    void addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {}, std::initializer_list<const char *> keys_to_censor_in_debug_report = {}, bool low_latency = false);
     bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {});
     //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<const char *> keys_to_censor, std::function<void(String &)> &&callback);
     void addResponse(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);

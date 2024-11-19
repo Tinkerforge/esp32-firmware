@@ -399,7 +399,7 @@ void Meters::register_urls()
         api.addState(get_path(slot, Meters::PathType::State),    &meter_slot.state);
         api.addState(get_path(slot, Meters::PathType::Errors),   &meter_slot.errors);
         api.addState(get_path(slot, Meters::PathType::ValueIDs), &meter_slot.value_ids);
-        api.addState(get_path(slot, Meters::PathType::Values),   &meter_slot.values, {}, METERS_VALUES_LOW_LATENCY);
+        api.addState(get_path(slot, Meters::PathType::Values),   &meter_slot.values, {}, {}, METERS_VALUES_LOW_LATENCY);
 
         const String base_path = get_path(slot, Meters::PathType::Base);
 

@@ -429,7 +429,7 @@ void EvseCommon::register_urls()
     api.addState("evse/state", &state);
     api.addState("evse/hardware_configuration", &hardware_configuration);
     api.addState("evse/low_level_state", &low_level_state);
-    api.addState("evse/button_state", &button_state, {}, true);
+    api.addState("evse/button_state", &button_state, {}, {}, true);
     api.addState("evse/slots", &slots);
     api.addState("evse/indicator_led", &indicator_led);
 

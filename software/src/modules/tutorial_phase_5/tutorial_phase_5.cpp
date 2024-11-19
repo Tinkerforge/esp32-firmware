@@ -146,7 +146,7 @@ void TutorialPhase5::register_urls()
     // The API manager checks the ConfigRoot object for changes every 250
     // milliseconds when low latency is requested. If a change is detected,
     // an update is sent.
-    api.addState("tutorial_phase_5/state", &state, {}, true);
+    api.addState("tutorial_phase_5/state", &state, {}, {}, true);
 }
 
 void TutorialPhase5::loop()
