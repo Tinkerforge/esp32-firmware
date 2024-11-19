@@ -31,7 +31,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Switch } from "../../ts/components/switch";
 import { __ } from "../../ts/translation";
 import "./wireguard";
-import { add_user, config, RegistrationState } from "./api";
+import { add_user, config, RegistrationState, update_enable } from "./api";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
@@ -408,8 +408,15 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         }
     }
 
-    override async sendSave(topic: "remote_access/config", cfg: config): Promise<void> {
-        await this.registerCharger(cfg);
+    override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
+        const config: update_enable = {
+            enable: cfg.enable,
+            relay_host: "",
+            relay_port: 0,
+            email: "",
+            cert_id: -1,
+        }
+        API.call("remote_access/update_enable", config, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"));
     }
 
     override getIsModified(topic: "remote_access/config"): boolean {

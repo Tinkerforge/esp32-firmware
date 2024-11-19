@@ -68,4 +68,5 @@ interface registration_config {
 
 export type get_login_salt = registration_config;
 export type get_secret_salt = registration_config;
+export type update_enable = registration_config;
 export type login = register;

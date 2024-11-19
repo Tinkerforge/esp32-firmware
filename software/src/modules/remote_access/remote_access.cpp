@@ -258,6 +258,28 @@ void RemoteAccess::register_urls() {
         return request.send(200);
     });
 
+    server.on("/remote_access/update_enable", HTTP_PUT, [this](WebServerRequest request) {
+        auto content_len = request.contentLength();
+        std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
+        if (req_body == nullptr) {
+            return request.send(500, "text/plain; charset=utf-8", "Low memory");
+        }
+        if (request.receive(req_body.get(), content_len) <= 0) {
+            return request.send(500, "text/plain; charset=utf-8", "Failed to read request body");
+        }
+
+        {
+            String error = registration_config.update_from_cstr(req_body.get(), content_len);
+            if (error != "") {
+                return request.send(400, "text/plain; charset=utf-8", error.c_str());
+            }
+        }
+
+        config.get("enable")->updateBool(registration_config.get("enable")->asBool());
+        api.writeConfig("remote_access/config", &config);
+        return request.send(200);
+    });
+
     server.on("/remote_access/get_login_salt", HTTP_PUT, [this](WebServerRequest request) {
         size_t content_len = request.contentLength();
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
