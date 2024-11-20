@@ -31,6 +31,7 @@
 #include "module.h"
 #include "config.h"
 #include "cm_networking_defs.h"
+#include "TFTools/Micros.h"
 
 struct cm_state_v1;
 struct cm_state_v2;
@@ -102,6 +103,7 @@ private:
     uint64_t needs_mdns = 0;
     static_assert(MAX_CONTROLLED_CHARGERS <= 64);
 
+    micros_t last_manager_addr_change = -1_m;
     int client_sock;
     bool manager_addr_valid = false;
     struct sockaddr_storage manager_addr;

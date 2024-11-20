@@ -420,9 +420,9 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
 
         struct cm_command_packet command_pkt;
 
-        struct sockaddr_storage temp_addr;
-        socklen_t socklen = sizeof(temp_addr);
-        int len = recvfrom(client_sock, &command_pkt, sizeof(command_pkt), 0, (struct sockaddr *)&temp_addr, &socklen);
+        struct sockaddr_storage from_addr;
+        socklen_t socklen = sizeof(from_addr);
+        int len = recvfrom(client_sock, &command_pkt, sizeof(command_pkt), 0, (struct sockaddr *)&from_addr, &socklen);
 
         if (len < 0) {
             if (errno != EAGAIN && errno != EWOULDBLOCK)
@@ -439,7 +439,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
         String validation_error = validate_command_packet_header(&command_pkt, len);
         if (!validation_error.isEmpty()) {
             logger.printfln("Received command packet from %s (%i bytes) failed validation: %s",
-                inet_ntoa(((struct sockaddr_in*)&temp_addr)->sin_addr),
+                inet_ntoa(((struct sockaddr_in*)&from_addr)->sin_addr),
                 len,
                 validation_error.c_str());
             return;
@@ -452,17 +452,53 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
 
         last_seen_seq_num = command_pkt.header.seq_num;
 
-        if (manager_addr_valid && memcmp(&manager_addr, &temp_addr, manager_addr.s2_len) != 0) {
+        if (memcmp(&this->manager_addr, &from_addr, from_addr.s2_len) != 0) {
             char manager_str[16];
-            char temp_str[16];
+            char from_str[16];
             inet_ntoa_r(((struct sockaddr_in*)&manager_addr)->sin_addr, manager_str, sizeof(manager_str));
-            inet_ntoa_r(((struct sockaddr_in*)&temp_addr   )->sin_addr, temp_str,    sizeof(temp_str   ));
-            logger.printfln("Warning: Manager address changed from %s to %s.", manager_str, temp_str);
+            inet_ntoa_r(((struct sockaddr_in*)&from_addr   )->sin_addr, from_str,    sizeof(from_str   ));
+
+            if (deadline_elapsed(this->last_manager_addr_change + 1_m)) {
+                if (this->manager_addr.s2_len > 0) {
+                    logger.printfln("Manager address changed from %s to %s", manager_str, from_str);
+                }
+                this->manager_addr_valid = true;
+            } else {
+                logger.printfln("Rejecting conflicting manager address change from %s to %s", manager_str, from_str);
+                this->manager_addr_valid = false;
+            }
+
+            memcpy(&this->manager_addr, &from_addr, from_addr.s2_len);
+            this->last_manager_addr_change = now_us();
+
+            if (!this->manager_addr_valid) {
+                // Block charging
+                if (client_callback) {
+                    client_callback(0, false, 0);
+                }
+
+                return;
+            }
+        } else { // Manager address unchanged
+            if (!this->manager_addr_valid && this->manager_addr.s2_len > 0) {
+                if (deadline_elapsed(this->last_manager_addr_change + 1_m)) {
+                    char manager_str[16];
+                    inet_ntoa_r(((struct sockaddr_in*)&manager_addr)->sin_addr, manager_str, sizeof(manager_str));
+
+                    logger.printfln("Accepting manager address %s", manager_str);
+                    this->manager_addr_valid = true;
+                } else {
+                    // Block charging
+                    if (client_callback) {
+                        client_callback(0, false, 0);
+                    }
+
+                    return;
+                }
+            }
         }
 
         last_successful_recv = millis();
-        manager_addr = temp_addr;
-        manager_addr_valid = true;
 
         if (client_callback) {
             client_callback(command_pkt.v1.allocated_current,
