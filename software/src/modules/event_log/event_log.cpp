@@ -122,9 +122,15 @@ void EventLog::register_urls()
             size_t first_len, second_len;
             trace_buffer.buf.get_chunks(&first_chunk, &first_len, &second_chunk, &second_len);
 
-            request.sendChunk(first_chunk, first_len);
+            char buf[128];
+            size_t written = snprintf(buf, ARRAY_SIZE(buf), "__begin_%.100s__\n", trace_buffer.name);
+            request.sendChunk(buf, written);
+
             if (second_len > 0)
                 request.sendChunk(second_chunk, second_len);
+
+            written = snprintf(buf, ARRAY_SIZE(buf), "__end_%.100s__\n", trace_buffer.name);
+            request.sendChunk(buf, written);
         }
 
         return request.endChunkedResponse();
