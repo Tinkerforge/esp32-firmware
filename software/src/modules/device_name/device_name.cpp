@@ -74,7 +74,7 @@ static bool isVowel(char c)
 String DeviceName::get20CharDisplayType() {
     String display_type = BUILD_DISPLAY_NAME;
     display_type += getWarpDisplayName(false);
-    display_type.replace("Charger", "");
+    display_type.replace(" Charger", "");
     display_type = display_type.substring(0, 20);
     return display_type;
 }
