@@ -29,6 +29,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include "tools/net.h"
 #include "cool_string.h"
 
 void CMNetworking::setup()
@@ -107,7 +108,8 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
 
     std::lock_guard<std::mutex> lock{dns_resolve_mutex};
     if (resolve_state[charger_idx] != RESOLVE_STATE_RESOLVED || dest_addrs[charger_idx].sin_addr.s_addr != in) {
-        const char *ip_str = ipaddr_ntoa(&ip);
+        char ip_str[16];
+        tf_ip4addr_ntoa(&ip, ip_str, sizeof(ip_str));
         // Show resolved hostname only if it wasn't already an IP
         if (strcmp(this->hosts[charger_idx], ip_str) != 0) {
             logger.printfln("Resolved %s to %s", this->hosts[charger_idx], ip_str);
@@ -232,7 +234,9 @@ void CMNetworking::resolve_via_mdns(mdns_result_t *entry)
             if (host == entry->hostname) {
                 this->dest_addrs[i].sin_addr.s_addr = entry->addr->addr.u_addr.ip4.addr;
                 if (this->resolve_state[i] != RESOLVE_STATE_RESOLVED) {
-                    logger.printfln("Resolved %s to %s (via mDNS scan)", this->hosts[i], ipaddr_ntoa((const ip_addr *)&entry->addr->addr));
+                    char addr_str[16];
+                    tf_ip4addr_ntoa(&entry->addr->addr, addr_str, sizeof(addr_str));
+                    logger.printfln("Resolved %s to %s (via mDNS scan)", this->hosts[i], addr_str);
                 }
                 this->resolve_state[i] = RESOLVE_STATE_RESOLVED;
             }
@@ -275,10 +279,11 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
     json.addObject();
         json.addMemberString("hostname", entry->hostname);
 
-        char buf[32] = "[no_address]";
-        if (entry->addr && entry->addr->addr.type == IPADDR_TYPE_V4)
-            esp_ip4addr_ntoa(&entry->addr->addr.u_addr.ip4, buf, ARRAY_SIZE(buf));
-        json.addMemberString("ip", buf);
+        char addr_str[32] = "[no_address]";
+        if (entry->addr && entry->addr->addr.type == IPADDR_TYPE_V4) {
+            tf_ip4addr_ntoa(&entry->addr->addr, addr_str, sizeof(addr_str));
+        }
+        json.addMemberString("ip", addr_str);
 
         json.addMemberString("display_name", display_name);
         json.addMemberNumber("error", error);

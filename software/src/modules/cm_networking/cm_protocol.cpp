@@ -29,6 +29,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include "tools/net.h"
 #include "modules/meters/meter_defs.h"
 
 int CMNetworking::create_socket(uint16_t port, bool blocking)
@@ -300,16 +301,23 @@ void CMNetworking::register_manager(const char *const *const hosts,
 
             // Don't log in the first 20 seconds after startup: We are probably still resolving hostnames.
             if (charger_idx == -1) {
-                if (deadline_elapsed(20000))
-                    logger.printfln("Received packet from unknown %s. Is the config complete?", inet_ntoa(source_addr.sin_addr));
+                if (deadline_elapsed(20_s)) {
+                    char source_str[16];
+                    tf_ip4addr_ntoa(&source_addr, source_str, sizeof(source_str));
+
+                    logger.printfln("Received packet from unknown %s. Is the config complete?", source_str);
+                }
                 return;
             }
 
             String validation_error = validate_state_packet_header(&state_pkt, len);
             if (!validation_error.isEmpty()) {
+                char source_str[16];
+                tf_ip4addr_ntoa(&source_addr, source_str, sizeof(source_str));
+
                 logger.printfln("Received state packet from %s (%s) (%i bytes) failed validation: %s",
                                 charge_manager.get_charger_name(charger_idx),
-                                inet_ntoa(source_addr.sin_addr),
+                                source_str,
                                 len,
                                 validation_error.c_str());
                 if (manager_error_callback) {
@@ -319,9 +327,12 @@ void CMNetworking::register_manager(const char *const *const hosts,
             }
 
             if (seq_num_invalid(state_pkt.header.seq_num, last_seen_seq_num[charger_idx])) {
+                char source_str[16];
+                tf_ip4addr_ntoa(&source_addr, source_str, sizeof(source_str));
+
                 logger.printfln("Received stale (out of order?) state packet from %s (%s). Last seen seq_num is %u, Received seq_num is %u",
                                 charge_manager.get_charger_name(charger_idx),
-                                inet_ntoa(source_addr.sin_addr),
+                                source_str,
                                 last_seen_seq_num[charger_idx],
                                 state_pkt.header.seq_num);
                 return;
@@ -330,9 +341,12 @@ void CMNetworking::register_manager(const char *const *const hosts,
             last_seen_seq_num[charger_idx] = state_pkt.header.seq_num;
 
             if (!CM_STATE_FLAGS_MANAGED_IS_SET(state_pkt.v1.state_flags)) {
+                char source_str[16];
+                tf_ip4addr_ntoa(&source_addr, source_str, sizeof(source_str));
+
                 logger.printfln("%s (%s) reports managed is not activated!",
                     charge_manager.get_charger_name(charger_idx),
-                    inet_ntoa(source_addr.sin_addr));
+                    source_str);
                 if (manager_error_callback) {
                     manager_error_callback(charger_idx, CM_NETWORKING_ERROR_NOT_MANAGED);
                 }
@@ -438,10 +452,9 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
 
         String validation_error = validate_command_packet_header(&command_pkt, len);
         if (!validation_error.isEmpty()) {
-            logger.printfln("Received command packet from %s (%i bytes) failed validation: %s",
-                inet_ntoa(((struct sockaddr_in*)&from_addr)->sin_addr),
-                len,
-                validation_error.c_str());
+            char from_str[16];
+            tf_ip4addr_ntoa(&from_addr, from_str, sizeof(from_str));
+            logger.printfln("Received command packet from %s (%i bytes) failed validation: %s", from_str, len, validation_error.c_str());
             return;
         }
 
@@ -455,8 +468,8 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
         if (memcmp(&this->manager_addr, &from_addr, from_addr.s2_len) != 0) {
             char manager_str[16];
             char from_str[16];
-            inet_ntoa_r(((struct sockaddr_in*)&manager_addr)->sin_addr, manager_str, sizeof(manager_str));
-            inet_ntoa_r(((struct sockaddr_in*)&from_addr   )->sin_addr, from_str,    sizeof(from_str   ));
+            tf_ip4addr_ntoa(&this->manager_addr, manager_str, sizeof(manager_str));
+            tf_ip4addr_ntoa(&from_addr,          from_str,    sizeof(from_str   ));
 
             if (deadline_elapsed(this->last_manager_addr_change + 1_m)) {
                 if (this->manager_addr.s2_len > 0) {
@@ -483,7 +496,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
             if (!this->manager_addr_valid && this->manager_addr.s2_len > 0) {
                 if (deadline_elapsed(this->last_manager_addr_change + 1_m)) {
                     char manager_str[16];
-                    inet_ntoa_r(((struct sockaddr_in*)&manager_addr)->sin_addr, manager_str, sizeof(manager_str));
+                    tf_ip4addr_ntoa(&this->manager_addr, manager_str, sizeof(manager_str));
 
                     logger.printfln("Accepting manager address %s", manager_str);
                     this->manager_addr_valid = true;
