@@ -126,6 +126,8 @@ void EventLog::register_urls()
             size_t written = snprintf(buf, ARRAY_SIZE(buf), "__begin_%.100s__\n", trace_buffer.name);
             request.sendChunk(buf, written);
 
+            if (first_len > 0)
+                request.sendChunk(first_chunk, first_len);
             if (second_len > 0)
                 request.sendChunk(second_chunk, second_len);
 
