@@ -34,7 +34,7 @@ static size_t suffix_len = strlen(suffix);
 
 // Also change mqtt.cpp MQTT_RECV_BUFFER_SIZE when changing WS_SEND_BUFFER_SIZE here!
 #if defined(BOARD_HAS_PSRAM)
-#define WS_SEND_BUFFER_SIZE 6144U
+#define WS_SEND_BUFFER_SIZE 10240U
 #else
 #define WS_SEND_BUFFER_SIZE 4096U
 #endif
