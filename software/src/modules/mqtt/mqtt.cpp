@@ -44,7 +44,7 @@ extern char local_uid_str[32];
 #define MQTT_SEND_BUFFER_SIZE 4096U
 #endif
 
-#define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 4)
+#define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 6)
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
