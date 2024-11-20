@@ -339,12 +339,13 @@ void CMNetworking::register_manager(const char *const *const hosts,
                 return;
             }
 
+#if MODULE_EM_PHASE_SWITCHER_AVAILABLE()
+            em_phase_switcher.filter_state_packet(charger_idx, &state_pkt);
+#endif
+
             if (manager_callback) {
                 manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr);
             } else {
-#if MODULE_EM_PHASE_SWITCHER_AVAILABLE()
-                em_phase_switcher.filter_state_packet(charger_idx, &state_pkt);
-#endif
                 this->send_state_packet(&state_pkt);
             }
         }
