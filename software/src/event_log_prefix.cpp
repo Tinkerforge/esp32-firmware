@@ -30,7 +30,7 @@ size_t event_log_alignment = 0;
 
 size_t strlen_with_event_log_alignment(const char *c, bool check_len)
 {
-    auto result = strlen(c);
+    auto result = c == nullptr ? 0 : strlen(c);
 
     if (check_len && result > ALIGNMENT_WARN_THRESHOLD) {
         printf("(1) Event log prefix %.*s is longer than threshold (%u > %u)\n", result, c, result, ALIGNMENT_WARN_THRESHOLD);
