@@ -117,14 +117,14 @@ private:
 };
 
 #define vprintfln(fmt, args)          vprintfln_prefixed(event_log_prefix, event_log_prefix_len, fmt, args)
-#define vprintfln_continue(fmt, args) vprintfln_prefixed(nullptr, 0, "    " fmt, args)
+#define vprintfln_continue(fmt, args) vprintfln_prefixed("", 0, "    " fmt, args)
 #define  printfln(fmt, ...)            printfln_prefixed(event_log_prefix, event_log_prefix_len, fmt __VA_OPT__(,) __VA_ARGS__)
-#define  printfln_continue(fmt, ...)   printfln_prefixed(nullptr, 0, "    " fmt __VA_OPT__(,) __VA_ARGS__)
+#define  printfln_continue(fmt, ...)   printfln_prefixed("", 0, "    " fmt __VA_OPT__(,) __VA_ARGS__)
 #define  printfln_debug(fmt, ...)      printfln_prefixed(event_log_prefix, event_log_prefix_len, "[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
 #define vtracefln(trace_buf_idx, fmt, args)          vtracefln_prefixed(trace_buf_idx, trace_log_prefix, trace_log_prefix_len, fmt, args)
-#define vtracefln_continue(trace_buf_idx, fmt, args) vtracefln_prefixed(trace_buf_idx, nullptr, 0, "    " fmt, args)
+#define vtracefln_continue(trace_buf_idx, fmt, args) vtracefln_prefixed(trace_buf_idx, "", 0, "    " fmt, args)
 #define  tracefln(trace_buf_idx, fmt, ...)            tracefln_prefixed(trace_buf_idx, trace_log_prefix, trace_log_prefix_len, fmt __VA_OPT__(,) __VA_ARGS__)
-#define  tracefln_continue(trace_buf_idx, fmt, ...)   tracefln_prefixed(trace_buf_idx, nullptr, 0, "    " fmt __VA_OPT__(,) __VA_ARGS__)
+#define  tracefln_continue(trace_buf_idx, fmt, ...)   tracefln_prefixed(trace_buf_idx, "", 0, "    " fmt __VA_OPT__(,) __VA_ARGS__)
 #define  tracefln_debug(trace_buf_idx, fmt, ...)      tracefln_prefixed(trace_buf_idx, trace_log_prefix, trace_log_prefix_len, "[%s:%d] " fmt, __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
 
 // To capture ESP-IDF log messages, use

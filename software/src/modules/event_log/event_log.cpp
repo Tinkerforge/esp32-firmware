@@ -44,10 +44,10 @@ void EventLog::pre_init()
 {
     event_buf.setup();
 
-    printfln_prefixed(nullptr, 0, "    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
-    printfln_prefixed(nullptr, 0, "         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
-    printfln_prefixed(nullptr, 0, "READY.");
-    printfln_prefixed(nullptr, 0, "Last reset reason was: %s", tf_reset_reason());
+    printfln_prefixed("", 0, "    **** TINKERFORGE " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
+    printfln_prefixed("", 0, "         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
+    printfln_prefixed("", 0, "READY.");
+    printfln_prefixed("", 0, "Last reset reason was: %s", tf_reset_reason());
 }
 
 size_t EventLog::alloc_trace_buffer(const char *name, size_t size) {
@@ -194,19 +194,22 @@ size_t EventLog::vsnprintf_prefixed(char *buf, size_t buf_len, const char *prefi
         buf[written++] = ' ';
     }
 
-    if (prefix != nullptr && prefix_len > 0 && written + prefix_len <= buf_len) {
-        memcpy(buf + written, prefix, prefix_len);
-        written += prefix_len;
-    }
+    bool skip_prefix = prefix == nullptr && prefix_len == 0;
+    if (!skip_prefix) {
+        if (prefix != nullptr && prefix_len > 0 && written + prefix_len <= buf_len) {
+            memcpy(buf + written, prefix, prefix_len);
+            written += prefix_len;
+        }
 
-    while (written < buf_len && written < EVENT_LOG_TIMESTAMP_LENGTH + 3 + event_log_alignment) {
-        buf[written++] = ' ';
-    }
+        while (written < buf_len && written < EVENT_LOG_TIMESTAMP_LENGTH + 3 + event_log_alignment) {
+            buf[written++] = ' ';
+        }
 
-    if (written + 3 <= buf_len) {
-        buf[written++] = ' ';
-        buf[written++] = '|';
-        buf[written++] = ' ';
+        if (written + 3 <= buf_len) {
+            buf[written++] = ' ';
+            buf[written++] = '|';
+            buf[written++] = ' ';
+        }
     }
 
     if (written < buf_len) {
