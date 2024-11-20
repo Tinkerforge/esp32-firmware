@@ -43,6 +43,7 @@ let x = {
             "price_based_heating_plan": "Preisbasierter Heizplan",
             "price_based_heating_plan_muted": "Heizplan anhand dynamischer Preise: Rot = blockierender Betrieb, Grün = erweiterter Betrieb",
             "status": "Status",
+            "status_help": <>Der <i>Preibasierte Heizplan</i> zeigt den Heizplan nahand der konfigurierten günstigsten und teuersten Stunden an. Der Heizplan muss nicht der echten späteren Steuerung der Heizung entsprechen, da z.B. ein unerwartet hoher PV-Überschuss den blockierenden Betrieb verhindern kann.</>,
             "january": "Januar",
             "february": "Februar",
             "march": "März",

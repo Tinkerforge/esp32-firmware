@@ -43,6 +43,7 @@ let x = {
             "price_based_heating_plan": "Price-based Heating Plan",
             "price_based_heating_plan_muted": "Heating plan based on dynamic prices: Red = blocking operation, Green = activation recommendation",
             "status": "Status",
+            "status_help": <>The <i>price-based heating plan</i> shows the heating plan based on the configured cheapest and most expensive hours. The heating plan does not have to correspond to the actual control of the heating, as e.g. an unexpectedly high PV excess can prevent the blocking operation.</>,
             "january": "January",
             "february": "February",
             "march": "March",
