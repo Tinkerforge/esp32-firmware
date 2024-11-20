@@ -115,19 +115,6 @@ public:
     //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<const char *> keys_to_censor, std::function<void(String &)> &&callback);
     void addResponse(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);
 
-    // TODO Remove deprecated functions. Marked as deprecated on 2024-01-29.
-    template<typename T>
-    [[gnu::deprecated("Pass bool low_latecy instead of interval_ms. Use 'false' or default for a 1000ms interval or 'true' for a 250ms interval.")]]
-    void addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, T interval_ms) {
-        addState(path, config, keys_to_censor, {}, interval_ms < 1000);
-    }
-    template<typename T>
-    [[gnu::deprecated("Please remove the interval_ms parameter.")]]
-    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, T interval_ms) {
-        (void)interval_ms;
-        return addPersistentConfig(path, config, keys_to_censor);
-    }
-
     // TODO Remove deprecated functions. Marked as deprecated on 2024-10-04.
     [[gnu::deprecated("Please add a 'String &' parameter to the callback lambda. It can be unused or unnamed.")]]
     void addCommand(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
