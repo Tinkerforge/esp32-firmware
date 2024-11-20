@@ -111,8 +111,8 @@ public:
 
     void addState(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {}, std::initializer_list<const char *> keys_to_censor_in_debug_report = {}, bool low_latency = false);
     void addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {}, std::initializer_list<const char *> keys_to_censor_in_debug_report = {}, bool low_latency = false);
+
     bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {});
-    //void addTemporaryConfig(const String &path, Config *config, std::initializer_list<const char *> keys_to_censor, std::function<void(String &)> &&callback);
     void addResponse(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);
 
     // TODO Remove deprecated functions. Marked as deprecated on 2024-10-04.
