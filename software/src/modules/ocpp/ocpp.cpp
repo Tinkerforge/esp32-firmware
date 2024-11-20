@@ -30,6 +30,8 @@ extern char local_uid_str[32];
 
 void Ocpp::pre_setup()
 {
+    trace_buf_idx = logger.alloc_trace_buffer("ocpp", 1 << 19);
+
     config = Config::Object({
         {"enable", Config::Bool(false)},
         {"url", Config::Str("", 0, 128)},

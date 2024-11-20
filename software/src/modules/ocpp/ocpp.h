@@ -45,6 +45,7 @@ public:
     ConfigRoot configuration;
     ConfigRoot change_configuration;
 
+    size_t trace_buf_idx;
 private:
     bool start_client();
 };

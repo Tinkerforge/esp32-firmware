@@ -29,6 +29,8 @@
 #include <esp_transport_ws.h>
 #include <LittleFS.h>
 
+#define TRACE_LOG_PREFIX nullptr
+
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tf_websocket_client.h"
@@ -248,8 +250,15 @@ time_t platform_get_system_time(void *ctx)
 void platform_printfln(int level, const char *fmt, ...)
 {
     va_list args;
+
+    if (level <= OCPP_LOG_LEVEL_WARN) {
+        va_start(args, fmt);
+        logger.vprintfln(fmt, args);
+        va_end(args);
+    }
+
     va_start(args, fmt);
-    logger.vprintfln(fmt, args);
+    logger.vtracefln(ocpp.trace_buf_idx, fmt, args);
     va_end(args);
 }
 
