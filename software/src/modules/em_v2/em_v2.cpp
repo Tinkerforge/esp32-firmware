@@ -134,12 +134,7 @@ void EMV2::pre_setup()
 
 void EMV2::setup_energy_manager()
 {
-    if (!this->DeviceModule::setup_device()) {
-        logger.printfln("setup_device error. Reboot in 5 Minutes.");
-
-        task_scheduler.scheduleOnce([]() {
-            trigger_reboot("Energy Manager");
-        }, 5_m);
+    if (!setup_device()) {
         return;
     }
 

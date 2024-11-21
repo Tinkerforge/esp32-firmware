@@ -158,12 +158,7 @@ bool EMV1::has_triggered(const Config *conf, void *data)
 
 void EMV1::setup_energy_manager()
 {
-    if (!this->DeviceModule::setup_device()) {
-        logger.printfln("setup_device error. Reboot in 5 Minutes.");
-
-        task_scheduler.scheduleOnce([]() {
-            trigger_reboot("Energy Manager");
-        }, 5_m);
+    if (!setup_device()) {
         return;
     }
 
