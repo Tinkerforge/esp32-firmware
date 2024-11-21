@@ -423,13 +423,13 @@ void FirmwareUpdate::register_urls()
 
     api.addState("firmware_update/state", &state);
 
-    api.addCommand("firmware_update/check_for_update", Config::Null(), {}, [this](String &/*errmsg*/ ) {
+    api.addCommand("firmware_update/check_for_update", Config::Null(), {}, [this](String &/*errmsg*/) {
         check_for_update();
     }, true);
 
     api.addCommand("firmware_update/install_firmware", &install_firmware_config, {}, [this](String &/*errmsg*/) {
 #if signature_sodium_public_key_length == 0
-        logger.printfln("Installing firmware from URL is not supported (installed firmware is unsigned)");
+        logger.printfln("Installing firmware from URL is not supported (running firmware is unsigned)");
 
         state.get("install_state")->updateEnum(InstallState::NotSupported);
         state.get("install_progress")->updateUint(0);
@@ -599,6 +599,8 @@ void FirmwareUpdate::register_urls()
 
                 delay(100); // wait for other operations to react
             }
+
+            logger.printfln("Installing firmware from file upload");
         }
 
         char json_buf[256] = "";
@@ -875,12 +877,12 @@ void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
 void FirmwareUpdate::install_firmware(const char *url)
 {
 #if signature_sodium_public_key_length == 0
-    logger.printfln("Installing firmware from URL is not supported (installed firmware is unsigned)");
+    logger.printfln("Installing firmware from URL is not supported (running firmware is unsigned)");
 
     state.get("install_state")->updateEnum(InstallState::NotSupported);
     state.get("install_progress")->updateUint(0);
 #else
-    logger.printfln("Installing firmware: %s", url);
+    logger.printfln("Installing firmware from URL: %s", url);
 
     state.get("install_state")->updateEnum(InstallState::InProgress);
     state.get("install_progress")->updateUint(0);
