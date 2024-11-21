@@ -884,6 +884,27 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     trace_sort(4);
 
     for (int i = 0; i < matched; ++i) {
+        // If we can allocate all available current to the currently active set of chargers
+        // and the spread limit is exceeded, short-circuit. We won't enable more chargers.
+        if (   ca_state->control_window_max.l1 >= limits->raw.l1
+            && ca_state->control_window_max.l2 >= limits->raw.l2
+            && ca_state->control_window_max.l3 >= limits->raw.l3
+            && ca_state->control_window_min.l1 * cfg->enable_current_factor >= limits->spread.l1
+            && ca_state->control_window_min.l2 * cfg->enable_current_factor >= limits->spread.l2
+            && ca_state->control_window_min.l3 * cfg->enable_current_factor >= limits->spread.l3) {
+            trace("4: wnd_max >= raw, wnd_ena >= spread");
+            break;
+        }
+
+        // If the window minimum is closer than the smaller minimum current
+        // to the min limit on any phase, short-circuit. We won't enable more chargers.
+        if (   limits->min.l1 - ca_state->control_window_min.l1 < std::min(cfg->minimum_current_1p, cfg->minimum_current_3p)
+            && limits->min.l2 - ca_state->control_window_min.l2 < std::min(cfg->minimum_current_1p, cfg->minimum_current_3p)
+            && limits->min.l3 - ca_state->control_window_min.l3 < std::min(cfg->minimum_current_1p, cfg->minimum_current_3p)) {
+            trace("4: min - wnd_min < min_1p");
+            break;
+        }
+
         const auto *state = &charger_state[idx_array[i]];
 
         bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
