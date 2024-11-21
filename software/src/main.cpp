@@ -174,7 +174,6 @@ static void pre_reboot()
 static int watchdog_handle;
 #endif
 
-
 static void register_default_urls() {
     server.on_HTTPThread("/", HTTP_GET, [](WebServerRequest request) {
         return send_index_html(request);
@@ -238,23 +237,40 @@ static void print_app_partitions()
     bool app0_found = false;
     esp_ota_img_states_t app0_state = ESP_OTA_IMG_INVALID;
     bool app0_running = false;
+    bool app0_boot = false;
     bool app1_found = false;
     esp_ota_img_states_t app1_state = ESP_OTA_IMG_INVALID;
     bool app1_running = false;
+    bool app1_boot = false;
 
-    const esp_partition_t *partition = esp_ota_get_running_partition();
+    const esp_partition_t *running_partition = esp_ota_get_running_partition();
 
-    if (partition == nullptr) {
+    if (running_partition == nullptr) {
         logger.printfln("Could not get running partition");
     }
-    else if (strcmp(partition->label, "app0") == 0) {
+    else if (strcmp(running_partition->label, "app0") == 0) {
         app0_running = true;
     }
-    else if (strcmp(partition->label, "app1") == 0) {
+    else if (strcmp(running_partition->label, "app1") == 0) {
         app1_running = true;
     }
     else {
-        logger.printfln("Unexpected running partition: %s", partition->label);
+        logger.printfln("Unexpected running partition: %s", running_partition->label);
+    }
+
+    const esp_partition_t *boot_partition = esp_ota_get_boot_partition();
+
+    if (boot_partition == nullptr) {
+        logger.printfln("Could not get boot partition");
+    }
+    else if (strcmp(boot_partition->label, "app0") == 0) {
+        app0_boot = true;
+    }
+    else if (strcmp(boot_partition->label, "app1") == 0) {
+        app1_boot = true;
+    }
+    else {
+        logger.printfln("Unexpected boot partition: %s", boot_partition->label);
     }
 
     esp_partition_iterator_t it = esp_partition_find(ESP_PARTITION_TYPE_APP,
@@ -262,7 +278,7 @@ static void print_app_partitions()
                                                      nullptr);
 
     while (it != nullptr) {
-        partition = esp_partition_get(it);
+        const esp_partition_t *partition = esp_partition_get(it);
 
         esp_ota_img_states_t ota_state;
         esp_err_t err = esp_ota_get_state_partition(partition, &ota_state);
@@ -282,11 +298,13 @@ static void print_app_partitions()
         it = esp_partition_next(it);
     }
 
-    logger.printfln("Partitions: app0 (%s%s), app1 (%s%s)",
+    logger.printfln("Partitions: app0 (%s%s%s), app1 (%s%s%s)",
                     app0_found ? get_esp_ota_img_state_name(app0_state) : "<unknown>",
                     app0_running ? ", running" : "",
+                    app0_boot ? ", boot" : "",
                     app1_found ? get_esp_ota_img_state_name(app1_state) : "<unknown>",
-                    app1_running ? ", running" : "");
+                    app1_running ? ", running" : "",
+                    app1_boot ? ", boot" : "");
 }
 
 void setup()
