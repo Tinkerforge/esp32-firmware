@@ -28,6 +28,9 @@ class StringWriter
 {
 public:
     StringWriter(char *buffer, size_t buffer_len);
+    StringWriter(const StringWriter &other) = delete;
+    const StringWriter &operator=(const StringWriter &other) = delete;
+
     virtual ~StringWriter() {}
 
     size_t getCapacity() const { return capacity; }
