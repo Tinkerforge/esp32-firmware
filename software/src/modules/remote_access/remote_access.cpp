@@ -1330,12 +1330,9 @@ void RemoteAccess::resolve_management() {
                 serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
                 serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
                 serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
-                serializer.addMemberArray("configured_connections");
+                serializer.addMemberArray("configured_users");
                     for (auto &user : config.get("users")) {
-                        uint32_t user_id = user.get("id")->asUint() - 1;
-                        for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
-                            serializer.addNumber((user_id * MAX_KEYS_PER_USER) + i);
-                        }
+                        serializer.addString(user.get("email")->asEphemeralCStr());
                     }
                 serializer.endArray();
             serializer.endObject();
@@ -1366,6 +1363,35 @@ void RemoteAccess::resolve_management() {
             }
             config.get("uuid")->updateString(resp["uuid"]);
             api.writeConfig("remote_access/config", &config);
+        }
+
+        StaticJsonDocument<1024> doc;
+        {
+            DeserializationError error = deserializeJson(doc, response_body.c_str());
+            if (error) {
+                char err_str[64];
+                snprintf(err_str, 64, "Error while deserializing management response: %s", error.c_str());
+                registration_state.get("message")->updateString(err_str);
+                registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+                https_client = nullptr;
+                return;
+            }
+            response_body = "";
+        }
+
+        for (size_t idx = config.get("users")->count() - 1; idx > 0; idx--) {
+            bool changed = false;
+            if (doc["configured_users"][idx] == 0) {
+                uint32_t user_id = config.get("users")->get(idx)->get("id")->asUint();
+                for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
+                    remove_key(user_id, i);
+                }
+                config.get("users")->remove(idx);
+                changed = true;
+            }
+            if (changed) {
+                api.writeConfig("remote_access/config", &config);
+            }
         }
 
         management_request_done = true;
