@@ -30,6 +30,7 @@
 #include "tools.h" // Only for snprintf_u and deadline_elapsed
 #include "modules/cm_networking/cm_networking_defs.h"
 #include "current_allocator_private.h"
+#include "string_builder.h"
 
 //#include "gcc_warnings.h"
 
@@ -79,6 +80,11 @@ static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "|        %zu        |", i);
         else
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), " %6.3f@%dp;%.3fkWh", current_array[i] / 1000.0f, phases_array[i], charger_state[i].allocated_energy_this_rotation);
+        if (i % 8 == 7 && i != charger_count - 1) {
+            logger.printfln("%s", buf);
+            ptr = buf;
+            ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "   ");
+        }
     }
     logger.printfln("%s", buf);
 }
@@ -112,6 +118,11 @@ static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[        %2zu        ]", i);
         else
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[%2zu %5d@%dp;%4dWh]", i, current_array[i], phases_array[i], (int32_t)(charger_state[i].allocated_energy_this_rotation * 1000.0f));
+        if (i % 8 == 7 && i != charger_count - 1) {
+            trace("%s", buf);
+            ptr = buf;
+            ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "   ");
+        }
     }
     trace("%s", buf);
 #endif
@@ -122,12 +133,11 @@ static void trace_sort_fn(int stage, int matched, int *idx_array, size_t charger
     char buf[200];
     memset(buf, 0, sizeof(buf));
     char *ptr = buf;
-    ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "%d: filtered %d to %d, sorted to ", stage, charger_count, matched);
-    if (matched == 0)
-        ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "| ");
-
-    for(int i = 0; i < charger_count; ++i)
-        ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "%d %s", idx_array[i], i == (matched - 1) ? "| " : "");
+    ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "%d: filtered %d to %d%s", stage, charger_count, matched, matched > 0 ? ", sorted to " : ".");
+    if (matched > 0) {
+        for(int i = 0; i < matched; ++i)
+            ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "%d %s", idx_array[i], (matched < charger_count) && (i == matched - 1) ? "|..." : "");
+    }
     trace("%s", buf);
 #endif
 }
@@ -408,8 +418,8 @@ static int32_t get_requested_current(const ChargerState *state, const CurrentAll
 // before unthrottling the three phase chargers (both without exceeding the raw limit).
 // Only check the raw limit because this is a current allocation decision,
 // not a enable/disable/phase switch decision.
-void calculate_window(const int *idx_array_const, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
-    trace("  Calc Wnd");
+void calculate_window(bool trace_short, const int *idx_array_const, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+    if (!trace_short) trace("     Calc Wnd");
     auto min_1p = cfg->minimum_current_1p;
     auto min_3p = cfg->minimum_current_3p;
 
@@ -453,8 +463,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
             wnd_min[phase] += min_1p;
             wnd_min_1p[phase] += min_1p;
         }
-
-        trace("    %d wnd_min (%d %d %d %d)", idx_array[i], wnd_min.pv, wnd_min.l1, wnd_min.l2, wnd_min.l3);
+        if (!trace_short) trace("       %d wnd_min (%d %d %d %d)", idx_array[i], wnd_min.pv, wnd_min.l1, wnd_min.l2, wnd_min.l3);
     }
 
     // Calculate left over current for 3p chargers after allocating the 1p minimum to 1p chargers
@@ -465,7 +474,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
         current_avail_for_3p = std::min(current_avail_for_3p, avail_on_phase);
     }
 
-    trace("    current_avail_for_3p %d", current_avail_for_3p);
+    if (!trace_short) trace("       current_avail_for_3p %d", current_avail_for_3p);
 
     // Add maximum window of 3p chargers.
     for (int i = 0; i < matched; ++i) {
@@ -488,13 +497,13 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
                            current_avail_for_3p,
                            current_avail_for_3p,
                            current_avail_for_3p};
-            trace("    %d (3p) wnd_max (%d %d %d %d).l1 == current_avail_for_3p.", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
+            if (!trace_short) trace("       %d (3p) wnd_max (%d %d %d %d).l1 == current_avail_for_3p.", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
             break;
         }
 
         wnd_max.pv += requested_current * alloc_phases;
 
-        trace("    %d (3p) wnd_max (%d %d %d %d)", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
+        if (!trace_short) trace("       %d (3p) wnd_max (%d %d %d %d)", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
     }
 
     // Add maximum window of 1p chargers with unknown rotation.
@@ -516,7 +525,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
                         current,
                         current};
 
-        trace("    %d (1p unknown rot) wnd_max (%d %d %d %d)", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
+        if (!trace_short) trace("       %d (1p unknown rot) wnd_max (%d %d %d %d)", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
     }
 
     // Add maximum window of 1p chargers with known rotation.
@@ -533,13 +542,13 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
         wnd_max[phase] += current;
         wnd_max.pv += current;
 
-        trace("    %d (1p known rot) wnd_max (%d %d %d %d)", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
+        if (!trace_short) trace("       %d (1p known rot) wnd_max (%d %d %d %d)", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
     }
 
     ca_state->control_window_min = wnd_min;
     ca_state->control_window_max = wnd_max;
 
-    trace("  Wnd (%d %d %d %d)->(%d %d %d %d)", wnd_min.pv, wnd_min.l1, wnd_min.l2, wnd_min.l3, wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
+    trace("     Wnd (%d %d %d %d)->(%d %d %d %d)", wnd_min.pv, wnd_min.l1, wnd_min.l2, wnd_min.l3, wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
 
 }
 
@@ -555,7 +564,7 @@ void calculate_window(const int *idx_array_const, int32_t *current_allocation, u
 //   shut down chargers until at least one of the minima is less than the PV limit.
 // - If any charger was shut down recalculate the window. The minima should already be correct, but updating the maxima is too complicated
 void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
-    calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, cfg->charger_count, cfg, ca_state);
+    calculate_window(false, idx_array, current_allocation, phase_allocation, limits, charger_state, cfg->charger_count, cfg, ca_state);
 
     Cost wnd_min = ca_state->control_window_min;
     auto min_1p = cfg->minimum_current_1p;
@@ -670,7 +679,7 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     // Recalculate the window once. wnd_min is already correct, but wnd_max needs to be fixed.
     if (any_charger_shut_down) {
-        calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
+        calculate_window(true, idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
     }
 }
 
@@ -695,7 +704,8 @@ static constexpr int CHECK_MIN_WINDOW_ENABLE = 2;
 static constexpr int CHECK_IMPROVEMENT = 4;
 static constexpr int CHECK_IMPROVEMENT_ALL_PHASE = 8;
 static constexpr int CHECK_SPREAD = 16;
-static bool can_activate(const Cost check_phase, const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch) {
+
+static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch) {
     // Spread
     bool check_spread = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & CHECK_SPREAD) != 0;
     bool improves_all_spread = true;
@@ -712,12 +722,9 @@ static bool can_activate(const Cost check_phase, const Cost new_cost, const Cost
 
     // Improvement - Check only if spread was not checked or was checked but new charger did not fit.
     if (!check_spread || !improves_all_spread) {
-        if (!improves_all_spread)
-            trace("    Does not improve spread");
-
         bool improves_pv = (check_phase.pv & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || (new_cost.pv > 0 && wnd_max.pv < limits->min.pv);
         if (!improves_pv) {
-            trace("    Can't activate: does not improve PV");
+            sw.printf(" No: !impr_pv");
             return false;
         }
 
@@ -737,11 +744,11 @@ static bool can_activate(const Cost check_phase, const Cost new_cost, const Cost
             }
         }
         if ((check_all_phases && !improves_all_phases) || (!check_all_phases && !improves_any_phase)) {
-            trace("    Can't activate: check_all %c improves_all %c improves_any %c is_unknown_rotated_1p_3p_switch %c",
-                            check_all_phases ? '1' : '0',
-                            improves_all_phases ? '1' : '0',
-                            improves_any_phase ? '1' : '0',
-                            is_unknown_rotated_1p_3p_switch ? '1' : '0');
+            sw.printf(" No: %d %d %d %d",
+                            check_all_phases,
+                            improves_all_phases,
+                            improves_any_phase,
+                            is_unknown_rotated_1p_3p_switch);
 
             // PV is already checked above.
             bool enable = is_unknown_rotated_1p_3p_switch;
@@ -749,7 +756,7 @@ static bool can_activate(const Cost check_phase, const Cost new_cost, const Cost
                 return false;
         }
     } else {
-        trace("    Improves spread");
+        sw.printf(" impr_spread ");
     }
 
     // Check minimum
@@ -764,10 +771,12 @@ static bool can_activate(const Cost check_phase, const Cost new_cost, const Cost
             required = wnd_min[p] + new_cost[p];
 
         if (limits->min[p] < required) {
-            trace("    Can't activate: p%d min %d < required %d", p, limits->min[p], required);
+            sw.printf(" No: p%d min %d < req %d ", p, limits->min[p], required);
             return false;
         }
     }
+
+    sw.printf(" Yes");
 
     return true;
 }
@@ -819,7 +828,7 @@ static int get_enable_cost(const ChargerState *state, bool activate_3p, bool hav
 // Activates the charger if possible.
 // Returns false if the charger can't be activated (see can_activate).
 // If true is returned, *spent is the cost that was spent to enable the charger.
-static bool try_activate(const ChargerState *state, bool activate_3p, bool have_active_chargers, Cost *spent, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg,const CurrentAllocatorState *ca_state) {
+static bool try_activate(StringWriter &sw, const ChargerState *state, bool activate_3p, bool have_active_chargers, Cost *spent, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg,const CurrentAllocatorState *ca_state) {
     Cost wnd_min = ca_state->control_window_min;
     Cost wnd_max = ca_state->control_window_max;
 
@@ -838,7 +847,7 @@ static bool try_activate(const ChargerState *state, bool activate_3p, bool have_
         CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE
     };
 
-    bool result = can_activate(check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg, false);
+    bool result = can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg, false);
     if (result && spent != nullptr)
         *spent = new_enable_cost;
     return result;
@@ -883,25 +892,30 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         // In that case we know what the charger is doing.
         bool activate_3p = is_fixed_3p || is_unknown_rot_switchable;
 
-        trace("4: Can activate %d?", idx_array[i]);
-        if (!try_activate(state, activate_3p, have_active_chargers, nullptr, limits, cfg, ca_state)) {
-            trace("4: No");
-            if (!is_unknown_rot_switchable)
+        char buf[256];
+        StringWriter sw{buf, ARRAY_SIZE(buf)};
+
+        sw.printf("4: %d:", idx_array[i]);
+        if (!try_activate(sw, state, activate_3p, have_active_chargers, nullptr, limits, cfg, ca_state)) {
+            if (!is_unknown_rot_switchable) {
+                trace("%s", buf);
                 continue;
-            trace("4: %d retrying 1p", idx_array[i]);
+            }
+            sw.printf("4: %d retry 1p:", idx_array[i]);
             // Retry enabling unknown_rot_switchable charger with one phase only
             activate_3p = false;
-            if (!try_activate(state, activate_3p, have_active_chargers, nullptr, limits, cfg, ca_state)) {
-                trace("4: No");
+            if (!try_activate(sw, state, activate_3p, have_active_chargers, nullptr, limits, cfg, ca_state)) {
+                trace("%s", buf);
                 continue;
             }
         }
 
         phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
 
-        trace("4: Yes (%dp)", phase_allocation[idx_array[i]]);
+        sw.printf(" (%dp)", phase_allocation[idx_array[i]]);
+        trace("%s", buf);
 
-        calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
+        calculate_window(true, idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
     }
 }
 
@@ -974,16 +988,19 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
             (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L3 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE
         };
 
-        trace("5: Can %d 1p->3p switched?", idx_array[i]);
-        if (!can_activate(check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg, state->phase_rotation == PhaseRotation::Unknown)) {
-            trace("5: No");
+        char buf[256];
+        StringWriter sw{buf, ARRAY_SIZE(buf)};
+
+        sw.printf("5: %d:", idx_array[i]);
+        if (!can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg, state->phase_rotation == PhaseRotation::Unknown)) {
+            trace("%s", buf);
             continue;
         }
 
-        trace("5: Yes");
+        trace("%s", buf);
 
         phase_allocation[idx_array[i]] = 3;
-        calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
+        calculate_window(true, idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
         wnd_min = ca_state->control_window_min;
         wnd_max = ca_state->control_window_max;
     }
@@ -1135,7 +1152,6 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         // Don't allocate more than the enable current to a charger that does not charge.
         if (!state->is_charging) {
-            trace("7: %d not charging", idx_array[i]);
             Cost enable_cost;
             auto enable_current = get_enable_cost(state, allocated_phases == 3, true, nullptr, &enable_cost, cfg);
             current = std::min(current, std::max(0, enable_current - allocated_current));
@@ -1160,7 +1176,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         current_allocation[idx_array[i]] = current;
         apply_cost(cost, limits);
-        trace("7: %d: %d@%dp", idx_array[i], current_allocation[idx_array[i]], allocated_phases);
+        trace("7: %d: %s%d@%dp", idx_array[i], !state->is_charging ? "!chrg " : "", current_allocation[idx_array[i]], allocated_phases);
     }
 }
 
@@ -1318,7 +1334,7 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         current_allocation[idx_array[i]] = enable_current;
         trace("9: %d: %d@%dp", idx_array[i], current_allocation[idx_array[i]], phase_allocation[idx_array[i]]);
 
-        calculate_window(idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
+        calculate_window(true, idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
     }
 }
 
@@ -1690,7 +1706,7 @@ bool update_from_client_packet(
     target.allowed_current = v1->allowed_charging_current;
 
     if (target.supported_current != v1->supported_current)
-        trace("RECV %d: supported %u -> %umA", client_id, target.supported_current, v1->supported_current);
+        trace("RECV %d: supported %u -> %u mA", client_id, target.supported_current, v1->supported_current);
     target.supported_current = v1->supported_current;
     target.cp_disconnect_supported = CM_FEATURE_FLAGS_CP_DISCONNECT_IS_SET(v1->feature_flags);
     target.cp_disconnect_state = CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(v1->state_flags);
