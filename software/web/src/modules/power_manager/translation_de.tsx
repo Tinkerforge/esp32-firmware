@@ -17,19 +17,11 @@ let x = {
             "config_error_excess_no_meter": "Überschussladen aktiviert aber kein Stromzähler eingerichtet"
         },
         "navbar": {
-            "power_manager_settings": "Einstellungen",
             "pv_excess_settings": "PV-Überschussladen"
         },
         "content": {
-            "page_header": "Energy Manager",
-
-            "enable_pm": "Power Manager aktiviert",
-            "enable_pm_desc": "Passt die verfügbare Ladeleistung automatisch an",
             "cm_requirements_warning": null,
-            "cm_multiple_chargers_warning": "Um das PV-Überschussladen mit dieser Wallbox zu nutzen, sollten im Lastmanagement keine weiteren Wallboxen als kontrollierte Wallboxen eingetragen sein.",
 
-            "contactor_installed": "Schütz angeschlossen",
-            "contactor_installed_desc": "Der Energiemanager verfügt über ein Schütz, mit dem die von ihm kontrollierten Wallboxen zwischen ein- und dreiphasigem Anschluss umgeschaltet werden können.",
             "phase_switching_mode": "Phasenumschaltung",
             "fixed_single_phase": "Fest einphasig angeschlossen",
             "fixed_three_phases": "Fest dreiphasig angeschlossen",

@@ -29,7 +29,6 @@ import { FormRow         } from "../../ts/components/form_row";
 import { FormSeparator   } from "../../ts/components/form_separator";
 import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { InputFloat      } from "../../ts/components/input_float";
-import { InputNumber     } from "../../ts/components/input_number";
 import { InputSelect     } from "../../ts/components/input_select";
 import { Switch          } from "../../ts/components/switch";
 import { SubPage         } from "../../ts/components/sub_page";
@@ -38,10 +37,6 @@ import { MeterValueID    } from "../meters/meter_value_id";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, Settings, Sun } from "react-feather";
-
-export function PowerManagerSettingsNavbar() {
-    return <NavbarItem name="power_manager_settings" module="power_manager" title={__("power_manager.navbar.power_manager_settings")} symbol={<Settings />} />;
-}
 
 export function PVExcessSettingsNavbar() {
     return <NavbarItem name="pv_excess_settings" module="power_manager" title={__("power_manager.navbar.pv_excess_settings")} symbol={<Sun />} />;
@@ -224,92 +219,6 @@ export class PowerManagerStatus extends Component {
 
             {this.generate_config_error_labels(state.config_error_flags)}
         </StatusSection>
-    }
-}
-
-export class PowerManagerSettings extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}, {em_contactor_installed: boolean}> {
-    constructor() {
-        super('power_manager/config',
-            __("power_manager.script.save_failed"),
-            __("power_manager.script.reboot_content_changed"));
-
-        this.setState({em_contactor_installed: false});
-
-        util.addApiEventListener_unchecked('energy_manager/config', () => {
-            this.setState({em_contactor_installed: API.get_unchecked('energy_manager/config')?.contactor_installed});
-        });
-    }
-
-    override async sendSave(t: "power_manager/config", cfg: API.getType['power_manager/config']) {
-        if (API.hasModule("em_v1")) {
-            await API.save_unchecked('energy_manager/config', {
-                contactor_installed: this.state.em_contactor_installed,
-            }, __("power_manager.script.save_failed"));
-        }
-
-        // Only update enabled. Rest is controlled by the PV excess settings subpage
-        let new_cfg: API.getType['power_manager/config'] = {...API.get("power_manager/config"), enabled:this.state.enabled};
-
-        await super.sendSave(t, new_cfg);
-    }
-
-    override async sendReset(t: "power_manager/config") {
-        if (API.hasModule("em_v1")) { // TODO EM V2 has this config too but without contactor_installed field.
-            await API.save_unchecked('energy_manager/config', {
-                ...API.get_unchecked('energy_manager/config'),
-                contactor_installed: this.state.em_contactor_installed,
-            }, this.error_string);
-        }
-
-        let new_cfg: API.getType['power_manager/config'] = {...API.get("power_manager/config"), enabled: API.hasModule("em_common")};
-
-        await super.sendSave(t, new_cfg);
-    }
-
-    override getIsModified(t: "power_manager/config"): boolean {
-        return API.get_unchecked("energy_manager/config")?.contactor_installed || API.get("power_manager/config").enabled;
-    }
-
-    render(props: {}, s: Readonly<API.getType['power_manager/config']>) {
-        if (!util.render_allowed())
-            return <SubPage name="power_manager_settings" />;
-
-        // Currently assume that the power manager settings page is only compiled in if this is an energy manager.
-        // The only setting to set is whether a contactor is installed,
-        // which is always (WARP3) or never (WARP1/2) the case with chargers.
-        // Enabling/Disabling the power manager is not necessary on chargers because it gets enabled iff PV excess charging is enabled.
-        // Still show the UI to re-enable the power manager on an energy manager, because there disabling the
-        // PV excess charging should not disable the power manager to allow manual phase switching of connected chargers.
-        let show_enable = !s.enabled;
-
-        return (
-            <SubPage name="power_manager_settings">
-                <ConfigForm id="power_manager_config_form" title={__("power_manager.content.page_header")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-
-                    <Collapse in={show_enable}>
-                        <div>
-                            <FormRow label={__("power_manager.content.enable_pm")}>
-                                <Switch desc={__("power_manager.content.enable_pm_desc")}
-                                        checked={s.enabled}
-                                        onClick={() => this.setState({
-                                            enabled: !s.enabled
-                                        })}
-                                />
-                            </FormRow>
-                        </div>
-                    </Collapse>
-
-                    <Collapse in={API.hasModule("em_v1")}>
-                        <FormRow label={__("power_manager.content.contactor_installed")}>
-                            <Switch desc={__("power_manager.content.contactor_installed_desc")}
-                                    checked={this.state.em_contactor_installed}
-                                    onClick={() => this.setState({em_contactor_installed: !this.state.em_contactor_installed})}
-                            />
-                        </FormRow>
-                    </Collapse>
-                </ConfigForm>
-            </SubPage>
-        );
     }
 }
 

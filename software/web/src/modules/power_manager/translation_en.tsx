@@ -17,19 +17,11 @@ let x = {
             "config_error_excess_no_meter": "Excess charging enabled but no meter configured"
         },
         "navbar": {
-            "power_manager_settings": "Settings",
             "pv_excess_settings": "PV Excess Charging"
         },
         "content": {
-            "page_header": "Energy Manager",
-
-            "enable_pm": "Power Manager enabled",
-            "enable_pm_desc": "Automatically adjust the amount of available charging power",
             "cm_requirements_warning": null,
-            "cm_multiple_chargers_warning": "To use the PV excess charging with this charger, no other chargers should be configured as manager chargers in the charge manager.",
 
-            "contactor_installed": "Contactor installed",
-            "contactor_installed_desc": "The energy manager is connected to a contactor that it can use to switch its managed chargers between single-phase and three-phase connection.",
             "phase_switching_mode": "Phase switching",
             "fixed_single_phase": "Fixed single-phase connection",
             "fixed_three_phases": "Fixed three-phase connection",
