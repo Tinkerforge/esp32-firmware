@@ -72,10 +72,14 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void pre_reboot() override;
 
     bool vehicle_connected = false;
 
     void handle_index_data(const void *data, size_t data_len);
+
+    void change_running_partition_from_pending_verify_to_valid(bool silent = false);
+    void change_running_partition_from_pending_verify_to_new(bool silent = false);
 
 private:
     bool is_vehicle_blocking_update() const;

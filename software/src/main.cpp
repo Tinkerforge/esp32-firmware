@@ -190,6 +190,10 @@ static void register_default_urls() {
 
     server.on_HTTPThread("/force_reboot", HTTP_GET, [](WebServerRequest request) {
         esp_unregister_shutdown_handler(pre_reboot);
+#if MODULE_FIRMWARE_UPDATE_AVAILABLE()
+        // Normally the firmware update pre_reboot hook would do this
+        firmware_update.change_running_partition_from_pending_verify_to_new(true);
+#endif
         ESP.restart();
         return request.send(200, "text/plain", "Forced reboot.");
     });
@@ -222,7 +226,9 @@ static void register_default_urls() {
     });
 }
 
-static const char *get_esp_ota_img_state_name(esp_ota_img_states_t ota_state)
+[[gnu::const]] const char *get_esp_ota_img_state_name(esp_ota_img_states_t ota_state);
+
+[[gnu::const]] const char *get_esp_ota_img_state_name(esp_ota_img_states_t ota_state)
 {
     switch (ota_state) {
     case ESP_OTA_IMG_NEW:            return "new";            // Monitor the first boot. In bootloader this state is changed to ESP_OTA_IMG_PENDING_VERIFY.
