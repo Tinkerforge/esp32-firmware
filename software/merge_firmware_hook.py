@@ -39,7 +39,7 @@ if env.GetProjectOption("custom_autoclean_build_dir", default="false") == "true"
     env.AddPostAction(
         "$BUILD_DIR/${PROGNAME}.elf",
         env.VerboseAction(lambda **kwargs: delete_old(firmware_name),
-                          "Cleaning old {}_*".format(firmware_name))
+                          "Cleaning old {}*".format(firmware_name))
     )
 
 def copy2(src, dst): # hide shutil.copy2 return value
