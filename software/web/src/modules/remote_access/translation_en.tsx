@@ -12,6 +12,7 @@ let x = {
             "password": "Password",
             "password_muted": "only used for the registation process and will not be stored",
             "relay_host": "Relay server hostname",
+            "relay_host_muted": "To switch to another relay-server all users all users must be removed",
             "relay_port": "Relay server port",
             "enable": "Remote access enabled",
             "enable_desc": /*FFN*/ (host: string) => <>A <a href={`https://${host}/`}>{host}</a> account is required for the remote access.</> /*NF*/,

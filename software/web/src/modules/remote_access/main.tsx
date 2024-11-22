@@ -31,7 +31,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Switch } from "../../ts/components/switch";
 import { __ } from "../../ts/translation";
 import "./wireguard";
-import { add_user, config, RegistrationState, update_enable } from "./api";
+import { add_user, config, RegistrationState, update_config } from "./api";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
@@ -415,14 +415,14 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 id: id,
             });
         }
-        const config: update_enable = {
+        const config: update_config = {
             enable: cfg.enable,
-            relay_host: "",
-            relay_port: 0,
+            relay_host: this.state.relay_host,
+            relay_port: this.state.relay_port,
             email: "",
-            cert_id: -1,
+            cert_id: this.state.cert_id,
         }
-        API.call("remote_access/update_enable", config, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"));
+        API.call("remote_access/update_config", config, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"));
     }
 
     override getIsModified(topic: "remote_access/config"): boolean {
@@ -554,7 +554,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                         />
                     </FormRow>
                     <CollapsedSection heading={__("remote_access.content.advanced_settings")}>
-                        <FormRow label={__("remote_access.content.relay_host")}>
+                        <FormRow label={__("remote_access.content.relay_host")} label_muted={__("remote_access.content.relay_host_muted")}>
                             <InputText required
                                     maxLength={64}
                                     value={this.state.relay_host}
