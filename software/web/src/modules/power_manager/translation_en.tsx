@@ -20,6 +20,7 @@ let x = {
             "pv_excess_settings": "PV Excess Charging"
         },
         "content": {
+            "em_proxy_warning": "When the Energy Manager is controlled by another charge manager, PV excess charging must be enabled on the charge manager, not here.",
             "cm_requirements_warning": null,
 
             "phase_switching_mode": "Phase switching",

@@ -20,6 +20,7 @@ let x = {
             "pv_excess_settings": "PV-Überschussladen"
         },
         "content": {
+            "em_proxy_warning": "Wenn der Energy Manager von einem anderen Lastmanager gesteuert wird, muss PV-Überschussladen auf dem Lastmanager aktiviert werden und nicht hier.",
             "cm_requirements_warning": null,
 
             "phase_switching_mode": "Phasenumschaltung",

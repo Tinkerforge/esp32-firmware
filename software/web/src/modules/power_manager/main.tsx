@@ -261,6 +261,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
 
         let cm_config = API.get_unchecked("charge_manager/config");
         let cm_ok = cm_config?.enable_charge_manager && cm_config?.chargers.length >= 1;
+        let cm_requirements_warning = API.get_unchecked("em_phase_switcher/charger_config")?.proxy_mode ? __("power_manager.content.em_proxy_warning") : __("power_manager.content.cm_requirements_warning");
 
         let is_em = API.hasModule("em_common");
 
@@ -297,7 +298,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                         <div>
                             <FormRow label="">
                                 <div style="color:red">
-                                    {__("power_manager.content.cm_requirements_warning")}
+                                    {cm_requirements_warning}
                                 </div>
                             </FormRow>
                         </div>
