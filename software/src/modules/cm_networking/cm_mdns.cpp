@@ -34,7 +34,6 @@
 
 void CMNetworking::setup()
 {
-    mdns_init();
     initialized = true;
 }
 
@@ -52,7 +51,9 @@ void CMNetworking::register_urls()
 
         return request.send(200, "application/json; charset=utf-8", result.c_str());
     });
+}
 
+void CMNetworking::register_events() {
 // If we don't have the evse or evse_v2 module, but have cm_networking, this is probably an energy manager.
 // We only want to announce manageable chargers, not managers.
 #if MODULE_NETWORK_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()

@@ -43,6 +43,7 @@ public:
     CMNetworking(){}
     void setup() override;
     void register_urls() override;
+    void register_events() override;
 
     int create_socket(uint16_t port, bool blocking);
 
