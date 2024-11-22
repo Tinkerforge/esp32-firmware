@@ -907,7 +907,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     }
 
     MeterValueID total_value_ids[METERS_MAX_VALUES_PER_METER];
-    mempcpy(total_value_ids, new_value_ids, sizeof(MeterValueID) * value_id_count);
+    memcpy(total_value_ids, new_value_ids, sizeof(MeterValueID) * value_id_count);
 
     uint32_t total_value_id_count = value_id_count;
     meter_slot.base_value_count = value_id_count;
