@@ -28,11 +28,14 @@ size_t event_log_alignment = 0;
 
 #define ALIGNMENT_WARN_THRESHOLD 16
 
-size_t strlen_with_event_log_alignment(const char *c, bool check_len)
+size_t strlen_with_event_log_alignment(const char *c, bool aligned)
 {
     auto result = c == nullptr ? 0 : strlen(c);
 
-    if (check_len && result > ALIGNMENT_WARN_THRESHOLD) {
+    if (!aligned)
+        return result;
+
+    if (result > ALIGNMENT_WARN_THRESHOLD) {
         printf("(1) Event log prefix %.*s is longer than threshold (%u > %u)\n", result, c, result, ALIGNMENT_WARN_THRESHOLD);
     }
 
@@ -41,7 +44,7 @@ size_t strlen_with_event_log_alignment(const char *c, bool check_len)
     return result;
 }
 
-const char *get_module_offset_and_length(const char *path, size_t *out_length, bool check_len)
+const char *get_module_offset_and_length(const char *path, size_t *out_length, bool aligned)
 {
     auto len = strlen(path);
     auto needle = "src/modules/";
@@ -64,11 +67,12 @@ const char *get_module_offset_and_length(const char *path, size_t *out_length, b
 
         *out_length = last_dot - last_slash - 1;
 
-        if (check_len && *out_length > ALIGNMENT_WARN_THRESHOLD) {
+        if (aligned && *out_length > ALIGNMENT_WARN_THRESHOLD) {
             printf("(2) Event log prefix %.*s is longer than threshold (%u > %u) in %s\n", *out_length,  last_slash + 1, *out_length, ALIGNMENT_WARN_THRESHOLD, path);
         }
 
-        event_log_alignment = std::max(event_log_alignment, *out_length);
+        if (aligned)
+            event_log_alignment = std::max(event_log_alignment, *out_length);
 
         return last_slash + 1;
     }
@@ -83,11 +87,12 @@ const char *get_module_offset_and_length(const char *path, size_t *out_length, b
 
     *out_length = (size_t)(ptr - result);
 
-    if (check_len && *out_length > ALIGNMENT_WARN_THRESHOLD) {
+    if (aligned && *out_length > ALIGNMENT_WARN_THRESHOLD) {
         printf("(3) Event log prefix %.*s is longer than threshold (%u > %u) in %s\n", *out_length, result, *out_length, ALIGNMENT_WARN_THRESHOLD, path);
     }
 
-    event_log_alignment = std::max(event_log_alignment, *out_length);
+    if (aligned)
+        event_log_alignment = std::max(event_log_alignment, *out_length);
 
     return result;
 }
