@@ -22,6 +22,7 @@ src/main_available.h
 src/main_available_end.h
 src/main_dependencies.h
 src/modules/pwa/manifest.json
+src/modules/meters/meter_value_id.py
 web/**/*.digest
 web/node_modules/
 web/build/
