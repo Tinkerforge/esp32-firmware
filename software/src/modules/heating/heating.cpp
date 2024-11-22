@@ -242,28 +242,44 @@ void Heating::update()
                 return;
             }
 
+            auto print_hours_today = [&] (const char *name, const bool *hours) {
+                char buffer[24*4 + 1] = {'\0'};
+                for (int i = 0; i < 24*4; i++) {
+                    buffer[i] = hours[i] ? '1' : '0';
+                }
+                extended_logging("%s: %s", name, buffer);
+            };
+
+            bool data[24*4] = {false};
+
             if (extended_active) {
-                const auto cheap = day_ahead_prices.get_cheap_hours_today(extended_hours);
-                if (!cheap.data_available) {
+                const bool data_available = day_ahead_prices.get_cheap_hours_today(extended_hours, data);
+                if (!data_available) {
                     extended_logging("Cheap hours not available. Ignoring extended control.");
-                } else if (cheap.data[minutes_since_midnight/15]) {
-                    extended_logging("Current time is in cheap hours.");
-                    sg_ready1_on |= true;
                 } else {
-                    extended_logging("Current time is not in cheap hours.");
-                    sg_ready1_on |= false;
+                    print_hours_today("Cheap hours", data);
+                    if (data[minutes_since_midnight/15]) {
+                        extended_logging("Current time is in cheap hours.");
+                        sg_ready1_on |= true;
+                    } else {
+                        extended_logging("Current time is not in cheap hours.");
+                        sg_ready1_on |= false;
+                    }
                 }
             }
             if (blocking_active) {
-                const auto expensive = day_ahead_prices.get_expensive_hours_today(blocking_hours);
-                if (!expensive.data_available) {
+                const bool data_available = day_ahead_prices.get_expensive_hours_today(blocking_hours, data);
+                if (!data_available) {
                     extended_logging("Expensive hours not available. Ignoring blocking control.");
-                } else if (expensive.data[minutes_since_midnight/15]) {
-                    extended_logging("Current time is in expensive hours.");
-                    sg_ready0_on |= true;
                 } else {
-                    extended_logging("Current time is not in expensive hours.");
-                    sg_ready0_on |= false;
+                    print_hours_today("Expensive hours", data);
+                    if (data[minutes_since_midnight/15]) {
+                        extended_logging("Current time is in expensive hours.");
+                        sg_ready0_on |= true;
+                    } else {
+                        extended_logging("Current time is not in expensive hours.");
+                        sg_ready0_on |= false;
+                    }
                 }
             }
         };
