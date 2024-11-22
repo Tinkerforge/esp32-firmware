@@ -19,7 +19,12 @@ custom_name = env.GetProjectOption('custom_name')
 
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.elf",
-    env.VerboseAction(lambda **kwargs: os.makedirs("build", exist_ok=True), "Ensuring build dir exists")
+    env.VerboseAction(lambda **kwargs: os.makedirs("build", exist_ok=True), "Ensuring build directory exists")
+)
+
+env.AddPostAction(
+    "$BUILD_DIR/${PROGNAME}.elf",
+    env.VerboseAction(lambda **kwargs: os.makedirs("build_latest", exist_ok=True), "Ensuring build_latest directory exists")
 )
 
 if env.GetProjectOption("custom_autoclean_build_dir", default="false") == "true": # Option is a string, not a Python boolean.
@@ -55,6 +60,23 @@ if sys.platform == 'win32':
     symlink = lambda src, dst: copy2(os.path.join('build', src), dst)
 else:
     symlink = os.symlink
+
+def remove_and_symlink(remove_pattern, src_path, dst_path):
+    for path in glob.glob(remove_pattern):
+        try:
+            os.remove(path)
+        except:
+            pass
+
+    return symlink(src_path, dst_path)
+
+env.AddPostAction(
+    "$BUILD_DIR/${PROGNAME}.elf",
+    env.VerboseAction(lambda env, **kwargs: remove_and_symlink(f"build_latest/{custom_name}_firmware*.elf",
+                                                               f"../build/{firmware_basename}.elf",
+                                                               f"build_latest/{firmware_basename}.elf"),
+                      f"Symlinking build{os.sep}{firmware_basename}.elf -> build_latest{os.sep}{firmware_basename}.elf")
+)
 
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.elf",
@@ -111,6 +133,14 @@ else:
                                                       f"build/{firmware_basename}_merged.bin"),
                           f"Copying $BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin -> build{os.sep}{firmware_basename}_merged.bin")
     )
+
+env.AddPostAction(
+    "$BUILD_DIR/${PROGNAME}.bin",
+    env.VerboseAction(lambda env, **kwargs: remove_and_symlink(f"build_latest/{custom_name}_firmware*_merged.bin",
+                                                               f"../build/{firmware_basename}_merged.bin",
+                                                               f"build_latest/{firmware_basename}_merged.bin"),
+                      f"Symlinking build{os.sep}{firmware_basename}_merged.bin -> build_latest{os.sep}{firmware_basename}_merged.bin")
+)
 
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.bin",

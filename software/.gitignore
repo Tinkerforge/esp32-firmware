@@ -2,6 +2,7 @@
 .vscode
 default_wifi.json*
 build/
+build_latest/
 data/spiffs.json
 data/wifi_sta_config.json
 data/wifi_soft_ap_config.json
