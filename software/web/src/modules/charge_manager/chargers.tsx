@@ -100,22 +100,23 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
     addScanResults(result: ScanCharger[]) {
         // Copy to remove signals.
-        let newResult: ScanCharger[] = result.filter(c => c).map(c => ({
+        let copy: ScanCharger[] = result.filter(c => c).map(c => ({
             display_name: c.display_name,
             error: c.error,
             hostname: c.hostname,
             ip: c.ip,
+            proxy_of: c.proxy_of,
         }));
 
         for (let oldC of this.state.scanResult) {
-            let i = newResult.findIndex(c => c.hostname == oldC.hostname);
+            let i = copy.findIndex(c => c.hostname == oldC.hostname);
             if (i == -1)
-                newResult.push(oldC);
-            else if (newResult[i].ip == "[no_address]")
-                newResult[i].ip = oldC.ip;
+                copy.push(oldC);
+            else if (copy[i].ip == "[no_address]")
+                copy[i].ip = oldC.ip;
         }
 
-        newResult.sort((a, b) => {
+        copy.sort((a, b) => {
             if (a.error == 0 && b.error != 0)
                 return -1;
             if (a.error != 0 && b.error == 0)
@@ -123,7 +124,25 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             return a.display_name.localeCompare(b.display_name);
         });
 
-        this.setState({scanResult: newResult});
+        let filtered: ScanCharger[] = [];
+
+        // Don't show devices that are proxied by another device.
+        // Patch the proxy's display name instead.
+        for (let c of copy) {
+            let found = false;
+            for (let p of copy) {
+                if (p.proxy_of == c.hostname + ".local") {
+                    p.display_name += " & " + c.display_name;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                filtered.push(c);
+            }
+        }
+
+        this.setState({scanResult: filtered});
     }
 
     setCharger (i: number, val: Partial<ChargerConfig>){

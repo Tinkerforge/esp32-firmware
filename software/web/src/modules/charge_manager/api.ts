@@ -15,6 +15,7 @@ interface ServCharger {
     ip: string;
     display_name: string;
     error: number;
+    proxy_of?: string;
 }
 
 export type scan_result = ServCharger[] | string;
