@@ -53,15 +53,15 @@ void EventLog::pre_init()
 size_t EventLog::alloc_trace_buffer(const char *name, size_t size) {
 #if defined(BOARD_HAS_PSRAM)
     if (boot_stage > BootStage::PRE_SETUP){
-        return -1; // TODO esp_system_abort here?
+        esp_system_abort("Using alloc_trace_buffer after the pre_setup is not allowed!");
     }
 
     if (this->trace_buffer_size_allocd + trace_buffer_size_allocd > MAX_TRACE_BUFFERS_SIZE){
-        return -1; // TODO esp_system_abort here?
+        esp_system_abort("Maximum size of trace buffers exceeded!");
     }
 
     if (trace_buffers_in_use == trace_buffers.size()){
-        return -1;  // TODO esp_system_abort here?
+        esp_system_abort("Maximum number of trace buffers exceeded!");
     }
 
     trace_buffers[trace_buffers_in_use].name = name;
