@@ -530,38 +530,49 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             </FormRow>
 
         let show_charger_settings = state.enable_charge_manager;
+        let show_available_current = true;
+
+        //#if MODULE_EM_PHASE_SWITCHER_AVAILABLE
+        if (state.managementEnabled) {
+            show_charger_settings = true;
+            show_available_current = false;
+        }
+        //#endif
+
         let em_charger = null;
 
 //#if MODULE_EM_PHASE_SWITCHER_AVAILABLE
-        if (state.enable_charge_manager) {
-            let em_charger_list: [string, string][] = [["255", __("charge_manager.content.em_no_ps_charger")]];
+        let em_charger_list: [string, string][] = [["255", __("charge_manager.content.em_no_ps_charger")]];
 
-            for (let i in state.chargers) {
-                em_charger_list.push([i.toString(), state.chargers[i].name]);
-            }
+        for (let i in state.chargers) {
+            em_charger_list.push([i.toString(), state.chargers[i].name]);
+        }
 
-            if (this.state.emCharger.idx < 254 && this.state.chargers[this.state.emCharger.idx].host != this.state.emCharger.host) {
-                this.setState({emCharger: {...state.emCharger, idx: 254, host: ""}});
-            }
+        if (this.state.emCharger.idx < 254 && this.state.chargers[this.state.emCharger.idx].host != this.state.emCharger.host) {
+            this.setState({emCharger: {...state.emCharger, idx: 254, host: ""}});
+        }
 
-            em_charger = <FormRow label={__("charge_manager.content.em_controlled_charger")} label_muted={__("charge_manager.content.em_controlled_charger_muted")}>
-                <InputSelect items={em_charger_list}
-                    value={state.emCharger.idx}
-                    onValue={(v) => {
-                        const chg_idx = parseInt(v);
-                        const host = chg_idx < 254 ? state.chargers[chg_idx].host.toLowerCase() : "";
-                        this.setState({emCharger: {...state.emCharger, idx: chg_idx, host: host}});
-                    }}
-                    required
-                    placeholder={__("charge_manager.content.add_charger_rotation_select")}
-                />
-            </FormRow>
-        } else {
-            if (state.managementEnabled) { // Proxy mode
-                show_charger_settings = true;
+        em_charger = <>
+            <Collapse in={state.enable_charge_manager}>
+                <div>
+                    <FormRow label={__("charge_manager.content.em_controlled_charger")} label_muted={__("charge_manager.content.em_controlled_charger_muted")}>
+                        <InputSelect items={em_charger_list}
+                            value={state.emCharger.idx}
+                            onValue={(v) => {
+                                const chg_idx = parseInt(v);
+                                const host = chg_idx < 254 ? state.chargers[chg_idx].host.toLowerCase() : "";
+                                this.setState({emCharger: {...state.emCharger, idx: chg_idx, host: host}});
+                            }}
+                            required={state.enable_charge_manager}
+                            placeholder={__("charge_manager.content.add_charger_rotation_select")}
+                        />
+                    </FormRow>
+                </div>
+            </Collapse>
 
-                if (state.chargers.length != 1) {
-                    em_charger = <FormRow label="">
+            <Collapse in={state.managementEnabled && state.chargers.length != 1}>
+                <div>
+                    <FormRow label="">
                         <IndicatorGroup
                             value={0}
                             items={[
@@ -569,9 +580,9 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                             ]}
                         />
                     </FormRow>
-                }
-            }
-        }
+                </div>
+            </Collapse>
+        </>
 //#endif
 
         return (
@@ -581,7 +592,11 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
                     <Collapse in={show_charger_settings}>
                         <div>
-                            {available_current}
+                            <Collapse in={state.enable_charge_manager}>
+                                <div>
+                                    {available_current}
+                                </div>
+                            </Collapse>
                             {chargers}
                             {em_charger}
                         </div>
