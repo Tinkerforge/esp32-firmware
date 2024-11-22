@@ -34,7 +34,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 // portTICK_PERIOD_MS expands to an old style cast.
-static TickType_t i2c_timeout = 1000 / portTICK_PERIOD_MS;
+static TickType_t i2c_timeout = 4 / portTICK_PERIOD_MS;
 #pragma GCC diagnostic pop
 
 static uint8_t intToBCD(uint8_t num) {
