@@ -775,7 +775,7 @@ void ChargeTracker::register_urls()
         remove_directory(CHARGE_RECORD_FOLDER);
         users.remove_username_file();
 
-        trigger_reboot("Removing all tracked charges", 1_s);
+        trigger_reboot("removing all tracked charges", 1_s);
     }, true);
 
     server.on_HTTPThread("/charge_tracker/pdf", HTTP_PUT, [this](WebServerRequest request) {

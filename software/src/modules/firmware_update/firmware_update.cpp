@@ -505,7 +505,7 @@ void FirmwareUpdate::register_urls()
             return;
         }
 
-        trigger_reboot("Firmware update", 1_s);
+        trigger_reboot("firmware update", 1_s);
 #else
         result = "Signature verification is disabled";
 #endif
@@ -578,7 +578,7 @@ void FirmwareUpdate::register_urls()
     });
 
     server.on_HTTPThread("/flash_firmware", HTTP_POST, [this](WebServerRequest request) {
-        trigger_reboot("Firmware update", 1_s);
+        trigger_reboot("firmware update", 1_s);
         task_scheduler.await([this](){flash_firmware_in_progress = false;});
         return request.send(200, "text/plain", "Update OK");
     },
@@ -1009,7 +1009,7 @@ void FirmwareUpdate::install_firmware(const char *url)
             logger.printfln("Firmware successfully installed");
             state.get("install_state")->updateEnum(InstallState::Rebooting);
             state.get("install_progress")->updateUint(0);
-            trigger_reboot("Firmware update", 1_s);
+            trigger_reboot("firmware update", 1_s);
             install_firmware_in_progress = false;
             break;
         }
