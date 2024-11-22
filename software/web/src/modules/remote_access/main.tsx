@@ -50,7 +50,8 @@ interface RemoteAccessState {
         email: string,
         password: string,
         note: string,
-    }
+    },
+    removeUsers: number[],
 }
 
 export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, RemoteAccessState> {
@@ -83,7 +84,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 this.reject = undefined;
             }
         });
-        this.setState({status_modal_string: ""});
+        this.setState({status_modal_string: "", removeUsers: []});
     }
 
     async get_login_salt(cfg: util.NoExtraProperties<API.getType["remote_access/register"]["config"]>) {
@@ -409,6 +410,11 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
+        for (const id of this.state.removeUsers) {
+            API.call("remote_access/remove_user", {
+                id: id,
+            });
+        }
         const config: update_enable = {
             enable: cfg.enable,
             relay_host: "",
@@ -459,9 +465,9 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             const row: TableRow = {
                 columnValues: [user.email],
                 onRemoveClick: async () => {
-                    API.call("remote_access/remove_user", {
-                        id: user.id,
-                    });
+                    this.setState({removeUsers: this.state.removeUsers.concat(user.id)});
+                    this.setState({users: this.state.users.filter((u) => u.id != user.id)});
+                    this.setDirty(true);
                 },
             }
             users.push(row);
@@ -509,27 +515,27 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                             addMessage={users.length < 5 ? __("remote_access.content.user_add_message")(users.length, 5) : __("remote_access.content.all_users_in_use")}
                             onAddGetChildren={() => {
                                 return <>
-                    <FormRow label={__("remote_access.content.email")}>
-                                        <InputText value={this.state.addUser.email} required
-                                    maxLength={64}
-                                    onValue={(v) => {
-                                                this.setState({addUser: {...this.state.addUser, email: v}})
-                                    }} />
-                    </FormRow>
-                    <FormRow label={__("remote_access.content.password")} label_muted={__("remote_access.content.password_muted")}>
-                        <InputPassword required
-                            value={this.state.addUser.password}
-                        maxLength={64}
-                        onValue={(v) => {
-                                this.setState({addUser: {...this.state.addUser, password: v}})
-                        }}
-                        hideClear
-                        placeholder="" />
-                    </FormRow>
-                    <FormRow label={__("remote_access.content.note")} label_muted={__("remote_access.content.note_muted")(this.state.relay_host)}>
-                        <InputText value={this.state.addUser.note} onValue={(v) => this.setState({addUser: {...this.state.addUser, note: v}})}/>
-                    </FormRow>
-                    </>
+                                    <FormRow label={__("remote_access.content.email")}>
+                                                        <InputText value={this.state.addUser.email} required
+                                                    maxLength={64}
+                                                    onValue={(v) => {
+                                                                this.setState({addUser: {...this.state.addUser, email: v}})
+                                                    }} />
+                                    </FormRow>
+                                    <FormRow label={__("remote_access.content.password")} label_muted={__("remote_access.content.password_muted")}>
+                                        <InputPassword required
+                                            value={this.state.addUser.password}
+                                        maxLength={64}
+                                        onValue={(v) => {
+                                                this.setState({addUser: {...this.state.addUser, password: v}})
+                                        }}
+                                        hideClear
+                                        placeholder="" />
+                                    </FormRow>
+                                    <FormRow label={__("remote_access.content.note")} label_muted={__("remote_access.content.note_muted")(this.state.relay_host)}>
+                                        <InputText value={this.state.addUser.note} onValue={(v) => this.setState({addUser: {...this.state.addUser, note: v}})}/>
+                                    </FormRow>
+                                </>
                             }}
                             onAddSubmit={async () => {
                                 if (users.length === 0) {
