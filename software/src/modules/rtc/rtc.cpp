@@ -21,12 +21,22 @@
 
 #include <time.h>
 
+#define TRACE_LOG_PREFIX nullptr
+
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
 #include "musl_libc_timegm.h"
 
 static constexpr minutes_t RTC_TO_SYS_INTERVAL = 10_m;
+
+static const char * const quality_strings[] = {
+    "None",
+    "RTC",
+    "Low",
+    "High",
+    "Force"
+};
 
 void IRtcBackend::set_time(const timeval &time)
 {
@@ -46,6 +56,8 @@ void IRtcBackend::set_time(const tm &time, int32_t microseconds)
 
 void Rtc::pre_setup()
 {
+    this->trace_buf_index = logger.alloc_trace_buffer("rtc", 8192);
+
     time = Config::Object({
         {"year", Config::Uint16(0)},
         {"month", Config::Uint8(0)},
@@ -193,11 +205,9 @@ void Rtc::update_rtc_from_system_time(int attempt) {
         backend->set_time(time);
     }
 
-#if MODULE_DEBUG_AVAILABLE()
     if (attempt > 0) {
-        logger.printfln("Failed to hit < X.010s %d times.%s", attempt, attempt >= 3 ? " RTC time may not be precise" : "");
+        logger.tracefln(this->trace_buf_index, "Failed to hit < X.010s %d times.%s", attempt, attempt >= 3 ? " RTC time may not be precise" : "");
     }
-#endif
 }
 
 bool Rtc::push_system_time(const timeval &time, Quality quality)
@@ -229,6 +239,12 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
         if (quality < last_sync_quality && !deadline_elapsed(last_sync_ok_deadline)) {
             return false;
         }
+
+        struct tm timeinfo = {};
+        char buf[23] = {};
+        localtime_r(&time.tv_sec, &timeinfo);
+        strftime(buf, ARRAY_SIZE(buf), "%F %T", &timeinfo);
+        logger.tracefln(this->trace_buf_index, "Set time to %s at %lu. Quality %s", buf, millis(), quality_strings[(size_t)quality]);
 
         settimeofday(&time, NULL);
 

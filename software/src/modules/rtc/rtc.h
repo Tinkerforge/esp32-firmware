@@ -72,6 +72,7 @@ public:
         return tv_now.tv_sec / 60;
     }
 
+    // Also edit quality_strings in rtc.cpp when modifying this!
     enum class Quality : uint8_t {
         None = 0, // Never sycned.
         RTC = 1, // Use for any RTC: Will not write RTCs. Will be ignored if the time was set for example via NTP or the API not too long ago.
@@ -97,4 +98,6 @@ private:
     micros_t last_sync_ok_deadline = -1000_h;
 
     std::recursive_mutex push_system_time_mutex;
+
+    size_t trace_buf_index;
 };
