@@ -243,6 +243,22 @@ let x = {
                         <td>Zeit in Millisekunden seitdem das zuletzt erkannten NFC-Tag das letzte mal erkannt wurde. Zeiten &lt;
                             1000 ms bedeuten typischerweise, dass das Tag gerade an die Wallbox gehalten wird.</td>
                     </tr>
+                    <tr>
+                        <td>4012 bis 4013</td>
+                        <td>Typ des letzten NFC-Tags</td>
+                        <td>uint8 (4x)</td>
+                        <td>nfc</td>
+                        <td>Typ des zuletzt erkannten NFC-Tags als ASCII-kodierter Hex-String.
+                            <ul>
+                                <li>"0000": Mifare Classic</li>
+                                <li>"0001": NFC Forum Typ 1</li>
+                                <li>"0002": NFC Forum Typ 2</li>
+                                <li>"0003": NFC Forum Typ 3</li>
+                                <li>"0004": NFC Forum Typ 4</li>
+                                <li>"0005": NFC Forum Typ 5</li>
+                            </ul>
+                        </td>
+                    </tr>
                 </tbody>
                 <thead>
                     <tr>
@@ -341,6 +357,52 @@ let x = {
                         <td>phase_switch</td>
                         <td>1 für einphasiges Laden. 3 für dreiphasiges Laden.</td>
                     </tr>
+                    <tr>
+                        <td>4000 bis 4009</td>
+                        <td>ID des vorzutäuschenden NFC-Tags</td>
+                        <td>uint8 (20x)</td>
+                        <td>nfc</td>
+                        <td>Mit den Registern 4000 bis einschließlich 4013 kann ein NFC-Tag vorgetäuscht werden (analog zur API nfc/inject_tag):
+                            <ul>
+                                <li>Register 4000 bis 4009: Die ID des Tags als ASCII-kodierter Hex-String.</li>
+                                <li>Register 4010 und 4011:
+                                    <ul>
+                                        <li>"0001": Mit dem vorgetäuschten Tag kann ein Ladevorgang nur gestartet werden (analog zur API nfc/inject_tag_start)</li>
+                                        <li>"0002": Mit dem vorgetäuschten Tag kann ein Ladevorgang nur gestoppt werden (analog zur API nfc/inject_tag_stop)</li>
+                                        <li>alle anderen Werte: Mit dem vorgetäuschten Tag kann ein Ladevorgang gestartet und gestoppt werden (analog zur API nfc/inject_tag)</li>
+                                    </ul>
+                                </li>
+                                <li>Register 4012 und 4013: Der Typ des NFC-Tags als ASCII-kodierter Hex-String:
+                                    <ul>
+                                        <li>"0000": Mifare Classic</li>
+                                        <li>"0001": NFC Forum Typ 1</li>
+                                        <li>"0002": NFC Forum Typ 2</li>
+                                        <li>"0003": NFC Forum Typ 3</li>
+                                        <li>"0004": NFC Forum Typ 4</li>
+                                        <li>"0005": NFC Forum Typ 5</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <br/>
+                            <strong>Schreiben der Register 4012 und 4013 startet das Vortäuschen das Tags. Danach werden die Holding Register 4000 bis 4013 geleert!</strong>
+                            Das Datenformat der Holding Register 4000 bis 4013 ist identisch zum Format der Input Register 4000 bis 4013 (die das zuletzt gesehen NFC-Tag enthalten).
+                            Ein physisch existierendes Tag kann also (wieder) vorgetäuscht werden, indem es einmal an die Wallbox gehalten wird und die dabei erzeugten Werte in den Input Registern 4000 bis 4013 später in die Holding Register 4000 bis 4013 geschrieben werden.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>4010 bis 4011</td>
+                        <td>Verwendungszweck des vorgetäuschten NFC-Tags</td>
+                        <td>uint8 (4x)</td>
+                        <td>nfc</td>
+                        <td>Siehe Beschreibung der Holding Register 4000 bis 4009.</td>
+                    </tr>
+                    <tr>
+                        <td>4012 bis 4013</td>
+                        <td>Typ des vorgetäuschten NFC-Tags</td>
+                        <td>uint8 (4x)</td>
+                        <td>nfc</td>
+                        <td>Siehe Beschreibung der Holding Register 4000 bis 4009.</td>
+                    </tr>
                 </tbody>
                 <thead>
                     <tr>
@@ -394,7 +456,7 @@ let x = {
                     </tr>
                     <tr>
                         <td>6</td>
-                        <td>Feature "evse_shutdown_input" verfügbar</td>
+                        <td>Feature "evse_sd_input" verfügbar</td>
                         <td>bool</td>
                         <td>---</td>
                         <td>Der Ladecontroller verfügt über einen Abschalteingang.</td>
@@ -415,17 +477,17 @@ let x = {
                     </tr>
                     <tr>
                         <td>1100</td>
-                        <td>Zustand des Abschalteingangs. 0 - geschlossen, 1 - geöffnet</td>
+                        <td>Zustand des Abschalteingangs</td>
                         <td>bool</td>
-                        <td>evse_shutdown_input</td>
-                        <td></td>
+                        <td>evse_sd_input</td>
+                        <td> 0 - geschlossen, 1 - geöffnet</td>
                     </tr>
                     <tr>
                         <td>1101</td>
-                        <td>Zustand des konfigurierbaren Eingangs. 0 - geschlossen, 1 - geöffnet</td>
+                        <td>Zustand des konfigurierbaren Eingangs</td>
                         <td>bool</td>
                         <td>evse_gp_input</td>
-                        <td></td>
+                        <td> 0 - geschlossen, 1 - geöffnet</td>
                     </tr>
                     <tr>
                         <td>2100</td>
@@ -495,10 +557,10 @@ let x = {
                     </tr>
                     <tr>
                         <td>1100</td>
-                        <td>Setzt den Zustand des konfigurierbaren Ausgangs. 0 - Verbunden mit Masse, 1 - Hochohmig</td>
+                        <td>Setzt den Zustand des konfigurierbaren Ausgangs</td>
                         <td>bool</td>
                         <td>evse_gp_output</td>
-                        <td></td>
+                        <td>0 - Verbunden mit Masse, 1 - Hochohmig</td>
                     </tr>
                 </tbody>
             </>

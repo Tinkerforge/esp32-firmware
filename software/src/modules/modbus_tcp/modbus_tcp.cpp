@@ -27,6 +27,7 @@
 
 #include "event_log_prefix.h"
 #include "build.h"
+#include "string_builder.h"
 
 #include "module_dependencies.h"
 
@@ -35,7 +36,7 @@ extern uint32_t local_uid_num;
 // MODBUS TABLE CHANGELOG
 // 1 - Initial release
 // 2 - Add coils 1000, 1001
-// 3 - Add phase switch, EVSE LED color
+// 3 - Add phase switch, EVSE LED color, EVSE GPIOs, NFC tag injection
 #define MODBUS_TABLE_VERSION 3
 
 static uint8_t hextouint(const char c)
@@ -249,8 +250,15 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpInputRegister(uint16_t reg, void *c
         case 4010: REQUIRE(nfc); {
                 fillTagCache(ctx->tag);
                 val.u = ctx->tag.unwrap().last_seen;
-            }
-            break;
+                // We want to support both 1 and 2 and '1' and '2' as injection types inject_tag_start/_stop.
+                // Other values are interpreted as 0, i.e. inject_tag
+                // "Reserve" by lying about a tags age if it is younger than 0x70 (112) ms.
+                // This allows a user of the modbus API to read input registers 4000 - 4013 after presenting a physical tag
+                // and then inject the same tag by writing the same data to holding registers 4000 - 4013.
+                if (val.u != 0 && val.u < 0x70)
+                    val.u += 0x70;
+            } break;
+        case 4012: REQUIRE(nfc); fillTagCache(ctx->tag); val.u = 0x30303000 + ('0' + ctx->tag.unwrap().tag_type); break;
 
         default: report_illegal_data_address = true; break;
     }
@@ -337,6 +345,8 @@ TFModbusTCPExceptionCode ModbusTcp::getWarpInputRegisters(uint16_t start_address
 Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpHoldingRegister(uint16_t reg) {
     TwoRegs val{0};
 
+    bool report_illegal_data_address = false;
+
     switch (reg) {
         case 0: val.u = 0; break;
 
@@ -357,14 +367,32 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpHoldingRegister(uint16_t reg) {
 
         case 3100: REQUIRE(phase_switch); val.u = cache->power_manager_external_control->get("phases_wanted")->asUint(); break;
 
-        default: return {};
+        default: report_illegal_data_address = true;
     }
+
+    if (reg >= 4000 && reg < 4014) {
+        report_illegal_data_address = false;
+
+        if (cache->has_feature_nfc) {;
+            // The NFC ID is already in network order but will be swapped.
+            for(size_t i = 0; i < 4; ++i) {
+                val.chars[i] = cache->nfc_tag_injection_buffer[(reg - 4000) * 2 + i];
+            }
+            val.u = swapBytes(val.u);
+        }
+        logger.printfln_debug("READ %u %.*s", reg, 4, val.chars);
+    }
+
+    if (report_illegal_data_address)
+        return {};
+
     return {val};
 }
 
 TFModbusTCPExceptionCode ModbusTcp::getWarpHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(meter)
+    FILL_FEATURE_CACHE(nfc)
 
     int i = 0;
     while (i < data_count) {
@@ -540,9 +568,12 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpHoldingRegisters(uint16_t start_addre
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(meter)
     FILL_FEATURE_CACHE(phase_switch)
+    FILL_FEATURE_CACHE(nfc)
 
     if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
         return TFModbusTCPExceptionCode::Success;
+
+    bool report_illegal_data_address = false;
 
     int i = 0;
     while (i < data_count) {
@@ -631,12 +662,60 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpHoldingRegisters(uint16_t start_addre
                         }
                     }
                 } break;
-            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
+
+            default: report_illegal_data_address = true;
         }
 
+        if (reg >= 4000 && reg < 4014) {
+            report_illegal_data_address = false;
+
+            if (cache->has_feature_nfc) {
+                // The NFC ID was already in network order but was swapped above.
+                val.u = swapBytes(val.u);
+
+                for(size_t j = 0; j < 4; ++j) {
+                    cache->nfc_tag_injection_buffer[(reg - 4000) * 2 + j] = val.chars[j];
+                }
+
+                // Inject tag if the tag type register(s) were written, but only if either the lower or both registers were written.
+                if (reg == 4012 && ((i + start_address == 4013) || data_count > 1)) {
+                    char buf[NFC_TAG_ID_STRING_LENGTH + 1];
+                    StringWriter sw{buf, ARRAY_SIZE(buf)};
+
+                    for(size_t j = 0; j < NFC_TAG_ID_LENGTH; ++j) {
+                        if (cache->nfc_tag_injection_buffer[2 * j] == 0)
+                            break;
+                        sw.putc(cache->nfc_tag_injection_buffer[2 * j]);
+                        sw.putc(cache->nfc_tag_injection_buffer[2 * j + 1]);
+                        sw.putc(':');
+                    }
+                    sw.setLength(sw.getLength() - 1);
+
+                    // Accepts both 0 - 5 and '0' to '5'
+                    uint32_t tag_type = cache->nfc_tag_injection_buffer[ARRAY_SIZE(cache->nfc_tag_injection_buffer) - 1] & 0x0F;
+                    // Accepts both 0 - 2 and '0' to '2'
+                    uint8_t injection_type = cache->nfc_tag_injection_buffer[ARRAY_SIZE(cache->nfc_tag_injection_buffer) - 5] & 0x0F;
+
+                    const char *command = "nfc/inject_tag";
+                    if (injection_type == 1)
+                        command = "nfc/inject_tag_start";
+                    else if (injection_type == 2)
+                        command = "nfc/inject_tag_stop";
+
+                    String err = api.callCommand(command, Config::ConfUpdateObject{{
+                            {"tag_type", tag_type},
+                            {"tag_id", CoolString{buf}}
+                        }});
+                    if (err != "") {
+                        logger.printfln("Failed to inject tag: %s", err.c_str());
+                    }
+                    memset(cache->nfc_tag_injection_buffer, 0, sizeof(cache->nfc_tag_injection_buffer));
+                }
+            }
+        }
     }
 
-    return TFModbusTCPExceptionCode::Success;
+    return report_illegal_data_address ? TFModbusTCPExceptionCode::IllegalDataAddress : TFModbusTCPExceptionCode::Success;
 }
 
 TFModbusTCPExceptionCode ModbusTcp::setKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {

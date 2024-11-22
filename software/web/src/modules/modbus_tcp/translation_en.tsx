@@ -241,6 +241,22 @@ let x = {
                         <td>Time in milliseconds since the last NFC tag was seen. An age less than 1000 ms usually indicates that the
                             tag is currently held to the charger.</td>
                     </tr>
+                    <tr>
+                        <td>4012 bis 4013</td>
+                        <td>Type of the last NFC tag</td>
+                        <td>uint8 (4x)</td>
+                        <td>nfc</td>
+                        <td>Type of the last seen NFC tag as ASCII coded hex string.
+                            <ul>
+                                <li>"0000": Mifare Classic</li>
+                                <li>"0001": NFC Forum Typ 1</li>
+                                <li>"0002": NFC Forum Typ 2</li>
+                                <li>"0003": NFC Forum Typ 3</li>
+                                <li>"0004": NFC Forum Typ 4</li>
+                                <li>"0005": NFC Forum Typ 5</li>
+                            </ul>
+                        </td>
+                    </tr>
                 </tbody>
                 <thead>
                     <tr>
@@ -339,6 +355,52 @@ let x = {
                         <td>phase_switch</td>
                         <td>1 for single-phase charging. 3 for three-phase charging.</td>
                     </tr>
+                    <tr>
+                        <td>4000 to 4009</td>
+                        <td>ID of the NFC tag to inject</td>
+                        <td>uint8 (20x)</td>
+                        <td>nfc</td>
+                        <td>By writing the registers 4000 up to and including 4013 a NFC tag can be injected (as if using the API nfc/inject_tag):
+                            <ul>
+                                <li>Register 4000 to 4009: The tag's ID as ASCII coded hex string.</li>
+                                <li>Register 4010 and 4011:
+                                    <ul>
+                                        <li>"0001": The injected tag can only a start charge (as if using the API nfc/inject_tag_start)</li>
+                                        <li>"0002": The injected tag can only a stop charge (as if using the API nfc/inject_tag_stop)</li>
+                                        <li>all other values: The injected tag can start and stop a charge (as if using the API nfc/inject_tag)</li>
+                                    </ul>
+                                </li>
+                                <li>Register 4012 and 4013: The tag's type as ASCII coded hex string:
+                                    <ul>
+                                        <li>"0000": Mifare Classic</li>
+                                        <li>"0001": NFC Forum Typ 1</li>
+                                        <li>"0002": NFC Forum Typ 2</li>
+                                        <li>"0003": NFC Forum Typ 3</li>
+                                        <li>"0004": NFC Forum Typ 4</li>
+                                        <li>"0005": NFC Forum Typ 5</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <br/>
+                            <strong>Writing registers 4012 and 4013 starts the tag injection. Holding Registers 4000 to 4013 will be cleared afterwards!</strong>
+                            The data format of holding registers 4000 to 4013 is identical to the one of input registers 4000 to 4013 (that contain the last seen NFC tag).
+                            A physically existing tag can later be (re-)injected by presenting it to the charger and copying the values read from input registers 4000 to 4013 into holding registers 4000 to 4013.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>4010 to 4011</td>
+                        <td>Usage of the NFC tag to inject</td>
+                        <td>uint8 (4x)</td>
+                        <td>nfc</td>
+                        <td>See description of holding registers 4000 to 4009.</td>
+                    </tr>
+                    <tr>
+                        <td>4012 to 4013</td>
+                        <td>Type of the NFC tag to inject</td>
+                        <td>uint8 (4x)</td>
+                        <td>nfc</td>
+                        <td>See description of holding registers 4000 to 4009.</td>
+                    </tr>
                 </tbody>
                 <thead>
                     <tr>
@@ -392,7 +454,7 @@ let x = {
                     </tr>
                     <tr>
                         <td>6</td>
-                        <td>Feature "evse_shutdown_input" available</td>
+                        <td>Feature "evse_sd_input" available</td>
                         <td>bool</td>
                         <td>---</td>
                         <td>The charge controller has a shutdown input.</td>
@@ -413,17 +475,17 @@ let x = {
                     </tr>
                     <tr>
                         <td>1100</td>
-                        <td>State of the shutdown input. 0 - closed, 1 - open</td>
+                        <td>State of the shutdown input</td>
                         <td>bool</td>
-                        <td>evse_shutdown_input</td>
-                        <td></td>
+                        <td>evse_sd_input</td>
+                        <td>0 - closed, 1 - open</td>
                     </tr>
                     <tr>
                         <td>1101</td>
-                        <td>State of the general purpose input. 0 - closed, 1 - open</td>
+                        <td>State of the general purpose input</td>
                         <td>bool</td>
                         <td>evse_gp_input</td>
-                        <td></td>
+                        <td>0 - closed, 1 - open</td>
                     </tr>
                     <tr>
                         <td>2100</td>
@@ -491,10 +553,10 @@ let x = {
                     </tr>
                     <tr>
                         <td>1100</td>
-                        <td>Sets the state of the general purpose output. 0 - connected to ground, 1 - high impedance</td>
+                        <td>Sets the state of the general purpose output</td>
                         <td>bool</td>
                         <td>evse_gp_output</td>
-                        <td></td>
+                        <td>0 - connected to ground, 1 - high impedance</td>
                     </tr>
                 </tbody>
             </>

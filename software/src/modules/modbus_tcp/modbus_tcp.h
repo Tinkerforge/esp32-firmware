@@ -80,6 +80,8 @@ private:
         const Config *power_manager_state;
         const Config *power_manager_external_control;
 
+        char nfc_tag_injection_buffer[28];
+
         bool has_feature_evse;
         bool has_feature_meter;
         bool has_feature_meter_phases;
@@ -99,6 +101,7 @@ private:
         uint32_t u;
         float f;
         struct {uint16_t upper; uint16_t lower;} regs;
+        char chars[4];
     };
     Option<TwoRegs> getWarpInputRegister(uint16_t address, void *ctx);
     Option<TwoRegs> getWarpHoldingRegister(uint16_t address);
