@@ -38,6 +38,8 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, Settings, Sun } from "react-feather";
 
+const METER_SLOT_BATTERY_NO_BATTERY = 255;
+
 export function PVExcessSettingsNavbar() {
     return <NavbarItem name="pv_excess_settings" module="power_manager" title={__("power_manager.navbar.pv_excess_settings")} symbol={<Sun />} />;
 }
@@ -290,6 +292,25 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         let guaranteed_power_lower_limit_1p = 230 * 1 * charge_manager_config.minimum_current_1p / 1000;
         let guaranteed_power_lower_limit_3p = 230 * 3 * charge_manager_config.minimum_current    / 1000;
 
+        let control_behavior_items: [string,string][] = [
+            ["-200", __("power_manager.content.target_power_n200")],
+            ["-100", __("power_manager.content.target_power_n100")],
+        ];
+
+        if (s.meter_slot_battery_power == METER_SLOT_BATTERY_NO_BATTERY) {
+            control_behavior_items.push(["-50", __("power_manager.content.target_power_n50_without_battery_meter")],
+                                        [  "0", __("power_manager.content.target_power_0_without_battery_meter"  )],
+                                        [ "50", __("power_manager.content.target_power_p50_without_battery_meter")]);
+        }
+        else {
+            control_behavior_items.push(["-50", __("power_manager.content.target_power_n50_with_battery_meter")],
+                                        [  "0", __("power_manager.content.target_power_0_with_battery_meter"  )],
+                                        [ "50", __("power_manager.content.target_power_p50_with_battery_meter")]);
+        }
+
+        control_behavior_items.push(["100", __("power_manager.content.target_power_p100")],
+                                    ["200", __("power_manager.content.target_power_p200")]);
+
         return (
             <SubPage name="pv_excess_settings">
                 <ConfigForm id="pv_excess_config_form" title={__("power_manager.content.header_excess_charging")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
@@ -398,15 +419,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                             : <>
                                 <FormRow label={__("power_manager.content.control_behavior")} label_muted={__("power_manager.content.control_behavior_muted")}>
                                     <InputSelect
-                                        items={[
-                                            ["-200", __("power_manager.content.target_power_n200")],
-                                            ["-100", __("power_manager.content.target_power_n100")],
-                                            [ "-50", __("power_manager.content.target_power_n50" )],
-                                            [   "0", __("power_manager.content.target_power_0"   )],
-                                            [  "50", __("power_manager.content.target_power_p50" )],
-                                            [ "100", __("power_manager.content.target_power_p100")],
-                                            [ "200", __("power_manager.content.target_power_p200")],
-                                        ]}
+                                        items={control_behavior_items}
                                         value={s.target_power_from_grid}
                                         onValue={(v) => this.setState({target_power_from_grid: parseInt(v)})}
                                     />
