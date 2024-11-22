@@ -534,7 +534,7 @@ void Users::register_urls()
         }});
     }
 
-    api.addCommand("users/modify", &modify, {"digest_hash"}, [this](String &result){
+    api.addCommand("users/modify", &modify, {"digest_hash"}, [this](String &errmsg) {
         auto id = modify.get("id")->asUint();
 
         Config *user = nullptr;
@@ -547,7 +547,7 @@ void Users::register_urls()
 
         // Validity was already checked, but we have to search the user config anyway.
         if (user == nullptr) {
-            result = "Can't modify user. User with this ID not found.";
+            errmsg = "Can't modify user. User with this ID not found.";
             return;
         }
 
@@ -559,7 +559,7 @@ void Users::register_urls()
 
         String err = this->config.validate(ConfigSource::API);
         if (!err.isEmpty()) {
-            result = err;
+            errmsg = err;
             return;
         }
 
@@ -603,6 +603,8 @@ void Users::register_urls()
         }
 
         if (idx == std::numeric_limits<size_t>::max()) {
+            // Defense in depth: the validator has already checked this
+            // condition. This if should never be true
             logger.printfln("Can't remove user. User with this ID not found.");
             return;
         }
@@ -627,13 +629,13 @@ void Users::register_urls()
         }
     }, true);
 
-
     api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](String &/*errmsg*/) {
         bool enable = http_auth_update.get("enabled")->asBool();
-        if (!enable)
+        if (!enable) {
             server.runInHTTPThread([](void *arg) {
                 server.onAuthenticate_HTTPThread([](WebServerRequest req){return true;});
             }, nullptr);
+        }
 
         config.get("http_auth_enabled")->updateBool(enable);
         API::writeConfig("users/config", &config);

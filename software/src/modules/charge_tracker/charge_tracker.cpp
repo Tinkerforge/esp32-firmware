@@ -766,9 +766,9 @@ void ChargeTracker::register_urls()
     api.addState("charge_tracker/current_charge", &current_charge);
     api.addState("charge_tracker/state", &state);
 
-    api.addCommand("charge_tracker/remove_all_charges", Config::Confirm(), {Config::confirm_key}, [this](String &result){
+    api.addCommand("charge_tracker/remove_all_charges", Config::Confirm(), {Config::confirm_key}, [this](String &errmsg) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
-            result = "Tracked charges will NOT be removed";
+            errmsg = "Tracked charges will NOT be removed";
             return;
         }
 

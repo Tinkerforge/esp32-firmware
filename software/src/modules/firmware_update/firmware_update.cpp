@@ -478,20 +478,20 @@ void FirmwareUpdate::register_urls()
 #endif
     }, true);
 
-    api.addCommand("firmware_update/override_signature", &override_signature, {}, [this](String &result) {
+    api.addCommand("firmware_update/override_signature", &override_signature, {}, [this](String &errmsg) {
 #if signature_sodium_public_key_length != 0
         char json_buf[64] = "";
         TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
         if (signature_override_cookie == 0) {
-            result = "No update pending";
+            errmsg = "No update pending";
             return;
         }
 
         uint32_t cookie = override_signature.get("cookie")->asUint();
 
         if (signature_override_cookie != cookie) {
-            result = "Wrong signature override cookie";
+            errmsg = "Wrong signature override cookie";
             return;
         }
 
@@ -500,14 +500,14 @@ void FirmwareUpdate::register_urls()
         signature_override_cookie = 0;
 
         if (!Update.end(true) || Update.hasError()) {
-            result = "Failed to apply update";
-            logger.printfln("%s: %s", result.c_str(), Update.errorString());
+            errmsg = "Failed to apply update";
+            logger.printfln("%s: %s", errmsg.c_str(), Update.errorString());
             return;
         }
 
         trigger_reboot("firmware update", 1_s);
 #else
-        result = "Signature verification is disabled";
+        errmsg = "Signature verification is disabled";
 #endif
     }, true);
 

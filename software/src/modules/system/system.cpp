@@ -100,9 +100,9 @@ void System::register_urls()
         return req.send(200, "text/html; charset=utf-8", recovery_html_data, recovery_html_length);
     });
 
-    api.addCommand("factory_reset", Config::Confirm(), {Config::confirm_key}, [this](String &result) {
+    api.addCommand("factory_reset", Config::Confirm(), {Config::confirm_key}, [this](String &errmsg) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
-            result = "Factory reset NOT requested";
+            errmsg = "Factory reset NOT requested";
             return;
         }
 
@@ -113,9 +113,9 @@ void System::register_urls()
         }, 3_s);
     }, true);
 
-    api.addCommand("config_reset", Config::Confirm(), {Config::confirm_key}, [this](String &result) {
+    api.addCommand("config_reset", Config::Confirm(), {Config::confirm_key}, [this](String &errmsg) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
-            result = "Config reset NOT requested";
+            errmsg = "Config reset NOT requested";
             return;
         }
 
