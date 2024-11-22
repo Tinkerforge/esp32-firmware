@@ -548,6 +548,7 @@ void Users::register_urls()
         // Validity was already checked, but we have to search the user config anyway.
         if (user == nullptr) {
             result = "Can't modify user. User with this ID not found.";
+            return;
         }
 
         user->get("roles")->updateUint(modify.get("roles")->asUint());
@@ -557,8 +558,10 @@ void Users::register_urls()
         user->get("digest_hash")->updateString(modify.get("digest_hash")->asString());
 
         String err = this->config.validate(ConfigSource::API);
-        if (!err.isEmpty())
+        if (!err.isEmpty()) {
             result = err;
+            return;
+        }
 
         API::writeConfig("users/config", &config);
 
