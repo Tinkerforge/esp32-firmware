@@ -37,6 +37,44 @@ void CMNetworking::setup()
     initialized = true;
 }
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
+static void add_charger_services() {
+    mdns_service_add(NULL, "_tf-warp-cm", "_udp", 34127, NULL, 0);
+    mdns_service_txt_item_set("_tf-warp-cm", "_udp", "version", MACRO_VALUE_TO_STRING(CM_PACKET_MAGIC) "." MACRO_VALUE_TO_STRING(CM_STATE_VERSION));
+
+    task_scheduler.scheduleWithFixedDelay([](){
+#if MODULE_DEVICE_NAME_AVAILABLE()
+        // Keep "display_name" updated because it can be changed at runtime without reboot.
+        mdns_service_txt_item_set("_tf-warp-cm", "_udp", "display_name", device_name.display_name.get("display_name")->asEphemeralCStr());
+#endif
+        // Keep "enabled" updated because it is retrieved from the EVSE.
+        mdns_service_txt_item_set("_tf-warp-cm", "_udp", "enabled", evse_common.get_management_enabled() ? "true" : "false");
+    }, 10_s);
+}
+#endif
+
+#if MODULE_EM_PHASE_SWITCHER_AVAILABLE()
+static void add_wem_services() {
+
+    static auto *cfg = api.getState("em_phase_switcher/charger_config");
+    if (!cfg->get("proxy_mode")->asBool())
+        return;
+
+    mdns_service_add(NULL, "_tf-warp-cm", "_udp", 34127, NULL, 0);
+    // TODO comment
+    mdns_service_txt_item_set("_tf-warp-cm", "_udp", "version", MACRO_VALUE_TO_STRING(CM_PACKET_MAGIC) "." MACRO_VALUE_TO_STRING(CM_STATE_VERSION));
+    mdns_service_txt_item_set("_tf-warp-cm", "_udp", "enabled", "true");
+
+#if MODULE_DEVICE_NAME_AVAILABLE()
+    task_scheduler.scheduleWithFixedDelay([](){
+        // Keep "display_name" updated because it can be changed at runtime without reboot.
+        mdns_service_txt_item_set("_tf-warp-cm", "_udp", "display_name", device_name.display_name.get("display_name")->asEphemeralCStr());
+        mdns_service_txt_item_set("_tf-warp-cm", "_udp", "proxy_of", cfg->get("host")->asEphemeralCStr());
+    }, 10_s);
+#endif
+}
+#endif
+
 void CMNetworking::register_urls()
 {
     api.addCommand("charge_manager/scan", Config::Null(), {}, [this](String &/*errmsg*/) {
@@ -54,23 +92,16 @@ void CMNetworking::register_urls()
 }
 
 void CMNetworking::register_events() {
-// If we don't have the evse or evse_v2 module, but have cm_networking, this is probably an energy manager.
-// We only want to announce manageable chargers, not managers.
-#if MODULE_NETWORK_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
+#if MODULE_NETWORK_AVAILABLE()
     if (!network.config.get("enable_mdns")->asBool())
         return;
 
-    mdns_service_add(NULL, "_tf-warp-cm", "_udp", 34127, NULL, 0);
-    mdns_service_txt_item_set("_tf-warp-cm", "_udp", "version", MACRO_VALUE_TO_STRING(CM_PACKET_MAGIC) "." MACRO_VALUE_TO_STRING(CM_STATE_VERSION));
-    task_scheduler.scheduleWithFixedDelay([](){
-        #if MODULE_DEVICE_NAME_AVAILABLE()
-            // Keep "display_name" updated because it can be changed at runtime without clicking "Save".
-            mdns_service_txt_item_set("_tf-warp-cm", "_udp", "display_name", device_name.display_name.get("display_name")->asEphemeralCStr());
-        #endif
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    add_charger_services();
+#elif MODULE_EM_PHASE_SWITCHER_AVAILABLE()
+    add_wem_services();
+#endif
 
-        // Keep "enabled" updated because it is retrieved from the EVSE.
-        mdns_service_txt_item_set("_tf-warp-cm", "_udp", "enabled", evse_common.get_management_enabled() ? "true" : "false");
-    }, 10_s);
 #endif
 }
 
@@ -184,7 +215,7 @@ void CMNetworking::start_scan()
     });
 }
 
-bool CMNetworking::mdns_result_is_charger(mdns_result_t *entry, const char ** ret_version, const char **ret_enabled, const char **ret_display_name) {
+bool CMNetworking::mdns_result_is_charger(mdns_result_t *entry, const char ** ret_version, const char **ret_enabled, const char **ret_display_name, const char **ret_proxy_of) {
     if (ret_version != nullptr)
         *ret_version = "0";
     if (ret_enabled != nullptr)
@@ -213,6 +244,11 @@ bool CMNetworking::mdns_result_is_charger(mdns_result_t *entry, const char ** re
             if (ret_version != nullptr)
                 *ret_version = entry->txt[i].value;
             ++found;
+        }
+        else if (strcmp(entry->txt[i].key, "proxy_of") == 0 && entry->txt_value_len[i] > 0) {
+            if (ret_proxy_of != nullptr)
+                *ret_proxy_of = entry->txt[i].value;
+            // don't increase found: this is an optional entry.
         }
     }
 
@@ -250,7 +286,8 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
     const char *version;
     const char *enabled;
     const char *display_name;
-    if (!this->mdns_result_is_charger(entry, &version, &enabled, &display_name))
+    const char *proxy_of = nullptr;
+    if (!this->mdns_result_is_charger(entry, &version, &enabled, &display_name, &proxy_of))
         return;
 
     this->resolve_via_mdns(entry);
@@ -288,6 +325,8 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
 
         json.addMemberString("display_name", display_name);
         json.addMemberNumber("error", error);
+        if (proxy_of != nullptr)
+            json.addMemberString("proxy_of", proxy_of);
     json.endObject();
 }
 
