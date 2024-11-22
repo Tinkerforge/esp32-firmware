@@ -408,7 +408,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <FormSeparator heading={__("heating.content.status")} help={__("heating.content.status_help")} />
+                    <FormSeparator heading={__("heating.content.status")} help={__("heating.content.status_help")}/>
                     <FormRow label={__("heating.content.price_based_heating_plan")} label_muted={__("heating.content.price_based_heating_plan_muted")}>
                     <div class="card pl-1 pb-1">
                         <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
@@ -503,7 +503,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         </div>
                     </FormRow>
 
-                    <FormSeparator heading="§14 EnWG"/>
+                    <FormSeparator heading="§14 EnWG" help={__("heating.content.p14_enwg_help")}/>
                     <FormRow label="§14 EnWG">
                         <Switch desc={__("heating.content.p14_enwg_control_activate")}
                                 checked={state.p14enwg_active}

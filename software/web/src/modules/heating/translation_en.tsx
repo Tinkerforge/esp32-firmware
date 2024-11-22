@@ -92,7 +92,12 @@ let x = {
             "but_only_if": "but only if",
             "kwh_per_day": "kWh/day",
             "h_per_day": "h/day",
-            "for_the_most_expensive": "for the most expensive"
+            "for_the_most_expensive": "for the most expensive",
+            "p14_enwg_help": <>
+                <p>From 01.01.2024, §14a EnWG requires the controllability of heat pumps in Germany. Specifically, newly installed heat pumps must have a communication interface to the grid operator such that the grid operator can adjust the power of the device in exceptional cases.</p>
+                <p>The control according to §14a EnWG can be activated here. For this purpose, an input is controlled by the grid operator and in return the heat pump is controlled via the SG Ready output 1 according to the input.</p>
+                <p>Note: The control according to §14a EnWG takes precedence over the heating control configured above.</p>
+            </>
         },
         "script": {
             "save_failed": "Failed to save the heating settings",
