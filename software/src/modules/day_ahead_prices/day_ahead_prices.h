@@ -83,8 +83,8 @@ public:
     DataReturn<int32_t> get_maximum_price_today();
     DataReturn<int32_t> get_maximum_price_tomorrow();
     DataReturn<int32_t> get_current_price();
-    DataReturn<bool*> get_cheap_hours_today(const uint8_t hours);
-    DataReturn<bool*> get_expensive_hours_today(const uint8_t hours);
+    bool get_cheap_hours_today(const uint8_t hours, bool *cheap_hours);
+    bool get_expensive_hours_today(const uint8_t hours, bool *expensive_hours);
     int32_t get_grid_cost_plus_tax_plus_markup();
 
     ConfigRoot config;

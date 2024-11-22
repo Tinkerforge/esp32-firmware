@@ -543,16 +543,14 @@ int32_t DayAheadPrices::get_grid_cost_plus_tax_plus_markup()
 }
 
 // Always returns 15 minute intervals, independend of the resolution
-DataReturn<bool*> DayAheadPrices::get_cheap_hours_today(const uint8_t hours)
+bool DayAheadPrices::get_cheap_hours_today(const uint8_t hours, bool *cheap_hours)
 {
-    static bool cheap_hours[24*4];
-
     auto p = prices.get("prices");
     const uint32_t num_prices = p->count();
 
     // No price data available
     if (num_prices == 0) {
-        return {false, nullptr};
+        return false;
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
@@ -572,7 +570,7 @@ DataReturn<bool*> DayAheadPrices::get_cheap_hours_today(const uint8_t hours)
     }
 
     if (prices_today.size() == 0) {
-        return {false, nullptr};
+        return false;
     }
 
     // Sort prices today in ascending order
@@ -592,20 +590,18 @@ DataReturn<bool*> DayAheadPrices::get_cheap_hours_today(const uint8_t hours)
         }
     }
 
-    return {true, cheap_hours};
+    return true;
 }
 
 // Always returns 15 minute intervals, independend of the resolution
-DataReturn<bool*> DayAheadPrices::get_expensive_hours_today(const uint8_t hours)
+bool DayAheadPrices::get_expensive_hours_today(const uint8_t hours, bool *expensive_hours)
 {
-    static bool expensive_hours[24*4];
-
     auto p = prices.get("prices");
     const uint32_t num_prices = p->count();
 
     // No price data available
     if (num_prices == 0) {
-        return {false, nullptr};
+        return false;
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
@@ -625,7 +621,7 @@ DataReturn<bool*> DayAheadPrices::get_expensive_hours_today(const uint8_t hours)
     }
 
     if (prices_today.size() == 0) {
-        return {false, nullptr};
+        return false;
     }
 
     // Sort prices today in descending order
@@ -645,7 +641,7 @@ DataReturn<bool*> DayAheadPrices::get_expensive_hours_today(const uint8_t hours)
         }
     }
 
-    return {true, expensive_hours};
+    return true;
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
