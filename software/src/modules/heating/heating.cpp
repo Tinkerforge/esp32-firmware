@@ -310,7 +310,7 @@ void Heating::update()
         if (sg_ready_output_1 != new_value) {
             em_v2.set_sg_ready_output(1, new_value);
             last_sg_ready_change = rtc.timestamp_minutes();
-            state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asInt());
+            state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asUint());
         }
     } else {
         state.get("sg_ready_extended_active")->updateBool(false);
@@ -319,7 +319,7 @@ void Heating::update()
         if (sg_ready_output_1 != new_value) {
             em_v2.set_sg_ready_output(1, new_value);
             last_sg_ready_change = rtc.timestamp_minutes();
-            state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asInt());
+            state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asUint());
         }
     }
 
