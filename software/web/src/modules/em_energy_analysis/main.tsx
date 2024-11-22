@@ -40,7 +40,6 @@ import { get_price_from_index } from "../day_ahead_prices/main";
 //#endif
 import uPlot from "uplot";
 import { MeterConfig } from "../meters/types";
-import { get_meter_power_index } from "../meters/main";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { PieChart } from "react-feather";
@@ -93,14 +92,14 @@ interface EnergyManagerDailyData extends CachedData {
     price_max: number[/*timestamp_slot*/]; // ct/kWh
 }
 
-const wb_state_names: {[id: number]: string} = {
-    0: __("em_energy_analysis.content.state_not_connected"),
-    1: __("em_energy_analysis.content.state_waiting_for_charge_release"),
-    2: __("em_energy_analysis.content.state_ready_to_charge"),
-    3: __("em_energy_analysis.content.state_charging"),
-    4: __("em_energy_analysis.content.state_error"),
-    5: __("em_energy_analysis.content.state_charging_single_phase"),
-    6: __("em_energy_analysis.content.state_charging_three_phase"),
+const wb_state_names: {[id: number]: () => string} = {
+    0: () => __("em_energy_analysis.content.state_not_connected"),
+    1: () => __("em_energy_analysis.content.state_waiting_for_charge_release"),
+    2: () => __("em_energy_analysis.content.state_ready_to_charge"),
+    3: () => __("em_energy_analysis.content.state_charging"),
+    4: () => __("em_energy_analysis.content.state_error"),
+    5: () => __("em_energy_analysis.content.state_charging_single_phase"),
+    6: () => __("em_energy_analysis.content.state_charging_three_phase"),
 };
 
 const wb_state_strokes: {[id: number]: string} = {
@@ -123,9 +122,9 @@ const wb_state_fills: {[id: number]: string} = {
     6: 'rgb( 40, 167,  69, 0.66)', // FIXME
 };
 
-const em_phase_names: {[id: number]: string} = {
-    0: __("em_energy_analysis.content.state_single_phase"),
-    1: __("em_energy_analysis.content.state_three_phase"),
+const em_phase_names: {[id: number]: () => string} = {
+    0: () => __("em_energy_analysis.content.state_single_phase"),
+    1: () => __("em_energy_analysis.content.state_three_phase"),
 };
 
 const em_phase_strokes: {[id: number]: string} = {
@@ -138,9 +137,9 @@ const em_phase_fills: {[id: number]: string} = {
     1: 'rgb( 40, 167,  69, 0.66)',
 };
 
-const em_input_names: {[id: number]: string} = {
-    0: __("em_energy_analysis.content.state_input_low"),
-    1: __("em_energy_analysis.content.state_input_high"),
+const em_input_names: {[id: number]: () => string} = {
+    0: () => __("em_energy_analysis.content.state_input_low"),
+    1: () => __("em_energy_analysis.content.state_input_high"),
 };
 
 const em_input_strokes: {[id: number]: string} = {
@@ -193,9 +192,9 @@ const em_sg_ready2_fills_active_open: {[id: number]: string} = {
     1: 'rgb(108, 117, 125, 0.66)',
 };
 
-const em_relay_names: {[id: number]: string} = {
-    0: __("em_energy_analysis.content.state_relay_open"),
-    1: __("em_energy_analysis.content.state_relay_closed"),
+const em_relay_names: {[id: number]: () => string} = {
+    0: () => __("em_energy_analysis.content.state_relay_open"),
+    1: () => __("em_energy_analysis.content.state_relay_closed"),
 };
 
 const em_relay_strokes: {[id: number]: string} = {
@@ -207,6 +206,16 @@ const em_relay_fills: {[id: number]: string} = {
     0: 'rgb(108, 117, 125, 0.66)',
     1: 'rgb( 40, 167,  69, 0.66)',
 };
+
+function resolve_translation(names: {[id: number]: () => string}) {
+    let result: {[id: number]: string} = {};
+
+    for (let key in names) {
+        result[key] = names[key]();
+    }
+
+    return result;
+}
 
 interface EMEnergyAnalysisStatusState {
     force_render: number,
@@ -884,7 +893,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.extras.push(state);
                     uplot_data.stacked.push(true);
                     uplot_data.paths.push(UplotPath.Line);
-                    uplot_data.extra_names.push(wb_state_names);
+                    uplot_data.extra_names.push(resolve_translation(wb_state_names));
                     uplot_data.y_axes.push('y');
                 }
             }
@@ -1011,7 +1020,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 uplot_data.names.push(__("em_energy_analysis.content.state_phase"));
                 uplot_data.values.push(phase);
                 uplot_data.paths.push(UplotPath.Line);
-                uplot_data.value_names.push(em_phase_names);
+                uplot_data.value_names.push(resolve_translation(em_phase_names));
                 uplot_data.value_strokes.push(em_phase_strokes);
                 uplot_data.value_fills.push(em_phase_fills);
                 uplot_data.default_visibilty.push(true);
@@ -1020,7 +1029,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 uplot_data.names.push(__("em_energy_analysis.content.state_input3"));
                 uplot_data.values.push(input3);
                 uplot_data.paths.push(UplotPath.Line);
-                uplot_data.value_names.push(em_input_names);
+                uplot_data.value_names.push(resolve_translation(em_input_names));
                 uplot_data.value_strokes.push(em_input_strokes);
                 uplot_data.value_fills.push(em_input_fills);
                 uplot_data.default_visibilty.push(false);
@@ -1029,7 +1038,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 uplot_data.names.push(__("em_energy_analysis.content.state_input4"));
                 uplot_data.values.push(input4);
                 uplot_data.paths.push(UplotPath.Line);
-                uplot_data.value_names.push(em_input_names);
+                uplot_data.value_names.push(resolve_translation(em_input_names));
                 uplot_data.value_strokes.push(em_input_strokes);
                 uplot_data.value_fills.push(em_input_fills);
                 uplot_data.default_visibilty.push(false);
@@ -1038,7 +1047,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 uplot_data.names.push(__("em_energy_analysis.content.state_relay"));
                 uplot_data.values.push(relay);
                 uplot_data.paths.push(UplotPath.Line);
-                uplot_data.value_names.push(em_relay_names);
+                uplot_data.value_names.push(resolve_translation(em_relay_names));
                 uplot_data.value_strokes.push(em_relay_strokes);
                 uplot_data.value_fills.push(em_relay_fills);
                 uplot_data.default_visibilty.push(false);
@@ -1073,7 +1082,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(translate_unchecked(`em_energy_analysis.content.state_input${k + 1}`));
                     uplot_data.values.push(ios[k]);
                     uplot_data.paths.push(UplotPath.Line);
-                    uplot_data.value_names.push(em_input_names);
+                    uplot_data.value_names.push(resolve_translation(em_input_names));
                     uplot_data.value_strokes.push(em_input_strokes);
                     uplot_data.value_fills.push(em_input_fills);
                     uplot_data.default_visibilty.push(false);
@@ -1140,7 +1149,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(translate_unchecked(`em_energy_analysis.content.state_relay${k + 1}`));
                     uplot_data.values.push(ios[6 + k]);
                     uplot_data.paths.push(UplotPath.Line);
-                    uplot_data.value_names.push(em_relay_names);
+                    uplot_data.value_names.push(resolve_translation(em_relay_names));
                     uplot_data.value_strokes.push(em_relay_strokes);
                     uplot_data.value_fills.push(em_relay_fills);
                     uplot_data.default_visibilty.push(false);
@@ -1173,7 +1182,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     uplot_data.names.push(charger.name);
                     uplot_data.values.push(state);
                     uplot_data.paths.push(UplotPath.Line);
-                    uplot_data.value_names.push(wb_state_names);
+                    uplot_data.value_names.push(resolve_translation(wb_state_names));
                     uplot_data.value_strokes.push(wb_state_strokes);
                     uplot_data.value_fills.push(wb_state_fills);
                     uplot_data.default_visibilty.push(true);
