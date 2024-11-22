@@ -72,7 +72,7 @@ public:
         return tv_now.tv_sec / 60;
     }
 
-    // Also edit quality_strings in rtc.cpp when modifying this!
+    // Also edit get_quality_name() in rtc.cpp when modifying this!
     enum class Quality : uint8_t {
         None = 0, // Never sycned.
         RTC = 1, // Use for any RTC: Will not write RTCs. Will be ignored if the time was set for example via NTP or the API not too long ago.

@@ -30,12 +30,17 @@
 
 static constexpr minutes_t RTC_TO_SYS_INTERVAL = 10_m;
 
-static const char * const quality_strings[] = {
-    "None",
-    "RTC",
-    "Low",
-    "High",
-    "Force"
+static const char *get_quality_name(Rtc::Quality quality)
+{
+    switch (quality) {
+    case Rtc::Quality::None:  return "None";
+    case Rtc::Quality::RTC:   return "RTC";
+    case Rtc::Quality::Low:   return "Low";
+    case Rtc::Quality::High:  return "High";
+    case Rtc::Quality::Force: return "Force";
+    }
+
+    return "<unknown>";
 };
 
 void IRtcBackend::set_time(const timeval &time)
@@ -244,7 +249,7 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
         char buf[23] = {};
         localtime_r(&time.tv_sec, &timeinfo);
         strftime(buf, ARRAY_SIZE(buf), "%F %T", &timeinfo);
-        logger.tracefln(this->trace_buf_index, "Set time to %s at %lu. Quality %s", buf, millis(), quality_strings[(size_t)quality]);
+        logger.tracefln(this->trace_buf_index, "Set time to %s at %lu. Quality %s", buf, millis(), get_quality_name(quality));
 
         settimeofday(&time, NULL);
 
