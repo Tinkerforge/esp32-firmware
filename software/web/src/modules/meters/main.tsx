@@ -609,7 +609,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                 {show_plot ? <><PageHeader title={__("meters.content.meters")}/>
 
                 <FormSeparator heading={__("meters.status.power_history")} first={true} >
-                    <div class="mb-2 col-auto">
+                    <div class="mb-2 ml-auto col-auto">
                         <InputSelect value={this.state.chart_selected} onValue={(v) => {
                             let chart_selected: "history_48"|"history_24"|"history_12"|"history_6"|"history_3"|"live" = v as any;
 
