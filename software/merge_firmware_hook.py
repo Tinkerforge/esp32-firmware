@@ -17,10 +17,6 @@ with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'r', encod
 
 custom_name = env.GetProjectOption('custom_name')
 
-partitions = env.GetProjectOption('board_build.partitions')
-m = re.match('^default_([1-9][0-9]*MB)_coredump.csv$', partitions)
-flash_size = m.group(1)
-
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.elf",
     env.VerboseAction(lambda **kwargs: os.makedirs("build", exist_ok=True), "Ensuring build dir exists")
