@@ -32,6 +32,7 @@ interface InputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElem
     onValue?: (value: number) => void
     unit?: string
     invalidFeedback?: string
+    disabled?: boolean
 }
 
 export function InputNumber(props: InputNumberProps) {
@@ -41,7 +42,6 @@ export function InputNumber(props: InputNumberProps) {
     let value = parseInt(props.value?.toString(), 10);
 
     const invalid = isNaN(value) || (props.min !== undefined && value < parseInt(props.min.toString())) || (props.max !== undefined && value > parseInt(props.max.toString()));
-
 
     let invalidFeedback = undefined;
     if ("invalidFeedback" in props && props.invalidFeedback) {
@@ -63,7 +63,7 @@ export function InputNumber(props: InputNumberProps) {
                 ref={input}
                 id={id}
                 type="number"
-                disabled={props.onValue === undefined}
+                disabled={(props.onValue === undefined) || props.disabled}
                 onInput={props.onValue === undefined ? undefined : (e) => {
                         // Chrome prints a console warning if NaN is assigned as an input's value; null works.
                         let value = parseInt((e.target as HTMLInputElement).value, 10);
@@ -77,6 +77,7 @@ export function InputNumber(props: InputNumberProps) {
             {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}
             {props.onValue ? <>
             <Button variant="primary"
+                    disabled={(props.value == props.min) || props.disabled}
                     className="form-control px-1"
                     style="margin-right: .125rem !important;"
                     onClick={() => {
@@ -92,6 +93,7 @@ export function InputNumber(props: InputNumberProps) {
                 <Minus/>
             </Button>
             <Button variant="primary"
+                    disabled={(props.value == props.max) || props.disabled}
                     className="form-control px-1 rounded-right"
                     onClick={() => {
                         if (util.hasValue(props.value) && !isNaN(props.value)) {
