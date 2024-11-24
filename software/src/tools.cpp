@@ -1118,27 +1118,18 @@ error:
     return nullptr;
 }
 
-time_t get_localtime_today_midnight()
-{
-    // Current local time
-    time_t now = time(nullptr);
-    struct tm tm;
-    localtime_r(&now, &tm);
-
-    // Local time to today midnight
-    tm.tm_hour = 0;
-    tm.tm_min = 0;
-    tm.tm_sec = 0;
-    return mktime(&tm);
-}
-
 time_t get_localtime_today_midnight_in_utc()
 {
-    time_t midnight_local = get_localtime_today_midnight();
+    // Current local time
+    const time_t now = time(nullptr);
+    struct tm *tm    = localtime(&now);
 
-    // Midnight local time to UTC
-    struct tm tm_utc;
-    gmtime_r(&midnight_local, &tm_utc);
+    // Local time to today midnight
+    tm->tm_hour  =  0;
+    tm->tm_min   =  0;
+    tm->tm_sec   =  0;
+    tm->tm_isdst = -1; // isdst = -1 => let mktime figure out if DST is in effect
 
-    return mktime(&tm_utc);
+    // Return today midnight in UTC
+    return mktime(tm);
 }
