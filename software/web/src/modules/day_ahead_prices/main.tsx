@@ -149,7 +149,7 @@ function get_current_price_string() {
 function get_price_timeframe() {
     const dap_config = API.get("day_ahead_prices/config");
 
-    let time = new Date();
+    let time = new Date(util.get_date_now_1m_update_rate());
     let s = ""
     if(dap_config.resolution == 0) {
         time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
@@ -254,7 +254,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
 
             // Add vertical line at current time
             const resolution_divisor = this.state.resolution == 0 ? 15 : 60;
-            const diff = Math.floor(Date.now() / 60000) - this.state.dap_prices.first_date;
+            const diff = Math.floor(util.get_date_now_1m_update_rate() / 60000) - this.state.dap_prices.first_date;
             const index = Math.floor(diff / resolution_divisor);
             data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now"), 'color': [64, 64, 64, 0.2]});
         }

@@ -185,6 +185,13 @@ export function capsLockActive() {
     return caps_active.value;
 }
 
+let date_now: Signal<number> = signal(Date.now());
+window.setInterval(() => date_now.value = Date.now(), 1000*60);
+
+export function get_date_now_1m_update_rate() {
+    return date_now.value;
+}
+
 function checkCapsLock(e: MouseEvent | KeyboardEvent) {
     let active = e.getModifierState("CapsLock");
     if (caps_active.value && e instanceof KeyboardEvent && e.type == "keyup" && e.key == "CapsLock")

@@ -62,7 +62,7 @@ function does_forecast_exist() {
 }
 
 function get_timestamp_today_00_00_in_seconds() {
-    return Math.floor(new Date().setHours(0, 0, 0, 0) / 1000);
+    return Math.floor(new Date(util.get_date_now_1m_update_rate()).setHours(0, 0, 0, 0) / 1000);
 }
 
 function forecast_time_between(first_date: number, index: number, start: number, end: number) {
@@ -71,7 +71,7 @@ function forecast_time_between(first_date: number, index: number, start: number,
 }
 
 function get_kwh_now_to_midnight() {
-    let start         = Math.floor(new Date().setMinutes(0, 0, 0) / 1000);
+    let start         = Math.floor(new Date(util.get_date_now_1m_update_rate()).setMinutes(0, 0, 0) / 1000);
     let end           = get_timestamp_today_00_00_in_seconds() + 60*60*24 - 1;
     let active_planes = get_active_planes();
     let wh            = 0.0;
@@ -418,12 +418,11 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         }
 
         function get_next_update_string() {
-            let next_api_call = state.state.next_api_call;
-            let now = Date.now()/(60*1000); // in minutes
-            if ((state.state.next_api_call == 0) || (get_active_planes().length == 0) || (next_api_call < now)) {
+            let now = util.get_date_now_1m_update_rate()/(60*1000);
+            if ((state.state.next_api_call == 0) || (get_active_planes().length == 0) || (state.state.next_api_call < now)) {
                 return __("util.not_yet_known");
             } else {
-                let diff    = next_api_call - now;
+                let diff    = state.state.next_api_call - now;
                 let hours   = Math.floor(diff / 60);
                 let minutes = Math.floor(diff % 60);
                 let update_string = (hours == 0) ? `${minutes}m`:`${hours}h ${minutes}m`;
@@ -498,7 +497,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                 <FormRow label={__("solar_forecast.content.next_update_in")} help={__("solar_forecast.content.next_update_in_help")}>
                         <InputText value={get_next_update_string()}/>
                     </FormRow>
-                <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date().getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
+                <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date(util.get_date_now_1m_update_rate()).getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
                     <InputText
                         value={util.get_value_with_unit(get_kwh_now_to_midnight(), "kWh", 2)}
                     />
@@ -568,7 +567,7 @@ export class SolarForecastStatus extends Component
             return <StatusSection name="solar_forecast" />
 
         return <StatusSection name="solar_forecast">
-            <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date().getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
+            <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date(util.get_date_now_1m_update_rate()).getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
                 <InputText
                     value={util.get_value_with_unit(get_kwh_now_to_midnight(), "kWh", 2)}
                 />
