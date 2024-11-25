@@ -298,7 +298,7 @@ static void print_app_partitions()
         it = esp_partition_next(it);
     }
 
-    logger.printfln("Partitions: app0 (%s%s%s), app1 (%s%s%s)",
+    logger.printfln("Firmware partitions: app0 (%s%s%s), app1 (%s%s%s)",
                     app0_found ? get_esp_ota_img_state_name(app0_state) : "<unknown>",
                     app0_running ? ", running" : "",
                     app0_boot ? ", boot" : "",
