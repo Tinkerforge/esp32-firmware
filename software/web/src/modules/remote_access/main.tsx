@@ -410,13 +410,18 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
+        let enable = cfg.enable;
         for (const id of this.state.removeUsers) {
             API.call("remote_access/remove_user", {
                 id: id,
-            });
+            }, __("remote_access.script.save_failed"));
         }
+        if (this.state.users.length === 0) {
+            enable = false;
+        }
+        this.setState({removeUsers: []});
         const config: update_config = {
-            enable: cfg.enable,
+            enable: enable,
             relay_host: this.state.relay_host,
             relay_port: this.state.relay_port,
             email: "",

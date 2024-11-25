@@ -424,7 +424,7 @@ void RemoteAccess::register_urls() {
 
             TFJsonSerializer serializer = TFJsonSerializer(delete_buf.get(), json_size + 1);
             serializer.addObject();
-            serializer.addMemberNumber("id", local_uid_num);
+            serializer.addMemberNumber("uuid", local_uid_num);
             serializer.addMemberString("password", config.get("password")->asEphemeralCStr()),
             serializer.endObject();
             size_t size = serializer.end();
@@ -959,7 +959,42 @@ void RemoteAccess::register_urls() {
             remove_key(req_id, i);
         }
 
-        api.writeConfig("remote_access/config", &config);
+        bool one_left = false;
+        for (const auto user : config.get("users")) {
+            if (user.get("id")->asUint() != 255) {
+                one_left = true;
+                break;
+            }
+        }
+
+        if (!one_left) {
+            char json[256];
+            TFJsonSerializer serializer = TFJsonSerializer(json, 256);
+            serializer.addObject();
+                serializer.addMemberString("uuid", config.get("uuid")->asEphemeralCStr());
+                serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
+            serializer.endObject();
+            size_t json_size = serializer.end();
+
+            if (https_client == nullptr) {
+                https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
+            }
+            https_client->set_header("Content-Type", "application/json");
+
+            char url[256];
+            snprintf(url, 256, "https://%s:%u/api/selfdestruct", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint());
+            run_request_with_next_stage(url, HTTP_METHOD_DELETE, json, json_size, config, [this](ConfigRoot cfg) {
+                https_client = nullptr;
+                encrypted_secret = nullptr;
+                secret_nonce = nullptr;
+            });
+
+            remove_key(0, 0);
+
+            config.get("enable")->updateBool(false);
+        }
+
+        API::writeConfig("remote_access/config", &config);
 
         return request.send(200);
     });
@@ -1357,8 +1392,6 @@ void RemoteAccess::resolve_management() {
                 if (error) {
                     char err_str[64];
                     snprintf(err_str, 64, "Error while deserializing management response: %s", error.c_str());
-                    registration_state.get("message")->updateString(err_str);
-                    registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
                     https_client = nullptr;
                     return;
                 }
@@ -1374,15 +1407,13 @@ void RemoteAccess::resolve_management() {
             if (error) {
                 char err_str[64];
                 snprintf(err_str, 64, "Error while deserializing management response: %s", error.c_str());
-                registration_state.get("message")->updateString(err_str);
-                registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
                 https_client = nullptr;
                 return;
             }
             response_body = "";
         }
 
-        for (size_t idx = config.get("users")->count() - 1; idx > 0; idx--) {
+        for (int idx = config.get("users")->count() - 1; idx > 0; idx--) {
             bool changed = false;
             if (doc["configured_users"][idx] == 0) {
                 uint32_t user_id = config.get("users")->get(idx)->get("id")->asUint();
