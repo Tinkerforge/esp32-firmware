@@ -123,17 +123,19 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
             }
 
             const value_ids = API.get_unchecked(`meters/${i}/value_ids`) as Readonly<number[]>;
-            const have_L2 = value_ids.indexOf(MeterValueID.CurrentL2ImExDiff) >= 0;
-            const have_L3 = value_ids.indexOf(MeterValueID.CurrentL3ImExDiff) >= 0;
+            if (value_ids?.length > 0) {
+                const have_L2 = value_ids.indexOf(MeterValueID.CurrentL2ImExDiff) >= 0;
+                const have_L3 = value_ids.indexOf(MeterValueID.CurrentL3ImExDiff) >= 0;
 
-            if (have_L2) {
-                if (have_L3) {
-                    // Have all phases, no comment
+                if (have_L2) {
+                    if (have_L3) {
+                        // Have all phases, no comment
+                    } else {
+                        meter_slots[i][1] += " (" + __("charge_manager.content.dlm_meter_slot_grid_currents_two_phase") + ")";
+                    }
                 } else {
-                    meter_slots[i][1] += " (" + __("charge_manager.content.dlm_meter_slot_grid_currents_two_phase") + ")";
+                    meter_slots[i][1] += " (" + __("charge_manager.content.dlm_meter_slot_grid_currents_single_phase") + ")";
                 }
-            } else {
-                meter_slots[i][1] += " (" + __("charge_manager.content.dlm_meter_slot_grid_currents_single_phase") + ")";
             }
         }
 
