@@ -428,9 +428,13 @@ void PowerManager::setup()
 
     task_scheduler.scheduleOnce([this]() {
         // Can't check for chargers in setup() because CM's setup() hasn't run yet to load the charger configuration.
-        if (charge_manager.get_charger_count() <= 0) {
-            logger.printfln("No chargers configured. Won't try to distribute energy.");
-            set_config_error(PM_CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK);
+        if (api.getState("charge_manager/config")->get("enable_charge_manager")->asBool()) {
+            if (charge_manager.get_charger_count() <= 0) {
+                logger.printfln("No chargers configured. Won't try to distribute energy.");
+                set_config_error(PM_CONFIG_ERROR_FLAGS_NO_CHARGERS_MASK);
+            }
+        } else {
+            logger.printfln("Charge manager not enabled. Won't try to distribute energy.");
         }
     });
 
