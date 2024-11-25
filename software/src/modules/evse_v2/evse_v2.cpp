@@ -296,6 +296,7 @@ void EVSEV2::post_register_urls()
     }, true);
 
 #if BUILD_IS_WARP2()
+    api.addFeature("evse_gp_output");
     api.addState("evse/gp_output", &gp_output);
     api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()));
