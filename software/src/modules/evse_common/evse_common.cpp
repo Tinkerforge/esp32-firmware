@@ -460,7 +460,7 @@ void EvseCommon::register_urls()
         auto current = external_current_update.get("current")->asUint();
         // Only reset the watchdog if this was a "valid" current.
         // We don't want to return an error if this current is invalid to not break home automation UIs.
-        if (current == 0 || current >= 6000 && current <= 32000)
+        if (current == 0 || (current >= 6000 && current <= 32000))
             this->last_external_update = millis();
         backend->set_charging_slot_max_current(CHARGING_SLOT_EXTERNAL, external_current_update.get("current")->asUint());
     }, false);
