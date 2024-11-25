@@ -82,10 +82,6 @@ export interface user_enabled {
     enabled: boolean;
 }
 
-export interface external_enabled {
-    enabled: boolean;
-}
-
 export interface external_defaults {
     current: number,
     clear_on_disconnect: boolean

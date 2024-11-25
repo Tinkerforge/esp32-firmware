@@ -24,7 +24,6 @@ import { h, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { SubPage } from "../../ts/components/sub_page";
-import { EVSE_SLOT_EXTERNAL } from "./api";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { InputSelect } from "../../ts/components/input_select";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -117,7 +116,6 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
     override async sendSave(t: "charge_limits/default_limits", cfg: EVSESettingsState & ChargeLimitsConfig) {
         await API.save('evse/auto_start_charging', {"auto_start_charging": this.state.auto_start_charging.auto_start_charging}, __("evse.script.save_failed"));
-        await API.save('evse/external_enabled', {"enabled": this.state.slots[EVSE_SLOT_EXTERNAL].active}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, __("evse.script.save_failed"));
         await API.save('require_meter/config', {"config": this.state.require_meter_enabled.config}, __("evse.script.save_failed"));
         await API.save('evse/led_configuration', this.state.led_configuration, __("evse.script.save_failed"));
@@ -137,7 +135,6 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
     override async sendReset(t: "charge_limits/default_limits") {
         await API.save('evse/auto_start_charging', {"auto_start_charging": true}, __("evse.script.save_failed"));
-        await API.save('evse/external_enabled', {"enabled": false}, __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": false}, __("evse.script.save_failed"));
         await API.reset('require_meter/config', __("evse.script.save_failed"));
         await API.reset('evse/led_configuration', __("evse.script.save_failed"));
@@ -157,7 +154,6 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         let result = false;
 
         result ||= API.is_modified('evse/auto_start_charging');
-        result ||= API.is_modified('evse/external_enabled');
         result ||= API.is_modified('evse/boost_mode');
         result ||= API.is_modified('require_meter/config');
         result ||= API.is_modified('evse/led_configuration');
@@ -227,16 +223,6 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                         <Switch desc={__("evse.content.auto_start_enable")}
                                 checked={!auto_start_charging.auto_start_charging}
                                 onClick={async () => this.setState({auto_start_charging: {...auto_start_charging, auto_start_charging: !auto_start_charging.auto_start_charging}})}/>
-                    </FormRow>
-
-                    <FormRow label={__("evse.content.external_description")} label_muted={__("evse.content.external_description_muted")}>
-                        <Switch desc={__("evse.content.external_enable")}
-                                checked={slots[EVSE_SLOT_EXTERNAL].active}
-                                onClick={async () => {
-                                    let tmp = slots;
-                                    slots[EVSE_SLOT_EXTERNAL].active = !slots[EVSE_SLOT_EXTERNAL].active;
-                                    this.setState({slots: tmp});
-                                }}/>
                     </FormRow>
 
                     <FormRow label={__("evse.content.enable_led_api")}>

@@ -145,9 +145,7 @@ void EvseCommon::pre_setup()
 
     automation.register_trigger(
         AutomationTriggerID::EVSEExternalCurrentWd,
-        *Config::Null(),
-        nullptr,
-        false
+        *Config::Null()
     );
 
     automation.register_action(
@@ -255,7 +253,20 @@ void EvseCommon::apply_defaults()
     if (this->apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 0, cm_enabled, true))
         backend->set_charging_slot(CHARGING_SLOT_CHARGE_MANAGER, 0, cm_enabled, true);
 
-    // Slot 8 (external) is controlled via API, no need to change anything here
+    // Slot 8 (external) is controlled via API, but we want to enable it in any case.
+    uint16_t external_current;
+    bool external_enabled;
+    bool external_clear_on_disconnect;
+    rc = backend->get_charging_slot(CHARGING_SLOT_EXTERNAL, &external_current, &external_enabled, &external_clear_on_disconnect);
+    if (rc != TF_E_OK) {
+        backend->is_in_bootloader(rc);
+        logger.printfln("Failed to apply defaults (external read failed). rc %d", rc);
+        return;
+    }
+    if (!external_enabled) {
+        this->apply_slot_default(CHARGING_SLOT_EXTERNAL, external_current, true, external_clear_on_disconnect);
+        backend->set_charging_slot(CHARGING_SLOT_EXTERNAL, external_current, true, external_clear_on_disconnect);
+    }
 
     // Disabling all unused charging slots.
     for (int i = CHARGING_SLOT_COUNT; i < CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE; i++) {
@@ -539,6 +550,9 @@ void EvseCommon::register_urls()
             apply_slot_default(CHARGING_SLOT_USER, 32000, false, false);
     }, false);
 
+    // We don't allow to disable the external slot anymore.
+    // However removing the API is a breaking change and calling evse/external_enabled_update with false
+    // should set the slot to 32 A to unblock the charger.
     api.addState("evse/external_enabled", &external_enabled);
     api.addCommand("evse/external_enabled_update", &external_enabled_update, {}, [this](String &/*errmsg*/) {
         bool enabled = external_enabled_update.get("enabled")->asBool();
@@ -546,15 +560,13 @@ void EvseCommon::register_urls()
         if (enabled == external_enabled.get("enabled")->asBool())
             return;
 
-        backend->set_charging_slot(CHARGING_SLOT_EXTERNAL, 32000, enabled, false);
-        apply_slot_default(CHARGING_SLOT_EXTERNAL, 32000, enabled, false);
+        backend->set_charging_slot(CHARGING_SLOT_EXTERNAL, 32000, true, false);
+        apply_slot_default(CHARGING_SLOT_EXTERNAL, 32000, true, false);
     }, false);
 
     api.addState("evse/external_defaults", &external_defaults);
     api.addCommand("evse/external_defaults_update", &external_defaults_update, {}, [this](String &/*errmsg*/) {
-        bool enabled;
-        backend->get_charging_slot_default(CHARGING_SLOT_EXTERNAL, nullptr, &enabled, nullptr);
-        apply_slot_default(CHARGING_SLOT_EXTERNAL, external_defaults_update.get("current")->asUint(), enabled, external_defaults_update.get("clear_on_disconnect")->asBool());
+        apply_slot_default(CHARGING_SLOT_EXTERNAL, external_defaults_update.get("current")->asUint(), true, external_defaults_update.get("clear_on_disconnect")->asBool());
     }, false);
 
     api.addState("evse/modbus_tcp_enabled", &modbus_enabled);
