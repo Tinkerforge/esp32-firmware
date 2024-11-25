@@ -59,7 +59,7 @@ void MqttAutoDiscovery::setup()
 
     prepare_topics();
 
-    task_scheduler.scheduleOnce([this](){
+    task_id = task_scheduler.scheduleOnce([this](){
         this->announce_next_topic(0);
     }, 1_s);
 
@@ -162,6 +162,14 @@ void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_le
     mqtt.publish(tp, String(), true);
 }
 
+void MqttAutoDiscovery::reschedule_announce_next_topic()
+{
+    task_scheduler.cancel(task_id);
+    task_id = task_scheduler.scheduleOnce([this](){
+        this->announce_next_topic(0);
+    }, 1_s);
+}
+
 void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 {
     seconds_t delay = 0_s;
@@ -250,7 +258,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
         }
     }
 
-    task_scheduler.scheduleOnce([this, topic_num](){
+    task_id = task_scheduler.scheduleOnce([this, topic_num](){
         this->announce_next_topic(topic_num);
     }, delay);
 }
