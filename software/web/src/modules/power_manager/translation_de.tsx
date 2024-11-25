@@ -25,13 +25,9 @@ let x = {
             "cm_requirements_warning": null,
 
             "phase_switching_mode": "Phasenumschaltung",
-            "fixed_single_phase": "Fest einphasig angeschlossen",
-            "fixed_three_phases": "Fest dreiphasig angeschlossen",
             "automatic": "Automatisch",
-            "always_single_phase": "Immer einphasig",
-            "always_three_phases": "Immer dreiphasig",
-            "pv1p_fast3p": "PV-Modus einphasig, Schnell-Modus dreiphasig",
             "external_control": "Externe Steuerung (EVCC)",
+            "external_control_unavailable": "Externe Steuerung (EVCC) – keine kontrollierte Wallbox für Phasenumschaltung",
             "external_control_notification": "Externe Steuerung für die Phasenumschaltung ist aktiv. Dadurch werden alle Einstellungen im Zusammenhang mit PV-Überschussladen deaktiviert.",
 
             "header_excess_charging": "Photovoltaik-Überschussladen",

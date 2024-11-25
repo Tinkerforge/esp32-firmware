@@ -263,35 +263,38 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         meter_slots_for_battery.unshift(["255", __("power_manager.content.meter_slot_battery_power_none")]);
 
         let cm_config = API.get_unchecked("charge_manager/config");
+        const em_phase_switcher_charger_config = API.get_unchecked("em_phase_switcher/charger_config");
         let cm_ok = cm_config?.enable_charge_manager && cm_config?.chargers.length >= 1;
-        let cm_requirements_warning = API.get_unchecked("em_phase_switcher/charger_config")?.proxy_mode ? __("power_manager.content.em_proxy_warning") : __("power_manager.content.cm_requirements_warning");
+        const cm_requirements_warning = em_phase_switcher_charger_config?.proxy_mode ? __("power_manager.content.em_proxy_warning") : __("power_manager.content.cm_requirements_warning");
 
         let is_em = API.hasModule("em_common");
 
         // On a charger, the power manager is enabled iff excess charging is enabled.
         let enabled = is_em ? s.enabled : s.excess_charging_enable;
 
-        let can_switch_phases = is_em && API.get_unchecked('energy_manager/config')?.contactor_installed
-            || API.hasFeature("evse") && API.get_unchecked('evse/hardware_configuration')?.evse_version >= 30;
-
         let debug_mode = API.hasModule("debug");
 
-        let phase_switching_modes: [string,string][] = [];
-        if (can_switch_phases) {
-            phase_switching_modes.push(["0", __("power_manager.content.automatic")],
-                                       ["1", __("power_manager.content.always_single_phase")],
-                                       ["2", __("power_manager.content.always_three_phases")],
-                                       ["4", __("power_manager.content.pv1p_fast3p")])
-            if (is_em)
-                phase_switching_modes.push(["3", __("power_manager.content.external_control")]);
-        } else {
-            phase_switching_modes.push(["1", __("power_manager.content.fixed_single_phase")],
-                                       ["2", __("power_manager.content.fixed_three_phases")]);
-        }
-
-        let charge_manager_config = API.get("charge_manager/config");
-        let guaranteed_power_lower_limit_1p = 230 * 1 * charge_manager_config.minimum_current_1p / 1000;
-        let guaranteed_power_lower_limit_3p = 230 * 3 * charge_manager_config.minimum_current    / 1000;
+        const phase_switching_mode = API.hasModule("em_phase_switcher") ? <FormRow label={__("power_manager.content.phase_switching_mode")}>
+                <InputSelect
+                    items={[
+                        ["0", __("power_manager.content.automatic")],
+                        cm_ok && em_phase_switcher_charger_config?.idx < 254 // EM has controlled charger
+                            ? ["3", __("power_manager.content.external_control")]
+                            : ["3-disabled", __("power_manager.content.external_control_unavailable")],
+                    ]}
+                    value={s.phase_switching_mode}
+                    onValue={(v) => {
+                        this.setState({phase_switching_mode: parseInt(v)});
+                        if (v == "3") {
+                            this.setState({
+                                excess_charging_enable: false,
+                                default_mode: 0,
+                            });
+                        }
+                    }}
+                />
+            </FormRow>
+        : null;
 
         let control_behavior_items: [string,string][] = [
             ["-200", __("power_manager.content.target_power_n200")],
@@ -343,26 +346,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                             />
                     </FormRow>
 
-                    <FormRow label={__("power_manager.content.phase_switching_mode")}>
-                        <InputSelect
-                            items={phase_switching_modes}
-                            value={s.phase_switching_mode}
-                            onValue={(v) => {
-                                this.setState({phase_switching_mode: parseInt(v)});
-                                if (v == "2") {
-                                    this.setState({guaranteed_power: Math.max(guaranteed_power_lower_limit_3p, this.state.guaranteed_power)});
-                                } else if (this.state.guaranteed_power == (guaranteed_power_lower_limit_3p)) {
-                                    this.setState({guaranteed_power: Math.max(guaranteed_power_lower_limit_1p, API.get("power_manager/config").guaranteed_power)});
-                                }
-                                if (v == "3") {
-                                    this.setState({
-                                        excess_charging_enable: false,
-                                        default_mode: 0,
-                                    });
-                                }
-                            }}
-                        />
-                    </FormRow>
+                    {phase_switching_mode}
 
                     <Collapse in={s.phase_switching_mode == 3}>
                         <div>
@@ -400,7 +384,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                                     value={s.guaranteed_power}
                                     onValue={this.set('guaranteed_power')}
                                     digits={3}
-                                    min={s.phase_switching_mode == 2 ? guaranteed_power_lower_limit_3p : guaranteed_power_lower_limit_1p}
+                                    min={1380}
                                     max={22000}
                                     showMinMax
                                 />

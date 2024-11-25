@@ -452,28 +452,6 @@ void PowerManager::setup()
         }
     });
 
-    // The default configuration after a factory reset must be good enough for everything to run without crashing.
-    if (!phase_switcher_backend->phase_switching_capable()) {
-        switch (phase_switching_mode) {
-            case PHASE_SWITCHING_ALWAYS_1PHASE:
-            case PHASE_SWITCHING_ALWAYS_3PHASE:
-                break;
-            default: {
-                    const char *err_reason;
-#if MODULE_EM_V1_AVAILABLE()
-                    err_reason = "no contactor installed";
-#elif 0 // FIXME: charger back-end
-                    err_reason = "charger doesn't support it";
-#else
-                    err_reason = "not supported by back-end";
-#endif
-                    logger.printfln("Invalid configuration: Phase switching enabled but %s.", err_reason);
-                    set_config_error(PM_CONFIG_ERROR_FLAGS_PHASE_SWITCHING_MASK);
-                    return;
-                }
-        }
-    }
-
     if (supply_cable_max_current_ma == 0) {
         logger.printfln("No maximum current configured for chargers. Disabling energy distribution.");
         set_config_error(PM_CONFIG_ERROR_FLAGS_NO_MAX_CURRENT_MASK);
@@ -775,7 +753,7 @@ void PowerManager::update_data()
 {
     // TODO remove have_phases and is_3phase
     // Update states from back-end
-    is_3phase = phase_switcher_backend->phase_switching_capable() ? phase_switcher_backend->get_is_3phase() : phase_switching_mode == PHASE_SWITCHING_ALWAYS_3PHASE;
+    is_3phase = phase_switcher_backend->get_is_3phase();
     low_level_state.get("is_3phase")->updateBool(is_3phase);
 
 #if MODULE_METERS_AVAILABLE()

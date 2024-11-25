@@ -25,13 +25,9 @@ let x = {
             "cm_requirements_warning": null,
 
             "phase_switching_mode": "Phase switching",
-            "fixed_single_phase": "Fixed single-phase connection",
-            "fixed_three_phases": "Fixed three-phase connection",
             "automatic": "Automatic",
-            "always_single_phase": "Always single-phase",
-            "always_three_phases": "Always three-phase",
-            "pv1p_fast3p": "PV mode single-phase, Fast mode three-phase",
             "external_control": "External control (EVCC)",
+            "external_control_unavailable": "External control (EVCC) – no managed charger for phase switching",
             "external_control_notification": "External control for phase switching is active. This will disable all settings related to PV excess charging.",
 
             "header_excess_charging": "Photovoltaic Excess Charging",
