@@ -1413,9 +1413,10 @@ void RemoteAccess::resolve_management() {
             response_body = "";
         }
 
-        for (int idx = config.get("users")->count() - 1; idx > 0; idx--) {
+        for (int idx = config.get("users")->count() - 1; idx >= 0; idx--) {
             bool changed = false;
-            if (doc["configured_users"][idx] == 0) {
+            int is_configured = doc["configured_users"][idx];
+            if (is_configured == 0) {
                 uint32_t user_id = config.get("users")->get(idx)->get("id")->asUint();
                 for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
                     remove_key(user_id, i);
