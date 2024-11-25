@@ -14,7 +14,8 @@ let x = {
             "config_error_phase_switching": "Phase switching or contactor not configured",
             "config_error_no_max_current": "No maximum current configured for chargers",
             "config_error_no_chargers": "No chargers configured",
-            "config_error_excess_no_meter": "Excess charging enabled but no meter configured"
+            "config_error_excess_no_meter": "Excess charging enabled but no meter configured or meter does not provide total power",
+            "config_error_dlm_no_meter": "Dynamic load management enabled but no meter configured or meter does not provide directional phase currents"
         },
         "navbar": {
             "pv_excess_settings": "PV Excess Charging"

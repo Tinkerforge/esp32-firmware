@@ -404,6 +404,7 @@ void PowerManager::setup()
     // Check for incomplete configuration after as much as possible has been set up.
 
     bool power_meter_available = false;
+    bool current_meter_available = false;
 #if MODULE_METERS_AVAILABLE()
     float unused_power;
     if (meters.get_power(meter_slot_power, &unused_power) == MeterValueAvailability::Unavailable) {
@@ -420,10 +421,23 @@ void PowerManager::setup()
             have_battery = true;
         }
     }
+
+    float unused_meter_currents[INDEX_CACHE_CURRENT_COUNT];
+    if (meters.get_currents(meter_slot_currents, unused_meter_currents) == MeterValueAvailability::Unavailable) {
+        meter_slot_currents = std::numeric_limits<decltype(meter_slot_currents)>::max();
+    } else {
+        current_meter_available = true;
+    }
+
 #endif
     if (excess_charging_enabled && !power_meter_available) {
         set_config_error(PM_CONFIG_ERROR_FLAGS_EXCESS_NO_METER_MASK);
         logger.printfln("Excess charging enabled but configured meter can't provide power values.");
+    }
+
+    if (dynamic_load_enabled && !current_meter_available) {
+        set_config_error(PM_CONFIG_ERROR_FLAGS_DLM_NO_METER_MASK);
+        logger.printfln("Dynamic load management enabled but configured meter can't provide current values.");
     }
 
     task_scheduler.scheduleOnce([this]() {

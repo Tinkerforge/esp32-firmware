@@ -14,7 +14,8 @@ let x = {
             "config_error_phase_switching": "Phasenumschaltung oder Schütz nicht konfiguriert",
             "config_error_no_max_current": "Maximaler Gesamtstrom der Wallboxen nicht konfiguriert",
             "config_error_no_chargers": "Keine Wallboxen konfiguriert",
-            "config_error_excess_no_meter": "Überschussladen aktiviert aber kein Stromzähler eingerichtet"
+            "config_error_excess_no_meter": "Überschussladen aktiviert aber kein Stromzähler eingerichtet oder Stromzähler liefert keine Gesamtleistung",
+            "config_error_dlm_no_meter": "Dynamisches Lastmanagement aktiviert aber kein Stromzähler eingerichtet oder Stromzähler liefert keine gerichteten Phasenströme"
         },
         "navbar": {
             "pv_excess_settings": "PV-Überschussladen"
