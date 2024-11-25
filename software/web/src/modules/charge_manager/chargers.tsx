@@ -526,6 +526,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                 digits={3}
                 min={state.enable_charge_manager ? 6000 : 0}
                 max={1000000}
+                required={state.enable_charge_manager}
                 />
             </FormRow>
 
