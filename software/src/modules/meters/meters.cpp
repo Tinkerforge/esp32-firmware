@@ -720,10 +720,11 @@ MeterValueAvailability Meters::get_currents(uint32_t slot, float currents[INDEX_
     }
 
     if (currents_available == 0) {
-        if (meter_slot.meter->supports_currents()) {
-            return MeterValueAvailability::CurrentlyUnknown;
-        } else {
+        // If the meter already declared its values but we didn't find any currents, we know they're not supported.
+        if (meter_slot.values_declared || !meter_slot.meter->supports_currents()) {
             return MeterValueAvailability::Unavailable;
+        } else {
+            return MeterValueAvailability::CurrentlyUnknown;
         }
     }
 
