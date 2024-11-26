@@ -41,6 +41,7 @@ bool Config::ConfUnion::changeUnionVariant(uint8_t tag)
         if (slot.prototypes[i].tag == tag) {
             union_buf[idx].tag = tag;
             slot.val = slot.prototypes[i].config;
+            slot.val.set_updated(0xFF);
             return true;
         }
     }

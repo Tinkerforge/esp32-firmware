@@ -457,76 +457,90 @@ struct json_length_visitor {
     bool zero_copy;
 };
 
+struct UpdateResult {
+    String message;
+    bool changed;
+};
+
 struct from_json {
-    String operator()(Config::ConfString &x)
+    UpdateResult operator()(Config::ConfString &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? "" : "Null updates not permitted.";
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
 
         if (!json_node.is<String>())
-            return "JSON node was not a string.";
+            return {"JSON node was not a string.", false};
+
+        bool changed = *x.getVal() != json_node.as<CoolString>();
         *x.getVal() = json_node.as<CoolString>();
-        return "";
+        return {"", changed};
     }
-    String operator()(Config::ConfFloat &x)
+    UpdateResult operator()(Config::ConfFloat &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? "" : "Null updates not permitted.";
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
 
         if (!json_node.is<float>())
-            return "JSON node was not a float.";
+            return {"JSON node was not a float.", false};
 
+        bool changed = x.getVal() != json_node.as<float>();
         x.setVal(json_node.as<float>());
-        return "";
+        return {"", changed};
     }
-    String operator()(Config::ConfInt &x)
+    UpdateResult operator()(Config::ConfInt &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? "" : "Null updates not permitted.";
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
 
         if (!json_node.is<int32_t>())
-            return "JSON node was not a signed integer.";
+            return {"JSON node was not a signed integer.", false};
+
+        bool changed = *x.getVal() != json_node.as<int32_t>();
         *x.getVal() = json_node.as<int32_t>();
-        return "";
+        return {"", changed};
     }
-    String operator()(Config::ConfUint &x)
+    UpdateResult operator()(Config::ConfUint &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? "" : "Null updates not permitted.";
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
 
         if (!json_node.is<uint32_t>())
-            return "JSON node was not an unsigned integer.";
+            return {"JSON node was not an unsigned integer.", false};
+
+        bool changed = *x.getVal() != json_node.as<uint32_t>();
         *x.getVal() = json_node.as<uint32_t>();
-        return "";
+        return {"", changed};
     }
-    String operator()(Config::ConfBool &x)
+    UpdateResult operator()(Config::ConfBool &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? "" : "Null updates not permitted.";
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
 
         if (!json_node.is<bool>())
-            return "JSON node was not a boolean.";
-        x.value = json_node.as<bool>();
-        return "";
-    }
-    String operator()(const Config::ConfVariant::Empty &x)
-    {
-        if (json_node.isNull())
-            return "";
-        if (json_node == "" || json_node == false || json_node == 0)
-            return "";
-        if (json_node.size() == 0 && (json_node.is<JsonArray>() || json_node.is<JsonObject>()))
-            return "";
+            return {"JSON node was not a boolean.", false};
 
-        return "JSON null node was not null or a falsy value. Use null, \"\", false, 0, [] or {}.";
+        bool changed = x.value != json_node.as<bool>();
+        x.value = json_node.as<bool>();
+        return {"", changed};
     }
-    String operator()(Config::ConfArray &x)
+    UpdateResult operator()(const Config::ConfVariant::Empty &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? "" : "Null updates not permitted.";
+            return {"", false};
+        if (json_node == "" || json_node == false || json_node == 0)
+            return {"", false};
+        if (json_node.size() == 0 && (json_node.is<JsonArray>() || json_node.is<JsonObject>()))
+            return {"", false};
+
+        return {"JSON null node was not null or a falsy value. Use null, \"\", false, 0, [] or {}.", false};
+    }
+    UpdateResult operator()(Config::ConfArray &x)
+    {
+        if (json_node.isNull())
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
 
         if (!json_node.is<JsonArray>())
-            return "JSON node was not an array.";
+            return {"JSON node was not an array.", false};
 
         JsonArray arr = json_node.as<JsonArray>();
         auto arr_size = arr.size();
@@ -534,7 +548,10 @@ struct from_json {
         auto *val = x.getVal();
         const auto old_size = val->size();
 
+        bool changed = false;
+
         if (arr_size != old_size) {
+            changed = true;
             if (arr_size < old_size) {
                 // resize() to smaller value truncates vector.
                 val->resize(arr_size);
@@ -555,17 +572,19 @@ struct from_json {
 
         for (size_t i = 0; i < arr_size; ++i) {
             // Must always call getVal() because a nested array might grow and trigger a slot array move that would invalidate any kept reference on the outer array.
-            String inner_error = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, (*x.getVal())[i].value);
-            if (inner_error != "")
-                return String("[") + i + "] " + inner_error;
+            auto res = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, (*x.getVal())[i].value);
+            if (res.message != "")
+                return {String("[") + i + "] " + res.message, false};
+            (*x.getVal())[i].set_updated(res.changed ? 0xFF : 0);
+            changed |= res.changed;
         }
 
-        return "";
+        return {"", changed};
     }
-    String operator()(Config::ConfObject &x)
+    UpdateResult operator()(Config::ConfObject &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? "" : "Null updates not permitted.";
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
 
         const auto size = x.getSlot()->schema->length;
 
@@ -577,21 +596,25 @@ struct from_json {
             // This allows calling for example evse/external_current_update with the payload 8000 instead of {"current": 8000}
             // Only allow this if the omitted key is not the confirm key.
             if (!json_node.is<JsonObject>() && is_root && size == 1 && Config::ConfirmKey() != schema->keys[0].val) {
-                String inner_error = Config::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, x.getSlot()->values[0].value);
-                if (inner_error != "")
-                    return String("(inferred) [\"") + schema->keys[0].val + "\"] " + inner_error + "\n";
-                else
-                    return inner_error;
+                auto res =  Config::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, x.getSlot()->values[0].value);
+                if (res.message != "")
+                    return {String("(inferred) [\"") + schema->keys[0].val + "\"] " + res.message + "\n", false};
+                else {
+                    x.getSlot()->values[0].set_updated(res.changed ? 0xFF : 0);
+                    return res;
+                }
             }
         }
 
         if (!json_node.is<JsonObject>())
-            return "JSON node was not an object.";
+            return {"JSON node was not an object.", false};
 
         const JsonObject obj = json_node.as<JsonObject>();
 
         String return_str = "";
         bool more_errors = false;
+
+        bool changed = false;
 
         for (size_t i = 0; i < size; ++i) {
             // Don't cache x.getSlot(): The recursive visitor can reallocate slot buffers which invalidates the returned pointer!
@@ -608,15 +631,18 @@ struct from_json {
                     more_errors = true;
             }
 
-            String inner_error = Config::apply_visitor(from_json{obj[key], force_same_keys, permit_null_updates, false}, slot->values[i].value);
+            auto res = Config::apply_visitor(from_json{obj[key], force_same_keys, permit_null_updates, false}, slot->values[i].value);
             if (obj.size() > 0)
                 obj.remove(key);
-            if (inner_error != "") {
+            if (res.message != "") {
                 if (return_str.length() < 1000)
-                    return_str += String("[\"") + key + "\"] " + inner_error + "\n";
+                    return_str += String("[\"") + key + "\"] " + res.message + "\n";
                 else
                     more_errors = true;
             }
+            changed |= res.changed;
+            // Don't use slot: Could already be invalidated by Config::apply_visitor!
+            x.getSlot()->values[i].set_updated(res.changed ? 0xFF : 0);
         }
 
         if (force_same_keys) {
@@ -631,46 +657,55 @@ struct from_json {
         if (return_str.length() > 0) {
             if (more_errors)
                 return_str += "More errors occurred that got filtered out.\n";
-            return return_str;
+            return {return_str, false};
         }
 
-        return "";
+        return {"", changed};
     }
 
-    String operator()(Config::ConfUnion &x)
+    UpdateResult operator()(Config::ConfUnion &x)
     {
         if (json_node.isNull())
-            return permit_null_updates ? "" : "Null updates not permitted.";
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
 
         if (!json_node.is<JsonArray>())
-            return "JSON node was not an array.";
+            return {"JSON node was not an array.", false};
 
         JsonArray arr = json_node.as<JsonArray>();
 
         if (arr.size() != 2) {
-            return "JSON array had length != 2.";
+            return {"JSON array had length != 2.", false};
         }
 
         uint8_t old_tag = x.getTag();
         uint8_t new_tag = old_tag;
 
+        bool changed = false;
+
         const auto &arr_first = arr[0];
         if (arr_first.isNull()) {
             if (!permit_null_updates)
-                return "[0] Null updates not permitted";
+                return {"[0] Null updates not permitted", false};
         }
         else if (arr_first.is<uint8_t>()) {
             new_tag = arr_first.as<uint8_t>();
         } else {
-            return "[0] JSON node was not an unsigned integer.";
+            return {"[0] JSON node was not an unsigned integer.", false};
         }
 
         if (new_tag != old_tag) {
+            changed = true;
             if (!x.changeUnionVariant(new_tag))
-                return String("[0] Unknown union tag: ") + new_tag;
+                return {String("[0] Unknown union tag: ") + new_tag, false};
         }
 
-        return Config::apply_visitor(from_json{arr[1], force_same_keys, permit_null_updates, false}, x.getVal()->value);
+        // We can't just return res because we could have changed the tag above.
+        auto res = Config::apply_visitor(from_json{arr[1], force_same_keys, permit_null_updates, false}, x.getVal()->value);
+        if (res.message != "")
+            return res;
+
+        x.getVal()->set_updated(res.changed ? 0xFF : 0);
+        return {res.message, changed || res.changed};
     }
 
     const JsonVariant json_node;
@@ -680,88 +715,100 @@ struct from_json {
 };
 
 struct from_update {
-    String operator()(Config::ConfString &x)
+    UpdateResult operator()(Config::ConfString &x)
     {
         if (Config::containsNull(update))
-            return "";
+            return {"", false};
 
         const auto *update_val = update->get<CoolString>();
         if (update_val == nullptr)
-            return "ConfUpdate node was not a string.";
+            return {"ConfUpdate node was not a string.", false};
+
+        bool changed = *x.getVal() != *update_val;
         *x.getVal() = *update_val;
-        return "";
+        return {"", changed};
     }
-    String operator()(Config::ConfFloat &x)
+    UpdateResult operator()(Config::ConfFloat &x)
     {
         if (Config::containsNull(update))
-            return "";
+            return {"", false};
 
         const auto *update_val = update->get<float>();
         if (update_val == nullptr)
-            return "ConfUpdate node was not a float.";
+            return {"ConfUpdate node was not a float.", false};
 
+        bool changed = x.getVal() != *update_val;
         x.setVal(*update_val);
-        return "";
+        return {"", changed};
     }
-    String operator()(Config::ConfInt &x)
+    UpdateResult operator()(Config::ConfInt &x)
     {
         if (Config::containsNull(update))
-            return "";
+            return {"", false};
 
         const auto *update_val = update->get<int32_t>();
         if (update_val == nullptr)
-            return "ConfUpdate node was not a signed integer.";
+            return {"ConfUpdate node was not a signed integer.", false};
+
+        bool changed = *x.getVal() != *update_val;
         *x.getVal() = *update_val;
-        return "";
+        return {"", changed};
     }
-    String operator()(Config::ConfUint &x)
+    UpdateResult operator()(Config::ConfUint &x)
     {
         if (Config::containsNull(update))
-            return "";
+            return {"", false};
 
         uint32_t new_val = 0;
         const auto *update_val_uint = update->get<uint32_t>();
         if (update_val_uint == nullptr) {
             const auto *update_val_int = update->get<int32_t>();
             if (update_val_int == nullptr || *update_val_int < 0)
-                return "ConfUpdate node was not an unsigned integer.";
+                return {"ConfUpdate node was not an unsigned integer.", false};
 
             new_val = (uint32_t)*update_val_int;
         } else {
             new_val = *update_val_uint;
         }
+
+        bool changed = *x.getVal() != new_val;
         *x.getVal() = new_val;
-        return "";
+        return {"", changed};
     }
-    String operator()(Config::ConfBool &x)
+    UpdateResult operator()(Config::ConfBool &x)
     {
         if (Config::containsNull(update))
-            return "";
+            return {"", false};
 
         const auto *update_val = update->get<bool>();
         if (update_val == nullptr)
-            return "ConfUpdate node was not a boolean.";
+            return {"ConfUpdate node was not a boolean.", false};
+
+        bool changed = x.value != *update_val;
         x.value = *update_val;
-        return "";
+        return {"", changed};
     }
-    String operator()(const Config::ConfVariant::Empty &x)
+    UpdateResult operator()(const Config::ConfVariant::Empty &x)
     {
-        return Config::containsNull(update) ? "" : "JSON null node was not null";
+        return {Config::containsNull(update) ? "" : "JSON null node was not null", false};
     }
-    String operator()(Config::ConfArray &x)
+    UpdateResult operator()(Config::ConfArray &x)
     {
         if (Config::containsNull(update))
-            return "";
+            return {"", false};
 
         const Config::ConfUpdateArray *arr = update->get<Config::ConfUpdateArray>();
         if (arr == nullptr)
-            return "ConfUpdate node was not an array.";
+            return {"ConfUpdate node was not an array.", false};
 
         const auto arr_size = arr->elements.size();
         auto *val = x.getVal();
         const auto old_size = val->size();
 
+        bool changed = false;
+
         if (arr_size != old_size) {
+            changed = true;
             if (arr_size < old_size) {
                 // resize() to smaller value truncates vector.
                 val->resize(arr_size);
@@ -782,29 +829,35 @@ struct from_update {
 
         for (size_t i = 0; i < arr_size; ++i) {
             // Must always call getVal() because a nested array might grow and trigger a slot array move that would invalidate any kept reference on the outer array.
-            String inner_error = Config::apply_visitor(from_update{&arr->elements[i]}, (*x.getVal())[i].value);
-            if (inner_error != "")
-                return String("[") + i + "] " + inner_error;
+            auto res = Config::apply_visitor(from_update{&arr->elements[i]}, (*x.getVal())[i].value);
+            if (res.message != "")
+                return {String("[") + i + "] " + res.message, false};
+
+            (*x.getVal())[i].set_updated(res.changed ? 0xFF : 0);
+            changed |= res.changed;
         }
 
-        return "";
+        return {"", changed};
     }
-    String operator()(Config::ConfObject &x)
+    UpdateResult operator()(Config::ConfObject &x)
     {
         if (Config::containsNull(update))
-            return "";
+            return {"", false};
 
         const Config::ConfUpdateObject *obj = update->get<Config::ConfUpdateObject>();
         if (obj == nullptr) {
-            return StringSumHelper("ConfUpdate node was variant ") + update->which() + ", not an object.";
+            return {StringSumHelper("ConfUpdate node was variant ") + update->which() + ", not an object.", false};
         }
 
         const auto size = x.getSlot()->schema->length;
 
         const auto &obj_elements = obj->elements;
         const auto obj_size = obj_elements.size();
+
+        bool changed = false;
+
         if (obj_size != size)
-            return String("ConfUpdate object had ") + obj_size + " entries instead of the expected " + size;
+            return {String("ConfUpdate object had ") + obj_size + " entries instead of the expected " + size, false};
 
         for (size_t i = 0; i < size; ++i) {
             size_t obj_idx = 0xFFFFFFFF;
@@ -818,30 +871,41 @@ struct from_update {
                 break;
             }
             if (obj_idx == 0xFFFFFFFF)
-                return String("Key ") + key + String("not found in ConfUpdate object");
+                return {String("Key ") + key + String("not found in ConfUpdate object"), false};
 
-            String inner_error = Config::apply_visitor(from_update{&obj_elements[obj_idx].second}, value.value);
-            if (inner_error != "")
-                return String("[\"") + key + "\"] " + inner_error;
+            auto res = Config::apply_visitor(from_update{&obj_elements[obj_idx].second}, value.value);
+            if (res.message != "")
+                return {String("[\"") + key + "\"] " + res.message, false};
+
+            changed |= res.changed;
+            x.getSlot()->values[i].set_updated(res.changed ? 0xFF : 0);
         }
 
-        return "";
+        return {"", changed};
     }
-    String operator()(Config::ConfUnion &x)
+    UpdateResult operator()(Config::ConfUnion &x)
     {
         if (Config::containsNull(update))
-            return "";
+            return {"", false};
 
         const Config::ConfUpdateUnion *un = update->get<Config::ConfUpdateUnion>();
         if (un == nullptr) {
-            return StringSumHelper("ConfUpdate node was variant ") + update->which() + ", not a union.";
+            return {StringSumHelper("ConfUpdate node was variant ") + update->which() + ", not a union.", false};
         }
 
+        bool changed = false;
+
         if (un->tag != as_const(x).getSlot()->tag) {
+            changed = true;
             x.changeUnionVariant(un->tag);
         }
 
-        return Config::apply_visitor(from_update{&un->value}, x.getVal()->value);
+        // We can't just return res because we could have changed the tag above.
+        auto res = Config::apply_visitor(from_update{&un->value}, x.getVal()->value);
+        if (res.message != "")
+            return {res.message, false};
+
+        return {res.message, changed || res.changed};
     }
 
     const Config::ConfUpdate *update;
