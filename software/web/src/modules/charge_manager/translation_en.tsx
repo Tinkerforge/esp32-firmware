@@ -91,9 +91,9 @@ let x = {
 
             "mode_disabled": "Disabled",
             "mode_manager": "Charge manager / PV excess charging",
-            "mode_manager_em_with_ps": "Charge manager / PV excess charging / Phase switching",
+            "mode_manager_em_with_ps": "Charge manager / PV excess charging / Phase switching / Externally controlled by EVCC",
             "mode_managed": "Externally controlled",
-            "mode_managed_em_with_ps": "Externally controlled / Phase switching only",
+            "mode_managed_em_with_ps": "Externally controlled by WARP Charger or Energy Manager / Phase switching only",
 
             "managed_boxes": "Managed chargers",
 
