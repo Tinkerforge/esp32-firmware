@@ -23,6 +23,8 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
+#include "tools/memory.h"
+
 void Event::pre_setup()
 {
     backendIdx = api.registerBackend(this);
@@ -46,22 +48,33 @@ int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> val
         }
 
         Config *config = api.states[i].config;
+        Config *ptr = config;
+
+        // TODO vlaues.size == 0
+        auto conf_path = heap_alloc_array<ConfPath>(values.size());
+        size_t conf_path_written = 0;
 
         for (auto value : values) {
             const char **obj_variant = strict_variant::get<const char *>(&value);
             bool is_obj = obj_variant != nullptr;
-            if (is_obj)
-                config = (Config *)config->get(*obj_variant);
+            if (is_obj) {
+                if (!string_is_in_rodata(*obj_variant))
+                    esp_system_abort("event path key not in flash! Please pass a string literal!");
+                ptr = (Config *)ptr->get(*obj_variant);
+            }
             else
-                config = (Config *)config->get(*strict_variant::get<size_t>(&value));
+                ptr = (Config *)ptr->get(*strict_variant::get<size_t>(&value));
 
-            if (config == nullptr) {
+            if (ptr == nullptr) {
                 if (is_obj)
                     logger.printfln("Value %s in state %s not found", *obj_variant, path.c_str());
                 else
                     logger.printfln("Index %u in state %s not found", *strict_variant::get<size_t>(&value), path.c_str());
                 return -1;
             }
+
+            conf_path[conf_path_written] = value;
+            ++conf_path_written;
         }
 
         int64_t eventID = ++lastEventID;
@@ -72,8 +85,8 @@ int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> val
         // pushStateUpdate will call the callback soon.
         // If not, trigger the callback to make sure
         // it is always called at least once.
-        if (!config->was_updated(1 << backendIdx)) {
-            if (callback(config) == EventResult::Deregister) {
+        if (!ptr->was_updated(1 << backendIdx)) {
+            if (callback(ptr) == EventResult::Deregister) {
                 store_callback = false;
             }
         }
@@ -81,7 +94,7 @@ int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> val
         // Store callback after possibly calling it,
         // because the function object is forwarded to the vector and cannot be used locally afterwards.
         if (store_callback) {
-            state_updates.push_back({eventID, i, config, std::move(callback)});
+            state_updates.push_back({eventID, i, std::move(callback), std::move(conf_path), conf_path_written});
         }
 
         return eventID;
@@ -129,8 +142,27 @@ bool Event::pushStateUpdate(size_t stateIdx, const String &payload, const String
         EventResult result = EventResult::OK;
 
         const auto &reg = state_updates[i];
-        if (reg.stateIdx == stateIdx && reg.config->was_updated(1 << backendIdx)) {
-            result = reg.callback(reg.config);
+
+        if (reg.stateIdx == stateIdx) {
+            Config *config = api.states[stateIdx].config;
+
+            for (size_t conf_path_idx = 0; conf_path_idx < reg.conf_path_len; ++conf_path_idx) {
+                auto *value = &reg.conf_path[conf_path_idx];
+                const char **obj_variant = strict_variant::get<const char *>(value);
+                bool is_obj = obj_variant != nullptr;
+                if (is_obj)
+                    config = (Config *)config->get(*obj_variant);
+                else
+                    config = (Config *)config->get(*strict_variant::get<size_t>(value));
+
+                if (config == nullptr) {
+                    return true;
+                }
+            }
+
+            if (config->was_updated(1 << backendIdx)) {
+                result = reg.callback(config);
+            }
         }
 
         if (result == EventResult::OK)

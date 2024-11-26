@@ -30,11 +30,17 @@ enum class EventResult {
     Deregister
 };
 
+typedef strict_variant::variant<
+    const char *,
+    size_t
+> ConfPath;
+
 struct StateUpdateRegistration {
     int64_t eventID;
     size_t stateIdx;
-    Config *config;
     std::function<EventResult(const Config *)> callback;
+    std::unique_ptr<ConfPath[]> conf_path;
+    size_t conf_path_len;
 };
 
 class Event final : public IModule, public IAPIBackend
@@ -44,10 +50,6 @@ public:
     void pre_setup() override;
     void setup() override;
 
-    typedef strict_variant::variant<
-        const char *,
-        size_t
-    > ConfPath;
 
     int64_t registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(const Config *)> &&callback);
     void deregisterEvent(int64_t eventID);
