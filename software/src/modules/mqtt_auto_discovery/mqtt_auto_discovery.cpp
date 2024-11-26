@@ -164,6 +164,9 @@ void MqttAutoDiscovery::check_discovery_topic(const char *topic, size_t topic_le
 
 void MqttAutoDiscovery::reschedule_announce_next_topic()
 {
+    if (config_in_use.get("auto_discovery_mode")->asEnum<MqttAutoDiscoveryMode>() == MqttAutoDiscoveryMode::DISCOVERY_DISABLED)
+        return;
+
     task_scheduler.cancel(task_id);
     task_id = task_scheduler.scheduleOnce([this](){
         this->announce_next_topic(0);
