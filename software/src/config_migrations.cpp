@@ -778,6 +778,35 @@ static const ConfigMigration migrations[] = {
         }
     },
 #endif
+
+#if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3() || BUILD_IS_ENERGY_MANAGER()
+    {
+        #if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
+        2, 6, 2,
+        #elif BUILD_IS_ENERGY_MANAGER()
+        2, 2, 1,
+        #else // EMv2? SEB?
+        0, 0, 0,
+        #endif
+        // Changes
+        // - PM phase switching modes 1phase, 3phase and PV1+Fast3 have been removed, change to automatic
+        [](){
+            // - PM phase switching modes 1phase, 3phase and PV1+Fast3 have been removed, change to automatic
+            {
+                StaticJsonDocument<512> pm_cfg;
+
+                if (read_config_file("power_manager/config", pm_cfg)) {
+                    uint32_t phase_switching_mode = pm_cfg["phase_switching_mode"].as<uint32_t>();
+
+                    if (phase_switching_mode != 0 && phase_switching_mode != 3) { // Not automatic or external (EVCC)
+                        pm_cfg["phase_switching_mode"] = 0; // Set to automatic
+                        write_config_file("power_manager/config", pm_cfg);
+                    }
+                }
+            }
+        }
+    },
+#endif
 };
 
 bool prepare_migrations()
