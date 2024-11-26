@@ -31,6 +31,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
 
     ConfigRoot config;
     ConfigRoot config_in_use;

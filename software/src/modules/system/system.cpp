@@ -78,17 +78,7 @@ void System::pre_setup()
     i18n_config = ConfigRoot{Config::Object({
         {"language", Config::Enum(Language::German, Language::German, Language::English)},
         {"detect_browser_language", Config::Bool(true)}
-    })
-#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
-    , [this](Config &update, ConfigSource source) -> String {
-        if (update.get("language")->asEnum<Language>() != i18n_config.get("language")->asEnum<Language>()) {
-            mqtt_auto_discovery.reschedule_announce_next_topic();
-        }
-
-        return "";
-    }
-#endif
-    };
+    })};
 }
 
 void System::setup()

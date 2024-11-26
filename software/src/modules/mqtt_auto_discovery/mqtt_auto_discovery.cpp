@@ -82,6 +82,16 @@ void MqttAutoDiscovery::register_urls()
     api.addPersistentConfig("mqtt/auto_discovery_config", &config);
 }
 
+void MqttAutoDiscovery::register_events()
+{
+#if MODULE_SYSTEM_AVAILABLE()
+    event.registerEvent("system/i18n_config", {"language"}, [this](const Config */*language*/) {
+        reschedule_announce_next_topic();
+        return EventResult::OK;
+    });
+#endif
+}
+
 void MqttAutoDiscovery::prepare_topics()
 {
     const String &auto_discovery_prefix = config_in_use.get("auto_discovery_prefix")->asString();
