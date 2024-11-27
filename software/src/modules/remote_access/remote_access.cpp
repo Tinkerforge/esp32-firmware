@@ -629,14 +629,14 @@ void RemoteAccess::register_urls() {
 
 void RemoteAccess::register_events() {
     event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
+        task_scheduler.cancel(this->task_id);
+
         if (connected->asBool()) {
             this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
                 if (!this->management_request_done) {
                     this->resolve_management();
                 }
             }, 0_s, 30_s);
-        } else {
-            task_scheduler.cancel(this->task_id);
         }
         return EventResult::OK;
     });
