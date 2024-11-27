@@ -479,7 +479,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         }
 
         return <>
-            <Modal centered show={this.state.status_modal_string != ""}>
+            <Modal centered className="modal-1" backdropClassName="modal-backdrop-1" show={this.state.status_modal_string != ""}>
                 <Modal.Header {...{closeButton: false} as any}>
                     <Modal.Title>
                         {__("remote_access.content.status_modal_header")}
