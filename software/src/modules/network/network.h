@@ -33,10 +33,13 @@ public:
 
     ConfigRoot config;
     ConfigRoot state;
-    bool connected = false;
+
+    inline bool is_connected() { return connected; }
 
 private:
     void update_connected();
+
+    bool connected = false;
 
     bool ethernet_connected = false;
     bool wifi_sta_connected = false;

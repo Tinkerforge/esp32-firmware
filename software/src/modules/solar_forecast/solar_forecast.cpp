@@ -306,7 +306,7 @@ void SolarForecast::update()
         return;
     }
 
-    if (!network.connected) {
+    if (!network.is_connected()) {
         retry_update(1_s);
         return;
     }

@@ -154,7 +154,7 @@ void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials
     client = tf_websocket_client_init(&websocket_cfg);
     tf_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
 
-    if (network.connected) {
+    if (network.is_connected()) {
         tf_websocket_client_start(client);
         client_running = true;
     }
@@ -188,7 +188,7 @@ void platform_reconnect(void *ctx)
         next_auth_header = (next_auth_header + 1) % auth_headers_count;
     }
 
-    if (network.connected) {
+    if (network.is_connected()) {
         tf_websocket_client_start(client);
         client_running = true;
     }
