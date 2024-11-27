@@ -543,6 +543,9 @@ int WebServerRequest::sendChunk(const char *chunk, ssize_t chunk_len)
             break;
     }
 
+    if (chunk_len == 0)
+        logger.printfln("BUG: sendChunk was called with chunk_len == 0! Use endChunkedResponse!");
+
     auto result = httpd_resp_send_chunk(req, chunk, chunk_len);
     if (result != ESP_OK) {
         chunkedResponseState = ChunkedResponseState::Failed;
