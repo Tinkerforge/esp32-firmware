@@ -592,19 +592,6 @@ void RemoteAccess::register_urls() {
         return;
     }
 
-    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
-        if (connected->asBool()) {
-            this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
-                if (!this->management_request_done) {
-                    this->resolve_management();
-                }
-            }, 0_s, 30_s);
-        } else {
-            task_scheduler.cancel(this->task_id);
-        }
-        return EventResult::OK;
-    });
-
     task_scheduler.scheduleWithFixedDelay([this]() {
         for (size_t i = 0; i < MAX_KEYS_PER_USER; i++) {
             uint32_t state = 1;
@@ -638,6 +625,21 @@ void RemoteAccess::register_urls() {
             }
         }
     }, 1_s, 1_s);
+}
+
+void RemoteAccess::register_events() {
+    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
+        if (connected->asBool()) {
+            this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+                if (!this->management_request_done) {
+                    this->resolve_management();
+                }
+            }, 0_s, 30_s);
+        } else {
+            task_scheduler.cancel(this->task_id);
+        }
+        return EventResult::OK;
+    });
 }
 
 void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, ConfigRoot config, std::function<void(ConfigRoot config)> next_stage) {
