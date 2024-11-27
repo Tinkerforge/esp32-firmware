@@ -49,7 +49,7 @@ private:
 
     CoolString device_info;
 
-    uint64_t task_id;
+    uint64_t task_id = 0;
     void announce_next_topic(uint32_t next_topic);
 
     void prepare_topics();

@@ -63,7 +63,7 @@ private:
     uint32_t json_buffer_position;
     bool current_price_available = false;
     AsyncHTTPSClient https_client;
-    uint64_t task_id;
+    uint64_t task_id = 0;
 
     DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
 

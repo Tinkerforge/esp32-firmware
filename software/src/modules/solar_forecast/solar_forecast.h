@@ -62,7 +62,7 @@ public:
     ConfigRoot config;
     ConfigRoot state;
 
-    uint64_t task_id;
+    uint64_t task_id = 0;
 
 private:
     class SolarForecastPlane {
