@@ -110,8 +110,9 @@ void EventLog::register_urls()
         return request.endChunkedResponse();
     });
 
-#if defined(BOARD_HAS_PSRAM)
+
     server.on_HTTPThread("/trace_log", HTTP_GET, [this](WebServerRequest request) {
+#if defined(BOARD_HAS_PSRAM)
         request.beginChunkedResponse(200);
 
         for (size_t i = 0; i < trace_buffers_in_use; ++i) {
@@ -136,8 +137,11 @@ void EventLog::register_urls()
         }
 
         return request.endChunkedResponse();
-    });
+#else
+        return request.send(200);
 #endif
+    });
+
 
     api.addState("event_log/boot_id", &boot_id);
 }
