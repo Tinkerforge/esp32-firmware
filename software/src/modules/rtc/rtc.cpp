@@ -246,9 +246,12 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
         }
 
         struct tm timeinfo = {};
-        char buf[23] = {};
         localtime_r(&time.tv_sec, &timeinfo);
-        strftime(buf, ARRAY_SIZE(buf), "%F %T", &timeinfo);
+
+        char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1] = {};
+        size_t written = strftime(buf, ARRAY_SIZE(buf), "%F %T", &timeinfo);
+        snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", time.tv_usec / 1000);
+
         logger.tracefln(this->trace_buf_index, "Set time to %s at %lu. Quality %s", buf, millis(), get_quality_name(quality));
 
         settimeofday(&time, NULL);
