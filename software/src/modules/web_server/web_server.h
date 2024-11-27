@@ -90,6 +90,13 @@ public:
 
 private:
     httpd_req_t *req;
+    enum class ChunkedResponseState {
+        NotStarted,
+        Started,
+        Failed,
+        Ended
+    };
+    ChunkedResponseState chunkedResponseState = ChunkedResponseState::NotStarted;
 };
 
 using wshCallback = std::function<WebServerRequestReturnProtect(WebServerRequest request)>;

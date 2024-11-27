@@ -500,23 +500,52 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
 
 void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_type)
 {
+    if (chunkedResponseState != ChunkedResponseState::NotStarted) {
+        // TODO: change this to esp_system_abort when 2.6.2 is released
+        logger.printfln("BUG: Multiple calls to beginChunkedResponse detected!");
+        chunkedResponseState = ChunkedResponseState::Failed;
+        return;
+    }
+
     auto result = httpd_resp_set_type(req, content_type);
     if (result != ESP_OK) {
+        chunkedResponseState = ChunkedResponseState::Failed;
         printf("Failed to set response type: %s (0x%X)\n", esp_err_to_name(result), result);
         return;
     }
 
     result = httpd_resp_set_status(req, httpStatusCodeToString(code));
     if (result != ESP_OK) {
+        chunkedResponseState = ChunkedResponseState::Failed;
         printf("Failed to set response status: %s (0x%X)\n", esp_err_to_name(result), result);
         return;
     }
+
+    chunkedResponseState = ChunkedResponseState::Started;
 }
 
 int WebServerRequest::sendChunk(const char *chunk, ssize_t chunk_len)
 {
+    switch (chunkedResponseState) {
+        case ChunkedResponseState::Failed:
+            return ESP_FAIL;
+        case ChunkedResponseState::NotStarted:
+            chunkedResponseState = ChunkedResponseState::Failed;
+            // TODO: change this to esp_system_abort when 2.6.2 is released
+            logger.printfln("BUG: sendChunk was called before beginChunkedResponse!");
+            return ESP_FAIL;
+        case ChunkedResponseState::Ended:
+            chunkedResponseState = ChunkedResponseState::Failed;
+            // TODO: change this to esp_system_abort when 2.6.2 is released
+            logger.printfln("BUG: sendChunk was called after endChunkedResponse");
+            return ESP_FAIL;
+        case ChunkedResponseState::Started:
+            break;
+    }
+
     auto result = httpd_resp_send_chunk(req, chunk, chunk_len);
     if (result != ESP_OK) {
+        chunkedResponseState = ChunkedResponseState::Failed;
         printf("Failed to send response chunk: %s (0x%X)\n", esp_err_to_name(result), result);
     }
     return result;
@@ -524,10 +553,29 @@ int WebServerRequest::sendChunk(const char *chunk, ssize_t chunk_len)
 
 WebServerRequestReturnProtect WebServerRequest::endChunkedResponse()
 {
+    switch (chunkedResponseState) {
+        case ChunkedResponseState::Failed:
+            return WebServerRequestReturnProtect{};
+        case ChunkedResponseState::NotStarted:
+            chunkedResponseState = ChunkedResponseState::Failed;
+            // TODO: change this to esp_system_abort when 2.6.2 is released
+            logger.printfln("BUG: endChunkedResponse was called before beginChunkedResponse!");
+            return this->send(500);
+        case ChunkedResponseState::Ended:
+            // TODO: change this to esp_system_abort when 2.6.2 is released
+            logger.printfln("BUG: endChunkedResponse was called twice!");
+            return WebServerRequestReturnProtect{};
+        case ChunkedResponseState::Started:
+            break;
+    }
+
     auto result = httpd_resp_send_chunk(req, nullptr, 0);
     if (result != ESP_OK) {
+        chunkedResponseState = ChunkedResponseState::Failed;
         printf("Failed to end chunked response: %s (0x%X)\n", esp_err_to_name(result), result);
     }
+
+    chunkedResponseState = ChunkedResponseState::Ended;
     return WebServerRequestReturnProtect{};
 }
 
