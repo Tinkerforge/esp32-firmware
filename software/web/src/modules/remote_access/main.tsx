@@ -145,7 +145,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 no_text: () => __("main.abort"),
                 yes_text: () => __("main.reboot"),
                 no_variant: "secondary",
-                yes_variant: "danger"
+                yes_variant: "danger",
+                nestingDepth: 1,
             }))
             return;
 
