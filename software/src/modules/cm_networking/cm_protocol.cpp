@@ -409,7 +409,9 @@ bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *com
             return true;
         }
 
-        logger.printfln("Failed to send command: %s (%d)", strerror(errno), errno);
+        if (errno == EHOSTUNREACH && network.is_connected())
+            logger.printfln("Failed to send command: %s (%d)", strerror(errno), errno);
+
         return true;
     }
     if (err != CM_COMMAND_PACKET_LENGTH) {
