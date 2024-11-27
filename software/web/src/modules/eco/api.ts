@@ -1,6 +1,13 @@
+interface ChargerState {
+    start: number,
+    amount: number
+}
+
 export interface config {
     charge_plan_active: boolean;
     mode_after_charge_plan: number;
+    service_life_active: boolean;
+    service_life: number;
     charge_below_active: boolean;
     charge_below: number;
     block_above_active: boolean;
@@ -11,9 +18,10 @@ export interface charge_plan {
     enabled: boolean;
     day: number;
     time: number;
-    hours: number;
+    amount: number;
 }
 
 export interface state {
     last_charge_plan_save: number;
+    chargers: ChargerState[],
 }

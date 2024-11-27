@@ -25,6 +25,8 @@
 #include "module_dependencies.h"
 #include "build.h"
 
+// TODO get MAX_CONTROLLED_CHARGERS from charge manager
+#define MAX_CONTROLLED_CHARGERS 65
 
 void Eco::pre_setup()
 {
@@ -33,6 +35,8 @@ void Eco::pre_setup()
     config = ConfigRoot{Config::Object({
         {"charge_plan_active", Config::Bool(false)},
         {"mode_after_charge_plan", Config::Uint(3, 0, 3)},
+        {"service_life_active", Config::Bool(false)},
+        {"service_life", Config::Uint(8)},
         {"charge_below_active", Config::Bool(false)},
         {"charge_below", Config::Int32(0)}, // in ct
         {"block_above_active", Config::Bool(false)},
@@ -48,12 +52,22 @@ void Eco::pre_setup()
         {"enabled",Config::Bool(false)},
         {"day", Config::Uint(0, 0, 2)},
         {"time", Config::Int(8*60)}, // localtime in minutes since 00:00
-        {"hours", Config::Uint(4, 1, 48)}
+        {"amount", Config::Uint(4)}  // h or kWh depending on configuration (currently only h supported)
     });
     charge_plan_update = charge_plan;
 
+    state_chargers_prototype = Config::Object({
+        {"start", Config::Uint(0)}, // Start of charge
+        {"amount", Config::Uint(0)} // Amount of charge since start (h or kWh depending on configuration)
+    });
+
     state = Config::Object({
         {"last_charge_plan_save", Config::Uint(0)},
+        {"chargers", Config::Array(
+            {},
+            &state_chargers_prototype,
+            0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
+        )}
     });
 }
 
@@ -61,6 +75,11 @@ void Eco::setup()
 {
     api.restorePersistentConfig("eco/config", &config);
     // TODO: Set user defined default charge_plan?
+
+    // TODO: Add number of chargers depending on charge manager configuration
+    for (size_t i = 0; i < MAX_CONTROLLED_CHARGERS; i++) {
+        state.get("chargers")->add();
+    }
 
     initialized = true;
 }

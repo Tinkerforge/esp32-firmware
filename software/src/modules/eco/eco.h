@@ -32,6 +32,7 @@ private:
     ConfigRoot charge_plan;
     ConfigRoot charge_plan_update;
     ConfigRoot state;
+    ConfigRoot state_chargers_prototype;
 
     size_t trace_buffer_index;
 

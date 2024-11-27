@@ -91,7 +91,7 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                     </FormRow>
                     <FormRow label="Modus nach Ablauf des Ladeplans">
                         <InputSelect
-                            disabled={!state.charge_plan_active}
+                            disabled={!day_ahead_prices_enabled || !state.charge_plan_active}
                             items={[
                                 ["0", "Schnell"],
                                 ["1", "Eco+PV"],
@@ -100,6 +100,21 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             ]}
                             value={state.mode_after_charge_plan}
                             onValue={(v) => this.setState({mode_after_charge_plan: parseInt(v)})}
+                        />
+                    </FormRow>
+                    <FormRow label="Maximale Standzeit" help="">
+                        <SwitchableInputNumber
+                            disabled={!day_ahead_prices_enabled || !state.charge_plan_active}
+                            switch_label_active={__("eco.content.active")}
+                            switch_label_inactive={__("eco.content.inactive")}
+                            unit="h"
+                            checked={state.service_life_active && day_ahead_prices_enabled && state.charge_plan_active}
+                            onClick={this.toggle('service_life_active')}
+                            value={state.service_life}
+                            onValue={this.set("service_life")}
+                            min={1}
+                            max={48}
+                            switch_label_min_width="100px"
                         />
                     </FormRow>
                     <FormRow label="Immer laden wenn Preis unter" help="">
@@ -196,7 +211,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
 
             const active = state.charge_plan.enabled ? "aktiv" : "nicht aktiv";
             const time = this.get_date_from_minutes(state.charge_plan.time).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-            return `Aktueller Ladeplan: Nutze die günstigsten ${state.charge_plan.hours} Stunden ${day} ${time} Uhr. Der Ladeplan ist ${active}.`;
+            return `Aktueller Ladeplan: Nutze die günstigsten ${state.charge_plan.amount} Stunden ${day} ${time} Uhr. Der Ladeplan ist ${active}.`;
         };
 
         return <StatusSection name="eco">
@@ -233,8 +248,8 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                         <InputNumber
                             disabled={state.charge_plan.enabled}
                             unit="h"
-                            value={state.charge_plan.hours}
-                            onValue={(v) => this.setState({charge_plan: {...state.charge_plan, hours: v}}, () => this.update_charge_plan({...state.charge_plan, hours: v}))}
+                            value={state.charge_plan.amount}
+                            onValue={(v) => this.setState({charge_plan: {...state.charge_plan, amount: v}}, () => this.update_charge_plan({...state.charge_plan, amount: v}))}
                             min={1}
                             max={48}
                         />
