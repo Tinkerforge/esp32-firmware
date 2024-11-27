@@ -147,6 +147,7 @@ void ModbusTcp::pre_setup()
         {"enable", Config::Bool(false)},
         {"port", Config::Uint16(502)},
         {"table", Config::Enum(RegisterTable::WARP, RegisterTable::WARP, RegisterTable::KEBA)},
+        {"send_illegal_data_address", Config::Bool(true)}
     });
 }
 
@@ -295,7 +296,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpInputRegister(uint16_t reg, void *c
         }
     }
 
-    if (report_illegal_data_address)
+    if (this->send_illegal_data_address && report_illegal_data_address)
         return {};
 
     return {val};
@@ -383,7 +384,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpHoldingRegister(uint16_t reg) {
         logger.printfln_debug("READ %u %.*s", reg, 4, val.chars);
     }
 
-    if (report_illegal_data_address)
+    if (this->send_illegal_data_address && report_illegal_data_address)
         return {};
 
     return {val};
@@ -474,7 +475,7 @@ TFModbusTCPExceptionCode ModbusTcp::getWarpDiscreteInputs(uint16_t start_address
             case 2104: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_active")->get(1)->asBool(); break;
             case 2105: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_active")->get(2)->asBool(); break;
 
-            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
+            default: if (this->send_illegal_data_address) return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
 
         if (result)
@@ -511,7 +512,7 @@ TFModbusTCPExceptionCode ModbusTcp::getWarpCoils(uint16_t start_address, uint16_
                         result = cache->evse_gp_output->get("gp_output")->asUint() > 0;
                 } break;
 
-            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
+            default: if (this->send_illegal_data_address) return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
 
         if (result)
@@ -555,7 +556,7 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpCoils(uint16_t start_address, uint16_
                     }
                 } break;
 
-            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
+            default: if (this->send_illegal_data_address) return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
 
         ++i;
@@ -715,7 +716,7 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpHoldingRegisters(uint16_t start_addre
         }
     }
 
-    return report_illegal_data_address ? TFModbusTCPExceptionCode::IllegalDataAddress : TFModbusTCPExceptionCode::Success;
+    return (this->send_illegal_data_address && report_illegal_data_address) ? TFModbusTCPExceptionCode::IllegalDataAddress : TFModbusTCPExceptionCode::Success;
 }
 
 TFModbusTCPExceptionCode ModbusTcp::setKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
@@ -759,7 +760,7 @@ TFModbusTCPExceptionCode ModbusTcp::setKebaHoldingRegisters(uint16_t start_addre
                     }
                 } break;
 
-            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
+            default: if(this->send_illegal_data_address) return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
         ++i;
     }
@@ -782,7 +783,7 @@ TFModbusTCPExceptionCode ModbusTcp::setBenderHoldingRegisters(uint16_t start_add
         switch (reg) {
             case 124: REQUIRE(evse); evse_common.set_modbus_enabled(val == 0); break;
             case 1000: REQUIRE(evse); evse_common.set_modbus_current(val * 1000); break;
-            default: return TFModbusTCPExceptionCode::IllegalDataAddress;
+            default: if (this->send_illegal_data_address) return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
         ++i;
     }
@@ -833,7 +834,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getKebaHoldingRegister(uint16_t reg) {
                 auto slot = cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE);
                 auto iec_state = cache->evse_state->get("iec61851_state")->asUint();
 
-                if (slot->get("active")->asBool() && slot->get("max_current")->asUint() == 0)
+                if (iec_state != 0 && slot->get("active")->asBool() && slot->get("max_current")->asUint() == 0)
                     // The charging process is temporarily interrupted because the temperature is too high or the wallbox is in suspended mode.
                     val.u = 5;
                 else if (iec_state == 4)
@@ -843,7 +844,6 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getKebaHoldingRegister(uint16_t reg) {
                     // 0 is start-up, 1 to 3 are IEC states A to C
                     val.u = iec_state + 1;
             } break;
-        case 1002: val.u = 0; break; // unused, but we don't want to return an error here to support reading the block 1000 - 1021 in one request.
         case 1004: REQUIRE(evse); {
                 auto iec_state = cache->evse_state->get("iec61851_state")->asUint();
 
@@ -901,7 +901,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getKebaHoldingRegister(uint16_t reg) {
         case 1600: break; // failsafe
         case 1602: break; // failsafe
 
-        default: return {};
+        default: if (this->send_illegal_data_address) {logger.printfln_debug("%d", this->send_illegal_data_address); return {};}
     }
 
     return {val};
@@ -1029,6 +1029,8 @@ void ModbusTcp::start_server() {
     fillCache();
 
     auto table = config.get("table")->asEnum<RegisterTable>();
+
+    this->send_illegal_data_address = config.get("send_illegal_data_address")->asBool();
 
     server.start(
         0, config.get("port")->asUint(),

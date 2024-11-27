@@ -111,4 +111,6 @@ private:
 
     std::unique_ptr<Cache> cache;
     uint64_t tick_task;
+
+    bool send_illegal_data_address = true;
 };
