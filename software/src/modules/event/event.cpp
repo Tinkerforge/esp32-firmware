@@ -50,8 +50,7 @@ int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> val
         Config *config = api.states[i].config;
         Config *ptr = config;
 
-        // TODO vlaues.size == 0
-        auto conf_path = heap_alloc_array<ConfPath>(values.size());
+        auto conf_path = values.size() != 0 ? heap_alloc_array<ConfPath>(values.size()) : nullptr;
         size_t conf_path_written = 0;
 
         for (auto value : values) {
