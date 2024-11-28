@@ -50,7 +50,7 @@ void Eco::pre_setup()
 
     charge_plan = Config::Object({
         {"enabled",Config::Bool(false)},
-        {"day", Config::Uint(0, 0, 2)},
+        {"depature", Config::Enum(Depature::Tomorrow, Depature::Today, Depature::Daily)},
         {"time", Config::Int(8*60)}, // localtime in minutes since 00:00
         {"amount", Config::Uint(4)}  // h or kWh depending on configuration (currently only h supported)
     });

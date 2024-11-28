@@ -21,7 +21,7 @@
 
 #include "module.h"
 #include "config.h"
-
+#include "depature.enum.h"
 
 class Eco final : public IModule
 {
