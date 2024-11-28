@@ -58,7 +58,12 @@ else:
     port = "/dev/ttyUSB0"
 
 if args.erase:
-    print(red("Erasing flash on port {}".format(port)))
+    while (confirm := input(red("Erase flash on port {}? [y/n] ".format(port)))) not in ['y', 'n']:
+        pass
+
+    if confirm == 'n':
+        sys.exit(0)
+
     os.system("pio pkg exec esptool.py -- --port {} --chip esp32 erase_flash".format(port))
 
 if not args.serial_only:
