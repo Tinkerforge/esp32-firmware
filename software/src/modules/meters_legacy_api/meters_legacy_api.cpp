@@ -371,6 +371,11 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
             value_indices_legacy_values_to_linked_meter[2] = value_indices_import_imex[1];
     }
 
+    if (value_indices_legacy_values_to_linked_meter[2] == UINT16_MAX && value_indices_legacy_values_to_linked_meter[1] != UINT16_MAX) {
+        value_indices_legacy_values_to_linked_meter[2] = value_indices_legacy_values_to_linked_meter[1];
+        logger.printfln("Meter in slot %u doesn't provide energy_abs; copying energy_rel instead.", linked_meter_slot);
+    }
+
 
     // ==== Meter type detection ====
 
