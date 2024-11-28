@@ -675,7 +675,7 @@ def main():
     build_lines.append('#define BUILD_HOST_PREFIX "{}"'.format(host_prefix))
     build_lines.append('#define BUILD_HOST_PREFIX_LENGTH {}'.format(len(host_prefix)))
 
-    for firmware in ['WARP', 'WARP2', 'WARP3', 'ENERGY_MANAGER']:
+    for firmware in ['WARP', 'WARP2', 'WARP3', 'ENERGY_MANAGER', 'ENERGY_MANAGER_V2', 'SMART_ENERGY_BROKER']:
         build_lines.append('#define BUILD_IS_{}() {}'.format(firmware, 1 if firmware == name.upper() else 0))
 
     build_lines.append('#define BUILD_CONFIG_TYPE "{}"'.format(config_type))
