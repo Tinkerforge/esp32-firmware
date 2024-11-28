@@ -290,6 +290,7 @@ i2c_cmd_handle_t i2c_master_prepare_write_read_device(uint8_t device_address,
                                                       const uint8_t* write_buffer, size_t write_size,
                                                       uint8_t* read_buffer, size_t read_size);
 
+time_t get_localtime_midnight_in_utc(time_t *timestamp);
 time_t get_localtime_today_midnight_in_utc();
 
 template <typename T>
