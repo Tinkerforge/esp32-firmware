@@ -953,6 +953,12 @@ void migrate_config()
     for (int i = 0; i < migration_count; ++i) {
         auto &mig = migrations[i];
 
+        if (i > 0) {
+            auto &last_mig = migrations[i - 1];
+            if (!last_mig.version_less_than(mig))
+                esp_system_abort("Config migration order broken!");
+        }
+
         bool have_to_migrate = current.version_less_than(mig);
         if (!have_to_migrate) {
             continue;
