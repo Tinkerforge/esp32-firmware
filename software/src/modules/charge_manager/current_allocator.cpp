@@ -1334,13 +1334,16 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         // A phase switch is not allowed while the hysteresis is not elapsed!
         bool force_3p = !ca_state->global_hysteresis_elapsed && state->phases == 3;
 
-        bool activate_3p = is_fixed_3p || is_unknown_rot_switchable || force_3p;
+        // Same for 1p changing.
+        bool force_1p = !ca_state->global_hysteresis_elapsed && state->phases == 1;
+
+        bool activate_3p = !force_1p && (is_fixed_3p || is_unknown_rot_switchable || force_3p);
 
         Cost enable_cost;
         auto enable_current = get_enable_cost(state, activate_3p, have_active_chargers, nullptr, &enable_cost, cfg);
 
         if (cost_exceeds_limits(enable_cost, limits, 9)) {
-            if (!is_unknown_rot_switchable || force_3p)
+            if (!activate_3p || !is_unknown_rot_switchable || force_3p)
                 continue;
             // Retry enabling unknown_rot_switchable charger with one phase only
             activate_3p = false;
