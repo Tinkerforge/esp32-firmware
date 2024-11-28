@@ -26,16 +26,17 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { Thermometer } from "react-feather";
 import { StatusSection } from "../../ts/components/status_section";
 import { FormRow } from "../../ts/components/form_row";
 import { is_solar_forecast_enabled } from  "../solar_forecast/main";
-import { is_day_ahead_prices_enabled } from "../day_ahead_prices/main";
 import { Switch } from "../../ts/components/switch";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputTime } from "../../ts/components/input_time";
 import { Button } from "react-bootstrap";
+import { UplotLoader } from "../../ts/components/uplot_loader";
+import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
+import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
 
 export function EcoNavbar() {
     return (
@@ -160,7 +161,9 @@ interface EcoStatusState {
 }
 
 export class EcoStatus extends Component<{}, EcoStatusState> {
-    timeout: number = undefined;
+    uplot_loader_ref  = createRef();
+    uplot_wrapper_ref = createRef();
+    timeout: number   = undefined;
 
     constructor() {
         super();
@@ -174,6 +177,11 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                 this.setState({charge_plan: API.get('eco/charge_plan')})
             }
         });
+
+        util.addApiEventListener("day_ahead_prices/prices", () => {
+            // Update chart every time new price data comes in
+            this.update_uplot();
+        });
     }
 
     get_date_from_minutes(minutes: number) {
@@ -186,6 +194,101 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
         return date.getMinutes() + date.getHours()*60;
     }
 
+
+    update_uplot() {
+        if (this.uplot_wrapper_ref.current == null) {
+            return;
+        }
+
+        console.log("update_uplot");
+
+        const dap_prices = API.get("day_ahead_prices/prices");
+        const dap_config = API.get("day_ahead_prices/config");
+        let data: UplotData;
+
+        console.log(dap_prices);
+        // If we have not got any prices yet, use empty data
+        if (dap_prices.prices.length == 0) {
+            data = {
+                keys: [null],
+                names: [null],
+                values: [null],
+                stacked: [null],
+                paths: [null],
+            }
+        // Else fill with time and the three different prices we want to show
+        } else {
+            data = {
+                keys: [null, 'price'],
+                names: [null, __("day_ahead_prices.content.electricity_price")],
+                values: [[], [], [], []],
+                stacked: [null, true],
+                paths: [null, UplotPath.Step],
+                // Only enable the electricity price by default.
+                // The chart with only electricity price is the most useful in most cases.
+                default_visibilty: [null, true],
+                lines_vertical: []
+            }
+            const resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60
+            const grid_costs_and_taxes_and_supplier_markup = dap_config.grid_costs_and_taxes / 1000.0 + dap_config.supplier_markup / 1000.0;
+            for (let i = 0; i < dap_prices.prices.length; i++) {
+                data.values[0].push(dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
+                data.values[1].push(get_price_from_index(i) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
+            }
+
+            data.values[0].push(dap_prices.first_date * 60 + dap_prices.prices.length * 60 * resolution_multiplier - 1);
+            data.values[1].push(get_price_from_index(dap_prices.prices.length - 1) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
+            console.log(data);
+
+            const last_save = this.state.state.last_charge_plan_save;
+            const enabled   = this.state.charge_plan.enabled;
+            const hours     = this.state.charge_plan.amount;
+            const day       = this.state.charge_plan.day;
+            const time      = this.state.charge_plan.time;
+
+            // TODO: Use charge start if charge already started
+            // TODO: Remove charged hours if charge already started
+            const from = util.get_date_now_1m_update_rate()/(1000*60); // current date in minutues
+            const from_index = Math.max(0, Math.floor((from - dap_prices.first_date) / resolution_multiplier));
+            // Minutes from today 00:00 to end of charge plan
+            const minutes_add = (((day == 0) || (day == 2)) ? 0 : 24*60) + time;
+            let to_date = new Date();
+            to_date.setHours(0, 0, 0, 0)
+            const to = to_date.getTime()/(60*1000) + minutes_add;
+            const to_index = Math.min(dap_prices.prices.length, Math.ceil((to - dap_prices.first_date) / resolution_multiplier));
+
+            console.log("from: " + from + " from_index: " + from_index + " to: " + to + " to_index: " + to_index);
+
+            for (let i = 0; i < from_index; i++) {
+                data.lines_vertical.push({'index': i, 'text': '', 'color': [64, 64, 64, 0.2]});
+            }
+
+            if (from_index < to_index) {
+                const cheap_hours = data.values[1]
+                .slice(from_index, to_index)
+                .map((price, index) => ({ price, index }))
+                .sort((a, b) => a.price - b.price)
+                .slice(0, hours)
+                .map(item => item.index+from_index);
+
+                cheap_hours.forEach(index => {
+                    data.lines_vertical.push({'index': index, 'text': '', 'color': [40, 167, 69, 0.5]});
+                });
+                console.log(cheap_hours);
+            }
+
+            // Add vertical line at current time
+            /*const resolution_divisor = dap_prices.resolution == 0 ? 15 : 60;
+            const diff = Math.floor(util.get_date_now_1m_update_rate() / 60000) - dap_prices.first_date;
+            const index = Math.floor(diff / resolution_divisor);
+            data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now"), 'color': [64, 64, 64, 0.2]});*/
+        }
+
+        // Show loader or data depending on the availability of data
+        this.uplot_loader_ref.current.set_data(data && data.keys.length > 1);
+        this.uplot_wrapper_ref.current.set_data(data);
+    }
+
     update_charge_plan(charge_plan: API.getType["eco/charge_plan"]) {
         if(this.timeout !== undefined) {
             clearTimeout(this.timeout);
@@ -194,6 +297,8 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
         console.log(charge_plan);
 
         this.timeout = setTimeout(() => API.save("eco/charge_plan", charge_plan), 1000);
+
+        this.update_uplot();
     }
 
     render(props: {}, state: EcoStatusState) {
@@ -218,7 +323,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             <FormRow label="Ladeplan" label_muted={charge_plan_text()}>
                 <div class="col-md-16">
                     <div class="input-group">
-                        <div class="input-group-prepend"><span class="eco-fixed-size input-group-text">Tag</span></div>
+                        <div class="input-group-prepend"><span class="eco-fixed-size input-group-text">Abfahrt</span></div>
                         <InputSelect
                             disabled={state.charge_plan.enabled}
                             items={[
@@ -229,11 +334,6 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                             value={state.charge_plan.day}
                             onValue={(v) => this.setState({charge_plan: {...state.charge_plan, day: parseInt(v)}}, () => this.update_charge_plan({...state.charge_plan, day: parseInt(v)}))}
                         />
-                    </div>
-                </div>
-                <div class="col-md-16 mt-1">
-                    <div class="input-group">
-                        <div class="input-group-prepend"><span class="eco-fixed-size input-group-text">Uhrzeit</span></div>
                         <InputTime
                             disabled={state.charge_plan.enabled}
                             date={this.get_date_from_minutes(state.charge_plan.time)}
@@ -253,6 +353,38 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                             min={1}
                             max={48}
                         />
+                    </div>
+                </div>
+                <div class="card mt-1">
+                    <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                        <UplotLoader
+                            ref={this.uplot_loader_ref}
+                            show={true}
+                            marker_class={'h4'}
+                            no_data={__("day_ahead_prices.content.no_data")}
+                            loading={__("day_ahead_prices.content.loading")}>
+                            <UplotWrapper
+                                ref={this.uplot_wrapper_ref}
+                                legend_show={false}
+                                class="eco-chart"
+                                sub_page="status"
+                                color_cache_group="eco.default"
+                                show={true}
+                                on_mount={() => this.update_uplot()}
+                                legend_time_label={__("day_ahead_prices.content.time")}
+                                legend_time_with_minutes={true}
+                                aspect_ratio={4}
+                                x_height={50}
+                                x_format={{hour: '2-digit', minute: '2-digit'}}
+                                x_padding_factor={0}
+                                x_include_date={true}
+                                y_unit={"ct/kWh"}
+                                y_label={"ct/kWh"}
+                                y_digits={3}
+                                only_show_visible={true}
+                                padding={[10, 10, null, 5]}
+                            />
+                        </UplotLoader>
                     </div>
                 </div>
                 <div class="form-group mt-2">

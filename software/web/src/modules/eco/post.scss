@@ -47,3 +47,15 @@
         border-top-right-radius: 0;
     }
 }
+
+.eco-chart {
+    position: relative;
+    aspect-ratio: 2;
+}
+
+@include media-breakpoint-up(md) {
+    .eco-chart {
+        position: relative;
+        aspect-ratio: 4;
+    }
+}
