@@ -57,7 +57,7 @@ void Eco::pre_setup()
     charge_plan_update = charge_plan;
 
     state_chargers_prototype = Config::Object({
-        {"start", Config::Uint(0)}, // Start of charge
+        {"start", Config::Uint(0)}, // Start of charge (TODO: Do we actually need this?)
         {"amount", Config::Uint(0)} // Amount of charge since start (h or kWh depending on configuration)
     });
 
@@ -103,16 +103,86 @@ void Eco::register_urls()
 
 void Eco::update()
 {
-    current_decision = Decision::Normal;
+    current_charge_decision = ChargeDecision::Normal;
 }
 
-Eco::Decision Eco::get_decision()
+void Eco::disable_charge_plan()
 {
-    if (!config.get("charge_planning_active")->asBool() &&
-        !config.get("charge_below_active")->asBool() &&
-        !config.get("block_above_active")->asBool()) {
-        return Decision::Normal;
+    charge_plan.get("enabled")->updateBool(false);
+}
+
+Eco::ChargeDecision Eco::get_charge_decision(const uint8_t charger_id)
+{
+    // Check if charger ID is sane
+    const uint32_t charger_count = config.get("chargers")->count();
+    if (charger_id >= charger_count) {
+        logger.printfln("Charger ID %u is not allowed (max is %d)", charger_id, charger_count-1);
+        return ChargeDecision::Normal;
     }
 
-    return current_decision;
+    // If we don't yet have day ahead prices, we can't make a decision
+    const auto current_price = day_ahead_prices.get_current_price_net();
+    if (!current_price.data_available) {
+        return ChargeDecision::Normal;
+    }
+
+    // Check for price below "charge below" threshold
+    if (config.get("charge_below_active")->asBool()) {
+        const int32_t charge_below = config.get("charge_below")->asInt()*1000; // *1000 since the current price is in ct/1000
+        if (current_price.data < charge_below) {
+            return ChargeDecision::Fast;
+        }
+    }
+
+    // Check for price above "block above" threshold
+    if (config.get("block_above_active")->asBool()) {
+        const int32_t block_above = config.get("block_above")->asInt()*1000; // *1000 since the current price is in ct/1000
+        if (current_price.data > block_above) {
+            return ChargeDecision::Normal;
+        }
+    }
+
+    if (config.get("charge_planning_active")->asBool() && charge_plan.get("enabled")->asBool()) {
+        // Currently we assume that the amount is in hours, later we may add support for kWh
+        const uint32_t hours_desired = charge_plan.get("amount")->asUint();
+        const uint32_t hours_charged = state.get("chargers")->get(charger_id)->get("amount")->asUint()/60; // assumes that amount is in minutes
+        const Depature depature      = charge_plan.get("depature")->asEnum<Depature>();
+        // If the desired amount of charge is reached, we are done with fast charging for this car.
+        if (hours_desired <= hours_charged) {
+            return ChargeDecision::Normal;
+        }
+
+              time_t   save_time          = state.get("last_charge_plan_save")->asUint()*60;
+        const uint32_t save_time_midnight = get_localtime_midnight_in_utc(&save_time) / 60;
+        const uint32_t today_midnight     = get_localtime_today_midnight_in_utc() / 60;
+        const uint32_t time               = charge_plan.get("time")->asUint();
+        const uint32_t minutes_add        = (((depature == Depature::Today) || (depature == Depature::Daily)) ? 0 : 24*60) + time;
+              uint32_t end_time           = (depature == Depature::Daily) ? (today_midnight + minutes_add) : (save_time_midnight + minutes_add);
+        const uint32_t current_time       = rtc.timestamp_minutes();
+
+        if (current_time >= end_time) {
+            // If the current time is after the planned charge ending time
+            // and the depature is set to "Daily" or "Tomorrow" we disable the charge plan.
+            // TODO: If we have not reached the desired charge amount at this point,
+            //       we could try to charge until the amount is reached or the car is disconnected.
+            if ((depature == Depature::Today) || (depature == Depature::Tomorrow)) {
+                disable_charge_plan();
+                return ChargeDecision::Normal;
+            // If the current time is after the planned charge ending time
+            // and the depature is set to "Daily" we increase the end time by 24 hours.
+            // For daily depature the new period under consideration will restart
+            // immediately after the time is reached.
+            } else if (depature == Depature::Daily) {
+                end_time += 24*60;
+            }
+        }
+
+        const uint32_t duration_remaining = end_time - current_time;
+        const uint32_t hours_remaining    = hours_desired - hours_charged;
+        if (day_ahead_prices.is_now_cheap(current_time, duration_remaining, hours_remaining)) {
+            return ChargeDecision::Fast;
+        }
+    }
+
+    return ChargeDecision::Normal;
 }

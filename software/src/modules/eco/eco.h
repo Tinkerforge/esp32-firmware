@@ -36,18 +36,19 @@ private:
 
     size_t trace_buffer_index;
 
+    void disable_charge_plan();
+
 public:
-    enum class Decision : uint8_t {
+    enum class ChargeDecision : uint8_t {
         Normal = 0,
         Fast = 1,
-        Block = 2
     };
 
     Eco(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    Decision get_decision();
+    ChargeDecision get_charge_decision(const uint8_t charger_id);
 
-    Decision current_decision = Decision::Normal;
+    ChargeDecision current_charge_decision = ChargeDecision::Normal;
 };
