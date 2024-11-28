@@ -56,6 +56,7 @@ interface UplotWrapperProps {
     show: boolean;
     on_mount?: () => void;
     sync?: uPlot.SyncPubSub;
+    legend_show?: boolean;
     legend_time_label: string;
     legend_time_with_minutes: boolean;
     legend_div_ref?: RefObject<HTMLDivElement>;
@@ -276,6 +277,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 },
             },
             legend: {
+                show: (this.props.legend_show === undefined) || this.props.legend_show,
                 live: !util.is_native_median_app(),
                 mount: (self: uPlot, legend: HTMLElement) => {
                     if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
