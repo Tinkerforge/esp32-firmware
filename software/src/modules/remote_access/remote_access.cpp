@@ -628,6 +628,9 @@ void RemoteAccess::register_urls() {
 }
 
 void RemoteAccess::register_events() {
+    if (!config.get("enable")->asBool())
+        return;
+
     event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
         task_scheduler.cancel(this->task_id);
 
