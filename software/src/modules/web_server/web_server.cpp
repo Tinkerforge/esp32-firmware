@@ -550,6 +550,9 @@ int WebServerRequest::sendChunk(const char *chunk, ssize_t chunk_len)
     if (result != ESP_OK) {
         chunkedResponseState = ChunkedResponseState::Failed;
         printf("Failed to send response chunk: %s (0x%X)\n", esp_err_to_name(result), result);
+
+        // "When you are finished sending all your chunks, you must call this function with buf_len as 0."
+        httpd_resp_send_chunk(req, nullptr, 0);
     }
     return result;
 }
