@@ -735,7 +735,8 @@ de_hyph = [
     "Füll-zy-klen",
     "Spei-cher-ge-schwin-dig-keit",
     "Web-sock-ets",
-    "Fort-s-et-zen"
+    "Fort-s-et-zen",
+    "Ge-samt-leis-tung"
 ]
 
 en_hyph = [
