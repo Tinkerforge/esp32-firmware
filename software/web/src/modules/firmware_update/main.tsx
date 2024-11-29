@@ -96,7 +96,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             await util.upload(f.slice(0xd000 - 0x1000, 0xd000), "check_firmware", () => {})
         }
         catch (error) {
-            let message = null;
+            let message = "";
 
             if (typeof error === "string") {
                 message = error;
@@ -128,8 +128,8 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                 }
             }
 
-            if (message != null) {
-                util.add_alert("firmware_update_failed", "danger", () => __("firmware_update.script.update_fail"), message == null ? null : () => message);
+            if (message != "") {
+                util.add_alert("firmware_update_failed", "danger", () => __("firmware_update.script.update_fail"), () => message);
             }
 
             return false;
@@ -209,7 +209,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                         }}
                         onUploadSuccess={() => util.postReboot(__("firmware_update.script.update_success"), __("util.reboot_text"))}
                         onUploadError={async (error) => {
-                            let message = null;
+                            let message = "";
 
                             if (typeof error === "string") {
                                 message = error;
@@ -248,8 +248,8 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                                 }
                             }
 
-                            if (message != null) {
-                                util.add_alert("firmware_update_failed", "danger", () => __("firmware_update.script.update_fail"), message == null ? null : () => message);
+                            if (message != "") {
+                                util.add_alert("firmware_update_failed", "danger", () => __("firmware_update.script.update_fail"), () => message);
                             }
 
                             util.resumeWebSockets();
