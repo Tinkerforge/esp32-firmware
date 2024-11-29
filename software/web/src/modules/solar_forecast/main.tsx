@@ -165,7 +165,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
 
     constructor() {
         super('solar_forecast/config',
-              __("solar_forecast.script.save_failed"),
+              () => __("solar_forecast.script.save_failed"),
               undefined, {});
 
         util.addApiEventListener("solar_forecast/state", () => {
@@ -223,7 +223,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             await API.save_unchecked(
                 `solar_forecast/planes/${plane_index}/config`,
                 this.state.plane_configs[plane_index],
-                __("solar_forecast.script.save_failed"),
+                () => __("solar_forecast.script.save_failed"),
                 plane_index == SOLAR_FORECAST_PLANES - 1 ? this.reboot_string : undefined);
         }
 

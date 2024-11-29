@@ -57,8 +57,8 @@ let automation_action_components: AutomationActionComponents = {};
 export class Automation extends ConfigComponent<"automation/config", {}, AutomationState> {
     constructor() {
         super('automation/config',
-              __("automation.script.save_failed"),
-              __("automation.script.reboot_content_changed"), {
+              () => __("automation.script.save_failed"),
+              () => __("automation.script.reboot_content_changed"), {
                   tasks: [],
                   displayed_trigger: AutomationTriggerID.None,
                   displayed_action: AutomationActionID.None,

@@ -49,8 +49,8 @@ interface MqttState {
 export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject<MqttStatus>}, MqttState> {
     constructor() {
         super('mqtt/config',
-              __("mqtt.script.save_failed"),
-              __("mqtt.script.reboot_content_changed"));
+              () => __("mqtt.script.save_failed"),
+              () => __("mqtt.script.reboot_content_changed"));
 
         util.addApiEventListener('mqtt/auto_discovery_config', () => {
             this.setState({auto_discovery_config: API.get('mqtt/auto_discovery_config')});
@@ -59,7 +59,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
 
     override async sendSave(t: "mqtt/config", cfg: API.getType["mqtt/config"]) {
         if (API.hasModule('mqtt_auto_discovery'))
-            await API.save('mqtt/auto_discovery_config', this.state.auto_discovery_config, __("mqtt.script.save_failed"));
+            await API.save('mqtt/auto_discovery_config', this.state.auto_discovery_config, () => __("mqtt.script.save_failed"));
         await super.sendSave(t, cfg);
     }
 

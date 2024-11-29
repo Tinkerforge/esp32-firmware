@@ -89,7 +89,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
 
     constructor() {
         super('heating/config',
-              __("heating.script.save_failed"));
+              () => __("heating.script.save_failed"));
 
         util.addApiEventListener("heating/state", () => {
             this.setState({heating_state: API.get("heating/state")});

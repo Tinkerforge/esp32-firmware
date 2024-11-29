@@ -28,19 +28,19 @@ import { deepSignal, DeepSignal } from "deepsignal";
 import Median from "median-js-bridge";
 
 export function reboot() {
-    API.call("reboot", null, "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
+    API.call("reboot", null, () => "").then(() => postReboot(__("util.reboot_title"), __("util.reboot_text")));
 }
 
 // react-bootstrap's Variant adds | string as the last union variant m(
 type StrictVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'dark' | 'light';
 
-let alerts: DeepSignal<Array<{id: string, variant: StrictVariant, title: string, text: string}>> = deepSignal([]);
+let alerts: DeepSignal<Array<{id: string, variant: StrictVariant, title: () => string, text: () => string}>> = deepSignal([]);
 
 export function get_alerts() {
     return alerts;
 }
 
-export function add_alert(id: string, variant: StrictVariant, title: string, text: string) {
+export function add_alert(id: string, variant: StrictVariant, title: () => string, text: () => string) {
     let idx = alerts.findIndex((alert) => alert.id == id);
     let alert = {id: id, variant: variant, title: title, text: text};
 
@@ -239,7 +239,7 @@ let iFrameSocketCb: (data: any) => void = null;
 
 function iFrameSocketInit(first: boolean, keep_as_first: boolean, continuation: (ws: WebSocket | undefined, eventTarget: API.APIEventTarget) => void) {
     if (!first) {
-        add_alert("event_connection_lost", "warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
+        add_alert("event_connection_lost", "warning",  () => __("util.event_connection_lost_title"),() =>  __("util.event_connection_lost"))
     }
     if (wsReconnectTimeout != null) {
         clearTimeout(wsReconnectTimeout);
@@ -309,7 +309,7 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
     }
 
     if (!first) {
-        add_alert("event_connection_lost", "warning",  __("util.event_connection_lost_title"), __("util.event_connection_lost"))
+        add_alert("event_connection_lost", "warning",  () => __("util.event_connection_lost_title"), () => __("util.event_connection_lost"))
     }
     console.log("Connecting to web socket");
     if (ws != null) {
@@ -355,7 +355,7 @@ export function postReboot(alert_title: string, alert_text: string) {
         ws.close();
     }
     clearTimeout(wsReconnectTimeout);
-    add_alert("reboot", "success", alert_title, alert_text);
+    add_alert("reboot", "success", () => alert_title, () => alert_text);
     // Wait 5 seconds before starting the reload/reconnect logic, to make sure the reboot has actually started yet.
     // Else it sometimes happens, that we reconnect _before_ the reboot starts.
     window.setTimeout(() => whenLoggedInElseReload(() =>

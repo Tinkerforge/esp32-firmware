@@ -198,7 +198,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
 
     constructor() {
         super('day_ahead_prices/config',
-              __("day_ahead_prices.script.save_failed"));
+              () => __("day_ahead_prices.script.save_failed"));
 
         util.addApiEventListener("day_ahead_prices/state", () => {
             this.setState({dap_state: API.get("day_ahead_prices/state")});

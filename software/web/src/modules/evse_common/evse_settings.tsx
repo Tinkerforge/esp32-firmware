@@ -57,8 +57,8 @@ type ChargeLimitsConfig = API.getType["charge_limits/default_limits"];
 export class EVSESettings extends ConfigComponent<"charge_limits/default_limits", {}, EVSESettingsState> {
     constructor() {
         super("charge_limits/default_limits",
-            __("evse.script.save_failed"),
-            __("evse.script.reboot_content_changed"));
+              () => __("evse.script.save_failed"),
+              () => __("evse.script.reboot_content_changed"));
 
         util.addApiEventListener('evse/gpio_configuration', () => {
             this.setState({gpio_cfg: API.get('evse/gpio_configuration')});
@@ -115,17 +115,17 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
     }
 
     override async sendSave(t: "charge_limits/default_limits", cfg: EVSESettingsState & ChargeLimitsConfig) {
-        await API.save('evse/auto_start_charging', {"auto_start_charging": this.state.auto_start_charging.auto_start_charging}, __("evse.script.save_failed"));
-        await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, __("evse.script.save_failed"));
-        await API.save('require_meter/config', {"config": this.state.require_meter_enabled.config}, __("evse.script.save_failed"));
-        await API.save('evse/led_configuration', this.state.led_configuration, __("evse.script.save_failed"));
+        await API.save('evse/auto_start_charging', {"auto_start_charging": this.state.auto_start_charging.auto_start_charging}, () => __("evse.script.save_failed"));
+        await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, () => __("evse.script.save_failed"));
+        await API.save('require_meter/config', {"config": this.state.require_meter_enabled.config}, () => __("evse.script.save_failed"));
+        await API.save('evse/led_configuration', this.state.led_configuration, () => __("evse.script.save_failed"));
 
         if (this.state.is_evse_v2) {
-            await API.save('evse/button_configuration', {"button": this.state.button_cfg.button}, __("evse.script.save_failed"));
-            await API.save('evse/gpio_configuration', this.state.gpio_cfg, __("evse.script.gpio_configuration_failed"));
-            await API.save('evse/ev_wakeup', {"enabled": this.state.ev_wakeup.enabled}, __("evse.script.save_failed"));
-            await API.save('evse/phase_auto_switch', {"enabled": this.state.phase_auto_switch.enabled}, __("evse.script.save_failed"));
-            await API.save('evse/phases_connected', this.state.phases_connected, __("evse.script.save_failed"));
+            await API.save('evse/button_configuration', {"button": this.state.button_cfg.button}, () => __("evse.script.save_failed"));
+            await API.save('evse/gpio_configuration', this.state.gpio_cfg, () => __("evse.script.gpio_configuration_failed"));
+            await API.save('evse/ev_wakeup', {"enabled": this.state.ev_wakeup.enabled}, () => __("evse.script.save_failed"));
+            await API.save('evse/phase_auto_switch', {"enabled": this.state.phase_auto_switch.enabled}, () => __("evse.script.save_failed"));
+            await API.save('evse/phases_connected', this.state.phases_connected, () => __("evse.script.save_failed"));
         }
 
         super.sendSave(t, cfg);
@@ -134,17 +134,17 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
     //TODO: Substitute hardcoded values after evse-reset-api is available.
 
     override async sendReset(t: "charge_limits/default_limits") {
-        await API.save('evse/auto_start_charging', {"auto_start_charging": true}, __("evse.script.save_failed"));
-        await API.save('evse/boost_mode', {"enabled": false}, __("evse.script.save_failed"));
-        await API.reset('require_meter/config', __("evse.script.save_failed"));
-        await API.reset('evse/led_configuration', __("evse.script.save_failed"));
+        await API.save('evse/auto_start_charging', {"auto_start_charging": true}, () => __("evse.script.save_failed"));
+        await API.save('evse/boost_mode', {"enabled": false}, () => __("evse.script.save_failed"));
+        await API.reset('require_meter/config', () => __("evse.script.save_failed"));
+        await API.reset('evse/led_configuration', () => __("evse.script.save_failed"));
 
         if (this.state.is_evse_v2) {
-            await API.save('evse/button_configuration', {"button": 2}, __("evse.script.save_failed"));
-            await API.save('evse/gpio_configuration', {"input": 0, "output": 1, "shutdown_input": 0}, __("evse.script.gpio_configuration_failed"));
-            await API.save('evse/ev_wakeup', {"enabled": true}, __("evse.script.save_failed"));
-            await API.save('evse/phase_auto_switch', {"enabled": true}, __("evse.script.save_failed"));
-            await API.save('evse/phases_connected', {"phases": 3}, __("evse.script.save_failed"));
+            await API.save('evse/button_configuration', {"button": 2}, () => __("evse.script.save_failed"));
+            await API.save('evse/gpio_configuration', {"input": 0, "output": 1, "shutdown_input": 0}, () => __("evse.script.gpio_configuration_failed"));
+            await API.save('evse/ev_wakeup', {"enabled": true}, () => __("evse.script.save_failed"));
+            await API.save('evse/phase_auto_switch', {"enabled": true}, () => __("evse.script.save_failed"));
+            await API.save('evse/phases_connected', {"phases": 3}, () => __("evse.script.save_failed"));
         }
 
         super.sendReset(t);

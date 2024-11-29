@@ -47,7 +47,7 @@ interface config {
 export class ModbusTcp extends ConfigComponent<'modbus_tcp/config', {}, config> {
     constructor() {
         super('modbus_tcp/config',
-                __("modbus_tcp.script.save_failed"));
+              () => __("modbus_tcp.script.save_failed"));
 
         util.addApiEventListener('evse/slots', () => {
             this.setState({evse_enable: API.get('evse/slots')[EVSE_SLOT_MODBUS_TCP].active});
@@ -55,12 +55,12 @@ export class ModbusTcp extends ConfigComponent<'modbus_tcp/config', {}, config> 
     }
 
     override async sendSave(t: "modbus_tcp/config", cfg: config & ModbusTcpConfig) {
-        await API.save_unchecked('evse/modbus_tcp_enabled', {enabled: this.state.evse_enable}, __("evse.script.save_failed"));
+        await API.save_unchecked('evse/modbus_tcp_enabled', {enabled: this.state.evse_enable}, () => __("evse.script.save_failed"));
         await super.sendSave(t, cfg);
     }
 
     override async sendReset(t: "modbus_tcp/config"){
-        await API.save_unchecked('evse/modbus_tcp_enabled', {enabled: false}, __("evse.script.save_failed"));
+        await API.save_unchecked('evse/modbus_tcp_enabled', {enabled: false}, () => __("evse.script.save_failed"));
         await super.sendReset(t);
     }
 

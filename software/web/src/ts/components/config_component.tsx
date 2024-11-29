@@ -42,10 +42,10 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
                                                                                      (object & Partial<Record<keyof API.getType[Config], never>>)) = {}
                                      > extends Component<P, API.getType[Config] & S & ConfigComponentState> {
     t: Config;
-    error_string?: string;
-    reboot_string?: string;
+    error_string?: () => string;
+    reboot_string?: () => string;
 
-    constructor(t: Config, error_string?: string, reboot_string?: string, initial_state?: Partial<API.getType[Config] & S>, props?: P, context?: any) {
+    constructor(t: Config, error_string?: () => string, reboot_string?: () => string, initial_state?: Partial<API.getType[Config] & S>, props?: P, context?: any) {
         super(props, context);
 
         this.t = t;
@@ -88,7 +88,7 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
         const modal = util.async_modal_ref.current;
         if (!await modal.show({
                 title: () => __("reset.reset_modal"),
-                body: () =>  this.reboot_string != undefined ? __("reset.reset_modal_body_prefix") + this.reboot_string + __("reset.reset_modal_body_postfix") : __("reset.reset_modal_body"),
+                body: () =>  this.reboot_string != undefined ? __("reset.reset_modal_body_prefix") + this.reboot_string() + __("reset.reset_modal_body_postfix") : __("reset.reset_modal_body"),
                 no_text: () => __("reset.reset_modal_abort"),
                 yes_text: () => __("reset.reset_modal_confirm"),
                 no_variant: "secondary",

@@ -58,12 +58,12 @@ function retry_once<T>(fn: () => Promise<T>, topic: string) {
 }
 
 function remove_user(id: number) {
-    return retry_once(() => API.call("users/remove", {"id": id}, __("users.script.save_failed")), "users_remove_failed");
+    return retry_once(() => API.call("users/remove", {"id": id}, () => __("users.script.save_failed")), "users_remove_failed");
 }
 
 function modify_user(user: User) {
     let {password, is_invalid, ...u} = user;
-    return retry_once(() => API.call("users/modify", u, __("users.script.save_failed")), "users_modify_failed");
+    return retry_once(() => API.call("users/modify", u, () => __("users.script.save_failed")), "users_modify_failed");
 }
 
 function modify_unknown_user(name: string) {
@@ -74,20 +74,20 @@ function modify_unknown_user(name: string) {
                                      "current": null,
                                      "digest_hash": null,
                                      "roles": null},
-                                    __("users.script.save_failed")),
-                      "users_modify_failed");
+                                     () => __("users.script.save_failed")),
+                                     "users_modify_failed");
 }
 
 function add_user(user: User) {
     let {password, is_invalid, ...u} = user;
-    return retry_once(() => API.call("users/add", u, __("users.script.save_failed")), "users_add_failed");
+    return retry_once(() => API.call("users/add", u, () => __("users.script.save_failed")), "users_add_failed");
 }
 
 export class Users extends ConfigComponent<'users/config', {}, UsersState> {
     constructor() {
         super('users/config',
-              __("users.script.save_failed"),
-              __("users.script.reboot_content_changed"), {
+              () => __("users.script.save_failed"),
+              () => __("users.script.reboot_content_changed"), {
                 userSlotEnabled: false,
                 addUser: {
                     id: -1,
@@ -169,7 +169,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         await API.call_unchecked('users/http_auth_update', {
             "enabled": enabled
         },
-        __("users.script.save_failed"));
+        () => __("users.script.save_failed"));
     }
 
     user_has_password(u: User) {
@@ -256,7 +256,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 
         await this.save_authentication_config(new_config.http_auth_enabled);
 
-        await API.save('evse/user_enabled', {"enabled": this.state.userSlotEnabled}, __("evse.script.save_failed"), __("users.script.reboot_content_changed"));
+        await API.save('evse/user_enabled', {"enabled": this.state.userSlotEnabled}, () => __("evse.script.save_failed"), () => __("users.script.reboot_content_changed"));
     }
 
     setUser(i: number, val: Partial<User>) {

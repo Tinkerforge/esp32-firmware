@@ -129,7 +129,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
             }
 
             if (message != null) {
-                util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), message);
+                util.add_alert("firmware_update_failed", "danger", () => __("firmware_update.script.update_fail"), message == null ? null : () => message);
             }
 
             return false;
@@ -230,7 +230,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                                                 yes_variant: "danger",
                                             })) {
                                             try {
-                                                await API.call("firmware_update/override_signature", {cookie: response.cookie}, __("firmware_update.script.update_fail"));
+                                                await API.call("firmware_update/override_signature", {cookie: response.cookie}, () => __("firmware_update.script.update_fail"));
                                             }
                                             catch {
                                                 return;
@@ -249,7 +249,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                             }
 
                             if (message != null) {
-                                util.add_alert("firmware_update_failed", "danger", __("firmware_update.script.update_fail"), message);
+                                util.add_alert("firmware_update_failed", "danger", () => __("firmware_update.script.update_fail"), message == null ? null : () => message);
                             }
 
                             util.resumeWebSockets();
@@ -263,7 +263,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                         <FormRow label={__("firmware_update.content.check_for_update")}>
                             <Button variant="primary"
                                     className="form-control"
-                                    onClick={() => this.setState({check_state: CheckState.InProgress, install_state: InstallState.Idle, install_progress: 0}, () => API.call("firmware_update/check_for_update", null, ""))}
+                                    onClick={() => this.setState({check_state: CheckState.InProgress, install_state: InstallState.Idle, install_progress: 0}, () => API.call("firmware_update/check_for_update", null, () => ""))}
                                     disabled={this.state.check_state == CheckState.InProgress || this.state.install_state == InstallState.InProgress || this.state.manual_install_in_progress}>
                                 {__("firmware_update.content.check_for_update")}
                                 <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={this.state.check_state != CheckState.InProgress}></span>
@@ -289,7 +289,7 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                                             ? <div class="input-group-append">
                                                 <Button variant="primary"
                                                         type="button"
-                                                        onClick={() => this.setState({install_state: InstallState.InProgress, install_progress: 0}, () => API.call("firmware_update/install_firmware", {version: this.state.update_version}, __("firmware_update.script.install_failed")))}
+                                                        onClick={() => this.setState({install_state: InstallState.InProgress, install_progress: 0}, () => API.call("firmware_update/install_firmware", {version: this.state.update_version}, () => __("firmware_update.script.install_failed")))}
                                                         disabled={this.state.install_state == InstallState.InProgress || this.state.manual_install_in_progress}>{__("firmware_update.content.install_update")}</Button>
                                             </div>
                                             : undefined

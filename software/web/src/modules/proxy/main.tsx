@@ -45,8 +45,8 @@ interface ProxyState {
 export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
     constructor() {
         super('proxy/config',
-            __("proxy.script.save_failed"),
-            __("proxy.script.reboot_content_changed"));
+              () => __("proxy.script.save_failed"),
+              () => __("proxy.script.reboot_content_changed"));
 
         util.addApiEventListener('proxy/devices', () => {
             this.setState({devices: API.get('proxy/devices')});

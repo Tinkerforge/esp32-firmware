@@ -53,8 +53,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     reject: (arg0?: any) => void;
     constructor() {
         super("remote_access/config",
-            __("remote_access.script.save_failed"),
-            __("remote_access.script.reboot_content_changed"));
+              () => __("remote_access.script.save_failed"),
+              () => __("remote_access.script.reboot_content_changed"));
 
         this.resolve = undefined;
         this.reject = undefined;
@@ -86,7 +86,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             this.resolve = resolve;
             this.reject = reject;
         });
-        await API.call("remote_access/get_login_salt", cfg, __("remote_access.script.save_failed"));
+        await API.call("remote_access/get_login_salt", cfg, () => __("remote_access.script.save_failed"));
 
         const bs64LoginSalt = await getLoginSaltPromise;
         const encodedString = "data:application/octet-stream;base64," + bs64LoginSalt;
@@ -101,7 +101,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             this.resolve = resolve;
             this.reject = reject;
         });
-        await API.call("remote_access/get_secret_salt", cfg, __("remote_access.script.save_failed"));
+        await API.call("remote_access/get_secret_salt", cfg, () => __("remote_access.script.save_failed"));
         const bs64Secret = await getSecretPromise;
         const encodedString = "data:application/octet-stream;base64," + bs64Secret;
         const res = await fetch(encodedString);
@@ -116,7 +116,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             this.reject = reject;
         });
 
-        API.call("remote_access/login", data, __("remote_access.script.save_failed"));
+        API.call("remote_access/login", data, () => __("remote_access.script.save_failed"));
         return loginPromise;
     }
 
@@ -127,7 +127,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             this.reject = reject;
         });
 
-        await API.call("remote_access/register", cfg, __("remote_access.script.save_failed"));
+        await API.call("remote_access/register", cfg, () => __("remote_access.script.save_failed"));
         await registrationPromise;
 
         this.setState({status_modal_string: ""});
@@ -158,7 +158,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 keys: []
             };
 
-            await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"), 10000);
+            await API.call("remote_access/register", registration_data, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"), 10000);
             return;
         }
 
@@ -167,7 +167,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             loginSalt = await this.get_login_salt(cfg);
         } catch (err) {
             console.error(err);
-            util.add_alert("registration", "danger", "Failed to login:", "Wrong user or password");
+            util.add_alert("registration", "danger", () => "Failed to login:", () => "Wrong user or password");
             this.setState({status_modal_string: ""});
             return;
         }
@@ -195,7 +195,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             });
         } catch (err) {
             console.error(`Failed to login: ${err}`);
-            util.add_alert("registration", "danger", "Failed to login:", "Wrong user or password");
+            util.add_alert("registration", "danger", () => "Failed to login:", () => "Wrong user or password");
             this.setState({status_modal_string: ""});
             return;
         }
@@ -205,7 +205,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             secretSalt = await this.get_secret_salt(cfg);
         } catch (err) {
             console.error(`Failed to get secret salt: ${err}`);
-            util.add_alert("registration", "danger", "Failed to get secret-salt:", err);
+            util.add_alert("registration", "danger", () => "Failed to get secret-salt:", () => err);
             this.setState({status_modal_string: ""});
             return;
         }
@@ -259,7 +259,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             await this.runRegistration(registration_data);
         } catch (err) {
             console.error(`Failed to register charger: ${err}`);
-            util.add_alert("registration", "danger", "Failed to register", err);
+            util.add_alert("registration", "danger", () => "Failed to register", () => err);
             this.setState({status_modal_string: ""});
         }
     }
@@ -284,7 +284,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             keys: []
         };
 
-        await API.call("remote_access/register", registration_data, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"), 10000);
+        await API.call("remote_access/register", registration_data, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"), 10000);
     }
 
     render() {

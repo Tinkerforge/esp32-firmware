@@ -47,7 +47,7 @@ type SystemI18nConfig = API.getType["system/i18n_config"];
 export class System extends ConfigComponent<"system/i18n_config", {}, SystemState> {
     constructor() {
         super('system/i18n_config',
-            __("system.script.save_failed"));
+              () => __("system.script.save_failed"));
 
         this.state = {
             version: null,
@@ -145,7 +145,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                                         await util.put("/config_reset", {"do_i_know_what_i_am_doing": true});
                                         util.postReboot(__("system.script.config_reset_init"), __("util.reboot_text"));
                                     } catch (error) {
-                                        util.add_alert("config_reset_failed", "danger", __("system.script.config_reset_error"), error);
+                                        util.add_alert("config_reset_failed", "danger", () => __("system.script.config_reset_error"), error);
                                     }
                                 }}>{__("system.content.config_reset")}</Button>
                         </FormRow>
@@ -169,7 +169,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                                 await util.put("/factory_reset", {"do_i_know_what_i_am_doing": true});
                                 util.postReboot(__("system.script.factory_reset_init"), __("util.reboot_text"));
                             } catch (error) {
-                                util.add_alert("factory_reset_failed", "danger", __("system.script.factory_reset_error"), error);
+                                util.add_alert("factory_reset_failed", "danger", () => __("system.script.factory_reset_error"), error);
                             }
                         }}>{__("system.content.factory_reset")}</Button>
                     </FormRow>

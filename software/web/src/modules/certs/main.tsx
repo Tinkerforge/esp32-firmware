@@ -88,9 +88,9 @@ export class Certs extends Component<{}, State> {
                                             id: state.editCert.id,
                                             name: state.editCert.name,
                                             cert: state.editCert.file == null ? null : await state.editCert.file.text()
-                                        }, __("certs.script.mod_cert_failed"));
+                                        }, () => __("certs.script.mod_cert_failed"));
                                     },
-                                    onRemoveClick: async () => { await API.call('certs/remove', {id: cert.id}, __("certs.script.del_cert_failed")); }
+                                    onRemoveClick: async () => { await API.call('certs/remove', {id: cert.id}, () => __("certs.script.del_cert_failed")); }
                                 }})
                             }
                             addEnabled={API.get('certs/state').certs.length < MAX_CERTS}
@@ -135,7 +135,7 @@ export class Certs extends Component<{}, State> {
                                     id: next_free_id,
                                     name: state.addCert.name,
                                     cert: await state.addCert.file.text()
-                                }, __("certs.script.add_cert_failed"));
+                                }, () => __("certs.script.add_cert_failed"));
                             }}
                             />
                     </div>

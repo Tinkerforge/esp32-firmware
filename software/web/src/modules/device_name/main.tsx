@@ -30,7 +30,7 @@ import { PageHeader } from "../../ts/components/page_header";
 
 export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
     constructor() {
-        super('info/display_name', __("device_name.script.save_failed"));
+        super('info/display_name', () => __("device_name.script.save_failed"));
     }
 
     render(props: {}, state: Readonly<API.getType['info/display_name']>) {
@@ -49,7 +49,7 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
                     if (!(e.target as HTMLFormElement).checkValidity())
                         return;
 
-                    API.save("info/display_name", state, __("device_name.script.save_failed"));
+                    API.save("info/display_name", state, () => __("device_name.script.save_failed"));
                 }}>
                     <InputText class={hide_save ? "rounded-right" : undefined} maxLength={32} value={state.display_name} onValue={(v) => this.setState({display_name: v})} required>
                         <div class="input-group-append">

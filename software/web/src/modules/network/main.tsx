@@ -40,8 +40,8 @@ type NetworkConfig = API.getType["network/config"];
 export class Network extends ConfigComponent<'network/config'> {
     constructor() {
         super('network/config',
-              __("network.script.save_failed"),
-              __("network.script.reboot_content_changed"));
+              () => __("network.script.save_failed"),
+              () => __("network.script.reboot_content_changed"));
     }
 
     render(props: {}, state: Readonly<NetworkConfig>) {

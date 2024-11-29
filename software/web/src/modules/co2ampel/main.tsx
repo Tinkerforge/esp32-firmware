@@ -41,8 +41,8 @@ type Co2AmpelConfig = API.getType["co2ampel/config"];
 export class Co2Ampel extends ConfigComponent<"co2ampel/config"> {
     constructor() {
         super('co2ampel/config',
-              __("co2ampel.script.save_failed"),
-              __("co2ampel.script.reboot_content_changed"));
+              () => __("co2ampel.script.save_failed"),
+              () => __("co2ampel.script.reboot_content_changed"));
     }
 
     render(props: {}, state: Readonly<Co2AmpelConfig>) {

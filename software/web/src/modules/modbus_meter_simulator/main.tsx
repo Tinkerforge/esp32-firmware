@@ -37,8 +37,8 @@ export function ModbusMeterSimulatorNavbar() {
 export class ModbusMeterSimulator extends ConfigComponent<'modbus_meter_simulator/config'> {
     constructor() {
         super('modbus_meter_simulator/config',
-            __("modbus_meter_simulator.script.save_failed"),
-            __("modbus_meter_simulator.script.reboot_content_changed"));
+              () => __("modbus_meter_simulator.script.save_failed"),
+              () => __("modbus_meter_simulator.script.reboot_content_changed"));
     }
 
     render(props: {}, s: Readonly<API.getType['modbus_meter_simulator/config']>) {

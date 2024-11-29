@@ -49,8 +49,8 @@ interface NFCState {
 export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
     constructor() {
         super('nfc/config',
-              __("nfc.script.save_failed"),
-              __("nfc.script.reboot_content_changed"), {
+              () => __("nfc.script.save_failed"),
+              () => __("nfc.script.reboot_content_changed"), {
                 addTag: {
                     tag_id: "",
                     user_id: 0,

@@ -151,7 +151,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                 <FormRow label={__("charge_manager.status.available_current")}>
                     <InputFloat min={0} max={state.config.maximum_available_current} digits={3} unit="A"
                         value={state.available_current.current}
-                        onValue={(v) => API.save("charge_manager/available_current", {"current": v}, __("charge_manager.script.set_available_current_failed"))}
+                        onValue={(v) => API.save("charge_manager/available_current", {"current": v}, () => __("charge_manager.script.set_available_current_failed"))}
                         showMinMax/>
                 </FormRow>
             }

@@ -66,7 +66,7 @@ export class TutorialPhase4 extends Component<{}, TutorialPhase4State> {
                         let config = {color: (event.target as HTMLInputElement).value.toString()};
 
                         // Send new config to backend as state "tutorial_phase_4/config"
-                        API.save("tutorial_phase_4/config", config, __("tutorial_phase_4.script.save_config_failed"));
+                        API.save("tutorial_phase_4/config", config, () => __("tutorial_phase_4.script.save_config_failed"));
                     }} />
                 </FormRow>
             </SubPage>);

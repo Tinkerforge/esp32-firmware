@@ -42,8 +42,8 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
 
     constructor() {
         super('wifi/ap_config',
-              __("wifi.script.ap_save_failed"),
-              __("wifi.script.ap_reboot_content_changed"));
+              () => __("wifi.script.ap_save_failed"),
+              () => __("wifi.script.ap_reboot_content_changed"));
     }
 
     override async isSaveAllowed(cfg: APConfig) { return this.ipconfig_valid; }

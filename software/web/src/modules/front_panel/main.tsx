@@ -113,7 +113,7 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
 
     constructor() {
         super('front_panel/config',
-              __("front_panel.script.save_failed"));
+              () => __("front_panel.script.save_failed"));
 /*
         for (let tile_index = 0; tile_index < FRONT_PANEL_TILES; tile_index++) {
             util.addApiEventListener_unchecked(`front_panel/tiles/${tile_index}/config`, () => {

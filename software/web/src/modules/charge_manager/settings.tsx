@@ -50,8 +50,8 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
 
     constructor() {
         super('charge_manager/config',
-              __("charge_manager.script.save_failed"),
-              __("charge_manager.script.reboot_content_changed"), {
+              () => __("charge_manager.script.save_failed"),
+              () => __("charge_manager.script.reboot_content_changed"), {
                   showExpert: false
               });
 
@@ -68,7 +68,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                 current_limit: this.state.dynamicLoadConfig.current_limit,
                 largest_consumer_current: this.state.dynamicLoadConfig.largest_consumer_current,
                 safety_margin_pct: this.state.dynamicLoadConfig.safety_margin_pct,
-            }, __("power_manager.script.save_failed"));
+            }, () => __("power_manager.script.save_failed"));
         } catch (e) {
             console.log("charge_manager save failed because of power_manager/dynamic_load_config", e);
         }
@@ -93,7 +93,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
 
         let energyManagerMode = API.hasModule("em_common") && !(API.hasModule("evse_v2") || API.hasModule("evse"));
         if (!energyManagerMode)
-            await API.save_unchecked('evse/management_enabled', {"enabled": false}, translate_unchecked("charge_manager.script.save_failed"));
+            await API.save_unchecked('evse/management_enabled', {"enabled": false}, () => translate_unchecked("charge_manager.script.save_failed"));
 
         await super.sendReset(t);
     }

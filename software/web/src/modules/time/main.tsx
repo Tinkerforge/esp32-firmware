@@ -50,8 +50,8 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
 
     constructor() {
         super('ntp/config',
-              __("time.script.save_failed"),
-              __("time.script.reboot_content_changed"));
+              () => __("time.script.save_failed"),
+              () => __("time.script.reboot_content_changed"));
 
         util.addApiEventListener("rtc/config", () => this.setState({...API.get("rtc/config")}));
     }
@@ -83,7 +83,7 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
             weekday: date.getUTCDay(),
         };
 
-        API.save("rtc/time", time, __("time.script.save_failed"));
+        API.save("rtc/time", time, () => __("time.script.save_failed"));
     }
 
     override async sendSave(t: "ntp/config", cfg: API.getType["ntp/config"]) {

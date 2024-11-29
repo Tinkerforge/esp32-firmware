@@ -108,7 +108,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
         if (current == this.state.slots[5].max_current)
             return;
 
-        API.save('evse/global_current', {"current": current}, __("evse.script.set_charging_current_failed"));
+        API.save('evse/global_current', {"current": current}, () => __("evse.script.set_charging_current_failed"));
     }
 
     render(props: {}, state: EVSEStatusState) {
@@ -138,13 +138,13 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                         <Button
                             className="form-control mr-2 rounded-right"
                             disabled={!(state.state.iec61851_state == 1 && state.slots[4].max_current == 0)}
-                            onClick={() =>  API.call('evse/start_charging', {}, __("evse.script.start_charging_failed"))}>
+                            onClick={() =>  API.call('evse/start_charging', {}, () => __("evse.script.start_charging_failed"))}>
                             {__("evse.status.start_charging")}
                         </Button>
                         <Button
                             className="form-control rounded-left"
                             disabled={!(state.state.charger_state == 2 || state.state.charger_state == 3 || (state.state.iec61851_state == 1 && state.slots[4].max_current != 0))}
-                            onClick={() => API.call('evse/stop_charging', {}, __("evse.script.stop_charging_failed"))}>
+                            onClick={() => API.call('evse/stop_charging', {}, () => __("evse.script.stop_charging_failed"))}>
                             {__("evse.status.stop_charging")}
                         </Button>
                     </div>

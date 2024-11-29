@@ -42,8 +42,8 @@ type AuthenticationState = API.getType['authentication/config'];
 export class Authentication extends ConfigComponent<'authentication/config', {}, {password: string}> {
     constructor() {
         super('authentication/config',
-              __("authentication.script.save_failed"),
-              __("authentication.script.reboot_content_changed"));
+              () => __("authentication.script.save_failed"),
+              () => __("authentication.script.reboot_content_changed"));
     }
 
     hash(username: string, password?: string) {

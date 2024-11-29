@@ -104,11 +104,11 @@ export function get_noninternal_meter_slots(required_ids : Readonly<MeterValueID
 
 export class PowerManagerStatus extends Component {
     change_mode(mode: number) {
-        API.save('power_manager/charge_mode', {"mode": mode}, __("power_manager.script.mode_change_failed"));
+        API.save('power_manager/charge_mode', {"mode": mode}, () => __("power_manager.script.mode_change_failed"));
     }
 
     change_phase(phases: number) {
-        API.save('power_manager/external_control', {"phases_wanted": phases}, __("power_manager.script.mode_change_failed"));
+        API.save('power_manager/external_control', {"phases_wanted": phases}, () => __("power_manager.script.mode_change_failed"));
     }
 
     generate_config_error_label(generate: number, label: string) {
@@ -148,7 +148,7 @@ export class PowerManagerStatus extends Component {
         let config      = API.get('power_manager/config');
 
         return <StatusSection name="power_manager">
-            {API.get('power_manager/config').enabled ?
+            {API.get('power_manager/config').enabled || true ?
                 <FormRow label={__("power_manager.status.mode")}>
                     <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                         <Button
@@ -228,8 +228,8 @@ export class PowerManagerStatus extends Component {
 export class PVExcessSettings extends ConfigComponent<'power_manager/config', {status_ref?: RefObject<PowerManagerStatus>}> {
     constructor() {
         super('power_manager/config',
-            __("power_manager.script.save_failed"),
-            __("power_manager.script.reboot_content_changed"));
+              () => __("power_manager.script.save_failed"),
+              () => __("power_manager.script.reboot_content_changed"));
     }
 
     render(props: {}, s: Readonly<API.getType['power_manager/config']>) {

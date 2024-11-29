@@ -65,7 +65,7 @@ interface EcoState {
 export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<EcoStatus>}, EcoState> {
     constructor() {
         super('eco/config',
-              __("eco.script.save_failed"));
+             () => __("eco.script.save_failed"));
     }
 
     render(props: {}, state: EcoState & EcoConfig) {

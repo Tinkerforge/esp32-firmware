@@ -52,8 +52,8 @@ interface OcppState {
 export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject<OcppStatus>}, OcppState> {
     constructor() {
         super('ocpp/config',
-              __("ocpp.script.save_failed"),
-              __("ocpp.script.reboot_content_changed"));
+              () => __("ocpp.script.save_failed"),
+              () => __("ocpp.script.reboot_content_changed"));
 
         util.addApiEventListener('ocpp/state', () => {
             this.setState({state: API.get('ocpp/state')});
@@ -65,12 +65,12 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
     }
 
     override async sendSave(t: "ocpp/config", cfg: OcppConfig) {
-        await API.save_unchecked('evse/ocpp_enabled', {enabled: this.state.enable}, __("evse.script.save_failed"));
+        await API.save_unchecked('evse/ocpp_enabled', {enabled: this.state.enable}, () => __("evse.script.save_failed"));
         await super.sendSave(t, cfg);
     }
 
     override async sendReset(t: "ocpp/config") {
-        await API.save_unchecked('evse/ocpp_enabled', {enabled: false}, __("evse.script.save_failed"));
+        await API.save_unchecked('evse/ocpp_enabled', {enabled: false}, () => __("evse.script.save_failed"));
         await super.sendReset(t);
     }
 
@@ -149,7 +149,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                                 }))
                                 return;
 
-                            API.call("ocpp/reset", null, __("ocpp.content.reset_failed"), __("ocpp.script.reboot_content_changed"));
+                            API.call("ocpp/reset", null, () => __("ocpp.content.reset_failed"), () => __("ocpp.script.reboot_content_changed"));
                             }}>
                             {__("ocpp.content.reset")}
                         </Button>
@@ -252,7 +252,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                                             onfocusout={() => API.call("ocpp/change_configuration", {
                                                     key: k,
                                                     value: state.configuration[k]
-                                            }, "lalala")} />
+                                            }, () => "")} />
                                 </FormRow> :
                                 <FormRow label={k.replace(/([a-z])([A-Z])/g, "$1\u00AD$2")}>
                                     <InputText value={state.configuration[k]} />

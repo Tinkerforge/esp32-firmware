@@ -151,7 +151,7 @@ export class ChargeLimitsStatus extends Component {
                     value={""}
                     onValue={(v) => {
                         this.setState({config_in_use: {...config_in_use, energy_wh: Number(v)}})
-                        API.call("charge_limits/override_energy", {energy_wh: Number(v)}, __("charge_limits.script.override_failed"));
+                        API.call("charge_limits/override_energy", {energy_wh: Number(v)}, () => __("charge_limits.script.override_failed"));
                 }}/>
             </FormRow>
         }
@@ -163,7 +163,7 @@ export class ChargeLimitsStatus extends Component {
                         value={""}
                         onValue={(v) => {
                             this.setState({config_in_use: {...config_in_use, duration: Number(v)}})
-                            API.call("charge_limits/override_duration", {duration: Number(v)}, __("charge_limits.script.override_failed"));
+                            API.call("charge_limits/override_duration", {duration: Number(v)}, () => __("charge_limits.script.override_failed"));
                     }}/>
                 </FormRow>
                 {energy_row}

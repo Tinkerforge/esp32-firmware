@@ -45,8 +45,8 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
 
     constructor() {
         super('ethernet/config',
-              __("ethernet.script.save_failed"),
-              __("ethernet.script.reboot_content_changed"));
+              () => __("ethernet.script.save_failed"),
+              () => __("ethernet.script.reboot_content_changed"));
     }
 
     override async isSaveAllowed(cfg: EthernetConfig) { return this.ipconfig_valid; }

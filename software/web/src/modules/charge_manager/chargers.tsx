@@ -65,8 +65,8 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
     constructor() {
         super('charge_manager/config',
-              __("charge_manager.script.save_failed"),
-              __("charge_manager.script.reboot_content_changed"), {
+              () => __("charge_manager.script.save_failed"),
+              () => __("charge_manager.script.reboot_content_changed"), {
                   addCharger: {host: "", name: "", rot: -1},
                   editCharger: {host: "", name: "", rot: -1},
                   managementEnabled: false,
@@ -183,7 +183,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             return;
 
         if (API.hasModule("evse_common"))
-            await API.save_unchecked('evse/management_enabled', {"enabled": this.state.managementEnabled}, translate_unchecked("charge_manager.script.save_failed"));
+            await API.save_unchecked('evse/management_enabled', {"enabled": this.state.managementEnabled}, () => translate_unchecked("charge_manager.script.save_failed"));
 
 //#if MODULE_EM_PHASE_SWITCHER_AVAILABLE
         let emCharger_copy = this.state.emCharger;
@@ -205,8 +205,8 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             emConfig_copy.contactor_installed = false;
         }
 
-        await API.save_unchecked('em_phase_switcher/charger_config', emCharger_copy, __("charge_manager.script.save_failed"));
-        await API.save_unchecked('energy_manager/config',            emConfig_copy,  __("charge_manager.script.save_failed"));
+        await API.save_unchecked('em_phase_switcher/charger_config', emCharger_copy, () => __("charge_manager.script.save_failed"));
+        await API.save_unchecked('energy_manager/config',            emConfig_copy,  () => __("charge_manager.script.save_failed"));
 //#endif
 
         let new_cfg: ChargeManagerConfig = {...API.get("charge_manager/config"),
@@ -235,10 +235,10 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             return;
 
         if (API.hasModule("evse_common"))
-            await API.save_unchecked('evse/management_enabled', {"enabled": false}, translate_unchecked("charge_manager.script.save_failed"));
+            await API.save_unchecked('evse/management_enabled', {"enabled": false}, () => translate_unchecked("charge_manager.script.save_failed"));
 
-        await API.reset_unchecked('em_phase_switcher/charger_config', __("charge_manager.script.save_failed"));
-        await API.reset_unchecked('energy_manager/config',            __("charge_manager.script.save_failed"));
+        await API.reset_unchecked('em_phase_switcher/charger_config', () => __("charge_manager.script.save_failed"));
+        await API.reset_unchecked('energy_manager/config',            () => __("charge_manager.script.save_failed"));
 
         await super.sendReset(t);
     }
@@ -266,7 +266,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
     async scan_services() {
         try {
-            await API.call('charge_manager/scan', {}, __("charge_manager.script.scan_failed"))
+            await API.call('charge_manager/scan', {}, () => __("charge_manager.script.scan_failed"))
         } catch {
             return;
         }

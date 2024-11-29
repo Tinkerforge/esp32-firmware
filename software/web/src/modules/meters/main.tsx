@@ -204,8 +204,8 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
 
     constructor() {
         super('meters/0/config',
-              __("meters.script.save_failed"),
-              __("meters.script.reboot_content_changed"), {
+              () => __("meters.script.save_failed"),
+              () => __("meters.script.reboot_content_changed"), {
                   states: {},
                   configs_plot: {},
                   configs_table: {},
@@ -577,7 +577,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
             await API.save_unchecked(
                 `meters/${meter_slot}/config`,
                 this.state.configs_table[meter_slot],
-                __("meters.script.save_failed"),
+                () => __("meters.script.save_failed"),
                 meter_slot == METERS_SLOTS - 1 ? this.reboot_string : undefined);
         }
     }
@@ -905,7 +905,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                                         }))
                                                         return;
 
-                                                    API.call_unchecked(`meters/${meter_slot}/reset`, null, __("meters.content.reset_failed"))
+                                                    API.call_unchecked(`meters/${meter_slot}/reset`, null, () => __("meters.content.reset_failed"))
                                                     }}>{__("meters.content.reset")}</Button>
                                             </div>
                                         </div>

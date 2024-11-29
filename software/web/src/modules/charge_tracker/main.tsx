@@ -100,8 +100,8 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
 export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {status_ref?: RefObject<ChargeTrackerStatus>}, ChargeTrackerState> {
     constructor() {
         super('charge_tracker/config',
-              __("charge_tracker.script.save_failed"),
-              __("charge_tracker.script.reboot_content_changed"), {
+              () => __("charge_tracker.script.save_failed"),
+              () => __("charge_tracker.script.reboot_content_changed"), {
                   user_filter: "-2",
                   file_type: "0",
                   csv_flavor: 'excel',
@@ -149,7 +149,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     async downloadChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_date: Date, end_date: Date, price?: number) {
         const [usernames, display_names] = await getAllUsernames()
             .catch(err => {
-                util.add_alert("download-usernames", "danger", __("charge_tracker.script.download_usernames_failed"), err);
+                util.add_alert("download-usernames", "danger", () => __("charge_tracker.script.download_usernames_failed"), err);
                 return [null, null];
             });
 
@@ -274,7 +274,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 else
                     util.downloadToFile(result, __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=utf-8; header=present");
             })
-            .catch(err => util.add_alert("download-charge-log", "danger", __("charge_tracker.script.download_charge_log_failed"), err));
+            .catch(err => util.add_alert("download-charge-log", "danger", () => __("charge_tracker.script.download_charge_log_failed"), err));
     }
 
     override async isSaveAllowed(cfg: ChargeTrackerConfig) {
@@ -373,7 +373,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                         end_timestamp_min: end.getTime() / 1000 / 60,
                                         user_filter: parseInt(state.user_filter),
                                         letterhead: state.pdf_text
-                                    }, __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
+                                    }, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
                                     util.downloadToFile(pdf, __("charge_tracker.content.charge_log_file"), "pdf", "application/pdf");
                                 } finally {
                                     this.setState({show_spinner: false});
@@ -452,7 +452,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
                             await API.call('charge_tracker/remove_all_charges', {
                                     "do_i_know_what_i_am_doing": true
-                                }, __("charge_tracker.script.remove_failed"));
+                                }, () => __("charge_tracker.script.remove_failed"));
 
                             util.postReboot(__("charge_tracker.script.remove_init"), __("util.reboot_text"));
                     }}>
