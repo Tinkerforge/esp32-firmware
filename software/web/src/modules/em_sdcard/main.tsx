@@ -149,10 +149,10 @@ export class EMSDcard extends Component {
                     <Button variant="danger" className="form-control" onClick={async () => {
                         const modal = util.async_modal_ref.current;
                         if (!await modal.show({
-                                title: __("em_sdcard.content.format_sdcard"),
-                                body: __("em_sdcard.content.format_sdcard_modal_text"),
-                                no_text: __("em_sdcard.content.abort_format"),
-                                yes_text: __("em_sdcard.content.confirm_format"),
+                                title: () => __("em_sdcard.content.format_sdcard"),
+                                body: () => __("em_sdcard.content.format_sdcard_modal_text"),
+                                no_text: () => __("em_sdcard.content.abort_format"),
+                                yes_text: () => __("em_sdcard.content.confirm_format"),
                                 no_variant: "secondary",
                                 yes_variant: "danger"
                             }))

@@ -441,10 +441,10 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     <Button variant="danger" className="form-control" onClick={async () => {
                         const modal = util.async_modal_ref.current;
                         if (!await modal.show({
-                                title: __("charge_tracker.content.remove"),
-                                body: __("charge_tracker.content.charge_tracker_remove_modal_text"),
-                                no_text: __("charge_tracker.content.abort_remove"),
-                                yes_text: __("charge_tracker.content.confirm_remove"),
+                                title: () => __("charge_tracker.content.remove"),
+                                body: () => __("charge_tracker.content.charge_tracker_remove_modal_text"),
+                                no_text: () => __("charge_tracker.content.abort_remove"),
+                                yes_text: () => __("charge_tracker.content.confirm_remove"),
                                 no_variant: "secondary",
                                 yes_variant: "danger"
                             }))

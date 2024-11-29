@@ -182,10 +182,10 @@ export async function call_unchecked(topic: string, payload: any, error_string?:
             const modal = util.async_modal_ref.current;
 
             if(!await modal.show({
-                    title: __("main.reboot_title"),
-                    body: __("main.reboot_content")(reboot_string),
-                    no_text: __("main.abort"),
-                    yes_text: __("main.reboot"),
+                    title: () => __("main.reboot_title"),
+                    body: () => __("main.reboot_content")(reboot_string),
+                    no_text: () => __("main.abort"),
+                    yes_text: () => __("main.reboot"),
                     no_variant: "secondary",
                     yes_variant: "danger"
                 }))

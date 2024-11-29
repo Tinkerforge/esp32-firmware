@@ -25,13 +25,13 @@ interface AsyncModalProps {
 }
 
 interface AsyncModalParams {
-    title: string;
-    body: ComponentChildren;
+    title: () => string;
+    body: () => ComponentChildren;
     no_variant: string;
-    no_text: string;
+    no_text: () => string;
 
     yes_variant: string;
-    yes_text: string;
+    yes_text: () => string;
 
     nestingDepth?: number
 }
@@ -43,8 +43,22 @@ interface AsyncModalState extends AsyncModalParams {
 }
 
 export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
+    constructor(props?: AsyncModalProps, state?: AsyncModalState) {
+        super(props, state);
+        this.params = {
+            title: () => "",
+            body: () => "",
+            no_variant: "secondary",
+            no_text: () => "",
+            yes_variant: "primary",
+            yes_text: () => "",
+        };
+    }
+    params: AsyncModalParams;
+
     show = async (strings: AsyncModalParams) => {
         return new Promise<boolean>((resolve) => {
+            this.params = strings;
             this.setState({
                 show: true,
                 promiseResolve: resolve,
@@ -71,15 +85,15 @@ export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
                     size="xl">
                 {/* There seems to be an incompatibility between preact's and react-bootstrap's typings*/ }
                 <Modal.Header {...{closeButton: true} as any}>
-                    <span class="modal-title form-label">{state.title}</span>
+                    <span class="modal-title form-label">{this.params.title()}</span>
                 </Modal.Header>
-                <Modal.Body>{state.body}</Modal.Body>
+                <Modal.Body>{this.params.body()}</Modal.Body>
                 <Modal.Footer>
                     <Button variant={state.no_variant} onClick={() => {this.hide(false)}}>
-                        {state.no_text}
+                        {this.params.no_text()}
                     </Button>
                     <Button variant={state.yes_variant} onClick={() => {this.hide(true)}}>
-                        {state.yes_text}
+                        {this.params.yes_text()}
                     </Button>
                 </Modal.Footer>
             </Modal>

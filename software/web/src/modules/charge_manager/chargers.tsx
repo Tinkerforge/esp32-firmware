@@ -173,10 +173,10 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         }
 
         if (illegal_chargers != "" && !await modal.show({
-            title: __("charge_manager.content.multi_broadcast_modal_title"),
-            body: __("charge_manager.content.multi_broadcast_modal_body") + "<br><br>" + illegal_chargers + "<br>" + __("charge_manager.content.multi_broadcast_modal_body_end"),
-            no_text: __("charge_manager.content.multi_broadcast_modal_cancel"),
-            yes_text: __("charge_manager.content.multi_broadcast_modal_save"),
+            title: () => __("charge_manager.content.multi_broadcast_modal_title"),
+            body: () => __("charge_manager.content.multi_broadcast_modal_body") + "<br><br>" + illegal_chargers + "<br>" + __("charge_manager.content.multi_broadcast_modal_body_end"),
+            no_text: () => __("charge_manager.content.multi_broadcast_modal_cancel"),
+            yes_text: () => __("charge_manager.content.multi_broadcast_modal_save"),
             no_variant: "secondary",
             yes_variant: "danger"
         }))
@@ -225,10 +225,10 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
     override async sendReset(t: "charge_manager/config"){
         const modal = util.async_modal_ref.current;
         if (!await modal.show({
-            title:__("reset.reset_modal"),
-                body: __("charge_manager.content.charge_manager_chargers_reset_modal_text"),
-                no_text: __("reset.reset_modal_abort"),
-                yes_text: __("reset.reset_modal_confirm"),
+                title: () => __("reset.reset_modal"),
+                body: () => __("charge_manager.content.charge_manager_chargers_reset_modal_text"),
+                no_text:() =>  __("reset.reset_modal_abort"),
+                yes_text: () => __("reset.reset_modal_confirm"),
                 no_variant: "secondary",
                 yes_variant: "danger"
             }))

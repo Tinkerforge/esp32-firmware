@@ -133,10 +133,10 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         this.setState({status_modal_string: ""});
         const modal = util.async_modal_ref.current;
         if(!await modal.show({
-                title: __("main.reboot_title"),
-                body: __("main.reboot_content")(__("remote_access.script.reboot_content_changed")),
-                no_text: __("main.abort"),
-                yes_text: __("main.reboot"),
+                title: () => __("main.reboot_title"),
+                body: () => __("main.reboot_content")(__("remote_access.script.reboot_content_changed")),
+                no_text: () => __("main.abort"),
+                yes_text: () => __("main.reboot"),
                 no_variant: "secondary",
                 yes_variant: "danger"
             }))

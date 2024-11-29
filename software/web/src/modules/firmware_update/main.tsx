@@ -109,10 +109,10 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                         const modal = util.async_modal_ref.current;
 
                         if (await modal.show({
-                                title: __("firmware_update.content.downgrade_title"),
-                                body: __("firmware_update.content.downgrade_body")(response.firmware_version, response.installed_version),
-                                no_text: __("firmware_update.content.abort_update"),
-                                yes_text: __("firmware_update.content.confirm_downgrade"),
+                                title: () => __("firmware_update.content.downgrade_title"),
+                                body: () => __("firmware_update.content.downgrade_body")(response.firmware_version, response.installed_version),
+                                no_text: () => __("firmware_update.content.abort_update"),
+                                yes_text: () => __("firmware_update.content.confirm_downgrade"),
                                 no_variant: "secondary",
                                 yes_variant: "danger",
                             })) {
@@ -222,10 +222,10 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                                         const modal = util.async_modal_ref.current;
 
                                         if (await modal.show({
-                                                title: __("firmware_update.content.signature_verify_failed_title"),
-                                                body: __("firmware_update.content.signature_verify_failed_body")(response.actual_publisher, response.expected_publisher),
-                                                no_text: __("firmware_update.content.abort_update"),
-                                                yes_text: __("firmware_update.content.confirm_override"),
+                                                title: () => __("firmware_update.content.signature_verify_failed_title"),
+                                                body: () => __("firmware_update.content.signature_verify_failed_body")(response.actual_publisher, response.expected_publisher),
+                                                no_text: () => __("firmware_update.content.abort_update"),
+                                                yes_text: () => __("firmware_update.content.confirm_override"),
                                                 no_variant: "secondary",
                                                 yes_variant: "danger",
                                             })) {

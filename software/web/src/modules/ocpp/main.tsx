@@ -140,10 +140,10 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                         <Button variant="danger" className="form-control" onClick={async () =>{
                             const modal = util.async_modal_ref.current;
                             if (!await modal.show({
-                                    title: __("ocpp.content.reset_title"),
-                                    body: __("ocpp.content.reset_title_text"),
-                                    no_text: __("ocpp.content.abort_reset"),
-                                    yes_text: __("ocpp.content.confirm_reset"),
+                                    title: () => __("ocpp.content.reset_title"),
+                                    body: () => __("ocpp.content.reset_title_text"),
+                                    no_text: () => __("ocpp.content.abort_reset"),
+                                    yes_text: () => __("ocpp.content.confirm_reset"),
                                     no_variant: "secondary",
                                     yes_variant: "danger"
                                 }))

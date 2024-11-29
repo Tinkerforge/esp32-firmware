@@ -896,10 +896,10 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                                 <Button size="sm" className="form-control" variant="danger" style="height: calc(1.5em + .5rem + 2px);" onClick={async () => {
                                                     const modal = util.async_modal_ref.current;
                                                     if (!await modal.show({
-                                                            title: __("meters.content.reset_modal"),
-                                                            body: __("meters.content.reset_modal_body")(get_meter_name(state.configs_table, meter_slot)),
-                                                            no_text: __("meters.content.reset_modal_abort"),
-                                                            yes_text: __("meters.content.reset_modal_confirm"),
+                                                            title: () => __("meters.content.reset_modal"),
+                                                            body: () => __("meters.content.reset_modal_body")(get_meter_name(state.configs_table, meter_slot)),
+                                                            no_text: () => __("meters.content.reset_modal_abort"),
+                                                            yes_text: () => __("meters.content.reset_modal_confirm"),
                                                             no_variant: "secondary",
                                                             yes_variant: "danger"
                                                         }))

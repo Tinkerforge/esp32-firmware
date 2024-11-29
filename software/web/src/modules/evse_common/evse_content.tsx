@@ -148,10 +148,10 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                     onClick={async () => {
                                         const modal = util.async_modal_ref.current;
                                         if(!await modal.show({
-                                            title: __("evse.content.reset_dc_fault_title"),
-                                            body: __("evse.content.reset_dc_fault_content"),
-                                            no_text: __("evse.content.abort"),
-                                            yes_text: __("evse.content.reset"),
+                                            title: () => __("evse.content.reset_dc_fault_title"),
+                                            body: () => __("evse.content.reset_dc_fault_content"),
+                                            no_text: () => __("evse.content.abort"),
+                                            yes_text: () => __("evse.content.reset"),
                                             no_variant: "secondary",
                                             yes_variant: "danger",
                                         }))

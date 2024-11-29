@@ -82,10 +82,10 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
     override async sendReset(t: "charge_manager/config"){
         const modal = util.async_modal_ref.current;
         if (!await modal.show({
-                title:__("reset.reset_modal"),
-                body: __("charge_manager.content.charge_manager_settings_reset_modal_text"),
-                no_text: __("reset.reset_modal_abort"),
-                yes_text: __("reset.reset_modal_confirm"),
+                title: () => __("reset.reset_modal"),
+                body: () => __("charge_manager.content.charge_manager_settings_reset_modal_text"),
+                no_text: () => __("reset.reset_modal_abort"),
+                yes_text: () => __("reset.reset_modal_confirm"),
                 no_variant: "secondary",
                 yes_variant: "danger"
             }))

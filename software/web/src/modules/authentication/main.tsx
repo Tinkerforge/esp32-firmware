@@ -91,10 +91,10 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
                         <Button variant="danger" className="form-control" disabled={state.digest_hash == ""} onClick={async () => {
                             const modal = util.async_modal_ref.current;
                             if(!await modal.show({
-                                    title: __("authentication.content.disable_auth_title"),
-                                    body: __("authentication.content.disable_auth_body"),
-                                    no_text: __("authentication.content.disable_auth_abort"),
-                                    yes_text: __("authentication.content.disable_auth_confirm"),
+                                    title: () => __("authentication.content.disable_auth_title"),
+                                    body: () => __("authentication.content.disable_auth_body"),
+                                    no_text: () => __("authentication.content.disable_auth_abort"),
+                                    yes_text: () => __("authentication.content.disable_auth_confirm"),
                                     no_variant: "secondary",
                                     yes_variant: "danger"
                                 }))

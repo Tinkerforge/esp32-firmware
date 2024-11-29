@@ -87,10 +87,10 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
     reset = async () => {
         const modal = util.async_modal_ref.current;
         if (!await modal.show({
-                title: __("reset.reset_modal"),
-                body: this.reboot_string != undefined ? __("reset.reset_modal_body_prefix") + this.reboot_string + __("reset.reset_modal_body_postfix") : __("reset.reset_modal_body"),
-                no_text: __("reset.reset_modal_abort"),
-                yes_text: __("reset.reset_modal_confirm"),
+                title: () => __("reset.reset_modal"),
+                body: () =>  this.reboot_string != undefined ? __("reset.reset_modal_body_prefix") + this.reboot_string + __("reset.reset_modal_body_postfix") : __("reset.reset_modal_body"),
+                no_text: () => __("reset.reset_modal_abort"),
+                yes_text: () => __("reset.reset_modal_confirm"),
                 no_variant: "secondary",
                 yes_variant: "danger"
             }))

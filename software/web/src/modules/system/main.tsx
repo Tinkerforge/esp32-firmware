@@ -132,10 +132,10 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                             <Button variant="danger" className="form-control" onClick={async () => {
                                     const modal = util.async_modal_ref.current;
                                     if (!await modal.show({
-                                            title: __("system.content.config_reset"),
-                                            body: __("system.content.config_reset_modal_text"),
-                                            no_text: __("system.content.abort_reset"),
-                                            yes_text: __("system.content.confirm_config_reset"),
+                                            title: () => __("system.content.config_reset"),
+                                            body: () => __("system.content.config_reset_modal_text"),
+                                            no_text: () => __("system.content.abort_reset"),
+                                            yes_text: () => __("system.content.confirm_config_reset"),
                                             no_variant: "secondary",
                                             yes_variant: "danger"
                                         }))
@@ -156,10 +156,10 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                         <Button variant="danger" className="form-control" onClick={async () => {
                             const modal = util.async_modal_ref.current;
                             if (!await modal.show({
-                                    title: __("system.content.factory_reset"),
-                                    body: __("system.content.factory_reset_modal_text"),
-                                    no_text: __("system.content.abort_reset"),
-                                    yes_text: __("system.content.confirm_factory_reset"),
+                                    title: () => __("system.content.factory_reset"),
+                                    body: () => __("system.content.factory_reset_modal_text"),
+                                    no_text: () => __("system.content.abort_reset"),
+                                    yes_text: () => __("system.content.confirm_factory_reset"),
                                     no_variant: "secondary",
                                     yes_variant: "danger"
                                 }))
