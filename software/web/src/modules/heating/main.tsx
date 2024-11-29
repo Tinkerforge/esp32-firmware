@@ -303,7 +303,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                 <Button
                                     className="form-control rounded-right"
                                     variant="primary"
-                                    onClick={() => API.call('heating/reset_holding_time', {}, "")}>
+                                    onClick={() => API.call('heating/reset_holding_time', {}, () => "")}>
                                     {__("heating.content.update_now")}
                                 </Button>
                             </div>

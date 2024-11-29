@@ -57,8 +57,8 @@ export class EMDebug extends Component {
                 <PageHeader title={__("em_debug.content.em_debug")}/>
                 <FormRow label={__("em_debug.content.reset_description")} label_muted={__("em_debug.content.reset_description_muted")}>
                     <div class="input-group pb-2">
-                        <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => API.call('energy_manager/reset', {}, "")}>{__("em_debug.content.reset_em")}</Button>
-                        <Button variant="primary" className="form-control rounded-left" onClick={() => API.call('energy_manager/reflash', {}, "")}>{__("em_debug.content.reflash_em")}</Button>
+                        <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => API.call('energy_manager/reset', {}, () => "")}>{__("em_debug.content.reset_em")}</Button>
+                        <Button variant="primary" className="form-control rounded-left" onClick={() => API.call('energy_manager/reflash', {}, () => "")}>{__("em_debug.content.reflash_em")}</Button>
                     </div>
                 </FormRow>
 
