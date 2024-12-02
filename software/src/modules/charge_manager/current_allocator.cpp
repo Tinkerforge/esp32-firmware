@@ -145,7 +145,7 @@ static void trace_sort_fn(int stage, int matched, int *idx_array, size_t charger
 #define trace_sort(x) trace_sort_fn(x, matched, idx_array, charger_count)
 
 // Sorts the indices of chargers that match the filter to the front of idx_array and returns the number of matches.
-int filter_chargers(filter_fn filter_, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
+int filter_chargers_impl(filter_fn filter_, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
     int matches = 0;
     for(int i = 0; i < charger_count; ++i) {
         if (!filter_(current_allocation[idx_array[i]], phase_allocation[idx_array[i]], &charger_state[idx_array[i]]))
@@ -160,7 +160,7 @@ int filter_chargers(filter_fn filter_, int *idx_array, const int32_t *current_al
 }
 
 // Sorts the indices of chargers by first grouping them with the group function and then comparing in groups with the sort function.
-void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits, const CurrentAllocatorConfig *cfg) {
+void sort_chargers_impl(group_fn group, compare_fn compare, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits, const CurrentAllocatorConfig *cfg) {
     int groups[MAX_CONTROLLED_CHARGERS] = {};
 
     for(int i = 0; i < charger_count; ++i)
@@ -376,10 +376,10 @@ static bool was_just_plugged_in(const ChargerState *state) {
 void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
-    filter(was_just_plugged_in(state));
+    filter_chargers(was_just_plugged_in(state));
 
     // Charger that is plugged in for the longest time first.
-    sort(0,
+    sort_chargers(0,
         left.state->last_plug_in < right.state->last_plug_in
     );
 
@@ -433,7 +433,7 @@ void calculate_window(bool trace_short, const int *idx_array_const, int32_t *cur
     int idx_array[MAX_CONTROLLED_CHARGERS];
     memcpy(idx_array, idx_array_const, sizeof(idx_array));
 
-    filter(allocated_phases > 0);
+    filter_chargers(allocated_phases > 0);
 
     // Calculate minimum window
     for (int i = 0; i < matched; ++i) {
@@ -572,13 +572,13 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     int matched = 0;
 
-    filter(allocated_phases > 0);
+    filter_chargers(allocated_phases > 0);
 
     // Reverse sort. Charger that was active for the longest time first.
     // Group chargers that were activated in stage 2 (because a vehicle was just plugged in)
     // behind others and sort those by the plug in timestamp to make sure the same chargers are shut down
     // if phases are overloaded in every iteration.
-    sort(
+    sort_chargers(
         was_just_plugged_in(state) ? 1 : 0,
         was_just_plugged_in(left.state) ? (left.state->last_plug_in < right.state->last_plug_in) : (left.state->last_switch < right.state->last_switch)
     );
@@ -875,9 +875,9 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     trace(have_active_chargers ? "4: have active chargers." : "4: don't have active chargers.");
 
     // A charger that was rotated has 0 allocated phases but is still charging.
-    filter(allocated_phases == 0 && (state->wants_to_charge || state->is_charging));
+    filter_chargers(allocated_phases == 0 && (state->wants_to_charge || state->is_charging));
 
-    sort(0,
+    sort_chargers(0,
         left.state->allocated_energy < right.state->allocated_energy
     );
 
@@ -967,9 +967,9 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     trace(have_active_chargers ? "5: have active chargers." : "5: don't have active chargers.");
 
-    filter(allocated_phases == 1 && state->phase_switch_supported);
+    filter_chargers(allocated_phases == 1 && state->phase_switch_supported);
 
-    sort(0,
+    sort_chargers(0,
         left.state->allocated_energy < right.state->allocated_energy
     );
 
@@ -1031,7 +1031,7 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
-    filter(allocated_phases > 0);
+    filter_chargers(allocated_phases > 0);
 
     // No need to sort here: We know that we have enough current to give each charger its minimum current.
     // A charger that can't be activated has 0 phases allocated.
@@ -1140,12 +1140,12 @@ static Cost get_fair_current(int matched, int start, int *idx_array, uint8_t *ph
 void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
     int matched = 0;
 
-    filter(allocated_current > 0);
+    filter_chargers(allocated_current > 0);
 
     if (matched == 0)
         return;
 
-    sort(
+    sort_chargers(
         3 - allocated_phases,
         current_capacity(_limits, left.state, left.allocated_current, left.allocated_phases, _cfg) < current_capacity(_limits, right.state, right.allocated_current, right.allocated_phases, _cfg)
     );
@@ -1210,9 +1210,9 @@ void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     int matched = 0;
 
     // Chargers that are currently not charging already have the enable current allocated (if available) by stage 7.
-    filter(allocated_current > 0 && state->is_charging);
+    filter_chargers(allocated_current > 0 && state->is_charging);
 
-    sort(
+    sort_chargers(
         3 - allocated_phases,
         current_capacity(_limits, left.state, left.allocated_current, left.allocated_phases, _cfg) < current_capacity(_limits, right.state, right.allocated_current, right.allocated_phases, _cfg)
     );
@@ -1299,12 +1299,12 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     trace(have_active_chargers ? "9: have active chargers." : "9: don't have active chargers.");
 
-    filter(allocated_phases == 0 && (state->wants_to_charge_low_priority || (state->wants_to_charge && state->last_wakeup != 0_us)));
+    filter_chargers(allocated_phases == 0 && (state->wants_to_charge_low_priority || (state->wants_to_charge && state->last_wakeup != 0_us)));
 
     if (matched == 0)
         return;
 
-    sort(
+    sort_chargers(
         stage_9_group(state, _cfg),
         stage_9_sort(left.state, right.state, _cfg)
     );

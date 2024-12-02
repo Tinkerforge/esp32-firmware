@@ -23,7 +23,7 @@
 
 typedef bool(*filter_fn)(int32_t /*allocated_current*/, uint8_t /*allocated_phases*/, const ChargerState */*state*/);
 
-int filter_chargers(filter_fn filter, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count);
+int filter_chargers_impl(filter_fn filter, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count);
 
 typedef int(*group_fn)(int32_t /*allocated_current*/, uint8_t /*allocated_phases*/, const ChargerState */*state*/, const CurrentAllocatorConfig * /*cfg*/);
 
@@ -34,7 +34,7 @@ struct CompareInfo {
 };
 typedef bool(*compare_fn)(CompareInfo /*left*/, CompareInfo /*right*/, CurrentLimits * /*limits*/, const CurrentAllocatorConfig * /*cfg*/);
 
-void sort_chargers(group_fn group, compare_fn compare, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits, const CurrentAllocatorConfig *cfg);
+void sort_chargers_impl(group_fn group, compare_fn compare, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits, const CurrentAllocatorConfig *cfg);
 
 GridPhase get_phase(PhaseRotation rot, ChargerPhase phase);
 
@@ -54,8 +54,8 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state);
 void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state);
 
-#define filter(x) do { \
-    matched = filter_chargers([](int32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
+#define filter_chargers(x) do { \
+    matched = filter_chargers_impl([](int32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
             return (x); \
         }, \
         idx_array, \
@@ -65,8 +65,8 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         charger_count); \
     } while(0)
 
-#define sort(group, filter) do {\
-    sort_chargers( \
+#define sort_chargers(group, filter) do {\
+    sort_chargers_impl( \
         [](int32_t allocated_current, uint8_t allocated_phases, const ChargerState *state, const CurrentAllocatorConfig *_cfg) { \
             return (group); \
         }, \
