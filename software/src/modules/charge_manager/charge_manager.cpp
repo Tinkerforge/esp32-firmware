@@ -457,13 +457,17 @@ void ChargeManager::setup()
 
             uint32_t allocated_current = 0;
 
+            // Use copy to not zero static limits forever.
+            CurrentLimits tmp_limits;
             if (!seen_all_chargers()) {
-                limits.raw = Cost{0, 0, 0, 0};
-                limits.min = Cost{0, 0, 0, 0};
-                limits.max_pv = 0;
+                tmp_limits.raw = Cost{0, 0, 0, 0};
+                tmp_limits.min = Cost{0, 0, 0, 0};
+                tmp_limits.max_pv = 0;
+            } else {
+                tmp_limits = this->limits;
             }
 
-            this->limits_post_allocation = this->limits;
+            this->limits_post_allocation = tmp_limits;
 
             int result = allocate_current(
                 this->ca_config,
@@ -480,15 +484,15 @@ void ChargeManager::setup()
             );
 
             for (size_t i = 0; i < 4; i++) {
-                allocated_currents[i] = limits.raw[i] - limits_post_allocation.raw[i];
-                this->state.get("l_raw")->get(i)->updateInt(limits.raw[i]);
-                this->state.get("l_min")->get(i)->updateInt(limits.min[i]);
-                this->state.get("l_spread")->get(i)->updateInt(limits.spread[i]);
+                allocated_currents[i] = tmp_limits.raw[i] - limits_post_allocation.raw[i];
+                this->state.get("l_raw")->get(i)->updateInt(tmp_limits.raw[i]);
+                this->state.get("l_min")->get(i)->updateInt(tmp_limits.min[i]);
+                this->state.get("l_spread")->get(i)->updateInt(tmp_limits.spread[i]);
                 this->state.get("alloc")->get(i)->updateInt(allocated_currents[i]);
                 this->low_level_state.get("wnd_min")->get(i)->updateInt(this->ca_state->control_window_min[i]);
                 this->low_level_state.get("wnd_max")->get(i)->updateInt(this->ca_state->control_window_max[i]);
             }
-            this->state.get("l_max_pv")->updateInt(limits.max_pv);
+            this->state.get("l_max_pv")->updateInt(tmp_limits.max_pv);
             this->low_level_state.get("last_hyst_reset")->updateUint(this->ca_state->last_hysteresis_reset.millis());
 
             for (int i = 0; i < this->charger_count; ++i) {
