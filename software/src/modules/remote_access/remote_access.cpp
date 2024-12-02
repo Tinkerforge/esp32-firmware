@@ -627,7 +627,7 @@ void RemoteAccess::register_urls() {
         }
         mbedtls_base64_encode((uint8_t*)bs64_note.get(), bs64_note_size, &olen, encrypted_note.get(), encrypted_note_size);
 
-        serializer.addMemberString("note", bs64_name.get());
+        serializer.addMemberString("note", bs64_note.get());
 
         serializer.endObject();
         size_t size = serializer.end();
