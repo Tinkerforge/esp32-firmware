@@ -38,14 +38,6 @@
 // double it to react faster if more current is available.
 #define REQUESTED_CURRENT_MARGIN_DEFAULT 3000
 
-#if MODULE_EM_COMMON_AVAILABLE()
-static void apply_energy_manager_config(Config &conf)
-{
-    conf.get("enable_watchdog")->updateBool(false);
-    conf.get("default_available_current")->updateUint(0);
-}
-#endif
-
 #if MODULE_AUTOMATION_AVAILABLE()
 bool ChargeManager::has_triggered(const Config *conf, void *data)
 {
@@ -118,15 +110,11 @@ void ChargeManager::pre_setup()
             0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
         )}
     }), [](Config &conf, ConfigSource source) -> String {
-#if MODULE_EM_COMMON_AVAILABLE()
-        apply_energy_manager_config(conf);
-#else
         uint32_t default_available_current = conf.get("default_available_current")->asUint();
         uint32_t maximum_available_current = conf.get("maximum_available_current")->asUint();
 
         if (default_available_current > maximum_available_current)
             return "default_available_current can not be greater than maximum_available_current";
-#endif
 
         if (conf.get("minimum_current_auto")->asBool()) {
             auto minimum_current_vehicle_type = conf.get("minimum_current_vehicle_type")->asUint();
@@ -365,11 +353,7 @@ void ChargeManager::start_manager_task()
 
 void ChargeManager::setup()
 {
-    if (!api.restorePersistentConfig("charge_manager/config", &config)) {
-#if MODULE_EM_COMMON_AVAILABLE()
-        apply_energy_manager_config(config);
-#endif
-    }
+    api.restorePersistentConfig("charge_manager/config", &config);
 
     // We could move this below the enable_charge_manager check, but want to always see
     // the configured values in debug reports even if the charge manager is currently
