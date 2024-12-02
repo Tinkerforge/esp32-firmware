@@ -96,7 +96,7 @@ export function __<S extends string>(key: DeepKeys<Translation, S>): GetDictValu
     return translate(key);
 }
 
-export function translate_unchecked<S extends string>(key: string): string {
+export function translate_unchecked(key: string): string {
     let value = translate(key);
 
     if (value !== undefined) {
