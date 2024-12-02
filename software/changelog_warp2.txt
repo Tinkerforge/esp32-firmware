@@ -650,7 +650,7 @@
 - Only show meter plot on status page if meter is connected
 - Fix charge manager not detecting vehicle as full if charge did start with an A -> C transition (through EVSE Bricklet firmware 2.2.6)
 
-2024-12-02: 2.6.2 (<unknown>)
+2024-12-02: 2.6.2 (120d8bd2)
 - Add passive battery storage support for PV excess charging
 - Add support for NFC type 5 tags (through NFC Bricklet firmware 2.1.0)
 - Add system language setting (currently used to translate MQTT auto discovery topics)
