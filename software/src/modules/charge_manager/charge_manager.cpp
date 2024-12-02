@@ -502,10 +502,6 @@ void ChargeManager::setup()
             this->state.get("state")->updateUint(result);
         }, 1_s);
 
-    if (config.get("enable_watchdog")->asBool()) {
-        task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1_s, 1_s);
-    }
-
     if (config.get("verbose")->asBool()) {
         ca_config->distribution_log = heap_alloc_array<char>(DISTRIBUTION_LOG_LEN);
         ca_config->distribution_log_len = DISTRIBUTION_LOG_LEN;
@@ -657,6 +653,10 @@ void ChargeManager::register_urls()
         this->limits.max_pv = 3 * current; //TODO: unlimited?
 
     }, false);
+
+    if (static_cm && config.get("enable_watchdog")->asBool()) {
+        task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1_s, 1_s);
+    }
 }
 
 void ChargeManager::update_charger_state_config(uint8_t idx) {
