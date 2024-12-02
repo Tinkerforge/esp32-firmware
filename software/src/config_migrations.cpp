@@ -418,73 +418,6 @@ static const ConfigMigration migrations[] = {
     },
 #endif
 
-#if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3() || BUILD_IS_ENERGY_MANAGER()
-    {
-        #if BUILD_IS_ENERGY_MANAGER()
-        2, 2, 0,
-        #elif BUILD_IS_WARP()
-        2, 4, 2,
-        #else // WARP2, 3
-        2, 5, 0,
-        #endif
-        // Changes
-        // - Move remote access keys into separate directory
-        // - Rename relay_host_port to relay_port
-        [](){
-            {
-                DynamicJsonDocument cfg{4096};
-                if (read_config_file("remote_access/config", cfg)) {
-                    cfg["relay_port"] = cfg["relay_host_port"];
-                    cfg.remove("relay_host_port");
-                    write_config_file("remote_access/config", cfg);
-                }
-            }
-
-            if (LittleFS.exists(KEY_DIRECTORY)) {
-                return;
-            }
-
-            DynamicJsonDocument mgmt{4096};
-            DynamicJsonDocument conn{4096};
-            if (!read_config_file("remote_access/management_connection", mgmt) || !read_config_file("remote_access/remote_connection_config", conn)) {
-                return;
-            }
-
-            LittleFS.mkdir(KEY_DIRECTORY);
-
-            store_key(0, 0, mgmt["private_key"].as<const char *>(), mgmt["psk"].as<const char *>(), mgmt["remote_public_key"].as<const char *>());
-            for(int i = 0; i < 5; ++i) {
-                auto key = conn["connections"][i];
-                store_key(1, i, key["private_key"].as<const char *>(), key["psk"].as<const char *>(), key["remote_public_key"].as<const char *>());
-            }
-
-            delete_config_file("remote_access/management_connection");
-            delete_config_file("remote_access/remote_connection_config");
-        }
-    },
-    {
-        #if BUILD_IS_ENERGY_MANAGER()
-        2, 2, 1,
-        #elif BUILD_IS_WARP()
-        2, 4, 3,
-        #else // WARP2, 3
-        2, 5, 1,
-        #endif
-        // Changes
-        // - Add multiple users to remote access
-        []() {
-            DynamicJsonDocument cfg{4096};
-            if (read_config_file("remote_access/config", cfg)) {
-                cfg["users"][0]["id"] = 1;
-                cfg["users"][0]["email"] = cfg["email"];
-                cfg["users"][0]["public_key"] = "";
-                cfg.remove("email");
-                write_config_file("remote_access/config", cfg);
-            }
-        }
-    },
-#endif
-
 #if BUILD_IS_ENERGY_MANAGER()
     {
         1, 0, 2,
@@ -852,6 +785,27 @@ static const ConfigMigration migrations[] = {
 
             delete_config_file("remote_access/management_connection");
             delete_config_file("remote_access/remote_connection_config");
+        }
+    },
+    {
+        #if BUILD_IS_ENERGY_MANAGER()
+        2, 2, 1,
+        #elif BUILD_IS_WARP()
+        2, 4, 3,
+        #else // WARP2, 3
+        2, 5, 1,
+        #endif
+        // Changes
+        // - Add multiple users to remote access
+        []() {
+            DynamicJsonDocument cfg{4096};
+            if (read_config_file("remote_access/config", cfg)) {
+                cfg["users"][0]["id"] = 1;
+                cfg["users"][0]["email"] = cfg["email"];
+                cfg["users"][0]["public_key"] = "";
+                cfg.remove("email");
+                write_config_file("remote_access/config", cfg);
+            }
         }
     },
 #endif
