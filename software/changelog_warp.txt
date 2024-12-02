@@ -664,3 +664,6 @@
 - MQTT: Fix leaking all DRAM with misbehaving brokers resulting in WiFi disconnects
 - Fix log spam of modbus timeouts
 - Fix multiple remote access bugs
+
+2024-12-02: 2.6.3 (<unknown>)
+- Fix charger manager never allocating current if any charger is not immediately reachable

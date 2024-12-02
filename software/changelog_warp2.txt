@@ -685,3 +685,6 @@
 - Wait up to 10 seconds for a car to react after a phase switch (through EVSE 2.0 Bricklet firmware 2.2.7)
 - Allow instant phase switch if contactor was not yet closed once or CP was disconnected (through EVSE 2.0 Bricklet firmware 2.2.7)
 - Fix glitch after 30 second CP disconnect (through EVSE 2.0 Bricklet firmware 2.2.7)
+
+2024-12-02: 2.6.3 (<unknown>)
+- Fix charger manager never allocating current if any charger is not immediately reachable
