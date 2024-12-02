@@ -148,7 +148,7 @@ export class PowerManagerStatus extends Component {
         let config      = API.get('power_manager/config');
 
         return <StatusSection name="power_manager">
-            {API.get('power_manager/config').enabled || true ?
+            {API.get('power_manager/config').enabled ?
                 <FormRow label={__("power_manager.status.mode")}>
                     <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                         <Button
