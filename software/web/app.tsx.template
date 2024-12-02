@@ -222,7 +222,7 @@ export class App extends Component<AppProps, AppState> {
                     <main id="main" class={util.is_native_median_app() ? "col px-4": "col-md-9 ml-sm-auto col-lg-10 px-md-4"} style={this.state.visible ? undefined : "visibility: hidden;"}>
                         <Tab.Content>
                             <div class={util.is_native_median_app() ? "alert_placeholder-app" : "alert_placeholder"}>
-                                {util.get_alerts().map((alert) => <Alert className="custom-alert" key={alert.id} variant={alert.variant} onClose={() => util.remove_alert(alert.id)} dismissible><strong>{alert.title}</strong> {alert.text}</Alert>)}
+                                {util.get_alerts().map((alert) => <Alert className="custom-alert" key={alert.id} variant={alert.variant} onClose={() => util.remove_alert(alert.id)} dismissible><strong>{alert.title()}</strong> {alert.text()}</Alert>)}
                             </div>
 
                             <SubPage name="login">
