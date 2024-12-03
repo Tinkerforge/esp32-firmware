@@ -127,7 +127,7 @@ void Eco::update()
         }
     }
 
-    if (config.get("charge_planning_active")->asBool() && charge_plan.get("enabled")->asBool()) {
+    if (config.get("charge_plan_active")->asBool() && charge_plan.get("enabled")->asBool()) {
         // Currently we assume that the amount is in hours, later we may add support for kWh
         const uint32_t hours_desired      = charge_plan.get("amount")->asUint();
         const Depature depature           = charge_plan.get("depature")->asEnum<Depature>();
