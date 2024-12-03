@@ -356,14 +356,14 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={(v) => this.setState({sg_ready_extended_active_type: parseInt(v)})}
                         />
                     </FormRow>
-                    <FormRow label="Regelzeit" label_muted="Zeitraum in dem die günstigsten Stunden für den erweiterten und die teuersten Stunden für den blockierenden Betrieb bestimmt werden" help="">
+                    <FormRow label={__("heating.content.control_period")} label_muted={__("heating.content.control_period_muted")} help={__("heating.content.control_period_help")}>
                         <InputSelect
                             items={[
-                                ["0", "24 Stunden"],
-                                ["1", "12 Stunden"],
-                                ["2", "8 Stunden"],
-                                ["3", "6 Stunden"],
-                                ["4", "4 Stunden"]
+                                ["0", "24 " + __("heating.content.hours")],
+                                ["1", "12 " + __("heating.content.hours")],
+                                ["2", "8 " +  __("heating.content.hours")],
+                                ["3", "6 " +  __("heating.content.hours")],
+                                ["4", "4 " +  __("heating.content.hours")]
                             ]}
                             value={state.control_period}
                             onValue={(v) => this.setState({control_period: parseInt(v)}, this.update_uplot)}
@@ -402,7 +402,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
-                            unit={__("heating.content.h_per_day")}
+                            unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
                             checked={state.extended_active && day_ahead_prices_enabled}
                             onClick={this.toggle('extended_active', this.update_uplot)}
                             value={state.extended_hours}
@@ -438,7 +438,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
-                            unit={__("heating.content.h_per_day")}
+                            unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
                             checked={state.blocking_active && day_ahead_prices_enabled}
                             onClick={this.toggle('blocking_active', this.update_uplot)}
                             value={state.blocking_hours}

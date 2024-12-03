@@ -91,13 +91,33 @@ let x = {
             "or": "or",
             "but_only_if": "but only if",
             "kwh_per_day": "kWh/day",
+            "h_per_x": /*SFN*/(x: number) => x == 24 ? "h/day" : "h/" + x + "h"/*NF*/,
             "h_per_day": "h/day",
             "for_the_most_expensive": "for the most expensive",
             "p14_enwg_help": <>
                 <p>From 01.01.2024, §14a EnWG requires the controllability of heat pumps in Germany. Specifically, newly installed heat pumps must have a communication interface to the grid operator such that the grid operator can adjust the power of the device in exceptional cases.</p>
                 <p>The control according to §14a EnWG can be activated here. For this purpose, an input is controlled by the grid operator and in return the heat pump is controlled via the SG Ready output 1 according to the input.</p>
                 <p>Note: The control according to §14a EnWG takes precedence over the heating control configured above.</p>
-            </>
+            </>,
+            "control_period": "Control period",
+            "control_period_help": <>
+                <p>Der Regelzeitraum bestimmt, für welchen Zeitraum die eingestellten Steuerregeln aktiv sind.</p>
+                <p>Beispielkonfiguration:</p>
+                <ul>
+                    <li>Regelzeitraum: 24 Stunden</li>
+                    <li>Erweiterter Betrieb: Günstigste 4 Stunden</li>
+                    <li>Blockierender Betrieb: Teuerste 4 Stunden</li>
+                </ul>
+                <p>In diesem Fall Kann es passieren das bis zu 4 Stunden am Stück der erweiterte Betrieb und bis zu 4 Stunden am Stück der blockierende Betrieb geschaltet wird. Angenommen die Heizung muss mindestens 2x pro Tag laufen damit eine gewünschte Temperatur eingehalten wird, würde sich eventuell folgende Konfiguration anbieten:</p>
+                <ul>
+                    <li>Regelzeitraum: 12 Stunden</li>
+                    <li>Erweiterter Betrieb: Günstigste 2 Stunden</li>
+                    <li>Blockierender Betrieb: Teuerste 2 Stunden</li>
+                </ul>
+                <p>In dieser Konfiguration würde die Heizung auch pro Tag 4 Stunden in den erweiterten Betrieb sowieso 4 Stunden in den blockiernden Betrieb gebracht.</p>
+                <p>Allerdings wird der Tag in zwei 12 Stunden Regelzeiträume geteilt in denen je die günstigsten/teuersten Steunden gesucht werden und entsprechend kann die Heizung pro 12 Stunden auch höchsten für 2 Stunden am Stück in den erweiterten oder blockierenden Betrieb gebracht werden.</p>
+            </>,
+            "control_period_muted": "Zeitraum in dem die günstigsten Stunden für den erweiterten und die teuersten Stunden für den blockierenden Betrieb bestimmt werden."
         },
         "script": {
             "save_failed": "Failed to save the heating settings",
