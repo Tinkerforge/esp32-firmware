@@ -463,8 +463,7 @@ void PowerManager::setup()
     // that across a reboot. This will still fail on a power cycle or bricklet update,
     // which set the contactor back to single phase.
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
-        uint32_t phases_wanted = is_3phase ? 3 : 1;
-        external_control.get("phases_wanted")->updateUint(phases_wanted);
+        external_control.get("phases_wanted")->updateUint(current_phases);
     }
 
     // supply_cable_max_current_ma must be set before reset
@@ -531,8 +530,8 @@ void PowerManager::register_urls()
                     esp_system_abort("Unexpected value of phase_switcher_backend->get_phase_switching_state()");
             }
 
-            bool _wants_3phase = external_control_update.get("phases_wanted")->asUint() == 3;
-            if (phase_switcher_backend->switch_phases_3phase(_wants_3phase))
+            uint32_t phases_wanted = external_control_update.get("phases_wanted")->asUint();
+            if (phase_switcher_backend->switch_phases(phases_wanted))
                 state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
         }, true);
 
@@ -553,8 +552,8 @@ void PowerManager::register_urls()
             }
 
             state.get("external_control")->updateUint(ext_state);
-            this->is_3phase = phase_switcher_backend->get_is_3phase();
-            low_level_state.get("is_3phase")->updateBool(this->is_3phase);
+            this->current_phases = phase_switcher_backend->get_phases();
+            low_level_state.get("is_3phase")->updateBool(this->current_phases == 3);
         }, 1_s, 1_s);
     } else {
         api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](String &/*errmsg*/) {
@@ -753,8 +752,8 @@ void PowerManager::update_data()
 {
     // TODO remove have_phases and is_3phase
     // Update states from back-end
-    is_3phase = phase_switcher_backend->get_is_3phase();
-    low_level_state.get("is_3phase")->updateBool(is_3phase);
+    current_phases = phase_switcher_backend->get_phases();
+    low_level_state.get("is_3phase")->updateBool(current_phases == 3);
 
 #if MODULE_METERS_AVAILABLE()
     if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != MeterValueAvailability::Fresh) {
@@ -1181,9 +1180,9 @@ bool PowerManager::get_enabled() const
     return config.get("enabled")->asBool();
 }
 
-bool PowerManager::get_is_3phase() const
+uint32_t PowerManager::get_phases() const
 {
-    return is_3phase;
+    return current_phases;
 }
 
 void PowerManager::set_config_error(uint32_t config_error_mask)

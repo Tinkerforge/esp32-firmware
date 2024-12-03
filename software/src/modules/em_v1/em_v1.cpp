@@ -374,7 +374,7 @@ bool EMV1::phase_switching_capable()
     return contactor_installed;
 }
 
-bool EMV1::can_switch_phases_now(bool /*wants_3phase*/)
+bool EMV1::can_switch_phases_now(uint32_t /*phases_wanted*/)
 {
     if (!contactor_installed) {
         return false;
@@ -387,9 +387,9 @@ bool EMV1::can_switch_phases_now(bool /*wants_3phase*/)
     return true;
 }
 
-bool EMV1::get_is_3phase()
+uint32_t EMV1::get_phases()
 {
-    return all_data.contactor_value;
+    return all_data.contactor_value ? 3 : 1;
 }
 
 PhaseSwitcherBackend::SwitchingState EMV1::get_phase_switching_state()
@@ -416,7 +416,7 @@ PhaseSwitcherBackend::SwitchingState EMV1::get_phase_switching_state()
     return PhaseSwitcherBackend::SwitchingState::Ready;
 }
 
-bool EMV1::switch_phases_3phase(bool wants_3phase)
+bool EMV1::switch_phases(uint32_t phases_wanted)
 {
     if (!contactor_installed) {
         logger.printfln("Requested phase switch without contactor installed.");
@@ -428,7 +428,7 @@ bool EMV1::switch_phases_3phase(bool wants_3phase)
         return false;
     }
 
-    tf_warp_energy_manager_set_contactor(&device, wants_3phase);
+    tf_warp_energy_manager_set_contactor(&device, phases_wanted == 3);
     phase_switch_deadtime_us = now_us() + micros_t{2000000}; // 2s
 
     return true;

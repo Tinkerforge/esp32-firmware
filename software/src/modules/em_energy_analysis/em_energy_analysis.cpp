@@ -274,10 +274,10 @@ void EMEnergyAnalysis::collect_data_points()
             // input_len and output_len now contain the actual value count
 
 #if MODULE_EM_V1_AVAILABLE()
-            flags |= power_manager.get_is_3phase() ? 0b0001 : 0;
-            flags |= inputs[0]                     ? 0b0010 : 0;
-            flags |= inputs[1]                     ? 0b0100 : 0;
-            flags |= outputs[0]                    ? 0b1000 : 0;
+            flags |= power_manager.get_phases() > 1 ? 0b0001 : 0;
+            flags |= inputs[0]                      ? 0b0010 : 0;
+            flags |= inputs[1]                      ? 0b0100 : 0;
+            flags |= outputs[0]                     ? 0b1000 : 0;
 #elif MODULE_EM_V2_AVAILABLE()
             flags |= inputs[0]  ? (1 << 0) : 0;
             flags |= inputs[1]  ? (1 << 1) : 0;

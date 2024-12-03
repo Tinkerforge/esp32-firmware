@@ -101,11 +101,11 @@ protected:
     // PhaseSwitcherBackend implementation
     uint32_t get_phase_switcher_priority() override {return 12;}
     bool phase_switching_capable() override;
-    bool can_switch_phases_now(bool wants_3phase) override;
+    bool can_switch_phases_now(uint32_t phases_wanted) override;
     bool requires_cp_disconnect() override {return false;}
-    bool get_is_3phase() override;
+    uint32_t get_phases() override;
     PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override;
-    bool switch_phases_3phase(bool wants_3phase) override;
+    bool switch_phases(uint32_t phases_wanted) override;
     bool is_external_control_allowed() override;
 
 // To allow the meters_evse_v2 module to get/set energy meter values

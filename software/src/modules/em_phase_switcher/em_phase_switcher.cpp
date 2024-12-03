@@ -149,14 +149,14 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
         allocated_phases = 1;
     } // 1 and 3 are ok
 
-    const uint32_t current_phases = em_v1.get_is_3phase() ? 3 : 1;
+    const uint32_t current_phases = em_v1.get_phases();
 
     switch(switching_state) {
         case SwitchingState::Idle: {
             if (allocated_phases != current_phases) {
                 if (!em_v1.phase_switching_capable()) {
                     logger.printfln("Phase switch wanted but not available. Check configuration.");
-                } else if (!em_v1.can_switch_phases_now(allocated_phases == 3)) {
+                } else if (!em_v1.can_switch_phases_now(allocated_phases)) {
                     // Can't switch to the requested phases at the moment. Try again later.
                     return;
                 } else if (!deadline_elapsed(last_state_packet - 3500_ms)) {
@@ -183,8 +183,7 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
             command_packet->v1.allocated_current = 0;
             command_packet->v1.command_flags |= CM_COMMAND_FLAGS_CPDISC_MASK;
 
-            bool wants_3phase = allocated_phases == 3;
-            if (em_v1.switch_phases_3phase(wants_3phase)) {
+            if (em_v1.switch_phases(allocated_phases)) {
                 switching_state = SwitchingState::WaitUntilSwitched;
             }
             break;
@@ -194,11 +193,10 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
             command_packet->v1.command_flags |= CM_COMMAND_FLAGS_CPDISC_MASK;
 
             if (em_v1.get_phase_switching_state() == PhaseSwitcherBackend::SwitchingState::Ready) {
-                bool wants_3phase = allocated_phases == 3;
-                if (em_v1.get_is_3phase() == wants_3phase) {
+                if (em_v1.get_phases() == allocated_phases) {
                     switching_state = SwitchingState::WaitUntilCPReconnect;
                 } else {
-                    logger.printfln("Incorrect number of phases after switching, wanted %u. Trying again.", wants_3phase ? 3u : 1u);
+                    logger.printfln("Incorrect number of phases after switching, wanted %u. Trying again.", allocated_phases);
                     switching_state = SwitchingState::TogglingContactor;
                 }
             }
@@ -253,7 +251,7 @@ void EMPhaseSwitcher::filter_state_packet(size_t charger_idx, cm_state_packet *s
         return;
     }
 
-    uint32_t em_phases = em_v1.get_is_3phase() ? 3 : 1;
+    uint32_t em_phases = em_v1.get_phases();
 
     // Modify packet
     state_packet->v1.feature_flags |= CM_FEATURE_FLAGS_PHASE_SWITCH_MASK; // Fake phase-switching support

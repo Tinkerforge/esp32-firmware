@@ -80,7 +80,7 @@ public:
     void register_phase_switcher_backend(PhaseSwitcherBackend *backend);
 
     bool get_enabled() const;
-    bool get_is_3phase() const;
+    uint32_t get_phases() const;
 
     [[gnu::const]] size_t get_debug_header_length() const override;
     void get_debug_header(StringBuilder *sb) override;
@@ -115,14 +115,14 @@ public:
 private:
     class PhaseSwitcherBackendDummy final : public PhaseSwitcherBackend
     {
-        uint32_t get_phase_switcher_priority()       override {return 0;}
-        bool phase_switching_capable()               override {return false;}
-        bool can_switch_phases_now(bool wants_3phase) override {return false;}
-        bool requires_cp_disconnect()                override {return true;}
-        bool get_is_3phase()                         override {return false;}
-        SwitchingState get_phase_switching_state()   override {return SwitchingState::Ready;} // Don't report an error when phase_switching_capable() is false.
-        bool switch_phases_3phase(bool wants_3phase) override {return false;}
-        bool is_external_control_allowed()           override {return false;}
+        uint32_t get_phase_switcher_priority()             override {return 0;}
+        bool phase_switching_capable()                     override {return false;}
+        bool can_switch_phases_now(uint32_t phases_wanted) override {return false;}
+        bool requires_cp_disconnect()                      override {return true;}
+        uint32_t get_phases()                              override {return 0;}
+        SwitchingState get_phase_switching_state()         override {return SwitchingState::Ready;} // Don't report an error when phase_switching_capable() is false.
+        bool switch_phases(uint32_t phases_wanted)         override {return false;}
+        bool is_external_control_allowed()                 override {return false;}
     };
 
     enum class BatteryMode : uint8_t {
@@ -168,7 +168,7 @@ private:
     bool     printed_skipping_currents_update    = false;
 
     uint32_t mode                                = 0;
-    bool     is_3phase                           = false;
+    uint32_t current_phases                      = 0;
     bool     just_switched_mode                  = false;
     int32_t max_current_limited_ma               = 0;
 

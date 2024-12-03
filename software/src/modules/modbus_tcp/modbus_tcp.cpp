@@ -244,7 +244,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpInputRegister(uint16_t reg, void *c
 #endif
         //2100... handled below
 
-        case 3100: val.u = power_manager.get_is_3phase() ? 3 : 1; break;
+        case 3100: val.u = power_manager.get_phases(); break;
         case 3102: REQUIRE(phase_switch); val.u = cache->power_manager_state->get("external_control")->asUint(); break;
 
         //4000... handled below
@@ -897,7 +897,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getKebaHoldingRegister(uint16_t reg) {
             } break;
 #endif
         case 1550: val.u = cache->has_feature_phase_switch ? 3 : 0; break;
-        case 1552: val.u = power_manager.get_is_3phase() ? 3 : 1; break;
+        case 1552: val.u = power_manager.get_phases(); break;
         case 1600: break; // failsafe
         case 1602: break; // failsafe
 

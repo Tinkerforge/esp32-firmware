@@ -370,6 +370,8 @@ void EvseCommon::send_cm_client_update() {
         supported_current = min(supported_current, (uint16_t)slots.get(i)->get("max_current")->asUint());
     }
 
+    const uint32_t phases = backend->get_phases();
+
     cm_networking.send_client_update(
         local_uid_num,
         state.get("iec61851_state")->asUint(),
@@ -382,8 +384,8 @@ void EvseCommon::send_cm_client_update() {
         supported_current,
         management_enabled.get("enabled")->asBool(),
         backend->get_control_pilot_disconnect(),
-        backend->get_is_3phase() ? 3 : 1,
-        backend->phase_switching_capable() && backend->can_switch_phases_now(!backend->get_is_3phase())
+        phases,
+        backend->phase_switching_capable() && backend->can_switch_phases_now(4 - phases)
     );
 #endif
 }
@@ -398,9 +400,10 @@ void EvseCommon::register_urls()
         set_managed_current(current);
 
         backend->set_control_pilot_disconnect(cp_disconnect_requested, nullptr);
-        auto phases = backend->get_is_3phase() ? 3 : 1;
-        if (phases_requested != 0 && phases != phases_requested) {
-            backend->switch_phases_3phase(phases_requested == 3);
+        uint32_t phases = backend->get_phases();
+        uint32_t phases_wanted = static_cast<uint32_t>(phases_requested);
+        if (phases_wanted != 0 && phases != phases_wanted) {
+            backend->switch_phases(phases_wanted);
         }
 
         // Decouple send via deadline: If we would send a client update immediately,
