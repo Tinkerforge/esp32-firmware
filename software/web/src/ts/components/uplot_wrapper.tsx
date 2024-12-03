@@ -60,6 +60,7 @@ interface UplotWrapperProps {
     y_unit: string;
     y_label: string;
     y_digits: number;
+    y_three_split?: boolean;
 }
 
 export class UplotWrapper extends Component<UplotWrapperProps, {}> {
@@ -279,6 +280,12 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 },
             ],
         };
+
+        if (this.props.y_three_split) {
+            options.axes[1].splits = (self: uPlot, axisIdx: number, scaleMin: number, scaleMax: number, foundIncr: number, foundSpace: number) => {
+                return [scaleMin, (scaleMin + scaleMax) / 2, scaleMax];
+            };
+        }
 
         let div = this.div_ref.current;
         this.uplot = new uPlot(options, [], div);

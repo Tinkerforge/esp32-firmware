@@ -70,6 +70,7 @@ interface UplotWrapperProps {
     y_unit: string;
     y_label: string;
     y_digits: number;
+    y_three_split?: boolean;
     y_skip_upper?: boolean;
     y_sync_ref?: RefObject<UplotFlagsWrapper>;
     y2_enable?: boolean;
@@ -438,6 +439,12 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 range: (self: uPlot, initMin: number, initMax: number, scaleKey: string): uPlot.Range.MinMax => {
                     return uPlot.rangeNum(this.y2_min, this.y2_max, {min: {}, max: {}});
                 }
+            };
+        }
+
+        if (this.props.y_three_split) {
+            options.axes[1].splits = (self: uPlot, axisIdx: number, scaleMin: number, scaleMax: number, foundIncr: number, foundSpace: number) => {
+                return [scaleMin, (scaleMin + scaleMax) / 2, scaleMax];
             };
         }
 
