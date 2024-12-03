@@ -54,6 +54,7 @@ void Eco::pre_setup()
     });
     charge_plan_update = charge_plan;
 
+    // TODO: If we don't need any more state information per charger we can use a simple array here.
     state_chargers_prototype = Config::Object({
         {"amount", Config::Uint(0)} // Amount of charge since start (h or kWh depending on configuration)
     });
@@ -71,10 +72,9 @@ void Eco::pre_setup()
 void Eco::setup()
 {
     api.restorePersistentConfig("eco/config", &config);
-    // TODO: Set user defined default charge_plan?
 
-    // TODO: Add number of chargers depending on charge manager configuration
-    for (size_t i = 0; i < MAX_CONTROLLED_CHARGERS; i++) {
+    const size_t controlled_chargers = charge_manager.config.get("chargers")->count();
+    for (size_t i = 0; i < controlled_chargers; i++) {
         state.get("chargers")->add();
     }
 

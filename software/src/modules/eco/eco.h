@@ -23,8 +23,7 @@
 #include "config.h"
 #include "depature.enum.h"
 
-// TODO get MAX_CONTROLLED_CHARGERS from charge manager
-#define MAX_CONTROLLED_CHARGERS 65
+#include "modules/cm_networking/cm_networking_defs.h"
 
 class Eco final : public IModule
 {
