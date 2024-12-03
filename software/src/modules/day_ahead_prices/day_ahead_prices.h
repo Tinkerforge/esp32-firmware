@@ -72,7 +72,7 @@ private:
 
     DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
 
-    uint32_t last_update_minmaxavg;
+    time_t last_update_minmaxavg;
     DataReturn<int32_t> price_minimum_today;
     DataReturn<int32_t> price_minimum_tomorrow;
     DataReturn<int32_t> price_average_today;

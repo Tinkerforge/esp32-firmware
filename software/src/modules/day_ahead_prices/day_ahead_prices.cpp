@@ -205,7 +205,8 @@ void DayAheadPrices::update_prices_sorted()
 
 void DayAheadPrices::update_minmaxavg_price()
 {
-    last_update_minmaxavg = get_localtime_today_midnight_in_utc();
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&last_update_minmaxavg))
+        return;
 
     // Minimum, average, maximum today
     const uint32_t start_today = last_update_minmaxavg / 60;
@@ -482,7 +483,11 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t sta
 
 DataReturn<int32_t> DayAheadPrices::get_minimum_price_today()
 {
-    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+    time_t midnight;
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+        return {false, 0};
+
+    if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
     }
 
@@ -491,7 +496,11 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_today()
 
 DataReturn<int32_t> DayAheadPrices::get_minimum_price_tomorrow()
 {
-    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+    time_t midnight;
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+        return {false, 0};
+
+    if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
     }
 
@@ -530,7 +539,11 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_between(const uint32_t sta
 
 DataReturn<int32_t> DayAheadPrices::get_average_price_today()
 {
-    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+    time_t midnight;
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+        return {false, 0};
+
+    if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
     }
 
@@ -539,7 +552,11 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_today()
 
 DataReturn<int32_t> DayAheadPrices::get_average_price_tomorrow()
 {
-    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+    time_t midnight;
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+        return {false, 0};
+
+    if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
     }
 
@@ -579,7 +596,11 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t sta
 
 DataReturn<int32_t> DayAheadPrices::get_maximum_price_today()
 {
-    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+    time_t midnight;
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+        return {false, 0};
+
+    if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
     }
 
@@ -588,7 +609,11 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_today()
 
 DataReturn<int32_t> DayAheadPrices::get_maximum_price_tomorrow()
 {
-    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+    time_t midnight;
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+        return {false, 0};
+
+    if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
     }
 

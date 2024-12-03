@@ -537,7 +537,11 @@ bool SolarForecast::forecast_time_between(const uint32_t first_date, const uint3
 
 DataReturn<uint32_t> SolarForecast::get_wh_today()
 {
-    const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
+    time_t midnight;
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+        return {false, 0};
+
+    const uint32_t start = midnight / 60;
     const uint32_t end   = start + 60*24 - 1;
 
     uint32_t wh    = 0;
@@ -561,7 +565,11 @@ DataReturn<uint32_t> SolarForecast::get_wh_today()
 
 DataReturn<uint32_t> SolarForecast::get_wh_tomorrow()
 {
-    const uint32_t start = get_localtime_today_midnight_in_utc() / 60 + 60*24;
+    time_t midnight;
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+        return {false, 0};
+
+    const uint32_t start = midnight / 60 + 60*24;
     const uint32_t end   = start + 60*24 - 1;
 
     uint32_t wh    = 0;

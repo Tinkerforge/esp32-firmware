@@ -275,7 +275,11 @@ void Heating::update()
 
             // start_time is the nearest time block with length duration and index for current time within the block
             const uint32_t duration_block = (minutes_since_midnight / (duration*60)) * (duration*60);
-            const uint32_t start_time     = get_localtime_today_midnight_in_utc()/60 + duration_block;
+            time_t midnight;
+            if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+                return;
+
+            const uint32_t start_time     = midnight/60 + duration_block;
             const uint8_t current_index   = (minutes_since_midnight - duration_block)/15;
 
             if (handle_extended) {

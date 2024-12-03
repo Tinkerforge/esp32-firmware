@@ -1118,11 +1118,10 @@ error:
     return nullptr;
 }
 
-time_t get_localtime_midnight_in_utc(time_t *timestamp)
+time_t get_localtime_midnight_in_utc(time_t timestamp)
 {
     // Local time for timestamp
-    const time_t t = time(timestamp);
-    struct tm *tm  = localtime(&t);
+    struct tm *tm  = localtime(&timestamp);
 
     // Local time to today midnight
     tm->tm_hour  =  0;
@@ -1134,7 +1133,12 @@ time_t get_localtime_midnight_in_utc(time_t *timestamp)
     return mktime(tm);
 }
 
-time_t get_localtime_today_midnight_in_utc()
+Option<time_t> get_localtime_today_midnight_in_utc()
 {
-    return get_localtime_midnight_in_utc(nullptr);
+    struct timeval tv;
+    if (!rtc.clock_synced(&tv))
+        return {};
+
+    return get_localtime_midnight_in_utc(tv.tv_sec);
 }
+

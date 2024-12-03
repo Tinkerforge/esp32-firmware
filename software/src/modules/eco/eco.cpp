@@ -134,8 +134,14 @@ void Eco::update()
         const Depature depature           = charge_plan.get("depature")->asEnum<Depature>();
 
         const time_t   save_time          = state.get("last_charge_plan_save")->asUint()*60;
-        const uint32_t save_time_midnight = get_localtime_midnight_in_utc(&save_time) / 60;
-        const uint32_t today_midnight     = get_localtime_today_midnight_in_utc() / 60;
+        const uint32_t save_time_midnight = get_localtime_midnight_in_utc(save_time) / 60;
+
+        time_t midnight;
+        if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
+            std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
+            return;
+        }
+        const uint32_t today_midnight     = midnight / 60;
 
         const uint32_t time               = charge_plan.get("time")->asUint();
         const uint32_t minutes_add        = (((depature == Depature::Today) || (depature == Depature::Daily)) ? 0 : 24*60) + time;
