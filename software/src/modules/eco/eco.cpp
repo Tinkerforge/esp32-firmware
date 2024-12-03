@@ -104,8 +104,8 @@ void Eco::register_urls()
 void Eco::update()
 {
     // If we don't yet have day ahead prices, we can't make a decision
-    const auto current_price = day_ahead_prices.get_current_price_net();
-    if (!current_price.data_available) {
+    int32_t current_price;
+    if (!day_ahead_prices.get_current_price_net().try_unwrap(&current_price)) {
         std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
         return;
     }
@@ -113,7 +113,7 @@ void Eco::update()
     // Check for price below "charge below" threshold
     if (config.get("charge_below_active")->asBool()) {
         const int32_t charge_below = config.get("charge_below")->asInt()*1000; // *1000 since the current price is in ct/1000
-        if (current_price.data < charge_below) {
+        if (current_price < charge_below) {
             std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Fast);
             return;
         }
@@ -122,7 +122,7 @@ void Eco::update()
     // Check for price above "block above" threshold
     if (config.get("block_above_active")->asBool()) {
         const int32_t block_above = config.get("block_above")->asInt()*1000; // *1000 since the current price is in ct/1000
-        if (current_price.data > block_above) {
+        if (current_price > block_above) {
             std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
             return;
         }

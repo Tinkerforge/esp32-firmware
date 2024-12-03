@@ -401,7 +401,7 @@ int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const Ti
     String str2 = "-- ct";
 
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
-    DataReturn<int32_t> price = {false, 0};
+    Option<int32_t> price = {};
     switch (param) {
         case DAPType::CurrentPrice:
             str1 = get_i18n_string("Price", "Preis");
@@ -417,8 +417,8 @@ int FrontPanel::update_front_page_day_ahead_prices(const uint8_t index, const Ti
             break;
     }
 
-    if (price.data_available) {
-        str2 = price_value_to_display_string((price.data + day_ahead_prices.get_grid_cost_plus_tax_plus_markup()) / 1000);
+    if (price.is_some()) {
+        str2 = price_value_to_display_string((price.unwrap() + day_ahead_prices.get_grid_cost_plus_tax_plus_markup()) / 1000);
     }
 #endif
 
@@ -440,7 +440,7 @@ int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const Tile
     uint32_t icon_index = SPRITE_ICON_SUN;
 
 #if MODULE_SOLAR_FORECAST_AVAILABLE()
-    DataReturn<uint32_t> kwh{};
+    Option<uint32_t> kwh{};
     switch (param) {
         case SFType::ForecastToday:
             str1 = get_i18n_string("Today", "Heute");
@@ -452,11 +452,11 @@ int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const Tile
             break;
     }
 
-    if (kwh.data_available) {
-        str2 = watt_hour_value_to_display_string(kwh.data);
+    if (kwh.is_some()) {
+        str2 = watt_hour_value_to_display_string(kwh.unwrap());
         // If 5 kWh is a high or a low value of course depends on the size of the pv system.
         // On average, 5 kWh in a day sounds low enough to show some clouds.
-        if (kwh.data <= 5) {
+        if (kwh.unwrap() <= 5) {
             icon_index = SPRITE_ICON_CLOUD_SUN;
         }
     }

@@ -535,11 +535,11 @@ bool SolarForecast::forecast_time_between(const uint32_t first_date, const uint3
     return (forecast_time >= start) && (forecast_time <= end);
 }
 
-DataReturn<uint32_t> SolarForecast::get_wh_today()
+Option<uint32_t> SolarForecast::get_wh_today()
 {
     time_t midnight;
     if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
-        return {false, 0};
+        return {};
 
     const uint32_t start = midnight / 60;
     const uint32_t end   = start + 60*24 - 1;
@@ -560,14 +560,17 @@ DataReturn<uint32_t> SolarForecast::get_wh_today()
 
     // We assume that we have valid data for the day if
     // there is at least one data point today
-    return {count != 0, wh};
+    if (count != 0)
+        return {};
+
+    return wh;
 }
 
-DataReturn<uint32_t> SolarForecast::get_wh_tomorrow()
+Option<uint32_t> SolarForecast::get_wh_tomorrow()
 {
     time_t midnight;
     if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
-        return {false, 0};
+        return {};
 
     const uint32_t start = midnight / 60 + 60*24;
     const uint32_t end   = start + 60*24 - 1;
@@ -588,5 +591,8 @@ DataReturn<uint32_t> SolarForecast::get_wh_tomorrow()
 
     // We assume that we have valid data for the day if
     // there is at least one data point tomorrow
-    return {count != 0, wh};
+    if (count != 0)
+        return {};
+
+    return wh;
 }

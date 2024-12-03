@@ -306,11 +306,12 @@ void EMEnergyAnalysis::collect_data_points()
             }
 
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
-            DataReturn<int32_t> current_price_data = day_ahead_prices.get_current_price();
-            int32_t grid_cost_plus_tax_plus_markup = day_ahead_prices.get_grid_cost_plus_tax_plus_markup();
+            {
+                int32_t current_price_data;
 
-            if (current_price_data.data_available) {
-                price = current_price_data.data + grid_cost_plus_tax_plus_markup;
+                if (day_ahead_prices.get_current_price().try_unwrap(&current_price_data)) {
+                    price = current_price_data + day_ahead_prices.get_grid_cost_plus_tax_plus_markup();
+                }
             }
 #endif
 
@@ -419,24 +420,26 @@ void EMEnergyAnalysis::collect_data_points()
         }
 
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
-        DataReturn<int32_t> minimum_price_today_data = day_ahead_prices.get_minimum_price_today();
-        DataReturn<int32_t> average_price_today_data = day_ahead_prices.get_average_price_today();
-        DataReturn<int32_t> maximum_price_today_data = day_ahead_prices.get_maximum_price_today();
-        int32_t grid_cost_plus_tax_plus_markup = day_ahead_prices.get_grid_cost_plus_tax_plus_markup();
+        {
+            int32_t minimum_price_today_data;
+            int32_t average_price_today_data;
+            int32_t maximum_price_today_data;
+            int32_t grid_cost_plus_tax_plus_markup = day_ahead_prices.get_grid_cost_plus_tax_plus_markup();
 
-        if (minimum_price_today_data.data_available) {
-            have_data = true;
-            price_min = (minimum_price_today_data.data + grid_cost_plus_tax_plus_markup) / 1000; // mct/kWh -> ct/kWh (floor)
-        }
+            if (day_ahead_prices.get_minimum_price_today().try_unwrap(&minimum_price_today_data)) {
+                have_data = true;
+                price_min = (minimum_price_today_data + grid_cost_plus_tax_plus_markup) / 1000; // mct/kWh -> ct/kWh (floor)
+            }
 
-        if (average_price_today_data.data_available) {
-            have_data = true;
-            price_avg = ((average_price_today_data.data + grid_cost_plus_tax_plus_markup) + 500) / 1000; // mct/kWh -> ct/kWh (round)
-        }
+            if (day_ahead_prices.get_average_price_today().try_unwrap(&average_price_today_data)) {
+                have_data = true;
+                price_avg = ((average_price_today_data + grid_cost_plus_tax_plus_markup) + 500) / 1000; // mct/kWh -> ct/kWh (round)
+            }
 
-        if (maximum_price_today_data.data_available) {
-            have_data = true;
-            price_max = ((maximum_price_today_data.data + grid_cost_plus_tax_plus_markup) + 999) / 1000; // mct/kWh -> ct/kWh (ceil)
+            if (day_ahead_prices.get_maximum_price_today().try_unwrap(&maximum_price_today_data)) {
+                have_data = true;
+                price_max = ((maximum_price_today_data + grid_cost_plus_tax_plus_markup) + 999) / 1000; // mct/kWh -> ct/kWh (ceil)
+            }
         }
 #endif
 

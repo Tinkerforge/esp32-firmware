@@ -450,14 +450,14 @@ bool DayAheadPrices::time_between(const uint32_t index, const uint32_t start, co
     return (dap_time >= start) && (dap_time <= end);
 }
 
-DataReturn<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t start, const uint32_t end)
+Option<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t start, const uint32_t end)
 {
     auto p = prices.get("prices");
     const uint32_t num_prices = p->count();
 
     // No price data available
     if (num_prices == 0) {
-        return {false, 0};
+        return {};
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
@@ -475,17 +475,17 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t sta
 
     // No data available for today
     if (count == 0) {
-        return {false, 0};
+        return {};
     }
 
-    return {true, min};
+    return min;
 }
 
-DataReturn<int32_t> DayAheadPrices::get_minimum_price_today()
+Option<int32_t> DayAheadPrices::get_minimum_price_today()
 {
     time_t midnight;
     if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
-        return {false, 0};
+        return {};
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -494,11 +494,11 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_today()
     return price_minimum_today;
 }
 
-DataReturn<int32_t> DayAheadPrices::get_minimum_price_tomorrow()
+Option<int32_t> DayAheadPrices::get_minimum_price_tomorrow()
 {
     time_t midnight;
     if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
-        return {false, 0};
+        return {};
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -507,14 +507,14 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_tomorrow()
     return price_minimum_tomorrow;
 }
 
-DataReturn<int32_t> DayAheadPrices::get_average_price_between(const uint32_t start, const uint32_t end)
+Option<int32_t> DayAheadPrices::get_average_price_between(const uint32_t start, const uint32_t end)
 {
     auto p = prices.get("prices");
     const uint32_t num_prices = p->count();
 
     // No price data available
     if (num_prices == 0) {
-        return {false, 0};
+        return {};
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
@@ -531,17 +531,17 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_between(const uint32_t sta
 
     // No data available for today
     if (count == 0) {
-        return {false, 0};
+        return {};
     }
 
-    return {true, sum / count};
+    return sum / count;
 }
 
-DataReturn<int32_t> DayAheadPrices::get_average_price_today()
+Option<int32_t> DayAheadPrices::get_average_price_today()
 {
     time_t midnight;
     if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
-        return {false, 0};
+        return {};
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -550,11 +550,11 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_today()
     return price_average_today;
 }
 
-DataReturn<int32_t> DayAheadPrices::get_average_price_tomorrow()
+Option<int32_t> DayAheadPrices::get_average_price_tomorrow()
 {
     time_t midnight;
     if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
-        return {false, 0};
+        return {};
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -563,14 +563,14 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_tomorrow()
     return price_average_tomorrow;
 }
 
-DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t start, const uint32_t end)
+Option<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t start, const uint32_t end)
 {
     auto p = prices.get("prices");
     const uint32_t num_prices = p->count();
 
     // No price data available
     if (num_prices == 0) {
-        return {false, 0};
+        return {};
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
@@ -588,17 +588,17 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t sta
 
     // No data available for today
     if (count == 0) {
-        return {false, 0};
+        return {};
     }
 
-    return {true, max};
+    return max;
 }
 
-DataReturn<int32_t> DayAheadPrices::get_maximum_price_today()
+Option<int32_t> DayAheadPrices::get_maximum_price_today()
 {
     time_t midnight;
     if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
-        return {false, 0};
+        return {};
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -607,11 +607,11 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_today()
     return price_maximum_today;
 }
 
-DataReturn<int32_t> DayAheadPrices::get_maximum_price_tomorrow()
+Option<int32_t> DayAheadPrices::get_maximum_price_tomorrow()
 {
     time_t midnight;
     if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
-        return {false, 0};
+        return {};
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -620,14 +620,18 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_tomorrow()
     return price_maximum_tomorrow;
 }
 
-DataReturn<int32_t> DayAheadPrices::get_current_price_net()
+Option<int32_t> DayAheadPrices::get_current_price_net()
 {
-    return {current_price_available, state.get("current_price")->asInt()};
+    if (!current_price_available)
+        return {};
+    return state.get("current_price")->asInt();
 }
 
-DataReturn<int32_t> DayAheadPrices::get_current_price()
+Option<int32_t> DayAheadPrices::get_current_price()
 {
-    return {current_price_available, (int32_t)std::round(state.get("current_price")->asInt()*(1 + config.get("vat")->asUint()/10000.0))};
+    if (!current_price_available)
+        return {};
+    return (int32_t)std::round(state.get("current_price")->asInt()*(1 + config.get("vat")->asUint()/10000.0));
 }
 
 int32_t DayAheadPrices::get_grid_cost_plus_tax_plus_markup()
@@ -718,9 +722,9 @@ bool DayAheadPrices::has_triggered(const Config *conf, void *data)
         if (type == 0) {// average
             auto avg = get_average_price_today();
             if (comparison == 0) { // greater
-                return avg.data_available && (current_price > (avg.data*value/100));
+                return avg.is_some() && (current_price > (avg.unwrap()*value/100));
             } else if (comparison == 1) { // less
-                return avg.data_available && (current_price < (avg.data*value/100));
+                return avg.is_some() && (current_price < (avg.unwrap()*value/100));
             }
         } else if (type == 1) { // absolute
             if (comparison == 0) { // greater

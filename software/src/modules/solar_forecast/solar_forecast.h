@@ -23,6 +23,8 @@
 #include <esp_http_client.h>
 #include <ArduinoJson.h>
 
+#include <TFTools/Option.h>
+
 #include "async_https_client.h"
 #include "module.h"
 #include "config.h"
@@ -56,8 +58,8 @@ public:
     esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
     void next_update();
 
-    DataReturn<uint32_t> get_wh_today();
-    DataReturn<uint32_t> get_wh_tomorrow();
+    Option<uint32_t> get_wh_today();
+    Option<uint32_t> get_wh_tomorrow();
 
     ConfigRoot config;
     ConfigRoot state;

@@ -322,15 +322,15 @@ void Heating::update()
             }
 
             extended_logging("Yield forecast is active.");
-            DataReturn<uint32_t> wh_expected = solar_forecast.get_wh_today();
+            uint32_t wh_expected;
 
-            if(!wh_expected.data_available) {
+            if(!solar_forecast.get_wh_today().try_unwrap(&wh_expected)) {
                 extended_logging("Expected PV yield not available. Ignoring yield forecast.");
             } else {
-                if (wh_expected.data/1000 < yield_forecast_threshold) {
-                    extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", wh_expected.data/1000, yield_forecast_threshold);
+                if (wh_expected/1000 < yield_forecast_threshold) {
+                    extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", wh_expected/1000, yield_forecast_threshold);
                 } else {
-                    extended_logging("Expected PV yield %dkWh is above or equal to threshold of %dkWh.", wh_expected.data/1000, yield_forecast_threshold);
+                    extended_logging("Expected PV yield %dkWh is above or equal to threshold of %dkWh.", wh_expected/1000, yield_forecast_threshold);
                     return true;
                 }
             }

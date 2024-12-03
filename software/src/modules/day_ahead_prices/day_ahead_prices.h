@@ -23,6 +23,8 @@
 #include <esp_http_client.h>
 #include <ArduinoJson.h>
 
+#include <TFTools/Option.h>
+
 #include "async_https_client.h"
 #include "module.h"
 #include "config.h"
@@ -73,12 +75,12 @@ private:
     DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
 
     time_t last_update_minmaxavg;
-    DataReturn<int32_t> price_minimum_today;
-    DataReturn<int32_t> price_minimum_tomorrow;
-    DataReturn<int32_t> price_average_today;
-    DataReturn<int32_t> price_average_tomorrow;
-    DataReturn<int32_t> price_maximum_today;
-    DataReturn<int32_t> price_maximum_tomorrow;
+    Option<int32_t> price_minimum_today;
+    Option<int32_t> price_minimum_tomorrow;
+    Option<int32_t> price_average_today;
+    Option<int32_t> price_average_tomorrow;
+    Option<int32_t> price_maximum_today;
+    Option<int32_t> price_maximum_tomorrow;
 
     bool prices_sorted_available = false;
     uint8_t prices_sorted_count = 0;
@@ -90,17 +92,17 @@ public:
     void setup() override;
     void register_urls() override;
     esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
-    DataReturn<int32_t> get_minimum_price_between(const uint32_t start, const uint32_t end);
-    DataReturn<int32_t> get_minimum_price_today();
-    DataReturn<int32_t> get_minimum_price_tomorrow();
-    DataReturn<int32_t> get_average_price_between(const uint32_t start, const uint32_t end);
-    DataReturn<int32_t> get_average_price_today();
-    DataReturn<int32_t> get_average_price_tomorrow();
-    DataReturn<int32_t> get_maximum_price_between(const uint32_t start, const uint32_t end);
-    DataReturn<int32_t> get_maximum_price_today();
-    DataReturn<int32_t> get_maximum_price_tomorrow();
-    DataReturn<int32_t> get_current_price();
-    DataReturn<int32_t> get_current_price_net();
+    Option<int32_t> get_minimum_price_between(const uint32_t start, const uint32_t end);
+    Option<int32_t> get_minimum_price_today();
+    Option<int32_t> get_minimum_price_tomorrow();
+    Option<int32_t> get_average_price_between(const uint32_t start, const uint32_t end);
+    Option<int32_t> get_average_price_today();
+    Option<int32_t> get_average_price_tomorrow();
+    Option<int32_t> get_maximum_price_between(const uint32_t start, const uint32_t end);
+    Option<int32_t> get_maximum_price_today();
+    Option<int32_t> get_maximum_price_tomorrow();
+    Option<int32_t> get_current_price();
+    Option<int32_t> get_current_price_net();
     bool get_cheap_and_expensive_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *cheap_hours, bool *expensive_hours);
     bool get_cheap_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *cheap_hours);
     bool get_expensive_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *expensive_hours);
