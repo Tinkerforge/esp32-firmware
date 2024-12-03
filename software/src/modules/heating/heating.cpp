@@ -24,6 +24,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "controlperiod.enum.h"
 
 
 static constexpr auto HEATING_UPDATE_INTERVAL = 1_m;
@@ -47,6 +48,7 @@ void Heating::pre_setup()
         {"sg_ready_extended_active_type", Config::Uint(0, 0, 1)},
         {"minimum_holding_time", Config::Uint(15, 10, 60)},
         {"meter_slot_grid_power", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
+        {"control_period", Config::Enum(ControlPeriod::Hours24, ControlPeriod::Hours24, ControlPeriod::Hours4)},
         {"extended_logging_active", Config::Bool(false)},
         {"yield_forecast_active", Config::Bool(false)},
         {"yield_forecast_threshold", Config::Uint(0)},
@@ -203,6 +205,7 @@ void Heating::update()
     const uint32_t blocking_hours              = config.get("blocking_hours")->asUint();
     const bool     pv_excess_control_active    = config.get("pv_excess_control_active")->asBool();
     const uint32_t pv_excess_control_threshold = config.get("pv_excess_control_threshold")->asUint();
+    const ControlPeriod control_period         = config.get("control_period")->asEnum<ControlPeriod>();
 
     bool sg_ready0_on = false;
     bool sg_ready1_on = false;
@@ -218,8 +221,6 @@ void Heating::update()
             return;
         }
 
-        bool no_block = false;
-
         // PV excess handling for winter and summer
         auto handle_pv_excess = [&] () {
             if (!pv_excess_control_active) {
@@ -232,33 +233,58 @@ void Heating::update()
             } else if ((-watt_current) > pv_excess_control_threshold) {
                 extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, pv_excess_control_threshold);
                 sg_ready1_on |= true;
-                no_block = true; // if pv excess is active, we don't ever want to block
             }
         };
 
         // Dynamic price handling for winter and summer
-        auto handle_dynamic_price = [&] () {
+        auto handle_dynamic_price = [&] (const bool handle_extended, const bool handle_blocking) {
             if (!extended_active && !blocking_active) {
                 return;
             }
 
-            auto print_hours_today = [&] (const char *name, const bool *hours) {
-                char buffer[24*4 + 1] = {'\0'};
-                for (int i = 0; i < 24*4; i++) {
+            auto print_hours_today = [&] (const char *name, const bool *hours, const uint8_t duration) {
+                char buffer[duration*4 + 1] = {'\0'};
+                for (int i = 0; i < duration*4; i++) {
                     buffer[i] = hours[i] ? '1' : '0';
                 }
                 extended_logging("%s: %s", name, buffer);
             };
 
-            bool data[24*4] = {false};
+            uint8_t duration = 0;
+            switch(control_period) {
+                case ControlPeriod::Hours24:
+                    duration = 24;
+                    break;
+                case ControlPeriod::Hours12:
+                    duration = 12;
+                    break;
+                case ControlPeriod::Hours8:
+                    duration = 8;
+                    break;
+                case ControlPeriod::Hours6:
+                    duration = 6;
+                    break;
+                case ControlPeriod::Hours4:
+                    duration = 4;
+                    break;
+                default:
+                    logger.printfln("Unknown control period %d", static_cast<std::underlying_type<ControlPeriod>::type>(control_period));
+                    return;
+            }
+            bool data[duration*4] = {false};
 
-            if (extended_active) {
-                const bool data_available = day_ahead_prices.get_cheap_hours_today(extended_hours, data);
+            // start_time is the nearest time block with length duration and index for current time within the block
+            const uint32_t duration_block = (minutes_since_midnight / (duration*60)) * (duration*60);
+            const uint32_t start_time     = get_localtime_today_midnight_in_utc()/60 + duration_block;
+            const uint8_t current_index   = (minutes_since_midnight - duration_block)/15;
+
+            if (handle_extended) {
+                const bool data_available = day_ahead_prices.get_cheap_hours(start_time, duration, extended_hours, data);
                 if (!data_available) {
                     extended_logging("Cheap hours not available. Ignoring extended control.");
                 } else {
-                    print_hours_today("Cheap hours", data);
-                    if (data[minutes_since_midnight/15]) {
+                    print_hours_today("Cheap hours", data, duration);
+                    if (data[current_index]) {
                         extended_logging("Current time is in cheap hours.");
                         sg_ready1_on |= true;
                     } else {
@@ -267,13 +293,13 @@ void Heating::update()
                     }
                 }
             }
-            if (blocking_active) {
-                const bool data_available = day_ahead_prices.get_expensive_hours_today(blocking_hours, data);
+            if (handle_blocking) {
+                const bool data_available = day_ahead_prices.get_expensive_hours(start_time, duration, blocking_hours, data);
                 if (!data_available) {
                     extended_logging("Expensive hours not available. Ignoring blocking control.");
                 } else {
-                    print_hours_today("Expensive hours", data);
-                    if (data[minutes_since_midnight/15]) {
+                    print_hours_today("Expensive hours", data, duration);
+                    if (data[current_index]) {
                         extended_logging("Current time is in expensive hours.");
                         sg_ready0_on |= true;
                     } else {
@@ -310,12 +336,21 @@ void Heating::update()
 
         const bool pv_yield_high = is_expected_yield_high();
         if (pv_yield_high) {
-            extended_logging("Day ahead prices are ignored because of expected PV yield.");
-            sg_ready1_on = false;
+            extended_logging("Day ahead prices are ignored for cheap hours because of expected PV yield.");
+            handle_dynamic_price(false, blocking_active);
         } else {
-            handle_dynamic_price();
+            handle_dynamic_price(extended_active, blocking_active);
         }
         handle_pv_excess();
+    }
+
+    // If p14enwg is triggered, we never turn output 1 (extended operation) on.
+    if (p14enwg_on) {
+        sg_ready1_on = false;
+    // If sg_ready0 and sg_ready1 are both to be turned on (e.g. high price but enough sun for heating with pv excess),
+    // we turn off sg_ready0. E.g. we prefer extended operation instead of blocking operation in this case.
+    } else if (sg_ready0_on && sg_ready1_on) {
+        sg_ready0_on = false;
     }
 
     const bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);

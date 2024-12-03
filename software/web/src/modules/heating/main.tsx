@@ -42,6 +42,7 @@ import { is_solar_forecast_enabled, get_kwh_today, get_kwh_tomorrow } from  "../
 import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
 import { StatusSection } from "../../ts/components/status_section";
 import { Button } from "react-bootstrap";
+import { ControlPeriod } from "./controlperiod.enum";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} hidden={false} />;
@@ -125,9 +126,46 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
         return s
     }
 
+    get_control_period_hours() {
+        const control_period = this.state.control_period;
+        switch(control_period) {
+            case ControlPeriod.Hours24: return 24;
+            case ControlPeriod.Hours12: return 12;
+            case ControlPeriod.Hours8:  return 8;
+            case ControlPeriod.Hours6:  return 6;
+            case ControlPeriod.Hours4:  return 4;
+            default: console.log("Invalid control period: " + control_period); return 24;
+        }
+    }
+
     update_uplot() {
         if (this.uplot_wrapper_ref.current == null) {
             return;
+        }
+
+        let extended_hours = this.state.extended_hours
+        let blocking_hours = this.state.blocking_hours
+
+        const control_period_hours = this.get_control_period_hours();
+        if (this.state.extended_active && this.state.blocking_active) {
+            if (blocking_hours + extended_hours > control_period_hours) {
+                this.setState({blocking_hours: Math.max(0, control_period_hours - extended_hours)});
+                blocking_hours = Math.max(0, control_period_hours - extended_hours);
+                if (this.state.extended_hours > control_period_hours) {
+                    this.setState({extended_hours: control_period_hours});
+                    extended_hours = control_period_hours;
+                }
+            }
+        } else if (this.state.extended_active) {
+            if (this.state.extended_hours > control_period_hours) {
+                this.setState({extended_hours: control_period_hours});
+                extended_hours = control_period_hours;
+            }
+        } else if (this.state.blocking_active) {
+            if (this.state.blocking_hours > control_period_hours) {
+                this.setState({blocking_hours: control_period_hours});
+                blocking_hours = control_period_hours;
+            }
         }
 
         const dap_prices = API.get("day_ahead_prices/prices");
@@ -171,49 +209,38 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
             const solar_forecast_threshold = this.state.yield_forecast_threshold;
             const hour_multiplier = 60/resolution_multiplier;
             const num_per_day     = 24*hour_multiplier;
-            const extended        = this.state.extended_active ? this.state.extended_hours*hour_multiplier : 0;
-            const blocking        = this.state.blocking_active ? this.state.blocking_hours*hour_multiplier : 0;
+            const extended        = this.state.extended_active ? extended_hours*hour_multiplier : 0;
+            const blocking        = this.state.blocking_active ? blocking_hours*hour_multiplier : 0;
 
-            if (dap_prices.prices.length >= num_per_day) {
+            let num_per_period = 0;
+            switch(this.state.control_period) {
+                case ControlPeriod.Hours24: num_per_period = num_per_day; break;
+                case ControlPeriod.Hours12: num_per_period = num_per_day/2; break;
+                case ControlPeriod.Hours8:  num_per_period = num_per_day/3; break;
+                case ControlPeriod.Hours6:  num_per_period = num_per_day/4; break;
+                case ControlPeriod.Hours4:  num_per_period = num_per_day/6; break;
+                default: console.log("Invalid control period: " + this.state.control_period); num_per_period = num_per_day; break;
+            }
+
+            for (let start = 0; start < dap_prices.prices.length; start += num_per_period) {
                 const cheap_hours = data.values[1]
-                    .slice(0, num_per_day)
+                    .slice(start, start + num_per_period)
                     .map((price, index) => ({ price, index }))
                     .sort((a, b) => a.price - b.price)
                     .slice(0, extended)
-                    .map(item => item.index);
+                    .map(item => item.index + start);
                 const expensive_hours = data.values[1]
-                    .slice(0, num_per_day)
+                    .slice(start, start + num_per_period)
                     .map((price, index) => ({ price, index }))
                     .sort((a, b) => b.price - a.price)
                     .slice(0, blocking)
-                    .map(item => item.index);
+                    .map(item => item.index + start);
 
                 cheap_hours.forEach(index => {
                     data.lines_vertical.push({'index': index, 'text': '', 'color': [40, 167, 69, 0.5]});
                 });
                 expensive_hours.forEach(index => {
                     data.lines_vertical.push({'index': index, 'text': '', 'color': [220, 53, 69, 0.5]});
-                });
-            }
-            if (dap_prices.prices.length >= num_per_day*2) {
-                const cheap_hours = data.values[1]
-                    .slice(num_per_day, num_per_day*2)
-                    .map((price, index) => ({ price, index }))
-                    .sort((a, b) => a.price - b.price)
-                    .slice(0, extended)
-                    .map(item => item.index);
-                const expensive_hours = data.values[1]
-                    .slice(num_per_day, num_per_day*2)
-                    .map((price, index) => ({ price, index }))
-                    .sort((a, b) => b.price - a.price)
-                    .slice(0, blocking)
-                    .map(item => item.index);
-
-                cheap_hours.forEach(index => {
-                    data.lines_vertical.push({'index': index + num_per_day, 'text': '', 'color': [40, 167, 69, 0.5]});
-                });
-                expensive_hours.forEach(index => {
-                    data.lines_vertical.push({'index': index + num_per_day, 'text': '', 'color': [220, 53, 69, 0.5]});
                 });
             }
 
@@ -329,6 +356,19 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={(v) => this.setState({sg_ready_extended_active_type: parseInt(v)})}
                         />
                     </FormRow>
+                    <FormRow label="Regelzeit" label_muted="Zeitraum in dem die günstigsten Stunden für den erweiterten und die teuersten Stunden für den blockierenden Betrieb bestimmt werden" help="">
+                        <InputSelect
+                            items={[
+                                ["0", "24 Stunden"],
+                                ["1", "12 Stunden"],
+                                ["2", "8 Stunden"],
+                                ["3", "6 Stunden"],
+                                ["4", "4 Stunden"]
+                            ]}
+                            value={state.control_period}
+                            onValue={(v) => this.setState({control_period: parseInt(v)}, this.update_uplot)}
+                        />
+                    </FormRow>
                     <FormRow label={__("heating.content.extended_logging")} label_muted={__("heating.content.extended_logging_description")}>
                         <Switch desc={__("heating.content.extended_logging_activate")}
                                 checked={state.extended_logging_active}
@@ -368,7 +408,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             value={state.extended_hours}
                             onValue={(v) => {this.setState({extended_hours: v}, this.update_uplot)}}
                             min={0}
-                            max={24 - state.blocking_hours}
+                            max={this.get_control_period_hours() - state.blocking_hours}
                             switch_label_min_width="100px"
                         />
                     </FormRow>
@@ -404,7 +444,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             value={state.blocking_hours}
                             onValue={(v) => {this.setState({blocking_hours: v}, this.update_uplot)}}
                             min={0}
-                            max={24 - state.extended_hours}
+                            max={this.get_control_period_hours() - state.extended_hours}
                             switch_label_min_width="100px"
                         />
                     </FormRow>

@@ -3,6 +3,7 @@ export interface config {
     sg_ready_extended_active_type: number;
     minimum_holding_time: number;
     meter_slot_grid_power: number;
+    control_period: number;
     extended_logging_active: boolean;
     yield_forecast_active: boolean;
     yield_forecast_threshold: number;
