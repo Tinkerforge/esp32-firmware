@@ -82,6 +82,7 @@ interface UplotWrapperProps {
     y2_skip_upper?: boolean;
     padding?: uPlot.Padding;
     only_show_visible?: boolean;
+    grid_show?: boolean;
 }
 
 export class UplotWrapper extends Component<UplotWrapperProps, {}> {
@@ -159,6 +160,9 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             ],
             axes: [
                 {
+                    grid: {
+                        show: (this.props.grid_show === undefined) || this.props.grid_show
+                    },
                     size: this.props.x_height,
                     incrs: [
                         60,
