@@ -99,7 +99,7 @@ void DayAheadPrices::pre_setup()
     prices = Config::Object({
         {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
         {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
-        {"prices",     Config::Array({}, Config::get_prototype_int32_0(), 0, 25 /*DST switchover*/ * 4 * 2, Config::type_id<Config::ConfInt>())}
+        {"prices",     Config::Array({}, Config::get_prototype_int32_0(), 0, DAY_AHEAD_PRICE_MAX_AMOUNT, Config::type_id<Config::ConfInt>())}
     });
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -138,11 +138,11 @@ void DayAheadPrices::register_urls()
     });
 
     task_scheduler.scheduleWallClock([this]() {
-        this->update_price();
+        this->update_current_price();
     }, PRICE_UPDATE_INTERVAL, 0_ms, true);
 }
 
-void DayAheadPrices::update_price()
+void DayAheadPrices::update_current_price()
 {
     static int32_t last_price = INT32_MAX;
 
@@ -166,6 +166,60 @@ void DayAheadPrices::update_price()
         }
     }
 #endif
+}
+
+void DayAheadPrices::update_prices_sorted()
+{
+    auto p = prices.get("prices");
+    const uint32_t num_prices = p->count();
+
+    // No price data available
+    if (num_prices == 0) {
+        prices_sorted_available = false;
+        return;
+    }
+
+    // Put prices in array with pair of index and price
+    std::fill_n(prices_sorted, DAY_AHEAD_PRICE_MAX_AMOUNT, std::pair<uint8_t, int32_t>(-1, 0));
+
+    const uint8_t multiplier = config.get("resolution")->asUint() == RESOLUTION_60MIN ? 4 : 1;
+    prices_sorted_count = MIN(num_prices * multiplier, DAY_AHEAD_PRICE_MAX_AMOUNT);
+    for (uint8_t i = 0; i < prices_sorted_count/multiplier; i++) {
+        if (config.get("resolution")->asUint() == RESOLUTION_15MIN) {
+            prices_sorted[i] = std::make_pair(i, p->get(i)->asInt());
+        } else {
+            prices_sorted[i*4+0] = std::make_pair(i*4+0, p->get(i)->asInt());
+            prices_sorted[i*4+1] = std::make_pair(i*4+1, p->get(i)->asInt());
+            prices_sorted[i*4+2] = std::make_pair(i*4+2, p->get(i)->asInt());
+            prices_sorted[i*4+3] = std::make_pair(i*4+3, p->get(i)->asInt());
+        }
+    }
+
+    // Sort prices today by comparator (ascending for cheap hours, descending for expensive hours)
+    std::sort(&prices_sorted[0], &prices_sorted[0]+prices_sorted_count,  [](const std::pair<uint8_t, int32_t> &a, const std::pair<uint8_t, int32_t> &b) {
+        return a.second < b.second;
+    });
+
+    prices_sorted_available = true;
+}
+
+void DayAheadPrices::update_minmaxavg_price()
+{
+    last_update_minmaxavg = get_localtime_today_midnight_in_utc();
+
+    // Minimum, average, maximum today
+    const uint32_t start_today = last_update_minmaxavg / 60;
+    const uint32_t end_today   = start_today + 24*60 - 1;
+    price_minimum_today = get_minimum_price_between(start_today, end_today);
+    price_average_today = get_average_price_between(start_today, end_today);
+    price_maximum_today = get_maximum_price_between(start_today, end_today);
+
+    // Minimum, average, maximum tomorrow
+    const uint32_t start_tomorrow = start_today + 24*60;
+    const uint32_t end_tomorrow   = start_tomorrow + 24*60 - 1;
+    price_minimum_tomorrow = get_minimum_price_between(start_tomorrow, end_tomorrow);
+    price_average_tomorrow = get_average_price_between(start_tomorrow, end_tomorrow);
+    price_maximum_tomorrow = get_maximum_price_between(start_tomorrow, end_tomorrow);
 }
 
 void DayAheadPrices::retry_update(millis_t delay)
@@ -360,7 +414,10 @@ void DayAheadPrices::handle_new_data()
         state.get("last_check")->updateUint(current_minutes);
         state.get("next_check")->updateUint(json_doc["next_date"].as<int>()/60);
         prices.get("first_date")->updateUint(json_doc["first_date"].as<int>()/60);
-        this->update_price();
+
+        update_current_price();
+        update_minmaxavg_price();
+        update_prices_sorted();
     }
 }
 
@@ -425,18 +482,20 @@ DataReturn<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t sta
 
 DataReturn<int32_t> DayAheadPrices::get_minimum_price_today()
 {
-    const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
-    const uint32_t end   = start + 24*60 - 1;
+    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+        update_minmaxavg_price();
+    }
 
-    return get_minimum_price_between(start, end);
+    return price_minimum_today;
 }
 
 DataReturn<int32_t> DayAheadPrices::get_minimum_price_tomorrow()
 {
-    const uint32_t start = (get_localtime_today_midnight_in_utc() / 60) + (24 * 60);
-    const uint32_t end   = start + 24*60 - 1;
+    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+        update_minmaxavg_price();
+    }
 
-    return get_minimum_price_between(start, end);
+    return price_minimum_tomorrow;
 }
 
 DataReturn<int32_t> DayAheadPrices::get_average_price_between(const uint32_t start, const uint32_t end)
@@ -471,18 +530,20 @@ DataReturn<int32_t> DayAheadPrices::get_average_price_between(const uint32_t sta
 
 DataReturn<int32_t> DayAheadPrices::get_average_price_today()
 {
-    const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
-    const uint32_t end   = start + 24*60 - 1;
+    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+        update_minmaxavg_price();
+    }
 
-    return get_average_price_between(start, end);
+    return price_average_today;
 }
 
 DataReturn<int32_t> DayAheadPrices::get_average_price_tomorrow()
 {
-    const uint32_t start = (get_localtime_today_midnight_in_utc() / 60) + (24 * 60);
-    const uint32_t end   = start + 24*60 - 1;
+    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+        update_minmaxavg_price();
+    }
 
-    return get_average_price_between(start, end);
+    return price_average_tomorrow;
 }
 
 DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t start, const uint32_t end)
@@ -518,18 +579,20 @@ DataReturn<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t sta
 
 DataReturn<int32_t> DayAheadPrices::get_maximum_price_today()
 {
-    const uint32_t start = get_localtime_today_midnight_in_utc() / 60;
-    const uint32_t end   = start + 24*60 - 1;
+    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+        update_minmaxavg_price();
+    }
 
-    return get_maximum_price_between(start, end);
+    return price_maximum_today;
 }
 
 DataReturn<int32_t> DayAheadPrices::get_maximum_price_tomorrow()
 {
-    const uint32_t start = (get_localtime_today_midnight_in_utc() / 60) + (24 * 60);
-    const uint32_t end   = start + 24*60 - 1;
+    if (last_update_minmaxavg != get_localtime_today_midnight_in_utc()) {
+        update_minmaxavg_price();
+    }
 
-    return get_maximum_price_between(start, end);
+    return price_maximum_tomorrow;
 }
 
 DataReturn<int32_t> DayAheadPrices::get_current_price_net()
@@ -547,95 +610,74 @@ int32_t DayAheadPrices::get_grid_cost_plus_tax_plus_markup()
     return config.get("grid_costs_and_taxes")->asUint() + config.get("supplier_markup")->asUint();
 }
 
-bool DayAheadPrices::get_sorted_hours(const int32_t start_time, const uint8_t duration, const uint8_t hours, bool *sorted_hours, std::function<bool(const std::tuple<uint8_t, int32_t>&, const std::tuple<uint8_t, int32_t>&)> comparator)
+bool DayAheadPrices::is_start_time_cheap(const int32_t start_time, const uint8_t duration, const uint8_t amount)
 {
-    auto p = prices.get("prices");
-    const uint32_t num_prices = p->count();
+    bool cheap_hours[duration*4] = {false};
+    const bool ret = get_cheap_and_expensive_hours(start_time, duration, amount, cheap_hours, nullptr);
+    return ret && cheap_hours[0];
+}
 
-    // No price data available
-    if (num_prices == 0) {
+bool DayAheadPrices::get_cheap_and_expensive_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *cheap_hours, bool *expensive_hours)
+{
+    if (cheap_hours == nullptr && expensive_hours == nullptr) {
+        return false;
+    }
+
+    if (prices_sorted_available == false) {
         return false;
     }
 
     const int32_t first_date  = prices.get("first_date")->asUint();
-    const int32_t resolution  = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
-    const int32_t multiplier  = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 4  : 1;
-    const int32_t start_index = (start_time - first_date) / resolution;
+    const int32_t start_index = (start_time - first_date) / 15;
+    const int32_t end_index   = start_index + duration*4;
 
-    // Find prices for today and save them as tuple with index and price
-    std::vector<std::tuple<uint8_t, int32_t>> prices_in_range;
-    for (uint16_t i = 0; i < duration*multiplier; i++) {
-        const int32_t price_index = start_index + i;
-        if ((price_index >= 0) && (price_index < num_prices)) {
-            prices_in_range.push_back(std::tuple<uint8_t, int32_t>(i, p->get(price_index)->asInt()));
-        }
-    }
-
-    if (prices_in_range.size() == 0) {
+    if(start_index >= end_index) {
         return false;
     }
 
-    // Sort prices today by comparator (ascending for cheap hours, descending for expensive hours)
-    std::sort(prices_in_range.begin(), prices_in_range.end(), comparator);
+    if (cheap_hours != nullptr) {
+        std::fill_n(cheap_hours, duration*4, false);
 
-    // Mark the cheap/expensive hours in sorted_hours
-    const uint16_t max_hours = MIN(hours*multiplier, prices_in_range.size());
-    std::fill_n(sorted_hours, duration * 4, false);
-    for (uint32_t i = 0; i < max_hours; i++) {
-        if(resolution == 15) {
-            sorted_hours[std::get<0>(prices_in_range[i])]     = true;
-        } else {
-            sorted_hours[std::get<0>(prices_in_range[i])*4+0] = true;
-            sorted_hours[std::get<0>(prices_in_range[i])*4+1] = true;
-            sorted_hours[std::get<0>(prices_in_range[i])*4+2] = true;
-            sorted_hours[std::get<0>(prices_in_range[i])*4+3] = true;
+        uint8_t cheap_count = 0;
+        for (uint8_t i = 0; i < prices_sorted_count; i++) {
+            auto price_index = prices_sorted[i].first;
+            if ((price_index >= start_index) && (price_index < end_index)) {
+                cheap_count++;
+                if(cheap_count > amount*4) {
+                    break;
+                }
+                cheap_hours[price_index-start_index] = true;
+            }
+        }
+    }
+
+    if (expensive_hours != nullptr) {
+        std::fill_n(expensive_hours, duration*4, false);
+
+        int16_t expensive_count = 0;
+        for (int16_t i = prices_sorted_count-1; i > 0; i--) {
+            auto price_index = prices_sorted[i].first;
+            if (price_index >= start_index && price_index < end_index) {
+                expensive_count++;
+                if(expensive_count > amount*4) {
+                    break;
+                }
+                expensive_hours[price_index-start_index] = true;
+            }
         }
     }
 
     return true;
 }
 
-bool DayAheadPrices::get_cheap_hours(const int32_t start_time, const uint8_t duration, const uint8_t hours, bool *cheap_hours)
+bool DayAheadPrices::get_cheap_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *cheap_hours)
 {
-    return get_sorted_hours(start_time, duration, hours, cheap_hours, [](const std::tuple<uint8_t, int32_t> &a, const std::tuple<uint8_t, int32_t> &b) {
-        return std::get<1>(a) < std::get<1>(b);
-    });
+    return get_cheap_and_expensive_hours(start_time, duration, amount, cheap_hours, nullptr);
 }
 
-bool DayAheadPrices::is_now_cheap(const int32_t current_time, const uint8_t duration, const uint8_t hours)
+bool DayAheadPrices::get_expensive_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *expensive_hours)
 {
-    // get_cheap_hours always returns with 15min resolution,
-    // so we need duration*4 elements in the array.
-    bool data[duration*4] = {false};
-
-    if (get_cheap_hours(current_time, duration, hours, data)) {
-        if (data[0]) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool DayAheadPrices::get_sorted_hours_today(const uint8_t hours, bool *sorted_hours, std::function<bool(const std::tuple<uint8_t, int32_t>&, const std::tuple<uint8_t, int32_t>&)> comparator)
-{
-    return get_sorted_hours(get_localtime_today_midnight_in_utc() / 60, 24, hours, sorted_hours, comparator);
-}
-
-// Always returns 15 minute intervals, independend of the resolution
-bool DayAheadPrices::get_cheap_hours_today(const uint8_t hours, bool *cheap_hours)
-{
-    return get_sorted_hours_today(hours, cheap_hours, [](const std::tuple<uint8_t, int32_t> &a, const std::tuple<uint8_t, int32_t> &b) {
-        return std::get<1>(a) < std::get<1>(b);
-    });
-}
-
-// Always returns 15 minute intervals, independend of the resolution
-bool DayAheadPrices::get_expensive_hours_today(const uint8_t hours, bool *expensive_hours)
-{
-    return get_sorted_hours_today(hours, expensive_hours, [](const std::tuple<uint8_t, int32_t> &a, const std::tuple<uint8_t, int32_t> &b) {
-        return std::get<1>(a) > std::get<1>(b);
-    });
+    return get_cheap_and_expensive_hours(start_time, duration, amount, nullptr, expensive_hours);
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()

@@ -36,6 +36,8 @@
 #define DAY_AHEAD_PRICE_MAX_JSON_LENGTH 4096*2
 #define DAY_AHEAD_PRICE_MAX_ARDUINO_JSON_BUFFER_SIZE 8192
 
+#define DAY_AHEAD_PRICE_MAX_AMOUNT (25*4*2) // Two days with 15min resolution and one additional hour for daylight savings time switch
+
 enum DAPDownloadState {
     DAP_DOWNLOAD_STATE_OK,
     DAP_DOWNLOAD_STATE_PENDING,
@@ -51,12 +53,15 @@ class DayAheadPrices final : public IModule
 private:
     void update();
     void retry_update(millis_t delay);
-    void update_price();
     String get_api_url_with_path();
     int get_max_price_values();
     bool time_between(const uint32_t index, const uint32_t start, const uint32_t end, const uint32_t first_date, const uint8_t resolution);
     void handle_new_data();
     void handle_cleanup();
+
+    void update_minmaxavg_price();
+    void update_current_price();
+    void update_prices_sorted();
 
     micros_t last_update_begin;
     char *json_buffer;
@@ -66,6 +71,18 @@ private:
     uint64_t task_id = 0;
 
     DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
+
+    uint32_t last_update_minmaxavg;
+    DataReturn<int32_t> price_minimum_today;
+    DataReturn<int32_t> price_minimum_tomorrow;
+    DataReturn<int32_t> price_average_today;
+    DataReturn<int32_t> price_average_tomorrow;
+    DataReturn<int32_t> price_maximum_today;
+    DataReturn<int32_t> price_maximum_tomorrow;
+
+    bool prices_sorted_available = false;
+    uint8_t prices_sorted_count = 0;
+    std::pair<uint8_t, int32_t> prices_sorted[DAY_AHEAD_PRICE_MAX_AMOUNT];
 
 public:
     DayAheadPrices(){}
@@ -84,12 +101,10 @@ public:
     DataReturn<int32_t> get_maximum_price_tomorrow();
     DataReturn<int32_t> get_current_price();
     DataReturn<int32_t> get_current_price_net();
-    bool get_sorted_hours(const int32_t start_time, const uint8_t duration, const uint8_t hours, bool *sorted_hours, std::function<bool(const std::tuple<uint8_t, int32_t>&, const std::tuple<uint8_t, int32_t>&)> comparator);
-    bool get_sorted_hours_today(const uint8_t hours, bool *sorted_hours, std::function<bool(const std::tuple<uint8_t, int32_t>&, const std::tuple<uint8_t, int32_t>&)> comparator);
-    bool get_cheap_hours_today(const uint8_t hours, bool *cheap_hours);
-    bool get_cheap_hours(const int32_t start_time, const uint8_t duration, const uint8_t hours, bool *cheap_hours);
-    bool is_now_cheap(const int32_t current_time, const uint8_t duration, const uint8_t hours);
-    bool get_expensive_hours_today(const uint8_t hours, bool *expensive_hours);
+    bool get_cheap_and_expensive_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *cheap_hours, bool *expensive_hours);
+    bool get_cheap_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *cheap_hours);
+    bool get_expensive_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *expensive_hours);
+    bool is_start_time_cheap(const int32_t start_time, const uint8_t duration, const uint8_t amount);
     int32_t get_grid_cost_plus_tax_plus_markup();
 
     ConfigRoot config;
