@@ -55,7 +55,6 @@ void Eco::pre_setup()
     charge_plan_update = charge_plan;
 
     state_chargers_prototype = Config::Object({
-        {"start", Config::Uint(0)}, // Start of charge (TODO: Do we actually need this?)
         {"amount", Config::Uint(0)} // Amount of charge since start (h or kWh depending on configuration)
     });
 
