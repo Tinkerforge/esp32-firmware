@@ -11,6 +11,8 @@ export interface config {
     charge_below: number;
     block_above_active: boolean;
     block_above: number;
+    yield_forecast_active: boolean;
+    yield_forecast: number;
 }
 
 export interface charge_plan {

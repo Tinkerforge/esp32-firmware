@@ -38,7 +38,9 @@ void Eco::pre_setup()
         {"charge_below_active", Config::Bool(false)},
         {"charge_below", Config::Int32(0)}, // in ct
         {"block_above_active", Config::Bool(false)},
-        {"block_above", Config::Int32(20)} // in ct
+        {"block_above", Config::Int32(20)}, // in ct
+        {"yield_forecast_active", Config::Bool(false)},
+        {"yield_forecast", Config::Uint(0)} // in kWh/day
     }), [this](Config &update, ConfigSource source) -> String {
         task_scheduler.scheduleOnce([this]() {
             this->update();
@@ -175,6 +177,17 @@ void Eco::update()
             if (hours_desired <= hours_charged) {
                 charge_decision[charger_id] = ChargeDecision::Normal;
                 continue;
+            }
+
+            if (config.get("yield_forecast_active")->asBool()) {
+                const uint32_t kwh_threshold = config.get("yield_forecast")->asUint();
+                if (kwh_threshold > 0) {
+                    const uint32_t kwh_expected = 0; // TODO: get expected yield in wh from solar forecast
+                    if (kwh_expected > kwh_threshold) {
+                        charge_decision[charger_id] = ChargeDecision::Normal;
+                        continue;
+                    }
+                }
             }
 
             const uint32_t hours_remaining    = hours_desired - hours_charged;

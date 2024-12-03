@@ -149,6 +149,21 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             switch_label_min_width="100px"
                         />
                     </FormRow>
+                    <FormRow label="Nur wenn PV-Ertragsprognose unter" help="">
+                    <SwitchableInputNumber
+                            disabled={!solar_forecast_enabled}
+                            switch_label_active={__("eco.content.active")}
+                            switch_label_inactive={__("eco.content.inactive")}
+                            unit={"kWh/Tag"}
+                            checked={state.yield_forecast_active && solar_forecast_enabled}
+                            onClick={this.toggle('yield_forecast_active')}
+                            value={state.yield_forecast}
+                            onValue={this.set("yield_forecast")}
+                            min={0}
+                            max={1000}
+                            switch_label_min_width="100px"
+                        />
+                    </FormRow>
                 </ConfigForm>
             </SubPage>
         );
