@@ -23,6 +23,9 @@
 #include "config.h"
 #include "depature.enum.h"
 
+// TODO get MAX_CONTROLLED_CHARGERS from charge manager
+#define MAX_CONTROLLED_CHARGERS 65
+
 class Eco final : public IModule
 {
 private:
@@ -38,6 +41,7 @@ private:
 
     void disable_charge_plan();
 
+
 public:
     enum class ChargeDecision : uint8_t {
         Normal = 0,
@@ -50,5 +54,5 @@ public:
     void register_urls() override;
     ChargeDecision get_charge_decision(const uint8_t charger_id);
 
-    ChargeDecision current_charge_decision = ChargeDecision::Normal;
+    ChargeDecision charge_decision[MAX_CONTROLLED_CHARGERS];
 };
