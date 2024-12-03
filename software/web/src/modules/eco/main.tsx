@@ -357,37 +357,36 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                         />
                     </div>
                 </div>
-                <div class="card mt-1">
-                    <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
-                        <UplotLoader
-                            ref={this.uplot_loader_ref}
+                <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                    <UplotLoader
+                        ref={this.uplot_loader_ref}
+                        show={true}
+                        marker_class={'h4'}
+                        no_data={__("day_ahead_prices.content.no_data")}
+                        loading={__("day_ahead_prices.content.loading")}>
+                        <UplotWrapper
+                            ref={this.uplot_wrapper_ref}
+                            legend_show={false}
+                            class="eco-chart"
+                            sub_page="status"
+                            color_cache_group="eco.default"
                             show={true}
-                            marker_class={'h4'}
-                            no_data={__("day_ahead_prices.content.no_data")}
-                            loading={__("day_ahead_prices.content.loading")}>
-                            <UplotWrapper
-                                ref={this.uplot_wrapper_ref}
-                                legend_show={false}
-                                class="eco-chart"
-                                sub_page="status"
-                                color_cache_group="eco.default"
-                                show={true}
-                                on_mount={() => this.update_uplot()}
-                                legend_time_label={__("day_ahead_prices.content.time")}
-                                legend_time_with_minutes={true}
-                                aspect_ratio={4}
-                                x_height={50}
-                                x_format={{hour: '2-digit', minute: '2-digit'}}
-                                x_padding_factor={0}
-                                x_include_date={true}
-                                y_unit={"ct/kWh"}
-                                y_label={"ct/kWh"}
-                                y_digits={3}
-                                only_show_visible={true}
-                                padding={[10, 10, null, 5]}
-                            />
-                        </UplotLoader>
-                    </div>
+                            on_mount={() => this.update_uplot()}
+                            legend_time_label={__("day_ahead_prices.content.time")}
+                            legend_time_with_minutes={true}
+                            aspect_ratio={4}
+                            x_height={50}
+                            x_format={{hour: '2-digit', minute: '2-digit'}}
+                            x_padding_factor={0}
+                            x_include_date={true}
+                            y_unit={"ct/kWh"}
+                            y_label={"ct/kWh"}
+                            y_digits={3}
+                            only_show_visible={true}
+                            grid_show={false}
+                            padding={[10, 10, null, 5]}
+                        />
+                    </UplotLoader>
                 </div>
                 <div class="form-group mt-2">
                     <Button
