@@ -667,3 +667,6 @@
 
 2024-12-02: 2.6.3 (a13b80a0)
 - Fix charger manager never allocating current if any charger is not immediately reachable
+
+2024-12-03: 2.6.4 (<unknown>)
+- Fix missing web interface alert texts
