@@ -210,9 +210,9 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             const errString = err as string;
             const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
             if (errCode === "401") {
-                util.add_alert("registration", "danger", __("remote_access.content.login_failed"), __("remote_access.content.wrong_credentials"));
+                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
             } else {
-                util.add_alert("registration", "danger", __("remote_access.content.login_failed"), errString);
+                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
             }
             this.setState({status_modal_string: ""});
             return;
@@ -289,7 +289,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             this.reject = reject;
         });
 
-        await API.call("remote_access/add_user", user, __("remote_access.script.save_failed"));
+        await API.call("remote_access/add_user", user, () => __("remote_access.script.save_failed"));
         await registrationPromise;
 
         this.setState({status_modal_string: ""});
@@ -309,7 +309,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             loginSalt = await this.get_login_salt(cfg);
         } catch (err) {
             console.error(err);
-            util.add_alert("registration", "danger", "Failed to login:", "Wrong user or password");
+            util.add_alert("registration", "danger", () => "Failed to login:", () => "Wrong user or password");
             this.setState({status_modal_string: ""});
             return;
         }
@@ -344,9 +344,9 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             const errString = err as string;
             const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
             if (errCode === "401") {
-                util.add_alert("registration", "danger", __("remote_access.content.login_failed"), __("remote_access.content.wrong_credentials"));
+                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
             } else {
-                util.add_alert("registration", "danger", __("remote_access.content.login_failed"), errString);
+                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
             }
             this.setState({status_modal_string: ""});
             return;
@@ -357,7 +357,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             secretSalt = await this.get_secret_salt(cfg);
         } catch (err) {
             console.error(`Failed to get secret salt: ${err}`);
-            util.add_alert("registration", "danger", "Failed to get secret-salt:", err);
+            util.add_alert("registration", "danger", () => "Failed to get secret-salt:", err);
             this.setState({status_modal_string: ""});
             return;
         }
@@ -405,7 +405,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             await this.runAddUser(add_user_data);
         } catch (err) {
             console.error(`Failed to register charger: ${err}`);
-            util.add_alert("registration", "danger", "Failed to register", err);
+            util.add_alert("registration", "danger", () => "Failed to register", () => err);
             this.setState({status_modal_string: ""});
         }
     }
@@ -415,7 +415,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         for (const id of this.state.removeUsers) {
             API.call("remote_access/remove_user", {
                 id: id,
-            }, __("remote_access.script.save_failed"));
+            }, () => __("remote_access.script.save_failed"));
         }
         if (this.state.users.length === 0) {
             enable = false;
@@ -428,7 +428,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             email: "",
             cert_id: this.state.cert_id,
         }
-        API.call("remote_access/update_config", config, __("remote_access.script.save_failed"), __("remote_access.script.reboot_content_changed"));
+        API.call("remote_access/update_config", config, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
     }
 
     override getIsModified(topic: "remote_access/config"): boolean {
