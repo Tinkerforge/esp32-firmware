@@ -72,7 +72,6 @@ void Network::register_urls()
         logger.printfln("Error initializing mDNS responder");
     } else {
         String hostname = config.get("hostname")->asString();
-        hostname.toLowerCase();
 
         if(mdns_hostname_set(hostname.c_str()) != ESP_OK) {
             logger.printfln("Error initializing mDNS hostname");
