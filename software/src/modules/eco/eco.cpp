@@ -144,7 +144,7 @@ void Eco::update()
         }
         const uint32_t today_midnight     = midnight / 60;
 
-        const uint32_t time               = charge_plan.get("time")->asUint();
+        const uint32_t time               = charge_plan.get("time")->asInt();
         const uint32_t minutes_add        = (((depature == Depature::Today) || (depature == Depature::Daily)) ? 0 : 24*60) + time;
               uint32_t end_time           = (depature == Depature::Daily) ? (today_midnight + minutes_add) : (save_time_midnight + minutes_add);
         const uint32_t current_time       = rtc.timestamp_minutes();
