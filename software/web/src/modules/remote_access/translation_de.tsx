@@ -31,7 +31,8 @@ let x = {
             "user_add_message": /*SFN*/ (user_count: number, max_users: number) => `${user_count} von ${max_users} Nutzern konfiguriert.`/*NF*/,
             "all_users_in_use": "Alle Accounts in benutzung",
             "note": "Notiz",
-            "note_muted": /*FFN*/(host: string) => <>wird auf <a href={`https://${host}/`} target="_blank">{host}</a> angezeigt. Optional</>/*NF*/
+            "note_muted": /*FFN*/(host: string) => <>wird auf <a href={`https://${host}/`} target="_blank">{host}</a> angezeigt. Optional</>/*NF*/,
+            "user_exists": "Account wurde bereits hinzugefügt"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",

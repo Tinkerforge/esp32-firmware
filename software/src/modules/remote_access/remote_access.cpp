@@ -721,6 +721,14 @@ void RemoteAccess::register_urls() {
             }
         }
 
+        const CoolString &email = doc["email"];
+        if (email == "" || this->user_already_registered(email)) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(400, "text/plain; charset=utf-8", "User already exists or is empty");
+        }
+
         // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
         // Also validate the decoded lengths!
         std::unique_ptr<uint8_t[]> secret_key       = decode_base64(doc["secret_key"],   crypto_secretbox_KEYBYTES);
@@ -904,7 +912,6 @@ void RemoteAccess::register_urls() {
         CoolString pub_key(public_key, olen);
 
         ConfigRoot user = config;
-        CoolString email = doc["email"];
 
         if (https_client == nullptr) {
             https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
@@ -1056,6 +1063,16 @@ void RemoteAccess::register_events() {
         }
         return EventResult::OK;
     });
+}
+
+bool RemoteAccess::user_already_registered(const CoolString &email) {
+    for (const auto &user : config.get("users")) {
+        if (email == user.get("email")->asEphemeralCStr()) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, ConfigRoot config, std::function<void(ConfigRoot config)> &&next_stage) {

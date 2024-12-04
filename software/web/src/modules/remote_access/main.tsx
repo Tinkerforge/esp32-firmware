@@ -456,6 +456,15 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         await API.call("remote_access/register", registration_data, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"), 10000);
     }
 
+    checkUserExisting() {
+        for (const user of this.state.users) {
+            if (user.email.toLowerCase() === this.state.addUser.email.toLowerCase()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     render() {
         if (!util.render_allowed())
             return <></>
@@ -522,21 +531,23 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                             onAddGetChildren={() => {
                                 return <>
                                     <FormRow label={__("remote_access.content.email")}>
-                                                        <InputText value={this.state.addUser.email} required
-                                                    maxLength={64}
-                                                    onValue={(v) => {
-                                                                this.setState({addUser: {...this.state.addUser, email: v}})
-                                                    }} />
+                                        <InputText value={this.state.addUser.email} required
+                                            maxLength={64}
+                                            class={this.checkUserExisting() ? "is-invalid" : undefined}
+                                            invalidFeedback={__("remote_access.content.user_exists")}
+                                            onValue={(v) => {
+                                                        this.setState({addUser: {...this.state.addUser, email: v}})
+                                            }} />
                                     </FormRow>
                                     <FormRow label={__("remote_access.content.password")} label_muted={__("remote_access.content.password_muted")}>
                                         <InputPassword required
                                             value={this.state.addUser.password}
-                                        maxLength={64}
-                                        onValue={(v) => {
-                                                this.setState({addUser: {...this.state.addUser, password: v}})
-                                        }}
-                                        hideClear
-                                        placeholder="" />
+                                            maxLength={64}
+                                            onValue={(v) => {
+                                                    this.setState({addUser: {...this.state.addUser, password: v}})
+                                            }}
+                                            hideClear
+                                            placeholder="" />
                                     </FormRow>
                                     <FormRow label={__("remote_access.content.note")} label_muted={__("remote_access.content.note_muted")(this.state.relay_host)}>
                                         <InputText value={this.state.addUser.note} onValue={(v) => this.setState({addUser: {...this.state.addUser, note: v}})}/>
