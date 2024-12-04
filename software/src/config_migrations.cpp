@@ -787,27 +787,6 @@ static const ConfigMigration migrations[] = {
             delete_config_file("remote_access/remote_connection_config");
         }
     },
-    {
-        #if BUILD_IS_ENERGY_MANAGER()
-        2, 2, 1,
-        #elif BUILD_IS_WARP()
-        2, 4, 3,
-        #else // WARP2, 3
-        2, 5, 1,
-        #endif
-        // Changes
-        // - Add multiple users to remote access
-        []() {
-            DynamicJsonDocument cfg{4096};
-            if (read_config_file("remote_access/config", cfg)) {
-                cfg["users"][0]["id"] = 1;
-                cfg["users"][0]["email"] = cfg["email"];
-                cfg["users"][0]["public_key"] = "";
-                cfg.remove("email");
-                write_config_file("remote_access/config", cfg);
-            }
-        }
-    },
 #endif
 
 #if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3() || BUILD_IS_ENERGY_MANAGER() || BUILD_IS_SMART_ENERGY_BROKER()
@@ -839,6 +818,27 @@ static const ConfigMigration migrations[] = {
                         write_config_file("power_manager/config", pm_cfg);
                     }
                 }
+            }
+        }
+    },
+    {
+        #if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
+        2, 6, 3,
+        #elif BUILD_IS_ENERGY_MANAGER()
+        2, 2, 2,
+        #else // TODO: Update SEB firmware below.
+        0, 0, 0,
+        #endif
+        // Changes
+        // - Add multiple users to remote access
+        []() {
+            DynamicJsonDocument cfg{4096};
+            if (read_config_file("remote_access/config", cfg)) {
+                cfg["users"][0]["id"] = 1;
+                cfg["users"][0]["email"] = cfg["email"];
+                cfg["users"][0]["public_key"] = "";
+                cfg.remove("email");
+                write_config_file("remote_access/config", cfg);
             }
         }
     },
