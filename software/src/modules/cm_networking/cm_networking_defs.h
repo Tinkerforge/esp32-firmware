@@ -166,7 +166,7 @@ struct cm_state_v1 {
     uint32_t feature_flags;
     uint32_t esp32_uid;
     uint32_t evse_uptime;
-    uint32_t charging_time;
+    uint32_t car_stopped_charging;
     uint16_t allowed_charging_current;
     uint16_t supported_current;
 

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-07-08.      *
+ * This file was automatically generated on 2024-12-04.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -957,7 +957,7 @@ int tf_evse_v2_get_hardware_configuration(TF_EVSEV2 *evse_v2, uint8_t *ret_jumpe
  *
  * TODO
  */
-int tf_evse_v2_get_low_level_state(TF_EVSEV2 *evse_v2, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[7], int16_t ret_voltages[7], uint32_t ret_resistances[2], bool ret_gpio[24], uint32_t *ret_charging_time, uint32_t *ret_time_since_state_change, uint32_t *ret_time_since_dc_fault_check, uint32_t *ret_uptime);
+int tf_evse_v2_get_low_level_state(TF_EVSEV2 *evse_v2, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[7], int16_t ret_voltages[7], uint32_t ret_resistances[2], bool ret_gpio[24], bool *ret_car_stopped_charging, uint32_t *ret_time_since_state_change, uint32_t *ret_time_since_dc_fault_check, uint32_t *ret_uptime);
 
 /**
  * \ingroup TF_EVSEV2

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2024-12-04.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -397,7 +397,7 @@ int tf_evse_get_hardware_configuration(TF_EVSE *evse, uint8_t *ret_jumper_config
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_evse_get_low_level_state(TF_EVSE *evse, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint32_t *ret_charging_time, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime) {
+int tf_evse_get_low_level_state(TF_EVSE *evse, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], bool *ret_car_stopped_charging, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime) {
     if (evse == NULL) {
         return TF_E_NULL;
     }
@@ -429,7 +429,7 @@ int tf_evse_get_low_level_state(TF_EVSE *evse, uint8_t *ret_led_state, uint16_t 
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(evse->tfp);
-        if (_error_code != 0 || _length != 34) {
+        if (_error_code != 0 || _length != 31) {
             tf_packet_buffer_remove(_recv_buf, _length);
         } else {
             if (ret_led_state != NULL) { *ret_led_state = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
@@ -438,7 +438,7 @@ int tf_evse_get_low_level_state(TF_EVSE *evse, uint8_t *ret_led_state, uint16_t 
             if (ret_voltages != NULL) { for (_i = 0; _i < 3; ++_i) ret_voltages[_i] = tf_packet_buffer_read_int16_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 6); }
             if (ret_resistances != NULL) { for (_i = 0; _i < 2; ++_i) ret_resistances[_i] = tf_packet_buffer_read_uint32_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 8); }
             if (ret_gpio != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_gpio, 5);} else { tf_packet_buffer_remove(_recv_buf, 1); }
-            if (ret_charging_time != NULL) { *ret_charging_time = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_car_stopped_charging != NULL) { *ret_car_stopped_charging = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_time_since_state_change != NULL) { *ret_time_since_state_change = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
             if (ret_uptime != NULL) { *ret_uptime = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
         }
@@ -454,7 +454,7 @@ int tf_evse_get_low_level_state(TF_EVSE *evse, uint8_t *ret_led_state, uint16_t 
 
     _result = tf_tfp_finish_send(evse->tfp, _result, _deadline);
 
-    if (_error_code == 0 && _length != 34) {
+    if (_error_code == 0 && _length != 31) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
@@ -1458,7 +1458,7 @@ int tf_evse_get_button_state(TF_EVSE *evse, uint32_t *ret_button_press_time, uin
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], uint32_t *ret_charging_time, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime, int16_t *ret_indication, uint16_t *ret_duration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_boost_mode_enabled) {
+int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *ret_charger_state, uint8_t *ret_contactor_state, uint8_t *ret_contactor_error, uint16_t *ret_allowed_charging_current, uint8_t *ret_error_state, uint8_t *ret_lock_state, uint8_t *ret_jumper_configuration, bool *ret_has_lock_switch, uint8_t *ret_evse_version, uint8_t *ret_led_state, uint16_t *ret_cp_pwm_duty_cycle, uint16_t ret_adc_values[2], int16_t ret_voltages[3], uint32_t ret_resistances[2], bool ret_gpio[5], bool *ret_car_stopped_charging, uint32_t *ret_time_since_state_change, uint32_t *ret_uptime, int16_t *ret_indication, uint16_t *ret_duration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_boost_mode_enabled) {
     if (evse == NULL) {
         return TF_E_NULL;
     }
@@ -1490,7 +1490,7 @@ int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(evse->tfp);
-        if (_error_code != 0 || _length != 59) {
+        if (_error_code != 0 || _length != 56) {
             tf_packet_buffer_remove(_recv_buf, _length);
         } else {
             if (ret_iec61851_state != NULL) { *ret_iec61851_state = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
@@ -1509,7 +1509,7 @@ int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *
             if (ret_voltages != NULL) { for (_i = 0; _i < 3; ++_i) ret_voltages[_i] = tf_packet_buffer_read_int16_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 6); }
             if (ret_resistances != NULL) { for (_i = 0; _i < 2; ++_i) ret_resistances[_i] = tf_packet_buffer_read_uint32_t(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 8); }
             if (ret_gpio != NULL) { tf_packet_buffer_read_bool_array(_recv_buf, ret_gpio, 5);} else { tf_packet_buffer_remove(_recv_buf, 1); }
-            if (ret_charging_time != NULL) { *ret_charging_time = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
+            if (ret_car_stopped_charging != NULL) { *ret_car_stopped_charging = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_time_since_state_change != NULL) { *ret_time_since_state_change = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
             if (ret_uptime != NULL) { *ret_uptime = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
             if (ret_indication != NULL) { *ret_indication = tf_packet_buffer_read_int16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
@@ -1531,7 +1531,7 @@ int tf_evse_get_all_data_1(TF_EVSE *evse, uint8_t *ret_iec61851_state, uint8_t *
 
     _result = tf_tfp_finish_send(evse->tfp, _result, _deadline);
 
-    if (_error_code == 0 && _length != 59) {
+    if (_error_code == 0 && _length != 56) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 

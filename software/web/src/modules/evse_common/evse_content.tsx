@@ -384,8 +384,13 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                 </FormRow>))
                         }
 
-                        <FormRow label={__("evse.content.charging_time")}>
-                            <InputText value={util.format_timespan_ms(ll_state.charging_time)}/>
+                        <FormRow label={__("evse.content.car_stopped_charging")}>
+                            <IndicatorGroup
+                                value={ll_state.charging_time}
+                                items={[
+                                    ["secondary", __("evse.content.car_stopped_false")],
+                                    ["primary", __("evse.content.car_stopped_true")]
+                                ]}/>
                         </FormRow>
 
                         {!is_evse_v3 ? undefined :

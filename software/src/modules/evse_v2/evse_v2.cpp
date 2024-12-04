@@ -419,7 +419,7 @@ static const char *debug_header_prefix =
     "LL_STATE,"
     "led_state,"
     "cp_pwm_duty_cycle,"
-    "charging_time,"
+    "car_stopped_charging,"
     "time_since_state_change,"
     "uptime,"
     "ADC_VALUES,"
@@ -581,7 +581,7 @@ void EVSEV2::get_debug_line(StringBuilder *sb)
     int16_t voltages[7];
     uint32_t resistances[2];
     bool gpio[24];
-    uint32_t charging_time;
+    bool car_stopped_charging;
     uint32_t time_since_state_change;
     uint32_t time_since_dc_fault_check;
     uint32_t uptime;
@@ -623,7 +623,7 @@ void EVSEV2::get_debug_line(StringBuilder *sb)
                                         voltages,
                                         resistances,
                                         gpio,
-                                        &charging_time,
+                                        &car_stopped_charging,
                                         &time_since_state_change,
                                         &time_since_dc_fault_check,
                                         &uptime);
@@ -703,7 +703,7 @@ void EVSEV2::get_debug_line(StringBuilder *sb)
 
              led_state,
              cp_pwm_duty_cycle,
-             charging_time,
+             car_stopped_charging,
              time_since_state_change,
              uptime,
 
@@ -887,7 +887,7 @@ void EVSEV2::update_all_data()
     int16_t voltages[7];
     uint32_t resistances[2];
     bool gpio[24];
-    uint32_t charging_time;
+    bool car_stopped_charging;
     uint32_t time_since_state_change;
     uint32_t time_since_dc_fault_check;
     uint32_t uptime;
@@ -958,7 +958,7 @@ void EVSEV2::update_all_data()
                                         voltages,
                                         resistances,
                                         gpio,
-                                        &charging_time,
+                                        &car_stopped_charging,
                                         &time_since_state_change,
                                         &time_since_dc_fault_check,
                                         &uptime);
@@ -1159,7 +1159,7 @@ void EVSEV2::update_all_data()
 
 #endif
 
-    evse_common.low_level_state.get("charging_time")->updateUint(charging_time);
+    evse_common.low_level_state.get("charging_time")->updateUint(car_stopped_charging);
     evse_common.low_level_state.get("time_since_state_change")->updateUint(time_since_state_change);
     evse_common.low_level_state.get("uptime")->updateUint(uptime);
     evse_common.low_level_state.get("time_since_dc_fault_check")->updateUint(time_since_dc_fault_check);

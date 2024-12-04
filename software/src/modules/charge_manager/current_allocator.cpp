@@ -1639,7 +1639,7 @@ int allocate_current(
 }
 
 
-static uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t charging_time, uint16_t target_allocated_current)
+static uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t car_stopped_charging, uint16_t target_allocated_current)
 {
     if (charger_state == 0) // not connected
         return 0;
@@ -1650,7 +1650,7 @@ static uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_curren
     if (charger_state == 1 && supported_current == 0) // connected but blocked, supported current == 0 means another slot blocks
         return 1;
     if (charger_state == 1 && supported_current != 0) { // blocked by charge management (as supported current != 0)
-        if (charging_time == 0)
+        if (car_stopped_charging == 0)
             return 2; // Not charged this session
         else
             return 6; // Charged at least once
@@ -1658,7 +1658,7 @@ static uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_curren
     if (charger_state == 2)
         return 3; // Waiting for the car to start charging
 
-    logger.printfln("Unknown state! cs %u sc %u ct %u tac %u", charger_state, supported_current, charging_time, target_allocated_current);
+    logger.printfln("Unknown state! cs %u sc %u ct %u tac %u", charger_state, supported_current, car_stopped_charging, target_allocated_current);
     return 5;
 }
 
@@ -1709,12 +1709,12 @@ bool update_from_client_packet(
     //     AND we are still in charger state 1 (i.e. blocked by a slot, so the charge management slot)
     //         or 2 (i.e. already have current allocated)
     // OR the charger is already charging
-    bool wants_to_charge = (v1->charging_time == 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2)) || v1->charger_state == 3;
+    bool wants_to_charge = (v1->car_stopped_charging == 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2)) || v1->charger_state == 3;
     target.wants_to_charge = wants_to_charge;
 
     // A charger wants to charge and has low priority if it has already charged this vehicle
     // AND only the charge manager slot (charger_state == 1, supported_current != 0) or no slot (charger_state == 2) blocks.
-    bool low_prio = v1->charging_time != 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2);
+    bool low_prio = v1->car_stopped_charging != 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2);
     target.wants_to_charge_low_priority = low_prio;
 
     target.is_charging = v1->charger_state == 3;
@@ -1792,7 +1792,7 @@ bool update_from_client_packet(
     if (target_alloc.error == 0 || target_alloc.error >= CHARGE_MANAGER_CLIENT_ERROR_START)
         target_alloc.state = get_charge_state(v1->charger_state,
                                               v1->supported_current,
-                                              v1->charging_time,
+                                              v1->car_stopped_charging,
                                               target_alloc.allocated_current);
 
     if (v3 != nullptr) {

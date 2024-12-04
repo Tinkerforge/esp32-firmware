@@ -532,7 +532,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
                                       uint32_t time_since_state_change,
                                       uint8_t error_state,
                                       uint32_t uptime,
-                                      uint32_t charging_time,
+                                      uint32_t car_stopped_charging,
                                       uint16_t allowed_charging_current,
                                       uint16_t supported_current,
                                       bool managed,
@@ -572,7 +572,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
 
     state_pkt.v1.esp32_uid = esp32_uid;
     state_pkt.v1.evse_uptime = uptime;
-    state_pkt.v1.charging_time = charging_time;
+    state_pkt.v1.car_stopped_charging = car_stopped_charging;
     state_pkt.v1.allowed_charging_current = allowed_charging_current;
     state_pkt.v1.supported_current = supported_current;
     state_pkt.v1.iec61851_state = iec61851_state;
