@@ -124,6 +124,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             ],
             axes: [
                 {
+                    font: '12px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: this.props.x_height,
                     incrs: [
                         60,
@@ -175,12 +176,21 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     labelSize: this.y_label_size,
                     labelGap: 0,
                     labelFont: 'bold 14px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+                    font: '12px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
                         let size = 0;
+                        let size_correction_factor = 1;
 
                         if (values) {
                             self.ctx.save();
                             self.ctx.font = self.axes[axisIdx].font;
+
+                            if (self.ctx.font == '10px sans-serif') {
+                                // FIXME: For some unknown reason sometimes changing the canvas font doesn't work and the
+                                //        canvas font stays "10px sans-serif", work around this using a rought correction
+                                //        factor. This is not the best because the result of this correction is not exact
+                                size_correction_factor = 12 * devicePixelRatio / 10;
+                            }
 
                             for (let i = 0; i < values.length; ++i) {
                                 size = Math.max(size, self.ctx.measureText(values[i]).width);
@@ -189,6 +199,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                             self.ctx.restore();
                         }
 
+                        size *= size_correction_factor;
                         return Math.ceil(size / devicePixelRatio) + this.y_size_offset;
                     },
                     values: (self: uPlot, splits: number[]) => {

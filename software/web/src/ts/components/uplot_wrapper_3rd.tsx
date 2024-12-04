@@ -106,6 +106,7 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             ],
             axes: [
                 {
+                    font: '12px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: 1,// with size = 0 the width of the whole plot changes relative to the power plot
                     ticks: {
                         size: 0
@@ -130,12 +131,21 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     side: 0, // top
                 },
                 {
+                    font: '12px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
                         let size = 0;
+                        let size_correction_factor = 1;
 
                         if (values) {
                             self.ctx.save();
                             self.ctx.font = self.axes[axisIdx].font;
+
+                            if (self.ctx.font == '10px sans-serif') {
+                                // FIXME: For some unknown reason sometimes changing the canvas font doesn't work and the
+                                //        canvas font stays "10px sans-serif", work around this using a rought correction
+                                //        factor. This is not the best because the result of this correction is not exact
+                                size_correction_factor = 12 * devicePixelRatio / 10;
+                            }
 
                             for (let i = 0; i < values.length; ++i) {
                                 size = Math.max(size, self.ctx.measureText(values[i]).width);
@@ -143,6 +153,8 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
                             self.ctx.restore();
                         }
+
+                        size *= size_correction_factor;
 
                         this.y_size = Math.ceil(size / devicePixelRatio) + this.y_size_offset;
                         size = Math.max(this.y_size, this.y_other_size);
@@ -208,12 +220,21 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
         if (this.props.y2_enable === true) {
             options.axes.push({
                 side: 1, // right
+                font: '12px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                 size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
                     let size = 0;
+                    let size_correction_factor = 1;
 
                     if (values) {
                         self.ctx.save();
                         self.ctx.font = self.axes[axisIdx].font;
+
+                        if (self.ctx.font == '10px sans-serif') {
+                            // FIXME: For some unknown reason sometimes changing the canvas font doesn't work and the
+                            //        canvas font stays "10px sans-serif", work around this using a rought correction
+                            //        factor. This is not the best because the result of this correction is not exact
+                            size_correction_factor = 12 * devicePixelRatio / 10;
+                        }
 
                         for (let i = 0; i < values.length; ++i) {
                             size = Math.max(size, self.ctx.measureText(values[i]).width);
@@ -221,6 +242,8 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
                         self.ctx.restore();
                     }
+
+                    size *= size_correction_factor;
 
                     this.y2_size = Math.ceil(size / devicePixelRatio) + this.y2_size_offset;
                     size = Math.max(this.y2_size, this.y2_other_size);
