@@ -608,7 +608,6 @@ void ChargeManager::register_urls()
     bool enabled = config.get("enable_charge_manager")->asBool();
 
     if (enabled && config.get("chargers")->count() > 0 && this->static_cm) {
-        ca_config->global_hysteresis = 0_us;
         ca_config->enable_current_factor = 1;
     }
 
@@ -671,4 +670,11 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
 uint32_t ChargeManager::get_maximum_available_current()
 {
     return config.get("maximum_available_current")->asUint();
+}
+
+void ChargeManager::skip_global_hysteresis() {
+    if (this->ca_state == nullptr || this->ca_config == nullptr)
+        return;
+
+    this->ca_state->last_hysteresis_reset = now_us() - this->ca_config->global_hysteresis - 1_us;
 }

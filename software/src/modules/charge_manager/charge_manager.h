@@ -92,6 +92,7 @@ public:
     const Cost *get_allocated_currents() {return &allocated_currents;}
 
     void trigger_allocator_run() {next_allocation = 0_us;}
+    void skip_global_hysteresis();
 
 private:
     Config config_chargers_prototype;
