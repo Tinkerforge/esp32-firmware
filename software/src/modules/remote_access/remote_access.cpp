@@ -412,55 +412,11 @@ void RemoteAccess::register_urls() {
             }
         }
 
-        if (!registration_config.get("enable")->asBool()) {
-            TFJsonSerializer test_serializer = TFJsonSerializer(nullptr, 0);
-            test_serializer.addObject();
-            test_serializer.addMemberNumber("id", local_uid_num);
-            test_serializer.addMemberString("password", config.get("password")->asEphemeralCStr()),
-            test_serializer.endObject();
-            size_t json_size = test_serializer.end();
-
-            std::unique_ptr<char[]> delete_buf = heap_alloc_array<char>(json_size + 1);
-
-            TFJsonSerializer serializer = TFJsonSerializer(delete_buf.get(), json_size + 1);
-            serializer.addObject();
-            serializer.addMemberNumber("uuid", local_uid_num);
-            serializer.addMemberString("password", config.get("password")->asEphemeralCStr()),
-            serializer.endObject();
-            size_t size = serializer.end();
-
-            CoolString relay_host = config.get("relay_host")->asString();
-            uint32_t relay_port = config.get("relay_port")->asUint();
-            CoolString url = "https://";
-            url += relay_host;
-            url += ":";
-            url += relay_port;
-            url += "/api/selfdestruct";
-
-            if (https_client == nullptr) {
-                https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
-            }
-            https_client->set_header("Content-Type", "application/json");
-            // Deregistering from the server is optional. Don't handle any request errors.
-            auto callback = [this](ConfigRoot _) {
-                https_client = nullptr;
-                encrypted_secret = nullptr;
-                secret_nonce = nullptr;
-            };
-            this->run_request_with_next_stage(url.c_str(), HTTP_METHOD_DELETE, delete_buf.get(), size, config, callback);
-
-            config.get("users")->removeAll();
-            config.get("uuid")->updateString("");
-            config.get("enable")->updateBool(false);
-            config.get("password")->updateString("");
-            API::writeConfig("remote_access/config", &config);
-
-            remove_key(0, 0);
-            for(int user_id = 1; user_id < MAX_USERS + 1; ++user_id) // user 0 is the management connection
-                for(int key_id = 0; key_id < MAX_KEYS_PER_USER; ++key_id)
-                    remove_key(user_id, key_id);
-
-            return request.send(200); // TODO result json?
+        if (config.get("users")->count() != 0) {
+            https_client = nullptr;
+            encrypted_secret = nullptr;
+            secret_nonce = nullptr;
+            return request.send(400, "text/plain; charset=utf-8", "Charger is already registered");
         }
 
         const CoolString &note = doc["note"];
