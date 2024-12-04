@@ -269,7 +269,7 @@ void apply_cost(Cost cost, CurrentLimits* limits) {
 //   We don't consider this as active because the wake-up stage will allocate to this charger anyway, but this has the lowest priority.
 //   If this was considered active, a wake-up could steal current from the following states
 static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
-    return allocated_phases > 0 && (state->wants_to_charge || state->is_charging || (state->wants_to_charge_low_priority && !deadline_elapsed(state->last_switch + KEEP_ACTIVE_AFTER_PHASE_SWITCH_TIME))) && state->last_wakeup == 0_us;
+    return allocated_phases > 0 && (state->wants_to_charge || state->is_charging) && state->last_wakeup == 0_us;
 }
 
 // Stage 1: Rotate chargers
