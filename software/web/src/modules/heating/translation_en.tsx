@@ -101,23 +101,22 @@ let x = {
             </>,
             "control_period": "Control period",
             "control_period_help": <>
-                <p>Der Regelzeitraum bestimmt, für welchen Zeitraum die eingestellten Steuerregeln aktiv sind.</p>
-                <p>Beispielkonfiguration:</p>
+                <p>The control period determines for which period the control rules are active.</p>
+                <p>Example configuration:</p>
                 <ul>
-                    <li>Regelzeitraum: 24 Stunden</li>
-                    <li>Erweiterter Betrieb: Günstigste 4 Stunden</li>
-                    <li>Blockierender Betrieb: Teuerste 4 Stunden</li>
+                    <li>Control period: 24 hours</li>
+                    <li>Extended operation: Cheapest 8 hours</li>
+                    <li>Blocking operation: Most expensive 8 hours</li>
                 </ul>
-                <p>In diesem Fall Kann es passieren das bis zu 4 Stunden am Stück der erweiterte Betrieb und bis zu 4 Stunden am Stück der blockierende Betrieb geschaltet wird. Angenommen die Heizung muss mindestens 2x pro Tag laufen damit eine gewünschte Temperatur eingehalten wird, würde sich eventuell folgende Konfiguration anbieten:</p>
+                <p>In this case, it can happen that up to 8 hours at a time the extended operation and up to 8 hours at a time the blocking operation is switched on. Assuming the heating must run at least 2 times a day to maintain a desired temperature, the following configuration might be appropriate:</p>
                 <ul>
-                    <li>Regelzeitraum: 12 Stunden</li>
-                    <li>Erweiterter Betrieb: Günstigste 2 Stunden</li>
-                    <li>Blockierender Betrieb: Teuerste 2 Stunden</li>
+                    <li>Control period: 12 hours</li>
+                    <li>Extended operation: Cheapest 4 hours</li>
+                    <li>Blocking operation: Most expensive 4 hours</li>
                 </ul>
-                <p>In dieser Konfiguration würde die Heizung auch pro Tag 4 Stunden in den erweiterten Betrieb sowieso 4 Stunden in den blockiernden Betrieb gebracht.</p>
-                <p>Allerdings wird der Tag in zwei 12 Stunden Regelzeiträume geteilt in denen je die günstigsten/teuersten Steunden gesucht werden und entsprechend kann die Heizung pro 12 Stunden auch höchsten für 2 Stunden am Stück in den erweiterten oder blockierenden Betrieb gebracht werden.</p>
+                <p>In this configuration, the day is divided into two 12-hour control periods in which the cheapest/most expensive hours are determined and accordingly the heating can be brought into extended or blocking operation for a maximum of 4 hours at a time per 12 hours.</p>
             </>,
-            "control_period_muted": "Zeitraum in dem die günstigsten Stunden für den erweiterten und die teuersten Stunden für den blockierenden Betrieb bestimmt werden."
+            "control_period_muted": "Period in which the cheapest hours for the extended and the most expensive hours for the blocking operation are determined."
         },
         "script": {
             "save_failed": "Failed to save the heating settings",
