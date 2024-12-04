@@ -225,7 +225,7 @@ void ChargeManager::pre_setup()
         {"rc", Config::Uint16(0)},         // "requested_current" - either the supported current or (after requested_current_threshold is elapsed in state C) the max phase current + requested_current_margin
         {"ae", Config::Uint(0, 9, 99999)}, // "allocated_energy" in Wh, values > 99999 Wh are truncated to 99999.
         {"ar", Config::Uint(0, 9, 99999)}, // "allocated_energy_this_rotation" in Wh, values > 99999 Wh are truncated to 99999.
-        {"ls", Config::Uint32(0)},         // "last_switch" in millis
+        {"ls", Config::Uint32(0)},         // "last_switch_on" in millis
         {"lp", Config::Uint32(0)},         // "last_plug_in" in millis
         {"lw", Config::Uint32(0)},         // "last_wakeup" in millis
         {"ip", Config::Uint32(0)},         // "use_supported_current" in millis
@@ -661,7 +661,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     ll_charger_cfg->get("rc")->updateUint(charger.requested_current);
     ll_charger_cfg->get("ae")->updateUint(charger.allocated_energy * 1000);
     ll_charger_cfg->get("ar")->updateUint(charger.allocated_energy_this_rotation * 1000);
-    ll_charger_cfg->get("ls")->updateUint(charger.last_switch.millis());
+    ll_charger_cfg->get("ls")->updateUint(charger.last_switch_on.millis());
     ll_charger_cfg->get("lp")->updateUint(charger.last_plug_in.millis());
     ll_charger_cfg->get("lw")->updateUint(charger.last_wakeup.millis());
     ll_charger_cfg->get("ip")->updateUint(charger.use_supported_current.millis());

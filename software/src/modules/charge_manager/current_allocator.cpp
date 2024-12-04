@@ -321,7 +321,7 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         const auto *state = &charger_state[i];
 
         bool alloc_energy_over_thres = state->allocated_energy_this_rotation >= cfg->allocated_energy_rotation_threshold;
-        bool min_active_elapsed = deadline_elapsed(state->last_switch + cfg->minimum_active_time);
+        bool min_active_elapsed = deadline_elapsed(state->last_switch_on + cfg->minimum_active_time);
 
         bool rotate = have_b1 && ca_state->global_hysteresis_elapsed && alloc_energy_over_thres && min_active_elapsed;
 
@@ -580,7 +580,7 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // if phases are overloaded in every iteration.
     sort_chargers(
         was_just_plugged_in(state) ? 1 : 0,
-        was_just_plugged_in(left.state) ? (left.state->last_plug_in < right.state->last_plug_in) : (left.state->last_switch < right.state->last_switch)
+        was_just_plugged_in(left.state) ? (left.state->last_plug_in < right.state->last_plug_in) : (left.state->last_switch_on < right.state->last_switch_on)
     );
 
     trace_sort(3);
@@ -1280,7 +1280,7 @@ static bool stage_9_sort(const ChargerState *left_state, const ChargerState *rig
             return left_state->last_wakeup >= right_state->last_wakeup;
         case NEVER_ATTEMPTED_TO_WAKE_UP:
             // Prefer older timestamps, i.e. cars that have been switched off longer.
-            return left_state->last_switch < right_state->last_switch;
+            return left_state->last_switch_on < right_state->last_switch_on;
         case CAR_DID_NOT_WAKE_UP:
             // Prefer older timestamps, i.e. cars that we longer did not attempt to wake up.
             return left_state->last_wakeup < right_state->last_wakeup;
@@ -1536,11 +1536,17 @@ int allocate_current(
 
             uint16_t current_to_set = current_array[i];
             int8_t phases_to_set = phases_array[i];
+            auto old_phases = charger_alloc.allocated_phases;
 
-            // Don't reset hysteresis if a charger is shut down. Re-activating a charger is (always?) fine.
-            if (charger_alloc.allocated_phases != phases_to_set && phases_to_set != 0) {
-                charger.last_switch = now;
-                ca_state->last_hysteresis_reset = now;
+            if (old_phases != phases_to_set) {
+                // Don't reset hysteresis if a charger is shut down. Re-activating a charger is (always?) fine.
+                if(phases_to_set != 0) {
+                    ca_state->last_hysteresis_reset = now;
+                }
+
+                if (old_phases == 0) {
+                    charger.last_switch_on = now;
+                }
             }
 
             if (charger.wants_to_charge_low_priority && phases_to_set != 0) {
@@ -1564,7 +1570,7 @@ int allocate_current(
 
             // The charger was just plugged in. If we've allocated phases to it for PLUG_IN_TIME, clear the timestamp
             // to reduce its priority.
-            if (charger.last_plug_in != 0_us && phases_to_set > 0 && deadline_elapsed(charger.last_switch + cfg->plug_in_time)) {
+            if (charger.last_plug_in != 0_us && phases_to_set > 0 && deadline_elapsed(charger.last_switch_on + cfg->plug_in_time)) {
                 trace("charger %d: clearing last_plug_in after deadline elapsed", i);
                 charger.last_plug_in = 0_us;
             }
