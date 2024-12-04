@@ -145,10 +145,10 @@ static void trace_sort_fn(int stage, int matched, int *idx_array, size_t charger
 #define trace_sort(x) trace_sort_fn(x, matched, idx_array, charger_count)
 
 // Sorts the indices of chargers that match the filter to the front of idx_array and returns the number of matches.
-int filter_chargers_impl(filter_fn filter_, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count) {
+int filter_chargers_impl(filter_fn filter_, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const CurrentAllocatorConfig *cfg, const ChargerState *charger_state, size_t charger_count) {
     int matches = 0;
     for(int i = 0; i < charger_count; ++i) {
-        if (!filter_(current_allocation[idx_array[i]], phase_allocation[idx_array[i]], &charger_state[idx_array[i]]))
+        if (!filter_(current_allocation[idx_array[i]], phase_allocation[idx_array[i]], cfg, &charger_state[idx_array[i]]))
             continue;
 
         int tmp = idx_array[matches];

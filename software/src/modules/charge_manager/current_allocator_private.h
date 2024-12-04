@@ -21,7 +21,7 @@
 
 #include "current_allocator.h"
 
-typedef bool(*filter_fn)(int32_t /*allocated_current*/, uint8_t /*allocated_phases*/, const ChargerState */*state*/);
+typedef bool(*filter_fn)(int32_t /*allocated_current*/, uint8_t /*allocated_phases*/, const CurrentAllocatorConfig */*cfg*/, const ChargerState */*state*/);
 
 int filter_chargers_impl(filter_fn filter, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count);
 
@@ -55,12 +55,13 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state);
 
 #define filter_chargers(x) do { \
-    matched = filter_chargers_impl([](int32_t allocated_current, uint8_t allocated_phases, const ChargerState *state) { \
+    matched = filter_chargers_impl([](int32_t allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *_cfg, const ChargerState *state) { \
             return (x); \
         }, \
         idx_array, \
         current_allocation, \
         phase_allocation, \
+        cfg, \
         charger_state, \
         charger_count); \
     } while(0)
