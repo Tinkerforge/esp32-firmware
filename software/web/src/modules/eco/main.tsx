@@ -399,6 +399,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                             y_digits={3}
                             only_show_visible={true}
                             grid_show={false}
+                            y_three_split={true}
                             padding={[10, 10, null, 5]}
                         />
                     </UplotLoader>
