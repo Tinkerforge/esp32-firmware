@@ -146,6 +146,7 @@ export class PowerManagerStatus extends Component {
         let state       = API.get('power_manager/state');
         let ll_state    = API.get('power_manager/low_level_state');
         let config      = API.get('power_manager/config');
+        const phases    = API.get_unchecked('evse/low_level_state')?.phases_current | API.get_unchecked('energy_manager/state')?.phases_switched;
 
         return <StatusSection name="power_manager">
             {API.get('power_manager/config').enabled ?
@@ -212,7 +213,7 @@ export class PowerManagerStatus extends Component {
                 :
                     <FormRow label={__("power_manager.status.phase_switching")}>
                         <IndicatorGroup
-                            value={!ll_state.is_3phase ? 0 : 1}
+                            value={phases == 3 ? 1 : 0}
                             items={[
                                 ["primary", __("power_manager.status.single_phase")],
                                 ["primary", __("power_manager.status.three_phase")],
