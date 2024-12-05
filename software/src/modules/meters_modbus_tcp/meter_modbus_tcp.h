@@ -22,13 +22,13 @@
 
 #include <stdint.h>
 
-#include "generic_modbus_tcp_client.h"
+#include "modules/modbus_tcp_client/generic_modbus_tcp_client.h"
 #include "modules/meters/imeter.h"
 #include "modules/meters/meter_value_id.h"
 #include "config.h"
 #include "meters_modbus_tcp.h"
-#include "modbus_register_type.enum.h"
-#include "modbus_value_type.enum.h"
+#include "modules/modbus_tcp_client/modbus_register_type.enum.h"
+#include "modules/modbus_tcp_client/modbus_value_type.enum.h"
 #include "meter_modbus_tcp_table_id.enum.h"
 #include "sungrow_hybrid_inverter_virtual_meter.enum.h"
 #include "sungrow_string_inverter_virtual_meter.enum.h"

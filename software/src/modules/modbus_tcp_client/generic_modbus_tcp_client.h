@@ -22,7 +22,7 @@
 #include <TFModbusTCPClient.h>
 #include <TFModbusTCPClientPool.h>
 
-#include "modules/modbus_tcp_client/generic_tcp_client_pool_connector.h"
+#include "generic_tcp_client_pool_connector.h"
 #include "modbus_register_type.enum.h"
 #include "tools.h"
 

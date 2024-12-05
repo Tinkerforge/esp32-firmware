@@ -26,7 +26,7 @@
 
 #include "module.h"
 #include "modules/meters/meter_generator.h"
-#include "modules/meters_modbus_tcp/modbus_tcp_tools.h"
+#include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 #include "config.h"
 
 #if defined(__GNUC__)

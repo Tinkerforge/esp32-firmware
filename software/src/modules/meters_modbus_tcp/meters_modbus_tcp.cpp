@@ -26,7 +26,7 @@
 #include "meter_modbus_tcp.h"
 #include "modules/meters/meter_value_id.h"
 #include "tools.h"
-#include "modbus_register_address_mode.enum.h"
+#include "modules/modbus_tcp_client/modbus_register_address_mode.enum.h"
 
 #include "gcc_warnings.h"
 

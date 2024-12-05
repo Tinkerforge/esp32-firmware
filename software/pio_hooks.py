@@ -474,28 +474,51 @@ def hyphenate_translation(translation, parent_key=None, lang=None):
 def repair_rtc_dir():
     path = os.path.abspath("src/modules/rtc")
 
-    try:
-        os.remove(os.path.join(path, "real_time_clock_v2_bricklet_firmware_bin.digest"))
-        os.remove(os.path.join(path, "real_time_clock_v2_bricklet_firmware_bin.embedded.cpp"))
-        os.remove(os.path.join(path, "real_time_clock_v2_bricklet_firmware_bin.embedded.h"))
-    except:
-        pass
+    for name in ["real_time_clock_v2_bricklet_firmware_bin.digest",
+                 "real_time_clock_v2_bricklet_firmware_bin.embedded.cpp",
+                 "real_time_clock_v2_bricklet_firmware_bin.embedded.h"]:
+        try:
+            os.remove(os.path.join(path, name))
+        except FileNotFoundError:
+            pass
 
 def repair_firmware_update_dir():
     path = os.path.abspath("src/modules/firmware_update")
 
-    try:
-        os.remove(os.path.join(path, "recovery_html.digest"))
-        os.remove(os.path.join(path, "recovery_html.embedded.cpp"))
-        os.remove(os.path.join(path, "recovery_html.embedded.h"))
-    except:
-        pass
+    for name in ["recovery_html.digest",
+                 "recovery_html.embedded.cpp",
+                 "recovery_html.embedded.h",
+                 "signature_public_key.embedded.cpp",
+                 "signature_public_key.embedded.h"]:
+        try:
+            os.remove(os.path.join(path, name))
+        except FileNotFoundError:
+            pass
 
-    try:
-        os.remove(os.path.join(path, "signature_public_key.embedded.cpp"))
-        os.remove(os.path.join(path, "signature_public_key.embedded.h"))
-    except:
-        pass
+def repair_meters_modbus_tcp_dir():
+    path = os.path.abspath("src/modules/meters_modbus_tcp")
+
+    for name in ["modbus_register_type.enum.cpp",
+                 "modbus_register_type.enum.h",
+                 "modbus_register_address_mode.enum.cpp",
+                 "modbus_register_address_mode.enum.h",
+                 "Modbus Value Type.uint8.enum",
+                 "modbus_value_type.enum.cpp",
+                 "modbus_value_type.enum.h"]:
+        try:
+            os.remove(os.path.join(path, name))
+        except FileNotFoundError:
+            pass
+
+    path = os.path.abspath("web/src/modules/meters_modbus_tcp")
+
+    for name in ["modbus_register_type.enum.ts",
+                 "modbus_register_address_mode.enum.ts",
+                 "modbus_value_type.enum.ts"]:
+        try:
+            os.remove(os.path.join(path, name))
+        except FileNotFoundError:
+            pass
 
 def find_module_space(modules, name_space):
     index = 0
@@ -518,6 +541,7 @@ def main():
 
     repair_rtc_dir()
     repair_firmware_update_dir()
+    repair_meters_modbus_tcp_dir()
 
     check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
 
