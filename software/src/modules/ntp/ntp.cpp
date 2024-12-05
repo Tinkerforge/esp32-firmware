@@ -48,11 +48,14 @@ extern "C" void sntp_sync_time(struct timeval *tv)
     if (first) {
         first = false;
         auto now = millis();
-        auto secs = now / 1000;
-        auto ms = now % 1000;
-        logger.printfln("NTP synchronized at %lu,%03lu", secs, ms);
-        task_scheduler.scheduleOnce([](){
+
+        task_scheduler.scheduleOnce([now](){
             ntp.set_synced(true);
+
+            auto secs = now / 1000;
+            auto ms = now % 1000;
+            // Don't log in TCP/IP task: Deadlocks the event lock
+            logger.printfln("NTP synchronized at %lu,%03lu", secs, ms);
         });
 
         task_scheduler.scheduleWithFixedDelay([](){
