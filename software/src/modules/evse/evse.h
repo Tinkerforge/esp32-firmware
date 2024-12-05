@@ -90,7 +90,7 @@ protected:
     bool phase_switching_capable()                                   override {return false;}
     bool can_switch_phases_now(uint32_t phases_wanted)               override {return false;}
     bool requires_cp_disconnect()                                    override {return false;}
-    uint32_t get_phases()                                            override {return 0;}
+    uint32_t get_phases()                                            override {return 3;}
     PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override {return PhaseSwitcherBackend::SwitchingState::Ready;} // Don't report an error when phase_switching_capable() is false.
     bool switch_phases(uint32_t phases_wanted)                       override {return false;}
     bool is_external_control_allowed()                               override {return false;}
