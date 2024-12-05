@@ -87,7 +87,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
             if (c.s != 5) {
                 if (state.state.state == 2) {
-                    c_body_classes = "bg-danger text-white bg-disabled";
+                    c_body_classes = "bg-warning bg-disabled";
                     c_state = __("charge_manager.script.charge_state_blocked_by_other_box");
                     c_info = __("charge_manager.script.charge_state_blocked_by_other_box_details");
                 } else {
