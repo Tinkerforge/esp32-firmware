@@ -671,7 +671,7 @@
 2024-12-03: 2.6.4 (e2a6bba1)
 - Fix missing web interface alert texts
 
-2024-12-05: 2.6.5 (<unknown>)
+2024-12-05: 2.6.5 (cd50d3be)
 - Fix external current slot blocking after firmware update
 - Fix managed chargers not being found via mDNS resolve anymore
 - Fix zero line being drawn on axis labels
