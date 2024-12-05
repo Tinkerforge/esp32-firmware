@@ -257,14 +257,14 @@ void EvseCommon::apply_defaults()
     uint16_t external_current;
     bool external_enabled;
     bool external_clear_on_disconnect;
-    rc = backend->get_charging_slot(CHARGING_SLOT_EXTERNAL, &external_current, &external_enabled, &external_clear_on_disconnect);
+    rc = backend->get_charging_slot_default(CHARGING_SLOT_EXTERNAL, &external_current, &external_enabled, &external_clear_on_disconnect);
     if (rc != TF_E_OK) {
         backend->is_in_bootloader(rc);
         logger.printfln("Failed to apply defaults (external read failed). rc %d", rc);
         return;
     }
     if (!external_enabled) {
-        this->apply_slot_default(CHARGING_SLOT_EXTERNAL, external_current, true, external_clear_on_disconnect);
+        backend->set_charging_slot_default(CHARGING_SLOT_EXTERNAL, external_current, true, external_clear_on_disconnect);
         backend->set_charging_slot(CHARGING_SLOT_EXTERNAL, external_current, true, external_clear_on_disconnect);
     }
 
