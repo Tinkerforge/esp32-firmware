@@ -1738,6 +1738,10 @@ bool update_from_client_packet(
     // A charger wants to charge and has low priority if it has already charged this vehicle
     // AND only the charge manager slot (charger_state == 1, supported_current != 0) or no slot (charger_state == 2) blocks.
     bool low_prio = v1->car_stopped_charging != 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2);
+
+    if (!target.wants_to_charge_low_priority && low_prio)
+        target.last_wakeup = now_us() - cfg->wakeup_time;
+
     target.wants_to_charge_low_priority = low_prio;
 
     target.is_charging = v1->charger_state == 3;
