@@ -1566,7 +1566,7 @@ int allocate_current(
                 charger.last_phase_switch = now;
             }
 
-            if (charger.wants_to_charge_low_priority && phases_to_set != 0) {
+            if (charger.wants_to_charge_low_priority && old_phases == 0 && phases_to_set != 0) {
                 LOCAL_LOG("Waking up vehicle at %s (%s).",
                           get_charger_name(i),
                           hosts[i]);
