@@ -1748,6 +1748,8 @@ bool update_from_client_packet(
     if (v1->charger_state == 0) {
         target.allocated_energy = 0;
         target.allocated_energy_this_rotation = 0;
+        target_alloc.allocated_current = 0;
+        target_alloc.allocated_phases = 0;
     }
 
     target.allowed_current = v1->allowed_charging_current;
