@@ -907,36 +907,41 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         const auto *state = &charger_state[idx_array[i]];
 
+        bool force_3p = !deadline_elapsed(state->last_phase_switch + cfg->global_hysteresis) && state->phases == 3;
+        bool force_1p = !deadline_elapsed(state->last_phase_switch + cfg->global_hysteresis) && state->phases == 1;
+
         bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
-        bool is_unknown_rot_switchable = state->phase_rotation == PhaseRotation::Unknown && state->phase_switch_supported;
+
         // Prefer unknown rotated switchable chargers to be active on all three phases.
         // In that case we know what the charger is doing.
-        bool activate_3p = is_fixed_3p || is_unknown_rot_switchable;
+        bool is_unknown_rot_switchable = state->phase_rotation == PhaseRotation::Unknown && state->phase_switch_supported;
+
+        bool try_3p = !force_1p && (force_3p || is_fixed_3p || is_unknown_rot_switchable);
+        bool try_1p = !force_3p && !is_fixed_3p;
 
         char buf[256];
         StringWriter sw{buf, ARRAY_SIZE(buf)};
 
         sw.printf("4: %d:", idx_array[i]);
-        if (!try_activate(sw, state, activate_3p, have_active_chargers, nullptr, limits, cfg, ca_state)) {
-            if (!is_unknown_rot_switchable) {
-                trace("%s", buf);
-                continue;
-            }
-            sw.printf("4: %d retry 1p:", idx_array[i]);
-            // Retry enabling unknown_rot_switchable charger with one phase only
-            activate_3p = false;
-            if (!try_activate(sw, state, activate_3p, have_active_chargers, nullptr, limits, cfg, ca_state)) {
-                trace("%s", buf);
-                continue;
-            }
+
+        uint8_t phase_alloc = 0;
+
+        if (try_3p && try_activate(sw, state, true, have_active_chargers, nullptr, limits, cfg, ca_state)) {
+            try_1p = false;
+            phase_alloc = 3;
         }
 
-        phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
+        if (try_1p && try_activate(sw, state, false, have_active_chargers, nullptr, limits, cfg, ca_state)) {
+            phase_alloc = 1;
+        }
+
+        phase_allocation[idx_array[i]] = phase_alloc;
 
         sw.printf(" (%dp)", phase_allocation[idx_array[i]]);
         trace("%s", buf);
 
-        calculate_window(true, idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
+        if (phase_alloc > 0)
+            calculate_window(true, idx_array, current_allocation, phase_allocation, limits, charger_state, charger_count, cfg, ca_state);
     }
 }
 
@@ -967,7 +972,7 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     trace(have_active_chargers ? "5: have active chargers." : "5: don't have active chargers.");
 
-    filter_chargers(allocated_phases == 1 && state->phase_switch_supported);
+    filter_chargers(allocated_phases == 1 && state->phase_switch_supported && deadline_elapsed(state->last_phase_switch + _cfg->global_hysteresis));
 
     sort_chargers(0,
         left.state->allocated_energy < right.state->allocated_energy
@@ -1325,36 +1330,43 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         if (!ca_state->global_hysteresis_elapsed && state->allowed_current == 0)
             continue;
 
+        bool force_3p = !deadline_elapsed(state->last_phase_switch + cfg->global_hysteresis) && state->phases == 3;
+        bool force_1p = !deadline_elapsed(state->last_phase_switch + cfg->global_hysteresis) && state->phases == 1;
+
         bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
+
+        // Prefer unknown rotated switchable chargers to be active on all three phases.
+        // In that case we know what the charger is doing.
         bool is_unknown_rot_switchable = state->phase_rotation == PhaseRotation::Unknown && state->phase_switch_supported;
 
-        // If we ignore that the hysteresis is not elapsed yet (see above)
-        // and this charger had three phases allocated in the last iteration,
-        // we have to be able to allocate three phases again or not wake it up.
-        // A phase switch is not allowed while the hysteresis is not elapsed!
-        bool force_3p = !ca_state->global_hysteresis_elapsed && state->phases == 3;
-
-        // Same for 1p changing.
-        bool force_1p = !ca_state->global_hysteresis_elapsed && state->phases == 1;
-
-        bool activate_3p = !force_1p && (is_fixed_3p || is_unknown_rot_switchable || force_3p);
+        bool try_3p = !force_1p && (force_3p || is_fixed_3p || is_unknown_rot_switchable);
+        bool try_1p = !force_3p && !is_fixed_3p;
 
         Cost enable_cost;
-        auto enable_current = get_enable_cost(state, activate_3p, have_active_chargers, nullptr, &enable_cost, cfg);
+        int enable_current;
+        uint8_t phase_alloc = 0;
 
-        if (cost_exceeds_limits(enable_cost, limits, 9)) {
-            if (!activate_3p || !is_unknown_rot_switchable || force_3p)
-                continue;
-            // Retry enabling unknown_rot_switchable charger with one phase only
-            activate_3p = false;
-            enable_current = get_enable_cost(state, activate_3p, have_active_chargers, nullptr, &enable_cost, cfg);
-            if (cost_exceeds_limits(enable_cost, limits, 9))
-                continue;
+        if (try_3p) {
+            enable_current = get_enable_cost(state, true, have_active_chargers, nullptr, &enable_cost, cfg);
+            if (!cost_exceeds_limits(enable_cost, limits, 9)) {
+                try_1p = false;
+                phase_alloc = 3;
+            }
         }
+
+        if (try_1p) {
+            enable_current = get_enable_cost(state, false, have_active_chargers, nullptr, &enable_cost, cfg);
+            if (!cost_exceeds_limits(enable_cost, limits, 9)) {
+                phase_alloc = 1;
+            }
+        }
+
+        if (phase_alloc == 0)
+            continue;
 
         apply_cost(enable_cost, limits);
 
-        phase_allocation[idx_array[i]] = activate_3p ? 3 : 1;
+        phase_allocation[idx_array[i]] = phase_alloc;
         current_allocation[idx_array[i]] = enable_current;
         trace("9: %d: %d@%dp", idx_array[i], current_allocation[idx_array[i]], phase_allocation[idx_array[i]]);
 
@@ -1547,6 +1559,11 @@ int allocate_current(
                 if (old_phases == 0) {
                     charger.last_switch_on = now;
                 }
+
+            }
+
+            if (charger.phases != phases_to_set && phases_to_set != 0) {
+                charger.last_phase_switch = now;
             }
 
             if (charger.wants_to_charge_low_priority && phases_to_set != 0) {
@@ -1745,6 +1762,14 @@ bool update_from_client_packet(
     // Only set the timestamp if plug_in_time is != 0: This feature is deactivated if the time is set to 0.
     if (target.last_update != 0 && target.charger_state == 0 && v1->charger_state != 0 && cfg->plug_in_time != 0_us)
         target.last_plug_in = now_us();
+
+    // If this charger just switched to state C (i.e. the contactor switched on)
+    // set last_phase_switch to now to make sure we don't immediately switch again.
+    if (target.charger_state != v1->charger_state && v1->charger_state == 3)
+        target.last_phase_switch = now_us();
+
+    if (v1->charger_state == 0)
+        target.last_phase_switch = -cfg->global_hysteresis;
 
     target.charger_state = v1->charger_state;
     target.last_update = millis();
