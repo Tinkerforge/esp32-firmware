@@ -42,10 +42,11 @@ export interface SwitchableInputNumberProps  extends Omit<JSXInternal.HTMLAttrib
 
 export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
     const id = !props.idContext ? useId() : useContext(props.idContext);
-    const label_id = useId();
+    const label_desktop_id = useId();
+    const label_mobile_id  = useId();
 
     const input = useRef<HTMLInputElement>();
-    let value = parseInt(props.value?.toString(), 10);
+    const value = parseInt(props.value?.toString(), 10);
 
     const invalid = isNaN(value) || (props.min !== undefined && value < parseInt(props.min.toString())) || (props.max !== undefined && value > parseInt(props.max.toString()));
 
@@ -67,12 +68,12 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
     return (
         <div class="row no-gutters input-group rounded">
             <div class="d-none d-sm-block input-group-prepend input-group-text custom-control custom-switch" style={"padding-left: 2.75rem; padding-right: 0.5rem; border-bottom-right-radius: 0; border-top-right-radius: 0; " + (props.switch_label_min_width ? ("min-width: " + props.switch_label_min_width) : "")}>
-                <input type="checkbox" class="custom-control-input" id={label_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
-                <label class="custom-control-label" for={label_id}>{props.checked ? props.switch_label_active : props.switch_label_inactive}</label>
+                <input type="checkbox" class="custom-control-input" id={label_desktop_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
+                <label class="custom-control-label" for={label_desktop_id}>{props.checked ? props.switch_label_active : props.switch_label_inactive}</label>
             </div>
             <div class="d-block d-sm-none input-group-prepend input-group-text custom-control custom-switch" style={"padding-left: 2.75rem; padding-right: 0.5rem; border-bottom-right-radius: 0; border-top-right-radius: 0;"}>
-                <input type="checkbox" class="custom-control-input" id={label_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
-                <label class="custom-control-label" for={label_id}></label>
+                <input type="checkbox" class="custom-control-input" id={label_mobile_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
+                <label class="custom-control-label" for={label_mobile_id}></label>
             </div>
             <input class="form-control no-spin"
                 ref={input}
