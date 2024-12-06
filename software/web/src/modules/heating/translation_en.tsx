@@ -30,6 +30,7 @@ let x = {
             "meter_slot_grid_power": "Power meter",
             "meter_slot_grid_power_muted": "typically at the grid connection",
             "meter_slot_grid_power_none": "No power meter configured",
+            "sg_ready": "SG Ready",
             "sg_ready_output": "SG Ready Output",
             "sg_ready_output1_muted": "Output 1 is used for blocking operation (SG Ready state 1).",
             "sg_ready_output1_help": "This operating state is backwards compatible with the EVU lock switched at fixed times and includes a maximum of 2 hours of hard blocking time.",
@@ -93,8 +94,9 @@ let x = {
             "h_per_x": /*SFN*/(x: number) => x == 24 ? "h/day" : "h/" + x + "h"/*NF*/,
             "h_per_day": "h/day",
             "for_the_most_expensive": "For the most expensive",
+            "p14_enwg": "§14a EnWG",
             "p14_enwg_help": <>
-                <p>From 01.01.2024, §14a EnWG requires the controllability of heat pumps in Germany. Specifically, newly installed heat pumps must have a communication interface to the grid operator such that the grid operator can adjust the power of the device in exceptional cases.</p>
+                <p>From January 1st 2024, §14a EnWG requires the controllability of heat pumps in Germany. Specifically, newly installed heat pumps must have a communication interface to the grid operator such that the grid operator can adjust the power of the device in exceptional cases.</p>
                 <p>The control according to §14a EnWG can be enabled here. For this purpose, an input is controlled by the grid operator and in return the heat pump is controlled via the SG Ready output 1 according to the input.</p>
                 <p>Note: The control according to §14a EnWG takes precedence over the heating control configured above.</p>
             </>,

@@ -31,7 +31,6 @@ import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Thermometer } from "react-feather";
-import { InputTime } from "../../ts/components/input_time";
 import { InputSelect } from "../../ts/components/input_select";
 import { MeterValueID    } from "../meters/meter_value_id";
 import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_manager/main";
@@ -523,7 +522,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             </div>
                         </div>
                     </FormRow>
-                    <FormRow label="SG Ready">
+                    <FormRow label={__("heating.content.sg_ready")}>
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
@@ -544,8 +543,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         </div>
                     </FormRow>
 
-                    <FormSeparator heading="§14 EnWG" help={__("heating.content.p14_enwg_help")}/>
-                    <FormRow label="§14 EnWG">
+                    <FormSeparator heading={__("heating.content.p14_enwg")} help={__("heating.content.p14_enwg_help")}/>
+                    <FormRow label={__("heating.content.p14_enwg")}>
                         <Switch desc={__("heating.content.p14_enwg_control_enabled")}
                                 checked={state.p14enwg_active}
                                 onClick={this.toggle('p14enwg_active')}
@@ -589,7 +588,7 @@ export class HeatingStatus extends Component
         const state = API.get('heating/state')
 
         return <StatusSection name="heating">
-            <FormRow label="SG Ready" label_muted={__("heating.content.sg_ready_muted")}>
+            <FormRow label={__("heating.content.sg_ready")} label_muted={__("heating.content.sg_ready_muted")}>
                 <div class="row mx-n1">
                     <div class="col-md-6 px-1">
                         <div class="input-group">

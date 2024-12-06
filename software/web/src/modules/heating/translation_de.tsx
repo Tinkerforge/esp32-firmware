@@ -30,10 +30,11 @@ let x = {
             "meter_slot_grid_power": "Stromzähler",
             "meter_slot_grid_power_muted": "typischerweise am Netzanschluss",
             "meter_slot_grid_power_none": "Kein Stromzähler konfiguriert",
+            "sg_ready": "SG-Ready",
             "sg_ready_output": "SG-Ready-Ausgang",
-            "sg_ready_output1_muted": "Ausgang 1 wird für den blockierenden Betrieb verwendet (SG Ready Zustand 1).",
+            "sg_ready_output1_muted": "Ausgang 1 wird für den blockierenden Betrieb verwendet (SG-Ready-Zustand 1).",
             "sg_ready_output1_help": "Im blockierenden Betrieb läuft die Heizung nicht. Dieser Betriebszustand ist abwärtskompatibel zur häufig zu festen Uhrzeiten geschalteten EVU-Sperre.",
-            "sg_ready_output2_muted": "Ausgang 2 wird für den erweiterten Betrieb verwendet (SG Ready Zustand 3).",
+            "sg_ready_output2_muted": "Ausgang 2 wird für den erweiterten Betrieb verwendet (SG-Ready-Zustand 3).",
             "sg_ready_output2_help": "In diesem Betriebszustand läuft die Wärmepumpe im erweiterten Betrieb für Raumheizung und Warmwasserbereitung. Es handelt sich dabei nicht um einen definitiven Anlaufbefehl, sondern um eine Einschaltempfehlung.",
             "control": "Steuerung",
             "active": "Aktiv",
@@ -92,9 +93,10 @@ let x = {
             "kwh_per_day": "kWh/Tag",
             "h_per_x": /*SFN*/(x: number) => x == 24 ? "h/Tag" : "h/" + x + "h"/*NF*/,
             "h_per_day": "h/Tag",
-            "for_the_most_expensive": "bei den teuersten",
+            "for_the_most_expensive": "Bei den teuersten",
+            "p14_enwg": "§14a EnWG",
             "p14_enwg_help": <>
-                <p>Ab dem 01.01.2024 fordert der §14a des EnWG die Steuerbarkeit von Wärmepumpen. Konkret müssen neu verbaute Wärmepumpen über eine Kommunikationsschnittstelle zum Netzbetreiber verfügen, damit dieser in Ausnahmefällen die Leistung des Geräts anpassen kann.</p>
+                <p>Ab dem 1. Januar 2024 fordert der §14a des EnWG die Steuerbarkeit von Wärmepumpen. Konkret müssen neu verbaute Wärmepumpen über eine Kommunikationsschnittstelle zum Netzbetreiber verfügen, damit dieser in Ausnahmefällen die Leistung des Geräts anpassen kann.</p>
                 <p>Die Steuerung nach §14a EnWG kann hier aktiviert werden. Dazu wird ein Eingang vom Netzbetreiber gesteuert und im Gegenzug wird über den SG-Ready-Ausgang 1 die Wärmepumpe entsprechend des Eingangs gesteuert.</p>
                 <p>Hinweis: Die Steuerung nach §14a EnWG hat Priorität gegenüber der oben konfigurierten Heizungssteuerung.</p>
             </>,
