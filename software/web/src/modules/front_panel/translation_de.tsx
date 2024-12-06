@@ -7,9 +7,9 @@ let x = {
             "front_panel": "Display"
         },
         "content": {
-            "front_panel": "Display",
-            "front_panel_muted": "Statusinformationen auf Display anzeigen",
-            "front_panel_desc": "Aktiviert das Display des Energy Managers",
+            "front_panel": "Display aktiviert",
+            "front_panel_muted": "",
+            "front_panel_desc": "Zeigt Statusinformationen auf Display an",
             "tile": "Kachel",
             "empty_tile": "Leere Kachel",
             "wallbox": "Wallbox",

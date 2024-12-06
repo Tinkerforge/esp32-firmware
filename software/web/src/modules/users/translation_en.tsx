@@ -25,7 +25,7 @@ let x = {
 
             "add_user_title": "Add user",
             "add_user_username": "Username",
-            "add_user_username_desc": "To log into the web interface",
+            "add_user_username_desc": "To log in to the web interface",
             "add_user_display_name": "Display name",
             "add_user_display_name_desc": "Shown in web interface and charge log",
             "add_user_current": "Maximum charge current",

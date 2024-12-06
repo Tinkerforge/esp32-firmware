@@ -8,18 +8,18 @@ let x = {
         },
         "content": {
             "heating": "Heating",
-            "extended_logging": "Extended Logging",
+            "extended_logging": "Extended logging",
             "extended_logging_enabled": "Extended logging enabled",
             "extended_logging_description": "More information about the control decisions in the event log",
-            "minimum_holding_time": "Minimum Holding Time",
+            "minimum_holding_time": "Minimum holding time",
             "minimum_holding_time_muted": "for SG Ready output 1 and SG Ready output 2",
-            "remaining_holding_time": "Remaining Holding Time",
+            "remaining_holding_time": "Remaining holding time",
             "remaining_holding_time_muted": "",
             "minutes": "Minutes",
             "minute": "Minute",
-            "dpc_low": "for cheapest",
+            "dpc_low": "For cheapest",
             "dpc_high": "Blocking for the most expensive",
-            "pv_excess_control": "if PV excess is above",
+            "pv_excess_control": "If PV excess is above",
             "pv_yield_forecast": "PV yield is below",
             "p14_enwg_control_enabled": "Control of heating based on §14 EnWG enabled (only relevant for Germany)",
             "input": "Input",
@@ -39,7 +39,7 @@ let x = {
             "control": "Control",
             "active": "Active",
             "inactive": "Inactive",
-            "watt": "Watt",
+            "watt": "W",
             "price_based_heating_plan": "Price-based Heating Plan",
             "price_based_heating_plan_muted": "Heating plan based on dynamic prices: Red = blocking operation, Green = activation recommendation",
             "status": "Status",
@@ -70,7 +70,7 @@ let x = {
             "meter_needs_activation": <>
                 <p style="color:red;">A meter must be selected for this configuration.</p>
             </>,
-            "hours": "Hours",
+            "hours": /*SFN*/(h: number) => "" + h + " hours"/*NF*/,
             "update_now": "Update now",
             "extended_operation": "Extended operation",
             "extended_operation_help": <>
@@ -93,7 +93,7 @@ let x = {
             "kwh_per_day": "kWh/day",
             "h_per_x": /*SFN*/(x: number) => x == 24 ? "h/day" : "h/" + x + "h"/*NF*/,
             "h_per_day": "h/day",
-            "for_the_most_expensive": "for the most expensive",
+            "for_the_most_expensive": "For the most expensive",
             "p14_enwg_help": <>
                 <p>From 01.01.2024, §14a EnWG requires the controllability of heat pumps in Germany. Specifically, newly installed heat pumps must have a communication interface to the grid operator such that the grid operator can adjust the power of the device in exceptional cases.</p>
                 <p>The control according to §14a EnWG can be enabled here. For this purpose, an input is controlled by the grid operator and in return the heat pump is controlled via the SG Ready output 1 according to the input.</p>

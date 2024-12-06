@@ -21,7 +21,7 @@ let x = {
             "cron_every_minute": "Every minute",
             "cron_weekdays": "Weekdays",
             "cron_weekends": "Weekends",
-            "cron_month_end": "Month End",
+            "cron_month_end": "End of month",
             "cron_translation_function": /*FFN*/(mday: number, wday: number, hour: number, minute: number) => {
                 const wdays = [
                     "Sundays",

@@ -359,11 +359,11 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     <FormRow label={__("heating.content.control_period")} label_muted={__("heating.content.control_period_muted")} help={__("heating.content.control_period_help")}>
                         <InputSelect
                             items={[
-                                ["0", "24 " + __("heating.content.hours")],
-                                ["1", "12 " + __("heating.content.hours")],
-                                ["2", "8 " +  __("heating.content.hours")],
-                                ["3", "6 " +  __("heating.content.hours")],
-                                ["4", "4 " +  __("heating.content.hours")]
+                                ["0", __("heating.content.hours")(24)],
+                                ["1", __("heating.content.hours")(12)],
+                                ["2", __("heating.content.hours")(8)],
+                                ["3", __("heating.content.hours")(6)],
+                                ["4", __("heating.content.hours")(4)]
                             ]}
                             value={state.control_period}
                             onValue={(v) => this.setState({control_period: parseInt(v)}, this.update_uplot)}
@@ -377,7 +377,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     </FormRow>
                     <FormSeparator heading={__("heating.content.extended_operation")} help={__("heating.content.extended_operation_help")}/>
                     <FormRow label={__("heating.content.pv_excess_control")}
-                             help={!meter_available && __("heating.content.meter_needs_activation")}>
+                             help={!meter_available && __("heating.content.meter_needs_activation")}
+                             class="mb-xs-1 mb-md-0">
                         <SwitchableInputNumber
                             disabled={!meter_available}
                             switch_label_active={__("heating.content.active")}
@@ -392,7 +393,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_min_width="100px"
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.or")} small={true}>
+                    <FormRow label={__("heating.content.or")} small={true} class="mb-0 mb-xs-1">
                         <div></div>
                     </FormRow>
                     <FormRow label={__("heating.content.dpc_low")}
@@ -562,7 +563,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={(v) => this.setState({p14enwg_input: parseInt(v)})}
                         />
                     </FormRow>
-                    <FormRow label="Blockierender Betrieb">
+                    <FormRow label={__("heating.content.blocking_operation")}>
                         <InputSelect
                             items={[
                                 ["0", __("heating.content.closed")],

@@ -25,7 +25,7 @@ let x = {
 
             "add_user_title": "Benutzer hinzufügen",
             "add_user_username": "Benutzername",
-            "add_user_username_desc": "Zur Anmeldung im Webinterface",
+            "add_user_username_desc": "Zur Anmeldung beim Webinterface",
             "add_user_display_name": "Anzeigename",
             "add_user_display_name_desc": "Zur Anzeige im Ladeprotokoll und Webinterface",
             "add_user_current": "Maximaler Ladestrom",
