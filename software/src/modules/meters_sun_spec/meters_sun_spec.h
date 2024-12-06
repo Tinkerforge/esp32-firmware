@@ -25,7 +25,7 @@
 #include <lwip/ip_addr.h>
 
 #include "module.h"
-#include "modules/meters/meter_generator.h"
+#include "modules/meters/imeter_generator.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 #include "config.h"
 
@@ -35,7 +35,7 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-class MetersSunSpec final : public IModule, public MeterGenerator
+class MetersSunSpec final : public IModule, public IMeterGenerator
 {
 public:
     MetersSunSpec() : client(TFModbusTCPByteOrder::Host) {}
@@ -45,7 +45,7 @@ public:
     void register_urls() override;
     void loop() override;
 
-    // for MeterGenerator
+    // for IMeterGenerator
     [[gnu::const]] MeterClassID get_class() const override;
     virtual IMeter *new_meter(uint32_t slot, Config *state, Config *errors) override;
     [[gnu::const]] virtual const Config *get_config_prototype() override;

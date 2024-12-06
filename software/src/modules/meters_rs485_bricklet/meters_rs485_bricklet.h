@@ -23,7 +23,7 @@
 
 #include "device_module.h"
 #include "config.h"
-#include "modules/meters/meter_generator.h"
+#include "modules/meters/imeter_generator.h"
 #include "meter_rs485_bricklet.h"
 #include "bindings/bricklet_rs485.h"
 
@@ -39,7 +39,7 @@ class MetersRS485Bricklet final : public DeviceModule<TF_RS485,
                                                       tf_rs485_reset,
                                                       tf_rs485_destroy,
                                                       false>,
-                                  public MeterGenerator
+                                  public IMeterGenerator
 {
 public:
     MetersRS485Bricklet();
@@ -50,7 +50,7 @@ public:
     void register_urls() override;
     void loop() override;
 
-    // for MeterGenerator
+    // for IMeterGenerator
     [[gnu::const]] MeterClassID get_class() const override;
     virtual IMeter *new_meter(uint32_t slot, Config *state, Config *errors) override;
     [[gnu::const]] virtual const Config *get_config_prototype() override;

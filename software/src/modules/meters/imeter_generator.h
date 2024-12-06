@@ -23,10 +23,10 @@
 
 #include "imeter.h"
 
-class MeterGenerator
+class IMeterGenerator
 {
 public:
-    virtual ~MeterGenerator() = default;
+    virtual ~IMeterGenerator() = default;
 
     virtual MeterClassID get_class() const = 0;
     virtual IMeter *new_meter(uint32_t slot, Config *state, Config *errors) = 0;

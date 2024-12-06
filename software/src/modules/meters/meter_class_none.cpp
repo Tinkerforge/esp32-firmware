@@ -22,9 +22,9 @@
 
 #include "gcc_warnings.h"
 
-// for MeterGenerator
+// for IMeterGenerator
 [[gnu::const]]
-IMeter * MeterGeneratorNone::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
+IMeter *MeterGeneratorNone::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
 {
     return this;
 }

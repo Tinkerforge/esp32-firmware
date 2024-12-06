@@ -24,7 +24,7 @@
 #include "module.h"
 #include "config.h"
 #include "imeter.h"
-#include "meter_generator.h"
+#include "imeter_generator.h"
 #include "meter_value_availability.h"
 #include "value_history.h"
 #include "meter_value_id.h"
@@ -83,7 +83,7 @@ public:
     void register_events() override;
     void pre_reboot() override;
 
-    void register_meter_generator(MeterClassID meter_class, MeterGenerator *generator);
+    void register_meter_generator(MeterClassID meter_class, IMeterGenerator *generator);
     IMeter *get_meter(uint32_t slot);
     uint32_t get_meters(MeterClassID meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
     MeterClassID get_meter_class(uint32_t slot);
@@ -139,7 +139,7 @@ private:
         ValueHistory power_history;
     };
 
-    MeterGenerator *get_generator_for_class(MeterClassID meter_class);
+    IMeterGenerator *get_generator_for_class(MeterClassID meter_class);
     IMeter *new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *errors);
 
     MeterValueAvailability get_single_value(uint32_t slot, uint32_t kind, float *value, micros_t max_age_us);
@@ -151,7 +151,7 @@ private:
 
     bool meters_feature_declared = false;
 
-    std::vector<std::tuple<MeterClassID, MeterGenerator *>> generators;
+    std::vector<std::tuple<MeterClassID, IMeterGenerator *>> generators;
 
     size_t history_chars_per_value;
     uint32_t last_live_update = 0;

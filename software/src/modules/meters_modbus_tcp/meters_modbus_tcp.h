@@ -22,7 +22,7 @@
 #include <stdint.h>
 
 #include "module.h"
-#include "modules/meters/meter_generator.h"
+#include "modules/meters/imeter_generator.h"
 #include "config.h"
 #include "meter_modbus_tcp_table_id.enum.h"
 
@@ -34,13 +34,13 @@
 
 #define METERS_MODBUS_TCP_MAX_CUSTOM_REGISTERS 36
 
-class MetersModbusTCP final : public IModule, public MeterGenerator
+class MetersModbusTCP final : public IModule, public IMeterGenerator
 {
 public:
     // for IModule
     void pre_setup() override;
 
-    // for MeterGenerator
+    // for IMeterGenerator
     [[gnu::const]] MeterClassID get_class() const override;
     virtual IMeter *new_meter(uint32_t slot, Config *state, Config *errors) override;
     [[gnu::const]] virtual const Config *get_config_prototype() override;

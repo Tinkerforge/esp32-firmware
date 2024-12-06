@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "module.h"
-#include "modules/meters/meter_generator.h"
+#include "modules/meters/imeter_generator.h"
 #include "config.h"
 #include "meter_meta.h"
 
@@ -33,13 +33,13 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-class MetersMeta final : public IModule, public MeterGenerator
+class MetersMeta final : public IModule, public IMeterGenerator
 {
 public:
     // for IModule
     void pre_setup() override;
 
-    // for MeterGenerator
+    // for IMeterGenerator
     [[gnu::const]] MeterClassID get_class() const override;
     IMeter *new_meter(uint32_t slot, Config *state, Config *errors) override;
     [[gnu::const]] const Config *get_config_prototype() override;

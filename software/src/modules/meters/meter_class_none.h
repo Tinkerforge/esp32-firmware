@@ -22,7 +22,7 @@
 #include <stdint.h>
 
 #include "imeter.h"
-#include "meter_generator.h"
+#include "imeter_generator.h"
 #include "config.h"
 
 #if defined(__GNUC__)
@@ -30,10 +30,10 @@
     #include "gcc_warnings.h"
 #endif
 
-class MeterGeneratorNone final : public MeterGenerator, public IMeter
+class MeterGeneratorNone final : public IMeterGenerator, public IMeter
 {
 public:
-    // for MeterGenerator
+    // for IMeterGenerator
     virtual IMeter *new_meter(uint32_t slot, Config *state, Config *errors) override;
     virtual const Config *get_config_prototype() override;
     virtual const Config *get_state_prototype()  override;
