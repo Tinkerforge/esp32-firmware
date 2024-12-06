@@ -19,7 +19,7 @@ let x = {
             "add_cert_message": /*SFN*/(have: number, max: number) => `${have} of ${max} certificates configured.`/*NF*/,
 
             "browse": "Browse",
-            "select_file": "Select..."
+            "select_file": "Select file..."
         },
         "script": {
             "add_cert_failed": "Failed to add certificate",

@@ -29,7 +29,6 @@ let x = {
             "opened": "Aktiv wenn geöffnet",
             "meter_slot_grid_power": "Stromzähler",
             "meter_slot_grid_power_muted": "typischerweise am Netzanschluss",
-            "meter_slot_grid_power_select": "Auswählen...",
             "meter_slot_grid_power_none": "Kein Stromzähler konfiguriert",
             "sg_ready_output": "SG-Ready-Ausgang",
             "sg_ready_output1_muted": "Ausgang 1 wird für den blockierenden Betrieb verwendet (SG Ready Zustand 1).",

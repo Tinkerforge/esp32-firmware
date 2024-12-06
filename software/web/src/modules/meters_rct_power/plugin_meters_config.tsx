@@ -84,7 +84,7 @@ export function init() {
                                 [VirtualMeter.Grid.toString(), __("meters_rct_power.content.virtual_meter_grid")],
                                 [VirtualMeter.Battery.toString(), __("meters_rct_power.content.virtual_meter_battery")],
                             ]}
-                            placeholder={__("meters_rct_power.content.virtual_meter_select")}
+                            placeholder={__("select")}
                             value={util.hasValue(config[1].virtual_meter) ? config[1].virtual_meter.toString() : undefined}
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {virtual_meter: parseInt(v)}));

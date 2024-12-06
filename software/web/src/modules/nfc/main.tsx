@@ -226,7 +226,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                                             ["4",__("nfc.content.type_4")],
                                             ["5",__("nfc.content.type_5")],
                                         ]}
-                                        placeholder={__("nfc.content.select_type")}
+                                        placeholder={__("select")}
                                         value={state.addTag.tag_type.toString()}
                                         onValue={(v) => this.setState({addTag: {...state.addTag, tag_type: parseInt(v)}})}
                                         required />

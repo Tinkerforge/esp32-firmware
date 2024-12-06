@@ -307,7 +307,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onDirtyChange={this.setDirty}>
                     <FormRow label={__("heating.content.meter_slot_grid_power")} label_muted={__("heating.content.meter_slot_grid_power_muted")}>
                         <InputSelect
-                            placeholder={meter_available ? __("heating.content.meter_slot_grid_power_select") : __("heating.content.meter_slot_grid_power_none")}
+                            placeholder={meter_available ? __("select") : __("heating.content.meter_slot_grid_power_none")}
                             items={meter_slots}
                             value={state.meter_slot_grid_power}
                             onValue={(v) => this.setState({meter_slot_grid_power: parseInt(v)})}

@@ -71,7 +71,6 @@ let x = {
             "rotation_6": "L312",
             "rotation_right": "Positive sequence",
             "rotation_left": "Negative sequence",
-            "add_charger_rotation_select": "Select...",
 
             "edit_charger_title": "Edit charger",
             "edit_charger_name": "Display name",
@@ -104,7 +103,6 @@ let x = {
             "dlm_enabled": "Dynamic load management enabled",
             "dlm_enabled_desc": "Adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the grid connection.",
             "dlm_meter_slot_grid_currents": "Energy meter",
-            "dlm_meter_slot_grid_currents_select": "Select...",
             "dlm_meter_slot_grid_currents_none": "No power meter configured",
             "dlm_meter_slot_grid_currents_missing_values": "phase currents are missing; draw minus feed required",
             "dlm_meter_slot_grid_currents_single_phase": "single-phase only, L1",

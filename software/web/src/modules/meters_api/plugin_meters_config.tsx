@@ -152,7 +152,7 @@ export class MeterValueIDSelector extends Component<MeterValueIDSelectorProps, M
                                 this.props.on_value_id(value_id);
                             }
                         }}
-                        placeholder={__("meters_api.content.placeholder")}
+                        placeholder={__("select")}
                         value={this.state.tree_path[i]}
                         className={'form-control' + (!this.state.is_valid && i == items.length - 1 ? ' is-invalid' : '')}
                         invalidFeedback={__("meters_api.content.invalid_feedback")}

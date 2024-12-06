@@ -372,7 +372,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                             <FormRow label={__("power_manager.content.meter_slot_grid_power")} label_muted={__("power_manager.content.meter_slot_grid_power_muted")}>
                                 <InputSelect
                                     required={s.excess_charging_enable}
-                                    placeholder={meter_slots.length > 0 ? __("power_manager.content.meter_slot_grid_power_select") : __("power_manager.content.meter_slot_grid_power_none")}
+                                    placeholder={meter_slots.length > 0 ? __("select") : __("power_manager.content.meter_slot_grid_power_none")}
                                     items={meter_slots}
                                     value={s.meter_slot_grid_power}
                                     onValue={(v) => this.setState({meter_slot_grid_power: parseInt(v)})}
@@ -430,7 +430,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                             <FormRow label={__("power_manager.content.meter_slot_battery_power")} label_muted={__("power_manager.content.meter_slot_battery_power_muted")}>
                                 <InputSelect
                                     required={s.excess_charging_enable}
-                                    placeholder={meter_slots_for_battery.length > 0 ? __("power_manager.content.meter_slot_grid_power_select") : __("power_manager.content.meter_slot_grid_power_none")}
+                                    placeholder={meter_slots_for_battery.length > 0 ? __("select") : __("power_manager.content.meter_slot_grid_power_none")}
                                     items={meter_slots_for_battery}
                                     value={s.meter_slot_battery_power}
                                     onValue={(v) => this.setState({meter_slot_battery_power: parseInt(v)})}

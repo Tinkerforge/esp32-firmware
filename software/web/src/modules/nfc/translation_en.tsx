@@ -42,7 +42,6 @@ let x = {
 
             "last_seen": "",
             "last_seen_suffix": " ago",
-            "select_type": "Select...",
             "type_0": "Mifare Classic",
             "type_1": "NFC Forum Type 1",
             "type_2": "NFC Forum Type 2",

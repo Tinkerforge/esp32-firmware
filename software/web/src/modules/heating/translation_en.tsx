@@ -29,7 +29,6 @@ let x = {
             "opened": "Opened",
             "meter_slot_grid_power": "Power meter",
             "meter_slot_grid_power_muted": "typically at the grid connection",
-            "meter_slot_grid_power_select": "Select...",
             "meter_slot_grid_power_none": "No power meter configured",
             "sg_ready_output": "SG Ready Output",
             "sg_ready_output1_muted": "Output 1 is used for blocking operation (SG Ready state 1).",

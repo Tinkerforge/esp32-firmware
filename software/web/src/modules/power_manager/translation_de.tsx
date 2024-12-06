@@ -38,7 +38,6 @@ let x = {
             "default_mode_muted": "wird nach Neustart verwendet",
             "meter_slot_grid_power": "Stromzähler",
             "meter_slot_grid_power_muted": "typischerweise am Netzanschluss",
-            "meter_slot_grid_power_select": "Auswählen...",
             "meter_slot_grid_power_none": "Kein Stromzähler konfiguriert",
             "meter_slot_grid_power_missing_value": "Summe der gerichteten Wirkleistung fehlt",
             "meter_slot_grid_power_in_use_by_battery": "als Batteriespeicher-Stromzähler ausgewählt",

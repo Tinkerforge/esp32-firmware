@@ -71,7 +71,6 @@ let x = {
             "rotation_6": "L312",
             "rotation_right": "Rechtsdrehend",
             "rotation_left": "Linksdrehend",
-            "add_charger_rotation_select": "Auswählen...",
 
             "edit_charger_title": "Wallbox bearbeiten",
             "edit_charger_name": "Anzeigename",
@@ -104,7 +103,6 @@ let x = {
             "dlm_enabled": "Dynamisches Lastmanagement aktiviert",
             "dlm_enabled_desc": "Regelt die kontrollierten Wallboxen so, dass der maximal zulässige Strom des Netzanschlusses auf keiner Phase überschritten wird.",
             "dlm_meter_slot_grid_currents": "Stromzähler",
-            "dlm_meter_slot_grid_currents_select": "Auswählen...",
             "dlm_meter_slot_grid_currents_none": "Kein Stromzähler konfiguriert",
             "dlm_meter_slot_grid_currents_missing_values": "Phasenströme fehlen; Bezug minus Einspeisung benötigt",
             "dlm_meter_slot_grid_currents_single_phase": "nur einphasig, L1",

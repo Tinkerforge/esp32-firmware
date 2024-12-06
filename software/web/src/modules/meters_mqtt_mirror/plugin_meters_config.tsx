@@ -18,14 +18,13 @@
  */
 
 import { h, ComponentChildren } from "preact";
-import { __, translate_unchecked } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api";
-import { InputSelect } from "../../ts/components/input_select";
 import { Switch          } from "../../ts/components/switch";
 
 export type MqttMirrorMetersConfig = [

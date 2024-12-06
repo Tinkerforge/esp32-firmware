@@ -497,7 +497,7 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
                         [ModbusRegisterType.HoldingRegister.toString(), __("meters_modbus_tcp.content.registers_register_type_holding_register")],
                         [ModbusRegisterType.InputRegister.toString(), __("meters_modbus_tcp.content.registers_register_type_input_register")],
                     ]}
-                    placeholder={__("meters_modbus_tcp.content.registers_register_type_select")}
+                    placeholder={__("select")}
                     value={util.hasValue(this.state.register.rtype) ? this.state.register.rtype.toString() : undefined}
                     onValue={(v) => {
                         this.setState({register: {...this.state.register, rtype: parseInt(v)}});
@@ -542,7 +542,7 @@ class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> 
                         [ModbusValueType.F64BE.toString(), __("meters_modbus_tcp.content.registers_value_type_f64be")],
                         [ModbusValueType.F64LE.toString(), __("meters_modbus_tcp.content.registers_value_type_f64le")],
                     ]}
-                    placeholder={__("meters_modbus_tcp.content.registers_value_type_select")}
+                    placeholder={__("select")}
                     value={util.hasValue(this.state.register.vtype) ? this.state.register.vtype.toString() : undefined}
                     onValue={(v) => {
                         this.setState({register: {...this.state.register, vtype: parseInt(v)}});
@@ -699,7 +699,7 @@ export function init() {
                                 [MeterModbusTCPTableID.VictronEnergyGX.toString(), __("meters_modbus_tcp.content.table_victron_energy_gx")],
                                 [MeterModbusTCPTableID.Custom.toString(), __("meters_modbus_tcp.content.table_custom")],
                             ]}
-                            placeholder={__("meters_modbus_tcp.content.table_select")}
+                            placeholder={__("select")}
                             value={util.hasValue(config[1].table) ? config[1].table[0].toString() : undefined}
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {table: new_table_config(parseInt(v))}));
@@ -854,7 +854,7 @@ export function init() {
                                 <InputSelect
                                     required
                                     items={virtual_meter_items}
-                                    placeholder={__("meters_modbus_tcp.content.virtual_meter_select")}
+                                    placeholder={__("select")}
                                     value={util.hasValue(config[1].table[1]) && util.hasValue((config[1].table[1] as any).virtual_meter) ? (config[1].table[1] as any).virtual_meter.toString() : undefined}
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)})}));
@@ -916,7 +916,7 @@ export function init() {
                                 <InputSelect
                                     required
                                     items={monophase_channel_items}
-                                    placeholder={__("meters_modbus_tcp.content.shelly_em_monophase_channel_select")}
+                                    placeholder={__("select")}
                                     value={util.hasValue(config[1].table[1]) && util.hasValue((config[1].table[1] as any).monophase_channel) ? (config[1].table[1] as any).monophase_channel.toString() : undefined}
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {monophase_channel: parseInt(v)})}));
@@ -930,7 +930,7 @@ export function init() {
                                         [ShellyEMMonophaseMapping.L2.toString(), __("meters_modbus_tcp.content.shelly_em_monophase_mapping_l2")],
                                         [ShellyEMMonophaseMapping.L3.toString(), __("meters_modbus_tcp.content.shelly_em_monophase_mapping_l3")],
                                     ]}
-                                    placeholder={__("meters_modbus_tcp.content.shelly_em_monophase_mapping_select")}
+                                    placeholder={__("select")}
                                     value={util.hasValue(config[1].table[1]) && util.hasValue((config[1].table[1] as any).monophase_mapping) ? (config[1].table[1] as any).monophase_mapping.toString() : undefined}
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {monophase_mapping: parseInt(v)})}));
@@ -950,7 +950,7 @@ export function init() {
                                         [CarloGavazziPhase.L2.toString(), __("meters_modbus_tcp.content.carlo_gavazzi_phase_l2")],
                                         [CarloGavazziPhase.L3.toString(), __("meters_modbus_tcp.content.carlo_gavazzi_phase_l3")],
                                     ]}
-                                    placeholder={__("meters_modbus_tcp.content.carlo_gavazzi_phase_select")}
+                                    placeholder={__("select")}
                                     value={util.hasValue(config[1].table[1]) && util.hasValue((config[1].table[1] as any).phase) ? (config[1].table[1] as any).phase.toString() : undefined}
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {phase: parseInt(v)})}));
@@ -978,7 +978,7 @@ export function init() {
                                     [ModbusRegisterAddressMode.Address.toString(), __("meters_modbus_tcp.content.register_address_mode_address")],
                                     [ModbusRegisterAddressMode.Number.toString(), __("meters_modbus_tcp.content.register_address_mode_number")]
                                 ]}
-                                placeholder={__("meters_modbus_tcp.content.register_address_mode_select")}
+                                placeholder={__("select")}
                                 value={util.hasValue(config[1].table[1].register_address_mode) ? config[1].table[1].register_address_mode.toString() : undefined}
                                 onValue={(v) => {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {register_address_mode: parseInt(v)})}));

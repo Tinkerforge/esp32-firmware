@@ -130,7 +130,6 @@ let x = {
             "add_rule_title": "Regel hinzufügen",
             "add_rule_count": /*SFN*/(count: number, max: number) => count + " von " + max + " Regeln konfiguriert"/*NF*/,
             "edit_rule_title": "Regel bearbeiten",
-            "select": "Auswählen...",
             "trigger_disabled": "Deaktiviert",
             "action_disabled": "Deaktiviert",
             "preview": "Vorschau"

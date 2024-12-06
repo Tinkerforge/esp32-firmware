@@ -121,7 +121,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             <FormRow key="trigger_row" label={__("automation.content.condition")}>
                 <InputSelect
                     required
-                    placeholder={__("automation.content.select")}
+                    placeholder={__("select")}
                     items={trigger}
                     onValue={(v) => {
                         this.setState({
@@ -150,7 +150,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             <FormRow key="action_row" label={__("automation.content.action")}>
                 <InputSelect
                     required
-                    placeholder={__("automation.content.select")}
+                    placeholder={__("select")}
                     items={action}
                     onValue={(v) => {
                         this.setState({

@@ -477,7 +477,7 @@ export function init() {
                         <InputSelect
                             required
                             items={model_ids}
-                            placeholder={__("meters_sun_spec.content.config_model_id_select")}
+                            placeholder={__("select")}
                             value={util.hasValue(config[1].model_id) ? config[1].model_id.toString() : config[1].model_id}
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {model_id: parseInt(v)}));

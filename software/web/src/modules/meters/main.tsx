@@ -1004,7 +1004,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                             </FormRow>
                                             <FormRow label={__("meters.content.edit_meter_class")}>
                                                 <InputSelect
-                                                    placeholder={__("meters.content.edit_meter_class_select")}
+                                                    placeholder={__("select")}
                                                     items={classes}
                                                     onValue={(v) => {
                                                         let meter_class = parseInt(v);
@@ -1076,7 +1076,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                 let rows: ComponentChild[] = [
                                     <FormRow label={__("meters.content.add_meter_slot")}>
                                         <InputSelect
-                                            placeholder={__("meters.content.add_meter_slot_select")}
+                                            placeholder={__("select")}
                                             items={slots}
                                             onValue={(v) => this.setState({addMeterSlot: parseInt(v)})}
                                             value={state.addMeterSlot !== null ? state.addMeterSlot.toString() : null}
@@ -1084,7 +1084,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
                                     </FormRow>,
                                     <FormRow label={__("meters.content.add_meter_class")}>
                                         <InputSelect
-                                            placeholder={__("meters.content.add_meter_class_select")}
+                                            placeholder={__("select")}
                                             items={classes}
                                             onValue={(v) => {
                                                 let meter_class = parseInt(v);

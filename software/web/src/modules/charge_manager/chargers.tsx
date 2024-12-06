@@ -425,7 +425,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                             ]}
                                             value={state.editCharger.rot}
                                             onValue={(v) => this.setState({editCharger: {...state.editCharger, rot: parseInt(v)}})}
-                                            placeholder={__("charge_manager.content.add_charger_rotation_select")}
+                                            placeholder={__("select")}
                                             required
                                             />
                                     </FormRow>
@@ -502,7 +502,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                         ]}
                                         value={state.addCharger.rot}
                                         onValue={(v) => this.setState({addCharger: {...state.addCharger, rot: parseInt(v)}})}
-                                        placeholder={__("charge_manager.content.add_charger_rotation_select")}
+                                        placeholder={__("select")}
                                         required
                                         />
                                 </FormRow>
@@ -565,7 +565,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                 this.setState({emCharger: {...state.emCharger, idx: chg_idx, host: host}});
                             }}
                             required={state.enable_charge_manager}
-                            placeholder={__("charge_manager.content.add_charger_rotation_select")}
+                            placeholder={__("select")}
                         />
                     </FormRow>
                 </div>

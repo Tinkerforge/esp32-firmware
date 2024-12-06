@@ -107,5 +107,6 @@ let x = {
     "days": "days",
     "day": "day",
     "today": "Today",
-    "tomorrow": "Tomorrow"
+    "tomorrow": "Tomorrow",
+    "select": "Auswählen..."
 }
