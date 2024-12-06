@@ -17,13 +17,7 @@ import subprocess
 import datetime
 
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
-from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
-from provisioning.tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
-from provisioning.tinkerforge.bricklet_industrial_dual_analog_in_v2 import BrickletIndustrialDualAnalogInV2
-from provisioning.tinkerforge.bricklet_industrial_dual_ac_in import BrickletIndustrialDualACIn
-from provisioning.tinkerforge.bricklet_rs485 import BrickletRS485
-from provisioning.tinkerforge.bricklet_io4_v2 import BrickletIO4V2
-from provisioning.tinkerforge.bricklet_warp_energy_manager import BrickletWARPEnergyManager
+from provisioning.tinkerforge.bricklet_warp_energy_manager_v2 import BrickletWARPEnergyManagerV2
 
 from provisioning.provision_common.provision_common import *
 from provisioning.provision_common.sdm_simulator import SDMSimulator
@@ -57,7 +51,7 @@ def get_next_serial_number(prefix):
 
     return '{0}{1:09}'.format(prefix, serial_number)
 
-class EnergyManagerTester:
+class EnergyManagerV2Tester:
     def __init__(self):
         if len(sys.argv) != 2:
             self.fatal_error("Usage: {} firmware_type".format(sys.argv[0]))
@@ -78,22 +72,10 @@ class EnergyManagerTester:
             self.sn_prefix = "3"
 
         self.result = {}
-        """
         self.ipcon = IPConnection()
-        self.idai = BrickletIndustrialDualAnalogInV2('24yU', self.ipcon)
-        self.rgb_led = BrickletRGBLEDV2('VRF', self.ipcon)
-        self.iqr = BrickletIndustrialQuadRelayV2('21wZ', self.ipcon)
-        self.idaci = BrickletIndustrialDualACIn('acin', self.ipcon)
-        self.io4 = BrickletIO4V2('Q4U', self.ipcon)
-        self.sdm_sim = SDMSimulator('25in')
-        self.sdm_sim.noise = (1.0, 1.0)
-
-        self.ipcon.connect('localhost', 4223)"""
+        self.ipcon.connect('localhost', 4223)
 
         self.result["start"] = now()
-
-        #self.rgb_led.set_rgb_value(0, 0, 255)
-        #self.iqr.set_selected_value(0, 1)
 
         github_reachable = True
         try:
@@ -108,14 +90,9 @@ class EnergyManagerTester:
             with ChangedDirectory(FIRMWARES_GIT_PATH):
                 run(["git", "pull"])
 
-        """
-        wem_bricklet_directory = os.path.join(FIRMWARES_GIT_PATH, "bricklets", "warp_energy_manager_v2")
-        wem_bricklet_path = os.readlink(os.path.join(wem_bricklet_directory, "bricklet_warp_energy_manager_v2_firmware_latest.zbin"))
-        wem_bricklet_path = os.path.join(wem_bricklet_directory, wem_bricklet_path)
-
         wem_brick_directory = os.path.join(FIRMWARES_GIT_PATH, "bricks", self.brick_firmware_basename)
         wem_brick_path = os.readlink(os.path.join(wem_brick_directory, "brick_{0}_firmware_latest.bin".format(self.brick_firmware_basename)))
-        wem_brick_path = os.path.join(wem_brick_directory, wem_brick_path)"""
+        wem_brick_path = os.path.join(wem_brick_directory, wem_brick_path)
 
         pattern = r"^WIFI:S:(wem2|seb)-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58)
         qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
@@ -145,7 +122,6 @@ class EnergyManagerTester:
             self.fatal_error("Failed to find MAC address in event log!")
         self.mac = macs[0]
 
-        """
         m = re.search(r"(?:WARP ENERGY MANAGER|WARP Energy Manager|SMART ENERGY BROKER) V(\d+).(\d+).(\d+)", event_log)
         if not m:
             self.fatal_error("Failed to find version number in event log!" + event_log)
@@ -194,149 +170,23 @@ class EnergyManagerTester:
         connect_to_ethernet(self.ssid, "hidden_proxy/enable")
 
         time.sleep(1)
-        self.wem_ipcon = IPConnection()
+        wem_ipcon = IPConnection()
         try:
-            self.wem_ipcon.connect(self.ssid, 4223)
+            wem_ipcon.connect(self.ssid, 4223)
         except Exception as e:
             self.fatal_error("Failed to connect to ESP proxy. Is the router's DHCP cache full?")
 
         time.sleep(1)
-        enumerations = enumerate_devices(self.wem_ipcon)
+        enumerations = enumerate_devices(wem_ipcon)
 
-        wem_bricklet_enum = next((e for e in enumerations if e.device_identifier == 2169), None)
+        wem_bricklet_enum = next((e for e in enumerations if e.device_identifier == BrickletWARPEnergyManagerV2.DEVICE_IDENTIFIER), None)
         if wem_bricklet_enum == None:
             self.fatal_error("WARP Energy Manager Bricklet not found!")
 
-        self.wem = BrickletWARPEnergyManager(wem_bricklet_enum.uid, self.wem_ipcon)
-        self.wem.set_rgb_value(0, 0, 255)"""
+        self.wem = BrickletWARPEnergyManagerV2(wem_bricklet_enum.uid, wem_ipcon)
 
     def fatal_error(self, string):
-        """self.rgb_led.set_rgb_value(255, 0, 0)
-
-        # Depending on the error, the WEM Bricklet might not be initialize yet
-        try:
-            self.wem.set_rgb_value(255, 0, 0)
-        except:
-            pass"""
         fatal_error(string)
-
-    def test_voltage_supply(self):
-        print('Testing voltage supply...')
-        voltage = self.idai.get_all_voltages()[0]/1000.0
-        if 11.75 < voltage < 12.25:
-            print(' ... Voltage OK ({}V)'.format(voltage))
-        else:
-            self.fatal_error(" ... Voltage FAILED! ({}V)".format(voltage))
-
-    def test_contactor(self):
-        print('Testing contactor...')
-        self.wem.set_contactor(True)
-        time.sleep(0.5)
-        value = self.idaci.get_value()[0]
-        if value:
-            print(' ... Contactor active OK')
-        else:
-            self.fatal_error(" ... Contactor active FAILED!")
-        self.wem.set_contactor(False)
-        time.sleep(0.5)
-        value = self.idaci.get_value()[0]
-        if not value:
-            print(' ... Contactor not active OK')
-        else:
-            self.fatal_error(" ... Contactor not active FAILED!")
-        print(' ... Done')
-
-    def test_gp_output(self):
-        print('Testing GP output...')
-        self.wem.set_output(True)
-        time.sleep(0.5)
-        value = self.io4.get_value()[1]
-        if not value:
-            print(' ... GP output active OK')
-        else:
-            self.fatal_error(" ... GP output active FAILED!")
-        self.wem.set_output(False)
-        time.sleep(0.5)
-        value = self.io4.get_value()[1]
-        if value:
-            print(' ... GP output not active OK')
-        else:
-            self.fatal_error(" ... GP output not active FAILED!")
-        print(' ... Done')
-
-    def test_input(self):
-        print('Testing input...')
-
-        self.iqr.set_selected_value(1, 0)
-        self.iqr.set_selected_value(2, 0)
-        time.sleep(0.5)
-        value = self.wem.get_input()
-        if value == (0, 0):
-            print(' ... Input (0, 0) OK')
-        else:
-            self.fatal_error(" ... Input (0, 0) FAILED!")
-        print(' ... Done')
-
-        self.iqr.set_selected_value(1, 1)
-        self.iqr.set_selected_value(2, 0)
-        time.sleep(0.5)
-        value = self.wem.get_input()
-        if value == (1, 0):
-            print(' ... Input (1, 0) OK')
-        else:
-            self.fatal_error(" ... Input (1, 0) FAILED!")
-        print(' ... Done')
-
-        self.iqr.set_selected_value(1, 0)
-        self.iqr.set_selected_value(2, 1)
-        time.sleep(0.5)
-        value = self.wem.get_input()
-        if value == (0, 1):
-            print(' ... Input (0, 1) OK')
-        else:
-            self.fatal_error(" ... Input (0, 1) FAILED!")
-        print(' ... Done')
-
-        self.iqr.set_selected_value(1, 1)
-        self.iqr.set_selected_value(2, 1)
-        time.sleep(0.5)
-        value = self.wem.get_input()
-        if value == (1, 1):
-            print(' ... Input (1, 1) OK')
-        else:
-            self.fatal_error(" ... Input (1, 1) FAILED!")
-        print(' ... Done')
-
-    def test_rs485(self):
-        print('Testing RS485...')
-        value = self.wem.get_energy_meter_values()
-        if value == (53.0, 42.0, 42.0):
-            print(' ... RS485 OK')
-        else:
-            self.fatal_error(" ... RS485 FAILED! ({})".format(value))
-        print(' ... Done')
-
-    def test_sd_card(self):
-        print('Testing SD card...')
-        print(' ... formating SD card')
-        status = self.wem.format_sd(0x4223ABCD)
-        if status == self.wem.FORMAT_STATUS_OK:
-            print(' ... SD card format OK')
-        else:
-            self.fatal_error(" ... SD card format FAILED! ({})".format(status))
-
-        print(' ... checking SD card status (may take a few seconds)')
-        for i in range(10):
-            time.sleep(0.5)
-
-            info = self.wem.get_sd_information()
-            if info.sd_status == 0 and  info.lfs_status == 0:
-                print(' ... SD card status OK')
-                break
-        else:
-            self.fatal_error(" ... SD card status FAILED! ({})".format(info))
-
-        print(' ... Done')
 
     def print_labels(self):
         serial_number = get_next_serial_number(self.sn_prefix)
@@ -398,20 +248,82 @@ class EnergyManagerTester:
         print(' ... Done')
 
     def test_all(self):
-        """
-        self.wem.set_rgb_value(0, 100, 0)
-        self.test_voltage_supply()
-        self.wem.set_rgb_value(0, 125, 0)
-        self.test_contactor()
-        self.wem.set_rgb_value(0, 150, 0)
-        self.test_gp_output()
-        self.wem.set_rgb_value(0, 175, 0)
-        self.test_input()
-        self.wem.set_rgb_value(0, 200, 0)
-        self.test_rs485()
-        self.wem.set_rgb_value(0, 225, 0)
-        self.test_sd_card()
-        self.wem.set_rgb_value(0, 255, 0)"""
+        self.wem.set_sg_ready_output(0, 0)
+        self.wem.set_sg_ready_output(1, 0)
+        self.wem.set_relay_output(0, 0)
+        self.wem.set_relay_output(1, 0)
+        time.sleep(0.25)
+        inp = self.wem.get_input()
+        if inp == (False, False, False, False):
+            print("Check 0000 OK")
+        else:
+            fatal_error("Check 0000 Failed " + str(inp))
+
+        self.wem.set_sg_ready_output(0, 1)
+        self.wem.set_sg_ready_output(1, 0)
+        self.wem.set_relay_output(0, 0)
+        self.wem.set_relay_output(1, 0)
+        time.sleep(0.25)
+        inp = self.wem.get_input()
+        if inp == (True, False, False, False):
+            print("Check 1000 OK")
+        else:
+            fatal_error("Check 1000 Failed " + str(inp))
+
+        self.wem.set_sg_ready_output(0, 0)
+        self.wem.set_sg_ready_output(1, 1)
+        self.wem.set_relay_output(0, 0)
+        self.wem.set_relay_output(1, 0)
+        time.sleep(0.25)
+        inp = self.wem.get_input()
+        if inp == (False, True, False, False):
+            print("Check 0100 OK")
+        else:
+            fatal_error("Check 0100 Failed" + str(inp))
+
+        self.wem.set_sg_ready_output(0, 0)
+        self.wem.set_sg_ready_output(1, 0)
+        self.wem.set_relay_output(0, 1)
+        self.wem.set_relay_output(1, 0)
+        time.sleep(0.25)
+        inp = self.wem.get_input()
+        if inp == (False, False, True, False):
+            print("Check 0010 OK")
+        else:
+            fatal_error("Check 0010 Failed" + str(inp))
+
+        self.wem.set_sg_ready_output(0, 0)
+        self.wem.set_sg_ready_output(1, 0)
+        self.wem.set_relay_output(0, 0)
+        self.wem.set_relay_output(1, 1)
+        time.sleep(0.25)
+        inp = self.wem.get_input()
+        if inp == (False, False, False, True):
+            print("Check 0001 OK")
+        else:
+            fatal_error("Check 0001 Failed" + str(inp))
+
+        for i in range(10):
+            time.sleep(0.25)
+            sd_info = self.wem.get_sd_information()
+            if (sd_info.sd_status) == 0 and (sd_info.lfs_status) == 0:
+                print("SD OK")
+                break
+        else:
+            fatal_error("SD failed")
+
+        state = self.wem.get_energy_meter_state()
+        if state.energy_meter_type == self.wem.ENERGY_METER_TYPE_DSZ15DZMOD:
+            self.meter_ok = True
+            print("Meter OK")
+        else:
+            fatal_error("Meter failed")
+
+        voltage = self.wem.get_input_voltage()
+        if 11500 < voltage < 12500:
+            print("Voltage OK {0} mV".format(voltage))
+        else:
+            fatal_error("Voltage failed {0} mV".format(voltage))
 
         self.print_labels()
 
@@ -420,12 +332,11 @@ class EnergyManagerTester:
             json.dump(self.result, f, indent=4)
 
         print('Done!')
-        #self.rgb_led.set_rgb_value(0, 255, 0)
 
 if __name__ == "__main__":
     try:
         while True:
-            emt = EnergyManagerTester()
+            emt = EnergyManagerV2Tester()
             emt.test_all()
     except FatalError:
         sys.exit(1)
