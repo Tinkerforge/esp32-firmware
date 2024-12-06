@@ -124,8 +124,6 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
             required_modules = []
             available_optional_modules = []
 
-            allow_nonexist = config['Dependencies'].getboolean('AllowNonexist', False)
-
             known_keys = set(['requires', 'optional', 'conflicts', 'after', 'before', 'modulelist'])
             unknown_keys = set(config['Dependencies'].keys()).difference(known_keys)
             if len(unknown_keys) > 0:
@@ -162,7 +160,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                     opt_name_upper = '_'.join(opt_name.split(' ')).upper()
                     opt_module, _ = find_module_space(modules, opt_name)
                     if not opt_module:
-                        if not allow_nonexist and opt_name_upper not in all_modules_upper:
+                        if opt_name_upper not in all_modules_upper:
                             print(f"Dependency error: Optional module '{opt_name}' wanted by module '{module_name}' does not exist.", file=sys.stderr)
                             sys.exit(1)
                     else:
@@ -185,7 +183,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                         sys.exit(1)
                     conflict_module, index = find_module_space(modules, conflict_name)
                     if index < 0:
-                        if not allow_nonexist and '_'.join(conflict_name.split(' ')).upper() not in all_modules_upper:
+                        if '_'.join(conflict_name.split(' ')).upper() not in all_modules_upper:
                             print(f"Dependency error: Module '{conflict_name}' in 'Conflicts' list of module '{module_name}' does not exist.", file=sys.stderr)
                             sys.exit(1)
                     elif conflict_module:
@@ -208,7 +206,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                         sys.exit(1)
                     _, index = find_module_space(modules, after_name)
                     if index < 0:
-                        if not allow_nonexist and '_'.join(after_name.split(' ')).upper() not in all_modules_upper:
+                        if '_'.join(after_name.split(' ')).upper() not in all_modules_upper:
                             print(f"Dependency error: Module '{after_name}' in 'After' list of module '{module_name}' does not exist.", file=sys.stderr)
                             sys.exit(1)
                     elif index > cur_module_index:
@@ -228,7 +226,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                         sys.exit(1)
                     _, index = find_module_space(modules, before_name)
                     if index < 0:
-                        if not allow_nonexist and '_'.join(before_name.split(' ')).upper() not in all_modules_upper:
+                        if '_'.join(before_name.split(' ')).upper() not in all_modules_upper:
                             print(f"Dependency error: Module '{before_name}' in 'Before' list of module '{module_name}' does not exist.", file=sys.stderr)
                             sys.exit(1)
                     elif index < cur_module_index:
