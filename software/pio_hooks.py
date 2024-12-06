@@ -135,7 +135,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
             requires = config['Dependencies'].get('Requires', "")
             requires = requires.splitlines()
             old_len = len(requires)
-            requires = list(dict.fromkeys(requires))
+            requires = set(requires)
             if len(requires) != old_len:
                 print(f"List of required modules for module '{module_name}' contains duplicates.", file=sys.stderr)
             for req_name in requires:
@@ -152,7 +152,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
             if optional is not None:
                 optional = optional.splitlines()
                 old_len = len(optional)
-                optional = list(dict.fromkeys(optional))
+                optional = set(optional)
                 if len(optional) != old_len:
                     print(f"List of optional modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for opt_name in optional:
@@ -176,7 +176,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
             if conflicts is not None:
                 conflicts = conflicts.splitlines()
                 old_len = len(conflicts)
-                conflicts = list(dict.fromkeys(conflicts))
+                conflicts = set(conflicts)
                 if len(conflicts) != old_len:
                     print(f"List of conflicting modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for conflict_name in conflicts:
@@ -199,7 +199,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
             if after is not None:
                 after = after.splitlines()
                 old_len = len(after)
-                after = list(dict.fromkeys(after))
+                after = set(after)
                 if len(after) != old_len:
                     print(f"List of 'After' modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for after_name in after:
@@ -219,7 +219,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
             if before is not None:
                 before = before.splitlines()
                 old_len = len(before)
-                before = list(dict.fromkeys(before))
+                before = set(before)
                 if len(before) != old_len:
                     print(f"List of 'Before' modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for before_name in before:
