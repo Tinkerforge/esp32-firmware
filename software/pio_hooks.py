@@ -111,6 +111,13 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
             return None
 
         m = m.splitlines()
+
+        if '*' in m:
+            if len(m) > 1:
+                print(f"List of '{config_key}' modules for module '{module_name}' contains * and other entries. Use either * or a specifix list.", file=sys.stderr)
+                sys.exit(1)
+            m = [x.space for x in modules if x.space != module_name]
+
         old_len = len(m)
         m = set(m)
         if len(m) != old_len:
