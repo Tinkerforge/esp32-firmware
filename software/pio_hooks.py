@@ -105,6 +105,18 @@ def write_firmware_info(display_name, major, minor, patch, beta, build_time):
     pathlib.Path(env.subst('$BUILD_DIR'), 'firmware_info.bin').write_bytes(buf)
 
 def generate_module_dependencies(info_path, module, modules, all_modules_upper):
+    def get_and_check_duplicates(config, config_key):
+        m = config['Dependencies'].get(config_key, "")
+        if m is None:
+            return None
+
+        m = m.splitlines()
+        old_len = len(m)
+        m = set(m)
+        if len(m) != old_len:
+            print(f"List of '{config_key}' modules for module '{module_name}' contains duplicates.", file=sys.stderr)
+        return m
+
     if module:
         module_name = module.space
     else:
@@ -130,12 +142,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                 print(f"Dependency error: '{module.under}/module.ini contains unknown keys {unknown_keys}  ", file=sys.stderr)
                 sys.exit(1)
 
-            requires = config['Dependencies'].get('Requires', "")
-            requires = requires.splitlines()
-            old_len = len(requires)
-            requires = set(requires)
-            if len(requires) != old_len:
-                print(f"List of required modules for module '{module_name}' contains duplicates.", file=sys.stderr)
+            requires = get_and_check_duplicates(config, 'Requires')
             for req_name in requires:
                 req_module, _ = find_module_space(modules, req_name)
                 if not req_module:
@@ -146,13 +153,8 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                     sys.exit(1)
                 required_modules.append(req_module)
 
-            optional = config['Dependencies'].get('Optional')
+            optional = get_and_check_duplicates(config, 'Optional')
             if optional is not None:
-                optional = optional.splitlines()
-                old_len = len(optional)
-                optional = set(optional)
-                if len(optional) != old_len:
-                    print(f"List of optional modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for opt_name in optional:
                     if opt_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot list itself as optional.", file=sys.stderr)
@@ -170,13 +172,8 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                         available_optional_modules.append(opt_module)
                     all_optional_modules_upper.append(opt_name_upper)
 
-            conflicts = config['Dependencies'].get('Conflicts')
+            conflicts = get_and_check_duplicates(config, 'Conflicts')
             if conflicts is not None:
-                conflicts = conflicts.splitlines()
-                old_len = len(conflicts)
-                conflicts = set(conflicts)
-                if len(conflicts) != old_len:
-                    print(f"List of conflicting modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for conflict_name in conflicts:
                     if conflict_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot list itself as conflicting.", file=sys.stderr)
@@ -193,13 +190,8 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
             if module:
                 cur_module_index = modules.index(module)
 
-            after = config['Dependencies'].get('After')
+            after = get_and_check_duplicates(config, 'After')
             if after is not None:
-                after = after.splitlines()
-                old_len = len(after)
-                after = set(after)
-                if len(after) != old_len:
-                    print(f"List of 'After' modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for after_name in after:
                     if after_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot require to be loaded after itself.", file=sys.stderr)
@@ -213,13 +205,8 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                         print(f"Dependency error: Module '{module_name}' must be loaded after module '{after_name}'.", file=sys.stderr)
                         sys.exit(1)
 
-            before = config['Dependencies'].get('Before')
+            before = get_and_check_duplicates(config, 'Before')
             if before is not None:
-                before = before.splitlines()
-                old_len = len(before)
-                before = set(before)
-                if len(before) != old_len:
-                    print(f"List of 'Before' modules for module '{module_name}' contains duplicates.", file=sys.stderr)
                 for before_name in before:
                     if before_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot require to be loaded before itself.", file=sys.stderr)
