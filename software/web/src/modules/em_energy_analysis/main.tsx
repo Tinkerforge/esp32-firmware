@@ -663,18 +663,23 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let config = API.get("power_manager/config");
 
             this.setState({meter_slot_status: config.meter_slot_grid_power});
+
+            // FIXME: need to call schedule_uplot_update() here
         });
 
         util.addApiEventListener_unchecked('heating/config', () => {
+            if (!API.hasFeature('energy_manager'))
+                return;
+
             let config = API.get_unchecked("heating/config");
 
+            // FIXME: updating the whole cache is overkill, just call schedule_uplot_update() instead
             this.update_current_5min_cache();
             this.update_current_daily_cache();
 
             this.setState({
                 sg_ready1_active_type: config.sg_ready_blocking_active_type,
                 sg_ready2_active_type: config.sg_ready_extended_active_type
-
             });
         });
     }
