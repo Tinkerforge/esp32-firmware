@@ -370,7 +370,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.extended_logging")} label_muted={__("heating.content.extended_logging_description")}>
-                        <Switch desc={__("heating.content.extended_logging_activate")}
+                        <Switch desc={__("heating.content.extended_logging_enabled")}
                                 checked={state.extended_logging_active}
                                 onClick={this.toggle('extended_logging_active')}
                         />
@@ -545,7 +545,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
 
                     <FormSeparator heading="§14 EnWG" help={__("heating.content.p14_enwg_help")}/>
                     <FormRow label="§14 EnWG">
-                        <Switch desc={__("heating.content.p14_enwg_control_activate")}
+                        <Switch desc={__("heating.content.p14_enwg_control_enabled")}
                                 checked={state.p14enwg_active}
                                 onClick={this.toggle('p14enwg_active')}
                         />

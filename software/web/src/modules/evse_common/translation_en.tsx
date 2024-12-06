@@ -191,7 +191,7 @@ let x = {
             "gpio_in_muted": "readable on GPIO 16",
             "gpio_out_muted": <><a href="https://en.wikipedia.org/wiki/Open_collector">open collector</a></>,
             "button_configuration_muted": "Action to be executed when the button is pressed.",
-            "button_configuration_deactivated": "No action",
+            "button_configuration_disabled": "No action",
             "button_configuration_start_charging": "Start charging",
             "button_configuration_stop_charging": "Stop charging",
             "button_configuration_start_and_stop_charging": "Start or stop charging",

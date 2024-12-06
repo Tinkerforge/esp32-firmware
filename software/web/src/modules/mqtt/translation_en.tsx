@@ -4,7 +4,7 @@ let x = {
     "mqtt": {
         "status": {
             "connection": "MQTT connection",
-            "not_configured": "Deactivated",
+            "not_configured": "Disabled",
             "not_connected": "Not connected",
             "connected": "Connected",
             "error": "Error"

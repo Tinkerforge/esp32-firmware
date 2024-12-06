@@ -191,7 +191,7 @@ let x = {
             "gpio_in_muted": "kann als GPIO 16 gelesen werden",
             "gpio_out_muted": <><a href="https://de.wikipedia.org/wiki/Open-Collector-Ausgang">Open-Collector-Ausgang</a></>,
             "button_configuration_muted": "Aktion, die bei Druck des Tasters ausgeführt wird.",
-            "button_configuration_deactivated": "Keine Aktion",
+            "button_configuration_disabled": "Keine Aktion",
             "button_configuration_start_charging": "Ladestart",
             "button_configuration_stop_charging": "Ladestop",
             "button_configuration_start_and_stop_charging": "Ladestart bzw. Ladestop",

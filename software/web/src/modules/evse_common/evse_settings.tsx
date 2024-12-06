@@ -262,7 +262,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                         <>
                         <FormRow label={__("evse.content.button_configuration")} label_muted={__("evse.content.button_configuration_muted")}>
                             <InputSelect items={[
-                                            ["0",__("evse.content.button_configuration_deactivated")],
+                                            ["0",__("evse.content.button_configuration_disabled")],
                                             ["1",__("evse.content.button_configuration_start_charging")],
                                             ["2",__("evse.content.button_configuration_stop_charging")],
                                             ["3",__("evse.content.button_configuration_start_and_stop_charging")],

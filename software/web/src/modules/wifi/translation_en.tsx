@@ -4,13 +4,13 @@ let x = {
     "wifi": {
         "status": {
             "wifi_connection": "WiFi connection",
-            "not_configured": "Deactivated",
+            "not_configured": "Disabled",
             "not_connected": "Not connected",
             "connecting": "Connecting",
             "connected": "Connected",
             "wifi_ap": "WiFi access point",
-            "deactivated": "Deactivated",
-            "activated": "Activated",
+            "disabled": "Disabled",
+            "enabled": "Enabled",
             "fallback_inactive": "Fallback inactive",
             "fallback_active": "Fallback active"
         },
@@ -35,9 +35,9 @@ let x = {
             "ap_settings": "WiFi Access Point",
             "ap_enable": "Access point",
             "ap_enable_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
-            "ap_enabled": "Activated",
+            "ap_enabled": "Enabled",
             "ap_fallback_only": "As fallback only",
-            "ap_disabled": "Deactivated",
+            "ap_disabled": "Disabled",
             "ap_ssid": "Network name (SSID)",
             "ap_hide_ssid": "Network name hidden",
             "ap_hide_ssid_desc_pre": null,

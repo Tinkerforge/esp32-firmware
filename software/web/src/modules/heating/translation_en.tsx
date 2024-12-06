@@ -9,7 +9,7 @@ let x = {
         "content": {
             "heating": "Heating",
             "extended_logging": "Extended Logging",
-            "extended_logging_activate": "Activates extended logging",
+            "extended_logging_enabled": "Extended logging enabled",
             "extended_logging_description": "More information about the control decisions in the event log",
             "minimum_holding_time": "Minimum Holding Time",
             "minimum_holding_time_muted": "for SG Ready output 1 and SG Ready output 2",
@@ -21,7 +21,7 @@ let x = {
             "dpc_high": "Blocking for the most expensive",
             "pv_excess_control": "if PV excess is above",
             "pv_yield_forecast": "PV yield is below",
-            "p14_enwg_control_activate": "Activates control of heating based on §14 EnWG (only relevant for Germany)",
+            "p14_enwg_control_enabled": "Control of heating based on §14 EnWG enabled (only relevant for Germany)",
             "input": "Input",
             "output": "Output",
             "throttled_if_input": "Throttled if Input",
@@ -62,10 +62,10 @@ let x = {
             "average_price": "Average price",
             "solar_forecast": "Solar forecast",
             "solar_forecast_needs_activation": <>
-                <p style="color:red;">The <a href="#solar_forecast" onClick={() => {window.scrollTo(0, 0); return true;}}>solar forecast</a> must be activated for this configuration.</p>
+                <p style="color:red;">The <a href="#solar_forecast" onClick={() => {window.scrollTo(0, 0); return true;}}>solar forecast</a> must be enabled for this configuration.</p>
             </>,
             "day_ahead_prices_needs_activation": <>
-                <p style="color:red;">The <a href="#day_ahead_prices" onClick={() => {window.scrollTo(0, 0); return true;}}>dynamic prices</a> must be activated for this configuration.</p>
+                <p style="color:red;">The <a href="#day_ahead_prices" onClick={() => {window.scrollTo(0, 0); return true;}}>dynamic prices</a> must be enabled for this configuration.</p>
             </>,
             "meter_needs_activation": <>
                 <p style="color:red;">A meter must be selected for this configuration.</p>
@@ -79,14 +79,14 @@ let x = {
                 <p>If the dynamic price control is enabled, the heating is put into extended operation for the cheapest x hours per day.</p>
                 <p>If the PV yield forecast control is enabled, the heating is put into extended operation if the forecast is below the set value.</p>
                 <p>Example configuration: Extended operation with PV excess <b>above 1200W</b> or for <b>cheapest 4 hours per day</b> but only if PV yield forecast <b>below 10 kWh/day</b>.</p>
-                <p>In this example, with a PV excess of 1200W, regardless of the following settings, the extended operation would be activated. In addition, the extended operation would be activated for the cheapest 4 hours per day, but only if the PV yield forecast was less than 10 kWh for the previous day. If a higher yield is expected, no extended operation is activated.</p>
+                <p>In this example, with a PV excess of 1200W, regardless of the following settings, the extended operation would be enabled. In addition, the extended operation would be enabled for the cheapest 4 hours per day, but only if the PV yield forecast was less than 10 kWh for the previous day. If a higher yield is expected, no extended operation is enabled.</p>
                 <p>Objective of these settings: If a high PV yield is expected, no electricity is drawn from the grid for extended operation, even if the electricity price is cheap.</p>
             </>,
             "blocking_operation": "Blocking operation",
             "blocking_operation_help": <>
                 <p>These settings control the blocking operation (SG Ready output 1).</p>
                 <p>If the dynamic price control is enabled, the heating is additionally put into blocking operation for the most expensive x hours per day.</p>
-                <p>Example configuration: Blocking operation for the most expensive 5 hours. The heating is blocked for the 5 most expensive hours per day. Exception: If the PV excess control is enabled and the set threshold is exceeded, the blocking operation is lifted and the extended operation for the heating is activated.</p>
+                <p>Example configuration: Blocking operation for the most expensive 5 hours. The heating is blocked for the 5 most expensive hours per day. Exception: If the PV excess control is enabled and the set threshold is exceeded, the blocking operation is lifted and the extended operation for the heating is enabled.</p>
             </>,
             "or": "or",
             "but_only_if": "but only if",
@@ -96,7 +96,7 @@ let x = {
             "for_the_most_expensive": "for the most expensive",
             "p14_enwg_help": <>
                 <p>From 01.01.2024, §14a EnWG requires the controllability of heat pumps in Germany. Specifically, newly installed heat pumps must have a communication interface to the grid operator such that the grid operator can adjust the power of the device in exceptional cases.</p>
-                <p>The control according to §14a EnWG can be activated here. For this purpose, an input is controlled by the grid operator and in return the heat pump is controlled via the SG Ready output 1 according to the input.</p>
+                <p>The control according to §14a EnWG can be enabled here. For this purpose, an input is controlled by the grid operator and in return the heat pump is controlled via the SG Ready output 1 according to the input.</p>
                 <p>Note: The control according to §14a EnWG takes precedence over the heating control configured above.</p>
             </>,
             "control_period": "Control period",

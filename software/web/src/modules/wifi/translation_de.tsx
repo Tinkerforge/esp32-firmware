@@ -9,8 +9,8 @@ let x = {
             "connecting": "Verbinde",
             "connected": "Verbunden",
             "wifi_ap": "WLAN-Access-Point",
-            "deactivated": "Deaktiviert",
-            "activated": "Aktiviert",
+            "disabled": "Deaktiviert",
+            "enabled": "Aktiviert",
             "fallback_inactive": "Fallback inaktiv",
             "fallback_active": "Fallback aktiv"
         },

@@ -4,8 +4,8 @@ let x = {
     "charge_manager": {
         "status": {
             "charge_manager": null,
-            "not_configured": "Deactivated",
-            "manager": "Activated",
+            "not_configured": "Disabled",
+            "manager": "Enabled",
             "error": "Error",
             "managed_boxes": "Managed chargers",
             "available_current": "Available current"
@@ -101,7 +101,7 @@ let x = {
             "charge_manager_chargers_reset_modal_text": "Resetting the charge manager configuration also deletes the list of controlled chargers. Continue?",
 
             "header_load_management": "Dynamic load management",
-            "dlm_enabled": "Enable dynamic load management",
+            "dlm_enabled": "Dynamic load management enabled",
             "dlm_enabled_desc": "Adjusts the power consumption of controlled chargers to avoid exceeding the maximum allowed current on any phase of the grid connection.",
             "dlm_meter_slot_grid_currents": "Energy meter",
             "dlm_meter_slot_grid_currents_select": "Select...",
@@ -165,7 +165,7 @@ let x = {
             "charge_error_0": "OK",
             "charge_error_1": "Communication error",
             "charge_error_2": "Packet header invalid or firmware incompatible",
-            "charge_error_3": "Charge management deactivated",
+            "charge_error_3": "Charge management disabled",
             "charge_error_128": "Charger unreachable",
             "charge_error_129": "Charge controller unreachable",
             "charge_error_130": "Charge controller does not react",

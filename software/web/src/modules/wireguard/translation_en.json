@@ -2,7 +2,7 @@
     "wireguard": {
         "status": {
             "connection": "WireGuard connection",
-            "not_configured": "Deactivated",
+            "not_configured": "Disabled",
             "waiting_for_timesync": "Waiting for time synchronization",
             "not_connected": "Connecting",
             "connected": "Connected"

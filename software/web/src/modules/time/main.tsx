@@ -238,7 +238,7 @@ export class TimeStatus extends Component<{}, TimeStatusState> {
                         class="flex-wrap"
                         value={!state.config.enable ? 0 : (state.state.synced ? 2 : 1)}
                         items={[
-                            ["primary", __("time.status.deactivated")],
+                            ["primary", __("time.status.disabled")],
                             ["danger", __("time.status.not_synced")],
                             ["success", __("time.status.synced")],
                         ]}/>

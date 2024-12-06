@@ -9,7 +9,7 @@ let x = {
         "content": {
             "heating": "Heizung",
             "extended_logging": "Erweitertes Logging",
-            "extended_logging_activate": "Weiterführende Informationen zu den Steuerentscheidungen werden im Ereignis-Log angezeigt.",
+            "extended_logging_enabled": "Weiterführende Informationen zu den Steuerentscheidungen werden im Ereignis-Log angezeigt.",
             "extended_logging_description": "",
             "minimum_holding_time": "Mindesthaltezeit",
             "minimum_holding_time_muted": "für SG-Ready-Ausgang 1 und SG-Ready-Ausgang 2",
@@ -21,7 +21,7 @@ let x = {
             "dpc_high": "Blockieren für die teuersten",
             "pv_excess_control": "bei PV-Überschuss ab",
             "pv_yield_forecast": "PV-Ertragsprognose unter",
-            "p14_enwg_control_activate": "Aktiviert die Kontrolle der Heizung nach §14 EnWG",
+            "p14_enwg_control_enabled": "Aktiviert die Kontrolle der Heizung nach §14 EnWG",
             "input": "Eingang",
             "output": "Ausgang",
             "throttled_if_input": "Drosselung",

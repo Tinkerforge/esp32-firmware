@@ -10,7 +10,7 @@ let x = {
         "content": {
             "users": "User Management",
 
-            "enable_authentication": "Enable login",
+            "enable_authentication": "Login enabled",
             "enable_authentication_desc": "A successful login as one of the configured users is required to open the Web interface or call the HTTP API",
             "enable_authentication_invalid": "To enable the login at least one user with a configured password is required.",
 

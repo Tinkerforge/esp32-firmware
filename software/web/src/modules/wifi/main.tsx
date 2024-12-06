@@ -91,8 +91,8 @@ export class WifiStatus extends Component<{}, WifiStatusState> {
                     class="flex-wrap"
                     value={state.state.ap_state}
                     items={[
-                        ["primary", __("wifi.status.deactivated")],
-                        ["success", __("wifi.status.activated")],
+                        ["primary", __("wifi.status.disabled")],
+                        ["success", __("wifi.status.enabled")],
                         ["success", __("wifi.status.fallback_inactive")],
                         ["danger",  __("wifi.status.fallback_active")],
                     ]}/>

@@ -32,7 +32,7 @@ interface Module {
 let modules: Module[] = [{{{modules}}}];
 
 // This is the part of the initialization to be done
-// if we are authenticated (or authentication is deactivated)
+// if we are authenticated (or authentication is disabled)
 function init() {
     for (let m of modules) {
         m.init();
