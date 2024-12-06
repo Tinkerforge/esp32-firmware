@@ -679,3 +679,8 @@ void ChargeManager::skip_global_hysteresis() {
 
     this->ca_state->last_hysteresis_reset = now_us() - this->ca_config->global_hysteresis - 1_us;
 }
+
+const ChargerState *ChargeManager::get_charger_state(uint8_t idx)
+{
+    return this->charger_state == nullptr ? nullptr : &this->charger_state[idx];
+}

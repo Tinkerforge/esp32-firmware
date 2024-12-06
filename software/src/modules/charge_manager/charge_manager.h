@@ -94,6 +94,8 @@ public:
     void trigger_allocator_run() {next_allocation = 0_us;}
     void skip_global_hysteresis();
 
+    const ChargerState *get_charger_state(uint8_t idx);
+
 private:
     Config config_chargers_prototype;
     Config state_chargers_prototype;
