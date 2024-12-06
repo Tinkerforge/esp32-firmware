@@ -104,6 +104,11 @@ Task *TaskQueue::findByTaskID(uint64_t task_id)
     return it->get();
 }
 
+void TaskScheduler::pre_reboot()
+{
+    rebooting = true;
+}
+
 COREDUMP_RTC_DATA_ATTR const char *task_fn_file;
 COREDUMP_RTC_DATA_ATTR int task_fn_line;
 
@@ -139,13 +144,15 @@ void TaskScheduler::custom_loop()
     task_fn_file = this->currentTask->file;
     task_fn_line = this->currentTask->line;
 
-    // Run task without holding the lock.
-    // This allows a task to schedule tasks (could also be done with a recursive mutex)
-    // but also allows other threads to schedule tasks while one is executed.
-    if (!this->currentTask->fn) {
-        logger.printfln("Invalid task");
-    } else {
-        this->currentTask->fn();
+    if (!this->rebooting) {
+        // Run task without holding the lock.
+        // This allows a task to schedule tasks (could also be done with a recursive mutex)
+        // but also allows other threads to schedule tasks while one is executed.
+        if (!this->currentTask->fn) {
+            logger.printfln("Invalid task");
+        } else {
+            this->currentTask->fn();
+        }
     }
 
     task_fn_file = nullptr;
@@ -275,6 +282,9 @@ uint64_t TaskScheduler::currentTaskId()
 
 TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t millis_to_wait)
 {
+    if (this->rebooting)
+        return TaskScheduler::AwaitResult::Timeout;
+
     if (millis_to_wait == 0) {
         logger.printfln("Calling TaskScheduler::await with millis_to_wait == 0 is not allowed. This is not scheduleOnce!");
         return TaskScheduler::AwaitResult::Error;

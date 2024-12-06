@@ -86,6 +86,8 @@ class TaskScheduler final : public IModule
 public:
     TaskScheduler() : tasks(&compare) {}
 
+    void pre_reboot() override;
+
     void custom_loop();
     uint64_t currentTaskId();
 
@@ -141,6 +143,9 @@ private:
 
     std::vector<WallClockTask> wall_clock_tasks;
     bool wall_clock_worker_started = false;
+
+    bool rebooting = false;
+
     void wall_clock_worker();
     void run_wall_clock_task(uint64_t task_id);
 };

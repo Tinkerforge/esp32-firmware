@@ -542,7 +542,7 @@ void FirmwareUpdate::register_urls()
             bool ready = false;
 
             while (!ready) {
-                task_scheduler.await([this, &ready](){
+                auto result = task_scheduler.await([this, &ready](){
                     check_firmware_in_progress = true;
                     ready = true;
 
@@ -551,6 +551,10 @@ void FirmwareUpdate::register_urls()
                         ready = false;
                     }
                 });
+
+                if (result != TaskScheduler::AwaitResult::Done) {
+                    return false;
+                }
 
                 delay(100); // wait for other operations to react
             }
@@ -587,7 +591,7 @@ void FirmwareUpdate::register_urls()
             bool ready = false;
 
             while (!ready) {
-                task_scheduler.await([this, &ready](){
+                auto result = task_scheduler.await([this, &ready](){
                     flash_firmware_in_progress = true;
                     ready = true;
 
@@ -596,6 +600,10 @@ void FirmwareUpdate::register_urls()
                         ready = false;
                     }
                 });
+
+                if (result != TaskScheduler::AwaitResult::Done) {
+                    return false;
+                }
 
                 delay(100); // wait for other operations to react
             }

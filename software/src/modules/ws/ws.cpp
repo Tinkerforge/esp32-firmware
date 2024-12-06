@@ -103,22 +103,24 @@ void WS::register_urls()
                 done = true;
             });
 
-            if (result == TaskScheduler::AwaitResult::Done) {
-                if (sb.getLength() == 0) {
-                    client.close_HTTPThread();
-                    return;
-                }
-
-                if (done) {
-                    sb.putc('\n');
-                }
-
-                if (!client.sendOwnedNoFreeBlocking_HTTPThread(sb.getPtr(), sb.getLength())) {
-                    return;
-                }
-
-                sb.clear();
+            if (result != TaskScheduler::AwaitResult::Done) {
+                return;
             }
+
+            if (sb.getLength() == 0) {
+                client.close_HTTPThread();
+                return;
+            }
+
+            if (done) {
+                sb.putc('\n');
+            }
+
+            if (!client.sendOwnedNoFreeBlocking_HTTPThread(sb.getPtr(), sb.getLength())) {
+                return;
+            }
+
+            sb.clear();
         }
     });
 

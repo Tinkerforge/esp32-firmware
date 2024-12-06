@@ -228,7 +228,10 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
                 int error_code = errno;
 
                 if (handler->callbackInMainThread) {
-                    task_scheduler.await([handler, request, error_code](){handler->uploadErrorCallback(request, error_code);});
+                    auto result = task_scheduler.await([handler, request, error_code](){handler->uploadErrorCallback(request, error_code);});
+                    if (result != TaskScheduler::AwaitResult::Done) {
+                        return ESP_FAIL;
+                    }
                 }
                 else {
                     handler->uploadErrorCallback(request, error_code);
@@ -241,7 +244,10 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
             bool result = false;
             if (handler->callbackInMainThread) {
                 auto scratch_ptr = scratch_buf.get();
-                task_scheduler.await([handler, request, offset, scratch_ptr, received, remaining, &result]{result = handler->uploadCallback(request, "not implemented", offset, scratch_ptr, received, remaining);});
+                auto await_result = task_scheduler.await([handler, request, offset, scratch_ptr, received, remaining, &result]{result = handler->uploadCallback(request, "not implemented", offset, scratch_ptr, received, remaining);});
+                if (await_result != TaskScheduler::AwaitResult::Done) {
+                    return ESP_FAIL;
+                }
             } else {
                 result = handler->uploadCallback(request, "not implemented", offset, scratch_buf.get(), received, remaining);
             }

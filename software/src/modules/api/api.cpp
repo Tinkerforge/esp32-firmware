@@ -502,7 +502,7 @@ void API::register_urls()
         size_t i = 0;
         bool done = false;
         while (!done) {
-            task_scheduler.await([ptr, &written, &i, &done, this](){
+            auto result = task_scheduler.await([ptr, &written, &i, &done, this](){
                 // There could be 0 states registered.
                 done = i >= states.size();
                 if (done)
@@ -531,6 +531,10 @@ void API::register_urls()
                 else
                     written += snprintf_u((ptr + written), BUF_SIZE - written, "}\n");
             });
+            if (result != TaskScheduler::AwaitResult::Done) {
+                return request.endChunkedResponse();
+            }
+
             if (written != 0)
                 request.sendChunk(ptr, written);
             written = 0;
@@ -540,7 +544,7 @@ void API::register_urls()
         done = false;
         written = 0;
         while (!done) {
-            task_scheduler.await([ptr, &written, &i, &done, this](){
+            auto result = task_scheduler.await([ptr, &written, &i, &done, this](){
                 if (i == 0 &&  states.size() != 0)
                     written += snprintf_u((ptr + written), BUF_SIZE - written, ",");
 
@@ -572,6 +576,11 @@ void API::register_urls()
                 else
                     written += snprintf_u((ptr + written), BUF_SIZE - written, "}\n");
             });
+
+            if (result != TaskScheduler::AwaitResult::Done) {
+                return request.endChunkedResponse();
+            }
+
             if (written != 0)
                 request.sendChunk(ptr, written);
             written = 0;
@@ -581,7 +590,7 @@ void API::register_urls()
         done = false;
         written = 0;
         while (!done) {
-            task_scheduler.await([ptr, &written, &i, &done, this](){
+            auto result = task_scheduler.await([ptr, &written, &i, &done, this](){
                 if (i == 0 && commands.size() != 0)
                     written += snprintf_u((ptr + written), BUF_SIZE - written, ",");
 
@@ -612,6 +621,11 @@ void API::register_urls()
                 else
                     written += snprintf_u((ptr + written), BUF_SIZE - written, "}\n");
             });
+
+            if (result != TaskScheduler::AwaitResult::Done) {
+                return request.endChunkedResponse();
+            }
+
             if (written != 0)
                 request.sendChunk(ptr, written);
             written = 0;
@@ -622,7 +636,7 @@ void API::register_urls()
         done = false;
         written = 0;
         while (!done) {
-            task_scheduler.await([ptr, &written, &i, &done, first, &it, this](){
+            auto result = task_scheduler.await([ptr, &written, &i, &done, first, &it, this](){
                 if (first) {
                     it = server.handlers.begin();
                     if (responses.size() != 0)
@@ -647,6 +661,11 @@ void API::register_urls()
                 else
                     written += snprintf_u((ptr + written), BUF_SIZE - written, "\n");
             });
+
+            if (result != TaskScheduler::AwaitResult::Done) {
+                return request.endChunkedResponse();
+            }
+
             first = false;
             if (written != 0)
                 request.sendChunk(ptr, written);
