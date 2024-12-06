@@ -28,7 +28,7 @@ struct CurrentAllocatorConfig {
     // i.e. one that triggered a C -> B2 transition and/or waited in B2 for too long
     micros_t wakeup_time;
 
-    // Require a charger to be active this long before clearing last_plug_in.
+    // Require a charger to be active this long before clearing just_plugged_in_timestamp.
     micros_t plug_in_time;
 
     // Amount of time a charger should stay activated before considering it for rotation or phase switch.
@@ -112,6 +112,9 @@ struct ChargerState {
     // If this is not 0, this charger has to be allocated current to as fast as possible,
     // or else the vehicle could power down its charge controller.
     // Is set to 0 the first time a charger gets current allocated.
+    micros_t just_plugged_in_timestamp;
+
+    // The last time a vehicle was plugged in or 0 if no car is currently plugged in.
     micros_t last_plug_in;
 
     micros_t last_wakeup;

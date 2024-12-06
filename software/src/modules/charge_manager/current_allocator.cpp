@@ -360,17 +360,17 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 // If another current limit blocks this charger (for example the user/NFC limit)
 // there is not need to allocate current to it.
 static bool was_just_plugged_in(const ChargerState *state) {
-    return state->last_plug_in != 0_us && state->wants_to_charge;
+    return state->just_plugged_in_timestamp != 0_us && state->wants_to_charge;
 }
 
 // Stage 2: Immediately activate chargers were a vehicle was just plugged in.
 // Do this before calculating the initial control window and ignore limits.
 // If we exceed limits by activating those chargers, the next stage will
 // shut down other chargers if necessary.
-// Both this stage and stage 3 sort by the last_plug_in timestamp,
+// Both this stage and stage 3 sort by the just_plugged_in_timestamp timestamp,
 // so if we have more chargers with a timestamp than can be activated at once,
 // we will activate some, give them current for some time and then activate the next group.
-// Because a charger's last_plug_in timestamp is only cleared once it has been charging for the plug_in_time,
+// Because a charger's just_plugged_in_timestamp timestamp is only cleared once it has been charging for the plug_in_time,
 // we won't toggle the contactors too fast.
 // This feature is completely deactivated if cfg->plug_in_time is set to 0.
 void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
@@ -380,7 +380,7 @@ void stage_2(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     // Charger that is plugged in for the longest time first.
     sort_chargers(0,
-        left.state->last_plug_in < right.state->last_plug_in
+        left.state->just_plugged_in_timestamp < right.state->just_plugged_in_timestamp
     );
 
     trace_sort(2);
@@ -580,7 +580,8 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // if phases are overloaded in every iteration.
     sort_chargers(
         was_just_plugged_in(state) ? 1 : 0,
-        was_just_plugged_in(left.state) ? (left.state->last_plug_in < right.state->last_plug_in) : (left.state->last_switch_on < right.state->last_switch_on)
+        // We only compare in groups, so was_just_plugged_in(right.state) is true iff it is for left.
+        was_just_plugged_in(left.state) ? (left.state->just_plugged_in_timestamp < right.state->just_plugged_in_timestamp) : (left.state->last_switch_on < right.state->last_switch_on)
     );
 
     trace_sort(3);
@@ -1006,7 +1007,7 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
             new_enable_cost[phase] -= ena_1p;
         }
 
-        // Only switch from one to three phase if there is still current available on **all** phases.
+        // Only switch from one to three phase if there is still current available on all phases except the P1 phase of this charger: P1 is used by this charger anyway.
         Cost check_phase{
             CHECK_IMPROVEMENT_ALL_PHASE | check_min,
             (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L1 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
@@ -1587,18 +1588,18 @@ int allocate_current(
 
             // The charger was just plugged in. If we've allocated phases to it for PLUG_IN_TIME, clear the timestamp
             // to reduce its priority.
-            if (charger.last_plug_in != 0_us && phases_to_set > 0 && deadline_elapsed(charger.last_switch_on + cfg->plug_in_time)) {
-                trace("charger %d: clearing last_plug_in after deadline elapsed", i);
-                charger.last_plug_in = 0_us;
+            if (charger.just_plugged_in_timestamp != 0_us && phases_to_set > 0 && deadline_elapsed(charger.last_switch_on + cfg->plug_in_time)) {
+                trace("charger %d: clearing just_plugged_in_timestamp after deadline elapsed", i);
+                charger.just_plugged_in_timestamp = 0_us;
             }
 
             // The charger was just plugged in, we've allocated phases to it in the last iteration but no phases to it in this iteration.
-            // As stage 3 (switching chargers off if phases are overloaded) sorts chargers by last_plug_in ascending if it is not 0,
+            // As stage 3 (switching chargers off if phases are overloaded) sorts chargers by just_plugged_in_timestamp ascending if it is not 0,
             // the sort order is stable, so we've just hit a phase limit that was not as restrictive in the last iteration.
             // Clear the timestamp to make sure
-            if (charger.last_plug_in != 0_us && charger_alloc.allocated_phases > 0 && phases_to_set == 0) {
-                trace("charger %d: clearing last_plug_in; phases overloaded?", i);
-                charger.last_plug_in = 0_us;
+            if (charger.just_plugged_in_timestamp != 0_us && charger_alloc.allocated_phases > 0 && phases_to_set == 0) {
+                trace("charger %d: clearing just_plugged_in_timestamp; phases overloaded?", i);
+                charger.just_plugged_in_timestamp = 0_us;
             }
 
             bool change = charger_alloc.allocated_current != current_to_set || charger_alloc.allocated_phases != phases_to_set;
@@ -1768,10 +1769,14 @@ bool update_from_client_packet(
     target.cp_disconnect_supported = CM_FEATURE_FLAGS_CP_DISCONNECT_IS_SET(v1->feature_flags);
     target.cp_disconnect_state = CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(v1->state_flags);
 
-    // Wait for A -> non-A transitions, but ignore chargers that are already in a non-A state in their first packet.
-    // Only set the timestamp if plug_in_time is != 0: This feature is deactivated if the time is set to 0.
-    if (target.last_update != 0 && target.charger_state == 0 && v1->charger_state != 0 && cfg->plug_in_time != 0_us)
+    if (target.charger_state == 0 && v1->charger_state != 0) {
         target.last_plug_in = now_us();
+
+        // Wait for A -> non-A transitions, but ignore chargers that are already in a non-A state in their first packet.
+        // Only set the timestamp if plug_in_time is != 0: This feature is deactivated if the time is set to 0.
+        if (target.last_update != 0 && target.charger_state == 0 && v1->charger_state != 0 && cfg->plug_in_time != 0_us)
+            target.just_plugged_in_timestamp = now_us();
+    }
 
     // If this charger just switched to state C (i.e. the contactor switched on)
     // set last_phase_switch to now to make sure we don't immediately switch again.
@@ -1781,6 +1786,7 @@ bool update_from_client_packet(
     if (v1->charger_state == 0) {
         target.last_phase_switch = -cfg->global_hysteresis;
         target.time_in_state_c = 0_us;
+        target.last_plug_in = 0_us;
     }
 
     target.charger_state = v1->charger_state;
