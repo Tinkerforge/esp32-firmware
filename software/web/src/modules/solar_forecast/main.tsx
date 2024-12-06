@@ -143,9 +143,8 @@ export function get_kwh_tomorrow() {
     return wh/1000.0;
 }
 
-
 export function SolarForecastNavbar() {
-    return <NavbarItem name="solar_forecast" title={__("solar_forecast.navbar.solar_forecast")} symbol={<Sunrise />} hidden={false}/>;
+    return <NavbarItem name="solar_forecast" module="solar_forecast" title={__("solar_forecast.navbar.solar_forecast")} symbol={<Sunrise />}/>;
 }
 
 type PlaneConfig = (API.getType['planes/0/plane_config'])

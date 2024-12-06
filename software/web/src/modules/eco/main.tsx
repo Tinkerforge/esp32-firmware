@@ -43,6 +43,7 @@ export function EcoNavbar() {
     return (
         <NavbarItem
             name="eco"
+            module="eco"
             title={__("eco.navbar.eco")}
             symbol={
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -50,7 +51,6 @@ export function EcoNavbar() {
                     <path d="M3.99999 21C5.50005 15.5 6 12.5 12 9.99997"/>
                 </svg>
             }
-            hidden={false}
         />
     );
 }

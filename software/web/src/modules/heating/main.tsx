@@ -45,7 +45,7 @@ import { Button } from "react-bootstrap";
 import { ControlPeriod } from "./controlperiod.enum";
 
 export function HeatingNavbar() {
-    return <NavbarItem name="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} hidden={false} />;
+    return <NavbarItem name="heating" module="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} />;
 }
 
 type HeatingConfig = API.getType["heating/config"];
