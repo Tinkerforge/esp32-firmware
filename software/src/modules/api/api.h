@@ -106,20 +106,20 @@ public:
     void addFeature(const char *name);
 
     // Prefer this version of addCommand over the one below.
-    void addCommand(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(String &errmsg)> &&callback, bool is_action);
-    void addCommand(const String &path,      ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(String &errmsg)> &&callback, bool is_action);
+    void addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &errmsg)> &&callback, bool is_action);
+    void addCommand(const String &path,      ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &errmsg)> &&callback, bool is_action);
 
-    void addState(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {}, std::initializer_list<const char *> keys_to_censor_in_debug_report = {}, bool low_latency = false);
-    void addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {}, std::initializer_list<const char *> keys_to_censor_in_debug_report = {}, bool low_latency = false);
+    void addState(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {}, bool low_latency = false);
+    void addState(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {}, bool low_latency = false);
 
-    bool addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor = {});
-    void addResponse(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);
+    bool addPersistentConfig(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {});
+    void addResponse(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);
 
     // TODO Remove deprecated functions. Marked as deprecated on 2024-10-04.
     [[gnu::deprecated("Please add a 'String &' parameter to the callback lambda. It can be unused or unnamed.")]]
-    void addCommand(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
+    void addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
     [[gnu::deprecated("Please add a 'String &' parameter to the callback lambda. It can be unused or unnamed.")]]
-    void addCommand(const String &path,      ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
+    void addCommand(const String &path,      ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
 
     bool hasFeature(const char *name);
 

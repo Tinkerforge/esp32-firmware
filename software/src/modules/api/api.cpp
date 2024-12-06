@@ -150,13 +150,13 @@ String API::getLittleFSConfigPath(const String &path, bool tmp) {
     return (tmp ? String("/config/.") : String("/config/")) + path_copy;
 }
 
-void API::addCommand(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action)
+void API::addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action)
 {
     // The lambda's by-copy capture creates a safe copy of the callback.
     this->addCommand(path, config, keys_to_censor_in_debug_report, [callback](String &){callback();}, is_action);
 }
 
-void API::addCommand(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
+void API::addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
 {
     size_t path_len = strlen(path);
 
@@ -204,17 +204,17 @@ void API::addCommand(const char * const path, ConfigRoot *config, std::initializ
     }
 }
 
-void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(void)> &&callback, bool is_action) {
+void API::addCommand(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(void)> &&callback, bool is_action) {
     // The lambda's by-copy capture creates a safe copy of the callback.
     this->addCommand(strdup(path.c_str()), config, keys_to_censor_in_debug_report, [callback](String &){callback();}, is_action);
 }
 
-void API::addCommand(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
+void API::addCommand(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
 {
     this->addCommand(strdup(path.c_str()), config, keys_to_censor_in_debug_report, std::move(callback), is_action);
 }
 
-void API::addState(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, std::initializer_list<const char *> keys_to_censor_in_debug_report, bool low_latency)
+void API::addState(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency)
 {
     size_t path_len = strlen(path);
 
@@ -287,12 +287,12 @@ void API::addState(const char * const path, ConfigRoot *config, std::initializer
     }
 }
 
-void API::addState(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor, std::initializer_list<const char *> keys_to_censor_in_debug_report, bool low_latency)
+void API::addState(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency)
 {
     this->addState(strdup(path.c_str()), config, keys_to_censor, keys_to_censor_in_debug_report, low_latency);
 }
 
-bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor)
+bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report)
 {
     if (path.length() > 63) {
         logger.printfln("The maximum allowed config path length is 63 bytes. Got %u bytes instead.", path.length());
@@ -322,9 +322,14 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, std::initi
         addState(conf_modified_path, conf_modified);
     }
 
-    addState(path, config, keys_to_censor);
+    addState(path, config, keys_to_censor, keys_to_censor_in_debug_report);
 
-    addCommand(path + "_update", config, keys_to_censor, [path, config, conf_modified](String &/*errmsg*/) {
+    std::vector<const char *> ktc{keys_to_censor};
+    for (const char *k : keys_to_censor_in_debug_report) {
+        ktc.push_back(k);
+    }
+
+    addCommand(path + "_update", config, ktc, [path, config, conf_modified](String &/*errmsg*/) {
         API::writeConfig(path, config);
         conf_modified->get("modified")->updateUint(3);
     }, false);
@@ -365,7 +370,7 @@ void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, ICh
     reg.callback(response, response_ownership, response_owner_id);
 }
 
-void API::addResponse(const char * const path, ConfigRoot *config, std::initializer_list<const char *> keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback)
+void API::addResponse(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback)
 {
     size_t path_len = strlen(path);
 
@@ -459,7 +464,7 @@ void API::removeAllConfig()
 }
 
 /*
-void API::addTemporaryConfig(String path, Config *config, std::initializer_list<const char *> keys_to_censor, std::function<void(String &)> &&callback)
+void API::addTemporaryConfig(String path, Config *config, const std::vector<const char *> &keys_to_censor, std::function<void(String &)> &&callback)
 {
     addState(path, config, keys_to_censor);
     addCommand(path + "_update", config, std::move(callback));

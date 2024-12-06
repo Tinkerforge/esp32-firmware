@@ -61,7 +61,7 @@ void Network::setup()
 
 void Network::register_urls()
 {
-    api.addPersistentConfig("network/config", &config);
+    api.addPersistentConfig("network/config", &config, {}, {"hostname"});
     api.addState("network/state", &state);
 
     if (!config.get("enable_mdns")->asBool()) {

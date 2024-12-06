@@ -763,7 +763,7 @@ void ChargeTracker::register_urls()
     });
 
     api.addState("charge_tracker/last_charges", &last_charges);
-    api.addState("charge_tracker/current_charge", &current_charge);
+    api.addState("charge_tracker/current_charge", &current_charge, {}, {"tag_id", "tag_type"});
     api.addState("charge_tracker/state", &state);
 
     api.addCommand("charge_tracker/remove_all_charges", Config::Confirm(), {Config::confirm_key}, [this](String &errmsg) {

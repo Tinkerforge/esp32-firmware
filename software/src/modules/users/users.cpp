@@ -534,7 +534,7 @@ void Users::register_urls()
         }});
     }
 
-    api.addCommand("users/modify", &modify, {"digest_hash"}, [this](String &errmsg) {
+    api.addCommand("users/modify", &modify, {"digest_hash", "display_name", "username"}, [this](String &errmsg) {
         auto id = modify.get("id")->asUint();
 
         Config *user = nullptr;
@@ -576,8 +576,8 @@ void Users::register_urls()
         modify.get("digest_hash")->updateString("___MARKER___VALUE___");
     }, true);
 
-    api.addState("users/config", &config, {"digest_hash"});
-    api.addCommand("users/add", &add, {"digest_hash"}, [this](String &/*errmsg*/) {
+    api.addState("users/config", &config, {"digest_hash"}, {"display_name", "username"});
+    api.addCommand("users/add", &add, {"digest_hash", "display_name", "username"}, [this](String &/*errmsg*/) {
         auto user = config.get("users")->add();
 
         user->get("id")->updateUint(add.get("id")->asUint());
