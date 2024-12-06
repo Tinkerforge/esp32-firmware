@@ -38,14 +38,7 @@ import { get_managed_chargers } from "../charge_manager/chargers";
 const FRONT_PANEL_TILES = 6;
 
 export function FrontPanelNavbar() {
-    return (
-        <NavbarItem
-            name="front_panel"
-            title={__("front_panel.navbar.front_panel")}
-            hidden={false} // Module/Feature-Check
-            symbol={<Monitor/>}
-        />
-    );
+    return <NavbarItem name="front_panel" module="front_panel" title={__("front_panel.navbar.front_panel")} symbol={<Monitor />} />;
 }
 
 type FrontPanelConfig = API.getType["front_panel/config"];

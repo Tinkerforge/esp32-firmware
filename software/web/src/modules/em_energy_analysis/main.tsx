@@ -45,7 +45,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { PieChart } from "react-feather";
 
 export function EMEnergyAnalysisNavbar() {
-    return <NavbarItem name="em_energy_analysis" module="em_common" title={__("em_energy_analysis.navbar.em_energy_analysis")} symbol={<PieChart />} />;
+    return <NavbarItem name="em_energy_analysis" module="em_energy_analysis" title={__("em_energy_analysis.navbar.em_energy_analysis")} symbol={<PieChart />} />;
 }
 
 const UPDATE_RETRY_DELAY = 500; // ms
