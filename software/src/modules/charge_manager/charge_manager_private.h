@@ -119,6 +119,9 @@ struct ChargerState {
     // If set, the last allocation was less than the requested current.
     // Ignore phase currents in this case for a faster ramp up.
     micros_t use_supported_current;
+
+    // Incremented every iteration the connected vehicle was in state C.
+    micros_t time_in_state_c;
 };
 
 struct ChargerAllocationState {

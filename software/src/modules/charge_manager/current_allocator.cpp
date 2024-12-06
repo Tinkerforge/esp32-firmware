@@ -1616,6 +1616,10 @@ int allocate_current(
                 charger.allocated_energy += allocated_energy;
             }
 
+            if (phases_to_set != 0 && charger.charger_state == 3) {
+                charger.time_in_state_c += cfg->allocation_interval;
+            }
+
             if (change) {
                 LOCAL_LOG("Allocated %d mA @ %dp to %s (%s).",
                       current_to_set,
@@ -1774,8 +1778,10 @@ bool update_from_client_packet(
     if (target.charger_state != v1->charger_state && v1->charger_state == 3)
         target.last_phase_switch = now_us();
 
-    if (v1->charger_state == 0)
+    if (v1->charger_state == 0) {
         target.last_phase_switch = -cfg->global_hysteresis;
+        target.time_in_state_c = 0_us;
+    }
 
     target.charger_state = v1->charger_state;
     target.last_update = millis();
