@@ -324,7 +324,11 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
 
     addState(path, config, keys_to_censor, keys_to_censor_in_debug_report);
 
-    std::vector<const char *> ktc{keys_to_censor};
+    std::vector<const char *> ktc;
+    ktc.reserve(keys_to_censor.size() + keys_to_censor_in_debug_report.size());
+    for (const char *k : keys_to_censor) {
+        ktc.push_back(k);
+    }
     for (const char *k : keys_to_censor_in_debug_report) {
         ktc.push_back(k);
     }
