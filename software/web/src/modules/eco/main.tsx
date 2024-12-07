@@ -246,6 +246,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                 lines_vertical: []
             }
             const resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60
+            const hour_multiplier       = dap_prices.resolution == 0 ? 4  : 1
             const grid_costs_and_taxes_and_supplier_markup = dap_config.grid_costs_and_taxes / 1000.0 + dap_config.supplier_markup / 1000.0;
             for (let i = 0; i < dap_prices.prices.length; i++) {
                 data.values[0].push(dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
@@ -285,7 +286,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                 .slice(from_index, to_index)
                 .map((price, index) => ({ price, index }))
                 .sort((a, b) => a.price - b.price)
-                .slice(0, hours)
+                .slice(0, hours*hour_multiplier)
                 .map(item => item.index+from_index);
 
                 cheap_hours.forEach(index => {
