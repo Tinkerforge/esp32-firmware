@@ -353,31 +353,67 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         ],
                         draw: [
                             (self: uPlot) => {
-                                this.data?.lines_vertical?.forEach(line  => {
+                                // Make blocks from vertical lines
+                                let blocks: {
+                                    start_index: number,
+                                    end_index: number,
+                                    color: [number, number, number, number]
+                                }[] = [];
+                                const col_eq = (a: [number, number, number, number], b: [number, number, number, number]) =>  a.every((v, i) => v === b[i]);
+                                let lines_vertical_sorted = this.data?.lines_vertical?.sort((a, b) => a.index - b.index);
+                                lines_vertical_sorted?.forEach(line  => {
+                                    if (blocks.length == 0) {
+                                        blocks.push({
+                                            start_index: line.index,
+                                            end_index: line.index+1,
+                                            color: line.color
+                                        });
+                                    } else if ((col_eq(blocks[blocks.length-1].color, line.color)) && (blocks[blocks.length-1].end_index == line.index)) {
+                                        blocks[blocks.length-1].end_index = line.index+1;
+                                    } else {
+                                        blocks.push({
+                                            start_index: line.index,
+                                            end_index: line.index+1,
+                                            color: line.color
+                                        });
+                                    }
+                                });
+
+                                // Draw blocks
+                                blocks.forEach(block  => {
                                     const { ctx, bbox } = self;
 
                                     let xd = self.data[0];
-                                    let x = self.valToPos(xd[line.index], 'x', true);
-                                    let xn = self.valToPos(xd[line.index+1], 'x', true);
+                                    let x  = self.valToPos(xd[block.start_index], 'x', true);
+                                    let xn = self.valToPos(xd[block.end_index],   'x', true);
 
                                     ctx.save();
 
                                     ctx.beginPath();
-                                    ctx.strokeStyle = `rgba(${line.color[0]}, ${line.color[1]}, ${line.color[2]}, ${line.color[3]})`;
-                                    ctx.lineWidth = xn-x;
-                                    ctx.moveTo(x+ctx.lineWidth/2, bbox.top);
-                                    ctx.lineTo(x+ctx.lineWidth/2, bbox.top + bbox.height);
-                                    ctx.stroke();
+                                    ctx.fillStyle = `rgba(${block.color[0]}, ${block.color[1]}, ${block.color[2]}, ${block.color[3]})`;
+                                    ctx.fillRect(x, bbox.top, xn-x, bbox.height);
 
+                                    ctx.restore();
+                                });
+
+                                // Draw text on top of vertical lines
+                                lines_vertical_sorted?.forEach(line  => {
                                     if (line.text.length > 0) {
+                                        const { ctx, bbox } = self;
+
+                                        let xd = self.data[0];
+                                        let x  = self.valToPos(xd[line.index],   'x', true);
+                                        let xn = self.valToPos(xd[line.index+1], 'x', true);
+
+                                        ctx.save();
+
                                         ctx.lineWidth = 1;
                                         let metrics   = ctx.measureText(line.text);
                                         let text_mid  = metrics.width/2 + (xn-x)/2;
                                         ctx.fillStyle = `rgba(32, 32, 32, 1)`;
                                         ctx.fillText(line.text, x + text_mid, 1 + (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent)/2);
+                                        ctx.restore();
                                     }
-
-                                    ctx.restore();
                                 });
                             },
                         ],
