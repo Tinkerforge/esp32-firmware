@@ -24,7 +24,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
-
+#include "modules/charge_manager/charge_manager_private.h"
 
 void Eco::pre_setup()
 {
@@ -56,8 +56,8 @@ void Eco::pre_setup()
     });
     charge_plan_update = charge_plan;
 
-    // TODO: If we don't need any more state information per charger we can use a simple array here.
     state_chargers_prototype = Config::Object({
+        {"start", Config::Uint(0)}, // Start of charge (minutes since epoch)
         {"amount", Config::Uint(0)} // Amount of charge since start (h or kWh depending on configuration)
     });
 
@@ -77,6 +77,7 @@ void Eco::setup()
 
     const size_t controlled_chargers = charge_manager.config.get("chargers")->count();
     for (size_t i = 0; i < controlled_chargers; i++) {
+        last_seen_plug_in[i] = 0_us;
         state.get("chargers")->add();
     }
 
@@ -104,6 +105,33 @@ void Eco::register_urls()
 
 void Eco::update()
 {
+    // Update eco charger state once per minute, independent of the eco charge decision
+    for (uint8_t charger_id = 0; charger_id < state.get("chargers")->count(); charger_id++) {
+        auto *charger_state = charge_manager.get_charger_state(charger_id);
+        if (charger_state == nullptr) {
+            state.get("chargers")->get(charger_id)->get("start")->updateUint(0);
+            state.get("chargers")->get(charger_id)->get("amount")->updateUint(0);
+        } else {
+            const uint32_t minutes_in_state_c = charger_state->time_in_state_c.millis()/(1000*60);
+            state.get("chargers")->get(charger_id)->get("amount")->updateUint(minutes_in_state_c);
+
+            if (charger_state->last_plug_in == 0_us) {
+                state.get("chargers")->get(charger_id)->get("start")->updateUint(0);
+                state.get("chargers")->get(charger_id)->get("amount")->updateUint(0);
+
+            // Only update "start" when there is a transition from one car to the next.
+            // Otherwise the start time may "jitter" for a given charging-session since
+            // the cpu time and the rtc time may not run completely in sync.
+            } else if (charger_state->last_plug_in != last_seen_plug_in[charger_id]) {
+                last_seen_plug_in[charger_id] = charger_state->last_plug_in;
+
+                const micros_t time_from_now_to_plug_in = now_us() - charger_state->last_plug_in;
+                const uint32_t epoch_to_plug_in_minutes = rtc.timestamp_minutes() - time_from_now_to_plug_in.millis()/(1000*60);
+                state.get("chargers")->get(charger_id)->get("start")->updateUint(epoch_to_plug_in_minutes);
+            }
+        }
+    }
+
     // If we don't yet have day ahead prices, we can't make a decision
     int32_t current_price;
     if (!day_ahead_prices.get_current_price_net().try_unwrap(&current_price)) {

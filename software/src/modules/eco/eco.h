@@ -37,6 +37,7 @@ private:
     ConfigRoot state_chargers_prototype;
 
     size_t trace_buffer_index;
+    micros_t last_seen_plug_in[MAX_CONTROLLED_CHARGERS];
 
     void disable_charge_plan();
 

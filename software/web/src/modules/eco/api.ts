@@ -1,4 +1,5 @@
 interface ChargerState {
+    start: number;
     amount: number
 }
 
