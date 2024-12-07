@@ -205,8 +205,9 @@ void DayAheadPrices::update_prices_sorted()
 
 void DayAheadPrices::update_minmaxavg_price()
 {
-    if (!get_localtime_today_midnight_in_utc().try_unwrap(&last_update_minmaxavg))
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&last_update_minmaxavg)) {
         return;
+    }
 
     // Minimum, average, maximum today
     const uint32_t start_today = last_update_minmaxavg / 60;
@@ -484,8 +485,9 @@ Option<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t start, 
 Option<int32_t> DayAheadPrices::get_minimum_price_today()
 {
     time_t midnight;
-    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
         return {};
+    }
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -497,8 +499,9 @@ Option<int32_t> DayAheadPrices::get_minimum_price_today()
 Option<int32_t> DayAheadPrices::get_minimum_price_tomorrow()
 {
     time_t midnight;
-    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
         return {};
+    }
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -540,8 +543,9 @@ Option<int32_t> DayAheadPrices::get_average_price_between(const uint32_t start, 
 Option<int32_t> DayAheadPrices::get_average_price_today()
 {
     time_t midnight;
-    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
         return {};
+    }
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -553,8 +557,9 @@ Option<int32_t> DayAheadPrices::get_average_price_today()
 Option<int32_t> DayAheadPrices::get_average_price_tomorrow()
 {
     time_t midnight;
-    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
         return {};
+    }
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -597,8 +602,9 @@ Option<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t start, 
 Option<int32_t> DayAheadPrices::get_maximum_price_today()
 {
     time_t midnight;
-    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
         return {};
+    }
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -610,8 +616,9 @@ Option<int32_t> DayAheadPrices::get_maximum_price_today()
 Option<int32_t> DayAheadPrices::get_maximum_price_tomorrow()
 {
     time_t midnight;
-    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
         return {};
+    }
 
     if (last_update_minmaxavg != midnight) {
         update_minmaxavg_price();
@@ -622,15 +629,19 @@ Option<int32_t> DayAheadPrices::get_maximum_price_tomorrow()
 
 Option<int32_t> DayAheadPrices::get_current_price_net()
 {
-    if (!current_price_available)
+    if (!current_price_available) {
         return {};
+    }
+
     return state.get("current_price")->asInt();
 }
 
 Option<int32_t> DayAheadPrices::get_current_price()
 {
-    if (!current_price_available)
+    if (!current_price_available) {
         return {};
+    }
+
     return (int32_t)std::round(state.get("current_price")->asInt()*(1 + config.get("vat")->asUint()/10000.0));
 }
 
