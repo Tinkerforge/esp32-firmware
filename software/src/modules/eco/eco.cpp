@@ -213,10 +213,17 @@ void Eco::update()
                 continue;
             }
 
+            // Check if pv yield forecast is above threshold (we don't want to fast charge if we expect high solar yield)
             if (config.get("yield_forecast_active")->asBool()) {
                 const uint32_t kwh_threshold = config.get("yield_forecast")->asUint();
                 if (kwh_threshold > 0) {
-                    const uint32_t kwh_expected = 0; // TODO: get expected yield in wh from solar forecast
+                    auto wh_expected = solar_forecast.get_wh_range(start_time, end_time);
+                    if (wh_expected.is_none()) {
+                        charge_decision[charger_id] = ChargeDecision::Normal;
+                        continue;
+                    }
+
+                    const uint32_t kwh_expected = wh_expected.unwrap()/1000;
                     if (kwh_expected > kwh_threshold) {
                         charge_decision[charger_id] = ChargeDecision::Normal;
                         continue;
@@ -224,7 +231,8 @@ void Eco::update()
                 }
             }
 
-            const uint32_t hours_remaining    = hours_desired - hours_charged;
+            // Check if the current day ahead price slot is cheap
+            const uint32_t hours_remaining = hours_desired - hours_charged;
             if (day_ahead_prices.is_start_time_cheap(current_time, duration_remaining, hours_remaining)) {
                 charge_decision[charger_id] = ChargeDecision::Fast;
             } else {
