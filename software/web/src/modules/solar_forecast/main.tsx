@@ -388,10 +388,10 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                 return <div class="form-group row"><span class="col-12">{__("solar_forecast.content.not_set_for_this_plane")}</span></div>;
             } else {
                 return <div>
-                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.address_of_pv_plane")}</span><span class="col-8"> {plane_state.place} ({__("solar_forecast.content.resolution")})</span></div>
-                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_update_attempt")}</span><span class="col-8">{new Date(plane_state.last_check*60*1000).toLocaleString()}</span></div>
-                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_successful_update")}</span><span class="col-8">{new Date(plane_state.last_sync*60*1000).toLocaleString()}</span></div>
-                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.next_update")}</span><span class="col-8">{new Date(plane_state.next_check*60*1000).toLocaleString()}</span></div>
+                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.address_of_pv_plane")}</span><span class="col-8"> {plane_state.place}</span></div>
+                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_update_attempt")}</span><span class="col-8">{plane_state.last_check == 0 ? __("solar_forecast.content.not_yet_queried") : new Date(plane_state.last_check*60*1000).toLocaleString()}</span></div>
+                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_successful_update")}</span><span class="col-8">{plane_state.last_sync == 0 ? __("solar_forecast.content.not_yet_queried") :  new Date(plane_state.last_sync*60*1000).toLocaleString()}</span></div>
+                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.next_update")}</span><span class="col-8">{plane_state.next_check == 0 ? __("solar_forecast.content.unknown") : new Date(plane_state.next_check*60*1000).toLocaleString()}</span></div>
                        </div>;
             }
         }
