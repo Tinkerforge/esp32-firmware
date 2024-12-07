@@ -50,7 +50,7 @@ void Eco::pre_setup()
 
     charge_plan = Config::Object({
         {"enabled",Config::Bool(false)},
-        {"depature", Config::Enum(Depature::Tomorrow, Depature::Today, Depature::Daily)},
+        {"departure", Config::Enum(Departure::Tomorrow, Departure::Today, Departure::Daily)},
         {"time", Config::Int(8*60)}, // localtime in minutes since 00:00
         {"amount", Config::Uint(4)}  // h or kWh depending on configuration (currently only h supported)
     });
@@ -160,7 +160,7 @@ void Eco::update()
     if (config.get("charge_plan_active")->asBool() && charge_plan.get("enabled")->asBool()) {
         // Currently we assume that the amount is in hours, later we may add support for kWh
         const uint32_t hours_desired      = charge_plan.get("amount")->asUint();
-        const Depature depature           = charge_plan.get("depature")->asEnum<Depature>();
+        const Departure departure         = charge_plan.get("departure")->asEnum<Departure>();
 
         const time_t   save_time          = state.get("last_charge_plan_save")->asUint()*60;
         const uint32_t save_time_midnight = get_localtime_midnight_in_utc(save_time) / 60;
@@ -173,24 +173,24 @@ void Eco::update()
         const uint32_t today_midnight     = midnight / 60;
 
         const uint32_t time               = charge_plan.get("time")->asInt();
-        const uint32_t minutes_add        = (((depature == Depature::Today) || (depature == Depature::Daily)) ? 0 : 24*60) + time;
-              uint32_t end_time           = (depature == Depature::Daily) ? (today_midnight + minutes_add) : (save_time_midnight + minutes_add);
+        const uint32_t minutes_add        = (((departure == Departure::Today) || (departure == Departure::Daily)) ? 0 : 24*60) + time;
+              uint32_t end_time           = (departure == Departure::Daily) ? (today_midnight + minutes_add) : (save_time_midnight + minutes_add);
         const uint32_t current_time       = rtc.timestamp_minutes();
 
         if (current_time >= end_time) {
             // If the current time is after the planned charge ending time
-            // and the depature is set to "Daily" or "Tomorrow" we disable the charge plan.
+            // and the departure is set to "Daily" or "Tomorrow" we disable the charge plan.
             // TODO: If we have not reached the desired charge amount at this point,
             //       we could try to charge until the amount is reached or the car is disconnected.
-            if ((depature == Depature::Today) || (depature == Depature::Tomorrow)) {
+            if ((departure == Departure::Today) || (departure == Departure::Tomorrow)) {
                 disable_charge_plan();
                 std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
                 return;
             // If the current time is after the planned charge ending time
-            // and the depature is set to "Daily" we increase the end time by 24 hours.
-            // For daily depature the new period under consideration will restart
+            // and the departure is set to "Daily" we increase the end time by 24 hours.
+            // For daily departure the new period under consideration will restart
             // immediately after the time is reached.
-            } else if (depature == Depature::Daily) {
+            } else if (departure == Departure::Daily) {
                 end_time += 24*60;
             }
         }

@@ -18,7 +18,7 @@ export interface config {
 
 export interface charge_plan {
     enabled: boolean;
-    depature: number;
+    departure: number;
     time: number;
     amount: number;
 }

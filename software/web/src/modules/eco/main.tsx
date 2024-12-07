@@ -37,7 +37,7 @@ import { Button } from "react-bootstrap";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
-import { Depature } from "./depature.enum";
+import { Departure } from "./departure.enum";
 
 export function EcoNavbar() {
     return (
@@ -259,7 +259,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             const last_save = this.state.state.last_charge_plan_save;
             const enabled   = this.state.charge_plan.enabled;
             const hours     = this.state.charge_plan.amount;
-            const depature  = this.state.charge_plan.depature;
+            const departure  = this.state.charge_plan.departure;
             const time      = this.state.charge_plan.time;
 
             // TODO: Use charge start if charge already started
@@ -268,7 +268,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             const from_index = Math.max(0, Math.floor((from - dap_prices.first_date) / resolution_multiplier));
 
             // Minutes from today 00:00 to end of charge plan
-            const minutes_add = (((depature == Depature.Today) || (depature == Depature.Daily)) ? 0 : 24*60) + time;
+            const minutes_add = (((departure == Departure.Today) || (departure == Departure.Daily)) ? 0 : 24*60) + time;
             let to_date = new Date();
             to_date.setHours(0, 0, 0, 0)
             const to = to_date.getTime()/(60*1000) + minutes_add;
@@ -325,9 +325,9 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
 
         let charge_plan_text = () => {
             let day = "bis Heute um";
-            if (state.charge_plan.depature === 1) {
+            if (state.charge_plan.departure === 1) {
                 day = "bis Morgen um";
-            } else if (state.charge_plan.depature === 2) {
+            } else if (state.charge_plan.departure === 2) {
                 day = "täglich bis";
             }
 
@@ -348,8 +348,8 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                                 ["1", "Morgen"],
                                 ["2", "Täglich"],
                             ]}
-                            value={state.charge_plan.depature}
-                            onValue={(v) => this.setState({charge_plan: {...state.charge_plan, depature: parseInt(v)}}, () => this.update_charge_plan({...state.charge_plan, depature: parseInt(v)}))}
+                            value={state.charge_plan.departure}
+                            onValue={(v) => this.setState({charge_plan: {...state.charge_plan, departure: parseInt(v)}}, () => this.update_charge_plan({...state.charge_plan, departure: parseInt(v)}))}
                         />
                         <InputTime
                             disabled={state.charge_plan.enabled}
