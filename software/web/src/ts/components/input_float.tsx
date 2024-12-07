@@ -140,6 +140,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
             {'onValue' in props && !props.disabled ?
                 <>
                     <Button variant="primary"
+                            disabled={props.disabled || (props.value == props.min)}
                             className="form-control px-1"
                             style="margin-right: .125rem !important;"
                             onClick={() => {
@@ -151,6 +152,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                         <Minus/>
                     </Button>
                     <Button variant="primary"
+                            disabled={props.disabled || (props.value == props.max)}
                             className="form-control px-1 rounded-right"
                             onClick={() => {
                                 let v = props.value;
