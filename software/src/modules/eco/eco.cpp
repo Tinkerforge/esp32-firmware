@@ -169,7 +169,7 @@ void Eco::update()
 
         const uint32_t duration_remaining = end_time - current_time;
 
-        for (uint8_t charger_id = 0; charger_id < config.get("chargers")->count(); charger_id++) {
+        for (uint8_t charger_id = 0; charger_id < state.get("chargers")->count(); charger_id++) {
             // TODO: Check if charger is connected to a car?
             const uint32_t hours_charged = state.get("chargers")->get(charger_id)->get("amount")->asUint()/60; // assumes that amount is in minutes
 
