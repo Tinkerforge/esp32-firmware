@@ -58,6 +58,8 @@ public:
     esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
     void next_update();
 
+    // start and end in minutes since epoch
+    Option<uint32_t> get_wh_range(const uint32_t start, const uint32_t end);
     Option<uint32_t> get_wh_today();
     Option<uint32_t> get_wh_tomorrow();
 

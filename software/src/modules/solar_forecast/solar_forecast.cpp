@@ -535,15 +535,8 @@ bool SolarForecast::forecast_time_between(const uint32_t first_date, const uint3
     return (forecast_time >= start) && (forecast_time <= end);
 }
 
-Option<uint32_t> SolarForecast::get_wh_today()
+Option<uint32_t> SolarForecast::get_wh_range(const uint32_t start, const uint32_t end)
 {
-    time_t midnight;
-    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
-        return {};
-
-    const uint32_t start = midnight / 60;
-    const uint32_t end   = start + 60*24 - 1;
-
     uint32_t wh    = 0;
     uint32_t count = 0;
     for (const SolarForecastPlane &plane : planes) {
@@ -560,39 +553,33 @@ Option<uint32_t> SolarForecast::get_wh_today()
 
     // We assume that we have valid data for the day if
     // there is at least one data point today
-    if (count != 0)
+    if (count != 0) {
         return {};
+    }
 
     return wh;
+}
+
+Option<uint32_t> SolarForecast::get_wh_today()
+{
+    time_t midnight;
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
+        return {};
+    }
+
+    const uint32_t start = midnight / 60;
+    const uint32_t end   = start + 60*24 - 1;
+    return get_wh_range(start, end);
 }
 
 Option<uint32_t> SolarForecast::get_wh_tomorrow()
 {
     time_t midnight;
-    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight))
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
         return {};
+    }
 
     const uint32_t start = midnight / 60 + 60*24;
     const uint32_t end   = start + 60*24 - 1;
-
-    uint32_t wh    = 0;
-    uint32_t count = 0;
-    for (const SolarForecastPlane &plane : planes) {
-        if (plane.config.get("active")->asBool()) {
-            const uint32_t first_date = plane.forecast.get("first_date")->asUint();
-            for (size_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
-                if (forecast_time_between(first_date, index, start, end)) {
-                    wh += plane.forecast.get("forecast")->get(index)->asUint();
-                    count++;
-                }
-            }
-        }
-    }
-
-    // We assume that we have valid data for the day if
-    // there is at least one data point tomorrow
-    if (count != 0)
-        return {};
-
-    return wh;
+    return get_wh_range(start, end);
 }
