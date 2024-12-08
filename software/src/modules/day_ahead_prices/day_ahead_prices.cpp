@@ -18,6 +18,9 @@
  */
 #include "day_ahead_prices.h"
 
+#include "region.enum.h"
+#include "resolution.enum.h"
+
 #include <time.h>
 #include <lwip/inet.h>
 
@@ -30,19 +33,10 @@
 static constexpr auto CHECK_INTERVAL = 1_m;
 static constexpr auto PRICE_UPDATE_INTERVAL = 15_m;
 
-enum Region {
-    REGION_DE,
-    REGION_AT,
-    REGION_LU
-};
 static const char * const region_str[] {
     "de", "at", "lu"
 };
 
-enum Resolution {
-    RESOLUTION_15MIN,
-    RESOLUTION_60MIN
-};
 static const char * const resolution_str[] {
     "15min", "60min"
 };
@@ -52,8 +46,8 @@ void DayAheadPrices::pre_setup()
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
         {"api_url", Config::Str(BUILD_DAY_AHEAD_PRICE_API_URL, 0, 64)},
-        {"region", Config::Uint(REGION_DE, REGION_DE, REGION_LU)},
-        {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
+        {"region", Config::Enum(Region::DE, Region::DE, Region::LU)},
+        {"resolution", Config::Enum(Resolution::Min60, Resolution::Min15, Resolution::Min60)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"vat", Config::Uint(0, 0, 10000)}, // in %/100
         {"grid_costs_and_taxes", Config::Uint(0, 0, 99000)}, // in ct/1000 per kWh
@@ -68,18 +62,18 @@ void DayAheadPrices::pre_setup()
 
         // If region or resolution changes we discard the current state
         // and trigger a new update (with the new config).
-        if ((update.get("region")->asUint()     != config.get("region")->asUint()) ||
-            (update.get("resolution")->asUint() != config.get("resolution")->asUint()) ||
-            (update.get("enable")->asBool()     != config.get("enable")->asBool()) ||
-            (update.get("api_url")->asString()  != config.get("api_url")->asString()) ||
-            (update.get("cert_id")->asInt()     != config.get("cert_id")->asInt()) ) {
+        if ((update.get("region")->asEnum<Region>()         != config.get("region")->asEnum<Region>()) ||
+            (update.get("resolution")->asEnum<Resolution>() != config.get("resolution")->asEnum<Resolution>()) ||
+            (update.get("enable")->asBool()                 != config.get("enable")->asBool()) ||
+            (update.get("api_url")->asString()              != config.get("api_url")->asString()) ||
+            (update.get("cert_id")->asInt()                 != config.get("cert_id")->asInt()) ) {
             state.get("last_sync")->updateUint(0);
             state.get("last_check")->updateUint(0);
             state.get("next_check")->updateUint(0);
             state.get("current_price")->updateInt(0);
             prices.get("first_date")->updateUint(0);
             prices.get("prices")->removeAll();
-            prices.get("resolution")->updateUint(update.get("resolution")->asUint());
+            prices.get("resolution")->updateEnum(update.get("resolution")->asEnum<Resolution>());
             current_price_available = false;
             task_scheduler.scheduleOnce([this]() {
                 this->update();
@@ -98,7 +92,7 @@ void DayAheadPrices::pre_setup()
 
     prices = Config::Object({
         {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
-        {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)},
+        {"resolution", Config::Enum(Resolution::Min60, Resolution::Min15, Resolution::Min60)},
         {"prices",     Config::Array({}, Config::get_prototype_int32_0(), 0, DAY_AHEAD_PRICE_MAX_AMOUNT, Config::type_id<Config::ConfInt>())}
     });
 
@@ -117,7 +111,7 @@ void DayAheadPrices::pre_setup()
 void DayAheadPrices::setup()
 {
     api.restorePersistentConfig("day_ahead_prices/config", &config);
-    prices.get("resolution")->updateUint(config.get("resolution")->asUint());
+    prices.get("resolution")->updateEnum(config.get("resolution")->asEnum<Resolution>());
 
     json_buffer = nullptr;
     json_buffer_position = 0;
@@ -146,7 +140,7 @@ void DayAheadPrices::update_current_price()
 {
     static int32_t last_price = INT32_MAX;
 
-    const uint32_t resolution_divisor = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
+    const uint32_t resolution_divisor = config.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 15 : 60;
     const uint32_t diff = rtc.timestamp_minutes() - prices.get("first_date")->asUint();
     const uint32_t index = diff/resolution_divisor;
     if (prices.get("prices")->count() <= index) {
@@ -182,10 +176,10 @@ void DayAheadPrices::update_prices_sorted()
     // Put prices in array with pair of index and price
     std::fill_n(prices_sorted, DAY_AHEAD_PRICE_MAX_AMOUNT, std::pair<uint8_t, int32_t>(-1, 0));
 
-    const uint8_t multiplier = config.get("resolution")->asUint() == RESOLUTION_60MIN ? 4 : 1;
+    const uint8_t multiplier = config.get("resolution")->asEnum<Resolution>() == Resolution::Min60 ? 4 : 1;
     prices_sorted_count = MIN(num_prices * multiplier, DAY_AHEAD_PRICE_MAX_AMOUNT);
     for (uint8_t i = 0; i < prices_sorted_count/multiplier; i++) {
-        if (config.get("resolution")->asUint() == RESOLUTION_15MIN) {
+        if (config.get("resolution")->asEnum<Resolution>() == Resolution::Min15) {
             prices_sorted[i] = std::make_pair(i, p->get(i)->asInt());
         } else {
             prices_sorted[i*4+0] = std::make_pair(i*4+0, p->get(i)->asInt());
@@ -432,8 +426,8 @@ String DayAheadPrices::get_api_url_with_path()
         api_url += "/";
     }
 
-    String region = region_str[config.get("region")->asUint()];
-    String resolution = resolution_str[config.get("resolution")->asUint()];
+    String region = region_str[static_cast<std::underlying_type<Region>::type>(config.get("region")->asEnum<Region>())];
+    String resolution = resolution_str[static_cast<std::underlying_type<Resolution>::type>(config.get("resolution")->asEnum<Resolution>())];
 
     return api_url + "v1/day_ahead_prices/" + region + "/" + resolution;
 }
@@ -442,7 +436,7 @@ int DayAheadPrices::get_max_price_values()
 {
     // We save maximal 2 days with 24 hours each and one additional hour for daylight savings time switch.
     // Depending on resoultion we have 4 or 1 data points per hour.
-    return (2*24 + 1) * (config.get("resolution")->asUint() == RESOLUTION_15MIN ? 4 : 1);
+    return (2*24 + 1) * (config.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 4 : 1);
 }
 
 bool DayAheadPrices::time_between(const uint32_t index, const uint32_t start, const uint32_t end, const uint32_t first_date, const uint8_t resolution) {
@@ -462,7 +456,7 @@ Option<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t start, 
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
-    const uint32_t resolution = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
+    const uint32_t resolution = config.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 15 : 60;
 
     int32_t min = INT32_MAX;
     int32_t count = 0;
@@ -521,7 +515,7 @@ Option<int32_t> DayAheadPrices::get_average_price_between(const uint32_t start, 
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
-    const uint32_t resolution = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
+    const uint32_t resolution = config.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 15 : 60;
 
     int32_t sum = 0;
     int32_t count = 0;
@@ -579,7 +573,7 @@ Option<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t start, 
     }
 
     const uint32_t first_date = prices.get("first_date")->asUint();
-    const uint32_t resolution = config.get("resolution")->asUint() == RESOLUTION_15MIN ? 15 : 60;
+    const uint32_t resolution = config.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 15 : 60;
 
     int32_t max = INT32_MIN;
     int32_t count = 0;

@@ -35,6 +35,7 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
+import { Resolution } from "./resolution.enum";
 
 function get_timestamp_today_00_00_in_seconds() {
     return Math.floor(new Date().setHours(0, 0, 0, 0) / 1000);
@@ -42,7 +43,7 @@ function get_timestamp_today_00_00_in_seconds() {
 
 function day_ahead_price_time_between(index: number, start: number, end: number) {
     const dap_prices = API.get("day_ahead_prices/prices");
-    const resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60;
+    const resolution_multiplier = dap_prices.resolution == Resolution.Min15 ? 15 : 60;
     const index_timestamp_seconds = (dap_prices.first_date + index*resolution_multiplier)*60;
     return (index_timestamp_seconds >= start) && (index_timestamp_seconds <= end);
 }
@@ -151,7 +152,7 @@ function get_price_timeframe() {
 
     let time = new Date(util.get_date_now_1m_update_rate());
     let s = ""
-    if(dap_config.resolution == 0) {
+    if(dap_config.resolution == Resolution.Min15) {
         time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
         time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
         time.setMinutes(Math.floor(time.getMinutes() / 15) * 15);
@@ -239,7 +240,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 default_visibilty: [null, true, false, false],
                 lines_vertical: []
             }
-            let resolution_multiplier = this.state.dap_prices.resolution == 0 ? 15 : 60
+            let resolution_multiplier = this.state.dap_prices.resolution == Resolution.Min15 ? 15 : 60
             for (let i = 0; i < this.state.dap_prices.prices.length; i++) {
                 data.values[0].push(this.state.dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
                 data.values[1].push(get_price_from_index(i) / 1000.0);
@@ -253,9 +254,8 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             data.values[3].push(this.state.supplier_markup / 1000.0);
 
             // Add vertical line at current time
-            const resolution_divisor = this.state.resolution == 0 ? 15 : 60;
             const diff = Math.floor(util.get_date_now_1m_update_rate() / 60000) - this.state.dap_prices.first_date;
-            const index = Math.floor(diff / resolution_divisor);
+            const index = Math.floor(diff / resolution_multiplier);
             data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now"), 'color': [64, 64, 64, 0.2]});
         }
 
