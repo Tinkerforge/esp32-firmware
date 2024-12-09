@@ -293,6 +293,8 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     Cost b1_on_phase= {0, 0, 0, 0};
     for (int i = 0; i < charger_count; ++i) {
         const auto *state = &charger_state[i];
+        // Don't trigger a rotation if the new charger was plugged in less than one alloc ago.
+        // Using last_plug_in is fine here, we don't need the more complicated logic of just_plugged_in.
         bool is_b1 = state->wants_to_charge && phase_allocation[i] == 0 && deadline_elapsed(state->last_plug_in + cfg->allocation_interval);
 
         if (is_b1) {
