@@ -34,7 +34,7 @@ static constexpr auto HEATING_UPDATE_INTERVAL = 1_m;
 
 #define extended_logging(fmt, ...) \
     do { \
-        if (extended_logging_active) { \
+        if (extended_logging) { \
             logger.tracefln(this->trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
         } \
     } while (0)
@@ -44,23 +44,23 @@ void Heating::pre_setup()
     this->trace_buffer_index = logger.alloc_trace_buffer("heating", 1 << 20);
 
     config = ConfigRoot{Config::Object({
-        {"sg_ready_blocking_active_type", Config::Uint(0, 0, 1)},
-        {"sg_ready_extended_active_type", Config::Uint(0, 0, 1)},
-        {"minimum_holding_time", Config::Uint(15, 10, 60)},
+        {"sgr_blocking_type", Config::Uint(0, 0, 1)},
+        {"sgr_extended_type", Config::Uint(0, 0, 1)},
+        {"min_hold_time", Config::Uint(15, 10, 60)},
         {"meter_slot_grid_power", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
         {"control_period", Config::Enum(ControlPeriod::Hours24, ControlPeriod::Hours24, ControlPeriod::Hours4)},
-        {"extended_logging_active", Config::Bool(false)},
-        {"yield_forecast_active", Config::Bool(false)},
+        {"extended_logging", Config::Bool(false)},
+        {"yield_forecast", Config::Bool(false)},
         {"yield_forecast_threshold", Config::Uint(0)},
-        {"extended_active", Config::Bool(false)},
+        {"extended", Config::Bool(false)},
         {"extended_hours", Config::Uint(4, 0, 24)},
-        {"blocking_active", Config::Bool(false)},
+        {"blocking", Config::Bool(false)},
         {"blocking_hours", Config::Uint(0, 0, 24)},
-        {"pv_excess_control_active", Config::Bool(false)},
+        {"pv_excess_control", Config::Bool(false)},
         {"pv_excess_control_threshold", Config::Uint(0)},
-        {"p14enwg_active", Config::Bool(false)},
+        {"p14enwg", Config::Bool(false)},
         {"p14enwg_input", Config::Uint(0, 0, 3)},
-        {"p14enwg_active_type", Config::Uint(0, 0, 1)}
+        {"p14enwg_type", Config::Uint(0, 0, 1)}
     }), [this](Config &update, ConfigSource source) -> String {
         task_scheduler.scheduleOnce([this]() {
             this->update();
@@ -69,10 +69,10 @@ void Heating::pre_setup()
     }};
 
     state = Config::Object({
-        {"sg_ready_blocking_active", Config::Bool(false)},
-        {"sg_ready_extended_active", Config::Bool(false)},
-        {"p14enwg_active", Config::Bool(false)},
-        {"remaining_holding_time", Config::Int(-1, -1, 60)}
+        {"sgr_blocking", Config::Bool(false)},
+        {"sgr_extended", Config::Bool(false)},
+        {"p14enwg", Config::Bool(false)},
+        {"next_update", Config::Uint(0)} // Unix timestamp in minutes, 0 = next update not yet known
     });
 }
 
@@ -99,12 +99,12 @@ void Heating::register_urls()
 
 bool Heating::is_active()
 {
-    const bool extended_active          = config.get("extended_active")->asBool();
-    const bool blocking_active          = config.get("blocking_active")->asBool();
-    const bool pv_excess_control_active = config.get("pv_excess_control_active")->asBool();
-    const bool yield_forecast_active    = config.get("yield_forecast_active")->asBool();
+    const bool extended          = config.get("extended")->asBool();
+    const bool blocking          = config.get("blocking")->asBool();
+    const bool pv_excess_control = config.get("pv_excess_control")->asBool();
+    const bool yield_forecast    = config.get("yield_forecast")->asBool();
 
-    if(!yield_forecast_active && !extended_active && !blocking_active && !pv_excess_control_active) {
+    if(!yield_forecast && !extended && !blocking && !pv_excess_control) {
         return false;
     }
 
@@ -113,20 +113,20 @@ bool Heating::is_active()
 
 bool Heating::is_p14enwg_active()
 {
-    return config.get("p14enwg_active")->asBool();
+    return config.get("p14enwg")->asBool();
 }
 
 Heating::Status Heating::get_status()
 {
-    const bool p14enwg_active          = config.get("p14enwg_active")->asBool();
-    const uint32_t p14enwg_active_type = config.get("p14enwg_active_type")->asUint();
-    const uint32_t sg_ready0_type      = config.get("sg_ready_blocking_active_type")->asUint();
-    const uint32_t sg_ready1_type      = config.get("sg_ready_extended_active_type")->asUint();
-    const bool sg_ready_output_0       = em_v2.get_sg_ready_output(0);
-    const bool sg_ready_output_1       = em_v2.get_sg_ready_output(1);
-    const bool sg_ready0_on            = sg_ready_output_0 == (sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
-    const bool sg_ready1_on            = sg_ready_output_1 == (sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED);
-    const bool p14_enwg_on             = p14enwg_active && (sg_ready_output_0 == (p14enwg_active_type == HEATING_SG_READY_ACTIVE_CLOSED));
+    const bool p14enwg            = config.get("p14enwg")->asBool();
+    const uint32_t p14enwg_type   = config.get("p14enwg_type")->asUint();
+    const uint32_t sg_ready0_type = config.get("sgr_blocking_type")->asUint();
+    const uint32_t sg_ready1_type = config.get("sgr_extended_type")->asUint();
+    const bool sg_ready_output_0  = em_v2.get_sg_ready_output(0);
+    const bool sg_ready_output_1  = em_v2.get_sg_ready_output(1);
+    const bool sg_ready0_on       = sg_ready_output_0 == (sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
+    const bool sg_ready1_on       = sg_ready_output_1 == (sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED);
+    const bool p14_enwg_on        = p14enwg && (sg_ready_output_0 == (p14enwg_type == HEATING_SG_READY_ACTIVE_CLOSED));
 
     if(p14_enwg_on) {
         return Status::BlockingP14;
@@ -141,28 +141,28 @@ Heating::Status Heating::get_status()
 
 void Heating::update()
 {
-    const bool extended_logging_active = config.get("extended_logging_active")->asBool();
+    const bool extended_logging = config.get("extended_logging")->asBool();
     // Only update if clock is synced. Heating control depends on time of day.
     struct timeval tv_now;
     if (!rtc.clock_synced(&tv_now)) {
-        state.get("remaining_holding_time")->updateInt(-1);
+        state.get("next_update")->updateUint(0);
         extended_logging("Clock not synced. Skipping update.");
         return;
     }
 
     // TODO: Does §14 EnWG need a smaller update interval or is it enough to check it every minute?
-    const bool     p14enwg_active      = config.get("p14enwg_active")->asBool();
-    const uint32_t p14enwg_input       = config.get("p14enwg_input")->asUint();
-    const uint32_t p14enwg_active_type = config.get("p14enwg_active_type")->asUint();
-    const uint32_t sg_ready0_type      = config.get("sg_ready_blocking_active_type")->asUint();
-    const uint32_t sg_ready1_type      = config.get("sg_ready_extended_active_type")->asUint();
+    const bool     p14enwg        = config.get("p14enwg")->asBool();
+    const uint32_t p14enwg_input  = config.get("p14enwg_input")->asUint();
+    const uint32_t p14enwg_type   = config.get("p14enwg_type")->asUint();
+    const uint32_t sg_ready0_type = config.get("sgr_blocking_type")->asUint();
+    const uint32_t sg_ready1_type = config.get("sgr_extended_type")->asUint();
 
     // Check if §14 EnWG should be turned on
     bool p14enwg_on = false;
-    if(p14enwg_active) {
+    if(p14enwg) {
         bool input_value = em_v2.get_input(p14enwg_input);
 
-        if (p14enwg_active_type == 0) {
+        if (p14enwg_type == 0) {
             p14enwg_on = input_value;
         } else {
             p14enwg_on = !input_value;
@@ -172,45 +172,49 @@ void Heating::update()
     // If p14enwg is triggered, we immediately set output 0 accordingly.
     // If it is not triggered it depends on the heating controller if it should be on or off.
     if (p14enwg_on) {
-        state.get("p14enwg_active")->updateBool(true);
+        state.get("p14enwg")->updateBool(true);
         extended_logging("§14 EnWG blocks heating. Turning on SG ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         em_v2.set_sg_ready_output(0, sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
     } else {
-        state.get("p14enwg_active")->updateBool(false);
+        state.get("p14enwg")->updateBool(false);
     }
 
     // Get values from config
-    const uint8_t minimum_holding_time = config.get("minimum_holding_time")->asUint();
+    const uint8_t min_hold_time = config.get("min_hold_time")->asUint();
     const uint32_t minutes = rtc.timestamp_minutes();
     uint32_t remaining_holding_time = 0;
     if (minutes >= last_sg_ready_change) {
         uint32_t time_since_last_change = minutes - last_sg_ready_change;
-        if(time_since_last_change < minimum_holding_time) {
-            remaining_holding_time = minimum_holding_time - time_since_last_change;
+        if(time_since_last_change < min_hold_time) {
+            remaining_holding_time = min_hold_time - time_since_last_change;
         }
     }
-    state.get("remaining_holding_time")->updateInt(remaining_holding_time);
+
+    if (state.get("next_update")->asUint() == 0) {
+        state.get("next_update")->updateUint(rtc.timestamp_minutes() + remaining_holding_time);
+        return;
+    }
 
     if (remaining_holding_time > 0) {
-        extended_logging("Minimum control holding time not reached. Current time: %dmin, last change: %dmin, minimum holding time: %dmin.", minutes, last_sg_ready_change, minimum_holding_time);
+        extended_logging("Minimum control holding time not reached. Current time: %dmin, last change: %dmin, minimum holding time: %dmin.", minutes, last_sg_ready_change, min_hold_time);
         return;
     }
 
     const uint32_t meter_slot_grid_power       = config.get("meter_slot_grid_power")->asUint();
-    const bool     yield_forecast_active       = config.get("yield_forecast_active")->asBool();
+    const bool     yield_forecast              = config.get("yield_forecast")->asBool();
     const uint32_t yield_forecast_threshold    = config.get("yield_forecast_threshold")->asUint();
-    const bool     extended_active             = config.get("extended_active")->asBool();
+    const bool     extended                    = config.get("extended")->asBool();
     const uint32_t extended_hours              = config.get("extended_hours")->asUint();
-    const bool     blocking_active             = config.get("blocking_active")->asBool();
+    const bool     blocking                    = config.get("blocking")->asBool();
     const uint32_t blocking_hours              = config.get("blocking_hours")->asUint();
-    const bool     pv_excess_control_active    = config.get("pv_excess_control_active")->asBool();
+    const bool     pv_excess_control           = config.get("pv_excess_control")->asBool();
     const uint32_t pv_excess_control_threshold = config.get("pv_excess_control_threshold")->asUint();
     const ControlPeriod control_period         = config.get("control_period")->asEnum<ControlPeriod>();
 
     bool sg_ready0_on = false;
     bool sg_ready1_on = false;
 
-    if(!yield_forecast_active && !extended_active && !blocking_active && !pv_excess_control_active) {
+    if(!yield_forecast && !extended && !blocking && !pv_excess_control) {
         extended_logging("No control active.");
     } else {
         const time_t now                      = time(NULL);
@@ -223,7 +227,7 @@ void Heating::update()
 
         // PV excess handling for winter and summer
         auto handle_pv_excess = [&] () {
-            if (!pv_excess_control_active) {
+            if (!pv_excess_control) {
                 return;
             }
             float watt_current = 0;
@@ -238,7 +242,7 @@ void Heating::update()
 
         // Dynamic price handling for winter and summer
         auto handle_dynamic_price = [&] (const bool handle_extended, const bool handle_blocking) {
-            if (!extended_active && !blocking_active) {
+            if (!extended && !blocking) {
                 return;
             }
 
@@ -316,7 +320,7 @@ void Heating::update()
 
         auto is_expected_yield_high = [&] () {
             // we check the expected pv excess and unblock if it is below the threshold.
-            if (!yield_forecast_active) {
+            if (!yield_forecast) {
                 extended_logging("Yield forecast is inactive.");
                 return false;
             }
@@ -341,9 +345,9 @@ void Heating::update()
         const bool pv_yield_high = is_expected_yield_high();
         if (pv_yield_high) {
             extended_logging("Day ahead prices are ignored for cheap hours because of expected PV yield.");
-            handle_dynamic_price(false, blocking_active);
+            handle_dynamic_price(false, blocking);
         } else {
-            handle_dynamic_price(extended_active, blocking_active);
+            handle_dynamic_price(extended, blocking);
         }
         handle_pv_excess();
     }
@@ -359,22 +363,22 @@ void Heating::update()
 
     const bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
     if (sg_ready1_on) {
-        state.get("sg_ready_extended_active")->updateBool(true);
+        state.get("sgr_extended")->updateBool(true);
         extended_logging("Heating decision: Turning on SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         const bool new_value = sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED;
         if (sg_ready_output_1 != new_value) {
             em_v2.set_sg_ready_output(1, new_value);
             last_sg_ready_change = rtc.timestamp_minutes();
-            state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asUint());
+            state.get("next_update")->updateUint(last_sg_ready_change + config.get("min_hold_time")->asUint());
         }
     } else {
-        state.get("sg_ready_extended_active")->updateBool(false);
+        state.get("sgr_extended")->updateBool(false);
         extended_logging("Heating decision: Turning off SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         const bool new_value = sg_ready1_type != HEATING_SG_READY_ACTIVE_CLOSED;
         if (sg_ready_output_1 != new_value) {
             em_v2.set_sg_ready_output(1, new_value);
             last_sg_ready_change = rtc.timestamp_minutes();
-            state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asUint());
+            state.get("next_update")->updateUint(last_sg_ready_change + config.get("min_hold_time")->asUint());
         }
     }
 
@@ -382,22 +386,22 @@ void Heating::update()
     if (!p14enwg_on) {
         const bool sg_ready_output_0 = em_v2.get_sg_ready_output(0);
         if (sg_ready0_on) {
-            state.get("sg_ready_blocking_active")->updateBool(true);
+            state.get("sgr_blocking")->updateBool(true);
             extended_logging("Heating decision: Turning on SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
             const bool new_value = sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED;
             if (sg_ready_output_0 != new_value) {
                 em_v2.set_sg_ready_output(0, new_value);
                 last_sg_ready_change = rtc.timestamp_minutes();
-                state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asUint());
+                state.get("next_update")->updateUint(last_sg_ready_change + config.get("min_hold_time")->asUint());
             }
         } else {
-            state.get("sg_ready_blocking_active")->updateBool(false);
+            state.get("sgr_blocking")->updateBool(false);
             extended_logging("Heating decision: Turning off SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
             const bool new_value = sg_ready0_type != HEATING_SG_READY_ACTIVE_CLOSED;
             if (sg_ready_output_0 != new_value) {
                 em_v2.set_sg_ready_output(0, new_value);
                 last_sg_ready_change = rtc.timestamp_minutes();
-                state.get("remaining_holding_time")->updateInt(config.get("minimum_holding_time")->asUint());
+                state.get("next_update")->updateUint(last_sg_ready_change + config.get("min_hold_time")->asUint());
             }
         }
     }

@@ -678,8 +678,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             this.update_current_daily_cache();
 
             this.setState({
-                sg_ready1_active_type: config.sg_ready_blocking_active_type,
-                sg_ready2_active_type: config.sg_ready_extended_active_type
+                sg_ready1_active_type: config.sgr_blocking_type,
+                sg_ready2_active_type: config.sgr_extended_type
             });
         });
     }

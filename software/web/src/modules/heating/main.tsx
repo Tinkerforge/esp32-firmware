@@ -146,7 +146,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
         let blocking_hours = this.state.blocking_hours
 
         const control_period_hours = this.get_control_period_hours();
-        if (this.state.extended_active && this.state.blocking_active) {
+        if (this.state.extended && this.state.blocking) {
             if (blocking_hours + extended_hours > control_period_hours) {
                 this.setState({blocking_hours: Math.max(0, control_period_hours - extended_hours)});
                 blocking_hours = Math.max(0, control_period_hours - extended_hours);
@@ -155,12 +155,12 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     extended_hours = control_period_hours;
                 }
             }
-        } else if (this.state.extended_active) {
+        } else if (this.state.extended) {
             if (this.state.extended_hours > control_period_hours) {
                 this.setState({extended_hours: control_period_hours});
                 extended_hours = control_period_hours;
             }
-        } else if (this.state.blocking_active) {
+        } else if (this.state.blocking) {
             if (this.state.blocking_hours > control_period_hours) {
                 this.setState({blocking_hours: control_period_hours});
                 blocking_hours = control_period_hours;
@@ -208,8 +208,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
             const solar_forecast_threshold = this.state.yield_forecast_threshold;
             const hour_multiplier = 60/resolution_multiplier;
             const num_per_day     = 24*hour_multiplier;
-            const extended        = this.state.extended_active ? extended_hours*hour_multiplier : 0;
-            const blocking        = this.state.blocking_active ? blocking_hours*hour_multiplier : 0;
+            const extended        = this.state.extended ? extended_hours*hour_multiplier : 0;
+            const blocking        = this.state.blocking ? blocking_hours*hour_multiplier : 0;
 
             let num_per_period = 0;
             switch(this.state.control_period) {
@@ -286,12 +286,15 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
         const meter_available          = meter_slots.length > 0;
 
         function get_remaining_minutes() {
-            if (state.heating_state.remaining_holding_time == -1) {
+            if (state.heating_state.next_update == 0) {
                 return __("util.not_yet_known");
-            } else if (state.heating_state.remaining_holding_time == 1) {
-                return "1 " + __("heating.content.minute");
             } else {
-                return state.heating_state.remaining_holding_time + " " + __("heating.content.minutes");
+                const remaining_holding_time = Math.round(Math.max(0, state.heating_state.next_update - util.get_date_now_1m_update_rate() / 60000));
+                if (remaining_holding_time == 1) {
+                    return "1 " + __("heating.content.minute");
+                } else {
+                    return remaining_holding_time + " " + __("heating.content.minutes");
+                }
             }
         }
 
@@ -315,8 +318,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     <FormRow label={__("heating.content.minimum_holding_time")} label_muted={__("heating.content.minimum_holding_time_muted")}>
                         <InputNumber
                             unit={__("heating.content.minutes")}
-                            value={state.minimum_holding_time}
-                            onValue={this.set("minimum_holding_time")}
+                            value={state.min_hold_time}
+                            onValue={this.set("min_hold_time")}
                             min={10}
                             max={60}
                         />
@@ -341,8 +344,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                 ["0", __("heating.content.closed")],
                                 ["1", __("heating.content.opened")]
                             ]}
-                            value={state.sg_ready_blocking_active_type}
-                            onValue={(v) => this.setState({sg_ready_blocking_active_type: parseInt(v)})}
+                            value={state.sgr_blocking_type}
+                            onValue={(v) => this.setState({sgr_blocking_type: parseInt(v)})}
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.sg_ready_output") + " 2"} label_muted={__("heating.content.sg_ready_output2_muted")} help={__("heating.content.sg_ready_output2_help")}>
@@ -351,8 +354,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                 ["0", __("heating.content.closed")],
                                 ["1", __("heating.content.opened")]
                             ]}
-                            value={state.sg_ready_extended_active_type}
-                            onValue={(v) => this.setState({sg_ready_extended_active_type: parseInt(v)})}
+                            value={state.sgr_extended_type}
+                            onValue={(v) => this.setState({sgr_extended_type: parseInt(v)})}
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.control_period")} label_muted={__("heating.content.control_period_muted")} help={__("heating.content.control_period_help")}>
@@ -370,8 +373,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     </FormRow>
                     <FormRow label={__("heating.content.extended_logging")} label_muted={__("heating.content.extended_logging_description")}>
                         <Switch desc={__("heating.content.extended_logging_enabled")}
-                                checked={state.extended_logging_active}
-                                onClick={this.toggle('extended_logging_active')}
+                                checked={state.extended_logging}
+                                onClick={this.toggle('extended_logging')}
                         />
                     </FormRow>
                     <FormSeparator heading={__("heating.content.extended_operation")} help={__("heating.content.extended_operation_help")}/>
@@ -383,8 +386,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.watt")}
-                            checked={state.pv_excess_control_active && meter_available}
-                            onClick={this.toggle('pv_excess_control_active')}
+                            checked={state.pv_excess_control && meter_available}
+                            onClick={this.toggle('pv_excess_control')}
                             value={state.pv_excess_control_threshold}
                             onValue={this.set("pv_excess_control_threshold")}
                             min={0}
@@ -403,8 +406,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
-                            checked={state.extended_active && day_ahead_prices_enabled}
-                            onClick={this.toggle('extended_active', this.update_uplot)}
+                            checked={state.extended && day_ahead_prices_enabled}
+                            onClick={this.toggle('extended', this.update_uplot)}
                             value={state.extended_hours}
                             onValue={(v) => {this.setState({extended_hours: v}, this.update_uplot)}}
                             min={0}
@@ -418,12 +421,12 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     <FormRow label={__("heating.content.pv_yield_forecast")}
                              help={!solar_forecast_enabled && __("heating.content.solar_forecast_needs_activation")}>
                         <SwitchableInputNumber
-                            disabled={!solar_forecast_enabled || !state.extended_active}
+                            disabled={!solar_forecast_enabled || !state.extended}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.kwh_per_day")}
-                            checked={state.yield_forecast_active && state.extended_active && solar_forecast_enabled}
-                            onClick={this.toggle('yield_forecast_active', this.update_uplot)}
+                            checked={state.yield_forecast && state.extended && solar_forecast_enabled}
+                            onClick={this.toggle('yield_forecast', this.update_uplot)}
                             value={state.yield_forecast_threshold}
                             onValue={this.set("yield_forecast_threshold", this.update_uplot)}
                             min={0}
@@ -439,8 +442,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
-                            checked={state.blocking_active && day_ahead_prices_enabled}
-                            onClick={this.toggle('blocking_active', this.update_uplot)}
+                            checked={state.blocking && day_ahead_prices_enabled}
+                            onClick={this.toggle('blocking', this.update_uplot)}
                             value={state.blocking_hours}
                             onValue={(v) => {this.setState({blocking_hours: v}, this.update_uplot)}}
                             min={0}
@@ -528,7 +531,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 1"}</span></div>
                                     <InputText
-                                        value={state.heating_state.sg_ready_blocking_active ? __("heating.content.active") : __("heating.content.inactive")}
+                                        value={state.heating_state.sgr_blocking ? __("heating.content.active") : __("heating.content.inactive")}
                                     />
                                 </div>
                             </div>
@@ -536,7 +539,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                 <div class="input-group">
                                     <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 2"}</span></div>
                                     <InputText
-                                        value={state.heating_state.sg_ready_extended_active ? __("heating.content.active") : __("heating.content.inactive")}
+                                        value={state.heating_state.sgr_extended ? __("heating.content.active") : __("heating.content.inactive")}
                                     />
                                 </div>
                             </div>
@@ -546,8 +549,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     <FormSeparator heading={__("heating.content.p14_enwg")} help={__("heating.content.p14_enwg_help")}/>
                     <FormRow label={__("heating.content.p14_enwg")}>
                         <Switch desc={__("heating.content.p14_enwg_control_enabled")}
-                                checked={state.p14enwg_active}
-                                onClick={this.toggle('p14enwg_active')}
+                                checked={state.p14enwg}
+                                onClick={this.toggle('p14enwg')}
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.input")}>
@@ -568,8 +571,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                 ["0", __("heating.content.closed")],
                                 ["1", __("heating.content.opened")]
                             ]}
-                            value={state.p14enwg_active_type}
-                            onValue={(v) => this.setState({p14enwg_active_type: parseInt(v)})}
+                            value={state.p14enwg_type}
+                            onValue={(v) => this.setState({p14enwg_type: parseInt(v)})}
                         />
                     </FormRow>
                 </ConfigForm>
@@ -594,7 +597,7 @@ export class HeatingStatus extends Component
                         <div class="input-group">
                             <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.blocked")}</span></div>
                             <InputText
-                                value={state.sg_ready_blocking_active ? __("heating.content.active") : __("heating.content.inactive")}
+                                value={state.sgr_blocking ? __("heating.content.active") : __("heating.content.inactive")}
                             />
                         </div>
                     </div>
@@ -602,7 +605,7 @@ export class HeatingStatus extends Component
                         <div class="input-group">
                             <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.extended")}</span></div>
                             <InputText
-                                value={state.sg_ready_extended_active ? __("heating.content.active") : __("heating.content.inactive")}
+                                value={state.sgr_extended ? __("heating.content.active") : __("heating.content.inactive")}
                             />
                         </div>
                     </div>
