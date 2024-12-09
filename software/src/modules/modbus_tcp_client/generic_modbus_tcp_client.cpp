@@ -76,17 +76,25 @@ void GenericModbusTCPClient::read_next()
     uint16_t read_start_address = static_cast<uint16_t>(generic_read_request.start_address + registers_done_count);
     uint16_t registers_remaining = static_cast<uint16_t>(generic_read_request.register_count - registers_done_count);
     uint16_t read_count = registers_remaining < read_block_size ? registers_remaining : read_block_size;
-    TFModbusTCPDataType data_type;
+    TFModbusTCPFunctionCode function_code;
 
     switch (generic_read_request.register_type) {
-    case ModbusRegisterType::HoldingRegister: data_type = TFModbusTCPDataType::HoldingRegister; break;
-    case ModbusRegisterType::InputRegister:   data_type = TFModbusTCPDataType::InputRegister;   break;
+    case ModbusRegisterType::HoldingRegister:
+        function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
+        break;
+
+    case ModbusRegisterType::InputRegister:
+        function_code = TFModbusTCPFunctionCode::ReadInputRegisters;
+        break;
+
+    case ModbusRegisterType::Coil:
+    case ModbusRegisterType::DiscreteInput:
     default:
         esp_system_abort("generic_modbus_tcp_client: Unsupported register type to read.");
     }
 
-    static_cast<TFModbusTCPSharedClient *>(connected_client)->read(data_type, device_address, read_start_address, read_count, target_buffer, 2_s,
-    [this, data_type, read_start_address, read_count](TFModbusTCPClientTransactionResult result) {
+    static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(device_address, function_code, read_start_address, read_count, target_buffer, 2_s,
+    [this, function_code, read_start_address, read_count](TFModbusTCPClientTransactionResult result) {
         if (last_read_result == result) {
             ++last_read_result_burst_length;
         }
@@ -98,11 +106,11 @@ void GenericModbusTCPClient::read_next()
         if (result != TFModbusTCPClientTransactionResult::Success) {
             if (result != TFModbusTCPClientTransactionResult::Timeout || (last_read_result_burst_length % 10) == 0) {
                 logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                         "Modbus read error (host='%s' port=%u dtype=%d devaddr=%u regaddr=%u regcnt=%u burstlen=%zu): %s (%d)",
+                                         "Modbus read error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u regcnt=%u burstlen=%zu): %s (%d)",
                                          host_name.c_str(),
                                          port,
-                                         static_cast<int>(data_type),
                                          device_address,
+                                         static_cast<int>(function_code),
                                          read_start_address,
                                          read_count,
                                          last_read_result_burst_length,

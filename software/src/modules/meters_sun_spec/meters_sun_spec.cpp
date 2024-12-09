@@ -342,12 +342,12 @@ void MetersSunSpec::loop()
 
             scan_state = ScanState::Reading;
 
-            client.read(TFModbusTCPDataType::HoldingRegister,
-                        scan_device_address,
-                        static_cast<uint16_t>(scan_read_address),
-                        static_cast<uint16_t>(read_chunk_size),
-                        &scan_read_buffer[scan_read_index],
-                        scan_read_timeout,
+            client.transact(scan_device_address,
+                            TFModbusTCPFunctionCode::ReadHoldingRegisters,
+                            static_cast<uint16_t>(scan_read_address),
+                            static_cast<uint16_t>(read_chunk_size),
+                            &scan_read_buffer[scan_read_index],
+                            scan_read_timeout,
             [this, cookie, read_chunk_size](TFModbusTCPClientTransactionResult result) {
                 if (scan_state != ScanState::Reading || cookie != scan_read_cookie) {
                     return;
