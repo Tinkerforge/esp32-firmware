@@ -157,7 +157,7 @@ void MeterRCTPower::read_next()
                 checksum_mismatch->updateUint(checksum_mismatch->asUint() + 1);
             }
             else {
-                logger.printfln("Error reading ID 0x%08u: %s [%d]",
+                logger.printfln("Error reading ID 0x%08x: %s [%d]",
                                 value_specs[value_specs_index].id,
                                 get_rct_power_client_transaction_result_name(result),
                                 static_cast<int>(result));
