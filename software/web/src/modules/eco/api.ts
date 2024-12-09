@@ -4,26 +4,26 @@ interface ChargerState {
 }
 
 export interface config {
-    charge_plan_active: boolean;
-    mode_after_charge_plan: number;
-    service_life_active: boolean;
-    service_life: number;
-    charge_below_active: boolean;
-    charge_below: number;
-    block_above_active: boolean;
-    block_above: number;
-    yield_forecast_active: boolean;
-    yield_forecast: number;
+    enable: boolean;
+    mode_after: number;
+    park_time: boolean;
+    park_time_duration: number;
+    charge_below: boolean;
+    charge_below_threshold: number;
+    block_above: boolean;
+    block_above_threshold: number;
+    yield_forecast: boolean;
+    yield_forecast_threshold: number;
 }
 
 export interface charge_plan {
-    enabled: boolean;
+    enable: boolean;
     departure: number;
     time: number;
     amount: number;
 }
 
 export interface state {
-    last_charge_plan_save: number;
+    last_save: number;
     chargers: ChargerState[],
 }

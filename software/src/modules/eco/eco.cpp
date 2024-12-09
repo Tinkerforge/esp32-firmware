@@ -31,16 +31,16 @@ void Eco::pre_setup()
     this->trace_buffer_index = logger.alloc_trace_buffer("eco", 1 << 20);
 
     config = ConfigRoot{Config::Object({
-        {"charge_plan_active", Config::Bool(false)},
-        {"mode_after_charge_plan", Config::Uint(3, 0, 3)},
-        {"service_life_active", Config::Bool(false)},
-        {"service_life", Config::Uint(8)},
-        {"charge_below_active", Config::Bool(false)},
-        {"charge_below", Config::Int32(0)}, // in ct
-        {"block_above_active", Config::Bool(false)},
-        {"block_above", Config::Int32(20)}, // in ct
-        {"yield_forecast_active", Config::Bool(false)},
-        {"yield_forecast", Config::Uint(0)} // in kWh/day
+        {"enable", Config::Bool(false)},
+        {"mode_after", Config::Uint(3, 0, 3)},
+        {"park_time", Config::Bool(false)},
+        {"park_time_duration", Config::Uint(8)},
+        {"charge_below", Config::Bool(false)},
+        {"charge_below_threshold", Config::Int32(0)}, // in ct
+        {"block_above", Config::Bool(false)},
+        {"block_above_threshold", Config::Int32(20)}, // in ct
+        {"yield_forecast", Config::Bool(false)},
+        {"yield_forecast_threshold", Config::Uint(0)} // in kWh/day
     }), [this](Config &update, ConfigSource source) -> String {
         task_scheduler.scheduleOnce([this]() {
             this->update();
@@ -49,9 +49,9 @@ void Eco::pre_setup()
     }};
 
     charge_plan = Config::Object({
-        {"enabled",Config::Bool(false)},
+        {"enable",Config::Bool(false)},
         {"departure", Config::Enum(Departure::Tomorrow, Departure::Today, Departure::Daily)},
-        {"time", Config::Int(8*60)}, // localtime in minutes since 00:00
+        {"time", Config::Uint(8*60, 0, 24*60)}, // localtime in minutes since 00:00
         {"amount", Config::Uint(4)}  // h or kWh depending on configuration (currently only h supported)
     });
     charge_plan_update = charge_plan;
@@ -62,7 +62,7 @@ void Eco::pre_setup()
     });
 
     state = Config::Object({
-        {"last_charge_plan_save", Config::Uint(0)},
+        {"last_save", Config::Uint(0)},
         {"chargers", Config::Array(
             {},
             &state_chargers_prototype,
@@ -94,7 +94,7 @@ void Eco::register_urls()
     api.addState("eco/charge_plan", &charge_plan);
     api.addCommand("eco/charge_plan_update", &charge_plan_update, {}, [this](String &/*errmsg*/) {
         charge_plan = charge_plan_update;
-        state.get("last_charge_plan_save")->updateUint(rtc.timestamp_minutes());
+        state.get("last_save")->updateUint(rtc.timestamp_minutes());
         update();
     }, false);
 
@@ -140,8 +140,8 @@ void Eco::update()
     }
 
     // Check for price below "charge below" threshold
-    if (config.get("charge_below_active")->asBool()) {
-        const int32_t charge_below = config.get("charge_below")->asInt()*1000; // *1000 since the current price is in ct/1000
+    if (config.get("charge_below")->asBool()) {
+        const int32_t charge_below = config.get("charge_below_threshold")->asInt()*1000; // *1000 since the current price is in ct/1000
         if (current_price < charge_below) {
             std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Fast);
             return;
@@ -149,15 +149,15 @@ void Eco::update()
     }
 
     // Check for price above "block above" threshold
-    if (config.get("block_above_active")->asBool()) {
-        const int32_t block_above = config.get("block_above")->asInt()*1000; // *1000 since the current price is in ct/1000
+    if (config.get("block_above")->asBool()) {
+        const int32_t block_above = config.get("block_above_threshold")->asInt()*1000; // *1000 since the current price is in ct/1000
         if (current_price > block_above) {
             std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
             return;
         }
     }
 
-    if (config.get("charge_plan_active")->asBool() && charge_plan.get("enabled")->asBool()) {
+    if (config.get("enable")->asBool() && charge_plan.get("enable")->asBool()) {
         // Currently we assume that the amount is in hours, later we may add support for kWh
         const uint32_t hours_desired      = charge_plan.get("amount")->asUint();
         const Departure departure         = charge_plan.get("departure")->asEnum<Departure>();
@@ -172,7 +172,7 @@ void Eco::update()
         }
         const uint32_t today_midnight     = midnight / 60;
 
-        const uint32_t time               = charge_plan.get("time")->asInt();
+        const uint32_t time               = charge_plan.get("time")->asUint();
         const uint32_t minutes_add        = (((departure == Departure::Today) || (departure == Departure::Daily)) ? 0 : 24*60) + time;
               uint32_t end_time           = (departure == Departure::Daily) ? (today_midnight + minutes_add) : (save_time_midnight + minutes_add);
         const uint32_t current_time       = rtc.timestamp_minutes();
@@ -214,8 +214,8 @@ void Eco::update()
             }
 
             // Check if pv yield forecast is above threshold (we don't want to fast charge if we expect high solar yield)
-            if (config.get("yield_forecast_active")->asBool()) {
-                const uint32_t kwh_threshold = config.get("yield_forecast")->asUint();
+            if (config.get("yield_forecast")->asBool()) {
+                const uint32_t kwh_threshold = config.get("yield_forecast_threshold")->asUint();
                 if (kwh_threshold > 0) {
                     auto wh_expected = solar_forecast.get_wh_range(start_time, end_time);
                     if (wh_expected.is_none()) {
@@ -246,7 +246,7 @@ void Eco::update()
 
 void Eco::disable_charge_plan()
 {
-    charge_plan.get("enabled")->updateBool(false);
+    charge_plan.get("enable")->updateBool(false);
 }
 
 Eco::ChargeDecision Eco::get_charge_decision(const uint8_t charger_id)

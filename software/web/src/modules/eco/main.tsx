@@ -38,6 +38,7 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
 import { Departure } from "./departure.enum";
+import { Resolution} from "../day_ahead_prices/resolution.enum";
 
 export function EcoNavbar() {
     return (
@@ -87,33 +88,33 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                     <FormRow label="Ladeplanung aktivieren" help="">
                         <Switch desc="Die Ladeplanung kann auf der Startseite im Modus Eco+PV aktiviert werden."
                             disabled={!day_ahead_prices_enabled}
-                            checked={state.charge_plan_active && day_ahead_prices_enabled}
-                            onClick={this.toggle('charge_plan_active')}
+                            checked={state.enable && day_ahead_prices_enabled}
+                            onClick={this.toggle('enable')}
                         />
                     </FormRow>
                     <FormRow label="Modus nach Ablauf des Ladeplans">
                         <InputSelect
-                            disabled={!day_ahead_prices_enabled || !state.charge_plan_active}
+                            disabled={!day_ahead_prices_enabled || !state.enable}
                             items={[
                                 ["0", "Schnell"],
                                 ["1", "Eco+PV"],
                                 ["2", "PV"],
                                 ["3", "Aus"],
                             ]}
-                            value={state.mode_after_charge_plan}
-                            onValue={(v) => this.setState({mode_after_charge_plan: parseInt(v)})}
+                            value={state.mode_after}
+                            onValue={(v) => this.setState({mode_after: parseInt(v)})}
                         />
                     </FormRow>
                     <FormRow label="Maximale Standzeit" help="">
                         <SwitchableInputNumber
-                            disabled={!day_ahead_prices_enabled || !state.charge_plan_active}
+                            disabled={!day_ahead_prices_enabled || !state.enable}
                             switch_label_active={__("eco.content.active")}
                             switch_label_inactive={__("eco.content.inactive")}
                             unit="h"
-                            checked={state.service_life_active && day_ahead_prices_enabled && state.charge_plan_active}
-                            onClick={this.toggle('service_life_active')}
-                            value={state.service_life}
-                            onValue={this.set("service_life")}
+                            checked={state.park_time && day_ahead_prices_enabled && state.enable}
+                            onClick={this.toggle('park_time')}
+                            value={state.park_time_duration}
+                            onValue={this.set("park_time_duration")}
                             min={1}
                             max={48}
                             switch_label_min_width="100px"
@@ -125,10 +126,10 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             switch_label_active={__("eco.content.active")}
                             switch_label_inactive={__("eco.content.inactive")}
                             unit="ct"
-                            checked={state.charge_below_active && day_ahead_prices_enabled}
-                            onClick={this.toggle('charge_below_active')}
-                            value={state.charge_below}
-                            onValue={this.set("charge_below")}
+                            checked={state.charge_below && day_ahead_prices_enabled}
+                            onClick={this.toggle('charge_below')}
+                            value={state.charge_below_threshold}
+                            onValue={this.set("charge_below_threshold")}
                             min={-100}
                             max={5000}
                             switch_label_min_width="100px"
@@ -140,10 +141,10 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             switch_label_active={__("eco.content.active")}
                             switch_label_inactive={__("eco.content.inactive")}
                             unit="ct"
-                            checked={state.block_above_active && day_ahead_prices_enabled}
-                            onClick={this.toggle('block_above_active')}
-                            value={state.block_above}
-                            onValue={this.set("block_above")}
+                            checked={state.block_above && day_ahead_prices_enabled}
+                            onClick={this.toggle('block_above')}
+                            value={state.block_above_threshold}
+                            onValue={this.set("block_above_threshold")}
                             min={-100}
                             max={5000}
                             switch_label_min_width="100px"
@@ -155,10 +156,10 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             switch_label_active={__("eco.content.active")}
                             switch_label_inactive={__("eco.content.inactive")}
                             unit={"kWh/Tag"}
-                            checked={state.yield_forecast_active && solar_forecast_enabled}
-                            onClick={this.toggle('yield_forecast_active')}
-                            value={state.yield_forecast}
-                            onValue={this.set("yield_forecast")}
+                            checked={state.yield_forecast && solar_forecast_enabled}
+                            onClick={this.toggle('yield_forecast')}
+                            value={state.yield_forecast_threshold}
+                            onValue={this.set("yield_forecast_threshold")}
                             min={0}
                             max={1000}
                             switch_label_min_width="100px"
@@ -245,8 +246,8 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                 default_visibilty: [null, true],
                 lines_vertical: []
             }
-            const resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60
-            const hour_multiplier       = dap_prices.resolution == 0 ? 4  : 1
+            const resolution_multiplier = dap_prices.resolution == Resolution.Min15 ? 15 : 60
+            const hour_multiplier       = dap_prices.resolution == Resolution.Min15 ? 4  : 1
             const grid_costs_and_taxes_and_supplier_markup = dap_config.grid_costs_and_taxes / 1000.0 + dap_config.supplier_markup / 1000.0;
             for (let i = 0; i < dap_prices.prices.length; i++) {
                 data.values[0].push(dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
@@ -257,8 +258,8 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             data.values[1].push(get_price_from_index(dap_prices.prices.length - 1) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
             console.log(data);
 
-            const last_save = this.state.state.last_charge_plan_save;
-            const enabled   = this.state.charge_plan.enabled;
+            const last_save = this.state.state.last_save;
+            const enabled   = this.state.charge_plan.enable;
             const hours     = this.state.charge_plan.amount;
             const departure  = this.state.charge_plan.departure;
             const time      = this.state.charge_plan.time;
@@ -296,7 +297,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             }
 
             // Add vertical line at current time
-            /*const resolution_divisor = dap_prices.resolution == 0 ? 15 : 60;
+            /*const resolution_divisor = dap_prices.resolution == Resolution.Min15 ? 15 : 60;
             const diff = Math.floor(util.get_date_now_1m_update_rate() / 60000) - dap_prices.first_date;
             const index = Math.floor(diff / resolution_divisor);
             data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now"), 'color': [64, 64, 64, 0.2]});*/
@@ -332,7 +333,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                 day = "täglich bis";
             }
 
-            const active = state.charge_plan.enabled ? "aktiv" : "nicht aktiv";
+            const active = state.charge_plan.enable ? "aktiv" : "nicht aktiv";
             const time = this.get_date_from_minutes(state.charge_plan.time).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
             return `Aktueller Ladeplan: Nutze die günstigsten ${state.charge_plan.amount} Stunden ${day} ${time} Uhr. Der Ladeplan ist ${active}.`;
         };
@@ -343,7 +344,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                     <div class="input-group">
                         <div class="input-group-prepend"><span class="eco-fixed-size input-group-text">Abfahrt</span></div>
                         <InputSelect
-                            disabled={state.charge_plan.enabled}
+                            disabled={state.charge_plan.enable}
                             items={[
                                 ["0", "Heute"],
                                 ["1", "Morgen"],
@@ -353,7 +354,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                             onValue={(v) => this.setState({charge_plan: {...state.charge_plan, departure: parseInt(v)}}, () => this.update_charge_plan({...state.charge_plan, departure: parseInt(v)}))}
                         />
                         <InputTime
-                            disabled={state.charge_plan.enabled}
+                            disabled={state.charge_plan.enable}
                             date={this.get_date_from_minutes(state.charge_plan.time)}
                             showSeconds={false}
                             onDate={(d: Date) => this.setState({charge_plan: {...state.charge_plan, time: this.get_minutes_from_date(d)}}, () => this.update_charge_plan({...state.charge_plan, time: this.get_minutes_from_date(d)}))}
@@ -364,7 +365,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                     <div class="input-group flex-nowrap">
                         <div class="input-group-prepend"><span class="eco-fixed-size input-group-text">Ladedauer</span></div>
                         <InputNumber
-                            disabled={state.charge_plan.enabled}
+                            disabled={state.charge_plan.enable}
                             unit="h"
                             value={state.charge_plan.amount}
                             onValue={(v) => this.setState({charge_plan: {...state.charge_plan, amount: v}}, () => this.update_charge_plan({...state.charge_plan, amount: v}))}
@@ -398,19 +399,19 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                             y_unit={"ct/kWh"}
                             y_label={"ct/kWh"}
                             y_digits={3}
+                            y_three_split={true}
                             only_show_visible={true}
                             grid_show={false}
-                            y_three_split={true}
                             padding={[10, 10, null, 5]}
                         />
                     </UplotLoader>
                 </div>
                 <div class="form-group mt-2">
                     <Button
-                        onClick={() => this.setState({charge_plan: {...state.charge_plan, enabled: !state.charge_plan.enabled}}, () => this.update_charge_plan({...state.charge_plan, enabled: !state.charge_plan.enabled}))}
+                        onClick={() => this.setState({charge_plan: {...state.charge_plan, enable: !state.charge_plan.enable}}, () => this.update_charge_plan({...state.charge_plan, enable: !state.charge_plan.enable}))}
                         className="form-control"
                     >
-                        <span class="text-nowrap">{state.charge_plan.enabled ? "Ladeplan deaktiveren" : "Ladeplan aktivieren"}</span>
+                        <span class="text-nowrap">{state.charge_plan.enable ? "Ladeplan deaktiveren" : "Ladeplan aktivieren"}</span>
                     </Button>
                 </div>
             </FormRow>
