@@ -260,8 +260,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             <FormRow label={__("solar_forecast.content.plane_config_latitude")} label_muted={__("solar_forecast.content.plane_config_latitude_muted")}>
                 <InputFloat
                     unit="°"
-                    value={this.state.plane_config_tmp.latitude}
-                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, latitude: v}})}
+                    value={this.state.plane_config_tmp.lat}
+                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, lat: v}})}
                     digits={4}
                     min={-900000}
                     max={900000}
@@ -270,8 +270,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             <FormRow label={__("solar_forecast.content.plane_config_longitude")} label_muted={__("solar_forecast.content.plane_config_longitude_muted")}>
                 <InputFloat
                     unit="°"
-                    value={this.state.plane_config_tmp.longitude}
-                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, longitude: v}})}
+                    value={this.state.plane_config_tmp.long}
+                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, long: v}})}
                     digits={4}
                     min={-1800000}
                     max={1800000}
@@ -280,8 +280,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             <FormRow label={__("solar_forecast.content.plane_config_declination")} label_muted={__("solar_forecast.content.plane_config_declination_muted")}>
                 <InputNumber
                     unit="°"
-                    value={this.state.plane_config_tmp.declination}
-                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, declination: v}})}
+                    value={this.state.plane_config_tmp.dec}
+                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, dec: v}})}
                     min={0}
                     max={90}
                 />
@@ -289,8 +289,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             <FormRow label={__("solar_forecast.content.plane_config_azimuth")} label_muted={__("solar_forecast.content.plane_config_azimuth_muted")}>
                 <InputNumber
                     unit="°"
-                    value={this.state.plane_config_tmp.azimuth}
-                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, azimuth: v}})}
+                    value={this.state.plane_config_tmp.az}
+                    onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, az: v}})}
                     min={-180}
                     max={180}
                 />
@@ -321,7 +321,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         let active_planes = [];
         for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
             // Data is available if at least one plane is active and all active planes have forecast data
-            if(this.state.plane_configs[i].active && (this.state.plane_forecasts[i].forecast.length > 0)) {
+            if(this.state.plane_configs[i].enable && (this.state.plane_forecasts[i].forecast.length > 0)) {
                 if (!data_available) {
                     // We use first date from first plane that has data available
                     first_index = i;
@@ -399,7 +399,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         function get_active_unsaved_planes() {
             let active_planes = [];
             for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
-                if (state.plane_configs[i].active) {
+                if (state.plane_configs[i].enable) {
                     active_planes.push(i);
                 }
             }
@@ -408,7 +408,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
 
         function get_next_free_unsaved_plane_index() {
             for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
-                if (!state.plane_configs[i].active) {
+                if (!state.plane_configs[i].enable) {
                     return i;
                 }
             }
@@ -460,10 +460,10 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                 extraValue: get_plane_info(active_plane_index),
                                 columnValues: [
                                     plane_config.name,
-                                    util.toLocaleFixed(plane_config.latitude / 10000, 4) + "°",
-                                    util.toLocaleFixed(plane_config.longitude / 10000, 4) + "°",
-                                    plane_config.declination + "°",
-                                    plane_config.azimuth + "°",
+                                    util.toLocaleFixed(plane_config.lat / 10000, 4) + "°",
+                                    util.toLocaleFixed(plane_config.long / 10000, 4) + "°",
+                                    plane_config.dec + "°",
+                                    plane_config.az + "°",
                                     util.toLocaleFixed(plane_config.wp / 1000, 3) + " kWp",
                                 ],
                                 editTitle: __("solar_forecast.content.edit_plane_config_title"),
@@ -474,7 +474,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                     this.setDirty(true);
                                 },
                                 onRemoveClick: async () => {
-                                    this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: {active: false, name: "#" + active_plane_index, latitude: 0, longitude: 0, declination: 0, azimuth: 0, wp: 0}}});
+                                    this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: {enable: false, name: "#" + active_plane_index, lat: 0, long: 0, dec: 0, az: 0, wp: 0}}});
                                     this.setDirty(true);
                                 }}
                             })
@@ -483,7 +483,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                         addTitle={__("solar_forecast.content.add_plane_config_title")}
                         addMessage={get_active_unsaved_planes().length == SOLAR_FORECAST_PLANES ? __("solar_forecast.content.add_plane_config_done") : __("solar_forecast.content.add_plane_config_count")(get_active_unsaved_planes().length, SOLAR_FORECAST_PLANES)}
                         onAddShow={async () => {
-                            this.setState({plane_config_tmp: {active: true, name: "#" + get_next_free_unsaved_plane_index(), latitude: 0, longitude: 0, declination: 0, azimuth: 0, wp: 0}})
+                            this.setState({plane_config_tmp: {enable: true, name: "#" + get_next_free_unsaved_plane_index(), lat: 0, long: 0, dec: 0, az: 0, wp: 0}})
                         }}
                         onAddGetChildren={() => this.on_get_children()}
                         onAddSubmit={async () => {

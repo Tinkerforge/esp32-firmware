@@ -1,11 +1,11 @@
 //APIPath:planes/{{{plane_id}}}/
 export interface plane_config___{{{plane_id}}} {
-    active: boolean;
+    enable: boolean;
     name: string;
-    latitude: number;
-    longitude: number;
-    declination: number;
-    azimuth: number;
+    lat: number;
+    long: number;
+    dec: number;
+    az: number;
     wp: number;
 }
 

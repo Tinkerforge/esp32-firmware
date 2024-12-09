@@ -71,13 +71,13 @@ void SolarForecast::pre_setup()
     uint8_t index = 0;
     for (SolarForecastPlane &plane : planes) {
         plane.config = ConfigRoot{Config::Object({
-            {"active", Config::Bool(false)},
+            {"enable", Config::Bool(false)},
             {"name", Config::Str(String("#") + index, 0, 16)},
-            {"latitude", Config::Int(0, -900000, 900000)},    // in 1/10000 degrees
-            {"longitude", Config::Int(0, -1800000, 1800000)}, // in 1/10000 degrees
-            {"declination", Config::Uint(0, 0, 90)},          // in degrees
-            {"azimuth", Config::Int(0, -180, 180)},           // in degrees
-            {"wp", Config::Uint(0)}                           // in watt-peak
+            {"lat", Config::Int(0, -900000, 900000)},    // in 1/10000 degrees
+            {"long", Config::Int(0, -1800000, 1800000)}, // in 1/10000 degrees
+            {"dec", Config::Uint(0, 0, 90)},             // in degrees
+            {"az", Config::Int(0, -180, 180)},           // in degrees
+            {"wp", Config::Uint(0)}                      // in watt-peak
         }), [this, index](Config &update, ConfigSource source) -> String {
             // If the config changes for a plane, we reset the state and forecast and trigger a new update
             SolarForecastPlane &p = this->planes[index];
@@ -145,7 +145,7 @@ void SolarForecast::next_update() {
     // This way we avoid hammering the server and also the ESP has some time in-between.
     int first_delay_ms = CHECK_INTERVAL;
     for (SolarForecastPlane &plane : planes) {
-        if (plane.config.get("active")->asBool()) {
+        if (plane.config.get("enable")->asBool()) {
             uint32_t next_check = plane.state.get("next_check")->asUint();
             if(next_check == 0) {
                 first_delay_ms = CHECK_DELAY_MIN;
@@ -325,7 +325,7 @@ void SolarForecast::update()
     // Find plane that is due for update
     plane_current = nullptr;
     for (SolarForecastPlane &plane : planes) {
-        if (plane.config.get("active")->asBool()) {
+        if (plane.config.get("enable")->asBool()) {
             uint32_t next_check = plane.state.get("next_check")->asUint();
             if((next_check < rtc.timestamp_minutes() || next_check == 0)) {
                 plane_current = &plane;
@@ -510,10 +510,10 @@ String SolarForecast::get_api_url_with_path(const SolarForecastPlane &plane)
     }
 
     return api_url + "estimate/"
-        + String(plane.config.get("latitude")->asInt()/10000.0, 4)  + "/"
-        + String(plane.config.get("longitude")->asInt()/10000.0, 4) + "/"
-        + String(plane.config.get("declination")->asUint())         + "/"
-        + String(plane.config.get("azimuth")->asInt())              + "/"
+        + String(plane.config.get("lat")->asInt()/10000.0, 4)  + "/"
+        + String(plane.config.get("long")->asInt()/10000.0, 4) + "/"
+        + String(plane.config.get("dec")->asUint())            + "/"
+        + String(plane.config.get("az")->asInt())              + "/"
         + String(plane.config.get("wp")->asUint()/1000.0, 3);
 }
 
@@ -540,7 +540,7 @@ Option<uint32_t> SolarForecast::get_wh_range(const uint32_t start, const uint32_
     uint32_t wh    = 0;
     uint32_t count = 0;
     for (const SolarForecastPlane &plane : planes) {
-        if (plane.config.get("active")->asBool()) {
+        if (plane.config.get("enable")->asBool()) {
             const uint32_t first_date = plane.forecast.get("first_date")->asUint();
             for (size_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
                 if (forecast_time_between(first_date, index, start, end)) {
