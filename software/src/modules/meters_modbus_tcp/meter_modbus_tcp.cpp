@@ -793,8 +793,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
     case MeterModbusTCPTableID::CarloGavazziEM270:
         carlo_gavazzi_em270_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<CarloGavazziEM270VirtualMeter>();
-        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
 
         switch (carlo_gavazzi_em270_virtual_meter) {
         case CarloGavazziEM270VirtualMeter::None:
@@ -822,8 +822,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
 
     case MeterModbusTCPTableID::CarloGavazziEM280:
         carlo_gavazzi_em280_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<CarloGavazziEM280VirtualMeter>();
-        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
         device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
 
         switch (carlo_gavazzi_em280_virtual_meter) {
         case CarloGavazziEM280VirtualMeter::None:
