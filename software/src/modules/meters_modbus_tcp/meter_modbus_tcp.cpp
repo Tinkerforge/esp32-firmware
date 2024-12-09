@@ -147,7 +147,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             const Config *registers = static_cast<const Config *>(ephemeral_config.get("table")->get()->get("registers"));
             size_t registers_count = registers->count();
 
-            // FIXME: leaking this, because as of right now meter instances don't get destroied
+            // FIXME: leaking this, because as of right now meter instances don't get destroyed
             ValueSpec *customs_specs = new ValueSpec[registers_count];
             MeterValueID *customs_ids = new MeterValueID[registers_count];
             uint32_t *customs_index = new uint32_t[registers_count];
@@ -168,6 +168,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
                 customs_index[i] = i;
             }
 
+            // FIXME: leaking this, because as of right now meter instances don't get destroyed
             custom_table = new ValueTable;
             custom_table->specs = customs_specs;
             custom_table->specs_length = registers_count;
