@@ -328,7 +328,7 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         bool rotate = have_b1 && ca_state->global_hysteresis_elapsed && alloc_energy_over_thres && min_active_elapsed;
 
         // A 3p or unknown rotated charger is active on all phases -> can be rotated immediately.
-        if (rotate && (state->phases != 3 && state->phase_rotation == PhaseRotation::Unknown)) {
+        if (rotate && (state->phases != 3 && state->phase_rotation != PhaseRotation::Unknown)) {
             // Not 2p safe!
             auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
             rotate &= b1_on_phase[phase] == 1;
