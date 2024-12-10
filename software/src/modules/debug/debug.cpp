@@ -243,7 +243,7 @@ void Debug::setup()
         state_fast.get("heap_check_time_max")->updateUint(this->integrity_check_runtime_max);
 
         micros_t now = now_us();
-        uint32_t time_since_last_update_us = static_cast<uint32_t>(static_cast<int64_t>(now - this->last_state_update));
+        uint32_t time_since_last_update_us = (now - this->last_state_update).as<uint32_t>();
         uint32_t integrity_check_cpu_usage = 100 * this->integrity_check_runtime_sum / time_since_last_update_us;
         state_fast.get("cpu_usage")->updateUint(100 - integrity_check_cpu_usage);
         this->last_state_update = now;
@@ -510,7 +510,7 @@ void Debug::loop()
             check_psram_next = true;
         }
     }
-    uint32_t runtime = static_cast<uint32_t>(static_cast<int64_t>(now_us() - start));
+    uint32_t runtime = (now_us() - start).as<uint32_t>();
 
     integrity_check_runs++;
     integrity_check_runtime_sum += runtime;
@@ -524,7 +524,7 @@ void Debug::loop()
         integrity_check_print_errors = false;
     }
 
-    uint32_t run = static_cast<uint32_t>(static_cast<int64_t>(start - last_run));
+    uint32_t run = (start - last_run).as<uint32_t>();
     if (run > run_max && last_run != 0_us) {
         run_max = run;
         state_slow.get("main_loop_max_runtime_us")->updateUint(run_max);
@@ -662,7 +662,7 @@ static float benchmark_area(uint32_t *start_address, size_t max_length)
     }
     micros_t runtime = now_us() - start_time;
 
-    uint32_t runtime32 = static_cast<uint32_t>(static_cast<int64_t>(runtime));
+    uint32_t runtime32 = runtime.as<uint32_t>();
     float runtime_f = static_cast<float>(runtime32);
     float test_length_f = static_cast<float>(max_length);
     float speed_MiBps = (test_length_f * 1000000.0F) / (runtime_f * 1024 * 1024);

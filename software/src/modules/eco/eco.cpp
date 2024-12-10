@@ -112,7 +112,7 @@ void Eco::update()
             state.get("chargers")->get(charger_id)->get("start")->updateUint(0);
             state.get("chargers")->get(charger_id)->get("amount")->updateUint(0);
         } else {
-            const uint32_t minutes_in_state_c = charger_state->time_in_state_c.millis()/(1000*60);
+            const uint32_t minutes_in_state_c = charger_state->time_in_state_c.to<minutes_t>().as<uint32_t>();
             state.get("chargers")->get(charger_id)->get("amount")->updateUint(minutes_in_state_c);
 
             if (charger_state->last_plug_in == 0_us) {
@@ -126,7 +126,7 @@ void Eco::update()
                 last_seen_plug_in[charger_id] = charger_state->last_plug_in;
 
                 const micros_t time_from_now_to_plug_in = now_us() - charger_state->last_plug_in;
-                const uint32_t epoch_to_plug_in_minutes = rtc.timestamp_minutes() - time_from_now_to_plug_in.millis()/(1000*60);
+                const uint32_t epoch_to_plug_in_minutes = rtc.timestamp_minutes() - time_from_now_to_plug_in.to<minutes_t>().as<uint32_t>();
                 state.get("chargers")->get(charger_id)->get("start")->updateUint(epoch_to_plug_in_minutes);
             }
         }

@@ -202,7 +202,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpInputRegister(uint16_t reg, void *c
         case 6: val.u = BUILD_VERSION_PATCH; break;
         case 8: val.u = build_timestamp(); break;
         case 10: val.u = local_uid_num; break;
-        case 12: val.u = (uint32_t)(int64_t)(now_us() / 1_s); break;
+        case 12: val.u = now_us().to<seconds_t>().as<uint32_t>(); break;
 
         case 1000: REQUIRE(evse); val.u = cache->evse_state->get("iec61851_state")->asUint(); break;
         case 1002: REQUIRE(evse); val.u = cache->evse_state->get("charger_state")->asUint(); break;

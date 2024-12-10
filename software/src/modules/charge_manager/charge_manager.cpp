@@ -478,7 +478,7 @@ void ChargeManager::setup()
                 this->low_level_state.get("wnd_max")->get(i)->updateInt(this->ca_state->control_window_max[i]);
             }
             this->state.get("l_max_pv")->updateInt(tmp_limits.max_pv);
-            this->low_level_state.get("last_hyst_reset")->updateUint(this->ca_state->last_hysteresis_reset.millis());
+            this->low_level_state.get("last_hyst_reset")->updateUint(this->ca_state->last_hysteresis_reset.to<millis_t>().as<uint32_t>());
 
             for (int i = 0; i < this->charger_count; ++i) {
                 update_charger_state_config(i);
@@ -662,10 +662,10 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     ll_charger_cfg->get("rc")->updateUint(charger.requested_current);
     ll_charger_cfg->get("ae")->updateUint(charger.allocated_energy * 1000);
     ll_charger_cfg->get("ar")->updateUint(charger.allocated_energy_this_rotation * 1000);
-    ll_charger_cfg->get("ls")->updateUint(charger.last_switch_on.millis());
-    ll_charger_cfg->get("lp")->updateUint(charger.just_plugged_in_timestamp.millis());
-    ll_charger_cfg->get("lw")->updateUint(charger.last_wakeup.millis());
-    ll_charger_cfg->get("ip")->updateUint(charger.use_supported_current.millis());
+    ll_charger_cfg->get("ls")->updateUint(charger.last_switch_on.to<millis_t>().as<uint32_t>());
+    ll_charger_cfg->get("lp")->updateUint(charger.just_plugged_in_timestamp.to<millis_t>().as<uint32_t>());
+    ll_charger_cfg->get("lw")->updateUint(charger.last_wakeup.to<millis_t>().as<uint32_t>());
+    ll_charger_cfg->get("ip")->updateUint(charger.use_supported_current.to<millis_t>().as<uint32_t>());
 }
 
 uint32_t ChargeManager::get_maximum_available_current()

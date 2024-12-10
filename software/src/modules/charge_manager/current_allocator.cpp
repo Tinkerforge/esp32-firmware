@@ -1612,7 +1612,7 @@ int allocate_current(
                 charger.allocated_energy_this_rotation = 0;
             } else {
                 auto amps = (float)current_to_set / 1000.0f * phases_to_set;
-                auto amp_hours = amps * ((float)cfg->allocation_interval) / ((float)(micros_t)1_h);
+                auto amp_hours = amps * (cfg->allocation_interval.as<float>() / ((micros_t)1_h).as<float>());
                 auto watt_hours = amp_hours * 230.0f;
                 auto allocated_energy = watt_hours / 1000;
                 charger.allocated_energy_this_rotation += allocated_energy;

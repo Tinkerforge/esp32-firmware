@@ -160,7 +160,7 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
                     // Can't switch to the requested phases at the moment. Try again later.
                     return;
                 } else if (!deadline_elapsed(last_state_packet - 3500_ms)) {
-                    logger.printfln("Charger state outdated. Last packet from %llims ago.", static_cast<int64_t>(now_us() - last_state_packet) / 1000);
+                    logger.printfln("Charger state outdated. Last packet from %llims ago.", (now_us() - last_state_packet).to<millis_t>().as<int64_t>());
                     return;
                 } else {
                     command_packet->v1.allocated_current = 0;
