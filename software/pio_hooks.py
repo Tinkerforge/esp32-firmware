@@ -131,6 +131,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
 
     has_dependencies = False
     wants_module_list = False
+    fail = False
     dep_modules = []
     all_optional_modules_upper = []
 
@@ -147,7 +148,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
             unknown_keys = set(config['Dependencies'].keys()).difference(known_keys)
             if len(unknown_keys) > 0:
                 print(f"Dependency error: '{module.under}/module.ini contains unknown keys {unknown_keys}  ", file=sys.stderr)
-                sys.exit(1)
+                fail = True
 
             requires = get_and_check_duplicates(config, 'Requires')
             for req_name in requires:
@@ -157,7 +158,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                         print(f"Dependency error: Module '{module_name}' requires module '{req_name}', which is available but not enabled for this environment.", file=sys.stderr)
                     else:
                         print(f"Dependency error: Module '{module_name}' requires module '{req_name}', which does not exist.", file=sys.stderr)
-                    sys.exit(1)
+                    fail = True
                 required_modules.append(req_module)
 
             optional = get_and_check_duplicates(config, 'Optional')
@@ -165,17 +166,17 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                 for opt_name in optional:
                     if opt_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot list itself as optional.", file=sys.stderr)
-                        sys.exit(1)
+                        fail = True
                     opt_name_upper = '_'.join(opt_name.split(' ')).upper()
                     opt_module, _ = find_module_space(modules, opt_name)
                     if not opt_module:
                         if opt_name_upper not in all_modules_upper:
                             print(f"Dependency error: Optional module '{opt_name}' wanted by module '{module_name}' does not exist.", file=sys.stderr)
-                            sys.exit(1)
+                            fail = True
                     else:
                         if opt_module in required_modules:
                             print(f"Dependency error: Optional module '{opt_name}' wanted by module '{module_name}' is already listed as required.", file=sys.stderr)
-                            sys.exit(1)
+                            fail = True
                         available_optional_modules.append(opt_module)
                     all_optional_modules_upper.append(opt_name_upper)
 
@@ -184,15 +185,15 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                 for conflict_name in conflicts:
                     if conflict_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot list itself as conflicting.", file=sys.stderr)
-                        sys.exit(1)
+                        fail = True
                     conflict_module, index = find_module_space(modules, conflict_name)
                     if index < 0:
                         if '_'.join(conflict_name.split(' ')).upper() not in all_modules_upper:
                             print(f"Dependency error: Module '{conflict_name}' in 'Conflicts' list of module '{module_name}' does not exist.", file=sys.stderr)
-                            sys.exit(1)
+                            fail = True
                     elif conflict_module:
                         print(f"Dependency error: Module '{module_name}' conflicts with module '{conflict_name}'.", file=sys.stderr)
-                        sys.exit(1)
+                        fail = True
 
             if module:
                 cur_module_index = modules.index(module)
@@ -202,32 +203,35 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                 for after_name in after:
                     if after_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot require to be loaded after itself.", file=sys.stderr)
-                        sys.exit(1)
+                        fail = True
                     _, index = find_module_space(modules, after_name)
                     if index < 0:
                         if '_'.join(after_name.split(' ')).upper() not in all_modules_upper:
                             print(f"Dependency error: Module '{after_name}' in 'After' list of module '{module_name}' does not exist.", file=sys.stderr)
-                            sys.exit(1)
+                            fail = True
                     elif index > cur_module_index:
                         print(f"Dependency error: Module '{module_name}' must be loaded after module '{after_name}'.", file=sys.stderr)
-                        sys.exit(1)
+                        fail = True
 
             before = get_and_check_duplicates(config, 'Before')
             if before is not None:
                 for before_name in before:
                     if before_name == module_name:
                         print(f"Dependency error: Module '{module_name}' cannot require to be loaded before itself.", file=sys.stderr)
-                        sys.exit(1)
+                        fail = True
                     _, index = find_module_space(modules, before_name)
                     if index < 0:
                         if '_'.join(before_name.split(' ')).upper() not in all_modules_upper:
                             print(f"Dependency error: Module '{before_name}' in 'Before' list of module '{module_name}' does not exist.", file=sys.stderr)
-                            sys.exit(1)
+                            fail = True
                     elif index < cur_module_index:
                         print(f"Dependency error: Module '{module_name}' must be loaded before module '{before_name}'.", file=sys.stderr)
-                        sys.exit(1)
+                        fail = True
 
             dep_modules = required_modules + available_optional_modules
+
+    if fail:
+        sys.exit(1)
 
     return has_dependencies, wants_module_list, dep_modules, all_optional_modules_upper
 
