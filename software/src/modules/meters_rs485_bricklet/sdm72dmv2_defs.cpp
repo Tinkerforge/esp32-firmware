@@ -68,9 +68,9 @@ static void sdm72dmv2_slow_read_done(const uint16_t *all_regs, uint32_t meter_sl
     meters.update_all_values(meter_slot, all_values);
 }
 
-MeterInfo sdm72dmv2 {
+const MeterInfo sdm72dmv2 {
     0x0089,
-    3,
+    METER_TYPE_SDM72DMV2,
     sdm72dmv2_slow,
     ARRAY_SIZE(sdm72dmv2_slow),
     sdm72dmv2_fast,

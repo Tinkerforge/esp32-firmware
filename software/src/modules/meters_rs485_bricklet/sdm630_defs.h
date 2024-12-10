@@ -21,4 +21,4 @@
 
 #include "meter_defs.h"
 
-extern MeterInfo sdm630;
+extern const MeterInfo sdm630;

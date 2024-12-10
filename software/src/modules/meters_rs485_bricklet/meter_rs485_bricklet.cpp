@@ -36,7 +36,7 @@
 static uint16_t write_buf[100];
 static uint16_t registers[400];
 
-static MeterInfo *supported_meters[] = {
+static const MeterInfo * const supported_meters[] = {
     &sdm72dm,
     &sdm630,
     &sdm72dmv2

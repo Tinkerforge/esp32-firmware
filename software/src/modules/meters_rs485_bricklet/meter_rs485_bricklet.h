@@ -81,7 +81,7 @@ private:
 public:
     Config *errors;
     ConfigRoot *sdm630_reset;
-    MeterInfo *meter_in_use = nullptr;
+    const MeterInfo *meter_in_use = nullptr;
 
 private:
     void cb_read_meter_type(TF_RS485 *rs485, uint8_t request_id, int8_t exception_code, uint16_t *holding_registers, uint16_t holding_registers_length);
