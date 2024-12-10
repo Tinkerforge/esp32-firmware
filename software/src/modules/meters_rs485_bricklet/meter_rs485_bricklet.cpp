@@ -39,7 +39,9 @@ static uint16_t registers[400];
 static const MeterInfo * const supported_meters[] = {
     &sdm72dm,
     &sdm630,
-    &sdm72dmv2
+    &sdm72dmv2,
+    // sdm72ctm is missing. Sequence doesn't match meter type defines.
+    &sdm630mctv2,
 };
 
 [[gnu::const]]

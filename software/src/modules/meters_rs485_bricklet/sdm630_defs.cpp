@@ -83,6 +83,23 @@ static void sdm630_slow_read_done(const uint16_t *all_regs, uint32_t meter_slot,
     meters.update_all_values(meter_slot, all_values);
 }
 
+static void sdm630_reset(uint32_t meter_slot, ConfigRoot *reset)
+{
+    float total = 0;
+    float import = 0;
+    float export_ = 0;
+
+    meters.get_energy_imexsum(meter_slot, &total);
+    meters.get_energy_import(meter_slot, &import);
+    meters.get_energy_export(meter_slot, &export_);
+
+    reset->get("energy_total")->updateFloat(total);
+    reset->get("energy_import")->updateFloat(import);
+    reset->get("energy_export")->updateFloat(export_);
+
+    api.writeConfig(meters.get_path(meter_slot, Meters::PathType::Base) + "sdm630_reset", reset);
+}
+
 const MeterInfo sdm630 {
     0x0070,
     METER_TYPE_SDM630,
@@ -93,19 +110,18 @@ const MeterInfo sdm630 {
     sdm630_slow_read_done,
     sdm630_fast_read_done,
     "SDM630",
-    [](uint32_t meter_slot, ConfigRoot *reset){
-        float total = 0;
-        float import = 0;
-        float export_ = 0;
+    sdm630_reset
+};
 
-        meters.get_energy_imexsum(meter_slot, &total);
-        meters.get_energy_import(meter_slot, &import);
-        meters.get_energy_export(meter_slot, &export_);
-
-        reset->get("energy_total")->updateFloat(total);
-        reset->get("energy_import")->updateFloat(import);
-        reset->get("energy_export")->updateFloat(export_);
-
-        api.writeConfig(meters.get_path(meter_slot, Meters::PathType::Base) + "sdm630_reset", reset);
-    }
+const MeterInfo sdm630mctv2 {
+    0x0079,
+    METER_TYPE_SDM630MCTV2,
+    sdm630_slow,
+    ARRAY_SIZE(sdm630_slow),
+    sdm630_fast,
+    ARRAY_SIZE(sdm630_fast),
+    sdm630_slow_read_done,
+    sdm630_fast_read_done,
+    "SDM630MCT-V2",
+    sdm630_reset
 };
