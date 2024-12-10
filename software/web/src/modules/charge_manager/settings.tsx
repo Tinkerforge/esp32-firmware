@@ -60,7 +60,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         });
     }
 
-    override async sendSave(t: "charge_manager/config", cfg: ChargeManagerConfig) {
+    override async sendSave(topic: "charge_manager/config", cfg: ChargeManagerConfig) {
         try {
             await API.save('power_manager/dynamic_load_config', {
                 enabled: this.state.dynamicLoadConfig.enabled,
@@ -76,10 +76,10 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         let {enable_charge_manager, chargers, maximum_available_current, ...new_values} = cfg;
         let new_cfg: ChargeManagerConfig = {...API.get("charge_manager/config"), ...new_values};
 
-        await super.sendSave(t, new_cfg);
+        await super.sendSave(topic, new_cfg);
     }
 
-    override async sendReset(t: "charge_manager/config"){
+    override async sendReset(topic: "charge_manager/config"){
         const modal = util.async_modal_ref.current;
         if (!await modal.show({
                 title: () => __("reset.reset_modal"),
@@ -95,14 +95,14 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         if (!energyManagerMode)
             await API.save_unchecked('evse/management_enabled', {"enabled": false}, () => translate_unchecked("charge_manager.script.save_failed"));
 
-        await super.sendReset(t);
+        await super.sendReset(topic);
     }
 
-    override getIsModified(t: "charge_manager/config"): boolean {
+    override getIsModified(topic: "charge_manager/config"): boolean {
         let evse_enabled = API.get_unchecked("evse/management_enabled");
         if (evse_enabled != null && evse_enabled.enabled)
             return true;
-        return super.getIsModified(t);
+        return super.getIsModified(topic);
     }
 
     render(props: {}, state: ChargeManagerConfig & ChargeManagerState) {

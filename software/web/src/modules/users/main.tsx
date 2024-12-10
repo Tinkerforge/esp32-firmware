@@ -197,7 +197,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         return (this.state as Readonly<UsersState & UsersConfig & ConfigComponentState>).users.some(u => this.user_has_password(u))
     }
 
-    override async sendSave(t: "users/config", new_config: UsersConfig) {
+    override async sendSave(topic: "users/config", new_config: UsersConfig) {
         let old_config = API.get('users/config');
         new_config.http_auth_enabled &&= this.http_auth_allowed();
         if (old_config.http_auth_enabled && !new_config.http_auth_enabled) {
@@ -267,7 +267,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         this.setState({users: users});
     }
 
-    override async sendReset(t: "users/config") {
+    override async sendReset(topic: "users/config") {
         let new_users = this.state.users.slice(0);
         new_users = [new_users[0]];
         new_users[0].display_name = "";
@@ -276,7 +276,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
         this.setState(new_state, this.save);
     }
 
-    override getIsModified(t: "users/config"): boolean {
+    override getIsModified(topic: "users/config"): boolean {
         if (this.state.users.length > 1 || this.state.users[0].display_name != "Anonymous")
             return true;
         return false;

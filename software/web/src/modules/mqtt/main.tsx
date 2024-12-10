@@ -57,23 +57,23 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
         });
     }
 
-    override async sendSave(t: "mqtt/config", cfg: API.getType["mqtt/config"]) {
+    override async sendSave(topic: "mqtt/config", cfg: API.getType["mqtt/config"]) {
         if (API.hasModule('mqtt_auto_discovery'))
             await API.save('mqtt/auto_discovery_config', this.state.auto_discovery_config, () => __("mqtt.script.save_failed"));
-        await super.sendSave(t, cfg);
+        await super.sendSave(topic, cfg);
     }
 
-    override async sendReset(t: "mqtt/config") {
+    override async sendReset(topic: "mqtt/config") {
         if (API.hasModule('mqtt_auto_discovery'))
             await API.reset('mqtt/auto_discovery_config', this.error_string, this.reboot_string);
 
-        await super.sendReset(t);
+        await super.sendReset(topic);
     }
 
-    override getIsModified(t: "mqtt/config"): boolean {
+    override getIsModified(topic: "mqtt/config"): boolean {
         if (API.hasModule('mqtt_auto_discovery') && API.is_modified('mqtt/auto_discovery_config'))
             return true;
-        return super.getIsModified(t);
+        return super.getIsModified(topic);
     }
 
     render(props: {}, state: Readonly<MqttConfig & MqttState>) {

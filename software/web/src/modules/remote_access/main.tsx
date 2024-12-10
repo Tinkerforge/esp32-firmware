@@ -264,16 +264,15 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         }
     }
 
-    override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
+    override async sendSave(topic: "remote_access/config", cfg: config): Promise<void> {
         await this.registerCharger(cfg);
     }
 
-
-    override getIsModified(t: "remote_access/config"): boolean {
-        return API.get(t).enable;
+    override getIsModified(topic: "remote_access/config"): boolean {
+        return API.get(topic).enable;
     }
 
-    override async sendReset(t: "remote_access/config") {
+    override async sendReset(topic: "remote_access/config") {
         const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
             config: {...API.get("remote_access/config"), enable: false},
             login_key: "",

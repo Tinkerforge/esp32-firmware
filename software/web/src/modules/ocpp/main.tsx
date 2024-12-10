@@ -64,21 +64,21 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
         });
     }
 
-    override async sendSave(t: "ocpp/config", cfg: OcppConfig) {
+    override async sendSave(topic: "ocpp/config", cfg: OcppConfig) {
         await API.save_unchecked('evse/ocpp_enabled', {enabled: this.state.enable}, () => __("evse.script.save_failed"));
-        await super.sendSave(t, cfg);
+        await super.sendSave(topic, cfg);
     }
 
-    override async sendReset(t: "ocpp/config") {
+    override async sendReset(topic: "ocpp/config") {
         await API.save_unchecked('evse/ocpp_enabled', {enabled: false}, () => __("evse.script.save_failed"));
-        await super.sendReset(t);
+        await super.sendReset(topic);
     }
 
-    override getIsModified(t: "ocpp/config"): boolean {
+    override getIsModified(topic: "ocpp/config"): boolean {
         let evse = API.get_unchecked("evse/ocpp_enabled");
         if (evse != null && evse.enabled)
             return true;
-        return super.getIsModified(t);
+        return super.getIsModified(topic);
     }
 
     render(props: {}, state: OcppConfig & OcppState) {

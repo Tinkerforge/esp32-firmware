@@ -183,9 +183,7 @@ function array_append<T>(a: Array<T>, b: Array<T>, tail: number): Array<T> {
     return a.slice(-tail);
 }
 
-type MetersConfig = API.getType['meters/0/config'];
-
-export class Meters extends ConfigComponent<'meters/0/config', MetersProps, MetersState> {
+export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
     live_processing = false;
     live_initialized = false;
     live_data: CachedData = {timestamps: [], samples: []};
@@ -203,7 +201,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
     values: {[meter_slot: number]: Readonly<number[]>} = {};
 
     constructor() {
-        super('meters/0/config',
+        super(null,
               () => __("meters.script.save_failed"),
               () => __("meters.script.reboot_content_changed"), {
                   states: {},
@@ -572,7 +570,7 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         }
     }
 
-    override async sendSave(t: "meters/0/config", new_config: MetersConfig) {
+    override async sendSave(topic: null, new_config: null) {
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             await API.save_unchecked(
                 `meters/${meter_slot}/config`,
@@ -582,13 +580,13 @@ export class Meters extends ConfigComponent<'meters/0/config', MetersProps, Mete
         }
     }
 
-    override async sendReset(t: "meters/0/config") {
+    override async sendReset(topic: null) {
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             await API.reset_unchecked(`meters/${meter_slot}/config`, this.error_string, this.reboot_string);
         }
     }
 
-    override getIsModified(t: "meters/0/config"): boolean {
+    override getIsModified(topic: null): boolean {
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
             if (API.is_modified_unchecked(`meters/${meter_slot}/config`))
                 return true;

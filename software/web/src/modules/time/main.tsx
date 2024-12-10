@@ -86,19 +86,19 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
         API.save("rtc/time", time, () => __("time.script.save_failed"));
     }
 
-    override async sendSave(t: "ntp/config", cfg: API.getType["ntp/config"]) {
-        super.sendSave(t, cfg);
+    override async sendSave(topic: "ntp/config", cfg: API.getType["ntp/config"]) {
+        super.sendSave(topic, cfg);
         // API.save extracts the rtc config
         API.save("rtc/config", this.state);
     }
 
-    override async sendReset(t: "ntp/config") {
-        super.sendReset(t);
+    override async sendReset(topic: "ntp/config") {
+        super.sendReset(topic);
         API.reset("rtc/config");
     }
 
-    override getIsModified(t: "ntp/config"): boolean {
-        return API.is_modified(t) || API.is_modified("rtc/config");
+    override getIsModified(topic: "ntp/config"): boolean {
+        return API.is_modified(topic) || API.is_modified("rtc/config");
     }
 
     render(props: {}, state: Readonly<TimeConfig>) {

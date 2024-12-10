@@ -114,7 +114,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         });
     }
 
-    override async sendSave(t: "charge_limits/default_limits", cfg: EVSESettingsState & ChargeLimitsConfig) {
+    override async sendSave(topic: "charge_limits/default_limits", cfg: EVSESettingsState & ChargeLimitsConfig) {
         await API.save('evse/auto_start_charging', {"auto_start_charging": this.state.auto_start_charging.auto_start_charging}, () => __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": this.state.boost_mode.enabled}, () => __("evse.script.save_failed"));
         await API.save('require_meter/config', {"config": this.state.require_meter_enabled.config}, () => __("evse.script.save_failed"));
@@ -128,12 +128,12 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             await API.save('evse/phases_connected', this.state.phases_connected, () => __("evse.script.save_failed"));
         }
 
-        super.sendSave(t, cfg);
+        super.sendSave(topic, cfg);
     }
 
     //TODO: Substitute hardcoded values after evse-reset-api is available.
 
-    override async sendReset(t: "charge_limits/default_limits") {
+    override async sendReset(topic: "charge_limits/default_limits") {
         await API.save('evse/auto_start_charging', {"auto_start_charging": true}, () => __("evse.script.save_failed"));
         await API.save('evse/boost_mode', {"enabled": false}, () => __("evse.script.save_failed"));
         await API.reset('require_meter/config', () => __("evse.script.save_failed"));
@@ -147,10 +147,10 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             await API.save('evse/phases_connected', {"phases": 3}, () => __("evse.script.save_failed"));
         }
 
-        super.sendReset(t);
+        super.sendReset(topic);
     }
 
-    override getIsModified(t: "charge_limits/default_limits"): boolean {
+    override getIsModified(topic: "charge_limits/default_limits"): boolean {
         let result = false;
 
         result ||= API.is_modified('evse/auto_start_charging');
@@ -166,7 +166,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             result ||= API.is_modified('evse/phases_connected');
         }
 
-        result ||= super.getIsModified(t);
+        result ||= super.getIsModified(topic);
         return result;
     }
 

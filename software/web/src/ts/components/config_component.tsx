@@ -41,14 +41,14 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
                                       S extends (API.getType[Config] extends any[] ? {} :
                                                                                      (object & Partial<Record<keyof API.getType[Config], never>>)) = {}
                                      > extends Component<P, API.getType[Config] & S & ConfigComponentState> {
-    t: Config;
+    topic: Config;
     error_string?: () => string;
     reboot_string?: () => string;
 
-    constructor(t: Config, error_string?: () => string, reboot_string?: () => string, initial_state?: Partial<API.getType[Config] & S>, props?: P, context?: any) {
+    constructor(topic: Config, error_string?: () => string, reboot_string?: () => string, initial_state?: Partial<API.getType[Config] & S>, props?: P, context?: any) {
         super(props, context);
 
-        this.t = t;
+        this.topic = topic;
         this.error_string = error_string;
         this.reboot_string = reboot_string;
         this.state = {
@@ -56,18 +56,20 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
             internal_isDirty: false,
         } as any;
 
-        util.addApiEventListener(t, () => {
-            if (!this.state.internal_isDirty) {
-                this.setState(API.get(t) as Partial<API.getType[Config] & S & ConfigComponentState>);
-            }
-        });
+        if (topic !== null) {
+            util.addApiEventListener(topic, () => {
+                if (!this.state.internal_isDirty) {
+                    this.setState(API.get(topic) as Partial<API.getType[Config] & S & ConfigComponentState>);
+                }
+            });
 
-        util.addApiEventListener((t + "_modified") as Config, () => {
-            // Make sure that clicking the reset button
-            // (which changes _modified because it removes the config saved in the ESPs flash)
-            // re-renders the component to disable the reset button.
-            this.forceUpdate();
-        });
+            util.addApiEventListener((topic + "_modified") as Config, () => {
+                // Make sure that clicking the reset button
+                // (which changes _modified because it removes the config saved in the ESPs flash)
+                // re-renders the component to disable the reset button.
+                this.forceUpdate();
+            });
+        }
     }
 
     toggle(x: keyof PickByValue<API.getType[Config] & S & ConfigComponentState, boolean>, callback?: () => void) {
@@ -75,13 +77,14 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
     }
 
     save = async () => {
-        let cfg = API.extract(this.t, this.state);
+        let cfg = this.topic !== null ? API.extract(this.topic, this.state) : null;
+
         if (!await this.isSaveAllowed(cfg))
             throw new Error("saving not allowed");
 
         cfg = await this.transformSave(cfg);
 
-        await this.sendSave(this.t, cfg);
+        await this.sendSave(this.topic, cfg);
     };
 
     reset = async () => {
@@ -95,11 +98,11 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
                 yes_variant: "danger"
             }))
             return;
-        await this.sendReset(this.t);
+        await this.sendReset(this.topic);
     };
 
     isModified = () => {
-        return this.getIsModified(this.t);
+        return this.getIsModified(this.topic);
     };
 
     isDirty = () => {
@@ -111,8 +114,8 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
             this.setState({internal_isDirty: dirty} as any);
     };
 
-    set<T extends keyof (API.getType[Config] & S & ConfigComponentState)>(x: T, callback?: () => void) {
-        return (s: (API.getType[Config] & S & ConfigComponentState)[T]) => this.setState({ [x]: s } as unknown as Partial<API.getType[Config] & S & ConfigComponentState>, callback);
+    set<T extends keyof (API.getType[Config] & S & ConfigComponentState)>(topic: T, callback?: () => void) {
+        return (s: (API.getType[Config] & S & ConfigComponentState)[T]) => this.setState({ [topic]: s } as unknown as Partial<API.getType[Config] & S & ConfigComponentState>, callback);
     }
 
     // Override this to block saving on a condition
@@ -126,17 +129,25 @@ export abstract class ConfigComponent<Config extends keyof ConfigMap,
     }
 
     // Override this to implement custom saving logic
-    async sendSave(t: Config, cfg: API.getType[Config]) {
-        await API.save(t, cfg, this.error_string, this.reboot_string);
+    async sendSave(topic: Config, cfg: API.getType[Config]) {
+        if (topic !== null) {
+            await API.save(topic, cfg, this.error_string, this.reboot_string);
+        }
     }
 
     // Also override this if you override sendSave
-    getIsModified(t: Config): boolean {
-        return API.is_modified(t);
+    getIsModified(topic: Config): boolean {
+        if (topic !== null) {
+            return API.is_modified(topic);
+        }
+
+        return false;
     }
 
     // Override this to implement custom reset logic
-    async sendReset(t: Config) {
-        await API.reset(t, this.error_string, this.reboot_string);
+    async sendReset(topic: Config) {
+        if (topic !== null) {
+            await API.reset(topic, this.error_string, this.reboot_string);
+        }
     }
 }

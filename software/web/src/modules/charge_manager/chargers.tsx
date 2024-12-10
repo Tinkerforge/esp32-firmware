@@ -164,7 +164,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         return true;
     }
 
-    override async sendSave(t: "charge_manager/config", cfg: ChargeManagerConfig) {
+    override async sendSave(topic: "charge_manager/config", cfg: ChargeManagerConfig) {
         const modal = util.async_modal_ref.current;
         let illegal_chargers = "";
         for (let i = 0; i < cfg.chargers.length; i++) {
@@ -219,10 +219,10 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
          || (new_cfg.maximum_available_current < API.get('charge_manager/config').default_available_current))
             new_cfg.default_available_current = new_cfg.maximum_available_current;
 
-        await super.sendSave(t, new_cfg);
+        await super.sendSave(topic, new_cfg);
     }
 
-    override async sendReset(t: "charge_manager/config"){
+    override async sendReset(topic: "charge_manager/config"){
         const modal = util.async_modal_ref.current;
         if (!await modal.show({
                 title: () => __("reset.reset_modal"),
@@ -240,14 +240,14 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         await API.reset_unchecked('em_phase_switcher/charger_config', () => __("charge_manager.script.save_failed"));
         await API.reset_unchecked('energy_manager/config',            () => __("charge_manager.script.save_failed"));
 
-        await super.sendReset(t);
+        await super.sendReset(topic);
     }
 
-    override getIsModified(t: "charge_manager/config"): boolean {
+    override getIsModified(topic: "charge_manager/config"): boolean {
         let evse_enabled = API.get_unchecked("evse/management_enabled");
         if (evse_enabled != null && evse_enabled.enabled)
             return true;
-        return super.getIsModified(t);
+        return super.getIsModified(topic);
     }
 
     insertLocalHost() {
