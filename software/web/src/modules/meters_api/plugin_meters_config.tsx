@@ -243,6 +243,9 @@ interface PresetSelectorState {
 class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState> {
     presets: Readonly<number[][]> = [
         [],
+        [74],
+        [14, 18, 22],
+        [74, 14, 18, 22],
         [74,209,211,213,214,210,212],
         [1,2,3,13,17,21,39,48,57,122,130,138,83,91,99,353,354,355,365,366,367,7,29,33,74,154,115,356,368,364,209,211,273,275,341,388,4,5,6,8,25,369,370,371,377,378,379,375,380,372,373,374,376,213,277,161,177,193,163,179,195,165,181,197,225,241,257,227,243,259,229,245,261,214,210,212],
         [1,2,3,13,17,21,39,48,57,122,130,138,83,91,99,353,354,355,7,29,33,74,154,115,356,364,209,211,4,5,6,8,25,213,277,214,210,212]
@@ -271,9 +274,12 @@ class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState>
             <InputSelect
                 items={[
                     ["0", __("meters_api.content.api_meter_no_preset")],
-                    ["1", __("meters.script.meter_type_1")],
-                    ["2", __("meters.script.meter_type_2")],
-                    ["3", __("meters.script.meter_type_3")]
+                    ["1", __("meters_api.content.meter_type_pv_only")],
+                    ["2", __("meters_api.content.meter_type_dlm_only")],
+                    ["3", __("meters_api.content.meter_type_pv_dlm_only")],
+                    ["4", __("meters.script.meter_type_1")],
+                    ["5", __("meters.script.meter_type_2")],
+                    ["6", __("meters.script.meter_type_3")]
                 ]}
                 value={this.state.preset}
                 onValue={async (v) => {
