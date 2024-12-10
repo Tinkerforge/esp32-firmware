@@ -23,9 +23,11 @@
 #include "modules/meters/sdm_helpers.h"
 
 static const RegRead sdm630_slow[] {
-    {1, 88},
-    {101, 8},
-    {201, 70},
+    //{1, 88},  // Full register set, including unused demand registers.
+    //{101, 8},
+    //{201, 70},
+    {1, 84},
+    {201, 52},
     {335, 48}
 };
 
