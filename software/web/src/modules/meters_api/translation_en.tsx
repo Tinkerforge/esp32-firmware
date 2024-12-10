@@ -15,7 +15,7 @@ let x = {
             "api_meter_preset": "Preset",
             "api_meter_no_preset": "No preset selected",
             "meter_type_pv_only": "PV excess charging",
-            "meter_type_dlm_only": "dynamic load management",
+            "meter_type_dlm_only": "Dynamic load management",
             "meter_type_pv_dlm_only": "PV excess charging + dynamic load management",
             "override_modal_title": "Override meter values",
             "override_modal_body": "The meter values will be overridden. Are you sure?",
