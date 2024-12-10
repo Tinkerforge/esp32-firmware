@@ -1,5 +1,4 @@
 meter_value_id.ts
 translation_*.tsx
 api.ts
-meters_defs.ts
 plugins.tsx
