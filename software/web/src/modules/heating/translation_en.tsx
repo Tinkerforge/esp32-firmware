@@ -117,7 +117,7 @@ let x = {
                 </ul>
                 <p>In this configuration, the day is divided into two 12-hour control periods in which the cheapest/most expensive hours are determined and accordingly the heating can be brought into extended or blocking operation for a maximum of 4 hours at a time per 12 hours.</p>
             </>,
-            "control_period_muted": "Period in which the cheapest hours for the extended and the most expensive hours for the blocking operation are determined."
+            "control_period_muted": "Period in which the cheapest hours for the extended and the most expensive hours for the blocking operation are determined. The better the storage capacity of the building, the larger the periods can be chosen."
         },
         "script": {
             "save_failed": "Failed to save the heating settings",
