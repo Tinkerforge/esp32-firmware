@@ -18,7 +18,7 @@ let x = {
             "surcharge": "Preisaufschlag",
             "day_ahead_prices_muted": <>Die Daten werden von <a href="https://www.entsoe.eu/about/" target="_blank">ENTSO-E</a> bereitgestellt und über api.warp-charger.com bezogen.</>,
             "day_ahead_prices_desc": "Lädt automatisch die Day-Ahead-Börsenstrompreise herunter. Für diese Funktion muss das Gerät Zugriff auf das Internet haben.",
-            "region": "Gebiet",
+            "region": "Region",
             "germany": "Deutschland",
             "austria": "Österreich",
             "luxembourg": "Luxenburg",
