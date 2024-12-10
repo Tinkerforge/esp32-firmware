@@ -92,8 +92,11 @@ void EMEnergyAnalysis::pre_setup()
 
 void EMEnergyAnalysis::setup()
 {
-    if (!em_common.initialized)
+    if (!em_common.initialized) {
         return;
+    }
+
+    initialized = true;
 
     all_data_common = em_common.get_all_data_common();
 
@@ -104,8 +107,9 @@ void EMEnergyAnalysis::setup()
 
 void EMEnergyAnalysis::register_urls()
 {
-    if (!em_common.initialized)
+    if (!em_common.initialized) {
         return;
+    }
 
     api.addResponse("energy_manager/history_wallbox_5min",         &history_wallbox_5min,         {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_5min_response(response, ownership, owner_id);});
     api.addResponse("energy_manager/history_wallbox_daily",        &history_wallbox_daily,        {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_daily_response(response, ownership, owner_id);});
