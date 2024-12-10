@@ -1261,7 +1261,7 @@ export function init() {
     for (let plugins of result) {
         for (let i in plugins) {
             if (config_plugins[i]) {
-                console.log('Meter: Overwriting class ID ' + i);
+                console.log('Meters: Overwriting class ID ' + i);
             }
 
             config_plugins[i] = plugins[i];
