@@ -1309,9 +1309,12 @@ void RemoteAccess::resolve_management() {
 
 
     const CoolString &uuid = config.get("uuid")->asString();
+    const CoolString &name = api.getState("info/display_name")->get("display_name")->asString();
+    size_t encrypted_name_size = name.length() + crypto_box_SEALBYTES;
+    size_t encoded_name_size = 4 * (encrypted_name_size / 3) + 5;
 
-    char json[250] = {};
-    TFJsonSerializer serializer = TFJsonSerializer(json, 250);
+    char json[1000] = {};
+    TFJsonSerializer serializer = TFJsonSerializer(json, 1000);
     serializer.addObject();
 
     bool old_api;
@@ -1343,7 +1346,18 @@ void RemoteAccess::resolve_management() {
                 serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
                 serializer.addMemberArray("configured_users");
                     for (auto &user : config.get("users")) {
-                        serializer.addString(user.get("email")->asEphemeralCStr());
+                        serializer.addObject();
+                        serializer.addMemberString("email", user.get("email")->asEphemeralCStr());
+                        auto key = decode_base64(user.get("public_key")->asString(), 32);
+
+                        auto encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
+                        crypto_box_seal(encrypted_name.get(), (uint8_t *)name.c_str(), name.length(), key.get());
+
+                        auto encoded_name = heap_alloc_array<uint8_t>(encoded_name_size);
+                        size_t olen;
+                        mbedtls_base64_encode(encoded_name.get(), encoded_name_size, &olen, encrypted_name.get(), encrypted_name_size);
+                        serializer.addMemberString("name", (char *)encoded_name.get());
+                        serializer.endObject();
                     }
                 serializer.endArray();
             serializer.endObject();
