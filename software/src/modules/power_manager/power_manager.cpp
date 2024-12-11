@@ -639,10 +639,13 @@ void PowerManager::register_phase_switcher_backend(PhaseSwitcherBackend *backend
 
 void PowerManager::zero_limits()
 {
-    cm_limits->raw.pv = 0;
-    cm_limits->raw.l1 = 0;
-    cm_limits->raw.l2 = 0;
-    cm_limits->raw.l3 = 0;
+    // Zero all limits, includes PV "phase"
+    for (size_t phase = 0; phase < 4; phase++) {
+        cm_limits->raw[phase]    = 0;
+        cm_limits->min[phase]    = 0;
+        cm_limits->spread[phase] = 0;
+    }
+    cm_limits->max_pv = 0;
 }
 
 [[gnu::noinline]] // Don't put msg buffer on calling function's stack.
@@ -1062,6 +1065,7 @@ void PowerManager::update_energy()
 
                 cm_limits->raw[cm_phase] = 0;
                 cm_limits->min[cm_phase] = 0;
+                cm_limits->spread[cm_phase] = 0;
             } else {
                 if (printed_skipping_currents_update && cm_phase == 1) {
                     logger.printfln("Dynamic load management available because current values are now available.");
