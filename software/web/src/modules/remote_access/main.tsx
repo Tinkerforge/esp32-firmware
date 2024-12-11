@@ -276,6 +276,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
 
         try {
             await this.runRegistration(registration_data);
+            this.setState({enable: true});
         } catch (err) {
             console.error(`Failed to register charger: ${err}`);
             util.add_alert("registration", "danger", () => "Failed to register", () => err);
@@ -521,7 +522,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                     <FormRow label={__("remote_access.content.user")}>
                         <Table columnNames={[__("remote_access.content.email")]}
                             rows={users}
-                            addEnabled={users.length < 5 && this.state.enable}
+                            addEnabled={users.length < 5}
                             addTitle={__("remote_access.content.add_user")}
                             onAddShow={async () => this.setState({addUser: {email: "", password: "", note: ""}})}
                             addMessage={users.length < 5 ? __("remote_access.content.user_add_message")(users.length, 5) : __("remote_access.content.all_users_in_use")}
@@ -554,7 +555,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                             onAddSubmit={async () => {
                                 if (users.length === 0) {
                                     const config: util.NoExtraProperties<API.getType["remote_access/register"]["config"]> = {
-                                        enable: this.state.enable,
+                                        enable: true,
                                         email: this.state.addUser.email,
                                         relay_host: this.state.relay_host,
                                         relay_port: this.state.relay_port,
