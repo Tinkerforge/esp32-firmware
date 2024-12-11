@@ -220,14 +220,14 @@ Cost get_cost(int32_t current_to_allocate,
 }
 
 // Checks stage-specific limits.
-bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage)
+bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool charge_mode_pv)
 {
     bool phases_exceeded = false;
     for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
         phases_exceeded |= cost[i] > 0 && limits->raw[i] < cost[i];
     }
 
-    bool pv_excess_exceeded = cost.pv > 0 && limits->raw.pv < cost.pv;
+    bool pv_excess_exceeded = charge_mode_pv && cost.pv > 0 && limits->raw.pv < cost.pv;
 
     switch(stage) {
         case 6:
@@ -301,19 +301,19 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
             have_b1 = true;
             if (state->phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
                 // We only care about the phases that are blocked, not about how many chargers are waiting.
-                b1_on_phase.l1 = 1;
-                b1_on_phase.l2 = 1;
-                b1_on_phase.l3 = 1;
+                b1_on_phase.l1 = state->charge_mode_pv ? 1 : 2;
+                b1_on_phase.l2 = state->charge_mode_pv ? 1 : 2;
+                b1_on_phase.l3 = state->charge_mode_pv ? 1 : 2;
             } else {
                 // Not 2p safe!
                 auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-                b1_on_phase[phase] = 1;
+                b1_on_phase[phase] = state->charge_mode_pv ? 1 : 2;
             }
         }
     }
     trace(have_b1 ? "1: have B1" : "1: don't have B1");
 
-    // Deallocate a charger if it should be rotated or if it reports that it is not active anymore.
+    // Shut down a charger if it should be rotated or if it reports that it is not active anymore.
     // Note that a charger that was activated in stage 9 (to wake up a full vehicle)
     // it will always be deactivated here to make sure we only wake up vehicles if there is current left over.
     for (int i = 0; i < charger_count; ++i) {
@@ -327,11 +327,20 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         bool rotate = have_b1 && ca_state->global_hysteresis_elapsed && alloc_energy_over_thres && min_active_elapsed;
 
-        // A 3p or unknown rotated charger is active on all phases -> can be rotated immediately.
+        // 3p and 1p unknown rotated chargers are considered active on any phase.
+        // They can be shut down if there is a charger waiting on any phase.
+        // 1p known rotated chargers are only active on a specific phase.
+        // Don't shut a 1p known rotated charger down if it is active on a phase where there is no charger waiting.
         if (rotate && (state->phases != 3 && state->phase_rotation != PhaseRotation::Unknown)) {
             // Not 2p safe!
             auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-            rotate &= b1_on_phase[phase] == 1;
+            // Only rotate if either this is a PV charger and there is a PV or fast charger waiting on **this** phase,
+            // or this is a fast charger and there is a fast charger waiting on **this** phase.
+            rotate &= b1_on_phase[phase] >= (state->charge_mode_pv ? 1 : 2);
+        } else {
+            // Only rotate if either this is a PV charger and there is a PV or fast charger waiting on **any** phase,
+            // or this is a fast charger and there is a fast charger waiting on **any** phase.
+            rotate &= std::max({b1_on_phase.l1, b1_on_phase.l2, b1_on_phase.l3}) >= (state->charge_mode_pv ? 1 : 2);
         }
 
         bool keep_active = is_active(phase_allocation[i], state) && !rotate;
@@ -580,8 +589,9 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // Group chargers that were activated in stage 2 (because a vehicle was just plugged in)
     // behind others and sort those by the plug in timestamp to make sure the same chargers are shut down
     // if phases are overloaded in every iteration.
+    // Sort PV chargers before fast chargers (symmetric to stage 4)
     sort_chargers(
-        was_just_plugged_in(state) ? 1 : 0,
+        was_just_plugged_in(state) ? 2 : (state->charge_mode_pv ? 0 : 1),
         // We only compare in groups, so was_just_plugged_in(right.state) is true iff it is for left.
         was_just_plugged_in(left.state) ? (left.state->just_plugged_in_timestamp < right.state->just_plugged_in_timestamp) : (left.state->last_switch_on < right.state->last_switch_on)
     );
@@ -654,7 +664,8 @@ void stage_3(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         // Don't shut down chargers that were just plugged in.
         // We want those to be active until plug_in_time is elapsed to make sure the vehicle does not disable its EVCC.
-        if (alloc_phases == 0 || was_just_plugged_in(state))
+        // Also ignore exceeded PV limits if this charger is not PV charging.
+        if (alloc_phases == 0 || was_just_plugged_in(state) || !state->charge_mode_pv)
             continue;
 
         trace("3: wnd_min %d > max_pv %d", wnd_min.pv, limits->max_pv);
@@ -843,8 +854,13 @@ static bool try_activate(StringWriter &sw, const ChargerState *state, bool activ
     // If there are no chargers active, don't require the enable cost on PV.
     // Still require the enable cost on the phases:
     // Phase limits are hard limits. PV can be exceeded for some time.
+    // Ignore PV limit completely if this charger is not PV charging.
     Cost check_phase{
-        CHECK_SPREAD | CHECK_IMPROVEMENT | (have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN),
+        CHECK_SPREAD | (state->charge_mode_pv
+                        ? (CHECK_IMPROVEMENT | (have_active_chargers
+                                                ? CHECK_MIN_WINDOW_ENABLE
+                                                : CHECK_MIN_WINDOW_MIN))
+                        : 0),
         CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
         CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
         CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE
@@ -880,7 +896,10 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // A charger that was rotated has 0 allocated phases but is still charging.
     filter_chargers(allocated_phases == 0 && (state->wants_to_charge || state->is_charging));
 
-    sort_chargers(0,
+    // Group PV chargers behind fast chargers to activate them last.
+    // PV chargers would probably be shut down in the next iteration anyway.
+    sort_chargers(
+        state->charge_mode_pv ? 1 : 0,
         left.state->allocated_energy < right.state->allocated_energy
     );
 
@@ -977,7 +996,10 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
     filter_chargers(allocated_phases == 1 && state->phase_switch_supported && deadline_elapsed(state->last_phase_switch + _cfg->global_hysteresis));
 
-    sort_chargers(0,
+    // Group PV chargers behind fast chargers to phase switch them last.
+    // PV chargers would probably be shut down in the next iteration anyway.
+    sort_chargers(
+        state->charge_mode_pv ? 1 : 0,
         left.state->allocated_energy < right.state->allocated_energy
     );
 
@@ -1011,7 +1033,7 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         // Only switch from one to three phase if there is still current available on all phases except the P1 phase of this charger: P1 is used by this charger anyway.
         Cost check_phase{
-            CHECK_IMPROVEMENT_ALL_PHASE | check_min,
+            (state->charge_mode_pv ?(CHECK_IMPROVEMENT_ALL_PHASE | check_min) : 0),
             (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L1 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
             (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L2 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
             (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L3 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE
@@ -1074,7 +1096,7 @@ void stage_6(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         // is a charger that was allocated phases to before stage 6, but we
         // don't have the minimum current available, that is a bug in the
         // previous stages.
-        if (cost_exceeds_limits(cost, limits, 6)) {
+        if (cost_exceeds_limits(cost, limits, 6, state->charge_mode_pv)) {
             logger.printfln("stage 6: Cost exceeded limits!");
             print_alloc(6, limits, current_allocation, phase_allocation, charger_count, charger_state);
             PRINT_COST(cost);
@@ -1168,7 +1190,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto allocated_current = current_allocation[idx_array[i]];
         auto allocated_phases = phase_allocation[idx_array[i]];
 
-        auto current = fair.pv / allocated_phases;
+        auto current = state->charge_mode_pv ? (fair.pv / allocated_phases) : 32000;
 
         if (state->phase_rotation == PhaseRotation::Unknown) {
             current = std::min({current, fair.l1, fair.l2, fair.l3});
@@ -1194,7 +1216,7 @@ void stage_7(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         // This should never happen:
         // We've just calculated how much current is still available.
         // If this cost exceeds the limits, stage_7 is bugged.
-        if (cost_exceeds_limits(cost, limits, 7)) {
+        if (cost_exceeds_limits(cost, limits, 7, state->charge_mode_pv)) {
             logger.printfln("stage 7: Cost exceeded limits!");
             print_alloc(7, limits, current_allocation, phase_allocation, charger_count, charger_state);
             PRINT_COST(cost);
@@ -1233,7 +1255,13 @@ void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         auto allocated_current = current_allocation[idx_array[i]];
         auto allocated_phases = phase_allocation[idx_array[i]];
 
-        auto current = std::min(std::max(0, limits->raw.pv / allocated_phases), current_capacity(limits, state, allocated_current, allocated_phases, cfg));
+        auto current = std::min(
+                        std::max(
+                            0,
+                            state->charge_mode_pv
+                                ? (limits->raw.pv / allocated_phases)
+                                : 32000),
+                        current_capacity(limits, state, allocated_current, allocated_phases, cfg));
 
         if (state->phase_rotation == PhaseRotation::Unknown) {
             // Phase rotation unknown. We have to assume that each phase could be used
@@ -1251,7 +1279,7 @@ void stage_8(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         // This should never happen:
         // We've just calculated how much current is still available.
         // If this cost exceeds the limits, stage_8 is bugged.
-        if (cost_exceeds_limits(cost, limits, 8)) {
+        if (cost_exceeds_limits(cost, limits, 8, state->charge_mode_pv)) {
             logger.printfln("stage 8: Cost exceeded limits! Charger %d Current %u", idx_array[i], current);
             print_alloc(8, limits, current_allocation, phase_allocation, charger_count, charger_state);
             PRINT_COST(cost);
@@ -1351,7 +1379,7 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         if (try_3p) {
             enable_current = get_enable_cost(state, true, have_active_chargers, nullptr, &enable_cost, cfg);
-            if (!cost_exceeds_limits(enable_cost, limits, 9)) {
+            if (!cost_exceeds_limits(enable_cost, limits, 9, state->charge_mode_pv)) {
                 try_1p = false;
                 phase_alloc = 3;
             }
@@ -1359,7 +1387,7 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 
         if (try_1p) {
             enable_current = get_enable_cost(state, false, have_active_chargers, nullptr, &enable_cost, cfg);
-            if (!cost_exceeds_limits(enable_cost, limits, 9)) {
+            if (!cost_exceeds_limits(enable_cost, limits, 9, state->charge_mode_pv)) {
                 phase_alloc = 1;
             }
         }

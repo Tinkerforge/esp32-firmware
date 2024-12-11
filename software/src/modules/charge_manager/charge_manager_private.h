@@ -125,6 +125,9 @@ struct ChargerState {
 
     // Incremented every iteration the connected vehicle was in state C.
     micros_t time_in_state_c;
+
+    // If false, PV limits are ignored for this charger
+    bool charge_mode_pv;
 };
 
 struct ChargerAllocationState {

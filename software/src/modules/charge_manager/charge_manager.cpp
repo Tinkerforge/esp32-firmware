@@ -418,6 +418,7 @@ void ChargeManager::setup()
     for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
         charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());
         charger_state[i].last_phase_switch = -ca_config->global_hysteresis;
+        charger_state[i].charge_mode_pv = true;
     }
 
     // TODO: Change all currents everywhere to int32_t or int16_t.
