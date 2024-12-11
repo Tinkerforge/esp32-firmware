@@ -412,11 +412,11 @@ void RemoteAccess::register_urls() {
             }
         }
 
-        if (config.get("users")->count() != 0) {
+        if (!registration_config.get("enable")->asBool()) {
             https_client = nullptr;
             encrypted_secret = nullptr;
             secret_nonce = nullptr;
-            return request.send(400, "text/plain; charset=utf-8", "Charger is already registered");
+            return request.send(400, "text/plain; charset=utf-8", "Calling register without enable beeing true is not supported anymore");
         }
 
         const CoolString &note = doc["note"];

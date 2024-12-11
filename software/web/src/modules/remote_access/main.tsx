@@ -436,24 +436,21 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
     }
 
     override async sendReset(topic: "remote_access/config") {
-        const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
-            config: {
+        for (const user of this.state.users) {
+            API.call("remote_access/remove_user", {
+                id: user.id
+            }, () => __("remote_access.script.save_failed"));
+        }
+
+        this.setState({removeUsers: []});
+        const config: update_config = {
                 enable: false,
-                relay_host: "",
-                relay_port: 443,
+            relay_host: this.state.relay_host,
+            relay_port: this.state.relay_port,
                 email: "",
                 cert_id: this.state.cert_id,
-            },
-            note: "",
-            login_key: "",
-            secret_key: "",
-            mgmt_charger_public: "",
-            mgmt_charger_private: "",
-            mgmt_psk: "",
-            keys: []
-        };
-
-        await API.call("remote_access/register", registration_data, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"), 10000);
+        }
+        API.call("remote_access/update_config", config, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
     }
 
     checkUserExisting() {
