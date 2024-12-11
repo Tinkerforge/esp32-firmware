@@ -1348,15 +1348,18 @@ void RemoteAccess::resolve_management() {
                     for (auto &user : config.get("users")) {
                         serializer.addObject();
                         serializer.addMemberString("email", user.get("email")->asEphemeralCStr());
-                        auto key = decode_base64(user.get("public_key")->asString(), 32);
 
-                        auto encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
-                        crypto_box_seal(encrypted_name.get(), (uint8_t *)name.c_str(), name.length(), key.get());
+                        if (user.get("public_key")->asString().length() != 0) {
+                            auto key = decode_base64(user.get("public_key")->asString(), 32);
 
-                        auto encoded_name = heap_alloc_array<uint8_t>(encoded_name_size);
-                        size_t olen;
-                        mbedtls_base64_encode(encoded_name.get(), encoded_name_size, &olen, encrypted_name.get(), encrypted_name_size);
-                        serializer.addMemberString("name", (char *)encoded_name.get());
+                            auto encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
+                            crypto_box_seal(encrypted_name.get(), (uint8_t *)name.c_str(), name.length(), key.get());
+
+                            auto encoded_name = heap_alloc_array<uint8_t>(encoded_name_size);
+                            size_t olen;
+                            mbedtls_base64_encode(encoded_name.get(), encoded_name_size, &olen, encrypted_name.get(), encrypted_name_size);
+                            serializer.addMemberString("name", (char *)encoded_name.get());
+                        }
                         serializer.endObject();
                     }
                 serializer.endArray();
