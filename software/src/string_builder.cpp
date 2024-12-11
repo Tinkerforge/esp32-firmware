@@ -85,6 +85,26 @@ ssize_t StringWriter::putc(char c)
     return 1;
 }
 
+ssize_t StringWriter::putcn(char c, size_t n)
+{
+    ssize_t remaining = getRemainingLength();
+
+    if (remaining <= 0) {
+        return 0;
+    }
+
+    if (n > remaining) {
+        n = remaining;
+    }
+
+    memset(buffer + length, c, n);
+    length += n;
+
+    buffer[length] = '\0';
+
+    return n;
+}
+
 ssize_t StringWriter::vprintf(const char *fmt, va_list args)
 {
     ssize_t remaining = getRemainingLength();
