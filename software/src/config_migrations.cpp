@@ -823,7 +823,7 @@ static const ConfigMigration migrations[] = {
     },
     {
         #if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
-        2, 6, 3,
+        2, 6, 6,
         #elif BUILD_IS_ENERGY_MANAGER()
         2, 2, 2,
         #else // TODO: Update SEB firmware below.
