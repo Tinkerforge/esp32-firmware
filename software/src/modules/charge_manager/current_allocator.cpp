@@ -1693,6 +1693,10 @@ int allocate_current(
 
     trace("\n\n");
 
+#if MODULE_POWER_MANAGER_AVAILABLE()
+    power_manager.print_trace_header();
+#endif
+
     return result;
 }
 

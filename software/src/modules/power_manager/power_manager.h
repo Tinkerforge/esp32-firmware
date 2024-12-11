@@ -87,6 +87,8 @@ public:
     [[gnu::const]] size_t get_debug_line_length() const override;
     void get_debug_line(StringBuilder *sb) override;
 
+    void print_trace_header() const;
+
     enum class FilterType : uint8_t {
         MinOnly = 0,
         MaxOnly = 1,
@@ -234,6 +236,10 @@ private:
     // Automation
     TristateBool automation_drawing_power_last   = TristateBool::Undefined;
     TristateBool automation_power_available_last = TristateBool::Undefined;
+
+    // Tracing
+    const char *trace_header;
+    size_t trace_header_length;
 };
 
 #include "module_available_end.h"

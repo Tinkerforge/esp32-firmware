@@ -26,6 +26,7 @@
 
 #include "event_log_prefix.h"
 #include "tools.h"
+#include "string_builder.h"
 
 #include "gcc_warnings.h"
 
@@ -274,6 +275,45 @@ static void init_mavg_filter(PowerManager::mavg_filter *filter, size_t values_co
     filter->mavg_values       = static_cast<decltype(filter->mavg_values)>(heap_caps_malloc_prefer(values_count * sizeof(filter->mavg_values[0]), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_32BIT)); // Prefer SPIRAM
 }
 
+static std::pair<char *, size_t> build_trace_header(bool with_pv, bool with_phases) {
+    StringBuilder sb{};
+    sb.setCapacity(167 + 190);
+    sb.puts("PM");
+
+    if (with_pv) {
+        sb.putcn(' ', 18);
+        sb.puts("PV");
+        sb.putcn(' ', 19);
+    }
+
+    if (with_phases) {
+        if (with_pv) {
+            sb.putc('|');
+            sb.putcn(' ', 23);
+        } else {
+            sb.putcn(' ', 21);
+        }
+        sb.puts("L1                       |                       L2                       |                       L3");
+    }
+    sb.putc('\n');
+
+    if (with_pv) {
+        sb.puts("mtr(W) avl(W)    raw    max    min spread");
+    }
+
+    if (with_phases) {
+        if (with_pv) {
+            sb.putc('|');
+        }
+        sb.puts(" meter preprc  error adjust    raw    min spread| meter preprc  error adjust    raw    min spread| meter preprc  error adjust    raw    min spread");
+    }
+    sb.putc('\n');
+
+    sb.shrink();
+    size_t length = sb.getLength();
+    return {sb.take(), length};
+}
+
 void PowerManager::setup()
 {
     initialized = true;
@@ -468,6 +508,10 @@ void PowerManager::setup()
 
     // supply_cable_max_current_ma must be set before reset
     reset_max_current_limit();
+
+    auto th = build_trace_header(excess_charging_enabled, dynamic_load_enabled);
+    this->trace_header = th.first;
+    this->trace_header_length = th.second;
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update_data();
@@ -815,7 +859,7 @@ void PowerManager::update_energy()
 {
 #if ENABLE_PM_TRACE
     char trace_log[256];
-    size_t trace_log_len = snprintf_u(trace_log, sizeof(trace_log), "PM");
+    size_t trace_log_len = 0;
 #endif
 
     if (!excess_charging_enabled) {
@@ -973,9 +1017,15 @@ void PowerManager::update_energy()
         cm_limits->spread.pv = pv_long_min_ma;
 
 #if ENABLE_PM_TRACE
-        trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, " PV m=%5iw avl=%5iw %5i<<%5i<%5i<%5i",
-            static_cast<int32_t>(power_at_meter_raw_w), power_available_w,
-            pv_long_min_ma, current_pv_minmax_ma.min, pv_raw_ma, current_pv_minmax_ma.max);
+        // Casting NaN to integer is undefined behaviour.
+        if (isnan(power_at_meter_raw_w)) {
+            trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "   N/A ");
+        } else {
+            trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6i ", static_cast<int32_t>(power_at_meter_raw_w));
+        }
+
+        trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6i %6i %6i %6i %6i",
+            power_available_w, pv_raw_ma, current_pv_minmax_ma.max, current_pv_minmax_ma.min, pv_long_min_ma);
 #endif
     }
 
@@ -1109,9 +1159,14 @@ void PowerManager::update_energy()
                 cm_limits->spread[cm_phase] = phase_long_min_ma;
 
 #if ENABLE_PM_TRACE
-                trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "  L%u m=%5i p=%5i err=%5i adj=%5i %5i<<%5i<%5i",
-                    cm_phase, phase_current_meter_ma, phase_preproc_ma, current_error_ma, current_adjust_ma,
-                    phase_long_min_ma, phase_min_ma->min, phase_limit_raw_ma);
+                // Only add rule before first phase if PV is active.
+                if (cm_phase != 1 || power_available_w != INT32_MAX) {
+                    trace_log[trace_log_len] = '|';
+                    trace_log_len += 1;
+                }
+                trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6i %6i %6i %6i %6i %6i %6i",
+                    phase_current_meter_ma, phase_preproc_ma, current_error_ma, current_adjust_ma,
+                    phase_limit_raw_ma, phase_min_ma->min, phase_long_min_ma);
 #endif
             }
         }
@@ -1183,6 +1238,10 @@ bool PowerManager::get_enabled() const
 uint32_t PowerManager::get_phases() const
 {
     return current_phases;
+}
+
+void PowerManager::print_trace_header() const {
+    logger.trace_plain(charge_manager.trace_buffer_index, this->trace_header, this->trace_header_length);
 }
 
 void PowerManager::set_config_error(uint32_t config_error_mask)
