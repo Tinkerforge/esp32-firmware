@@ -278,7 +278,7 @@ void ChargeManager::pre_setup()
         {"disconnect", Config::Bool(false)},
     });
 
-#if MODULE_AUTOMATION_AVAILABLE() && !MODULE_EM_COMMON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
     automation.register_trigger(
         AutomationTriggerID::ChargeManagerWd,
         *Config::Null(),
@@ -612,7 +612,7 @@ void ChargeManager::register_urls()
         ca_config->enable_current_factor = 1;
     }
 
-#if MODULE_AUTOMATION_AVAILABLE() && MODULE_POWER_MANAGER_AVAILABLE() && !MODULE_EM_COMMON_AVAILABLE()
+#if MODULE_AUTOMATION_AVAILABLE()
     automation.set_enabled(AutomationTriggerID::ChargeManagerWd, enabled && this->static_cm);
     automation.set_enabled(AutomationActionID::SetManagerCurrent, enabled && this->static_cm);
 #endif
