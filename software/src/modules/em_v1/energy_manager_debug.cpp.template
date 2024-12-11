@@ -40,7 +40,7 @@ const char *EMV1::prepare_fmtstr() {
     }
 
     sb.shrink();
-    fmtstr = sb.take().release();
+    fmtstr = sb.take();
 
     //logger.printfln("Using fmtstr='%s'", fmtstr);
 

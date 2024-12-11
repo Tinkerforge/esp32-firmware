@@ -336,7 +336,7 @@ void Meters::setup()
             sb.puts("]}}\n");
 
             size_t len = sb.getLength();
-            char *buf = sb.take().release();
+            char *buf = sb.take();
 
             ws.web_sockets.sendToAllOwned(buf, len);
         }
@@ -371,7 +371,7 @@ void Meters::setup()
                 sb.puts("]}}\n");
 
                 size_t len = sb.getLength();
-                char *buf = sb.take().release();
+                char *buf = sb.take();
 
                 ws.web_sockets.sendToAllOwned(buf, len);
             }

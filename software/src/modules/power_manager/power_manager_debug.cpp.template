@@ -40,7 +40,7 @@ const char *PowerManager::prepare_fmtstr() {
     }
 
     sb.shrink();
-    fmtstr = sb.take().release();
+    fmtstr = sb.take();
 
     //logger.printfln("using fmtstr='%s'", fmtstr);
 

@@ -199,7 +199,7 @@ bool WS::pushStateUpdateEnd(StringBuilder *sb)
     sb->puts(suffix, suffix_len);
 
     size_t len = sb->getLength();
-    char *buf = sb->take().release();
+    char *buf = sb->take();
 
     return web_sockets.sendToAllOwned(buf, len);
 }

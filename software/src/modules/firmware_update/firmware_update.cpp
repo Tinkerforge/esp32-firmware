@@ -472,9 +472,11 @@ void FirmwareUpdate::register_urls()
         firmware_url.printf("_%x", version.timestamp);
         firmware_url.puts(firmware_url_suffix, firmware_url_suffix_len);
 
-        std::unique_ptr<char> firmware_url_ptr = firmware_url.take();
+        char *firmware_url_ptr = firmware_url.take();
 
-        install_firmware(firmware_url_ptr.get());
+        install_firmware(firmware_url_ptr);
+
+        free(firmware_url_ptr);
 #endif
     }, true);
 
@@ -699,13 +701,13 @@ void FirmwareUpdate::check_for_update()
     index_url.puts(BUILD_NAME, BUILD_NAME_LENGTH);
     index_url.puts(index_url_suffix, index_url_suffix_len);
 
-    std::unique_ptr<char> index_url_ptr = index_url.take();
+    char *index_url_ptr = index_url.take();
 
     index_buf_used = 0;
     //last_version_timestamp = time(nullptr);
     check_for_update_in_progress = true;
 
-    https_client.download_async(index_url_ptr.get(), cert_id, [this](AsyncHTTPSClientEvent *event) {
+    https_client.download_async(index_url_ptr, cert_id, [this](AsyncHTTPSClientEvent *event) {
         switch (event->type) {
         case AsyncHTTPSClientEventType::Error:
             switch (event->error) {
@@ -790,6 +792,8 @@ void FirmwareUpdate::check_for_update()
             break;
         }
     });
+
+    free(index_url_ptr);
 #endif
 }
 

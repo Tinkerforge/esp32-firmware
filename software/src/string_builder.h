@@ -61,5 +61,5 @@ public:
 
     bool setCapacity(size_t capacity);
     bool shrink() { return setCapacity(getLength()); }
-    std::unique_ptr<char> take();
+    char *take();
 };
