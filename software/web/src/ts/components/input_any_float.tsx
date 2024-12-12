@@ -18,8 +18,11 @@
  */
 
 import { h, Component } from "preact";
+import { __ } from "../translation";
 
 interface InputAnyFloatProps {
+    min?: number,
+    max?: number,
     value: number,
     onValue: (value: number) => void,
     required?: boolean,
@@ -49,7 +52,7 @@ export class InputAnyFloat extends Component<InputAnyFloatProps, InputAnyFloatSt
         }
 
         this.state = {
-            value_str: props.value.toString().replace(".", this.separator),
+            value_str: props.value !== null ? props.value.toString().replace(".", this.separator) : "",
         } as any;
     }
 
@@ -78,18 +81,46 @@ export class InputAnyFloat extends Component<InputAnyFloatProps, InputAnyFloatSt
     }
 
     render() {
-        return <input
-            class="form-control"
-            type="text"
-            pattern={this.pattern}
-            inputMode="decimal"
-            required={this.props.required}
-            value={this.state.value_str}
-            onInput={(e) => {
-                this.parse_input((e.target as HTMLInputElement).value);
-            }}
-            onKeyDown={(e) => {
-                this.parse_input((e.target as HTMLInputElement).value);
-            }} />;
+        const out_of_range = (this.props.min !== undefined && this.props.value < this.props.min)
+                          || (this.props.max !== undefined && this.props.value > this.props.max);
+        let invalid_feedback = undefined;
+
+        if (out_of_range) {
+            if (this.props.min !== undefined && this.props.max === undefined) {
+                invalid_feedback = <div class="invalid-feedback">{__("component.input_any_float.min_only")(this.props.min)}</div>;
+            } else if (this.props.min === undefined && this.props.max !== undefined) {
+                invalid_feedback = <div class="invalid-feedback">{__("component.input_any_float.max_only")(this.props.max)}</div>;
+            } else {
+                invalid_feedback = <div class="invalid-feedback">{__("component.input_any_float.min_max")(this.props.min, this.props.max)}</div>;
+            }
+        }
+
+        /*if (this.props.value !== null) {
+            if (this.props.min !== undefined && this.props.value < this.props.min) {
+                console.log("Value too small");
+                invalid_feedback = <div class="invalid-feedback">{__("component.input_any_float.min_only")(this.props.min.toString())}</div>;
+            }
+            else if (this.props.max !== undefined && this.props.value > this.props.max) {
+                console.log("Value too small");
+                invalid_feedback = <div class="invalid-feedback">{__("component.input_any_float.max_only")(this.props.min.toString())}</div>;
+            }
+        }*/
+
+        return <div class="input-group">
+            <input
+                class={"form-control" + (out_of_range ? " is-invalid" : "")}
+                type="text"
+                pattern={this.pattern}
+                inputMode="decimal"
+                required={this.props.required}
+                value={this.state.value_str}
+                onInput={(e) => {
+                    this.parse_input((e.target as HTMLInputElement).value);
+                }}
+                onKeyDown={(e) => {
+                    this.parse_input((e.target as HTMLInputElement).value);
+                }} />
+            {invalid_feedback}
+        </div>;
     }
 }
