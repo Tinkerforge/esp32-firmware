@@ -45,7 +45,7 @@ function get_active_planes() {
     let active_planes = [];
     for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
         const plane_config = API.get_unchecked(`solar_forecast/planes/${i}/config`);
-        if (plane_config.active) {
+        if (plane_config.enable) {
             active_planes.push(i);
         }
     }
