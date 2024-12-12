@@ -139,3 +139,9 @@
 - Fix unnecessary phase switches on managed chargers if car is full
 - Fix phase display on managed chargers
 - Fix zero line being drawn on axis labels
+
+2024-12-12: 2.6.6 (<unknown>)
+- Support up to 5 remote access users
+- Add "PV excess" and "dynamic load management" presets to API meter
+- Fix charge manager disabling unrelated chargers to activate waiting chargers
+- Improve translations
