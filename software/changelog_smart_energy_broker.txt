@@ -1,7 +1,7 @@
 2024-11-13: 1.0.0 (85cbdfc8)
 - Initial release
 
-2024-12-12: 1.1.0 (3d3ba971)
+2024-12-12: 1.1.0 (f9dee467)
 - Support up to 5 remote access users
 - Add "PV excess" and "dynamic load management" presets to API meter
 - Fix charge manager disabling unrelated chargers to activate waiting chargers
