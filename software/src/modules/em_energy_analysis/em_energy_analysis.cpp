@@ -525,18 +525,18 @@ bool EMEnergyAnalysis::load_persistent_data()
 
         switch (status) {
         case WEM_DATA_STORAGE_STATUS_BUSY:
-            logger.printfln("Persistent data not available yet, trying again later");
+            logger.printfln("Persistent data page %u not available yet, trying again later", page);
             return false;
 
         case WEM_DATA_STORAGE_STATUS_NOT_FOUND:
-            logger.printfln("Persistent data not found, first boot?");
+            logger.printfln("Persistent data page %u not found, first boot?", page);
             return true;
 
         case WEM_DATA_STORAGE_STATUS_OK:
             break;
 
         default:
-            logger.printfln("Persistent data has unknown status, trying again later: %d", status);
+            logger.printfln("Persistent data page %u has unknown status, trying again later: %d", page, status);
             return false;
         }
     }
