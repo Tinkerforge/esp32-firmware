@@ -34,7 +34,7 @@ interface InputMonthProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputEleme
     style?: string
 }
 
-// FIXME: <input type="month"> is not supported in Firefox and Safari as of April 2023
+// FIXME: <input type="month"> is not supported in Firefox and Safari as of April 2023,
 //        but the arrow buttons work as expected, so this is still usable
 export function InputMonth(props: InputMonthProps) {
     const input = useRef<HTMLInputElement>();
