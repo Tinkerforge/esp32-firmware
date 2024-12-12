@@ -40,14 +40,14 @@ let x = {
             "vat": "MwSt",
             "extra_costs_help": <>
                 <p>Die dynamischen Börsenstrompreise sind nur ein Teil der Stromkosten. Es fallen zusätzliche fixe Steuern, Netzentgelte und Aufschläge an.</p>
-                <p>Die MwSt bezieht sich auf die MwSt die auf den Börstenstrompreis anfällt (in DE aktuell 19%). Weitere Zusatzkosten können in der Rechnung des Stromanbieters nachgeschaut werden.</p>
+                <p>Die MwSt bezieht sich auf die MwSt die auf den Börsenstrompreis anfällt (in DE aktuell 19%). Weitere Zusatzkosten können in der Rechnung des Stromanbieters nachgeschaut werden.</p>
                 <p>Es gibt drei sinnvolle Möglichkeiten für die optionalen Einstellungen:</p>
                 <ul>
                     <li>Alles auf 0 lassen: Es wird der Netto-Börsenpreis angezeigt.</li>
                     <li>MwSt auf 0 lassen und bei den Gebühren den Nettopreis eintragen: Es wird der Netto-Strompreis inkl. Gebühren angezeigt.</li>
                     <li>MwSt korrekt eintragen und bei den Gebühren den Bruttopreis eintragen: Es wird der Brutto-Strompreis inkl. Gebühren angezeigt.</li>
                 </ul>
-                <p>Zur Regelung werden unabhängig von den Zusatzkosten immer nur die dynamischen Netto-Börsenpsreise verwendet.</p>
+                <p>Zur Regelung werden unabhängig von den Zusatzkosten immer nur die dynamischen Netto-Börsenpreise verwendet.</p>
             </>,
             "incl_all_costs": "inkl. aller Kosten",
             "extra_costs": "Zusatzkosten"
