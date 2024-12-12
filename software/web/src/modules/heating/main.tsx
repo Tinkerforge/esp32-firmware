@@ -20,6 +20,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, createRef, Component, RefObject } from "preact";
+import { effect } from "@preact/signals-core";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { SwitchableInputNumber } from "../../ts/components/switchable_input_number";
@@ -99,6 +100,9 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
             // Update chart every time new price data comes in
             this.update_uplot();
         });
+
+        // Update vertical "now" line on time change
+        effect(() => this.update_uplot());
     }
 
     get_price_timeframe() {
@@ -138,6 +142,10 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
     }
 
     update_uplot() {
+        // Use signal here to make effect() record its use, even
+        // if this function might exit early on its first call
+        let date_now = util.get_date_now_1m_update_rate();
+
         if (this.uplot_wrapper_ref.current == null) {
             return;
         }
@@ -245,7 +253,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
 
             // Add vertical line at current time
             const resolution_divisor = dap_prices.resolution == 0 ? 15 : 60;
-            const diff = Math.floor(util.get_date_now_1m_update_rate() / 60000) - dap_prices.first_date;
+            const diff = Math.floor(date_now / 60000) - dap_prices.first_date;
             const index = Math.floor(diff / resolution_divisor);
             data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now"), 'color': [64, 64, 64, 0.2]});
         }

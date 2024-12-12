@@ -20,6 +20,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { Component, createRef, h, RefObject } from "preact";
+import { effect } from "@preact/signals-core";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -146,7 +147,6 @@ function get_current_price_string() {
     return str;
 }
 
-
 function get_price_timeframe() {
     const dap_config = API.get("day_ahead_prices/config");
 
@@ -204,14 +204,22 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
         util.addApiEventListener("day_ahead_prices/state", () => {
             this.setState({dap_state: API.get("day_ahead_prices/state")});
         });
+
         util.addApiEventListener("day_ahead_prices/prices", () => {
             this.setState({dap_prices: API.get("day_ahead_prices/prices")});
             // Update chart every time new price data comes in
             this.update_uplot();
         });
+
+        // Update vertical "now" line on time change
+        effect(() => this.update_uplot());
     }
 
     update_uplot() {
+        // Use signal here to make effect() record its use, even
+        // if this function might exit early on its first call
+        let date_now = util.get_date_now_1m_update_rate();
+
         if (this.uplot_wrapper_ref.current == null) {
             return;
         }
@@ -254,7 +262,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             data.values[3].push(this.state.supplier_markup / 1000.0);
 
             // Add vertical line at current time
-            const diff = Math.floor(util.get_date_now_1m_update_rate() / 60000) - this.state.dap_prices.first_date;
+            const diff = Math.floor(date_now / 60000) - this.state.dap_prices.first_date;
             const index = Math.floor(diff / resolution_multiplier);
             data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now"), 'color': [64, 64, 64, 0.2]});
         }

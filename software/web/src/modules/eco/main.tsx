@@ -20,6 +20,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, createRef, Component, RefObject } from "preact";
+import { effect } from "@preact/signals-core";
 import { __ } from "../../ts/translation";
 import { SwitchableInputNumber } from "../../ts/components/switchable_input_number";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -171,7 +172,6 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
     }
 }
 
-
 interface EcoStatusState {
     state: API.getType["eco/state"];
     charge_plan: API.getType["eco/charge_plan"];
@@ -199,6 +199,9 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             // Update chart every time new price data comes in
             this.update_uplot();
         });
+
+        // Update vertical "now" line on time change
+        effect(() => this.update_uplot());
     }
 
     get_date_from_minutes(minutes: number) {
@@ -211,13 +214,14 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
         return date.getMinutes() + date.getHours()*60;
     }
 
-
     update_uplot() {
+        // Use signal here to make effect() record its use, even
+        // if this function might exit early on its first call
+        let date_now = util.get_date_now_1m_update_rate();
+
         if (this.uplot_wrapper_ref.current == null) {
             return;
         }
-
-        console.log("update_uplot");
 
         const dap_prices = API.get("day_ahead_prices/prices");
         const dap_config = API.get("day_ahead_prices/config");
@@ -266,7 +270,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
 
             // TODO: Use charge start if charge already started
             // TODO: Remove charged hours if charge already started
-            const from = util.get_date_now_1m_update_rate()/(1000*60); // current date in minutues
+            const from = date_now / 60000; // current date in minutues
             const from_index = Math.max(0, Math.floor((from - dap_prices.first_date) / resolution_multiplier));
 
             // Minutes from today 00:00 to end of charge plan
@@ -298,7 +302,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
 
             // Add vertical line at current time
             /*const resolution_divisor = dap_prices.resolution == Resolution.Min15 ? 15 : 60;
-            const diff = Math.floor(util.get_date_now_1m_update_rate() / 60000) - dap_prices.first_date;
+            const diff = Math.floor(date_now / 60000) - dap_prices.first_date;
             const index = Math.floor(diff / resolution_divisor);
             data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now"), 'color': [64, 64, 64, 0.2]});*/
         }
