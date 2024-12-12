@@ -36,7 +36,6 @@ import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wr
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
 import { Resolution } from "./resolution.enum";
-import { effect } from "@preact/signals";
 
 function get_timestamp_today_00_00_in_seconds() {
     return Math.floor(new Date().setHours(0, 0, 0, 0) / 1000);
@@ -362,7 +361,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 sub_page="day_ahead_prices"
                                 color_cache_group="day_ahead_prices.default"
                                 show={true}
-                                on_mount={effect(() => this.update_uplot())}
+                                on_mount={() => this.update_uplot()}
                                 legend_time_label={__("day_ahead_prices.content.time")}
                                 legend_time_with_minutes={true}
                                 aspect_ratio={3}
