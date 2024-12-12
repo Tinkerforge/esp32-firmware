@@ -795,17 +795,12 @@ static const ConfigMigration migrations[] = {
         2, 6, 2,
         #elif BUILD_IS_ENERGY_MANAGER()
         2, 2, 1,
-        #else // TODO: Update SEB firmware below.
-        0, 0, 0,
+        #else
+        1, 1, 0,
         #endif
         // Changes
         // - PM phase switching modes 1phase, 3phase and PV1+Fast3 have been removed, change to automatic
         [](){
-            #if BUILD_IS_SMART_ENERGY_BROKER()
-            static_assert(BUILD_VERSION_MAJOR == 1, "Fix migration for SEB");
-            static_assert(BUILD_VERSION_MINOR == 0, "Fix migration for SEB");
-            static_assert(BUILD_VERSION_PATCH == 0, "Fix migration for SEB");
-            #endif
             // - PM phase switching modes 1phase, 3phase and PV1+Fast3 have been removed, change to automatic
             {
                 StaticJsonDocument<512> pm_cfg;
@@ -826,8 +821,8 @@ static const ConfigMigration migrations[] = {
         2, 6, 6,
         #elif BUILD_IS_ENERGY_MANAGER()
         2, 2, 2,
-        #else // TODO: Update SEB firmware below.
-        0, 0, 0,
+        #else
+        1, 1, 0,
         #endif
         // Changes
         // - Add multiple users to remote access
