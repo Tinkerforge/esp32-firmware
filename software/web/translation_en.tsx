@@ -61,13 +61,13 @@ let x = {
         "input_text": {
             "min_only": /*SFN*/ (min: string) => `At least ${min} characters required`/*NF*/,
             "max_only": /*SFN*/ (max: string) => `At most ${max} characters allowed`/*NF*/,
-            "min_max": /*SFN*/ (min: string, max: string) => `At least ${min} but at most ${max} characters allowed`/*NF*/,
+            "min_max": /*SFN*/ (min: string, max: string) => `At least ${min} characters required, but at most ${max} characters allowed`/*NF*/,
             "required": "Field must not be empty"
         },
         "input_number": {
             "min_only": /*SFN*/ (min: string, unit: string) => `At least ${min} ${unit} required`/*NF*/,
             "max_only": /*SFN*/ (max: string, unit: string) => `At most ${max} ${unit} allowed`/*NF*/,
-            "min_max": /*SFN*/ (min: string, max: string, unit: string) => `At least ${min} but at most ${max} ${unit} required`/*NF*/,
+            "min_max": /*SFN*/ (min: string, max: string, unit: string) => `At least ${min} ${unit} required, but at most ${max} ${unit} allowed`/*NF*/,
             "required": "Field must not be empty"
         },
         "input_file": {
