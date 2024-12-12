@@ -175,7 +175,17 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             loginSalt = await this.get_login_salt(cfg);
         } catch (err) {
             console.error(err);
-            util.add_alert("registration", "danger", () => "Failed to login:", () => "Wrong user or password");
+
+            // scrape the status code from the error message and only display wrong username or password in case it
+            // really is an authorization error.
+            const errString = err as string;
+            const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
+            if (errCode === "400") {
+                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
+            } else {
+                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
+            }
+            this.setState({status_modal_string: ""});
             this.setState({status_modal_string: ""});
             return;
         }
