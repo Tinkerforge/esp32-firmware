@@ -42,6 +42,7 @@ import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price
 import { StatusSection } from "../../ts/components/status_section";
 import { Button } from "react-bootstrap";
 import { ControlPeriod } from "./controlperiod.enum";
+import { effect } from "@preact/signals";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" module="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} />;
@@ -467,7 +468,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                     sub_page="heating"
                                     color_cache_group="heating.default"
                                     show={true}
-                                    on_mount={() => this.update_uplot()}
+                                    on_mount={effect(() => this.update_uplot())}
                                     legend_time_label={__("day_ahead_prices.content.time")}
                                     legend_time_with_minutes={true}
                                     aspect_ratio={3}

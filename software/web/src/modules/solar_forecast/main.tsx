@@ -37,6 +37,7 @@ import { UplotData, UplotWrapper } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { StatusSection } from "../../ts/components/status_section";
+import { effect } from "@preact/signals";
 
 const SOLAR_FORECAST_PLANES = 6;
 
@@ -535,7 +536,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                 sub_page="solar_forecast"
                                 color_cache_group="solar_forecast.default"
                                 show={true}
-                                on_mount={() => this.update_uplot()}
+                                on_mount={effect(() => this.update_uplot())}
                                 legend_time_label={__("solar_forecast.content.time")}
                                 legend_time_with_minutes={true}
                                 aspect_ratio={3}

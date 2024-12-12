@@ -39,6 +39,7 @@ import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wr
 import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
 import { Departure } from "./departure.enum";
 import { Resolution} from "../day_ahead_prices/resolution.enum";
+import { effect } from "@preact/signals";
 
 export function EcoNavbar() {
     return (
@@ -388,7 +389,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                             sub_page="status"
                             color_cache_group="eco.default"
                             show={true}
-                            on_mount={() => this.update_uplot()}
+                            on_mount={effect(() => this.update_uplot())}
                             legend_time_label={__("day_ahead_prices.content.time")}
                             legend_time_with_minutes={true}
                             aspect_ratio={4}
