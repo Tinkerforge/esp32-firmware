@@ -370,8 +370,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
     }
 
     get_series_opts(i: number, fill: boolean): uPlot.Series {
-        let name = this.data.names[i];
-        let color = plot.get_color(this.props.color_cache_group, name);
+        let color = plot.get_color(this.props.color_cache_group, this.data.keys[i]);
         let paths = undefined;
 
         if (this.data.paths) {
@@ -387,7 +386,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             show: this.series_visibility[this.data.keys[i]],
             pxAlign: 0,
             spanGaps: false,
-            label: name,
+            label: this.data.names[i],
             value: (self: uPlot, rawValue: number) => util.hasValue(rawValue) ? util.toLocaleFixed(rawValue, this.props.y_digits) + " " + this.props.y_unit : null,
             stroke: color.stroke,
             fill: fill ? color.fill : undefined,

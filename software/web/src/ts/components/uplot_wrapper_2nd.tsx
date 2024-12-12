@@ -615,8 +615,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
     }
 
     get_series_opts(i: number): uPlot.Series {
-        let name = this.data.names[i];
-        let color = plot.get_color(this.props.color_cache_group, name);
+        let color = plot.get_color(this.props.color_cache_group, this.data.keys[i]);
         let paths = undefined;
 
         if (this.data.paths) {
@@ -636,7 +635,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             show: this.series_visibility[this.data.keys[i]],
             pxAlign: 0,
             spanGaps: false,
-            label: name,
+            label: this.data.names[i],
             value: (self: uPlot, rawValue: number, seriesIdx: number, idx: number | null) => {
                 if (rawValue !== null) {
                     let prefix = '';
@@ -776,7 +775,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 } else {
                     this.uplot.addBand({
                         series: [i, last_stacked_index[y_axis]],
-                        fill: plot.get_color(this.props.color_cache_group, this.data.names[i]).fill,
+                        fill: plot.get_color(this.props.color_cache_group, this.data.keys[i]).fill,
                     });
                 }
 

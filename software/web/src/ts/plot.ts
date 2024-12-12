@@ -50,9 +50,9 @@ const fills = [
 let color_cache: {[id: string]: {stroke: string, fill: string}} = {};
 let color_cache_next: {[id: string]: number} = {};
 
-export function get_color(group: string, name: string)
+export function get_color(group: string, subkey: string)
 {
-    let key = group + '-' + name;
+    let key = group + '-' + subkey;
 
     if (!color_cache[key]) {
         if (!util.hasValue(color_cache_next[group])) {
