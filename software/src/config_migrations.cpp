@@ -796,7 +796,7 @@ static const ConfigMigration migrations[] = {
         #elif BUILD_IS_ENERGY_MANAGER()
         2, 2, 1,
         #else
-        1, 1, 0,
+        1, 0, 1, // seb 1.0.1 was never released but we can't have two migrations with the same version.
         #endif
         // Changes
         // - PM phase switching modes 1phase, 3phase and PV1+Fast3 have been removed, change to automatic
