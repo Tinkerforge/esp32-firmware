@@ -31,7 +31,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Switch } from "../../ts/components/switch";
 import { __ } from "../../ts/translation";
 import "./wireguard";
-import { add_user, config, RegistrationState, update_config } from "./api";
+import { add_user, config, RegistrationState, config_update } from "./api";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
@@ -422,14 +422,14 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             enable = false;
         }
         this.setState({removeUsers: []});
-        const config: update_config = {
+        const config: config_update = {
             enable: enable,
             relay_host: this.state.relay_host,
             relay_port: this.state.relay_port,
             email: "",
             cert_id: this.state.cert_id,
         }
-        API.call("remote_access/update_config", config, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
+        API.call("remote_access/config_update", config, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
     }
 
     override getIsModified(topic: "remote_access/config"): boolean {
@@ -444,14 +444,14 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         }
 
         this.setState({removeUsers: []});
-        const config: update_config = {
+        const config: config_update = {
                 enable: false,
             relay_host: this.state.relay_host,
             relay_port: this.state.relay_port,
                 email: "",
                 cert_id: this.state.cert_id,
         }
-        API.call("remote_access/update_config", config, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
+        API.call("remote_access/config_update", config, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
     }
 
     checkUserExisting() {

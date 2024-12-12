@@ -258,7 +258,7 @@ void RemoteAccess::register_urls() {
         return request.send(200);
     });
 
-    server.on("/remote_access/update_config", HTTP_PUT, [this](WebServerRequest request) {
+    server.on("/remote_access/config_update", HTTP_PUT, [this](WebServerRequest request) {
         auto content_len = request.contentLength();
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
