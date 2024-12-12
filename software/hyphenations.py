@@ -736,7 +736,10 @@ de_hyph = [
     "Spei-cher-ge-schwin-dig-keit",
     "Web-sock-ets",
     "Fort-s-et-zen",
-    "Ge-samt-leis-tung"
+    "Ge-samt-leis-tung",
+    "Fehl-ge-schla-gen",
+    "Nut-zer-na-me",
+    "hin-zu-ge-fügt",
 ]
 
 en_hyph = [
