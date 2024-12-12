@@ -78,8 +78,8 @@ let x = {
                 <p>If the PV excess control is enabled, the heating is put into extended operation as soon as the excess at the grid connection exceeds the set value.</p>
                 <p>If the dynamic price control is enabled, the heating is put into extended operation for the cheapest x hours per day.</p>
                 <p>If the PV yield forecast control is enabled, the heating is put into extended operation if the forecast is below the set value.</p>
-                <p>Example configuration: Extended operation with PV excess <b>above 1200W</b> or for <b>cheapest 4 hours per day</b>, but only if PV yield forecast <b>below 10 kWh/day</b>.</p>
-                <p>In this example, with a PV excess of 1200W, regardless of the following settings, the extended operation would be enabled. In addition, the extended operation would be enabled for the cheapest 4 hours per day, but only if the PV yield forecast was less than 10 kWh for the previous day. If a higher yield is expected, no extended operation is enabled.</p>
+                <p>Example configuration: Extended operation with PV excess <b>above 1200 W</b> or for the <b>cheapest four hours per day</b>, but only if PV yield forecast is <b>below 10 kWh per day</b>.</p>
+                <p>In this example, with a PV excess of 1200 W, regardless of the following settings, the extended operation would be enabled. In addition, the extended operation would be enabled for the cheapest four hours per day, but only if the PV yield forecast was less than 10 kWh for the previous day. If a higher yield is expected, no extended operation is enabled.</p>
                 <p>Objective of these settings: If a high PV yield is expected, no electricity is drawn from the grid for extended operation, even if the electricity price is cheap.</p>
             </>,
             "blocking_operation": "Blocking operation",

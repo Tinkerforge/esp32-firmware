@@ -29,7 +29,7 @@ let x = {
             "sta_bssid_lock": "BSSID lock",
             "sta_bssid_lock_desc": "Connects only to the network with the configured BSSID. Leave disabled if you use multiple access points or repeaters with with the same network name.",
             "sta_enable_11b": "Optimize reception",
-            "sta_enable_11b_desc": <>Uses deprecated slow 802.11b mode for slightly better WiFi range. <strong>Also slows down other devices connected to this network</strong>, but may improve the reception quality and robustness of the WiFi connection somewhat.</>,
+            "sta_enable_11b_desc": <>Use deprecated slow 802.11b mode for slightly better WiFi range. <strong>This also slows down other devices connected to this network</strong> but may improve the reception quality and robustness of the WiFi connection somewhat.</>,
             "sta_passphrase": "Passphrase",
 
             "ap_settings": "WiFi Access Point",
