@@ -1,0 +1,224 @@
+/* esp32-firmware
+ * Copyright (C) 2024 Matthias Bolte <matthias@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#define EVENT_LOG_PREFIX "batteries_mbtcp"
+
+#include "battery_modbus_tcp.h"
+
+#include <TFModbusTCPClient.h>
+
+#include "event_log_prefix.h"
+#include "module_dependencies.h"
+#include "modules/modbus_tcp_client/modbus_register_address_mode.enum.h"
+#include "modules/modbus_tcp_client/modbus_tcp_tools.h"
+
+static BatteryModbusTCP::ValueTable *read_table_config(const Config *config)
+{
+    // FIXME: leaking this, because as of right now battery instances don't get destroyed
+    BatteryModbusTCP::ValueTable *table = new BatteryModbusTCP::ValueTable;
+
+    table->device_address = static_cast<uint8_t>(config->get("device_address")->asUint());
+
+    const Config *registers_config = static_cast<const Config *>(config->get("registers"));
+    size_t registers_count         = registers_config->count();
+
+    // FIXME: leaking this, because as of right now battery instances don't get destroyed
+    BatteryModbusTCP::ValueSpec *values = new BatteryModbusTCP::ValueSpec[registers_count];
+
+    for (size_t i = 0; i < registers_count; ++i) {
+        values[i].register_type = registers_config->get(i)->get("rtype")->asEnum<ModbusRegisterType>();
+        values[i].start_address = static_cast<uint16_t>(registers_config->get(i)->get("addr")->asUint());
+        values[i].value         = static_cast<uint16_t>(registers_config->get(i)->get("value")->asUint());
+    }
+
+    table->values = values;
+    table->values_length = registers_count;
+
+    return table;
+}
+
+BatteryClassID BatteryModbusTCP::get_class() const
+{
+    return BatteryClassID::ModbusTCP;
+}
+
+void BatteryModbusTCP::setup(const Config &ephemeral_config)
+{
+    host_name = ephemeral_config.get("host")->asString();
+    port      = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
+    table_id  = ephemeral_config.get("table")->getTag<BatteryModbusTCPTableID>();
+
+    switch (table_id) {
+    case BatteryModbusTCPTableID::None:
+        logger.printfln("No table selected");
+        return;
+
+    case BatteryModbusTCPTableID::Custom: {
+            const Config *table_config = static_cast<const Config *>(ephemeral_config.get("table")->get());
+
+            custom_table_enable_grid_charge  = read_table_config(static_cast<const Config *>(table_config->get("enable_grid_charge")));
+            custom_table_disable_grid_charge = read_table_config(static_cast<const Config *>(table_config->get("disable_grid_charge")));
+            custom_table_enable_discharge    = read_table_config(static_cast<const Config *>(table_config->get("enable_discharge")));
+            custom_table_disable_discharge   = read_table_config(static_cast<const Config *>(table_config->get("disable_discharge")));
+
+            tables[static_cast<uint32_t>(IBattery::Action::EnableGridCharge)]  = custom_table_enable_grid_charge;
+            tables[static_cast<uint32_t>(IBattery::Action::DisableGridCharge)] = custom_table_disable_grid_charge;
+            tables[static_cast<uint32_t>(IBattery::Action::EnableDischarge)]   = custom_table_enable_discharge;
+            tables[static_cast<uint32_t>(IBattery::Action::DisableDischarge)]  = custom_table_disable_discharge;
+        }
+
+        break;
+
+    default:
+        logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
+        return;
+    }
+}
+
+void BatteryModbusTCP::register_events()
+{
+    // FIXME: maybe don't keep the connection open, but instead only connect for the duration of action's execution
+    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
+        if (connected->asBool()) {
+            start_connection();
+        } else {
+            stop_connection();
+        }
+
+        return EventResult::OK;
+    });
+}
+
+void BatteryModbusTCP::pre_reboot()
+{
+    stop_connection();
+}
+
+bool BatteryModbusTCP::supports_action(Action /*action*/)
+{
+    return true;
+}
+
+bool BatteryModbusTCP::start_action(Action action)
+{
+    if (connected_client == nullptr) {
+        logger.printfln("Not connected, cannot start action");
+        return false;
+    }
+
+    if (has_current_action) {
+        logger.printfln("Another action is already in progress");
+        return false;
+    }
+
+    has_current_action   = true;
+    current_action       = action;
+    current_action_index = 0;
+
+    write_next();
+
+    return true;
+}
+
+bool BatteryModbusTCP::get_current_action(Action *action)
+{
+    *action = current_action;
+
+    return has_current_action;
+}
+
+void BatteryModbusTCP::connect_callback()
+{
+}
+
+void BatteryModbusTCP::disconnect_callback()
+{
+}
+
+void BatteryModbusTCP::write_next()
+{
+    if (!has_current_action) {
+        return;
+    }
+
+    if (connected_client == nullptr) {
+        // FIXME: maybe retry if connection is lost in the middle of an action, instead of aborting
+        has_current_action = false;
+        return;
+    }
+
+    const ValueTable *table = tables[static_cast<uint32_t>(current_action)];
+
+    if (current_action_index >= table->values_length) {
+        has_current_action = false; // action is complete
+        return;
+    }
+
+    const ValueSpec *spec = &table->values[current_action_index];
+    TFModbusTCPFunctionCode function_code;
+
+    switch (spec->register_type) {
+    case ModbusRegisterType::HoldingRegister:
+        function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+        break;
+
+    case ModbusRegisterType::Coil:
+        function_code = TFModbusTCPFunctionCode::WriteSingleCoil;
+        break;
+
+    case ModbusRegisterType::InputRegister:
+    case ModbusRegisterType::DiscreteInput:
+    default:
+        esp_system_abort("battery_modbus_tcp: Unsupported register type to write.");
+    }
+
+    static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(table->device_address,
+                                                                       function_code,
+                                                                       spec->start_address,
+                                                                       1,
+                                                                       const_cast<uint16_t *>(&spec->value),
+                                                                       2_s,
+    [this, table, spec, function_code](TFModbusTCPClientTransactionResult result) {
+
+        if (result != TFModbusTCPClientTransactionResult::Success) {
+            logger.printfln("Modbus write error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u value=%u): %s (%d)",
+                            host_name.c_str(),
+                            port,
+                            table->device_address,
+                            static_cast<int>(function_code),
+                            spec->start_address,
+                            spec->value,
+                            get_tf_modbus_tcp_client_transaction_result_name(result),
+                            static_cast<int>(result));
+
+            // FIXME: maybe retry on error in the middle of an action, instead of aborting
+            has_current_action = false;
+            return;
+        }
+
+        ++current_action_index;
+
+        if (current_action_index >= table->values_length) {
+            has_current_action = false; // action is done
+            return;
+        }
+
+        write_next(); // FIXME: maybe add a little delay between writes to avoid bursts?
+    });
+}
