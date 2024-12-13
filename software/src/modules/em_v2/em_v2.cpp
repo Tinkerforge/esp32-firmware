@@ -178,7 +178,7 @@ void EMV2::register_urls()
 {
     this->DeviceModule::register_urls();
 
-    api.addCommand("energy_manager/outputs_update", &outputs_update, {}, [this](String &error) {
+    api.addCommand("energy_manager/outputs_update", &outputs_update, {}, [this](String &errmsg) {
         // 2x SG Ready, 2x Relay
         uint8_t new_values[4];
         this->outputs_update.fillUint8Array(new_values, ARRAY_SIZE(new_values));
@@ -188,7 +188,7 @@ void EMV2::register_urls()
             uint8_t new_value = new_values[i + 2];
             if (new_value != 255) {
                 if (new_value > 1) {
-                    error += "Relay output value out of range [0, 1].\n";
+                    errmsg += "Relay output value out of range [0, 1].\n";
                 } else {
                     set_relay_output(i, new_value);
                 }
@@ -201,7 +201,7 @@ void EMV2::register_urls()
             uint8_t new_value = new_values[i];
             if (new_value != 255) {
                 if (new_value > 1) {
-                    error += "SG Ready output value out of range [0, 1].\n";
+                    errmsg += "SG Ready output value out of range [0, 1].\n";
                 } else {
                     bool switching_blocked = false;
 
@@ -214,7 +214,7 @@ void EMV2::register_urls()
 #endif
 
                     if (switching_blocked) {
-                        error += "Cannot control SG Ready output that is currently in use by heating control.\n";
+                        errmsg += "Cannot control SG Ready output that is currently in use by heating control.\n";
                     } else {
                         set_sg_ready_output(i, new_value);
                     }

@@ -163,9 +163,9 @@ void Certs::register_urls()
 {
     api.addState("certs/state", &state);
 
-    api.addCommand("certs/add", &add, {}, [this](String &error) {
+    api.addCommand("certs/add", &add, {}, [this](String &errmsg) {
         if (add.get("cert")->asString().length() == 0) {
-            error = "Adding an empty certificate is not allowed. Did you mean to call certs/modify?";
+            errmsg = "Adding an empty certificate is not allowed. Did you mean to call certs/modify?";
             return;
         }
 
@@ -173,7 +173,7 @@ void Certs::register_urls()
 
         for (const auto &cert: state.get("certs")) {
             if (cert.get("id")->asUint() == cert_id) {
-                error = String("A certificate with ID ") + cert_id + " does already exist! Did you mean to call certs/modify?";
+                errmsg = String("A certificate with ID ") + cert_id + " does already exist! Did you mean to call certs/modify?";
                 return;
             }
         }
@@ -197,7 +197,7 @@ void Certs::register_urls()
         this->update_state();
     }, true);
 
-    api.addCommand("certs/modify", &add, {}, [this](String &error) {
+    api.addCommand("certs/modify", &add, {}, [this](String &errmsg) {
         uint8_t cert_id = add.get("id")->asUint();
         bool found = false;
         for (const auto &cert: state.get("certs")) {
@@ -208,7 +208,7 @@ void Certs::register_urls()
         }
 
         if (!found) {
-            error = String("No cert with ID ") + cert_id + " found! Did you mean to call certs/add?";
+            errmsg = String("No cert with ID ") + cert_id + " found! Did you mean to call certs/add?";
         }
 
         {
@@ -230,13 +230,13 @@ void Certs::register_urls()
         this->update_state();
     }, true);
 
-    api.addCommand("certs/remove", &remove, {}, [this](String &error) {
+    api.addCommand("certs/remove", &remove, {}, [this](String &errmsg) {
         uint8_t cert_id = remove.get("id")->asUint();
 
         String path = get_cert_path(cert_id);
 
         if (!LittleFS.exists(path)) {
-            error = String("No cert with ID ") + cert_id + " found!";
+            errmsg = String("No cert with ID ") + cert_id + " found!";
             return;
         }
 

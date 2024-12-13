@@ -85,9 +85,9 @@ void MetersSunSpec::pre_setup()
 
 void MetersSunSpec::register_urls()
 {
-    api.addCommand("meters_sun_spec/scan", &scan_config, {}, [this](String &error) {
+    api.addCommand("meters_sun_spec/scan", &scan_config, {}, [this](String &errmsg) {
         if (scan_state != ScanState::Idle) {
-            error = "Another scan is already in progress, please try again later!";
+            errmsg = "Another scan is already in progress, please try again later!";
             return;
         }
 
@@ -105,7 +105,7 @@ void MetersSunSpec::register_urls()
         scan_last_keep_alive = now_us();
     }, true);
 
-    api.addCommand("meters_sun_spec/scan_continue", &scan_continue_config, {}, [this](String &error) {
+    api.addCommand("meters_sun_spec/scan_continue", &scan_continue_config, {}, [this](String &errmsg) {
         if (scan_state == ScanState::Idle) {
             return;
         }
@@ -113,14 +113,14 @@ void MetersSunSpec::register_urls()
         uint32_t cookie = scan_continue_config.get("cookie")->asUint();
 
         if (cookie != scan_cookie) {
-            error = "Cannot continue another scan";
+            errmsg = "Cannot continue another scan";
             return;
         }
 
         scan_last_keep_alive = now_us();
     }, true);
 
-    api.addCommand("meters_sun_spec/scan_abort", &scan_abort_config, {}, [this](String &error) {
+    api.addCommand("meters_sun_spec/scan_abort", &scan_abort_config, {}, [this](String &errmsg) {
         if (scan_state == ScanState::Idle) {
             return;
         }
@@ -128,7 +128,7 @@ void MetersSunSpec::register_urls()
         uint32_t cookie = scan_abort_config.get("cookie")->asUint();
 
         if (cookie != scan_cookie) {
-            error = "Cannot abort another scan";
+            errmsg = "Cannot abort another scan";
             return;
         }
 
