@@ -457,7 +457,7 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
             return [MeterModbusTCPTableID.CarloGavazziEM540, {device_address: 1}];
 
         default:
-            return [MeterModbusTCPTableID.None, {}];
+            return [MeterModbusTCPTableID.None, null];
     }
 }
 
