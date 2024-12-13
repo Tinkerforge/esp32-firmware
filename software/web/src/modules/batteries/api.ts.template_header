@@ -1,0 +1,5 @@
+import { BatteryClassID } from "./battery_class_id.enum";
+{{{imports}}}
+
+type BatteryConfig =
+    [BatteryClassID.None, null]{{{configs}}};
