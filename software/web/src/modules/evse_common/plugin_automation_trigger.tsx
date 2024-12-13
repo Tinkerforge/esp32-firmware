@@ -36,7 +36,7 @@ export type ChargerStateAutomationTrigger = [
 
 export type EVSEEexternalCurrentWdAutomationTrigger = [
     AutomationTriggerID.EVSEExternalCurrentWd,
-    {},
+    null,
 ];
 
 function new_iec_change_config(): AutomationTrigger {
@@ -102,7 +102,7 @@ function get_iec_change_edit_children(trigger: ChargerStateAutomationTrigger, on
 function new_external_current_wd_config(): AutomationTrigger {
     return [
         AutomationTriggerID.EVSEExternalCurrentWd,
-        {},
+        null,
     ];
 }
 

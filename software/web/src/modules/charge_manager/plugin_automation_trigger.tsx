@@ -25,7 +25,7 @@ import { AutomationTrigger, InitResult } from "../automation/types";
 
 export type ChargeManagerWdAutomationTrigger = [
     AutomationTriggerID.ChargeManagerWd,
-    {},
+    null,
 ];
 
 function get_charge_manager_wd_table_children(_: ChargeManagerWdAutomationTrigger) {
@@ -39,7 +39,7 @@ function get_charge_manager_wd_edit_children(_: ChargeManagerWdAutomationTrigger
 function new_charge_manager_wd_config(): AutomationTrigger {
     return [
         AutomationTriggerID.ChargeManagerWd,
-        {},
+        null,
     ];
 }
 
