@@ -33,18 +33,19 @@ public:
     virtual MeterClassID get_class() const = 0;
     virtual void setup(const Config &ephemeral_config) {}
     virtual void register_urls(const String &base_url) {}
-    virtual void register_events() {}
-    virtual void pre_reboot() {}
+    virtual void register_events()                     {}
+    virtual void pre_reboot()                          {}
 
     virtual bool supports_power()         {return false;}
     virtual bool supports_energy_import() {return false;}
     virtual bool supports_energy_imexsum(){return false;}
     virtual bool supports_energy_export() {return false;}
     virtual bool supports_currents()      {return false;}
-    //virtual bool supports_phases() {return false;}
+    //virtual bool supports_phases()      {return false;}
 
     // Should be true iff the meter has [...]Resettable values
     virtual bool supports_reset()         {return false;}
+
     // Should reset _all_ [...]Resettable values.
     // Return false if the reset failed.
     virtual bool reset()                  {return true; }
