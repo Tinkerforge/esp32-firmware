@@ -129,7 +129,7 @@ function get_pm_limit_max_current_table_children(action: PMLimitMaxCurrentAutoma
 function get_pm_limit_max_current_edit_children(action: PMLimitMaxCurrentAutomationAction, on_action: (action: AutomationAction) => void) {
     const items:[string, string][] = [
         ['0', __("power_manager.automation.limit_max_current")],
-        ['1', __("power_manager.automation.reset_limit_max_current") + " (" + API.get("charge_manager/config").maximum_available_current / 1000 + "A)"]
+        ['1', __("power_manager.automation.reset_limit_max_current") + " (" + API.get("charge_manager/config").maximum_available_current / 1000 + " A)"]
     ]
 
     return [
