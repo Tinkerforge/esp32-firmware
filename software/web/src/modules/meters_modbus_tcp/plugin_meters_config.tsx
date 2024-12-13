@@ -470,7 +470,7 @@ interface RegisterEditorState {
     register: Register,
 }
 
-class RegisterTable extends Component<RegisterEditorProps, RegisterEditorState> {
+class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState> {
     constructor(props: RegisterEditorProps) {
         super(props);
 
@@ -985,7 +985,7 @@ export function init() {
                                 }} />
                         </FormRow>,
                         <FormRow label={__("meters_modbus_tcp.content.registers")}>
-                            <RegisterTable
+                            <RegisterEditor
                                 table={config[1].table}
                                 on_table={(table: TableConfigCustom) => on_config(util.get_updated_union(config, {table: table}))} />
                         </FormRow>
