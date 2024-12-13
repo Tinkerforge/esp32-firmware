@@ -34,7 +34,7 @@ export type ChargerStateAutomationTrigger = [
     },
 ];
 
-export type EVSEEexternalCurrentWdAutomationTrigger = [
+export type EVSEExternalCurrentWdAutomationTrigger = [
     AutomationTriggerID.EVSEExternalCurrentWd,
     null,
 ];
@@ -106,11 +106,11 @@ function new_external_current_wd_config(): AutomationTrigger {
     ];
 }
 
-function get_external_current_wd_table_children(_: EVSEEexternalCurrentWdAutomationTrigger) {
+function get_external_current_wd_table_children(_: EVSEExternalCurrentWdAutomationTrigger) {
     return __("evse.automation.external_current_wd_trigger");
 }
 
-function get_external_current_wd_edit_children(_: EVSEEexternalCurrentWdAutomationTrigger, __: (trigger: AutomationTrigger) => void): ComponentChildren {
+function get_external_current_wd_edit_children(_: EVSEExternalCurrentWdAutomationTrigger, __: (trigger: AutomationTrigger) => void): ComponentChildren {
     return []
 }
 
