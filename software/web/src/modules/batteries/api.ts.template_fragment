@@ -1,0 +1,2 @@
+//APIPath:batteries/{{{battery_id}}}/
+export type config___{{{battery_id}}} = BatteryConfig;
