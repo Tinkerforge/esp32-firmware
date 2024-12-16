@@ -311,11 +311,13 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
             }
         }
     }
-    trace(have_b1 ? "1: have B1" : "1: don't have B1");
 
     // Only rotate once per cfg->rotation_interval.
     // Setting the rotation interval to 0 seconds disables the rotation feature completely.
     bool rotation_allowed = cfg->rotation_interval > 0_s && deadline_elapsed(ca_state->next_rotation);
+
+    trace("1: have B1 %d; rotation allowed %d",have_b1, rotation_allowed);
+
     if (rotation_allowed) {
         seconds_t interval = cfg->rotation_interval;
         ca_state->next_rotation = now_us() + interval;
