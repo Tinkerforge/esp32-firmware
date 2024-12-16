@@ -34,6 +34,8 @@ struct CurrentAllocatorConfig {
     // Amount of time a charger should stay activated before considering it for rotation or phase switch.
     micros_t minimum_active_time;
 
+    seconds_t rotation_interval;
+
     // Only consider charger for rotation if it has charged at least this amount of energy (kWh).
     int32_t allocated_energy_rotation_threshold;
 
@@ -53,6 +55,8 @@ struct CurrentAllocatorState {
 
     bool global_hysteresis_elapsed = false;
     micros_t last_hysteresis_reset = 0_us;
+
+    micros_t next_rotation = 0_us;
 
     Cost control_window_min = {0, 0, 0, 0};
     Cost control_window_max = {0, 0, 0, 0};

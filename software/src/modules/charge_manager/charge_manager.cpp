@@ -151,6 +151,7 @@ void ChargeManager::pre_setup()
         {"plug_in_time", Config::Uint(3 * 60, 0, 60 * 60)},
         {"enable_current_factor_pct", Config::Uint(150, 100, 300)},
         {"allocation_interval", Config::Uint(10, 1, 60 * 60)},
+        {"rotation_interval", Config::Uint(15 * 60, 0, 24 * 60 * 60)},
     });
 
     const Config *config_prototype_int32_0 = Config::get_prototype_int32_0();
@@ -375,6 +376,7 @@ void ChargeManager::setup()
     ca_config->wakeup_time                          = seconds_t{low_level_config.get("wakeup_time")->asUint()};
     ca_config->plug_in_time                         = seconds_t{low_level_config.get("plug_in_time")->asUint()};
     ca_config->allocation_interval                  = seconds_t{low_level_config.get("allocation_interval")->asUint()};
+    ca_config->rotation_interval                    = seconds_t{low_level_config.get("rotation_interval")->asUint()};
     ca_config->allocated_energy_rotation_threshold  = low_level_config.get("alloc_energy_rot_thres")->asUint();
     ca_config->enable_current_factor                = low_level_config.get("enable_current_factor_pct")->asUint() / 100.0f;
 

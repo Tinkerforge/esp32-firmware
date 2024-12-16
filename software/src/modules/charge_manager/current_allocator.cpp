@@ -313,6 +313,27 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     }
     trace(have_b1 ? "1: have B1" : "1: don't have B1");
 
+    // Only rotate once per cfg->rotation_interval.
+    // Setting the rotation interval to 0 seconds disables the rotation feature completely.
+    bool rotation_allowed = cfg->rotation_interval > 0_s && deadline_elapsed(ca_state->next_rotation);
+    if (rotation_allowed) {
+        seconds_t interval = cfg->rotation_interval;
+        ca_state->next_rotation = now_us() + interval;
+
+        // Align rotations to wall-clock time if it is known.
+        timeval tv;
+        if (rtc.clock_synced(&tv)) {
+            seconds_t now = seconds_t{tv.tv_sec};
+            seconds_t midnight = seconds_t{get_localtime_midnight_in_utc(tv.tv_sec)};
+
+            auto offset_after_interval = (now - midnight) % interval;
+            ca_state->next_rotation -= offset_after_interval;
+
+            if (offset_after_interval >= (2_us * cfg->allocation_interval))
+                ca_state->next_rotation += interval;
+        }
+    }
+
     // Shut down a charger if it should be rotated or if it reports that it is not active anymore.
     // Note that a charger that was activated in stage 9 (to wake up a full vehicle)
     // it will always be deactivated here to make sure we only wake up vehicles if there is current left over.
@@ -323,9 +344,11 @@ void stage_1(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         const auto *state = &charger_state[i];
 
         bool alloc_energy_over_thres = state->allocated_energy_this_rotation >= cfg->allocated_energy_rotation_threshold;
+        // We need both the clock-aligned rotation interval and the minimum active time to be elapsed before rotating a charger:
+        // A charger that was just plugged in may not be rotated.
         bool min_active_elapsed = deadline_elapsed(state->last_switch_on + cfg->minimum_active_time);
 
-        bool rotate = have_b1 && ca_state->global_hysteresis_elapsed && alloc_energy_over_thres && min_active_elapsed;
+        bool rotate = rotation_allowed && have_b1 && ca_state->global_hysteresis_elapsed && alloc_energy_over_thres && min_active_elapsed;
 
         // 3p and 1p unknown rotated chargers are considered active on any phase.
         // They can be shut down if there is a charger waiting on any phase.
