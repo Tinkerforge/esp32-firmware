@@ -52,6 +52,8 @@ private:
     Config table_custom_registers_prototype;
     std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> table_prototypes;
     Config errors_prototype;
+
+    size_t trace_buffer_index;
 };
 
 #if defined(__GNUC__)

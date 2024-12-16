@@ -19,6 +19,7 @@
  */
 
 #define EVENT_LOG_PREFIX "meters_mbtcp"
+#define TRACE_LOG_PREFIX nullptr
 
 #include "meter_modbus_tcp.h"
 
@@ -30,7 +31,7 @@
 
 #include "gcc_warnings.h"
 
-//#define DEBUG_LOG_ALL_VALUES
+//#define DEBUG_VALUES_TO_TRACE_LOG
 
 #define NUMBER_TO_ADDRESS(number) ((number) - 1u)
 
@@ -963,7 +964,7 @@ bool MeterModbusTCP::prepare_read()
     bool overflow = false;
 
     while (
-#ifndef DEBUG_LOG_ALL_VALUES
+#ifndef DEBUG_VALUES_TO_TRACE_LOG
         table->index[read_index] == VALUE_INDEX_DEBUG ||
 #endif
         table->specs[read_index].start_address == START_ADDRESS_VIRTUAL) {
@@ -1075,6 +1076,14 @@ bool MeterModbusTCP::is_carlo_gavazzi_em510() const
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
+        logger.tracefln(trace_buffer_index,
+                        "m%u t%u i%zu e%u a%zu",
+                        slot,
+                        static_cast<uint8_t>(table_id),
+                        read_index,
+                        static_cast<uint32_t>(generic_read_request.result),
+                        table->specs[read_index].start_address);
+
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
             auto timeout = errors->get("timeout");
             timeout->updateUint(timeout->asUint() + 1);
@@ -1088,6 +1097,15 @@ void MeterModbusTCP::read_done_callback()
     if (is_sungrow_inverter_meter()
      && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS) {
         if (sungrow_inverter_output_type < 0) {
+            logger.tracefln(trace_buffer_index,
+                            "m%u t%u i%zu u16 a%zu r%u v%u",
+                            slot,
+                            static_cast<uint8_t>(table_id),
+                            read_index,
+                            table->specs[read_index].start_address,
+                            register_buffer[register_buffer_index],
+                            register_buffer[register_buffer_index]);
+
             switch (register_buffer[register_buffer_index]) {
             case 0:
                 if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
@@ -1126,13 +1144,6 @@ void MeterModbusTCP::read_done_callback()
 
             sungrow_inverter_output_type = register_buffer[register_buffer_index];
 
-#ifdef DEBUG_LOG_ALL_VALUES
-            logger.printfln("%s / Output Type (%u): %d",
-                            get_meter_modbus_tcp_table_id_name(table_id),
-                            SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS,
-                            sungrow_inverter_output_type);
-#endif
-
             meters.declare_value_ids(slot, table->ids, table->ids_length);
         }
 
@@ -1148,6 +1159,15 @@ void MeterModbusTCP::read_done_callback()
     if (is_deye_hybrid_inverter_battery_meter()
      && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
         if (deye_hybrid_inverter_device_type < 0) {
+            logger.tracefln(trace_buffer_index,
+                            "m%u t%u i%zu u16 a%zu r%u v%u",
+                            slot,
+                            static_cast<uint8_t>(table_id),
+                            read_index,
+                            table->specs[read_index].start_address,
+                            register_buffer[register_buffer_index],
+                            register_buffer[register_buffer_index]);
+
             switch (register_buffer[register_buffer_index]) {
             case 0x0002:
             case 0x0003:
@@ -1170,13 +1190,6 @@ void MeterModbusTCP::read_done_callback()
             }
 
             deye_hybrid_inverter_device_type = register_buffer[register_buffer_index];
-
-#ifdef DEBUG_LOG_ALL_VALUES
-            logger.printfln("%s / Device Type (%u): %d",
-                            get_meter_modbus_tcp_table_id_name(table_id),
-                            DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS,
-                            deye_hybrid_inverter_device_type);
-#endif
 
             meters.declare_value_ids(slot, table->ids, table->ids_length);
         }
@@ -1205,6 +1218,7 @@ void MeterModbusTCP::read_done_callback()
     float value = NAN;
     ModbusValueType value_type = table->specs[read_index].value_type;
     size_t register_count = MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(value_type);
+    const char *endian = "?";
 
     switch (register_count) {
     case 1:
@@ -1212,10 +1226,12 @@ void MeterModbusTCP::read_done_callback()
 
     case 2:
         if (MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(value_type)) {
+            endian = "le";
             c32.r[0] = register_buffer[register_buffer_index + 0];
             c32.r[1] = register_buffer[register_buffer_index + 1];
         }
         else {
+            endian = "be";
             c32.r[0] = register_buffer[register_buffer_index + 1];
             c32.r[1] = register_buffer[register_buffer_index + 0];
         }
@@ -1224,12 +1240,14 @@ void MeterModbusTCP::read_done_callback()
 
     case 4:
         if (MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(value_type)) {
+            endian = "le";
             c64.r[0] = register_buffer[register_buffer_index + 0];
             c64.r[1] = register_buffer[register_buffer_index + 1];
             c64.r[2] = register_buffer[register_buffer_index + 2];
             c64.r[3] = register_buffer[register_buffer_index + 3];
         }
         else {
+            endian = "be";
             c64.r[0] = register_buffer[register_buffer_index + 3];
             c64.r[1] = register_buffer[register_buffer_index + 2];
             c64.r[2] = register_buffer[register_buffer_index + 1];
@@ -1245,124 +1263,138 @@ void MeterModbusTCP::read_done_callback()
 
     switch (value_type) {
     case ModbusValueType::None:
+        logger.tracefln(trace_buffer_index,
+                        "m%u t%u i%zu n a%zu",
+                        slot,
+                        static_cast<uint8_t>(table_id),
+                        read_index,
+                        table->specs[read_index].start_address);
         break;
 
     case ModbusValueType::U16:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %u",
-                        get_meter_modbus_tcp_table_id_name(table_id),
-                        table->specs[read_index].name,
+        logger.tracefln(trace_buffer_index,
+                        "m%u t%u i%zu u16 a%zu r%u v%u",
+                        slot,
+                        static_cast<uint8_t>(table_id),
+                        read_index,
                         table->specs[read_index].start_address,
+                        register_buffer[register_buffer_index],
                         register_buffer[register_buffer_index]);
-#endif
 
         value = static_cast<float>(register_buffer[register_buffer_index]);
         break;
 
     case ModbusValueType::S16:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %d",
-                        get_meter_modbus_tcp_table_id_name(table_id),
-                        table->specs[read_index].name,
+        logger.tracefln(trace_buffer_index,
+                        "m%u t%u i%zu s16 a%zu r%u v%d",
+                        slot,
+                        static_cast<uint8_t>(table_id),
+                        read_index,
                         table->specs[read_index].start_address,
+                        register_buffer[register_buffer_index],
                         static_cast<int16_t>(register_buffer[register_buffer_index]));
-#endif
 
         value = static_cast<float>(static_cast<int16_t>(register_buffer[register_buffer_index]));
         break;
 
     case ModbusValueType::U32BE:
     case ModbusValueType::U32LE:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %u (%u %u)",
-                        get_meter_modbus_tcp_table_id_name(table_id),
-                        table->specs[read_index].name,
+        logger.tracefln(trace_buffer_index,
+                        "m%u t%u i%zu u32%s a%zu r%u,%u v%u",
+                        slot,
+                        static_cast<uint8_t>(table_id),
+                        read_index,
+                        endian,
                         table->specs[read_index].start_address,
-                        c32.u,
                         register_buffer[register_buffer_index + 0],
-                        register_buffer[register_buffer_index + 1]);
-#endif
+                        register_buffer[register_buffer_index + 1],
+                        c32.u);
 
         value = static_cast<float>(c32.u);
         break;
 
     case ModbusValueType::S32BE:
     case ModbusValueType::S32LE:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %d (%u %u)",
-                        get_meter_modbus_tcp_table_id_name(table_id),
-                        table->specs[read_index].name,
+        logger.tracefln(trace_buffer_index,
+                        "m%u t%u i%zu s32%s a%zu r%u,%u v%d",
+                        slot,
+                        static_cast<uint8_t>(table_id),
+                        read_index,
+                        endian,
                         table->specs[read_index].start_address,
-                        static_cast<int32_t>(c32.u),
                         register_buffer[register_buffer_index + 0],
-                        register_buffer[register_buffer_index + 1]);
-#endif
+                        register_buffer[register_buffer_index + 1],
+                        static_cast<int32_t>(c32.u));
 
         value = static_cast<float>(static_cast<int32_t>(c32.u));
         break;
 
     case ModbusValueType::F32BE:
     case ModbusValueType::F32LE:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %f (%u %u)",
-                        get_meter_modbus_tcp_table_id_name(table_id),
-                        table->specs[read_index].name,
+        logger.tracefln(trace_buffer_index,
+                        "m%u t%u i%zu f32%s a%zu r%u,%u v%f",
+                        slot,
+                        static_cast<uint8_t>(table_id),
+                        read_index,
+                        endian,
                         table->specs[read_index].start_address,
-                        static_cast<double>(c32.f),
                         register_buffer[register_buffer_index + 0],
-                        register_buffer[register_buffer_index + 1]);
-#endif
+                        register_buffer[register_buffer_index + 1],
+                        static_cast<double>(c32.f));
 
         value = c32.f;
         break;
 
     case ModbusValueType::U64BE:
     case ModbusValueType::U64LE:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %llu (%u %u %u %u)",
-                        get_meter_modbus_tcp_table_id_name(table_id),
-                        table->specs[read_index].name,
+        logger.tracefln(trace_buffer_index,
+                        "m%u t%u i%zu u64%s a%zu r%u,%u,%u,%u v%llu",
+                        slot,
+                        static_cast<uint8_t>(table_id),
+                        read_index,
+                        endian,
                         table->specs[read_index].start_address,
-                        c64.u,
                         register_buffer[register_buffer_index + 0],
                         register_buffer[register_buffer_index + 1],
                         register_buffer[register_buffer_index + 2],
-                        register_buffer[register_buffer_index + 3]);
-#endif
+                        register_buffer[register_buffer_index + 3],
+                        c64.u);
 
         value = static_cast<float>(c64.u);
         break;
 
     case ModbusValueType::S64BE:
     case ModbusValueType::S64LE:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %lld (%u %u %u %u)",
-                        get_meter_modbus_tcp_table_id_name(table_id),
-                        table->specs[read_index].name,
+        logger.tracefln(trace_buffer_index,
+                        "m%u t%u i%zu s64%s a%zu r%u,%u,%u,%u v%lld",
+                        slot,
+                        static_cast<uint8_t>(table_id),
+                        read_index,
+                        endian,
                         table->specs[read_index].start_address,
-                        static_cast<int64_t>(c64.u),
                         register_buffer[register_buffer_index + 0],
                         register_buffer[register_buffer_index + 1],
                         register_buffer[register_buffer_index + 2],
-                        register_buffer[register_buffer_index + 3]);
-#endif
+                        register_buffer[register_buffer_index + 3],
+                        static_cast<int64_t>(c64.u));
 
         value = static_cast<float>(static_cast<int64_t>(c64.u));
         break;
 
     case ModbusValueType::F64BE:
     case ModbusValueType::F64LE:
-#ifdef DEBUG_LOG_ALL_VALUES
-        logger.printfln("%s / %s (%zu): %f (%u %u %u %u)",
-                        get_meter_modbus_tcp_table_id_name(table_id),
-                        table->specs[read_index].name,
+        logger.tracefln(trace_buffer_index,
+                        "m%u t%u i%zu f64%s a%zu r%u,%u,%u,%u v%f",
+                        slot,
+                        static_cast<uint8_t>(table_id),
+                        read_index,
+                        endian,
                         table->specs[read_index].start_address,
-                        c64.f,
                         register_buffer[register_buffer_index + 0],
                         register_buffer[register_buffer_index + 1],
                         register_buffer[register_buffer_index + 2],
-                        register_buffer[register_buffer_index + 3]);
-#endif
+                        register_buffer[register_buffer_index + 3],
+                        c64.f);
 
         value = static_cast<float>(c64.f);
         break;

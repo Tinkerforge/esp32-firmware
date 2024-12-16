@@ -32,6 +32,8 @@
 
 void MetersModbusTCP::pre_setup()
 {
+    this->trace_buffer_index = logger.alloc_trace_buffer("meters_mbtcp", 8192);
+
     table_prototypes.push_back({MeterModbusTCPTableID::None, *Config::Null()});
 
     table_custom_registers_prototype = Config::Object({
@@ -189,7 +191,7 @@ MeterClassID MetersModbusTCP::get_class() const
 
 IMeter *MetersModbusTCP::new_meter(uint32_t slot, Config *state, Config *errors)
 {
-    return new MeterModbusTCP(slot, state, errors, modbus_tcp_client.get_pool());
+    return new MeterModbusTCP(slot, state, errors, modbus_tcp_client.get_pool(), trace_buffer_index);
 }
 
 const Config *MetersModbusTCP::get_config_prototype()
