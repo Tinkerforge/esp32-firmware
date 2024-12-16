@@ -141,16 +141,31 @@ def main():
     if not os.path.exists(sodium_secret_key_path):
         raise Exception(f'Sodium secret key file {sodium_secret_key_path} is missing')
 
-    sodium_secret_key_password = args.sodium_secret_key_password
+    sodium_secret_key_hex = None
 
-    if config['sodium_secret_key_protection'] == 'password' and sodium_secret_key_password == None:
-        print(f'Enter password for sodium secret key file {sodium_secret_key_path}:')
-        sodium_secret_key_password = getpass.getpass(prompt='')
+    while sodium_secret_key_hex == None:
+        sodium_secret_key_password = None
 
-    sodium_secret_key_hex = keepassxc(config, 'sodium_secret_key', 'show', ['-s', '-a', 'password'], 'sodium_secret_key', password=sodium_secret_key_password)
+        if config['sodium_secret_key_protection'] == 'password':
+            if args.sodium_secret_key_password == None:
+                print(f'Enter password for sodium secret key file {sodium_secret_key_path}:')
 
-    if sodium_secret_key_hex == None:
-        raise Exception(f'Could not read sodium secret key entry from {sodium_secret_key_path}')
+                try:
+                    sodium_secret_key_password = getpass.getpass(prompt='')
+                except KeyboardInterrupt:
+                    raise Exception('Aborted')
+            else:
+                sodium_secret_key_password = args.sodium_secret_key_password
+
+        sodium_secret_key_hex = keepassxc(config, 'sodium_secret_key', 'show', ['-s', '-a', 'password'], 'sodium_secret_key', password=sodium_secret_key_password)
+
+        if sodium_secret_key_hex == None:
+            message = f'Could not read sodium secret key entry from {sodium_secret_key_path}'
+
+            if config['sodium_secret_key_protection'] == 'password' and args.sodium_secret_key_password == None:
+                print(message)
+            else:
+                raise Exception(message)
 
     sodium_secret_key = bytes.fromhex(sodium_secret_key_hex)
 
@@ -231,16 +246,31 @@ def main():
         if not os.path.exists(gpg_keyring_passphrase_path):
             raise Exception(f'GPG keyring passphrase file {gpg_keyring_passphrase_path} is missing')
 
-        gpg_keyring_passphrase_password = args.gpg_keyring_passphrase_password
+        gpg_keyring_passphrase = None
 
-        if config['gpg_keyring_passphrase_protection'] == 'password' and gpg_keyring_passphrase_password == None:
-            print(f'Enter password for GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
-            gpg_keyring_passphrase_password = getpass.getpass(prompt='')
+        while gpg_keyring_passphrase == None:
+            gpg_keyring_passphrase_password = None
 
-        gpg_keyring_passphrase = keepassxc(config, 'gpg_keyring_passphrase', 'show', ['-s', '-a', 'password'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password)
+            if config['gpg_keyring_passphrase_protection'] == 'password':
+                if args.gpg_keyring_passphrase_password == None:
+                    print(f'Enter password for GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
 
-        if gpg_keyring_passphrase == None:
-            raise Exception(f'Could not read GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
+                    try:
+                        gpg_keyring_passphrase_password = getpass.getpass(prompt='')
+                    except KeyboardInterrupt:
+                        raise Exception('Aborted')
+                else:
+                    gpg_keyring_passphrase_password = args.gpg_keyring_passphrase_password
+
+            gpg_keyring_passphrase = keepassxc(config, 'gpg_keyring_passphrase', 'show', ['-s', '-a', 'password'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password)
+
+            if gpg_keyring_passphrase == None:
+                message = f'Could not read GPG keyring passphrase entry from {gpg_keyring_passphrase_path}'
+
+                if config['gpg_keyring_passphrase_protection'] == 'password' and args.gpg_keyring_passphrase_password == None:
+                    print(message)
+                else:
+                    raise Exception(message)
 
         gpg_keyring_passphrase = gpg_keyring_passphrase.strip()
 
