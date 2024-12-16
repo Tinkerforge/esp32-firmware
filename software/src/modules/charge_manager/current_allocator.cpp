@@ -1419,9 +1419,7 @@ int allocate_current(
     uint32_t *allocated_current
     )
 {
-#if BOARD_HAS_PSRAM
     logger.trace_timestamp(charge_manager.trace_buffer_index);
-#endif
 
     // TODO use enum for this. See charge_manager.cpp state definition for constants.
     int result = 1;
