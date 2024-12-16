@@ -99,5 +99,5 @@ private:
 
     std::recursive_mutex push_system_time_mutex;
 
-    size_t trace_buf_index;
+    size_t trace_buffer_index;
 };

@@ -61,7 +61,7 @@ void IRtcBackend::set_time(const tm &time, int32_t microseconds)
 
 void Rtc::pre_setup()
 {
-    this->trace_buf_index = logger.alloc_trace_buffer("rtc", 8192);
+    this->trace_buffer_index = logger.alloc_trace_buffer("rtc", 8192);
 
     time = Config::Object({
         {"year", Config::Uint16(0)},
@@ -211,7 +211,7 @@ void Rtc::update_rtc_from_system_time(int attempt) {
     }
 
     if (attempt > 0) {
-        logger.tracefln(this->trace_buf_index, "Failed to hit < X.010s %d times.%s", attempt, attempt >= 3 ? " RTC time may not be precise" : "");
+        logger.tracefln(this->trace_buffer_index, "Failed to hit < X.010s %d times.%s", attempt, attempt >= 3 ? " RTC time may not be precise" : "");
     }
 }
 
@@ -252,7 +252,7 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
         size_t written = strftime(buf, ARRAY_SIZE(buf), "%F %T", &timeinfo);
         snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", time.tv_usec / 1000);
 
-        logger.tracefln(this->trace_buf_index, "Set time to %s at %lu. Quality %s", buf, millis(), get_quality_name(quality));
+        logger.tracefln(this->trace_buffer_index, "Set time to %s at %lu. Quality %s", buf, millis(), get_quality_name(quality));
 
         settimeofday(&time, NULL);
 
