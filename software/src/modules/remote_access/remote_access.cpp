@@ -1389,6 +1389,8 @@ void RemoteAccess::resolve_management() {
             }
             config.get("uuid")->updateString(resp["uuid"]);
             api.writeConfig("remote_access/config", &config);
+
+            return;
         }
 
         StaticJsonDocument<1024> doc;
