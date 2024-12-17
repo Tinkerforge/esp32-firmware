@@ -961,6 +961,10 @@ void MeterModbusTCP::disconnect_callback()
 
 bool MeterModbusTCP::prepare_read()
 {
+    if (table == nullptr) {
+        return false;
+    }
+
     bool overflow = false;
 
     while (
@@ -980,6 +984,10 @@ bool MeterModbusTCP::prepare_read()
 
 void MeterModbusTCP::read_next()
 {
+    if (table == nullptr) {
+        return;
+    }
+
     if (register_buffer_index < generic_read_request.register_count
      && generic_read_request.register_type == table->specs[read_index].register_type
      && generic_read_request.start_address + register_buffer_index == table->specs[read_index].start_address
@@ -1075,6 +1083,10 @@ bool MeterModbusTCP::is_carlo_gavazzi_em510() const
 
 void MeterModbusTCP::read_done_callback()
 {
+    if (table == nullptr) {
+        return;
+    }
+
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
         logger.tracefln(trace_buffer_index,
                         "m%u t%u i%zu e%u a%zu",
