@@ -73,6 +73,10 @@ function update_active_language() {
     }
 }
 window.addEventListener('languagechange', update_active_language);
+// Call update_active_language once initially.
+// If system module is not used this has to be called once so the first
+// language from navigator.languages is used, if there is no languagechange event.
+update_active_language();
 
 function translate<S extends string>(key: string): GetDictValue<S, Translation> {
     let subtranslation: any = translation[active_language.value];
