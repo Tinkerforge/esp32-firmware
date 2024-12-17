@@ -32,7 +32,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
-from provisioning.tinkerforge.bricklet_nfc import SimpleGetTagID
+from provisioning.tinkerforge.bricklet_nfc import BrickletNFC, SimpleGetTagID
 from provisioning.tinkerforge.bricklet_evse_v2 import BrickletEVSEV2
 
 from provisioning.provision_common.provision_common import *
@@ -48,13 +48,20 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
     enumerations = enumerate_devices(ipcon)
 
     master = next((e for e in enumerations if e.device_identifier == 13), None)
-    evse_enum = next((e for e in enumerations if e.device_identifier == 2167), None)
-
-    if qr_variant != "B" and len(enumerations) not in [1, 2]:
-        fatal_error("Unexpected number of devices! Expected 1 or 2 but got {}.".format(len(enumerations)))
+    evse_enum = next((e for e in enumerations if e.device_identifier == BrickletEVSEV2.DEVICE_IDENTIFIER), None)
+    nfc_enum = next((e for e in enumerations if e.device_identifier == BrickletNFC.DEVICE_IDENTIFIER), None)
 
     if evse_enum is None:
         fatal_error("No EVSE Bricklet found!")
+
+    if qr_variant == "B":
+        if len(enumerations) != 1:
+            fatal_error("Unexpected number of devices! Expected 1 but got {}.".format(len(enumerations)))
+    else:
+        if nfc_enum is None:
+            fatal_error("No NFC Bricklet found!")
+        if len(enumerations) != 2:
+            fatal_error("Unexpected number of devices! Expected 2 but got {}.".format(len(enumerations)))
 
     is_basic = master is not None
 
