@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-02-27.      #
+# This file was automatically generated on 2024-12-17.      #
 #                                                           #
 # Python Bindings Version 2.1.31                            #
 #                                                           #
@@ -42,6 +42,7 @@ class BrickletOLED128x64V2(Device):
     FUNCTION_GET_DISPLAY_CONFIGURATION = 5
     FUNCTION_WRITE_LINE = 6
     FUNCTION_DRAW_BUFFERED_FRAME = 7
+    FUNCTION_WRITE_LINE_2 = 8
     FUNCTION_GET_SPITFP_ERROR_COUNT = 234
     FUNCTION_SET_BOOTLOADER_MODE = 235
     FUNCTION_GET_BOOTLOADER_MODE = 236
@@ -87,6 +88,7 @@ class BrickletOLED128x64V2(Device):
         self.response_expected[BrickletOLED128x64V2.FUNCTION_GET_DISPLAY_CONFIGURATION] = BrickletOLED128x64V2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletOLED128x64V2.FUNCTION_WRITE_LINE] = BrickletOLED128x64V2.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletOLED128x64V2.FUNCTION_DRAW_BUFFERED_FRAME] = BrickletOLED128x64V2.RESPONSE_EXPECTED_FALSE
+        self.response_expected[BrickletOLED128x64V2.FUNCTION_WRITE_LINE_2] = BrickletOLED128x64V2.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletOLED128x64V2.FUNCTION_GET_SPITFP_ERROR_COUNT] = BrickletOLED128x64V2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletOLED128x64V2.FUNCTION_SET_BOOTLOADER_MODE] = BrickletOLED128x64V2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletOLED128x64V2.FUNCTION_GET_BOOTLOADER_MODE] = BrickletOLED128x64V2.RESPONSE_EXPECTED_ALWAYS_TRUE
@@ -207,6 +209,11 @@ class BrickletOLED128x64V2(Device):
 
     def write_line(self, line, position, text):
         r"""
+        .. note::
+         This function is deprecated and only here for backward compatibility.
+         Since firmware version 2.0.5 we recommend :func:`Write Line 2`.
+         It has an additional parameter for letter spacing.
+
         Writes text to a specific line with a specific position.
         The text can have a maximum of 22 characters.
 
@@ -255,6 +262,41 @@ class BrickletOLED128x64V2(Device):
         force_complete_redraw = bool(force_complete_redraw)
 
         self.ipcon.send_request(self, BrickletOLED128x64V2.FUNCTION_DRAW_BUFFERED_FRAME, (force_complete_redraw,), '!', 0, '')
+
+    def write_line_2(self, line, position, letter_spacing, text):
+        r"""
+        Writes text to a specific line with a specific position.
+        The text can have a maximum of 26 characters.
+
+        With a letter spacing of 0, a maximum of 26 characters can be written and
+        with a letter spacing of 1 a maximum of 22 characters can be written.
+
+        For example: (1, 10, "Hello") will write *Hello* in the middle of the
+        second line of the display.
+
+        The display uses a special 5x7 pixel charset. You can view the characters
+        of the charset in Brick Viewer.
+
+        If automatic draw is enabled (default) the text is directly written to
+        the screen. Only pixels that have actually changed are updated on the screen,
+        the rest stays the same.
+
+        If automatic draw is disabled the text is written to an internal buffer and
+        the buffer is transferred to the display only after :func:`Draw Buffered Frame`
+        is called. This can be used to avoid flicker when drawing a complex frame in
+        multiple steps.
+
+        Automatic draw can be configured with the :func:`Set Display Configuration`
+        function.
+        """
+        self.check_validity()
+
+        line = int(line)
+        position = int(position)
+        letter_spacing = int(letter_spacing)
+        text = create_string(text)
+
+        self.ipcon.send_request(self, BrickletOLED128x64V2.FUNCTION_WRITE_LINE_2, (line, position, letter_spacing, text), 'B B B 26s', 0, '')
 
     def get_spitfp_error_count(self):
         r"""

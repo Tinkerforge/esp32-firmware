@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2024-12-17.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -78,6 +78,11 @@ typedef struct TF_OLED128x64V2 {
  * \ingroup TF_OLED128x64V2
  */
 #define TF_OLED_128X64_V2_FUNCTION_DRAW_BUFFERED_FRAME 7
+
+/**
+ * \ingroup TF_OLED128x64V2
+ */
+#define TF_OLED_128X64_V2_FUNCTION_WRITE_LINE_2 8
 
 /**
  * \ingroup TF_OLED128x64V2
@@ -392,6 +397,11 @@ int tf_oled_128x64_v2_get_display_configuration(TF_OLED128x64V2 *oled_128x64_v2,
 /**
  * \ingroup TF_OLED128x64V2
  *
+ * \note
+ *  This function is deprecated and only here for backward compatibility.
+ *  Since firmware version 2.0.5 we recommend {@link tf_oled_128x64_v2_write_line_2}.
+ *  It has an additional parameter for letter spacing.
+ *
  * Writes text to a specific line with a specific position.
  * The text can have a maximum of 22 characters.
  *
@@ -431,6 +441,35 @@ int tf_oled_128x64_v2_write_line(TF_OLED128x64V2 *oled_128x64_v2, uint8_t line, 
  * *true*. It may only become necessary in case of stuck pixels because of errors.
  */
 int tf_oled_128x64_v2_draw_buffered_frame(TF_OLED128x64V2 *oled_128x64_v2, bool force_complete_redraw);
+
+/**
+ * \ingroup TF_OLED128x64V2
+ *
+ * Writes text to a specific line with a specific position.
+ * The text can have a maximum of 26 characters.
+ *
+ * With a letter spacing of 0, a maximum of 26 characters can be written and
+ * with a letter spacing of 1 a maximum of 22 characters can be written.
+ *
+ * For example: (1, 10, "Hello") will write *Hello* in the middle of the
+ * second line of the display.
+ *
+ * The display uses a special 5x7 pixel charset. You can view the characters
+ * of the charset in Brick Viewer.
+ *
+ * If automatic draw is enabled (default) the text is directly written to
+ * the screen. Only pixels that have actually changed are updated on the screen,
+ * the rest stays the same.
+ *
+ * If automatic draw is disabled the text is written to an internal buffer and
+ * the buffer is transferred to the display only after {@link tf_oled_128x64_v2_draw_buffered_frame}
+ * is called. This can be used to avoid flicker when drawing a complex frame in
+ * multiple steps.
+ *
+ * Automatic draw can be configured with the {@link tf_oled_128x64_v2_set_display_configuration}
+ * function.
+ */
+int tf_oled_128x64_v2_write_line_2(TF_OLED128x64V2 *oled_128x64_v2, uint8_t line, uint8_t position, uint8_t letter_spacing, const char *text);
 
 /**
  * \ingroup TF_OLED128x64V2
