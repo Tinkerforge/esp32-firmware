@@ -29,15 +29,15 @@ class Batteries final : public IModule
 {
 public:
     enum class PathType {
-        Base              = 0,
-        Config            = 1,
-        State             = 2,
-        Errors            = 3,
-        EnableGridCharge  = 4,
-        DisableGridCharge = 5,
-        EnableDisharge    = 6,
-        DisableDisharge   = 7,
-        _max              = 7,
+        Base                     = 0,
+        Config                   = 1,
+        State                    = 2,
+        Errors                   = 3,
+        PermitGridCharge         = 4,
+        RevokeGridChargeOverride = 5,
+        ForbidDisharge           = 6,
+        RevokeDishargeOverride   = 7,
+        _max                     = 7,
     };
 
     Batteries()
