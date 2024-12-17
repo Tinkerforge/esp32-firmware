@@ -37,10 +37,7 @@ def get_next_serial_number():
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'staging-password.txt'), 'r') as f:
         staging_password = f.read().strip()
 
-    if sys.version_info < (3, 5, 3):
-        context = ssl.SSLContext(protocol=ssl.PROTOCOL_SSLv23)
-    else:
-        context = ssl.SSLContext()
+    context = ssl.create_default_context()
 
     https_handler = urllib.request.HTTPSHandler(context=context)
 

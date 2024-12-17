@@ -357,13 +357,8 @@ def handle_block3_fuses(set_block_3, uid, passphrase):
         sys.exit(0)
 
     print("Installing auth_handler")
-    if sys.version_info < (3,5,3):
-        context = ssl.SSLContext(protocol=ssl.PROTOCOL_SSLv23)
-    else:
-        context = ssl.SSLContext()
+    context = ssl.create_default_context()
 
-    #context.verify_mode = ssl.CERT_REQUIRED
-    #context.load_verify_locations(certifi.where())
     https_handler = urllib.request.HTTPSHandler(context=context)
 
     auth_handler = urllib.request.HTTPBasicAuthHandler()
