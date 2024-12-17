@@ -109,6 +109,8 @@ struct ChargerState {
 
     float allocated_energy;
     float allocated_energy_this_rotation;
+    float allocated_average_power;
+
     micros_t last_switch_on;
     micros_t last_phase_switch;
 

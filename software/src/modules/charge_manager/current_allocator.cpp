@@ -925,7 +925,7 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // PV chargers would probably be shut down in the next iteration anyway.
     sort_chargers(
         state->charge_mode_pv ? 1 : 0,
-        left.state->allocated_energy < right.state->allocated_energy
+        left.state->allocated_average_power < right.state->allocated_average_power
     );
 
     trace_sort(4);
@@ -1025,7 +1025,7 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
     // PV chargers would probably be shut down in the next iteration anyway.
     sort_chargers(
         state->charge_mode_pv ? 1 : 0,
-        left.state->allocated_energy < right.state->allocated_energy
+        left.state->allocated_average_power < right.state->allocated_average_power
     );
 
     trace_sort(5);
@@ -1659,17 +1659,24 @@ int allocate_current(
             charger_alloc.allocated_current = current_to_set;
             charger_alloc.allocated_phases = phases_to_set;
 
+            auto charging_time = (now - charger.last_plug_in).as<float>();
+
             if (phases_to_set == 0) {
                 charger.allocated_energy_this_rotation = 0;
             } else {
-                auto amps = (float)current_to_set / 1000.0f * phases_to_set;
-                auto amp_hours = amps * (cfg->allocation_interval.as<float>() / ((micros_t)1_h).as<float>());
+                auto amps = (float)current_to_set * phases_to_set / 1000.0f;
+
+                auto alloc_time = !deadline_elapsed(charger.last_plug_in + cfg->allocation_interval) ? charging_time : cfg->allocation_interval.as<float>();
+
+                auto amp_hours = amps * (alloc_time / ((micros_t)1_h).as<float>());
                 auto watt_hours = amp_hours * 230.0f;
-                auto allocated_energy = watt_hours / 1000;
+                auto allocated_energy = watt_hours / 1000.0f;
                 charger.allocated_energy_this_rotation += allocated_energy;
                 charger.allocated_energy += allocated_energy;
             }
 
+            charging_time /= 1000.0 * 1000.0 * 60.0 * 60.0;
+            charger.allocated_average_power = charger.allocated_energy / (float)charging_time;
             if (phases_to_set != 0 && charger.charger_state == 3) {
                 charger.time_in_state_c += cfg->allocation_interval;
             }
@@ -1814,6 +1821,7 @@ bool update_from_client_packet(
     if (v1->charger_state == 0) {
         target.allocated_energy = 0;
         target.allocated_energy_this_rotation = 0;
+        target.allocated_average_power = 0;
         target_alloc.allocated_current = 0;
         target_alloc.allocated_phases = 0;
     }
