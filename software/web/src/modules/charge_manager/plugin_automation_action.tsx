@@ -27,18 +27,18 @@ import { InputFloat } from "../../ts/components/input_float";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api"
 
-export type ChargeManagerAutomationAction = [
+export type SetManagerCurrentAutomationAction = [
     AutomationActionID.SetManagerCurrent,
     {
         current: number;
     },
 ];
 
-function get_set_manager_table_children(action: ChargeManagerAutomationAction) {
+function get_set_manager_current_table_children(action: SetManagerCurrentAutomationAction) {
     return __("charge_manager.automation.automation_action_text")(util.toLocaleFixed(action[1].current / 1000, 3));
 }
 
-function get_set_manager_edit_children(action: ChargeManagerAutomationAction, on_action: (action: AutomationAction) => void) {
+function get_set_manager_current_edit_children(action: SetManagerCurrentAutomationAction, on_action: (action: AutomationAction) => void) {
     return [
         <FormRow label={__("charge_manager.automation.max_current")}>
             <InputFloat
@@ -70,8 +70,8 @@ export function init(): InitResult {
                 translation_name: () => __("charge_manager.automation.set_charge_manager"),
                 new_config: new_set_manager_current_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
-                get_edit_children: get_set_manager_edit_children,
-                get_table_children: get_set_manager_table_children,
+                get_edit_children: get_set_manager_current_edit_children,
+                get_table_children: get_set_manager_current_table_children,
             },
         },
     };
