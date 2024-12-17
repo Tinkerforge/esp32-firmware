@@ -122,7 +122,7 @@ class EnergyManagerV2Tester:
             self.fatal_error("Failed to find MAC address in event log!")
         self.mac = macs[0]
 
-        m = re.search(r"(?:WARP ENERGY MANAGER|WARP Energy Manager|SMART ENERGY BROKER) V(\d+).(\d+).(\d+)", event_log)
+        m = re.search(r"(?:WARP ENERGY MANAGER 2.0|WARP Energy Manager 2.0|SMART ENERGY BROKER) V(\d+).(\d+).(\d+)", event_log)
         if not m:
             self.fatal_error("Failed to find version number in event log!" + event_log)
 
