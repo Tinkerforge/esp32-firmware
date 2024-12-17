@@ -52,6 +52,14 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #define MAX_CERT_ID -1
 #endif
 
+int Mqtt::subscribe_internal(esp_mqtt_client_handle_t client, const char *topic, int qos) {
+    if (this->read_only)
+        return ESP_OK;
+    return esp_mqtt_client_subscribe(client, topic, qos);
+}
+
+#pragma GCC poison esp_mqtt_client_subscribe
+
 void Mqtt::pre_setup()
 {
     // The real UID will be patched in later
@@ -69,7 +77,8 @@ void Mqtt::pre_setup()
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"client_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"client_key_id", Config::Int(-1, -1, MAX_CERT_ID)},
-        {"path", Config::Str("", 0, 64)}
+        {"path", Config::Str("", 0, 64)},
+        {"read_only", Config::Bool(false)}
     }), [](Config &cfg, ConfigSource source) -> String {
 #if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
         const String &global_topic_prefix = cfg.get("global_topic_prefix")->asString();
@@ -178,7 +187,7 @@ void Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained 
         starts_with_global_topic_prefix = true;
     }
 
-    bool subscribed = esp_mqtt_client_subscribe(client, topic->c_str(), 0) >= 0;
+    bool subscribed = this->subscribe_internal(client, topic->c_str(), 0) >= 0;
 
     this->commands.push_back({*topic, std::move(callback), retained, callback_in_thread, starts_with_global_topic_prefix, subscribed});
 }
@@ -261,7 +270,7 @@ void Mqtt::resubscribe()
 
     if (!global_topic_prefix_subscribed) {
         String topic = global_topic_prefix + "/#";
-        global_topic_prefix_subscribed = esp_mqtt_client_subscribe(client, topic.c_str(), 0) >= 0;
+        global_topic_prefix_subscribed = this->subscribe_internal(client, topic.c_str(), 0) >= 0;
     }
 
     for (auto &cmd : this->commands) {
@@ -271,7 +280,7 @@ void Mqtt::resubscribe()
         if (cmd.subscribed)
             continue;
 
-        cmd.subscribed = esp_mqtt_client_subscribe(client, cmd.topic.c_str(), 0) >= 0;
+        cmd.subscribed = this->subscribe_internal(client, cmd.topic.c_str(), 0) >= 0;
     }
 }
 
@@ -357,6 +366,10 @@ static bool filter_mqtt_log(const char *topic, size_t topic_len)
 void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_len, bool retain)
 {
     if (client == nullptr) {
+        return;
+    }
+
+    if (this->read_only) {
         return;
     }
 
@@ -564,7 +577,7 @@ void Mqtt::setup()
     global_topic_prefix = this->config.get("global_topic_prefix")->asString();
     send_interval_ms = this->config.get("interval")->asUint() * 1000;
     client_name = this->config.get("client_name")->asString();
-    global_topic_prefix = this->config.get("global_topic_prefix")->asString();
+    read_only = this->config.get("read_only")->asBool();
 
     if (!config.get("enable_mqtt")->asBool()) {
         return;

@@ -127,6 +127,10 @@ private:
     bool was_connected = false;
     bool global_topic_prefix_subscribed = false;
     bool initial_network_event_seen = false;
+
+    bool read_only = false;
+
+    int subscribe_internal(esp_mqtt_client_handle_t client, const char *topic, int qos);
 };
 
 #include "module_available_end.h"

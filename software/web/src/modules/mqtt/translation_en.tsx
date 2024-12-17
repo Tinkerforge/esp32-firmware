@@ -16,6 +16,8 @@ let x = {
             "mqtt": "MQTT",
             "enable_mqtt_desc": null,
             "enable_mqtt": "MQTT enabled",
+            "read_only": "Read only access",
+            "read_only_desc": "Ignores data from the MQTT broker (and other MQTT clients).",
             "protocol": "Protocol",
             "protocol_mqtt": "MQTT (not encrypted)",
             "protocol_mqtts": "MQTTS (MQTT over TLS; encrypted)",

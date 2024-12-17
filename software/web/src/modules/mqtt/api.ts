@@ -12,6 +12,7 @@ export interface config {
     client_cert_id: number;
     client_key_id: number;
     path: string;
+    read_only: boolean;
 }
 
 export interface auto_discovery_config {

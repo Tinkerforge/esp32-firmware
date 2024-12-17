@@ -94,6 +94,12 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                                 onClick={this.toggle('enable_mqtt')}/>
                     </FormRow>
 
+                    <FormRow label={__("mqtt.content.read_only")}>
+                        <Switch desc={__("mqtt.content.read_only_desc")}
+                                checked={state.read_only}
+                                onClick={this.toggle('read_only')}/>
+                    </FormRow>
+
                     <FormRow label={__("mqtt.content.protocol")}>
                         <InputSelect
                             items={[
