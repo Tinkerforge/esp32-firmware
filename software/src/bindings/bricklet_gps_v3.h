@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2024-12-17.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -718,8 +718,7 @@ int tf_gps_v3_restart(TF_GPSV3 *gps_v3, uint8_t restart_type);
  * * HDOP value and
  * * VDOP value
  *
- * for a given satellite system. Currently GPS and GLONASS are supported, Galileo
- * is not yet supported.
+ * for a given satellite system. Currently GPS, GLONASS and Galileo are supported.
  *
  * The GPS and GLONASS satellites have unique numbers and the satellite list gives
  * the numbers of the satellites that are currently utilized. The number 0 is not
@@ -730,13 +729,13 @@ int tf_gps_v3_get_satellite_system_status_low_level(TF_GPSV3 *gps_v3, uint8_t sa
 /**
  * \ingroup TF_GPSV3
  *
- * Returns the current elevation, azimuth and SNR
- * for a given satellite and satellite system.
+ * Returns the current elevation, azimuth and SNR for a given satellite and satellite system.
  *
- * The satellite number here always goes from 1 to 32. For GLONASS it corresponds to
- * the satellites 65-96.
+ * The available satellite numbers are:
  *
- * Galileo is not yet supported.
+ * * GPS: 1-32
+ * * GLONASS: 65-96
+ * * Galileo: 301-332
  */
 int tf_gps_v3_get_satellite_status(TF_GPSV3 *gps_v3, uint8_t satellite_system, uint8_t satellite_number, int16_t *ret_elevation, int16_t *ret_azimuth, int16_t *ret_snr);
 
@@ -1022,8 +1021,7 @@ int tf_gps_v3_get_identity(TF_GPSV3 *gps_v3, char ret_uid[8], char ret_connected
  * * HDOP value and
  * * VDOP value
  *
- * for a given satellite system. Currently GPS and GLONASS are supported, Galileo
- * is not yet supported.
+ * for a given satellite system. Currently GPS, GLONASS and Galileo are supported.
  *
  * The GPS and GLONASS satellites have unique numbers and the satellite list gives
  * the numbers of the satellites that are currently utilized. The number 0 is not

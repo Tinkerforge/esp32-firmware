@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-11-14.      #
+# This file was automatically generated on 2024-12-17.      #
 #                                                           #
 # Python Bindings Version 2.1.31                            #
 #                                                           #
@@ -23,7 +23,7 @@ except (ValueError, ImportError):
 
 GetState = namedtuple('State', ['iec61851_state', 'charger_state', 'contactor_state', 'contactor_error', 'allowed_charging_current', 'error_state', 'lock_state', 'dc_fault_current_state'])
 GetHardwareConfiguration = namedtuple('HardwareConfiguration', ['jumper_configuration', 'has_lock_switch', 'evse_version', 'energy_meter_type'])
-GetLowLevelState = namedtuple('LowLevelState', ['led_state', 'cp_pwm_duty_cycle', 'adc_values', 'voltages', 'resistances', 'gpio', 'charging_time', 'time_since_state_change', 'time_since_dc_fault_check', 'uptime'])
+GetLowLevelState = namedtuple('LowLevelState', ['led_state', 'cp_pwm_duty_cycle', 'adc_values', 'voltages', 'resistances', 'gpio', 'car_stopped_charging', 'time_since_state_change', 'time_since_dc_fault_check', 'uptime'])
 GetChargingSlot = namedtuple('ChargingSlot', ['max_current', 'active', 'clear_on_disconnect'])
 GetAllChargingSlots = namedtuple('AllChargingSlots', ['max_current', 'active_and_clear_on_disconnect'])
 GetChargingSlotDefault = namedtuple('ChargingSlotDefault', ['max_current', 'active', 'clear_on_disconnect'])
@@ -300,7 +300,7 @@ class BrickletEVSEV2(Device):
         """
         self.check_validity()
 
-        return GetLowLevelState(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_LOW_LEVEL_STATE, (), '', 66, 'B H 7H 7h 2I 24! I I I I'))
+        return GetLowLevelState(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_LOW_LEVEL_STATE, (), '', 63, 'B H 7H 7h 2I 24! ! I I I'))
 
     def set_charging_slot(self, slot, max_current, active, clear_on_disconnect):
         r"""

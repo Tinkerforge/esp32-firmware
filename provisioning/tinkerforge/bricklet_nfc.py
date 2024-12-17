@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-02-27.      #
+# This file was automatically generated on 2024-12-17.      #
 #                                                           #
 # Python Bindings Version 2.1.31                            #
 #                                                           #
@@ -27,6 +27,7 @@ CardemuGetState = namedtuple('CardemuGetState', ['state', 'idle'])
 P2PGetState = namedtuple('P2PGetState', ['state', 'idle'])
 P2PReadNDEFLowLevel = namedtuple('P2PReadNDEFLowLevel', ['ndef_length', 'ndef_chunk_offset', 'ndef_chunk_data'])
 SimpleGetTagIDLowLevel = namedtuple('SimpleGetTagIDLowLevel', ['tag_type', 'tag_id_length', 'tag_id_data', 'last_seen'])
+CardemuGetTagID = namedtuple('CardemuGetTagID', ['tag_id_length', 'tag_id_data'])
 GetSPITFPErrorCount = namedtuple('SPITFPErrorCount', ['error_count_ack_checksum', 'error_count_message_checksum', 'error_count_frame', 'error_count_overflow'])
 GetIdentity = namedtuple('Identity', ['uid', 'connected_uid', 'position', 'hardware_version', 'firmware_version', 'device_identifier'])
 ReaderGetTagID = namedtuple('ReaderGetTagID', ['tag_type', 'tag_id'])
@@ -72,6 +73,8 @@ class BrickletNFC(Device):
     FUNCTION_SET_MAXIMUM_TIMEOUT = 27
     FUNCTION_GET_MAXIMUM_TIMEOUT = 28
     FUNCTION_SIMPLE_GET_TAG_ID_LOW_LEVEL = 29
+    FUNCTION_CARDEMU_SET_TAG_ID = 30
+    FUNCTION_CARDEMU_GET_TAG_ID = 31
     FUNCTION_GET_SPITFP_ERROR_COUNT = 234
     FUNCTION_SET_BOOTLOADER_MODE = 235
     FUNCTION_GET_BOOTLOADER_MODE = 236
@@ -95,6 +98,7 @@ class BrickletNFC(Device):
     TAG_TYPE_TYPE2 = 2
     TAG_TYPE_TYPE3 = 3
     TAG_TYPE_TYPE4 = 4
+    TAG_TYPE_TYPE5 = 5
     READER_STATE_INITIALIZATION = 0
     READER_STATE_IDLE = 128
     READER_STATE_ERROR = 192
@@ -172,7 +176,7 @@ class BrickletNFC(Device):
         """
         Device.__init__(self, uid, ipcon, BrickletNFC.DEVICE_IDENTIFIER, BrickletNFC.DEVICE_DISPLAY_NAME)
 
-        self.api_version = (2, 0, 2)
+        self.api_version = (2, 0, 3)
 
         self.response_expected[BrickletNFC.FUNCTION_SET_MODE] = BrickletNFC.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletNFC.FUNCTION_GET_MODE] = BrickletNFC.RESPONSE_EXPECTED_ALWAYS_TRUE
@@ -200,6 +204,8 @@ class BrickletNFC(Device):
         self.response_expected[BrickletNFC.FUNCTION_SET_MAXIMUM_TIMEOUT] = BrickletNFC.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletNFC.FUNCTION_GET_MAXIMUM_TIMEOUT] = BrickletNFC.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletNFC.FUNCTION_SIMPLE_GET_TAG_ID_LOW_LEVEL] = BrickletNFC.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletNFC.FUNCTION_CARDEMU_SET_TAG_ID] = BrickletNFC.RESPONSE_EXPECTED_FALSE
+        self.response_expected[BrickletNFC.FUNCTION_CARDEMU_GET_TAG_ID] = BrickletNFC.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletNFC.FUNCTION_GET_SPITFP_ERROR_COUNT] = BrickletNFC.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletNFC.FUNCTION_SET_BOOTLOADER_MODE] = BrickletNFC.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletNFC.FUNCTION_GET_BOOTLOADER_MODE] = BrickletNFC.RESPONSE_EXPECTED_ALWAYS_TRUE
@@ -315,7 +321,7 @@ class BrickletNFC(Device):
         r"""
         Writes NDEF formated data.
 
-        This function currently supports NFC Forum Type 2 and 4.
+        This function currently supports NFC Forum Type 2, 4, 5 and Mifare Classic.
 
         The general approach for writing a NDEF message is as follows:
 
@@ -340,7 +346,7 @@ class BrickletNFC(Device):
         r"""
         Reads NDEF formated data from a tag.
 
-        This function currently supports NFC Forum Type 1, 2, 3 and 4.
+        This function currently supports NFC Forum Type 1, 2, 3, 4, 5 and Mifare Classic.
 
         The general approach for reading a NDEF message is as follows:
 
@@ -408,6 +414,7 @@ class BrickletNFC(Device):
         * NFC Forum Type 2 page size: 4 byte
         * NFC Forum Type 3 page size: 16 byte
         * NFC Forum Type 4: No pages, page = file selection (CC or NDEF, see below)
+        * NFC Forum Type 5 page size: 4 byte
 
         The general approach for writing to a tag is as follows:
 
@@ -449,6 +456,7 @@ class BrickletNFC(Device):
         * NFC Forum Type 2 page size: 4 byte
         * NFC Forum Type 3 page size: 16 byte
         * NFC Forum Type 4: No pages, page = file selection (CC or NDEF, see below)
+        * NFC Forum Type 5 page size: 4 byte
 
         The general approach for reading a tag is as follows:
 
@@ -714,6 +722,10 @@ class BrickletNFC(Device):
 
     def simple_get_tag_id_low_level(self, index):
         r"""
+        Returns the tag type and tag ID from simple mode sorted by last seen time for a given index.
+
+        Up to eight tags are saved.
+
         .. versionadded:: 2.0.6$nbsp;(Plugin)
         """
         self.check_validity()
@@ -721,6 +733,31 @@ class BrickletNFC(Device):
         index = int(index)
 
         return SimpleGetTagIDLowLevel(*self.ipcon.send_request(self, BrickletNFC.FUNCTION_SIMPLE_GET_TAG_ID_LOW_LEVEL, (index,), 'B', 24, 'B B 10B I'))
+
+    def cardemu_set_tag_id(self, tag_id_length, tag_id_data):
+        r"""
+        Sets the tag ID for cardemu mode. The tag ID can either have a length of 4 or 7.
+
+        Set a length of 0 for random tag ID (default)
+
+        .. versionadded:: 2.1.0$nbsp;(Plugin)
+        """
+        self.check_validity()
+
+        tag_id_length = int(tag_id_length)
+        tag_id_data = list(map(int, tag_id_data))
+
+        self.ipcon.send_request(self, BrickletNFC.FUNCTION_CARDEMU_SET_TAG_ID, (tag_id_length, tag_id_data), 'B 7B', 0, '')
+
+    def cardemu_get_tag_id(self):
+        r"""
+        Returns the tag ID and length as set by :func:`Cardemu Set Tag ID`.
+
+        .. versionadded:: 2.1.0$nbsp;(Plugin)
+        """
+        self.check_validity()
+
+        return CardemuGetTagID(*self.ipcon.send_request(self, BrickletNFC.FUNCTION_CARDEMU_GET_TAG_ID, (), '', 16, 'B 7B'))
 
     def get_spitfp_error_count(self):
         r"""
@@ -907,7 +944,7 @@ class BrickletNFC(Device):
         r"""
         Writes NDEF formated data.
 
-        This function currently supports NFC Forum Type 2 and 4.
+        This function currently supports NFC Forum Type 2, 4, 5 and Mifare Classic.
 
         The general approach for writing a NDEF message is as follows:
 
@@ -976,6 +1013,7 @@ class BrickletNFC(Device):
         * NFC Forum Type 2 page size: 4 byte
         * NFC Forum Type 3 page size: 16 byte
         * NFC Forum Type 4: No pages, page = file selection (CC or NDEF, see below)
+        * NFC Forum Type 5 page size: 4 byte
 
         The general approach for writing to a tag is as follows:
 
@@ -1133,6 +1171,10 @@ class BrickletNFC(Device):
 
     def simple_get_tag_id(self, index):
         r"""
+        Returns the tag type and tag ID from simple mode sorted by last seen time for a given index.
+
+        Up to eight tags are saved.
+
         .. versionadded:: 2.0.6$nbsp;(Plugin)
         """
         index = int(index)

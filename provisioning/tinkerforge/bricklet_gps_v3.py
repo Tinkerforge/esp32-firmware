@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-02-27.      #
+# This file was automatically generated on 2024-12-17.      #
 #                                                           #
 # Python Bindings Version 2.1.31                            #
 #                                                           #
@@ -261,8 +261,7 @@ class BrickletGPSV3(Device):
         * HDOP value and
         * VDOP value
 
-        for a given satellite system. Currently GPS and GLONASS are supported, Galileo
-        is not yet supported.
+        for a given satellite system. Currently GPS, GLONASS and Galileo are supported.
 
         The GPS and GLONASS satellites have unique numbers and the satellite list gives
         the numbers of the satellites that are currently utilized. The number 0 is not
@@ -276,13 +275,13 @@ class BrickletGPSV3(Device):
 
     def get_satellite_status(self, satellite_system, satellite_number):
         r"""
-        Returns the current elevation, azimuth and SNR
-        for a given satellite and satellite system.
+        Returns the current elevation, azimuth and SNR for a given satellite and satellite system.
 
-        The satellite number here always goes from 1 to 32. For GLONASS it corresponds to
-        the satellites 65-96.
+        The available satellite numbers are:
 
-        Galileo is not yet supported.
+        * GPS: 1-32
+        * GLONASS: 65-96
+        * Galileo: 301-332
         """
         self.check_validity()
 
@@ -620,8 +619,7 @@ class BrickletGPSV3(Device):
         * HDOP value and
         * VDOP value
 
-        for a given satellite system. Currently GPS and GLONASS are supported, Galileo
-        is not yet supported.
+        for a given satellite system. Currently GPS, GLONASS and Galileo are supported.
 
         The GPS and GLONASS satellites have unique numbers and the satellite list gives
         the numbers of the satellites that are currently utilized. The number 0 is not

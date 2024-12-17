@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-02-27.      #
+# This file was automatically generated on 2024-12-17.      #
 #                                                           #
 # Python Bindings Version 2.1.31                            #
 #                                                           #
@@ -255,10 +255,10 @@ class BrickletThermalImaging(Device):
         r"""
         Sets the spotmeter region of interest. The 4 values are
 
-        * Index 0: Column start (has to be smaller then Column end).
-        * Index 1: Row start (has to be smaller then Row end).
-        * Index 2: Column end (has to be smaller then 80).
-        * Index 3: Row end (has to be smaller then 60).
+        * Index 0: Column start (has to be smaller than column end).
+        * Index 1: Row start (has to be smaller than row end).
+        * Index 2: Column end (has to be smaller than 80).
+        * Index 3: Row end (has to be smaller than 60).
 
         The spotmeter statistics can be read out with :func:`Get Statistics`.
         """
@@ -283,10 +283,10 @@ class BrickletThermalImaging(Device):
 
         The high contrast region of interest consists of four values:
 
-        * Index 0: Column start (has to be smaller or equal then Column end).
-        * Index 1: Row start (has to be smaller then Row end).
-        * Index 2: Column end (has to be smaller then 80).
-        * Index 3: Row end (has to be smaller then 60).
+        * Index 0: Column start (has to be smaller than or equal to column end).
+        * Index 1: Row start (has to be smaller than row end).
+        * Index 2: Column end (has to be smaller than 80).
+        * Index 3: Row end (has to be smaller than 60).
 
         The algorithm to generate the high contrast image is applied to this region.
 

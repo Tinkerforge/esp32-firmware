@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-02-27.      #
+# This file was automatically generated on 2024-12-17.      #
 #                                                           #
 # Python Bindings Version 2.1.31                            #
 #                                                           #
@@ -115,7 +115,7 @@ class BrickletIndustrialDualACIn(Device):
 
     def get_value(self):
         r"""
-        Returns the input values as bools, *true* refers to "AC voltage detected" and *false* refers to no AC "voltage detected".
+        Returns the input values as bools, *true* refers to "AC voltage detected" and *false* refers to no "AC voltage detected".
         """
         self.check_validity()
 

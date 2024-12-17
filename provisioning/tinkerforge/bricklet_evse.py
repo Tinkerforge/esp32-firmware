@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-11-14.      #
+# This file was automatically generated on 2024-12-17.      #
 #                                                           #
 # Python Bindings Version 2.1.31                            #
 #                                                           #
@@ -23,14 +23,14 @@ except (ValueError, ImportError):
 
 GetState = namedtuple('State', ['iec61851_state', 'charger_state', 'contactor_state', 'contactor_error', 'allowed_charging_current', 'error_state', 'lock_state'])
 GetHardwareConfiguration = namedtuple('HardwareConfiguration', ['jumper_configuration', 'has_lock_switch', 'evse_version'])
-GetLowLevelState = namedtuple('LowLevelState', ['led_state', 'cp_pwm_duty_cycle', 'adc_values', 'voltages', 'resistances', 'gpio', 'charging_time', 'time_since_state_change', 'uptime'])
+GetLowLevelState = namedtuple('LowLevelState', ['led_state', 'cp_pwm_duty_cycle', 'adc_values', 'voltages', 'resistances', 'gpio', 'car_stopped_charging', 'time_since_state_change', 'uptime'])
 GetChargingSlot = namedtuple('ChargingSlot', ['max_current', 'active', 'clear_on_disconnect'])
 GetAllChargingSlots = namedtuple('AllChargingSlots', ['max_current', 'active_and_clear_on_disconnect'])
 GetChargingSlotDefault = namedtuple('ChargingSlotDefault', ['max_current', 'active', 'clear_on_disconnect'])
 GetUserCalibration = namedtuple('UserCalibration', ['user_calibration_active', 'voltage_diff', 'voltage_mul', 'voltage_div', 'resistance_2700', 'resistance_880'])
 GetIndicatorLED = namedtuple('IndicatorLED', ['indication', 'duration'])
 GetButtonState = namedtuple('ButtonState', ['button_press_time', 'button_release_time', 'button_pressed'])
-GetAllData1 = namedtuple('AllData1', ['iec61851_state', 'charger_state', 'contactor_state', 'contactor_error', 'allowed_charging_current', 'error_state', 'lock_state', 'jumper_configuration', 'has_lock_switch', 'evse_version', 'led_state', 'cp_pwm_duty_cycle', 'adc_values', 'voltages', 'resistances', 'gpio', 'charging_time', 'time_since_state_change', 'uptime', 'indication', 'duration', 'button_press_time', 'button_release_time', 'button_pressed', 'boost_mode_enabled'])
+GetAllData1 = namedtuple('AllData1', ['iec61851_state', 'charger_state', 'contactor_state', 'contactor_error', 'allowed_charging_current', 'error_state', 'lock_state', 'jumper_configuration', 'has_lock_switch', 'evse_version', 'led_state', 'cp_pwm_duty_cycle', 'adc_values', 'voltages', 'resistances', 'gpio', 'car_stopped_charging', 'time_since_state_change', 'uptime', 'indication', 'duration', 'button_press_time', 'button_release_time', 'button_pressed', 'boost_mode_enabled'])
 GetSPITFPErrorCount = namedtuple('SPITFPErrorCount', ['error_count_ack_checksum', 'error_count_message_checksum', 'error_count_frame', 'error_count_overflow'])
 GetIdentity = namedtuple('Identity', ['uid', 'connected_uid', 'position', 'hardware_version', 'firmware_version', 'device_identifier'])
 
@@ -208,7 +208,7 @@ class BrickletEVSE(Device):
         """
         self.check_validity()
 
-        return GetLowLevelState(*self.ipcon.send_request(self, BrickletEVSE.FUNCTION_GET_LOW_LEVEL_STATE, (), '', 42, 'B H 2H 3h 2I 5! I I I'))
+        return GetLowLevelState(*self.ipcon.send_request(self, BrickletEVSE.FUNCTION_GET_LOW_LEVEL_STATE, (), '', 39, 'B H 2H 3h 2I 5! ! I I'))
 
     def set_charging_slot(self, slot, max_current, active, clear_on_disconnect):
         r"""
@@ -405,7 +405,7 @@ class BrickletEVSE(Device):
         """
         self.check_validity()
 
-        return GetAllData1(*self.ipcon.send_request(self, BrickletEVSE.FUNCTION_GET_ALL_DATA_1, (), '', 67, 'B B B B H B B B ! B B H 2H 3h 2I 5! I I I h H I I ! !'))
+        return GetAllData1(*self.ipcon.send_request(self, BrickletEVSE.FUNCTION_GET_ALL_DATA_1, (), '', 64, 'B B B B H B B B ! B B H 2H 3h 2I 5! ! I I h H I I ! !'))
 
     def factory_reset(self, password):
         r"""
