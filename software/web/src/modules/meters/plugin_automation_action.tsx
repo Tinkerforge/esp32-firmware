@@ -43,7 +43,7 @@ function get_meter_reset_table_children(action: MeterAutomationAction) {
     return __("meters.automation.automation_action_text")(meter[1].display_name);
 }
 
-function get_meter_reset_edit_children(action: MeterAutomationAction, on_action: (action: AutomationAction) => void): ComponentChildren {
+function get_meter_reset_edit_children(action: MeterAutomationAction, on_action: (action: AutomationAction) => void) {
     let items: [string, string][] = [];
     for (let i = 0; i < METERS_SLOTS; i++) {
         const meter = API.get_unchecked(`meters/${i}/config`);

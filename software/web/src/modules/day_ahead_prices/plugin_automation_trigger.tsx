@@ -49,7 +49,7 @@ function get_day_ahead_prices_now_table_children(trigger: DayAheadPriceNowAutoma
     return __("day_ahead_prices.automation.trigger_text")(trigger[1].type, trigger[1].comparison, trigger[1].value);
 }
 
-function get_day_ahead_prices_now_edit_children(trigger: DayAheadPriceNowAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void): ComponentChildren {
+function get_day_ahead_prices_now_edit_children(trigger: DayAheadPriceNowAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
         <FormRow label={__("day_ahead_prices.automation.comparative_value")} label_muted={__("day_ahead_prices.automation.comparative_value_muted")}>
             <InputSelect
