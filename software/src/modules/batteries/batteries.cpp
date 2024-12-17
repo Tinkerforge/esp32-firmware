@@ -28,10 +28,49 @@
 
 static BatteryGeneratorNone battery_generator_none;
 
+static const char *batteries_path_postfixes[] = {
+    "",
+    "config",
+    "state",
+    "errors",
+    "permit_grid_charge",
+    "revoke_grid_charge_override",
+    "forbid_discharge",
+    "revoke_discharge_override",
+};
+
+static_assert(ARRAY_SIZE(batteries_path_postfixes) == static_cast<uint32_t>(Batteries::PathType::_max) + 1, "Path postfix length mismatch");
+
 void Batteries::pre_setup()
 {
     generators.reserve(BATTERY_CLASS_ID_COUNT);
     register_battery_generator(BatteryClassID::None, &battery_generator_none);
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    for (uint32_t i = 0; i <= static_cast<uint32_t>(IBattery::Action::_max); ++i) {
+        AutomationActionID automation_id = static_cast<AutomationActionID>(static_cast<uint32_t>(AutomationActionID::PermitGridCharge) + i);
+        Batteries::PathType path_type = static_cast<Batteries::PathType>(static_cast<uint32_t>(Batteries::PathType::PermitGridCharge) + i);
+
+        automation.register_action(
+            automation_id,
+            Config::Object({
+                {"battery_slot", Config::Uint(0, 0, BATTERIES_SLOTS - 1)}
+            }),
+            [this, path_type](const Config *config) {
+                uint32_t battery_slot = config->get("battery_slot")->asUint();
+                String path = get_path(battery_slot, path_type);
+                const String errmsg = api.callCommand(path.c_str(), {});
+                String action_name = batteries_path_postfixes[static_cast<uint32_t>(path_type)];
+
+                action_name.replace("_", " ");
+
+                if (!errmsg.isEmpty()) {
+                    logger.printfln("Automation couldn't %s for battery slot %u: %s", action_name.c_str(), battery_slot, errmsg.c_str());
+                }
+            }
+        );
+    }
+#endif
 }
 
 void Batteries::setup()
@@ -99,7 +138,7 @@ void Batteries::register_urls()
 
         for (uint32_t i = 0; i <= static_cast<uint32_t>(IBattery::Action::_max); ++i) {
             IBattery::Action action = static_cast<IBattery::Action>(i);
-            Batteries::PathType path_type = static_cast<Batteries::PathType>(static_cast<uint32_t>(Batteries::PathType::EnableGridCharge) + i);
+            Batteries::PathType path_type = static_cast<Batteries::PathType>(static_cast<uint32_t>(Batteries::PathType::PermitGridCharge) + i);
 
             if (battery_slot.battery->supports_action(action)) {
                 api.addCommand(get_path(slot, path_type), Config::Null(), {}, [battery_slot, action](String &errmsg) {
@@ -217,9 +256,6 @@ BatteryClassID Batteries::get_battery_class(uint32_t slot)
 
     return battery_slots[slot].battery->get_class();
 }
-
-static const char *batteries_path_postfixes[] = {"", "config", "state", "errors", "enable_grid_charge", "disable_grid_charge", "enable_discharge", "disable_discharge"};
-static_assert(ARRAY_SIZE(batteries_path_postfixes) == static_cast<uint32_t>(Batteries::PathType::_max) + 1, "Path postfix length mismatch");
 
 String Batteries::get_path(uint32_t slot, Batteries::PathType path_type)
 {

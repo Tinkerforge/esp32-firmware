@@ -29,11 +29,11 @@ class IBattery
 {
 public:
     enum class Action {
-        EnableGridCharge  = 0,
-        DisableGridCharge = 1,
-        EnableDischarge   = 2,
-        DisableDischarge  = 3,
-        _max              = 3,
+        PermitGridCharge         = 0,
+        RevokeGridChargeOverride = 1,
+        ForbidDischarge          = 2,
+        RevokeDischargeOverride  = 3,
+        _max                     = 3,
     };
 
     virtual ~IBattery() = default;

@@ -40,7 +40,7 @@ void BatteriesModbusTCP::pre_setup()
     });
 
     table_prototypes.push_back({BatteryModbusTCPTableID::Custom, Config::Object({
-        {"enable_grid_charge", Config::Object({
+        {"permit_grid_charge", Config::Object({
             {"device_address", Config::Uint(1, 1, 247)},
             {"register_address_mode", Config::Uint8(static_cast<uint8_t>(ModbusRegisterAddressMode::Address))},
             {"registers", Config::Array({},
@@ -50,7 +50,7 @@ void BatteriesModbusTCP::pre_setup()
                 Config::type_id<Config::ConfObject>()
             )},
         })},
-        {"disable_grid_charge", Config::Object({
+        {"revoke_grid_charge_override", Config::Object({
             {"device_address", Config::Uint(1, 1, 247)},
             {"register_address_mode", Config::Uint8(static_cast<uint8_t>(ModbusRegisterAddressMode::Address))},
             {"registers", Config::Array({},
@@ -60,7 +60,7 @@ void BatteriesModbusTCP::pre_setup()
                 Config::type_id<Config::ConfObject>()
             )},
         })},
-        {"enable_discharge", Config::Object({
+        {"forbid_discharge", Config::Object({
             {"device_address", Config::Uint(1, 1, 247)},
             {"register_address_mode", Config::Uint8(static_cast<uint8_t>(ModbusRegisterAddressMode::Address))},
             {"registers", Config::Array({},
@@ -70,7 +70,7 @@ void BatteriesModbusTCP::pre_setup()
                 Config::type_id<Config::ConfObject>()
             )},
         })},
-        {"disable_discharge", Config::Object({
+        {"revoke_discharge_override", Config::Object({
             {"device_address", Config::Uint(1, 1, 247)},
             {"register_address_mode", Config::Uint8(static_cast<uint8_t>(ModbusRegisterAddressMode::Address))},
             {"registers", Config::Array({},

@@ -11,74 +11,17 @@ let x = {
             "batteries": "Speichersteuerung",
 
             "battery_class": "Klasse",
-            "battery_class_none": "Keine",
-
-
-                "history_48": "Verlauf (48 h)",
-                "history_24": "Verlauf (24 h)",
-                "history_12": "Verlauf (12 h)",
-                "history_6": "Verlauf (6 h)",
-                "history_3": "Verlauf (3 h)",
-                "live": "Live (6 min)",
-                "no_data": "Keine Daten vorhanden!",
-                "loading": "Lade Daten...",
-                "detailed_values": "Details",
-                "detailed_values_none": "Es sind bisher keine Werte vorhanden.",
-
-                "table_display_name": "Anzeigename",
-                "table_power": "Leistung",
-                "table_energy_import": "Energiebezug",
-                "table_energy_export": "Energieeinspeisung",
-                "table_phases": "Phasen",
-
-                "add_meter_title": "Stromzähler hinzufügen",
-                "add_meter_prefix": "",
-                "add_meter_infix": " von ",
-                "add_meter_suffix": " Stromzählern konfiguriert",
-                "add_meter_slot": "Nummer",
-                "add_meter_class": "Klasse",
-
-                "edit_meter_title": "Stromzähler bearbeiten",
-                "edit_meter_slot": "Nummer",
-                "unknown_slot": /*SFN*/ (slot: number) => `Unbekannter Stromzähler nummer ${slot}`/*NF*/,
-                "edit_meter_class": "Klasse",
-
-                "settings": "Einstellungen",
-
-                "last_reset": "Stromzähler zuletzt zurückgesetzt",
-                "last_reset_unknown": "Unbekannt",
-                "last_reset_counter": /*SFN*/ (n: number) => `${n} mal zurückgesetzt`/*NF*/,
-                "reset": "Zurücksetzen",
-                "never": "Nie",
-
-                "reset_modal": "Zählerwerte zurücksetzen?",
-                "reset_modal_body": /*SFN*/(meter_name: string) => `Zurücksetzbare Werte von ${meter_name} wirklich zurücksetzen?`/*NF*/,
-                "reset_modal_abort": "Abbrechen",
-                "reset_modal_confirm": "Zurücksetzen",
-                "reset_failed": "Zurücksetzen des Zählerwerte fehlgeschlagen",
-
-                "meter_type": "Stromzählertyp"
+            "battery_class_none": "Keine"
         },
         "script": {
-                "time": "Uhrzeit",
-                "power": "Leistung",
             "save_failed": "Speichern der Speichersteuerungs-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Speichersteuerungs-Einstellungen",
-                "meter": /*SFN*/(slot: number|"?") => "Zähler #" + slot/*NF*/,
-
-                "meter_type_0": "Kein Stromzähler angeschlossen",
-                "meter_type_1": "Eastron SDM72",
-                "meter_type_2": "Eastron SDM630",
-                "meter_type_3": "Eastron SDM72V2",
-                "meter_type_4": "Eastron SDM72CTM",
-                "meter_type_5": "Eastron SDM630MCT",
-                "meter_type_6": "Eltako DSZ15DZMOD",
-                "meter_type_7": "YTL DEM4A",
-                "meter_type_200": "Unbekannt/Benutzerdefiniert (einfach)",
-                "meter_type_201": "Unbekannt/Benutzerdefiniert (Extrawerte)",
-                "meter_type_254": "Intern",
-                "meter_type_255": "Automatische Erkennung",
-                "reboot_required": "Neustart erforderlich"
+            "reboot_content_changed": "Speichersteuerungs-Einstellungen"
+        },
+        "automation": {
+            "permit_grid_charge": "Laden des Speichers vom Netz erlauben",
+            "revoke_grid_charge_override": "Erlaubnis zum Laden des Speichers vom Netz zurücknehmen",
+            "forbid_discharge": "Entladen des Speichers verbieten",
+            "revoke_discharge_override": "Verbot zum Entladen des Speichers zurücknehmen"
         }
     }
 }
