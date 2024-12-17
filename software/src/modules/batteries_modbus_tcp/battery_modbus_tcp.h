@@ -74,8 +74,8 @@ private:
     size_t current_action_index;
 
     // custom
-    ValueTable *custom_table_enable_grid_charge;
-    ValueTable *custom_table_disable_grid_charge;
-    ValueTable *custom_table_enable_discharge;
-    ValueTable *custom_table_disable_discharge;
+    ValueTable *custom_table_permit_grid_charge;
+    ValueTable *custom_table_revoke_grid_charge_override;
+    ValueTable *custom_table_forbid_discharge;
+    ValueTable *custom_table_revoke_discharge_override;
 };
