@@ -332,7 +332,7 @@ bool Wifi::apply_sta_config_and_connect()
         WiFi.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
     }
 
-    logger.printfln("Connecting to %s", ssid);
+    logger.printfln("Connecting to '%s'", ssid);
     EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
     switch (eap_config_id) {
         case EapConfigID::None:
@@ -487,16 +487,16 @@ void Wifi::setup()
             uint8_t reason_code = info.wifi_sta_disconnected.reason;
             const char *reason = reason2str(reason_code);
             if (!this->was_connected) {
-                logger.printfln("Failed to connect to %s: %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
+                logger.printfln("Failed to connect to '%s': %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
             } else {
                 uint32_t now = millis();
                 uint32_t connected_for = now - last_connected_ms;
 
                 // FIXME: Use a better way of time keeping here.
                 if (connected_for < 0x7FFFFFFF)
-                    logger.printfln("Disconnected from %s: %s (%u). Was connected for %u seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
+                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for %u seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
                 else
-                    logger.printfln("Disconnected from %s: %s (%u). Was connected for a long time.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
+                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for a long time.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
 
                 task_scheduler.scheduleOnce([this, now](){
                     state.get("connection_end")->updateUint(now);
@@ -516,7 +516,7 @@ void Wifi::setup()
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
             this->was_connected = true;
 
-            logger.printfln("Connected to %s, BSSID %s", WiFi.SSID().c_str(), WiFi.BSSIDstr().c_str());
+            logger.printfln("Connected to '%s', BSSID %s", WiFi.SSID().c_str(), WiFi.BSSIDstr().c_str());
             auto now = millis();
             last_connected_ms = now;
 
