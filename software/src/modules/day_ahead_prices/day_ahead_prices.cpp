@@ -60,6 +60,11 @@ void DayAheadPrices::pre_setup()
             return "HTTPS required for Day Ahead Price API URL";
         }
 
+        if (!update.get("enable")->asBool() && (prices_sorted != nullptr)) {
+            heap_caps_free(prices_sorted);
+            prices_sorted = nullptr;
+        }
+
         // If region or resolution changes we discard the current state
         // and trigger a new update (with the new config).
         if ((update.get("region")->asEnum<Region>()         != config.get("region")->asEnum<Region>()) ||
@@ -164,6 +169,10 @@ void DayAheadPrices::update_current_price()
 
 void DayAheadPrices::update_prices_sorted()
 {
+    if (prices_sorted == nullptr) {
+        prices_sorted = (std::pair<uint8_t, int32_t> *)calloc_psram_or_dram(DAY_AHEAD_PRICE_MAX_AMOUNT, sizeof(std::pair<uint8_t, int32_t>));
+    }
+
     auto p = prices.get("prices");
     const uint32_t num_prices = p->count();
 
@@ -653,6 +662,10 @@ bool DayAheadPrices::is_start_time_cheap(const int32_t start_time, const uint8_t
 
 bool DayAheadPrices::get_cheap_and_expensive_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *cheap_hours, bool *expensive_hours)
 {
+    if (prices_sorted == nullptr) {
+        return false;
+    }
+
     if (cheap_hours == nullptr && expensive_hours == nullptr) {
         return false;
     }

@@ -84,7 +84,7 @@ private:
 
     bool prices_sorted_available = false;
     uint8_t prices_sorted_count = 0;
-    std::pair<uint8_t, int32_t> prices_sorted[DAY_AHEAD_PRICE_MAX_AMOUNT];
+    std::pair<uint8_t, int32_t> *prices_sorted = nullptr;
 
 public:
     DayAheadPrices(){}
