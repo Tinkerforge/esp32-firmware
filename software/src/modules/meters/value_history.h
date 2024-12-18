@@ -22,7 +22,6 @@
 #include <Arduino.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <esp_heap_caps.h>
 #include <limits>
 
 #include "ringbuffer.h"
@@ -106,7 +105,7 @@ public:
 #else
                   malloc_32bit_addressed,
 #endif
-                  heap_caps_free> live;
+                  free_any> live;
     uint32_t live_last_update = 0;
 
     TF_PackedRingbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
@@ -117,7 +116,7 @@ public:
 #else
                   malloc_32bit_addressed,
 #endif
-                  heap_caps_free> history;
+                  free_any> history;
     uint32_t history_last_update = 0;
 
     size_t chars_per_value = -1;

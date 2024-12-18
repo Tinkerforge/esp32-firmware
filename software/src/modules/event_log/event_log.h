@@ -93,15 +93,15 @@ private:
 #else
                         malloc_32bit_addressed,
 #endif
-                        heap_caps_free> event_buf;
+                        free_any> event_buf;
 
 
     struct TraceBuffer {
-        const char * name;
+        const char *name;
         std::mutex mutex;
         TF_Ringbuffer<char,
                       malloc_psram,
-                      heap_caps_free> buf;
+                      free_any> buf;
     };
 
     TraceBuffer *find_trace_buffer(const char *prefix);

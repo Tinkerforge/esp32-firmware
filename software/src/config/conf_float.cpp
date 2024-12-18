@@ -31,7 +31,7 @@ Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements)
 
 void Config::ConfFloat::freeSlotBuf(Config::ConfFloat::Slot *buf)
 {
-    heap_caps_free(buf);
+    free_any(buf);
 }
 
 typedef union {

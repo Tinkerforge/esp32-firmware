@@ -21,32 +21,53 @@
 
 #include <esp_heap_caps.h>
 
-void *malloc_32bit_addressed(size_t s)
+void *malloc_32bit_addressed(size_t size)
 {
-    return heap_caps_malloc(s, MALLOC_CAP_32BIT);
+    return heap_caps_malloc(size, MALLOC_CAP_32BIT);
 }
 
-void *malloc_psram(size_t s)
+void *malloc_psram(size_t size)
 {
-    return heap_caps_malloc(s, MALLOC_CAP_SPIRAM);
+    return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
 }
 
-void *malloc_psram_or_dram(size_t s)
+void *malloc_psram_or_dram(size_t size)
 {
-    return heap_caps_malloc_prefer(s, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    return heap_caps_malloc_prefer(size, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 }
 
-void *calloc_32bit_addressed(size_t c, size_t s)
+void *malloc_aligned_psram_or_dram(size_t alignment, size_t size)
 {
-    return heap_caps_calloc(c, s, MALLOC_CAP_32BIT);
+    void *ptr = nullptr;
+
+#if defined(BOARD_HAS_PSRAM)
+    // Only try PSRAM if the board has PSRAM to avoid malloc failure callback without PSRAM
+    ptr = heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_SPIRAM);
+#endif
+
+    if (ptr == nullptr) {
+        ptr = heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    }
+
+    return ptr;
 }
 
-void *calloc_psram_or_dram(size_t c, size_t s)
+void *calloc_32bit_addressed(size_t count, size_t size)
 {
-    return heap_caps_calloc_prefer(c, s, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    return heap_caps_calloc(count, size, MALLOC_CAP_32BIT);
 }
 
-void *calloc_dram(size_t c, size_t s)
+void *calloc_psram_or_dram(size_t count, size_t size)
 {
-    return heap_caps_calloc(c, s, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    return heap_caps_calloc_prefer(count, size, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+}
+
+void *calloc_dram(size_t count, size_t size)
+{
+    return heap_caps_calloc(count, size, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+}
+
+void free_any(void *ptr)
+{
+    heap_caps_free(ptr);
 }

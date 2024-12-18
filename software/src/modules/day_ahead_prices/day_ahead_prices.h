@@ -84,7 +84,8 @@ private:
 
     bool prices_sorted_available = false;
     uint8_t prices_sorted_count = 0;
-    std::pair<uint8_t, int32_t> *prices_sorted = nullptr;
+    typedef std::pair<uint8_t, int32_t> PriceSorted;
+    PriceSorted *prices_sorted = nullptr;
 
 public:
     DayAheadPrices(){}

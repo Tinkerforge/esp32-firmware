@@ -61,7 +61,7 @@ void DayAheadPrices::pre_setup()
         }
 
         if (!update.get("enable")->asBool() && (prices_sorted != nullptr)) {
-            heap_caps_free(prices_sorted);
+            delete_array_psram_or_dram(prices_sorted);
             prices_sorted = nullptr;
         }
 
@@ -170,7 +170,7 @@ void DayAheadPrices::update_current_price()
 void DayAheadPrices::update_prices_sorted()
 {
     if (prices_sorted == nullptr) {
-        prices_sorted = (std::pair<uint8_t, int32_t> *)calloc_psram_or_dram(DAY_AHEAD_PRICE_MAX_AMOUNT, sizeof(std::pair<uint8_t, int32_t>));
+        prices_sorted = new_array_psram_or_dram<PriceSorted>(DAY_AHEAD_PRICE_MAX_AMOUNT);
     }
 
     auto p = prices.get("prices");
@@ -384,9 +384,7 @@ void DayAheadPrices::update()
 
 void DayAheadPrices::handle_cleanup()
 {
-    if (json_buffer != nullptr) {
-        heap_caps_free(json_buffer);
-    }
+    free_any(json_buffer);
     json_buffer = nullptr;
     json_buffer_position = 0;
 }

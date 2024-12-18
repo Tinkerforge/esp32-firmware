@@ -35,7 +35,7 @@ Config::ConfObject::Slot *Config::ConfObject::allocSlotBuf(size_t elements)
 
 void Config::ConfObject::freeSlotBuf(Config::ConfObject::Slot *buf)
 {
-    heap_caps_free(buf);
+    free_any(buf);
 }
 
 [[gnu::noinline]]

@@ -59,11 +59,11 @@ struct IRAMAlloc {
 
     Tp *allocate(std::size_t n)
     {
-        return (Tp *) malloc_32bit_addressed(n * sizeof(Tp));
+        return (Tp *)malloc_32bit_addressed(n * sizeof(Tp));
     }
     void deallocate(Tp *p, std::size_t n)
     {
-        heap_caps_free(p);
+        free_any(p);
     }
 };
 template <class T, class U>

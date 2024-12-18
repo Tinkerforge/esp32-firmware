@@ -91,7 +91,7 @@ void MetersSunSpec::register_urls()
             return;
         }
 
-        scan = new (malloc_psram_or_dram(sizeof(Scan))) Scan;
+        scan = new_psram_or_dram<Scan>();
 
         scan->host = scan_config.get("host")->asString();
         scan->port = static_cast<uint16_t>(scan_config.get("port")->asUint());
@@ -235,8 +235,7 @@ void MetersSunSpec::loop()
                 break; // need to report the scan as done before doing something else
             }
 
-            scan->~Scan();
-            heap_caps_free(scan);
+            delete_psram_or_dram(scan);
             scan = nullptr;
         }
 

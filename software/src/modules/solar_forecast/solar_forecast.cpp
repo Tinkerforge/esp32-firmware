@@ -47,7 +47,7 @@ const String test_data = "{\"result\":{\"watts\":{\"2024-08-15 06:10:54\":0,\"20
 
 void SolarForecast::pre_setup()
 {
-    planes = (SolarForecastPlane *)calloc_psram_or_dram(SOLAR_FORECAST_PLANES, sizeof(SolarForecastPlane));
+    planes = new_array_psram_or_dram<SolarForecastPlane>(SOLAR_FORECAST_PLANES);
 
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
@@ -287,9 +287,7 @@ void SolarForecast::handle_new_data()
 
 void SolarForecast::handle_cleanup()
 {
-    if (json_buffer != nullptr) {
-        heap_caps_free(json_buffer);
-    }
+    free_any(json_buffer);
     json_buffer = nullptr;
     json_buffer_position = 0;
 }

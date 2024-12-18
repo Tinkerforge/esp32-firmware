@@ -32,7 +32,7 @@ Config::ConfUint::Slot *Config::ConfUint::allocSlotBuf(size_t elements)
 
 void Config::ConfUint::freeSlotBuf(Config::ConfUint::Slot *buf)
 {
-    heap_caps_free(buf);
+    free_any(buf);
 }
 
 uint32_t* Config::ConfUint::getVal() { return &uint_buf[idx].val; }
