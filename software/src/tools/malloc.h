@@ -26,6 +26,8 @@ void *malloc_32bit_addressed(size_t s);
 
 void *malloc_psram(size_t s);
 
+void *malloc_psram_or_dram(size_t s);
+
 void *calloc_32bit_addressed(size_t c, size_t s);
 
 void *calloc_psram_or_dram(size_t c, size_t s);

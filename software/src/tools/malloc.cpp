@@ -31,6 +31,11 @@ void *malloc_psram(size_t s)
     return heap_caps_malloc(s, MALLOC_CAP_SPIRAM);
 }
 
+void *malloc_psram_or_dram(size_t s)
+{
+    return heap_caps_malloc_prefer(s, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+}
+
 void *calloc_32bit_addressed(size_t c, size_t s)
 {
     return heap_caps_calloc(c, s, MALLOC_CAP_32BIT);

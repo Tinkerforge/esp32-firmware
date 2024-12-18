@@ -38,7 +38,7 @@
 class MetersSunSpec final : public IModule, public IMeterGenerator
 {
 public:
-    MetersSunSpec() : client(TFModbusTCPByteOrder::Host) {}
+    MetersSunSpec() {}
 
     // for IModule
     void pre_setup() override;
@@ -54,7 +54,6 @@ public:
 
 private:
     enum class ScanState {
-        Idle,
         Connect,
         Connecting,
         Disconnect,
@@ -81,49 +80,47 @@ private:
     Config config_prototype;
     Config errors_prototype;
 
-    TFModbusTCPClient client;
     ConfigRoot scan_config;
     ConfigRoot scan_continue_config;
     ConfigRoot scan_abort_config;
 
-    bool scan_new = false;
-    String scan_new_host;
-    uint16_t scan_new_port;
-    uint8_t scan_new_device_address_first;
-    uint8_t scan_new_device_address_last;
-    uint32_t scan_new_cookie;
+    struct Scan {
+        Scan() : client(TFModbusTCPByteOrder::Host) {}
 
-    micros_t scan_last_keep_alive = 0_us;
-    bool scan_abort = false;
-    ScanState scan_state = ScanState::Idle;
-    String scan_host;
-    uint16_t scan_port;
-    uint8_t scan_device_address_first;
-    uint8_t scan_device_address_last;
-    uint32_t scan_cookie;
-    uint8_t scan_device_address;
-    size_t scan_base_address_index;
-    size_t scan_read_address;
-    size_t scan_read_size;
-    size_t scan_read_retries;
-    micros_t scan_read_delay_deadline;
-    uint16_t scan_read_buffer[68];
-    micros_t scan_read_timeout = 1_s;
-    uint16_t scan_read_timeout_burst;
-    uint32_t scan_read_cookie = 0;
-    ModbusDeserializer scan_deserializer;
-    size_t scan_read_index;
-    TFModbusTCPClientTransactionResult scan_read_result;
-    ScanState scan_read_state;
-    uint16_t scan_model_id;
-    std::unordered_map<uint16_t, uint16_t> scan_model_instances;
-    size_t scan_block_length;
-    char scan_printfln_buffer[512] = "";
-    size_t scan_printfln_buffer_used = 0;
-    micros_t scan_printfln_last_flush = 0_us;
-    char scan_common_manufacturer_name[32 + 1];
-    char scan_common_model_name[32 + 1];
-    char scan_common_serial_number[32 + 1];
+        TFModbusTCPClient client;
+        micros_t last_keep_alive = 0_us;
+        bool abort = false;
+        ScanState state = ScanState::Connect;
+        String host;
+        uint16_t port;
+        uint8_t device_address_first;
+        uint8_t device_address_last;
+        uint32_t cookie;
+        uint8_t device_address;
+        size_t base_address_index = 0;
+        size_t read_address;
+        size_t read_size;
+        size_t read_retries;
+        micros_t read_delay_deadline;
+        uint16_t read_buffer[68];
+        micros_t read_timeout = 1_s;
+        uint16_t read_timeout_burst = 0;
+        ModbusDeserializer deserializer;
+        size_t read_index;
+        TFModbusTCPClientTransactionResult read_result;
+        ScanState read_state;
+        uint16_t model_id;
+        std::unordered_map<uint16_t, uint16_t> model_instances;
+        size_t block_length;
+        char printfln_buffer[512] = "";
+        size_t printfln_buffer_used = 0;
+        micros_t printfln_last_flush = 0_us;
+        char common_manufacturer_name[32 + 1];
+        char common_model_name[32 + 1];
+        char common_serial_number[32 + 1];
+    };
+
+    Scan *scan = nullptr;
 };
 
 #if defined(__GNUC__)
