@@ -26,6 +26,15 @@
 #include "build.h"
 #include "modules/charge_manager/charge_manager_private.h"
 
+#define ECO_EXTENDED_LOGGING 1
+
+#define extended_logging(fmt, ...) \
+    do { \
+        if (ECO_EXTENDED_LOGGING) { \
+            logger.tracefln(this->trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
+        } \
+    } while (0)
+
 void Eco::pre_setup()
 {
     this->trace_buffer_index = logger.alloc_trace_buffer("eco", 1 << 20);
@@ -114,10 +123,12 @@ void Eco::update()
         } else {
             const uint32_t minutes_in_state_c = charger_state->time_in_state_c.to<minutes_t>().as<uint32_t>();
             state.get("chargers")->get(charger_id)->get("amount")->updateUint(minutes_in_state_c);
+            extended_logging("Charger %d: Update minutes in state C to %d", charger_id, minutes_in_state_c);
 
             if (charger_state->last_plug_in == 0_us) {
                 state.get("chargers")->get(charger_id)->get("start")->updateUint(0);
                 state.get("chargers")->get(charger_id)->get("amount")->updateUint(0);
+                extended_logging("Charger %d: Update amount and start time to 0", charger_id);
 
             // Only update "start" when there is a transition from one car to the next.
             // Otherwise the start time may "jitter" for a given charging-session since
@@ -128,6 +139,7 @@ void Eco::update()
                 const micros_t time_from_now_to_plug_in = now_us() - charger_state->last_plug_in;
                 const uint32_t epoch_to_plug_in_minutes = rtc.timestamp_minutes() - time_from_now_to_plug_in.to<minutes_t>().as<uint32_t>();
                 state.get("chargers")->get(charger_id)->get("start")->updateUint(epoch_to_plug_in_minutes);
+                extended_logging("Charger %d: Update start time to %d", charger_id, epoch_to_plug_in_minutes);
             }
         }
     }
@@ -136,6 +148,7 @@ void Eco::update()
     int32_t current_price;
     if (!day_ahead_prices.get_current_price_net().try_unwrap(&current_price)) {
         std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
+        extended_logging("Charger all: No current price available -> Normal");
         return;
     }
 
@@ -144,6 +157,7 @@ void Eco::update()
         const int32_t charge_below = config.get("charge_below_threshold")->asInt()*1000; // *1000 since the current price is in ct/1000
         if (current_price < charge_below) {
             std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Fast);
+            extended_logging("Charger all: Current price (%d) below threshold (%d)-> Fast", current_price, charge_below);
             return;
         }
     }
@@ -153,31 +167,33 @@ void Eco::update()
         const int32_t block_above = config.get("block_above_threshold")->asInt()*1000; // *1000 since the current price is in ct/1000
         if (current_price > block_above) {
             std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
+            extended_logging("Charger all: Current price (%d) above threshold (%d)-> Normal", current_price, block_above);
             return;
         }
     }
 
     if (config.get("enable")->asBool() && charge_plan.get("enable")->asBool()) {
         // Currently we assume that the amount is in hours, later we may add support for kWh
-        const uint32_t hours_desired      = charge_plan.get("amount")->asUint();
-        const Departure departure         = charge_plan.get("departure")->asEnum<Departure>();
+        const uint32_t desired_amount_1m      = charge_plan.get("amount")->asUint()*60;
+        const Departure departure            = charge_plan.get("departure")->asEnum<Departure>();
 
-        const time_t   save_time          = state.get("last_save")->asUint()*60;
-        const uint32_t save_time_midnight = get_localtime_midnight_in_utc(save_time) / 60;
+        const time_t   save_time_1s          = state.get("last_save")->asUint()*60;
+        const uint32_t save_time_midnight_1m = get_localtime_midnight_in_utc(save_time_1s) / 60;
 
-        time_t midnight;
-        if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
+        time_t midnight_1s;
+        if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight_1s)) {
             std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
+            extended_logging("Charger all: Midnight not available -> Normal");
             return;
         }
-        const uint32_t today_midnight     = midnight / 60;
+        const uint32_t today_midnight_1m  = midnight_1s / 60;
 
-        const uint32_t time               = charge_plan.get("time")->asUint();
-        const uint32_t minutes_add        = (((departure == Departure::Today) || (departure == Departure::Daily)) ? 0 : 24*60) + time;
-              uint32_t end_time           = (departure == Departure::Daily) ? (today_midnight + minutes_add) : (save_time_midnight + minutes_add);
-        const uint32_t current_time       = rtc.timestamp_minutes();
+        const uint32_t time_1m            = charge_plan.get("time")->asUint();
+        const uint32_t add_1m             = (((departure == Departure::Today) || (departure == Departure::Daily)) ? 0 : 24*60) + time_1m;
+              uint32_t end_time_1m        = (departure == Departure::Daily) ? (today_midnight_1m + add_1m) : (save_time_midnight_1m + add_1m);
+        const uint32_t current_time_1m    = rtc.timestamp_minutes();
 
-        if (current_time >= end_time) {
+        if (current_time_1m >= end_time_1m) {
             // If the current time is after the planned charge ending time
             // and the departure is set to "Daily" or "Tomorrow" we disable the charge plan.
             // TODO: If we have not reached the desired charge amount at this point,
@@ -185,31 +201,34 @@ void Eco::update()
             if ((departure == Departure::Today) || (departure == Departure::Tomorrow)) {
                 disable_charge_plan();
                 std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
+                extended_logging("Charger all: Current time (%dm) after planned charge ending time (%dm) -> Normal", current_time_1m, end_time_1m);
                 return;
             // If the current time is after the planned charge ending time
             // and the departure is set to "Daily" we increase the end time by 24 hours.
             // For daily departure the new period under consideration will restart
             // immediately after the time is reached.
             } else if (departure == Departure::Daily) {
-                end_time += 24*60;
+                end_time_1m += 24*60;
             }
         }
 
-        const uint32_t duration_remaining = end_time - current_time;
+        const uint32_t duration_remaining_1m = end_time_1m - current_time_1m;
 
         for (uint8_t charger_id = 0; charger_id < state.get("chargers")->count(); charger_id++) {
-            const uint32_t hours_charged = state.get("chargers")->get(charger_id)->get("amount")->asUint()/60; // assumes that amount is in minutes
-            const uint32_t start_time    = state.get("chargers")->get(charger_id)->get("start")->asUint();
+            const uint32_t charged_amount_1m = state.get("chargers")->get(charger_id)->get("amount")->asUint();
+            const uint32_t start_time_1m     = state.get("chargers")->get(charger_id)->get("start")->asUint();
 
             // Check if car is charging on this charger
-            if (start_time == 0) {
+            if (start_time_1m == 0) {
                 charge_decision[charger_id] = ChargeDecision::Normal;
+                extended_logging("Charger %d: Car not charging (start_time = 0) -> Normal", charger_id);
                 continue;
             }
 
             // If the desired amount of charge is reached, we are done with fast charging for this car.
-            if (hours_desired <= hours_charged) {
+            if (desired_amount_1m <= charged_amount_1m) {
                 charge_decision[charger_id] = ChargeDecision::Normal;
+                extended_logging("Charger %d: Desired charge amount reached (%dm <= %dm) -> Normal", charger_id, desired_amount_1m, charged_amount_1m);
                 continue;
             }
 
@@ -217,30 +236,35 @@ void Eco::update()
             if (config.get("yield_forecast")->asBool()) {
                 const uint32_t kwh_threshold = config.get("yield_forecast_threshold")->asUint();
                 if (kwh_threshold > 0) {
-                    auto wh_expected = solar_forecast.get_wh_range(start_time, end_time);
+                    auto wh_expected = solar_forecast.get_wh_range(start_time_1m, end_time_1m);
                     if (wh_expected.is_none()) {
                         charge_decision[charger_id] = ChargeDecision::Normal;
+                        extended_logging("Charger %d: Expected PV yield not available. Ignoring yield forecast. -> Normal", charger_id);
                         continue;
                     }
 
                     const uint32_t kwh_expected = wh_expected.unwrap()/1000;
                     if (kwh_expected > kwh_threshold) {
                         charge_decision[charger_id] = ChargeDecision::Normal;
+                        extended_logging("Charger %d: Expected PV yield %d kWh is above threshold of %d kWh. -> Normal", charger_id, kwh_expected, kwh_threshold);
                         continue;
                     }
                 }
             }
 
             // Check if the current day ahead price slot is cheap
-            const uint32_t hours_remaining = hours_desired - hours_charged;
-            if (day_ahead_prices.is_start_time_cheap(current_time, duration_remaining, hours_remaining)) {
+            const uint32_t amount_remaining_15m    = (desired_amount_1m - charged_amount_1m)/15;
+            const uint32_t duration_remaining_15m = duration_remaining_1m/15;
+            if (day_ahead_prices.is_start_time_cheap_15m(current_time_1m, duration_remaining_15m, amount_remaining_15m)) {
                 charge_decision[charger_id] = ChargeDecision::Fast;
             } else {
                 charge_decision[charger_id] = ChargeDecision::Normal;
             }
+            extended_logging("Charger %d: Current price (%d) is %s -> %s [current_time %dm, duration_remaining %dm, desired_amount %dm, charged_amount %d]", charger_id, current_price, (charge_decision[charger_id] == ChargeDecision::Fast) ? "cheap" : "expensive", (charge_decision[charger_id] == ChargeDecision::Fast) ? "Fast" : "Normal", current_time_1m, duration_remaining_1m, desired_amount_1m, charged_amount_1m);
         }
     } else {
         std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
+        extended_logging("Charger all: Eco or charge plan disabled -> Normal");
     }
 }
 
