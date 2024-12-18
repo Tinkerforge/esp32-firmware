@@ -49,7 +49,7 @@
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L2_ADDRESS          818u
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS          819u
 
-#define DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS             0u
+#define DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS 0u
 
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER                 2007u
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY          2310u
@@ -1150,7 +1150,8 @@ void MeterModbusTCP::read_done_callback()
                 break;
 
             default:
-                logger.printfln("%s has unknown Output Type: %u", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[0]);
+                table = nullptr;
+                logger.printfln("%s has unknown Output Type: %u", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[register_buffer_index]);
                 return;
             }
 
@@ -1184,7 +1185,7 @@ void MeterModbusTCP::read_done_callback()
             case 0x0002:
             case 0x0003:
             case 0x0004:
-                logger.printfln("%s has unsupported Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[0]);
+                logger.printfln("%s has unsupported Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[register_buffer_index]);
                 return;
 
             case 0x0005:
@@ -1197,7 +1198,8 @@ void MeterModbusTCP::read_done_callback()
                 break;
 
             default:
-                logger.printfln("%s has unknown Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[0]);
+                table = nullptr;
+                logger.printfln("%s has unknown Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[register_buffer_index]);
                 return;
             }
 
