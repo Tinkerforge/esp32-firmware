@@ -103,10 +103,12 @@ public:
     Option<int32_t> get_maximum_price_tomorrow();
     Option<int32_t> get_current_price();
     Option<int32_t> get_current_price_net();
-    bool get_cheap_and_expensive_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *cheap_hours, bool *expensive_hours);
-    bool get_cheap_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *cheap_hours);
-    bool get_expensive_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *expensive_hours);
-    bool is_start_time_cheap(const int32_t start_time, const uint8_t duration, const uint8_t amount);
+    bool get_cheap_and_expensive_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *cheap_hours, bool *expensive_hours);
+    bool get_cheap_and_expensive_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m, bool *cheap_hours, bool *expensive_hours);
+    bool get_cheap_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *cheap_hours);
+    bool get_expensive_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *expensive_hours);
+    bool is_start_time_cheap_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m);
+    bool is_start_time_cheap_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h);
     int32_t get_grid_cost_plus_tax_plus_markup();
 
     ConfigRoot config;

@@ -653,14 +653,19 @@ int32_t DayAheadPrices::get_grid_cost_plus_tax_plus_markup()
     return config.get("grid_costs_and_taxes")->asUint() + config.get("supplier_markup")->asUint();
 }
 
-bool DayAheadPrices::is_start_time_cheap(const int32_t start_time, const uint8_t duration, const uint8_t amount)
+bool DayAheadPrices::is_start_time_cheap_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m)
 {
-    bool cheap_hours[duration*4] = {false};
-    const bool ret = get_cheap_and_expensive_hours(start_time, duration, amount, cheap_hours, nullptr);
+    bool cheap_hours[duration_15m] = {false};
+    const bool ret = get_cheap_and_expensive_15m(start_time, duration_15m, amount_15m, cheap_hours, nullptr);
     return ret && cheap_hours[0];
 }
 
-bool DayAheadPrices::get_cheap_and_expensive_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *cheap_hours, bool *expensive_hours)
+bool DayAheadPrices::is_start_time_cheap_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h)
+{
+    return is_start_time_cheap_15m(start_time, duration_1h*4, amount_1h*4);
+}
+
+bool DayAheadPrices::get_cheap_and_expensive_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m, bool *cheap_hours, bool *expensive_hours)
 {
     if (prices_sorted == nullptr) {
         return false;
@@ -676,21 +681,21 @@ bool DayAheadPrices::get_cheap_and_expensive_hours(const int32_t start_time, con
 
     const int32_t first_date  = prices.get("first_date")->asUint();
     const int32_t start_index = (start_time - first_date) / 15;
-    const int32_t end_index   = start_index + duration*4;
+    const int32_t end_index   = start_index + duration_15m;
 
     if(start_index >= end_index) {
         return false;
     }
 
     if (cheap_hours != nullptr) {
-        std::fill_n(cheap_hours, duration*4, false);
+        std::fill_n(cheap_hours, duration_15m, false);
 
         uint8_t cheap_count = 0;
         for (uint8_t i = 0; i < prices_sorted_count; i++) {
             auto price_index = prices_sorted[i].first;
             if ((price_index >= start_index) && (price_index < end_index)) {
                 cheap_count++;
-                if(cheap_count > amount*4) {
+                if(cheap_count > amount_15m) {
                     break;
                 }
                 cheap_hours[price_index-start_index] = true;
@@ -699,14 +704,14 @@ bool DayAheadPrices::get_cheap_and_expensive_hours(const int32_t start_time, con
     }
 
     if (expensive_hours != nullptr) {
-        std::fill_n(expensive_hours, duration*4, false);
+        std::fill_n(expensive_hours, duration_15m, false);
 
         int16_t expensive_count = 0;
         for (int16_t i = prices_sorted_count-1; i > 0; i--) {
             auto price_index = prices_sorted[i].first;
             if (price_index >= start_index && price_index < end_index) {
                 expensive_count++;
-                if(expensive_count > amount*4) {
+                if(expensive_count > amount_15m) {
                     break;
                 }
                 expensive_hours[price_index-start_index] = true;
@@ -717,14 +722,19 @@ bool DayAheadPrices::get_cheap_and_expensive_hours(const int32_t start_time, con
     return true;
 }
 
-bool DayAheadPrices::get_cheap_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *cheap_hours)
+bool DayAheadPrices::get_cheap_and_expensive_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *cheap_hours, bool *expensive_hours)
 {
-    return get_cheap_and_expensive_hours(start_time, duration, amount, cheap_hours, nullptr);
+    return get_cheap_and_expensive_15m(start_time, duration_1h*4, amount_1h*4, cheap_hours, expensive_hours);
 }
 
-bool DayAheadPrices::get_expensive_hours(const int32_t start_time, const uint8_t duration, const uint8_t amount, bool *expensive_hours)
+bool DayAheadPrices::get_cheap_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *cheap_hours)
 {
-    return get_cheap_and_expensive_hours(start_time, duration, amount, nullptr, expensive_hours);
+    return get_cheap_and_expensive_1h(start_time, duration_1h, amount_1h, cheap_hours, nullptr);
+}
+
+bool DayAheadPrices::get_expensive_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *expensive_hours)
+{
+    return get_cheap_and_expensive_1h(start_time, duration_1h, amount_1h, nullptr, expensive_hours);
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
