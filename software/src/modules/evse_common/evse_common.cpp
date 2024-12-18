@@ -622,20 +622,6 @@ void EvseCommon::register_urls()
     backend->post_register_urls();
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    if (automation.has_task_with_trigger(AutomationTriggerID::ChargerState)) {
-        event.registerEvent("evse/state", {}, [this](const Config *cfg) {
-            // we need this since not only iec state changes trigger this api event.
-            static uint32_t last_state = 0;
-            uint32_t state_now = cfg->get("charger_state")->asUint();
-            uint32_t states[2] = {last_state, state_now};
-            if (last_state != state_now) {
-                automation.trigger(AutomationTriggerID::ChargerState, (void *)states, this);
-                last_state = state_now;
-            }
-            return EventResult::OK;
-        });
-    }
-
     if (automation.has_task_with_trigger(AutomationTriggerID::EVSEExternalCurrentWd)) {
         task_scheduler.scheduleWithFixedDelay([this](){
             static bool was_triggered = false;
@@ -653,6 +639,25 @@ void EvseCommon::register_urls()
     api.addCommand("evse/automation_current_update", &automation_current_update, {}, [this](String &/*errmsg*/) {
         backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOMATION, automation_current_update.get("current")->asUint());
     }, false); //TODO: should this be an action?
+#endif
+}
+
+void EvseCommon::register_events()
+{
+#if MODULE_AUTOMATION_AVAILABLE()
+    if (automation.has_task_with_trigger(AutomationTriggerID::ChargerState)) {
+        event.registerEvent("evse/state", {}, [this](const Config *cfg) {
+            // we need this since not only iec state changes trigger this api event.
+            static uint32_t last_state = 0;
+            uint32_t state_now = cfg->get("charger_state")->asUint();
+            uint32_t states[2] = {last_state, state_now};
+            if (last_state != state_now) {
+                automation.trigger(AutomationTriggerID::ChargerState, (void *)states, this);
+                last_state = state_now;
+            }
+            return EventResult::OK;
+        });
+    }
 #endif
 }
 

@@ -135,6 +135,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
 
     void setup_evse();
 
