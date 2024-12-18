@@ -55,8 +55,8 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
         fatal_error("No EVSE Bricklet found!")
 
     if qr_variant == "B":
-        if len(enumerations) != 1:
-            fatal_error("Unexpected number of devices! Expected 1 but got {}.".format(len(enumerations)))
+        if len(enumerations) != 2:
+            fatal_error("Unexpected number of devices! Expected 2 but got {}.".format(len(enumerations)))
     else:
         if nfc_enum is None:
             fatal_error("No NFC Bricklet found!")
