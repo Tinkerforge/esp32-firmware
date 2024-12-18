@@ -287,7 +287,7 @@ void Heating::update()
             const uint8_t current_index   = (minutes_since_midnight - duration_block)/15;
 
             if (handle_extended) {
-                const bool data_available = day_ahead_prices.get_cheap_hours(start_time, duration, extended_hours, data);
+                const bool data_available = day_ahead_prices.get_cheap_1h(start_time, duration, extended_hours, data);
                 if (!data_available) {
                     extended_logging("Cheap hours not available. Ignoring extended control.");
                 } else {
@@ -302,7 +302,7 @@ void Heating::update()
                 }
             }
             if (handle_blocking) {
-                const bool data_available = day_ahead_prices.get_expensive_hours(start_time, duration, blocking_hours, data);
+                const bool data_available = day_ahead_prices.get_expensive_1h(start_time, duration, blocking_hours, data);
                 if (!data_available) {
                     extended_logging("Expensive hours not available. Ignoring blocking control.");
                 } else {
