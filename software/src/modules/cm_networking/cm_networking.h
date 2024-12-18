@@ -97,7 +97,7 @@ private:
     #define RESOLVE_STATE_RESOLVED 2
 
     uint8_t resolve_state[MAX_CONTROLLED_CHARGERS] = {};
-    struct sockaddr_in dest_addrs[MAX_CONTROLLED_CHARGERS] = {};
+    struct sockaddr_in *dest_addrs = nullptr;
     const char *const *hosts = nullptr;
     int charger_count = 0;
     // one bit per charger

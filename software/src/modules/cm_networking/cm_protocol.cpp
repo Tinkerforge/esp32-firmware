@@ -204,6 +204,8 @@ void CMNetworking::register_manager(const char *const *const hosts,
     this->hosts = hosts;
     this->charger_count = charger_count;
 
+    dest_addrs = (struct sockaddr_in *)heap_caps_calloc_prefer(charger_count, sizeof(struct sockaddr_in), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+
     for (int i = 0; i < charger_count; ++i) {
         if (endswith(hosts[i], ".local"))
             needs_mdns |= 1 << i;
