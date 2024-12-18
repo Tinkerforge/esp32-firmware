@@ -127,7 +127,7 @@ void MqttAutoDiscovery::prepare_topics()
 
     device_info.concat("\"device\":{\"identifiers\":\"");
     device_info.concat(client_name);
-    device_info.concat("\",\"manufacturer\":\"" BUILD_MANUFACTURER "\",\"model\":\"" BUILD_DISPLAY_NAME "\",\"name\":\"" BUILD_DISPLAY_NAME " (");
+    device_info.concat("\",\"manufacturer\":\"" BUILD_MANUFACTURER_FULL "\",\"model\":\"" BUILD_DISPLAY_NAME "\",\"name\":\"" BUILD_DISPLAY_NAME " (");
     device_info.concat(client_name);
     device_info.concat(")\"}");
 

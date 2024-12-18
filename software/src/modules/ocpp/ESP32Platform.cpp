@@ -905,7 +905,7 @@ void platform_register_stop_callback(void *ctx, void (*cb)(int32_t, StopReason, 
 
 const char *platform_get_charge_point_vendor()
 {
-    return "Tinkerforge GmbH";
+    return BUILD_MANUFACTURER_FULL;
 }
 
 char model[21] = {0};
