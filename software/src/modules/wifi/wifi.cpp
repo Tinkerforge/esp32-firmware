@@ -22,6 +22,7 @@
 #include <WiFi.h>
 #include <esp_wifi.h>
 #include <esp_wpa2.h>
+#include <TFJson.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -767,7 +768,6 @@ void Wifi::setup()
     initialized = true;
 }
 
-// FIXME: use TFJson on top of StringBuilder
 void Wifi::get_scan_results(StringBuilder *sb, int network_count)
 {
     sb->putc('[');
@@ -777,8 +777,14 @@ void Wifi::get_scan_results(StringBuilder *sb, int network_count)
             sb->putc(',');
         }
 
-        sb->printf("{\"ssid\":\"%s\",\"bssid\":\"%s\",\"rssi\":%d,\"channel\":%d,\"encryption\":%d}",
-                   WiFi.SSID(i).c_str(), WiFi.BSSIDstr(i).c_str(), WiFi.RSSI(i), WiFi.channel(i), WiFi.encryptionType(i));
+        char json_buf[2 + 64] = ""; // use twice the maximum SSID length to have room for escaping
+        TFJsonSerializer json{json_buf, sizeof(json_buf)};
+
+        json.addString(WiFi.SSID(i).c_str());
+        json.end();
+
+        sb->printf("{\"ssid\":%s,\"bssid\":\"%s\",\"rssi\":%d,\"channel\":%d,\"encryption\":%d}",
+                   json_buf, WiFi.BSSIDstr(i).c_str(), WiFi.RSSI(i), WiFi.channel(i), WiFi.encryptionType(i));
     }
 
     sb->putc(']');
