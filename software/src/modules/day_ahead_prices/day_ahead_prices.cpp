@@ -190,7 +190,7 @@ void DayAheadPrices::update_prices_sorted()
     }
 
     // Sort prices today by comparator (ascending for cheap hours, descending for expensive hours)
-    std::sort(&prices_sorted[0], &prices_sorted[0]+prices_sorted_count,  [](const std::pair<uint8_t, int32_t> &a, const std::pair<uint8_t, int32_t> &b) {
+    std::stable_sort(&prices_sorted[0], &prices_sorted[0]+prices_sorted_count,  [](const std::pair<uint8_t, int32_t> &a, const std::pair<uint8_t, int32_t> &b) {
         return a.second < b.second;
     });
 
