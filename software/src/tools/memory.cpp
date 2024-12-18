@@ -19,24 +19,7 @@
 
 #include "memory.h"
 
-#include <esp_heap_caps.h>
-
 #include "header_logger.h"
-
-// 0x3f800000 - 0x3fbfffff PSRAM
-extern char _ext_ram_bss_start;
-
-// 0x3ffae000 - 0x3fffffff SRAM
-extern char _data_start;
-extern char _noinit_start;
-extern char _bss_start;
-extern char _heap_start;
-
-// 0x40080000 - 0x4009ffff IRAM
-extern char _iram_start;
-
-// 0x400c2000 - 0x40bfffff flash text
-extern char _text_start;
 
 // The memory areas can't be checked with static asserts at compile time
 // because their addresses will be determined at link time.
@@ -49,29 +32,4 @@ void check_memory_assumptions()
     if (&_rodata_end > &_heap_start       ) header_printfln("memory_tools", "_rodata_end after _heap_start");
     if (&_rodata_end > &_iram_start       ) header_printfln("memory_tools", "_rodata_end after _iram_start");
     if (&_rodata_end > &_text_start       ) header_printfln("memory_tools", "_rodata_end after _text_start");
-}
-
-void *malloc_32bit_addressed(size_t s)
-{
-    return heap_caps_malloc(s, MALLOC_CAP_32BIT);
-}
-
-void *malloc_psram(size_t s)
-{
-    return heap_caps_malloc(s, MALLOC_CAP_SPIRAM);
-}
-
-void *calloc_32bit_addressed(size_t c, size_t s)
-{
-    return heap_caps_calloc(c, s, MALLOC_CAP_32BIT);
-}
-
-void *calloc_psram_or_dram(size_t c, size_t s)
-{
-    return heap_caps_calloc_prefer(c, s, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-}
-
-void *calloc_dram(size_t c, size_t s)
-{
-    return heap_caps_calloc(c, s, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 }

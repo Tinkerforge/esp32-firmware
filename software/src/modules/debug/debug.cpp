@@ -32,8 +32,8 @@
 #include "module_dependencies.h"
 #include "backtrace.h"
 #include "string_builder.h"
-
 #include "config/private.h"
+#include "tools/memory.h"
 
 #include "gcc_warnings.h"
 
@@ -41,10 +41,6 @@
 
 static float benchmark_area(uint32_t *start_address, size_t max_length);
 static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_clk, uint32_t *dummy_cyclelen, const char **spi_mode);
-
-extern uint32_t _rodata_start;
-extern uint32_t _rodata_end;
-extern uint32_t _text_start;
 
 [[gnu::noinline]]
 static void malloc_failed_log_detailed(size_t size, uint32_t caps, const char *function_name, const char *task_name)

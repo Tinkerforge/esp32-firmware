@@ -20,32 +20,14 @@
 #pragma once
 
 #include <stddef.h>
-#include <stdint.h>
 
-// 0x3f400000 - 0x3f7fffff flash rodata
-extern uint32_t _rodata_start;
-extern uint32_t _rodata_end;
+// https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/mem_alloc.html#bit-accessible-memory
+void *malloc_32bit_addressed(size_t s);
 
-// 0x3f800000 - 0x3fbfffff PSRAM
-extern uint32_t _ext_ram_bss_start;
+void *malloc_psram(size_t s);
 
-// 0x3ffae000 - 0x3fffffff SRAM
-extern uint32_t _data_start;
-extern uint32_t _noinit_start;
-extern uint32_t _bss_start;
-extern uint32_t _heap_start;
+void *calloc_32bit_addressed(size_t c, size_t s);
 
-// 0x40080000 - 0x4009ffff IRAM
-extern uint32_t _iram_start;
+void *calloc_psram_or_dram(size_t c, size_t s);
 
-// 0x400c2000 - 0x40bfffff flash text
-extern uint32_t _text_start;
-
-inline bool string_is_in_rodata(const char *str)
-{
-    // Everything in rodata has lower addresses than all other memories.
-    // Checking against the upper address is enough.
-    return str < reinterpret_cast<char *>(&_rodata_end);
-}
-
-void check_memory_assumptions();
+void *calloc_dram(size_t c, size_t s);

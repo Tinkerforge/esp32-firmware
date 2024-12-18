@@ -20,7 +20,7 @@
 #pragma once
 
 #include "config.h"
-#include "tools/memory.h"
+#include "tools/malloc.h"
 
 #define SLOT_HEADROOM 20
 

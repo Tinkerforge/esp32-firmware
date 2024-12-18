@@ -21,7 +21,7 @@
 
 #include <stdio.h>
 
-#include "memory.h"
+#include "./malloc.h"
 
 // minimal C++11 allocator with debug output
 template <class Tp>
