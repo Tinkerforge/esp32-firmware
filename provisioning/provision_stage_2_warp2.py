@@ -54,10 +54,10 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
     if evse_enum is None:
         fatal_error("No EVSE Bricklet found!")
 
-    if qr_variant == "B":
-        if len(enumerations) != 2:
-            fatal_error("Unexpected number of devices! Expected 2 but got {}.".format(len(enumerations)))
-    else:
+    # Don't check len(enumeraions) if this is a basic:
+    # In this case we are connected to localhost and there's a lot of bricks and bricklets connected to the test PC
+
+    if qr_variant != "B":
         if nfc_enum is None:
             fatal_error("No NFC Bricklet found!")
         if len(enumerations) != 2:
