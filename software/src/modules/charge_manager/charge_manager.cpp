@@ -457,6 +457,22 @@ void ChargeManager::setup()
 
             this->limits_post_allocation = tmp_limits;
 
+#if MODULE_ECO_AVAILABLE()
+            for(size_t i = 0; i < charger_count; ++i) {
+                // Looks stupid but results in a compiler warning if ChargeDecision gets more enum variants.
+                switch (eco.get_charge_decision(i)) {
+                    case Eco::ChargeDecision::Normal:
+                        logger.printfln_debug("%zu Normal", i);
+                        charger_state[i].charge_mode_pv = true;
+                        break;
+                    case Eco::ChargeDecision::Fast:
+                        logger.printfln_debug("%zu Fast", i);
+                        charger_state[i].charge_mode_pv = false;
+                        break;
+                }
+            }
+#endif
+
             int result = allocate_current(
                 this->ca_config,
                 &this->limits_post_allocation,
