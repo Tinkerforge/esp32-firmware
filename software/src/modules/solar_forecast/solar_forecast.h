@@ -71,7 +71,7 @@ public:
 private:
     class SolarForecastPlane {
     public:
-        uint8_t index;
+        size_t index;
         ConfigRoot config;
         ConfigRoot forecast;
         ConfigRoot state;
@@ -96,5 +96,5 @@ private:
     AsyncHTTPSClient https_client;
 
     SFDownloadState download_state = SF_DOWNLOAD_STATE_OK;
-    SolarForecastPlane planes[SOLAR_FORECAST_PLANES];
+    SolarForecastPlane *planes = nullptr;
 };
