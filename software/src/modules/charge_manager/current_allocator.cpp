@@ -1000,7 +1000,7 @@ void stage_4(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
 // - Sort by allocated energy ascending as in stage 3
 // - Enable conditions are similar to stage 3:
 //   The enable cost is the cost to enable a charger with three phases minus the cost (that already was subtracted in stage 3) to enable it with one phase.
-void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state, const ChargerAllocationState *charger_allocation_state) {
     Cost wnd_min = ca_state->control_window_min;
     Cost wnd_max = ca_state->control_window_max;
 
@@ -1037,7 +1037,7 @@ void stage_5(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         // that were activated in this iteration. Those ignored the hysteresis anyway
         // and we can skip the phase switch by immediately allocating three phases.
         // Note that this is **not** the same check as the one in stage 9 (waking up chargers)
-        if (!ca_state->global_hysteresis_elapsed && state->allowed_current != 0)
+        if (!ca_state->global_hysteresis_elapsed && charger_allocation_state[idx_array[i]].allocated_current != 0)
             continue;
 
         Cost new_cost = Cost{3 * min_3p - min_1p, min_3p, min_3p, min_3p};
@@ -1353,7 +1353,7 @@ static bool stage_9_sort(const ChargerState *left_state, const ChargerState *rig
 // If there is still current left, attempt to wake up chargers with a probably fully charged car.
 // Activating a charger will automatically change it from low to normal priority for at least 3 minutes,
 // giving the car time to request current.
-void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state) {
+void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state, size_t charger_count, const CurrentAllocatorConfig *cfg, CurrentAllocatorState *ca_state, const ChargerAllocationState *charger_allocation_state) {
     int matched = 0;
 
     bool have_active_chargers = ca_state->control_window_min.pv != 0;
@@ -1383,7 +1383,7 @@ void stage_9(int *idx_array, int32_t *current_allocation, uint8_t *phase_allocat
         // Only if the current is still left over in this iteration, the
         // charger that is being woken up is reallocated the current.
         // Note that this is **not** the same check as the one in stage 5 (1p->3p switch)
-        if (!ca_state->global_hysteresis_elapsed && state->allowed_current == 0)
+        if (!ca_state->global_hysteresis_elapsed && charger_allocation_state[idx_array[i]].allocated_current == 0)
             continue;
 
         bool force_3p = !deadline_elapsed(state->last_phase_switch + cfg->global_hysteresis) && state->phases == 3;
@@ -1579,7 +1579,7 @@ int allocate_current(
     //trace_alloc(3, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_4(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
     //trace_alloc(4, limits, current_array, phases_array, cfg->charger_count, charger_state);
-    stage_5(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
+    stage_5(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state, charger_allocation_state);
     //trace_alloc(5, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_6(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
     //trace_alloc(6, limits, current_array, phases_array, cfg->charger_count, charger_state);
@@ -1587,7 +1587,7 @@ int allocate_current(
     //trace_alloc(7, limits, current_array, phases_array, cfg->charger_count, charger_state);
     stage_8(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
     //trace_alloc(8, limits, current_array, phases_array, cfg->charger_count, charger_state);
-    stage_9(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state);
+    stage_9(idx_array, current_array, phases_array, limits, charger_state, cfg->charger_count, cfg, ca_state, charger_allocation_state);
     trace_alloc(9, limits, current_array, phases_array, cfg->charger_count, charger_state);
     //auto end = micros();
     //logger.printfln("Took %u µs", end - start);
