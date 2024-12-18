@@ -25,8 +25,9 @@ bool Config::ConfUint::slotEmpty(size_t i) {
         && uint_buf[i].max == 0;
 }
 
-Config::ConfUint::Slot *Config::ConfUint::allocSlotBuf(size_t elements) {
-    return (Config::ConfUint::Slot *) heap_caps_calloc(elements, sizeof(Config::ConfUint::Slot), MALLOC_CAP_32BIT);
+Config::ConfUint::Slot *Config::ConfUint::allocSlotBuf(size_t elements)
+{
+    return (Config::ConfUint::Slot *)calloc_32bit_addressed(elements, sizeof(Config::ConfUint::Slot));
 }
 
 void Config::ConfUint::freeSlotBuf(Config::ConfUint::Slot *buf)

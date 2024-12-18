@@ -341,7 +341,7 @@ void SolarForecast::update()
 
 #ifdef SOLAR_FORECAST_USE_TEST_DATA
     if(json_buffer == nullptr) {
-        json_buffer = (char *)heap_caps_calloc_prefer(SOLAR_FORECAST_MAX_JSON_LENGTH, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        json_buffer = (char *)calloc_psram_or_dram(SOLAR_FORECAST_MAX_JSON_LENGTH, sizeof(char));
     } else {
         logger.printfln("JSON Buffer was potentially not freed correctly");
         json_buffer_position = 0;
@@ -369,7 +369,7 @@ void SolarForecast::update()
     }
 
     if(json_buffer == nullptr) {
-        json_buffer = (char *)heap_caps_calloc_prefer(SOLAR_FORECAST_MAX_JSON_LENGTH, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        json_buffer = (char *)calloc_psram_or_dram(SOLAR_FORECAST_MAX_JSON_LENGTH, sizeof(char));
     } else {
         logger.printfln("JSON Buffer was potentially not freed correctly");
         json_buffer_position = 0;

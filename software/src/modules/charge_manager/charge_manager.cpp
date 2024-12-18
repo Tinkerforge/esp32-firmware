@@ -400,7 +400,7 @@ void ChargeManager::setup()
         hosts_buf_size += config.get("chargers")->get(i)->get("host")->asString().length() + 1; //null terminator
     }
 
-    char *hosts_buf = (char*)heap_caps_calloc_prefer(hosts_buf_size, sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    char *hosts_buf = (char *)calloc_psram_or_dram(hosts_buf_size, sizeof(char));
     this->hosts = heap_alloc_array<const char *>(config.get("chargers")->count());
     size_t hosts_written = 0;
 
@@ -414,8 +414,8 @@ void ChargeManager::setup()
 
     this->charger_count = config.get("chargers")->count();
     ca_config->charger_count = this->charger_count;
-    this->charger_state = (ChargerState*) heap_caps_calloc_prefer(this->charger_count, sizeof(ChargerState), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-    this->charger_allocation_state = (ChargerAllocationState*) heap_caps_calloc_prefer(this->charger_count, sizeof(ChargerAllocationState), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    this->charger_state = (ChargerState *)calloc_psram_or_dram(this->charger_count, sizeof(ChargerState));
+    this->charger_allocation_state = (ChargerAllocationState *)calloc_psram_or_dram(this->charger_count, sizeof(ChargerAllocationState));
 
     for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
         charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());

@@ -26,7 +26,7 @@ bool Config::ConfFloat::slotEmpty(size_t i) {
 }
 Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements)
 {
-    return (Config::ConfFloat::Slot *) heap_caps_calloc(elements, sizeof(Config::ConfFloat::Slot), MALLOC_CAP_32BIT);
+    return (Config::ConfFloat::Slot *)calloc_32bit_addressed(elements, sizeof(Config::ConfFloat::Slot));
 }
 
 void Config::ConfFloat::freeSlotBuf(Config::ConfFloat::Slot *buf)

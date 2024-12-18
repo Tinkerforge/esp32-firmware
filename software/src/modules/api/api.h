@@ -27,7 +27,7 @@
 #include "module.h"
 #include "config.h"
 #include "chunked_response.h"
-#include "tools.h"
+#include "tools/allocator.h"
 #include "modules/web_server/web_server.h"
 
 // Will be stored in IRAM -> use 32 bit integers even if a bool would be sufficient

@@ -26,7 +26,7 @@
 #include <limits>
 
 #include "ringbuffer.h"
-#include "malloc_tools.h"
+#include "tools/memory.h"
 
 // How many hours to keep the coarse history for
 #define HISTORY_HOURS 48

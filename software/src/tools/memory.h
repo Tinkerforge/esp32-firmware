@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <stddef.h>
+
 // 0x3f400000 - 0x3f7fffff flash rodata
 extern char _rodata_start;
 extern char _rodata_end;
@@ -31,3 +33,14 @@ inline bool string_is_in_rodata(const char *str)
 }
 
 void check_memory_assumptions();
+
+// https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/mem_alloc.html#bit-accessible-memory
+void *malloc_32bit_addressed(size_t s);
+
+void *malloc_psram(size_t s);
+
+void *calloc_32bit_addressed(size_t c, size_t s);
+
+void *calloc_psram_or_dram(size_t c, size_t s);
+
+void *calloc_dram(size_t c, size_t s);

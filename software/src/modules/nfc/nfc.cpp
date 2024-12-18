@@ -211,8 +211,8 @@ void NFC::setup_nfc()
     initialized = true;
     api.addFeature("nfc");
 
-    old_tags = static_cast<decltype(old_tags)>(heap_caps_calloc(TAG_LIST_LENGTH, sizeof(*old_tags), MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    new_tags = static_cast<decltype(old_tags)>(heap_caps_calloc(TAG_LIST_LENGTH, sizeof(*new_tags), MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    old_tags = static_cast<decltype(old_tags)>(calloc_dram(TAG_LIST_LENGTH, sizeof(*old_tags)));
+    new_tags = static_cast<decltype(old_tags)>(calloc_dram(TAG_LIST_LENGTH, sizeof(*new_tags)));
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.set_enabled(AutomationTriggerID::NFC, true);

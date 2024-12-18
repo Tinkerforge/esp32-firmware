@@ -204,7 +204,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
     this->hosts = hosts;
     this->charger_count = charger_count;
 
-    dest_addrs = (struct sockaddr_in *)heap_caps_calloc_prefer(charger_count, sizeof(struct sockaddr_in), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    dest_addrs = (struct sockaddr_in *)calloc_psram_or_dram(charger_count, sizeof(struct sockaddr_in));
 
     for (int i = 0; i < charger_count; ++i) {
         if (endswith(hosts[i], ".local"))
@@ -228,13 +228,13 @@ void CMNetworking::register_manager(const char *const *const hosts,
     // The tasks resources may be leaked, because
     // it will run forever.
 
-    ManagerTaskData *task_data = static_cast<ManagerTaskData *>(heap_caps_calloc(1, sizeof(ManagerTaskData), MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    ManagerTaskData *task_data = static_cast<ManagerTaskData *>(calloc_dram(1, sizeof(ManagerTaskData)));
     if (!task_data) {
         logger.printfln("Failed to allocate task data");
         return;
     }
 
-    uint8_t *queue_storage = static_cast<uint8_t *>(heap_caps_calloc_prefer(this->charger_count, sizeof(ManagerQueueItem), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    uint8_t *queue_storage = static_cast<uint8_t *>(calloc_psram_or_dram(this->charger_count, sizeof(ManagerQueueItem)));
     if (!queue_storage) {
         logger.printfln("Failed to allocate queue storage");
         free(task_data);
