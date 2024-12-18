@@ -162,7 +162,7 @@ void Eco::update()
         const uint32_t hours_desired      = charge_plan.get("amount")->asUint();
         const Departure departure         = charge_plan.get("departure")->asEnum<Departure>();
 
-        const time_t   save_time          = state.get("last_charge_plan_save")->asUint()*60;
+        const time_t   save_time          = state.get("last_save")->asUint()*60;
         const uint32_t save_time_midnight = get_localtime_midnight_in_utc(save_time) / 60;
 
         time_t midnight;
@@ -251,7 +251,7 @@ void Eco::disable_charge_plan()
 
 Eco::ChargeDecision Eco::get_charge_decision(const uint8_t charger_id)
 {
-    if (charger_id >= charge_plan.get("chargers")->count()) {
+    if (charger_id >= state.get("chargers")->count()) {
         return ChargeDecision::Normal;
     }
 
