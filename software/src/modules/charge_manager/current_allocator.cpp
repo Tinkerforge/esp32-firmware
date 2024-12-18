@@ -90,7 +90,7 @@ static void print_alloc(int stage, CurrentLimits *limits, int32_t *current_array
 }
 
 static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array, uint8_t *phases_array, size_t charger_count, const ChargerState *charger_state) {
-#if BOARD_HAS_PSRAM
+#if defined(BOARD_HAS_PSRAM)
     char buf[768] = {};
     trace("%d: raw(%d %d %d %d) min(%d %d %d %d) spread(%d %d %d %d) max_pv %d",
            stage,
@@ -129,7 +129,7 @@ static void trace_alloc(int stage, CurrentLimits *limits, int32_t *current_array
 }
 
 static void trace_sort_fn(int stage, int matched, int *idx_array, size_t charger_count) {
-#if BOARD_HAS_PSRAM
+#if defined(BOARD_HAS_PSRAM)
     char buf[200];
     memset(buf, 0, sizeof(buf));
     char *ptr = buf;

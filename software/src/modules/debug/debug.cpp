@@ -488,7 +488,7 @@ void Debug::register_events()
     register_task("wpsT",            0, ExpectMissing);
 }
 
-#if defined(BOARD_HAS_PSRAM) && BOARD_HAS_PSRAM == 1
+#if defined(BOARD_HAS_PSRAM)
 #define CHECK_PSRAM 1
 #else
 #define CHECK_PSRAM 0
