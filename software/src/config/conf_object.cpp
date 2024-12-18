@@ -120,7 +120,7 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
 {
     auto len = val.size();
 
-    auto schema = (ConfObjectSchema *) heap_caps_malloc(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key), MALLOC_CAP_32BIT);
+    auto schema = (ConfObjectSchema *)malloc_32bit_addressed(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key));
     schema->length = len;
 
     for (int i = 0; i < len; ++i) {

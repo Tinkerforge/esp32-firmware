@@ -24,7 +24,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "tools.h"
+#include "tools/malloc.h"
 #include "pdf_charge_log.h"
 
 struct [[gnu::packed]] ChargeStart {
@@ -929,7 +929,7 @@ void ChargeTracker::register_urls()
         }
 search_done:
 
-        display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(heap_caps_malloc(MAX_PASSIVE_USERS * sizeof(display_name_cache[0]), MALLOC_CAP_32BIT));
+        display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(malloc_32bit_addressed(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
         if (!display_name_cache) {
             return request.send(500, "text/plain", "Failed to generate PDF: No memory");;
         }
