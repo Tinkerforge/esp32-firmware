@@ -171,6 +171,8 @@ private:
 
     // Fronius
     FroniusGEN24PlusHybridInverterVirtualMeter fronius_gen24_plus_hybrid_inverter_virtual_meter;
+    uint16_t fronius_gen24_plus_hybrid_inverter_input_or_model_id = 0;
+    size_t fronius_gen24_plus_hybrid_inverter_start_address_shift;
     int16_t fronius_gen24_plus_hybrid_inverter_dca_sf;
     int16_t fronius_gen24_plus_hybrid_inverter_dcv_sf;
     int16_t fronius_gen24_plus_hybrid_inverter_dcw_sf;

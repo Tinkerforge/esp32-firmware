@@ -61,20 +61,21 @@
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY          2350u
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY 2352u
 
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCA_SF_ADDRESS         NUMBER_TO_ADDRESS(40256u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCV_SF_ADDRESS         NUMBER_TO_ADDRESS(40257u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCW_SF_ADDRESS         NUMBER_TO_ADDRESS(40258u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCWH_SF_ADDRESS        NUMBER_TO_ADDRESS(40259u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCA_ADDRESS     NUMBER_TO_ADDRESS(40313u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCV_ADDRESS     NUMBER_TO_ADDRESS(40314u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCW_ADDRESS     NUMBER_TO_ADDRESS(40315u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCWH_ADDRESS    NUMBER_TO_ADDRESS(40316u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCA_ADDRESS  NUMBER_TO_ADDRESS(40333u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCV_ADDRESS  NUMBER_TO_ADDRESS(40334u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCW_ADDRESS  NUMBER_TO_ADDRESS(40335u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCWH_ADDRESS NUMBER_TO_ADDRESS(40336u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_ADDRESS       NUMBER_TO_ADDRESS(40352u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_SF_ADDRESS    NUMBER_TO_ADDRESS(40366u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_INPUT_OR_MODEL_ID_ADDRESS NUMBER_TO_ADDRESS(40264u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCA_SF_ADDRESS            NUMBER_TO_ADDRESS(40256u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCV_SF_ADDRESS            NUMBER_TO_ADDRESS(40257u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCW_SF_ADDRESS            NUMBER_TO_ADDRESS(40258u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCWH_SF_ADDRESS           NUMBER_TO_ADDRESS(40259u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCA_ADDRESS        NUMBER_TO_ADDRESS(40313u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCV_ADDRESS        NUMBER_TO_ADDRESS(40314u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCW_ADDRESS        NUMBER_TO_ADDRESS(40315u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCWH_ADDRESS       NUMBER_TO_ADDRESS(40316u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCA_ADDRESS     NUMBER_TO_ADDRESS(40333u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCV_ADDRESS     NUMBER_TO_ADDRESS(40334u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCW_ADDRESS     NUMBER_TO_ADDRESS(40335u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCWH_ADDRESS    NUMBER_TO_ADDRESS(40336u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_ADDRESS          NUMBER_TO_ADDRESS(40352u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_SF_ADDRESS       NUMBER_TO_ADDRESS(40366u)
 
 #define CARLO_GAVAZZI_EM100_OR_ET100_W               0x04
 #define CARLO_GAVAZZI_EM100_OR_ET100_KWH_PLUS_TOTAL  0x10
@@ -622,7 +623,7 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
             return;
 
         case FroniusGEN24PlusHybridInverterVirtualMeter::Battery:
-            table = &fronius_gen24_plus_hybrid_inverter_battery_table;
+            table = &fronius_gen24_plus_hybrid_inverter_battery_type_table;
             break;
 
         default:
@@ -1217,6 +1218,49 @@ void MeterModbusTCP::read_done_callback()
         return;
     }
 
+    if (is_fronius_gen24_plus_hybrid_inverter_battery_meter()
+     && generic_read_request.start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_INPUT_OR_MODEL_ID_ADDRESS) {
+        if (fronius_gen24_plus_hybrid_inverter_input_or_model_id == 0) {
+            logger.tracefln(trace_buffer_index,
+                            "m%u t%u i%zu u16 a%zu r%u v%u",
+                            slot,
+                            static_cast<uint8_t>(table_id),
+                            read_index,
+                            table->specs[read_index].start_address,
+                            register_buffer[register_buffer_index],
+                            register_buffer[register_buffer_index]);
+
+            switch (register_buffer[register_buffer_index]) {
+            case 1: // module/1/ID: Input ID
+                table = &fronius_gen24_plus_hybrid_inverter_battery_integer_table;
+                fronius_gen24_plus_hybrid_inverter_start_address_shift = 0;
+                break;
+
+            case 160: // ID: SunSpec Model ID
+                table = &fronius_gen24_plus_hybrid_inverter_battery_float_table;
+                fronius_gen24_plus_hybrid_inverter_start_address_shift = 10;
+                break;
+
+            default:
+                table = nullptr;
+                logger.printfln("%s has unknown input or model ID: %u", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[register_buffer_index]);
+                return;
+            }
+
+            fronius_gen24_plus_hybrid_inverter_input_or_model_id = register_buffer[register_buffer_index];
+
+            meters.declare_value_ids(slot, table->ids, table->ids_length);
+        }
+
+        read_allowed = true;
+        read_index = 0;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+
+        prepare_read();
+
+        return;
+    }
+
     union {
         uint32_t u;
         float f;
@@ -1512,50 +1556,52 @@ void MeterModbusTCP::read_done_callback()
         }
     }
     else if (is_fronius_gen24_plus_hybrid_inverter_battery_meter()) {
-        if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCA_SF_ADDRESS) {
+        size_t start_address = register_start_address - fronius_gen24_plus_hybrid_inverter_start_address_shift;
+
+        if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCA_SF_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_dca_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCV_SF_ADDRESS) {
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCV_SF_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_dcv_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCW_SF_ADDRESS) {
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCW_SF_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_dcw_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCWH_SF_ADDRESS) {
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCWH_SF_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_dcwh_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCA_ADDRESS) {
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCA_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_charge_dca = value; // SunSpec: uint16
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCV_ADDRESS) {
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCV_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_charge_dcv = value; // SunSpec: uint16
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCW_ADDRESS) {
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCW_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_charge_dcw = value; // SunSpec: uint16
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCWH_ADDRESS) {
-            // Is 0 in older versions while discharging. As this is an acc32 map 0 to NaN. This will make the
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCWH_ADDRESS) {
+            // Is 0 in firmware versions <= 1.30 while discharging. As this is an acc32 map 0 to NaN. This will make the
             // meters framework ignore this value during discharging and keep the pervious value
             fronius_gen24_plus_hybrid_inverter_charge_dcwh = c32.u == 0 ? NAN : value; // SunSpec: acc32
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCA_ADDRESS) {
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCA_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_discharge_dca = value; // SunSpec: uint16
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCV_ADDRESS) {
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCV_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_discharge_dcv = value; // SunSpec: uint16
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCW_ADDRESS) {
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCW_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_discharge_dcw = value; // SunSpec: uint16
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCWH_ADDRESS) {
-            // Is 0 in older versions while charging. As this is an acc32 map 0 to NaN. This will make the
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCWH_ADDRESS) {
+            // Is 0 in firmware versions <= 1.30 while charging. As this is an acc32 map 0 to NaN. This will make the
             // meters framework ignore this value during charging and keep the pervious value
             fronius_gen24_plus_hybrid_inverter_discharge_dcwh = c32.u == 0 ? NAN : value; // SunSpec: acc32
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_ADDRESS) {
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_chastate = value; // SunSpec: uint16
         }
-        else if (register_start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_SF_ADDRESS) {
+        else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_SF_ADDRESS) {
             fronius_gen24_plus_hybrid_inverter_chastate_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
 
             float dca_scale_factor = get_fronius_scale_factor(fronius_gen24_plus_hybrid_inverter_dca_sf);
@@ -1573,7 +1619,7 @@ void MeterModbusTCP::read_done_callback()
             float discharge_dcw = fronius_gen24_plus_hybrid_inverter_discharge_dcw * dcw_scale_factor;
 
             float current_charge_discharge_diff = charge_dca - discharge_dca; // One of the two value is always 0A
-            float voltage = std::max(charge_dcv, discharge_dcv); // In older versions one of the two values is always 0V. In newer versions they are the same
+            float voltage = std::max(charge_dcv, discharge_dcv); // In firmware versions <= 1.30 one of the two values is always 0V. In firmware versions >= 1.31 they are the same
             float power_charge_discharge_diff = charge_dcw - discharge_dcw; // One of the two value is always 0W
             float state_of_charge = fronius_gen24_plus_hybrid_inverter_chastate * chastate_scale_factor;
             float energy_charge = fronius_gen24_plus_hybrid_inverter_charge_dcwh * dcwh_scale_factor * 0.001f;
