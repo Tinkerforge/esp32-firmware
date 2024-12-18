@@ -1790,6 +1790,15 @@ bool update_from_client_packet(
     target.uid = v1->esp32_uid;
     target.uptime = v1->evse_uptime;
 
+    // If we've just resolved this charger but the charger did not reboot
+    // we can receive a packet before successfully sending the first one
+    // If the allocation algorithm runs between receiving the first packet
+    // and sending the first packet, we wrongly assume that this charger's EVSE
+    // does not react. (This only happens if resolving the charger takes just long enough, ~ 30 seconds)
+    // To fix this, fake that we've sent a config just now.
+    if (charger_allocation_state->last_sent_config == 0_us)
+        charger_allocation_state->last_sent_config = now_us();
+
 #if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_EM_V1_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
     // Immediately block firmware updates if this charger reports a connected vehicle.
     if (v1->charger_state != 0)
