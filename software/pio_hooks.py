@@ -118,10 +118,10 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
                 sys.exit(1)
             m = [x.space for x in modules if x.space != module_name]
 
-        old_len = len(m)
-        m = set(m)
-        if len(m) != old_len:
+        s = set(m)
+        if len(s) != len(m):
             print(f"List of '{config_key}' modules for module '{module_name}' contains duplicates.", file=sys.stderr)
+            m = sorted(s)
         return m
 
     if module:
