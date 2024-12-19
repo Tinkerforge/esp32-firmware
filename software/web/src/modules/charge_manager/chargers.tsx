@@ -549,7 +549,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             em_charger_list.push([i.toString(), state.chargers[i].name]);
         }
 
-        if (this.state.emCharger.idx < 254 && this.state.chargers[this.state.emCharger.idx].host != this.state.emCharger.host) {
+        if (this.state.emCharger.idx < 254 && this.state.chargers[this.state.emCharger.idx]?.host != this.state.emCharger.host) {
             this.setState({emCharger: {...state.emCharger, idx: 254, host: ""}});
         }
 
