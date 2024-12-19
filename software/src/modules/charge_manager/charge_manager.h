@@ -93,6 +93,8 @@ public:
 
     void trigger_allocator_run() {next_allocation = 0_us;}
     void skip_global_hysteresis();
+    void enable_fast_single_charger_mode();
+    bool is_static_cm() {return static_cm;}
 
     const ChargerState *get_charger_state(uint8_t idx);
 

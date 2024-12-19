@@ -16,7 +16,7 @@ debug_log_variables = [
     "max_current_limited_ma",
     "",
     "mode",
-    "current_phases",
+    ##"current_phases",
     ##"wants_3phase",
     ##"wants_3phase_last",
     ##"is_on_last",

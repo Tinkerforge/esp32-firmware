@@ -24,13 +24,15 @@
 #include "config.h"
 #include "module.h"
 #include "modules/cm_networking/cm_networking_defs.h"
+#include "modules/power_manager/phase_switcher_back-end.h"
 #include "TFTools/Micros.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
 
-class EMPhaseSwitcher final : public IModule
+class EMPhaseSwitcher final : public IModule,
+                   public PhaseSwitcherBackend
 #if MODULE_AUTOMATION_AVAILABLE()
                  , public IAutomationBackend
 #endif
@@ -42,6 +44,15 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+
+    // for PhaseSwitcherBackend
+    uint32_t get_phase_switcher_priority() override {return 8;}
+    bool phase_switching_capable() override;
+    bool can_switch_phases_now(uint32_t phases_wanted) override;
+    uint32_t get_phases() override;
+    PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override;
+    bool switch_phases(uint32_t phases_wanted) override;
+    bool is_external_control_allowed() override;
 
     bool is_proxy_mode_enabled();
 
@@ -64,11 +75,14 @@ private:
         PostSwitchStateFaking,
     };
 
+    PhaseSwitcherBackend::SwitchingState get_phase_switching_state_internal();
+    bool switch_phases_internal(uint32_t phases_wanted);
+
     ConfigRoot state;
     ConfigRoot charger_config;
 
+    micros_t phase_switch_deadtime_us = 0_us;
     micros_t last_state_packet = -1_h; // System boot is time 0. Timestamps must be initialized with old enough values for correct deadline calculation after start-up.
-
     micros_t next_state_change_after;
 
     const char *charger_hostname;
@@ -77,6 +91,7 @@ private:
     uint8_t controlled_charger_idx;
     uint8_t last_iec61851_state;
     uint8_t last_charger_state;
+    uint8_t external_phase_override = 0;
 };
 
 #include "module_available_end.h"

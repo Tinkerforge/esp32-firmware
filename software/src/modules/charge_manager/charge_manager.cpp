@@ -703,3 +703,22 @@ const ChargerState *ChargeManager::get_charger_state(uint8_t idx)
 {
     return this->charger_state == nullptr ? nullptr : &this->charger_state[idx];
 }
+
+void ChargeManager::enable_fast_single_charger_mode()
+{
+    if (!config.get("enable_charge_manager")->asBool()) {
+        logger.printfln("Cannot enable fast single charger mode because the charge manager is disabled");
+        return;
+    }
+
+    size_t charger_count = config.get("chargers")->count();
+    if (charger_count != 1) {
+        logger.printfln("Cannot enable fast single charger mode because %zu chargers are configured", charger_count);
+        return;
+    }
+
+    ca_config->allocation_interval = 5_s;
+    low_level_config.get("allocation_interval")->updateUint(5);
+
+    logger.printfln("Enabled fast single charger mode");
+}

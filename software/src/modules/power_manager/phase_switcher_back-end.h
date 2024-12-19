@@ -41,7 +41,6 @@ public:
     virtual uint32_t get_phase_switcher_priority() = 0;
     virtual bool phase_switching_capable() = 0;
     virtual bool can_switch_phases_now(uint32_t phases_wanted) = 0;
-    virtual bool requires_cp_disconnect() = 0;
     virtual uint32_t get_phases() = 0;
     virtual SwitchingState get_phase_switching_state() = 0;
     virtual bool switch_phases(uint32_t phases_wanted) = 0;

@@ -192,8 +192,6 @@ void EMV1::setup()
         this->update_all_data();
     }, EM_TASK_DELAY);
 
-    power_manager.register_phase_switcher_backend(this);
-
 #if MODULE_AUTOMATION_AVAILABLE()
     if (!contactor_installed) {
         automation.set_enabled(AutomationTriggerID::EMPhaseSwitch, false);
@@ -367,71 +365,26 @@ int EMV1::wem_get_energy_meter_detailed_values(float *ret_values, uint16_t *ret_
     return tf_warp_energy_manager_get_energy_meter_detailed_values(&device, ret_values, ret_values_length);
 }
 
-// for PhaseSwitcherBackend
-
-bool EMV1::phase_switching_capable()
-{
-    return contactor_installed;
-}
-
-bool EMV1::can_switch_phases_now(uint32_t /*phases_wanted*/)
-{
-    if (!contactor_installed) {
-        return false;
-    }
-
-    if (get_phase_switching_state() != PhaseSwitcherBackend::SwitchingState::Ready) {
-        return false;
-    }
-
-    return true;
-}
+// for EM Phase Switcher
 
 uint32_t EMV1::get_phases()
 {
     return all_data.contactor_value ? 3 : 1;
 }
 
-PhaseSwitcherBackend::SwitchingState EMV1::get_phase_switching_state()
+bool EMV1::get_is_contactor_error()
 {
-    if (!contactor_installed) {
-        // Don't report an error when phase_switching_capable() is false.
-        return PhaseSwitcherBackend::SwitchingState::Ready;
-    }
-
-    if (contactor_check_tripped || !em_common.is_bricklet_reachable()) {
-        return PhaseSwitcherBackend::SwitchingState::Error;
-    }
-
-    if (phase_switch_deadtime_us == 0_us) {
-        return PhaseSwitcherBackend::SwitchingState::Ready;
-    }
-
-    if (!deadline_elapsed(phase_switch_deadtime_us)) {
-        return PhaseSwitcherBackend::SwitchingState::Busy;
-    }
-
-    phase_switch_deadtime_us = 0_us;
-
-    return PhaseSwitcherBackend::SwitchingState::Ready;
+    return contactor_check_tripped || !em_common.is_bricklet_reachable();
 }
 
-bool EMV1::switch_phases(uint32_t phases_wanted)
+bool EMV1::get_is_contactor_installed()
 {
-    if (!contactor_installed) {
-        logger.printfln("Requested phase switch without contactor installed.");
-        return false;
-    }
+    return contactor_installed;
+}
 
-    if (get_phase_switching_state() != PhaseSwitcherBackend::SwitchingState::Ready) {
-        logger.printfln("Requested phase switch while not ready.");
-        return false;
-    }
-
-    tf_warp_energy_manager_set_contactor(&device, phases_wanted == 3);
-    phase_switch_deadtime_us = now_us() + micros_t{2000000}; // 2s
-
-    return true;
+void EMV1::set_contactor_for_em_phase_switcher(bool contactor_value)
+{
+    tf_warp_energy_manager_set_contactor(&device, contactor_value);
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()

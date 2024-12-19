@@ -102,7 +102,6 @@ protected:
     uint32_t get_phase_switcher_priority() override {return 12;}
     bool phase_switching_capable() override;
     bool can_switch_phases_now(uint32_t phases_wanted) override;
-    bool requires_cp_disconnect() override {return false;}
     uint32_t get_phases() override;
     PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override;
     bool switch_phases(uint32_t phases_wanted) override;

@@ -76,7 +76,7 @@ void EMPhaseSwitcher::setup()
         return;
     }
 
-    const size_t charger_count = charge_manager.config.get("chargers")->count();
+    const size_t charger_count = charge_manager.get_charger_count();
     if (controlled_charger_idx >= charger_count) {
         logger.printfln("Controlled charger %u doesn't exist, have only %u", controlled_charger_idx, charger_count);
         return;
@@ -91,17 +91,133 @@ void EMPhaseSwitcher::setup()
         return;
     }
 
+    // Initialize phase request with current state if external control is enabled
+    if (power_manager.get_phase_switching_mode() == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+        external_phase_override = static_cast<uint8_t>(get_phases());
+    }
+
     if (charger_config.get("proxy_mode")->asBool()) {
         charger_hostname = strdup(charge_manager.get_charger_host(0).c_str());
 
         cm_networking.register_manager(&charger_hostname, 1, nullptr, nullptr);
         cm_networking.register_client(nullptr);
+    } else {
+#if MODULE_POWER_MANAGER_AVAILABLE()
+        power_manager.register_phase_switcher_backend(this);
+#endif
     }
 }
 
 void EMPhaseSwitcher::register_urls()
 {
     api.addPersistentConfig("em_phase_switcher/charger_config", &charger_config);
+}
+
+// for PhaseSwitcherBackend
+
+bool EMPhaseSwitcher::phase_switching_capable()
+{
+    return em_v1.get_is_contactor_installed();
+}
+
+bool EMPhaseSwitcher::can_switch_phases_now(uint32_t /*phases_wanted*/)
+{
+    if (!em_v1.get_is_contactor_installed()) {
+        return false;
+    }
+
+    if (get_phase_switching_state_internal() != PhaseSwitcherBackend::SwitchingState::Ready) {
+        return false;
+    }
+
+    return true;
+}
+
+uint32_t EMPhaseSwitcher::get_phases()
+{
+    return em_v1.get_phases();
+}
+
+PhaseSwitcherBackend::SwitchingState EMPhaseSwitcher::get_phase_switching_state()
+{
+    PhaseSwitcherBackend::SwitchingState internal_state = get_phase_switching_state_internal();
+    if (internal_state != PhaseSwitcherBackend::SwitchingState::Ready) {
+        return internal_state;
+    }
+
+    return PhaseSwitcherBackend::SwitchingState::Ready;
+}
+
+bool EMPhaseSwitcher::switch_phases(uint32_t phases_wanted)
+{
+    if (phases_wanted > 3) {
+        logger.printfln("Invalid phases wanted: %u", phases_wanted);
+        return false;
+    }
+
+    if (!em_v1.get_is_contactor_installed()) {
+        logger.printfln("Requested phase switch without contactor installed.");
+        return false;
+    }
+
+    if (get_phase_switching_state() != PhaseSwitcherBackend::SwitchingState::Ready) {
+        logger.printfln("Requested phase switch while not ready.");
+        return false;
+    }
+
+    external_phase_override = static_cast<uint8_t>(phases_wanted);
+
+    // Skip global hysteresis so that a phase switch request is acted on immediately.
+    charge_manager.skip_global_hysteresis();
+
+    return true;
+}
+
+bool EMPhaseSwitcher::is_external_control_allowed()
+{
+    return charge_manager.get_charger_count() == 1;
+}
+
+PhaseSwitcherBackend::SwitchingState EMPhaseSwitcher::get_phase_switching_state_internal()
+{
+    if (!em_v1.get_is_contactor_installed()) {
+        // Don't report an error when phase_switching_capable() is false.
+        return PhaseSwitcherBackend::SwitchingState::Ready;
+    }
+
+    if (em_v1.get_is_contactor_error()) {
+        return PhaseSwitcherBackend::SwitchingState::Error;
+    }
+
+    if (phase_switch_deadtime_us == 0_us) {
+        return PhaseSwitcherBackend::SwitchingState::Ready;
+    }
+
+    if (!deadline_elapsed(phase_switch_deadtime_us)) {
+        return PhaseSwitcherBackend::SwitchingState::Busy;
+    }
+
+    phase_switch_deadtime_us = 0_us;
+
+    return PhaseSwitcherBackend::SwitchingState::Ready;
+}
+
+bool EMPhaseSwitcher::switch_phases_internal(uint32_t phases_wanted)
+{
+    if (!em_v1.get_is_contactor_installed()) {
+        logger.printfln("Requested phase switch without contactor installed.");
+        return false;
+    }
+
+    if (get_phase_switching_state_internal() != PhaseSwitcherBackend::SwitchingState::Ready) {
+        logger.printfln("Requested phase switch while not ready.");
+        return false;
+    }
+
+    em_v1.set_contactor_for_em_phase_switcher(phases_wanted > 1);
+    phase_switch_deadtime_us = now_us() + micros_t{2000000}; // 2s
+
+    return true;
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -151,12 +267,14 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
 
     const uint32_t current_phases = em_v1.get_phases();
 
+    SwitchingState old_state = switching_state;
+
     switch(switching_state) {
         case SwitchingState::Idle: {
             if (allocated_phases != current_phases) {
-                if (!em_v1.phase_switching_capable()) {
+                if (!phase_switching_capable()) {
                     logger.printfln("Phase switch wanted but not available. Check configuration.");
-                } else if (!em_v1.can_switch_phases_now(allocated_phases)) {
+                } else if (!can_switch_phases_now(allocated_phases)) {
                     // Can't switch to the requested phases at the moment. Try again later.
                     return;
                 } else if (!deadline_elapsed(last_state_packet - 3500_ms)) {
@@ -183,7 +301,7 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
             command_packet->v1.allocated_current = 0;
             command_packet->v1.command_flags |= CM_COMMAND_FLAGS_CPDISC_MASK;
 
-            if (em_v1.switch_phases(allocated_phases)) {
+            if (switch_phases_internal(allocated_phases)) {
                 switching_state = SwitchingState::WaitUntilSwitched;
             }
             break;
@@ -192,7 +310,7 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
             command_packet->v1.allocated_current = 0;
             command_packet->v1.command_flags |= CM_COMMAND_FLAGS_CPDISC_MASK;
 
-            if (em_v1.get_phase_switching_state() == PhaseSwitcherBackend::SwitchingState::Ready) {
+            if (get_phase_switching_state_internal() == PhaseSwitcherBackend::SwitchingState::Ready) {
                 if (em_v1.get_phases() == allocated_phases) {
                     switching_state = SwitchingState::WaitUntilCPReconnect;
                 } else {
@@ -206,7 +324,7 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
         case SwitchingState::WaitUntilCPReconnect: {
             if (deadline_elapsed(next_state_change_after)) {
                 switching_state = SwitchingState::PostSwitchStateFaking;
-                next_state_change_after += 10_s;
+                next_state_change_after += 30_s;
             } else {
                 command_packet->v1.allocated_current = 0;
                 command_packet->v1.command_flags |= CM_COMMAND_FLAGS_CPDISC_MASK;
@@ -223,6 +341,10 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
             logger.printfln("Unexpected switching state for cmd: %u", static_cast<uint32_t>(switching_state));
             break;
     }
+
+    if (switching_state != old_state) {
+        logger.printfln("Now in state %hhu (command)", static_cast<uint8_t>(switching_state));
+    }
 }
 
 void EMPhaseSwitcher::filter_state_packet(size_t charger_idx, cm_state_packet *state_packet)
@@ -237,16 +359,14 @@ void EMPhaseSwitcher::filter_state_packet(size_t charger_idx, cm_state_packet *s
     const bool has_phase_switch = (state_packet->v1.feature_flags >> CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS) & 1;
     const bool has_cp_disconnect = (state_packet->v1.feature_flags >> CM_FEATURE_FLAGS_CP_DISCONNECT_BIT_POS) & 1;
     const bool managed = (state_packet->v1.state_flags >> CM_STATE_FLAGS_MANAGED_BIT_POS) & 1;
-    const uint8_t phases_connected = state_packet->v3.phases & CM_STATE_V3_PHASES_CONNECTED_MASK; // Statically configured supply phases
 
-    if (version >= 3 && !has_phase_switch && has_cp_disconnect && managed && phases_connected == 3) {
+    if (version >= 3 && !has_phase_switch && has_cp_disconnect && managed) {
         charger_usable = true;
     } else {
         if (version < 3)           logger.printfln("Downstream charger %zu not usable: charge protocol version is %hhu, need at least 3", charger_idx, version);
         if (has_phase_switch)      logger.printfln("Downstream charger %zu not usable: is phase-switching-capable", charger_idx);
         if (!has_cp_disconnect)    logger.printfln("Downstream charger %zu not usable: CP-disconnect not supported", charger_idx);
         if (!managed)              logger.printfln("Downstream charger %zu not usable: not managed", charger_idx);
-        if (phases_connected != 3) logger.printfln("Downstream charger %zu not usable: not connected to three phases", charger_idx);
         charger_usable = false;
         return;
     }
@@ -254,8 +374,15 @@ void EMPhaseSwitcher::filter_state_packet(size_t charger_idx, cm_state_packet *s
     uint32_t em_phases = em_v1.get_phases();
 
     // Modify packet
-    state_packet->v1.feature_flags |= CM_FEATURE_FLAGS_PHASE_SWITCH_MASK; // Fake phase-switching support
-    state_packet->v3.phases = static_cast<uint8_t>((static_cast<uint32_t>(state_packet->v3.phases) & ~CM_STATE_V3_PHASES_CONNECTED_MASK) | em_phases | CM_STATE_V3_CAN_PHASE_SWITCH_MASK);
+    if (external_phase_override) {
+        // Don't fake phase-switching support
+        state_packet->v3.phases = static_cast<uint8_t>((static_cast<uint32_t>(state_packet->v3.phases) & ~CM_STATE_V3_PHASES_CONNECTED_MASK) | external_phase_override);
+    } else {
+        state_packet->v1.feature_flags |= CM_FEATURE_FLAGS_PHASE_SWITCH_MASK; // Fake phase-switching support
+        state_packet->v3.phases = static_cast<uint8_t>((static_cast<uint32_t>(state_packet->v3.phases) & ~CM_STATE_V3_PHASES_CONNECTED_MASK) | em_phases | CM_STATE_V3_CAN_PHASE_SWITCH_MASK);
+    }
+
+    SwitchingState old_state = switching_state;
 
     switch(switching_state) {
         case SwitchingState::Idle: {
@@ -275,7 +402,7 @@ void EMPhaseSwitcher::filter_state_packet(size_t charger_idx, cm_state_packet *s
         case SwitchingState::DisconnectingCP: {
             const bool cp_is_disconnected = (state_packet->v1.state_flags >> CM_STATE_FLAGS_CP_DISCONNECTED_BIT_POS) & 1;
             if (cp_is_disconnected) {
-                next_state_change_after = now_us() + 4_s;
+                next_state_change_after = now_us() + 5_s;
                 switching_state = SwitchingState::DisconnectingCPSettle;
             }
             state_packet->v1.iec61851_state = last_iec61851_state;
@@ -308,5 +435,9 @@ void EMPhaseSwitcher::filter_state_packet(size_t charger_idx, cm_state_packet *s
         default:
             logger.printfln("Unexpected switching state for state: %u", static_cast<uint32_t>(switching_state));
             break;
+    }
+
+    if (switching_state != old_state) {
+        logger.printfln("Now in state %hhu (state)", static_cast<uint8_t>(switching_state));
     }
 }

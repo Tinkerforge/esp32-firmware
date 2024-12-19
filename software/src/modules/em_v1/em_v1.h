@@ -24,7 +24,6 @@
 #include "bindings/bricklet_warp_energy_manager.h"
 #include "modules/em_common/em_common.h"
 #include "modules/em_common/structs.h"
-#include "modules/power_manager/phase_switcher_back-end.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
 #include "em_rgb_led.h"
 #include "module_available.h"
@@ -53,7 +52,6 @@ class EMV1 final : public DeviceModule<TF_WARPEnergyManager,
                                        tf_warp_energy_manager_reset,
                                        tf_warp_energy_manager_destroy>,
                    public IEMBackend,
-                   public PhaseSwitcherBackend,
                    public IDebugProtocolBackend
 #if MODULE_AUTOMATION_AVAILABLE()
                  , public IAutomationBackend
@@ -102,17 +100,11 @@ protected:
 
 public:
 
-    // for PhaseSwitcherBackend
-    uint32_t get_phase_switcher_priority() override {return 8;}
-    bool phase_switching_capable() override;
-    bool can_switch_phases_now(uint32_t phases_wanted) override;
-    bool requires_cp_disconnect() override {return true;}
-    uint32_t get_phases() override;
-    PhaseSwitcherBackend::SwitchingState get_phase_switching_state() override;
-    bool switch_phases(uint32_t phases_wanted) override;
-    // Always false because this is would be a phase switch without CP disconnect.
-    // That is not supported, see requires_cp_disconnect.
-    bool is_external_control_allowed() override {return false;}
+    // for EM Phase Switcher
+    uint32_t get_phases();
+    bool get_is_contactor_error();
+    bool get_is_contactor_installed();
+    void set_contactor_for_em_phase_switcher(bool contactor_value);
 
     void setup_energy_manager();
     [[gnu::const]] size_t get_debug_header_length() const override;
@@ -146,7 +138,6 @@ private:
     EmRgbLed rgb_led;
 
     bool     contactor_check_tripped             = false;
-    micros_t phase_switch_deadtime_us            = 0_us;
 
     // Config cache
     bool     contactor_installed      = false;
