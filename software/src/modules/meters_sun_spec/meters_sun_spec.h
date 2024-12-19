@@ -53,7 +53,7 @@ public:
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
 private:
-    enum class ScanState {
+    enum class ScanState : uint8_t {
         Connect,
         Connecting,
         Disconnect,
@@ -89,32 +89,32 @@ private:
 
         TFModbusTCPClient client;
         micros_t last_keep_alive = 0_us;
-        bool abort = false;
-        ScanState state = ScanState::Connect;
         String host;
         uint16_t port;
         uint8_t device_address_first;
         uint8_t device_address_last;
-        uint32_t cookie;
         uint8_t device_address;
+        ScanState state = ScanState::Connect;
+        uint16_t model_id;
+        uint32_t cookie;
         size_t base_address_index = 0;
         size_t read_address;
         size_t read_size;
         size_t read_retries;
+        size_t read_index;
         micros_t read_delay_deadline;
         uint16_t read_buffer[68];
         micros_t read_timeout = 1_s;
         uint16_t read_timeout_burst = 0;
-        ModbusDeserializer deserializer;
-        size_t read_index;
-        TFModbusTCPClientTransactionResult read_result;
         ScanState read_state;
-        uint16_t model_id;
+        bool abort = false;
+        ModbusDeserializer deserializer;
+        TFModbusTCPClientTransactionResult read_result;
         std::unordered_map<uint16_t, uint16_t> model_instances;
         size_t block_length;
         char printfln_buffer[512] = "";
-        size_t printfln_buffer_used = 0;
         micros_t printfln_last_flush = 0_us;
+        size_t printfln_buffer_used = 0;
         char common_manufacturer_name[32 + 1];
         char common_model_name[32 + 1];
         char common_serial_number[32 + 1];
