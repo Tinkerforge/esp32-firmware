@@ -127,12 +127,11 @@ def main():
     config.read(make_path('config.ini'))
     config = config['preset:' + config['signature:' + args.signature_name]['preset']]
 
-    publisher_bytes = config['publisher'].encode('utf-8')
+    publisher = config['publisher']
+    publisher_bytes = publisher.encode('utf-8')
 
     if len(publisher_bytes) < 1 or len(publisher_bytes) > 63:
         raise Exception('Signature publisher UTF-8 length is out of range')
-
-    publisher = repr(publisher_bytes)[2:-1].replace('"', '\\"')
 
     sodium_secret_key_path = make_keys_path(config['sodium_secret_key_path'])
 

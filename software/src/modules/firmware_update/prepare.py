@@ -48,7 +48,7 @@ else:
         print('signature publisher UTF-8 length is out of range')
         sys.exit(-1)
 
-    publisher = repr(publisher_bytes)[2:-1].replace('"', '\\"')
+    publisher = json.dumps(config['publisher'])[1:-1]
 
     sodium_public_key_path = make_signature_keys_path(config['sodium_public_key_path'])
 
