@@ -794,7 +794,7 @@ static const ConfigMigration migrations[] = {
         #if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
         2, 6, 2,
         #elif BUILD_IS_ENERGY_MANAGER()
-        2, 2, 1,
+        2, 2, 1, // actually 2.3.0
         #else
         1, 0, 1, // seb 1.0.1 was never released but we can't have two migrations with the same version.
         #endif
@@ -820,7 +820,7 @@ static const ConfigMigration migrations[] = {
         #if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
         2, 6, 6,
         #elif BUILD_IS_ENERGY_MANAGER()
-        2, 2, 2,
+        2, 2, 2, // actually 2.3.0
         #else
         1, 1, 0,
         #endif
@@ -834,6 +834,64 @@ static const ConfigMigration migrations[] = {
                 cfg["users"][0]["public_key"] = "";
                 cfg.remove("email");
                 write_config_file("remote_access/config", cfg);
+            }
+        }
+    },
+#endif
+
+#if BUILD_IS_ENERGY_MANAGER()
+    {
+        2, 2, 3,
+        // 2.2.3 changes (actually 2.3.0)
+        // - Migrate CM default_available_current from 0 to maximum_available_current because the EM can now use static load management too.
+        // - Disable contactor setting if too many or no chargers configured.
+        // - Create phase switcher's charger config.
+        []() {
+            size_t charger_count = 0;
+            bool contactor_installed = false;
+            bool have_cm_config = false;
+
+            DynamicJsonDocument cm_cfg{16384};
+
+            // Migrate CM default_available_current from 0 to maximum_available_current because the EM can now use static load management too.
+            if (read_config_file("charge_manager/config", cm_cfg)) {
+                have_cm_config = true;
+
+                uint32_t max_current     = cm_cfg["maximum_available_current"].as<uint32_t>();
+                uint32_t default_current = cm_cfg["default_available_current"].as<uint32_t>();
+                if (default_current == 0) {
+                    cm_cfg["default_available_current"] = max_current;
+                    write_config_file("charge_manager/config", cm_cfg);
+                } else {
+                    logger.printfln("Not migrating user-configured default_available_current of %u", default_current);
+                }
+
+                charger_count = cm_cfg["chargers"].size();
+            }
+
+            // Disable contactor setting if too many or no chargers configured.
+            {
+                StaticJsonDocument<1024> cfg;
+
+                if (read_config_file("energy_manager/config", cfg)) {
+                    if (charger_count == 1) {
+                        contactor_installed = cfg["contactor_installed"];
+                    } else {
+                        cfg["contactor_installed"] = false;
+                    }
+                }
+            }
+
+            // Create phase switcher's charger config.
+            if (have_cm_config && contactor_installed) {
+                StaticJsonDocument<1024> cfg;
+                cfg.to<JsonObject>();
+
+                cfg["idx"] = 0;
+                cfg["host"] = cm_cfg["chargers"][0]["host"];
+                cfg["proxy_mode"] = false;
+
+                write_config_file("em_phase_switcher/charger_config", cfg);
             }
         }
     },
