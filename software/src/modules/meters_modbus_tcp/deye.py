@@ -440,9 +440,9 @@ specs = [
         'values': [
             {
                 'name': 'Total Load Power [0.1 kWh]',
-                'value_id': 'EnergyActiveLSumImport',
+                'value_id': 'EnergyActiveLSumImExDiff',
                 'start_address': 527,
-                'value_type': 'U32LE',
+                'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
