@@ -69,59 +69,59 @@ specs = [
             },
             {
                 'name': 'Output Phase Current A [0.01 A]',
-                'value_id': 'CurrentL1ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL1ImExDiff',
                 'start_address': 630,
                 'value_type': 'S16',
-                'scale_factor': 0.01,  # FIXME: sign?
+                'scale_factor': -0.01,
             },
             {
                 'name': 'Output Phase Current B [0.01 A]',
-                'value_id': 'CurrentL2ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL2ImExDiff',
                 'start_address': 631,
                 'value_type': 'S16',
-                'scale_factor': 0.01,  # FIXME: sign?
+                'scale_factor': -0.01,
             },
             {
                 'name': 'Output Phase Current C [0.01 A]',
-                'value_id': 'CurrentL3ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL3ImExDiff',
                 'start_address': 632,
                 'value_type': 'S16',
-                'scale_factor': 0.01,  # FIXME: sign?
+                'scale_factor': -0.01,
             },
             {
                 'name': 'Output Phase Power A [W]',
-                'value_id': 'PowerActiveL1ImExDiff',  # FIXME: direction?
+                'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 633,
                 'value_type': 'S16',
-                'scale_factor': 1.0,  # FIXME: sign?
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Output Phase Power B [W]',
-                'value_id': 'PowerActiveL2ImExDiff',  # FIXME: direction?
+                'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 634,
                 'value_type': 'S16',
-                'scale_factor': 1.0,  # FIXME: sign?
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Output Phase Power C [W]',
-                'value_id': 'PowerActiveL3ImExDiff',  # FIXME: direction?
+                'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 635,
                 'value_type': 'S16',
-                'scale_factor': 1.0,  # FIXME: sign?
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Output Total Active Power [W]',
-                'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
+                'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 636,
                 'value_type': 'S16',
-                'scale_factor': 1.0,  # FIXME: sign?
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Output Total Apparent Power [VA]',
-                'value_id': 'PowerApparentLSumImExDiff',  # FIXME: direction?
+                'value_id': 'PowerApparentLSumImExDiff',
                 'start_address': 637,
                 'value_type': 'S16',
-                'scale_factor': 1.0,  # FIXME: sign?
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Frequency [0.01 Hz]',
