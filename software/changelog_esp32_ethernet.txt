@@ -20,7 +20,7 @@
 - Print reason for last firmware restart to event log
 - Improve recovery page
 - Allow forcing a firmware update via the recovery page
-- Increase wifi scan timeout for AP channel selection
+- Increase WiFi scan timeout for AP channel selection
 - Fix form validation display on success
 - Fix memory leak in WebSocket queue cleanup
 - Fix WebSockets blocking the web server if a connection stays active over weeks

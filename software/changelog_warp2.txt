@@ -166,7 +166,7 @@
 - Fix LED blink when waiting for not user-related charge release
 
 2022-06-07: 2.0.6 (e66e4e51)
-- Increase wifi scan timeout for AP channel selection
+- Increase WiFi scan timeout for AP channel selection
 - Fix form validation display on success
 - Add NTP state and synced time to status page
 - Make sure to never start charging when button is pressed (through EVSE 2.0 Bricklet firmware 2.1.5)
@@ -505,7 +505,7 @@
 - Fix modification of certificates
 - Fix NFC tag to user mapping on boot-up
 - Fix 0% progress bar width
-- Fix missing "average line to neutral voltage"-value of SDM72DMv2
+- Fix missing "average line to neutral voltage"-value of SDM72DMV2
 - Fix browser's back button not working when accessing web interface main page
 - Fix date input keyboard entry
 - Fix reported range of external current in MQTT auto discovery
@@ -603,7 +603,7 @@
 - Improve translations
 - Document new meter types used in Modbus TCP input register 2000
 - Improve Modbus TCP documented register ranges and types
-- Allow up to 2K of HTTP request headers
+- Allow up to 2kb of HTTP request headers
 
 2024-07-24: 2.4.1 (2b99ba4c)
 - Add support for more Modbus TCP devices: Alpha ESS SMILE, Shelly Pro (3)EM
@@ -679,7 +679,7 @@
 - Charge Manager: Fix phase switch with vehicles reacting slowly
 - Charge Manager: Don't let wake-up switch phases if hysteresis is not elapsed yet
 - MQTT: Fix leaking all DRAM with misbehaving brokers resulting in WiFi disconnects
-- Fix log spam of modbus timeouts
+- Fix log spam of Modbus timeouts
 - Fix multiple remote access bugs
 - Increase CP disconnect time to minimum 5 seconds (through EVSE 2.0 Bricklet firmware 2.2.7)
 - Wait up to 10 seconds for a car to react after a phase switch (through EVSE 2.0 Bricklet firmware 2.2.7)

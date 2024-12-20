@@ -208,7 +208,7 @@
 - Completely rework WebSocket connection handling
 - Add NFC tag injection for start or stop
 - Add API to inject energy meter values
-- Add (experimental!) support for SDM630 and SDM72DM V2
+- Add (experimental!) support for SDM630 and SDM72DMV2
 - Factory reset EVSE when factory or config reset is triggered (through EVSE Bricklet firmware 2.1.1)
 - Make web interface sub-page headers sticky
 - Move "Save" button into sticky headers
@@ -509,7 +509,7 @@
 - Fix modification of certificates
 - Fix NFC tag to user mapping on boot-up
 - Fix 0% progress bar width
-- Fix missing "average line to neutral voltage"-value of SDM72DMv2
+- Fix missing "average line to neutral voltage"-value of SDM72DMV2
 - Fix browser's back button not working when accessing web interface main page
 - Fix date input keyboard entry
 - Fix reported range of external current in MQTT auto discovery

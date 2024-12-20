@@ -231,7 +231,7 @@
 - Add more meter history plot zoom levels
 - Add phase switch buttons to status page if external control is enabled
 - Add modal for WiFi scan results
-- Add bricklet reflash and reboot buttons
+- Add Bricklet reflash and reboot buttons
 - SunSpec: Support multiple devices in one register set
 - SunSpec: Support multiple instances of the same model in one device
 - SunSpec: Improve boot scan robustness
@@ -273,7 +273,7 @@
 - Disable gratuitous ARP
 - Disable trusting sender of IP packets for ARP
 - Disable TLS elliptic curves smaller than the required default of 256
-- Allow up to 2K of HTTP request headers
+- Allow up to 2kb of HTTP request headers
 
 2024-06-18: 2.1.1 (a72824a4)
 - Fix all charges being blocked if no contactor is installed
