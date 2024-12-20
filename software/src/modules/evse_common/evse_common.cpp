@@ -189,7 +189,7 @@ bool EvseCommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled
     return true;
 }
 
-void EvseCommon::apply_defaults()
+bool EvseCommon::apply_defaults()
 {
     if (should_factory_reset_bricklets) {
         this->factory_reset();
@@ -217,7 +217,7 @@ void EvseCommon::apply_defaults()
     if (rc != TF_E_OK) {
         backend->is_in_bootloader(rc);
         logger.printfln("Failed to apply defaults (global read failed). rc %d", rc);
-        return;
+        return false;
     }
     // If this is the first start-up, this slot will not be active.
     // In the old firmwares, the global current was not persistent
@@ -236,7 +236,7 @@ void EvseCommon::apply_defaults()
     if (rc != TF_E_OK) {
         backend->is_in_bootloader(rc);
         logger.printfln("Failed to apply defaults (cm read failed). rc %d", rc);
-        return;
+        return false;
     }
     if (this->apply_slot_default(CHARGING_SLOT_USER, 0, user_enabled, true))
         backend->set_charging_slot(CHARGING_SLOT_USER, 0, user_enabled, true);
@@ -248,7 +248,7 @@ void EvseCommon::apply_defaults()
     if (rc != TF_E_OK) {
         backend->is_in_bootloader(rc);
         logger.printfln("Failed to apply defaults (cm read failed). rc %d", rc);
-        return;
+        return false;
     }
     if (this->apply_slot_default(CHARGING_SLOT_CHARGE_MANAGER, 0, cm_enabled, true))
         backend->set_charging_slot(CHARGING_SLOT_CHARGE_MANAGER, 0, cm_enabled, true);
@@ -261,14 +261,14 @@ void EvseCommon::apply_defaults()
     if (rc != TF_E_OK) {
         backend->is_in_bootloader(rc);
         logger.printfln("Failed to apply defaults (external read failed). rc %d", rc);
-        return;
+        return false;
     }
     if (!external_enabled) {
         backend->set_charging_slot_default(CHARGING_SLOT_EXTERNAL, external_current, true, external_clear_on_disconnect);
         backend->set_charging_slot(CHARGING_SLOT_EXTERNAL, external_current, true, external_clear_on_disconnect);
     }
 
-    // Disabling all unused charging slots.
+    // Disable all unused charging slots.
     for (int i = CHARGING_SLOT_COUNT; i < CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE; i++) {
         bool active;
         backend->is_in_bootloader(backend->get_charging_slot_default(i, NULL, &active, NULL));
@@ -276,6 +276,8 @@ void EvseCommon::apply_defaults()
             backend->is_in_bootloader(backend->set_charging_slot_default(i, 32000, false, false));
         backend->set_charging_slot_active(i, false);
     }
+
+    return true;
 }
 
 void EvseCommon::setup()
@@ -355,7 +357,9 @@ void EvseCommon::setup_evse()
         return;
     }
 
-    this->apply_defaults();
+    if (!this->apply_defaults()) {
+        return;
+    }
     backend->set_initialized(true);
 }
 

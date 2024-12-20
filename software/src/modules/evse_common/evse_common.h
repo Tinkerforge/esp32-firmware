@@ -169,7 +169,7 @@ public:
     void set_indicator_led(int16_t, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *);
 
     bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
-    void apply_defaults();
+    bool apply_defaults();
 
     ConfigRoot &get_state();
     ConfigRoot &get_slots();
