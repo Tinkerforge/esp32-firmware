@@ -48,7 +48,17 @@ else:
         print('signature publisher UTF-8 length is out of range')
         sys.exit(-1)
 
-    publisher = json.dumps(config['publisher'])[1:-1]
+    publisher = ''
+
+    for c in config['publisher']:
+        n = ord(c)
+
+        if n <= 0x7f:
+            publisher += json.dumps(c)[1:-1]
+        elif n <= 0xffff:
+            publisher += f'\\u{n:04x}'
+        else:
+            publisher += f'\\U{n:08x}'
 
     sodium_public_key_path = make_signature_keys_path(config['sodium_public_key_path'])
 
