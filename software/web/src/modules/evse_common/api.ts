@@ -185,3 +185,7 @@ export interface user_calibration {
 
 export interface debug_switch_to_one_phase {}
 export interface debug_switch_to_three_phases {}
+
+export interface meter_config {
+    slot: number
+}

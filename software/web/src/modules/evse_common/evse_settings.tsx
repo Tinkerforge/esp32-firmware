@@ -187,6 +187,11 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             led_configuration} = s;
 
         const has_meter = API.hasFeature("meter");
+        let disable_three_phase_entry = false;
+        if (has_meter) {
+            const p = API.get("meter/phases").phases_connected;
+            disable_three_phase_entry = (p[0] && !p[1] && !p[2]);
+        }
 
         const energy_settings = <FormRow label={__("charge_limits.content.energy")} label_muted={__("charge_limits.content.energy_muted")}>
             <InputSelect items={[
@@ -358,7 +363,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                             <FormRow label={__("evse.content.phases_connected")} label_muted={__("evse.content.phases_connected_muted")}>
                                 <InputSelect items={[
                                                 ["1",__("evse.content.phases_connected_1")],
-                                                ["3",__("evse.content.phases_connected_3")]
+                                                [disable_three_phase_entry ? "3_disabled" : "3",__("evse.content.phases_connected_3")]
                                             ]}
                                         value={phases_connected.phases}
                                         onValue={(v) => {
