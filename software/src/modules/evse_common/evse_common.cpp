@@ -194,6 +194,8 @@ bool EvseCommon::apply_defaults()
     if (should_factory_reset_bricklets) {
         this->factory_reset();
         should_factory_reset_bricklets = false;
+        // The EVSE runs the factory reset 500 ms after the function call.
+        delay(1000);
     }
 
     // Maybe this is the first start-up after updating the EVSE to firmware 2.1.0 (or higher)
