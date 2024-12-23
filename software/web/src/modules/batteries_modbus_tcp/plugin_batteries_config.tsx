@@ -18,7 +18,9 @@
  */
 
 import * as util from "../../ts/util";
+import * as API from "../../ts/api";
 import { h, Fragment, Component, ComponentChildren } from "preact";
+import { Button } from "react-bootstrap";
 import { __ } from "../../ts/translation";
 import { BatteryClassID } from "../batteries/battery_class_id.enum";
 import { BatteryConfig } from "../batteries/types";
@@ -277,7 +279,15 @@ export function init() {
 
                 if (util.hasValue(config[1].table) && config[1].table[0] == BatteryModbusTCPTableID.Custom) {
                     edit_children.push(
-                        <FormSeparator heading={__("batteries_modbus_tcp.content.permit_grid_charge")} />,
+                        <FormSeparator heading={__("batteries_modbus_tcp.content.permit_grid_charge")}>
+                            <div class="mb-2 ml-auto col-auto">
+                                <Button variant="primary"
+                                        /* FIXME: don't hardcode battery slot 0 here */
+                                        onClick={() => API.call('batteries/0/permit_grid_charge', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
+                                        {__("batteries_modbus_tcp.content.execute")}
+                                </Button>
+                            </div>
+                        </FormSeparator>,
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
                             <InputNumber
                                 required
@@ -307,7 +317,15 @@ export function init() {
                                 on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: table})}))} />
                         </FormRow>,
 
-                        <FormSeparator heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")} />,
+                        <FormSeparator heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")}>
+                            <div class="mb-2 ml-auto col-auto">
+                                <Button variant="primary"
+                                        /* FIXME: don't hardcode battery slot 0 here */
+                                        onClick={() => API.call('batteries/0/revoke_grid_charge_override', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
+                                        {__("batteries_modbus_tcp.content.execute")}
+                                </Button>
+                            </div>
+                        </FormSeparator>,
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
                             <InputNumber
                                 required
@@ -337,7 +355,15 @@ export function init() {
                                 on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: table})}))} />
                         </FormRow>,
 
-                        <FormSeparator heading={__("batteries_modbus_tcp.content.forbid_discharge")} />,
+                        <FormSeparator heading={__("batteries_modbus_tcp.content.forbid_discharge")}>
+                            <div class="mb-2 ml-auto col-auto">
+                                <Button variant="primary"
+                                        /* FIXME: don't hardcode battery slot 0 here */
+                                        onClick={() => API.call('batteries/0/forbid_discharge', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
+                                        {__("batteries_modbus_tcp.content.execute")}
+                                </Button>
+                            </div>
+                        </FormSeparator>,
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
                             <InputNumber
                                 required
@@ -367,7 +393,15 @@ export function init() {
                                 on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: table})}))} />
                         </FormRow>,
 
-                        <FormSeparator heading={__("batteries_modbus_tcp.content.revoke_discharge_override")} />,
+                        <FormSeparator heading={__("batteries_modbus_tcp.content.revoke_discharge_override")}>
+                            <div class="mb-2 ml-auto col-auto">
+                                <Button variant="primary"
+                                        /* FIXME: don't hardcode battery slot 0 here */
+                                        onClick={() => API.call('batteries/0/revoke_discharge_override', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
+                                        {__("batteries_modbus_tcp.content.execute")}
+                                </Button>
+                            </div>
+                        </FormSeparator>,
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
                             <InputNumber
                                 required

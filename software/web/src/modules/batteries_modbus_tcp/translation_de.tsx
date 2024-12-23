@@ -8,6 +8,8 @@ let x = {
         },
         "content": {
             "battery_class": "Modbus/TCP",
+            "execute": "Ausführen",
+            "execute_failed": "Ausführung fehlgeschlagen",
             "display_name": "Anzeigename",
             "host": "Host",
             "host_invalid": "Host ist ungültig",
