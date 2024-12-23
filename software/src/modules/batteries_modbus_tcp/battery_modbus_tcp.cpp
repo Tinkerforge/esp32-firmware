@@ -175,11 +175,11 @@ void BatteryModbusTCP::write_next()
 
     switch (spec->register_type) {
     case ModbusRegisterType::HoldingRegister:
-        function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+        function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
         break;
 
     case ModbusRegisterType::Coil:
-        function_code = TFModbusTCPFunctionCode::WriteSingleCoil;
+        function_code = TFModbusTCPFunctionCode::WriteMultipleCoils;
         break;
 
     case ModbusRegisterType::InputRegister:
