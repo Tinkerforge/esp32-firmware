@@ -208,7 +208,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
 
     for (int i = 0; i < charger_count; ++i) {
         if (endswith(hosts[i], ".local"))
-            needs_mdns |= 1 << i;
+            needs_mdns |= 1ull << i;
 
         dest_addrs[i].sin_addr.s_addr = 0;
         resolve_state[i] = RESOLVE_STATE_UNKNOWN;
