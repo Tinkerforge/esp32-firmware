@@ -101,15 +101,18 @@ for name in sorted(os.listdir('packages')):
         urlretrieve(zip_url, zip_path + '.tmp')
     except Exception as e:
         print('Error while downloading {0}: {1}'.format(zip_url, e))
-        print('Retrying with curl')
-
-        command = shlex.join(['curl', '-s', '-L', zip_url, '-o', zip_path + '.tmp'])
 
         if sys.platform == 'win32':
-            command = 'powershell.exe ' + command
+            command_title = 'powershell'
+            command = f'powershell.exe .\\download-slient.ps1 "{zip_url}" "{zip_path + ".tmp"}"'
+        else:
+            command_title = 'curl'
+            command = shlex.join(['curl', '-s', '-L', zip_url, '-o', zip_path + '.tmp'])
+
+        print(f'Retrying with {command_title}')
 
         if os.system(command) != 0:
-            print('Error while downloading {0} with curl'.format(zip_url))
+            print(f'Error while downloading {zip_url} using {command_title}')
             sys.exit(1)
 
     os.rename(zip_path + '.tmp', zip_path)
