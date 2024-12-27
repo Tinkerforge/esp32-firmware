@@ -76,6 +76,7 @@ private:
     void parse_registration(ConfigRoot config, std::queue<WgKey> keys, CoolString public_key);
     void parse_add_user(ConfigRoot cfg, std::queue<WgKey> key_cache, CoolString pub_key, CoolString email, uint32_t next_user_id);
     void login(ConfigRoot config, CoolString &login_key);
+    void request_cleanup();
     bool user_already_registered(const CoolString &email);
     int setup_inner_socket();
     WireGuard *management = nullptr;
@@ -85,6 +86,8 @@ private:
     int inner_socket = -1;
     uint16_t in_seq_number = 0;
     bool management_request_done = false;
+    bool management_request_failed = false;
+    bool management_request_allowed = true;
     uint64_t task_id = 0;
 
     std::unique_ptr<AsyncHTTPSClient> https_client;

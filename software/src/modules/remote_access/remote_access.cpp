@@ -284,18 +284,22 @@ void RemoteAccess::register_urls() {
     });
 
     server.on("/remote_access/get_login_salt", HTTP_PUT, [this](WebServerRequest request) {
+        this->management_request_allowed = false;
         size_t content_len = request.contentLength();
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
+            this->request_cleanup();
             return request.send(500,  "text/plain; charset=utf-8", "Low memory");
         }
         if (request.receive(req_body.get(), content_len) <= 0) {
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Failed to read request body");
         }
 
         {
             String error = registration_config.update_from_cstr(req_body.get(), content_len);
             if (error != "") {
+                this->request_cleanup();
                 return request.send(400, "text/plain; charset=utf-8", error.c_str());
             }
         }
@@ -308,15 +312,18 @@ void RemoteAccess::register_urls() {
         size_t content_len = request.contentLength();
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
         if (request.receive(req_body.get(), content_len) <= 0) {
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Failed to read request body");
         }
 
         {
             String error = registration_config.update_from_cstr(req_body.get(), content_len);
             if (error != "") {
+                this->request_cleanup();
                 return request.send(400, "text/plain; charset=utf-8", error.c_str());
             }
         }
@@ -330,9 +337,11 @@ void RemoteAccess::register_urls() {
         auto content_len = request.contentLength();
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
         if (request.receive(req_body.get(), content_len) <= 0) {
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Failed to read request body");
         }
 
@@ -345,6 +354,7 @@ void RemoteAccess::register_urls() {
             if (error) {
                 char err_str[64];
                 snprintf(err_str, 64, "Failed to deserialize request body: %s", error.c_str());
+                this->request_cleanup();
                 return request.send(400, "text/plain; charset=utf-8", err_str);
             }
         }
@@ -352,6 +362,7 @@ void RemoteAccess::register_urls() {
         {
             String error = registration_config.update_from_json(doc["config"], true, ConfigSource::API);
             if (error != "") {
+                this->request_cleanup();
                 return request.send(400, "text/plain; charset=utf-8", error.c_str());
             }
         }
@@ -364,9 +375,7 @@ void RemoteAccess::register_urls() {
 
     server.on("/remote_access/register", HTTP_PUT, [this](WebServerRequest request) {
         if (config.get("users")->count() != 0) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(400, "text/plain; charset=utf-8", "Charger already registered");
         }
 
@@ -374,15 +383,11 @@ void RemoteAccess::register_urls() {
         auto content_len = request.contentLength();
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
         if (request.receive(req_body.get(), content_len) <= 0) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Failed to read request body");
         }
 
@@ -395,9 +400,7 @@ void RemoteAccess::register_urls() {
             if (error) {
                 char err_str[64];
                 snprintf(err_str, 64, "Failed to deserialize request body: %s", error.c_str());
-                https_client = nullptr;
-                encrypted_secret = nullptr;
-                secret_nonce = nullptr;
+                this->request_cleanup();
                 return request.send(400, "text/plain; charset=utf-8", err_str);
             }
         }
@@ -405,17 +408,13 @@ void RemoteAccess::register_urls() {
         {
             String error = registration_config.update_from_json(doc["config"], true, ConfigSource::API);
             if (error != "") {
-                https_client = nullptr;
-                encrypted_secret = nullptr;
-                secret_nonce = nullptr;
+                this->request_cleanup();
                 return request.send(400, "text/plain; charset=utf-8", error.c_str());
             }
         }
 
         if (!registration_config.get("enable")->asBool()) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(400, "text/plain; charset=utf-8", "Calling register without enable beeing true is not supported anymore");
         }
 
@@ -428,9 +427,7 @@ void RemoteAccess::register_urls() {
         size_t json_size = 5000 + bs64_name_size + bs64_note_size;
         std::unique_ptr<char[]> ptr = heap_alloc_array<char>(json_size);
         if (ptr == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
 
@@ -438,25 +435,19 @@ void RemoteAccess::register_urls() {
         // Also validate the decoded lengths!
         std::unique_ptr<uint8_t[]> secret_key       = decode_base64(doc["secret_key"],   crypto_secretbox_KEYBYTES);
         if (secret_key == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
 
         if (sodium_init() < 0) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             logger.printfln("Failed to initialize libsodium");
             return request.send(500, "text/plain; charset=utf-8", "Failed to initialize crypto");
         }
         char secret[crypto_box_SECRETKEYBYTES];
         int ret = crypto_secretbox_open_easy((unsigned char *)secret, (unsigned char *)encrypted_secret.get(), crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES, (unsigned char*)secret_nonce.get(), (unsigned char*)secret_key.get());
         if (ret != 0) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             logger.printfln("Failed to decrypt secret");
             return request.send(500, "text/plain; charset=utf-8", "Failed to decrypt secret");
         }
@@ -464,9 +455,7 @@ void RemoteAccess::register_urls() {
         unsigned char pk[crypto_box_PUBLICKEYBYTES];
         ret = crypto_scalarmult_base(pk, (unsigned char *)secret);
         if (ret < 0) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             logger.printfln("Failed to derive public-key");
             return request.send(500, "text/plain; charset=utf-8", "Failed to derive public-key");
         }
@@ -494,9 +483,7 @@ void RemoteAccess::register_urls() {
 
                 ret = crypto_box_seal((unsigned char *)output, (unsigned char *)wg_key.c_str(), wg_key.length(), pk);
                 if (ret < 0) {
-                    https_client = nullptr;
-                    encrypted_secret = nullptr;
-                    secret_nonce = nullptr;
+                    this->request_cleanup();
                     logger.printfln("Failed to encrypt Wireguard keys: %i", ret);
                     return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt WireGuard keys.");
                 }
@@ -512,9 +499,7 @@ void RemoteAccess::register_urls() {
                 char encrypted_psk[44 + crypto_box_SEALBYTES];
                 ret = crypto_box_seal((unsigned char*)encrypted_psk, (unsigned char*)psk.c_str(), psk.length(), pk);
                 if (ret < 0) {
-                    https_client = nullptr;
-                    encrypted_secret = nullptr;
-                    secret_nonce = nullptr;
+                    this->request_cleanup();
                     logger.printfln("Failed to encrypt psk: %i", ret);
                     return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt psk");
                 }
@@ -548,17 +533,13 @@ void RemoteAccess::register_urls() {
 
         std::unique_ptr<uint8_t[]> encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
         if (encrypted_name == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
         crypto_box_seal(encrypted_name.get(), (unsigned char *)name.c_str(), name.length(), (unsigned char *)pk);
         auto bs64_name = heap_alloc_array<char>(bs64_name_size);
         if (bs64_name == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
         size_t olen;
@@ -568,17 +549,13 @@ void RemoteAccess::register_urls() {
 
         auto encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
         if (encrypted_name == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
         crypto_box_seal(encrypted_note.get(), (uint8_t*)note.c_str(), note.length(), pk);
         auto bs64_note = heap_alloc_array<char>(bs64_note_size);
         if (bs64_note == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
         mbedtls_base64_encode((uint8_t*)bs64_note.get(), bs64_note_size, &olen, encrypted_note.get(), encrypted_note_size);
@@ -636,15 +613,11 @@ void RemoteAccess::register_urls() {
         size_t content_len = request.contentLength();
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
         if (request.receive(req_body.get(), content_len) <= 0) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Failed to read request body");
         }
 
@@ -670,18 +643,14 @@ void RemoteAccess::register_urls() {
             if (error) {
                 char err_str[64];
                 snprintf(err_str, 64, "Failed to deserialize request body: %s", error.c_str());
-                https_client = nullptr;
-                encrypted_secret = nullptr;
-                secret_nonce = nullptr;
+                this->request_cleanup();
                 return request.send(400, "text/plain; charset=utf-8", err_str);
             }
         }
 
         const CoolString &email = doc["email"];
         if (email == "" || this->user_already_registered(email)) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(400, "text/plain; charset=utf-8", "User already exists or is empty");
         }
 
@@ -689,16 +658,12 @@ void RemoteAccess::register_urls() {
         // Also validate the decoded lengths!
         std::unique_ptr<uint8_t[]> secret_key       = decode_base64(doc["secret_key"],   crypto_secretbox_KEYBYTES);
         if (secret_key == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
 
         if (sodium_init() < 0) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             logger.printfln("Failed to initialize libsodium");
             return request.send(500, "text/plain; charset=utf-8", "Failed to initialize crypto");
         }
@@ -706,9 +671,7 @@ void RemoteAccess::register_urls() {
         char secret[crypto_box_SECRETKEYBYTES];
         int ret = crypto_secretbox_open_easy((unsigned char *)secret, (unsigned char *)encrypted_secret.get(), crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES, (unsigned char*)secret_nonce.get(), (unsigned char*)secret_key.get());
         if (ret != 0) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             logger.printfln("Failed to decrypt secret");
             return request.send(500, "text/plain; charset=utf-8", "Failed to decrypt secret");
         }
@@ -716,9 +679,7 @@ void RemoteAccess::register_urls() {
         unsigned char pk[crypto_box_PUBLICKEYBYTES];
         ret = crypto_scalarmult_base(pk, (unsigned char *)secret);
         if (ret < 0) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             logger.printfln("Failed to derive public-key");
             return request.send(500, "text/plain; charset=utf-8", "Failed to derive public-key");
         }
@@ -732,9 +693,7 @@ void RemoteAccess::register_urls() {
         size_t json_size = 4500 + bs64_note_size + bs64_name_size;
         auto json = heap_alloc_array<char>(json_size);
         if (json == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
 
@@ -743,17 +702,13 @@ void RemoteAccess::register_urls() {
 
         std::unique_ptr<uint8_t []> encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
         if (encrypted_note == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
 
         if (crypto_box_seal(encrypted_note.get(), (uint8_t*)note.c_str(), note.length(), pk)) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
-             return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt note");
+            this->request_cleanup();
+            return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt note");
         }
 
         auto bs64_note = heap_alloc_array<char>(bs64_note_size);
@@ -764,16 +719,12 @@ void RemoteAccess::register_urls() {
 
         std::unique_ptr<uint8_t[]> encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
         if (encrypted_name == nullptr) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
 
         if (crypto_box_seal(encrypted_name.get(), (uint8_t*)name.c_str(), name.length(), pk)) {
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
+            this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt name");
         }
 
@@ -806,9 +757,7 @@ void RemoteAccess::register_urls() {
             CoolString psk = key["psk"];
             uint8_t encrypted_psk[44 + crypto_box_SEALBYTES];
             if (crypto_box_seal(encrypted_psk, (uint8_t*)psk.c_str(), 44, pk)) {
-                https_client = nullptr;
-                encrypted_secret = nullptr;
-                secret_nonce = nullptr;
+                this->request_cleanup();
                 return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt psk");
             }
             serializer.addMemberArray("psk");
@@ -820,9 +769,7 @@ void RemoteAccess::register_urls() {
             CoolString web_private = key["web_private"];
             uint8_t encrypted_web_private[44 + crypto_box_SEALBYTES];
             if (crypto_box_seal(encrypted_web_private, (uint8_t*)web_private.c_str(), 44, pk)) {
-                https_client = nullptr;
-                encrypted_secret = nullptr;
-                secret_nonce = nullptr;
+                this->request_cleanup();
                 return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt web_private");
             }
             serializer.addMemberArray("web_private");
@@ -947,9 +894,7 @@ void RemoteAccess::register_urls() {
             char url[256];
             snprintf(url, 256, "https://%s:%u/api/selfdestruct", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint());
             run_request_with_next_stage(url, HTTP_METHOD_DELETE, json, json_size, config, [this](ConfigRoot cfg) {
-                https_client = nullptr;
-                encrypted_secret = nullptr;
-                secret_nonce = nullptr;
+                this->request_cleanup();
             });
 
             remove_key(0, 0);
@@ -1034,29 +979,47 @@ bool RemoteAccess::user_already_registered(const CoolString &email) {
 void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, ConfigRoot config, std::function<void(ConfigRoot config)> &&next_stage) {
     response_body = String();
 
-    std::function<void(AsyncHTTPSClientEvent *event)> callback = [this, next_stage, config](AsyncHTTPSClientEvent *event) {
+    const String url_capture = String(url);
+    std::function<void(AsyncHTTPSClientEvent *event)> callback = [this, next_stage, config, url_capture](AsyncHTTPSClientEvent *event) {
             switch (event->type) {
                 case AsyncHTTPSClientEventType::Error:
                     switch (event->error) {
                         case AsyncHTTPSClientError::HTTPStatusError: {
-                            registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-                            {
-                                char err_buf[64];
-                                snprintf(err_buf, 64, "Received status-code %i", (int)event->error_http_status);
-                                registration_state.get("message")->updateString(err_buf);
+                            if (strstr(url_capture.c_str(), "/management") != nullptr) {
+                                if (!this->management_request_failed) {
+                                    logger.printfln("Management request failed with HTTP-Error-Code %i", (int)event->error_http_status);
+                                    this->management_request_failed = true;
+                                }
+                            } else {
+                                registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+                                {
+                                    char err_buf[64];
+                                    snprintf(err_buf, 64, "Received status-code %i", (int)event->error_http_status);
+                                    registration_state.get("message")->updateString(err_buf);
+                                }
                             }
+                            this->request_cleanup();
                             break;
                         }
                         case AsyncHTTPSClientError::HTTPError:
                             break;
 
                         default:
-                            registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-                            {
-                                char err_buf[64];
-                                snprintf(err_buf, 64, "Error code %i", (int)event->error);
-                                registration_state.get("message")->updateString(err_buf);
+                            if (strstr(url_capture.c_str(), "/management") != nullptr) {
+                                if (!this->management_request_failed) {
+                                    logger.printfln("Management request failed with internal error code %i", (int)event->error);
+                                    this->management_request_failed = true;
+                                }
+                            } else {
+                                registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+                                {
+                                    char err_buf[64];
+                                    snprintf(err_buf, 64, "Error code %i", (int)event->error);
+                                    registration_state.get("message")->updateString(err_buf);
+                                }
                             }
+                            this->request_cleanup();
+                            break;
                     }
                     response_body = String();
                     break;
@@ -1104,7 +1067,7 @@ void RemoteAccess::parse_login_salt(ConfigRoot config) {
         if (error) {
             registration_state.get("message")->updateString("Error while deserializing login-salt");
             registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-            https_client = nullptr;
+            this->request_cleanup();
             return;
         }
         for (int i = 0; i < 48; i++) {
@@ -1121,7 +1084,7 @@ void RemoteAccess::parse_login_salt(ConfigRoot config) {
     if (mbedtls_base64_encode((uint8_t*)base64, 65, &bytes_written, login_salt, 48)) {
         registration_state.get("message")->updateString("Error while encoding login-salt");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-        https_client = nullptr;
+        this->request_cleanup();
         return;
     }
     registration_state.get("message")->updateString(String(base64));
@@ -1143,7 +1106,7 @@ void RemoteAccess::login(ConfigRoot config, CoolString &login_key) {
     if (mbedtls_base64_decode(key, 24, &written, (uint8_t*)login_key.c_str(), login_key.length()) != 0) {
         registration_state.get("message")->updateString("Error while decoding login-salt");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-        https_client = nullptr;
+        this->request_cleanup();
         return;
     }
 
@@ -1180,7 +1143,7 @@ void RemoteAccess::parse_secret(ConfigRoot config) {
             snprintf(err_str, 64, "Error while deserializing Secret: %s", error.c_str());
             registration_state.get("message")->updateString(err_str);
             registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-            https_client = nullptr;
+            this->request_cleanup();
             return;
         }
         response_body = "";
@@ -1190,7 +1153,7 @@ void RemoteAccess::parse_secret(ConfigRoot config) {
     if (encrypted_secret == nullptr) {
         registration_state.get("message")->updateString("Low memory");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-        https_client = nullptr;
+        this->request_cleanup();
         return;
     }
     for (int i = 0; i < crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES; i++) {
@@ -1201,7 +1164,7 @@ void RemoteAccess::parse_secret(ConfigRoot config) {
     if (encrypted_secret == nullptr) {
         registration_state.get("message")->updateString("Low memory");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-        https_client = nullptr;
+        this->request_cleanup();
         return;
     }
     for (int i = 0; i < crypto_secretbox_NONCEBYTES; i++) {
@@ -1217,9 +1180,7 @@ void RemoteAccess::parse_secret(ConfigRoot config) {
     if (mbedtls_base64_encode(encoded_secret_salt, 65, &olen, secret_salt, 48) != 0) {
         registration_state.get("message")->updateString("Error while encoding secret-salt");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-        https_client = nullptr;
-        encrypted_secret = nullptr;
-        secret_nonce = nullptr;
+        this->request_cleanup();
         return;
     }
 
@@ -1236,10 +1197,7 @@ void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> k
             snprintf(err_str, 64, "Error while deserializing registration response: %s", error.c_str());
             registration_state.get("message")->updateString(err_str);
             registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-            https_client = nullptr;
-            encrypted_secret = nullptr;
-            secret_nonce = nullptr;
-            response_body = "";
+            this->request_cleanup();
             return;
         }
 
@@ -1273,10 +1231,7 @@ void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> k
         API::writeConfig("remote_access/config", &this->config);
         registration_state.get("message")->updateString("");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);
-        https_client = nullptr;
-        encrypted_secret = nullptr;
-        secret_nonce = nullptr;
-        response_body = "";
+        this->request_cleanup();
 }
 
 void RemoteAccess::parse_add_user(ConfigRoot cfg, std::queue<WgKey> key_cache, CoolString pub_key, CoolString email, uint32_t next_user_id) {
@@ -1299,6 +1254,10 @@ void RemoteAccess::parse_add_user(ConfigRoot cfg, std::queue<WgKey> key_cache, C
 }
 
 void RemoteAccess::resolve_management() {
+    if (!this->management_request_allowed) {
+        return;
+    }
+
     CoolString relay_host = config.get("relay_host")->asString();
     uint32_t relay_port = config.get("relay_port")->asUint();
     CoolString url = "https://";
@@ -1375,6 +1334,7 @@ void RemoteAccess::resolve_management() {
     }
     https_client->set_header("Content-Type", "application/json");
     auto callback = [this, old_api](ConfigRoot cfg) {
+        this->management_request_failed = false;
         if (old_api) {
             StaticJsonDocument<250> resp;
             {
@@ -1382,7 +1342,7 @@ void RemoteAccess::resolve_management() {
                 if (error) {
                     char err_str[64];
                     snprintf(err_str, 64, "Error while deserializing management response: %s", error.c_str());
-                    https_client = nullptr;
+                    this->request_cleanup();
                     return;
                 }
                 response_body = "";
@@ -1399,7 +1359,7 @@ void RemoteAccess::resolve_management() {
             if (error) {
                 char err_str[64];
                 snprintf(err_str, 64, "Error while deserializing management response: %s", error.c_str());
-                https_client = nullptr;
+                this->request_cleanup();
                 return;
             }
             response_body = "";
@@ -1421,8 +1381,8 @@ void RemoteAccess::resolve_management() {
             }
         }
 
-        management_request_done = true;
-        https_client = nullptr;
+        this->management_request_done = true;
+        this->request_cleanup();
         this->connect_management();
         this->connection_state.get(0)->get("state")->updateUint(1);
     };
@@ -1490,6 +1450,14 @@ uint16_t find_next_free_port(uint16_t port) {
         port++;
     }
     return port;
+}
+
+void RemoteAccess::request_cleanup() {
+    https_client = nullptr;
+    encrypted_secret = nullptr;
+    secret_nonce = nullptr;
+    response_body = "";
+    management_request_allowed = true;
 }
 
 void RemoteAccess::connect_management() {
