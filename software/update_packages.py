@@ -46,7 +46,7 @@ for name in sorted(os.listdir('packages')):
             package_json_path = os.path.join('packages', name, 'package.json')
 
             try:
-                with open(os.path.join(package_json_path), 'r', encoding='utf-8') as f:
+                with open(os.path.join(package_json_path), 'rb') as f:
                     package_json = f.read()
             except FileNotFoundError:
                 package_json = None
@@ -59,7 +59,7 @@ for name in sorted(os.listdir('packages')):
                 util.log('Clearing {0}'.format(name))
                 os.makedirs(package_path)
 
-                with open(package_json_path, 'w', encoding='utf-8') as f:
+                with open(package_json_path, 'wb') as f:
                     f.write(package_json)
 
         continue
