@@ -53,6 +53,17 @@ export function is_day_ahead_prices_enabled() {
     return API.get("day_ahead_prices/config").enable;
 }
 
+export function get_price_from_index_as_15min(index: number, incl_vat: boolean = true) {
+    const prices = get_prices_as_15min();
+    const dap_config = API.get("day_ahead_prices/config");
+
+    if (incl_vat && (dap_config.vat != 0)) {
+        return Math.round(prices[index] * (1 + dap_config.vat / 10000.0));
+    }
+
+    return prices[index];
+}
+
 export function get_price_from_index(index: number, incl_vat: boolean = true) {
     const dap_prices = API.get("day_ahead_prices/prices");
     const dap_config = API.get("day_ahead_prices/config");
@@ -130,6 +141,20 @@ export function get_average_price_tomorrow(add_markup: boolean = true) {
     const price_avg = price_sum / price_count;
     const grid_costs_and_taxes_and_supplier_markup = dap_config.grid_costs_and_taxes + dap_config.supplier_markup;
     return price_avg + (add_markup ? grid_costs_and_taxes_and_supplier_markup : 0);
+}
+
+export function get_prices_as_15min() {
+    const dap_prices = API.get("day_ahead_prices/prices");
+    if (dap_prices.resolution == Resolution.Min15) {
+        return dap_prices.prices;
+    }
+
+    // Duplicate every entry 4x
+    let dap_prices_15min = []
+    for (const price of dap_prices.prices) {
+        dap_prices_15min.push(price, price, price, price)
+    }
+    return dap_prices_15min;
 }
 
 function get_current_price_string() {

@@ -720,6 +720,16 @@ bool DayAheadPrices::get_cheap_and_expensive_15m(const int32_t start_time, const
     return true;
 }
 
+bool DayAheadPrices::get_cheap_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m, bool *cheap_hours)
+{
+    return get_cheap_and_expensive_15m(start_time, duration_15m, amount_15m, cheap_hours, nullptr);
+}
+
+bool DayAheadPrices::get_expensive_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m, bool *expensive_hours)
+{
+    return get_cheap_and_expensive_15m(start_time, duration_15m, amount_15m, nullptr, expensive_hours);
+}
+
 bool DayAheadPrices::get_cheap_and_expensive_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *cheap_hours, bool *expensive_hours)
 {
     return get_cheap_and_expensive_15m(start_time, duration_1h*4, amount_1h*4, cheap_hours, expensive_hours);

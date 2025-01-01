@@ -106,6 +106,8 @@ public:
     Option<int32_t> get_current_price_net();
     bool get_cheap_and_expensive_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *cheap_hours, bool *expensive_hours);
     bool get_cheap_and_expensive_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m, bool *cheap_hours, bool *expensive_hours);
+    bool get_cheap_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m, bool *cheap_hours);
+    bool get_expensive_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m, bool *expensive_hours);
     bool get_cheap_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *cheap_hours);
     bool get_expensive_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *expensive_hours);
     bool is_start_time_cheap_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m);
