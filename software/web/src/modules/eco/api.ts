@@ -1,6 +1,7 @@
 interface ChargerState {
     start: number;
     amount: number
+    chart: string;
 }
 
 export interface config {
@@ -26,4 +27,11 @@ export interface charge_plan {
 export interface state {
     last_save: number;
     chargers: ChargerState[],
+}
+
+export interface chart {
+    departure: number;
+    time: number;
+    amount: number;
+    current_time: number;
 }

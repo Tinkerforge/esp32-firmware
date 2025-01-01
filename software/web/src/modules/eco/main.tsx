@@ -37,7 +37,7 @@ import { InputTime } from "../../ts/components/input_time";
 import { Button } from "react-bootstrap";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
-import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
+import { is_day_ahead_prices_enabled, get_price_from_index, get_prices_as_15min, get_price_from_index_as_15min } from "../day_ahead_prices/main";
 import { Departure } from "./departure.enum";
 import { Resolution} from "../day_ahead_prices/resolution.enum";
 
@@ -223,13 +223,62 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             return;
         }
 
-        const dap_prices = API.get("day_ahead_prices/prices");
+        const eco_state = API.get("eco/state")
+
+        console.log("eco_state.chargers.length", eco_state.chargers.length);
+        console.log("eco_state.chargers[0].start", eco_state.chargers[0].start);
+        console.log("eco_state.chargers[0].amount", eco_state.chargers[0].amount);
+        console.log("eco_state.chargers[0].chart", eco_state.chargers[0].chart);
+
+        if ((eco_state.chargers.length > 0) && (eco_state.chargers[0].start > 0) && (eco_state.chargers[0].amount > 0) && (eco_state.chargers[0].chart != "")) {
+            const chart_base64 = eco_state.chargers[0].chart;
+            const chart_str    = atob(chart_base64);
+            const chart_uint8  = Uint8Array.from(chart_str, c => c.charCodeAt(0));
+            const chart_bool   = new Array(chart_uint8.length*8).fill(false).map((_, i) => (chart_uint8[Math.floor(i/8)] & (1 << (i % 8))) != 0);
+            console.log("chart_base64", chart_base64);
+            console.log("chart_str", chart_str);
+            console.log("chart_uint8", chart_uint8);
+            console.log("chart_bool", chart_bool);
+            this.update_uplot_draw(date_now, chart_bool);
+        } else {
+            const eco_chart_data = {
+                departure: this.state.charge_plan.departure,
+                time: this.state.charge_plan.time,
+                amount: this.state.charge_plan.amount,
+                current_time: date_now / 60000 // current date in minutues
+            };
+
+            try {
+                const eco_chart = API.call("eco/chart", eco_chart_data, undefined, undefined, 2 * 60 * 1000);
+
+                // Get array of bools from blob (binary bitfield)
+                eco_chart.then((blob) => {
+                    blob.arrayBuffer().then((buffer) => {
+                        const array = new Uint8Array(buffer);
+                        const bool_array = new Array(array.length*8).fill(false).map((_, i) => (array[Math.floor(i/8)] & (1 << (i % 8))) != 0);
+                        this.update_uplot_draw(date_now, bool_array);
+                    });
+                });
+            } catch (e) {
+                // The errors we can get here are mostly stuff like "no dap data available" or "no time available".
+                // We should not annoy the user with error popups for this. Maybe print to console?
+                this.update_uplot_draw(date_now, []);
+            }
+        }
+    }
+
+    update_uplot_draw(date_now: number, green_blocks: boolean[]) {
+        if (this.uplot_wrapper_ref.current == null) {
+            return;
+        }
+
+        const prices = get_prices_as_15min();
+        const first_date = API.get("day_ahead_prices/prices").first_date;
         const dap_config = API.get("day_ahead_prices/config");
         let data: UplotData;
 
-        console.log(dap_prices);
         // If we have not got any prices yet, use empty data
-        if (dap_prices.prices.length == 0) {
+        if (prices.length == 0) {
             data = {
                 keys: [null],
                 names: [null],
@@ -250,61 +299,28 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                 default_visibilty: [null, true],
                 lines_vertical: []
             }
-            const resolution_multiplier = dap_prices.resolution == Resolution.Min15 ? 15 : 60
-            const hour_multiplier       = dap_prices.resolution == Resolution.Min15 ? 4  : 1
             const grid_costs_and_taxes_and_supplier_markup = dap_config.grid_costs_and_taxes / 1000.0 + dap_config.supplier_markup / 1000.0;
-            for (let i = 0; i < dap_prices.prices.length; i++) {
-                data.values[0].push(dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
-                data.values[1].push(get_price_from_index(i) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
+            for (let i = 0; i < prices.length; i++) {
+                data.values[0].push(first_date * 60 + i * 60*15);
+                data.values[1].push(get_price_from_index_as_15min(i) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
             }
 
-            data.values[0].push(dap_prices.first_date * 60 + dap_prices.prices.length * 60 * resolution_multiplier - 1);
-            data.values[1].push(get_price_from_index(dap_prices.prices.length - 1) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
-            console.log(data);
+            data.values[0].push(first_date * 60 + prices.length * 60 * 15 - 1);
+            data.values[1].push(get_price_from_index_as_15min(prices.length - 1) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
 
-            const last_save = this.state.state.last_save;
-            const enabled   = this.state.charge_plan.enable;
-            const hours     = this.state.charge_plan.amount;
-            const departure  = this.state.charge_plan.departure;
-            const time      = this.state.charge_plan.time;
-
-            // TODO: Use charge start if charge already started
-            // TODO: Remove charged hours if charge already started
             const from = date_now / 60000; // current date in minutues
-            const from_index = Math.max(0, Math.floor((from - dap_prices.first_date) / resolution_multiplier));
+            const from_index = Math.max(0, Math.floor((from - first_date) / 15))
 
-            // Minutes from today 00:00 to end of charge plan
-            const minutes_add = (((departure == Departure.Today) || (departure == Departure.Daily)) ? 0 : 24*60) + time;
-            let to_date = new Date();
-            to_date.setHours(0, 0, 0, 0)
-            const to = to_date.getTime()/(60*1000) + minutes_add;
-            const to_index = Math.min(dap_prices.prices.length, Math.ceil((to - dap_prices.first_date) / resolution_multiplier));
+            for (let i = from_index; i < Math.min(data.values[0].length, green_blocks.length + from_index); i++) {
+                if (green_blocks[i-from_index]) {
+                    data.lines_vertical.push({'index': i, 'text': '', 'color': [40, 167, 69, 0.5]});
+                }
+            }
 
-            console.log("from: " + from + " from_index: " + from_index + " to: " + to + " to_index: " + to_index);
-
+            // Grey out history
             for (let i = 0; i < from_index; i++) {
                 data.lines_vertical.push({'index': i, 'text': '', 'color': [64, 64, 64, 0.2]});
             }
-
-            if (from_index < to_index) {
-                const cheap_hours = data.values[1]
-                .slice(from_index, to_index)
-                .map((price, index) => ({ price, index }))
-                .sort((a, b) => a.price - b.price)
-                .slice(0, hours*hour_multiplier)
-                .map(item => item.index+from_index);
-
-                cheap_hours.forEach(index => {
-                    data.lines_vertical.push({'index': index, 'text': '', 'color': [40, 167, 69, 0.5]});
-                });
-                console.log(cheap_hours);
-            }
-
-            // Add vertical line at current time
-            /*const resolution_divisor = dap_prices.resolution == Resolution.Min15 ? 15 : 60;
-            const diff = Math.floor(date_now / 60000) - dap_prices.first_date;
-            const index = Math.floor(diff / resolution_divisor);
-            data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now"), 'color': [64, 64, 64, 0.2]});*/
         }
 
         // Show loader or data depending on the availability of data
@@ -317,10 +333,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             clearTimeout(this.timeout);
         }
 
-        console.log(charge_plan);
-
         this.timeout = setTimeout(() => API.save("eco/charge_plan", charge_plan), 1000);
-
         this.update_uplot();
     }
 

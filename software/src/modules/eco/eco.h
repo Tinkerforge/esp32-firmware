@@ -40,6 +40,8 @@ private:
     micros_t last_seen_plug_in[MAX_CONTROLLED_CHARGERS];
 
     void disable_charge_plan();
+    void set_chargers_state_chart_data(const uint8_t charger_id, const bool *chart, const uint8_t chart_length);
+    std::pair<uint8_t, uint32_t> get_end_time_1m(const Departure departure, const uint32_t desired_amount_1m, const uint32_t time_1m, const time_t save_time_1s);
 
 
 public:
