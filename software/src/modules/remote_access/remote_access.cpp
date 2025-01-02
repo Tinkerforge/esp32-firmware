@@ -116,6 +116,7 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     int ret = dns_gethostbyname_addrtype_lwip_ctx(dest_host, &ip, nullptr, nullptr, LWIP_DNS_ADDRTYPE_IPV4);
     if (ret == ERR_VAL) {
         logger.printfln("No DNS server is configured!");
+        return -1;
     }
 
     if (ret != ESP_OK || ip.type != IPADDR_TYPE_V4) {
@@ -135,6 +136,7 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     if (ret == -1) {
         logger.printfln("Setting socket to non_blocking caused and error: (%i)%s", errno, strerror_r(errno, nullptr, 0));
         close(sock);
+        return -1;
     }
 
     if (local_port != nullptr) {
@@ -148,6 +150,7 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
         if (ret == -1) {
             logger.printfln("Binding socket to port %u caused and error: (%i)%s", *local_port, errno, strerror_r(errno, nullptr, 0));
             close(sock);
+            return -1;
         }
     }
 
@@ -1071,9 +1074,6 @@ void RemoteAccess::parse_login_salt(ConfigRoot config) {
             return;
         }
         for (int i = 0; i < 48; i++) {
-            if (i == 48) {
-                break;
-            }
             login_salt[i] = doc[i].as<uint8_t>();
         }
         response_body = "";
@@ -1610,17 +1610,15 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
     connection_state.get(conn_idx + 1)->get("connection")->updateUint(conn_id);
 }
 
-int RemoteAccess::setup_inner_socket() {
-    if (inner_socket < 0) {
-        close(inner_socket);
-    } else if (inner_socket > 0) {
-        return 0;
+void RemoteAccess::setup_inner_socket() {
+    if (inner_socket > 0) {
+        return;
     }
 
     inner_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (inner_socket < 0) {
         logger.printfln("Failed to create inner socket: (%i)%s", errno, strerror_r(errno, nullptr, 0));
-        return inner_socket;
+        return;
     }
 
     struct sockaddr_in local_addr;
@@ -1633,6 +1631,8 @@ int RemoteAccess::setup_inner_socket() {
     if (ret == -1) {
         logger.printfln("Binding socket to port 12345 caused and error: (%i)%s", errno, strerror_r(errno, nullptr, 0));
         close(inner_socket);
+        inner_socket = -1;
+        return;
     }
 
     ret = fcntl(inner_socket, F_SETFL, O_NONBLOCK);
@@ -1642,7 +1642,7 @@ int RemoteAccess::setup_inner_socket() {
         inner_socket = -1;
     }
 
-    return 0;
+    return;
 }
 
 uint8_t RemoteAccess::get_connection(uint8_t conn_id) {
@@ -1677,7 +1677,7 @@ void RemoteAccess::run_management() {
             return;
         }
         close(inner_socket);
-        inner_socket = 0;
+        inner_socket = -1;
         setup_inner_socket();
         return;
     } if (ret != sizeof(management_command_packet)) {

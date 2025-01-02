@@ -79,7 +79,7 @@ private:
     void request_cleanup();
     void cleanup_after();
     bool user_already_registered(const CoolString &email);
-    int setup_inner_socket();
+    void setup_inner_socket();
     WireGuard *management = nullptr;
     Connections remote_connections[5] = {};
 
