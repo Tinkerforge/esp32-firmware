@@ -998,10 +998,11 @@ void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_
                                     registration_state.get("message")->updateString(err_buf);
                                 }
                             }
-                            this->request_cleanup();
+                            this->cleanup_after();
                             break;
                         }
                         case AsyncHTTPSClientError::HTTPError:
+                            this->cleanup_after();
                             break;
 
                         default:
@@ -1018,7 +1019,7 @@ void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_
                                     registration_state.get("message")->updateString(err_buf);
                                 }
                             }
-                            this->request_cleanup();
+                            this->cleanup_after();
                             break;
                     }
                     response_body = String();
@@ -1027,6 +1028,7 @@ void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_
                 case AsyncHTTPSClientEventType::Aborted:
                     registration_state.get("message")->updateString("Request was aborted");
                     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+                            this->cleanup_after();
                     break;
                 case AsyncHTTPSClientEventType::Data:
                     handle_response_chunk(event);
@@ -1335,6 +1337,7 @@ void RemoteAccess::resolve_management() {
     https_client->set_header("Content-Type", "application/json");
     auto callback = [this, old_api](ConfigRoot cfg) {
         this->management_request_failed = false;
+        this->management_request_allowed = true;
         if (old_api) {
             StaticJsonDocument<250> resp;
             {
@@ -1386,7 +1389,14 @@ void RemoteAccess::resolve_management() {
         this->connect_management();
         this->connection_state.get(0)->get("state")->updateUint(1);
     };
+    this->management_request_allowed = false;
     run_request_with_next_stage(url.c_str(), HTTP_METHOD_PUT, json, len, config, callback);
+}
+
+void RemoteAccess::cleanup_after() {
+    task_scheduler.scheduleOnce([this] {
+        this->request_cleanup();
+    }, 0_s);
 }
 
 static int management_filter_in(struct pbuf* packet) {
