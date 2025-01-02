@@ -1002,7 +1002,6 @@ void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_
                             break;
                         }
                         case AsyncHTTPSClientError::HTTPError:
-                            this->cleanup_after();
                             break;
 
                         default:
