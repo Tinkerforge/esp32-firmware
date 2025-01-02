@@ -375,8 +375,7 @@ void RemoteAccess::register_urls() {
 
     server.on("/remote_access/register", HTTP_PUT, [this](WebServerRequest request) {
         if (config.get("users")->count() != 0) {
-            this->request_cleanup();
-            return request.send(400, "text/plain; charset=utf-8", "Charger already registered");
+            config.get("users")->removeAll();
         }
 
         // TODO: Maybe don't run the registration in the request handler. Start a task instead?
