@@ -462,7 +462,7 @@ void RemoteAccess::register_urls() {
             return request.send(500, "text/plain; charset=utf-8", "Failed to derive public-key");
         }
 
-        TFJsonSerializer serializer = TFJsonSerializer(ptr.get(), json_size);
+        TFJsonSerializer serializer{ptr.get(), json_size};
         serializer.addObject();
         serializer.addMemberArray("keys");
         char buf[50];
@@ -699,7 +699,7 @@ void RemoteAccess::register_urls() {
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
 
-        TFJsonSerializer serializer = TFJsonSerializer(json.get(), json_size);
+        TFJsonSerializer serializer{json.get(), json_size};
         serializer.addObject();
 
         std::unique_ptr<uint8_t []> encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
@@ -881,7 +881,7 @@ void RemoteAccess::register_urls() {
 
         if (!one_left) {
             char json[256];
-            TFJsonSerializer serializer = TFJsonSerializer(json, 256);
+            TFJsonSerializer serializer{json, 256};
             serializer.addObject();
                 serializer.addMemberString("uuid", config.get("uuid")->asEphemeralCStr());
                 serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
@@ -1273,7 +1273,7 @@ void RemoteAccess::resolve_management() {
     size_t encoded_name_size = 4 * (encrypted_name_size / 3) + 5;
 
     char json[1000] = {};
-    TFJsonSerializer serializer = TFJsonSerializer(json, 1000);
+    TFJsonSerializer serializer{json, 1000};
     serializer.addObject();
 
     bool old_api;
