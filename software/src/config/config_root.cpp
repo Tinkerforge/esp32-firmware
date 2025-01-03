@@ -20,6 +20,8 @@
 #include "config/private.h"
 #include "config/visitors.h"
 
+ConfigRoot::ConfigRoot() : validator(nullptr) {}
+
 ConfigRoot::ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {}
 
 ConfigRoot::ConfigRoot(Config cfg, Validator &&validator) : Config(cfg), validator(new Validator(std::move(validator))) {}

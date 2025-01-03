@@ -792,7 +792,7 @@ struct ConfigRoot : public Config {
 public:
     using Validator = std::function<String(Config &, ConfigSource)>;
 
-    ConfigRoot() = default;
+    ConfigRoot();
 
     ConfigRoot(Config cfg);
 
