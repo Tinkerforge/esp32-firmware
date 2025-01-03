@@ -550,7 +550,7 @@ void RemoteAccess::register_urls() {
         serializer.addMemberString("name", bs64_name.get());
 
         auto encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
-        if (encrypted_name == nullptr) {
+        if (encrypted_note == nullptr) {
             this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
