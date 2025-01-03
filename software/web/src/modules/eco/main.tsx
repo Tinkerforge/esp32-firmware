@@ -262,8 +262,9 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                 });
             } catch (e) {
                 // The errors we can get here are mostly stuff like "no dap data available" or "no time available".
-                // We should not annoy the user with error popups for this. Maybe print to console?
+                // We should not annoy the user with error popups for this.
                 this.update_uplot_draw(date_now, []);
+                console.log("Error while fetching eco chart data:", e);
             }
         }
     }
