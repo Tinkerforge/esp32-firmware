@@ -57,7 +57,7 @@ private:
 
     void start_scan();
     void check_for_scan_completion();
-    void get_scan_results(StringBuilder *sb, int network_count);
+    void get_scan_results(StringBuilder *sb, int16_t network_count);
 
     ConfigRoot ap_config;
     ConfigRoot sta_config;

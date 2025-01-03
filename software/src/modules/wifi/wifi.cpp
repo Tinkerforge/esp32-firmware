@@ -220,7 +220,7 @@ void Wifi::apply_soft_ap_config_and_start()
             }, 500_ms);
             return;
         } else { // Scan already started
-            int network_count = WiFi.scanComplete();
+            int16_t network_count = WiFi.scanComplete();
 
             if (network_count == WIFI_SCAN_RUNNING && !deadline_elapsed(scan_start_time + 10000)) {
                 task_scheduler.scheduleOnce([this]() {
@@ -232,7 +232,7 @@ void Wifi::apply_soft_ap_config_and_start()
             if (network_count >= 0) { // Scan finished successfully
                 float channels[14] = {0}; // Don't use 0, channels are one-based.
                 float channels_smeared[14] = {0}; // Don't use 0, channels are one-based.
-                for (int i = 0; i < network_count; ++i) {
+                for (int16_t i = 0; i < network_count; ++i) {
                     wifi_ap_record_t *info = (wifi_ap_record_t *)WiFi.getScanInfoByIndex(i);
 
                     int channel = info->primary;
@@ -768,11 +768,11 @@ void Wifi::setup()
     initialized = true;
 }
 
-void Wifi::get_scan_results(StringBuilder *sb, int network_count)
+void Wifi::get_scan_results(StringBuilder *sb, int16_t network_count)
 {
     sb->putc('[');
 
-    for (int i = 0; i < network_count; ++i) {
+    for (int16_t i = 0; i < network_count; ++i) {
         if (i > 0) {
             sb->putc(',');
         }
@@ -792,7 +792,7 @@ void Wifi::get_scan_results(StringBuilder *sb, int network_count)
 
 void Wifi::check_for_scan_completion()
 {
-    int network_count = WiFi.scanComplete();
+    int16_t network_count = WiFi.scanComplete();
 
     if (network_count == WIFI_SCAN_RUNNING) {
         logger.printfln("Scan in progress...");
@@ -862,7 +862,7 @@ void Wifi::register_urls()
     }, true);
 
     server.on("/wifi/scan_results", HTTP_GET, [this](WebServerRequest request) {
-        int network_count = WiFi.scanComplete();
+        int16_t network_count = WiFi.scanComplete();
 
         if (network_count == WIFI_SCAN_RUNNING) {
             return request.send(200, "text/plain; charset=utf-8", "scan in progress");
