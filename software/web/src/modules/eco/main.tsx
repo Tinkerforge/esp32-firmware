@@ -223,14 +223,15 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             return;
         }
 
-        const eco_state = API.get("eco/state")
+        const eco_state       = API.get("eco/state")
+        const eco_charge_plan = API.get("eco/charge_plan")
 
         console.log("eco_state.chargers.length", eco_state.chargers.length);
         console.log("eco_state.chargers[0].start", eco_state.chargers[0].start);
         console.log("eco_state.chargers[0].amount", eco_state.chargers[0].amount);
         console.log("eco_state.chargers[0].chart", eco_state.chargers[0].chart);
 
-        if ((eco_state.chargers.length > 0) && (eco_state.chargers[0].start > 0) && (eco_state.chargers[0].amount > 0) && (eco_state.chargers[0].chart != "")) {
+        if (eco_charge_plan.enable && (eco_state.chargers.length > 0) && (eco_state.chargers[0].start > 0) && (eco_state.chargers[0].amount > 0) && (eco_state.chargers[0].chart != "")) {
             const chart_base64 = eco_state.chargers[0].chart;
             const chart_str    = atob(chart_base64);
             const chart_uint8  = Uint8Array.from(chart_str, c => c.charCodeAt(0));
