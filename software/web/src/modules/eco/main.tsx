@@ -393,6 +393,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                         />
                     </div>
                 </div>
+                <div class="card mt-1">
                 <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
                     <UplotLoader
                         ref={this.uplot_loader_ref}
@@ -424,6 +425,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                             padding={[10, 10, null, 5]}
                         />
                     </UplotLoader>
+                </div>
                 </div>
                 <div class="form-group mt-2">
                     <Button
