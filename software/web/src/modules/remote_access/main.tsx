@@ -453,15 +453,10 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             }, () => __("remote_access.script.save_failed"));
         }
 
+        // If a user is removed and then the config is resetted, clear the users to be removed.
         this.setState({removeUsers: []});
-        const config: config_update = {
-                enable: false,
-            relay_host: this.state.relay_host,
-            relay_port: this.state.relay_port,
-                email: "",
-                cert_id: this.state.cert_id,
-        }
-        API.call("remote_access/config_update", config, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
+
+        API.reset("remote_access/config", () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
     }
 
     checkUserExisting() {

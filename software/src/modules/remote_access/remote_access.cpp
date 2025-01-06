@@ -269,6 +269,16 @@ void RemoteAccess::register_urls() {
         api.writeConfig("remote_access/config", &config);
     }, false);
 
+    api.addCommand("remote_access/config_reset", Config::Null(), {}, [this](String &/*errmsg*/) {
+        API::removeConfig("remote_access/config");
+
+        for (uint32_t user = 0; user < MAX_USERS + 1; user++) {
+            for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
+                remove_key(user, i);
+            }
+        }
+    }, true);
+
     server.on("/remote_access/get_login_salt", HTTP_PUT, [this](WebServerRequest request) {
         this->management_request_allowed = false;
         size_t content_len = request.contentLength();
