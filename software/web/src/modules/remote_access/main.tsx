@@ -550,7 +550,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                     <FormRow label={__("remote_access.content.password")} label_muted={__("remote_access.content.password_muted")}>
                                         <InputPassword required
                                             value={this.state.addUser.password}
-                                            maxLength={64}
+                                            // no maxLength: The password is put through argon2id.
                                             onValue={(v) => {
                                                     this.setState({addUser: {...this.state.addUser, password: v}})
                                             }}
