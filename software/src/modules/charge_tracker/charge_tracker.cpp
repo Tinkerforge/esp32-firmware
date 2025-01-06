@@ -797,9 +797,13 @@ void ChargeTracker::register_urls()
             auto buf = heap_alloc_array<char>(1024);
             if (request.contentLength() > 1024)
                 return request.send(413);
-            request.receive(buf.get(), 1024);
+            auto received = request.receive(buf.get(), 1024);
 
-            DeserializationError error = deserializeJson(doc, buf.get(), 1024);
+            if (received < 0) {
+                return request.send(500, "text/plain", "Failed to receive request payload");
+            }
+
+            DeserializationError error = deserializeJson(doc, buf.get(), received);
             if (error) {
                 String errorString = String("Failed to deserialize string: ") + error.c_str();
                 return request.send(400, "text/plain", errorString.c_str());
