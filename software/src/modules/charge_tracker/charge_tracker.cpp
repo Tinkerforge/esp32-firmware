@@ -326,7 +326,8 @@ bool ChargeTracker::setupRecords()
     File folder = LittleFS.open(CHARGE_RECORD_FOLDER);
     File f;
 
-    uint32_t found_blobs[32] = {0};
+    // Two more to handle power cycles where a new record was created but the oldest one was not yet deleted.
+    uint32_t found_blobs[CHARGE_RECORD_FILE_COUNT + 2] = {0};
     size_t found_blobs_size = ARRAY_SIZE(found_blobs);
     int found_blob_counter = 0;
 
