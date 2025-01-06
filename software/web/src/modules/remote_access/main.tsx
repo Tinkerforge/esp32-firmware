@@ -558,7 +558,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                             placeholder="" />
                                     </FormRow>
                                     <FormRow label={__("remote_access.content.note")} label_muted={__("remote_access.content.note_muted")(this.state.relay_host)}>
-                                        <textarea maxLength={128} style={{width: "100%"}} value={this.state.addUser.note} onInput={(v) => this.setState({addUser: {...this.state.addUser, note: (v.target as HTMLInputElement).value}})}/>
+                                        <textarea class="form-control" maxLength={128} style={{width: "100%"}} value={this.state.addUser.note} onInput={(v) => this.setState({addUser: {...this.state.addUser, note: (v.target as HTMLInputElement).value}})}/>
                                     </FormRow>
                                 </>
                             }}
