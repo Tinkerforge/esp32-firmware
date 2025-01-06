@@ -123,7 +123,7 @@ bool ChargeTracker::repair_last(float meter_start)
 
     File r_file = LittleFS.open(chargeRecordFilename(last_charge_record), "r+");
     if (r_file.size() % CHARGE_RECORD_SIZE != 0) {
-        logger.printfln("Can't track start of charge: Last charge end was not tracked or file is damaged! Offset is %u bytes. Expected 0", r_file.size() % CHARGE_RECORD_SIZE);
+        logger.printfln("Can't repair last charge: Last charge end was not tracked or file is damaged! Offset is %u bytes. Expected 0", r_file.size() % CHARGE_RECORD_SIZE);
         // TODO: for robustness we would have to write the last end here? Yes, but only if % == 9. Also write duration 0, so we know this is a "faked" end. Still write the correct meter state.
         return false;
     }
@@ -135,6 +135,11 @@ bool ChargeTracker::repair_last(float meter_start)
     else if (r_file.size() == sizeof(Charge)) {
         if (last_charge_record > 1) {
             File tmp = LittleFS.open(chargeRecordFilename(last_charge_record - 1));
+            auto tmp_size = tmp.size();
+            if (tmp_size % CHARGE_RECORD_SIZE != 0 || tmp_size < sizeof(Charge) * 2) {
+                logger.printfln("Can't repair last charge: Penultimate tracked charge file is damaged! Offset is %u bytes. Expected 0", tmp_size % CHARGE_RECORD_SIZE);
+                return false;
+            }
             tmp.seek(tmp.size() - sizeof(Charge) * 2);
             tmp.read(reinterpret_cast<uint8_t *>(&charges), sizeof(Charge));
         }
