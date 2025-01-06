@@ -739,6 +739,7 @@ void ChargeTracker::register_urls()
     // which requires that the user config is already loaded from flash.
     // This happens in users::setup() i.e. _after_ charge_tracker::setup()
     removeOldRecords();
+    updateState();
 
     api.addPersistentConfig("charge_tracker/config", &config);
 
