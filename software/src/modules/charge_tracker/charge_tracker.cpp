@@ -352,7 +352,7 @@ bool ChargeTracker::setupRecords()
             continue;
         }
 
-        if (found_blob_counter > found_blobs_size) {
+        if (found_blob_counter >= found_blobs_size) {
             logger.printfln("Too many charge records found!");
             return false;
         }
