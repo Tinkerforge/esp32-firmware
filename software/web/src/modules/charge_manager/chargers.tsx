@@ -32,7 +32,8 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
-import type { ChargeManagerStatus } from "./main"
+import type { ChargeManagerStatus } from "./main";
+import { CMPhaseRotation } from "./cm_phase_rotation.enum";
 import { InputFloat } from "../../ts/components/input_float";
 
 type ChargeManagerConfig = API.getType["charge_manager/config"];
@@ -259,7 +260,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         c.unshift({
             host: "127.0.0.1",
             name: name.display_name,
-            rot: 0
+            rot: CMPhaseRotation.Unknown
         });
         this.setState({chargers: c})
     }
@@ -413,15 +414,15 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                     </FormRow>
                                     <FormRow label={__("charge_manager.content.edit_charger_rotation")} help={__("charge_manager.content.charger_rotation_help")}>
                                         <InputSelect items={[
-                                                ["0", __("charge_manager.content.rotation_0")],
+                                                [CMPhaseRotation.Unknown.toString(), __("charge_manager.content.rotation_0")],
                                                 ["right-disabled", __("charge_manager.content.rotation_right")],
-                                                ["1", __("charge_manager.content.rotation_1")],
-                                                ["3", __("charge_manager.content.rotation_3")],
-                                                ["6", __("charge_manager.content.rotation_6")],
+                                                [CMPhaseRotation.L123.toString(), __("charge_manager.content.rotation_1")],
+                                                [CMPhaseRotation.L231.toString(), __("charge_manager.content.rotation_3")],
+                                                [CMPhaseRotation.L312.toString(), __("charge_manager.content.rotation_6")],
                                                 ["left-disabled", __("charge_manager.content.rotation_left")],
-                                                ["2", __("charge_manager.content.rotation_2")],
-                                                ["4", __("charge_manager.content.rotation_4")],
-                                                ["5", __("charge_manager.content.rotation_5")],
+                                                [CMPhaseRotation.L132.toString(), __("charge_manager.content.rotation_2")],
+                                                [CMPhaseRotation.L213.toString(), __("charge_manager.content.rotation_4")],
+                                                [CMPhaseRotation.L321.toString(), __("charge_manager.content.rotation_5")],
                                             ]}
                                             value={state.editCharger.rot}
                                             onValue={(v) => this.setState({editCharger: {...state.editCharger, rot: parseInt(v)}})}
@@ -472,7 +473,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                             <ListGroupItem key={c.hostname}
                                                         action type="button"
                                                         onClick={c.error != 0 ? undefined : () => {
-                                                            this.setState({addCharger: {host: c.hostname + ".local", name: c.display_name, rot: 0}})
+                                                            this.setState({addCharger: {host: c.hostname + ".local", name: c.display_name, rot: CMPhaseRotation.Unknown}})
                                                         }}
                                                         style={c.error == 0 ? "" : "cursor: default; background-color: #eeeeee !important;"}>
                                                 <div class="d-flex w-100 justify-content-between">
@@ -489,23 +490,23 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                 }</ListGroup>
                             </FormRow>
                             <FormRow label={__("charge_manager.content.add_charger_rotation")} help={__("charge_manager.content.charger_rotation_help")}>
-                                    <InputSelect items={[
-                                            ["0", __("charge_manager.content.rotation_0")],
-                                            ["right-disabled", __("charge_manager.content.rotation_right")],
-                                            ["1", __("charge_manager.content.rotation_1")],
-                                            ["3", __("charge_manager.content.rotation_3")],
-                                            ["6", __("charge_manager.content.rotation_6")],
-                                            ["left-disabled", __("charge_manager.content.rotation_left")],
-                                            ["2", __("charge_manager.content.rotation_2")],
-                                            ["4", __("charge_manager.content.rotation_4")],
-                                            ["5", __("charge_manager.content.rotation_5")],
-                                        ]}
-                                        value={state.addCharger.rot}
-                                        onValue={(v) => this.setState({addCharger: {...state.addCharger, rot: parseInt(v)}})}
-                                        placeholder={__("select")}
-                                        required
-                                        />
-                                </FormRow>
+                                <InputSelect items={[
+                                        [CMPhaseRotation.Unknown.toString(), __("charge_manager.content.rotation_0")],
+                                        ["right-disabled", __("charge_manager.content.rotation_right")],
+                                        [CMPhaseRotation.L123.toString(), __("charge_manager.content.rotation_1")],
+                                        [CMPhaseRotation.L231.toString(), __("charge_manager.content.rotation_3")],
+                                        [CMPhaseRotation.L312.toString(), __("charge_manager.content.rotation_6")],
+                                        ["left-disabled", __("charge_manager.content.rotation_left")],
+                                        [CMPhaseRotation.L132.toString(), __("charge_manager.content.rotation_2")],
+                                        [CMPhaseRotation.L213.toString(), __("charge_manager.content.rotation_4")],
+                                        [CMPhaseRotation.L321.toString(), __("charge_manager.content.rotation_5")],
+                                    ]}
+                                    value={state.addCharger.rot}
+                                    onValue={(v) => this.setState({addCharger: {...state.addCharger, rot: parseInt(v)}})}
+                                    placeholder={__("select")}
+                                    required
+                                    />
+                            </FormRow>
                         </>]}
                         onAddSubmit={async () => {
                             this.setState({chargers: state.chargers.concat(state.addCharger)});
@@ -533,12 +534,12 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         let show_charger_settings = state.enable_charge_manager;
         let show_available_current = true;
 
-        //#if MODULE_EM_PHASE_SWITCHER_AVAILABLE
+//#if MODULE_EM_PHASE_SWITCHER_AVAILABLE
         if (state.managementEnabled) {
             show_charger_settings = true;
             show_available_current = false;
         }
-        //#endif
+//#endif
 
         let em_charger = null;
 

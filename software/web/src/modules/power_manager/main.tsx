@@ -35,6 +35,7 @@ import { SubPage         } from "../../ts/components/sub_page";
 import { MeterClassID    } from "../meters/meter_class_id.enum";
 import { MeterValueID    } from "../meters/meter_value_id";
 import { NavbarItem } from "../../ts/components/navbar_item";
+import { BatteryMode } from "./battery_mode.enum";
 import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, Settings, Sun } from "react-feather";
 
@@ -442,8 +443,8 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                                     disabled={s.meter_slot_battery_power >= 255}
                                     required={s.meter_slot_battery_power < 255}
                                     items={[
-                                        ["0", __("power_manager.content.battery_mode_prefer_chargers")],
-                                        ["1", __("power_manager.content.battery_mode_prefer_battery")],
+                                        [BatteryMode.PreferChargers.toString(), __("power_manager.content.battery_mode_prefer_chargers")],
+                                        [BatteryMode.PreferBattery.toString(), __("power_manager.content.battery_mode_prefer_battery")],
                                     ]}
                                     value={s.battery_mode}
                                     onValue={(v) => this.setState({battery_mode: parseInt(v)})}

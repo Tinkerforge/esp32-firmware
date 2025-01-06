@@ -31,6 +31,7 @@
 #include "current_allocator.h"
 #include "build.h"
 #include "tools.h"
+#include "cm_phase_rotation.enum.h"
 
 #define WATCHDOG_TIMEOUT_MS 30000
 
@@ -50,16 +51,6 @@ bool ChargeManager::has_triggered(const Config *conf, void *data)
     }
 }
 #endif
-
-enum class CMPhaseRotation: uint8_t {
-    Unknown,
-    L123,
-    L132,
-    L231,
-    L213,
-    L321,
-    L312
-};
 
 static PhaseRotation convert_phase_rotation(CMPhaseRotation pr) {
     switch (pr) {
@@ -81,7 +72,7 @@ void ChargeManager::pre_setup()
     config_chargers_prototype = Config::Object({
         {"host", Config::Str("", 0, 64)},
         {"name", Config::Str("", 0, 32)},
-        {"rot", Config::Uint((uint8_t)CMPhaseRotation::Unknown, (uint8_t)CMPhaseRotation::Unknown, (uint8_t)CMPhaseRotation::L312)}
+        {"rot", Config::Enum(CMPhaseRotation::Unknown)}
     });
 
     config = ConfigRoot{Config::Object({

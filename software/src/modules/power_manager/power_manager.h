@@ -23,6 +23,7 @@
 #include "module.h"
 #include "config.h"
 #include "phase_switcher_back-end.h"
+#include "battery_mode.enum.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
 #include "modules/charge_manager/current_limits.h"
 #include "module_available.h"
@@ -125,12 +126,6 @@ private:
         SwitchingState get_phase_switching_state()         override {return SwitchingState::Ready;} // Don't report an error when phase_switching_capable() is false.
         bool switch_phases(uint32_t phases_wanted)         override {return false;}
         bool is_external_control_allowed()                 override {return false;}
-    };
-
-    enum class BatteryMode : uint8_t {
-        PreferChargers = 0,
-        PreferBattery = 1,
-        BatteryModeMax = 1,
     };
 
     enum class TristateBool : uint8_t {

@@ -30,6 +30,7 @@
 #include "string_builder.h"
 
 #include "module_dependencies.h"
+#include "register_table.enum.h"
 
 extern uint32_t local_uid_num;
 
@@ -146,7 +147,7 @@ void ModbusTcp::pre_setup()
     config = Config::Object({
         {"enable", Config::Bool(false)},
         {"port", Config::Uint16(502)},
-        {"table", Config::Enum(RegisterTable::WARP, RegisterTable::WARP, RegisterTable::KEBA)},
+        {"table", Config::Enum(RegisterTable::WARP)},
         {"send_illegal_data_address", Config::Bool(true)}
     });
 }
@@ -1046,7 +1047,7 @@ void ModbusTcp::start_server() {
                     switch (table) {
                         case RegisterTable::WARP:
                             return this->getWarpCoils(start_address, data_count, (uint8_t *) data_values);
-                        case RegisterTable::BENDER:
+                        case RegisterTable::Bender:
                         case RegisterTable::KEBA:
                             break;
                     }
@@ -1055,7 +1056,7 @@ void ModbusTcp::start_server() {
                     switch (table) {
                         case RegisterTable::WARP:
                             return this->getWarpDiscreteInputs(start_address, data_count, (uint8_t *) data_values);
-                        case RegisterTable::BENDER:
+                        case RegisterTable::Bender:
                         case RegisterTable::KEBA:
                             break;
                     }
@@ -1064,7 +1065,7 @@ void ModbusTcp::start_server() {
                     switch (table) {
                         case RegisterTable::WARP:
                             return this->getWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                        case RegisterTable::BENDER:
+                        case RegisterTable::Bender:
                             return this->getBenderHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
                         case RegisterTable::KEBA:
                             return this->getKebaHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
@@ -1074,7 +1075,7 @@ void ModbusTcp::start_server() {
                     switch (table) {
                         case RegisterTable::WARP:
                             return this->getWarpInputRegisters(start_address, data_count, (uint16_t *) data_values);
-                        case RegisterTable::BENDER:
+                        case RegisterTable::Bender:
                         case RegisterTable::KEBA:
                             break;
                     }
@@ -1083,7 +1084,7 @@ void ModbusTcp::start_server() {
                     switch (table) {
                         case RegisterTable::WARP:
                             return this->setWarpCoils(start_address, data_count, (uint8_t *) data_values);
-                        case RegisterTable::BENDER:
+                        case RegisterTable::Bender:
                         case RegisterTable::KEBA:
                             break;
                     }
@@ -1092,7 +1093,7 @@ void ModbusTcp::start_server() {
                     switch (table) {
                         case RegisterTable::WARP:
                             return this->setWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                        case RegisterTable::BENDER:
+                        case RegisterTable::Bender:
                             return this->setBenderHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
                         case RegisterTable::KEBA:
                             return this->setKebaHoldingRegisters(start_address, data_count, (uint16_t *) data_values);

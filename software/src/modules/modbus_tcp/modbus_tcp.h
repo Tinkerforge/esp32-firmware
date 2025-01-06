@@ -91,18 +91,13 @@ private:
         bool has_feature_phase_switch;
     };
 
-    enum RegisterTable {
-        WARP,
-        BENDER,
-        KEBA
-    };
-
     union TwoRegs {
         uint32_t u;
         float f;
         struct {uint16_t upper; uint16_t lower;} regs;
         char chars[4];
     };
+
     Option<TwoRegs> getWarpInputRegister(uint16_t address, void *ctx);
     Option<TwoRegs> getWarpHoldingRegister(uint16_t address);
 

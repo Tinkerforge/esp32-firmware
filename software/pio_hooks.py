@@ -1286,6 +1286,8 @@ def main():
                 enum_values = []
                 enum_cases = []
                 value_number = -1
+                value_number_min = None
+                value_number_max = None
                 value_count = 0
 
                 with open(os.path.join(mod_path, name), 'r', encoding='utf-8') as f:
@@ -1303,6 +1305,16 @@ def main():
                         else:
                             value_number += 1
 
+                        if value_number_min == None:
+                            value_number_min = value_number
+                        else:
+                            value_number_min = min(value_number_min, value_number)
+
+                        if value_number_max == None:
+                            value_number_max = value_number
+                        else:
+                            value_number_max = max(value_number_max, value_number)
+
                         value_count += 1
 
                         enum_values.append('    {0} = {1},\n'.format(value_name.camel, value_number))
@@ -1313,7 +1325,9 @@ def main():
                     f.write('#include <stdint.h>\n\n')
                     f.write('#pragma once\n\n')
                     f.write(f'enum class {enum_name.camel} : {name_parts[1]}_t {{\n')
+                    f.write(f'    _min = {value_number_min},\n')
                     f.write(''.join(enum_values))
+                    f.write(f'    _max = {value_number_max},\n')
                     f.write('};\n\n')
                     f.write(f'#define {enum_name.upper}_COUNT {value_count}\n\n')
                     f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value);\n')

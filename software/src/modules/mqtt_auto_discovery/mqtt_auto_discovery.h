@@ -23,6 +23,7 @@
 #include "config.h"
 #include "mqtt_discovery_topics.h"
 #include "cool_string.h"
+#include "mqtt_auto_discovery_mode.enum.h"
 
 class MqttAutoDiscovery final : public IModule
 {
@@ -45,7 +46,7 @@ private:
         String full_path;
     };
 
-    struct DiscoveryTopic mqtt_discovery_topics[TOPIC_COUNT];
+    struct DiscoveryTopic mqtt_discovery_topics[MQTT_DISCOVERY_TOPIC_COUNT];
 
     CoolString device_info;
 

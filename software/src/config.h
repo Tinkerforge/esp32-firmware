@@ -504,8 +504,12 @@ struct Config {
     static Config Object(std::initializer_list<std::pair<const char *, Config>> obj);
 
     template<typename T>
-    static Config Enum(T u, T first, T last) {
-        return Uint(static_cast<uint32_t>(u), static_cast<uint32_t>(first), static_cast<uint32_t>(last));
+    static Config Enum(T u, T min, T max) {
+        return Uint(static_cast<uint32_t>(u), static_cast<uint32_t>(min), static_cast<uint32_t>(max));
+    }
+    template<typename T>
+    static Config Enum(T u) {
+        return Uint(static_cast<uint32_t>(u), static_cast<uint32_t>(T::_min), static_cast<uint32_t>(T::_max));
     }
 
     template<typename T>

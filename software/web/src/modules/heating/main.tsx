@@ -42,7 +42,7 @@ import { is_solar_forecast_enabled, get_kwh_today, get_kwh_tomorrow } from  "../
 import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
 import { StatusSection } from "../../ts/components/status_section";
 import { Button } from "react-bootstrap";
-import { ControlPeriod } from "./controlperiod.enum";
+import { ControlPeriod } from "./control_period.enum";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" module="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} />;

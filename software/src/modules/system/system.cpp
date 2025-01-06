@@ -76,7 +76,7 @@ Language System::get_system_language()
 void System::pre_setup()
 {
     i18n_config = ConfigRoot{Config::Object({
-        {"language", Config::Enum(Language::German, Language::German, Language::English)},
+        {"language", Config::Enum(Language::German)},
         {"detect_browser_language", Config::Bool(true)}
     })};
 }

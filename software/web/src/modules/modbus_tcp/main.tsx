@@ -28,6 +28,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { EVSE_SLOT_MODBUS_TCP } from "../evse_common/api";
+import { RegisterTable } from "./register_table.enum";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { NavbarItem } from "../../ts/components/navbar_item";
 
@@ -105,9 +106,9 @@ export class ModbusTcp extends ConfigComponent<'modbus_tcp/config', {}, config> 
                     </FormRow>
                     <FormRow label={__("modbus_tcp.content.table")}>
                         <InputSelect items={[
-                            ["0", __("modbus_tcp.content.tf")],
-                            ["1", __("modbus_tcp.content.bender_emulate")],
-                            ["2", __("modbus_tcp.content.keba_emulate")],
+                            [RegisterTable.WARP.toString(), __("modbus_tcp.content.warp")],
+                            [RegisterTable.Bender.toString(), __("modbus_tcp.content.bender_emulate")],
+                            [RegisterTable.KEBA.toString(), __("modbus_tcp.content.keba_emulate")],
                         ]}
                         value={this.state.table}
                         onValue={(v) => {

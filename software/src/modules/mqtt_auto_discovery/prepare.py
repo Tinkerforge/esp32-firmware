@@ -8,9 +8,9 @@ tfutil.create_parent_module(__file__, 'software')
 from software import util
 
 class DiscoveryType(Enum):
-    STATE_ONLY = "STATE_ONLY"
-    STATE_AND_UPDATE = "STATE_AND_UPDATE"
-    COMMAND_ONLY = "COMMAND_ONLY"
+    STATE_ONLY = "StateOnly"
+    STATE_AND_UPDATE = "StateAndUpdate"
+    COMMAND_ONLY = "CommandOnly"
 
 class Component(Enum):
     BINARY_SENSOR = "binary_sensor"

@@ -132,9 +132,9 @@ void Http::pre_setup()
     automation.register_trigger(
         AutomationTriggerID::HTTP,
         Config::Object({
-            {"method", Config::Uint((uint8_t)HttpTriggerMethod::GET_POST_PUT,
-                                    (uint8_t)HttpTriggerMethod::GET,
-                                    (uint8_t)HttpTriggerMethod::GET_POST_PUT)},
+            {"method", Config::Enum(HttpTriggerMethod::GET_POST_PUT,
+                                    HttpTriggerMethod::GET,
+                                    HttpTriggerMethod::GET_POST_PUT)},
             {"url_suffix", Config::Str("", 0, 32)},
             {"payload", Config::Str("", 0, 32)}
         })

@@ -2,6 +2,6 @@
 
 #include "mqtt_discovery_topics.h"
 
-const struct DiscoveryTopicInfo mqtt_discovery_topic_infos[TOPIC_COUNT] = {
+const struct MqttDiscoveryTopicInfo mqtt_discovery_topic_infos[MQTT_DISCOVERY_TOPIC_COUNT] = {
 {{{topics}}}
 };

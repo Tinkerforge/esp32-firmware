@@ -76,7 +76,7 @@ void Wifi::pre_setup()
         return "";
     }};
     state = Config::Object({
-        {"connection_state", Config::Enum(WifiState::NotConfigured, WifiState::NotConfigured, WifiState::Connected)},
+        {"connection_state", Config::Enum(WifiState::NotConfigured)},
         {"connection_start", Config::Uint(0)},
         {"connection_end", Config::Uint(0)},
         {"ap_state", Config::Int(0)},

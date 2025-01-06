@@ -1,23 +1,11 @@
 #pragma once
 
-#define TOPIC_COUNT ({{{topic_count}}})
-#define MAX_JSON_LEN ({{{max_json_len}}})
-#define MQTT_AUTO_DISCOVERY_MODE_MIN (0)
-#define MQTT_AUTO_DISCOVERY_MODE_MAX (2)
+#define MQTT_DISCOVERY_TOPIC_COUNT ({{{topic_count}}})
+#define MQTT_DISCOVERY_MAX_JSON_LENGTH ({{{max_json_len}}})
 
-enum class MqttAutoDiscoveryMode {
-    DISCOVERY_DISABLED = 0,
-    GENERIC = 1,
-    HOMEASSISTANT = 2,
-};
+#include "mqtt_discovery_type.enum.h"
 
-enum class MqttDiscoveryType {
-    STATE_ONLY,
-    STATE_AND_UPDATE,
-    COMMAND_ONLY
-};
-
-struct DiscoveryTopicInfo {
+struct MqttDiscoveryTopicInfo {
     const char * const feature;
     const char * const path;
     const char * const component;
@@ -31,4 +19,4 @@ struct DiscoveryTopicInfo {
     const MqttDiscoveryType type;
 };
 
-extern const struct DiscoveryTopicInfo mqtt_discovery_topic_infos[TOPIC_COUNT];
+extern const struct MqttDiscoveryTopicInfo mqtt_discovery_topic_infos[MQTT_DISCOVERY_TOPIC_COUNT];

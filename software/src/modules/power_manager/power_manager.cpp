@@ -93,7 +93,7 @@ void PowerManager::pre_setup()
         {"default_mode", Config::Uint(0, 0, 3)},
         {"meter_slot_grid_power", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
         {"meter_slot_battery_power", Config::Uint(METER_SLOT_BATTERY_NO_BATTERY, 0, METER_SLOT_BATTERY_NO_BATTERY)},
-        {"battery_mode", Config::Uint(0, 0, static_cast<uint32_t>(BatteryMode::BatteryModeMax))},
+        {"battery_mode", Config::Enum(BatteryMode::PreferChargers)},
         {"battery_inverted", Config::Bool(false)},
         {"battery_deadzone", Config::Uint(100, 0, 9999)}, // in watt
         {"target_power_from_grid", Config::Int32(0)}, // in watt

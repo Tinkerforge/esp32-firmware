@@ -91,7 +91,7 @@ void Mqtt::pre_setup()
     }};
 
     state = Config::Object({
-        {"connection_state", Config::Enum(MqttConnectionState::NotConfigured, MqttConnectionState::NotConfigured, MqttConnectionState::Error)},
+        {"connection_state", Config::Enum(MqttConnectionState::NotConfigured)},
         {"connection_start", Config::Uint(0)},
         {"connection_end", Config::Uint(0)},
         {"last_error", Config::Int(0)}
