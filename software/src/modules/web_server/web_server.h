@@ -53,6 +53,7 @@ public:
 
     size_t contentLength();
 
+    [[gnu::warn_unused_result]]
     int receive(char *buf, size_t buf_len);
 
     int method()
