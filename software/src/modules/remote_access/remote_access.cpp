@@ -261,30 +261,13 @@ void RemoteAccess::register_urls() {
         return request.send(200);
     });
 
-    server.on("/remote_access/config_update", HTTP_PUT, [this](WebServerRequest request) {
-        auto content_len = request.contentLength();
-        std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
-        if (req_body == nullptr) {
-            return request.send(500, "text/plain; charset=utf-8", "Low memory");
-        }
-        if (request.receive(req_body.get(), content_len) <= 0) {
-            return request.send(500, "text/plain; charset=utf-8", "Failed to read request body");
-        }
-
-        {
-            String error = registration_config.update_from_cstr(req_body.get(), content_len);
-            if (error != "") {
-                return request.send(400, "text/plain; charset=utf-8", error.c_str());
-            }
-        }
-
+    api.addCommand("remote_access/config_update", &registration_config, {"password", "email"}, [this](String &/*errmsg*/) {
         config.get("enable")->updateBool(registration_config.get("enable")->asBool());
         config.get("relay_host")->updateString(registration_config.get("relay_host")->asEphemeralCStr());
         config.get("relay_port")->updateUint(registration_config.get("relay_port")->asUint());
         config.get("cert_id")->updateInt(registration_config.get("cert_id")->asInt());
         api.writeConfig("remote_access/config", &config);
-        return request.send(200);
-    });
+    }, false);
 
     server.on("/remote_access/get_login_salt", HTTP_PUT, [this](WebServerRequest request) {
         this->management_request_allowed = false;
