@@ -177,23 +177,12 @@ interface EcoStatusState {
     charge_plan: API.getType["eco/charge_plan"];
 }
 
-export class EcoStatus extends Component<{}, EcoStatusState> {
+export class EcoChart extends Component<{charger_id: number, departure?: Departure, time?: number, amount?: number, enable?: boolean}, {}> {
     uplot_loader_ref  = createRef();
     uplot_wrapper_ref = createRef();
-    timeout: number   = undefined;
 
     constructor() {
         super();
-
-        util.addApiEventListener('eco/state', () => {
-            this.setState({state: API.get('eco/state')})
-        });
-
-        util.addApiEventListener('eco/charge_plan', () => {
-            if(this.state.charge_plan === undefined) {
-                this.setState({charge_plan: API.get('eco/charge_plan')})
-            }
-        });
 
         util.addApiEventListener("day_ahead_prices/prices", () => {
             // Update chart every time new price data comes in
@@ -202,16 +191,6 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
 
         // Update vertical "now" line on time change
         effect(() => this.update_uplot());
-    }
-
-    get_date_from_minutes(minutes: number) {
-        const h = Math.floor(minutes / 60);
-        const m = minutes - h * 60;
-        return new Date(0, 0, 1, h, m);
-    }
-
-    get_minutes_from_date(date: Date) {
-        return date.getMinutes() + date.getHours()*60;
     }
 
     update_uplot() {
@@ -226,26 +205,26 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
         const eco_state       = API.get("eco/state")
         const eco_charge_plan = API.get("eco/charge_plan")
 
-        console.log("eco_state.chargers.length", eco_state.chargers.length);
-        console.log("eco_state.chargers[0].start", eco_state.chargers[0].start);
-        console.log("eco_state.chargers[0].amount", eco_state.chargers[0].amount);
-        console.log("eco_state.chargers[0].chart", eco_state.chargers[0].chart);
+        // this.props.charger_id is -1 for status page charger, we always show charger 0 on status page
+        const charger_id = Math.max(0, this.props.charger_id)
+        if (eco_state.chargers.length <= charger_id ) {
+            return;
+        }
 
-        if (eco_charge_plan.enable && (eco_state.chargers.length > 0) && (eco_state.chargers[0].start > 0) && (eco_state.chargers[0].amount > 0) && (eco_state.chargers[0].chart != "")) {
-            const chart_base64 = eco_state.chargers[0].chart;
+        if (this.props.charger_id >= 0 || (((this.props.enable == undefined) || this.props.enable) && (eco_state.chargers[charger_id].start > 0) && (eco_state.chargers[charger_id].amount > 0) && (eco_state.chargers[charger_id].chart != ""))) {
+            const chart_base64 = eco_state.chargers[charger_id].chart;
             const chart_str    = atob(chart_base64);
             const chart_uint8  = Uint8Array.from(chart_str, c => c.charCodeAt(0));
             const chart_bool   = new Array(chart_uint8.length*8).fill(false).map((_, i) => (chart_uint8[Math.floor(i/8)] & (1 << (i % 8))) != 0);
-            console.log("chart_base64", chart_base64);
-            console.log("chart_str", chart_str);
-            console.log("chart_uint8", chart_uint8);
-            console.log("chart_bool", chart_bool);
             this.update_uplot_draw(date_now, chart_bool);
         } else {
+            if (this.props.departure == undefined || this.props.time == undefined || this.props.amount == undefined) {
+                return;
+            }
             const eco_chart_data = {
-                departure: this.state.charge_plan.departure,
-                time: this.state.charge_plan.time,
-                amount: this.state.charge_plan.amount,
+                departure: this.props.departure,
+                time: this.props.time,
+                amount: this.props.amount,
                 current_time: date_now / 60000 // current date in minutues
             };
 
@@ -330,13 +309,88 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
         this.uplot_wrapper_ref.current.set_data(data);
     }
 
+    render(props: {}) {
+        return <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+            <UplotLoader
+                ref={this.uplot_loader_ref}
+                show={true}
+                marker_class={'h4'}
+                no_data={__("day_ahead_prices.content.no_data")}
+                loading={__("day_ahead_prices.content.loading")}>
+                <UplotWrapper
+                    ref={this.uplot_wrapper_ref}
+                    legend_show={false}
+                    class="eco-chart"
+                    sub_page="status"
+                    color_cache_group="eco.default"
+                    show={true}
+                    on_mount={() => this.update_uplot()}
+                    legend_time_label={__("day_ahead_prices.content.time")}
+                    legend_time_with_minutes={true}
+                    aspect_ratio={4}
+                    x_height={50}
+                    x_format={{hour: '2-digit', minute: '2-digit'}}
+                    x_padding_factor={0}
+                    x_include_date={true}
+                    y_unit={"ct/kWh"}
+                    y_label={"ct/kWh"}
+                    y_digits={3}
+                    y_three_split={true}
+                    only_show_visible={true}
+                    grid_show={false}
+                    padding={[10, 10, null, 5]}
+                    height_min={100}
+                />
+            </UplotLoader>
+        </div>
+    }
+}
+
+
+export class EcoStatus extends Component<{}, EcoStatusState> {
+    timeout: number                    = undefined;
+    eco_chart_ref: RefObject<EcoChart> = createRef();
+
+    constructor() {
+        super();
+
+        util.addApiEventListener('eco/state', () => {
+            this.setState({state: API.get('eco/state')})
+        });
+
+        util.addApiEventListener('eco/charge_plan', () => {
+            if(this.state.charge_plan === undefined) {
+                this.setState({charge_plan: API.get('eco/charge_plan')})
+            }
+        });
+    }
+
+    get_date_from_minutes(minutes: number) {
+        const h = Math.floor(minutes / 60);
+        const m = minutes - h * 60;
+        return new Date(0, 0, 1, h, m);
+    }
+
+    get_minutes_from_date(date: Date) {
+        return date.getMinutes() + date.getHours()*60;
+    }
+
     update_charge_plan(charge_plan: API.getType["eco/charge_plan"]) {
         if(this.timeout !== undefined) {
             clearTimeout(this.timeout);
         }
 
-        this.timeout = setTimeout(() => API.save("eco/charge_plan", charge_plan), 1000);
-        this.update_uplot();
+        const old_enable = API.get("eco/charge_plan").enable;
+
+        if (charge_plan.enable != old_enable) {
+            API.save("eco/charge_plan", charge_plan)
+        } else {
+            this.timeout = setTimeout(() => API.save("eco/charge_plan", charge_plan), 1000);
+        }
+
+        if(!charge_plan.enable) {
+            this.eco_chart_ref.current?.update_uplot();
+        }
     }
 
     render(props: {}, state: EcoStatusState) {
@@ -394,38 +448,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                     </div>
                 </div>
                 <div class="card mt-1">
-                <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
-                    <UplotLoader
-                        ref={this.uplot_loader_ref}
-                        show={true}
-                        marker_class={'h4'}
-                        no_data={__("day_ahead_prices.content.no_data")}
-                        loading={__("day_ahead_prices.content.loading")}>
-                        <UplotWrapper
-                            ref={this.uplot_wrapper_ref}
-                            legend_show={false}
-                            class="eco-chart"
-                            sub_page="status"
-                            color_cache_group="eco.default"
-                            show={true}
-                            on_mount={() => this.update_uplot()}
-                            legend_time_label={__("day_ahead_prices.content.time")}
-                            legend_time_with_minutes={true}
-                            aspect_ratio={4}
-                            x_height={50}
-                            x_format={{hour: '2-digit', minute: '2-digit'}}
-                            x_padding_factor={0}
-                            x_include_date={true}
-                            y_unit={"ct/kWh"}
-                            y_label={"ct/kWh"}
-                            y_digits={3}
-                            y_three_split={true}
-                            only_show_visible={true}
-                            grid_show={false}
-                            padding={[10, 10, null, 5]}
-                        />
-                    </UplotLoader>
-                </div>
+                <EcoChart charger_id={-1} ref={this.eco_chart_ref} departure={this.state.charge_plan.departure} time={this.state.charge_plan.time} amount={this.state.charge_plan.amount} enable={this.state.charge_plan.enable}/>
                 </div>
                 <div class="form-group mt-2">
                     <Button
