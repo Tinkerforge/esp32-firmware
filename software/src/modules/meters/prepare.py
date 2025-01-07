@@ -195,8 +195,10 @@ with open('meter_value_id.h', 'w', encoding='utf-8') as f:
     f.write('#include <stdint.h>\n')
     f.write('#include <stddef.h>\n\n')
     f.write('enum class MeterValueID {\n')
+    f.write('    _min = 0,\n')
     f.write('    NotSupported = 0,\n')
     f.write(''.join(value_id_enum))
+    f.write(f'    _max = {last_id},\n')
     f.write('};\n\n')
     f.write('const char *getMeterValueName(MeterValueID id);\n\n')
 

@@ -37,17 +37,17 @@ void MetersModbusTCP::pre_setup()
     table_prototypes.push_back({MeterModbusTCPTableID::None, *Config::Null()});
 
     table_custom_registers_prototype = Config::Object({
-        {"rtype", Config::Uint8(static_cast<uint8_t>(ModbusRegisterType::HoldingRegister))},
+        {"rtype", Config::Enum(ModbusRegisterType::HoldingRegister)},
         {"addr", Config::Uint16(0)},
-        {"vtype", Config::Uint8(static_cast<uint8_t>(ModbusValueType::U16))},
+        {"vtype", Config::Enum(ModbusValueType::U16)},
         {"off", Config::Float(0.0f)},
         {"scale", Config::Float(1.0f)},
-        {"id", Config::Uint16(static_cast<uint8_t>(MeterValueID::NotSupported))},
+        {"id", Config::Enum(MeterValueID::NotSupported)},
     });
 
     table_prototypes.push_back({MeterModbusTCPTableID::Custom, Config::Object({
         {"device_address", Config::Uint(1, 1, 247)},
-        {"register_address_mode", Config::Uint8(static_cast<uint8_t>(ModbusRegisterAddressMode::Address))},
+        {"register_address_mode", Config::Enum(ModbusRegisterAddressMode::Address)},
         {"registers", Config::Array({},
             &table_custom_registers_prototype,
             0, METERS_MODBUS_TCP_MAX_CUSTOM_REGISTERS, Config::type_id<Config::ConfObject>()
@@ -55,70 +55,70 @@ void MetersModbusTCP::pre_setup()
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SungrowHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowHybridInverterVirtualMeter::None))},
+        {"virtual_meter", Config::Enum(SungrowHybridInverterVirtualMeter::None)},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SungrowStringInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SungrowStringInverterVirtualMeter::None))},
+        {"virtual_meter", Config::Enum(SungrowStringInverterVirtualMeter::None)},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SolarmaxMaxStorage, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SolarmaxMaxStorageVirtualMeter::None))},
+        {"virtual_meter", Config::Enum(SolarmaxMaxStorageVirtualMeter::None)},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::VictronEnergyGX, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(VictronEnergyGXVirtualMeter::None))},
+        {"virtual_meter", Config::Enum(VictronEnergyGXVirtualMeter::None)},
         {"device_address", Config::Uint(100, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::DeyeHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(DeyeHybridInverterVirtualMeter::None))},
+        {"virtual_meter", Config::Enum(DeyeHybridInverterVirtualMeter::None)},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::AlphaESSHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(AlphaESSHybridInverterVirtualMeter::None))},
+        {"virtual_meter", Config::Enum(AlphaESSHybridInverterVirtualMeter::None)},
         {"device_address", Config::Uint(85, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::ShellyProEM, Config::Object({
         {"device_address", Config::Uint(1, 1, 247)},
-        {"monophase_channel", Config::Uint8(static_cast<uint8_t>(ShellyEMMonophaseChannel::None))},
-        {"monophase_mapping", Config::Uint8(static_cast<uint8_t>(ShellyEMMonophaseMapping::None))},
+        {"monophase_channel", Config::Enum(ShellyEMMonophaseChannel::None)},
+        {"monophase_mapping", Config::Enum(ShellyEMMonophaseMapping::None)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::ShellyPro3EM, Config::Object({
         {"device_address", Config::Uint(1, 1, 247)},
-        {"device_profile", Config::Uint8(static_cast<uint8_t>(ShellyPro3EMDeviceProfile::Triphase))},
-        {"monophase_channel", Config::Uint8(static_cast<uint8_t>(ShellyEMMonophaseChannel::None))},
-        {"monophase_mapping", Config::Uint8(static_cast<uint8_t>(ShellyEMMonophaseMapping::None))},
+        {"device_profile", Config::Enum(ShellyPro3EMDeviceProfile::Triphase)},
+        {"monophase_channel", Config::Enum(ShellyEMMonophaseChannel::None)},
+        {"monophase_mapping", Config::Enum(ShellyEMMonophaseMapping::None)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::GoodweHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(GoodweHybridInverterVirtualMeter::None))},
+        {"virtual_meter", Config::Enum(GoodweHybridInverterVirtualMeter::None)},
         {"device_address", Config::Uint(247, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SolaxHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(SolaxHybridInverterVirtualMeter::None))},
+        {"virtual_meter", Config::Enum(SolaxHybridInverterVirtualMeter::None)},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::FroniusGEN24PlusHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(FroniusGEN24PlusHybridInverterVirtualMeter::None))},
+        {"virtual_meter", Config::Enum(FroniusGEN24PlusHybridInverterVirtualMeter::None)},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::HaileiHybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(HaileiHybridInverterVirtualMeter::None))},
+        {"virtual_meter", Config::Enum(HaileiHybridInverterVirtualMeter::None)},
         {"device_address", Config::Uint(85, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::FoxESSH3HybridInverter, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(FoxESSH3HybridInverterVirtualMeter::None))},
+        {"virtual_meter", Config::Enum(FoxESSH3HybridInverterVirtualMeter::None)},
         {"device_address", Config::Uint(247, 1, 247)},
     })});
 
@@ -139,7 +139,7 @@ void MetersModbusTCP::pre_setup()
 
     Config carlo_gavazzi_single_phase = Config::Object({
         {"device_address", Config::Uint(1, 1, 247)},
-        {"phase", Config::Uint8(static_cast<uint8_t>(CarloGavazziPhase::None))},
+        {"phase", Config::Enum(CarloGavazziPhase::None)},
     });
 
     table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM24DIN, carlo_gavazzi});
@@ -149,12 +149,12 @@ void MetersModbusTCP::pre_setup()
     table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM210, carlo_gavazzi});
 
     table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM270, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(CarloGavazziEM270VirtualMeter::None))},
+        {"virtual_meter", Config::Enum(CarloGavazziEM270VirtualMeter::None)},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM280, Config::Object({
-        {"virtual_meter", Config::Uint8(static_cast<uint8_t>(CarloGavazziEM280VirtualMeter::None))},
+        {"virtual_meter", Config::Enum(CarloGavazziEM280VirtualMeter::None)},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 

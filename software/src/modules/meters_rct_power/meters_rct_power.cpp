@@ -31,7 +31,7 @@ void MetersRCTPower::pre_setup()
         {"display_name",   Config::Str("", 0, 32)},
         {"host",           Config::Str("", 0, 64)},
         {"port",           Config::Uint16(8899)},
-        {"virtual_meter",  Config::Uint8(static_cast<uint8_t>(VirtualMeter::None))},
+        {"virtual_meter",  Config::Enum(VirtualMeter::None)},
     });
 
     errors_prototype = Config::Object({
