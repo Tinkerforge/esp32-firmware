@@ -171,6 +171,13 @@ class Stage3:
 
                     tries[position] = ACTION_TRY_COUNT
 
+    def reset_all_hardware(self):
+        for k, v in self.devices.items():
+            event = threading.Event()
+            self.action_stop_queue.put(((k, 0), lambda device: device.set_value(False, False), event))
+            if not event.wait(timeout=ACTION_COMPLETION_TIMEOUT):
+                fatal_error('Action did not complete in time')
+
     # internal
     def connect_warp_power(self, phases):
         assert set(phases).issubset({'L1', 'L2', 'L3'}), phases
@@ -775,6 +782,9 @@ class Stage3:
 
         if self.read_meter_qr_code() != '01':
             fatal_error('Meter in wrong step')
+
+        print("Resetting test hardware")
+        reset_all_hardware()
 
         self.evse_uptime_start = self.get_evse_uptime_function()
         self.wall_clock_start = time.time()
