@@ -9,7 +9,7 @@ import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, 'software')
 
-from software.tfpp import tfpp
+from software.web.tfpp import tfpp
 
 JS_ANALYZE = False
 
