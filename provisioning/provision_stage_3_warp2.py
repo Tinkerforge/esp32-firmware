@@ -833,7 +833,7 @@ class Stage3:
                     if voltages[i] > VOLTAGE_OFF_THRESHOLD:
                         fatal_error('Unexpected voltage on {0}'.format(phase))
 
-            verify_evse_not_crashed()
+            self.verify_evse_not_crashed()
 
         # since EVSE 2.0 firmware 2.1.14 the contactor stays off for 30 seconds
         # after state D. the previous test ends with state D, so we need to leave
@@ -849,7 +849,7 @@ class Stage3:
 
         time.sleep(30)
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 01: test phase separation
         print('Connecting power to L1 and L2')
@@ -972,7 +972,7 @@ class Stage3:
         self.connect_voltage_monitors(False)
         time.sleep(RELAY_SETTLE_DURATION)
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 01: test PE disconnect
         print('Disconnecting PE')
@@ -990,7 +990,7 @@ class Stage3:
 
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 01: mark test as passed
         self.click_meter_run_button()
@@ -1000,7 +1000,7 @@ class Stage3:
         if self.read_meter_qr_code() != '02':
             fatal_error('Meter in wrong step')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 02: test voltage L1
         print('Testing wallbox, step 02/15, test voltage L1')
@@ -1028,7 +1028,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '03':
             fatal_error('Step 02 timed out')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 03: test Z auto L1
         print('Testing wallbox, step 03/15, test Z auto L1')
@@ -1046,7 +1046,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=30) != '04':
             fatal_error('Step 03 timed out')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 04: test voltage L2
         print('Testing wallbox, step 04/15, test voltage L2')
@@ -1061,7 +1061,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '05':
             fatal_error('Step 04 timed out')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 05: test Z auto L2
         print('Testing wallbox, step 05/15, test Z auto L2')
@@ -1073,7 +1073,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=30) != '06':
             fatal_error('Step 05 timed out')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 06: test voltage L3
         print('Testing wallbox, step 06/15, test voltage L3')
@@ -1088,7 +1088,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '07':
             fatal_error('Step 06 timed out')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 07: test Z auto L3
         print('Testing wallbox, step 07/15, test Z auto L3')
@@ -1100,7 +1100,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=30) != '08':
             fatal_error('Step 07 timed out')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 08: test RCD positive
         print('Testing wallbox, step 08/15, test RCD positive')
@@ -1124,7 +1124,7 @@ class Stage3:
 
         self.reset_dc_fault('C')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 09: test RCD negative
         print('Testing wallbox, step 09/15, test RCD negative')
@@ -1144,7 +1144,7 @@ class Stage3:
 
         self.reset_dc_fault('A')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 10: test R iso L1
         print('Testing wallbox, step 10/15, test R iso L1')
@@ -1156,7 +1156,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '11':
             fatal_error('Step 10 timed out')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 11: test R iso L2
         print('Testing wallbox, step 11/15, test R iso L2')
@@ -1171,7 +1171,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '12':
             fatal_error('Step 11 timed out')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 12: test R iso L3
         print('Testing wallbox, step 12/15, test R iso L3')
@@ -1186,7 +1186,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '13':
             fatal_error('Step 12 timed out')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 13: test R iso N
         print('Testing wallbox, step 13/15, test R iso N')
@@ -1201,7 +1201,7 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '14':
             fatal_error('Step 13 timed out')
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 14: test R low front panel
         print('Testing wallbox, step 14/15, test R low front panel')
@@ -1222,7 +1222,7 @@ class Stage3:
         self.connect_front_panel(False)
         time.sleep(RELAY_SETTLE_DURATION)
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         # step 15: result
         print('Testing wallbox, step 15/15')
@@ -1232,7 +1232,7 @@ class Stage3:
 
         self.click_meter_run_button() # skip QR code
 
-        verify_evse_not_crashed()
+        self.verify_evse_not_crashed()
 
         print('Testing wallbox, done')
 
