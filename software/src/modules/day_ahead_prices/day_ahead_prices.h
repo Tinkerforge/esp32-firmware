@@ -82,7 +82,6 @@ private:
     Option<int32_t> price_maximum_today;
     Option<int32_t> price_maximum_tomorrow;
 
-    bool prices_sorted_available = false;
     uint8_t prices_sorted_count = 0;
     typedef std::pair<uint8_t, int32_t> PriceSorted;
     PriceSorted *prices_sorted = nullptr;
@@ -117,6 +116,8 @@ public:
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot prices;
+
+    bool prices_sorted_available = false;
 
 #if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;
