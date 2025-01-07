@@ -90,12 +90,13 @@ EXPECTED_DEVICE_IDENTIFIERS = {
 }
 
 class Stage3:
-    def __init__(self, is_front_panel_button_pressed_function, has_evse_error_function, get_iec_state_function, reset_dc_fault_function, switch_phases_function):
+    def __init__(self, is_front_panel_button_pressed_function, has_evse_error_function, get_iec_state_function, reset_dc_fault_function, switch_phases_function, get_evse_uptime_function):
         self.is_front_panel_button_pressed_function = is_front_panel_button_pressed_function
         self.has_evse_error_function = has_evse_error_function
         self.get_iec_state_function = get_iec_state_function
         self.reset_dc_fault_function = reset_dc_fault_function
         self.switch_phases_function = switch_phases_function
+        self.get_evse_uptime_function = lambda: get_evse_uptime_function() / 1000.0
         self.ipcon = IPConnection()
         self.inventory = Inventory(self.ipcon)
         self.devices = {} # by position path
@@ -752,16 +753,31 @@ class Stage3:
             if not self.check_iec_state(cp_pe_state):
                 fatal_error('Wallbox not in IEC state ' + cp_pe_state)
 
+    def verify_evse_not_crashed(self):
+        wall_clock_now = time.time()
+        wall_clock_elapsed = wall_clock_now - self.wall_clock_start
+
+        evse_uptime_now = self.get_evse_uptime_function()
+        evse_uptime_elapsed = evse_uptime_now - self.evse_uptime_start
+        if not wall_clock_elapsed * 0.9 < evse_uptime_elapsed < wall_clock_elapsed * 1.1:
+            fatal_error(f'EVSE uptime not elapsing as expected:\n\t',
+                        f'EVSE start {self.evse_uptime_start} now {evse_uptime_now} elapsed {evse_uptime_elapsed}\n\t'
+                        f'WALL start {self.wall_clock_start} now {wall_clock_now} elapsed {wall_clock_elapsed}')
+
     # requires power_on
     def test_wallbox(self, has_phase_switch):
         assert self.has_evse_error_function != None
         assert self.get_iec_state_function != None
         assert self.reset_dc_fault_function != None
+        assert self.get_evse_uptime_function != None
         if has_phase_switch:
             assert self.switch_phases_function != None
 
         if self.read_meter_qr_code() != '01':
             fatal_error('Meter in wrong step')
+
+        self.evse_uptime_start = self.get_evse_uptime_function()
+        self.wall_clock_start = time.time()
 
         # step 01
         print('Testing wallbox, step 01/15, test IEC states')
@@ -808,6 +824,8 @@ class Stage3:
                     if voltages[i] > VOLTAGE_OFF_THRESHOLD:
                         fatal_error('Unexpected voltage on {0}'.format(phase))
 
+            verify_evse_not_crashed()
+
         # since EVSE 2.0 firmware 2.1.14 the contactor stays off for 30 seconds
         # after state D. the previous test ends with state D, so we need to leave
         # state D and then wait here for at least 30 seconds
@@ -821,6 +839,8 @@ class Stage3:
         print('Waiting for 30 second state D deadtime')
 
         time.sleep(30)
+
+        verify_evse_not_crashed()
 
         # step 01: test phase separation
         print('Connecting power to L1 and L2')
@@ -943,6 +963,8 @@ class Stage3:
         self.connect_voltage_monitors(False)
         time.sleep(RELAY_SETTLE_DURATION)
 
+        verify_evse_not_crashed()
+
         # step 01: test PE disconnect
         print('Disconnecting PE')
 
@@ -959,6 +981,8 @@ class Stage3:
 
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
+        verify_evse_not_crashed()
+
         # step 01: mark test as passed
         self.click_meter_run_button()
         self.click_meter_run_button()
@@ -966,6 +990,8 @@ class Stage3:
 
         if self.read_meter_qr_code() != '02':
             fatal_error('Meter in wrong step')
+
+        verify_evse_not_crashed()
 
         # step 02: test voltage L1
         print('Testing wallbox, step 02/15, test voltage L1')
@@ -993,6 +1019,8 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '03':
             fatal_error('Step 02 timeouted')
 
+        verify_evse_not_crashed()
+
         # step 03: test Z auto L1
         print('Testing wallbox, step 03/15, test Z auto L1')
 
@@ -1009,6 +1037,8 @@ class Stage3:
         if self.read_meter_qr_code(timeout=30) != '04':
             fatal_error('Step 03 timeouted')
 
+        verify_evse_not_crashed()
+
         # step 04: test voltage L2
         print('Testing wallbox, step 04/15, test voltage L2')
 
@@ -1022,6 +1052,8 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '05':
             fatal_error('Step 04 timeouted')
 
+        verify_evse_not_crashed()
+
         # step 05: test Z auto L2
         print('Testing wallbox, step 05/15, test Z auto L2')
 
@@ -1031,6 +1063,8 @@ class Stage3:
 
         if self.read_meter_qr_code(timeout=30) != '06':
             fatal_error('Step 05 timeouted')
+
+        verify_evse_not_crashed()
 
         # step 06: test voltage L3
         print('Testing wallbox, step 06/15, test voltage L3')
@@ -1045,6 +1079,8 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '07':
             fatal_error('Step 06 timeouted')
 
+        verify_evse_not_crashed()
+
         # step 07: test Z auto L3
         print('Testing wallbox, step 07/15, test Z auto L3')
 
@@ -1054,6 +1090,8 @@ class Stage3:
 
         if self.read_meter_qr_code(timeout=30) != '08':
             fatal_error('Step 07 timeouted')
+
+        verify_evse_not_crashed()
 
         # step 08: test RCD positive
         print('Testing wallbox, step 08/15, test RCD positive')
@@ -1077,6 +1115,8 @@ class Stage3:
 
         self.reset_dc_fault('C')
 
+        verify_evse_not_crashed()
+
         # step 09: test RCD negative
         print('Testing wallbox, step 09/15, test RCD negative')
 
@@ -1095,6 +1135,8 @@ class Stage3:
 
         self.reset_dc_fault('A')
 
+        verify_evse_not_crashed()
+
         # step 10: test R iso L1
         print('Testing wallbox, step 10/15, test R iso L1')
 
@@ -1104,6 +1146,8 @@ class Stage3:
 
         if self.read_meter_qr_code(timeout=15) != '11':
             fatal_error('Step 10 timeouted')
+
+        verify_evse_not_crashed()
 
         # step 11: test R iso L2
         print('Testing wallbox, step 11/15, test R iso L2')
@@ -1118,6 +1162,8 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '12':
             fatal_error('Step 11 timeouted')
 
+        verify_evse_not_crashed()
+
         # step 12: test R iso L3
         print('Testing wallbox, step 12/15, test R iso L3')
 
@@ -1131,6 +1177,8 @@ class Stage3:
         if self.read_meter_qr_code(timeout=15) != '13':
             fatal_error('Step 12 timeouted')
 
+        verify_evse_not_crashed()
+
         # step 13: test R iso N
         print('Testing wallbox, step 13/15, test R iso N')
 
@@ -1143,6 +1191,8 @@ class Stage3:
 
         if self.read_meter_qr_code(timeout=15) != '14':
             fatal_error('Step 13 timeouted')
+
+        verify_evse_not_crashed()
 
         # step 14: test R low front panel
         print('Testing wallbox, step 14/15, test R low front panel')
@@ -1163,6 +1213,8 @@ class Stage3:
         self.connect_front_panel(False)
         time.sleep(RELAY_SETTLE_DURATION)
 
+        verify_evse_not_crashed()
+
         # step 15: result
         print('Testing wallbox, step 15/15')
 
@@ -1171,6 +1223,8 @@ class Stage3:
 
         self.click_meter_run_button() # skip QR code
 
+        verify_evse_not_crashed()
+
         print('Testing wallbox, done')
 
 def main():
@@ -1178,7 +1232,8 @@ def main():
                     has_evse_error_function=lambda: False,
                     get_iec_state_function=lambda: 'A',
                     reset_dc_fault_function=lambda: None,
-                    switch_phases_function=lambda x: None)
+                    switch_phases_function=lambda x: None,
+                    get_evse_uptime_function=lambda x: None)
 
     stage3.setup()
 
