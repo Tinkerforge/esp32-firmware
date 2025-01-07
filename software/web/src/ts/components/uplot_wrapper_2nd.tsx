@@ -83,6 +83,7 @@ interface UplotWrapperProps {
     padding?: uPlot.Padding;
     only_show_visible?: boolean;
     grid_show?: boolean;
+    height_min?: number;
 }
 
 export class UplotWrapper extends Component<UplotWrapperProps, {}> {
@@ -568,9 +569,10 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             aspect_ratio = this.props.aspect_ratio;
         }
 
+        const height_min = this.props.height_min ? this.props.height_min : 0;
         return {
             width: div.clientWidth,
-            height: Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio),
+            height: Math.max(height_min, Math.floor((div.clientWidth + (window.innerWidth - document.documentElement.clientWidth)) / aspect_ratio)),
         }
     }
 
