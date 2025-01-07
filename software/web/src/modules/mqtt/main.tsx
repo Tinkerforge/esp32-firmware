@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "module_available.inc"
+
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { h, Fragment, Component, RefObject } from "preact";
@@ -33,6 +35,9 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { SubPage } from "../../ts/components/sub_page";
 import { Collapse } from "react-bootstrap";
 import { NavbarItem } from "../../ts/components/navbar_item";
+//#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE
+import { MqttAutoDiscoveryMode } from "../mqtt_auto_discovery/mqtt_auto_discovery_mode.enum";
+//#endif
 import { StatusSection } from "../../ts/components/status_section";
 import { Rss } from "react-feather";
 
@@ -227,28 +232,28 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                                      onValue={this.set("interval")}/>
                     </FormRow>
 
-                    {API.hasModule('mqtt_auto_discovery') ? <>
-                        <FormRow label={__("mqtt.content.auto_discovery_mode")} label_muted={__("mqtt.content.auto_discovery_mode_muted")}>
-                            <InputSelect
-                                items={[
-                                    ["0", __("mqtt.content.auto_discovery_mode_disabled")],
-                                    ["1", __("mqtt.content.auto_discovery_mode_generic")],
-                                    ["2", __("mqtt.content.auto_discovery_mode_homeassistant")],
-                                ]}
-                                value={state.auto_discovery_config.auto_discovery_mode}
-                                onValue={(v) => {this.setState({auto_discovery_config: {...this.state.auto_discovery_config, auto_discovery_mode: parseInt(v)}})}}/>
-                        </FormRow>
+{/*#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE*/}
+                    <FormRow label={__("mqtt.content.auto_discovery_mode")} label_muted={__("mqtt.content.auto_discovery_mode_muted")}>
+                        <InputSelect
+                            items={[
+                                [MqttAutoDiscoveryMode.Disabled.toString(), __("mqtt.content.auto_discovery_mode_disabled")],
+                                [MqttAutoDiscoveryMode.Generic.toString(), __("mqtt.content.auto_discovery_mode_generic")],
+                                [MqttAutoDiscoveryMode.HomeAssistant.toString(), __("mqtt.content.auto_discovery_mode_homeassistant")],
+                            ]}
+                            value={state.auto_discovery_config.auto_discovery_mode}
+                            onValue={(v) => {this.setState({auto_discovery_config: {...this.state.auto_discovery_config, auto_discovery_mode: parseInt(v)}})}}/>
+                    </FormRow>
 
-                        <FormRow label={__("mqtt.content.auto_discovery_prefix")}>
-                            <InputText required
-                                    maxLength={64}
-                                    pattern="^[^#+$][^#+]*"
-                                    value={state.auto_discovery_config.auto_discovery_prefix}
-                                    onValue={(v) => this.setState({auto_discovery_config: {...this.state.auto_discovery_config, auto_discovery_prefix: v}})}
-                                    invalidFeedback={__("mqtt.content.auto_discovery_prefix_invalid")}
-                                    />
-                        </FormRow>
-                    </> : null}
+                    <FormRow label={__("mqtt.content.auto_discovery_prefix")}>
+                        <InputText required
+                                maxLength={64}
+                                pattern="^[^#+$][^#+]*"
+                                value={state.auto_discovery_config.auto_discovery_prefix}
+                                onValue={(v) => this.setState({auto_discovery_config: {...this.state.auto_discovery_config, auto_discovery_prefix: v}})}
+                                invalidFeedback={__("mqtt.content.auto_discovery_prefix_invalid")}
+                                />
+                    </FormRow>
+{/*#endif*/}
                 </ConfigForm>
             </SubPage>
         );
