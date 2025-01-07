@@ -31,7 +31,7 @@ void MetersEVSEV2::pre_setup()
     });
 
     state_prototype = Config::Object({
-        {"type",  Config::Uint(0)}  // 0 - not available, 1 - sdm72, 2 - sdm630, 3 - sdm72v2, ... see meter.h
+        {"type", Config::Uint(0)} // 0 - not available, 1 - sdm72, 2 - sdm630, 3 - sdm72v2, ... see meter.h
     });
 
     errors_prototype = Config::Object({

@@ -191,7 +191,6 @@ void Meters::pre_setup()
     generators.reserve(METER_CLASS_ID_COUNT);
     register_meter_generator(MeterClassID::None, &meter_generator_none);
 
-
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_action(
         AutomationActionID::MeterReset,
