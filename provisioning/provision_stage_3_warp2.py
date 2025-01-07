@@ -1027,7 +1027,7 @@ class Stage3:
         self.click_meter_run_button()
 
         if self.read_meter_qr_code(timeout=15) != '03':
-            fatal_error('Step 02 timeouted')
+            fatal_error('Step 02 timed out')
 
         verify_evse_not_crashed()
 
@@ -1045,7 +1045,7 @@ class Stage3:
         self.click_meter_run_button()
 
         if self.read_meter_qr_code(timeout=30) != '04':
-            fatal_error('Step 03 timeouted')
+            fatal_error('Step 03 timed out')
 
         verify_evse_not_crashed()
 
@@ -1060,7 +1060,7 @@ class Stage3:
         print('Test autostarts')
 
         if self.read_meter_qr_code(timeout=15) != '05':
-            fatal_error('Step 04 timeouted')
+            fatal_error('Step 04 timed out')
 
         verify_evse_not_crashed()
 
@@ -1072,7 +1072,7 @@ class Stage3:
         print('Test autostarts')
 
         if self.read_meter_qr_code(timeout=30) != '06':
-            fatal_error('Step 05 timeouted')
+            fatal_error('Step 05 timed out')
 
         verify_evse_not_crashed()
 
@@ -1087,7 +1087,7 @@ class Stage3:
         print('Test autostarts')
 
         if self.read_meter_qr_code(timeout=15) != '07':
-            fatal_error('Step 06 timeouted')
+            fatal_error('Step 06 timed out')
 
         verify_evse_not_crashed()
 
@@ -1099,7 +1099,7 @@ class Stage3:
         print('Test autostarts')
 
         if self.read_meter_qr_code(timeout=30) != '08':
-            fatal_error('Step 07 timeouted')
+            fatal_error('Step 07 timed out')
 
         verify_evse_not_crashed()
 
@@ -1121,7 +1121,7 @@ class Stage3:
         print('Starting test')
 
         if self.read_meter_qr_code(timeout=30) != '09':
-            fatal_error('Step 08 timeouted')
+            fatal_error('Step 08 timed out')
 
         self.reset_dc_fault('C')
 
@@ -1141,7 +1141,7 @@ class Stage3:
         self.click_meter_run_button()
 
         if self.read_meter_qr_code(timeout=30) != '10':
-            fatal_error('Step 09 timeouted')
+            fatal_error('Step 09 timed out')
 
         self.reset_dc_fault('A')
 
@@ -1155,7 +1155,7 @@ class Stage3:
         print('Test autostarts')
 
         if self.read_meter_qr_code(timeout=15) != '11':
-            fatal_error('Step 10 timeouted')
+            fatal_error('Step 10 timed out')
 
         verify_evse_not_crashed()
 
@@ -1170,7 +1170,7 @@ class Stage3:
         print('Test autostarts')
 
         if self.read_meter_qr_code(timeout=15) != '12':
-            fatal_error('Step 11 timeouted')
+            fatal_error('Step 11 timed out')
 
         verify_evse_not_crashed()
 
@@ -1185,7 +1185,7 @@ class Stage3:
         print('Test autostarts')
 
         if self.read_meter_qr_code(timeout=15) != '13':
-            fatal_error('Step 12 timeouted')
+            fatal_error('Step 12 timed out')
 
         verify_evse_not_crashed()
 
@@ -1200,7 +1200,7 @@ class Stage3:
         print('Test autostarts')
 
         if self.read_meter_qr_code(timeout=15) != '14':
-            fatal_error('Step 13 timeouted')
+            fatal_error('Step 13 timed out')
 
         verify_evse_not_crashed()
 
@@ -1216,7 +1216,7 @@ class Stage3:
         print('Test autostarts')
 
         if self.read_meter_qr_code(timeout=15) != '15':
-            fatal_error('Step 14 timeouted')
+            fatal_error('Step 14 timed out')
 
         print('Connecting front panel')
 
