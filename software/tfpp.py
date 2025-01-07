@@ -140,7 +140,12 @@ def parse_file(input_path, defines, ifs_elses):
                     if isinstance(if_else, Else):
                         raise Exception(f'Duplicate #else directive at {input_path}:{i + 1}: {line_rstripped}')
 
-                    ifs_elses.append(Else(1 - if_else.value, f'{input_path}:{i + 1}'))
+                    value = if_else.value
+
+                    if value != None:
+                        value = 1 - value
+
+                    ifs_elses.append(Else(value, f'{input_path}:{i + 1}'))
                 elif verb == 'endif':
                     if len(arguments) > 0:
                         raise Exception(f'Unexpected arguments in #endif directive at {input_path}:{i + 1}: {line_rstripped}')
