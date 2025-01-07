@@ -24,17 +24,24 @@ class Else:
 def any_zero(ifs_elses):
     return any([if_else.value == 0 for if_else in ifs_elses])
 
+def remove_end(line, end):
+    if len(end) > 0 and line.endswith(end):
+        line = line[:-len(end)]
+
+    return line
+
 def parse_file(input_path, defines, ifs_elses):
     output_lines = []
 
     with input_path.open(encoding='utf-8') as input_file:
         for i, line in enumerate(input_file.readlines()):
-            m = re.match(r'^[/\s]*//\s*#\s*(.*)$', line.strip())
+            line_rstripped = line.rstrip()
+            m = re.match(r'^(?:[/\s]*//|\s*\{\s*/\*)\s*#\s*(.*?)(\s*(?:|\*/\s*\}))$', line_rstripped)
 
             if m != None:
-                line_rstripped = line.rstrip("\r\n")
                 directive = m.group(1)
-                m = re.match(r'^(include |define |undef |ifdef |if |else|endif)\s*(.*)$', directive)
+                end = m.group(2)
+                m = re.match(r'^(include\s|define\s|undef\s|ifdef\s|if\s|else|endif)\s*(.*?)\s*$', directive)
 
                 if m == None:
                     raise Exception(f'Malformed directive at {input_path}:{i + 1}: {line_rstripped}')
@@ -83,7 +90,7 @@ def parse_file(input_path, defines, ifs_elses):
                         if define == None:
                             raise Exception(f'Symbol {symbol} in #undef directive at {input_path}:{i + 1} is not defined: {line_rstripped}')
 
-                        line = line.rstrip() + f' [defined at {define.location}]\n'
+                        line = remove_end(line_rstripped, end) + f' [defined at {define.location}]{end}\n'
                         defines.pop(symbol)
                 elif verb == 'ifdef':
                     m = re.match(r'^([A-Za-z_-][A-Za-z0-9_-]*)$', arguments)
@@ -99,10 +106,10 @@ def parse_file(input_path, defines, ifs_elses):
 
                         if define != None:
                             value = 1
-                            line = line.rstrip() + f' [defined as {define.value} at {define.location}]\n'
+                            line = remove_end(line_rstripped, end) + f' [defined as {define.value} at {define.location}]{end}\n'
                         else:
                             value = 0
-                            line = line.rstrip() + f' [not defined]\n'
+                            line = remove_end(line_rstripped, end) + f' [not defined]{end}\n'
 
                     ifs_elses.append(If(value, f'{input_path}:{i + 1}'))
                 elif verb == 'if':
@@ -125,7 +132,7 @@ def parse_file(input_path, defines, ifs_elses):
                                 raise Exception(f'Symbol {symbol} in #if directive at {input_path}:{i + 1} is not defined: {line_rstripped}')
 
                             value = define.value
-                            line = line.rstrip() + f' [defined as {value} at {define.location}]\n'
+                            line = remove_end(line_rstripped, end) + f' [defined as {value} at {define.location}]{end}\n'
 
                     ifs_elses.append(If(value, f'{input_path}:{i + 1}'))
                 elif verb == 'else':
@@ -155,8 +162,12 @@ def parse_file(input_path, defines, ifs_elses):
 
                     ifs_elses.pop()
 
-            if any_zero(ifs_elses) and not line.lstrip().startswith('//'):
-                line = '//' + line
+            for if_else in ifs_elses:
+                if if_else.value == 0:
+                    if if_else.location != f'{input_path}:{i + 1}':
+                        line = '\n'
+
+                    break
 
             output_lines.append(line)
 
