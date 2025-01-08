@@ -398,6 +398,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             return <StatusSection name="eco" />
         }
 
+        // TODO: This function needs to go into translation_*.tsx
         let charge_plan_text = () => {
             let day = "bis Heute um";
             if (state.charge_plan.departure === 1) {
@@ -407,8 +408,30 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             }
 
             const active = state.charge_plan.enable ? "aktiv" : "nicht aktiv";
-            const time = this.get_date_from_minutes(state.charge_plan.time).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-            return `Aktueller Ladeplan: Nutze die günstigsten ${state.charge_plan.amount} Stunden ${day} ${time} Uhr. Der Ladeplan ist ${active}.`;
+            const time   = this.get_date_from_minutes(state.charge_plan.time).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+            const plan   = `Aktueller Ladeplan: Nutze die günstigsten ${state.charge_plan.amount} Stunden ${day} ${time} Uhr. Der Ladeplan ist ${active}.`;
+            if (!state.charge_plan.enable || state.state.chargers.length == 0) {
+                return plan;
+            }
+
+            const start  = state.state.chargers[0].start*60*1000;
+            const amount = state.state.chargers[0].amount;
+
+            if (start == 0) {
+                const status = `Status: Kein Auto angeschlossen.`;
+                return <div>{plan}<br/>{status}</div>;
+            }
+
+            const today     = new Date().setHours(0, 0, 0, 0);
+            const start_day = new Date(start).setHours(0, 0, 0, 0);
+
+            const begin = today == start_day ?
+                `Ladebeginn: Heute, ${new Date(start).toLocaleString([], {hour: '2-digit', minute: '2-digit'})}` :
+                `Ladebeginn: ${new Date(start).toLocaleString([], {weekday: 'long', hour: '2-digit', minute: '2-digit'})}`;
+            const charging_done = `Ladedauer bisher: ${amount} Minuten.`;
+            const charging_todo = `Ladedauer ausstehend: ${state.charge_plan.amount*60 - amount} Minuten.`;
+
+            return <div>{plan}<br/>{begin}<br/>{charging_done}<br/>{charging_todo}</div>;
         };
 
         return <StatusSection name="eco">
