@@ -387,7 +387,7 @@ def main():
     ipcon = IPConnection()
     ipcon.connect("localhost", 4223)
 
-    iqr = BrickletIndustrialQuadRelayV2("23th", ipcon)
+    iqr = BrickletIndustrialQuadRelayV2("2bkV", ipcon)
     iqr.set_response_expected_all(True)
 
     iqr.set_value([True, True, True, True])
