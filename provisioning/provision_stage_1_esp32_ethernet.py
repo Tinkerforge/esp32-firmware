@@ -22,6 +22,7 @@ import threading
 import time
 import traceback
 import urllib.request
+from pathlib import Path
 
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 
@@ -31,6 +32,10 @@ ESP_ETHERNET_DEVICE_ID = 115
 
 def main():
     common_init('/dev/ttyUSB0')
+
+    config = json.loads(Path("provision_stage_1_esp32_ethernet_config.json").read_text())
+    esp_ethernet_static_ip = config["esp_ethernet_static_ip"]
+    esp_ethernet_static_subnet = config["esp_ethernet_static_subnet"]
 
     if len(sys.argv) < 2:
         fatal_error("Usage: {} firmware_type".format(sys.argv[0]))
@@ -79,9 +84,9 @@ def main():
         with wifi(ssid, passphrase):
             req = urllib.request.Request("http://10.0.0.1/ethernet/config_update",
                                         data=json.dumps({"enable_ethernet":True,
-                                                        "ip": "192.168.123.123",
+                                                        "ip": esp_ethernet_static_ip,
                                                         "gateway":"0.0.0.0",
-                                                        "subnet":"255.255.0.0",
+                                                        "subnet":esp_ethernet_static_subnet,
                                                         "dns":"0.0.0.0",
                                                         "dns2":"0.0.0.0"}).encode("utf-8"),
                                         method='PUT',
@@ -102,10 +107,10 @@ def main():
             result["wifi_test_successful"] = True
 
         time.sleep(3)
-        print("Connecting via ethernet to 192.168.123.123", end="")
+        print(f"Connecting via ethernet to {esp_ethernet_static_ip}", end="")
         for i in range(30):
             start = time.time()
-            req = urllib.request.Request("http://192.168.123.123/ethernet/config_update",
+            req = urllib.request.Request(f"http://{esp_ethernet_static_ip}/ethernet/config_update",
                                     data=json.dumps({"enable_ethernet":True,
                                                     "ip":"0.0.0.0",
                                                     "gateway":"0.0.0.0",
@@ -128,7 +133,7 @@ def main():
             raise Exception("exit 1")
         print(" Connected.")
 
-        req = urllib.request.Request("http://192.168.123.123/info/version")
+        req = urllib.request.Request(f"http://{esp_ethernet_static_ip}/info/version")
         try:
             with urllib.request.urlopen(req, timeout=10) as f:
                 fw_version = json.loads(f.read().decode("utf-8"))["firmware"].split("-")[0].split("+")[0]
@@ -137,7 +142,7 @@ def main():
 
         if firmware_type in ["warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker"]:
             try:
-                with urllib.request.urlopen("http://192.168.123.123/hidden_proxy/enable", timeout=10) as f:
+                with urllib.request.urlopen(f"http://{esp_ethernet_static_ip}/hidden_proxy/enable", timeout=10) as f:
                     f.read()
             except Exception as e:
                 print(e)
@@ -145,7 +150,7 @@ def main():
 
         time.sleep(3)
         ipcon = IPConnection()
-        ipcon.connect("192.168.123.123", 4223)
+        ipcon.connect(esp_ethernet_static_ip, 4223)
         result["ethernet_test_successful"] = True
         print("Connected. Testing bricklet ports")
 

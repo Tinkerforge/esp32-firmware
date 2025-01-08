@@ -6,6 +6,7 @@ provisioning/staging-password.txt
 provisioning/printer_host_bag.txt
 provisioning/esptool
 provisioning/cp210x-cfg
+provisioning/provision_stage_1_esp32_ethernet_config.json
 .vscode/
 software/src/modules/valovo*
 software/src/modules/modbus_reader/tinkerforge
