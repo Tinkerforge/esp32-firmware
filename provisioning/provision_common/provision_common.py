@@ -58,10 +58,10 @@ def run(args):
     return subprocess.check_output(args, env=dict(os.environ, LC_ALL="en_US.UTF-8", LANG="C", LANGUAGE="en")).decode("utf-8").split("\n")
 
 def esptool(args, override_port=None):
-    return run(["python3", "./esptool/esptool.py", "--port", PORT if override_port is None else override_port, *args])
+    return run(["./venv/bin/esptool.py", "--port", PORT if override_port is None else override_port, *args])
 
 def espefuse(args, override_port=None):
-    return run(["python3", "./esptool/espefuse.py", "--port", PORT if override_port is None else override_port, *args])
+    return run(["./venv/bin/espefuse.py", "--port", PORT if override_port is None else override_port, *args])
 
 colors = {"off":"\x1b[00m",
           "blue":   "\x1b[34m",
