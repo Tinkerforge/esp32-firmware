@@ -527,8 +527,12 @@ static float get_scale_factor(int32_t sunssf)
 
 }
 
-static inline uint32_t convert_me_uint32(const uint32_t *me32)
+static inline uint32_t convert_me_uint32(const uint32_t *me32, bool is_already_le32 = false)
 {
+    if (is_already_le32) {
+        return *me32;
+    }
+
     union {
         uint32_t u32;
         uint16_t u16[2];
@@ -557,14 +561,14 @@ static inline uint64_t convert_me_uint64(const uint64_t *me64)
     return uni.u64;
 }
 
-static inline float convert_me_float(const uint32_t *me32)
+static inline float convert_me_float(const uint32_t *me32, bool is_already_le32)
 {
     union {
         float result;
         uint32_t u32;
     } uni;
 
-    uni.u32 = convert_me_uint32(me32);
+    uni.u32 = convert_me_uint32(me32, is_already_le32);
     return uni.result;
 }
 """)
@@ -631,7 +635,7 @@ for model in models:
         elif field_type == "uint64":
             print_cpp(f"    uint64_t val = convert_me_uint64(&model->{name});")
         elif field_type == "float32":
-            print_cpp(f"    float val = convert_me_float(&model->{name});")
+            print_cpp(f"    float val = convert_me_float(&model->{name}, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);")
         else:
             print(f"Unhandled field_type {field_type} for field {name}", file=sys.stderr)
 

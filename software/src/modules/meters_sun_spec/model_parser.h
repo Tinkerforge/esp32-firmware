@@ -36,6 +36,7 @@
 #define SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY    (1u << 2)
 #define SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED               (1u << 3)
 #define SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY (1u << 4)
+#define SUN_SPEC_QUIRKS_FLOAT_IS_LE32                          (1u << 5)
 
 class MetersSunSpecParser
 {
