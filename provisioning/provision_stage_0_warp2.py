@@ -107,9 +107,9 @@ def main():
         # product name and will be capitalized and joined by a space to form the display name.
         # special care if given to "esp32" which is shown in uppercase
         if firmware_type == "esp32":
-            run(['./cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Brick', '-S', 'Tinkerforge_ESP32_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
+            run(['/home/pi/tf/esp32-firmware/provisioning/cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Brick', '-S', 'Tinkerforge_ESP32_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
         else:
-            run(['./cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Ethernet Brick', '-S', 'Tinkerforge_ESP32_Ethernet_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
+            run(['/home/pi/tf/esp32-firmware/provisioning/cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Ethernet Brick', '-S', 'Tinkerforge_ESP32_Ethernet_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
 
         result["cp2102n_configured"] = True
 
