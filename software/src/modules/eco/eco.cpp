@@ -69,7 +69,7 @@ void Eco::pre_setup()
 
     state_chargers_prototype = Config::Object({
         {"start", Config::Uint(0)}, // Start of charge (minutes since epoch)
-        {"amount", Config::Uint(0)}, // Amount of charge since start (h or kWh depending on configuration)
+        {"amount", Config::Uint(0)}, // Amount of charge since start (currently in minutes)
         {"chart", Config::Str("", 0, 33)} // Base64 encoded chart data
     });
 
