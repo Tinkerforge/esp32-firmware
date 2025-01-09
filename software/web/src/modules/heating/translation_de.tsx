@@ -68,7 +68,7 @@ let x = {
                 <p style="color:red;">Für diese Konfiguration müssen die <a href="#day_ahead_prices" onClick={() => {window.scrollTo(0, 0); return true;}}>dynamischen Strompreise</a> aktiviert werden.</p>
             </>,
             "meter_needs_activation": <>
-                <p style="color:red;">Für diese Konfiguration mus ein Stromzähler ausgewählt werden.</p>
+                <p style="color:red;">Für diese Konfiguration muss ein Stromzähler ausgewählt werden.</p>
             </>,
             "hours": /*SFN*/(h: number) => "" + h + " Stunden"/*NF*/,
             "update_now": "Jetzt aktualisieren",
