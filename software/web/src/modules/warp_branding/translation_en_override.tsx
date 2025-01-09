@@ -52,7 +52,7 @@ let x = {
     },
     "power_manager": {
         "content": {
-            "cm_requirements_warning": "To use the PV excess charging, charge management must be enabled and set to “Charge manager / PV excess charging” and the charger should only manage itself."
+            "cm_requirements_warning": "To use the PV excess charging, the charge management mode (see sub page “Chargers”) must be set to “Charge manager / PV excess charging”."
         }
     },
     "remote_access": {
