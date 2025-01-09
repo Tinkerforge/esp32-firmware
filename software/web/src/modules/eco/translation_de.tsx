@@ -21,7 +21,7 @@ let x = {
                 <p>Mit Hilfe des Ladeplans sowie dynamischen Strompreisen und einer optionalen PV-Ertragsprognose kann die Ladung des Elektroautos optimiert werden.</p>
             </>,
             "mode_after_help": <>
-                <p>Gibt an auf welchen Modus gewelchselt werden soll, wenn der Ladeplan abgelaufen ist.</p>
+                <p>Gibt an auf welchen Modus gewechselt werden soll, wenn der Ladeplan abgelaufen ist.</p>
                 <p>Beispiel: Der Ladeplan ist konfiguriert auf 'Nutze die günstigsten <b>4 Stunden</b> bis <b>Morgen um 08:00 Uhr</b>' und der Modus nach Ablauf des Ladeplans ist auf 'PV' konfiguriert. In diesem Fall würde der Ladeplan ausgeführt und <b>ab morgen 08:00 Uhr</b> der Modus auf <b>PV gewechselt</b>. Danach ist dann (bis ein neuer Ladeplan eingestellt wird) nur noch PV-Überschussladen möglich.</p>
                 <p>Ist der Ladeplan auf 'Täglich' konfiguriert, kommt diese Einstellung nicht zum tragen.</p>
             </>,
