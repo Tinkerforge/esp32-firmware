@@ -528,19 +528,12 @@ class Stage3:
                     if EXPECTED_DEVICE_IDENTIFIERS[full_position] != bricklet_entry.device_identifier:
                         fatal_error('Wrong Bricklet at postion {0}'.format(full_position))
 
-                    if bricklet_entry.device_identifier == BrickletNFC.DEVICE_IDENTIFIER:
-                        device = BrickletNFC(bricklet_entry.uid, self.ipcon)
-                    else:
-                        device = create_device(bricklet_entry.device_identifier, bricklet_entry.uid, self.ipcon)
+                    device = create_device(bricklet_entry.device_identifier, bricklet_entry.uid, self.ipcon)
 
-                    # Don't reset the servo brick for the metrel's next button. Resetting can move the motor a bit, pressing the button.
-                    if full_position != '10A':
+                    # Don't reset the servo bricklets. Resetting can move the motor a bit.
+                    if bricklet_entry.device_identifier != BrickletServoV2.DEVICE_IDENTIFIER:
                         device.reset()
-
-                        if bricklet_entry.device_identifier == BrickletNFC.DEVICE_IDENTIFIER:
-                            device = BrickletNFC(bricklet_entry.uid, self.ipcon)
-                        else:
-                            device = create_device(bricklet_entry.device_identifier, bricklet_entry.uid, self.ipcon)
+                        device = create_device(bricklet_entry.device_identifier, bricklet_entry.uid, self.ipcon)
 
                     device.set_response_expected_all(True)
 
