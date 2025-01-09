@@ -131,7 +131,12 @@ void Eco::register_urls()
         if (request.contentLength() > 1024) {
             return request.send(413);
         }
-        request.receive(buf.get(), 1024);
+
+        auto received = request.receive(buf.get(), 1024);
+        if (received < 0) {
+            return request.send(500, "text/plain", "Failed to receive request payload");
+        }
+
         StaticJsonDocument<1024> doc;
         DeserializationError error = deserializeJson(doc, buf.get(), 1024);
         if (error) {
