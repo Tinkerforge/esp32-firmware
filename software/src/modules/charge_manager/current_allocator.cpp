@@ -233,7 +233,7 @@ bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool
 
     switch(stage) {
         case 6:
-            // Intentionally ignore the phase limit in stage 6:
+            // Intentionally ignore the PV limit in stage 6:
             // If we currently don't have the minimum current available
             // on the PV "phase" we don't want to shut down the charger immediately.
             return phases_exceeded;
