@@ -36,15 +36,8 @@ typedef bool(*compare_fn)(CompareInfo /*left*/, CompareInfo /*right*/, CurrentLi
 
 void sort_chargers_impl(group_fn group, compare_fn compare, int *idx_array, const int32_t *current_allocation, const uint8_t *phase_allocation, const ChargerState *charger_state, size_t charger_count, CurrentLimits *limits, const CurrentAllocatorConfig *cfg);
 
-GridPhase get_phase(PhaseRotation rot, ChargerPhase phase);
 
-Cost get_cost(int32_t current_to_allocate,
-              ChargerPhase phases_to_allocate,
-              PhaseRotation rot,
-              int32_t allocated_current,
-              ChargerPhase allocated_phases);
 
-bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool charge_mode_pv);
 
 #define filter_chargers(x) do { \
     matched = filter_chargers_impl([](int32_t allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *_cfg, const ChargerState *state) { \
@@ -74,3 +67,13 @@ bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool
         limits, \
         cfg); \
     } while (0)
+
+GridPhase get_phase(PhaseRotation rot, ChargerPhase phase);
+
+Cost get_cost(int32_t current_to_allocate,
+              ChargerPhase phases_to_allocate,
+              PhaseRotation rot,
+              int32_t allocated_current,
+              ChargerPhase allocated_phases);
+
+bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool charge_mode_pv);
