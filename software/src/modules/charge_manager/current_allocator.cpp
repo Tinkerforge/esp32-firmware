@@ -303,13 +303,13 @@ static void stage_1(StageContext &sc) {
             have_b1 = true;
             if (state->phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
                 // We only care about the phases that are blocked, not about how many chargers are waiting.
-                b1_on_phase.l1 = state->charge_mode_pv ? 1 : 2;
-                b1_on_phase.l2 = state->charge_mode_pv ? 1 : 2;
-                b1_on_phase.l3 = state->charge_mode_pv ? 1 : 2;
+                b1_on_phase.l1 = 1;
+                b1_on_phase.l2 = 1;
+                b1_on_phase.l3 = 1;
             } else {
                 // Not 2p safe!
                 auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-                b1_on_phase[phase] = state->charge_mode_pv ? 1 : 2;
+                b1_on_phase[phase] = 1;
             }
         }
     }
@@ -361,13 +361,7 @@ static void stage_1(StageContext &sc) {
         if (rotate && (state->phases != 3 && state->phase_rotation != PhaseRotation::Unknown)) {
             // Not 2p safe!
             auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-            // Only rotate if either this is a PV charger and there is a PV or fast charger waiting on **this** phase,
-            // or this is a fast charger and there is a fast charger waiting on **this** phase.
-            rotate &= b1_on_phase[phase] >= (state->charge_mode_pv ? 1 : 2);
-        } else {
-            // Only rotate if either this is a PV charger and there is a PV or fast charger waiting on **any** phase,
-            // or this is a fast charger and there is a fast charger waiting on **any** phase.
-            rotate &= std::max({b1_on_phase.l1, b1_on_phase.l2, b1_on_phase.l3}) >= (state->charge_mode_pv ? 1 : 2);
+            rotate &= b1_on_phase[phase] == 1;
         }
 
         bool keep_active = is_active(sc.phase_allocation[i], state) && !rotate;
