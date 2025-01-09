@@ -9,6 +9,7 @@ provisioning/cp210x-cfg
 provisioning/provision_stage_1_esp32_ethernet_config.json
 provisioning/venv
 .vscode/
+software/src/modules/iso15118*
 software/src/modules/valovo*
 software/src/modules/modbus_reader/tinkerforge
 software/valovo_*
