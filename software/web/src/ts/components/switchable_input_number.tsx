@@ -79,7 +79,6 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                 ref={input}
                 id={id}
                 type="number"
-                disabled={!props.checked || props.disabled}
                 onInput={(e) => {
                         // Chrome prints a console warning if NaN is assigned as an input's value; null works.
                         let value = parseInt((e.target as HTMLInputElement).value, 10);
@@ -90,6 +89,7 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                 inputMode="numeric"
                 {...props}
                 onClick={undefined}
+                disabled={!props.checked || props.disabled}
             />
             <div class="input-group-append">
                 {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}
