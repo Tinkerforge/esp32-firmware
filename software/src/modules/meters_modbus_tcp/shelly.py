@@ -35,6 +35,12 @@ monophase_values = [
         'value_type': 'F32LE',
     },
     {
+        'name': 'Channel 1 frequency [Hz]',
+        'value_id': 'FrequencyL1',
+        'start_address': 2016,
+        'value_type': 'F32LE',
+    },
+    {
         'name': 'Channel 1 total active energy - perpetual count [Wh]',
         'value_id': 'EnergyActiveL1ImportResettable',
         'start_address': 2310,
@@ -138,6 +144,12 @@ specs = [
                 'value_type': 'F32LE',
             },
             {
+                'name': 'Phase A frequency [Hz]',
+                'value_id': 'FrequencyL1',
+                'start_address': 1033,
+                'value_type': 'F32LE',
+            },
+            {
                 'name': 'Phase B voltage [V]',
                 'value_id': 'VoltageL2N',
                 'start_address': 1040,
@@ -168,6 +180,12 @@ specs = [
                 'value_type': 'F32LE',
             },
             {
+                'name': 'Phase B frequency [Hz]',
+                'value_id': 'FrequencyL2',
+                'start_address': 1053,
+                'value_type': 'F32LE',
+            },
+            {
                 'name': 'Phase C voltage [V]',
                 'value_id': 'VoltageL3N',
                 'start_address': 1060,
@@ -195,6 +213,12 @@ specs = [
                 'name': 'Phase C power factor',
                 'value_id': 'PowerFactorL3',
                 'start_address': 1068,
+                'value_type': 'F32LE',
+            },
+            {
+                'name': 'Phase C frequency [Hz]',
+                'value_id': 'FrequencyL3',
+                'start_address': 1073,
                 'value_type': 'F32LE',
             },
             {
