@@ -118,7 +118,7 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             onValue={this.set("park_time_duration")}
                             min={1}
                             max={48}
-                            switch_label_min_width="100px"
+                            switch_label_min_width="110px"
                         />
                     </FormRow>
                     <FormRow label="Immer laden wenn Preis unter" help={<>{!day_ahead_prices_enabled && __("eco.content.day_ahead_prices_needs_activation")} {__("eco.content.charge_below_help")}</>}>
@@ -133,7 +133,7 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             onValue={this.set("charge_below_threshold")}
                             min={-100}
                             max={5000}
-                            switch_label_min_width="100px"
+                            switch_label_min_width="110px"
                         />
                     </FormRow>
                     <FormRow label="Nie laden wenn Preis über" help={<>{!day_ahead_prices_enabled && __("eco.content.day_ahead_prices_needs_activation")} {__("eco.content.block_above_help")}</>}>
@@ -148,7 +148,7 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             onValue={this.set("block_above_threshold")}
                             min={-100}
                             max={5000}
-                            switch_label_min_width="100px"
+                            switch_label_min_width="110px"
                         />
                     </FormRow>
                     <FormRow label="Nur wenn PV-Ertragsprognose unter" help={<>{!solar_forecast_enabled && __("eco.content.solar_forecast_needs_activation")} {__("eco.content.yield_forecast_threshold_help")}</>}>
@@ -163,7 +163,7 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             onValue={this.set("yield_forecast_threshold")}
                             min={0}
                             max={1000}
-                            switch_label_min_width="100px"
+                            switch_label_min_width="110px"
                         />
                     </FormRow>
                 </ConfigForm>

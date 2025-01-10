@@ -400,7 +400,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={this.set("pv_excess_control_threshold")}
                             min={0}
                             max={100000}
-                            switch_label_min_width="100px"
+                            switch_label_min_width="110px"
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.or")} small={true} class="mb-0 mb-xs-1">
@@ -420,7 +420,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={(v) => {this.setState({extended_hours: v}, this.update_uplot)}}
                             min={0}
                             max={this.get_control_period_hours() - state.blocking_hours}
-                            switch_label_min_width="100px"
+                            switch_label_min_width="110px"
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.but_only_if")} small={true} class="mb-0 mb-xs-1">
@@ -439,7 +439,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={this.set("yield_forecast_threshold", this.update_uplot)}
                             min={0}
                             max={1000}
-                            switch_label_min_width="100px"
+                            switch_label_min_width="110px"
                         />
                     </FormRow>
                     <FormSeparator heading={__("heating.content.blocking_operation")} help={__("heating.content.blocking_operation_help")}/>
@@ -456,7 +456,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={(v) => {this.setState({blocking_hours: v}, this.update_uplot)}}
                             min={0}
                             max={this.get_control_period_hours() - state.extended_hours}
-                            switch_label_min_width="100px"
+                            switch_label_min_width="110px"
                         />
                     </FormRow>
                     <FormSeparator heading={__("heating.content.status")} help={__("heating.content.status_help")}/>
