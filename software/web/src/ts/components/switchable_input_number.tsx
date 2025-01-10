@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, JSX, Context, ComponentChildren, Fragment } from "preact";
+import { h, JSX, Context } from "preact";
 import { useId, useContext, useRef } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
@@ -26,18 +26,18 @@ import { __ } from "../translation";
 
 import * as util from "../util";
 
-export interface SwitchableInputNumberProps  extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
+interface SwitchableInputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>, "class" | "id" | "type" | "onInput"> {
     idContext?: Context<string>;
-    checked: boolean;
-    onClick: JSX.MouseEventHandler<HTMLInputElement>;
-    disabled?: boolean;
     value: number;
     onValue: (value: number) => void;
     unit?: string;
+    invalidFeedback?: string;
+    disabled?: boolean;
+    checked: boolean;
+    onClick: JSX.MouseEventHandler<HTMLInputElement>;
     switch_label_active?: string;
     switch_label_inactive?: string;
     switch_label_min_width?: string;
-    invalidFeedback?: string;
 }
 
 export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
@@ -94,13 +94,14 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
             <div class="input-group-append">
                 {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}
                 <Button variant="primary"
-                        disabled={!props.checked || props.disabled || (props.value == props.min)}
+                        disabled={!props.checked || props.value == props.min || props.disabled}
                         className="form-control px-1"
                         style="margin-right: .125rem !important;"
                         onClick={() => {
                             if (!props.checked || props.disabled) {
                                 return;
                             }
+
                             if (util.hasValue(props.value) && !isNaN(props.value)) {
                                 props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number));
                             }
@@ -113,12 +114,13 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                     <Minus/>
                 </Button>
                 <Button variant="primary"
-                        disabled={!props.checked || props.disabled || (props.value == props.max)}
+                        disabled={!props.checked || props.value == props.max || props.disabled}
                         className="form-control px-1 rounded-right"
                         onClick={() => {
                             if (!props.checked || props.disabled) {
                                 return;
                             }
+
                             if (util.hasValue(props.value) && !isNaN(props.value)) {
                                 props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));
                             }

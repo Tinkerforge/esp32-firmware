@@ -27,19 +27,19 @@ import { __ } from "../translation";
 import * as util from "../util";
 
 interface InputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
-    idContext?: Context<string>
-    value: number
-    onValue?: (value: number) => void
-    unit?: string
-    invalidFeedback?: string
-    disabled?: boolean
+    idContext?: Context<string>;
+    value: number;
+    onValue?: (value: number) => void;
+    unit?: string;
+    invalidFeedback?: string;
+    disabled?: boolean;
 }
 
 export function InputNumber(props: InputNumberProps) {
     const id = !props.idContext ? useId() : useContext(props.idContext);
 
     const input = useRef<HTMLInputElement>();
-    let value = parseInt(props.value?.toString(), 10);
+    const value = parseInt(props.value?.toString(), 10);
 
     const invalid = isNaN(value) || (props.min !== undefined && value < parseInt(props.min.toString())) || (props.max !== undefined && value > parseInt(props.max.toString()));
 
@@ -78,7 +78,7 @@ export function InputNumber(props: InputNumberProps) {
             {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}
             {props.onValue ? <>
             <Button variant="primary"
-                    disabled={(props.value == props.min) || props.disabled}
+                    disabled={props.value == props.min || props.disabled}
                     className="form-control px-1"
                     style="margin-right: .125rem !important;"
                     onClick={() => {
@@ -94,7 +94,7 @@ export function InputNumber(props: InputNumberProps) {
                 <Minus/>
             </Button>
             <Button variant="primary"
-                    disabled={(props.value == props.max) || props.disabled}
+                    disabled={props.value == props.max || props.disabled}
                     className="form-control px-1 rounded-right"
                     onClick={() => {
                         if (util.hasValue(props.value) && !isNaN(props.value)) {
