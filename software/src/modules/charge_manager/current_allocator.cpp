@@ -541,7 +541,6 @@ static void calculate_window(bool trace_short, StageContext &sc) {
 
         auto factors = get_phase_factors(alloc_phases, state->phase_rotation);
 
-        auto already_allocated = sc.current_allocation[idx_array[i]];
         auto current = get_requested_current(state, sc.cfg);
 
         auto available_current = (sc.limits->raw - wnd_max).min_phase();
