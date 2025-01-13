@@ -484,6 +484,10 @@ static void calculate_window(bool trace_short, StageContext &sc) {
 
     // Calculate minimum window
     for (int i = 0; i < matched; ++i) {
+        // Never remove current that was allocated in this iteration.
+        if (sc.current_allocation[idx_array[i]] > 0)
+            continue;
+
         const auto *state = &sc.charger_state[idx_array[i]];
         const auto alloc_phases = sc.phase_allocation[idx_array[i]];
 
@@ -516,8 +520,9 @@ static void calculate_window(bool trace_short, StageContext &sc) {
 
         auto factors = get_phase_factors(alloc_phases, state->phase_rotation);
         auto requested = factors * get_requested_current(state, sc.cfg);
+        auto already_allocated = factors * sc.current_allocation[idx_array[i]];
 
-        wnd_max += requested;
+        wnd_max += requested - already_allocated;
 
         // It is sufficient to check one phase here, wnd_max should have the same value on every phase because only three phase chargers are included yet
         if (wnd_max.l1 > current_avail_for_3p) {
@@ -541,7 +546,8 @@ static void calculate_window(bool trace_short, StageContext &sc) {
 
         auto factors = get_phase_factors(alloc_phases, state->phase_rotation);
 
-        auto current = get_requested_current(state, sc.cfg);
+        auto already_allocated = sc.current_allocation[idx_array[i]];
+        auto current = get_requested_current(state, sc.cfg) - already_allocated;
 
         auto available_current = (sc.limits->raw - wnd_max).min_phase();
         current = std::min(available_current, current);
@@ -559,8 +565,11 @@ static void calculate_window(bool trace_short, StageContext &sc) {
         if (alloc_phases == 3 || state->phase_rotation == PhaseRotation::Unknown)
             continue;
 
+        auto already_allocated = sc.current_allocation[idx_array[i]];
+        auto current = get_requested_current(state, sc.cfg) - already_allocated;
+
         const auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-        const auto current = std::min(sc.limits->raw[phase] - wnd_max[phase], get_requested_current(state, sc.cfg));
+        current = std::min(sc.limits->raw[phase] - wnd_max[phase], current);
 
         wnd_max[phase] += current;
         wnd_max.pv += current;
