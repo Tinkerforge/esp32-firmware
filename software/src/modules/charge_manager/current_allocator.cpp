@@ -441,6 +441,21 @@ static int32_t get_requested_current(const ChargerState *state, const CurrentAll
     return state->requested_current;
 }
 
+static inline Cost get_phase_factors(uint8_t allocated_phases, PhaseRotation rotation) {
+    if (allocated_phases == 3) {
+        return Cost{3, 1, 1, 1};
+    }
+    else if (rotation == PhaseRotation::Unknown) {
+        // unknown rot 1p
+        return Cost{1, 1, 1, 1};
+    }
+
+    // known rot 1p
+    Cost result {1, 0, 0, 0};
+    result[get_phase(rotation, ChargerPhase::P1)] = 1;
+    return result;
+}
+
 // Calculates the control window.
 // The window is the range of current that could be allocated between
 // throttling all chargers to their minimum current
@@ -472,39 +487,22 @@ static void calculate_window(bool trace_short, StageContext &sc) {
         const auto *state = &sc.charger_state[idx_array[i]];
         const auto alloc_phases = sc.phase_allocation[idx_array[i]];
 
-        if (alloc_phases == 3) {
-            wnd_min.pv += 3 * min_3p;
-            wnd_min.l1 += min_3p;
-            wnd_min.l2 += min_3p;
-            wnd_min.l3 += min_3p;
-        }
-        else if (state->phase_rotation == PhaseRotation::Unknown) {
-            // unknown rot 1p
-            wnd_min.pv += min_1p;
-            wnd_min.l1 += min_1p;
-            wnd_min.l2 += min_1p;
-            wnd_min.l3 += min_1p;
+        const auto factors = get_phase_factors(alloc_phases, state->phase_rotation);
 
-            wnd_min_1p.l1 += min_1p;
-            wnd_min_1p.l2 += min_1p;
-            wnd_min_1p.l3 += min_1p;
-        } else {
-            // known rot 1p
-            const auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-            wnd_min.pv += min_1p;
-            wnd_min[phase] += min_1p;
-            wnd_min_1p[phase] += min_1p;
+        if (alloc_phases == 3) {
+            wnd_min += min_3p * factors;
         }
+        else {
+            wnd_min += min_1p * factors;
+            wnd_min_1p += min_1p * factors.without_pv();
+        }
+
         if (!trace_short) trace("       %d wnd_min (%d %d %d %d)", idx_array[i], wnd_min.pv, wnd_min.l1, wnd_min.l2, wnd_min.l3);
     }
 
-    // Calculate left over current for 3p chargers after allocating the 1p minimum to 1p chargers
-    auto current_avail_for_3p = UNLIMITED;
-
-    for (size_t i = 0; i < 4; ++i) {
-        auto avail_on_phase = sc.limits->raw[i] - wnd_min_1p[i];
-        current_avail_for_3p = std::min(current_avail_for_3p, avail_on_phase);
-    }
+    // Calculate left over current for 3p chargers after allocating the 1p minimum to 1p chargers.
+    // The PV phase is not blocked by other phases when allocating current to a 3p charger, so it can be excluded here.
+    auto current_avail_for_3p = (sc.limits->raw - wnd_min_1p).min_phase();
 
     if (!trace_short) trace("       current_avail_for_3p %d", current_avail_for_3p);
 
@@ -516,24 +514,19 @@ static void calculate_window(bool trace_short, StageContext &sc) {
         if (alloc_phases != 3)
             continue;
 
-        auto requested_current = get_requested_current(state, sc.cfg);
+        auto factors = get_phase_factors(alloc_phases, state->phase_rotation);
+        auto requested = factors * get_requested_current(state, sc.cfg);
 
-        wnd_max += Cost{0,
-                        requested_current,
-                        requested_current,
-                        requested_current};
+        wnd_max += requested;
 
         // It is sufficient to check one phase here, wnd_max should have the same value on every phase because only three phase chargers are included yet
         if (wnd_max.l1 > current_avail_for_3p) {
-            wnd_max = Cost{wnd_max.l1 + (current_avail_for_3p - wnd_max.l1) * alloc_phases,
-                           current_avail_for_3p,
-                           current_avail_for_3p,
-                           current_avail_for_3p};
+            wnd_max = factors * current_avail_for_3p;
+
             if (!trace_short) trace("       %d (3p) wnd_max (%d %d %d %d).l1 == current_avail_for_3p.", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
+
             break;
         }
-
-        wnd_max.pv += requested_current * alloc_phases;
 
         if (!trace_short) trace("       %d (3p) wnd_max (%d %d %d %d)", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
     }
@@ -546,16 +539,15 @@ static void calculate_window(bool trace_short, StageContext &sc) {
         if (alloc_phases == 3 || state->phase_rotation != PhaseRotation::Unknown)
             continue;
 
-        auto current = get_requested_current(state, sc.cfg);
-        for (size_t p = 1; p < 4; ++p) {
-            auto avail_on_phase = sc.limits->raw[p] - wnd_max[p];
-            current = std::min(current, avail_on_phase);
-        }
+        auto factors = get_phase_factors(alloc_phases, state->phase_rotation);
 
-        wnd_max += Cost{current,
-                        current,
-                        current,
-                        current};
+        auto already_allocated = sc.current_allocation[idx_array[i]];
+        auto current = get_requested_current(state, sc.cfg);
+
+        auto available_current = (sc.limits->raw - wnd_max).min_phase();
+        current = std::min(available_current, current);
+
+        wnd_max += current * factors;
 
         if (!trace_short) trace("       %d (1p unknown rot) wnd_max (%d %d %d %d)", idx_array[i], wnd_max.pv, wnd_max.l1, wnd_max.l2, wnd_max.l3);
     }

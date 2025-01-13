@@ -93,6 +93,37 @@ struct Cost {
         lhs -= rhs;
         return lhs;
     }
+
+    Cost &operator*=(int rhs) {
+        this->pv *= rhs;
+        this->l1 *= rhs;
+        this->l2 *= rhs;
+        this->l3 *= rhs;
+
+        return *this;
+    }
+
+    friend Cost operator*(Cost lhs, int rhs) {
+        return lhs *= rhs;
+    }
+
+    // Forward to above variant.
+    // Both are required to be implemented for commutative operators.
+    friend Cost operator*(int lhs, Cost rhs) {
+        return lhs * rhs;
+    }
+
+    int32_t min() {
+        return std::min({this->pv, this->l1, this->l2, this->l3});
+    }
+
+    int32_t min_phase() {
+        return std::min({this->l1, this->l2, this->l3});
+    }
+
+    Cost without_pv() const {
+        return Cost{0, this->l1, this->l2, this->l3};
+    }
 };
 static_assert(sizeof(Cost) == 4 * sizeof(int), "Unexpected size of Cost");
 
