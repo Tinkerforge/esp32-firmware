@@ -113,12 +113,39 @@ struct Cost {
         return lhs * rhs;
     }
 
-    int32_t min() {
+    Cost &operator*=(float rhs) {
+        this->pv *= rhs;
+        this->l1 *= rhs;
+        this->l2 *= rhs;
+        this->l3 *= rhs;
+
+        return *this;
+    }
+
+    friend Cost operator*(Cost lhs, float rhs) {
+        return lhs *= rhs;
+    }
+
+    // Forward to above variant.
+    // Both are required to be implemented for commutative operators.
+    friend Cost operator*(float lhs, Cost rhs) {
+        return lhs * rhs;
+    }
+
+    int32_t min() const {
         return std::min({this->pv, this->l1, this->l2, this->l3});
     }
 
-    int32_t min_phase() {
+    int32_t min_phase() const {
         return std::min({this->l1, this->l2, this->l3});
+    }
+
+    int32_t max() const {
+        return std::max({this->pv, this->l1, this->l2, this->l3});
+    }
+
+    int32_t max_phase() const {
+        return std::max({this->l1, this->l2, this->l3});
     }
 
     Cost without_pv() const {

@@ -186,6 +186,21 @@ GridPhase get_phase(PhaseRotation rot, ChargerPhase phase) {
     return (GridPhase)(((int)rot >> (6 - 2 * (int)phase)) & 0x3);
 }
 
+static inline Cost get_phase_factors(uint8_t allocated_phases, PhaseRotation rotation) {
+    if (allocated_phases == 3) {
+        return Cost{3, 1, 1, 1};
+    }
+    else if (rotation == PhaseRotation::Unknown) {
+        // unknown rot 1p
+        return Cost{1, 1, 1, 1};
+    }
+
+    // known rot 1p
+    Cost result {1, 0, 0, 0};
+    result[get_phase(rotation, ChargerPhase::P1)] = 1;
+    return result;
+}
+
 // Returns how much current would be used
 // if the allocation of a charger was changed from
 // [allocated_current]@[allocated_phases]
@@ -196,29 +211,10 @@ Cost get_cost(int32_t current_to_allocate,
               int32_t allocated_current,
               ChargerPhase allocated_phases)
 {
-    Cost cost{};
+    auto allocated = allocated_current * get_phase_factors((uint8_t)allocated_phases, rot);
+    auto to_allocate = current_to_allocate * get_phase_factors((uint8_t)phases_to_allocate, rot);
 
-    // Reclaim old allocation before reallocating
-    if (allocated_current != 0) {
-        cost = get_cost(allocated_current, allocated_phases, rot, 0, (ChargerPhase) 0);
-        for(int i = 0; i < 4; ++i)
-            cost[i] = -cost[i];
-    }
-
-    cost.pv += (int)phases_to_allocate * current_to_allocate;
-
-    if (rot == PhaseRotation::Unknown) {
-        // Phase rotation unknown. We have to assume that each phase could be used
-        cost.l1 += current_to_allocate;
-        cost.l2 += current_to_allocate;
-        cost.l3 += current_to_allocate;
-    } else {
-        for (int i = 1; i <= (int)phases_to_allocate; ++i) {
-            cost[get_phase(rot, (ChargerPhase)i)] += current_to_allocate;
-        }
-    }
-
-    return cost;
+    return to_allocate - allocated;
 }
 
 // Checks stage-specific limits.
@@ -255,12 +251,10 @@ bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool
 }
 
 void apply_cost(Cost cost, CurrentLimits* limits) {
-    for (size_t i = (size_t)GridPhase::PV; i <= (size_t)GridPhase::L3; ++i) {
-        limits->raw[i] -= cost[i];
-        limits->min[i] -= cost[i];
-        // No need to apply the cost to the spread limit:
-        // It is only used for the window calculation, i.e. before costs are applied.
-    }
+    limits->raw -= cost;
+    limits->min -= cost;
+    limits->spread -= cost;
+
     limits->max_pv -= cost.pv;
 }
 
@@ -303,9 +297,7 @@ static void stage_1(StageContext &sc) {
             have_b1 = true;
             if (state->phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
                 // We only care about the phases that are blocked, not about how many chargers are waiting.
-                b1_on_phase.l1 = 1;
-                b1_on_phase.l2 = 1;
-                b1_on_phase.l3 = 1;
+                b1_on_phase += Cost{0, 1, 1, 1};
             } else {
                 // Not 2p safe!
                 auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
@@ -441,21 +433,6 @@ static int32_t get_requested_current(const ChargerState *state, const CurrentAll
     return state->requested_current;
 }
 
-static inline Cost get_phase_factors(uint8_t allocated_phases, PhaseRotation rotation) {
-    if (allocated_phases == 3) {
-        return Cost{3, 1, 1, 1};
-    }
-    else if (rotation == PhaseRotation::Unknown) {
-        // unknown rot 1p
-        return Cost{1, 1, 1, 1};
-    }
-
-    // known rot 1p
-    Cost result {1, 0, 0, 0};
-    result[get_phase(rotation, ChargerPhase::P1)] = 1;
-    return result;
-}
-
 // Calculates the control window.
 // The window is the range of current that could be allocated between
 // throttling all chargers to their minimum current
@@ -584,6 +561,10 @@ static void calculate_window(bool trace_short, StageContext &sc) {
 
 }
 
+static inline Cost get_minimum_cost(uint8_t allocated_phases, PhaseRotation rotation, const CurrentAllocatorConfig *cfg) {
+    return (allocated_phases == 3 ? cfg->minimum_current_3p : cfg->minimum_current_1p) * get_phase_factors(allocated_phases, rotation);
+}
+
 // Stage 3: Shut down chargers if over limit
 // - Calculate window
 // - Only work with chargers that currently have phases allocated (i.e. those that were active in stage 1)
@@ -639,23 +620,16 @@ static void stage_3(StageContext &sc) {
             if (alloc_phases == 0)
                 continue;
 
-            trace("3: wnd_min %d > p%d raw %d", wnd_min[p], p, sc.limits->raw[p]);
-
-            if (state->phases == 3) {
-                sc.phase_allocation[sc.idx_array[i]] = 0;
-                wnd_min -= Cost {3 * min_3p, min_3p, min_3p, min_3p};
-            } else if (state->phase_rotation == PhaseRotation::Unknown) {
-                sc.phase_allocation[sc.idx_array[i]] = 0;
-                wnd_min -= Cost {min_1p, min_1p, min_1p, min_1p};
-            } else if ((GridPhase)p == get_phase(state->phase_rotation, ChargerPhase::P1)) {
-                sc.phase_allocation[sc.idx_array[i]] = 0;
-                wnd_min.pv -= min_1p;
-                wnd_min[p] -= min_1p;
-            } else {
+            if (alloc_phases == 1 && state->phase_rotation != PhaseRotation::Unknown && (GridPhase)p != get_phase(state->phase_rotation, ChargerPhase::P1)) {
                 // This is a 1p charger with known rotation that is not active on this phase.
                 // Disabling it will not improve the situation.
                 continue;
             }
+
+            trace("3: wnd_min %d > p%d raw %d", wnd_min[p], p, sc.limits->raw[p]);
+
+            wnd_min -= get_minimum_cost(alloc_phases, state->phase_rotation, sc.cfg);
+            sc.phase_allocation[sc.idx_array[i]] = 0;
 
             trace("3: shut down %d", sc.idx_array[i]);
 
@@ -693,19 +667,8 @@ static void stage_3(StageContext &sc) {
 
         // We don't have to recalculate the window but instead can just change the minimum.
         // The window minimum does not have dependencies between chargers.
-        if (state->phases == 3) {
-            sc.phase_allocation[sc.idx_array[i]] = 0;
-            wnd_min -= Cost {3 * min_3p, min_3p, min_3p, min_3p};
-        } else if (state->phase_rotation == PhaseRotation::Unknown) {
-            sc.phase_allocation[sc.idx_array[i]] = 0;
-            wnd_min -= Cost {min_1p, min_1p, min_1p, min_1p};
-        } else {
-            sc.phase_allocation[sc.idx_array[i]] = 0;
-            wnd_min.pv -= min_1p;
-
-            auto p = get_phase(state->phase_rotation, ChargerPhase::P1);
-            wnd_min[p] -= min_1p;
-        }
+        wnd_min -= get_minimum_cost(alloc_phases, state->phase_rotation, sc.cfg);
+        sc.phase_allocation[sc.idx_array[i]] = 0;
 
         trace("3: shut down %d", sc.idx_array[i]);
 
@@ -821,35 +784,20 @@ static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost
 // - (in *enable)  the cost to enable this charger
 // - (as return value) the enable current of each of the phases that the charger would be active on
 static int get_enable_cost(const ChargerState *state, bool activate_3p, bool have_active_chargers, Cost *minimum, Cost *enable, const CurrentAllocatorConfig *cfg) {
-    auto min_1p = cfg->minimum_current_1p;
-    auto min_3p = cfg->minimum_current_3p;
-
-    // TODO: Add to cfg? Will not change while the firmware is running.
-    int ena_1p = min_1p * cfg->enable_current_factor;
-    int ena_3p = min_3p * cfg->enable_current_factor;
-
     Cost new_cost;
     Cost new_enable_cost;
     int enable_current;
 
-    if (activate_3p) {
-        enable_current = have_active_chargers ? ena_3p : min_3p;
-        new_cost = Cost{3 * min_3p, min_3p, min_3p, min_3p};
-        new_enable_cost = Cost{3 * ena_3p, ena_3p, ena_3p, ena_3p};
-    } else if (state->phase_rotation == PhaseRotation::Unknown) {
-        enable_current = have_active_chargers ? ena_1p : min_1p;
-        new_cost = Cost{min_1p, min_1p, min_1p, min_1p};
-        new_enable_cost = Cost{ena_1p, ena_1p, ena_1p, ena_1p};
+    auto factors = get_phase_factors(activate_3p ? 3 : 1, state->phase_rotation);
+    auto enable_factors = (have_active_chargers ? cfg->enable_current_factor : 1.0f) * factors;
+
+    new_cost = get_minimum_cost(activate_3p ? 3 : 1, state->phase_rotation, cfg);
+    new_enable_cost = (have_active_chargers ? cfg->enable_current_factor : 1.0f) * new_cost;
+
+    if (activate_3p || state->phase_rotation == PhaseRotation::Unknown) {
+        enable_current = new_enable_cost.l1;
     } else {
-        enable_current = have_active_chargers ? ena_1p : min_1p;
-
-        auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-
-        new_cost.pv += min_1p;
-        new_cost[phase] += min_1p;
-
-        new_enable_cost.pv += ena_1p;
-        new_enable_cost[phase] += ena_1p;
+        enable_current = new_enable_cost[get_phase(state->phase_rotation, ChargerPhase::P1)];
     }
 
     if (minimum != nullptr)
@@ -1036,28 +984,22 @@ static void stage_5(StageContext &sc) {
         if (!sc.ca_state->global_hysteresis_elapsed && sc.charger_allocation_state[sc.idx_array[i]].allocated_current != 0)
             continue;
 
-        Cost new_cost = Cost{3 * min_3p - min_1p, min_3p, min_3p, min_3p};
-        Cost new_enable_cost = Cost{3 * ena_3p - ena_1p, ena_3p, ena_3p, ena_3p};
+        Cost new_cost = min_3p * Cost{3, 1, 1, 1};
+        Cost new_enable_cost = min_3p * sc.cfg->enable_current_factor * Cost{3, 1, 1, 1};
+
+        auto old_factors = get_phase_factors(1, state->phase_rotation);
+        // TODO use already allocated current here
+        new_cost -= get_minimum_cost(1, state->phase_rotation, sc.cfg);
 
         // P1 is already active
         auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
 
-        if (state->phase_rotation == PhaseRotation::Unknown) {
-            for (size_t p = 1; p < 4; ++p) {
-                new_cost[p] -= min_1p;
-                new_enable_cost[p] -= min_1p;
-            }
-        } else {
-            new_cost[phase] -= min_1p;
-            new_enable_cost[phase] -= ena_1p;
-        }
-
         // Only switch from one to three phase if there is still current available on all phases except the P1 phase of this charger: P1 is used by this charger anyway.
         Cost check_phase{
-            (state->charge_mode_pv ?(CHECK_IMPROVEMENT_ALL_PHASE | check_min) : 0),
-            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L1 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
-            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L2 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
-            (state->phase_rotation == PhaseRotation::Unknown || phase == GridPhase::L3 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE
+            ((state->charge_mode & ChargeMode::PV) != 0 ? (CHECK_IMPROVEMENT_ALL_PHASE | check_min) : 0),
+            (old_factors.l1 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
+            (old_factors.l2 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
+            (old_factors.l3 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE
         };
 
         char buf[256];
@@ -1096,20 +1038,7 @@ static void stage_6(StageContext &sc) {
         const auto *state = &sc.charger_state[sc.idx_array[i]];
 
         auto allocated_phases = sc.phase_allocation[sc.idx_array[i]];
-        Cost cost{0, 0, 0, 0};
-
-        if (allocated_phases == 3) {
-            cost = Cost{3 * min_3p, min_3p, min_3p, min_3p};
-        } else {
-            cost.pv = min_1p;
-            if (state->phase_rotation == PhaseRotation::Unknown) {
-                for (size_t p = 1; p < 4; ++p)
-                    cost[p] += min_1p;
-            } else {
-                auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-                cost[phase] += min_1p;
-            }
-        }
+        auto cost = get_minimum_cost(allocated_phases, state->phase_rotation, sc.cfg);
 
         // This should never happen:
         // We should never allocate more current than the raw phase limits,
@@ -1126,7 +1055,7 @@ static void stage_6(StageContext &sc) {
             continue;
         }
 
-        sc.current_allocation[sc.idx_array[i]] = allocated_phases == 3 ? min_3p : min_1p;
+        sc.current_allocation[sc.idx_array[i]] = cost.max_phase();
         trace("6: %d: %d@%dp", sc.idx_array[i], sc.current_allocation[sc.idx_array[i]], allocated_phases);
         apply_cost(cost, sc.limits);
     }
@@ -1138,11 +1067,12 @@ static int32_t current_capacity(const CurrentLimits *limits, const ChargerState 
 
     // TODO: add margin again if exactly one charger is active and requested_current > 6000. Also add in calculate_window? -> Maybe not necessary any more?
 
+    auto capacity = std::max(requested_current - allocated_current, 0);
+
     if (allocated_phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
-        return std::min({std::max(requested_current - allocated_current, 0), limits->raw.l1, limits->raw.l2, limits->raw.l3});
+        return std::min(capacity, limits->raw.min_phase());
     }
 
-    auto capacity = std::max(requested_current - allocated_current, 0);
     for (size_t i = (size_t)ChargerPhase::P1; i < (size_t)ChargerPhase::P1 + allocated_phases; ++i) {
         auto phase = get_phase(state->phase_rotation, (ChargerPhase)i);
         capacity = std::min(capacity, limits->raw[phase]);
@@ -1214,7 +1144,7 @@ static void stage_7(StageContext &sc) {
         auto current = state->charge_mode_pv ? (fair.pv / allocated_phases) : 32000;
 
         if (state->phase_rotation == PhaseRotation::Unknown) {
-            current = std::min({current, fair.l1, fair.l2, fair.l3});
+            current = std::min(current, fair.min_phase());
         } else {
             for (size_t p = 0; p < allocated_phases; ++p) {
                 auto phase = get_phase(state->phase_rotation, (ChargerPhase)((size_t)ChargerPhase::P1 + p));
@@ -1286,7 +1216,7 @@ static void stage_8(StageContext &sc) {
 
         if (state->phase_rotation == PhaseRotation::Unknown) {
             // Phase rotation unknown. We have to assume that each phase could be used
-            current = std::min({current, sc.limits->raw[GridPhase::L1], sc.limits->raw[GridPhase::L2], sc.limits->raw[GridPhase::L3]});
+            current = std::min(current, sc.limits->raw.min_phase());
         } else {
             for (int p = 1; p <= (int)allocated_phases; ++p) {
                 current = std::min(current, sc.limits->raw[get_phase(state->phase_rotation, (ChargerPhase)p)]);
