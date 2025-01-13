@@ -19,25 +19,25 @@
 
 #include "remote_access.h"
 
+#include <LittleFS.h>
+#include <TFJson.h>
+#include <WiFi.h>
+#include <esp_http_client.h>
 #include <lwip/err.h>
+#include <lwip/netdb.h>
+#include <lwip/pbuf.h>
 #include <lwip/sockets.h>
 #include <lwip/sys.h>
-#include <lwip/pbuf.h>
-#include <lwip/netdb.h>
-#include <WiFi.h>
 #include <mbedtls/aes.h>
 #include <mbedtls/base64.h>
 #include <sodium.h>
-#include <esp_http_client.h>
-#include <LittleFS.h>
-#include <TFJson.h>
 
+#include "build.h"
+#include "esp_tls.h"
+#include "esp_tls_errors.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "build.h"
 #include "tools.h"
-#include "esp_tls_errors.h"
-#include "esp_tls.h"
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 extern char local_uid_str[32];
@@ -49,11 +49,13 @@ extern uint32_t local_uid_num;
 #define KEY_SIZE (3 * WG_KEY_LENGTH)
 #define KEY_DIRECTORY "/remote-access-keys"
 
-static inline String get_key_path(uint8_t user_id, uint8_t key_id) {
+static inline String get_key_path(uint8_t user_id, uint8_t key_id)
+{
     return String(KEY_DIRECTORY "/") + user_id + "_" + key_id;
 }
 
-void remove_key(uint8_t user_id, uint8_t key_id) {
+void remove_key(uint8_t user_id, uint8_t key_id)
+{
     auto path = get_key_path(user_id, key_id);
     if (!LittleFS.exists(path))
         return;
@@ -61,7 +63,8 @@ void remove_key(uint8_t user_id, uint8_t key_id) {
     LittleFS.remove(path);
 }
 
-void store_key(uint8_t user_id, uint8_t key_id, const char *pri, const char *psk, const char *pub) {
+void store_key(uint8_t user_id, uint8_t key_id, const char *pri, const char *psk, const char *pub)
+{
     File f = LittleFS.open(get_key_path(user_id, key_id), "w+");
     // TODO: more robust writing
     f.write((const uint8_t *)pri, WG_KEY_LENGTH);
@@ -108,7 +111,8 @@ fail:
     return false;
 }
 
-static int create_sock_and_send_to(const void *payload, size_t payload_len, const char *dest_host, uint16_t port, uint16_t *local_port) {
+static int create_sock_and_send_to(const void *payload, size_t payload_len, const char *dest_host, uint16_t port, uint16_t *local_port)
+{
     struct sockaddr_in dest_addr;
     bzero(&dest_addr, sizeof(dest_addr));
 
@@ -159,26 +163,19 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     return ret;
 }
 
-void RemoteAccess::pre_setup() {
-    users_config_prototype = Config::Object({
-        {"id", Config::Uint8(0)},
-        {"email", Config::Str("", 0, 64)},
-        {"public_key", Config::Str("", 0, 44)}
-    });
+void RemoteAccess::pre_setup()
+{
+    users_config_prototype =
+        Config::Object({{"id", Config::Uint8(0)}, {"email", Config::Str("", 0, 64)}, {"public_key", Config::Str("", 0, 44)}});
 
-    config = ConfigRoot{Config::Object({
-        {"uuid", Config::Str("", 0, 36)},
-        {"enable", Config::Bool(false)},
-        {"password", Config::Str("", 0, 32)},
-        {"relay_host", Config::Str("my.warp-charger.com", 0, 64)},
-        {"relay_port", Config::Uint16(443)},
-        {"cert_id", Config::Int8(-1)},
-        {"users", Config::Array(
-            {},
-            &users_config_prototype,
-            0, MAX_USERS, Config::type_id<Config::ConfObject>()
-        )}
-    })};
+    config = ConfigRoot{
+        Config::Object({{"uuid", Config::Str("", 0, 36)},
+                        {"enable", Config::Bool(false)},
+                        {"password", Config::Str("", 0, 32)},
+                        {"relay_host", Config::Str("my.warp-charger.com", 0, 64)},
+                        {"relay_port", Config::Uint16(443)},
+                        {"cert_id", Config::Int8(-1)},
+                        {"users", Config::Array({}, &users_config_prototype, 0, MAX_USERS, Config::type_id<Config::ConfObject>())}})};
 
     registration_config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
@@ -194,24 +191,17 @@ void RemoteAccess::pre_setup() {
         {"connection", Config::Uint8(255)},
     });
 
-    connection_state = Config::Array(
-        {},
-        &connection_state_prototype,
-        MAX_KEYS_PER_USER + 1,
-        MAX_KEYS_PER_USER + 1,
-        Config::type_id<Config::ConfUint>()
-    );
-    for(int i = 0; i < MAX_KEYS_PER_USER + 1; ++i) {
+    connection_state =
+        Config::Array({}, &connection_state_prototype, MAX_KEYS_PER_USER + 1, MAX_KEYS_PER_USER + 1, Config::type_id<Config::ConfUint>());
+    for (int i = 0; i < MAX_KEYS_PER_USER + 1; ++i) {
         connection_state.add()->get("state")->updateUint(1); // Set the default here so that the generic prototype can be used.
     }
 
-    registration_state = Config::Object({
-        {"state", Config::Uint8(0)},
-        {"message", Config::Str("", 0, 64)}
-    });
+    registration_state = Config::Object({{"state", Config::Uint8(0)}, {"message", Config::Str("", 0, 64)}});
 }
 
-void RemoteAccess::setup() {
+void RemoteAccess::setup()
+{
     LittleFS.mkdir(KEY_DIRECTORY);
 
     api.restorePersistentConfig("remote_access/config", &config);
@@ -223,8 +213,9 @@ void RemoteAccess::setup() {
     logger.printfln("Remote Access is enabled trying to connect");
 }
 
-static std::unique_ptr<uint8_t []> decode_base64(const CoolString &input, size_t buffer_size) {
-    std::unique_ptr<uint8_t []> out = heap_alloc_array<uint8_t>(buffer_size);
+static std::unique_ptr<uint8_t[]> decode_base64(const CoolString &input, size_t buffer_size)
+{
+    std::unique_ptr<uint8_t[]> out = heap_alloc_array<uint8_t>(buffer_size);
     if (out == nullptr) {
         return out;
     }
@@ -237,19 +228,20 @@ static std::unique_ptr<uint8_t []> decode_base64(const CoolString &input, size_t
     return out;
 }
 
-void RemoteAccess::handle_response_chunk(const AsyncHTTPSClientEvent *event) {
+void RemoteAccess::handle_response_chunk(const AsyncHTTPSClientEvent *event)
+{
     if (response_body.length() == 0) {
         if (event->data_complete_len < 0) {
             response_body.reserve(1024);
-        }
-        else {
+        } else {
             response_body.reserve(event->data_complete_len);
         }
     }
-    response_body.concat((const uint8_t*)event->data_chunk, (unsigned int)event->data_chunk_len);
+    response_body.concat((const uint8_t *)event->data_chunk, (unsigned int)event->data_chunk_len);
 }
 
-void RemoteAccess::register_urls() {
+void RemoteAccess::register_urls()
+{
     api.addState("remote_access/config", &config, {"password"}, {"email"});
 
     api.addState("remote_access/state", &connection_state);
@@ -261,23 +253,33 @@ void RemoteAccess::register_urls() {
         return request.send(200);
     });
 
-    api.addCommand("remote_access/config_update", &registration_config, {"password", "email"}, [this](String &/*errmsg*/) {
-        config.get("enable")->updateBool(registration_config.get("enable")->asBool());
-        config.get("relay_host")->updateString(registration_config.get("relay_host")->asEphemeralCStr());
-        config.get("relay_port")->updateUint(registration_config.get("relay_port")->asUint());
-        config.get("cert_id")->updateInt(registration_config.get("cert_id")->asInt());
-        api.writeConfig("remote_access/config", &config);
-    }, false);
+    api.addCommand(
+        "remote_access/config_update",
+        &registration_config,
+        {"password", "email"},
+        [this](String & /*errmsg*/) {
+            config.get("enable")->updateBool(registration_config.get("enable")->asBool());
+            config.get("relay_host")->updateString(registration_config.get("relay_host")->asEphemeralCStr());
+            config.get("relay_port")->updateUint(registration_config.get("relay_port")->asUint());
+            config.get("cert_id")->updateInt(registration_config.get("cert_id")->asInt());
+            api.writeConfig("remote_access/config", &config);
+        },
+        false);
 
-    api.addCommand("remote_access/config_reset", Config::Null(), {}, [this](String &/*errmsg*/) {
-        API::removeConfig("remote_access/config");
+    api.addCommand(
+        "remote_access/config_reset",
+        Config::Null(),
+        {},
+        [this](String & /*errmsg*/) {
+            API::removeConfig("remote_access/config");
 
-        for (uint32_t user = 0; user < MAX_USERS + 1; user++) {
-            for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
-                remove_key(user, i);
+            for (uint32_t user = 0; user < MAX_USERS + 1; user++) {
+                for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
+                    remove_key(user, i);
+                }
             }
-        }
-    }, true);
+        },
+        true);
 
     server.on("/remote_access/get_login_salt", HTTP_PUT, [this](WebServerRequest request) {
         this->management_request_allowed = false;
@@ -285,7 +287,7 @@ void RemoteAccess::register_urls() {
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
             this->request_cleanup();
-            return request.send(500,  "text/plain; charset=utf-8", "Low memory");
+            return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
         if (request.receive(req_body.get(), content_len) <= 0) {
             this->request_cleanup();
@@ -428,7 +430,7 @@ void RemoteAccess::register_urls() {
 
         // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
         // Also validate the decoded lengths!
-        std::unique_ptr<uint8_t[]> secret_key       = decode_base64(doc["secret_key"],   crypto_secretbox_KEYBYTES);
+        std::unique_ptr<uint8_t[]> secret_key = decode_base64(doc["secret_key"], crypto_secretbox_KEYBYTES);
         if (secret_key == nullptr) {
             this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
@@ -440,7 +442,11 @@ void RemoteAccess::register_urls() {
             return request.send(500, "text/plain; charset=utf-8", "Failed to initialize crypto");
         }
         char secret[crypto_box_SECRETKEYBYTES];
-        int ret = crypto_secretbox_open_easy((unsigned char *)secret, (unsigned char *)encrypted_secret.get(), crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES, (unsigned char*)secret_nonce.get(), (unsigned char*)secret_key.get());
+        int ret = crypto_secretbox_open_easy((unsigned char *)secret,
+                                             (unsigned char *)encrypted_secret.get(),
+                                             crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES,
+                                             (unsigned char *)secret_nonce.get(),
+                                             (unsigned char *)secret_key.get());
         if (ret != 0) {
             this->request_cleanup();
             logger.printfln("Failed to decrypt secret");
@@ -492,7 +498,7 @@ void RemoteAccess::register_urls() {
 
                 CoolString psk = key["psk"];
                 char encrypted_psk[44 + crypto_box_SEALBYTES];
-                ret = crypto_box_seal((unsigned char*)encrypted_psk, (unsigned char*)psk.c_str(), psk.length(), pk);
+                ret = crypto_box_seal((unsigned char *)encrypted_psk, (unsigned char *)psk.c_str(), psk.length(), pk);
                 if (ret < 0) {
                     this->request_cleanup();
                     logger.printfln("Failed to encrypt psk: %i", ret);
@@ -538,7 +544,7 @@ void RemoteAccess::register_urls() {
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
         size_t olen;
-        mbedtls_base64_encode((uint8_t*)bs64_name.get(), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
+        mbedtls_base64_encode((uint8_t *)bs64_name.get(), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
 
         serializer.addMemberString("name", bs64_name.get());
 
@@ -547,13 +553,13 @@ void RemoteAccess::register_urls() {
             this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
-        crypto_box_seal(encrypted_note.get(), (uint8_t*)note.c_str(), note.length(), pk);
+        crypto_box_seal(encrypted_note.get(), (uint8_t *)note.c_str(), note.length(), pk);
         auto bs64_note = heap_alloc_array<char>(bs64_note_size);
         if (bs64_note == nullptr) {
             this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
-        mbedtls_base64_encode((uint8_t*)bs64_note.get(), bs64_note_size, &olen, encrypted_note.get(), encrypted_note_size);
+        mbedtls_base64_encode((uint8_t *)bs64_note.get(), bs64_note_size, &olen, encrypted_note.get(), encrypted_note_size);
 
         serializer.addMemberString("note", bs64_note.get());
 
@@ -561,11 +567,15 @@ void RemoteAccess::register_urls() {
         size_t size = serializer.end();
 
         char url[128];
-        snprintf(url, 128, "https://%s:%u/api/charger/add", registration_config.get("relay_host")->asEphemeralCStr(), registration_config.get("relay_port")->asUint());
+        snprintf(url,
+                 128,
+                 "https://%s:%u/api/charger/add",
+                 registration_config.get("relay_host")->asEphemeralCStr(),
+                 registration_config.get("relay_port")->asUint());
 
         std::queue<WgKey> key_cache;
 
-        key_cache.push(WgKey {
+        key_cache.push(WgKey{
             doc["mgmt_charger_private"],
             doc["mgmt_psk"],
             "",
@@ -574,18 +584,8 @@ void RemoteAccess::register_urls() {
         {
             int i = 0;
             for (const auto key : doc["keys"].as<JsonArray>()) {
-                WgKey k = {
-                    key["charger_private"],
-                    key["psk"],
-                    key["web_public"]
-                };
-                key_cache.push(
-                    WgKey {
-                    key["charger_private"],
-                    key["psk"],
-                    key["web_public"]
-                    }
-                );
+                WgKey k = {key["charger_private"], key["psk"], key["web_public"]};
+                key_cache.push(WgKey{key["charger_private"], key["psk"], key["web_public"]});
                 ++i;
                 // Ignore rest of keys if there were sent more than we support.
                 if (i == MAX_KEYS_PER_USER)
@@ -594,9 +594,9 @@ void RemoteAccess::register_urls() {
         }
 
         uint8_t public_key[50];
-        mbedtls_base64_encode(public_key, 50, &olen, (uint8_t*)pk, crypto_box_PUBLICKEYBYTES);
+        mbedtls_base64_encode(public_key, 50, &olen, (uint8_t *)pk, crypto_box_PUBLICKEYBYTES);
         auto next_stage = [this, key_cache, public_key, olen](ConfigRoot cfg) {
-            CoolString pub_key((char*)public_key, olen);
+            CoolString pub_key((char *)public_key, olen);
             this->parse_registration(cfg, key_cache, pub_key);
         };
         this->run_request_with_next_stage(url, HTTP_METHOD_PUT, ptr.get(), size, registration_config, next_stage);
@@ -651,7 +651,7 @@ void RemoteAccess::register_urls() {
 
         // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
         // Also validate the decoded lengths!
-        std::unique_ptr<uint8_t[]> secret_key       = decode_base64(doc["secret_key"],   crypto_secretbox_KEYBYTES);
+        std::unique_ptr<uint8_t[]> secret_key = decode_base64(doc["secret_key"], crypto_secretbox_KEYBYTES);
         if (secret_key == nullptr) {
             this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
@@ -664,7 +664,11 @@ void RemoteAccess::register_urls() {
         }
 
         char secret[crypto_box_SECRETKEYBYTES];
-        int ret = crypto_secretbox_open_easy((unsigned char *)secret, (unsigned char *)encrypted_secret.get(), crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES, (unsigned char*)secret_nonce.get(), (unsigned char*)secret_key.get());
+        int ret = crypto_secretbox_open_easy((unsigned char *)secret,
+                                             (unsigned char *)encrypted_secret.get(),
+                                             crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES,
+                                             (unsigned char *)secret_nonce.get(),
+                                             (unsigned char *)secret_key.get());
         if (ret != 0) {
             this->request_cleanup();
             logger.printfln("Failed to decrypt secret");
@@ -695,20 +699,24 @@ void RemoteAccess::register_urls() {
         TFJsonSerializer serializer{json.get(), json_size};
         serializer.addObject();
 
-        std::unique_ptr<uint8_t []> encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
+        std::unique_ptr<uint8_t[]> encrypted_note = heap_alloc_array<uint8_t>(encrypted_note_size);
         if (encrypted_note == nullptr) {
             this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
 
-        if (crypto_box_seal(encrypted_note.get(), (uint8_t*)note.c_str(), note.length(), pk)) {
+        if (crypto_box_seal(encrypted_note.get(), (uint8_t *)note.c_str(), note.length(), pk)) {
             this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt note");
         }
 
         auto bs64_note = heap_alloc_array<char>(bs64_note_size);
         size_t olen;
-        mbedtls_base64_encode((uint8_t*)bs64_note.get(), bs64_note_size, &olen, encrypted_note.get(), note.length() + crypto_box_SEALBYTES);
+        mbedtls_base64_encode((uint8_t *)bs64_note.get(),
+                              bs64_note_size,
+                              &olen,
+                              encrypted_note.get(),
+                              note.length() + crypto_box_SEALBYTES);
 
         serializer.addMemberString("note", bs64_note.get());
 
@@ -718,13 +726,13 @@ void RemoteAccess::register_urls() {
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
 
-        if (crypto_box_seal(encrypted_name.get(), (uint8_t*)name.c_str(), name.length(), pk)) {
+        if (crypto_box_seal(encrypted_name.get(), (uint8_t *)name.c_str(), name.length(), pk)) {
             this->request_cleanup();
             return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt name");
         }
 
         auto bs64_name = heap_alloc_array<char>(bs64_name_size);
-        mbedtls_base64_encode((uint8_t*)bs64_name.get(), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
+        mbedtls_base64_encode((uint8_t *)bs64_name.get(), bs64_name_size, &olen, encrypted_name.get(), encrypted_name_size);
 
         serializer.addMemberString("charger_name", bs64_name.get());
 
@@ -751,7 +759,7 @@ void RemoteAccess::register_urls() {
 
             CoolString psk = key["psk"];
             uint8_t encrypted_psk[44 + crypto_box_SEALBYTES];
-            if (crypto_box_seal(encrypted_psk, (uint8_t*)psk.c_str(), 44, pk)) {
+            if (crypto_box_seal(encrypted_psk, (uint8_t *)psk.c_str(), 44, pk)) {
                 this->request_cleanup();
                 return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt psk");
             }
@@ -763,7 +771,7 @@ void RemoteAccess::register_urls() {
 
             CoolString web_private = key["web_private"];
             uint8_t encrypted_web_private[44 + crypto_box_SEALBYTES];
-            if (crypto_box_seal(encrypted_web_private, (uint8_t*)web_private.c_str(), 44, pk)) {
+            if (crypto_box_seal(encrypted_web_private, (uint8_t *)web_private.c_str(), 44, pk)) {
                 this->request_cleanup();
                 return request.send(500, "text/plain; charset=utf-8", "Failed to encrypt web_private");
             }
@@ -782,23 +790,17 @@ void RemoteAccess::register_urls() {
         uint32_t size = serializer.end();
 
         char url[128];
-        snprintf(url, 128, "https://%s:%u/api/charger/allow_user", registration_config.get("relay_host")->asEphemeralCStr(), registration_config.get("relay_port")->asUint());
+        snprintf(url,
+                 128,
+                 "https://%s:%u/api/charger/allow_user",
+                 registration_config.get("relay_host")->asEphemeralCStr(),
+                 registration_config.get("relay_port")->asUint());
 
         std::queue<WgKey> key_cache;
         int a = 0;
         for (const auto key : doc["wg_keys"].as<JsonArray>()) {
-            WgKey k = {
-                key["charger_private"],
-                key["psk"],
-                key["web_public"]
-            };
-            key_cache.push(
-                WgKey {
-                key["charger_private"],
-                key["psk"],
-                key["web_public"]
-                }
-            );
+            WgKey k = {key["charger_private"], key["psk"], key["web_public"]};
+            key_cache.push(WgKey{key["charger_private"], key["psk"], key["web_public"]});
             ++a;
             // Ignore rest of keys if there were sent more than we support.
             if (a == MAX_KEYS_PER_USER)
@@ -806,7 +808,7 @@ void RemoteAccess::register_urls() {
         }
 
         uint8_t public_key[50];
-        mbedtls_base64_encode(public_key, 50, &olen, (uint8_t*)pk, crypto_box_PUBLICKEYBYTES);
+        mbedtls_base64_encode(public_key, 50, &olen, (uint8_t *)pk, crypto_box_PUBLICKEYBYTES);
         CoolString pub_key(public_key, olen);
 
         ConfigRoot user = config;
@@ -856,7 +858,7 @@ void RemoteAccess::register_urls() {
             idx++;
         }
         if (idx >= config.get("users")->count()) {
-                return request.send(400, "text/plain; charset=utf-8", "User does not exist");
+            return request.send(400, "text/plain; charset=utf-8", "User does not exist");
         }
 
         config.get("users")->remove(idx);
@@ -876,8 +878,8 @@ void RemoteAccess::register_urls() {
             char json[256];
             TFJsonSerializer serializer{json, 256};
             serializer.addObject();
-                serializer.addMemberString("uuid", config.get("uuid")->asEphemeralCStr());
-                serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
+            serializer.addMemberString("uuid", config.get("uuid")->asEphemeralCStr());
+            serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
             serializer.endObject();
             size_t json_size = serializer.end();
 
@@ -887,7 +889,11 @@ void RemoteAccess::register_urls() {
             https_client->set_header("Content-Type", "application/json");
 
             char url[256];
-            snprintf(url, 256, "https://%s:%u/api/selfdestruct", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint());
+            snprintf(url,
+                     256,
+                     "https://%s:%u/api/selfdestruct",
+                     config.get("relay_host")->asEphemeralCStr(),
+                     config.get("relay_port")->asUint());
             run_request_with_next_stage(url, HTTP_METHOD_DELETE, json, json_size, config, [this](ConfigRoot cfg) {
                 this->request_cleanup();
             });
@@ -906,44 +912,51 @@ void RemoteAccess::register_urls() {
         return;
     }
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        for (size_t i = 0; i < MAX_KEYS_PER_USER; i++) {
-            uint32_t state = 1;
-            if (this->remote_connections[i].conn != nullptr) {
-                state = this->remote_connections[i].conn->is_peer_up(nullptr, nullptr) ? 2 : 1;
-            }
+    task_scheduler.scheduleWithFixedDelay(
+        [this]() {
+            for (size_t i = 0; i < MAX_KEYS_PER_USER; i++) {
+                uint32_t state = 1;
+                if (this->remote_connections[i].conn != nullptr) {
+                    state = this->remote_connections[i].conn->is_peer_up(nullptr, nullptr) ? 2 : 1;
+                }
 
-            if (this->connection_state.get(i + 1)->get("state")->updateUint(state)) { // 0 is the management connection
-                uint32_t conn = this->connection_state.get(i + 1)->get("connection")->asUint();
-                uint32_t user = this->connection_state.get(i + 1)->get("user")->asUint();
-                if (state == 2) {
-                    logger.printfln("Connection %u for user %u connected", conn, user);
-                } else if (state == 1 && conn != 255 && user != 255) {
-                    logger.printfln("Connection %u for user %u disconnected", conn, user);
+                if (this->connection_state.get(i + 1)->get("state")->updateUint(state)) { // 0 is the management connection
+                    uint32_t conn = this->connection_state.get(i + 1)->get("connection")->asUint();
+                    uint32_t user = this->connection_state.get(i + 1)->get("user")->asUint();
+                    if (state == 2) {
+                        logger.printfln("Connection %u for user %u connected", conn, user);
+                    } else if (state == 1 && conn != 255 && user != 255) {
+                        logger.printfln("Connection %u for user %u disconnected", conn, user);
+                    }
                 }
             }
-        }
-    }, 1_s, 1_s);
+        },
+        1_s,
+        1_s);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        uint32_t state = 1;
-        if (management != nullptr) {
-            state = management->is_peer_up(nullptr, nullptr) ? 2 : 1;
-        }
-
-        if (this->connection_state.get(0)->get("state")->updateUint(state)) {
-            if (state == 2) {
-                logger.printfln("Management connection connected");
-            } else {
-                this->management_request_done = false;
-                in_seq_number = 0;
-                logger.printfln("Management connection disconnected");
+    task_scheduler.scheduleWithFixedDelay(
+        [this]() {
+            uint32_t state = 1;
+            if (management != nullptr) {
+                state = management->is_peer_up(nullptr, nullptr) ? 2 : 1;
             }
-        }
-    }, 1_s, 1_s);
+
+            if (this->connection_state.get(0)->get("state")->updateUint(state)) {
+                if (state == 2) {
+                    logger.printfln("Management connection connected");
+                } else {
+                    this->management_request_done = false;
+                    in_seq_number = 0;
+                    logger.printfln("Management connection disconnected");
+                }
+            }
+        },
+        1_s,
+        1_s);
 }
 
-void RemoteAccess::register_events() {
+void RemoteAccess::register_events()
+{
     if (!config.get("enable")->asBool())
         return;
 
@@ -951,17 +964,21 @@ void RemoteAccess::register_events() {
         task_scheduler.cancel(this->task_id);
 
         if (connected->asBool()) {
-            this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
-                if (!this->management_request_done) {
-                    this->resolve_management();
-                }
-            }, 0_s, 30_s);
+            this->task_id = task_scheduler.scheduleWithFixedDelay(
+                [this]() {
+                    if (!this->management_request_done) {
+                        this->resolve_management();
+                    }
+                },
+                0_s,
+                30_s);
         }
         return EventResult::OK;
     });
 }
 
-bool RemoteAccess::user_already_registered(const CoolString &email) {
+bool RemoteAccess::user_already_registered(const CoolString &email)
+{
     for (const auto &user : config.get("users")) {
         if (email == user.get("email")->asEphemeralCStr()) {
             return true;
@@ -971,69 +988,75 @@ bool RemoteAccess::user_already_registered(const CoolString &email) {
     return false;
 }
 
-void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, ConfigRoot config, std::function<void(ConfigRoot config)> &&next_stage) {
+void RemoteAccess::run_request_with_next_stage(const char *url,
+                                               esp_http_client_method_t method,
+                                               const char *body,
+                                               int body_size,
+                                               ConfigRoot config,
+                                               std::function<void(ConfigRoot config)> &&next_stage)
+{
     response_body = String();
 
     const String url_capture = String(url);
-    std::function<void(AsyncHTTPSClientEvent *event)> callback = [this, next_stage, config, url_capture](AsyncHTTPSClientEvent *event) {
-            switch (event->type) {
-                case AsyncHTTPSClientEventType::Error:
-                    switch (event->error) {
-                        case AsyncHTTPSClientError::HTTPStatusError: {
-                            if (strstr(url_capture.c_str(), "/management") != nullptr) {
-                                if (!this->management_request_failed) {
-                                    logger.printfln("Management request failed with HTTP-Error-Code %i", (int)event->error_http_status);
-                                    this->management_request_failed = true;
-                                }
-                            } else {
-                                registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-                                {
-                                    char err_buf[64];
-                                    snprintf(err_buf, 64, "Received status-code %i", (int)event->error_http_status);
-                                    registration_state.get("message")->updateString(err_buf);
-                                }
+    std::function<void(AsyncHTTPSClientEvent * event)> callback = [this, next_stage, config, url_capture](AsyncHTTPSClientEvent *event) {
+        switch (event->type) {
+            case AsyncHTTPSClientEventType::Error:
+                switch (event->error) {
+                    case AsyncHTTPSClientError::HTTPStatusError: {
+                        if (strstr(url_capture.c_str(), "/management") != nullptr) {
+                            if (!this->management_request_failed) {
+                                logger.printfln("Management request failed with HTTP-Error-Code %i", (int)event->error_http_status);
+                                this->management_request_failed = true;
                             }
-                            this->cleanup_after();
-                            break;
+                        } else {
+                            registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+                            {
+                                char err_buf[64];
+                                snprintf(err_buf, 64, "Received status-code %i", (int)event->error_http_status);
+                                registration_state.get("message")->updateString(err_buf);
+                            }
                         }
-                        case AsyncHTTPSClientError::HTTPError:
-                            break;
-
-                        default:
-                            if (strstr(url_capture.c_str(), "/management") != nullptr) {
-                                if (!this->management_request_failed) {
-                                    logger.printfln("Management request failed with internal error code %i", (int)event->error);
-                                    this->management_request_failed = true;
-                                }
-                            } else {
-                                registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-                                {
-                                    char err_buf[64];
-                                    snprintf(err_buf, 64, "Error code %i", (int)event->error);
-                                    registration_state.get("message")->updateString(err_buf);
-                                }
-                            }
-                            this->cleanup_after();
-                            break;
+                        this->cleanup_after();
+                        break;
                     }
-                    response_body = String();
-                    break;
+                    case AsyncHTTPSClientError::HTTPError:
+                        break;
 
-                case AsyncHTTPSClientEventType::Aborted:
-                    registration_state.get("message")->updateString("Request was aborted");
-                    registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-                            this->cleanup_after();
-                    break;
-                case AsyncHTTPSClientEventType::Data:
-                    handle_response_chunk(event);
-                    break;
-                case AsyncHTTPSClientEventType::Finished:
-                    task_scheduler.scheduleOnce([this, next_stage, config]() {
-                        next_stage(config);
-                    });
-                    break;
-            }
-        };
+                    default:
+                        if (strstr(url_capture.c_str(), "/management") != nullptr) {
+                            if (!this->management_request_failed) {
+                                logger.printfln("Management request failed with internal error code %i", (int)event->error);
+                                this->management_request_failed = true;
+                            }
+                        } else {
+                            registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+                            {
+                                char err_buf[64];
+                                snprintf(err_buf, 64, "Error code %i", (int)event->error);
+                                registration_state.get("message")->updateString(err_buf);
+                            }
+                        }
+                        this->cleanup_after();
+                        break;
+                }
+                response_body = String();
+                break;
+
+            case AsyncHTTPSClientEventType::Aborted:
+                registration_state.get("message")->updateString("Request was aborted");
+                registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+                this->cleanup_after();
+                break;
+            case AsyncHTTPSClientEventType::Data:
+                handle_response_chunk(event);
+                break;
+            case AsyncHTTPSClientEventType::Finished:
+                task_scheduler.scheduleOnce([this, next_stage, config]() {
+                    next_stage(config);
+                });
+                break;
+        }
+    };
 
     // https_client should never be a nullptr in normal operation but in case someone uses the api wrong
     // this ensures that we dont crash
@@ -1043,19 +1066,25 @@ void RemoteAccess::run_request_with_next_stage(const char *url, esp_http_client_
     https_client->fetch(url, config.get("cert_id")->asInt(), method, body, body_size, std::move(callback));
 }
 
-void RemoteAccess::get_login_salt(ConfigRoot config) {
+void RemoteAccess::get_login_salt(ConfigRoot config)
+{
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
     registration_state.get("message")->updateString("");
     char url[196] = {};
-    sprintf(url, "https://%s:%u/api/auth/get_login_salt?email=%s", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint(), config.get("email")->asEphemeralCStr());
+    sprintf(url,
+            "https://%s:%u/api/auth/get_login_salt?email=%s",
+            config.get("relay_host")->asEphemeralCStr(),
+            config.get("relay_port")->asUint(),
+            config.get("email")->asEphemeralCStr());
 
     https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
-    run_request_with_next_stage(url, HTTP_METHOD_GET, nullptr, 0, config, [this] (ConfigRoot cfg) {
+    run_request_with_next_stage(url, HTTP_METHOD_GET, nullptr, 0, config, [this](ConfigRoot cfg) {
         this->parse_login_salt(cfg);
     });
 }
 
-void RemoteAccess::parse_login_salt(ConfigRoot config) {
+void RemoteAccess::parse_login_salt(ConfigRoot config)
+{
     uint8_t login_salt[48];
     {
         StaticJsonDocument<1024> doc;
@@ -1074,7 +1103,7 @@ void RemoteAccess::parse_login_salt(ConfigRoot config) {
 
     char base64[65] = {};
     size_t bytes_written;
-    if (mbedtls_base64_encode((uint8_t*)base64, 65, &bytes_written, login_salt, 48)) {
+    if (mbedtls_base64_encode((uint8_t *)base64, 65, &bytes_written, login_salt, 48)) {
         registration_state.get("message")->updateString("Error while encoding login-salt");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
         this->request_cleanup();
@@ -1084,7 +1113,8 @@ void RemoteAccess::parse_login_salt(ConfigRoot config) {
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);
 }
 
-void RemoteAccess::login(ConfigRoot config, CoolString &login_key) {
+void RemoteAccess::login(ConfigRoot config, CoolString &login_key)
+{
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
     registration_state.get("message")->updateString("");
     char url[128] = {};
@@ -1096,7 +1126,7 @@ void RemoteAccess::login(ConfigRoot config, CoolString &login_key) {
     doc["email"] = config.get("email")->asString();
     uint8_t key[24] = {};
     size_t written;
-    if (mbedtls_base64_decode(key, 24, &written, (uint8_t*)login_key.c_str(), login_key.length()) != 0) {
+    if (mbedtls_base64_decode(key, 24, &written, (uint8_t *)login_key.c_str(), login_key.length()) != 0) {
         registration_state.get("message")->updateString("Error while decoding login-salt");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
         this->request_cleanup();
@@ -1115,18 +1145,24 @@ void RemoteAccess::login(ConfigRoot config, CoolString &login_key) {
     });
 }
 
-void RemoteAccess::get_secret(ConfigRoot config) {
+void RemoteAccess::get_secret(ConfigRoot config)
+{
     registration_state.get("message")->updateString("");
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
     char url[128] = {};
-    snprintf(url, 128, "https://%s:%u/api/user/get_secret", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint());
+    snprintf(url,
+             128,
+             "https://%s:%u/api/user/get_secret",
+             config.get("relay_host")->asEphemeralCStr(),
+             config.get("relay_port")->asUint());
 
     run_request_with_next_stage(url, HTTP_METHOD_GET, nullptr, 0, config, [this](ConfigRoot cfg) {
         this->parse_secret(cfg);
     });
 }
 
-void RemoteAccess::parse_secret(ConfigRoot config) {
+void RemoteAccess::parse_secret(ConfigRoot config)
+{
     StaticJsonDocument<2048> doc;
 
     {
@@ -1181,59 +1217,55 @@ void RemoteAccess::parse_secret(ConfigRoot config) {
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);
 }
 
-void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> keys, CoolString public_key) {
-        StaticJsonDocument<256> resp_doc;
-        DeserializationError error = deserializeJson(resp_doc, response_body.begin(), response_body.length());
+void RemoteAccess::parse_registration(ConfigRoot new_config, std::queue<WgKey> keys, CoolString public_key)
+{
+    StaticJsonDocument<256> resp_doc;
+    DeserializationError error = deserializeJson(resp_doc, response_body.begin(), response_body.length());
 
-        if (error) {
-            char err_str[64];
-            snprintf(err_str, 64, "Error while deserializing registration response: %s", error.c_str());
-            registration_state.get("message")->updateString(err_str);
-            registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
-            this->request_cleanup();
-            return;
-        }
-
-        const char* charger_password = resp_doc["charger_password"];
-        const char* management_pub = resp_doc["management_pub"];
-
-        WgKey &mgmt = keys.front();
-        store_key(0, 0, mgmt.priv.c_str(), mgmt.psk.c_str(), management_pub);
-        keys.pop();
-
-        for (int i = 0; !keys.empty() && i < MAX_KEYS_PER_USER; i++, keys.pop()) {
-            WgKey &key = keys.front();
-            store_key(1, i,
-                key.priv.c_str(),
-                key.psk.c_str(),
-                key.pub.c_str());
-        }
-
-        this->config.get("relay_host")->updateString(new_config.get("relay_host")->asString());
-        this->config.get("relay_port")->updateUint(new_config.get("relay_port")->asUint());
-        this->config.get("enable")->updateBool(new_config.get("enable")->asBool());
-        this->config.get("cert_id")->updateInt(new_config.get("cert_id")->asInt());
-        this->config.get("password")->updateString(charger_password);
-        this->config.get("uuid")->updateString(resp_doc["charger_uuid"]);
-
-        this->config.get("users")->add();
-        this->config.get("users")->get(0)->get("email")->updateString(new_config.get("email")->asString());
-        this->config.get("users")->get(0)->get("id")->updateUint(1);
-        this->config.get("users")->get(0)->get("public_key")->updateString(public_key);
-
-        API::writeConfig("remote_access/config", &this->config);
-        registration_state.get("message")->updateString("");
-        registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);
+    if (error) {
+        char err_str[64];
+        snprintf(err_str, 64, "Error while deserializing registration response: %s", error.c_str());
+        registration_state.get("message")->updateString(err_str);
+        registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
         this->request_cleanup();
+        return;
+    }
+
+    const char *charger_password = resp_doc["charger_password"];
+    const char *management_pub = resp_doc["management_pub"];
+
+    WgKey &mgmt = keys.front();
+    store_key(0, 0, mgmt.priv.c_str(), mgmt.psk.c_str(), management_pub);
+    keys.pop();
+
+    for (int i = 0; !keys.empty() && i < MAX_KEYS_PER_USER; i++, keys.pop()) {
+        WgKey &key = keys.front();
+        store_key(1, i, key.priv.c_str(), key.psk.c_str(), key.pub.c_str());
+    }
+
+    this->config.get("relay_host")->updateString(new_config.get("relay_host")->asString());
+    this->config.get("relay_port")->updateUint(new_config.get("relay_port")->asUint());
+    this->config.get("enable")->updateBool(new_config.get("enable")->asBool());
+    this->config.get("cert_id")->updateInt(new_config.get("cert_id")->asInt());
+    this->config.get("password")->updateString(charger_password);
+    this->config.get("uuid")->updateString(resp_doc["charger_uuid"]);
+
+    this->config.get("users")->add();
+    this->config.get("users")->get(0)->get("email")->updateString(new_config.get("email")->asString());
+    this->config.get("users")->get(0)->get("id")->updateUint(1);
+    this->config.get("users")->get(0)->get("public_key")->updateString(public_key);
+
+    API::writeConfig("remote_access/config", &this->config);
+    registration_state.get("message")->updateString("");
+    registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);
+    this->request_cleanup();
 }
 
-void RemoteAccess::parse_add_user(ConfigRoot cfg, std::queue<WgKey> key_cache, CoolString pub_key, CoolString email, uint32_t next_user_id) {
+void RemoteAccess::parse_add_user(ConfigRoot cfg, std::queue<WgKey> key_cache, CoolString pub_key, CoolString email, uint32_t next_user_id)
+{
     for (int i = 0; !key_cache.empty() && i < MAX_KEYS_PER_USER; i++, key_cache.pop()) {
         const WgKey &key = key_cache.front();
-        store_key(next_user_id, i,
-            key.priv.c_str(),
-            key.psk.c_str(),
-            key.pub.c_str());
+        store_key(next_user_id, i, key.priv.c_str(), key.psk.c_str(), key.pub.c_str());
     }
 
     this->config.get("users")->add();
@@ -1246,7 +1278,8 @@ void RemoteAccess::parse_add_user(ConfigRoot cfg, std::queue<WgKey> key_cache, C
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);
 }
 
-void RemoteAccess::resolve_management() {
+void RemoteAccess::resolve_management()
+{
     if (!this->management_request_allowed) {
         return;
     }
@@ -1258,7 +1291,6 @@ void RemoteAccess::resolve_management() {
     url += ":";
     url += relay_port;
     url += "/api/management";
-
 
     const CoolString &uuid = config.get("uuid")->asString();
     const CoolString &name = api.getState("info/display_name")->get("display_name")->asString();
@@ -1275,47 +1307,47 @@ void RemoteAccess::resolve_management() {
         serializer.addMemberNumber("id", local_uid_num);
         serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
         serializer.addMemberObject("data");
-            serializer.addMemberObject("V1");
-                serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
-                serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
-                serializer.addMemberArray("configured_connections");
-                    for (auto &user : config.get("users")) {
-                        uint32_t user_id = user.get("id")->asUint() - 1;
-                        for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
-                            serializer.addNumber((user_id * MAX_KEYS_PER_USER) + i);
-                        }
-                    }
-                serializer.endArray();
-            serializer.endObject();
+        serializer.addMemberObject("V1");
+        serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
+        serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
+        serializer.addMemberArray("configured_connections");
+        for (auto &user : config.get("users")) {
+            uint32_t user_id = user.get("id")->asUint() - 1;
+            for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
+                serializer.addNumber((user_id * MAX_KEYS_PER_USER) + i);
+            }
+        }
+        serializer.endArray();
+        serializer.endObject();
         serializer.endObject();
     } else {
         old_api = false;
         serializer.addMemberObject("data");
-            serializer.addMemberObject("V2");
-                serializer.addMemberString("id", config.get("uuid")->asEphemeralCStr());
-                serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
-                serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
-                serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
-                serializer.addMemberArray("configured_users");
-                    for (auto &user : config.get("users")) {
-                        serializer.addObject();
-                        serializer.addMemberString("email", user.get("email")->asEphemeralCStr());
+        serializer.addMemberObject("V2");
+        serializer.addMemberString("id", config.get("uuid")->asEphemeralCStr());
+        serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
+        serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
+        serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
+        serializer.addMemberArray("configured_users");
+        for (auto &user : config.get("users")) {
+            serializer.addObject();
+            serializer.addMemberString("email", user.get("email")->asEphemeralCStr());
 
-                        if (user.get("public_key")->asString().length() != 0) {
-                            auto key = decode_base64(user.get("public_key")->asString(), 32);
+            if (user.get("public_key")->asString().length() != 0) {
+                auto key = decode_base64(user.get("public_key")->asString(), 32);
 
-                            auto encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
-                            crypto_box_seal(encrypted_name.get(), (uint8_t *)name.c_str(), name.length(), key.get());
+                auto encrypted_name = heap_alloc_array<uint8_t>(encrypted_name_size);
+                crypto_box_seal(encrypted_name.get(), (uint8_t *)name.c_str(), name.length(), key.get());
 
-                            auto encoded_name = heap_alloc_array<uint8_t>(encoded_name_size);
-                            size_t olen;
-                            mbedtls_base64_encode(encoded_name.get(), encoded_name_size, &olen, encrypted_name.get(), encrypted_name_size);
-                            serializer.addMemberString("name", (char *)encoded_name.get());
-                        }
-                        serializer.endObject();
-                    }
-                serializer.endArray();
+                auto encoded_name = heap_alloc_array<uint8_t>(encoded_name_size);
+                size_t olen;
+                mbedtls_base64_encode(encoded_name.get(), encoded_name_size, &olen, encrypted_name.get(), encrypted_name_size);
+                serializer.addMemberString("name", (char *)encoded_name.get());
+            }
             serializer.endObject();
+        }
+        serializer.endArray();
+        serializer.endObject();
         serializer.endObject();
     }
 
@@ -1384,15 +1416,19 @@ void RemoteAccess::resolve_management() {
     run_request_with_next_stage(url.c_str(), HTTP_METHOD_PUT, json, len, config, callback);
 }
 
-void RemoteAccess::cleanup_after() {
-    task_scheduler.scheduleOnce([this] {
-        this->request_cleanup();
-    }, 0_s);
+void RemoteAccess::cleanup_after()
+{
+    task_scheduler.scheduleOnce(
+        [this] {
+            this->request_cleanup();
+        },
+        0_s);
 }
 
-static int management_filter_in(struct pbuf* packet) {
+static int management_filter_in(struct pbuf *packet)
+{
     // When this function is called it is already ensured that the payload contains a valid ip packet.
-    uint8_t *payload = (uint8_t*)packet->payload;
+    uint8_t *payload = (uint8_t *)packet->payload;
 
     if (payload[9] != 0x11) {
         logger.printfln("Management blocked invalid incoming packet with protocol: 0x%X", payload[9]);
@@ -1414,8 +1450,9 @@ static int management_filter_in(struct pbuf* packet) {
     return ERR_OK;
 }
 
-static int management_filter_out(struct pbuf* packet) {
-    uint8_t *payload = (uint8_t*)packet->payload;
+static int management_filter_out(struct pbuf *packet)
+{
+    uint8_t *payload = (uint8_t *)packet->payload;
 
     if (payload[9] == 0x1) {
         return ERR_OK;
@@ -1425,7 +1462,8 @@ static int management_filter_out(struct pbuf* packet) {
     return ERR_VAL;
 }
 
-bool port_valid(uint16_t port) {
+bool port_valid(uint16_t port)
+{
     bool port_valid = false;
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock < 0) {
@@ -1446,14 +1484,16 @@ bool port_valid(uint16_t port) {
     return port_valid;
 }
 
-uint16_t find_next_free_port(uint16_t port) {
+uint16_t find_next_free_port(uint16_t port)
+{
     while (!port_valid(port)) {
         port++;
     }
     return port;
 }
 
-void RemoteAccess::request_cleanup() {
+void RemoteAccess::request_cleanup()
+{
     https_client = nullptr;
     encrypted_secret = nullptr;
     secret_nonce = nullptr;
@@ -1461,16 +1501,19 @@ void RemoteAccess::request_cleanup() {
     management_request_allowed = true;
 }
 
-void RemoteAccess::connect_management() {
+void RemoteAccess::connect_management()
+{
     static bool done = false;
     if (done)
         return;
 
     struct timeval tv;
     if (!rtc.clock_synced(&tv)) {
-        task_scheduler.scheduleOnce([this]() {
-            this->connect_management();
-        }, 5_s);
+        task_scheduler.scheduleOnce(
+            [this]() {
+                this->connect_management();
+            },
+            5_s);
         return;
     }
 
@@ -1513,31 +1556,36 @@ void RemoteAccess::connect_management() {
     local_port = find_next_free_port(local_port);
     this->setup_inner_socket();
     management->begin(internal_ip,
-             internal_subnet,
-             local_port,
-             internal_gateway,
-             private_key,
-             remote_host,
-             remote_public_key,
-             51820,
-             allowed_ip,
-             allowed_subnet,
-             false,
-             psk,
-             &management_filter_in,
-             &management_filter_out);
+                      internal_subnet,
+                      local_port,
+                      internal_gateway,
+                      private_key,
+                      remote_host,
+                      remote_public_key,
+                      51820,
+                      allowed_ip,
+                      allowed_subnet,
+                      false,
+                      psk,
+                      &management_filter_in,
+                      &management_filter_out);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        this->run_management();
-    }, 250_ms);
+    task_scheduler.scheduleWithFixedDelay(
+        [this]() {
+            this->run_management();
+        },
+        250_ms);
 }
 
-void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
+void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
+{
     struct timeval tv;
     if (!rtc.clock_synced(&tv)) {
-        task_scheduler.scheduleOnce([this, i, local_port]() {
-            this->connect_remote_access(i, local_port);
-        }, 5_s);
+        task_scheduler.scheduleOnce(
+            [this, i, local_port]() {
+                this->connect_remote_access(i, local_port);
+            },
+            5_s);
         return;
     }
 
@@ -1588,22 +1636,23 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port) {
     *conn = new WireGuard();
 
     (*conn)->begin(internal_ip,
-             internal_subnet,
-             local_port,
-             internal_gateway,
-             private_key,
-             remote_host,
-             remote_public_key,
-             51820,
-             allowed_ip,
-             allowed_subnet,
-             false,
-             psk);
+                   internal_subnet,
+                   local_port,
+                   internal_gateway,
+                   private_key,
+                   remote_host,
+                   remote_public_key,
+                   51820,
+                   allowed_ip,
+                   allowed_subnet,
+                   false,
+                   psk);
     connection_state.get(conn_idx + 1)->get("user")->updateUint(user_id);
     connection_state.get(conn_idx + 1)->get("connection")->updateUint(conn_id);
 }
 
-void RemoteAccess::setup_inner_socket() {
+void RemoteAccess::setup_inner_socket()
+{
     if (inner_socket > 0) {
         return;
     }
@@ -1638,7 +1687,8 @@ void RemoteAccess::setup_inner_socket() {
     return;
 }
 
-uint8_t RemoteAccess::get_connection(uint8_t conn_id) {
+uint8_t RemoteAccess::get_connection(uint8_t conn_id)
+{
     uint8_t first_free_idx = 255;
     for (uint8_t i = 0; i < 5; i++) {
         if (remote_connections[i].id == conn_id) {
@@ -1655,7 +1705,8 @@ uint8_t RemoteAccess::get_connection(uint8_t conn_id) {
     }
 }
 
-void RemoteAccess::run_management() {
+void RemoteAccess::run_management()
+{
     if (inner_socket < 0) {
         return;
     }
@@ -1673,7 +1724,8 @@ void RemoteAccess::run_management() {
         inner_socket = -1;
         setup_inner_socket();
         return;
-    } if (ret != sizeof(management_command_packet)) {
+    }
+    if (ret != sizeof(management_command_packet)) {
         logger.printfln("Didnt receive Management command.");
         return;
     }
@@ -1701,36 +1753,34 @@ void RemoteAccess::run_management() {
     }
     WireGuard **conn = &remote_connections[conn_idx].conn;
     switch (command->command_id) {
-        case management_command_id::Connect:
-            {
-                remote_connections[conn_idx].id = command->connection_no;
-                if (conn == nullptr) {
-                    return;
-                }
-                if (*conn != nullptr && (*conn)->is_peer_up(nullptr, nullptr)) {
-                    return;
-                }
-                if ((*conn) == nullptr) {
-                    uint32_t conn_id = command->connection_no % MAX_KEYS_PER_USER;
-                    uint32_t user_id = command->connection_no / MAX_KEYS_PER_USER;
-                    logger.printfln("Opening connection %u for user %u", conn_id, user_id);
-                }
-
-                uint16_t local_port = 51821;
-                port_discovery_packet response;
-                response.charger_id = local_uid_num;
-                response.connection_no = command->connection_no;
-                memcpy(&response.connection_uuid, &command->connection_uuid, 16);
-
-                CoolString remote_host = config.get("relay_host")->asString();
-                if (*conn != nullptr) {
-                    (*conn)->end();
-                }
-                local_port = find_next_free_port(local_port);
-                create_sock_and_send_to(&response, sizeof(response), remote_host.c_str(), 51820, &local_port);
-                connect_remote_access(command->connection_no, local_port);
+        case management_command_id::Connect: {
+            remote_connections[conn_idx].id = command->connection_no;
+            if (conn == nullptr) {
+                return;
             }
-            break;
+            if (*conn != nullptr && (*conn)->is_peer_up(nullptr, nullptr)) {
+                return;
+            }
+            if ((*conn) == nullptr) {
+                uint32_t conn_id = command->connection_no % MAX_KEYS_PER_USER;
+                uint32_t user_id = command->connection_no / MAX_KEYS_PER_USER;
+                logger.printfln("Opening connection %u for user %u", conn_id, user_id);
+            }
+
+            uint16_t local_port = 51821;
+            port_discovery_packet response;
+            response.charger_id = local_uid_num;
+            response.connection_no = command->connection_no;
+            memcpy(&response.connection_uuid, &command->connection_uuid, 16);
+
+            CoolString remote_host = config.get("relay_host")->asString();
+            if (*conn != nullptr) {
+                (*conn)->end();
+            }
+            local_port = find_next_free_port(local_port);
+            create_sock_and_send_to(&response, sizeof(response), remote_host.c_str(), 51820, &local_port);
+            connect_remote_access(command->connection_no, local_port);
+        } break;
 
         case management_command_id::Disconnect:
             remote_connections[conn_idx].id = 255;
@@ -1738,7 +1788,9 @@ void RemoteAccess::run_management() {
                 logger.printfln("Not found");
                 break;
             }
-            logger.printfln("Closing connection %u for user %u", connection_state.get(conn_idx + 1)->get("connection")->asUint(), connection_state.get(conn_idx + 1)->get("user")->asUint());
+            logger.printfln("Closing connection %u for user %u",
+                            connection_state.get(conn_idx + 1)->get("connection")->asUint(),
+                            connection_state.get(conn_idx + 1)->get("user")->asUint());
             (*conn)->end();
             delete *conn;
             *conn = nullptr;
