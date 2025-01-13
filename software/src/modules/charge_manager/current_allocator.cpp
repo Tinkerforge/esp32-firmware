@@ -996,7 +996,7 @@ static void stage_5(StageContext &sc) {
 
         // Only switch from one to three phase if there is still current available on all phases except the P1 phase of this charger: P1 is used by this charger anyway.
         Cost check_phase{
-            ((state->charge_mode & ChargeMode::PV) != 0 ? (CHECK_IMPROVEMENT_ALL_PHASE | check_min) : 0),
+            (state->charge_mode_pv ?(CHECK_IMPROVEMENT_ALL_PHASE | check_min) : 0),
             (old_factors.l1 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
             (old_factors.l2 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
             (old_factors.l3 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE
