@@ -110,7 +110,7 @@ struct Cost {
     // Forward to above variant.
     // Both are required to be implemented for commutative operators.
     friend Cost operator*(int lhs, Cost rhs) {
-        return lhs * rhs;
+        return rhs * lhs;
     }
 
     Cost &operator*=(float rhs) {
@@ -129,7 +129,7 @@ struct Cost {
     // Forward to above variant.
     // Both are required to be implemented for commutative operators.
     friend Cost operator*(float lhs, Cost rhs) {
-        return lhs * rhs;
+        return rhs * lhs;
     }
 
     int32_t min() const {
