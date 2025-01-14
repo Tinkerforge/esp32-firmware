@@ -85,7 +85,8 @@ void sort_chargers_impl(group_fn group, compare_fn compare, StageContext &sc);
         [](const CompareContext &ctx) { \
             return (filter); \
         }, \
-        sc); \
+        sc, \
+        matched); \
     } while (0)
 
 GridPhase get_phase(PhaseRotation rot, ChargerPhase phase);

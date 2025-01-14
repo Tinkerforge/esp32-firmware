@@ -160,15 +160,15 @@ int filter_chargers_impl(filter_fn filter_, StageContext &sc) {
 }
 
 // Sorts the indices of chargers by first grouping them with the group function and then comparing in groups with the sort function.
-void sort_chargers_impl(group_fn group, compare_fn compare, StageContext &sc) {
+void sort_chargers_impl(group_fn group, compare_fn compare, StageContext &sc, int matched) {
     int groups[MAX_CONTROLLED_CHARGERS] = {};
 
-    for(int i = 0; i < sc.charger_count; ++i)
-        groups[sc.idx_array[i]] = group({sc.current_allocation[sc.idx_array[i]], sc.phase_allocation[sc.idx_array[i]], &sc.charger_state[sc.idx_array[i]], sc.cfg});
+    for(int i = 0; i < matched; ++i)
+        groups[sc.idx_array[i]] = group({sc.current_allocation[sc.idx_array[i]], sc.phase_allocation[sc.idx_array[i]], &sc.charger_state[sc.idx_array[i]], sc.cfg, &sc.charger_allocation_state[sc.idx_array[i]]});
 
     std::stable_sort(
         sc.idx_array,
-        sc.idx_array + sc.charger_count,
+        sc.idx_array + matched,
         [&groups, &compare, sc] (int left, int right) {
             if (groups[left] != groups[right])
                 return groups[left] < groups[right];
