@@ -1,4 +1,3 @@
-
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
  *
@@ -889,4 +888,50 @@ export function is_date_today(date: Date): boolean {
     return date.getDate() == today.getDate() &&
            date.getMonth() == today.getMonth() &&
            date.getFullYear() == today.getFullYear();
+}
+
+export function decodeBase58ToJson(encoded: string): any {
+    const ALPHABET = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+    const BASE = 58;
+
+    // Count leading '1' = zero bytes
+    let leadingZeros = 0;
+    for (let char of encoded) {
+        if (char === '1') {
+            leadingZeros++;
+        } else {
+            break;
+        }
+    }
+
+    let decoded: number[] = [];
+    for (let char of encoded.slice(leadingZeros)) {
+        let index = ALPHABET.indexOf(char);
+        if (index < 0) {
+            throw new Error(`Invalid character '${char}' in Base58 string`);
+        }
+        let carry = index;
+        for (let i = 0; i < decoded.length; i++) {
+            carry += decoded[i] * BASE;
+            decoded[i] = carry % 256;
+            carry = Math.floor(carry / 256);
+        }
+        while (carry > 0) {
+            decoded.push(carry % 256);
+            carry = Math.floor(carry / 256);
+        }
+    }
+
+    // Insert zero bytes at the front for each leading '1'
+    while (leadingZeros-- > 0) {
+        decoded.push(0);
+    }
+
+    decoded = decoded.reverse();
+    let jsonString = new TextDecoder().decode(new Uint8Array(decoded));
+    try {
+        return JSON.parse(jsonString);
+    } catch (e) {
+        throw new Error('Decoded string is not valid JSON');
+    }
 }
