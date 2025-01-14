@@ -32,7 +32,10 @@ let x = {
             "all_users_in_use": "All users are currently in use",
             "note": "Note",
             "note_muted": /*FFN*/(host: string) => <>will be shown at <a href={`https://${host}/`} target="_blank">{host}</a>. Optional</>/*NF*/,
-            "user_exists": "This account already exists"
+            "user_exists": "This account already exists",
+            "auth_token": "Autorization token",
+            "auth_token_invalid": "Invalid authentorization token",
+            "auth_method": "Authorization method"
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",

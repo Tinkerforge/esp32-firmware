@@ -32,7 +32,10 @@ let x = {
             "all_users_in_use": "Alle Accounts in benutzung",
             "note": "Notiz",
             "note_muted": /*FFN*/(host: string) => <>wird auf <a href={`https://${host}/`} target="_blank">{host}</a> angezeigt. Optional</>/*NF*/,
-            "user_exists": "Account wurde bereits hinzugefügt"
+            "user_exists": "Account wurde bereits hinzugefügt",
+            "auth_token": "Authorisierungstoken",
+            "auth_token_invalid": "Ungültiges Authorisierungstoken",
+            "auth_method": "Authorisierungsmethode"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",

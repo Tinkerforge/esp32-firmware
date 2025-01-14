@@ -36,8 +36,9 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
-import { Container, Modal, Row, Spinner } from "react-bootstrap";
+import { Collapse, Container, Modal, Row, Spinner } from "react-bootstrap";
 import { Table, TableRow } from "ts/components/table";
+import { useState } from "preact/hooks";
 
 export function RemoteAccessNavbar() {
     return <NavbarItem name="remote_access" module="remote_access" title={__("remote_access.navbar.remote_access")} symbol={<Smartphone />} />;
@@ -49,6 +50,8 @@ interface RemoteAccessState {
     addUser: {
         email: string,
         password: string,
+        auth_token: string,
+        public_key: string,
         note: string,
     },
     removeUsers: number[],
@@ -315,62 +318,79 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             cert_id: this.state.cert_id,
         }
 
-        let loginSalt: Uint8Array;
-        try {
-            loginSalt = await this.get_login_salt(cfg);
-        } catch (err) {
-            console.error(err);
-            util.add_alert("registration", "danger", () => "Failed to login:", () => "Wrong user or password");
-            this.setState({status_modal_string: ""});
-            return;
-        }
-
-        const loginHash = await hash({
-            pass: this.state.addUser.password,
-            salt: loginSalt,
-            time: 2,
-            mem: 19 * 1024,
-            hashLen: 24,
-            parallelism: 1,
-            type: ArgonType.Argon2id
-        });
-        const loginKey = (await util.blobToBase64(new Blob([loginHash.hash]))).replace("data:application/octet-stream;base64,", "");
-
-        try {
-            await this.login({
-                config: cfg,
-                login_key: loginKey,
-                note: "",
-                secret_key: "",
-                mgmt_charger_public: "",
-                mgmt_charger_private: "",
-                mgmt_psk: "",
-                keys: []
-            });
-        } catch (err) {
-            console.error(`Failed to login: ${err}`);
-
-            // scrape the status code from the error message and only display wrong username or password in case it
-            // really is an authorization error.
-            const errString = err as string;
-            const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
-            if (errCode === "401") {
-                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
-            } else {
-                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
+        let secret_key_string = undefined;
+        let loginKey = undefined;
+        if (this.state.addUser.auth_token === "") {
+            let loginSalt: Uint8Array;
+            try {
+                loginSalt = await this.get_login_salt(cfg);
+            } catch (err) {
+                console.error(err);
+                util.add_alert("registration", "danger", () => "Failed to login:", () => "Wrong user or password");
+                this.setState({status_modal_string: ""});
+                return;
             }
-            this.setState({status_modal_string: ""});
-            return;
-        }
 
-        let secretSalt: Uint8Array;
-        try {
-            secretSalt = await this.get_secret_salt(cfg);
-        } catch (err) {
-            console.error(`Failed to get secret salt: ${err}`);
-            util.add_alert("registration", "danger", () => "Failed to get secret-salt:", err);
-            this.setState({status_modal_string: ""});
-            return;
+            const loginHash = await hash({
+                pass: this.state.addUser.password,
+                salt: loginSalt,
+                time: 2,
+                mem: 19 * 1024,
+                hashLen: 24,
+                parallelism: 1,
+                type: ArgonType.Argon2id
+            });
+            loginKey = (await util.blobToBase64(new Blob([loginHash.hash]))).replace("data:application/octet-stream;base64,", "");
+
+            try {
+                await this.login({
+                    config: cfg,
+                    login_key: loginKey,
+                    note: "",
+                    secret_key: "",
+                    mgmt_charger_public: "",
+                    mgmt_charger_private: "",
+                    mgmt_psk: "",
+                    keys: []
+                });
+            } catch (err) {
+                console.error(`Failed to login: ${err}`);
+
+                // scrape the status code from the error message and only display wrong username or password in case it
+                // really is an authorization error.
+                const errString = err as string;
+                const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
+                if (errCode === "401") {
+                    util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
+                } else {
+                    util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
+                }
+                this.setState({status_modal_string: ""});
+                return;
+            }
+
+            let secretSalt: Uint8Array;
+            try {
+                secretSalt = await this.get_secret_salt(cfg);
+            } catch (err) {
+                console.error(`Failed to get secret salt: ${err}`);
+                util.add_alert("registration", "danger", () => "Failed to get secret-salt:", err);
+                this.setState({status_modal_string: ""});
+                return;
+            }
+            const secret_key = await hash({
+                pass: this.state.addUser.password,
+                salt: secretSalt,
+                // Takes about 1.5 seconds on a Nexus 4
+                time: 2, // the number of iterations
+                mem: 19 * 1024, // used memory, in KiB
+                hashLen: 32, // desired hash length
+                parallelism: 1, // desired parallelism (it won't be computed in parallel, however)
+                type: ArgonType.Argon2id,
+            })
+
+            const secret_key_blob = new Blob([secret_key.hash]);
+            secret_key_string = await util.blobToBase64(secret_key_blob);
         }
 
         const keys: util.NoExtraProperties<API.getType["remote_access/register"]["keys"]> = [];
@@ -390,26 +410,23 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             });
         }
 
-        const secret_key = await hash({
-            pass: this.state.addUser.password,
-            salt: secretSalt,
-            // Takes about 1.5 seconds on a Nexus 4
-            time: 2, // the number of iterations
-            mem: 19 * 1024, // used memory, in KiB
-            hashLen: 32, // desired hash length
-            parallelism: 1, // desired parallelism (it won't be computed in parallel, however)
-            type: ArgonType.Argon2id,
-        })
-
-        const secret_key_blob = new Blob([secret_key.hash]);
-        const secret_key_string = await util.blobToBase64(secret_key_blob);
-
-        const add_user_data: add_user = {
-            secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
-            login_key: loginKey,
-            note: this.state.addUser.note,
-            email: this.state.addUser.email,
-            wg_keys: keys,
+        let add_user_data: add_user;
+        if (this.state.addUser.auth_token === "") {
+            add_user_data = {
+                secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
+                login_key: loginKey,
+                note: this.state.addUser.note,
+                email: this.state.addUser.email,
+                wg_keys: keys,
+            }
+        } else {
+            add_user_data = {
+                auth_token: this.state.addUser.auth_token,
+                public_key: this.state.addUser.public_key,
+                note: this.state.addUser.note,
+                email: this.state.addUser.email,
+                wg_keys: keys,
+            }
         }
 
         try {
@@ -459,9 +476,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         API.reset("remote_access/config", () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
     }
 
-    checkUserExisting() {
+    checkUserExisting(email?: string) {
+        if (email === undefined) {
+            email = this.state.addUser.email;
+        }
         for (const user of this.state.users) {
-            if (user.email.toLowerCase() === this.state.addUser.email.toLowerCase()) {
+            if (user.email.toLowerCase() === email.toLowerCase()) {
                 return true;
             }
         }
@@ -529,29 +549,76 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                             rows={users}
                             addEnabled={users.length < 5}
                             addTitle={__("remote_access.content.add_user")}
-                            onAddShow={async () => this.setState({addUser: {email: "", password: "", note: ""}})}
+                            onAddShow={async () => this.setState({addUser: {email: "", password: "", auth_token: "", public_key: "", note: ""}})}
                             addMessage={users.length < 5 ? __("remote_access.content.user_add_message")(users.length, 5) : __("remote_access.content.all_users_in_use")}
                             onAddGetChildren={() => {
+                                const [authMethod, setAuthMethod] = useState("password");
+                                const [invalidFeedback, setInvalidFeedback] = useState("");
+                                const [authToken, setAuthToken] = useState("");
+
                                 return <>
-                                    <FormRow label={__("remote_access.content.email")}>
-                                        <InputText value={this.state.addUser.email} required
-                                            maxLength={64}
-                                            class={this.checkUserExisting() ? "is-invalid" : undefined}
-                                            invalidFeedback={__("remote_access.content.user_exists")}
-                                            onValue={(v) => {
-                                                        this.setState({addUser: {...this.state.addUser, email: v}})
-                                            }} />
+                                    <FormRow label={__("remote_access.content.auth_method")}>
+                                        <InputSelect items={[["password", __("remote_access.content.password")], ["token", __("remote_access.content.auth_token")]]} value={authMethod} onValue={(v) => setAuthMethod(v)}/>
                                     </FormRow>
-                                    <FormRow label={__("remote_access.content.password")} label_muted={__("remote_access.content.password_muted")}>
-                                        <InputPassword required
-                                            value={this.state.addUser.password}
-                                            // no maxLength: The password is put through argon2id.
-                                            onValue={(v) => {
-                                                    this.setState({addUser: {...this.state.addUser, password: v}})
-                                            }}
-                                            hideClear
-                                            placeholder="" />
-                                    </FormRow>
+                                    <Collapse in={authMethod === "token"}>
+                                       <div>
+                                        <FormRow label={__("remote_access.content.auth_token")}>
+                                                <InputText required={this.state.addUser.password === ""}
+                                                    class={invalidFeedback !== "" ? "is-invalid" : undefined}
+                                                    value={authToken}
+                                                    invalidFeedback={invalidFeedback}
+                                                    onValue={(v) => {
+                                                        setAuthToken(v);
+                                                        try {
+                                                            const decodedToken = util.decodeBase58ToJson(v);
+                                                            if (decodedToken.user_email === undefined) {
+                                                                setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
+                                                                return;
+                                                            }
+                                                            if (this.checkUserExisting(decodedToken.user_email)) {
+                                                                setInvalidFeedback(__("remote_access.content.user_exists"));
+                                                                return;
+                                                            }
+                                                            if (decodedToken.user_public_key === undefined) {
+                                                                setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
+                                                                return;
+                                                            }
+                                                            if (decodedToken.token === undefined) {
+                                                                setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
+                                                                return;
+                                                            }
+                                                            this.setState({addUser: {...this.state.addUser, email: decodedToken.user_email, password: "", public_key: decodedToken.user_public_key, auth_token: decodedToken.token}});
+                                                            setInvalidFeedback("");
+                                                        } catch {
+                                                            setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
+                                                        }
+                                                    }} />
+                                            </FormRow>
+                                       </div>
+                                    </Collapse>
+                                    <Collapse in={authMethod === "password"}>
+                                        <div>
+                                            <FormRow label={__("remote_access.content.email")}>
+                                                <InputText value={this.state.addUser.email} required={this.state.addUser.auth_token === ""}
+                                                    maxLength={64}
+                                                    class={this.checkUserExisting() ? "is-invalid" : undefined}
+                                                    invalidFeedback={__("remote_access.content.user_exists")}
+                                                    onValue={(v) => {
+                                                                this.setState({addUser: {...this.state.addUser, email: v}})
+                                                    }} />
+                                            </FormRow>
+                                            <FormRow label={__("remote_access.content.password")} label_muted={__("remote_access.content.password_muted")}>
+                                                <InputPassword required={this.state.addUser.auth_token === ""}
+                                                    value={this.state.addUser.password}
+                                                    // no maxLength: The password is put through argon2id.
+                                                    onValue={(v) => {
+                                                            this.setState({addUser: {...this.state.addUser, password: v}})
+                                                    }}
+                                                    hideClear
+                                                    placeholder="" />
+                                            </FormRow>
+                                        </div>
+                                    </Collapse>
                                     <FormRow label={__("remote_access.content.note")} label_muted={__("remote_access.content.note_muted")(this.state.relay_host)}>
                                         <textarea class="form-control" maxLength={128} style={{width: "100%"}} value={this.state.addUser.note} onInput={(v) => this.setState({addUser: {...this.state.addUser, note: (v.target as HTMLInputElement).value}})}/>
                                     </FormRow>

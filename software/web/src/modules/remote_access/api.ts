@@ -51,10 +51,12 @@ export interface register {
 }
 
 export interface add_user {
-    secret_key: string,
+    secret_key?: string,
+    public_key?: string,
     note: string,
     email: string,
-    login_key: string,
+    login_key?: string,
+    auth_token?: string,
     wg_keys: KeyObject[],
 }
 
