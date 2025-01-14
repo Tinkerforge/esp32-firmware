@@ -308,7 +308,32 @@ void MeterSunSpec::scan_next()
 
                     logger.printfln("Looking for device Mn='%s' Md='%s' SN='%s'", manufacturer_name.c_str(), model_name.c_str(), serial_number.c_str());
 
+                    // The manufacturer name for SolarEdge devices sometimes has a trailing space. Compare only the first 9 characters.
+                    #define equals_solar_edge(value) (strncmp(value, "SolarEdge", 9) == 0)
+
                     if (manufacturer_name.length() == 0 && model_name.length() == 0 && serial_number.length() == 0) {
+                        scan_device_found = true;
+                    }
+                    else if (equals_solar_edge(m->Mn) &&
+                             strncmp(m->Md, "SE-RGMTR-1D-240C-A", 32) == 0 &&
+                             strncmp(m->SN, "0", 32) == 0 &&
+                             equals_solar_edge(manufacturer_name.c_str()) &&
+                             strncmp(model_name.c_str(), "MTR-240-3PC1-D-A-MW", 32) == 0) {
+                        // Sometimes SolarEdge inverters report a MTR-240-3PC1-D-A-MW meter wrongly
+                        // as a SE-RGMTR-1D-240C-A meter with serial number 0. Work around this by
+                        // accepting a SE-RGMTR-1D-240C-A meter with serial number 0 when looking
+                        // for a MTR-240-3PC1-D-A-MW meter.
+                        scan_device_found = true;
+                    }
+                    else if (equals_solar_edge(m->Mn) &&
+                             strncmp(m->Md, "MTR-240-3PC1-D-A-MW", 32) == 0 &&
+                             equals_solar_edge(manufacturer_name.c_str()) &&
+                             strncmp(model_name.c_str(), "SE-RGMTR-1D-240C-A", 32) == 0 &&
+                             strncmp(serial_number.c_str(), "0", 32) == 0) {
+                        // A MTR-240-3PC1-D-A-MW meter might have been configured while it was wrongly
+                        // reported as SE-RGMTR-1D-240C-A meter with serial number 0. But now it is
+                        // correctly reported again. Work around this by accepting a MTR-240-3PC1-D-A-MW
+                        // meter when looking for a SE-RGMTR-1D-240C-A meter with serial number 0.
                         scan_device_found = true;
                     }
                     else {
@@ -334,7 +359,7 @@ void MeterSunSpec::scan_next()
                             if (model_id >= 100 && model_id < 200) {
                                 quirks |= SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16;
                             }
-                        } else if (strncmp(m->Mn, "SolarEdge", 9) == 0) { // Compare only 9 characters. The manufacturer name for SolarEdge devices sometimes has a trailing space.
+                        } else if (equals_solar_edge(m->Mn)) {
                             if (model_id >= 200 && model_id < 300) {
                                 // Only meters are inverted, inverters are not.
                                 quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;
