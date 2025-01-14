@@ -398,9 +398,7 @@ static bool was_just_plugged_in(const ChargerState *state) {
 // we won't toggle the contactors too fast.
 // This feature is completely deactivated if cfg->plug_in_time is set to 0.
 static void stage_2(StageContext &sc) {
-    int matched = 0;
-
-    filter_chargers(was_just_plugged_in(ctx.state));
+    int matched = filter_chargers(was_just_plugged_in(ctx.state));
 
     // Charger that is plugged in for the longest time first.
     sort_chargers(0,
@@ -451,13 +449,11 @@ static void calculate_window(bool trace_short, StageContext &sc) {
     Cost wnd_min_1p{0, 0, 0, 0};
     Cost wnd_max{0, 0, 0, 0};
 
-    int matched = 0;
-
     // Work on copy of idx_array so that this function can be called in stages without destroying their sort order.
     int idx_array[MAX_CONTROLLED_CHARGERS];
     memcpy(idx_array, sc.idx_array, sizeof(idx_array));
 
-    filter_chargers(ctx.allocated_phases > 0);
+    int matched = filter_chargers(ctx.allocated_phases > 0);
 
     // Calculate minimum window
     for (int i = 0; i < matched; ++i) {
@@ -580,12 +576,8 @@ static void stage_3(StageContext &sc) {
     calculate_window(false, sc);
 
     Cost wnd_min = sc.ca_state->control_window_min;
-    auto min_1p = sc.cfg->minimum_current_1p;
-    auto min_3p = sc.cfg->minimum_current_3p;
 
-    int matched = 0;
-
-    filter_chargers(ctx.allocated_phases > 0);
+    int matched = filter_chargers(ctx.allocated_phases > 0);
 
     // Reverse sort. Charger that was active for the longest time first.
     // Group chargers that were activated in stage 2 (because a vehicle was just plugged in)
@@ -856,14 +848,13 @@ static void stage_4(StageContext &sc) {
     if (!sc.ca_state->global_hysteresis_elapsed)
         return;
 
-    int matched = 0;
 
     bool have_active_chargers = sc.ca_state->control_window_min.pv != 0;
 
     trace(have_active_chargers ? "4: have active chargers." : "4: don't have active chargers.");
 
     // A charger that was rotated has 0 allocated phases but is still charging.
-    filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge || ctx.state->is_charging));
+    int matched = filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge || ctx.state->is_charging));
 
     // Group PV chargers behind fast chargers to activate them last.
     // PV chargers would probably be shut down in the next iteration anyway.
@@ -954,8 +945,6 @@ static void stage_5(StageContext &sc) {
     int ena_1p = min_1p * sc.cfg->enable_current_factor;
     int ena_3p = min_3p * sc.cfg->enable_current_factor;
 
-    int matched = 0;
-
     // If there is exactly one charger active, the window minimum should be the charger's 1p minimum current,
     // or it is already active with three phases in which case this stage will do nothing.
     bool have_active_chargers = sc.ca_state->control_window_min.pv > min_1p;
@@ -963,7 +952,7 @@ static void stage_5(StageContext &sc) {
 
     trace(have_active_chargers ? "5: have active chargers." : "5: don't have active chargers.");
 
-    filter_chargers(ctx.allocated_phases == 1 && ctx.state->phase_switch_supported && deadline_elapsed(ctx.state->last_phase_switch + ctx.cfg->global_hysteresis));
+    int matched = filter_chargers(ctx.allocated_phases == 1 && ctx.state->phase_switch_supported && deadline_elapsed(ctx.state->last_phase_switch + ctx.cfg->global_hysteresis));
 
     // Group PV chargers behind fast chargers to phase switch them last.
     // PV chargers would probably be shut down in the next iteration anyway.
@@ -1022,9 +1011,7 @@ static void stage_5(StageContext &sc) {
 
 // Stage 6: Allocate minimum current to chargers with at least one allocated phase
 static void stage_6(StageContext &sc) {
-    int matched = 0;
-
-    filter_chargers(ctx.allocated_phases > 0);
+    int matched = filter_chargers(ctx.allocated_phases > 0 && ctx.allocated_current == 0);
 
     // No need to sort here: We know that we have enough current to give each charger its minimum current.
     // A charger that can't be activated has 0 phases allocated.
@@ -1119,9 +1106,7 @@ static Cost get_fair_current(int matched, int start, int *idx_array, uint8_t *ph
 //   On the PV "phase" include a charger n times were n is the number of phases this charger uses.
 //   A three-phase charger will use 18 A of PV current if it is allocated 6 A to each phase.
 static void stage_7(StageContext &sc) {
-    int matched = 0;
-
-    filter_chargers(ctx.allocated_current > 0);
+    int matched = filter_chargers(ctx.allocated_current > 0);
 
     if (matched == 0)
         return;
@@ -1188,10 +1173,8 @@ static void stage_7(StageContext &sc) {
 //   One phase chargers on other phases will take the rest if possible.
 // - Sort by current_capacity ascending. This makes sure that one pass is enough to allocate the possible maximum.
 static void stage_8(StageContext &sc) {
-    int matched = 0;
-
     // Chargers that are currently not charging already have the enable current allocated (if available) by stage 7.
-    filter_chargers(ctx.allocated_current > 0 && ctx.state->is_charging);
+    int matched = filter_chargers(ctx.allocated_current > 0 && ctx.state->is_charging);
 
     sort_chargers(
         3 - ctx.allocated_phases,
@@ -1280,13 +1263,11 @@ static bool stage_9_sort(const ChargerState *left_state, const ChargerState *rig
 // Activating a charger will automatically change it from low to normal priority for at least 3 minutes,
 // giving the car time to request current.
 static void stage_9(StageContext &sc) {
-    int matched = 0;
-
     bool have_active_chargers = sc.ca_state->control_window_min.pv != 0;
 
     trace(have_active_chargers ? "9: have active chargers." : "9: don't have active chargers.");
 
-    filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge_low_priority || (ctx.state->wants_to_charge && ctx.state->last_wakeup != 0_us)));
+    int matched = filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge_low_priority || (ctx.state->wants_to_charge && ctx.state->last_wakeup != 0_us)));
 
     if (matched == 0)
         return;

@@ -70,12 +70,10 @@ typedef bool(*compare_fn)(const CompareContext &ctx);
 
 void sort_chargers_impl(group_fn group, compare_fn compare, StageContext &sc);
 
-#define filter_chargers(x) do { \
-    matched = filter_chargers_impl([](const FilterContext &ctx) { \
+#define filter_chargers(x) filter_chargers_impl([](const FilterContext &ctx) { \
             return (x); \
         }, \
-        sc); \
-    } while(0)
+        sc)
 
 #define sort_chargers(group, filter) do {\
     sort_chargers_impl( \
