@@ -377,7 +377,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                         this.setState({enable_charge_manager: v == "2", managementEnabled: mgmt_en})
                     }}
                 />
-                <div class="pt-3 pb-4">
+                <div class="pt-3">
                     {translate_unchecked(`charge_manager.script.mode_explainer_${state.enable_charge_manager ? "2" : state.managementEnabled ? "1" : "0"}${charge_manager_mode_explainer_suffix}`)}
                 </div>
             </FormRow>

@@ -113,7 +113,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
             const name_link = (API.is_dirty("charge_manager/config") || !charger_config || util.remoteAccessMode) ? c.n :
                                 <a target="_blank" rel="noopener noreferrer" href={(charger_config.host == '127.0.0.1' || charger_config.host == 'localhost') ? '/' : "http://" + charger_config.host}>{c.n}</a>
 
-            return  <div class="card">
+            return  <div class={"card " + (i + 1 == state.config.chargers.length ? "mb-0" : "")}>
                         <h5 class="card-header">
                             {name_link}
                         </h5>
@@ -129,6 +129,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
         let controls_only_self = (state.config.chargers.length == 1
                        && (state.config.chargers[0].host == '127.0.0.1' || state.config.chargers[0].host == 'localhost'));
+        let row_count = Math.ceil(cards.length / 2);
 
         return <StatusSection name="charge_manager">
 
@@ -158,8 +159,8 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
             {controls_only_self ? null :
                 <FormRow label={__("charge_manager.status.managed_boxes")}>
-                    {util.range(Math.ceil(cards.length / 2)).map(i =>
-                        <div class="card-deck mb-4">
+                    {util.range(row_count).map(i =>
+                        <div class={"card-deck" + (i + 1 < row_count ? " mb-3" : "")}>
                             {cards[2 * i]}
                             {cards.length > (2 * i + 1) ? cards[2 * i + 1] : undefined}
                         </div>)

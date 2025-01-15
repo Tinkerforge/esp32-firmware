@@ -196,17 +196,17 @@ export function ChargeManagerDebug(props: {dynamicLoadConfig: API.getType['power
             </CMDFormRow>
 
             <CMDFormRow label="">
-                <div class="row">
-                    <div class="col-12 col-sm-3">
+                <div class="row d-none d-lg-flex">
+                    <div class="col">
                         <p class="mb-0 form-label text-center">PV</p>
                     </div>
-                    <div class="col-12 col-sm-3">
+                    <div class="col">
                         <p class="mb-0 form-label text-center">L1</p>
                     </div>
-                    <div class="col-12 col-sm-3">
+                    <div class="col">
                         <p class="mb-0 form-label text-center">L2</p>
                     </div>
-                    <div class="col-12 col-sm-3">
+                    <div class="col">
                         <p class="mb-0 form-label text-center">L3</p>
                     </div>
                 </div>
@@ -321,7 +321,7 @@ export function ChargeManagerDebug(props: {dynamicLoadConfig: API.getType['power
             <FormSeparator heading="Chargers" />
 
             <div class="row">
-                {util.range(state.chargers.length).map(i => <div class="mb-5 col-12 col-sm-6 ">
+                {util.range(state.chargers.length).map(i => <div class="mb-3 col-12 col-sm-6">
                     <Charger i={i} state={state.chargers[i]} ll_state={ll_state.chargers[i]}/>
                 </div>)}
             </div>

@@ -473,7 +473,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                 <div class="card mt-1">
                 <EcoChart charger_id={-1} ref={this.eco_chart_ref} departure={this.state.charge_plan.departure} time={this.state.charge_plan.time} amount={this.state.charge_plan.amount} enable={this.state.charge_plan.enable}/>
                 </div>
-                <div class="form-group mt-2">
+                <div class="mt-2">
                     <Button
                         onClick={() => this.setState({charge_plan: {...state.charge_plan, enable: !state.charge_plan.enable}}, () => this.update_charge_plan({...state.charge_plan, enable: !state.charge_plan.enable}))}
                         className="form-control"
