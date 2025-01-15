@@ -45,6 +45,7 @@ struct GroupContext {
     uint8_t allocated_phases;
     const ChargerState *state;
     const CurrentAllocatorConfig *cfg;
+    const ChargerAllocationState *alloc_state;
 };
 
 struct CompareInfo {
