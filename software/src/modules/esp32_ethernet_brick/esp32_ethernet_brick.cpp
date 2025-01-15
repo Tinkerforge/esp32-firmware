@@ -64,7 +64,7 @@ static TF_Local local;
 #define WEM_FACTORY_RESET_WAIT_TIME 8
 #endif
 
-#if (BUILD_IS_ENERGY_MANAGER() || BUILD_IS_ENERGY_MANAGER_V2()) && MODULE_SYSTEM_AVAILABLE()
+#if (BUILD_IS_ENERGY_MANAGER() || BUILD_IS_ENERGY_MANAGER_V2() || BUILD_IS_SMART_ENERGY_BROKER()) && MODULE_SYSTEM_AVAILABLE()
 static void check_for_factory_reset()
 {
     // A factory reset will leave the green LED on, even across a restart. Switch it off here.
