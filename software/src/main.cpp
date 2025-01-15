@@ -326,10 +326,6 @@ void setup()
         imodule->pre_init();
     }
 
-    if (esp_register_shutdown_handler(pre_reboot) != ESP_OK) {
-        logger.printfln("Failed to register reboot handler");
-    }
-
     print_app_partitions();
 
     if (!mount_or_format_spiffs()) {
@@ -392,6 +388,10 @@ void setup()
 #if MODULE_WATCHDOG_AVAILABLE()
     watchdog_handle = watchdog.add("main_loop", "Main thread blocked", 30000, 0, true);
 #endif
+
+    if (esp_register_shutdown_handler(pre_reboot) != ESP_OK) {
+        logger.printfln("Failed to register reboot handler");
+    }
 
     boot_stage = BootStage::LOOP;
 }
