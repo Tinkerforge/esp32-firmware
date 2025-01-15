@@ -88,9 +88,11 @@ private:
     const char *charger_hostname;
     SwitchingState switching_state = SwitchingState::Idle;
     bool charger_usable = false;
+    bool allocated_current_after_last_disconnect = true;
+    bool skip_cp_disconnect = false;
     uint8_t controlled_charger_idx;
-    uint8_t last_iec61851_state;
-    uint8_t last_charger_state;
+    uint8_t last_iec61851_state = 255;
+    uint8_t last_charger_state = 255;
     uint8_t external_phase_override = 0;
 };
 

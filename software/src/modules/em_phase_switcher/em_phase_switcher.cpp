@@ -281,8 +281,17 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
                     logger.printfln("Charger state outdated. Last packet from %llims ago.", (now_us() - last_state_packet).to<millis_t>().as<int64_t>());
                     return;
                 } else {
-                    command_packet->v1.allocated_current = 0;
-                    switching_state = SwitchingState::Stopping;
+                    if (allocated_current_after_last_disconnect) {
+                        skip_cp_disconnect = false;
+                        command_packet->v1.allocated_current = 0;
+                        switching_state = SwitchingState::Stopping;
+                        logger.printfln("Toggling with CP disconnect");
+                    } else {
+                        skip_cp_disconnect = true;
+                        command_packet->v1.allocated_current = 0;
+                        switching_state = SwitchingState::TogglingContactor;
+                        logger.printfln("Free toggle without CP disconnect");
+                    }
                 }
             }
             break;
@@ -299,7 +308,9 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
         }
         case SwitchingState::TogglingContactor: {
             command_packet->v1.allocated_current = 0;
-            command_packet->v1.command_flags |= CM_COMMAND_FLAGS_CPDISC_MASK;
+            if (!skip_cp_disconnect) {
+                command_packet->v1.command_flags |= CM_COMMAND_FLAGS_CPDISC_MASK;
+            }
 
             if (switch_phases_internal(allocated_phases)) {
                 switching_state = SwitchingState::WaitUntilSwitched;
@@ -308,11 +319,17 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
         }
         case SwitchingState::WaitUntilSwitched: {
             command_packet->v1.allocated_current = 0;
-            command_packet->v1.command_flags |= CM_COMMAND_FLAGS_CPDISC_MASK;
+            if (!skip_cp_disconnect) {
+                command_packet->v1.command_flags |= CM_COMMAND_FLAGS_CPDISC_MASK;
+            }
 
             if (get_phase_switching_state_internal() == PhaseSwitcherBackend::SwitchingState::Ready) {
                 if (em_v1.get_phases() == allocated_phases) {
-                    switching_state = SwitchingState::WaitUntilCPReconnect;
+                    if (skip_cp_disconnect) {
+                        switching_state = SwitchingState::Idle;
+                    } else {
+                        switching_state = SwitchingState::WaitUntilCPReconnect;
+                    }
                 } else {
                     logger.printfln("Incorrect number of phases after switching, wanted %u. Trying again.", allocated_phases);
                     switching_state = SwitchingState::TogglingContactor;
@@ -340,6 +357,16 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
         default:
             logger.printfln("Unexpected switching state for cmd: %u", static_cast<uint32_t>(switching_state));
             break;
+    }
+
+    if (last_charger_state == 0 && command_packet->v1.allocated_current == 0) {
+        // Not plugged in and no current allocated -> safe
+        allocated_current_after_last_disconnect = false;
+    } else {
+        if (last_charger_state >= 2 || command_packet->v1.allocated_current != 0) {
+            // Charger ready or charging or allocating current -> not safe
+            allocated_current_after_last_disconnect = true;
+        }
     }
 
     if (switching_state != old_state) {
