@@ -203,6 +203,7 @@ void DayAheadPrices::update_prices_sorted()
         return a.second < b.second;
     });
 
+    prices_sorted_first_date  = prices.get("first_date")->asUint();
     prices_sorted_available = true;
 }
 
@@ -677,8 +678,7 @@ bool DayAheadPrices::get_cheap_and_expensive_15m(const int32_t start_time, const
         return false;
     }
 
-    const int32_t first_date  = prices.get("first_date")->asUint();
-    const int32_t start_index = (start_time - first_date) / 15;
+    const int32_t start_index = (start_time - prices_sorted_first_date) / 15;
     const int32_t end_index   = start_index + duration_15m;
 
     if(start_index >= end_index) {
