@@ -25,6 +25,11 @@
 #include "event_log_prefix.h"
 #include "TFTools/Micros.h"
 
+// Stolen from evse_common.h, which cannot be included or depended on because the EM doesn't have any EVSE code.
+#define CHARGER_STATE_NOT_PLUGGED_IN 0
+#define CHARGER_STATE_READY_TO_CHARGE 2
+#define IEC_STATE_B 1
+
 #include "gcc_warnings.h"
 
 void EMPhaseSwitcher::pre_setup()
@@ -341,7 +346,7 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
         case SwitchingState::WaitUntilCPReconnect: {
             if (deadline_elapsed(next_state_change_after)) {
                 switching_state = SwitchingState::PostSwitchStateFaking;
-                next_state_change_after += 30_s;
+                next_state_change_after += 25_s; // Only 25 seconds because the charge manager will complain about unresponsive EVSEs after 32 seconds.
             } else {
                 command_packet->v1.allocated_current = 0;
                 command_packet->v1.command_flags |= CM_COMMAND_FLAGS_CPDISC_MASK;
@@ -349,7 +354,7 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
             break;
         }
         case SwitchingState::PostSwitchStateFaking: {
-            if (deadline_elapsed(next_state_change_after)) {
+            if (deadline_elapsed(next_state_change_after) || command_packet->v2.allocated_phases == 0) {
                 switching_state = SwitchingState::Idle;
             }
             break;
@@ -359,11 +364,11 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
             break;
     }
 
-    if (last_charger_state == 0 && command_packet->v1.allocated_current == 0) {
+    if (last_charger_state == CHARGER_STATE_NOT_PLUGGED_IN && command_packet->v1.allocated_current == 0) {
         // Not plugged in and no current allocated -> safe
         allocated_current_after_last_disconnect = false;
     } else {
-        if (last_charger_state >= 2 || command_packet->v1.allocated_current != 0) {
+        if ((old_state == SwitchingState::Idle && last_charger_state >= CHARGER_STATE_READY_TO_CHARGE) || command_packet->v1.allocated_current != 0) {
             // Charger ready or charging or allocating current -> not safe
             allocated_current_after_last_disconnect = true;
         }
@@ -431,6 +436,9 @@ void EMPhaseSwitcher::filter_state_packet(size_t charger_idx, cm_state_packet *s
             if (cp_is_disconnected) {
                 next_state_change_after = now_us() + 5_s;
                 switching_state = SwitchingState::DisconnectingCPSettle;
+
+                // CP was just disconnected but no current was allocated yet.
+                allocated_current_after_last_disconnect = false;
             }
             state_packet->v1.iec61851_state = last_iec61851_state;
             state_packet->v1.charger_state  = last_charger_state;
@@ -450,12 +458,13 @@ void EMPhaseSwitcher::filter_state_packet(size_t charger_idx, cm_state_packet *s
             break;
         }
         case SwitchingState::PostSwitchStateFaking: {
-            if (state_packet->v1.iec61851_state == last_iec61851_state && state_packet->v1.charger_state == last_charger_state) {
-                //logger.printfln("PostSwitchStateFaking: Done early");
-                switching_state = SwitchingState::Idle;
-            } else {
+            // Continue faking the state while the vehicle is taking its time to start charging.
+            if (state_packet->v1.iec61851_state == IEC_STATE_B) {
                 state_packet->v1.iec61851_state = last_iec61851_state;
                 state_packet->v1.charger_state  = last_charger_state;
+            } else {
+                //logger.printfln("PostSwitchStateFaking: Done early");
+                switching_state = SwitchingState::Idle;
             }
             break;
         }
