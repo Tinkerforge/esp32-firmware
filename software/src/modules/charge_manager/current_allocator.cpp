@@ -453,7 +453,11 @@ static void calculate_window(bool trace_short, StageContext &sc) {
     int idx_array[MAX_CONTROLLED_CHARGERS];
     memcpy(idx_array, sc.idx_array, sizeof(idx_array));
 
+    int *old_idx_array = sc.idx_array;
+    sc.idx_array = idx_array;
+
     int matched = filter_chargers(ctx.allocated_phases > 0);
+    sc.idx_array = old_idx_array;
 
     // Calculate minimum window
     for (int i = 0; i < matched; ++i) {
