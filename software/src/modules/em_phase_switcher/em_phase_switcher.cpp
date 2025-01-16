@@ -76,7 +76,7 @@ void EMPhaseSwitcher::setup()
         return;
     }
 
-    const size_t charger_count = charge_manager.get_charger_count();
+    const size_t charger_count = charge_manager.get_charger_count_from_config();
     if (controlled_charger_idx >= charger_count) {
         logger.printfln("Controlled charger %u doesn't exist, have only %u", controlled_charger_idx, charger_count);
         return;

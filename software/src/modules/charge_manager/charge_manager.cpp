@@ -525,9 +525,16 @@ void ChargeManager::check_watchdog()
     last_available_current_update = millis();
 }
 
+// Get cached charger count, which is only valid when the charge manager is enabled.
 size_t ChargeManager::get_charger_count()
 {
     return charger_count;
+}
+
+// Get the charger count from the config, which is valid even if the charge manager is disabled.
+size_t ChargeManager::get_charger_count_from_config()
+{
+    return config.get("chargers")->count();
 }
 
 // Check is not 100% reliable after an uptime of 49 days because last_update might legitimately 0.
