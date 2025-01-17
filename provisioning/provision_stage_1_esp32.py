@@ -56,8 +56,8 @@ def main():
 
     ssid = "esp32-" + uid
 
-    run(["systemctl", "restart", "NetworkManager.service"])
-    run(["iw", "reg", "set", "DE"])
+    run(["sudo", "systemctl", "restart", "NetworkManager.service"])
+    run(["sudo", "iw", "reg", "set", "DE"])
 
     print("Waiting for ESP wifi. Takes about one minute.")
     if not wait_for_wifi(ssid, 90):
@@ -132,6 +132,7 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+        input("Press return to exit. ")
     except FatalError:
         input("Press return to exit. ")
         sys.exit(1)

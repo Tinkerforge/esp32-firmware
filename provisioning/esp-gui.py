@@ -12,13 +12,13 @@ import threading
 
 selected_firmware_type = ""
 
-Action = namedtuple("Action", "name pwd cmd run_as_root shell detach show_filter_fn")
+Action = namedtuple("Action", "name pwd cmd show_filter_fn")
 
 actions = [
-    Action("ESP Parallel-Flash", ".", "./provision_stage_0_{{{firmware_type}}}.sh", True, "hold_shell", False, lambda x: x != "warp3"),
-    Action("ESP Test", ".", "python3 -u provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}}", True, "shell", False, lambda x: x != "warp3"),
-    Action("ESP Print Label (Skip Test)", ".", "python3 -u provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}} --skip-tests", False, "shell", False, lambda x: x != "warp3"),
-    Action("WARP ESP Flash and Test", ".", "python3 -u provision_warp_esp32_ethernet_brick.py", True, "hold_shell", False, lambda x: x == "warp3")
+    Action("ESP Parallel-Flash",          ".", "./provision_stage_0_{{{firmware_type}}}.sh",                                        lambda x: x != "warp3"),
+    Action("ESP Test",                    ".", "python3 -u provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}}",              lambda x: x != "warp3"),
+    Action("ESP Print Label (Skip Test)", ".", "python3 -u provision_stage_1_{{{brick_type}}}.py {{{firmware_type}}} --skip-tests", lambda x: x != "warp3"),
+    Action("WARP ESP Flash and Test",     ".", "python3 -u provision_warp_esp32_ethernet_brick.py",                                 lambda x: x == "warp3")
 ]
 
 # use "with ChangedDirectory('/path/to/abc')" instead of "os.chdir('/path/to/abc')"
@@ -44,7 +44,7 @@ def work(q: queue.Queue, done_q: queue.Queue):
         if todo is None:
             return
 
-        a, root_pw, btn = todo
+        a, btn = todo
 
         with ChangedDirectory(a.pwd):
             cmd = a.cmd if isinstance(a.cmd, list) else [a.cmd]
@@ -59,23 +59,14 @@ def work(q: queue.Queue, done_q: queue.Queue):
 
                 c = c.replace("{{{firmware_type}}}", selected_firmware_type)
                 c = c.replace("{{{brick_type}}}", brick_type)
-                sub_cmd = shlex.split(c)
+                sub_cmd = ["lxterminal", "-e"] + shlex.split(c)
 
-                if a.shell != "no_shell":
-                    sub_cmd = ["konsole", "--hold" if a.shell == "hold_shell" else "", "-e", *sub_cmd]
-
-                if a.run_as_root:
-                    sub_cmd = ["sudo", "-S", *sub_cmd]
-
-                if not a.detach:
-                    subprocess.check_output(sub_cmd, input=root_pw.encode("utf-8") if a.run_as_root else "")
-                else:
-                    subprocess.Popen(sub_cmd)
+                subprocess.check_output(sub_cmd)
                 done_q.put(btn)
 
-def run(a: Action, root_pw: str, btn: QPushButton):
+def run(a: Action, btn: QPushButton):
     btn.setDisabled(True)
-    work_queue.put((a, root_pw, btn))
+    work_queue.put((a, btn))
 
 def unblock_btn_check():
     try:
@@ -94,9 +85,6 @@ class App(QApplication):
 
 
 def main():
-    with open("root_password.txt") as f:
-        root_pw = f.readline().strip()
-
     t = threading.Thread(target=work, args=[work_queue, work_done_queue], daemon=True)
     t.start()
 
@@ -120,7 +108,7 @@ def main():
     for a in actions:
         btn = QPushButton(a.name, window)
         btn.setDisabled(True)
-        btn.clicked.connect(functools.partial(run, a, root_pw, btn))
+        btn.clicked.connect(functools.partial(run, a, btn))
         layout.addWidget(btn)
         btn_action[btn] = a
 

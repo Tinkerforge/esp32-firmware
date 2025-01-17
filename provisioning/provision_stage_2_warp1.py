@@ -101,22 +101,29 @@ def ansi_format(fmt, s):
     result = fmt.format(s)
     return prefix + result + suffix
 
+# inherit from BaseException instead of Exception to avoid being handled by
+# try/except blocks that handle Exception instances. sys.exit() raises a
+# SystemExit exception that inherits from BaseException for the same reason
+class FatalError(BaseException):
+    pass
+
 def fatal_error(*args):
     for line in args:
         print(red(str(line)))
-    sys.exit(0)
+
+    raise FatalError
 
 @contextmanager
 def wifi(ssid, passphrase):
-    output = "\n".join(run(["nmcli", "dev", "wifi", "connect", ssid, "password", passphrase]))
+    output = "\n".join(run(["sudo", "nmcli", "dev", "wifi", "connect", ssid, "password", passphrase]))
     if "successfully activated with" not in output:
-        run(["nmcli", "con", "del", ssid])
+        run(["sudo", "nmcli", "con", "del", ssid])
         fatal_error("Failed to connect to wifi.", "nmcli output was:", output)
 
     try:
         yield
     finally:
-        output = "\n".join(run(["nmcli", "con", "del", ssid]))
+        output = "\n".join(run(["sudo", "nmcli", "con", "del", ssid]))
         if "successfully deleted." not in output:
             print("Failed to clean up wifi connection {}".format(ssid))
 
@@ -359,11 +366,11 @@ def wait_for_wifi(ssid, timeout_s):
     while time.time() - start < timeout_s:
         if time.time() - last_scan > 15:
             try:
-                run(["nmcli", "dev", "wifi", "rescan"])
+                run(["sudo", "nmcli", "dev", "wifi", "rescan"])
             except:
                 pass
             last_scan = time.time()
-        output = '\n'.join(run(["nmcli", "dev", "wifi", "list"]))
+        output = '\n'.join(run(["sudo", "nmcli", "dev", "wifi", "list"]))
 
         if ssid in output:
             return True
@@ -496,10 +503,6 @@ def main():
     global uids
 
     result = {"start": now()}
-
-    git_user = None
-    if len(sys.argv) == 2:
-        git_user = sys.argv[1]
 
     with urllib.request.urlopen("https://download.tinkerforge.com/latest_versions.txt") as f:
         latest_versions = f.read().decode("utf-8")
@@ -640,7 +643,7 @@ def main():
 
         result["uid"] = uid
 
-        run(["systemctl", "restart", "NetworkManager.service"])
+        run(["sudo", "systemctl", "restart", "NetworkManager.service"])
 
         ssid = "warp-" + uid
 
@@ -663,14 +666,14 @@ def main():
 
                 result["firmware"] = "warp_firmware_1_2_3_60cb5c5b_merged.bin"
 
-                run(["systemctl", "restart", "NetworkManager.service"])
+                run(["sudo", "systemctl", "restart", "NetworkManager.service"])
                 print("Waiting for ESP wifi. Takes about one minute.")
                 if not wait_for_wifi(ssid, 120):
                     fatal_error("ESP wifi not found after 120 seconds")
 
-                output = "\n".join(run(["nmcli", "dev", "wifi", "connect", ssid, "password", passphrase]))
+                output = "\n".join(run(["sudo", "nmcli", "dev", "wifi", "connect", ssid, "password", passphrase]))
                 if "successfully activated with" not in output:
-                    run(["nmcli", "con", "del", ssid])
+                    run(["sudo", "nmcli", "con", "del", ssid])
                     fatal_error("Failed to connect to wifi.", "nmcli output was:", output)
 
                 with urllib.request.urlopen("http://10.0.0.1/hidden_proxy/enable") as f:
@@ -694,11 +697,9 @@ def main():
 
     print("Checking if EVSE was tested...")
     if not exists_evse_test_report(result["evse_uid"]):
-        if git_user is None:
-            fatal_error("No test report found for EVSE {} and git username is unknown. Please pull the wallbox git.".format(result["evse_uid"]))
         print("No test report found. Checking for new test reports...")
         with ChangedDirectory(os.path.join("..", "..", "wallbox")):
-            run(["su", git_user, "-c", "git pull"])
+            run(["git", "pull"])
         if not exists_evse_test_report(result["evse_uid"]):
             fatal_error("No test report found for EVSE {}.".format(result["evse_uid"]))
 
@@ -718,9 +719,18 @@ def main():
             my_input("Pull the USB cable, do the electrical tests and press any key when done")
 
         # Restart NetworkManager to reconnect to the "default" wifi
-        run(["systemctl", "restart", "NetworkManager.service"])
+        run(["sudo", "systemctl", "restart", "NetworkManager.service"])
 
     print('Done!')
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+        input('Press return to exit ')
+    except FatalError:
+        input('Press return to exit ')
+        sys.exit(1)
+    except Exception as e:
+        traceback.print_exc()
+        input('Press return to exit ')
+        sys.exit(1)

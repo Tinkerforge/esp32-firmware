@@ -1285,6 +1285,7 @@ def main():
 if __name__ == '__main__':
     try:
         main()
+        input('Press return to exit ')
     except FatalError:
         input('Press return to exit ')
         sys.exit(1)

@@ -3,7 +3,6 @@
 __pycache__
 provisioning/staging_password.txt
 provisioning/staging-password.txt
-provisioning/root_password.txt
 provisioning/printer_host_bag.txt
 provisioning/esptool
 provisioning/cp210x-cfg

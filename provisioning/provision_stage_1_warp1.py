@@ -53,9 +53,9 @@ def espefuse(args):
 
 @contextmanager
 def wifi(ssid, passphrase):
-    output = "\n".join(run(["nmcli", "dev", "wifi", "connect", ssid, "password", passphrase]))
+    output = "\n".join(run(["sudo", "nmcli", "dev", "wifi", "connect", ssid, "password", passphrase]))
     if "successfully activated with" not in output:
-        run(["nmcli", "con", "del", ssid])
+        run(["sudo", "nmcli", "con", "del", ssid])
         print("Failed to connect to wifi.")
         print("nmcli output was:")
         print(output)
@@ -64,7 +64,7 @@ def wifi(ssid, passphrase):
     try:
         yield
     finally:
-        output = "\n".join(run(["nmcli", "con", "del", ssid]))
+        output = "\n".join(run(["sudo", "nmcli", "con", "del", ssid]))
         if "successfully deleted." not in output:
             print("Failed to clean up wifi connection {}".format(ssid))
 
@@ -329,11 +329,11 @@ def wait_for_wifi(ssid, timeout_s):
     while time.time() - start < timeout_s:
         if time.time() - last_scan > 15:
             try:
-                run(["nmcli", "dev", "wifi", "rescan"])
+                run(["sudo", "nmcli", "dev", "wifi", "rescan"])
             except:
                 pass
             last_scan = time.time()
-        output = '\n'.join(run(["nmcli", "dev", "wifi", "list"]))
+        output = '\n'.join(run(["sudo", "nmcli", "dev", "wifi", "list"]))
 
         if ssid in output:
             return True
@@ -389,7 +389,7 @@ def main():
 
     ssid = "warp-" + uid
 
-    run(["systemctl", "restart", "NetworkManager.service"])
+    run(["sudo", "systemctl", "restart", "NetworkManager.service"])
 
     print("Waiting for ESP wifi. Takes about one minute.")
     if not wait_for_wifi(ssid, 90):
@@ -487,6 +487,7 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+        input("Press return to exit. ")
     except Exception as e:
         traceback.print_exc()
         input("Press return to exit. ")

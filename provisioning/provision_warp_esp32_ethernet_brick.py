@@ -405,7 +405,7 @@ def main():
     for k, v in relay_to_serial.items():
         t = ThreadWithReturnValue(target=lambda: \
             subprocess.run(
-                ['python', 'provision_stage_0_warp2.py', '/home/pi/tf/firmwares/bricks/warp3_charger/brick_warp3_charger_firmware_latest.bin', v, "warp3"],
+                ['python', 'provision_stage_0_warp2.py', '../../firmwares/bricks/warp3_charger/brick_warp3_charger_firmware_latest.bin', v, "warp3"],
                 capture_output=True,
                 encoding='utf-8'))
         t.start()
@@ -451,8 +451,8 @@ def main():
 
     threads.clear()
 
-    run(["systemctl", "restart", "NetworkManager.service"])
-    run(["sudo" ,"iw", "reg", "set", "DE"])
+    run(["sudo", "systemctl", "restart", "NetworkManager.service"])
+    run(["sudo", "iw", "reg", "set", "DE"])
 
     for k, v in list(relay_to_serial.items()):
         try:

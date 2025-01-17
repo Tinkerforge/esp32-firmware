@@ -51,9 +51,9 @@ def espefuse(args):
 
 @contextmanager
 def wifi(ssid, passphrase):
-    output = "\n".join(run(["nmcli", "dev", "wifi", "connect", ssid, "password", passphrase]))
+    output = "\n".join(run(["sudo", "nmcli", "dev", "wifi", "connect", ssid, "password", passphrase]))
     if "successfully activated with" not in output:
-        run(["nmcli", "con", "del", ssid])
+        run(["sudo", "nmcli", "con", "del", ssid])
         print("Failed to connect to wifi.")
         print("nmcli output was:")
         print(output)
@@ -62,7 +62,7 @@ def wifi(ssid, passphrase):
     try:
         yield
     finally:
-        output = "\n".join(run(["nmcli", "con", "del", ssid]))
+        output = "\n".join(run(["sudo", "nmcli", "con", "del", ssid]))
         if "successfully deleted." not in output:
             print("Failed to clean up wifi connection {}".format(ssid))
 
@@ -326,11 +326,11 @@ def wait_for_wifi(ssid, timeout_s):
     while time.time() - start < timeout_s:
         if time.time() - last_scan > 15:
             try:
-                run(["nmcli", "dev", "wifi", "rescan"])
+                run(["sudo", "nmcli", "dev", "wifi", "rescan"])
             except:
                 pass
             last_scan = time.time()
-        output = '\n'.join(run(["nmcli", "dev", "wifi", "list"]))
+        output = '\n'.join(run(["sudo", "nmcli", "dev", "wifi", "list"]))
 
         if ssid in output:
             return True
@@ -441,7 +441,7 @@ def main():
     # base58 (mangled on Windows) and base10. every other field in between is part of the
     # product name and will be capitalized and joined by a space to form the display name.
     # special care if given to "esp32" which is shown in uppercase
-    run(['./cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Brick', '-S', 'Tinkerforge_ESP32_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
+    run(['sudo', './cp210x-cfg/cp210x-cfg', '-d', busnum + '.' + devnum, '-C', 'Tinkerforge GmbH', '-N', 'ESP32 Brick', '-S', 'Tinkerforge_ESP32_Brick_{0}_{1}'.format(uid, uid_number), '-t', '0'])
 
     result["cp2102n_configured"] = True
     result["end"] = now()

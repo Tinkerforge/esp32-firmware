@@ -797,8 +797,11 @@ def main(stage3):
 if __name__ == "__main__":
     try:
         led_wrap()
+        input('Press return to exit ')
     except FatalError:
+        input('Press return to exit ')
         sys.exit(1)
     except Exception as e:
         traceback.print_exc()
+        input('Press return to exit ')
         sys.exit(1)

@@ -387,7 +387,9 @@ if __name__ == "__main__":
             emt = EnergyManagerTester()
             emt.test_all()
     except FatalError:
+        input("Press return to exit. ")
         sys.exit(1)
     except Exception as e:
         traceback.print_exc()
+        input("Press return to exit. ")
         sys.exit(1)
