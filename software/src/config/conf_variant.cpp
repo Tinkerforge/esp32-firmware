@@ -175,9 +175,7 @@ const char *Config::ConfVariant::getVariantName() const
         case ConfVariant::Tag::UNION:
             return val.un.variantName;
     }
-#ifdef __GNUC__
-    __builtin_unreachable();
-#endif
+    esp_system_abort("getVariantName: ConfVariant has unknown type!");
 }
 
 Config::ConfVariant::ConfVariant(ConfVariant &&cpy) {

@@ -398,9 +398,7 @@ struct Config {
             case ConfVariant::Tag::UNION:
                 return visitor(v.val.un);
         }
-#ifdef __GNUC__
-        __builtin_unreachable();
-#endif
+        esp_system_abort("apply_visitor: ConfVariant has unknown type!");
     }
 
     template<typename T>
@@ -426,9 +424,7 @@ struct Config {
             case ConfVariant::Tag::UNION:
                 return visitor(v.val.un);
         }
-#ifdef __GNUC__
-        __builtin_unreachable();
-#endif
+        esp_system_abort("apply_visitor: const ConfVariant has unknown type!");
     }
 
     ConfVariant value;
