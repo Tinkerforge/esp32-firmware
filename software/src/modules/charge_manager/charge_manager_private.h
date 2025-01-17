@@ -62,6 +62,17 @@ struct CurrentAllocatorState {
     Cost control_window_max = {0, 0, 0, 0};
 };
 
+namespace ChargeMode {
+    enum Type {
+        _min = 1,
+        PV = 1,
+        Min = 2,
+        Eco = 4,
+        Fast = 8,
+        _max = 8
+    };
+}
+
 // Check alignment/padding when adding stuff.
 struct ChargerState {
     uint32_t last_update;
@@ -132,8 +143,13 @@ struct ChargerState {
     // Incremented every iteration the connected vehicle was in state C.
     micros_t time_in_state_c;
 
-    // If false, PV limits are ignored for this charger
-    bool charge_mode_pv;
+    uint8_t charge_mode;
+
+    // Those are translated from the charge_mode before allocate_current.
+    // We should not overwrite charge_mode (for example for the Eco -> Fast/Off decision)
+    bool off;
+    bool use_pv_current;
+    bool observe_pv_limit;
 };
 
 struct ChargerAllocationState {

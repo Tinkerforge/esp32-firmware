@@ -31,13 +31,16 @@ struct StageContext {
     const CurrentAllocatorConfig *cfg;
     CurrentAllocatorState *ca_state;
     const ChargerAllocationState *charger_allocation_state;
+    uint32_t charge_mode_filter;
 };
+
 
 struct FilterContext {
     int32_t allocated_current;
     uint8_t allocated_phases;
     const CurrentAllocatorConfig *cfg;
     const ChargerState *state;
+    uint32_t charge_mode_filter;
 };
 
 struct GroupContext {
@@ -96,4 +99,4 @@ Cost get_cost(int32_t current_to_allocate,
               int32_t allocated_current,
               ChargerPhase allocated_phases);
 
-bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool charge_mode_pv);
+bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool observe_pv_limit);

@@ -343,6 +343,52 @@ void ChargeManager::start_manager_task()
     }, cm_send_delay);
 }
 
+// This is a separate function to simplify the control flow.
+static void update_charger_state_from_mode(ChargerState *state, int charger_idx) {
+    auto mode = state->charge_mode;
+
+    // Every charger is off by default.
+    // If no bit in mode is set the charger stays off.
+    state->off = true;
+    state->use_pv_current = false;
+    state->observe_pv_limit = false;
+
+    for (uint8_t m = ChargeMode::_max; m >= ChargeMode::_min; m = ((uint8_t)m >> 1)) {
+        switch((ChargeMode::Type)(mode & m)) {
+            case ChargeMode::Fast:
+                state->off = false;
+                state->use_pv_current = true;
+                state->observe_pv_limit = false;
+                return;
+
+#if MODULE_ECO_AVAILABLE()
+            case ChargeMode::Eco:
+                switch (eco.get_charge_decision(charger_idx)) {
+                    case Eco::ChargeDecision::Fast:
+                        state->off = false;
+                        state->use_pv_current = true;
+                        state->observe_pv_limit = false;
+                        return;
+                    case Eco::ChargeDecision::Normal:
+                        continue;
+                }
+                continue;
+#endif
+            case ChargeMode::Min:
+                // TODO implement
+                // TODO get min+pv guaranteed power from power manager
+                // TODO maybe support guaranteed power == enable_current of this specific charger?
+                continue;
+
+            case ChargeMode::PV:
+                state->off = false;
+                state->use_pv_current = true;
+                state->observe_pv_limit = true;
+                return;
+        }
+    }
+}
+
 void ChargeManager::setup()
 {
     api.restorePersistentConfig("charge_manager/config", &config);
@@ -411,7 +457,7 @@ void ChargeManager::setup()
     for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
         charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());
         charger_state[i].last_phase_switch = -ca_config->global_hysteresis;
-        charger_state[i].charge_mode_pv = true;
+        charger_state[i].charge_mode = ChargeMode::PV;
     }
 
     // TODO: Change all currents everywhere to int32_t or int16_t.
@@ -448,21 +494,9 @@ void ChargeManager::setup()
 
             this->limits_post_allocation = tmp_limits;
 
-#if MODULE_ECO_AVAILABLE()
             for(size_t i = 0; i < charger_count; ++i) {
-                // Looks stupid but results in a compiler warning if ChargeDecision gets more enum variants.
-                switch (eco.get_charge_decision(i)) {
-                    case Eco::ChargeDecision::Normal:
-                        logger.printfln_debug("%zu Normal", i);
-                        charger_state[i].charge_mode_pv = true;
-                        break;
-                    case Eco::ChargeDecision::Fast:
-                        logger.printfln_debug("%zu Fast", i);
-                        charger_state[i].charge_mode_pv = false;
-                        break;
-                }
+                update_charger_state_from_mode(&charger_state[i], i);
             }
-#endif
 
             int result = allocate_current(
                 this->ca_config,

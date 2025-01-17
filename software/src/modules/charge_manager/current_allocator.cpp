@@ -148,7 +148,7 @@ static void trace_sort_fn(int stage, int matched, const StageContext &sc) {
 int filter_chargers_impl(filter_fn filter_, StageContext &sc) {
     int matches = 0;
     for(int i = 0; i < sc.charger_count; ++i) {
-        if (!filter_({sc.current_allocation[sc.idx_array[i]], sc.phase_allocation[sc.idx_array[i]], sc.cfg, &sc.charger_state[sc.idx_array[i]]}))
+        if (!filter_({sc.current_allocation[sc.idx_array[i]], sc.phase_allocation[sc.idx_array[i]], sc.cfg, &sc.charger_state[sc.idx_array[i]], sc.charge_mode_filter}))
             continue;
 
         int tmp = sc.idx_array[matches];
@@ -218,14 +218,14 @@ Cost get_cost(int32_t current_to_allocate,
 }
 
 // Checks stage-specific limits.
-bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool charge_mode_pv)
+bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool observe_pv_limit)
 {
     bool phases_exceeded = false;
     for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
         phases_exceeded |= cost[i] > 0 && limits->raw[i] < cost[i];
     }
 
-    bool pv_excess_exceeded = charge_mode_pv && cost.pv > 0 && limits->raw.pv < cost.pv;
+    bool pv_excess_exceeded = observe_pv_limit && cost.pv > 0 && limits->raw.pv < cost.pv;
 
     switch(stage) {
         case 6:
@@ -268,6 +268,25 @@ static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
     return allocated_phases > 0 && (state->wants_to_charge || state->is_charging) && state->last_wakeup == 0_us;
 }
 
+static int get_highest_charge_mode_bit(const ChargerState *state) {
+    for (uint8_t i = ChargeMode::_max; i >= ChargeMode::_min; i = ((uint8_t)i >> 1)) {
+        switch((ChargeMode::Type)(state->charge_mode & i)) {
+            case ChargeMode::Fast:
+                return (int)ChargeMode::Fast;
+            case ChargeMode::Eco:
+                // TODO: Fix this when supporting Min.
+                if (!state->off && !state->observe_pv_limit)
+                    return (int)ChargeMode::Eco;
+                break;
+            case ChargeMode::Min:
+                return (int)ChargeMode::Min;
+            case ChargeMode::PV:
+                return (int)ChargeMode::PV;
+        }
+    }
+    return 0;
+}
+
 // Stage 1: Rotate chargers
 // If there is any charger that wants to charge but doesn't have current allocated,
 // temporarily disable chargers that are currently active (see is_active) but have been allocated
@@ -277,7 +296,6 @@ static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
 // We want to dealloc a charger if the connected vehicle is currently being woken up.
 // If there is current left over at the end, we will reallocate some to this charger.
 static void stage_1(StageContext &sc) {
-
     // Only rotate if there is at least one charger that does want to charge but doesn't have current allocated.
     // This charger also has to be plugged in for at least one allocation iteration, to make sure
     // we don't rotate chargers out immediately if a new charger is plugged in. Maybe there is
@@ -287,8 +305,16 @@ static void stage_1(StageContext &sc) {
     // We don't have to handle the PV "phase" because an active charger will draw the PV current on some of the phases.
     bool have_b1 = false;
     Cost b1_on_phase= {0, 0, 0, 0};
+    int highest_charge_mode_bit_seen = 0;
+
     for (int i = 0; i < sc.charger_count; ++i) {
         const auto *state = &sc.charger_state[i];
+        if (state->off)
+            continue;
+
+        if (state->wants_to_charge || state->is_charging)
+            highest_charge_mode_bit_seen = std::max(highest_charge_mode_bit_seen, get_highest_charge_mode_bit(state));
+
         // Don't trigger a rotation if the new charger was plugged in less than one alloc ago.
         // Using last_plug_in is fine here, we don't need the more complicated logic of just_plugged_in.
         bool is_b1 = state->wants_to_charge && sc.phase_allocation[i] == 0 && deadline_elapsed(state->last_plug_in + sc.cfg->allocation_interval);
@@ -345,6 +371,7 @@ static void stage_1(StageContext &sc) {
         bool min_active_elapsed = deadline_elapsed(state->last_switch_on + sc.cfg->minimum_active_time);
 
         bool rotate = rotation_allowed && have_b1 && sc.ca_state->global_hysteresis_elapsed && alloc_energy_over_thres && min_active_elapsed;
+        bool rotate_for_higher_prio = rotation_allowed && state->charge_mode < highest_charge_mode_bit_seen && sc.ca_state->global_hysteresis_elapsed && min_active_elapsed;
 
         // 3p and 1p unknown rotated chargers are considered active on any phase.
         // They can be shut down if there is a charger waiting on any phase.
@@ -356,7 +383,7 @@ static void stage_1(StageContext &sc) {
             rotate &= b1_on_phase[phase] == 1;
         }
 
-        bool keep_active = is_active(sc.phase_allocation[i], state) && !rotate;
+        bool keep_active = is_active(sc.phase_allocation[i], state) && !rotate && !rotate_for_higher_prio && !state->off;
 
         trace("1: %d: alloc_ge_thres %c min_active %c rot %c keep_active %c can p-switch %c",
                         i,
@@ -398,7 +425,7 @@ static bool was_just_plugged_in(const ChargerState *state) {
 // we won't toggle the contactors too fast.
 // This feature is completely deactivated if cfg->plug_in_time is set to 0.
 static void stage_2(StageContext &sc) {
-    int matched = filter_chargers(was_just_plugged_in(ctx.state));
+    int matched = filter_chargers(was_just_plugged_in(ctx.state) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0 && !ctx.state->off);
 
     // Charger that is plugged in for the longest time first.
     sort_chargers(0,
@@ -589,14 +616,12 @@ static void stage_3(StageContext &sc) {
     // if phases are overloaded in every iteration.
     // Sort PV chargers before fast chargers (symmetric to stage 4)
     sort_chargers(
-        was_just_plugged_in(ctx.state) ? 2 : (ctx.state->charge_mode_pv ? 0 : 1),
+        was_just_plugged_in(ctx.state) ? 1 : -get_highest_charge_mode_bit(ctx.state),
         // We only compare in groups, so was_just_plugged_in(right.state) is true iff it is for left.
         was_just_plugged_in(ctx.left.state) ? (ctx.left.state->just_plugged_in_timestamp < ctx.right.state->just_plugged_in_timestamp) : (ctx.left.state->last_switch_on < ctx.right.state->last_switch_on)
     );
 
     trace_sort(3);
-
-    bool any_charger_shut_down = false;
 
     // If any phase is overloaded, shut down chargers using this phase until it is not.
     // Maybe try to be more clever here:
@@ -624,12 +649,12 @@ static void stage_3(StageContext &sc) {
 
             trace("3: wnd_min %d > p%d raw %d", wnd_min[p], p, sc.limits->raw[p]);
 
+            // We don't have to recalculate the window but instead can just change the minimum.
+            // The window minimum does not have dependencies between chargers.
             wnd_min -= get_minimum_cost(alloc_phases, state->phase_rotation, sc.cfg);
             sc.phase_allocation[sc.idx_array[i]] = 0;
 
             trace("3: shut down %d", sc.idx_array[i]);
-
-            any_charger_shut_down = true;
         }
     }
 
@@ -656,7 +681,7 @@ static void stage_3(StageContext &sc) {
         // Don't shut down chargers that were just plugged in.
         // We want those to be active until plug_in_time is elapsed to make sure the vehicle does not disable its EVCC.
         // Also ignore exceeded PV limits if this charger is not PV charging.
-        if (alloc_phases == 0 || was_just_plugged_in(state) || !state->charge_mode_pv)
+        if (alloc_phases == 0 || was_just_plugged_in(state) || !state->observe_pv_limit)
             continue;
 
         trace("3: wnd_min %d > max_pv %d", wnd_min.pv, sc.limits->max_pv);
@@ -667,13 +692,6 @@ static void stage_3(StageContext &sc) {
         sc.phase_allocation[sc.idx_array[i]] = 0;
 
         trace("3: shut down %d", sc.idx_array[i]);
-
-        any_charger_shut_down = true;
-    }
-
-    // Recalculate the window once. wnd_min is already correct, but wnd_max needs to be fixed.
-    if (any_charger_shut_down) {
-        calculate_window(true, sc);
     }
 }
 
@@ -784,9 +802,6 @@ static int get_enable_cost(const ChargerState *state, bool activate_3p, bool hav
     Cost new_enable_cost;
     int enable_current;
 
-    auto factors = get_phase_factors(activate_3p ? 3 : 1, state->phase_rotation);
-    auto enable_factors = (have_active_chargers ? cfg->enable_current_factor : 1.0f) * factors;
-
     new_cost = get_minimum_cost(activate_3p ? 3 : 1, state->phase_rotation, cfg);
     new_enable_cost = (have_active_chargers ? cfg->enable_current_factor : 1.0f) * new_cost;
 
@@ -821,11 +836,10 @@ static bool try_activate(StringWriter &sw, const ChargerState *state, bool activ
     // Phase limits are hard limits. PV can be exceeded for some time.
     // Ignore PV limit completely if this charger is not PV charging.
     Cost check_phase{
-        CHECK_SPREAD | (state->charge_mode_pv
-                        ? (CHECK_IMPROVEMENT | (have_active_chargers
+        (!state->observe_pv_limit ? 0 :
+            CHECK_SPREAD | CHECK_IMPROVEMENT | (have_active_chargers
                                                 ? CHECK_MIN_WINDOW_ENABLE
-                                                : CHECK_MIN_WINDOW_MIN))
-                        : 0),
+                                                : CHECK_MIN_WINDOW_MIN)),
         CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
         CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
         CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE
@@ -849,21 +863,31 @@ static bool try_activate(StringWriter &sw, const ChargerState *state, bool activ
 //   Only immediately activate all three phases if this is a non-phase-switchable three-phase charger or one with an unknown phase rotation.
 // - Recalculate the window each time a charger is activated
 static void stage_4(StageContext &sc) {
+    // Recalculate window here so that stages 4 - 8 can be called multiple times with different priority groups.
+    calculate_window(true, sc);
+
     if (!sc.ca_state->global_hysteresis_elapsed)
         return;
 
 
-    bool have_active_chargers = sc.ca_state->control_window_min.pv != 0;
+    // If there is no charger active right now, only require the minimum current
+    // instead of the enable current. This is especially relevant for a setup
+    // with only one charger.
+    bool have_active_chargers = false;
+    for (size_t i = 0; i < sc.cfg->charger_count; ++i) {
+        if (sc.phase_allocation[i] > 0) {
+            have_active_chargers = true;
+            break;
+        }
+    }
 
     trace(have_active_chargers ? "4: have active chargers." : "4: don't have active chargers.");
 
     // A charger that was rotated has 0 allocated phases but is still charging.
-    int matched = filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge || ctx.state->is_charging));
+    int matched = filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge || ctx.state->is_charging) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0 && !ctx.state->off);
 
-    // Group PV chargers behind fast chargers to activate them last.
-    // PV chargers would probably be shut down in the next iteration anyway.
     sort_chargers(
-        ctx.state->charge_mode_pv ? 1 : 0,
+        get_highest_charge_mode_bit(ctx.state),
         ctx.left.state->allocated_average_power < ctx.right.state->allocated_average_power
     );
 
@@ -921,6 +945,9 @@ static void stage_4(StageContext &sc) {
             phase_alloc = 1;
         }
 
+        // Only allow the first charger to be activated with the minimum current. Require the enable current now.
+        have_active_chargers = true;
+
         sc.phase_allocation[sc.idx_array[i]] = phase_alloc;
 
         sw.printf(" (%dp)", sc.phase_allocation[sc.idx_array[i]]);
@@ -936,8 +963,8 @@ static void stage_4(StageContext &sc) {
 // - If there are still phases with a limit greater than the window maximum,
 //   switch chargers that have 1 phase allocated to 3 phases if possible
 // - Only chargers that _currently_ support the phase switch are considered
-// - Sort by allocated energy ascending as in stage 3
-// - Enable conditions are similar to stage 3:
+// - Sort by allocated energy ascending as in stage 4
+// - Enable conditions are similar to stage 4:
 //   The enable cost is the cost to enable a charger with three phases minus the cost (that already was subtracted in stage 3) to enable it with one phase.
 static void stage_5(StageContext &sc) {
     Cost wnd_min = sc.ca_state->control_window_min;
@@ -946,22 +973,25 @@ static void stage_5(StageContext &sc) {
     auto min_1p = sc.cfg->minimum_current_1p;
     auto min_3p = sc.cfg->minimum_current_3p;
 
-    int ena_1p = min_1p * sc.cfg->enable_current_factor;
-    int ena_3p = min_3p * sc.cfg->enable_current_factor;
+    int active_chargers = 0;
+    for (size_t i = 0; i < sc.cfg->charger_count; ++i) {
+        if (sc.phase_allocation[i] != 0) {
+            ++active_chargers;
+        }
+    }
 
-    // If there is exactly one charger active, the window minimum should be the charger's 1p minimum current,
-    // or it is already active with three phases in which case this stage will do nothing.
-    bool have_active_chargers = sc.ca_state->control_window_min.pv > min_1p;
-    auto check_min = have_active_chargers ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN;
+    // - If there are no chargers active this stage will do nothing.
+    // - If there are more than one charger active, require the enable current on the PV phase.
+    // - If there is only one charger active, this could be the one charger that is about to be switched to 3p.
+    //   In that case require only the minimum current on the PV phase.
+    auto check_pv_min = active_chargers < 2 ? CHECK_MIN_WINDOW_ENABLE : CHECK_MIN_WINDOW_MIN;
 
-    trace(have_active_chargers ? "5: have active chargers." : "5: don't have active chargers.");
+    trace(check_pv_min ? "5: <2 active. pv reqs min" : "5: >1 active. pv reqs ena");
 
-    int matched = filter_chargers(ctx.allocated_phases == 1 && ctx.state->phase_switch_supported && deadline_elapsed(ctx.state->last_phase_switch + ctx.cfg->global_hysteresis));
+    int matched = filter_chargers(ctx.allocated_phases == 1 && ctx.state->phase_switch_supported && deadline_elapsed(ctx.state->last_phase_switch + ctx.cfg->global_hysteresis) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
 
-    // Group PV chargers behind fast chargers to phase switch them last.
-    // PV chargers would probably be shut down in the next iteration anyway.
     sort_chargers(
-        ctx.state->charge_mode_pv ? 1 : 0,
+        get_highest_charge_mode_bit(ctx.state),
         ctx.left.state->allocated_average_power < ctx.right.state->allocated_average_power
     );
 
@@ -983,13 +1013,12 @@ static void stage_5(StageContext &sc) {
         auto old_factors = get_phase_factors(1, state->phase_rotation);
         // TODO use already allocated current here
         new_cost -= get_minimum_cost(1, state->phase_rotation, sc.cfg);
-
-        // P1 is already active
-        auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
+        // TODO should we subtract the 1p enable cost here?
+        new_enable_cost -= get_minimum_cost(1, state->phase_rotation, sc.cfg);
 
         // Only switch from one to three phase if there is still current available on all phases except the P1 phase of this charger: P1 is used by this charger anyway.
         Cost check_phase{
-            (state->charge_mode_pv ?(CHECK_IMPROVEMENT_ALL_PHASE | check_min) : 0),
+            !state->observe_pv_limit ? 0 : (CHECK_IMPROVEMENT_ALL_PHASE | check_pv_min),
             (old_factors.l1 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
             (old_factors.l2 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
             (old_factors.l3 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE
@@ -1015,15 +1044,12 @@ static void stage_5(StageContext &sc) {
 
 // Stage 6: Allocate minimum current to chargers with at least one allocated phase
 static void stage_6(StageContext &sc) {
-    int matched = filter_chargers(ctx.allocated_phases > 0 && ctx.allocated_current == 0);
+    int matched = filter_chargers(ctx.allocated_phases > 0 && ctx.allocated_current == 0 && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
 
     // No need to sort here: We know that we have enough current to give each charger its minimum current.
     // A charger that can't be activated has 0 phases allocated.
 
     trace_sort(6);
-
-    auto min_1p = sc.cfg->minimum_current_1p;
-    auto min_3p = sc.cfg->minimum_current_3p;
 
     for (int i = 0; i < matched; ++i) {
         const auto *state = &sc.charger_state[sc.idx_array[i]];
@@ -1037,7 +1063,7 @@ static void stage_6(StageContext &sc) {
         // is a charger that was allocated phases to before stage 6, but we
         // don't have the minimum current available, that is a bug in the
         // previous stages.
-        if (cost_exceeds_limits(cost, sc.limits, 6, state->charge_mode_pv)) {
+        if (cost_exceeds_limits(cost, sc.limits, 6, state->observe_pv_limit)) {
             logger.printfln("stage 6: Cost exceeded limits!");
             print_alloc(6, sc);
             PRINT_COST(cost);
@@ -1110,7 +1136,7 @@ static Cost get_fair_current(int matched, int start, int *idx_array, uint8_t *ph
 //   On the PV "phase" include a charger n times were n is the number of phases this charger uses.
 //   A three-phase charger will use 18 A of PV current if it is allocated 6 A to each phase.
 static void stage_7(StageContext &sc) {
-    int matched = filter_chargers(ctx.allocated_current > 0);
+    int matched = filter_chargers(ctx.allocated_current > 0 && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
 
     if (matched == 0)
         return;
@@ -1130,7 +1156,7 @@ static void stage_7(StageContext &sc) {
         auto allocated_current = sc.current_allocation[sc.idx_array[i]];
         auto allocated_phases = sc.phase_allocation[sc.idx_array[i]];
 
-        auto current = state->charge_mode_pv ? (fair.pv / allocated_phases) : 32000;
+        auto current = state->observe_pv_limit ? (fair.pv / allocated_phases) : 32000;
 
         if (state->phase_rotation == PhaseRotation::Unknown) {
             current = std::min(current, fair.min_phase());
@@ -1156,7 +1182,7 @@ static void stage_7(StageContext &sc) {
         // This should never happen:
         // We've just calculated how much current is still available.
         // If this cost exceeds the limits, stage_7 is bugged.
-        if (cost_exceeds_limits(cost, sc.limits, 7, state->charge_mode_pv)) {
+        if (cost_exceeds_limits(cost, sc.limits, 7, state->observe_pv_limit)) {
             logger.printfln("stage 7: Cost exceeded limits!");
             print_alloc(7, sc);
             PRINT_COST(cost);
@@ -1178,7 +1204,7 @@ static void stage_7(StageContext &sc) {
 // - Sort by current_capacity ascending. This makes sure that one pass is enough to allocate the possible maximum.
 static void stage_8(StageContext &sc) {
     // Chargers that are currently not charging already have the enable current allocated (if available) by stage 7.
-    int matched = filter_chargers(ctx.allocated_current > 0 && ctx.state->is_charging);
+    int matched = filter_chargers(ctx.allocated_current > 0 && ctx.state->is_charging && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
 
     sort_chargers(
         3 - ctx.allocated_phases,
@@ -1196,7 +1222,7 @@ static void stage_8(StageContext &sc) {
         auto current = std::min(
                         std::max(
                             0,
-                            state->charge_mode_pv
+                            state->observe_pv_limit
                                 ? (sc.limits->raw.pv / allocated_phases)
                                 : 32000),
                         current_capacity(sc.limits, state, allocated_current, allocated_phases, sc.cfg));
@@ -1217,7 +1243,7 @@ static void stage_8(StageContext &sc) {
         // This should never happen:
         // We've just calculated how much current is still available.
         // If this cost exceeds the limits, stage_8 is bugged.
-        if (cost_exceeds_limits(cost, sc.limits, 8, state->charge_mode_pv)) {
+        if (cost_exceeds_limits(cost, sc.limits, 8, state->observe_pv_limit)) {
             logger.printfln("stage 8: Cost exceeded limits! Charger %d Current %u", sc.idx_array[i], current);
             print_alloc(8, sc);
             PRINT_COST(cost);
@@ -1315,7 +1341,7 @@ static void stage_9(StageContext &sc) {
 
         if (try_3p) {
             enable_current = get_enable_cost(state, true, have_active_chargers, nullptr, &enable_cost, sc.cfg);
-            if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->charge_mode_pv)) {
+            if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->observe_pv_limit)) {
                 try_1p = false;
                 phase_alloc = 3;
             }
@@ -1323,7 +1349,7 @@ static void stage_9(StageContext &sc) {
 
         if (try_1p) {
             enable_current = get_enable_cost(state, false, have_active_chargers, nullptr, &enable_cost, sc.cfg);
-            if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->charge_mode_pv)) {
+            if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->observe_pv_limit)) {
                 phase_alloc = 1;
             }
         }
@@ -1490,26 +1516,25 @@ int allocate_current(
         cfg->charger_count,
         cfg,
         ca_state,
-        charger_allocation_state
+        charger_allocation_state,
+        0xFFFFFFFF
     };
 
     trace_alloc(0, sc);
     stage_1(sc);
-    //trace_alloc(1, sc);
     stage_2(sc);
-    //trace_alloc(2, sc);
     stage_3(sc);
-    //trace_alloc(3, sc);
-    stage_4(sc);
-    //trace_alloc(4, sc);
-    stage_5(sc);
-    //trace_alloc(5, sc);
     stage_6(sc);
-    //trace_alloc(6, sc);
-    stage_7(sc);
-    //trace_alloc(7, sc);
-    stage_8(sc);
-    //trace_alloc(8, sc);
+
+    for (ChargeMode::Type mode = ChargeMode::_max; mode >= ChargeMode::_min; mode = (ChargeMode::Type)((int)mode >> 1)) {
+        sc.charge_mode_filter = mode;
+        stage_4(sc);
+        stage_5(sc);
+        stage_6(sc);
+        stage_7(sc);
+        stage_8(sc);
+    }
+
     stage_9(sc);
     trace_alloc(9, sc);
     //auto end = micros();
