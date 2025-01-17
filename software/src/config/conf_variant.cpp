@@ -35,9 +35,6 @@ Config::ConfVariant::ConfVariant() : tag(Tag::EMPTY), updated(0xFF), val() {}
 
 Config::ConfVariant::ConfVariant(const ConfVariant &cpy)
 {
-    if (tag != Tag::EMPTY)
-        destroyUnionMember();
-
     switch (cpy.tag) {
         case ConfVariant::Tag::EMPTY:
             new(&val.e) Empty(cpy.val.e);
@@ -179,9 +176,6 @@ const char *Config::ConfVariant::getVariantName() const
 }
 
 Config::ConfVariant::ConfVariant(ConfVariant &&cpy) {
-    if (tag != Tag::EMPTY)
-        destroyUnionMember();
-
     switch (cpy.tag) {
         case ConfVariant::Tag::EMPTY:
             new(&val.e) Empty(std::move(cpy.val.e));

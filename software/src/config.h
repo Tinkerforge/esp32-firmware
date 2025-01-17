@@ -334,7 +334,7 @@ struct Config {
             OBJECT,
             UNION
         };
-        Tag tag = Tag::EMPTY;
+        Tag tag;
         uint8_t updated;
         union Val {
             Val();
