@@ -52,6 +52,37 @@ void Automation::pre_setup()
         })
     );
 
+    const Config *conf_uint8_prototype = Config::get_prototype_uint8_0();
+
+    state = Config::Object({
+        {"registered_triggers", Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
+        {"registered_actions",  Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
+        {"enabled_triggers",    Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
+        {"enabled_actions",     Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
+    });
+}
+
+void Automation::setup()
+{
+    for (auto const &trigger : trigger_map) {
+        state.get("registered_triggers")->add()->updateEnum(trigger.first);
+
+        if (trigger.second.enable) {
+            state.get("enabled_triggers")->add()->updateEnum(trigger.first);
+        }
+    }
+
+    for (auto const &action : action_map) {
+        state.get("registered_actions")->add()->updateEnum(action.first);
+
+        if (action.second.enable) {
+            state.get("enabled_actions")->add()->updateEnum(action.first);
+        }
+    }
+
+    // Create Config::Objects here and not during pre-setup so that other module can registertriggers and actions
+    // but the automation config can still be loaded at the beginning of the setup stage.
+
     config_tasks_prototype = Config::Object({
         {"trigger", Config::Union<AutomationTriggerID>(
             *Config::Null(),
@@ -109,36 +140,7 @@ void Automation::pre_setup()
         }
     };
 
-    const Config *conf_uint8_prototype = Config::get_prototype_uint8_0();
-
-    state = Config::Object({
-        {"registered_triggers", Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
-        {"registered_actions",  Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
-        {"enabled_triggers",    Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
-        {"enabled_actions",     Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
-    });
-
-    for (auto const &trigger : trigger_map) {
-        state.get("registered_triggers")->add()->updateEnum(trigger.first);
-
-        if (trigger.second.enable) {
-            state.get("enabled_triggers")->add()->updateEnum(trigger.first);
-        }
-    }
-
-    for (auto const &action : action_map) {
-        state.get("registered_actions")->add()->updateEnum(action.first);
-
-        if (action.second.enable) {
-            state.get("enabled_actions")->add()->updateEnum(action.first);
-        }
-    }
-}
-
-void Automation::setup()
-{
     api.restorePersistentConfig("automation/config", &config);
-
     config_in_use = config;
 
     if (has_task_with_trigger(AutomationTriggerID::Cron)) {
@@ -171,6 +173,15 @@ void Automation::register_urls()
 
 void Automation::register_action(AutomationActionID id, Config cfg, ActionCb &&callback, ValidatorCb &&validator, bool enable)
 {
+    if (boot_stage > BootStage::PRE_SETUP) {
+#ifdef DEBUG_FS_ENABLE
+        esp_system_abort("Registering actions is only allowed during the pre-setup stage.");
+#else
+        logger.printfln("Registering actions is only allowed during the pre-setup stage. Ignoring action ID %u.", static_cast<uint32_t>(id));
+        return;
+#endif
+    }
+
     if (action_map.find(id) != action_map.end()) {
         logger.printfln("Action %u is already registered", static_cast<uint>(id));
         return;
@@ -182,6 +193,15 @@ void Automation::register_action(AutomationActionID id, Config cfg, ActionCb &&c
 
 void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb &&validator, bool enable)
 {
+    if (boot_stage > BootStage::PRE_SETUP) {
+#ifdef DEBUG_FS_ENABLE
+        esp_system_abort("Registering triggers is only allowed during the pre-setup stage.");
+#else
+        logger.printfln("Registering triggers is only allowed during the pre-setup stage. Ignoring trigger ID %u.", static_cast<uint32_t>(id));
+        return;
+#endif
+    }
+
     if (trigger_map.find(id) != trigger_map.end()) {
         logger.printfln("Trigger %u is already registered", static_cast<uint>(id));
         return;
@@ -267,8 +287,36 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
 
 bool Automation::has_task_with_trigger(AutomationTriggerID number)
 {
+    if (config_in_use.is_null()) {
+#ifdef DEBUG_FS_ENABLE
+        esp_system_abort("has_task_with_trigger failed because config is not loaded yet.");
+#else
+        logger.printfln("has_task_with_trigger failed because config is not loaded yet.");
+        return false;
+#endif
+    }
+
     for (const Config &conf : config_in_use.get("tasks")) {
         if (conf.get("trigger")->getTag<AutomationTriggerID>() == number) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Automation::has_task_with_action(AutomationActionID number)
+{
+    if (config_in_use.is_null()) {
+#ifdef DEBUG_FS_ENABLE
+        esp_system_abort("has_task_with_action failed because config is not loaded yet.");
+#else
+        logger.printfln("has_task_with_action failed because config is not loaded yet.");
+        return false;
+#endif
+    }
+
+    for (const Config &conf : config_in_use.get("tasks")) {
+        if (conf.get("action")->getTag<AutomationActionID>() == number) {
             return true;
         }
     }

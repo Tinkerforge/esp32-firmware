@@ -63,6 +63,7 @@ public:
 
     bool trigger(AutomationTriggerID number, void *data, IAutomationBackend *backend);
     bool has_task_with_trigger(AutomationTriggerID number);
+    bool has_task_with_action(AutomationActionID number);
     bool has_triggered(const Config *conf, void *data) override;
     ConfigVec get_configured_triggers(AutomationTriggerID number);
 
