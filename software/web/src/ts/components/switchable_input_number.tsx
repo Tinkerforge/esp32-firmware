@@ -42,8 +42,8 @@ interface SwitchableInputNumberProps extends Omit<JSXInternal.HTMLAttributes<HTM
 
 export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
     const id = !props.idContext ? useId() : useContext(props.idContext);
-    const label_desktop_id = useId();
-    const label_mobile_id  = useId();
+    const label_desktop_id = id + "-1";
+    const label_mobile_id = id + "-2";
 
     const input = useRef<HTMLInputElement>();
     const value = parseInt(props.value?.toString(), 10);
