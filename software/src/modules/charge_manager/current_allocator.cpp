@@ -1490,9 +1490,9 @@ int allocate_current(
 
         if (unreachable_evse_found) {
             // Shut down everything.
-            limits->raw = Cost{0, 0, 0, 0};
-            limits->min = Cost{0, 0, 0, 0};
-            limits->max_pv = 0;
+            for (int i = 0; i < cfg->charger_count; ++i) {
+                charger_state[i].off = true;
+            }
             LOCAL_LOG("%s", "Unreachable, unreactive or misconfigured EVSE(s) found. Setting available current to 0 mA.");
             result = 2;
 
