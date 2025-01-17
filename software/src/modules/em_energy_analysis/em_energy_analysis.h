@@ -29,6 +29,12 @@
 #include "options.h"
 #include "modules/em_common/structs.h"
 
+#if OPTIONS_METERS_MAX_SLOTS() > 7
+#define METERS_MAX_SLOTS_RECORDED 7
+#else
+#define METERS_MAX_SLOTS_RECORDED OPTIONS_METERS_MAX_SLOTS()
+#endif
+
 class EMEnergyAnalysis final : public IModule
 {
 public:
@@ -67,13 +73,13 @@ private:
     ConfigRoot history_wallbox_daily;
     ConfigRoot history_energy_manager_5min;
     ConfigRoot history_energy_manager_daily;
-    bool history_meter_setup_done[OPTIONS_METERS_MAX_SLOTS()];
-    float history_meter_power_value[OPTIONS_METERS_MAX_SLOTS()]; // W
-    micros_t history_meter_power_timestamp[OPTIONS_METERS_MAX_SLOTS()];
-    double history_meter_power_sum[OPTIONS_METERS_MAX_SLOTS()] = {0}; // watt seconds
-    double history_meter_power_duration[OPTIONS_METERS_MAX_SLOTS()] = {0}; // seconds
-    double history_meter_energy_import[OPTIONS_METERS_MAX_SLOTS()] = {0}; // daWh
-    double history_meter_energy_export[OPTIONS_METERS_MAX_SLOTS()] = {0}; // daWh
+    bool history_meter_setup_done[METERS_MAX_SLOTS_RECORDED];
+    float history_meter_power_value[METERS_MAX_SLOTS_RECORDED]; // W
+    uint32_t history_meter_power_timestamp[METERS_MAX_SLOTS_RECORDED];
+    double history_meter_power_sum[METERS_MAX_SLOTS_RECORDED] = {0}; // watt seconds
+    double history_meter_power_duration[METERS_MAX_SLOTS_RECORDED] = {0}; // seconds
+    double history_meter_energy_import[METERS_MAX_SLOTS_RECORDED] = {0}; // daWh
+    double history_meter_energy_export[METERS_MAX_SLOTS_RECORDED] = {0}; // daWh
     uint32_t history_request_seqnum = 0;
 
     // Cached EM data
