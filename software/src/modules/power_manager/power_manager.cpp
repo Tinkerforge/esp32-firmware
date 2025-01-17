@@ -321,9 +321,14 @@ void PowerManager::setup()
     api.restorePersistentConfig("power_manager/config", &config);
     api.restorePersistentConfig("power_manager/dynamic_load_config", &dynamic_load_config);
 
+    bool automation_has_action = false;
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation_has_action = automation.has_task_with_action(AutomationActionID::PMBlockCharge);
+#endif
+
     // Force-enable PM if either PV excess charging or dynamic load management are enabled.
     // Force-disable otherwise.
-    if (config.get("excess_charging_enable")->asBool() || dynamic_load_config.get("enabled")->asBool()) {
+    if (config.get("excess_charging_enable")->asBool() || dynamic_load_config.get("enabled")->asBool() || automation_has_action) {
         config.get("enabled")->updateBool(true);
     } else {
         config.get("enabled")->updateBool(false);
