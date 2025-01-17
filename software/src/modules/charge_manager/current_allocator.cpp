@@ -970,7 +970,6 @@ static void stage_5(StageContext &sc) {
     Cost wnd_min = sc.ca_state->control_window_min;
     Cost wnd_max = sc.ca_state->control_window_max;
 
-    auto min_1p = sc.cfg->minimum_current_1p;
     auto min_3p = sc.cfg->minimum_current_3p;
 
     int active_chargers = 0;
