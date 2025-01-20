@@ -681,7 +681,7 @@ public:
 
 private:
     // This is a gigantic footgun: The reference is invalidated after the module setup,
-    // because of the ConfSlot array shrinkToFit calls.
+    // and after every ConfArray::Slot buffer reallocation!
     std::vector<Config> &asArray();
     const std::vector<Config> &asArray() const;
 
@@ -789,6 +789,8 @@ public:
     [[gnu::const]] static const Config *get_prototype_bool_false();
 };
 
+static_assert(sizeof(Config) == 4, "Config size unexpected!");
+
 struct ConfigRoot : public Config {
 public:
     using Validator = std::function<String(Config &, ConfigSource)>;
@@ -854,6 +856,8 @@ struct ConfUnionPrototype {
         Config::check_enum_template_type<T>();
     }
 };
+
+static_assert(sizeof(ConfigRoot) == 8, "Config size unexpected!");
 
 struct ConfUnionPrototypeInternal {
     uint8_t tag;
