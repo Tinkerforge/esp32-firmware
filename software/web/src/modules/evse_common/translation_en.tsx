@@ -21,7 +21,7 @@ let x = {
         },
         "content": {
             "status": "Charge Status",
-            "evse_settings": "Wallbox",
+            "evse_settings": "Charger",
             "iec_state": "IEC 61851 state",
             "iec_state_a": "A (disconnected)",
             "iec_state_b": "B (connected)",

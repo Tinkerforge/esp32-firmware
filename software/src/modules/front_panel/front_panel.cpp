@@ -59,7 +59,7 @@ void FrontPanel::pre_setup()
     this->DeviceModule::pre_setup();
 
     tile_prototypes[0] = {TileType::EmptyTile,           *Config::Null()};
-    tile_prototypes[1] = {TileType::Wallbox,             Config::Uint(0, 0, FRONT_PANEL_CONTROLLED_CHARGES)};
+    tile_prototypes[1] = {TileType::Charger,             Config::Uint(0, 0, FRONT_PANEL_CONTROLLED_CHARGES)};
     tile_prototypes[2] = {TileType::ChargeManagement,    *Config::Null()};
     tile_prototypes[3] = {TileType::Meter,               Config::Uint(0, 0, FRONT_PANEL_METERS_SLOTS)};
     tile_prototypes[4] = {TileType::DayAheadPrices,      Config::Enum(DAPType::CurrentPrice, DAPType::CurrentPrice, DAPType::AveragePriveTomorrow)};
@@ -95,7 +95,7 @@ void FrontPanel::pre_setup()
         }
     };
 
-    config.get("tiles")->get(0)->changeUnionVariant(TileType::Wallbox);
+    config.get("tiles")->get(0)->changeUnionVariant(TileType::Charger);
     config.get("tiles")->get(1)->changeUnionVariant(TileType::DayAheadPrices);
     config.get("tiles")->get(2)->changeUnionVariant(TileType::HeatingStatus);
     config.get("tiles")->get(3)->changeUnionVariant(TileType::Meter);
@@ -310,7 +310,7 @@ const char* FrontPanel::get_i18n_string(const char *key_en, const char *key_de)
 #endif
 }
 
-int FrontPanel::update_front_page_wallbox(const uint8_t index, const TileType type, const uint8_t param)
+int FrontPanel::update_front_page_charger(const uint8_t index, const TileType type, const uint8_t param)
 {
     String str1 = "Box " + String(param);
     String str2 = "-- kW";
@@ -551,8 +551,8 @@ void FrontPanel::update_front_page()
             case TileType::EmptyTile:
                 result = update_front_page_empty_tile(i, type, 0);
                 break;
-            case TileType::Wallbox:
-                result = update_front_page_wallbox(i, type, tile->get()->asUint());
+            case TileType::Charger:
+                result = update_front_page_charger(i, type, tile->get()->asUint());
                 break;
             case TileType::ChargeManagement:
                 result = update_front_page_charge_management(i, type, 0);

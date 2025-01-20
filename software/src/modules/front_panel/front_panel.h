@@ -61,7 +61,7 @@ public:
 private:
     enum class TileType : uint8_t {
         EmptyTile           = 0,
-        Wallbox             = 1,
+        Charger             = 1,
         ChargeManagement    = 2,
         Meter               = 3,
         DayAheadPrices      = 4,
@@ -87,7 +87,7 @@ private:
     void update_front_page();
     void update_led();
     int update_front_page_empty_tile(const uint8_t index, const TileType type, const uint8_t param);
-    int update_front_page_wallbox(const uint8_t index, const TileType type, const uint8_t param);
+    int update_front_page_charger(const uint8_t index, const TileType type, const uint8_t param);
     int update_front_page_charge_management(const uint8_t index, const TileType type, const uint8_t param);
     int update_front_page_meter(const uint8_t index, const TileType type, const uint8_t param);
     int update_front_page_day_ahead_prices(const uint8_t index, const TileType type, const DAPType param);

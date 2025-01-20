@@ -3,7 +3,7 @@ import { h } from "preact";
 let x = {
     "meters_evse_v2": {
         "content": {
-            "meter_class": "Wallbox-internal",
+            "meter_class": "Charger internal",
 
             "config_display_name": "Display name"
         }

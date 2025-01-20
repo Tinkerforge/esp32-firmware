@@ -125,10 +125,10 @@ uint32_t keba_get_features()
     if (api.hasFeature("meter")) {
         features += 20;
     } else {
-        // All keba boxes have some kind of energy meter.
+        // All keba chargers have some kind of energy meter.
         // TODO: should we still report 10 (not calibrared meter) here for better compatibility?
         if (!warned) {
-            logger.printfln("Wallbox has no meter. Errors are expected!");
+            logger.printfln("Charger has no meter. Errors are expected!");
             warned = true;
         }
     }
@@ -836,7 +836,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getKebaHoldingRegister(uint16_t reg) {
                 auto iec_state = cache->evse_state->get("iec61851_state")->asUint();
 
                 if (iec_state != 0 && slot->get("active")->asBool() && slot->get("max_current")->asUint() == 0)
-                    // The charging process is temporarily interrupted because the temperature is too high or the wallbox is in suspended mode.
+                    // The charging process is temporarily interrupted because the temperature is too high or the charger is in suspended mode.
                     val.u = 5;
                 else if (iec_state == 4)
                     // An error has occurred.
