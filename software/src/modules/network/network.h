@@ -37,6 +37,8 @@ public:
     inline const String &get_hostname() { return hostname; }
     inline uint16_t get_web_server_port() { return web_server_port; }
 
+    void set_default_hostname(const String &hostname);
+
 private:
     void update_connected();
 
@@ -44,6 +46,7 @@ private:
     ConfigRoot state;
 
     String hostname;
+    CoolString default_hostname;
     bool enable_mdns;
     uint16_t web_server_port;
 

@@ -52,9 +52,14 @@ void Network::pre_setup()
 
 void Network::setup()
 {
-    if (!api.restorePersistentConfig("network/config", &config)) {
-        config.get("hostname")->updateString(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
+    if (this->default_hostname.isEmpty()) {
+        esp_system_abort("Network::set_default_hostname was not called before Network::setup");
     }
+
+    if (!api.restorePersistentConfig("network/config", &config)) {
+        config.get("hostname")->updateString(this->default_hostname);
+    }
+    this->default_hostname.make_invalid();
 
     this->hostname = config.get("hostname")->asString();
     this->enable_mdns = config.get("enable_mdns")->asBool();
@@ -150,4 +155,8 @@ void Network::update_connected()
             logger.printfln("Network disconnected");
         }
     }
+}
+
+void Network::set_default_hostname(const String &hostname) {
+    this->default_hostname = hostname;
 }

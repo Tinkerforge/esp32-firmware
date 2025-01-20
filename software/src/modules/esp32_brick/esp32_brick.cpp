@@ -74,6 +74,10 @@ void ESP32Brick::setup()
     read_efuses(&local_uid_num, local_uid_str, passphrase);
     logger.printfln("ESP32 Brick UID: %s", local_uid_str);
 
+#if MODULE_NETWORK_AVAILABLE()
+    network.set_default_hostname(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
+#endif
+
     initHAL();
 
 #if TF_LOCAL_ENABLE != 0

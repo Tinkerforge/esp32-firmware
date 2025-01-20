@@ -165,6 +165,11 @@ void ESP32EthernetBrick::pre_init()
 void ESP32EthernetBrick::setup()
 {
     read_efuses(&local_uid_num, local_uid_str, passphrase);
+
+#if MODULE_NETWORK_AVAILABLE()
+    network.set_default_hostname(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
+#endif
+
 #if BUILD_IS_WARP3()
     logger.printfln("WARP ESP32 Ethernet Brick UID: %s", local_uid_str);
 #else
