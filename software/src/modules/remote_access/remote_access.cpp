@@ -963,15 +963,13 @@ void RemoteAccess::register_urls()
             if (management != nullptr) {
                 state = management->is_peer_up(nullptr, nullptr) ? 2 : 1;
             }
-            if (state != 2) {
-                this->management_request_done = false;
-            }
 
             if (this->connection_state.get(0)->get("state")->updateUint(state)) {
                 if (state == 2) {
                     logger.printfln("Management connection connected");
                 } else {
                     in_seq_number = 0;
+                    this->management_request_done = false;
                     logger.printfln("Management connection disconnected");
                 }
             }
@@ -991,6 +989,7 @@ void RemoteAccess::register_events()
         if (connected->asBool()) {
             this->task_id = task_scheduler.scheduleWithFixedDelay(
                 [this]() {
+                    logger.printfln("Checking if management connection is up %u", this->management_request_done);
                     if (!this->management_request_done) {
                         this->resolve_management();
                     }
