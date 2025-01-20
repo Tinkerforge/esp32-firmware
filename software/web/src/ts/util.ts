@@ -379,7 +379,7 @@ let loginReconnectTimeout: number = null;
 
 export function ifLoggedInElse(if_continuation: () => void, else_continuation: () => void) {
     if (!remoteAccessMode || connection_id.length > 0) {
-        download("/login_state", 10000)
+        download("/login_state")
             .catch(e => new Blob(["Logged in"]))
             .then(blob => blob.text())
             .then(text => text == "Logged in" ? if_continuation() : else_continuation());
@@ -603,7 +603,16 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
     });
 }
 
-export async function download(url: string, timeout_ms: number = 5000) {
+export async function download(url: string) {
+    let timeout_ms;
+    if (remoteAccessMode) {
+        timeout_ms = 10000;
+    } else {
+        timeout_ms = 5000;
+    }
+
+    console.log("Timeout: ", timeout_ms);
+
     let abort = new AbortController();
     let timeout = setTimeout(() => abort.abort(), timeout_ms);
 
