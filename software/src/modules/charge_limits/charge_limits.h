@@ -44,6 +44,7 @@ public:
 
     float get_energy_limit();
 
+private:
     ConfigRoot config;
     ConfigRoot config_in_use;
     ConfigRoot state;
@@ -51,7 +52,6 @@ public:
     ConfigRoot override_duration;
     ConfigRoot override_energy;
 
-private:
     bool was_triggered = false;
 };
 

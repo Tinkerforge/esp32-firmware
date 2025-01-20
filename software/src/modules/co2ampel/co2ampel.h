@@ -36,10 +36,10 @@ public:
 
     void set_color(uint32_t c);
 
+private:
     ConfigRoot state;
     ConfigRoot config;
 
-private:
     TF_CO2V2 co2;
     TF_LCD128x64 lcd;
     TF_RGBLEDButton rlb;

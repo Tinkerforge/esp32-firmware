@@ -87,6 +87,10 @@ private:
     PriceSorted *prices_sorted = nullptr;
     int32_t prices_sorted_first_date = 0;
 
+    ConfigRoot config;
+    ConfigRoot state;
+    ConfigRoot prices;
+
 public:
     DayAheadPrices(){}
     void pre_setup() override;
@@ -113,10 +117,6 @@ public:
     bool is_start_time_cheap_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m);
     bool is_start_time_cheap_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h);
     int32_t get_grid_cost_plus_tax_plus_markup();
-
-    ConfigRoot config;
-    ConfigRoot state;
-    ConfigRoot prices;
 
     bool prices_sorted_available = false;
 

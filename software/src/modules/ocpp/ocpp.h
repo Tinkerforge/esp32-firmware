@@ -39,13 +39,14 @@ public:
     void (*tag_seen_cb)(int32_t, const char *, void *) = nullptr;
     void *tag_seen_cb_user_data = nullptr;
 
-    ConfigRoot config;
     ConfigRoot config_in_use;
     ConfigRoot state;
     ConfigRoot configuration;
-    ConfigRoot change_configuration;
 
     size_t trace_buf_idx;
 private:
     bool start_client();
+
+    ConfigRoot config;
+    ConfigRoot change_configuration;
 };

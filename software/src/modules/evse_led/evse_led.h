@@ -50,12 +50,13 @@ public:
     bool set_api(Blink state, uint16_t duration_ms, uint16_t h = 0, uint8_t s = 0, uint8_t v = 0);
 
     bool enable_api = false;
-    ConfigRoot config;
-    ConfigRoot led;
 
 private:
     bool accepts_new_state(Blink state);
     bool set(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint8_t v, bool via_api);
+
+    ConfigRoot config;
+    ConfigRoot led;
 
     Blink current_state = Blink::None;
     micros_t current_duration_end_us = 0_us;
