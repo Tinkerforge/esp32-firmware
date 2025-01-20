@@ -54,10 +54,11 @@ void Network::setup()
 {
     if (!api.restorePersistentConfig("network/config", &config)) {
         config.get("hostname")->updateString(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
-        this->hostname = config.get("hostname")->asString();
-        this->enable_mdns = config.get("enable_mdns")->asBool();
-        this->web_server_port = config.get("web_server_port")->asUint();
     }
+
+    this->hostname = config.get("hostname")->asString();
+    this->enable_mdns = config.get("enable_mdns")->asBool();
+    this->web_server_port = config.get("web_server_port")->asUint();
 
     initialized = true;
 }
