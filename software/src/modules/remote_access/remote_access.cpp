@@ -989,7 +989,6 @@ void RemoteAccess::register_events()
         if (connected->asBool()) {
             this->task_id = task_scheduler.scheduleWithFixedDelay(
                 [this]() {
-                    logger.printfln("Checking if management connection is up %u", this->management_request_done);
                     if (!this->management_request_done) {
                         this->resolve_management();
                     }
@@ -1431,17 +1430,18 @@ void RemoteAccess::resolve_management()
             const CoolString &user_email = doc["configured_users_emails"][idx];
             const CoolString &user_uuid = doc["configured_users_uuids"][idx];
 
-            if (user_email.length() == 0) {
+            if (doc["configured_users"][idx] == 0) {
                 uint32_t user_id = config.get("users")->get(idx)->get("id")->asUint();
                 for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
                     remove_key(user_id, i);
                 }
                 config.get("users")->remove(idx);
                 changed = true;
-            } else {
+            } else if (user_email != "null") {
                 changed |= config.get("users")->get(idx)->get("email")->updateString(user_email);
                 changed |= config.get("users")->get(idx)->get("uuid")->updateString(user_uuid);
             }
+
             }
             if (changed) {
                 api.writeConfig("remote_access/config", &config);
