@@ -166,7 +166,11 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
 void RemoteAccess::pre_setup()
 {
     users_config_prototype =
-        Config::Object({{"id", Config::Uint8(0)}, {"email", Config::Str("", 0, 64)}, {"public_key", Config::Str("", 0, 44)}});
+        Config::Object({{"id",Config::Uint8(0)},
+            {"email", Config::Str("", 0, 64)},
+            {"uuid", Config::Str("", 0, 36)},
+            {"public_key", Config::Str("", 0, 44)}
+        });
 
     config = ConfigRoot{
         Config::Object({{"uuid", Config::Str("", 0, 36)},
@@ -959,12 +963,14 @@ void RemoteAccess::register_urls()
             if (management != nullptr) {
                 state = management->is_peer_up(nullptr, nullptr) ? 2 : 1;
             }
+            if (state != 2) {
+                this->management_request_done = false;
+            }
 
             if (this->connection_state.get(0)->get("state")->updateUint(state)) {
                 if (state == 2) {
                     logger.printfln("Management connection connected");
                 } else {
-                    this->management_request_done = false;
                     in_seq_number = 0;
                     logger.printfln("Management connection disconnected");
                 }
@@ -1350,7 +1356,14 @@ void RemoteAccess::resolve_management()
         serializer.addMemberArray("configured_users");
         for (auto &user : config.get("users")) {
             serializer.addObject();
+
+            // Check if we already have the user_id and use it
+            const CoolString &user_id = user.get("uuid")->asString();
+            if (user_id.length() != 0) {
+                serializer.addMemberString("user_id", user_id.c_str());
+            } else {
             serializer.addMemberString("email", user.get("email")->asEphemeralCStr());
+            }
 
             if (user.get("public_key")->asString().length() != 0) {
                 auto key = decode_base64(user.get("public_key")->asString(), 32);
@@ -1395,6 +1408,10 @@ void RemoteAccess::resolve_management()
             config.get("uuid")->updateString(resp["uuid"]);
             api.writeConfig("remote_access/config", &config);
 
+            this->request_cleanup();
+            // Instantly make another request to ensure we get the users uuid
+            // this->resolve_management();
+
             return;
         }
 
@@ -1410,20 +1427,25 @@ void RemoteAccess::resolve_management()
             response_body = "";
         }
 
-        for (int idx = config.get("users")->count() - 1; idx >= 0; idx--) {
             bool changed = false;
-            int is_configured = doc["configured_users"][idx];
-            if (is_configured == 0) {
+        for (int idx = config.get("users")->count() - 1; idx >= 0; idx--) {
+            const CoolString &user_email = doc["configured_users_emails"][idx];
+            const CoolString &user_uuid = doc["configured_users_uuids"][idx];
+
+            if (user_email.length() == 0) {
                 uint32_t user_id = config.get("users")->get(idx)->get("id")->asUint();
                 for (int i = 0; i < MAX_KEYS_PER_USER; i++) {
                     remove_key(user_id, i);
                 }
                 config.get("users")->remove(idx);
                 changed = true;
+            } else {
+                changed |= config.get("users")->get(idx)->get("email")->updateString(user_email);
+                changed |= config.get("users")->get(idx)->get("uuid")->updateString(user_uuid);
+            }
             }
             if (changed) {
                 api.writeConfig("remote_access/config", &config);
-            }
         }
 
         this->management_request_done = true;
