@@ -611,8 +611,6 @@ export async function download(url: string) {
         timeout_ms = 5000;
     }
 
-    console.log("Timeout: ", timeout_ms);
-
     let abort = new AbortController();
     let timeout = setTimeout(() => abort.abort(), timeout_ms);
 
