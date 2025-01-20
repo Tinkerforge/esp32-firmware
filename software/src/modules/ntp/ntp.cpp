@@ -28,8 +28,6 @@
 #include "timezone_translation.h"
 #include "build.h"
 
-static bool first = true;
-
 extern "C" void sntp_sync_time(struct timeval *tv)
 {
     if (sntp_get_sync_mode() != SNTP_SYNC_MODE_IMMED) {
@@ -43,26 +41,7 @@ extern "C" void sntp_sync_time(struct timeval *tv)
     settimeofday(&time, NULL);
 #endif
     sntp_set_sync_status(SNTP_SYNC_STATUS_COMPLETED);
-    ntp.last_sync = now_us();
-
-    if (first) {
-        first = false;
-        auto now = millis();
-
-        task_scheduler.scheduleOnce([now](){
-            ntp.set_synced(true);
-
-            auto secs = now / 1000;
-            auto ms = now % 1000;
-            // Don't log in TCP/IP task: Deadlocks the event lock
-            logger.printfln("NTP synchronized at %lu,%03lu", secs, ms);
-        });
-
-        task_scheduler.scheduleWithFixedDelay([](){
-            if (deadline_elapsed(ntp.last_sync + 25_h))
-                ntp.set_synced(false);
-        }, 1_h, 1_h);
-    }
+    ntp.time_synced_NTPThread();
 }
 
 void NTP::pre_setup()
@@ -166,4 +145,27 @@ void NTP::register_urls()
 {
     api.addPersistentConfig("ntp/config", &config);
     api.addState("ntp/state", &state);
+}
+
+void NTP::time_synced_NTPThread() {
+    this->last_sync = now_us();
+
+    if (this->first_sync) {
+        this->first_sync = false;
+        auto now = millis();
+
+        task_scheduler.scheduleOnce([this, now](){
+            this->set_synced(true);
+
+            auto secs = now / 1000;
+            auto ms = now % 1000;
+            // Don't log in TCP/IP task: Deadlocks the event lock
+            logger.printfln("NTP synchronized at %lu,%03lu", secs, ms);
+        });
+
+        task_scheduler.scheduleWithFixedDelay([this](){
+            if (deadline_elapsed(this->last_sync + 25_h))
+                this->set_synced(false);
+        }, 1_h, 1_h);
+    }
 }

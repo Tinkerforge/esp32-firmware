@@ -30,6 +30,14 @@ private:
     String ntp_server1;
     String ntp_server2;
 
+    std::mutex mtx;
+    uint32_t sync_counter = 0;
+    micros_t last_sync = 0_us;
+    bool first_sync = true;
+
+    ConfigRoot config;
+    ConfigRoot state;
+
 public:
     NTP(){}
     void pre_setup() override;
@@ -38,10 +46,6 @@ public:
     void set_synced(bool synced);
     void set_api_time(struct timeval time);
 
-    std::mutex mtx;
-    uint32_t sync_counter = 0;
-    micros_t last_sync = 0_us;
 
-    ConfigRoot config;
-    ConfigRoot state;
+    void time_synced_NTPThread();
 };
