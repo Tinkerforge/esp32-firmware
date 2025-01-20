@@ -30,6 +30,9 @@
 # define CHARGE_LIMITS_TIME_MODIFIER 60
 #endif
 
+static constexpr uint32_t default_duration = 0;
+static constexpr uint32_t default_energy_wh = 0;
+
 static uint32_t map_duration(uint32_t val)
 {
     switch (val)
@@ -62,8 +65,8 @@ static uint32_t map_duration(uint32_t val)
 void ChargeLimits::pre_setup()
 {
     config = Config::Object({
-        {"duration", Config::Uint(0, 0, 10)},
-        {"energy_wh", Config::Uint32(0)},
+        {"duration", Config::Uint(default_duration, 0, 10)},
+        {"energy_wh", Config::Uint32(default_energy_wh)},
     });
 
     state = Config::Object({
@@ -183,10 +186,11 @@ void ChargeLimits::register_urls()
 
         if (!charging) {
             if (was_charging) {
+                // Read back charge_limits/default_limits to apply new default limits without rebooting the ESP.
                 if (!api.restorePersistentConfig("charge_limits/default_limits", &config_in_use))
                 {
-                    config_in_use.get("duration")->updateUint(config.get("duration")->asUint());
-                    config_in_use.get("energy_wh")->updateUint(config.get("energy_wh")->asUint());
+                    config_in_use.get("duration")->updateUint(default_duration);
+                    config_in_use.get("energy_wh")->updateUint(default_energy_wh);
                 }
 
                 evse_common.set_charge_limits_slot(32000, true);
