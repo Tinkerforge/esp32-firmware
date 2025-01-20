@@ -1331,7 +1331,7 @@ void RemoteAccess::resolve_management()
         serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
         serializer.addMemberObject("data");
         serializer.addMemberObject("V1");
-        serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
+        serializer.addMemberNumber("port", network.get_web_server_port());
         serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
         serializer.addMemberArray("configured_connections");
         for (auto &user : config.get("users")) {
@@ -1349,7 +1349,7 @@ void RemoteAccess::resolve_management()
         serializer.addMemberObject("V2");
         serializer.addMemberString("id", config.get("uuid")->asEphemeralCStr());
         serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
-        serializer.addMemberNumber("port", network.config.get("web_server_port")->asUint());
+        serializer.addMemberNumber("port", network.get_web_server_port());
         serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
         serializer.addMemberArray("configured_users");
         for (auto &user : config.get("users")) {

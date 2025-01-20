@@ -114,7 +114,7 @@ void Ethernet::setup()
         return;
 
 #if MODULE_NETWORK_AVAILABLE()
-    hostname = network.config.get("hostname")->asString();
+    hostname = network.get_hostname();
 #else
     hostname = String(BUILD_HOST_PREFIX) + "-" + local_uid_str;
 #endif

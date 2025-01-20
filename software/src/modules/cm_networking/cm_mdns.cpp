@@ -93,7 +93,7 @@ void CMNetworking::register_urls()
 
 void CMNetworking::register_events() {
 #if MODULE_NETWORK_AVAILABLE()
-    if (!network.config.get("enable_mdns")->asBool())
+    if (!network.get_enable_mdns())
         return;
 
 #if MODULE_EVSE_COMMON_AVAILABLE()

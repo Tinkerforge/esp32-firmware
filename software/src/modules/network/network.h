@@ -31,13 +31,21 @@ public:
     void register_urls() override;
     void register_events() override;
 
-    ConfigRoot config;
-    ConfigRoot state;
-
     inline bool is_connected() { return connected; }
+
+    inline bool get_enable_mdns() { return enable_mdns; }
+    inline const String &get_hostname() { return hostname; }
+    inline uint16_t get_web_server_port() { return web_server_port; }
 
 private:
     void update_connected();
+
+    ConfigRoot config;
+    ConfigRoot state;
+
+    String hostname;
+    bool enable_mdns;
+    uint16_t web_server_port;
 
     bool connected = false;
 

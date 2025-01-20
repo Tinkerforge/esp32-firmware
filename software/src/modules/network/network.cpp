@@ -54,6 +54,9 @@ void Network::setup()
 {
     if (!api.restorePersistentConfig("network/config", &config)) {
         config.get("hostname")->updateString(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
+        this->hostname = config.get("hostname")->asString();
+        this->enable_mdns = config.get("enable_mdns")->asBool();
+        this->web_server_port = config.get("web_server_port")->asUint();
     }
 
     initialized = true;
@@ -64,14 +67,14 @@ void Network::register_urls()
     api.addPersistentConfig("network/config", &config, {}, {"hostname"});
     api.addState("network/state", &state);
 
-    if (!config.get("enable_mdns")->asBool()) {
+    if (!this->enable_mdns) {
         return;
     }
 
     if (mdns_init() != ESP_OK) {
         logger.printfln("Error initializing mDNS responder");
     } else {
-        String hostname = config.get("hostname")->asString();
+        String hostname = this->hostname;
 
         if(mdns_hostname_set(hostname.c_str()) != ESP_OK) {
             logger.printfln("Error initializing mDNS hostname");

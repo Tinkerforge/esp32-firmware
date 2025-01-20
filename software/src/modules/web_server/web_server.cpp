@@ -108,7 +108,7 @@ void WebServer::post_setup()
     config.httpd.linger_timeout = 100;
 
 #if MODULE_NETWORK_AVAILABLE()
-    config.httpd.server_port = network.config.get("web_server_port")->asUint();
+    config.httpd.server_port = network.get_web_server_port();
 #endif
 
 #if MODULE_HTTP_AVAILABLE()
