@@ -244,7 +244,7 @@ static void abort_on_union_get_failure()
 
 Config::Wrap Config::get()
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfUnion>()) {
         abort_on_union_get_failure();
     }
@@ -255,7 +255,7 @@ Config::Wrap Config::get()
 
 const Config::ConstWrap Config::get() const
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfUnion>()) {
         abort_on_union_get_failure();
     }
@@ -275,7 +275,7 @@ static void abort_on_object_get_failure(const Config *conf, const char *key)
 
 Config::Wrap Config::get(const char *s, size_t s_len)
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfObject>()) {
         abort_on_object_get_failure(this, s);
     }
@@ -286,7 +286,7 @@ Config::Wrap Config::get(const char *s, size_t s_len)
 
 const Config::ConstWrap Config::get(const char *s, size_t s_len) const
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfObject>()) {
         abort_on_object_get_failure(this, s);
     }
@@ -297,11 +297,13 @@ const Config::ConstWrap Config::get(const char *s, size_t s_len) const
 
 Config::Wrap Config::get(const String &s)
 {
+    // Asserts checked in ::get.
     return get(s.c_str(), s.length());
 }
 
 const Config::ConstWrap Config::get(const String &s) const
 {
+    // Asserts checked in ::get.
     return get(s.c_str(), s.length());
 }
 
@@ -316,7 +318,7 @@ static void abort_on_array_get_failure(const Config *conf, size_t i)
 
 Config::Wrap Config::get(size_t i)
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         abort_on_array_get_failure(this, i);
     }
@@ -327,7 +329,7 @@ Config::Wrap Config::get(size_t i)
 
 const Config::ConstWrap Config::get(size_t i) const
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         abort_on_array_get_failure(this, i);
     }
@@ -347,7 +349,7 @@ static void abort_on_array_add_max_failure(size_t max_elements)
 
 Config::Wrap Config::add()
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to add to a node that is not an array!");
     }
@@ -375,7 +377,7 @@ Config::Wrap Config::add()
 
 bool Config::removeLast()
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to remove the last element from a node that is not an array!");
     }
@@ -391,7 +393,7 @@ bool Config::removeLast()
 
 bool Config::removeAll()
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to remove all from a node that is not an array!");
     }
@@ -405,7 +407,7 @@ bool Config::removeAll()
 
 bool Config::remove(size_t i)
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to remove from a node that is not an array!");
     }
@@ -421,7 +423,7 @@ bool Config::remove(size_t i)
 
 size_t Config::count() const
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to get count of a node that is not an array!");
     }
@@ -431,7 +433,7 @@ size_t Config::count() const
 
 std::vector<Config>::iterator Config::begin()
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to get begin iterator of a node that is not an array!");
     }
@@ -440,7 +442,7 @@ std::vector<Config>::iterator Config::begin()
 
 std::vector<Config>::iterator Config::end()
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to get end iterator of a node that is not an array!");
     }
@@ -449,7 +451,7 @@ std::vector<Config>::iterator Config::end()
 
 std::vector<Config>::const_iterator Config::begin() const
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to get begin iterator of a node that is not an array!");
     }
@@ -458,7 +460,7 @@ std::vector<Config>::const_iterator Config::begin() const
 
 std::vector<Config>::const_iterator Config::end() const
 {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to get end iterator of a node that is not an array!");
     }
@@ -467,51 +469,61 @@ std::vector<Config>::const_iterator Config::end() const
 
 const CoolString &Config::asString() const
 {
+    // Asserts checked in ::get.
     return *this->get<ConfString>()->getVal();
 }
 
 const char *Config::asEphemeralCStr() const
 {
+    // Asserts checked in ::get.
     return this->get<ConfString>()->getVal()->c_str();
 }
 
 const char *Config::asUnsafeCStr() const
 {
+    // Asserts checked in ::get.
     return this->get<ConfString>()->getVal()->c_str();
 }
 
 float Config::asFloat() const
 {
+    // Asserts checked in ::get.
     return this->get<ConfFloat>()->getVal();
 }
 
 uint32_t Config::asUint() const
 {
+    // Asserts checked in ::get.
     return *this->get<ConfUint>()->getVal();
 }
 
 int32_t Config::asInt() const
 {
+    // Asserts checked in ::get.
     return *this->get<ConfInt>()->getVal();
 }
 
 bool Config::asBool() const
 {
+    // Asserts checked in ::get.
     return *this->get<ConfBool>()->getVal();
 }
 
 std::vector<Config> &Config::asArray()
 {
+    // Asserts checked in ::get.
     return *this->get<ConfArray>()->getVal();
 }
 
 const std::vector<Config> &Config::asArray() const
 {
+    // Asserts checked in ::get.
     return *this->get<ConfArray>()->getVal();
 }
 
 bool Config::clearString()
 {
+    // Asserts checked in ::is.
     if (!this->is<ConfString>()) {
         esp_system_abort("Config is not a string!");
     }
@@ -526,7 +538,7 @@ bool Config::clearString()
 // because it is stored as uint32_t in the IRAM.
 template<>
 inline bool Config::update_value<float, Config::ConfFloat>(float value, const char *value_type) {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<ConfFloat>()) {
         String value_string(value);
         config_abort_on_type_error("update_value", this, value_type, &value_string);
@@ -543,7 +555,7 @@ inline bool Config::update_value<float, Config::ConfFloat>(float value, const ch
 
 template<>
 inline size_t Config::fillArray<float, Config::ConfFloat>(float *arr, size_t elements) {
-    ASSERT_MAIN_THREAD();
+    // Asserts checked in ::is.
     if (!this->is<ConfArray>()) {
         esp_system_abort("Can't fill array, Config is not an array");
     }
@@ -564,6 +576,7 @@ inline size_t Config::fillArray<float, Config::ConfFloat>(float *arr, size_t ele
 
 bool Config::updateString(const String &value)
 {
+    // Asserts checked in ::update_value.
     if (!value) {
         esp_system_abort("Can't update string, value is invalid string!");
     }
@@ -572,76 +585,91 @@ bool Config::updateString(const String &value)
 
 bool Config::updateInt(int32_t value)
 {
+    // Asserts checked in ::update_value.
     return update_value<int32_t, ConfInt>(value, "int32_t");
 }
 
 bool Config::updateUint(uint32_t value)
 {
+    // Asserts checked in ::update_value.
     return update_value<uint32_t, ConfUint>(value, "uint32_t");
 }
 
 bool Config::updateFloat(float value)
 {
+    // Asserts checked in ::update_value.
     return update_value<float, ConfFloat>(value, "float");
 }
 
 bool Config::updateBool(bool value)
 {
+    // Asserts checked in ::update_value.
     return update_value<bool, ConfBool>(value, "bool");
 }
 
 size_t Config::fillFloatArray(float *arr, size_t elements)
 {
+    // Asserts checked in ::fillArray.
     return fillArray<float, Config::ConfFloat>(arr, elements);
 }
 
 size_t Config::fillUint8Array(uint8_t *arr, size_t elements)
 {
+    // Asserts checked in ::fillArray.
     return fillArray<uint8_t, Config::ConfUint>(arr, elements);
 }
 
 size_t Config::fillInt8Array(int8_t *arr, size_t elements)
 {
+    // Asserts checked in ::fillArray.
     return fillArray<int8_t, Config::ConfInt>(arr, elements);
 }
 
 size_t Config::fillUint16Array(uint16_t *arr, size_t elements)
 {
+    // Asserts checked in ::fillArray.
     return fillArray<uint16_t, Config::ConfUint>(arr, elements);
 }
 
 size_t Config::fillInt16Array(int16_t *arr, size_t elements)
 {
+    // Asserts checked in ::fillArray.
     return fillArray<int16_t, Config::ConfInt>(arr, elements);
 }
 
 size_t Config::fillUint32Array(uint32_t *arr, size_t elements)
 {
+    // Asserts checked in ::fillArray.
     return fillArray<uint32_t, Config::ConfUint>(arr, elements);
 }
 
 size_t Config::fillInt32Array(int32_t *arr, size_t elements)
 {
+    // Asserts checked in ::fillArray.
     return fillArray<int32_t, Config::ConfInt>(arr, elements);
 }
 
 size_t Config::json_size(bool zero_copy) const
 {
+    // Asserts checked in ::apply_visitor.
     return Config::apply_visitor(json_length_visitor{zero_copy}, value);
 }
 
 size_t Config::max_string_length() const
 {
+    // Asserts checked in ::apply_visitor.
     return Config::apply_visitor(max_string_length_visitor{}, value);
 }
 
 size_t Config::string_length() const
 {
+    // Asserts checked in ::apply_visitor.
     return Config::apply_visitor(string_length_visitor{}, value);
 }
 
 DynamicJsonDocument Config::to_json(const char *const *keys_to_censor, size_t keys_to_censor_len) const
 {
+    // Asserts checked in ::json_size.
     DynamicJsonDocument doc(json_size(true));
 
     JsonVariant var;
@@ -658,6 +686,7 @@ DynamicJsonDocument Config::to_json(const char *const *keys_to_censor, size_t ke
 
 void Config::save_to_file(File &file)
 {
+    // Asserts checked in ::to_json.
     auto doc = this->to_json(nullptr, 0);
 
     if (doc.overflowed()) {
@@ -687,6 +716,7 @@ void Config::write_to_stream(Print &output)
 
 void Config::write_to_stream_except(Print &output, const char *const *keys_to_censor, size_t keys_to_censor_len)
 {
+    // Asserts checked in ::to_json.
     auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
 
     if (doc.overflowed()) {
@@ -716,6 +746,7 @@ String Config::to_string() const
 
 String Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len) const
 {
+    // Asserts checked in ::to_json.
     auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
 
     String result;
@@ -743,6 +774,7 @@ String Config::to_string_except(const char *const *keys_to_censor, size_t keys_t
 
 void Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len, StringBuilder *sb) const
 {
+    // Asserts checked in ::to_json.
     auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
     char *ptr = sb->getRemainingPtr();
     size_t written = serializeJson(doc, ptr, sb->getRemainingLength());

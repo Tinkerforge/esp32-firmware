@@ -460,6 +460,7 @@ struct Config {
     template<typename T>
     bool is() const
     {
+        ASSERT_MAIN_THREAD();
         return (int)value.tag == Config::type_id<T>();
     }
 
@@ -635,7 +636,7 @@ public:
 private:
     template<typename ConfigT>
     ConfigT *get() {
-        ASSERT_MAIN_THREAD();
+        // Asserts checked in ::is.
         if (!this->is<ConfigT>()) {
             config_abort_on_type_error("get", this, ConfigT::variantName);
         }
@@ -645,7 +646,7 @@ private:
 
     template<typename ConfigT>
     const ConfigT *get() const {
-        ASSERT_MAIN_THREAD();
+        // Asserts checked in ::is.
         if (!this->is<ConfigT>()) {
             config_abort_on_type_error("get (const)", this, ConfigT::variantName);
         }
@@ -686,7 +687,7 @@ private:
 
     template<typename T, typename ConfigT>
     bool update_value(T value, const char *value_type) {
-        ASSERT_MAIN_THREAD();
+        // Asserts checked in ::is.
         if (!this->is<ConfigT>()) {
             String value_string(value);
             config_abort_on_type_error("update_value", this, value_type, &value_string);
@@ -725,7 +726,7 @@ public:
 
     template<typename T>
     bool changeUnionVariant(T tag) {
-        ASSERT_MAIN_THREAD();
+        // Asserts checked in ::is.
         if (!this->is<ConfUnion>()) {
             String tag_string(static_cast<int32_t>(tag));
             config_abort_on_type_error("changeUnionVariant", this, "ConfUnion", &tag_string);
@@ -737,7 +738,7 @@ public:
 private:
     template<typename T, typename ConfigT>
     size_t fillArray(T *arr, size_t elements) {
-        ASSERT_MAIN_THREAD();
+        // Asserts checked in ::is.
         if (!this->is<ConfArray>()) {
             esp_system_abort("Can't fill array, Config is not an array");
         }
