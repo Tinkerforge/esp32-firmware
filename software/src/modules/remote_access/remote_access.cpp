@@ -995,6 +995,19 @@ void RemoteAccess::register_urls()
             if (management != nullptr) {
                 state = management->is_peer_up(nullptr, nullptr) ? 2 : 1;
             }
+            if (state == 2) {
+                this->last_mgmt_alive = millis();
+            }
+
+            // Check if we got unlucky timing and management request ran
+            // without the management connection getting connected afterwards
+            if (deadline_elapsed(this->last_mgmt_alive + 60000) && this->management_request_done) {
+                logger.printfln("Management connection timed out");
+
+                // Reset the timeout to prevent log and reconnect spamming
+                this->last_mgmt_alive = millis();
+                this->management_request_done = false;
+            }
 
             if (this->connection_state.get(0)->get("state")->updateUint(state)) {
                 if (state == 2) {

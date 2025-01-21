@@ -89,6 +89,7 @@ private:
     bool management_request_done = false;
     bool management_request_failed = false;
     bool management_request_allowed = true;
+    uint32_t last_mgmt_alive = 0;
     uint64_t task_id = 0;
 
     std::unique_ptr<AsyncHTTPSClient> https_client;
