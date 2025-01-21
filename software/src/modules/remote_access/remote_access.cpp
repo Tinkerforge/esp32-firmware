@@ -432,38 +432,50 @@ void RemoteAccess::register_urls()
             return request.send(500, "text/plain; charset=utf-8", "Low memory");
         }
 
-        // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
-        // Also validate the decoded lengths!
-        std::unique_ptr<uint8_t[]> secret_key = decode_base64(doc["secret_key"], crypto_secretbox_KEYBYTES);
-        if (secret_key == nullptr) {
-            this->request_cleanup();
-            return request.send(500, "text/plain; charset=utf-8", "Low memory");
-        }
-
         if (sodium_init() < 0) {
             this->request_cleanup();
             logger.printfln("Failed to initialize libsodium");
             return request.send(500, "text/plain; charset=utf-8", "Failed to initialize crypto");
         }
 
-        char secret[crypto_box_SECRETKEYBYTES];
-        int ret = crypto_secretbox_open_easy((unsigned char *)secret,
-                                             (unsigned char *)encrypted_secret.get(),
-                                             crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES,
-                                             (unsigned char *)secret_nonce.get(),
-                                             (unsigned char *)secret_key.get());
-        if (ret != 0) {
-            this->request_cleanup();
-            logger.printfln("Failed to decrypt secret");
-            return request.send(500, "text/plain; charset=utf-8", "Failed to decrypt secret");
-        }
-
         unsigned char pk[crypto_box_PUBLICKEYBYTES];
-        ret = crypto_scalarmult_base(pk, (unsigned char *)secret);
-        if (ret < 0) {
+        if (!doc["secret_key"].isNull()) {
+            // TODO: Should we validate the secret{,_nonce,_key} lengths before decoding?
+            // Also validate the decoded lengths!
+            std::unique_ptr<uint8_t[]> secret_key = decode_base64(doc["secret_key"], crypto_secretbox_KEYBYTES);
+            if (secret_key == nullptr) {
+                this->request_cleanup();
+                return request.send(500, "text/plain; charset=utf-8", "Low memory");
+            }
+
+            char secret[crypto_box_SECRETKEYBYTES];
+            int ret = crypto_secretbox_open_easy((unsigned char *)secret,
+                                                (unsigned char *)encrypted_secret.get(),
+                                                crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES,
+                                                (unsigned char *)secret_nonce.get(),
+                                                (unsigned char *)secret_key.get());
+            if (ret != 0) {
+                this->request_cleanup();
+                logger.printfln("Failed to decrypt secret");
+                return request.send(500, "text/plain; charset=utf-8", "Failed to decrypt secret");
+            }
+
+            ret = crypto_scalarmult_base(pk, (unsigned char *)secret);
+            if (ret < 0) {
+                this->request_cleanup();
+                logger.printfln("Failed to derive public-key");
+                return request.send(500, "text/plain; charset=utf-8", "Failed to derive public-key");
+            }
+        } else if (!doc["public_key"].isNull()) {
+            std::unique_ptr<uint8_t[]> public_key = decode_base64(doc["public_key"], crypto_box_PUBLICKEYBYTES);
+            if (public_key == nullptr) {
+                this->request_cleanup();
+                return request.send(500, "text/plain; charset=utf-8", "Low memory");
+            }
+            memcpy(pk, public_key.get(), crypto_box_PUBLICKEYBYTES);
+        } else {
             this->request_cleanup();
-            logger.printfln("Failed to derive public-key");
-            return request.send(500, "text/plain; charset=utf-8", "Failed to derive public-key");
+            return request.send(400, "text/plain; charset=utf-8", "No key provided");
         }
 
         TFJsonSerializer serializer{ptr.get(), json_size};
@@ -487,7 +499,7 @@ void RemoteAccess::register_urls()
                 // TODO optimize: this is always 44 bytes + crypto_box_SEALBYTES -> stack alloc
                 char output[44 + crypto_box_SEALBYTES];
 
-                ret = crypto_box_seal((unsigned char *)output, (unsigned char *)wg_key.c_str(), wg_key.length(), pk);
+                int ret = crypto_box_seal((unsigned char *)output, (unsigned char *)wg_key.c_str(), wg_key.length(), pk);
                 if (ret < 0) {
                     this->request_cleanup();
                     logger.printfln("Failed to encrypt Wireguard keys: %i", ret);
@@ -568,15 +580,27 @@ void RemoteAccess::register_urls()
 
         serializer.addMemberString("note", bs64_note.get());
 
+        char url[128];
+        const CoolString &uuid = doc["user_uuid"];
+        const CoolString &token = doc["auth_token"];
+        if (uuid != "null" && token != "null") {
+            serializer.addMemberString("user_id", uuid.c_str());
+            serializer.addMemberString("token", token.c_str());
+            snprintf(url,
+                    128,
+                    "https://%s:%u/api/add_with_token",
+                    registration_config.get("relay_host")->asEphemeralCStr(),
+                    registration_config.get("relay_port")->asUint());
+        } else {
+            snprintf(url,
+                    128,
+                    "https://%s:%u/api/charger/add",
+                    registration_config.get("relay_host")->asEphemeralCStr(),
+                    registration_config.get("relay_port")->asUint());
+        }
+
         serializer.endObject();
         size_t size = serializer.end();
-
-        char url[128];
-        snprintf(url,
-                 128,
-                 "https://%s:%u/api/charger/add",
-                 registration_config.get("relay_host")->asEphemeralCStr(),
-                 registration_config.get("relay_port")->asUint());
 
         std::queue<WgKey> key_cache;
 

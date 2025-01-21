@@ -41,8 +41,11 @@ export interface registration_state {
 
 export interface register {
     config: registration_config,
-    login_key: string,
-    secret_key: string,
+    login_key?: string,
+    auth_token?: string,
+    secret_key?: string,
+    public_key?: string,
+    user_uuid?: string,
     note: string,
     mgmt_charger_public: string,
     mgmt_charger_private: string,
@@ -57,6 +60,7 @@ export interface add_user {
     email: string,
     login_key?: string,
     auth_token?: string,
+    user_uuid?: string,
     wg_keys: KeyObject[],
 }
 

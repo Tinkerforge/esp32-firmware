@@ -31,7 +31,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Switch } from "../../ts/components/switch";
 import { __ } from "../../ts/translation";
 import "./wireguard";
-import { add_user, config, RegistrationState, config_update } from "./api";
+import { add_user, config, RegistrationState, config_update, register } from "./api";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
@@ -52,6 +52,7 @@ interface RemoteAccessState {
         password: string,
         auth_token: string,
         public_key: string,
+        user_id: string,
         note: string,
     },
     removeUsers: number[],
@@ -173,72 +174,89 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             return;
         }
 
-        let loginSalt: Uint8Array;
-        try {
-            loginSalt = await this.get_login_salt(cfg);
-        } catch (err) {
-            console.error(err);
+        let secret_key_string = undefined;
+        if (this.state.addUser.auth_token === "") {
+            let loginSalt: Uint8Array;
+            try {
+                loginSalt = await this.get_login_salt(cfg);
+            } catch (err) {
+                console.error(err);
 
-            // scrape the status code from the error message and only display wrong username or password in case it
-            // really is an authorization error.
-            const errString = err as string;
-            const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
-            if (errCode === "400") {
-                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
-            } else {
-                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
+                // scrape the status code from the error message and only display wrong username or password in case it
+                // really is an authorization error.
+                const errString = err as string;
+                const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
+                if (errCode === "400") {
+                    util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
+                } else {
+                    util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
+                }
+                this.setState({status_modal_string: ""});
+                this.setState({status_modal_string: ""});
+                return;
             }
-            this.setState({status_modal_string: ""});
-            this.setState({status_modal_string: ""});
-            return;
-        }
 
-        const loginHash = await hash({
-            pass: this.state.addUser.password,
-            salt: loginSalt,
-            time: 2,
-            mem: 19 * 1024,
-            hashLen: 24,
-            parallelism: 1,
-            type: ArgonType.Argon2id
-        });
-        const loginKey = (await util.blobToBase64(new Blob([loginHash.hash]))).replace("data:application/octet-stream;base64,", "");
-
-        try {
-            await this.login({
-                config: cfg,
-                note: "",
-                login_key: loginKey,
-                secret_key: "",
-                mgmt_charger_public: "",
-                mgmt_charger_private: "",
-                mgmt_psk: "",
-                keys: []
+            const loginHash = await hash({
+                pass: this.state.addUser.password,
+                salt: loginSalt,
+                time: 2,
+                mem: 19 * 1024,
+                hashLen: 24,
+                parallelism: 1,
+                type: ArgonType.Argon2id
             });
-        } catch (err) {
-            console.error(`Failed to login: ${err}`);
+            const loginKey = (await util.blobToBase64(new Blob([loginHash.hash]))).replace("data:application/octet-stream;base64,", "");
 
-            // scrape the status code from the error message and only display wrong username or password in case it
-            // really is an authorization error.
-            const errString = err as string;
-            const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
-            if (errCode === "401") {
-                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
-            } else {
-                util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
+            try {
+                await this.login({
+                    config: cfg,
+                    note: "",
+                    login_key: loginKey,
+                    secret_key: "",
+                    mgmt_charger_public: "",
+                    mgmt_charger_private: "",
+                    mgmt_psk: "",
+                    keys: []
+                });
+            } catch (err) {
+                console.error(`Failed to login: ${err}`);
+
+                // scrape the status code from the error message and only display wrong username or password in case it
+                // really is an authorization error.
+                const errString = err as string;
+                const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
+                if (errCode === "401") {
+                    util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
+                } else {
+                    util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
+                }
+                this.setState({status_modal_string: ""});
+                return;
             }
-            this.setState({status_modal_string: ""});
-            return;
-        }
 
-        let secretSalt: Uint8Array;
-        try {
-            secretSalt = await this.get_secret_salt(cfg);
-        } catch (err) {
-            console.error(`Failed to get secret salt: ${err}`);
-            util.add_alert("registration", "danger", () => "Failed to get secret-salt:", () => err);
-            this.setState({status_modal_string: ""});
-            return;
+            let secretSalt: Uint8Array;
+            try {
+                secretSalt = await this.get_secret_salt(cfg);
+            } catch (err) {
+                console.error(`Failed to get secret salt: ${err}`);
+                util.add_alert("registration", "danger", () => "Failed to get secret-salt:", () => err);
+                this.setState({status_modal_string: ""});
+                return;
+            }
+
+            const secret_key = await hash({
+                pass: this.state.addUser.password,
+                salt: secretSalt,
+                // Takes about 1.5 seconds on a Nexus 4
+                time: 2, // the number of iterations
+                mem: 19 * 1024, // used memory, in KiB
+                hashLen: 32, // desired hash length
+                parallelism: 1, // desired parallelism (it won't be computed in parallel, however)
+                type: ArgonType.Argon2id,
+            })
+
+            const secret_key_blob = new Blob([secret_key.hash]);
+            secret_key_string = await util.blobToBase64(secret_key_blob);
         }
 
         const mg_charger_keypair = (window as any).wireguard.generateKeypair();
@@ -260,32 +278,34 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             });
         }
 
-        const secret_key = await hash({
-            pass: this.state.addUser.password,
-            salt: secretSalt,
-            // Takes about 1.5 seconds on a Nexus 4
-            time: 2, // the number of iterations
-            mem: 19 * 1024, // used memory, in KiB
-            hashLen: 32, // desired hash length
-            parallelism: 1, // desired parallelism (it won't be computed in parallel, however)
-            type: ArgonType.Argon2id,
-        })
-
-        const secret_key_blob = new Blob([secret_key.hash]);
-        const secret_key_string = await util.blobToBase64(secret_key_blob);
-
         const psk: string = (window as any).wireguard.generatePresharedKey();
 
-        const registration_data: util.NoExtraProperties<API.getType["remote_access/register"]> = {
-            config: cfg,
-            note: this.state.addUser.note,
-            login_key: this.state.login_key,
-            secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
-            mgmt_charger_public: mg_charger_keypair.publicKey,
-            mgmt_charger_private: mg_charger_keypair.privateKey,
-            mgmt_psk: psk,
-            keys: keys
-        };
+
+        let registration_data: register;
+        if (this.state.addUser.auth_token === "") {
+            registration_data = {
+                config: cfg,
+                note: this.state.addUser.note,
+                login_key: this.state.login_key,
+                secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
+                mgmt_charger_public: mg_charger_keypair.publicKey,
+                mgmt_charger_private: mg_charger_keypair.privateKey,
+                mgmt_psk: psk,
+                keys: keys,
+            }
+        } else {
+            registration_data = {
+                config: cfg,
+                note: this.state.addUser.note,
+                auth_token: this.state.addUser.auth_token,
+                public_key: this.state.addUser.public_key,
+                user_uuid: this.state.addUser.user_id,
+                mgmt_charger_private: mg_charger_keypair.privateKey,
+                mgmt_charger_public: mg_charger_keypair.publicKey,
+                mgmt_psk: psk,
+                keys: keys,
+            }
+        }
 
         try {
             await this.runRegistration(registration_data);
@@ -423,6 +443,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             add_user_data = {
                 auth_token: this.state.addUser.auth_token,
                 public_key: this.state.addUser.public_key,
+                user_uuid: this.state.addUser.user_id,
                 note: this.state.addUser.note,
                 email: this.state.addUser.email,
                 wg_keys: keys,
@@ -549,7 +570,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                             rows={users}
                             addEnabled={users.length < 5}
                             addTitle={__("remote_access.content.add_user")}
-                            onAddShow={async () => this.setState({addUser: {email: "", password: "", auth_token: "", public_key: "", note: ""}})}
+                            onAddShow={async () => this.setState({addUser: {email: "", password: "", auth_token: "", public_key: "", note: "", user_id: ""}})}
                             addMessage={users.length < 5 ? __("remote_access.content.user_add_message")(users.length, 5) : __("remote_access.content.all_users_in_use")}
                             onAddGetChildren={() => {
                                 const [authMethod, setAuthMethod] = useState("password");
@@ -587,7 +608,11 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                                                 setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
                                                                 return;
                                                             }
-                                                            this.setState({addUser: {...this.state.addUser, email: decodedToken.user_email, password: "", public_key: decodedToken.user_public_key, auth_token: decodedToken.token}});
+                                                            if (decodedToken.user_uuid === undefined) {
+                                                                setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
+                                                                return;
+                                                            }
+                                                            this.setState({addUser: {...this.state.addUser, email: decodedToken.user_email, password: "", public_key: decodedToken.user_public_key, auth_token: decodedToken.token, user_id: decodedToken.user_uuid}});
                                                             setInvalidFeedback("");
                                                         } catch {
                                                             setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
