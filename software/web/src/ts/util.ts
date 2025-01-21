@@ -198,10 +198,18 @@ export function get_date_now_1m_update_rate() {
 }
 
 function checkCapsLock(e: MouseEvent | KeyboardEvent) {
-    let active = e.getModifierState("CapsLock");
-    if (caps_active.value && e instanceof KeyboardEvent && e.type == "keyup" && e.key == "CapsLock")
-        active = false;
-    caps_active.value = active;
+    if (caps_active.value && e instanceof KeyboardEvent && e.type == "keyup" && e.key == "CapsLock") {
+        caps_active.value = false;
+    } else if (e instanceof MouseEvent && ((e.target as Element).tagName.toLowerCase() == "select") || (e.target as Element).tagName.toLowerCase() == "option") {
+        // Ignore clicks on drop-down menus and options within, as capslock will be reported as off while the menu is shown.
+        return;
+    } else {
+        // Browser-generated events always have getModifierState(), but injected events from password managers often do not.
+        if (!e.getModifierState) {
+            return;
+        }
+        caps_active.value = e.getModifierState("CapsLock")
+    }
 }
 
 export function initCapsLockCheck() {
