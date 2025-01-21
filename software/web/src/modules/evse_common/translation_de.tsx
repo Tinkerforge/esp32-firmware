@@ -324,7 +324,7 @@ let x = {
                 11: "OCPP",
                 12: "Energie-/Zeitlimit",
                 13: "Zählerüberwachung",
-                14: "Automation"
+                14: "Automatisierung"
             }[i];}/*NF*/,
 
             "reboot_content_changed": "Ladeeinstellungen",
