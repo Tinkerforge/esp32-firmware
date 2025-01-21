@@ -445,6 +445,7 @@ void RemoteAccess::register_urls()
             logger.printfln("Failed to initialize libsodium");
             return request.send(500, "text/plain; charset=utf-8", "Failed to initialize crypto");
         }
+
         char secret[crypto_box_SECRETKEYBYTES];
         int ret = crypto_secretbox_open_easy((unsigned char *)secret,
                                              (unsigned char *)encrypted_secret.get(),
@@ -648,7 +649,8 @@ void RemoteAccess::register_urls()
         }
 
         const CoolString &email = doc["email"];
-        if (email == "" || this->user_already_registered(email)) {
+        const CoolString &uuid = doc["user_uuid"];
+        if ((email == "null" && uuid == "null") || this->user_already_registered(email)) {
             this->request_cleanup();
             return request.send(400, "text/plain; charset=utf-8", "User already exists or is empty");
         }
@@ -754,7 +756,12 @@ void RemoteAccess::register_urls()
 
         serializer.addMemberString("charger_id", config.get("uuid")->asEphemeralCStr());
         serializer.addMemberString("charger_password", config.get("password")->asEphemeralCStr());
-        serializer.addMemberString("email", doc["email"]);
+        if (email != "null") {
+            serializer.addMemberString("email", email.c_str());
+        }
+        if (uuid != "null") {
+            serializer.addMemberString("user_uuid", uuid.c_str());
+        }
 
         serializer.addMemberObject("user_auth");
 
@@ -844,6 +851,7 @@ void RemoteAccess::register_urls()
         auto next_stage = [this, key_cache, pub_key, next_user_id, email](ConfigRoot cfg) {
             this->parse_add_user(cfg, key_cache, pub_key, email, next_user_id);
         };
+
         this->run_request_with_next_stage(url, HTTP_METHOD_PUT, json.get(), size, user, next_stage);
 
         return request.send(200);
