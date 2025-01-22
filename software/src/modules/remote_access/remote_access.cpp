@@ -1436,6 +1436,7 @@ void RemoteAccess::resolve_management()
     auto callback = [this, old_api](ConfigRoot cfg) {
         this->management_request_failed = false;
         this->management_request_allowed = true;
+
         if (old_api) {
             StaticJsonDocument<250> resp;
             {
@@ -1452,8 +1453,6 @@ void RemoteAccess::resolve_management()
             api.writeConfig("remote_access/config", &config);
 
             this->request_cleanup();
-            // Instantly make another request to ensure we get the users uuid
-            // this->resolve_management();
 
             return;
         }
@@ -1493,6 +1492,7 @@ void RemoteAccess::resolve_management()
         }
 
         this->management_request_done = true;
+        this->last_mgmt_alive = millis();
         this->request_cleanup();
         this->connect_management();
         this->connection_state.get(0)->get("state")->updateUint(1);
