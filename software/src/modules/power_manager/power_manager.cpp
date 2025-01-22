@@ -191,7 +191,7 @@ void PowerManager::pre_setup()
 
             // Automation rule configured to switch to default mode
             if (configured_mode == 4) {
-                configured_mode = this->default_mode;
+                configured_mode = get_default_charge_mode(); // TODO Reads config at runtime
             }
 
             const String err = api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
@@ -357,7 +357,6 @@ void PowerManager::setup()
     zero_limits();
 
     // Cache config for energy update
-    default_mode                = config.get("default_mode")->asUint();
     excess_charging_enabled     = config.get("excess_charging_enable")->asBool();
     meter_slot_power            = config.get("meter_slot_grid_power")->asUint();
     target_power_from_grid_w    = config.get("target_power_from_grid")->asInt();    // watt
@@ -365,16 +364,12 @@ void PowerManager::setup()
     battery_mode                = config.get("battery_mode")->asEnum<BatteryMode>();
     battery_inverted            = config.get("battery_inverted")->asBool();
     battery_deadzone_w          = static_cast<uint16_t>(config.get("battery_deadzone")->asUint()); // watt
-    guaranteed_power_w          = static_cast<int32_t>(config.get("guaranteed_power")->asUint()); // watt
     phase_switching_mode        = config.get("phase_switching_mode")->asUint();
     dynamic_load_enabled        = dynamic_load_config.get("enabled")->asBool();
     meter_slot_currents         = dynamic_load_config.get("meter_slot_grid_currents")->asUint();
     supply_cable_max_current_ma = static_cast<int32_t>(charge_manager.config.get("maximum_available_current")->asUint()); // milliampere
     min_current_1p_ma           = static_cast<int32_t>(charge_manager.config.get("minimum_current_1p")->asUint());        // milliampere
     min_current_3p_ma           = static_cast<int32_t>(charge_manager.config.get("minimum_current")->asUint());           // milliampere
-
-    mode = default_mode;
-    charge_mode.get("mode")->updateUint(mode);
 
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
@@ -411,11 +406,6 @@ void PowerManager::setup()
 
     // Pre-calculate various limits
     overall_min_power_w = 230 * 1 * min_current_1p_ma / 1000;
-
-    if (guaranteed_power_w < overall_min_power_w) {
-        guaranteed_power_w = overall_min_power_w;
-        logger.printfln("Raising guaranteed power to %i based on minimum charge current set in charge manager.", guaranteed_power_w);
-    }
 
     // Calculate constants and set up meter current filters if dynamic load management is enabled
     if (dynamic_load_enabled) {
@@ -541,18 +531,11 @@ void PowerManager::register_urls()
     api.addState("power_manager/low_level_state", &low_level_state);
 
     api.addState("power_manager/charge_mode", &charge_mode);
-    api.addCommand("power_manager/charge_mode_update", &charge_mode_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("power_manager/charge_mode_update", &charge_mode_update, {}, [this](String &errmsg) {
         uint32_t new_mode = this->charge_mode_update.get("mode")->asUint();
 
-        if (new_mode == MODE_DO_NOTHING)
-            return;
-
-        auto runtime_mode = this->charge_mode.get("mode");
-        uint32_t old_mode = runtime_mode->asUint();
-        just_switched_mode |= runtime_mode->updateUint(new_mode); // If this callback runs again before just_switched_mode was consumed, keep it true instead of overwriting it to false;
-        mode = new_mode;
-
-        logger.printfln("Switched mode %u->%u", old_mode, mode);
+        logger.printfln("Charging mode %u requested but it was ignored", new_mode);
+        errmsg = "Charge mode switch ignored";
     }, false);
 
     api.addState("power_manager/external_control", &external_control);
@@ -878,7 +861,7 @@ void PowerManager::update_energy()
                 printed_skipping_energy_update = true;
             }
 
-            p_error_w = INT32_MAX;
+            power_available_w = INT32_MAX;
         } else {
             if (printed_skipping_energy_update) {
                 logger.printfln("PV excess charging available because power values are now available.");
@@ -935,71 +918,47 @@ void PowerManager::update_energy()
                 em_v1.update_grid_balance_led(EmRgbLed::GridBalance::Balanced);
             }
 #endif
-        }
 
-        switch (mode) {
-            case MODE_FAST:
-                power_available_w = INT32_MAX;
-                break;
-            case MODE_OFF:
-            default:
-                power_available_w = 0;
-                break;
-            case MODE_PV:
-            case MODE_MIN_PV:
-                if (p_error_w == INT32_MAX) {
-                    power_available_w = 0;
-                } else {
-                    // Excess charging uses an adaptive P controller to adjust available power.
-                    int32_t p_adjust_w;
-                    int32_t cm_allocated_power_w = cm_allocated_currents->pv * 230 / 1000; // ma -> watt
+            // Excess charging uses an adaptive P controller to adjust available power.
+            int32_t p_adjust_w;
+            int32_t cm_allocated_power_w = cm_allocated_currents->pv * 230 / 1000; // ma -> watt
 
-                    if (cm_allocated_power_w <= 0) {
-                        // When no power was allocated to any charger, use p=1 so that the threshold for switching on can be reached properly.
-                        p_adjust_w = p_error_w;
+            if (cm_allocated_power_w <= 0) {
+                // When no power was allocated to any charger, use p=1 so that the threshold for switching on can be reached properly.
+                p_adjust_w = p_error_w;
 
-                        // Sanity check
-                        if (cm_allocated_power_w < 0) {
-                            logger.printfln("Negative cm_allocated_power_w: %i  cm_allocated_currents(%i %i %i %i)", cm_allocated_power_w, cm_allocated_currents->pv, cm_allocated_currents->l1, cm_allocated_currents->l2, cm_allocated_currents->l3);
-                            cm_allocated_power_w = 0;
-                        }
-                    } else {
-                        // Some EVs may only be able to adjust their charge power in steps of 1500W,
-                        // so smaller factors are required for smaller errors.
-                        int32_t p_error_abs_w = abs(p_error_w);
-                        if (p_error_abs_w < 1000) {
-                            // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
-                            p_adjust_w = p_error_w / 2;
-                        } else if (p_error_abs_w < 1500) {
-                            // Use p=0.75 for medium differences so that the controller can converge reasonably fast while still avoiding too many oscillations.
-                            p_adjust_w = p_error_w * 3 / 4;
-                        } else {
-                            // Use p=0.875 for large differences so that the controller can converge faster.
-                            p_adjust_w = p_error_w * 7 / 8;
-                        }
-                    }
-
-                    power_available_w = cm_allocated_power_w + p_adjust_w;
-
-                    if (mode != MODE_MIN_PV)
-                        break;
-
-                    // Check against guaranteed power only in MIN_PV mode.
-                    if (power_available_w < guaranteed_power_w)
-                        power_available_w = guaranteed_power_w;
-
-                    break;
+                // Sanity check
+                if (cm_allocated_power_w < 0) {
+                    logger.printfln("Negative cm_allocated_power_w: %i  cm_allocated_currents(%i %i %i %i)", cm_allocated_power_w, cm_allocated_currents->pv, cm_allocated_currents->l1, cm_allocated_currents->l2, cm_allocated_currents->l3);
+                    cm_allocated_power_w = 0;
                 }
+            } else {
+                // Some EVs may only be able to adjust their charge power in steps of 1500W,
+                // so smaller factors are required for smaller errors.
+                int32_t p_error_abs_w = abs(p_error_w);
+                if (p_error_abs_w < 1000) {
+                    // Use p=0.5 for small differences so that the controller can converge without oscillating too much.
+                    p_adjust_w = p_error_w / 2;
+                } else if (p_error_abs_w < 1500) {
+                    // Use p=0.75 for medium differences so that the controller can converge reasonably fast while still avoiding too many oscillations.
+                    p_adjust_w = p_error_w * 3 / 4;
+                } else {
+                    // Use p=0.875 for large differences so that the controller can converge faster.
+                    p_adjust_w = p_error_w * 7 / 8;
+                }
+            }
+
+            power_available_w = cm_allocated_power_w + p_adjust_w;
         }
     }
 
     low_level_state.get("power_available")->updateInt(power_available_w);
 
     if (power_available_w == INT32_MAX) {
-        cm_limits->raw.pv = INT32_MAX;
-        cm_limits->min.pv = INT32_MAX;
-        cm_limits->spread.pv = INT32_MAX;
-        cm_limits->max_pv = INT32_MAX;
+        cm_limits->raw.pv = 0;
+        cm_limits->min.pv = 0;
+        cm_limits->spread.pv = 0;
+        cm_limits->max_pv = 0;
     } else {
         int32_t pv_raw_ma = power_available_w * 1000 / 230;
         update_minmax_filter(pv_raw_ma, &current_pv_minmax_ma);
@@ -1190,12 +1149,6 @@ void PowerManager::update_energy()
 
     low_level_state.get("charging_blocked")->updateUint(charging_blocked.combined);
 
-    if ((mode == MODE_OFF) ||
-        (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL && external_control.get("phases_wanted")->asUint() == 0)) {
-        zero_limits();
-    }
-
-    // TODO check this
     if (charging_blocked.combined) {
         zero_limits();
 
@@ -1204,8 +1157,6 @@ void PowerManager::update_energy()
 
         return;
     }
-
-    just_switched_mode = false;
 }
 
 void PowerManager::update_phase_switcher()
@@ -1232,6 +1183,16 @@ void PowerManager::reset_max_current_limit()
 bool PowerManager::get_enabled() const
 {
     return config.get("enabled")->asBool();
+}
+
+uint32_t PowerManager::get_default_charge_mode() const
+{
+    return config.get("default_mode")->asUint();
+}
+
+uint32_t PowerManager::get_guaranteed_power_w() const
+{
+    return config.get("guaranteed_power")->asUint();
 }
 
 uint32_t PowerManager::get_phase_switching_mode() const

@@ -81,6 +81,8 @@ public:
     void register_phase_switcher_backend(PhaseSwitcherBackend *backend);
 
     bool get_enabled() const;
+    uint32_t get_default_charge_mode() const;
+    uint32_t get_guaranteed_power_w() const;
     uint32_t get_phase_switching_mode() const;
     uint32_t get_phases() const;
 
@@ -164,8 +166,6 @@ private:
     bool     printed_skipping_energy_update      = false;
     bool     printed_skipping_currents_update    = false;
 
-    uint32_t mode                                = 0;
-    bool     just_switched_mode                  = false;
     int32_t max_current_limited_ma               = 0;
 
     union {
@@ -205,7 +205,6 @@ private:
     micros_t cm_allocator_trigger_hysteresis = 0_us;
 
     // Config cache
-    uint32_t default_mode             = 0;
     bool     excess_charging_enabled  = false;
     uint32_t meter_slot_power         = UINT32_MAX;
     uint32_t meter_slot_battery_power = UINT32_MAX;
@@ -213,7 +212,6 @@ private:
     bool     battery_inverted         = false;
     uint16_t battery_deadzone_w       = 0;
     int32_t  target_power_from_grid_w = 0;
-    int32_t  guaranteed_power_w       = 0;
     uint32_t phase_switching_mode     = 0;
     bool     dynamic_load_enabled     = false;
     uint32_t meter_slot_currents      = UINT32_MAX;
