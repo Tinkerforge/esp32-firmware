@@ -65,19 +65,6 @@ public:
     void update_charger_state_config(uint8_t idx);
 
     ConfigRoot config;
-    ConfigRoot low_level_config;
-
-    ConfigRoot state;
-    ConfigRoot low_level_state;
-
-    ConfigRoot available_current;
-    ConfigRoot available_current_update;
-    ConfigRoot control_pilot_disconnect;
-
-    uint32_t last_available_current_update = 0;
-    bool watchdog_triggered = false;
-
-    ChargerState *charger_state = nullptr;
 
     size_t trace_buffer_index;
 
@@ -96,9 +83,26 @@ public:
     bool is_static_cm() {return static_cm;}
 
     const ChargerState *get_charger_state(uint8_t idx);
+    ChargerState *get_mutable_charger_state(uint8_t idx);
 
 private:
     size_t charger_count = 0;
+
+    uint32_t last_available_current_update = 0;
+    bool watchdog_triggered = false;
+
+    ChargerState *charger_state = nullptr;
+
+    ConfigRoot low_level_config;
+
+    ConfigRoot state;
+    ConfigRoot low_level_state;
+
+    ConfigRoot available_current;
+    ConfigRoot available_current_update;
+
+    ConfigRoot control_pilot_disconnect;
+
     Config config_chargers_prototype;
     Config state_chargers_prototype;
     Config low_level_state_chargers_prototype;

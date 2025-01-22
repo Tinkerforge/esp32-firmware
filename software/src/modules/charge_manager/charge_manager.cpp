@@ -759,6 +759,12 @@ void ChargeManager::skip_global_hysteresis() {
 
 const ChargerState *ChargeManager::get_charger_state(uint8_t idx)
 {
+    return this->get_mutable_charger_state(idx);
+}
+
+
+ChargerState *ChargeManager::get_mutable_charger_state(uint8_t idx)
+{
     return this->charger_state == nullptr ? nullptr : &this->charger_state[idx];
 }
 

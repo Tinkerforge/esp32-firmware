@@ -220,24 +220,24 @@ void EMEnergyAnalysis::collect_data_points()
     if (current_5min_slot != last_history_5min_slot) {
         // 5min data
         for (size_t i = 0; i < charge_manager.get_charger_count(); ++i) {
-            auto &charger = charge_manager.charger_state[i];
-            uint32_t last_update = charger.last_update;
+            auto *charger = charge_manager.get_mutable_charger_state(i);
+            uint32_t last_update = charger->last_update;
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
-                uint32_t uid = charger.uid;
+                uint32_t uid = charger->uid;
 #if MODULE_EM_V1_AVAILABLE()
-                uint16_t flags = charger.charger_state; // v1: bit 0-2 = charger state, bit 7 = no data (read only)
+                uint16_t flags = charger->charger_state; // v1: bit 0-2 = charger state, bit 7 = no data (read only)
 #elif MODULE_EM_V2_AVAILABLE()
-                uint16_t flags = charger.charger_state | (charger.phases << 3); // v2: bit 0-2 = charger state, bit 3-4 = phases, bit 15 = no data (read only)
+                uint16_t flags = charger->charger_state | (charger->phases << 3); // v2: bit 0-2 = charger state, bit 3-4 = phases, bit 15 = no data (read only)
 #endif
                 uint16_t power = UINT16_MAX;
 
-                if (charger.meter_supported) {
-                    float power_total_sum = charger.power_total_sum;
-                    uint32_t power_total_count = charger.power_total_count;
+                if (charger->meter_supported) {
+                    float power_total_sum = charger->power_total_sum;
+                    uint32_t power_total_count = charger->power_total_count;
 
-                    charger.power_total_sum = 0;
-                    charger.power_total_count = 0;
+                    charger->power_total_sum = 0;
+                    charger->power_total_count = 0;
 
                     if (power_total_count > 0) {
                         power = clamp<uint64_t>(0,
@@ -258,7 +258,7 @@ void EMEnergyAnalysis::collect_data_points()
 #ifdef DEBUG_LOGGING
             else {
                 logger.printfln("collect_data_points: skipping 5min u%u, data too old %u",
-                                charger.uid, last_update);
+                                charger->uid, last_update);
             }
 #endif
         }
@@ -331,18 +331,18 @@ void EMEnergyAnalysis::collect_data_points()
 
         // daily data
         for (size_t i = 0; i < charge_manager.get_charger_count(); ++i) {
-            const auto &charger = charge_manager.charger_state[i];
-            uint32_t last_update = charger.last_update;
+            const auto *charger = charge_manager.get_charger_state(i);
+            uint32_t last_update = charger->last_update;
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
                 bool have_data = false;
-                uint32_t uid = charger.uid;
+                uint32_t uid = charger->uid;
                 uint32_t energy = UINT32_MAX;
 
-                if (charger.meter_supported) {
+                if (charger->meter_supported) {
                     have_data = true;
                     energy = clamp<uint64_t>(0,
-                                             roundf(charger.energy_abs * 100.0),
+                                             roundf(charger->energy_abs * 100.0),
                                              UINT32_MAX - 1); // kWh -> daWh
                 }
 
@@ -359,14 +359,14 @@ void EMEnergyAnalysis::collect_data_points()
 #ifdef DEBUG_LOGGING
                 else {
                     logger.printfln("collect_data_points: skipping daily u%u, no data",
-                                    charger.uid);
+                                    charger->uid);
                 }
 #endif
             }
 #ifdef DEBUG_LOGGING
             else {
                 logger.printfln("collect_data_points: skipping daily u%u, data too old %u",
-                                charger.uid, last_update);
+                                charger->uid, last_update);
             }
 #endif
         }
