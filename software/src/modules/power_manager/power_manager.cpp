@@ -362,9 +362,9 @@ void PowerManager::setup()
     phase_switching_mode        = config.get("phase_switching_mode")->asUint();
     dynamic_load_enabled        = dynamic_load_config.get("enabled")->asBool();
     meter_slot_currents         = dynamic_load_config.get("meter_slot_grid_currents")->asUint();
-    supply_cable_max_current_ma = static_cast<int32_t>(charge_manager.config.get("maximum_available_current")->asUint()); // milliampere
-    min_current_1p_ma           = static_cast<int32_t>(charge_manager.config.get("minimum_current_1p")->asUint());        // milliampere
-    min_current_3p_ma           = static_cast<int32_t>(charge_manager.config.get("minimum_current")->asUint());           // milliampere
+    supply_cable_max_current_ma = static_cast<int32_t>(charge_manager.get_maximum_available_current()); // milliampere
+    min_current_1p_ma           = static_cast<int32_t>(charge_manager.get_minimum_current_1p());        // milliampere
+    min_current_3p_ma           = static_cast<int32_t>(charge_manager.get_minimum_current_3p());        // milliampere
 
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);

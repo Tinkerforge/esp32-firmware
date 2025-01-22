@@ -45,30 +45,18 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void start_manager_task();
-    void check_watchdog();
-    size_t get_charger_count();
-    bool seen_all_chargers();
-    bool is_charging_stopped(uint32_t last_update_cutoff);
-    void set_all_control_pilot_disconnect(bool disconnect);
-    bool are_all_control_pilot_disconnected(uint32_t last_update_cutoff);
-    bool is_control_pilot_disconnect_supported(uint32_t last_update_cutoff);
-    void set_allocated_current_callback(std::function<void(uint32_t)> &&callback);
-
-    const String &get_charger_host(uint8_t idx);
-    const char *get_charger_name(uint8_t idx);
-
 #if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 
-    void update_charger_state_config(uint8_t idx);
+    size_t get_charger_count();
 
-    ConfigRoot config;
-
-    size_t trace_buffer_index;
+    const String &get_charger_host(uint8_t idx);
+    const char *get_charger_name(uint8_t idx);
 
     uint32_t get_maximum_available_current();
+    uint32_t get_minimum_current_3p();
+    uint32_t get_minimum_current_1p();
 
     CurrentLimits *get_limits() {
         // TODO: Maybe add separate function for this?
@@ -80,12 +68,19 @@ public:
     void trigger_allocator_run() {next_allocation = 0_us;}
     void skip_global_hysteresis();
     void enable_fast_single_charger_mode();
-    bool is_static_cm() {return static_cm;}
 
     const ChargerState *get_charger_state(uint8_t idx);
     ChargerState *get_mutable_charger_state(uint8_t idx);
 
+    size_t trace_buffer_index;
+
 private:
+    bool seen_all_chargers();
+    void start_manager_task();
+    void check_watchdog();
+
+    void update_charger_state_config(uint8_t idx);
+
     size_t charger_count = 0;
 
     uint32_t last_available_current_update = 0;
@@ -93,6 +88,7 @@ private:
 
     ChargerState *charger_state = nullptr;
 
+    ConfigRoot config;
     ConfigRoot low_level_config;
 
     ConfigRoot state;

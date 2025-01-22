@@ -605,59 +605,6 @@ bool ChargeManager::seen_all_chargers()
     return true;
 }
 
-bool ChargeManager::is_charging_stopped(uint32_t last_update_cutoff)
-{
-    for (size_t i = 0; i < charger_count; ++i) {
-        const auto &charger = this->charger_state[i];
-        if (!a_after_b(charger.last_update, last_update_cutoff)) {
-            return false;
-        }
-
-        if (charger.allowed_current > 0) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-void ChargeManager::set_all_control_pilot_disconnect(bool disconnect)
-{
-    control_pilot_disconnect.get("disconnect")->updateBool(disconnect);
-}
-
-bool ChargeManager::are_all_control_pilot_disconnected(uint32_t last_update_cutoff)
-{
-    for (size_t i = 0; i < charger_count; ++i) {
-        const auto &charger = this->charger_state[i];
-        if (!a_after_b(charger.last_update, last_update_cutoff)) {
-            return false;
-        }
-
-        if (!charger.cp_disconnect_state) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool ChargeManager::is_control_pilot_disconnect_supported(uint32_t last_update_cutoff)
-{
-    for (size_t i = 0; i < charger_count; ++i) {
-        const auto &charger = this->charger_state[i];
-        if (!a_after_b(charger.last_update, last_update_cutoff)) {
-            return false;
-        }
-
-        if (!charger.cp_disconnect_supported) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 const String &ChargeManager::get_charger_host(uint8_t idx)
 {
     return this->config.get("chargers")->get(idx)->get("host")->asString();
@@ -748,6 +695,15 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
 uint32_t ChargeManager::get_maximum_available_current()
 {
     return config.get("maximum_available_current")->asUint();
+}
+
+uint32_t ChargeManager::get_minimum_current_1p()
+{
+    return config.get("minimum_current_1p")->asUint();
+}
+uint32_t ChargeManager::get_minimum_current_3p()
+{
+    return config.get("minimum_current")->asUint();
 }
 
 void ChargeManager::skip_global_hysteresis() {
