@@ -420,11 +420,12 @@ void ChargeManager::setup()
     // Always set initialized so that the front-end is displayed.
     initialized = true;
 
-    this->charger_count = config.get("chargers")->count();
-
     if (!config.get("enable_charge_manager")->asBool() || charger_count == 0) {
         return;
     }
+    // If enable_charge_manager is false, leave charger_count as 0.
+    this->charger_count = config.get("chargers")->count();
+
     state.get("state")->updateUint(1);
 
     this->ca_config = new CurrentAllocatorConfig();
