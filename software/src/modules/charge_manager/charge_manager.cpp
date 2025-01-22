@@ -417,7 +417,7 @@ void ChargeManager::setup()
     // Always set initialized so that the front-end is displayed.
     initialized = true;
 
-    if (!config.get("enable_charge_manager")->asBool() || charger_count == 0) {
+    if (!config.get("enable_charge_manager")->asBool() || config.get("chargers")->count() == 0) {
         return;
     }
     // If enable_charge_manager is false, leave charger_count as 0.
