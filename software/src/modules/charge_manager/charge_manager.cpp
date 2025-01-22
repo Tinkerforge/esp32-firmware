@@ -375,11 +375,9 @@ static void update_charger_state_from_mode(ChargerState *state, int charger_idx)
                 continue;
 #endif
             case ChargeMode::Min: {
-                // TODO get min+pv guaranteed power from power manager
                 // TODO maybe support guaranteed power == enable_current of this specific charger?
-                auto guaranteed_power = 2000;
                 state->off = false;
-                state->guaranteed_pv_current = guaranteed_power * 1000 / 230;
+                state->guaranteed_pv_current = power_manager.get_guaranteed_power_w() * 1000 / 230;
                 continue;
             }
 
