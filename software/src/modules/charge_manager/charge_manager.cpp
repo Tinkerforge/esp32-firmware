@@ -351,6 +351,8 @@ static void update_charger_state_from_mode(ChargerState *state, int charger_idx)
     // If no bit in mode is set the charger stays off.
     state->off = true;
     state->observe_pv_limit = false;
+    state->eco_fast = false;
+    state->guaranteed_pv_current = 0;
 
     for (uint8_t m = ChargeMode::_max; m >= ChargeMode::_min; m = ((uint8_t)m >> 1)) {
         switch((ChargeMode::Type)(mode & m)) {
@@ -365,17 +367,21 @@ static void update_charger_state_from_mode(ChargerState *state, int charger_idx)
                     case Eco::ChargeDecision::Fast:
                         state->off = false;
                         state->observe_pv_limit = false;
+                        state->eco_fast = true;
                         return;
                     case Eco::ChargeDecision::Normal:
                         continue;
                 }
                 continue;
 #endif
-            case ChargeMode::Min:
-                // TODO implement
+            case ChargeMode::Min: {
                 // TODO get min+pv guaranteed power from power manager
                 // TODO maybe support guaranteed power == enable_current of this specific charger?
+                auto guaranteed_power = 2000;
+                state->off = false;
+                state->guaranteed_pv_current = guaranteed_power * 1000 / 230;
                 continue;
+            }
 
             case ChargeMode::PV:
                 state->off = false;

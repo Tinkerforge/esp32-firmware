@@ -218,14 +218,14 @@ Cost get_cost(int32_t current_to_allocate,
 }
 
 // Checks stage-specific limits.
-bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool observe_pv_limit)
+bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool observe_pv_limit, uint32_t guaranteed_pv_current)
 {
     bool phases_exceeded = false;
     for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
         phases_exceeded |= cost[i] > 0 && limits->raw[i] < cost[i];
     }
 
-    bool pv_excess_exceeded = observe_pv_limit && cost.pv > 0 && limits->raw.pv < cost.pv;
+    bool pv_excess_exceeded = observe_pv_limit && cost.pv > 0 && limits->raw.pv < cost.pv && cost.pv > guaranteed_pv_current;
 
     switch(stage) {
         case 6:
@@ -274,8 +274,7 @@ static int get_highest_charge_mode_bit(const ChargerState *state) {
             case ChargeMode::Fast:
                 return (int)ChargeMode::Fast;
             case ChargeMode::Eco:
-                // TODO: Fix this when supporting Min.
-                if (!state->off && !state->observe_pv_limit)
+                if (state->eco_fast)
                     return (int)ChargeMode::Eco;
                 break;
             case ChargeMode::Min:
@@ -312,8 +311,13 @@ static void stage_1(StageContext &sc) {
         if (state->off)
             continue;
 
-        if (state->wants_to_charge || state->is_charging)
-            highest_charge_mode_bit_seen = std::max(highest_charge_mode_bit_seen, get_highest_charge_mode_bit(state));
+        if (state->wants_to_charge || state->is_charging) {
+            auto highest_bit = get_highest_charge_mode_bit(state);
+            // Don't rotate PV chargers out for Min chargers. Both groups are allocated at the same time.
+            if (highest_bit == ChargeMode::Min)
+                highest_bit = ChargeMode::PV;
+            highest_charge_mode_bit_seen = std::max(highest_charge_mode_bit_seen, highest_bit);
+        }
 
         // Don't trigger a rotation if the new charger was plugged in less than one alloc ago.
         // Using last_plug_in is fine here, we don't need the more complicated logic of just_plugged_in.
@@ -451,11 +455,18 @@ static void stage_2(StageContext &sc) {
 
 // Use the supported current in case the last allocation was able to fulfill the requested current.
 // In that case we want a fast ramp-up until we know the new limit of the charger (or don't have any current left)
-static int32_t get_requested_current(const ChargerState *state, const CurrentAllocatorConfig *cfg) {
-    if (!deadline_elapsed(state->use_supported_current + seconds_t{cfg->requested_current_threshold}))
-        return state->supported_current;
+static int32_t get_requested_current(const ChargerState *state, const CurrentAllocatorConfig *cfg, uint8_t allocated_phases) {
+    int32_t reqd = state->requested_current;
 
-    return state->requested_current;
+    if (!deadline_elapsed(state->use_supported_current + seconds_t{cfg->requested_current_threshold})) {
+        reqd = state->supported_current;
+    }
+
+    if (get_highest_charge_mode_bit(state) == ChargeMode::Min) {
+        auto guaranteed_current = state->guaranteed_pv_current / allocated_phases;
+        reqd = std::min(guaranteed_current, reqd);
+    }
+    return reqd;
 }
 
 // Calculates the control window.
@@ -523,7 +534,7 @@ static void calculate_window(bool trace_short, StageContext &sc) {
             continue;
 
         auto factors = get_phase_factors(alloc_phases, state->phase_rotation);
-        auto requested = factors * get_requested_current(state, sc.cfg);
+        auto requested = factors * get_requested_current(state, sc.cfg, alloc_phases);
         auto already_allocated = factors * sc.current_allocation[idx_array[i]];
 
         wnd_max += requested - already_allocated;
@@ -551,7 +562,7 @@ static void calculate_window(bool trace_short, StageContext &sc) {
         auto factors = get_phase_factors(alloc_phases, state->phase_rotation);
 
         auto already_allocated = sc.current_allocation[idx_array[i]];
-        auto current = get_requested_current(state, sc.cfg) - already_allocated;
+        auto current = get_requested_current(state, sc.cfg, alloc_phases) - already_allocated;
 
         auto available_current = (sc.limits->raw - wnd_max).min_phase();
         current = std::min(available_current, current);
@@ -570,7 +581,7 @@ static void calculate_window(bool trace_short, StageContext &sc) {
             continue;
 
         auto already_allocated = sc.current_allocation[idx_array[i]];
-        auto current = get_requested_current(state, sc.cfg) - already_allocated;
+        auto current = get_requested_current(state, sc.cfg, alloc_phases) - already_allocated;
 
         const auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
         current = std::min(sc.limits->raw[phase] - wnd_max[phase], current);
@@ -717,7 +728,7 @@ static constexpr int CHECK_IMPROVEMENT = 4;
 static constexpr int CHECK_IMPROVEMENT_ALL_PHASE = 8;
 static constexpr int CHECK_SPREAD = 16;
 
-static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch) {
+static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch, uint16_t guaranteed_current) {
     // Spread
     bool check_spread = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & CHECK_SPREAD) != 0;
     bool improves_all_spread = true;
@@ -775,6 +786,13 @@ static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost
     for (size_t p = 0; p < 4; ++p) {
         if ((check_phase[p] & (CHECK_MIN_WINDOW_MIN | CHECK_MIN_WINDOW_ENABLE)) == 0 || new_cost[p] <= 0)
             continue;
+
+        // If the guaranteed current is sufficient to activate this charger
+        // we don't have to check the PV minimum. It is allowed to activate
+        // this charger even if the PV limit will be exceeded.
+        if (p == (size_t)GridPhase::PV && new_cost.pv <= guaranteed_current) {
+            continue;
+        }
 
         auto required = 0;
         if ((check_phase[p] & CHECK_MIN_WINDOW_ENABLE) != 0)
@@ -845,7 +863,7 @@ static bool try_activate(StringWriter &sw, const ChargerState *state, bool activ
         CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE
     };
 
-    bool result = can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg, false);
+    bool result = can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg, false, state->guaranteed_pv_current / (activate_3p ? 3 : 1));
     if (result && spent != nullptr)
         *spent = new_enable_cost;
     return result;
@@ -1027,7 +1045,7 @@ static void stage_5(StageContext &sc) {
         StringWriter sw{buf, ARRAY_SIZE(buf)};
 
         sw.printf("5: %d:", sc.idx_array[i]);
-        if (!can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, sc.limits, sc.cfg, state->phase_rotation == PhaseRotation::Unknown)) {
+        if (!can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, sc.limits, sc.cfg, state->phase_rotation == PhaseRotation::Unknown, state->guaranteed_pv_current / 3)) {
             trace("%s", buf);
             continue;
         }
@@ -1062,7 +1080,7 @@ static void stage_6(StageContext &sc) {
         // is a charger that was allocated phases to before stage 6, but we
         // don't have the minimum current available, that is a bug in the
         // previous stages.
-        if (cost_exceeds_limits(cost, sc.limits, 6, state->observe_pv_limit)) {
+        if (cost_exceeds_limits(cost, sc.limits, 6, state->observe_pv_limit, state->guaranteed_pv_current)) {
             logger.printfln("stage 6: Cost exceeded limits!");
             print_alloc(6, sc);
             PRINT_COST(cost);
@@ -1079,7 +1097,7 @@ static void stage_6(StageContext &sc) {
 
 // The current capacity of a charger is the maximum amount of current that can be allocated to the charger additionally to the already allocated current on the allocated phases.
 static int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *cfg) {
-    auto requested_current = get_requested_current(state, cfg);
+    auto requested_current = get_requested_current(state, cfg, allocated_phases);
 
     // TODO: add margin again if exactly one charger is active and requested_current > 6000. Also add in calculate_window? -> Maybe not necessary any more?
 
@@ -1155,7 +1173,7 @@ static void stage_7(StageContext &sc) {
         auto allocated_current = sc.current_allocation[sc.idx_array[i]];
         auto allocated_phases = sc.phase_allocation[sc.idx_array[i]];
 
-        auto current = state->observe_pv_limit ? (fair.pv / allocated_phases) : 32000;
+        auto current = state->observe_pv_limit ? std::max(state->guaranteed_pv_current / allocated_phases, fair.pv / allocated_phases) : 32000;
 
         if (state->phase_rotation == PhaseRotation::Unknown) {
             current = std::min(current, fair.min_phase());
@@ -1181,7 +1199,7 @@ static void stage_7(StageContext &sc) {
         // This should never happen:
         // We've just calculated how much current is still available.
         // If this cost exceeds the limits, stage_7 is bugged.
-        if (cost_exceeds_limits(cost, sc.limits, 7, state->observe_pv_limit)) {
+        if (cost_exceeds_limits(cost, sc.limits, 7, state->observe_pv_limit, state->guaranteed_pv_current)) {
             logger.printfln("stage 7: Cost exceeded limits!");
             print_alloc(7, sc);
             PRINT_COST(cost);
@@ -1222,7 +1240,7 @@ static void stage_8(StageContext &sc) {
                         std::max(
                             0,
                             state->observe_pv_limit
-                                ? (sc.limits->raw.pv / allocated_phases)
+                                ? std::max(state->guaranteed_pv_current / allocated_phases, sc.limits->raw.pv / allocated_phases)
                                 : 32000),
                         current_capacity(sc.limits, state, allocated_current, allocated_phases, sc.cfg));
 
@@ -1242,7 +1260,7 @@ static void stage_8(StageContext &sc) {
         // This should never happen:
         // We've just calculated how much current is still available.
         // If this cost exceeds the limits, stage_8 is bugged.
-        if (cost_exceeds_limits(cost, sc.limits, 8, state->observe_pv_limit)) {
+        if (cost_exceeds_limits(cost, sc.limits, 8, state->observe_pv_limit, state->guaranteed_pv_current)) {
             logger.printfln("stage 8: Cost exceeded limits! Charger %d Current %u", sc.idx_array[i], current);
             print_alloc(8, sc);
             PRINT_COST(cost);
@@ -1340,7 +1358,7 @@ static void stage_9(StageContext &sc) {
 
         if (try_3p) {
             enable_current = get_enable_cost(state, true, have_active_chargers, nullptr, &enable_cost, sc.cfg);
-            if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->observe_pv_limit)) {
+            if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->observe_pv_limit, state->guaranteed_pv_current)) {
                 try_1p = false;
                 phase_alloc = 3;
             }
@@ -1348,7 +1366,7 @@ static void stage_9(StageContext &sc) {
 
         if (try_1p) {
             enable_current = get_enable_cost(state, false, have_active_chargers, nullptr, &enable_cost, sc.cfg);
-            if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->observe_pv_limit)) {
+            if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->observe_pv_limit, state->guaranteed_pv_current)) {
                 phase_alloc = 1;
             }
         }
@@ -1525,8 +1543,12 @@ int allocate_current(
     stage_3(sc);
     stage_6(sc);
 
-    for (ChargeMode::Type mode = ChargeMode::_max; mode >= ChargeMode::_min; mode = (ChargeMode::Type)((int)mode >> 1)) {
+    for (ChargeMode::Type mode = ChargeMode::_max; mode >= ChargeMode::Min; mode = (ChargeMode::Type)((int)mode >> 1)) {
         sc.charge_mode_filter = mode;
+        // Run Min and PV as one mode.
+        if (mode == ChargeMode::Min)
+            sc.charge_mode_filter |= ChargeMode::PV;
+
         stage_4(sc);
         stage_5(sc);
         stage_6(sc);

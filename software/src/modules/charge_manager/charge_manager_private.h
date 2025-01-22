@@ -149,6 +149,8 @@ struct ChargerState {
     // We should not overwrite charge_mode (for example for the Eco -> Fast/Off decision)
     bool off;
     bool observe_pv_limit;
+    bool eco_fast;
+    int32_t guaranteed_pv_current;
 };
 
 struct ChargerAllocationState {
