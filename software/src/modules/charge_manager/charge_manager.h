@@ -48,7 +48,6 @@ public:
     void start_manager_task();
     void check_watchdog();
     size_t get_charger_count();
-    size_t get_charger_count_from_config();
     bool seen_all_chargers();
     bool is_charging_stopped(uint32_t last_update_cutoff);
     void set_all_control_pilot_disconnect(bool disconnect);
@@ -78,7 +77,6 @@ public:
     uint32_t last_available_current_update = 0;
     bool watchdog_triggered = false;
 
-    size_t charger_count = 0;
     ChargerState *charger_state = nullptr;
 
     size_t trace_buffer_index;
@@ -100,6 +98,7 @@ public:
     const ChargerState *get_charger_state(uint8_t idx);
 
 private:
+    size_t charger_count = 0;
     Config config_chargers_prototype;
     Config state_chargers_prototype;
     Config low_level_state_chargers_prototype;

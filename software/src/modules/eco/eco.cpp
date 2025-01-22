@@ -87,7 +87,7 @@ void Eco::setup()
 {
     api.restorePersistentConfig("eco/config", &config);
 
-    const size_t controlled_chargers = charge_manager.config.get("chargers")->count();
+    const size_t controlled_chargers = charge_manager.get_charger_count();
     for (size_t i = 0; i < controlled_chargers; i++) {
         last_seen_plug_in[i] = 0_us;
         state.get("chargers")->add();
@@ -267,7 +267,7 @@ void Eco::set_chargers_state_chart_data(const uint8_t charger_id, bool *chart, u
     }
 
     if(charger_id == 255) {
-        const size_t controlled_chargers = charge_manager.config.get("chargers")->count();
+        const size_t controlled_chargers = charge_manager.get_charger_count();
         for (size_t i = 0; i < controlled_chargers; i++) {
             state.get("chargers")->get(i)->get("chart")->updateString(chart_base64);
         }

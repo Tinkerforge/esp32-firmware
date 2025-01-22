@@ -315,7 +315,7 @@ int FrontPanel::update_front_page_wallbox(const uint8_t index, const TileType ty
     String str1 = "Box " + String(param);
     String str2 = "-- kW";
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
-    size_t charger_count = charge_manager.charger_count;
+    size_t charger_count = charge_manager.get_charger_count();
     if (charger_count > 0) {
         auto &charger = charge_manager.charger_state[param];
         const int32_t watt = charger.power_total_sum/charger.power_total_count;
@@ -339,7 +339,7 @@ int FrontPanel::update_front_page_charge_management(const uint8_t index, const T
     String str1 = "WB 0x";
     String str2 = "-- kW";
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
-    size_t charger_count = charge_manager.charger_count;
+    size_t charger_count = charge_manager.get_charger_count();
     if (charger_count > 0) {
         str1 = "WB " + String(charger_count) + "x";
 
@@ -597,7 +597,7 @@ void FrontPanel::update_led()
 
     // Check if something is charging
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
-    size_t charger_count = charge_manager.charger_count;
+    size_t charger_count = charge_manager.get_charger_count();
     if (charger_count > 0) {
         const float current = charge_manager.get_allocated_currents()->pv; // mA
         if (current > 100) {

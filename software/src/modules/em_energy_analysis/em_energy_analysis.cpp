@@ -219,7 +219,7 @@ void EMEnergyAnalysis::collect_data_points()
 
     if (current_5min_slot != last_history_5min_slot) {
         // 5min data
-        for (size_t i = 0; i < charge_manager.charger_count; ++i) {
+        for (size_t i = 0; i < charge_manager.get_charger_count(); ++i) {
             auto &charger = charge_manager.charger_state[i];
             uint32_t last_update = charger.last_update;
 
@@ -330,7 +330,7 @@ void EMEnergyAnalysis::collect_data_points()
         }
 
         // daily data
-        for (size_t i = 0; i < charge_manager.charger_count; ++i) {
+        for (size_t i = 0; i < charge_manager.get_charger_count(); ++i) {
             const auto &charger = charge_manager.charger_state[i];
             uint32_t last_update = charger.last_update;
 

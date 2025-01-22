@@ -308,11 +308,9 @@ void ChargeManager::pre_setup()
 
 void ChargeManager::start_manager_task()
 {
-    auto charger_count = config.get("chargers")->count();
-
     auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
 
-    cm_networking.register_manager(this->hosts.get(), config.get("chargers")->count(), [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3) mutable {
+    cm_networking.register_manager(this->hosts.get(), charger_count, [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3) mutable {
             if (update_from_client_packet(
                     client_id,
                     v1,
@@ -335,7 +333,7 @@ void ChargeManager::start_manager_task()
 
     millis_t cm_send_delay = 1000_ms / millis_t{charger_count};
 
-    task_scheduler.scheduleWithFixedDelay([this, charger_count]() mutable {
+    task_scheduler.scheduleWithFixedDelay([this](){
         static int i = 0;
 
         if (i >= charger_count)
@@ -422,7 +420,9 @@ void ChargeManager::setup()
     // Always set initialized so that the front-end is displayed.
     initialized = true;
 
-    if (!config.get("enable_charge_manager")->asBool() || config.get("chargers")->count() == 0) {
+    this->charger_count = config.get("chargers")->count();
+
+    if (!config.get("enable_charge_manager")->asBool() || charger_count == 0) {
         return;
     }
     state.get("state")->updateUint(1);
@@ -447,22 +447,22 @@ void ChargeManager::setup()
 
     auto default_current = config.get("default_available_current")->asUint();
     available_current.get("current")->updateUint(default_current);
-    for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
+    for (size_t i = 0; i < charger_count; ++i) {
         low_level_state.get("chargers")->add();
         auto state_last_charger = state.get("chargers")->add();
         state_last_charger->get("n")->updateString(config.get("chargers")->get(i)->get("name")->asString());
     }
 
     size_t hosts_buf_size = 0;
-    for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
+    for (size_t i = 0; i < charger_count; ++i) {
         hosts_buf_size += config.get("chargers")->get(i)->get("host")->asString().length() + 1; //null terminator
     }
 
     char *hosts_buf = (char *)calloc_psram_or_dram(hosts_buf_size, sizeof(char));
-    this->hosts = heap_alloc_array<const char *>(config.get("chargers")->count());
+    this->hosts = heap_alloc_array<const char *>(charger_count);
     size_t hosts_written = 0;
 
-    for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
+    for (size_t i = 0; i < charger_count; ++i) {
         hosts[i] = hosts_buf + hosts_written;
         memcpy(hosts_buf + hosts_written, config.get("chargers")->get(i)->get("host")->asEphemeralCStr(), config.get("chargers")->get(i)->get("host")->asString().length());
         hosts_written += config.get("chargers")->get(i)->get("host")->asString().length();
@@ -470,12 +470,11 @@ void ChargeManager::setup()
         ++hosts_written;
     }
 
-    this->charger_count = config.get("chargers")->count();
     ca_config->charger_count = this->charger_count;
     this->charger_state = (ChargerState *)calloc_psram_or_dram(this->charger_count, sizeof(ChargerState));
     this->charger_allocation_state = (ChargerAllocationState *)calloc_psram_or_dram(this->charger_count, sizeof(ChargerAllocationState));
 
-    for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
+    for (size_t i = 0; i < charger_count; ++i) {
         charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());
         charger_state[i].last_phase_switch = -ca_config->global_hysteresis;
         charger_state[i].charge_mode = translate_charge_mode(power_manager.get_default_charge_mode());
@@ -580,16 +579,9 @@ void ChargeManager::check_watchdog()
     last_available_current_update = millis();
 }
 
-// Get cached charger count, which is only valid when the charge manager is enabled.
 size_t ChargeManager::get_charger_count()
 {
     return charger_count;
-}
-
-// Get the charger count from the config, which is valid even if the charge manager is disabled.
-size_t ChargeManager::get_charger_count_from_config()
-{
-    return config.get("chargers")->count();
 }
 
 // Check is not 100% reliable after an uptime of 49 days because last_update might legitimately 0.
@@ -680,7 +672,7 @@ void ChargeManager::register_urls()
 {
     bool enabled = config.get("enable_charge_manager")->asBool();
 
-    if (enabled && config.get("chargers")->count() > 0 && this->static_cm) {
+    if (enabled && charger_count > 0 && this->static_cm) {
         ca_config->enable_current_factor = 1;
     }
 
@@ -715,7 +707,7 @@ void ChargeManager::register_urls()
     api.addCommand("power_manager/charge_mode_update", &charge_mode_update, {}, [this](String &errmsg) {
         uint32_t new_mode = this->charge_mode_update.get("mode")->asUint();
 
-        for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
+        for (size_t i = 0; i < charger_count; ++i) {
             charger_state[i].charge_mode = translate_charge_mode(new_mode);
         }
 
@@ -777,7 +769,6 @@ void ChargeManager::enable_fast_single_charger_mode()
         return;
     }
 
-    size_t charger_count = config.get("chargers")->count();
     if (charger_count != 1) {
         logger.printfln("Cannot enable fast single charger mode because %zu chargers are configured", charger_count);
         return;
