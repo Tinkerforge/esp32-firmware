@@ -77,18 +77,6 @@ function Charger (props: {i: number,
                     <CMDCardOutFloat value={props.ll_state.ae} digits={3} scale={3} unit={'kWh'}/>
                 </FormRow>
 
-                <FormRow label="Alloc'd energy rot">
-                    <div class="row no-gutters justify-content-center">
-                        <div class="col">
-                            <CMDCardOutFloat value={props.ll_state.ar} digits={3} scale={3} unit={''} maxUnitLengthOnPage={0}/>
-                        </div>
-                        <div class="col-auto"><span class="form-control" style="border: none;"> / </span></div>
-                        <div class="col">
-                            <CMDCardOutFloat value={ll_cfg.alloc_energy_rot_thres} digits={0} scale={0} maxFractionalDigitsOnPage={0} unit={'kWh'}/>
-                        </div>
-                    </div>
-                </FormRow>
-
                 <FormRow label="Last switch">
                     <div class="row no-gutters justify-content-center">
                         <div class="col">

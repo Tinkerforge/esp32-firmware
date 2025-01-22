@@ -31,13 +31,7 @@ struct CurrentAllocatorConfig {
     // Require a charger to be active this long before clearing just_plugged_in_timestamp.
     micros_t plug_in_time;
 
-    // Amount of time a charger should stay activated before considering it for rotation or phase switch.
-    micros_t minimum_active_time;
-
     seconds_t rotation_interval;
-
-    // Only consider charger for rotation if it has charged at least this amount of energy (kWh).
-    int32_t allocated_energy_rotation_threshold;
 
     int32_t minimum_current_3p;
     int32_t minimum_current_1p;
@@ -119,7 +113,6 @@ struct ChargerState {
     PhaseRotation phase_rotation;
 
     float allocated_energy;
-    float allocated_energy_this_rotation;
     float allocated_average_power;
 
     micros_t last_switch_on;

@@ -136,8 +136,6 @@ void ChargeManager::pre_setup()
 
     low_level_config = Config::Object({
         {"global_hysteresis", Config::Uint(3 * 60, 0, 60 * 60)},
-        {"alloc_energy_rot_thres", Config::Uint(5, 0, 100)},
-        {"min_active_time", Config::Uint(15 * 60, 0, 24 * 60 * 60)},
         {"wakeup_time", Config::Uint(3 * 60, 0, 60 * 60)},
         {"plug_in_time", Config::Uint(3 * 60, 0, 60 * 60)},
         {"enable_current_factor_pct", Config::Uint(150, 100, 300)},
@@ -216,7 +214,6 @@ void ChargeManager::pre_setup()
                                                 3 phases (2)*/
         {"rc", Config::Uint16(0)},         // "requested_current" - either the supported current or (after requested_current_threshold is elapsed in state C) the max phase current + requested_current_margin
         {"ae", Config::Uint(0, 9, 99999)}, // "allocated_energy" in Wh, values > 99999 Wh are truncated to 99999.
-        {"ar", Config::Uint(0, 9, 99999)}, // "allocated_energy_this_rotation" in Wh, values > 99999 Wh are truncated to 99999.
         {"ls", Config::Uint32(0)},         // "last_switch_on" in millis
         {"lp", Config::Uint32(0)},         // "just_plugged_in_timestamp" in millis
         {"lw", Config::Uint32(0)},         // "last_wakeup" in millis
@@ -431,12 +428,10 @@ void ChargeManager::setup()
     this->ca_config = new CurrentAllocatorConfig();
 
     ca_config->global_hysteresis                    = seconds_t{low_level_config.get("global_hysteresis")->asUint()};
-    ca_config->minimum_active_time                  = seconds_t{low_level_config.get("min_active_time")->asUint()};
     ca_config->wakeup_time                          = seconds_t{low_level_config.get("wakeup_time")->asUint()};
     ca_config->plug_in_time                         = seconds_t{low_level_config.get("plug_in_time")->asUint()};
     ca_config->allocation_interval                  = seconds_t{low_level_config.get("allocation_interval")->asUint()};
     ca_config->rotation_interval                    = seconds_t{low_level_config.get("rotation_interval")->asUint()};
-    ca_config->allocated_energy_rotation_threshold  = low_level_config.get("alloc_energy_rot_thres")->asUint();
     ca_config->enable_current_factor                = low_level_config.get("enable_current_factor_pct")->asUint() / 100.0f;
 
     ca_config->minimum_current_3p = config.get("minimum_current")->asUint();
@@ -686,7 +681,6 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     ll_charger_cfg->get("b")->updateUint(bits);
     ll_charger_cfg->get("rc")->updateUint(charger.requested_current);
     ll_charger_cfg->get("ae")->updateUint(charger.allocated_energy * 1000);
-    ll_charger_cfg->get("ar")->updateUint(charger.allocated_energy_this_rotation * 1000);
     ll_charger_cfg->get("ls")->updateUint(charger.last_switch_on.to<millis_t>().as<uint32_t>());
     ll_charger_cfg->get("lp")->updateUint(charger.just_plugged_in_timestamp.to<millis_t>().as<uint32_t>());
     ll_charger_cfg->get("lw")->updateUint(charger.last_wakeup.to<millis_t>().as<uint32_t>());

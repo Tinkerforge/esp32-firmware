@@ -63,7 +63,6 @@ interface ChargerLowLevelState {
     b: number
     rc: number
     ae: number
-    ar: number
     ls: number
     lp: number
     lw: number

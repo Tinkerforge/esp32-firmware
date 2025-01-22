@@ -79,7 +79,7 @@ static void print_alloc(int stage, const StageContext &sc) {
         if (sc.phase_allocation[i] == 0 && sc.current_allocation[i] == 0 && stage != 0)
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "|        %zu        |", i);
         else
-            ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), " %6.3f@%dp;%.3fkWh", sc.current_allocation[i] / 1000.0f, sc.phase_allocation[i], sc.charger_state[i].allocated_energy_this_rotation);
+            ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), " %6.3f@%dp", sc.current_allocation[i] / 1000.0f, sc.phase_allocation[i]);
         if (i % 8 == 7 && i != sc.charger_count - 1) {
             logger.printfln("%s", buf);
             ptr = buf;
@@ -117,7 +117,7 @@ static void trace_alloc(int stage, StageContext &sc) {
         if (sc.phase_allocation[i] == 0 && sc.current_allocation[i] == 0 && stage != 0)
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[        %2zu        ]", i);
         else
-            ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[%2zu %5d@%dp;%4dWh]", i, sc.current_allocation[i], sc.phase_allocation[i], (int32_t)(sc.charger_state[i].allocated_energy_this_rotation * 1000.0f));
+            ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[%2zu %5d@%dp       ]", i, sc.current_allocation[i], sc.phase_allocation[i]);
         if (i % 8 == 7 && i != sc.charger_count - 1) {
             trace("%s", buf);
             ptr = buf;
@@ -369,31 +369,27 @@ static void stage_1(StageContext &sc) {
 
         const auto *state = &sc.charger_state[i];
 
-        bool alloc_energy_over_thres = state->allocated_energy_this_rotation >= sc.cfg->allocated_energy_rotation_threshold;
         // We need both the clock-aligned rotation interval and the minimum active time to be elapsed before rotating a charger:
         // A charger that was just plugged in may not be rotated.
-        bool min_active_elapsed = deadline_elapsed(state->last_switch_on + sc.cfg->minimum_active_time);
-
-        bool rotate = rotation_allowed && have_b1 && sc.ca_state->global_hysteresis_elapsed && alloc_energy_over_thres && min_active_elapsed;
-        bool rotate_for_higher_prio = rotation_allowed && state->charge_mode < highest_charge_mode_bit_seen && sc.ca_state->global_hysteresis_elapsed && min_active_elapsed;
+        bool rotate_for_waiting_b1  = rotation_allowed && sc.ca_state->global_hysteresis_elapsed && have_b1;
+        bool rotate_for_higher_prio = rotation_allowed && sc.ca_state->global_hysteresis_elapsed && state->charge_mode < highest_charge_mode_bit_seen;
 
         // 3p and 1p unknown rotated chargers are considered active on any phase.
         // They can be shut down if there is a charger waiting on any phase.
         // 1p known rotated chargers are only active on a specific phase.
         // Don't shut a 1p known rotated charger down if it is active on a phase where there is no charger waiting.
-        if (rotate && (state->phases != 3 && state->phase_rotation != PhaseRotation::Unknown)) {
+        if (rotate_for_waiting_b1 && (state->phases != 3 && state->phase_rotation != PhaseRotation::Unknown)) {
             // Not 2p safe!
             auto phase = get_phase(state->phase_rotation, ChargerPhase::P1);
-            rotate &= b1_on_phase[phase] == 1;
+            rotate_for_waiting_b1 &= b1_on_phase[phase] == 1;
         }
 
-        bool keep_active = is_active(sc.phase_allocation[i], state) && !rotate && !rotate_for_higher_prio && !state->off;
+        bool keep_active = is_active(sc.phase_allocation[i], state) && !rotate_for_waiting_b1 && !rotate_for_higher_prio && !state->off;
 
-        trace("1: %d: alloc_ge_thres %c min_active %c rot %c keep_active %c can p-switch %c",
+        trace("1: %d: rot_b1 %c rot_prio %c keep_active %c can p-switch %c",
                         i,
-                        alloc_energy_over_thres ? '1' : '0',
-                        min_active_elapsed ? '1' : '0',
-                        rotate ? '1' : '0',
+                        rotate_for_waiting_b1 ? '1' : '0',
+                        rotate_for_higher_prio ? '1' : '0',
                         keep_active ? '1' : '0',
                         state->phase_switch_supported ? '1' : '0');
 
@@ -1630,9 +1626,7 @@ int allocate_current(
 
             auto charging_time = (now - charger.last_plug_in).as<float>();
 
-            if (phases_to_set == 0) {
-                charger.allocated_energy_this_rotation = 0;
-            } else {
+            if (phases_to_set != 0) {
                 auto amps = (float)current_to_set * phases_to_set / 1000.0f;
 
                 auto alloc_time = !deadline_elapsed(charger.last_plug_in + cfg->allocation_interval) ? charging_time : cfg->allocation_interval.as<float>();
@@ -1640,7 +1634,6 @@ int allocate_current(
                 auto amp_hours = amps * (alloc_time / ((micros_t)1_h).as<float>());
                 auto watt_hours = amp_hours * 230.0f;
                 auto allocated_energy = watt_hours / 1000.0f;
-                charger.allocated_energy_this_rotation += allocated_energy;
                 charger.allocated_energy += allocated_energy;
             }
 
@@ -1798,7 +1791,6 @@ bool update_from_client_packet(
     // Reset allocated energy if no car is connected
     if (v1->charger_state == 0) {
         target.allocated_energy = 0;
-        target.allocated_energy_this_rotation = 0;
         target.allocated_average_power = 0;
         target_alloc.allocated_current = 0;
         target_alloc.allocated_phases = 0;
