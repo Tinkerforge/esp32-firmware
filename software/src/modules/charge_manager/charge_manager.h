@@ -53,6 +53,7 @@ public:
 
     const String &get_charger_host(uint8_t idx);
     const char *get_charger_name(uint8_t idx);
+    bool is_only_proxy() { return this->config.get("chargers")->count() == 1 && !this->config.get("enable_charge_manager")->asBool(); }
 
     uint32_t get_maximum_available_current();
     uint32_t get_minimum_current_3p();
