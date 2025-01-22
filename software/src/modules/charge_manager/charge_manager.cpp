@@ -350,14 +350,12 @@ static void update_charger_state_from_mode(ChargerState *state, int charger_idx)
     // Every charger is off by default.
     // If no bit in mode is set the charger stays off.
     state->off = true;
-    state->use_pv_current = false;
     state->observe_pv_limit = false;
 
     for (uint8_t m = ChargeMode::_max; m >= ChargeMode::_min; m = ((uint8_t)m >> 1)) {
         switch((ChargeMode::Type)(mode & m)) {
             case ChargeMode::Fast:
                 state->off = false;
-                state->use_pv_current = true;
                 state->observe_pv_limit = false;
                 return;
 
@@ -366,7 +364,6 @@ static void update_charger_state_from_mode(ChargerState *state, int charger_idx)
                 switch (eco.get_charge_decision(charger_idx)) {
                     case Eco::ChargeDecision::Fast:
                         state->off = false;
-                        state->use_pv_current = true;
                         state->observe_pv_limit = false;
                         return;
                     case Eco::ChargeDecision::Normal:
@@ -382,7 +379,6 @@ static void update_charger_state_from_mode(ChargerState *state, int charger_idx)
 
             case ChargeMode::PV:
                 state->off = false;
-                state->use_pv_current = true;
                 state->observe_pv_limit = true;
                 return;
         }

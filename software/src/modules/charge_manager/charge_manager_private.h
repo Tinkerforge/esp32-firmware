@@ -148,7 +148,6 @@ struct ChargerState {
     // Those are translated from the charge_mode before allocate_current.
     // We should not overwrite charge_mode (for example for the Eco -> Fast/Off decision)
     bool off;
-    bool use_pv_current;
     bool observe_pv_limit;
 };
 
