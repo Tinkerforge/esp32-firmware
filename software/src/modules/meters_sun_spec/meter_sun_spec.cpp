@@ -41,16 +41,16 @@ MeterClassID MeterSunSpec::get_class() const
     return MeterClassID::SunSpec;
 }
 
-void MeterSunSpec::setup(const Config &ephemeral_config)
+void MeterSunSpec::setup(Config *ephemeral_config)
 {
-    host_name         = ephemeral_config.get("host")->asString();
-    port              = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
-    device_address    = static_cast<uint8_t>(ephemeral_config.get("device_address")->asUint());
-    manufacturer_name = ephemeral_config.get("manufacturer_name")->asString();
-    model_name        = ephemeral_config.get("model_name")->asString();
-    serial_number     = ephemeral_config.get("serial_number")->asString();
-    model_id          = static_cast<uint16_t>(ephemeral_config.get("model_id")->asUint());
-    model_instance    = static_cast<uint16_t>(ephemeral_config.get("model_instance")->asUint());
+    host_name         = ephemeral_config->get("host")->asString();
+    port              = static_cast<uint16_t>(ephemeral_config->get("port")->asUint());
+    device_address    = static_cast<uint8_t>(ephemeral_config->get("device_address")->asUint());
+    manufacturer_name = ephemeral_config->get("manufacturer_name")->asString();
+    model_name        = ephemeral_config->get("model_name")->asString();
+    serial_number     = ephemeral_config->get("serial_number")->asString();
+    model_id          = static_cast<uint16_t>(ephemeral_config->get("model_id")->asUint());
+    model_instance    = static_cast<uint16_t>(ephemeral_config->get("model_instance")->asUint());
 
     model_parser = MetersSunSpecParser::new_parser(slot, model_id);
     if (!model_parser) {

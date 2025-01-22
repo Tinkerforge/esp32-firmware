@@ -30,9 +30,9 @@ MeterClassID MeterAPI::get_class() const
     return MeterClassID::API;
 }
 
-void MeterAPI::setup(const Config &ephemeral_config)
+void MeterAPI::setup(Config *ephemeral_config)
 {
-    const Config *value_ids = static_cast<const Config *>(ephemeral_config.get("value_ids"));
+    const Config *value_ids = static_cast<const Config *>(ephemeral_config->get("value_ids"));
     value_count = value_ids->count();
 
     MeterValueID *ids = static_cast<MeterValueID *>(malloc(value_count * sizeof(MeterValueID)));

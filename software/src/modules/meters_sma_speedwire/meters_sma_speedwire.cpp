@@ -27,7 +27,7 @@
 void MetersSMASpeedwire::pre_setup()
 {
     config_prototype = Config::Object({
-        {"display_name", Config::Str("", 0, 32)}
+        {"display_name", Config::Str("", 0, 32)},
     });
 
     meters.register_meter_generator(get_class(), this);

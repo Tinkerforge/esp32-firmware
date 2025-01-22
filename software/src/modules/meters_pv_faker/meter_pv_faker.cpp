@@ -39,12 +39,12 @@ MeterClassID MeterPvFaker::get_class() const
     return MeterClassID::PvFaker;
 }
 
-void MeterPvFaker::setup(const Config &ephemeral_config)
+void MeterPvFaker::setup(Config *ephemeral_config)
 {
     // Cache config
-    peak_power  = ephemeral_config.get("peak_power")->asUint() * (-1LL);
-    zero_at_lux = ephemeral_config.get("zero_at_lux")->asUint();
-    peak_at_lux = ephemeral_config.get("peak_at_lux")->asUint();
+    peak_power  = ephemeral_config->get("peak_power")->asUint() * (-1LL);
+    zero_at_lux = ephemeral_config->get("zero_at_lux")->asUint();
+    peak_at_lux = ephemeral_config->get("peak_at_lux")->asUint();
     peak_at_lux_shifted = peak_at_lux - zero_at_lux;
 
     if (zero_at_lux >= peak_at_lux) {
@@ -52,8 +52,8 @@ void MeterPvFaker::setup(const Config &ephemeral_config)
         return;
     }
 
-    const String &illuminance_topic = ephemeral_config.get("topic")->asString();
-    const String &limiter_topic = ephemeral_config.get("limiter_topic")->asString();
+    const String &illuminance_topic = ephemeral_config->get("topic")->asString();
+    const String &limiter_topic = ephemeral_config->get("limiter_topic")->asString();
     const String &global_topic_prefix = mqtt.config.get("global_topic_prefix")->asString();
 
     if (illuminance_topic.startsWith(global_topic_prefix)) {

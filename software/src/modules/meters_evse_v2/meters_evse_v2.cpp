@@ -27,7 +27,7 @@
 void MetersEVSEV2::pre_setup()
 {
     config_prototype = Config::Object({
-        {"display_name", Config::Str("WARP Charger", 0, 32)}
+        {"display_name", Config::Str("WARP Charger", 0, 32)},
     });
 
     state_prototype = Config::Object({

@@ -34,10 +34,10 @@ MeterClassID MeterMqttMirror::get_class() const
     return MeterClassID::MqttMirror;
 }
 
-void MeterMqttMirror::setup(const Config &ephemeral_config)
+void MeterMqttMirror::setup(Config *ephemeral_config)
 {
-    const String &meter_path = ephemeral_config.get("meter_path")->asString();
-    bool automatic = ephemeral_config.get("auto")->asBool();
+    const String &meter_path = ephemeral_config->get("meter_path")->asString();
+    bool automatic = ephemeral_config->get("auto")->asBool();
 
     if (meter_path.length() < 3) {
         logger.printfln("Meter %u source path too short: '%s'", slot, meter_path.c_str());

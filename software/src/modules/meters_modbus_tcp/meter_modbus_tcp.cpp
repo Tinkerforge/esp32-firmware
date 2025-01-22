@@ -132,11 +132,11 @@ MeterClassID MeterModbusTCP::get_class() const
     return MeterClassID::ModbusTCP;
 }
 
-void MeterModbusTCP::setup(const Config &ephemeral_config)
+void MeterModbusTCP::setup(Config *ephemeral_config)
 {
-    host_name      = ephemeral_config.get("host")->asString();
-    port           = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
-    table_id       = ephemeral_config.get("table")->getTag<MeterModbusTCPTableID>();
+    host_name = ephemeral_config->get("host")->asString();
+    port      = static_cast<uint16_t>(ephemeral_config->get("port")->asUint());
+    table_id  = ephemeral_config->get("table")->getTag<MeterModbusTCPTableID>();
 
     switch (table_id) {
     case MeterModbusTCPTableID::None:
@@ -144,9 +144,9 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         return;
 
     case MeterModbusTCPTableID::Custom: {
-            device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+            device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
-            const Config *registers = static_cast<const Config *>(ephemeral_config.get("table")->get()->get("registers"));
+            const Config *registers = static_cast<const Config *>(ephemeral_config->get("table")->get()->get("registers"));
             size_t registers_count = registers->count();
 
             // FIXME: leaking this, because as of right now meter instances don't get destroyed
@@ -184,8 +184,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SungrowHybridInverter:
-        sungrow_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowHybridInverterVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        sungrow_hybrid_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SungrowHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (sungrow_hybrid_inverter_virtual_meter) {
         case SungrowHybridInverterVirtualMeter::None:
@@ -216,8 +216,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SungrowStringInverter:
-        sungrow_string_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SungrowStringInverterVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        sungrow_string_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SungrowStringInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (sungrow_string_inverter_virtual_meter) {
         case SungrowStringInverterVirtualMeter::None:
@@ -244,8 +244,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SolarmaxMaxStorage:
-        solarmax_max_storage_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SolarmaxMaxStorageVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        solarmax_max_storage_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SolarmaxMaxStorageVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (solarmax_max_storage_virtual_meter) {
         case SolarmaxMaxStorageVirtualMeter::None:
@@ -272,8 +272,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::VictronEnergyGX:
-        victron_energy_gx_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<VictronEnergyGXVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        victron_energy_gx_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<VictronEnergyGXVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (victron_energy_gx_virtual_meter) {
         case VictronEnergyGXVirtualMeter::None:
@@ -304,8 +304,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::DeyeHybridInverter:
-        deye_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<DeyeHybridInverterVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        deye_hybrid_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<DeyeHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (deye_hybrid_inverter_virtual_meter) {
         case DeyeHybridInverterVirtualMeter::None:
@@ -336,8 +336,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::AlphaESSHybridInverter:
-        alpha_ess_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<AlphaESSHybridInverterVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        alpha_ess_hybrid_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<AlphaESSHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (alpha_ess_hybrid_inverter_virtual_meter) {
         case AlphaESSHybridInverterVirtualMeter::None:
@@ -364,9 +364,9 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::ShellyProEM:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
-        shelly_pro_em_monophase_channel = ephemeral_config.get("table")->get()->get("monophase_channel")->asEnum<ShellyEMMonophaseChannel>();
-        shelly_pro_em_monophase_mapping = ephemeral_config.get("table")->get()->get("monophase_mapping")->asEnum<ShellyEMMonophaseMapping>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+        shelly_pro_em_monophase_channel = ephemeral_config->get("table")->get()->get("monophase_channel")->asEnum<ShellyEMMonophaseChannel>();
+        shelly_pro_em_monophase_mapping = ephemeral_config->get("table")->get()->get("monophase_mapping")->asEnum<ShellyEMMonophaseMapping>();
 
         switch (shelly_pro_em_monophase_channel) {
         case ShellyEMMonophaseChannel::None:
@@ -435,10 +435,10 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::ShellyPro3EM:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
-        shelly_pro_3em_device_profile = ephemeral_config.get("table")->get()->get("device_profile")->asEnum<ShellyPro3EMDeviceProfile>();
-        shelly_pro_3em_monophase_channel = ephemeral_config.get("table")->get()->get("monophase_channel")->asEnum<ShellyEMMonophaseChannel>();
-        shelly_pro_3em_monophase_mapping = ephemeral_config.get("table")->get()->get("monophase_mapping")->asEnum<ShellyEMMonophaseMapping>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+        shelly_pro_3em_device_profile = ephemeral_config->get("table")->get()->get("device_profile")->asEnum<ShellyPro3EMDeviceProfile>();
+        shelly_pro_3em_monophase_channel = ephemeral_config->get("table")->get()->get("monophase_channel")->asEnum<ShellyEMMonophaseChannel>();
+        shelly_pro_3em_monophase_mapping = ephemeral_config->get("table")->get()->get("monophase_mapping")->asEnum<ShellyEMMonophaseMapping>();
 
         switch (shelly_pro_3em_device_profile) {
         case ShellyPro3EMDeviceProfile::Triphase:
@@ -541,8 +541,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::GoodweHybridInverter:
-        goodwe_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<GoodweHybridInverterVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        goodwe_hybrid_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<GoodweHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (goodwe_hybrid_inverter_virtual_meter) {
         case GoodweHybridInverterVirtualMeter::None:
@@ -581,8 +581,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SolaxHybridInverter:
-        solax_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<SolaxHybridInverterVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        solax_hybrid_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SolaxHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (solax_hybrid_inverter_virtual_meter) {
         case SolaxHybridInverterVirtualMeter::None:
@@ -609,8 +609,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::FroniusGEN24PlusHybridInverter:
-        fronius_gen24_plus_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<FroniusGEN24PlusHybridInverterVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        fronius_gen24_plus_hybrid_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<FroniusGEN24PlusHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (fronius_gen24_plus_hybrid_inverter_virtual_meter) {
         case FroniusGEN24PlusHybridInverterVirtualMeter::None:
@@ -634,8 +634,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::HaileiHybridInverter:
-        hailei_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<HaileiHybridInverterVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        hailei_hybrid_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<HaileiHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (hailei_hybrid_inverter_virtual_meter) {
         case HaileiHybridInverterVirtualMeter::None:
@@ -662,8 +662,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::FoxESSH3HybridInverter:
-        fox_ess_h3_hybrid_inverter_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<FoxESSH3HybridInverterVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        fox_ess_h3_hybrid_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<FoxESSH3HybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (fox_ess_h3_hybrid_inverter_virtual_meter) {
         case FoxESSH3HybridInverterVirtualMeter::None:
@@ -690,49 +690,49 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SiemensPAC2200:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         table = &siemens_pac2200_table;
         break;
 
     case MeterModbusTCPTableID::SiemensPAC3120:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         table = &siemens_pac3120_and_pac3220_table;
         break;
 
     case MeterModbusTCPTableID::SiemensPAC3200:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         table = &siemens_pac3200_table;
         break;
 
     case MeterModbusTCPTableID::SiemensPAC3220:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         table = &siemens_pac3120_and_pac3220_table;
         break;
 
     case MeterModbusTCPTableID::SiemensPAC4200:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         table = &siemens_pac4200_table;
         break;
 
     case MeterModbusTCPTableID::SiemensPAC4220:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         table = &siemens_pac4220_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM24DIN:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 11));
         table = &carlo_gavazzi_em24_din_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM24E1:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         table = &carlo_gavazzi_em24_e1_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM100:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
-        carlo_gavazzi_em100_phase = ephemeral_config.get("table")->get()->get("phase")->asEnum<CarloGavazziPhase>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+        carlo_gavazzi_em100_phase = ephemeral_config->get("table")->get()->get("phase")->asEnum<CarloGavazziPhase>();
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
 
         switch (carlo_gavazzi_em100_phase) {
@@ -760,8 +760,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::CarloGavazziET100:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
-        carlo_gavazzi_et100_phase = ephemeral_config.get("table")->get()->get("phase")->asEnum<CarloGavazziPhase>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+        carlo_gavazzi_et100_phase = ephemeral_config->get("table")->get()->get("phase")->asEnum<CarloGavazziPhase>();
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
 
         switch (carlo_gavazzi_et100_phase) {
@@ -789,14 +789,14 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM210:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 61));
         table = &carlo_gavazzi_em210_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM270:
-        carlo_gavazzi_em270_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<CarloGavazziEM270VirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        carlo_gavazzi_em270_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<CarloGavazziEM270VirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
 
         switch (carlo_gavazzi_em270_virtual_meter) {
@@ -824,8 +824,8 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM280:
-        carlo_gavazzi_em280_virtual_meter = ephemeral_config.get("table")->get()->get("virtual_meter")->asEnum<CarloGavazziEM280VirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        carlo_gavazzi_em280_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<CarloGavazziEM280VirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
 
         switch (carlo_gavazzi_em280_virtual_meter) {
@@ -853,20 +853,20 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM300:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
         table = &carlo_gavazzi_em300_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziET300:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
         table = &carlo_gavazzi_et300_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM510:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
-        carlo_gavazzi_em510_phase = ephemeral_config.get("table")->get()->get("phase")->asEnum<CarloGavazziPhase>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+        carlo_gavazzi_em510_phase = ephemeral_config->get("table")->get()->get("phase")->asEnum<CarloGavazziPhase>();
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
 
         switch (carlo_gavazzi_em510_phase) {
@@ -894,12 +894,12 @@ void MeterModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM530:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         table = &carlo_gavazzi_em530_and_em540_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM540:
-        device_address = static_cast<uint8_t>(ephemeral_config.get("table")->get()->get("device_address")->asUint());
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         table = &carlo_gavazzi_em530_and_em540_table;
         break;
 

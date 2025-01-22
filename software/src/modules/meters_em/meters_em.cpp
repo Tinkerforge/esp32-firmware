@@ -27,7 +27,7 @@
 void MetersEM::pre_setup()
 {
     config_prototype = Config::Object({
-        {"display_name", Config::Str("WARP Energy Manager", 0, 32)}
+        {"display_name", Config::Str("WARP Energy Manager", 0, 32)},
     });
 
     state_prototype = Config::Object({
@@ -52,7 +52,7 @@ MeterClassID MetersEM::get_class() const
     return MeterClassID::EnergyManager;
 }
 
-IMeter *MetersEM::new_meter(uint32_t slot, Config *state, Config * errors)
+IMeter *MetersEM::new_meter(uint32_t slot, Config *state, Config *errors)
 {
     if (meter_instance) {
         logger.printfln("Cannot create more than one meter of class EnergyManager.");

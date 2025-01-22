@@ -58,7 +58,7 @@ public:
     MeterMeta(uint32_t slot_) : slot(slot_) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
-    void setup(const Config &ephemeral_config) override;
+    void setup(Config *ephemeral_config) override;
     void register_events() override;
 
     bool supports_power()         override {return true;}

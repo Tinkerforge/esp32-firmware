@@ -151,7 +151,7 @@ MeterClassID MeterSMASpeedwire::get_class() const
     return MeterClassID::SMASpeedwire;
 }
 
-void MeterSMASpeedwire::setup(const Config & /*ephemeral_config*/)
+void MeterSMASpeedwire::setup(Config */*ephemeral_config*/)
 {
     IPAddress mc_groupIP(239, 12, 255, 254);
     if (udp.beginMulticast(mc_groupIP, 9522)) {

@@ -215,11 +215,11 @@ void MeterRS485Bricklet::setupMeter()
         this);
 }
 
-void MeterRS485Bricklet::setup(const Config &ephemeral_config)
+void MeterRS485Bricklet::setup(Config *ephemeral_config)
 {
     // TODO Trigger meter value update, in case other modules expect meter values during setup.
 
-    this->type_override = ephemeral_config.get("type_override")->asUint();
+    this->type_override = ephemeral_config->get("type_override")->asUint();
 
     if (this->type_override == METER_TYPE_NONE) {
         logger.printfln("Meter type override set to NONE (0). Disabling energy meter support.");

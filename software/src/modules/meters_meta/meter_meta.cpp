@@ -34,13 +34,13 @@ MeterClassID MeterMeta::get_class() const
     return MeterClassID::Meta;
 }
 
-void MeterMeta::setup(const Config &ephemeral_config)
+void MeterMeta::setup(Config *ephemeral_config)
 {
     // Cache config
-    mode           = ephemeral_config.get("mode")->asEnum<ConfigMode>();
-    source_meter_a = ephemeral_config.get("source_meter_a")->asUint();
-    source_meter_b = ephemeral_config.get("source_meter_b")->asUint();
-    constant       = ephemeral_config.get("constant")->asInt();
+    mode           = ephemeral_config->get("mode")->asEnum<ConfigMode>();
+    source_meter_a = ephemeral_config->get("source_meter_a")->asUint();
+    source_meter_b = ephemeral_config->get("source_meter_b")->asUint();
+    constant       = ephemeral_config->get("constant")->asInt();
 
     if (mode == ConfigMode::Sum || mode == ConfigMode::Diff) {
         source_mode = SourceMode::Double;
