@@ -104,6 +104,9 @@ private:
     Config state_chargers_prototype;
     Config low_level_state_chargers_prototype;
 
+    ConfigRoot charge_mode;
+    ConfigRoot charge_mode_update;
+
     CurrentLimits limits, limits_post_allocation;
     Cost allocated_currents;
 

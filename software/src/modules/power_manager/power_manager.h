@@ -153,8 +153,6 @@ private:
     ConfigRoot low_level_state;
     ConfigRoot config;
     ConfigRoot dynamic_load_config;
-    ConfigRoot charge_mode;
-    ConfigRoot charge_mode_update;
     ConfigRoot external_control;
     ConfigRoot external_control_update;
 

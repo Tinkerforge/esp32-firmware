@@ -147,11 +147,6 @@ void PowerManager::pre_setup()
     }};
 
     // Runtime config
-    charge_mode = Config::Object({
-        {"mode", Config::Uint(0, 0, 3)},
-    });
-    charge_mode_update = charge_mode;
-
     external_control = Config::Object({
         {"phases_wanted", Config::Uint(0, 0, 3)},
     });
@@ -529,14 +524,6 @@ void PowerManager::register_urls()
     api.addPersistentConfig("power_manager/dynamic_load_config", &dynamic_load_config);
 
     api.addState("power_manager/low_level_state", &low_level_state);
-
-    api.addState("power_manager/charge_mode", &charge_mode);
-    api.addCommand("power_manager/charge_mode_update", &charge_mode_update, {}, [this](String &errmsg) {
-        uint32_t new_mode = this->charge_mode_update.get("mode")->asUint();
-
-        logger.printfln("Charging mode %u requested but it was ignored", new_mode);
-        errmsg = "Charge mode switch ignored";
-    }, false);
 
     api.addState("power_manager/external_control", &external_control);
 
