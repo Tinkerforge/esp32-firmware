@@ -184,19 +184,6 @@ export function capsLockActive() {
     return caps_active.value;
 }
 
-let date_now: Signal<number> = signal(Date.now());
-window.setInterval(() => {
-    let new_date_now = Date.now();
-
-    if (Math.floor(new_date_now / 60000) != Math.floor(date_now.value / 60000)) {
-        date_now.value = new_date_now;
-    }
-}, 1000);
-
-export function get_date_now_1m_update_rate() {
-    return date_now.value;
-}
-
 function checkCapsLock(e: MouseEvent | KeyboardEvent) {
     if (caps_active.value && e instanceof KeyboardEvent && e.type == "keyup" && e.key == "CapsLock") {
         caps_active.value = false;
@@ -215,6 +202,19 @@ function checkCapsLock(e: MouseEvent | KeyboardEvent) {
 export function initCapsLockCheck() {
     document.addEventListener("keyup", checkCapsLock);
     document.addEventListener("click", checkCapsLock);
+}
+
+let date_now: Signal<number> = signal(Date.now());
+window.setInterval(() => {
+    let new_date_now = Date.now();
+
+    if (Math.floor(new_date_now / 60000) != Math.floor(date_now.value / 60000)) {
+        date_now.value = new_date_now;
+    }
+}, 1000);
+
+export function get_date_now_1m_update_rate() {
+    return date_now.value;
 }
 
 export let remoteAccessMode = window.top !== window.self;
