@@ -81,6 +81,7 @@ private:
     void check_watchdog();
 
     void update_charger_state_config(uint8_t idx);
+    void update_charger_state_from_mode(ChargerState *state, int charger_idx);
 
     size_t charger_count = 0;
 
@@ -119,6 +120,8 @@ private:
     std::unique_ptr<const char *[]> hosts;
     uint16_t requested_current_threshold;
     uint16_t requested_current_margin;
+
+    uint32_t guaranteed_pv_current;
 
     ChargerAllocationState *charger_allocation_state = nullptr;
     CurrentAllocatorConfig *ca_config = nullptr;

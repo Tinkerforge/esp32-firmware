@@ -344,7 +344,7 @@ void ChargeManager::start_manager_task()
 }
 
 // This is a separate function to simplify the control flow.
-static void update_charger_state_from_mode(ChargerState *state, int charger_idx) {
+void ChargeManager::update_charger_state_from_mode(ChargerState *state, int charger_idx) {
     auto mode = state->charge_mode;
 
     // Every charger is off by default.
@@ -377,7 +377,7 @@ static void update_charger_state_from_mode(ChargerState *state, int charger_idx)
             case ChargeMode::Min: {
                 // TODO maybe support guaranteed power == enable_current of this specific charger?
                 state->off = false;
-                state->guaranteed_pv_current = power_manager.get_guaranteed_power_w() * 1000 / 230;
+                state->guaranteed_pv_current = this->guaranteed_pv_current;
                 continue;
             }
 
@@ -603,6 +603,7 @@ bool ChargeManager::seen_all_chargers()
 
 const String &ChargeManager::get_charger_host(uint8_t idx)
 {
+    // FIXME: This is broken after a config update without reboot.
     return this->config.get("chargers")->get(idx)->get("host")->asString();
 }
 
@@ -613,6 +614,9 @@ const char *ChargeManager::get_charger_name(uint8_t idx)
 
 void ChargeManager::register_urls()
 {
+    // PowerManager::setup() runs after ChargeManager::setup()
+    this->guaranteed_pv_current = (power_manager.get_guaranteed_power_w() * 1000) / 230;
+
     bool enabled = config.get("enable_charge_manager")->asBool();
 
     if (enabled && charger_count > 0 && this->static_cm) {
