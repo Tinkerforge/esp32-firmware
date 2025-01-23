@@ -1502,7 +1502,7 @@ def main():
         with open('web/build/index.standalone.html', 'wb') as f:
             f.write(html_bytes)
 
-        util.embed_data(util.gzip_compress(html_bytes), 'src', 'index_html', 'char')
+        util.embed_data(util.gzip_compress(html_bytes), 'src', 'index_html', 'char', 'ssize_t')
         util.store_digest(index_html_digest, 'src', 'index_html', env=env)
 
     if web_only:

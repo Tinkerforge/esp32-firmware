@@ -44,4 +44,4 @@ tfutil.specialize_template('manifest.json', 'manifest.json', {
 })
 
 with open('manifest.json', 'r', encoding='utf-8') as f:
-    util.embed_data_with_digest(f.read().encode('utf-8'), '.', 'manifest', 'char')
+    util.embed_data_with_digest(f.read().encode('utf-8'), '.', 'manifest', 'char', 'ssize_t')
