@@ -45,7 +45,7 @@ void Eco::pre_setup()
         {"enable", Config::Bool(false)},
         {"mode_after", Config::Uint(3, 0, 3)},
         {"park_time", Config::Bool(false)},
-        {"park_time_duration", Config::Uint(8)},
+        {"park_time_duration", Config::Uint(8)}, // in hours
         {"charge_below", Config::Bool(false)},
         {"charge_below_threshold", Config::Int32(0)}, // in ct
         {"block_above", Config::Bool(false)},
@@ -177,7 +177,12 @@ void Eco::register_urls()
             return request.send(400, "text/plain", "Charge plan not available");
         }
 
-        const uint32_t duration_15m   = (end_time_1m.second - current_time_1m + 14)/15; // Round up to 15 minutes
+        uint32_t duration_remaining_1m = end_time_1m.second - current_time_1m;
+        if (config.get("park_time")->asBool()) {
+            const uint32_t park_time_duration_1m = config.get("park_time_duration")->asUint()*60;
+            duration_remaining_1m = MIN(park_time_duration_1m, duration_remaining_1m);
+        }
+        const uint32_t duration_15m   = (duration_remaining_1m + 14)/15; // Round up to 15 minutes
         const uint32_t duration_uint8 = (duration_15m + 7)/8;
         const uint32_t amount_15m     = amount_1m/15;
 
@@ -243,7 +248,12 @@ void Eco::set_chargers_state_chart_data(const uint8_t charger_id, bool *chart, u
             ((time_t)current_time_1m)*60
         );
         if (end_time_1m.first == 0) {
-            const uint32_t duration_15m = (end_time_1m.second - current_time_1m + 14)/15; // Round up to 15 minutes
+            uint32_t duration_remaining_1m = end_time_1m.second - current_time_1m;
+            if (config.get("park_time")->asBool()) {
+                const uint32_t park_time_duration_1m = config.get("park_time_duration")->asUint()*60;
+                duration_remaining_1m = MIN(park_time_duration_1m, duration_remaining_1m);
+            }
+            const uint32_t duration_15m = (duration_remaining_1m + 14)/15; // Round up to 15 minutes
             const uint32_t amount_15m   = amount_1m/15;
             day_ahead_prices.get_cheap_15m(current_time_1m, duration_15m, amount_15m, chart);
 
@@ -368,7 +378,13 @@ void Eco::update()
             return;
         }
 
-        const uint32_t duration_remaining_1m = end_time_1m.second - current_time_1m;
+        uint32_t duration_remaining_1m = end_time_1m.second - current_time_1m;
+
+        // Limit duration_remaining to park_time_duration (if enabled)
+        const uint32_t park_time_duration_1m = config.get("park_time_duration")->asUint()*60;
+        if (config.get("park_time")->asBool()) {
+            duration_remaining_1m = MIN(park_time_duration_1m, duration_remaining_1m);
+        }
 
         for (uint8_t charger_id = 0; charger_id < state.get("chargers")->count(); charger_id++) {
             const uint32_t charged_amount_1m = state.get("chargers")->get(charger_id)->get("amount")->asUint();
@@ -412,9 +428,15 @@ void Eco::update()
                 }
             }
 
+            // Check time from start to end and limit to park_time_duration
+            if (config.get("park_time")->asBool()) {
+                const uint32_t duration_remaining_from_start_1m = MIN(end_time_1m.second - start_time_1m, park_time_duration_1m);
+                duration_remaining_1m = MIN(duration_remaining_1m, duration_remaining_from_start_1m);
+            }
+
             // Check if the current day ahead price slot is cheap
             const uint32_t amount_remaining_15m   = (desired_amount_1m - charged_amount_1m)/15;
-            const uint32_t duration_remaining_15m = duration_remaining_1m/15;
+            const uint32_t duration_remaining_15m = (duration_remaining_1m + 14)/15; // Round up to 15 minutes
 
             const bool ret = day_ahead_prices.get_cheap_15m(current_time_1m, duration_remaining_15m, amount_remaining_15m, cheap_hours);
             if(ret && cheap_hours[0]) {
