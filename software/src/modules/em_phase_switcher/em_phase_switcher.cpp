@@ -81,10 +81,23 @@ void EMPhaseSwitcher::setup()
         return;
     }
 
-    const size_t charger_count = charge_manager.get_charger_count();
-    if (controlled_charger_idx >= charger_count) {
-        logger.printfln("Controlled charger %u doesn't exist, have only %u", controlled_charger_idx, charger_count);
-        return;
+    const bool proxy_mode = charger_config.get("proxy_mode")->asBool();
+
+    if (proxy_mode) {
+        if (controlled_charger_idx != 0) {
+            logger.printfln("Invalid controlled charger index %hhu", controlled_charger_idx);
+            return;
+        }
+        if (!charge_manager.is_only_proxy()) {
+            logger.printfln("Charge manager not in proxy mode");
+            return;
+        }
+    } else {
+        const size_t charger_count = charge_manager.get_charger_count();
+        if (controlled_charger_idx >= charger_count) {
+            logger.printfln("Controlled charger %u doesn't exist, have only %u", controlled_charger_idx, charger_count);
+            return;
+        }
     }
 
     // Verify config
@@ -101,7 +114,7 @@ void EMPhaseSwitcher::setup()
         external_phase_override = static_cast<uint8_t>(get_phases());
     }
 
-    if (charger_config.get("proxy_mode")->asBool()) {
+    if (proxy_mode) {
         charger_hostname = strdup(charge_manager.get_charger_host(0).c_str());
 
         cm_networking.register_manager(&charger_hostname, 1, nullptr, nullptr);
