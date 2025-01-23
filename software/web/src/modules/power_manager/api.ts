@@ -11,7 +11,6 @@ export interface low_level_state {
     i_pp_max: number[];
     i_pp_mavg: number[];
     i_pp: number[];
-    overall_min_power: number;
     max_current_limited: number;
     is_3phase: boolean;
     charging_blocked: number;

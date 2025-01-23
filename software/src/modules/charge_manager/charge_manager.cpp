@@ -726,15 +726,6 @@ uint32_t ChargeManager::get_maximum_available_current()
     return config.get("maximum_available_current")->asUint();
 }
 
-uint32_t ChargeManager::get_minimum_current_1p()
-{
-    return config.get("minimum_current_1p")->asUint();
-}
-uint32_t ChargeManager::get_minimum_current_3p()
-{
-    return config.get("minimum_current")->asUint();
-}
-
 void ChargeManager::skip_global_hysteresis() {
     if (this->ca_state == nullptr || this->ca_config == nullptr)
         return;

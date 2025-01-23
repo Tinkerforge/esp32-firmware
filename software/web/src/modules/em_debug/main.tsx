@@ -72,9 +72,6 @@ export class EMDebug extends Component {
                 <FormRow label="power available">
                     <OutputFloat value={pm_ll_state.power_available} digits={3} scale={3} unit={'kW'} />
                 </FormRow>
-                <FormRow label="overall min power">
-                    <OutputFloat value={pm_ll_state.overall_min_power} digits={3} scale={3} unit={'kW'} />
-                </FormRow>
                 <FormRow label="max current limited">
                     <OutputFloat value={pm_ll_state.max_current_limited} digits={3} scale={3} unit={'A'} />
                 </FormRow>

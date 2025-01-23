@@ -214,18 +214,14 @@ private:
     bool     dynamic_load_enabled     = false;
     uint32_t meter_slot_currents      = UINT32_MAX;
     int32_t  supply_cable_max_current_ma = 0;
-    int32_t min_current_1p_ma         = 0;
-    int32_t min_current_3p_ma         = 0;
 
     // Pre-calculated limits
-    int32_t  overall_min_power_w = 0;
     int32_t  target_phase_current_ma = 0;
     int32_t  phase_current_max_increase_ma = 0;
     bool     have_battery = false;
 
     // Automation
     TristateBool automation_drawing_power_last   = TristateBool::Undefined;
-    TristateBool automation_power_available_last = TristateBool::Undefined;
 
     // Tracing
     const char *trace_header;

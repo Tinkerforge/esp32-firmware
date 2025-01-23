@@ -80,7 +80,6 @@ void PowerManager::pre_setup()
             config_prototype_int32_0,
             3, 3, Config::type_id<Config::ConfInt>())
         },
-        {"overall_min_power", Config::Int32(0)},
         {"max_current_limited", Config::Int32(0)},
         {"is_3phase", Config::Bool(false)}, // obsolete / phase switcher?
         {"charging_blocked", Config::Uint32(0)},
@@ -204,6 +203,7 @@ void PowerManager::pre_setup()
         });
 #endif
 
+    // Trigger is non-functional. Never enable, but register as disabled anyway so that the front-end works correctly.
     automation.register_trigger(
         AutomationTriggerID::PMPowerAvailable,
         Config::Object({
@@ -315,7 +315,6 @@ void PowerManager::setup()
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.set_enabled(AutomationActionID::PMLimitMaxCurrent, true);
-    automation.set_enabled(AutomationTriggerID::PMPowerAvailable, true);
     automation.set_enabled(AutomationTriggerID::PMGridPowerDraw, true);
 #endif
 
@@ -339,8 +338,6 @@ void PowerManager::setup()
     dynamic_load_enabled        = dynamic_load_config.get("enabled")->asBool();
     meter_slot_currents         = dynamic_load_config.get("meter_slot_grid_currents")->asUint();
     supply_cable_max_current_ma = static_cast<int32_t>(charge_manager.get_maximum_available_current()); // milliampere
-    min_current_1p_ma           = static_cast<int32_t>(charge_manager.get_minimum_current_1p());        // milliampere
-    min_current_3p_ma           = static_cast<int32_t>(charge_manager.get_minimum_current_3p());        // milliampere
 
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
         state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_UNAVAILABLE);
@@ -375,9 +372,6 @@ void PowerManager::setup()
         init_minmax_filter(&current_pv_long_min_ma, values_count_long_min, FilterType::MinOnly);
     }
 
-    // Pre-calculate various limits
-    overall_min_power_w = 230 * 1 * min_current_1p_ma / 1000;
-
     // Calculate constants and set up meter current filters if dynamic load management is enabled
     if (dynamic_load_enabled) {
         int32_t current_limit_ma            = static_cast<int32_t>(dynamic_load_config.get("current_limit")->asUint());
@@ -407,8 +401,6 @@ void PowerManager::setup()
 
         //logger.printfln("cb trip %i  max %i  target phase current %i  max inc %i  pp mavg limit %i  pp int limit %i", circuit_breaker_trip_point_ma, max_possible_ma, target_phase_current_ma, phase_current_max_increase_ma, currents_phase_preproc_mavg_limit, currents_phase_preproc_interpolate_limit);
     }
-
-    low_level_state.get("overall_min_power")->updateInt(overall_min_power_w);
 
     // Update data from meter and phase switcher back-end, requires power filter to be set up.
     update_data();
@@ -956,15 +948,6 @@ void PowerManager::update_energy()
 #endif
     }
 
-#if MODULE_AUTOMATION_AVAILABLE()
-    bool power_above_min = current_pv_minmax_ma.min >= overall_min_power_w;
-    TristateBool automation_power_available = static_cast<TristateBool>(power_above_min);
-    if (automation_power_available != automation_power_available_last) {
-        automation.trigger(AutomationTriggerID::PMPowerAvailable, &power_above_min, this);
-        automation_power_available_last = automation_power_available;
-    }
-#endif
-
     // Cache low-level state configs
     Config *state_i_meter   = static_cast<Config *>(low_level_state.get("i_meter"));
     Config *state_i_pp_max  = static_cast<Config *>(low_level_state.get("i_pp_max"));
@@ -1192,9 +1175,6 @@ bool PowerManager::has_triggered(const Config *conf, void *data)
 #pragma GCC diagnostic ignored "-Wswitch-enum"
 
     switch (conf->getTag<AutomationTriggerID>()) {
-        case AutomationTriggerID::PMPowerAvailable:
-            return (*static_cast<bool *>(data) == cfg->get("power_available")->asBool());
-
         case AutomationTriggerID::PMGridPowerDraw:
             return ((power_at_meter_raw_w > 0) == cfg->get("drawing_power")->asBool());
 

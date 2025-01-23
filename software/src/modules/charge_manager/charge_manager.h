@@ -56,8 +56,6 @@ public:
     bool is_only_proxy() { return this->config.get("chargers")->count() == 1 && !this->config.get("enable_charge_manager")->asBool(); }
 
     uint32_t get_maximum_available_current();
-    uint32_t get_minimum_current_3p();
-    uint32_t get_minimum_current_1p();
 
     CurrentLimits *get_limits() {
         // TODO: Maybe add separate function for this?
