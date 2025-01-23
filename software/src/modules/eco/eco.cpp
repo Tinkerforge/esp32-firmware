@@ -430,13 +430,12 @@ void Eco::update()
 
             // Check time from start to end and limit to park_time_duration
             if (config.get("park_time")->asBool()) {
-                const uint32_t duration_remaining_from_start_1m = MIN(end_time_1m.second - start_time_1m, park_time_duration_1m);
-                duration_remaining_1m = MIN(duration_remaining_1m, duration_remaining_from_start_1m);
+                duration_remaining_1m = MIN(end_time_1m.second - start_time_1m, park_time_duration_1m) - charged_amount_1m;
             }
 
             // Check if the current day ahead price slot is cheap
-            const uint32_t amount_remaining_15m   = (desired_amount_1m - charged_amount_1m)/15;
-            const uint32_t duration_remaining_15m = (duration_remaining_1m + 14)/15; // Round up to 15 minutes
+            const uint32_t amount_remaining_15m   = (desired_amount_1m/15) - (charged_amount_1m/15); // Round down to 15 minutes
+            const uint32_t duration_remaining_15m = (duration_remaining_1m + 14)/15;                 // Round up to 15 minutes
 
             const bool ret = day_ahead_prices.get_cheap_15m(current_time_1m, duration_remaining_15m, amount_remaining_15m, cheap_hours);
             if(ret && cheap_hours[0]) {
