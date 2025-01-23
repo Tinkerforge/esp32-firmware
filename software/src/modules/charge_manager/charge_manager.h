@@ -122,6 +122,7 @@ private:
     uint16_t requested_current_margin;
 
     uint32_t guaranteed_pv_current;
+    uint32_t pm_default_charge_mode;
 
     ChargerAllocationState *charger_allocation_state = nullptr;
     CurrentAllocatorConfig *ca_config = nullptr;

@@ -473,7 +473,6 @@ void ChargeManager::setup()
     for (size_t i = 0; i < charger_count; ++i) {
         charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());
         charger_state[i].last_phase_switch = -ca_config->global_hysteresis;
-        charger_state[i].charge_mode = translate_charge_mode(power_manager.get_default_charge_mode());
     }
 
     // TODO: Change all currents everywhere to int32_t or int16_t.
@@ -616,6 +615,12 @@ void ChargeManager::register_urls()
 {
     // PowerManager::setup() runs after ChargeManager::setup()
     this->guaranteed_pv_current = (power_manager.get_guaranteed_power_w() * 1000) / 230;
+    this->pm_default_charge_mode = power_manager.get_default_charge_mode();
+
+    auto default_mode = translate_charge_mode(this->pm_default_charge_mode);
+    for (size_t i = 0; i < charger_count; ++i) {
+        charger_state[i].charge_mode = default_mode;
+    }
 
     bool enabled = config.get("enable_charge_manager")->asBool();
 
@@ -652,10 +657,10 @@ void ChargeManager::register_urls()
     // This is power_manager API that is now handled by the charge manager.
     api.addState("power_manager/charge_mode", &charge_mode);
     api.addCommand("power_manager/charge_mode_update", &charge_mode_update, {}, [this](String &errmsg) {
-        uint32_t new_mode = this->charge_mode_update.get("mode")->asUint();
+        auto new_mode = translate_charge_mode(this->charge_mode_update.get("mode")->asUint());
 
         for (size_t i = 0; i < charger_count; ++i) {
-            charger_state[i].charge_mode = translate_charge_mode(new_mode);
+            charger_state[i].charge_mode = new_mode;
         }
 
         //logger.printfln("Charging mode %u requested but it was ignored", new_mode);
