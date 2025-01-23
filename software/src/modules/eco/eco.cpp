@@ -121,7 +121,7 @@ void Eco::register_urls()
         update();
     }, false);
 
-    server.on_HTTPThread("/eco/chart", HTTP_PUT, [this](WebServerRequest request) {
+    server.on("/eco/chart", HTTP_PUT, [this](WebServerRequest request) {
         timeval tv;
         if (!rtc.clock_synced(&tv)) {
             return request.send(503, "text/plain", "Clock not yet synced");
