@@ -179,29 +179,58 @@ export function render_allowed() {
 }
 
 let caps_active: Signal<boolean> = signal(false);
+// True IFF we've seen a CapsLock keydown event while caps_active was false.
+// We have to ignore the first CapsLock keyup event after the CapsLock keydown event that activates the caps lock.
+let ignore_caps_key_up: boolean = false;
 
 export function capsLockActive() {
     return caps_active.value;
 }
 
 function checkCapsLock(e: MouseEvent | KeyboardEvent) {
-    if (caps_active.value && e instanceof KeyboardEvent && e.type == "keyup" && e.key == "CapsLock") {
-        caps_active.value = false;
-    } else if (e instanceof MouseEvent && ((e.target as Element).tagName.toLowerCase() == "select") || (e.target as Element).tagName.toLowerCase() == "option") {
-        // Ignore clicks on drop-down menus and options within, as capslock will be reported as off while the menu is shown.
+    // Browser-generated events always have getModifierState(), but injected events from password managers often do not.
+    // Assume that injected events don't use CapsLock
+    if (!e.getModifierState) {
         return;
-    } else {
-        // Browser-generated events always have getModifierState(), but injected events from password managers often do not.
-        if (!e.getModifierState) {
-            return;
+    }
+
+    const is_mouse_event = e instanceof MouseEvent;
+
+    // Ignore clicks on drop-down menus and options within, as capslock will be reported as off while the menu is shown.
+    if (is_mouse_event && ((e.target as Element).tagName.toLowerCase() == "select") || (e.target as Element).tagName.toLowerCase() == "option") {
+        return;
+    }
+
+    // If caps is currently not pressed and we see a CapsLock keydown,
+    // caps is active and we have to ignore the caps key up in the other event handler.
+    if (!is_mouse_event && !caps_active.value && e.key == "CapsLock") {
+        caps_active.value = true;
+        ignore_caps_key_up = true;
+        return;
+    }
+
+    caps_active.value = e.getModifierState('CapsLock');
+}
+
+function checkCapsLockKeyUp(e: KeyboardEvent) {
+    if (caps_active.value && e.key == "CapsLock") {
+        if (ignore_caps_key_up) {
+            ignore_caps_key_up = false;
+        } else {
+            caps_active.value = false;
         }
-        caps_active.value = e.getModifierState("CapsLock")
     }
 }
 
 export function initCapsLockCheck() {
-    document.addEventListener("keyup", checkCapsLock);
+    // macOS has a capslock indicator (and drops some keydown/up events)
+    if (navigator.userAgent.includes("Mac"))
+        return;
+
+    document.addEventListener("keydown", checkCapsLock);
     document.addEventListener("click", checkCapsLock);
+
+    document.addEventListener("keyup", checkCapsLockKeyUp);
 }
 
 let date_now: Signal<number> = signal(Date.now());
