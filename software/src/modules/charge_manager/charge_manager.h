@@ -85,7 +85,6 @@ private:
     size_t charger_count = 0;
 
     uint32_t last_available_current_update = 0;
-    bool watchdog_triggered = false;
 
     ChargerState *charger_state = nullptr;
 
@@ -114,6 +113,8 @@ private:
     bool static_cm = true;
 
     bool all_chargers_seen = false;
+
+    bool watchdog_triggered = false;
 
     std::unique_ptr<const char *[]> hosts;
     uint16_t requested_current_threshold;
