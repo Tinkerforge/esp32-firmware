@@ -39,32 +39,6 @@ void EMPhaseSwitcher::pre_setup()
         {"host", Config::Str("", 0, 32)},
         {"proxy_mode", Config::Bool(false)},
     });
-
-    //state = Config::Object({
-    //});
-
-#if MODULE_AUTOMATION_AVAILABLE()
-    //automation.register_trigger(
-    //    AutomationTriggerID::EMInput,
-    //    Config::Object({
-    //        {"index",  Config::Uint(0, 0, 3)},
-    //        {"closed", Config::Bool(false)},
-    //    })
-    //);
-
-    //automation.register_action(
-    //    AutomationActionID::EMRelaySwitch,
-    //    Config::Object({
-    //        {"index",  Config::Uint(0, 0, 1)},
-    //        {"closed", Config::Bool(false)}
-    //    }),
-    //    [this](const Config *cfg) {
-    //        const uint32_t index  = cfg->get("index" )->asUint();
-    //        const bool     closed = cfg->get("closed")->asBool();
-    //        this->set_relay_output(index, closed);
-    //    }
-    //);
-#endif
 }
 
 void EMPhaseSwitcher::setup()
@@ -237,25 +211,6 @@ bool EMPhaseSwitcher::switch_phases_internal(uint32_t phases_wanted)
 
     return true;
 }
-
-#if MODULE_AUTOMATION_AVAILABLE()
-bool EMPhaseSwitcher::has_triggered(const Config *conf, void *data)
-{
-    const AutomationTriggerID trigger_id = conf->getTag<AutomationTriggerID>();
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-
-    switch (trigger_id) {
-        default:
-            break;
-    }
-#pragma GCC diagnostic pop
-
-    logger.printfln("has_triggered called for unexpected trigger ID %u", static_cast<uint32_t>(trigger_id));
-    return false;
-}
-#endif
 
 bool EMPhaseSwitcher::is_proxy_mode_enabled()
 {

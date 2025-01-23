@@ -27,15 +27,8 @@
 #include "modules/power_manager/phase_switcher_back-end.h"
 #include "TFTools/Micros.h"
 
-#if MODULE_AUTOMATION_AVAILABLE()
-#include "modules/automation/automation_backend.h"
-#endif
-
 class EMPhaseSwitcher final : public IModule,
                    public PhaseSwitcherBackend
-#if MODULE_AUTOMATION_AVAILABLE()
-                 , public IAutomationBackend
-#endif
 {
 public:
     EMPhaseSwitcher(){}
@@ -59,10 +52,6 @@ public:
     void filter_command_packet(size_t charger_idx, cm_command_packet *command_packet);
     void filter_state_packet(size_t charger_idx, cm_state_packet *state_packet);
 
-#if MODULE_AUTOMATION_AVAILABLE()
-    bool has_triggered(const Config *conf, void *data) override;
-#endif
-
 private:
     enum class SwitchingState : uint8_t {
         Idle = 0,
@@ -78,7 +67,6 @@ private:
     PhaseSwitcherBackend::SwitchingState get_phase_switching_state_internal();
     bool switch_phases_internal(uint32_t phases_wanted);
 
-    ConfigRoot state;
     ConfigRoot charger_config;
 
     micros_t phase_switch_deadtime_us = 0_us;
