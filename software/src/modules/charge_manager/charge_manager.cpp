@@ -300,6 +300,29 @@ void ChargeManager::pre_setup()
             return "";
         },
         false);
+
+    automation.register_action(
+        AutomationActionID::PMChargeModeSwitch,
+        Config::Object({
+            {"mode", Config::Uint(0, 0, 4)}
+        }),
+        [this](const Config *cfg) {
+            uint32_t configured_mode = cfg->get("mode")->asUint();
+
+            // Automation rule configured to switch to default mode
+            if (configured_mode == 4) {
+                configured_mode = this->pm_default_charge_mode;
+            }
+
+            const String err = api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
+                {"mode", configured_mode}
+            }});
+            if (!err.isEmpty()) {
+                logger.printfln("Automation couldn't switch charge mode: %s", err.c_str());
+            }
+        },
+        nullptr,
+        false);
 #endif
 }
 
@@ -420,6 +443,7 @@ void ChargeManager::setup()
     if (!config.get("enable_charge_manager")->asBool() || config.get("chargers")->count() == 0) {
         return;
     }
+
     // If enable_charge_manager is false, leave charger_count as 0.
     this->charger_count = config.get("chargers")->count();
 
@@ -629,6 +653,7 @@ void ChargeManager::register_urls()
     }
 
 #if MODULE_AUTOMATION_AVAILABLE()
+    automation.set_enabled(AutomationActionID::PMChargeModeSwitch, enabled);
     automation.set_enabled(AutomationTriggerID::ChargeManagerWd, enabled && this->static_cm);
     automation.set_enabled(AutomationActionID::SetManagerCurrent, enabled && this->static_cm);
 #endif
