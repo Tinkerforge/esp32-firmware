@@ -177,29 +177,6 @@ void PowerManager::pre_setup()
         }, nullptr, false);
 
     automation.register_action(
-        AutomationActionID::PMChargeModeSwitch,
-        Config::Object({
-            {"mode", Config::Uint(0, 0, 4)}
-        }),
-        [this](const Config *cfg) {
-            uint32_t configured_mode = cfg->get("mode")->asUint();
-
-            // Automation rule configured to switch to default mode
-            if (configured_mode == 4) {
-                configured_mode = get_default_charge_mode(); // TODO Reads config at runtime
-            }
-
-            const String err = api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
-                {"mode", configured_mode}
-            }});
-            if (!err.isEmpty()) {
-                logger.printfln("Automation couldn't switch charge mode: %s", err.c_str());
-            }
-        },
-        nullptr,
-        false);
-
-    automation.register_action(
         AutomationActionID::PMLimitMaxCurrent,
         Config::Object({
             {"current", Config::Int(0, -1)}
@@ -337,7 +314,6 @@ void PowerManager::setup()
     }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    automation.set_enabled(AutomationActionID::PMChargeModeSwitch, true);
     automation.set_enabled(AutomationActionID::PMLimitMaxCurrent, true);
     automation.set_enabled(AutomationTriggerID::PMPowerAvailable, true);
     automation.set_enabled(AutomationTriggerID::PMGridPowerDraw, true);
