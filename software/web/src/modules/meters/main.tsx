@@ -974,7 +974,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                         let config_plugin = config_plugins[config[0]];
                                         if (!config_plugin) {
                                             console.log("No config plugin available for meter type", config[0]);
-                                            this.setState({editMeterSlot: meter_slot, editMeter: [0, null]});
+                                            this.setState({editMeterSlot: meter_slot, editMeter: [MeterClassID.None, null]});
                                             return;
                                         }
                                         this.setState({editMeterSlot: meter_slot, editMeter: config_plugin.clone_config(config)});

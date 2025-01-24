@@ -1,3 +1,5 @@
+import { AutomationTriggerID } from "./automation_trigger_id.enum";
+import { AutomationActionID } from "./automation_action_id.enum";
 {{{imports}}}
 
 export interface config {
@@ -17,7 +19,7 @@ interface Task {
 }
 
 type AutomationTrigger =
-    [0, null]{{{triggers}}};
+    [AutomationTriggerID.None, null]{{{triggers}}};
 
 type AutomationAction =
-    [0, null]{{{actions}}};
+    [AutomationActionID.None, null]{{{actions}}};
