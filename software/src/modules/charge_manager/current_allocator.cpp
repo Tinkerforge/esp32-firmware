@@ -242,7 +242,7 @@ bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool
                 phases_min_exceeded |= cost[i] > 0 && limits->min[i] < cost[i];
             }
 
-            bool pv_excess_min_exceeded = cost.pv > 0 && limits->min.pv < cost.pv;
+            bool pv_excess_min_exceeded =  observe_pv_limit && cost.pv > 0 && limits->min.pv < cost.pv && cost.pv > guaranteed_pv_current;
             return phases_exceeded || pv_excess_exceeded || phases_min_exceeded || pv_excess_min_exceeded;
         }
         default:
