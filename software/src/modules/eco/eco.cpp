@@ -382,9 +382,6 @@ void Eco::update()
 
         // Limit duration_remaining to park_time_duration (if enabled)
         const uint32_t park_time_duration_1m = config.get("park_time_duration")->asUint()*60;
-        if (config.get("park_time")->asBool()) {
-            duration_remaining_1m = MIN(park_time_duration_1m, duration_remaining_1m);
-        }
 
         for (uint8_t charger_id = 0; charger_id < state.get("chargers")->count(); charger_id++) {
             const uint32_t charged_amount_1m = state.get("chargers")->get(charger_id)->get("amount")->asUint();
@@ -430,7 +427,8 @@ void Eco::update()
 
             // Check time from start to end and limit to park_time_duration
             if (config.get("park_time")->asBool()) {
-                duration_remaining_1m = MIN(end_time_1m.second - start_time_1m, park_time_duration_1m) - charged_amount_1m;
+                const uint32_t current_park_time = current_time_1m - start_time_1m;
+                duration_remaining_1m = MIN(duration_remaining_1m, park_time_duration_1m - current_park_time);
             }
 
             // Check if the current day ahead price slot is cheap
