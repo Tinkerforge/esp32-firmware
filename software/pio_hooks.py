@@ -1380,7 +1380,9 @@ def main():
                     with open(os.path.join(frontend_mod_path, enum_name.under + '.enum.ts'), 'w', encoding='utf-8') as f:
                         f.write(f'// WARNING: This file is generated from "{name}" by pio_hooks.py\n\n')
                         f.write(f'export const enum {enum_name.camel} {{\n')
+                        f.write(f'    _min = {value_number_min},\n')
                         f.write(''.join(enum_values))
+                        f.write(f'    _max = {value_number_max},\n')
                         f.write('}\n')
 
     if prepare_only:
