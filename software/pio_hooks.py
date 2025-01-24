@@ -1146,6 +1146,12 @@ def main():
             if navbar_group != None:
                 navbar_mapping.append((frontend_component[1].under, f'{navbar_group[1].under}_ref'))
 
+    def has_status_component(x):
+        return (x.component.space + " Status") in [y.component.space for y in frontend_status_components]
+
+    def has_subpage_component(x):
+        return (x.component.space.endswith(" Status") and x.component.space.removesuffix(" Status") in [y.component.space for y in frontend_components])
+
     tfutil.specialize_template(os.path.join("web", "app.tsx.template"), os.path.join("web", "src", "app.tsx"), {
         '{{{logo_base64}}}': logo_base64,
         '{{{navbar_imports}}}': '\n'.join([f'import {{ {x.component.camel}Navbar }} from "./modules/{x.module.under}/main";' for x in frontend_components if x.mode != 'Close']),
@@ -1153,10 +1159,10 @@ def main():
         '{{{navbar_refs}}}': '\n    '.join([f'{x.component.under}_ref = createRef();' for x in frontend_components if x.mode == 'Open']),
         '{{{navbar_refs_mapping}}}': '\n            '.join([f'{repr(x[0])}: this.{x[1]},' for x in navbar_mapping]),
         '{{{content_imports}}}': '\n'.join([f'import {{ {x.component.camel} }} from "./modules/{x.module.under}/main";' for x in frontend_components if x.mode == None]),
-        '{{{content}}}': '\n                            '.join([f'<{x.component.camel}{f" status_ref={{this.{x.component.under}_status_ref}}" if (x.component.space + " Status") in [y.component.space for y in frontend_status_components] else ""} />' for x in frontend_components if x.mode == None]),
+        '{{{content}}}': '\n                            '.join([f'<{x.component.camel}{f" status_ref={{this.{x.component.under}_status_ref}}" if has_status_component(x) else ""} />' for x in frontend_components if x.mode == None]),
         '{{{status_imports}}}': '\n'.join([f'import {{ {x.component.camel} }} from "./modules/{x.module.under}/main";' for x in frontend_status_components]),
-        '{{{status}}}': '\n                                '.join([f'<{x.component.camel} ref={{this.{x.component.under}_ref}} />' for x in frontend_status_components]),
-        '{{{status_refs}}}': '\n    '.join([f'{x.component.under}_ref = createRef();' for x in frontend_status_components]),
+        '{{{status}}}': '\n                                '.join([f'<{x.component.camel}{f" ref={{this.{x.component.under}_ref}}" if has_subpage_component(x) else "" } />' for x in frontend_status_components]),
+        '{{{status_refs}}}': '\n    '.join([f'{x.component.under}_ref = createRef();' for x in frontend_status_components if has_subpage_component(x)]),
     })
 
     tfutil.specialize_template(os.path.join("web", "main.tsx.template"), os.path.join("web", "src", "main.tsx"), {
