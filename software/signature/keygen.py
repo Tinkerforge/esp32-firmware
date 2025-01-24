@@ -50,17 +50,17 @@ def load_libsodium():
     return libsodium
 
 
-def keepassxc(config, prefix, action, args, entry, password=None, input=None):
-    path = make_keys_path(config[prefix + '_path'])
-    protection = config[prefix + '_protection']
+def keepassxc(preset, prefix, action, args, entry, password=None, input=None):
+    path = make_keys_path(preset[prefix + '_path'])
+    protection = preset[prefix + '_protection']
     full_args = ['keepassxc-cli', action]
     full_kwargs = {'stderr': subprocess.DEVNULL, 'encoding': 'utf-8'}
     full_input = None
 
     if protection == 'token':
-        full_args += ['-q', '--no-password', '-y', f'2:{config[prefix + "_token"]}']
+        full_args += ['-q', '--no-password', '-y', f'2:{preset[prefix + "_token"]}']
     elif protection == 'keyfile':
-        full_args += ['-q', '--no-password', '-k', make_keys_path(config[prefix + '_keyfile'])]
+        full_args += ['-q', '--no-password', '-k', make_keys_path(preset[prefix + '_keyfile'])]
     elif protection == 'password':
         assert password != None
         full_input = password + '\n'
@@ -97,9 +97,13 @@ def main():
 
     config = configparser.ConfigParser()
     config.read(make_path('config.ini'))
-    config = config['preset:' + args.preset]
 
-    sodium_public_key_path = make_keys_path(config['sodium_public_key_path'])
+    try:
+        preset = config['preset:' + args.preset]
+    except KeyError:
+        raise Exception(f'Preset {args.preset} is unknown')
+
+    sodium_public_key_path = make_keys_path(preset['sodium_public_key_path'])
 
     print(f'Checking for existing sodium public key file {sodium_public_key_path}')
 
@@ -114,7 +118,7 @@ def main():
         except Exception as e:
             raise Exception(f'Could not remove existing sodium public key file {sodium_public_key_path}: {e}')
 
-    sodium_secret_key_path = make_keys_path(config['sodium_secret_key_path'])
+    sodium_secret_key_path = make_keys_path(preset['sodium_secret_key_path'])
 
     print(f'Checking for existing sodium secret key entry in {sodium_secret_key_path}')
 
@@ -123,23 +127,23 @@ def main():
 
     sodium_secret_key_password = args.sodium_secret_key_password
 
-    if config['sodium_secret_key_protection'] == 'password' and sodium_secret_key_password == None:
+    if preset['sodium_secret_key_protection'] == 'password' and sodium_secret_key_password == None:
         print(f'Enter password for existing sodium secret key file {sodium_secret_key_path}:')
         sodium_secret_key_password = getpass.getpass(prompt='')
 
-    if keepassxc(config, 'sodium_secret_key', 'show', [], 'sodium_secret_key', password=sodium_secret_key_password) != None:
+    if keepassxc(preset, 'sodium_secret_key', 'show', [], 'sodium_secret_key', password=sodium_secret_key_password) != None:
         if not args.force_overwrite:
             raise Exception(f'Sodium secret key entry already exists in {sodium_secret_key_path}')
 
         print(f'Removing existing sodium secret key entry from {sodium_secret_key_path} [--force-overwrite]')
 
-        if keepassxc(config, 'sodium_secret_key', 'rm', [], 'sodium_secret_key', password=sodium_secret_key_password) == None:
+        if keepassxc(preset, 'sodium_secret_key', 'rm', [], 'sodium_secret_key', password=sodium_secret_key_password) == None:
             raise Exception(f'Could not remove existing sodium secret key entry from {sodium_secret_key_path}')
 
-        if keepassxc(config, 'sodium_secret_key', 'show', [], 'sodium_secret_key', password=sodium_secret_key_password) != None:
+        if keepassxc(preset, 'sodium_secret_key', 'show', [], 'sodium_secret_key', password=sodium_secret_key_password) != None:
             print(f'Removing existing sodium secret key entry from {sodium_secret_key_path} recycling bin [--force-overwrite]')
 
-            if keepassxc(config, 'sodium_secret_key', 'rm', [], 'sodium_secret_key', password=sodium_secret_key_password) == None:
+            if keepassxc(preset, 'sodium_secret_key', 'rm', [], 'sodium_secret_key', password=sodium_secret_key_password) == None:
                 raise Exception(f'Could not remove existing sodium secret key entry from {sodium_secret_key_path} recycling bin')
 
     print('Generating sodium public and secret key')
@@ -172,16 +176,16 @@ def main():
 
     sodium_secret_key_hex = sodium_secret_key_buffer.raw.hex()
 
-    if keepassxc(config, 'sodium_secret_key', 'add', ['-p'], 'sodium_secret_key', password=sodium_secret_key_password, input=sodium_secret_key_hex) == None:
+    if keepassxc(preset, 'sodium_secret_key', 'add', ['-p'], 'sodium_secret_key', password=sodium_secret_key_password, input=sodium_secret_key_hex) == None:
         raise Exception(f'Could not add sodium secret key to {sodium_secret_key_path}')
 
-    if keepassxc(config, 'sodium_secret_key', 'show', ['-s', '-a', 'password'], 'sodium_secret_key', password=sodium_secret_key_password) != sodium_secret_key_hex:
+    if keepassxc(preset, 'sodium_secret_key', 'show', ['-s', '-a', 'password'], 'sodium_secret_key', password=sodium_secret_key_password) != sodium_secret_key_hex:
         raise Exception(f'Could not add sodium secret key to {sodium_secret_key_path}')
 
-    if not config.getboolean('gpg_sign'):
+    if not preset.getboolean('gpg_sign'):
         print('Skipping GPG keyring')
     else:
-        gpg_keyring_path = make_keys_path(config['gpg_keyring_path'])
+        gpg_keyring_path = make_keys_path(preset['gpg_keyring_path'])
 
         print(f'Checking for existing GPG keyring file {gpg_keyring_path}')
 
@@ -196,35 +200,35 @@ def main():
             except Exception as e:
                 raise Exception(f'Could not remove existing GPG keyring file {gpg_keyring_path}: {e}')
 
-        gpg_keyring_passphrase_path = make_keys_path(config['gpg_keyring_passphrase_path'])
+        gpg_keyring_passphrase_path = make_keys_path(preset['gpg_keyring_passphrase_path'])
 
         if not os.path.exists(gpg_keyring_passphrase_path):
             raise Exception(f'GPG keyring passphrase file {gpg_keyring_passphrase_path} is missing')
 
         gpg_keyring_passphrase_password = args.gpg_keyring_passphrase_password
 
-        if config['gpg_keyring_passphrase_protection'] == 'password' and gpg_keyring_passphrase_password == None:
+        if preset['gpg_keyring_passphrase_protection'] == 'password' and gpg_keyring_passphrase_password == None:
             print(f'Enter password for existing GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
             gpg_keyring_passphrase_password = getpass.getpass(prompt='')
 
         print(f'Checking for existing GPG keyring passphrase enrty in {gpg_keyring_passphrase_path}')
 
-        if keepassxc(config, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != None:
+        if keepassxc(preset, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != None:
             if not args.force_overwrite:
                 raise Exception(f'GPG keyring passphrase entry already exists in {gpg_keyring_passphrase_path}')
 
             print(f'Removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} [--force-overwrite]')
 
-            if keepassxc(config, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
+            if keepassxc(preset, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
                 raise Exception(f'Could not remove existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
 
-            if keepassxc(config, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != None:
+            if keepassxc(preset, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != None:
                 print(f'Removing existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin [--force-overwrite]')
 
-                if keepassxc(config, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
+                if keepassxc(preset, 'gpg_keyring_passphrase', 'rm', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) == None:
                     raise Exception(f'Could not remove existing GPG keyring passphrase entry from {gpg_keyring_passphrase_path} recycling bin')
 
-        gpg_public_key_path = make_keys_path(config['gpg_public_key_path'])
+        gpg_public_key_path = make_keys_path(preset['gpg_public_key_path'])
 
         print(f'Checking for existing GPG public key file {gpg_public_key_path}')
 
@@ -243,10 +247,10 @@ def main():
 
         gpg_keyring_passphrase = secrets.token_hex(64)
 
-        if keepassxc(config, 'gpg_keyring_passphrase', 'add', ['-p'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password, input=gpg_keyring_passphrase) == None:
+        if keepassxc(preset, 'gpg_keyring_passphrase', 'add', ['-p'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password, input=gpg_keyring_passphrase) == None:
             raise Exception(f'Could not add GPG keyring passphrase to {gpg_keyring_passphrase_path}')
 
-        if keepassxc(config, 'gpg_keyring_passphrase', 'show', ['-s', '-a', 'password'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != gpg_keyring_passphrase:
+        if keepassxc(preset, 'gpg_keyring_passphrase', 'show', ['-s', '-a', 'password'], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password) != gpg_keyring_passphrase:
             raise Exception(f'Could not add GPG keyring passphrase to {gpg_keyring_passphrase_path}')
 
         print(f'Creating GPG keyring file {gpg_keyring_path}')
@@ -258,7 +262,7 @@ def main():
                 '--no-default-keyring',
                 '--keyring', gpg_keyring_path,
                 '--passphrase', gpg_keyring_passphrase,
-                '--quick-generate-key', config['gpg_keyring_user_id'], 'default', 'default', '0',
+                '--quick-generate-key', preset['gpg_keyring_user_id'], 'default', 'default', '0',
             ])
         except:
             raise Exception(f'Could not create GPG keyring file {gpg_keyring_path}')
@@ -273,7 +277,7 @@ def main():
                 '--keyring', gpg_keyring_path,
                 '--passphrase', gpg_keyring_passphrase,
                 '--output', gpg_public_key_path,
-                '--export', config['gpg_keyring_user_id'],
+                '--export', preset['gpg_keyring_user_id'],
             ])
         except:
             raise Exception(f'Could not export GPG public key to {gpg_public_key_path}')
