@@ -225,7 +225,7 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
                 departure: this.props.departure,
                 time: this.props.time,
                 amount: this.props.amount,
-                current_time: date_now / 60000 // current date in minutues
+                current_time: Math.floor(date_now / 60000) // current date in minutues
             };
 
             try {
