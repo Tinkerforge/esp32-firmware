@@ -104,10 +104,6 @@ export function get_noninternal_meter_slots(required_ids : Readonly<MeterValueID
 }
 
 export class PowerManagerStatus extends Component {
-    change_mode(mode: number) {
-        API.save('power_manager/charge_mode', {"mode": mode}, () => __("power_manager.script.mode_change_failed"));
-    }
-
     change_phase(phases: number) {
         API.save('power_manager/external_control', {"phases_wanted": phases}, () => __("power_manager.script.mode_change_failed"));
     }
@@ -143,52 +139,11 @@ export class PowerManagerStatus extends Component {
         if (!util.render_allowed())
             return <StatusSection name="power_manager" />
 
-        let charge_mode = API.get('power_manager/charge_mode');
         let state       = API.get('power_manager/state');
         let ll_state    = API.get('power_manager/low_level_state');
-        let config      = API.get('power_manager/config');
         const phases    = API.get_unchecked('evse/low_level_state')?.phases_current | API.get_unchecked('energy_manager/state')?.phases_switched;
 
         return <StatusSection name="power_manager">
-            {API.get('power_manager/config').enabled ?
-                <FormRow label={__("power_manager.status.mode")}>
-                    <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
-                        <Button
-                            style="display: flex;align-items: center;justify-content: center;"
-                            className="m-1 rounded-left rounded-right"
-                            variant={charge_mode.mode == 1 ? "success" : "primary"}
-                            disabled={charge_mode.mode == 1}
-                            onClick={() => this.change_mode(1)}>
-                            {charge_mode.mode == 1 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_off")}</span>
-                        </Button>
-                        <Button
-                            style="display: flex;align-items: center;justify-content: center;"
-                            className="m-1 rounded-left rounded-right"
-                            variant={config.excess_charging_enable ? (charge_mode.mode == 2 ? "success" : "primary") : "secondary"}
-                            disabled={!config.excess_charging_enable || charge_mode.mode == 2}
-                            onClick={() => this.change_mode(2)}>
-                            {!config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 2 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_pv")}</span>
-                        </Button>
-                        <Button
-                            style="display: flex;align-items: center;justify-content: center;"
-                            className="m-1 rounded-left rounded-right"
-                            variant={config.excess_charging_enable ? (charge_mode.mode == 3 ? "success" : "primary") : "secondary"}
-                            disabled={!config.excess_charging_enable || charge_mode.mode == 3}
-                            onClick={() => this.change_mode(3)}>
-                            {!config.excess_charging_enable ? <Circle size="20"/> : (charge_mode.mode == 3 ? <CheckCircle size="20"/> : <Circle size="20"/>)} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_min_pv")}</span>
-                        </Button>
-                        <Button
-                            style="display: flex;align-items: center;justify-content: center;"
-                            className="m-1 rounded-left rounded-right"
-                            variant={charge_mode.mode == 0 ? "success" : "primary"}
-                            disabled={charge_mode.mode == 0}
-                            onClick={() => this.change_mode(0)}>
-                            {charge_mode.mode == 0 ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.mode_fast")}</span>
-                        </Button>
-                    </ButtonGroup>
-                </FormRow>
-                : null}
-
             {API.get_unchecked("evse/hardware_configuration")?.evse_version >= 30 || API.get_unchecked("energy_manager/config")?.contactor_installed ?
                 API.hasFeature("phase_switch") && (API.get_unchecked("evse/management_enabled") == null || !API.get_unchecked("evse/management_enabled").enabled) ?
                     <FormRow label={__("power_manager.status.phase_switching")}>
