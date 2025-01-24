@@ -114,14 +114,16 @@ env.AddPostAction(
     ), "Merging {0}.bin -> {0}_merged.bin".format(env.subst(f"$BUILD_DIR{os.sep}$PROGNAME")))
 )
 
-if env.GetProjectOption('custom_signed') == 'true':
+signature_preset = env.GetProjectOption('custom_signature_preset')
+
+if len(signature_preset) > 0:
     env.AddPostAction(
         "$BUILD_DIR/${PROGNAME}.bin",
         env.VerboseAction(lambda env, **kwargs: check_call(
             env.subst('$PYTHONEXE'),
             "-u",
             env.subst("$PROJECT_DIR/signature/sign.py"),
-            custom_name,
+            signature_preset,
             env.subst("$BUILD_DIR/${PROGNAME}_merged.bin"),
             f"build/{firmware_basename}_merged.bin"
         ), f"Signing $BUILD_DIR{os.sep}${{PROGNAME}}_merged.bin -> build{os.sep}{firmware_basename}_merged.bin")

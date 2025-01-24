@@ -24,17 +24,17 @@ def make_keys_path(path):
     return os.path.join('.', os.path.relpath(os.path.join(directory, 'keys', path)))
 
 
-def keepassxc(config, prefix, action, args, entry, password=None, input=None):
-    path = make_keys_path(config[prefix + '_path'])
-    protection = config[prefix + '_protection']
+def keepassxc(preset, prefix, action, args, entry, password=None, input=None):
+    path = make_keys_path(preset[prefix + '_path'])
+    protection = preset[prefix + '_protection']
     full_args = ['keepassxc-cli', action]
     full_kwargs = {'stderr': subprocess.DEVNULL, 'encoding': 'utf-8'}
     full_input = None
 
     if protection == 'token':
-        full_args += ['-q', '--no-password', '-y', f'2:{config[prefix + "_token"]}']
+        full_args += ['-q', '--no-password', '-y', f'2:{preset[prefix + "_token"]}']
     elif protection == 'keyfile':
-        full_args += ['-q', '--no-password', '-k', make_keys_path(config[prefix + '_keyfile'])]
+        full_args += ['-q', '--no-password', '-k', make_keys_path(preset[prefix + '_keyfile'])]
     elif protection == 'password':
         assert password != None
         full_input = password + '\n'
@@ -66,9 +66,13 @@ def main():
 
     config = configparser.ConfigParser()
     config.read(make_path('config.ini'))
-    config = config['preset:' + args.preset]
 
-    sodium_secret_key_path = make_keys_path(config['sodium_secret_key_path'])
+    try:
+        preset = config['preset:' + args.preset]
+    except KeyError:
+        raise Exception(f'Preset {args.preset} is unknown, maybe the signature data is outdated')
+
+    sodium_secret_key_path = make_keys_path(preset['sodium_secret_key_path'])
 
     print(f'Reading sodium secret key entry from {sodium_secret_key_path}')
 
@@ -80,7 +84,7 @@ def main():
     while sodium_secret_key_hex == None:
         sodium_secret_key_password = None
 
-        if config['sodium_secret_key_protection'] == 'password':
+        if preset['sodium_secret_key_protection'] == 'password':
             print(f'Enter password for sodium secret key file {sodium_secret_key_path}:')
 
             try:
@@ -88,20 +92,20 @@ def main():
             except KeyboardInterrupt:
                 raise Exception('Aborted')
 
-        sodium_secret_key_hex = keepassxc(config, 'sodium_secret_key', 'show', [], 'sodium_secret_key', password=sodium_secret_key_password)
+        sodium_secret_key_hex = keepassxc(preset, 'sodium_secret_key', 'show', [], 'sodium_secret_key', password=sodium_secret_key_password)
 
         if sodium_secret_key_hex == None:
             message = f'Could not read sodium secret key entry from {sodium_secret_key_path}'
 
-            if config['sodium_secret_key_protection'] == 'password':
+            if preset['sodium_secret_key_protection'] == 'password':
                 print(message)
             else:
                 raise Exception(message)
 
-    if not config.getboolean('gpg_sign'):
+    if not preset.getboolean('gpg_sign'):
         print('Skipping GPG keyring')
     else:
-        gpg_keyring_passphrase_path = make_keys_path(config['gpg_keyring_passphrase_path'])
+        gpg_keyring_passphrase_path = make_keys_path(preset['gpg_keyring_passphrase_path'])
 
         print(f'Reading GPG keyring passphrase entry from {gpg_keyring_passphrase_path}')
 
@@ -113,7 +117,7 @@ def main():
         while gpg_keyring_passphrase == None:
             gpg_keyring_passphrase_password = None
 
-            if config['gpg_keyring_passphrase_protection'] == 'password':
+            if preset['gpg_keyring_passphrase_protection'] == 'password':
                 print(f'Enter password for GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
 
                 try:
@@ -121,20 +125,19 @@ def main():
                 except KeyboardInterrupt:
                     raise Exception('Aborted')
 
-            gpg_keyring_passphrase = keepassxc(config, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password)
+            gpg_keyring_passphrase = keepassxc(preset, 'gpg_keyring_passphrase', 'show', [], 'gpg_keyring_passphrase', password=gpg_keyring_passphrase_password)
 
             if gpg_keyring_passphrase == None:
                 message = f'Could not read GPG keyring passphrase entry from {gpg_keyring_passphrase_path}'
 
-                if config['gpg_keyring_passphrase_protection'] == 'password':
+                if preset['gpg_keyring_passphrase_protection'] == 'password':
                     print(message)
                 else:
                     raise Exception(message)
 
-
         gpg_keyring_passphrase = gpg_keyring_passphrase.strip()
 
-        gpg_keyring_path = make_keys_path(config['gpg_keyring_path'])
+        gpg_keyring_path = make_keys_path(preset['gpg_keyring_path'])
 
         if not os.path.exists(gpg_keyring_path):
             raise Exception(f'GPG keyring file {gpg_keyring_path} is missing')

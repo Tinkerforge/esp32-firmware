@@ -63,14 +63,18 @@ def main():
     libsodium = load_libsodium()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('signature_name')
+    parser.add_argument('preset')
     parser.add_argument('input_path')
 
     args = parser.parse_args()
 
     config = configparser.ConfigParser()
     config.read(make_path('config.ini'))
-    config = config['preset:' + config['signature:' + args.signature_name]['preset']]
+
+    try:
+        preset = config['preset:' + args.preset]
+    except KeyError:
+        raise Exception(f'Preset {args.preset} is unknown, maybe the signature data is outdated')
 
     try:
         with open(args.input_path, 'rb') as f:
@@ -78,10 +82,10 @@ def main():
     except Exception as e:
         raise Exception(f'Could not read input from {args.input_path}: {e}')
 
-    if not config.getboolean('gpg_sign'):
+    if not preset.getboolean('gpg_sign'):
         print('Skipping GPG verify')
     else:
-        gpg_public_key_path = make_keys_path(config['gpg_public_key_path'])
+        gpg_public_key_path = make_keys_path(preset['gpg_public_key_path'])
 
         try:
             subprocess.check_call([
@@ -107,7 +111,7 @@ def main():
 
         print('Checksum is matching')
 
-    sodium_public_key_path = make_keys_path(config['sodium_public_key_path'])
+    sodium_public_key_path = make_keys_path(preset['sodium_public_key_path'])
 
     with open(sodium_public_key_path, 'r', encoding='utf-8') as f:
         sodium_public_key_json = json.loads(f.read())
@@ -141,8 +145,8 @@ def main():
 
     actual_publisher = signature_info[8:72].decode('utf-8').rstrip('\0')
 
-    if actual_publisher != config['publisher']:
-        raise Exception(f'Publisher mismatch: {repr(actual_publisher)} != {repr(config["publisher"])}')
+    if actual_publisher != preset['publisher']:
+        raise Exception(f'Publisher mismatch: {repr(actual_publisher)} != {repr(preset["publisher"])}')
 
     input_data[signature_info_offset + 72:signature_info_offset + 72 + crypto_sign_BYTES] = bytes([0x55] * crypto_sign_BYTES)
 

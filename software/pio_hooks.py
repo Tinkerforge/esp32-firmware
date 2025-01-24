@@ -562,7 +562,7 @@ def main():
     web_only = env.GetProjectOption("custom_web_only") == "true"
     prepare_only = "-DPREPARE_ONLY" in build_flags
     web_build_flags = env.GetProjectOption("custom_web_build_flags")
-    signed = env.GetProjectOption("custom_signed") == "true"
+    signature_preset = env.GetProjectOption("custom_signature_preset")
     monitor_speed = env.GetProjectOption("monitor_speed")
     nightly = "-DNIGHTLY" in build_flags
 
@@ -712,7 +712,7 @@ def main():
     build_lines.append('#define BUILD_FIRMWARE_UPDATE_URL "{}"'.format(firmware_update_url))
     build_lines.append('#define BUILD_DAY_AHEAD_PRICE_API_URL "{}"'.format(day_ahead_price_api_url))
     build_lines.append('#define BUILD_SOLAR_FORECAST_API_URL "{}"'.format(solar_forecast_api_url))
-    build_lines.append('#define BUILD_IS_SIGNED() {}'.format("1" if signed else "0"))
+    build_lines.append('#define BUILD_IS_SIGNED() {}'.format("1" if len(signature_preset) > 0 else "0"))
     build_lines.append('uint32_t build_timestamp();')
     build_lines.append('const char *build_timestamp_hex_str();')
     build_lines.append('const char *build_version_full_str();')
@@ -724,7 +724,7 @@ def main():
 
     firmware_basename = '{}_firmware{}{}{}_{}_{:x}{}'.format(
         name,
-        "-UNSIGNED" if not signed else "",
+        "-UNSIGNED" if len(signature_preset) == 0 else "",
         "-NIGHTLY" if nightly else "",
         "-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE" if not_for_distribution else "",
         "{}_{}_{}{}".format(*version[:3], f"_beta_{version[3]}" if version[3] != "255" else ""),
@@ -818,7 +818,7 @@ def main():
 
     metadata = json.dumps({
         'name': name,
-        'signed': signed,
+        'signature_preset': signature_preset,
         'frontend_modules': [frontend_module.under for frontend_module in frontend_modules],
         'branding_mod_path': os.path.abspath(branding_mod_path),
     }, separators=(',', ':'))

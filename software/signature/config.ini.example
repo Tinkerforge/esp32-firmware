@@ -1,4 +1,4 @@
-[preset:my_signature_preset]
+[preset:my_signature_preset:v1]
 publisher = My Signature Publisher
 
 sodium_public_key_path = sodium_public_key_v1.json
@@ -19,21 +19,3 @@ gpg_keyring_passphrase_token = 123456789
 gpg_keyring_passphrase_keyfile = gpg_keyring_passphrase_v1.keyfile
 
 gpg_public_key_path = gpg_public_key_v1.gpg
-
-[signature:esp32]
-preset = my_signature_preset
-
-[signature:esp32_ethernet]
-preset = my_signature_preset
-
-[signature:warp]
-preset = my_signature_preset
-
-[signature:warp2]
-preset = my_signature_preset
-
-[signature:warp3]
-preset = my_signature_preset
-
-[signature:energy_manager]
-preset = my_signature_preset

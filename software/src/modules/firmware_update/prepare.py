@@ -34,33 +34,37 @@ if metadata_json == None:
 
 metadata = json.loads(metadata_json)
 
-if not metadata['signed']:
-    publisher = ''
+if len(metadata['signature_preset']) == 0:
+    publisher_literal = ''
     sodium_public_key = b''
 else:
     config = configparser.ConfigParser()
     config.read(make_signature_path('config.ini'))
-    config = config['preset:' + config['signature:' + metadata['name']]['preset']]
 
-    publisher_bytes = config['publisher'].encode('utf-8')
+    preset = config['preset:' + metadata['signature_preset']]
+
+    publisher = preset['publisher']
+    publisher_bytes = publisher.encode('utf-8')
 
     if len(publisher_bytes) < 1 or len(publisher_bytes) > 63:
-        print('signature publisher UTF-8 length is out of range')
+        print(f'Signature publisher UTF-8 length is out of range: {repr(publisher)}')
         sys.exit(-1)
 
-    publisher = ''
+    print(f'Embedding sodium public key for {repr(publisher)}')
 
-    for c in config['publisher']:
+    publisher_literal = ''
+
+    for c in publisher:
         n = ord(c)
 
         if n <= 0x7f:
-            publisher += json.dumps(c)[1:-1]
+            publisher_literal += json.dumps(c)[1:-1]
         elif n <= 0xffff:
-            publisher += f'\\u{n:04x}'
+            publisher_literal += f'\\u{n:04x}'
         else:
-            publisher += f'\\U{n:08x}'
+            publisher_literal += f'\\U{n:08x}'
 
-    sodium_public_key_path = make_signature_keys_path(config['sodium_public_key_path'])
+    sodium_public_key_path = make_signature_keys_path(preset['sodium_public_key_path'])
 
     with open(sodium_public_key_path, 'r', encoding='utf-8') as f:
         sodium_public_key_json = json.loads(f.read())
@@ -91,7 +95,7 @@ except FileNotFoundError:
 
 with open(cpp_path + '.tmp', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated\n\n')
-    f.write(f'const char *signature_publisher = "{publisher}";\n\n')
+    f.write(f'const char *signature_publisher = "{publisher_literal}";\n\n')
     f.write('extern const unsigned char signature_sodium_public_key_data[] = {\n')
 
     sodium_public_key_io = io.BytesIO(sodium_public_key)
