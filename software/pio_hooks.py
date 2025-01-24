@@ -591,7 +591,7 @@ def main():
             pass
 
     is_release = len(subprocess.run(["git", "tag", "--contains", "HEAD"], check=True, capture_output=True).stdout) > 0
-    is_dirty = len(subprocess.run(["git", "diff"], check=True, capture_output=True).stdout) > 0
+    is_dirty = len(subprocess.run(["git", "diff", "HEAD"], check=True, capture_output=True).stdout) > 0
     dirty_suffix = ""
     git_url = subprocess.run(["git", "config", "--get", "remote.origin.url"], check=True, capture_output=True).stdout.decode("utf-8").strip()
     git_commit_id = subprocess.run(["git", "rev-parse", "--short=15", "HEAD"], check=True, capture_output=True).stdout.decode("utf-8").strip()
