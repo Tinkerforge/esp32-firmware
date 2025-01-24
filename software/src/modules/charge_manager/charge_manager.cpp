@@ -384,8 +384,8 @@ void ChargeManager::update_charger_state_from_mode(ChargerState *state, int char
                 state->observe_pv_limit = false;
                 return;
 
-#if MODULE_ECO_AVAILABLE()
             case ChargeMode::Eco:
+#if MODULE_ECO_AVAILABLE()
                 switch (eco.get_charge_decision(charger_idx)) {
                     case Eco::ChargeDecision::Fast:
                         state->off = false;
@@ -395,8 +395,9 @@ void ChargeManager::update_charger_state_from_mode(ChargerState *state, int char
                     case Eco::ChargeDecision::Normal:
                         continue;
                 }
-                continue;
 #endif
+                continue;
+
             case ChargeMode::Min: {
                 // TODO maybe support guaranteed power == enable_current of this specific charger?
                 state->off = false;
