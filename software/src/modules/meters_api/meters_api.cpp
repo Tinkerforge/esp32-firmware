@@ -21,6 +21,7 @@
 
 #include "module_dependencies.h"
 #include "meter_api.h"
+#include "modules/meters/meter_location.enum.h"
 
 #include "gcc_warnings.h"
 
@@ -28,6 +29,7 @@ void MetersAPI::pre_setup()
 {
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
+        {"location", Config::Enum(MeterLocation::Unknown)},
         {"value_ids", Config::Array({},
             Config::get_prototype_uint32_0(),
             0, METERS_MAX_VALUES_PER_METER, Config::type_id<Config::ConfUint>()

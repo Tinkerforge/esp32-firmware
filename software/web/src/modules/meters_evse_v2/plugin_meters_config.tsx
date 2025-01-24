@@ -21,8 +21,11 @@ import { h, ComponentChildren } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/meter_class_id.enum";
+import { MeterLocation } from "../meters/meter_location.enum";
+import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
+import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api";
 
@@ -30,6 +33,7 @@ export type EVSEV2MetersConfig = [
     MeterClassID.EVSEV2,
     {
         display_name: string;
+        location: number;
     },
 ];
 
@@ -37,7 +41,7 @@ export function init() {
     return {
         [MeterClassID.EVSEV2]: {
             name: () => __("meters_evse_v2.content.meter_class"),
-            new_config: () => [MeterClassID.EVSEV2, {display_name: ""}] as MeterConfig,
+            new_config: () => [MeterClassID.EVSEV2, {display_name: "", location: MeterLocation.Charger}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: EVSEV2MetersConfig, on_config: (config: EVSEV2MetersConfig) => void): ComponentChildren => {
                 return [
@@ -50,6 +54,23 @@ export function init() {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }}
                         />
+                    </FormRow>,
+                    <FormRow label={__("meters_evse_v2.content.config_location")}>
+                        <SwitchableInputSelect
+                            required
+                            items={get_meter_location_items()}
+                            placeholder={__("select")}
+                            value={config[1].location.toString()}
+                            onValue={(v) => {
+                                on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                            }}
+                            checked={config[1].location != MeterLocation.Charger}
+                            onSwitch={() => {
+                                on_config(util.get_updated_union(config, {location: (config[1].location != MeterLocation.Charger ? MeterLocation.Charger : MeterLocation.Unknown)}));
+                            }}
+                            switch_label_active={__("meters_evse_v2.content.location_different")}
+                            switch_label_inactive={__("meters_evse_v2.content.location_matching")}
+                            />
                     </FormRow>,
                 ];
             },

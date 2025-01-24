@@ -22,6 +22,7 @@
 #include "module_dependencies.h"
 #include "meter_rct_power.h"
 #include "virtual_meter.enum.h"
+#include "modules/meters/meter_location.enum.h"
 
 #include "gcc_warnings.h"
 
@@ -29,6 +30,7 @@ void MetersRCTPower::pre_setup()
 {
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
+        {"location",       Config::Enum(MeterLocation::Unknown)},
         {"host",           Config::Str("", 0, 64)},
         {"port",           Config::Uint16(8899)},
         {"virtual_meter",  Config::Enum(VirtualMeter::None)},

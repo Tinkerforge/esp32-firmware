@@ -20,6 +20,7 @@ let x = {
             "config_unique_id_muted": "optional; manufacturer, model, serial number",
             "config_model_id": "Model",
             "config_model_instance": "Model instance",
+            "config_location": "Location",
 
             "scan_title": "Device search",
             "scan_title_muted": "first device address, last device address",
@@ -27,6 +28,9 @@ let x = {
             "scan_results": "Discovered devices",
             "scan_log": "Log",
             "scan_log_file": "SunSpec-scan-log",
+
+            "location_matching": "Matching",
+            "location_different": "Different",
 
             "model_no_supported": "Not supported",
             "model_other_preferred": /*SFN*/(slot: number|"?") => "Model " + slot + " preferred"/*NF*/,

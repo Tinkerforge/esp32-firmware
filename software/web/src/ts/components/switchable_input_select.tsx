@@ -17,25 +17,31 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Context, Fragment } from "preact";
+import { h, JSX, Context } from "preact";
 import { useId, useContext } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { register_id_context_component_type } from "./form_row";
 
-export interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
+interface SwitchableInputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
     idContext?: Context<string>
     items: [string, string][];
-    onValue?: (value: string) => void;
+    onValue: (value: string) => void;
     placeholder?: string;
     className?: string;
     style?: string;
     invalidFeedback?: string;
+    checked: boolean;
+    onSwitch: JSX.MouseEventHandler<HTMLInputElement>;
+    switch_label_active?: string;
+    switch_label_inactive?: string;
+    switch_label_min_width?: string;
 }
 
-export function InputSelect(props: InputSelectProps) {
-    let {idContext, items, value, onValue, placeholder, className, style, ...p} = props;
-
+export function SwitchableInputSelect(props: SwitchableInputSelectProps) {
+    let {idContext, items, value, onValue, placeholder, className, style, checked, onSwitch, switch_label_active, switch_label_inactive, switch_label_min_width, ...p} = props;
     const id = !idContext ? useId() : useContext(idContext);
+    const label_desktop_id = id + "-1";
+    const label_mobile_id = id + "-2";
 
     if (placeholder) {
         let found = false;
@@ -60,16 +66,24 @@ export function InputSelect(props: InputSelectProps) {
     const invalidFeedback = props.invalidFeedback ? <div class="invalid-feedback" hidden={props.hidden}>{props.invalidFeedback}</div> : undefined;
 
     return (
-        <>
+        <div class="row no-gutters input-group rounded">
+            <div class="d-none d-sm-block input-group-prepend input-group-text custom-control custom-switch" style={"padding-left: 2.75rem; padding-right: 0.6rem; border-bottom-right-radius: 0; border-top-right-radius: 0; text-align: left; " + (switch_label_min_width ? ("min-width: " + switch_label_min_width) : "")}>
+                <input type="checkbox" class="custom-control-input" id={label_desktop_id} checked={checked} onClick={onSwitch} disabled={props.disabled} />
+                <label class="custom-control-label" for={label_desktop_id}>{checked ? switch_label_active : switch_label_inactive}</label>
+            </div>
+            <div class="d-block d-sm-none input-group-prepend input-group-text custom-control custom-switch" style={"padding-left: 2.75rem; padding-right: 0; border-bottom-right-radius: 0; border-top-right-radius: 0;"}>
+                <input type="checkbox" class="custom-control-input" id={label_mobile_id} checked={checked} onClick={onSwitch} disabled={props.disabled} />
+                <label class="custom-control-label" for={label_mobile_id}></label>
+            </div>
             <select
                 {...p}
-                readOnly={onValue === undefined}
-                disabled={onValue === undefined}
                 value={value}
-                class={(className ?? "") + " custom-select"}
+                readOnly={!checked || props.disabled}
+                disabled={!checked || props.disabled}
+                class={(className ?? "") + " form-control custom-select"}
                 style={style ?? ""}
                 id={id}
-                onInput={onValue === undefined ? undefined : (e) => onValue((e.target as HTMLSelectElement).value)}
+                onInput={(e) => onValue((e.target as HTMLSelectElement).value)}
                 >
                 {
                     (placeholder ? [<option value="" disabled selected>{placeholder}</option>] : [])
@@ -79,8 +93,8 @@ export function InputSelect(props: InputSelectProps) {
                 }
             </select>
             {invalidFeedback}
-        </>
+        </div>
     );
 }
 
-register_id_context_component_type(InputSelect);
+register_id_context_component_type(SwitchableInputSelect);

@@ -6,6 +6,7 @@ let x = {
             "meter_class": "API",
 
             "config_display_name": "Anzeigename",
+            "config_location": "Messort",
             "config_value_ids": "Werte",
             "config_value_id": "Wert",
             "invalid_feedback": "Bereits ausgewählt",

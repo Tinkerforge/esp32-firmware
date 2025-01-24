@@ -21,6 +21,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "modules/meters/meter_location.enum.h"
 
 #include "gcc_warnings.h"
 
@@ -28,6 +29,7 @@ void MetersEM::pre_setup()
 {
     config_prototype = Config::Object({
         {"display_name", Config::Str("WARP Energy Manager", 0, 32)},
+        {"location", Config::Enum(MeterLocation::Grid)},
     });
 
     state_prototype = Config::Object({

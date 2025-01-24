@@ -6,6 +6,7 @@ let x = {
             "meter_class": "Meta",
 
             "config_display_name": "Display name",
+            "config_location": "Location",
             "mode": "Mode",
             "mode_sum": "Sum (A + B)",
             "mode_diff": "Difference (A - B)",

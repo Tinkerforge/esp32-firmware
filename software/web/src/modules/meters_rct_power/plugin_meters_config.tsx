@@ -21,10 +21,13 @@ import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/meter_class_id.enum";
+import { MeterLocation } from "../meters/meter_location.enum";
+import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
+import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { VirtualMeter } from "./virtual_meter.enum";
 
@@ -32,20 +35,32 @@ export type RCTPowerMetersConfig = [
     MeterClassID.RCTPower,
     {
         display_name: string;
+        location: number;
         host: string;
         port: number;
         virtual_meter: number;
     },
 ];
 
+function get_default_location(virtual_meter: number) {
+    if (util.hasValue(virtual_meter)) {
+        switch (virtual_meter) {
+        case VirtualMeter.Grid: return MeterLocation.Grid;
+        case VirtualMeter.Battery: return MeterLocation.Battery;
+        }
+    }
+
+    return MeterLocation.Unknown;
+}
+
 export function init() {
     return {
         [MeterClassID.RCTPower]: {
             name: () => __("meters_rct_power.content.meter_class"),
-            new_config: () => [MeterClassID.RCTPower, {display_name: "", host: "", port: 8899, virtual_meter: null}] as MeterConfig,
+            new_config: () => [MeterClassID.RCTPower, {display_name: "", location: MeterLocation.Unknown, host: "", port: 8899, virtual_meter: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: RCTPowerMetersConfig, on_config: (config: RCTPowerMetersConfig) => void): ComponentChildren => {
-                return [
+                let edit_children = [
                     <FormRow label={__("meters_rct_power.content.display_name")}>
                         <InputText
                             required
@@ -85,12 +100,53 @@ export function init() {
                                 [VirtualMeter.Battery.toString(), __("meters_rct_power.content.virtual_meter_battery")],
                             ]}
                             placeholder={__("select")}
-                            value={util.hasValue(config[1].virtual_meter) ? config[1].virtual_meter.toString() : undefined}
+                            value={util.hasValue(config[1].virtual_meter) ? config[1].virtual_meter.toString() : null}
                             onValue={(v) => {
-                                on_config(util.get_updated_union(config, {virtual_meter: parseInt(v)}));
+                                on_config(util.get_updated_union(config, {virtual_meter: parseInt(v), location: get_default_location(parseInt(v))}));
                             }} />
-                    </FormRow>,
+                    </FormRow>
                 ];
+
+                let default_location = get_default_location(config[1].virtual_meter);
+
+                if (default_location == MeterLocation.Unknown) {
+                    edit_children.push(
+                        <FormRow label={__("meters_rct_power.content.location")}>
+                            <InputSelect
+                                required
+                                disabled={config[1].virtual_meter === null}
+                                items={get_meter_location_items()}
+                                placeholder={__("select")}
+                                value={config[1].location.toString()}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                                }} />
+                        </FormRow>);
+                }
+                else {
+                    let enable_location_override = config[1].virtual_meter !== null && default_location != config[1].location;
+
+                    edit_children.push(
+                        <FormRow label={__("meters_rct_power.content.location")}>
+                            <SwitchableInputSelect
+                                required
+                                items={get_meter_location_items()}
+                                placeholder={__("select")}
+                                value={config[1].location.toString()}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                                }}
+                                checked={enable_location_override}
+                                onSwitch={() => {
+                                    on_config(util.get_updated_union(config, {location: (enable_location_override ? default_location : MeterLocation.Unknown)}));
+                                }}
+                                switch_label_active={__("meters_rct_power.content.location_different")}
+                                switch_label_inactive={__("meters_rct_power.content.location_matching")}
+                                />
+                        </FormRow>);
+                }
+
+                return edit_children;
             },
         },
     };

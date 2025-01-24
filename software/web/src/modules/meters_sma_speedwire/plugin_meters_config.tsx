@@ -18,18 +18,21 @@
  */
 
 import { h, ComponentChildren } from "preact";
-import { __, translate_unchecked } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/meter_class_id.enum";
+import { MeterLocation } from "../meters/meter_location.enum";
+import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
+import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
-import * as API from "../../ts/api";
 
 export type SMASpeedwireMetersConfig = [
     MeterClassID.SMASpeedwire,
     {
         display_name: string;
+        location: number;
     },
 ];
 
@@ -37,7 +40,7 @@ export function init() {
     return {
         [MeterClassID.SMASpeedwire]: {
             name: () => __("meters_sma_speedwire.content.meter_class"),
-            new_config: () => [MeterClassID.SMASpeedwire, {display_name: ""}] as MeterConfig,
+            new_config: () => [MeterClassID.SMASpeedwire, {display_name: "", location: MeterLocation.Unknown}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: SMASpeedwireMetersConfig, on_config: (config: SMASpeedwireMetersConfig) => void): ComponentChildren => {
                 return [
@@ -50,6 +53,16 @@ export function init() {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }}
                         />
+                    </FormRow>,
+                    <FormRow label={__("meters_sma_speedwire.content.config_location")}>
+                        <InputSelect
+                            required
+                            items={get_meter_location_items()}
+                            placeholder={__("select")}
+                            value={config[1].location.toString()}
+                            onValue={(v) => {
+                                on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                            }} />
                     </FormRow>,
                 ];
             },

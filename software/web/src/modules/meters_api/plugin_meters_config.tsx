@@ -21,6 +21,8 @@ import { h, Fragment, Component, ComponentChildren } from 'preact'
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/meter_class_id.enum";
+import { MeterLocation } from "../meters/meter_location.enum";
+import { get_meter_location_items } from "../meters/meter_location";
 import { MeterValueID, MeterValueTreeType, METER_VALUE_INFOS, METER_VALUE_TREE } from "../meters/meter_value_id";
 import { MeterConfig } from "../meters/types";
 import { Table, TableRow } from "../../ts/components/table";
@@ -34,6 +36,7 @@ export type APIMetersConfig = [
     MeterClassID.API,
     {
         display_name: string;
+        location: number;
         value_ids: number[];
     },
 ];
@@ -283,9 +286,7 @@ class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState>
                 ]}
                 value={this.state.preset}
                 onValue={async (v) => {
-
                     let preset = parseInt(v);
-
                     let value_ids: number[] = isNaN(preset) ? [] : this.presets[preset];
 
                     if (this.props.config[1].value_ids.toString() !== this.presets[parseInt(this.state.preset)].toString()) {
@@ -314,7 +315,7 @@ export function init() {
     return {
         [MeterClassID.API]: {
             name: () => __("meters_api.content.meter_class"),
-            new_config: () => [MeterClassID.API, {display_name: "", value_ids: new Array<number>()}] as MeterConfig,
+            new_config: () => [MeterClassID.API, {display_name: "", location: MeterLocation.Unknown, value_ids: new Array<number>()}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: APIMetersConfig, on_config: (config: APIMetersConfig) => void): ComponentChildren => {
                 return [
@@ -326,6 +327,16 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }}/>
+                    </FormRow>,
+                    <FormRow label={__("meters_api.content.config_location")}>
+                        <InputSelect
+                            required
+                            items={get_meter_location_items()}
+                            placeholder={__("select")}
+                            value={config[1].location.toString()}
+                            onValue={(v) => {
+                                on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                            }} />
                     </FormRow>,
                     <FormRow label={__("meters_api.content.api_meter_preset")}>
                         <PresetSelector config={config} on_config={on_config} />
