@@ -32,13 +32,9 @@
 #include "modules/automation/automation_backend.h"
 #endif
 
-#define PM_TASK_DELAY_MS                    500
+#include "modules/charge_manager/config_charge_mode.enum.h"
 
-#define MODE_FAST                           0
-#define MODE_OFF                            1
-#define MODE_PV                             2
-#define MODE_MIN_PV                         3
-#define MODE_DO_NOTHING                     255
+#define PM_TASK_DELAY_MS                    500
 
 #define CLOUD_FILTER_OFF                    0
 #define CLOUD_FILTER_LIGHT                  1
@@ -81,7 +77,7 @@ public:
     void register_phase_switcher_backend(PhaseSwitcherBackend *backend);
 
     bool get_enabled() const;
-    uint32_t get_default_charge_mode() const;
+    ConfigChargeMode get_default_charge_mode() const;
     uint32_t get_guaranteed_power_w() const;
     uint32_t get_phase_switching_mode() const;
     uint32_t get_phases() const;

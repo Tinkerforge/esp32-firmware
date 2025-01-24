@@ -1,0 +1,12 @@
+// Only to be used for the config/API because we can't break the mapping for 0 to 4.
+// Use ChargeMode::Type instead!
+Fast
+Off
+PV
+MinPV
+Default // Not allowed in config
+Min
+Eco
+EcoPV
+EcoMin
+EcoMinPV

@@ -28,6 +28,7 @@
 #endif
 
 #include "current_limits.h"
+#include "config_charge_mode.enum.h"
 
 struct CurrentAllocatorConfig;
 struct CurrentAllocatorState;
@@ -73,6 +74,8 @@ public:
 
     size_t trace_buffer_index;
 
+    uint8_t translate_charge_mode(ConfigChargeMode power_manager_charge_mode);
+
 private:
     bool seen_all_chargers();
     void start_manager_task();
@@ -103,7 +106,6 @@ private:
     Config low_level_state_chargers_prototype;
 
     ConfigRoot charge_mode;
-    ConfigRoot charge_mode_update;
 
     CurrentLimits limits, limits_post_allocation;
     Cost allocated_currents;
@@ -120,7 +122,7 @@ private:
     uint16_t requested_current_margin;
 
     uint32_t guaranteed_pv_current;
-    uint32_t pm_default_charge_mode;
+    ConfigChargeMode pm_default_charge_mode;
 
     ChargerAllocationState *charger_allocation_state = nullptr;
     CurrentAllocatorConfig *ca_config = nullptr;

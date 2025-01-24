@@ -268,9 +268,8 @@ void ChargeManager::pre_setup()
     });
 
     charge_mode = Config::Object({
-        {"mode", Config::Uint(0, 0, 3)},
+        {"mode", Config::Enum(ConfigChargeMode::Fast)},
     });
-    charge_mode_update = charge_mode;
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_trigger(
@@ -304,18 +303,11 @@ void ChargeManager::pre_setup()
     automation.register_action(
         AutomationActionID::PMChargeModeSwitch,
         Config::Object({
-            {"mode", Config::Uint(0, 0, 4)}
+            {"mode", Config::Enum(ConfigChargeMode::Fast)}
         }),
         [this](const Config *cfg) {
-            uint32_t configured_mode = cfg->get("mode")->asUint();
-
-            // Automation rule configured to switch to default mode
-            if (configured_mode == 4) {
-                configured_mode = this->pm_default_charge_mode;
-            }
-
             const String err = api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
-                {"mode", configured_mode}
+                {"mode", (uint32_t)cfg->get("mode")->asEnum<ConfigChargeMode>()}
             }});
             if (!err.isEmpty()) {
                 logger.printfln("Automation couldn't switch charge mode: %s", err.c_str());
@@ -413,18 +405,28 @@ void ChargeManager::update_charger_state_from_mode(ChargerState *state, int char
     }
 }
 
-static uint8_t translate_charge_mode(uint32_t power_manager_charge_mode) {
+uint8_t ChargeManager::translate_charge_mode(ConfigChargeMode power_manager_charge_mode) {
     switch (power_manager_charge_mode) {
-        case MODE_FAST:
+        case ConfigChargeMode::Fast:
             return ChargeMode::Fast;
-        case MODE_OFF:
+        case ConfigChargeMode::Off:
             return 0;
-        case MODE_PV:
+        case ConfigChargeMode::PV:
             return ChargeMode::PV;
-        case MODE_MIN_PV:
+        case ConfigChargeMode::MinPV:
             return ChargeMode::Min | ChargeMode::PV;
-        case MODE_DO_NOTHING:
-            return 0;
+        case ConfigChargeMode::Default:
+            return this->translate_charge_mode(this->pm_default_charge_mode);
+        case ConfigChargeMode::Min:
+            return ChargeMode::Min;
+        case ConfigChargeMode::Eco:
+            return ChargeMode::Eco;
+        case ConfigChargeMode::EcoPV:
+            return ChargeMode::Eco | ChargeMode::PV;
+        case ConfigChargeMode::EcoMin:
+            return ChargeMode::Eco | ChargeMode::Min;
+        case ConfigChargeMode::EcoMinPV:
+            return ChargeMode::Eco | ChargeMode::Min | ChargeMode::PV;
     }
     return 0;
 }
@@ -641,6 +643,7 @@ void ChargeManager::register_urls()
     // PowerManager::setup() runs after ChargeManager::setup()
     this->guaranteed_pv_current = (power_manager.get_guaranteed_power_w() * 1000) / 230;
     this->pm_default_charge_mode = power_manager.get_default_charge_mode();
+    this->charge_mode.get("mode")->updateEnum(this->pm_default_charge_mode);
 
     auto default_mode = translate_charge_mode(this->pm_default_charge_mode);
     for (size_t i = 0; i < charger_count; ++i) {
@@ -682,8 +685,12 @@ void ChargeManager::register_urls()
 
     // This is power_manager API that is now handled by the charge manager.
     api.addState("power_manager/charge_mode", &charge_mode);
-    api.addCommand("power_manager/charge_mode_update", &charge_mode_update, {}, [this](String &errmsg) {
-        auto new_mode = translate_charge_mode(this->charge_mode_update.get("mode")->asUint());
+    api.addCommand("power_manager/charge_mode_update", &charge_mode, {}, [this](String &errmsg) {
+        // translate_charge_mode supports passing "default", but charge_mode should be updated as well.
+        if (charge_mode.get("mode")->asEnum<ConfigChargeMode>() == ConfigChargeMode::Default)
+            charge_mode.get("mode")->updateEnum(this->pm_default_charge_mode);
+
+        auto new_mode = translate_charge_mode(this->charge_mode.get("mode")->asEnum<ConfigChargeMode>());
 
         for (size_t i = 0; i < charger_count; ++i) {
             charger_state[i].charge_mode = new_mode;

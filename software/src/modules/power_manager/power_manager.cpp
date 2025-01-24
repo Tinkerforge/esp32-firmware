@@ -89,7 +89,7 @@ void PowerManager::pre_setup()
         {"enabled", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint(PHASE_SWITCHING_AUTOMATIC, PHASE_SWITCHING_MIN, PHASE_SWITCHING_MAX)},
         {"excess_charging_enable", Config::Bool(false)},
-        {"default_mode", Config::Uint(0, 0, 3)},
+        {"default_mode", Config::Enum(ConfigChargeMode::Fast)},
         {"meter_slot_grid_power", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
         {"meter_slot_battery_power", Config::Uint(METER_SLOT_BATTERY_NO_BATTERY, 0, METER_SLOT_BATTERY_NO_BATTERY)},
         {"battery_mode", Config::Enum(BatteryMode::PreferChargers)},
@@ -99,13 +99,16 @@ void PowerManager::pre_setup()
         {"guaranteed_power", Config::Uint(1380, 0, 22080)}, // in watt
         {"cloud_filter_mode", Config::Uint(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_OFF, CLOUD_FILTER_STRONG)},
     }), [](const Config &cfg, ConfigSource source) -> String {
+        if (cfg.get("default_mode")->asEnum<ConfigChargeMode>() == ConfigChargeMode::Default)
+            return "Default mode 4 not allowed!";
+
         const bool excess_charging_enable = cfg.get("excess_charging_enable")->asBool();
 
         if (cfg.get("phase_switching_mode")->asUint() == 3) { // external control
             if (excess_charging_enable) {
                 return "Can't enable excess charging when external control is enabled for phase switching.";
             }
-            if (cfg.get("default_mode")->asUint() != MODE_FAST) {
+            if (cfg.get("default_mode")->asEnum<ConfigChargeMode>() != ConfigChargeMode::Fast) {
                 return "Can't select any charging mode besides 'Fast' when external control is enabled for phase switching.";
             }
         }
@@ -1131,9 +1134,9 @@ bool PowerManager::get_enabled() const
     return config.get("enabled")->asBool();
 }
 
-uint32_t PowerManager::get_default_charge_mode() const
+ConfigChargeMode PowerManager::get_default_charge_mode() const
 {
-    return config.get("default_mode")->asUint();
+    return config.get("default_mode")->asEnum<ConfigChargeMode>();
 }
 
 uint32_t PowerManager::get_guaranteed_power_w() const
