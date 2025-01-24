@@ -26,7 +26,7 @@ import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { InputText } from "../../ts/components/input_text";
+import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputPassword } from "../../ts/components/input_password";
@@ -174,7 +174,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                     <Collapse in={state.protocol == 2 || state.protocol == 3}>
                         <div>
                             <FormRow label={__("mqtt.content.path")} label_muted={__("mqtt.content.path_muted")}>
-                                <InputText
+                                <InputTextPatterned
                                     pattern="/.*"
                                     invalidFeedback={__("mqtt.content.path_invalid")}
                                     maxLength={64}
@@ -207,7 +207,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                     </FormRow>
 
                     <FormRow label={__("mqtt.content.topic_prefix")} label_muted={__("mqtt.content.topic_prefix_muted")}>
-                        <InputText maxLength={64}
+                        <InputTextPatterned maxLength={64}
                                    pattern="^[^#+$][^#+]*"
                                    value={state.global_topic_prefix}
                                    onValue={this.set("global_topic_prefix")}
@@ -245,7 +245,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                     </FormRow>
 
                     <FormRow label={__("mqtt.content.auto_discovery_prefix")}>
-                        <InputText required
+                        <InputTextPatterned required
                                 maxLength={64}
                                 pattern="^[^#+$][^#+]*"
                                 value={state.auto_discovery_config.auto_discovery_prefix}

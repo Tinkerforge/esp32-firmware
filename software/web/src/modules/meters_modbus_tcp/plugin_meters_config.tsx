@@ -44,7 +44,7 @@ import { FoxESSH3HybridInverterVirtualMeter } from "./fox_ess_h3_hybrid_inverter
 import { CarloGavazziPhase } from "./carlo_gavazzi_phase.enum";
 import { CarloGavazziEM270VirtualMeter } from "./carlo_gavazzi_em270_virtual_meter.enum";
 import { CarloGavazziEM280VirtualMeter } from "./carlo_gavazzi_em280_virtual_meter.enum";
-import { InputText } from "../../ts/components/input_text";
+import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
 import { InputSelect } from "../../ts/components/input_select";
@@ -641,7 +641,7 @@ export function init() {
                             }} />
                     </FormRow>,
                     <FormRow label={__("meters_modbus_tcp.content.host")}>
-                        <InputText
+                        <InputTextPatterned
                             required
                             maxLength={64}
                             pattern="^[a-zA-Z0-9\-\.]+$"

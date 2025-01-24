@@ -25,7 +25,7 @@ import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { InputText } from "../../ts/components/input_text";
+import { InputTextPatterned } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
@@ -58,7 +58,7 @@ export class Network extends ConfigComponent<'network/config'> {
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
                     <FormRow label={__("network.content.hostname")}>
-                        <InputText maxLength={32}
+                        <InputTextPatterned maxLength={32}
                                    pattern="[a-zA-Z0-9\-]*"
                                    required
                                    value={state.hostname}

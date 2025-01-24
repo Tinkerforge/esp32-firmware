@@ -27,60 +27,89 @@ import * as util from "../util";
 interface InputTextProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "pattern" | "className"> {
     idContext?: Context<string>
     onValue?: (value: string) => void
+    invalidFeedback?: string
     class?: string
     children?: ComponentChildren
     prefixChildren?: ComponentChildren
 }
 
-interface InputTextWithValidationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "className"> {
+interface InputTextPatternedProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "className"> {
     idContext?: Context<string>
     onValue?: (value: string) => void
     invalidFeedback: string
+    pattern: string
     class?: string
     children?: ComponentChildren
     prefixChildren?: ComponentChildren
 }
 
-export function InputText<T extends (InputTextProps | InputTextWithValidationProps)>(props: util.NoExtraProperties<InputTextProps, T> | InputTextWithValidationProps) {
-    const id = !props.idContext ? useId() : useContext(props.idContext);
-    let invalidFeedback = undefined;
-    if ("invalidFeedback" in props && props.invalidFeedback)
-        invalidFeedback = <div class="invalid-feedback">{props.invalidFeedback}</div>;
-    else if (props.required && !props.value)
-        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.required")}</div>;
-    else if ("minLength" in props && !("maxLength" in props) && props.minLength)
-        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_only")(props.minLength.toString())}</div>;
-    else if (!("minLength" in props) && "maxLength" in props && props.maxLength)
-        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.max_only")(props.maxLength.toString())}</div>;
-    else if ("minLength" in props && "maxLength" in props && props.minLength && props.maxLength)
-        invalidFeedback = <div class="invalid-feedback">{__("component.input_text.min_max")(props.minLength.toString(), props.maxLength.toString())}</div>;
+interface InputTextInternalProps extends JSXInternal.HTMLAttributes<HTMLInputElement> {
+    idContext?: Context<string>
+    onValue?: (value: string) => void
+    invalidFeedback?: string
+    prefixChildren?: ComponentChildren
+}
 
-    let inner = <input {...props}
+function InputTextInternal<T extends InputTextInternalProps>(props: util.NoExtraProperties<InputTextInternalProps, T>) {
+    let {
+        idContext,
+        onValue,
+        invalidFeedback,
+        prefixChildren,
+        ...p
+    } = props;
+
+    const id = !idContext ? useId() : useContext(idContext);
+
+    const invalidFeedbackDiv = invalidFeedback !== undefined ? <div class="invalid-feedback">{invalidFeedback}</div> : undefined
+
+    let inner = <input {...p}
                     class={"form-control " + (props.class ?? "")}
                     id={id}
                     type="text"
-                    onInput={props.onValue ? (e) => {
+                    onInput={onValue ? (e) => {
                         if ((props.maxLength != undefined && new Blob([(e.target as HTMLInputElement).value]).size <= (props.maxLength as any)) ||
                                 props.maxLength == undefined)
-                            props.onValue((e.target as HTMLInputElement).value);
+                            onValue((e.target as HTMLInputElement).value);
                         else
-                            props.onValue(props.value as string);
+                            onValue(props.value as string);
                     } : undefined}
-                    readonly={!props.onValue}/>
+                    readonly={!onValue}/>
 
-    if (props.prefixChildren || props.children) {
+    if (prefixChildren || props.children) {
         return <div class="input-group">
-                {props.prefixChildren}
+                {prefixChildren}
                 {inner}
                 {props.children}
-                {invalidFeedback}
+                {invalidFeedbackDiv}
             </div>
     }
 
     return (
         <>
             {inner}
-            {invalidFeedback}
+            {invalidFeedbackDiv}
         </>
     );
+}
+
+export function InputText<T extends InputTextProps>(props: util.NoExtraProperties<InputTextProps, T>) {
+    let invalidFeedback = undefined;
+    if ("invalidFeedback" in props && props.invalidFeedback)
+        invalidFeedback = props.invalidFeedback;
+    else if (props.required && !props.value)
+        invalidFeedback = __("component.input_text.required");
+    else if ("minLength" in props && !("maxLength" in props) && props.minLength)
+        invalidFeedback = __("component.input_text.min_only")(props.minLength.toString());
+    else if (!("minLength" in props) && "maxLength" in props && props.maxLength)
+        invalidFeedback = __("component.input_text.max_only")(props.maxLength.toString());
+    else if ("minLength" in props && "maxLength" in props && props.minLength && props.maxLength)
+        invalidFeedback = __("component.input_text.min_max")(props.minLength.toString(), props.maxLength.toString());
+
+    return <InputTextInternal {...props} invalidFeedback={invalidFeedback} />
+}
+
+// Passing a pattern to an input type="text" also requires passing invalidFeedback for a readable error message
+export function InputTextPatterned<T extends InputTextPatternedProps>(props: util.NoExtraProperties<InputTextPatternedProps, T>) {
+    return <InputTextInternal {...props} />
 }

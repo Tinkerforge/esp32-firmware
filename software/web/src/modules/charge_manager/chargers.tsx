@@ -26,7 +26,7 @@ import { translate_unchecked, __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { InputText } from "../../ts/components/input_text";
+import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { Collapse, ListGroup, ListGroupItem } from "react-bootstrap";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputSelect } from "../../ts/components/input_select";
@@ -403,7 +403,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                         />
                                     </FormRow>
                                     <FormRow label={__("charge_manager.content.edit_charger_host")}>
-                                        <InputText value={state.editCharger.host}
+                                        <InputTextPatterned value={state.editCharger.host}
                                             onValue={(v) => this.setState({editCharger: {...state.editCharger, host: v}})}
                                             maxLength={64}
                                             pattern="^[a-zA-Z0-9\-\.]+$"
@@ -458,7 +458,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                 />
                             </FormRow>
                             <FormRow label={__("charge_manager.content.add_charger_host")}>
-                                <InputText value={state.addCharger.host}
+                                <InputTextPatterned value={state.addCharger.host}
                                     onValue={(v) => this.setState({addCharger: {...state.addCharger, host: v}})}
                                     maxLength={64}
                                     pattern="^[a-zA-Z0-9\-\.]+$"

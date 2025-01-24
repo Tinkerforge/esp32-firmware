@@ -28,7 +28,7 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
 import { Collapse, Button, Spinner, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
-import { InputText } from "../../ts/components/input_text";
+import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
 import { Lock, Unlock } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
@@ -374,7 +374,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     </FormRow>
 
                     <FormRow label={__("wifi.content.sta_bssid")}>
-                        <InputText pattern="([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}"
+                        <InputTextPatterned pattern="([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}"
                                    value={this.bssid_to_string(state.bssid)}
                                    onValue={(v) => this.setState({bssid: this.string_to_bssid(v)})}
                                    invalidFeedback={__("wifi.content.sta_bssid_invalid")}

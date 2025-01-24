@@ -23,7 +23,7 @@ import { h, Fragment } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
-import { InputText } from "../../ts/components/input_text";
+import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
@@ -152,7 +152,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                                     onEditShow: async () => this.setState({editTag: {tag_id: tag.tag_id, user_id: tag.user_id, tag_type: tag.tag_type}}),
                                     onEditGetChildren: () => [<>
                                         <FormRow label={__("nfc.content.edit_tag_tag_id")}>
-                                             <InputText value={state.editTag.tag_id}
+                                             <InputTextPatterned value={state.editTag.tag_id}
                                                 onValue={(v) => this.setState({editTag: {...state.editTag, tag_id: v}})}
                                                 minLength={8} maxLength={29}
                                                 pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
@@ -208,7 +208,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                                         : <span>{__("nfc.content.add_tag_description")}</span>}
                                 </FormRow>
                                 <FormRow label={__("nfc.content.add_tag_tag_id")}>
-                                    <InputText
+                                    <InputTextPatterned
                                         value={state.addTag.tag_id}
                                         onValue={(v) => this.setState({addTag: {...state.addTag, tag_id: v}})}
                                         minLength={8} maxLength={29}

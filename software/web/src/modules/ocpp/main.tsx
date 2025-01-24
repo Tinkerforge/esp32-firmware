@@ -23,7 +23,7 @@ import { h, Component, Fragment, RefObject } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { FormRow } from "../../ts/components/form_row";
-import { InputText } from "../../ts/components/input_text";
+import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { ConfigForm } from "../../ts/components/config_form";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { Button } from "react-bootstrap";
@@ -98,7 +98,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                                 onClick={this.toggle('enable')}/>
                     </FormRow>
                     <FormRow label={__("ocpp.content.endpoint_url")}>
-                        <InputText required
+                        <InputTextPatterned required
                                    maxLength={128}
                                    value={state.url}
                                    onValue={this.set("url")}

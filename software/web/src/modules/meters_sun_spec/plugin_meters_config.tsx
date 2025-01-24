@@ -23,7 +23,7 @@ import { h, Fragment, Component, ComponentChildren } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterConfig } from "../meters/types";
-import { InputText } from "../../ts/components/input_text";
+import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
@@ -393,7 +393,7 @@ export function init() {
 
                 return [
                     <FormRow label={__("meters_sun_spec.content.config_host")}>
-                        <InputText
+                        <InputTextPatterned
                             required
                             maxLength={64}
                             pattern="^[a-zA-Z0-9\-\.]+$"

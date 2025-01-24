@@ -22,7 +22,7 @@ import { h } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
 import { AutomationTrigger, InitResult } from "../automation/types";
-import { InputText } from "../../ts/components/input_text";
+import { InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
@@ -88,7 +88,7 @@ function get_nfc_edit_children(trigger: NfcAutomationTrigger, on_trigger: (trigg
                 : <span>{__("nfc.automation.add_tag_description")}</span>}
         </FormRow>,
         <FormRow label={__("nfc.automation.table_tag_id")}>
-            <InputText
+            <InputTextPatterned
                 required
                 value={trigger[1].tag_id}
                 onValue={(v) => {
