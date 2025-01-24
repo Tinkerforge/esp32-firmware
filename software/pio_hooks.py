@@ -1282,6 +1282,7 @@ def main():
                     print('Error: Invalid enum file "{}" in backend {}'.format(name, mod_path))
                     sys.exit(1)
 
+                enum_comments = []
                 enum_name = util.FlavoredName(name_parts[0]).get()
                 enum_values = []
                 enum_cases = []
@@ -1294,16 +1295,39 @@ def main():
                     for line in f.readlines():
                         line = line.strip()
 
-                        if len(line) == 0 or line.startswith('#'):
+                        if len(line) == 0:
                             continue
 
-                        line_parts = line.split('=', 1)
-                        value_name = util.FlavoredName(line_parts[0].strip()).get()
+                        m = re.match(r'^(?:(#).*|//\s*(.*)|([A-Za-z][A-Za-z0-9 ]+?)?\s*(?:=\s*(\d+))?\s*(?://\s*(.*))?)$', line)
 
-                        if len(line_parts) > 1:
-                            value_number = int(line_parts[1].strip())
+                        if m == None:
+                            print(f'Error: Malformed line enum file "{name}" in backend {mod_path}: {line}')
+                            sys.exit(1)
+
+                        file_comment = m.group(1)
+
+                        if file_comment != None:
+                            continue
+
+                        enum_comment = m.group(2)
+
+                        if enum_comment != None:
+                            enum_comments.append(f'// {enum_comment}\n')
+                            continue
+
+                        value_name = util.FlavoredName(m.group(3)).get()
+
+                        if m.group(4) != None:
+                            value_number = int(m.group(4))
                         else:
                             value_number += 1
+
+                        value_comment = m.group(5)
+
+                        if value_comment == None:
+                            value_comment = ''
+                        else:
+                            value_comment = ' // ' + value_comment
 
                         if value_number_min == None:
                             value_number_min = value_number
@@ -1317,13 +1341,14 @@ def main():
 
                         value_count += 1
 
-                        enum_values.append('    {0} = {1},\n'.format(value_name.camel, value_number))
-                        enum_cases.append('    case {0}::{1}: return "{2}";\n'.format(enum_name.camel, value_name.camel, value_name.space))
+                        enum_values.append(f'    {value_name.camel} = {value_number},{value_comment}\n')
+                        enum_cases.append(f'    case {enum_name.camel}::{value_name.camel}: return "{value_name.space}";\n')
 
                 with open(os.path.join(mod_path, enum_name.under + '.enum.h'), 'w', encoding='utf-8') as f:
                     f.write(f'// WARNING: This file is generated from "{name}" by pio_hooks.py\n\n')
                     f.write('#include <stdint.h>\n\n')
                     f.write('#pragma once\n\n')
+                    f.write(''.join(enum_comments))
                     f.write(f'enum class {enum_name.camel} : {name_parts[1]}_t {{\n')
                     f.write(f'    _min = {value_number_min},\n')
                     f.write(''.join(enum_values))
