@@ -4,7 +4,19 @@ let x = {
     "meters": {
         "status": {
             "power_history": null,
-            "current_power": "Leistung"
+            "current_power": "Leistung",
+            "charger_power_sum": "Wallbox-Leistung",
+            "charger_power_sum_muted": "Summe",
+            "inverter_power_sum": "Wechselrichter-Leistung",
+            "inverter_power_sum_muted": "Summe",
+            "grid_power_sum": "Netzanschluss-Leistung",
+            "grid_power_sum_muted": "Summe",
+            "battery_power_sum": "Speicher-Leistung",
+            "battery_power_sum_muted": "Summe",
+            "battery_soc_avg": "Speicher-Ladestand",
+            "battery_soc_avg_muted": "Mittelwert",
+            "load_power_sum": "Last-Leistung",
+            "load_power_sum_muted": "Summe"
         },
         "navbar": {
             "meters": "Stromzähler"
@@ -60,7 +72,14 @@ let x = {
             "reset_modal_confirm": "Zurücksetzen",
             "reset_failed": "Zurücksetzen des Zählerwerte fehlgeschlagen",
 
-            "meter_type": "Stromzählertyp"
+            "meter_type": "Stromzählertyp",
+
+            "location_other": "Anderer",
+            "location_charger": "Wallbox",
+            "location_inverter": "Wechselrichter",
+            "location_grid": "Netzanschluss",
+            "location_battery": "Speicher",
+            "location_load": "Last"
         },
         "automation": {
             "meter_reset": "Stromzähler zurücksetzen",

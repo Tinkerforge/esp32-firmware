@@ -27,6 +27,7 @@
 #include "meter_sun_spec.h"
 #include "tools.h"
 #include "sun_spec_model_id.h"
+#include "modules/meters/meter_location.enum.h"
 
 #include "gcc_warnings.h"
 
@@ -51,6 +52,7 @@ void MetersSunSpec::pre_setup()
 {
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 65)}, // 32 chars manufacturer name; space; 32 chars model name
+        {"location", Config::Enum(MeterLocation::Unknown)},
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
         {"device_address", Config::Uint(1, 1, 247)},

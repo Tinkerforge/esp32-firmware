@@ -22,6 +22,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "rct_power_client.h"
+#include "modules/meters/meter_location.enum.h"
 
 static const MeterValueID grid_value_ids[] = {
     MeterValueID::EnergyActiveLSumExport,
@@ -66,6 +67,8 @@ void MeterRCTPower::setup(Config *ephemeral_config)
     port          = static_cast<uint16_t>(ephemeral_config->get("port")->asUint());
     virtual_meter = ephemeral_config->get("virtual_meter")->asEnum<VirtualMeter>();
 
+    MeterLocation default_location = MeterLocation::Unknown;
+
     switch (virtual_meter) {
     case VirtualMeter::None:
         logger.printfln("No Virtual Meter selected");
@@ -73,23 +76,30 @@ void MeterRCTPower::setup(Config *ephemeral_config)
 
     case VirtualMeter::InverterUnused:
         logger.printfln("Invalid Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));
+        default_location = MeterLocation::Inverter;
         return;
 
     case VirtualMeter::Grid:
         value_specs = grid_rct_value_specs;
         value_specs_length = ARRAY_SIZE(grid_rct_value_specs);
         meters.declare_value_ids(slot, grid_value_ids, ARRAY_SIZE(grid_value_ids));
+        default_location = MeterLocation::Grid;
         break;
 
     case VirtualMeter::Battery:
         value_specs = battery_rct_value_specs;
         value_specs_length = ARRAY_SIZE(battery_rct_value_specs);
         meters.declare_value_ids(slot, battery_value_ids, ARRAY_SIZE(battery_value_ids));
+        default_location = MeterLocation::Battery;
         break;
 
     default:
         logger.printfln("Unknown Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));
         return;
+    }
+
+    if (ephemeral_config->get("location")->asEnum<MeterLocation>() == MeterLocation::Unknown && default_location != MeterLocation::Unknown) {
+        ephemeral_config->get("location")->updateEnum(default_location);
     }
 
     task_scheduler.scheduleWithFixedDelay([this]() {

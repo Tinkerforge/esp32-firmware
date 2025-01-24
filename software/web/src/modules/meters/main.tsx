@@ -34,6 +34,7 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotWrapper, UplotData } from "../../ts/components/uplot_wrapper";
 import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS, METER_VALUE_ORDER } from "./meter_value_id";
 import { MeterClassID } from "./meter_class_id.enum";
+import { MeterLocation } from "../meters/meter_location.enum";
 import { MeterConfig, MeterConfigPlugin } from "./types";
 import { Table } from "../../ts/components/table";
 import { PageHeader } from "../../ts/components/page_header";
@@ -1139,6 +1140,14 @@ function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, mete
     return meter_name;
 }
 
+function get_meter_location(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
+    if (util.hasValue(meter_slot) && util.hasValue(meter_configs) && util.hasValue(meter_configs[meter_slot]) && util.hasValue(meter_configs[meter_slot][1])) {
+        return meter_configs[meter_slot][1].location;
+    }
+
+    return MeterLocation.Unknown;
+}
+
 export class MetersStatus extends Component<{}, MetersStatusState> {
     on_mount: () => void;
     on_mount_pending = false;
@@ -1186,68 +1195,146 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
     }
 
     render() {
-        if (!util.render_allowed() || !API.hasFeature("meters") || API.hasFeature("energy_manager"))
+        if (!util.render_allowed() || !API.hasFeature("meters"))
             return <StatusSection name="meters" />;
 
         const value_ids = API.get_unchecked(`meters/${this.state.status_meter_slot}/value_ids`);
+        let status_power: number = null;
 
         // The meters feature is set if any meter is connected. This includes a WARP Charger Smart
         // with external meter for PV excess charging. But in this case the status plot should not
         // be shown, because it will never have values. Only show the plot if the shown meter has
         // declared its value IDs to indicate that it actually is alive.
-        if (value_ids.length == 0)
-            return <StatusSection name="meters" />;
+        if (!API.hasFeature("energy_manager") && value_ids.length > 0) {
+            const values = API.get_unchecked(`meters/${this.state.status_meter_slot}/values`);
 
-        const values = API.get_unchecked(`meters/${this.state.status_meter_slot}/values`);
-        let power: number = undefined;
-        let power_idx = get_meter_power_index(value_ids);
+            let power_idx = get_meter_power_index(value_ids);
 
-        if (power_idx >= 0 && values && values.length > 0) {
-            power = values[power_idx];
+            if (power_idx >= 0 && values && values.length > power_idx) {
+                status_power = values[power_idx];
+            }
         }
+
+        let charger_powers: number[] = [];
+        let inverter_powers:number [] = [];
+        let grid_powers: number[] = [];
+        let battery_powers: number[] = [];
+        let battery_socs: number[] = [];
+        let load_powers: number[] = [];
+
+        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            let location = get_meter_location(this.state.meter_configs, meter_slot);
+            const value_ids = API.get_unchecked(`meters/${meter_slot}/value_ids`);
+            const values = API.get_unchecked(`meters/${meter_slot}/values`);
+            let power_idx = get_meter_power_index(value_ids);
+
+            if (power_idx >= 0 && values && values.length > power_idx) {
+                let power = values[power_idx];
+
+                switch (location) {
+                case MeterLocation.Charger: charger_powers.push(power); break;
+                case MeterLocation.Inverter: inverter_powers.push(power); break;
+                case MeterLocation.Grid: grid_powers.push(power); break;
+                case MeterLocation.Battery: battery_powers.push(power); break;
+                case MeterLocation.Load: load_powers.push(power); break;
+                }
+            }
+
+            if (location == MeterLocation.Battery) {
+                let soc_idx = value_ids.indexOf(MeterValueID.StateOfCharge);
+
+                if (soc_idx >= 0 && values && values.length > soc_idx) {
+                    let soc = values[soc_idx];
+
+                    battery_socs.push(soc);
+                }
+            }
+        }
+
+        let sum_or_null = (values: number[]) => {
+            let non_null_values = values.filter((x) => x !== null);
+
+            if (non_null_values.length == 0) {
+                return null;
+            }
+
+            return non_null_values.reduce((x, y) => x + y, 0);
+        }
+
+        let charger_power_sum = sum_or_null(charger_powers);
+        let inverter_power_sum = sum_or_null(inverter_powers);
+        let grid_power_sum = sum_or_null(grid_powers);
+        let battery_power_sum = sum_or_null(battery_powers);
+        let battery_soc_avg = battery_socs.length > 0 ? sum_or_null(battery_socs) / battery_socs.length : null;
+        let load_power_sum = sum_or_null(load_powers);
 
         return (
             <StatusSection name="meters">
-                <FormRow label={__("meters.status.power_history")}>
-                    <div class="card pl-1 pb-1">
-                        <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
-                            <UplotLoader ref={this.uplot_loader_ref}
-                                        show={true}
-                                        marker_class="h4"
-                                        no_data={__("meters.content.no_data")}
-                                        loading={__("meters.content.loading")} >
-                                <UplotWrapper ref={this.uplot_wrapper_ref}
-                                            class="status-meters-chart"
-                                            sub_page="status"
-                                            color_cache_group="meters.default"
+                {status_power != null ? <>
+                    <FormRow label={__("meters.status.power_history")}>
+                        <div class="card pl-1 pb-1">
+                            <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                                <UplotLoader ref={this.uplot_loader_ref}
                                             show={true}
-                                            on_mount={() => {
-                                                if (this.on_mount) {
-                                                    this.on_mount();
-                                                }
-                                                else {
-                                                    this.on_mount_pending = true;
-                                                }
-                                            }}
-                                            legend_time_label={__("meters.script.time")}
-                                            legend_time_with_seconds={false}
-                                            aspect_ratio={3}
-                                            x_height={50}
-                                            x_format={{hour: '2-digit', minute: '2-digit'}}
-                                            x_padding_factor={0}
-                                            x_include_date={true}
-                                            y_min={0}
-                                            y_max={1500}
-                                            y_unit="W"
-                                            y_label={__("meters.script.power") + " [W]"}
-                                            y_digits={0} />
-                            </UplotLoader>
+                                            marker_class="h4"
+                                            no_data={__("meters.content.no_data")}
+                                            loading={__("meters.content.loading")} >
+                                    <UplotWrapper ref={this.uplot_wrapper_ref}
+                                                class="status-meters-chart"
+                                                sub_page="status"
+                                                color_cache_group="meters.default"
+                                                show={true}
+                                                on_mount={() => {
+                                                    if (this.on_mount) {
+                                                        this.on_mount();
+                                                    }
+                                                    else {
+                                                        this.on_mount_pending = true;
+                                                    }
+                                                }}
+                                                legend_time_label={__("meters.script.time")}
+                                                legend_time_with_seconds={false}
+                                                aspect_ratio={3}
+                                                x_height={50}
+                                                x_format={{hour: '2-digit', minute: '2-digit'}}
+                                                x_padding_factor={0}
+                                                x_include_date={true}
+                                                y_min={0}
+                                                y_max={1500}
+                                                y_unit="W"
+                                                y_label={__("meters.script.power") + " [W]"}
+                                                y_digits={0} />
+                                </UplotLoader>
+                            </div>
                         </div>
-                    </div>
-                </FormRow>
-                <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(this.state.meter_configs, this.state.status_meter_slot)}>
-                    <OutputFloat value={power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
-                </FormRow>
+                    </FormRow>
+                    <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(this.state.meter_configs, this.state.status_meter_slot)}>
+                        <OutputFloat value={status_power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
+                    </FormRow></> : undefined}
+                {charger_power_sum != null ?
+                    <FormRow label={__("meters.status.charger_power_sum")} label_muted={__("meters.status.charger_power_sum_muted")}>
+                        <OutputFloat value={charger_power_sum} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
+                    </FormRow> : undefined}
+                {inverter_power_sum != null ?
+                    <FormRow label={__("meters.status.inverter_power_sum")} label_muted={__("meters.status.inverter_power_sum_muted")}>
+                        <OutputFloat value={inverter_power_sum} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
+                    </FormRow> : undefined}
+                {grid_power_sum != null ?
+                    <FormRow label={__("meters.status.grid_power_sum")} label_muted={__("meters.status.grid_power_sum_muted")}>
+                        <OutputFloat value={grid_power_sum} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
+                    </FormRow> : undefined}
+                {battery_power_sum != null ?
+                    <FormRow label={__("meters.status.battery_power_sum")} label_muted={__("meters.status.battery_power_sum_muted")}>
+                        <OutputFloat value={battery_power_sum} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
+                    </FormRow> : undefined}
+                {battery_soc_avg != null ?
+                    <FormRow label={__("meters.status.battery_soc_avg")} label_muted={__("meters.status.battery_soc_avg_muted")}>
+                        <OutputFloat value={battery_soc_avg} digits={0} scale={0} unit="%" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
+                    </FormRow> : undefined}
+                {load_power_sum != null ?
+                    <FormRow label={__("meters.status.load_power_sum")} label_muted={__("meters.status.load_power_sum_muted")}>
+                        <OutputFloat value={load_power_sum} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
+                    </FormRow> : undefined}
             </StatusSection>
         );
     }

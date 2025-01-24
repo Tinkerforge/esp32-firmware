@@ -22,15 +22,18 @@ import * as util from "../../ts/util";
 import { h, Fragment, Component, ComponentChildren } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { MeterClassID } from "../meters/meter_class_id.enum";
+import { MeterLocation } from "../meters/meter_location.enum";
+import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
+import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { Button, ListGroup, ListGroupItem } from "react-bootstrap";
 import { Download } from 'react-feather';
-import { SUN_SPEC_MODEL_INFOS, SUN_SPEC_MODEL_IS_METER_LIKE, SUN_SPEC_MODEL_IS_SUPPORTED } from "./sun_spec_model_specs";
+import { SUN_SPEC_MODEL_INFOS, SUN_SPEC_MODEL_IS_METER_LIKE, SUN_SPEC_MODEL_METER_LOCATION, SUN_SPEC_MODEL_IS_SUPPORTED } from "./sun_spec_model_specs";
 
 const SCAN_CONTINUE_INTERVAL = 3000; // milliseconds
 
@@ -38,6 +41,7 @@ export type SunSpecMetersConfig = [
     MeterClassID.SunSpec,
     {
         display_name: string;
+        location: number;
         host: string;
         port: number;
         device_address: number;
@@ -380,11 +384,25 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
     }
 }
 
+function get_default_location(model_id: number) {
+    if (!util.hasValue(model_id)) {
+        return MeterLocation.Unknown;
+    }
+
+    let location = SUN_SPEC_MODEL_METER_LOCATION[model_id];
+
+    if (location === undefined) {
+        location = MeterLocation.Unknown;
+    }
+
+    return location;
+}
+
 export function init() {
     return {
         [MeterClassID.SunSpec]: {
             name: () => __("meters_sun_spec.content.meter_class"),
-            new_config: () => [MeterClassID.SunSpec, {display_name: "", host: "", port: 502, device_address: null, manufacturer_name: null, model_name: null, serial_number: null, model_id: null}] as MeterConfig,
+            new_config: () => [MeterClassID.SunSpec, {display_name: "", location: MeterLocation.Unknown, host: "", port: 502, device_address: null, manufacturer_name: null, model_name: null, serial_number: null, model_id: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: SunSpecMetersConfig, on_config: (config: SunSpecMetersConfig) => void): ComponentChildren => {
                 let model_ids: [string, string][] = [];
@@ -395,7 +413,7 @@ export function init() {
                     }
                 }
 
-                return [
+                let edit_children = [
                     <FormRow label={__("meters_sun_spec.content.config_host")}>
                         <InputTextPatterned
                             required
@@ -484,7 +502,7 @@ export function init() {
                             placeholder={__("select")}
                             value={util.hasValue(config[1].model_id) ? config[1].model_id.toString() : config[1].model_id}
                             onValue={(v) => {
-                                on_config(util.get_updated_union(config, {model_id: parseInt(v)}));
+                                on_config(util.get_updated_union(config, {model_id: parseInt(v), location: get_default_location(parseInt(v))}));
                             }} />
                     </FormRow>,
                     <FormRow label={__("meters_sun_spec.content.config_model_instance")}>
@@ -496,8 +514,49 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {model_instance: v}));
                             }} />
-                    </FormRow>,
+                    </FormRow>
                 ];
+
+                let default_location = get_default_location(config[1].model_id);
+
+                if (default_location == MeterLocation.Unknown) {
+                    edit_children.push(
+                        <FormRow label={__("meters_sun_spec.content.config_location")}>
+                            <InputSelect
+                                required
+                                disabled={config[1].model_id == null}
+                                items={get_meter_location_items()}
+                                placeholder={__("select")}
+                                value={config[1].location.toString()}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                                }} />
+                        </FormRow>);
+                }
+                else {
+                    let enable_location_override = config[1].model_id != null && default_location != config[1].location;
+
+                    edit_children.push(
+                        <FormRow label={__("meters_sun_spec.content.config_location")}>
+                            <SwitchableInputSelect
+                                required
+                                items={get_meter_location_items()}
+                                placeholder={__("select")}
+                                value={config[1].location.toString()}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                                }}
+                                checked={enable_location_override}
+                                onSwitch={() => {
+                                    on_config(util.get_updated_union(config, {location: (enable_location_override ? default_location : MeterLocation.Unknown)}));
+                                }}
+                                switch_label_active={__("meters_sun_spec.content.location_different")}
+                                switch_label_inactive={__("meters_sun_spec.content.location_matching")}
+                                />
+                        </FormRow>);
+                }
+
+                return edit_children;
             },
         },
     };

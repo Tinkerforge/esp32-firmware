@@ -25,6 +25,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "modules/meters/meter_location.enum.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 #include "modules/modbus_tcp_client/modbus_register_address_mode.enum.h"
 #include "meters_modbus_tcp_defs.inc"
@@ -138,6 +139,8 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
     port      = static_cast<uint16_t>(ephemeral_config->get("port")->asUint());
     table_id  = ephemeral_config->get("table")->getTag<MeterModbusTCPTableID>();
 
+    MeterLocation default_location = MeterLocation::Unknown;
+
     switch (table_id) {
     case MeterModbusTCPTableID::None:
         logger.printfln("No table selected");
@@ -194,18 +197,22 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         case SungrowHybridInverterVirtualMeter::Inverter:
             table = &sungrow_hybrid_inverter_output_type_table;
+            default_location = MeterLocation::Inverter;
             break;
 
         case SungrowHybridInverterVirtualMeter::Grid:
             table = &sungrow_hybrid_inverter_grid_table;
+            default_location = MeterLocation::Grid;
             break;
 
         case SungrowHybridInverterVirtualMeter::Battery:
             table = &sungrow_hybrid_inverter_battery_table;
+            default_location = MeterLocation::Battery;
             break;
 
         case SungrowHybridInverterVirtualMeter::Load:
             table = &sungrow_hybrid_inverter_load_table;
+            default_location = MeterLocation::Load;
             break;
 
         default:
@@ -226,14 +233,17 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         case SungrowStringInverterVirtualMeter::Inverter:
             table = &sungrow_string_inverter_output_type_table;
+            default_location = MeterLocation::Inverter;
             break;
 
         case SungrowStringInverterVirtualMeter::Grid:
             table = &sungrow_string_inverter_grid_table;
+            default_location = MeterLocation::Grid;
             break;
 
         case SungrowStringInverterVirtualMeter::Load:
             table = &sungrow_string_inverter_load_table;
+            default_location = MeterLocation::Load;
             break;
 
         default:
@@ -254,14 +264,17 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         case SolarmaxMaxStorageVirtualMeter::Inverter:
             table = &solarmax_max_storage_inverter_table;
+            default_location = MeterLocation::Inverter;
             break;
 
         case SolarmaxMaxStorageVirtualMeter::Grid:
             table = &solarmax_max_storage_grid_table;
+            default_location = MeterLocation::Grid;
             break;
 
         case SolarmaxMaxStorageVirtualMeter::Battery:
             table = &solarmax_max_storage_battery_table;
+            default_location = MeterLocation::Battery;
             break;
 
         default:
@@ -282,18 +295,22 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         case VictronEnergyGXVirtualMeter::Inverter:
             table = &victron_energy_gx_inverter_table;
+            default_location = MeterLocation::Inverter;
             break;
 
         case VictronEnergyGXVirtualMeter::Grid:
             table = &victron_energy_gx_grid_table;
+            default_location = MeterLocation::Grid;
             break;
 
         case VictronEnergyGXVirtualMeter::Battery:
             table = &victron_energy_gx_battery_table;
+            default_location = MeterLocation::Battery;
             break;
 
         case VictronEnergyGXVirtualMeter::Load:
             table = &victron_energy_gx_load_table;
+            default_location = MeterLocation::Load;
             break;
 
         default:
@@ -314,18 +331,22 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         case DeyeHybridInverterVirtualMeter::Inverter:
             table = &deye_hybrid_inverter_table;
+            default_location = MeterLocation::Inverter;
             break;
 
         case DeyeHybridInverterVirtualMeter::Grid:
             table = &deye_hybrid_inverter_grid_table;
+            default_location = MeterLocation::Grid;
             break;
 
         case DeyeHybridInverterVirtualMeter::Battery:
             table = &deye_hybrid_inverter_device_type_table;
+            default_location = MeterLocation::Battery;
             break;
 
         case DeyeHybridInverterVirtualMeter::Load:
             table = &deye_hybrid_inverter_load_table;
+            default_location = MeterLocation::Load;
             break;
 
         default:
@@ -346,14 +367,17 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         case AlphaESSHybridInverterVirtualMeter::Inverter:
             table = &alpha_ess_hybrid_inverter_table;
+            default_location = MeterLocation::Inverter;
             break;
 
         case AlphaESSHybridInverterVirtualMeter::Grid:
             table = &alpha_ess_hybrid_inverter_grid_table;
+            default_location = MeterLocation::Grid;
             break;
 
         case AlphaESSHybridInverterVirtualMeter::Battery:
             table = &alpha_ess_hybrid_inverter_battery_table;
+            default_location = MeterLocation::Battery;
             break;
 
         default:
@@ -551,26 +575,32 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         case GoodweHybridInverterVirtualMeter::Inverter:
             table = &goodwe_hybrid_inverter_table;
+            default_location = MeterLocation::Inverter;
             break;
 
         case GoodweHybridInverterVirtualMeter::Grid:
             table = &goodwe_hybrid_inverter_grid_table;
+            default_location = MeterLocation::Grid;
             break;
 
         case GoodweHybridInverterVirtualMeter::Battery:
             table = &goodwe_hybrid_inverter_battery_table;
+            default_location = MeterLocation::Battery;
             break;
 
         case GoodweHybridInverterVirtualMeter::Load:
             table = &goodwe_hybrid_inverter_load_table;
+            default_location = MeterLocation::Load;
             break;
 
         case GoodweHybridInverterVirtualMeter::BackupLoad:
             table = &goodwe_hybrid_inverter_backup_load_table;
+            default_location = MeterLocation::Load;
             break;
 
         case GoodweHybridInverterVirtualMeter::Meter:
             table = &goodwe_hybrid_inverter_meter_table;
+            default_location = MeterLocation::Other;
             break;
 
         default:
@@ -591,14 +621,17 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         case SolaxHybridInverterVirtualMeter::Inverter:
             table = &solax_hybrid_inverter_table;
+            default_location = MeterLocation::Inverter;
             break;
 
         case SolaxHybridInverterVirtualMeter::Grid:
             table = &solax_hybrid_inverter_grid_table;
+            default_location = MeterLocation::Grid;
             break;
 
         case SolaxHybridInverterVirtualMeter::Battery:
             table = &solax_hybrid_inverter_battery_table;
+            default_location = MeterLocation::Battery;
             break;
 
         default:
@@ -618,12 +651,18 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             return;
 
         case FroniusGEN24PlusHybridInverterVirtualMeter::InverterUnused:
+            logger.printfln("Invalid Fronius GEN24 Plus Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fronius_gen24_plus_hybrid_inverter_virtual_meter));
+            default_location = MeterLocation::Inverter;
+            return;
+
         case FroniusGEN24PlusHybridInverterVirtualMeter::GridUnused:
             logger.printfln("Invalid Fronius GEN24 Plus Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fronius_gen24_plus_hybrid_inverter_virtual_meter));
+            default_location = MeterLocation::Grid;
             return;
 
         case FroniusGEN24PlusHybridInverterVirtualMeter::Battery:
             table = &fronius_gen24_plus_hybrid_inverter_battery_type_table;
+            default_location = MeterLocation::Battery;
             break;
 
         default:
@@ -644,14 +683,17 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         case HaileiHybridInverterVirtualMeter::Inverter:
             table = &hailei_hybrid_inverter_table;
+            default_location = MeterLocation::Inverter;
             break;
 
         case HaileiHybridInverterVirtualMeter::Grid:
             table = &hailei_hybrid_inverter_grid_table;
+            default_location = MeterLocation::Grid;
             break;
 
         case HaileiHybridInverterVirtualMeter::Battery:
             table = &hailei_hybrid_inverter_battery_table;
+            default_location = MeterLocation::Battery;
             break;
 
         default:
@@ -672,14 +714,17 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         case FoxESSH3HybridInverterVirtualMeter::Inverter:
             table = &fox_ess_h3_hybrid_inverter_table;
+            default_location = MeterLocation::Inverter;
             break;
 
         case FoxESSH3HybridInverterVirtualMeter::Grid:
             table = &fox_ess_h3_hybrid_inverter_grid_table;
+            default_location = MeterLocation::Grid;
             break;
 
         case FoxESSH3HybridInverterVirtualMeter::Battery:
             table = &fox_ess_h3_hybrid_inverter_battery_table;
+            default_location = MeterLocation::Battery;
             break;
 
         default:
@@ -906,6 +951,10 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
+    }
+
+    if (ephemeral_config->get("location")->asEnum<MeterLocation>() == MeterLocation::Unknown && default_location != MeterLocation::Unknown) {
+        ephemeral_config->get("location")->updateEnum(default_location);
     }
 
     if (table->ids_length > 0) {

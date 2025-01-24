@@ -21,6 +21,7 @@
 
 #include "module_dependencies.h"
 #include "meter_sma_speedwire.h"
+#include "modules/meters/meter_location.enum.h"
 
 #include "gcc_warnings.h"
 
@@ -28,6 +29,7 @@ void MetersSMASpeedwire::pre_setup()
 {
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
+        {"location", Config::Enum(MeterLocation::Unknown)},
     });
 
     meters.register_meter_generator(get_class(), this);

@@ -5,7 +5,8 @@ let x = {
         "content": {
             "meter_class": "SMA Speedwire",
 
-            "config_display_name": "Anzeigename"
+            "config_display_name": "Anzeigename",
+            "config_location": "Messort"
         }
     }
 }

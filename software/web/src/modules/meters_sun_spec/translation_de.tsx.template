@@ -20,6 +20,7 @@ let x = {
             "config_unique_id_muted": "optional; Hersteller, Modell, Seriennummer",
             "config_model_id": "Modell",
             "config_model_instance": "Modellinstanz",
+            "config_location": "Messort",
 
             "scan_title": "Gerätesuche",
             "scan_title_muted": "erste Geräteadresse, letzte Geräteadresse",
@@ -27,6 +28,9 @@ let x = {
             "scan_results": "Gefundene Geräte",
             "scan_log": "Log",
             "scan_log_file": "SunSpec-Gerätesuche",
+
+            "location_matching": "Übereinstimmend",
+            "location_different": "Abweichend",
 
             "model_no_supported": "Nicht unterstützt",
             "model_other_preferred": /*SFN*/(slot: number|"?") => "Modell " + slot + " bevorzugt"/*NF*/,

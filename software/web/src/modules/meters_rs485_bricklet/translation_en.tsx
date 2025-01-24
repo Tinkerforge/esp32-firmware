@@ -6,6 +6,11 @@ let x = {
             "meter_class": "Charger internal",
 
             "config_display_name": "Display name",
+            "config_location": "Location",
+
+            "location_matching": "Matching",
+            "location_different": "Different",
+
             "type_override": "Meter type"
         }
     }

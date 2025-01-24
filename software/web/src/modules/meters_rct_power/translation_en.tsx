@@ -12,7 +12,10 @@ let x = {
             "port_muted": "typically 8899",
             "virtual_meter": "Virtual meter",
             "virtual_meter_grid": "Grid",
-            "virtual_meter_battery": "Battery"
+            "virtual_meter_battery": "Battery",
+            "location": "Location",
+            "location_matching": "Matching",
+            "location_different": "Different"
         }
     }
 }

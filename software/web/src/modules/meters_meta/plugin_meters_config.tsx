@@ -23,6 +23,8 @@ import { __ } from "../../ts/translation";
 import { METERS_SLOTS } from "../../build";
 
 import { MeterClassID } from "../meters/meter_class_id.enum";
+import { MeterLocation } from "../meters/meter_location.enum";
+import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig  } from "../meters/types";
 
 import { h, ComponentChildren } from "preact";
@@ -36,6 +38,7 @@ export type MetaMetersConfig = [
     MeterClassID.Meta,
     {
         display_name: string;
+        location: number;
         mode: number;
         source_meter_a: number;
         source_meter_b: number;
@@ -47,7 +50,7 @@ export function init() {
     return {
         [MeterClassID.Meta]: {
             name: () => __("meters_meta.content.meter_class"),
-            new_config: () => [MeterClassID.Meta, {display_name: "Meta", mode: 0, source_meter_a: 0, source_meter_b: 1, constant: 0}] as MeterConfig,
+            new_config: () => [MeterClassID.Meta, {display_name: "Meta", location: MeterLocation.Unknown, mode: 0, source_meter_a: 0, source_meter_b: 1, constant: 0}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: MetaMetersConfig, on_config: (config: MetaMetersConfig) => void): ComponentChildren => {
                 let meter_names: [string, string][] = [];
@@ -66,6 +69,16 @@ export function init() {
                             value={config[1].display_name}
                             onValue={(v) => {on_config(util.get_updated_union(config, {display_name: v}));}}
                         />
+                    </FormRow>,
+                    <FormRow label={__("meters_meta.content.config_location")}>
+                        <InputSelect
+                            required
+                            items={get_meter_location_items()}
+                            placeholder={__("select")}
+                            value={config[1].location.toString()}
+                            onValue={(v) => {
+                                on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                            }} />
                     </FormRow>,
                     <FormRow label={__("meters_meta.content.mode")}>
                         <InputSelect

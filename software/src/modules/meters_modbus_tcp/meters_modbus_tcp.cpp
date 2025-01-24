@@ -24,6 +24,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "meter_modbus_tcp.h"
+#include "modules/meters/meter_location.enum.h"
 #include "modules/meters/meter_value_id.h"
 #include "tools.h"
 #include "modules/modbus_tcp_client/modbus_register_address_mode.enum.h"
@@ -166,6 +167,7 @@ void MetersModbusTCP::pre_setup()
 
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
+        {"location",       Config::Enum(MeterLocation::Unknown)},
         {"host",           Config::Str("", 0, 64)},
         {"port",           Config::Uint16(502)},
         {"table",          Config::Union<MeterModbusTCPTableID>(

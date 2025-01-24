@@ -4,7 +4,19 @@ let x = {
     "meters": {
         "status": {
             "power_history": null,
-            "current_power": "Power"
+            "current_power": "Power",
+            "charger_power_sum": "Charger power",
+            "charger_power_sum_muted": "sum",
+            "inverter_power_sum": "Inverter power",
+            "inverter_power_sum_muted": "sum",
+            "grid_power_sum": "Grid power",
+            "grid_power_sum_muted": "sum",
+            "battery_power_sum": "Battery power",
+            "battery_power_sum_muted": "sum",
+            "battery_soc_avg": "Battery state of charge",
+            "battery_soc_avg_muted": "average",
+            "load_power_sum": "Load power",
+            "load_power_sum_muted": "sum"
         },
         "navbar": {
             "meters": "Energy Meters"
@@ -60,7 +72,14 @@ let x = {
             "reset_modal_confirm": "Reset",
             "reset_failed": "Failed to reset meter values",
 
-            "meter_type": "Energy meter type"
+            "meter_type": "Energy meter type",
+
+            "location_other": "Other",
+            "location_charger": "Charger",
+            "location_inverter": "Inverter",
+            "location_grid": "Grid",
+            "location_battery": "Battery",
+            "location_load": "Load"
         },
         "automation": {
             "meter_reset": "Reset energy meter",
