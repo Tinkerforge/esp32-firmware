@@ -68,9 +68,16 @@ def main():
     config.read(make_path('config.ini'))
 
     try:
-        preset = config['preset:' + args.preset]
+        preset = dict(config['preset:' + args.preset])
     except KeyError:
         raise Exception(f'Preset {args.preset} is unknown, maybe the signature data is outdated')
+
+    if 'extends' in preset:
+        extends = preset['extends']
+
+        for key in config[extends]:
+            if key not in preset:
+                preset[key] = config.get(extends, key)
 
     sodium_secret_key_path = make_keys_path(preset['sodium_secret_key_path'])
 
@@ -102,7 +109,7 @@ def main():
             else:
                 raise Exception(message)
 
-    if not preset.getboolean('gpg_sign'):
+    if preset['gpg_sign'] != 'true':
         print('Skipping GPG keyring')
     else:
         gpg_keyring_passphrase_path = make_keys_path(preset['gpg_keyring_passphrase_path'])

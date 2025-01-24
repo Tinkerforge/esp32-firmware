@@ -99,9 +99,16 @@ def main():
     config.read(make_path('config.ini'))
 
     try:
-        preset = config['preset:' + args.preset]
+        preset = dict(config['preset:' + args.preset])
     except KeyError:
         raise Exception(f'Preset {args.preset} is unknown')
+
+    if 'extends' in preset:
+        extends = preset['extends']
+
+        for key in config[extends]:
+            if key not in preset:
+                preset[key] = config.get(extends, key)
 
     sodium_public_key_path = make_keys_path(preset['sodium_public_key_path'])
 
@@ -182,7 +189,7 @@ def main():
     if keepassxc(preset, 'sodium_secret_key', 'show', ['-s', '-a', 'password'], 'sodium_secret_key', password=sodium_secret_key_password) != sodium_secret_key_hex:
         raise Exception(f'Could not add sodium secret key to {sodium_secret_key_path}')
 
-    if not preset.getboolean('gpg_sign'):
+    if preset['gpg_sign'] != 'true':
         print('Skipping GPG keyring')
     else:
         gpg_keyring_path = make_keys_path(preset['gpg_keyring_path'])

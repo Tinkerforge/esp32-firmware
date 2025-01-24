@@ -41,7 +41,18 @@ else:
     config = configparser.ConfigParser()
     config.read(make_signature_path('config.ini'))
 
-    preset = config['preset:' + metadata['signature_preset']]
+    try:
+        preset = dict(config['preset:' + metadata['signature_preset']])
+    except KeyError:
+        print(f"Preset {metadata['signature_preset']} is unknown, maybe the signature data is outdated")
+        sys.exit(-1)
+
+    if 'extends' in preset:
+        extends = preset['extends']
+
+        for key in config[extends]:
+            if key not in preset:
+                preset[key] = config.get(extends, key)
 
     publisher = preset['publisher']
     publisher_bytes = publisher.encode('utf-8')

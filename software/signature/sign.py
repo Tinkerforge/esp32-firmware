@@ -127,9 +127,16 @@ def main():
     config.read(make_path('config.ini'))
 
     try:
-        preset = config['preset:' + args.preset]
+        preset = dict(config['preset:' + args.preset])
     except KeyError:
         raise Exception(f'Preset {args.preset} is unknown, maybe the signature data is outdated')
+
+    if 'extends' in preset:
+        extends = preset['extends']
+
+        for key in config[extends]:
+            if key not in preset:
+                preset[key] = config.get(extends, key)
 
     publisher = preset['publisher']
     publisher_bytes = publisher.encode('utf-8')
@@ -228,7 +235,7 @@ def main():
     except Exception as e:
         raise Exception(f'Could not rename output file from {args.output_path}.tmp to {args.output_path}: {e}')
 
-    if not preset.getboolean('gpg_sign'):
+    if preset['gpg_sign'] != 'true':
         print('Skipping GPG signature')
     else:
         sha256sum = hashlib.sha256(input_data).hexdigest()

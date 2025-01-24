@@ -72,9 +72,16 @@ def main():
     config.read(make_path('config.ini'))
 
     try:
-        preset = config['preset:' + args.preset]
+        preset = dict(config['preset:' + args.preset])
     except KeyError:
         raise Exception(f'Preset {args.preset} is unknown, maybe the signature data is outdated')
+
+    if 'extends' in preset:
+        extends = preset['extends']
+
+        for key in config[extends]:
+            if key not in preset:
+                preset[key] = config.get(extends, key)
 
     try:
         with open(args.input_path, 'rb') as f:
@@ -82,7 +89,7 @@ def main():
     except Exception as e:
         raise Exception(f'Could not read input from {args.input_path}: {e}')
 
-    if not preset.getboolean('gpg_sign'):
+    if preset['gpg_sign'] != 'true':
         print('Skipping GPG verify')
     else:
         gpg_public_key_path = make_keys_path(preset['gpg_public_key_path'])
