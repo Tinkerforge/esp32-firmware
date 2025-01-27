@@ -1640,7 +1640,17 @@ int allocate_current(
             charging_time /= 1000.0 * 1000.0 * 60.0 * 60.0;
             charger.allocated_average_power = charger.allocated_energy / (float)charging_time;
             if (phases_to_set != 0 && charger.charger_state == 3) {
-                charger.time_in_state_c += cfg->allocation_interval;
+                // If this charger is in Eco+Min(+*),
+                // and the eco mode check returned that charging is currently expensive
+                // and we've allocated only the guaranteed current,
+                // don't count this as time in state C:
+                // We would always use the first X hours if the charge plan is "use the cheapest X out of Y hours".
+                bool eco_min_pv_hack = (charger.charge_mode & (ChargeMode::Eco | ChargeMode::Min)) == (ChargeMode::Eco | ChargeMode::Min)
+                                    && !charger.eco_fast
+                                    && (current_to_set * phases_to_set) <= charger.guaranteed_pv_current;
+                if (!eco_min_pv_hack) {
+                    charger.time_in_state_c += cfg->allocation_interval;
+                }
             }
 
             if (change) {
