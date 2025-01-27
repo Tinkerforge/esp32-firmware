@@ -80,7 +80,7 @@ void EventLog::pre_setup()
     });
 }
 
-#define CHUNK_SIZE 1024
+#define CHUNK_SIZE 1024U
 
 void EventLog::register_urls()
 {
@@ -92,7 +92,7 @@ void EventLog::register_urls()
         request.beginChunkedResponse(200);
 
         for (int index = 0; index < used; index += CHUNK_SIZE) {
-            size_t to_write = MIN(CHUNK_SIZE, used - index);
+            size_t to_write = std::min(CHUNK_SIZE, used - index);
 
             for (int i = 0; i < to_write; ++i) {
                 event_buf.peek_offset(chunk_buf + i, index + i);

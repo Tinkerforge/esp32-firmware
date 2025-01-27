@@ -30,7 +30,7 @@
 
 #include "gcc_warnings.h"
 
-#define MAX_READ_CHUNK_SIZE 125
+#define MAX_READ_CHUNK_SIZE 125U
 #define MAX_SCAN_READ_RETRIES 5
 #define MAX_SCAN_READ_TIMEOUT_BURST 10
 
@@ -320,7 +320,7 @@ void MetersSunSpec::loop()
                 break;
             }
 
-            size_t read_chunk_size = MIN(scan->read_size - scan->read_index, MAX_READ_CHUNK_SIZE);
+            size_t read_chunk_size = std::min(scan->read_size - scan->read_index, MAX_READ_CHUNK_SIZE);
 
             scan->state = ScanState::Reading;
 

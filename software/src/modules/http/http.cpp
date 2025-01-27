@@ -86,7 +86,7 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
     if ((ref_uri[ref_len - 1] == '*')
      && (strncmp_with_same_len(ref_uri, "/*", 2) != 0)
      && (strnlen(in_uri, len) >= (ref_len - 1))
-     && (strncmp(ref_uri, in_uri, MIN(ref_len - 1, len)) == 0)) {
+     && (strncmp(ref_uri, in_uri, std::min(ref_len - 1, len)) == 0)) {
         return true;
     }
 
@@ -287,21 +287,21 @@ bool Http::has_triggered(const Config *conf, void *data)
     switch (cfg->get("method")->asEnum<HttpTriggerMethod>()) {
         case HttpTriggerMethod::GET:
             if (method != HTTP_GET) {
-                trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
+                trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
                 return false;
             }
 
             break;
         case HttpTriggerMethod::POST:
             if (method != HTTP_POST) {
-                trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
+                trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
                 return false;
             }
 
             break;
         case HttpTriggerMethod::PUT:
             if (method != HTTP_PUT) {
-                trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
+                trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
                 return false;
             }
 
@@ -309,7 +309,7 @@ bool Http::has_triggered(const Config *conf, void *data)
         case HttpTriggerMethod::POST_PUT:
             if (method != HTTP_POST
              && method != HTTP_PUT) {
-                trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
+                trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
                 return false;
             }
 
@@ -318,7 +318,7 @@ bool Http::has_triggered(const Config *conf, void *data)
             if (method != HTTP_GET
              && method != HTTP_POST
              && method != HTTP_PUT) {
-                trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
+                trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::WrongMethod);
                 return false;
             }
 
@@ -326,19 +326,19 @@ bool Http::has_triggered(const Config *conf, void *data)
     }
 
     if (trigger->uri_suffix != cfg->get("url_suffix")->asEphemeralCStr()) {
-        trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongUrl);
+        trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::WrongUrl);
         return false;
     }
 
     const auto &expected_payload = cfg->get("payload")->asString();
 
     if (expected_payload.length() != 0 && expected_payload.length() != trigger->req.contentLength()) {
-        trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongPayloadLength);
+        trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::WrongPayloadLength);
         return false;
     }
 
     if (expected_payload.length() == 0) {
-        trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::OK);
+        trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::OK);
         return true;
     }
 
@@ -348,23 +348,23 @@ bool Http::has_triggered(const Config *conf, void *data)
 
         if (trigger->req.receive(trigger->payload.get(), size) < 0) {
             trigger->payload_receive_failed = true;
-            trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::FailedToReceivePayload);
+            trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::FailedToReceivePayload);
             return false;
         }
 
         trigger->payload[size] = '\0';
         trigger->payload_receive_failed = false;
     } else if (trigger->payload_receive_failed) {
-        trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::FailedToReceivePayload);
+        trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::FailedToReceivePayload);
         return false;
     }
 
     if (expected_payload != trigger->payload.get()) {
-        trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::WrongPayload);
+        trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::WrongPayload);
         return false;
     }
 
-    trigger->most_specific_error = MAX(trigger->most_specific_error, HttpTriggerActionResult::OK);
+    trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::OK);
     return true;
 }
 #endif

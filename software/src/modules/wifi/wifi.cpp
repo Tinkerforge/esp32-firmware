@@ -192,7 +192,7 @@ float rssi_to_weight(int rssi)
 
 void apply_weight(float *channels, int channel, float weight)
 {
-    for (int i = MAX(1, channel - 2); i <= MIN(13, channel + 2); ++i) {
+    for (int i = std::max(1, channel - 2); i <= std::min(13, channel + 2); ++i) {
         if (i == channel - 2 || i == channel + 2)
             channels[i] += weight / 2;
         else
