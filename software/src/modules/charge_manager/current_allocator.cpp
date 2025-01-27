@@ -741,7 +741,7 @@ static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost
 
     // Improvement - Check only if spread was not checked or was checked but new charger did not fit.
     if (!check_spread || !improves_all_spread) {
-        bool improves_pv = (check_phase.pv & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || (new_cost.pv > 0 && wnd_max.pv < limits->min.pv);
+        bool improves_pv = (check_phase.pv & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || (new_cost.pv > 0 && (wnd_max.pv < limits->min.pv || new_cost.pv <= guaranteed_pv_current));
         if (!improves_pv) {
             sw.printf(" No: !impr_pv");
             return false;
