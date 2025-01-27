@@ -30,6 +30,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "tools.h"
+#include "tools/net.h"
 
 extern char local_uid_str[32];
 

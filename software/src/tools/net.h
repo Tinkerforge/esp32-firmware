@@ -19,9 +19,10 @@
 
 #pragma once
 
-#include "esp_netif_ip_addr.h"
-#include "lwip/ip_addr.h"
-#include "lwip/sockets.h"
+#include <esp_netif_ip_addr.h>
+#include <IPAddress.h>
+#include <lwip/ip_addr.h>
+#include <lwip/sockets.h>
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -74,3 +75,8 @@ extern inline void tf_ip4addr_ntoa(const esp_ip_addr_t *addr, char *buf, int buf
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif
+
+bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check);
+bool is_valid_subnet_mask(IPAddress subnet);
+
+void poke_localhost();

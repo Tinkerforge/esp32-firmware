@@ -22,6 +22,7 @@
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 #include "tools.h"
+#include "tools/net.h"
 #include "esp_httpd_priv.h"
 
 #define KEEP_ALIVE_TIMEOUT_MS 10000

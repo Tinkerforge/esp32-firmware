@@ -27,7 +27,6 @@
 #include <memory> // for std::unique_ptr
 #include <esp_log.h>
 #include <driver/i2c.h>
-#include <IPAddress.h>
 #include <TFTools/Micros.h>
 #include <TFTools/Option.h>
 
@@ -52,9 +51,6 @@ int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose,
 int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch, uint8_t left_beta /* 255 == no beta */, uint32_t left_timestamp,
                     uint8_t right_major, uint8_t right_minor, uint8_t right_patch, uint8_t right_beta /* 255 == no beta */, uint32_t right_timestamp);
 
-bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check);
-bool is_valid_subnet_mask(IPAddress subnet);
-
 extern TaskHandle_t mainTaskHandle;
 void set_main_task_handle();
 inline bool running_in_main_task()
@@ -65,8 +61,6 @@ inline bool running_in_main_task()
 void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms);
 
 uint16_t internet_checksum(const uint8_t *data, size_t length);
-
-void poke_localhost();
 
 void trigger_reboot(const char *initiator, millis_t delay_ms = 0_ms);
 
