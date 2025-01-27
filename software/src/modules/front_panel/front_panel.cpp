@@ -23,6 +23,8 @@
 #include "module_dependencies.h"
 #include "bindings/errors.h"
 #include "tools.h"
+#include "tools/malloc.h"
+#include "flash_map_xz.embedded.h"
 #include "warp_front_panel_bricklet_firmware_bin.embedded.h"
 #include "sprite_defines.h"
 #include "font_defines.h"
@@ -46,6 +48,12 @@ static constexpr auto UPDATE_INTERVAL = 1_s;
 #else
 #define FRONT_PANEL_METERS_SLOTS 0
 #endif
+
+static void static_flash_data_done_callback(struct TF_WARPFrontPanel *warp_front_panel, void *user_data)
+{
+    FrontPanel *fp = static_cast<FrontPanel *>(user_data);
+    fp->flash_data_done_callback();
+}
 
 FrontPanel::FrontPanel() : DeviceModule(warp_front_panel_bricklet_firmware_bin_data,
                                         warp_front_panel_bricklet_firmware_bin_length,
@@ -115,7 +123,7 @@ void FrontPanel::setup_bricklet()
 
 void FrontPanel::check_bricklet_state()
 {
-    if (!initialized) {
+    if (!initialized || flash_update_in_progress) {
         return;
     }
 
@@ -149,6 +157,8 @@ void FrontPanel::setup()
         return;
     }
 
+    tf_warp_front_panel_register_flash_data_done_callback(&device, &static_flash_data_done_callback, this);
+
     api.restorePersistentConfig("front_panel/config", &config);
 
     task_scheduler.scheduleWithFixedDelay([this](){
@@ -157,7 +167,7 @@ void FrontPanel::setup()
 
     task_scheduler.scheduleOnce([this](){
         this->check_flash_metadata();
-    }, 15_s); // We assume that the Bricklet has booted and read the metadata after 15s
+    });
 }
 
 void FrontPanel::register_urls()
@@ -169,6 +179,94 @@ void FrontPanel::register_urls()
     }, 100_ms, UPDATE_INTERVAL);
 
     this->DeviceModule::register_urls();
+
+    api.addCommand("front_panel/reflash_map", Config::Null(), {}, [this](String &/*errmsg*/) {
+        this->start_reflash_map();
+    }, true);
+
+#if defined(DEBUG_FS_ENABLE) && defined(BOARD_HAS_PSRAM)
+    server.on_HTTPThread("/front_panel/flash_map", HTTP_POST, [this](WebServerRequest request) {
+        task_scheduler.scheduleOnce([this]() {
+            this->start_reflash_map();
+        });
+
+        return request.send(200, "text/plain", "File upload OK\n");
+    },
+    [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
+        if (this->flash_update_in_progress) {
+            logger.printfln("Flash update already in progress");
+
+            return false;
+        }
+
+        if (!flash_writer) {
+            flash_writer = static_cast<decltype(flash_writer)>(malloc(sizeof(*flash_writer)));
+            if (!flash_writer) {
+                logger.printfln("Allocating flash writer memory failed");
+
+                return false;
+            }
+
+            size_t upload_size = len + remaining;
+
+            uint8_t *file_buf = static_cast<decltype(file_buf)>(malloc_psram(upload_size));
+            if (!file_buf) {
+                free(this->flash_writer);
+                this->flash_writer = nullptr;
+
+                logger.printfln("Allocating file receive buffer failed");
+
+                return false;
+            }
+
+            xz_buf *xzbuf = &this->flash_writer->xzbuf;
+            xzbuf->in = file_buf;
+            xzbuf->in_pos = 0;
+            xzbuf->in_size = upload_size;
+        }
+
+        // The buffer was just allocated and is known to be writable.
+        // Casting the const away is safe in this case.
+        uint8_t *fbuf = const_cast<uint8_t *>(this->flash_writer->xzbuf.in);
+
+        memcpy(fbuf + offset, data, len);
+        return true;
+    },
+    [this](WebServerRequest request, int error_code) {
+        if (this->flash_writer) {
+            free(const_cast<uint8_t *>(this->flash_writer->xzbuf.in));
+            this->flash_writer->xzbuf.in = nullptr;
+            free(this->flash_writer);
+            this->flash_writer = nullptr;
+        }
+
+        logger.printfln("File reception failed: %s (%d)", strerror(error_code), error_code);
+
+        return request.send(500, "Failed to receive file");
+    });
+
+    api.addCommand("front_panel/erase", Config::Null(), {}, [this](String &errmsg) {
+        int rc = tf_warp_front_panel_erase_flash(&device, NULL);
+        if (rc != TF_E_OK) {
+            logger.printfln("Erase failed: %i", rc);
+            errmsg = "Erase failed";
+        }
+    }, true);
+
+    api.addCommand("front_panel/redraw", Config::Null(), {}, [this](String &errmsg) {
+        int rc = tf_warp_front_panel_redraw_everything(&device);
+        if (rc != TF_E_OK) {
+            logger.printfln("Redraw failed: %i", rc);
+            errmsg = "Redraw failed";
+        }
+    }, true);
+
+    api.addCommand("front_panel/blank", Config::Null(), {}, [this](String &/*errmsg*/) {
+        for (size_t i = 0; i < 6; i++) {
+            update_front_page_empty_tile(i,  TileType::EmptyTile, 0);
+        }
+    }, true);
+#endif
 }
 
 void FrontPanel::loop()
@@ -613,7 +711,7 @@ void FrontPanel::update_led()
 
 void FrontPanel::update()
 {
-    if (!initialized) {
+    if (!initialized || flash_update_in_progress) {
         return;
     }
 
@@ -702,20 +800,293 @@ void FrontPanel::check_flash_metadata()
         return;
     }
 
-    const bool metadata_ok = (version_flash  == METADATA_VERSION)  && (version_bricklet  == METADATA_VERSION) &&
-                             (length_flash   == METADATA_LENGTH)   && (length_bricklet   == METADATA_LENGTH)  &&
-                             (checksum_flash == METADATA_CHECKSUM) && (checksum_bricklet == METADATA_CHECKSUM);
-
-    // Check if content of flash and expectation of the Bricklet and expections of the ESP32 match
-    // If it doesn't match, we can't actually do anything. The front panel will still work, but
-    // probably miss some icons or similar.
-    // This print will help to identify which part is not up-to-date
-    if (!metadata_ok) {
-        logger.printfln(
-            "Flash metadata mismatch. Version: %u vs %u vs %u, Length: %u vs %u vs %u, Checksum: %x vs %x vs %x",
-            version_flash,  version_bricklet,  METADATA_VERSION,
-            length_flash,   length_bricklet,   METADATA_LENGTH,
-            checksum_flash, checksum_bricklet, METADATA_CHECKSUM
-        );
+    if (version_flash == 0) {
+        logger.printfln("Flash info not yet read");
+        task_scheduler.scheduleOnce([this]() {
+            this->check_flash_metadata();
+        }, 1_s);
     }
+
+    const bool metadata_flash_matches_bricklet = version_flash == version_bricklet && length_flash == length_bricklet && checksum_flash == checksum_bricklet;
+    const bool metadata_flash_matches_esp      = version_flash == METADATA_VERSION && length_flash == METADATA_LENGTH && checksum_flash == METADATA_CHECKSUM;
+
+    if (metadata_flash_matches_bricklet && metadata_flash_matches_esp) {
+        // Metadata OK
+        return;
+    }
+
+    logger.printfln(
+        "Flash metadata mismatch. Version: %u vs %u vs %u, Length: %u vs %u vs %u, Checksum: %x vs %x vs %x",
+        version_flash,  version_bricklet,  METADATA_VERSION,
+        length_flash,   length_bricklet,   METADATA_LENGTH,
+        checksum_flash, checksum_bricklet, METADATA_CHECKSUM
+    );
+
+    if (metadata_flash_matches_esp) {
+        return;
+    }
+
+    start_reflash_map();
+}
+
+void FrontPanel::start_reflash_map()
+{
+    if (this->flash_update_in_progress) {
+        logger.printfln("Flash update already in progress");
+        return;
+    }
+
+    logger.printfln("Updating display Flash memory...");
+
+    flash_update_in_progress = true;
+    tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_OFF);
+
+    task_scheduler.scheduleOnce([this]() {
+        this->reflash_map_start();
+    }, 700_ms);
+}
+
+void FrontPanel::reflash_map_start()
+{
+    if (!flash_writer) {
+        flash_writer = static_cast<decltype(flash_writer)>(malloc(sizeof(*flash_writer)));
+        if (!flash_writer) {
+            logger.printfln("Allocating flash_writer memory failed");
+            flash_update_in_progress = false;
+            tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC);
+            return;
+        }
+
+        // If there was no flash_writer yet, the flash process was not started by HTTP call, so use the embedded map instead.
+        xz_buf *xzbuf = &flash_writer->xzbuf;
+        xzbuf->in = flash_map_xz_data;
+        xzbuf->in_pos = 0;
+        xzbuf->in_size = flash_map_xz_length;
+    }
+
+    set_led(LEDPattern::Blinking, LEDColor::Yellow);
+
+    flash_writer->start_time_us = now_us();
+    flash_writer->write_deadline_us = 0;
+    flash_writer->fail_count = 0;
+    flash_writer->last_page = false;
+    flash_writer->first_cb = true;
+
+    flash_writer->writer_watchdog_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+        if (deadline_elapsed(this->flash_writer->write_deadline_us)) {
+            logger.printfln("Missed write callback");
+            this->reflash_map_write_next();
+        }
+    }, 2_s, 2_s);
+
+    reflash_map_erase();
+}
+
+void FrontPanel::reflash_map_erase()
+{
+    flash_writer->write_deadline_us = now_us() + 170_s;
+
+    uint8_t status = 255;
+    int rc = tf_warp_front_panel_erase_flash(&device, &status);
+    if (rc != TF_E_OK || status != TF_WARP_FRONT_PANEL_FLASH_STATUS_OK) {
+        flash_writer->fail_count++;
+
+        if (flash_writer->fail_count < 10) {
+            logger.printfln("Failed to erase flash: status %u (error %s (%i)) Trying again.", status, tf_hal_strerror(rc), rc);
+            task_scheduler.scheduleOnce([this]() {
+                this->reflash_map_erase();
+            }, 100_ms);
+            return;
+        }
+        logger.printfln("Failed to erase flash: status %u (error %s (%i)) Giving up.", status, tf_hal_strerror(rc), rc);
+        reflash_map_end();
+        return;
+    }
+
+    flash_writer->fail_count = 0;
+
+    // Prepare decompression and writing
+    rc = tf_warp_front_panel_set_flash_index(&device, 0, 0);
+    if (rc != TF_E_OK) {
+        logger.printfln("Failed to set flash index: %s (%i)", tf_hal_strerror(rc), rc);
+        reflash_map_end();
+        return;
+    }
+
+    flash_writer->decoder = xz_dec_init(XZ_DYNALLOC, 1024 * 1024);
+    if (!flash_writer->decoder) {
+        logger.printfln("Failed to initialize XZ decoder");
+        reflash_map_end();
+        return;
+    }
+
+    xz_buf *xzbuf = &flash_writer->xzbuf;
+    xzbuf->out = flash_writer->out_buf;
+    xzbuf->out_pos = 0;
+    xzbuf->out_size = 0; // Don't produce any output, only decompress header.
+
+    xz_ret ret = xz_dec_run(flash_writer->decoder, xzbuf);
+    if (ret != XZ_OK) {
+        if (ret == XZ_FORMAT_ERROR) {
+            logger.printfln("xz header has wrong format. Probably not an xz file.");
+        } else {
+            logger.printfln("xz header decompression failed: %u", static_cast<uint32_t>(ret));
+        }
+        reflash_map_end();
+        return;
+    }
+
+    //logger.printfln("Erasing finished after %u ms. Writing ...", duration);
+    reflash_map_write_next();
+}
+
+void FrontPanel::flash_data_done_callback()
+{
+    if (!flash_update_in_progress) {
+        logger.printfln("Received flash data done callback but no flash update is in progress. :-?");
+        return;
+    }
+
+    if (flash_writer->first_cb) {
+        flash_writer->first_cb = false;
+        micros_t now = now_us();
+        uint32_t duration = (now - flash_writer->start_time_us).as<uint32_t>();
+        flash_writer->start_time_us = now;
+        logger.printfln("Erasing finished after %.1fs", duration / 1000000.0);
+    }
+
+    task_scheduler.scheduleOnce([this]() {
+        reflash_map_write_next();
+    });
+}
+
+void FrontPanel::reflash_map_write_next()
+{
+    if (!flash_writer->first_cb) {
+        flash_writer->write_deadline_us = now_us() + 5_s;
+    }
+
+    xz_buf *xzbuf = &flash_writer->xzbuf;
+    xzbuf->out_size = ARRAY_SIZE(flash_writer->out_buf);
+
+    if (!flash_writer->last_page || xzbuf->out_pos > 0) {
+        if (xzbuf->out_pos < xzbuf->out_size) {
+            xz_ret ret = xz_dec_run(flash_writer->decoder, xzbuf);
+            if (ret != XZ_OK) {
+                if (ret != XZ_STREAM_END) {
+                    logger.printfln("XZ decompression failed: %u", static_cast<uint32_t>(ret));
+                    reflash_map_end();
+                    return;
+                }
+
+                xz_dec_end(flash_writer->decoder);
+                flash_writer->decoder = nullptr;
+
+                flash_writer->last_page = true;
+
+                // Fill page if necessary
+                if (xzbuf->out_pos < xzbuf->out_size) {
+                    for (size_t i = xzbuf->out_pos; i < xzbuf->out_size; i++) {
+                        flash_writer->out_buf[i] = 0xFF;
+                    }
+                    xzbuf->out_pos = xzbuf->out_size;
+                }
+            }
+        }
+
+        uint32_t next_page_index     = std::numeric_limits<decltype(next_page_index)>::max();
+        uint8_t  next_sub_page_index = std::numeric_limits<decltype(next_sub_page_index)>::max();
+
+        for (size_t subpage = 0; subpage < 4; subpage++) {
+            uint8_t status;
+            int rc;
+            for (size_t i = 0; i < 10; i++) {
+                rc = tf_warp_front_panel_set_flash_data(&device, &flash_writer->out_buf[subpage * 64], &next_page_index, &next_sub_page_index, &status);
+                if (rc == TF_E_OK) {
+                    break;
+                }
+                logger.printfln("set_flash_data failed: %s (%i)", tf_hal_strerror(rc), rc);
+            }
+            if (rc != TF_E_OK) {
+                logger.printfln("Writing flash data failed: %s (%i). Page %u, sub-page %u, status %u.", tf_hal_strerror(rc), rc, next_page_index, next_sub_page_index, status);
+                reflash_map_end();
+                return;
+            }
+
+            if (status == TF_WARP_FRONT_PANEL_FLASH_STATUS_BUSY) {
+                if (next_sub_page_index != 0) {
+                    logger.printfln("Writer is busy on unexpected sub-page %u", next_sub_page_index);
+
+                    for (size_t i = 0; i < 10; i++) {
+                        rc = tf_warp_front_panel_set_flash_index(&device, next_page_index, 0);
+                        if (rc == TF_E_OK) {
+                        break;
+                        }
+                        logger.printfln("set_flash_index failed: %s (%i)", tf_hal_strerror(rc), rc);
+                    }
+                    if (rc != TF_E_OK) {
+                        logger.printfln("Failed to reset flash index: %s (%i)", tf_hal_strerror(rc), rc);
+                        reflash_map_end();
+                        return;
+                    }
+                }
+
+                flash_writer->fail_count++;
+
+                if (flash_writer->fail_count < 10) {
+                    task_scheduler.scheduleOnce([this]() {
+                        this->reflash_map_write_next();
+                    }, 100_ms);
+                    return; // Try again
+                }
+
+                logger.printfln("Write page %u timed out: status %u (error %s (%i)) Giving up.", next_page_index, status, tf_hal_strerror(rc), rc);
+                reflash_map_end();
+                return;
+            }
+        }
+
+        flash_writer->fail_count = 0;
+        xzbuf->out_pos = 0;
+        return;
+    }
+
+    micros_t now = now_us();
+    uint32_t duration = (now - flash_writer->start_time_us).as<uint32_t>();
+
+    logger.printfln("Writing finished after %.1fs", duration / 1000000.0);
+
+    reflash_map_end();
+
+    // TODO remove and use update code below
+    this->DeviceModule::reset();
+
+    //update();
+    //tf_warp_front_panel_redraw_everything(&device);
+
+    //task_scheduler.scheduleOnce([this]() {
+    //    tf_warp_front_panel_set_display(&this->device, TF_WARP_FRONT_PANEL_DISPLAY_AUTOMATIC);
+    //}, 650_ms);
+}
+
+void FrontPanel::reflash_map_end()
+{
+    task_scheduler.cancel(flash_writer->writer_watchdog_task_id);
+
+    if (flash_writer->decoder) {
+        xz_dec_end(flash_writer->decoder);
+        flash_writer->decoder = nullptr;
+    }
+
+    xz_buf *xzbuf = &flash_writer->xzbuf;
+    if (xzbuf->in != flash_map_xz_data) {
+        logger.printfln("Freeing temporary upload buffer");
+        free(const_cast<uint8_t *>(xzbuf->in));
+        xzbuf->in = nullptr;
+    }
+
+    free(flash_writer);
+    flash_writer = nullptr;
+
+    flash_update_in_progress = false;
 }

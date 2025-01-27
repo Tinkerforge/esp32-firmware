@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-09-15.      *
+ * This file was automatically generated on 2025-01-22.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -28,6 +28,7 @@ extern "C" {
 struct TF_WARPFrontPanel;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
+typedef void (*TF_WARPFrontPanel_FlashDataDoneHandler)(struct TF_WARPFrontPanel *warp_front_panel, void *user_data);
 
 #endif
 /**
@@ -38,6 +39,8 @@ struct TF_WARPFrontPanel;
 typedef struct TF_WARPFrontPanel {
     TF_TFP *tfp;
 #if TF_IMPLEMENT_CALLBACKS != 0
+    TF_WARPFrontPanel_FlashDataDoneHandler flash_data_done_handler;
+    void *flash_data_done_user_data;
 
 #endif
     uint16_t magic;
@@ -147,6 +150,11 @@ typedef struct TF_WARPFrontPanel {
 /**
  * \ingroup TF_WARPFrontPanel
  */
+#define TF_WARP_FRONT_PANEL_FUNCTION_REDRAW_EVERYTHING 22
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
 #define TF_WARP_FRONT_PANEL_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
@@ -205,6 +213,11 @@ typedef struct TF_WARPFrontPanel {
 #define TF_WARP_FRONT_PANEL_FUNCTION_GET_IDENTITY 255
 
 #if TF_IMPLEMENT_CALLBACKS != 0
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ */
+#define TF_WARP_FRONT_PANEL_CALLBACK_FLASH_DATA_DONE 21
 
 #endif
 
@@ -416,8 +429,19 @@ int tf_warp_front_panel_set_response_expected(TF_WARPFrontPanel *warp_front_pane
  * functions of this device at once.
  */
 int tf_warp_front_panel_set_response_expected_all(TF_WARPFrontPanel *warp_front_panel, bool response_expected);
-
-
+#if TF_IMPLEMENT_CALLBACKS != 0
+/**
+ * \ingroup TF_WARPFrontPanel
+ *
+ * Registers the given \c handler to the Flash Data Done callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(void *user_data) \endcode
+ *
+ * TODO
+ */
+int tf_warp_front_panel_register_flash_data_done_callback(TF_WARPFrontPanel *warp_front_panel, TF_WARPFrontPanel_FlashDataDoneHandler handler, void *user_data);
+#endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
  * \ingroup TF_WARPFrontPanel
@@ -568,6 +592,13 @@ int tf_warp_front_panel_get_display(TF_WARPFrontPanel *warp_front_panel, uint8_t
  *
  */
 int tf_warp_front_panel_get_flash_metadata(TF_WARPFrontPanel *warp_front_panel, uint32_t *ret_version_flash, uint32_t *ret_version_expected, uint32_t *ret_length_flash, uint32_t *ret_length_expected, uint32_t *ret_checksum_flash, uint32_t *ret_checksum_expected);
+
+/**
+ * \ingroup TF_WARPFrontPanel
+ *
+ * TODO
+ */
+int tf_warp_front_panel_redraw_everything(TF_WARPFrontPanel *warp_front_panel);
 
 /**
  * \ingroup TF_WARPFrontPanel

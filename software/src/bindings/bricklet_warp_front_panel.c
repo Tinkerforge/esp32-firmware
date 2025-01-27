@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-09-15.      *
+ * This file was automatically generated on 2025-01-22.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -21,13 +21,38 @@ extern "C" {
 #endif
 
 
+#if TF_IMPLEMENT_CALLBACKS != 0
 static bool tf_warp_front_panel_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
-    (void)device;
-    (void)fid;
+    TF_WARPFrontPanel *warp_front_panel = (TF_WARPFrontPanel *)device;
+    TF_HALCommon *hal_common = tf_hal_get_common(warp_front_panel->tfp->spitfp->hal);
     (void)payload;
 
+    switch (fid) {
+        case TF_WARP_FRONT_PANEL_CALLBACK_FLASH_DATA_DONE: {
+            TF_WARPFrontPanel_FlashDataDoneHandler fn = warp_front_panel->flash_data_done_handler;
+            void *user_data = warp_front_panel->flash_data_done_user_data;
+            if (fn == NULL) {
+                return false;
+            }
+
+
+            hal_common->locked = true;
+            fn(warp_front_panel, user_data);
+            hal_common->locked = false;
+            break;
+        }
+
+        default:
+            return false;
+    }
+
+    return true;
+}
+#else
+static bool tf_warp_front_panel_callback_handler(void *device, uint8_t fid, TF_PacketBuffer *payload) {
     return false;
 }
+#endif
 int tf_warp_front_panel_create(TF_WARPFrontPanel *warp_front_panel, const char *uid_or_port_name, TF_HAL *hal) {
     if (warp_front_panel == NULL || hal == NULL) {
         return TF_E_NULL;
@@ -117,24 +142,29 @@ int tf_warp_front_panel_get_response_expected(TF_WARPFrontPanel *warp_front_pane
                 *ret_response_expected = (warp_front_panel->response_expected[0] & (1 << 7)) != 0;
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_WARP_FRONT_PANEL_FUNCTION_REDRAW_EVERYTHING:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_front_panel->response_expected[1] & (1 << 0)) != 0;
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_WARP_FRONT_PANEL_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_front_panel->response_expected[1] & (1 << 1)) != 0;
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_RESET:
+        case TF_WARP_FRONT_PANEL_FUNCTION_SET_STATUS_LED_CONFIG:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_front_panel->response_expected[1] & (1 << 2)) != 0;
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_WRITE_UID:
+        case TF_WARP_FRONT_PANEL_FUNCTION_RESET:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (warp_front_panel->response_expected[1] & (1 << 3)) != 0;
+            }
+            break;
+        case TF_WARP_FRONT_PANEL_FUNCTION_WRITE_UID:
+            if (ret_response_expected != NULL) {
+                *ret_response_expected = (warp_front_panel->response_expected[1] & (1 << 4)) != 0;
             }
             break;
         default:
@@ -210,32 +240,39 @@ int tf_warp_front_panel_set_response_expected(TF_WARPFrontPanel *warp_front_pane
                 warp_front_panel->response_expected[0] &= ~(1 << 7);
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_WARP_FRONT_PANEL_FUNCTION_REDRAW_EVERYTHING:
             if (response_expected) {
                 warp_front_panel->response_expected[1] |= (1 << 0);
             } else {
                 warp_front_panel->response_expected[1] &= ~(1 << 0);
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_WARP_FRONT_PANEL_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (response_expected) {
                 warp_front_panel->response_expected[1] |= (1 << 1);
             } else {
                 warp_front_panel->response_expected[1] &= ~(1 << 1);
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_RESET:
+        case TF_WARP_FRONT_PANEL_FUNCTION_SET_STATUS_LED_CONFIG:
             if (response_expected) {
                 warp_front_panel->response_expected[1] |= (1 << 2);
             } else {
                 warp_front_panel->response_expected[1] &= ~(1 << 2);
             }
             break;
-        case TF_WARP_FRONT_PANEL_FUNCTION_WRITE_UID:
+        case TF_WARP_FRONT_PANEL_FUNCTION_RESET:
             if (response_expected) {
                 warp_front_panel->response_expected[1] |= (1 << 3);
             } else {
                 warp_front_panel->response_expected[1] &= ~(1 << 3);
+            }
+            break;
+        case TF_WARP_FRONT_PANEL_FUNCTION_WRITE_UID:
+            if (response_expected) {
+                warp_front_panel->response_expected[1] |= (1 << 4);
+            } else {
+                warp_front_panel->response_expected[1] &= ~(1 << 4);
             }
             break;
         default:
@@ -1479,6 +1516,60 @@ int tf_warp_front_panel_get_flash_metadata(TF_WARPFrontPanel *warp_front_panel, 
     return tf_tfp_get_error(_error_code);
 }
 
+int tf_warp_front_panel_redraw_everything(TF_WARPFrontPanel *warp_front_panel) {
+    if (warp_front_panel == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (warp_front_panel->magic != 0x5446 || warp_front_panel->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = warp_front_panel->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_warp_front_panel_get_response_expected(warp_front_panel, TF_WARP_FRONT_PANEL_FUNCTION_REDRAW_EVERYTHING, &_response_expected);
+    tf_tfp_prepare_send(warp_front_panel->tfp, TF_WARP_FRONT_PANEL_FUNCTION_REDRAW_EVERYTHING, 0, _response_expected);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(warp_front_panel->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(warp_front_panel->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(warp_front_panel->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(warp_front_panel->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
 int tf_warp_front_panel_get_spitfp_error_count(TF_WARPFrontPanel *warp_front_panel, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (warp_front_panel == NULL) {
         return TF_E_NULL;
@@ -2195,8 +2286,22 @@ int tf_warp_front_panel_get_identity(TF_WARPFrontPanel *warp_front_panel, char r
 
     return tf_tfp_get_error(_error_code);
 }
+#if TF_IMPLEMENT_CALLBACKS != 0
+int tf_warp_front_panel_register_flash_data_done_callback(TF_WARPFrontPanel *warp_front_panel, TF_WARPFrontPanel_FlashDataDoneHandler handler, void *user_data) {
+    if (warp_front_panel == NULL) {
+        return TF_E_NULL;
+    }
 
+    if (warp_front_panel->magic != 0x5446 || warp_front_panel->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
 
+    warp_front_panel->flash_data_done_handler = handler;
+    warp_front_panel->flash_data_done_user_data = user_data;
+
+    return TF_E_OK;
+}
+#endif
 int tf_warp_front_panel_callback_tick(TF_WARPFrontPanel *warp_front_panel, uint32_t timeout_us) {
     if (warp_front_panel == NULL) {
         return TF_E_NULL;

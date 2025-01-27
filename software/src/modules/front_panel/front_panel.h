@@ -24,6 +24,7 @@
 #include "build.h"
 #include "bindings/bricklet_warp_front_panel.h"
 #include "module_available.h"
+#include "tools/libxz/xz.h"
 
 #define FRONT_PANEL_TILES 6
 #define TILE_TYPES 8
@@ -58,6 +59,8 @@ public:
     int set_led(const LEDPattern pattern, const LEDColor color);
     int get_led(LEDPattern *pattern, LEDColor *color);
 
+    void flash_data_done_callback();
+
 private:
     enum class TileType : uint8_t {
         EmptyTile           = 0,
@@ -81,6 +84,18 @@ private:
         ForecastTomorrow = 1,
     };
 
+    struct flash_writer_data {
+        uint8_t out_buf[256];
+        micros_t start_time_us;
+        micros_t write_deadline_us;
+        uint64_t writer_watchdog_task_id;
+        uint32_t fail_count;
+        xz_dec *decoder = nullptr;
+        xz_buf xzbuf;
+        bool last_page;
+        bool first_cb;
+    };
+
     void update();
     void update_wifi();
     void update_status_bar();
@@ -98,6 +113,11 @@ private:
 
     const char* get_i18n_string(const char *key_en, const char *key_de);
     void check_flash_metadata();
+    void start_reflash_map();
+    void reflash_map_start();
+    void reflash_map_erase();
+    void reflash_map_write_next();
+    void reflash_map_end();
 
     String watt_value_to_display_string(const int32_t w);
     String watt_hour_value_to_display_string(const uint32_t wh);
@@ -106,6 +126,9 @@ private:
     ConfUnionPrototype<TileType> tile_prototypes[TILE_TYPES];
     Config config_tiles_prototype;
     ConfigRoot config;
+
+    flash_writer_data *flash_writer = nullptr;
+    bool flash_update_in_progress = false;
 };
 
 #include "module_available_end.h"
