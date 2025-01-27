@@ -21,6 +21,7 @@ import * as util from "../util";
 
 import { h, Context } from "preact";
 import { useId, useContext } from "preact/hooks";
+import { register_id_context_component_type } from "./form_row";
 
 interface OutputFloatProps {
     idContext?: Context<string>;
@@ -74,3 +75,5 @@ export function OutputFloat(props: OutputFloatProps) {
         </div>
     );
 }
+
+register_id_context_component_type(OutputFloat);

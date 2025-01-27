@@ -23,6 +23,7 @@ import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { Eye, EyeOff, Trash2 } from "react-feather";
 import { __ } from "../translation";
+import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../../ts/util";
 
@@ -128,3 +129,5 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
         );
     }
 }
+
+register_id_context_component_type(InputPassword);

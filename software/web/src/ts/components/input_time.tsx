@@ -22,6 +22,7 @@ import { useId, useContext, useRef } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 //import { Button } from "react-bootstrap";
 //import { ArrowLeft, ArrowRight } from "react-feather";
+import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../../ts/util";
 
@@ -130,3 +131,5 @@ export function InputTime(props: InputTimeProps) {
     );
 */
 }
+
+register_id_context_component_type(InputTime);

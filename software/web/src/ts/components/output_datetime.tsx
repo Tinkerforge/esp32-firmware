@@ -20,6 +20,7 @@
 import { h, Context } from "preact";
 import { useId, useContext } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
+import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../../ts/util";
 
@@ -66,3 +67,5 @@ export function OutputDatetime(props: OutputDatetimeProps) {
 
     );
 }
+
+register_id_context_component_type(OutputDatetime);

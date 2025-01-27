@@ -25,6 +25,7 @@ import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { Progress } from "./progress";
 import { __ } from "../../ts/translation";
+import { register_id_context_component_type } from "./form_row";
 
 interface InputFileProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "accept"> {
     idContext?: Context<string>
@@ -89,3 +90,5 @@ export function InputFile(props: InputFileProps) {
         </>
     );
 }
+
+register_id_context_component_type(InputFile);

@@ -20,6 +20,7 @@
 import { h, Context, Fragment } from "preact";
 import { useId, useContext } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
+import { register_id_context_component_type } from "./form_row";
 
 export interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
     idContext?: Context<string>
@@ -80,3 +81,5 @@ export function InputSelect(props: InputSelectProps) {
         </>
     );
 }
+
+register_id_context_component_type(InputSelect);

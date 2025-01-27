@@ -17,25 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, createContext, Context, VNode, cloneElement, toChildArray, Fragment, ComponentChildren } from "preact";
+import { h, Component, createContext, Context, VNode, toChildArray, Fragment, ComponentChildren } from "preact";
 import { Collapse } from "react-bootstrap";
 import { HelpCircle } from "react-feather";
-
-import { InputFloat } from "./input_float";
-import { InputIndicator } from "./input_indicator";
-import { InputIP } from "./input_ip";
-import { InputNumber } from "./input_number";
-import { InputPassword } from "./input_password";
-import { InputSelect } from "./input_select";
-import { OutputDatetime } from "./output_datetime";
-import { Switch } from "./switch";
-import { InputDate } from "./input_date";
-import { InputFile } from "./input_file";
-import { InputText } from "./input_text";
-import { InputTime } from "./input_time";
-import { InputMonth } from "./input_month";
-import { OutputFloat } from "./output_float";
-import { SwitchableInputNumber } from "./switchable_input_number";
 import { useMemo } from "preact/hooks";
 
 export interface FormRowProps {
@@ -59,23 +43,11 @@ export interface FormRowProps {
 
 let id_counter = 0;
 
-const components_using_id_context: any = [
-    InputDate,
-    InputFile,
-    InputFloat,
-    InputIndicator,
-    InputIP,
-    InputMonth,
-    InputNumber,
-    InputPassword,
-    InputSelect,
-    InputText,
-    InputTime,
-    OutputDatetime,
-    OutputFloat,
-    Switch,
-    SwitchableInputNumber,
-];
+let component_types_using_id_context: any = [];
+
+export function register_id_context_component_type(component_type: any) {
+    component_types_using_id_context.push(component_type);
+}
 
 function walk(children: ComponentChildren): VNode<any> | null {
     for (let c of toChildArray(children)) {
@@ -85,7 +57,7 @@ function walk(children: ComponentChildren): VNode<any> | null {
         if (c.type == FormRow)
             continue;
 
-        if (components_using_id_context.indexOf(c.type) >= 0)
+        if (component_types_using_id_context.indexOf(c.type) >= 0)
             return c;
 
         let sub_result = walk(c.props.children)

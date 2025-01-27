@@ -23,6 +23,7 @@ import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
 import { __ } from "../translation";
+import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../util";
 
@@ -111,5 +112,6 @@ export function InputNumber(props: InputNumberProps) {
         </div> : null }
         {invalidFeedback}
     </div>;
-
 }
+
+register_id_context_component_type(InputNumber);

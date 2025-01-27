@@ -20,6 +20,7 @@
 import { h, Context, Fragment, ComponentChildren } from "preact";
 import { useId, useContext } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
+import { register_id_context_component_type } from "./form_row";
 
 interface InputIPProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "minLength" | "maxLength" | "size" | "pattern" | "onInput"> {
     idContext?: Context<string>
@@ -43,3 +44,5 @@ export function InputIP(props: InputIPProps) {
         <div class="invalid-feedback">{props.invalidFeedback}</div>
     </>);
 }
+
+register_id_context_component_type(InputIP);

@@ -19,6 +19,7 @@
 
 import { h, JSX, Context, ComponentChildren } from "preact";
 import { useId, useContext } from "preact/hooks";
+import { register_id_context_component_type } from "./form_row";
 
 export interface SwitchProps {
     idContext?: Context<string>;
@@ -44,3 +45,5 @@ export function Switch(props: SwitchProps) {
 
     return inner;
 }
+
+register_id_context_component_type(Switch);

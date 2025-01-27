@@ -21,6 +21,7 @@ import { h, Context } from "preact";
 import { useId, useContext } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { Button } from "react-bootstrap";
+import { register_id_context_component_type } from "./form_row";
 
 type variant = "primary" | "secondary" | "success" | "warning" | "danger" | "light" | "link"
 
@@ -54,6 +55,7 @@ export function InputIndicator(props: InputIndicatorProps) {
         <div class="input-group-append">
             <Button variant={props.resetVariant} className="form-control rounded-right" type="button" onClick={props.onReset}>{props.resetText}</Button>
         </div>
-    </div>
-
+    </div>;
 }
+
+register_id_context_component_type(InputIndicator);

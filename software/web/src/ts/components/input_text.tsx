@@ -21,6 +21,7 @@ import { h, Context, Fragment, ComponentChildren } from "preact";
 import { useId, useContext } from "preact/hooks";
 import { JSXInternal } from "preact/src/jsx";
 import { __ } from "../translation";
+import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../util";
 
@@ -109,7 +110,11 @@ export function InputText<T extends InputTextProps>(props: util.NoExtraPropertie
     return <InputTextInternal {...props} invalidFeedback={invalidFeedback} />
 }
 
+register_id_context_component_type(InputText);
+
 // Passing a pattern to an input type="text" also requires passing invalidFeedback for a readable error message
 export function InputTextPatterned<T extends InputTextPatternedProps>(props: util.NoExtraProperties<InputTextPatternedProps, T>) {
     return <InputTextInternal {...props} />
 }
+
+register_id_context_component_type(InputTextPatterned);

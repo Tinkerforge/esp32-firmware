@@ -24,6 +24,7 @@ import { useId, useContext, useRef, useState } from "preact/hooks";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
 import { __ } from "../translation";
+import { register_id_context_component_type } from "./form_row";
 
 interface InputFloatReadonlyProps {
     idContext?: Context<string>;
@@ -190,3 +191,5 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
     {invalidFeedback}
 </div>
 }
+
+register_id_context_component_type(InputFloat);
