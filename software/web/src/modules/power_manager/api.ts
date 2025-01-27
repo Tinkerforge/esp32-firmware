@@ -39,10 +39,6 @@ export interface dynamic_load_config {
     safety_margin_pct: number;
 }
 
-export interface charge_mode {
-    mode: number;
-}
-
 export interface external_control {
     phases_wanted: number;
 }

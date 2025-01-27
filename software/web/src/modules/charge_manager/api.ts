@@ -1,3 +1,5 @@
+import { ConfigChargeMode } from "modules/charge_manager/config_charge_mode.enum";
+
 interface ChargerState {
     s: number,
     e: number,
@@ -84,4 +86,9 @@ export interface low_level_config {
     plug_in_time: number
     enable_current_factor_pct: number
     allocation_interval: number
+}
+
+//APIPath:power_manager/
+export interface charge_mode {
+    mode: ConfigChargeMode;
 }
