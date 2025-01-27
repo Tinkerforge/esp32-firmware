@@ -62,10 +62,10 @@ let x = {
             "average_price": "Durchschnittspreis",
             "solar_forecast": "PV-Ertragsprognose",
             "solar_forecast_needs_activation": <>
-                <p style="color:red;">Für diese Konfiguration muss die <a href="#solar_forecast" onClick={() => {window.scrollTo(0, 0); return true;}}>PV-Ertragsprognose</a> aktiviert werden.</p>
+                <p style="color:red;">Für diese Konfiguration muss die <a href="#solar_forecast">PV-Ertragsprognose</a> aktiviert werden.</p>
             </>,
             "day_ahead_prices_needs_activation": <>
-                <p style="color:red;">Für diese Konfiguration müssen die <a href="#day_ahead_prices" onClick={() => {window.scrollTo(0, 0); return true;}}>dynamischen Strompreise</a> aktiviert werden.</p>
+                <p style="color:red;">Für diese Konfiguration müssen die <a href="#day_ahead_prices">dynamischen Strompreise</a> aktiviert werden.</p>
             </>,
             "meter_needs_activation": <>
                 <p style="color:red;">Für diese Konfiguration muss ein Stromzähler ausgewählt werden.</p>

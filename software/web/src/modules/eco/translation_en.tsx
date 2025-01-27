@@ -11,10 +11,10 @@ let x = {
             "active": "Active",
             "inactive": "Inactive",
             "solar_forecast_needs_activation": <>
-                <p style="color:red;">The <a href="#solar_forecast" onClick={() => {window.scrollTo(0, 0); return true;}}>solar forecast</a> must be enabled for this configuration.</p>
+                <p style="color:red;">The <a href="#solar_forecast">solar forecast</a> must be enabled for this configuration.</p>
             </>,
             "day_ahead_prices_needs_activation": <>
-                <p style="color:red;">The <a href="#day_ahead_prices" onClick={() => {window.scrollTo(0, 0); return true;}}>day ahead prices</a> must be enabled for this configuration.</p>
+                <p style="color:red;">The <a href="#day_ahead_prices">day ahead prices</a> must be enabled for this configuration.</p>
             </>,
             "charge_plan_enable_help": <>
                 <p>If the charge plan is enabled, a configurable charge plan is shown on the status page.</p>

@@ -11,10 +11,10 @@ let x = {
             "active": "Aktiv",
             "inactive": "Inaktiv",
             "solar_forecast_needs_activation": <>
-                <p style="color:red;">Für diese Konfiguration muss die <a href="#solar_forecast" onClick={() => {window.scrollTo(0, 0); return true;}}>PV-Ertragsprognose</a> aktiviert werden.</p>
+                <p style="color:red;">Für diese Konfiguration muss die <a href="#solar_forecast">PV-Ertragsprognose</a> aktiviert werden.</p>
             </>,
             "day_ahead_prices_needs_activation": <>
-                <p style="color:red;">Für diese Konfiguration müssen die <a href="#day_ahead_prices" onClick={() => {window.scrollTo(0, 0); return true;}}>dynamischen Strompreise</a> aktiviert werden.</p>
+                <p style="color:red;">Für diese Konfiguration müssen die <a href="#day_ahead_prices">dynamischen Strompreise</a> aktiviert werden.</p>
             </>,
             "charge_plan_enable_help": <>
                 <p>Wenn die Ladeplanung aktiviert ist wird auf der Status-Seite ein konfigurierbarer Ladeplan angezeigt.</p>

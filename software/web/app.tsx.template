@@ -20,6 +20,7 @@
 
 import * as util from "./ts/util";
 import { h, Fragment, Component, createRef, RefObject } from "preact";
+import { useLayoutEffect } from "preact/hooks";
 import { __ } from "./ts/translation";
 import { NavbarItem } from "./ts/components/navbar_item";
 import { NavbarGroup } from "./ts/components/navbar_group";
@@ -191,6 +192,8 @@ export class App extends Component<AppProps, AppState> {
     }
 
     render() {
+        useLayoutEffect(() => window.scrollTo(0, 0), [this.state.sub_page]);
+
         return <>
             <nav class={util.is_native_median_app() ? "": "navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2"} hidden={util.is_native_median_app()}>
                 <a href="#status"><img id="navbar-logo" class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
@@ -205,7 +208,6 @@ export class App extends Component<AppProps, AppState> {
                     let sub_page_changed = this.state.sub_page != sub_page;
 
                     if (sub_page_changed || this.state.sidebar_open) {
-                        setTimeout(() => window.scrollTo(0, 0), 1);
                         this.setState({sub_page: sub_page, sidebar_open: false}, () => {if (sub_page_changed) this.on_sub_page_change();});
                     }
                 }}>
