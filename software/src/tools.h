@@ -27,7 +27,6 @@
 #include <esp_log.h>
 #include <FS.h>
 #include <driver/i2c.h>
-#include <lwip/dns.h>
 #include <TFTools/Micros.h>
 #include <TFTools/Option.h>
 
@@ -72,25 +71,6 @@ inline bool running_in_main_task()
 void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms);
 
 uint16_t internet_checksum(const uint8_t *data, size_t length);
-
-// Helper function to execute dns_gethostbyname in lwIP's TCPIP context.
-err_t dns_gethostbyname_lwip_ctx(const char *hostname, ip_addr_t *addr, dns_found_callback found, void *callback_arg);
-// Helper function to execute dns_gethostbyname_addrtype in lwIP's TCPIP context.
-err_t dns_gethostbyname_addrtype_lwip_ctx(const char *hostname, ip_addr_t *addr, dns_found_callback found, void *callback_arg, u8_t dns_addrtype);
-
-struct dns_gethostbyname_addrtype_lwip_ctx_async_data
-{
-    err_t err; // output
-    ip_addr_t addr; // internal
-    ip_addr_t *addr_ptr; // output
-    std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> found_callback; // input
-    void *user; // input/output
-};
-
-void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
-                                               std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback,
-                                               dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg,
-                                               u8_t dns_addrtype);
 
 void poke_localhost();
 

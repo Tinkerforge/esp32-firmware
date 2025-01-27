@@ -762,87 +762,6 @@ uint16_t internet_checksum(const uint8_t *data, size_t length)
     return checksum;
 }
 
-struct gethostbyname_parameters {
-    const char *hostname;
-    ip_addr_t *addr;
-    dns_found_callback found_callback;
-    void *callback_arg;
-    u8_t dns_addrtype;
-};
-
-static esp_err_t gethostbyname_lwip_ctx(void *ctx)
-{
-    gethostbyname_parameters *parameters = static_cast<gethostbyname_parameters *>(ctx);
-    return dns_gethostbyname(parameters->hostname, parameters->addr, parameters->found_callback, parameters->callback_arg);
-}
-
-err_t dns_gethostbyname_lwip_ctx(const char *hostname, ip_addr_t *addr, dns_found_callback found_callback, void *callback_arg)
-{
-    gethostbyname_parameters parameters;
-    parameters.hostname = hostname;
-    parameters.addr = addr;
-    parameters.found_callback = found_callback;
-    parameters.callback_arg = callback_arg;
-
-    return esp_netif_tcpip_exec(gethostbyname_lwip_ctx, &parameters);
-}
-
-static esp_err_t gethostbyname_addrtype_lwip_ctx(void *ctx)
-{
-    gethostbyname_parameters *parameters = static_cast<gethostbyname_parameters *>(ctx);
-    return dns_gethostbyname_addrtype(parameters->hostname, parameters->addr, parameters->found_callback, parameters->callback_arg, parameters->dns_addrtype);
-}
-
-err_t dns_gethostbyname_addrtype_lwip_ctx(const char *hostname, ip_addr_t *addr, dns_found_callback found_callback, void *callback_arg, u8_t dns_addrtype)
-{
-    gethostbyname_parameters parameters;
-    parameters.hostname = hostname;
-    parameters.addr = addr;
-    parameters.found_callback = found_callback;
-    parameters.callback_arg = callback_arg;
-    parameters.dns_addrtype = dns_addrtype;
-
-    return esp_netif_tcpip_exec(gethostbyname_addrtype_lwip_ctx, &parameters);
-}
-
-static void gethostbyname_addrtype_lwip_ctx_async(const char */*hostname*/, const ip_addr_t *addr, void *callback_arg)
-{
-    dns_gethostbyname_addrtype_lwip_ctx_async_data *data = static_cast<dns_gethostbyname_addrtype_lwip_ctx_async_data *>(callback_arg);
-
-    data->err = ERR_OK; // ERR_OK because we got a response. Response might be negative and ipaddr a nullptr, though.
-
-    if (addr != nullptr) {
-        data->addr = *addr;
-        data->addr_ptr = &data->addr;
-    }
-    else {
-        data->addr_ptr = nullptr;
-    }
-
-    task_scheduler.scheduleOnce([data]() {
-        data->found_callback(data);
-    });
-}
-
-void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
-                                               std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback,
-                                               dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg,
-                                               u8_t dns_addrtype)
-{
-    callback_arg->found_callback = std::move(found_callback);
-    err_t err = dns_gethostbyname_addrtype_lwip_ctx(hostname, &callback_arg->addr, gethostbyname_addrtype_lwip_ctx_async, callback_arg, dns_addrtype);
-
-    // Don't set the callback_arg's err if the result is not available yet.
-    // The callback handler might be executed before dns_gethostbyname_addrtype_lwip_ctx returns.
-    if (err == ERR_INPROGRESS)
-        return;
-
-    callback_arg->err = err;
-    callback_arg->addr_ptr = &callback_arg->addr;
-
-    callback_arg->found_callback(callback_arg); // Can't call local found_callback anymore because it has been std::forward'ed.
-}
-
 static esp_err_t poke_localhost_fn(void * /*ctx*/)
 {
     udp_pcb *l_udp_pcb = udp_new();
@@ -1141,4 +1060,3 @@ Option<time_t> get_localtime_today_midnight_in_utc()
 
     return get_localtime_midnight_in_utc(tv.tv_sec);
 }
-

@@ -38,6 +38,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include "tools/dns.h"
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 extern char local_uid_str[32];

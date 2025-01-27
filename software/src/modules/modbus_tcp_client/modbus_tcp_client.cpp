@@ -24,6 +24,8 @@
 #include <TFNetworkUtil.h>
 #include <esp_timer.h>
 
+#include "tools/dns.h"
+
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 
