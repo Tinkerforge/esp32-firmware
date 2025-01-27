@@ -724,7 +724,7 @@ static constexpr int CHECK_IMPROVEMENT = 4;
 static constexpr int CHECK_IMPROVEMENT_ALL_PHASE = 8;
 static constexpr int CHECK_SPREAD = 16;
 
-static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch, uint16_t guaranteed_current) {
+static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch, uint16_t guaranteed_pv_current) {
     // Spread
     bool check_spread = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & CHECK_SPREAD) != 0;
     bool improves_all_spread = true;
@@ -786,7 +786,7 @@ static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost
         // If the guaranteed current is sufficient to activate this charger
         // we don't have to check the PV minimum. It is allowed to activate
         // this charger even if the PV limit will be exceeded.
-        if (p == (size_t)GridPhase::PV && new_cost.pv <= guaranteed_current) {
+        if (p == (size_t)GridPhase::PV && new_cost.pv <= guaranteed_pv_current) {
             continue;
         }
 
@@ -859,7 +859,7 @@ static bool try_activate(StringWriter &sw, const ChargerState *state, bool activ
         CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE
     };
 
-    bool result = can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg, false, state->guaranteed_pv_current / (activate_3p ? 3 : 1));
+    bool result = can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg, false, state->guaranteed_pv_current);
     if (result && spent != nullptr)
         *spent = new_enable_cost;
     return result;
@@ -1041,7 +1041,7 @@ static void stage_5(StageContext &sc) {
         StringWriter sw{buf, ARRAY_SIZE(buf)};
 
         sw.printf("5: %d:", sc.idx_array[i]);
-        if (!can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, sc.limits, sc.cfg, state->phase_rotation == PhaseRotation::Unknown, state->guaranteed_pv_current / 3)) {
+        if (!can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, sc.limits, sc.cfg, state->phase_rotation == PhaseRotation::Unknown, state->guaranteed_pv_current)) {
             trace("%s", buf);
             continue;
         }
