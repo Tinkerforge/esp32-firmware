@@ -29,6 +29,7 @@
 #include "build.h"
 #include "config_migrations.h"
 #include "tools.h"
+#include "tools/fs.h"
 #include "tools/memory.h"
 
 extern TF_HAL hal;

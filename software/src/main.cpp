@@ -31,6 +31,7 @@
 #include "bindings/hal_common.h"
 #include "build.h"
 #include "tools.h"
+#include "tools/fs.h"
 #include "tools/memory.h"
 
 #include "gcc_warnings.h"

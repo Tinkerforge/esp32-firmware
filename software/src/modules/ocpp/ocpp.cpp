@@ -24,6 +24,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "tools/fs.h"
 #include "build.h"
 
 extern char local_uid_str[32];

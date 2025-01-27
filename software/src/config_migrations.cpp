@@ -31,7 +31,7 @@
 #include "build.h"
 #include "config.h"
 #include "digest_auth.h"
-#include "tools.h"
+#include "tools/fs.h"
 
 struct ConfigMigration {
     int major, minor, patch;

@@ -23,6 +23,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "tools/fs.h"
 
 extern uint32_t local_uid_num;
 

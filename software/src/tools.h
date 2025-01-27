@@ -26,7 +26,6 @@
 #include <mutex>
 #include <memory> // for std::unique_ptr
 #include <esp_log.h>
-#include <FS.h>
 #include <driver/i2c.h>
 #include <IPAddress.h>
 #include <TFTools/Micros.h>
@@ -48,17 +47,10 @@ void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase)
 
 int check(int rc, const char *msg);
 
-extern bool should_factory_reset_bricklets;
-bool mount_or_format_spiffs();
-
 int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose, const uint8_t *firmware, size_t firmware_len, bool force);
 
 int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch, uint8_t left_beta /* 255 == no beta */, uint32_t left_timestamp,
                     uint8_t right_major, uint8_t right_minor, uint8_t right_patch, uint8_t right_beta /* 255 == no beta */, uint32_t right_timestamp);
-
-bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories = true);
-
-void remove_directory(const char *path);
 
 bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check);
 bool is_valid_subnet_mask(IPAddress subnet);
@@ -102,8 +94,6 @@ public:
 };
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
-void list_dir(fs::FS &fs, const char *dirname, uint8_t depth, uint8_t current_depth = 0);
 
 template <typename T>
 T clamp(T min, T val, T max)

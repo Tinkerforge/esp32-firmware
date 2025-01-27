@@ -34,6 +34,7 @@
 #include "string_builder.h"
 #include "config/private.h"
 #include "tools/memory.h"
+#include "tools/fs.h"
 
 #include "gcc_warnings.h"
 

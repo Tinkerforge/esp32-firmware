@@ -27,6 +27,7 @@
 #include "bindings/hal_common.h"
 #include "bindings/bricklet_evse_v2.h"
 #include "tools.h"
+#include "tools/fs.h"
 
 #define BUTTON_MIN_PRESS_THRES 10000
 #define BUTTON_MAX_PRESS_THRES 30000
