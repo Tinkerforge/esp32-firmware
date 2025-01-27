@@ -24,6 +24,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include "tools/bricklets.h"
 #include "build.h"
 #include "hal_arduino_esp32_brick/hal_arduino_esp32_brick.h"
 

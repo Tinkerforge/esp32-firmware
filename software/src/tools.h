@@ -30,8 +30,6 @@
 #include <TFTools/Micros.h>
 #include <TFTools/Option.h>
 
-#include "bindings/hal_common.h"
-
 #define MACRO_NAME_TO_STRING(x) #x
 
 // Indirection expands macro. See https://gcc.gnu.org/onlinedocs/gcc-3.4.3/cpp/Stringification.html
@@ -43,10 +41,6 @@ bool a_after_b(uint32_t a, uint32_t b);
 bool deadline_elapsed(uint32_t deadline_ms);
 
 void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase);
-
-int check(int rc, const char *msg);
-
-int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose, const uint8_t *firmware, size_t firmware_len, bool force);
 
 int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch, uint8_t left_beta /* 255 == no beta */, uint32_t left_timestamp,
                     uint8_t right_major, uint8_t right_minor, uint8_t right_patch, uint8_t right_beta /* 255 == no beta */, uint32_t right_timestamp);

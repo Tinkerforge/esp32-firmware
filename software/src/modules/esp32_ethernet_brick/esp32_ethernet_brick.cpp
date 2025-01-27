@@ -28,6 +28,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "tools.h"
+#include "tools/bricklets.h"
 #include "hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"
 #include "bindings/errors.h"
 
