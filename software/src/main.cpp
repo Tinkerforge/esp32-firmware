@@ -23,6 +23,7 @@
 #include <string.h>
 #include <esp_partition.h>
 #include <esp_ota_ops.h>
+#include <esp_task.h>
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
