@@ -24,9 +24,11 @@
 #include <time.h>
 #include <new>
 #include <mutex>
+#include <memory> // for std::unique_ptr
 #include <esp_log.h>
 #include <FS.h>
 #include <driver/i2c.h>
+#include <IPAddress.h>
 #include <TFTools/Micros.h>
 #include <TFTools/Option.h>
 
