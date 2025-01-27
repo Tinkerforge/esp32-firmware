@@ -664,6 +664,8 @@ void EVSE::update_all_data()
 
     evse_common.require_meter_enabled.get("enabled")->updateBool(SLOT_ACTIVE(active_and_clear_on_disconnect[CHARGING_SLOT_REQUIRE_METER]));
 
+    evse_common.automation_current.get("current")->updateUint(max_current[CHARGING_SLOT_AUTOMATION]);
+
     // get_user_calibration
     user_calibration.get("user_calibration_active")->updateBool(user_calibration_active);
     user_calibration.get("voltage_diff")->updateInt(voltage_diff);
