@@ -162,6 +162,8 @@ def parse_file(input_path, defines, ifs_elses):
 
                     ifs_elses.pop()
 
+                line = remove_end(line.rstrip(), end) + f' <DontUseJavaScriptLineCommentInJSX/>{end}\n'
+
             for if_else in ifs_elses:
                 if if_else.value == 0:
                     if if_else.location != f'{input_path}:{i + 1}':
