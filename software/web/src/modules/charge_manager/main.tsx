@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "module_available.inc"
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
@@ -28,7 +29,9 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, Server, Sliders } from "react-feather";
+//#if MODULE_ECO_AVAILABLE
 import { EcoChart } from "modules/eco/main";
+//#endif
 import { ButtonGroup, Button } from "react-bootstrap";
 
 import { ConfigChargeMode } from "./config_charge_mode.enum";
@@ -149,8 +152,10 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
          || state.config.chargers.length == 0)
             return <StatusSection name="charge_manager" />;
 
+//#if MODULE_ECO_AVAILABLE
         let cm_eco = API.get("power_manager/charge_mode").mode >= ConfigChargeMode.Eco && API.get("power_manager/charge_mode").mode <= ConfigChargeMode.EcoMinPV;
-        let show_eco_chart = cm_eco && API.get("eco/config").enable && API.get("eco/charge_plan").enable
+        let show_eco_chart = cm_eco && API.get("eco/config").enable && API.get("eco/charge_plan").enable;
+//#endif
 
         let cards = state.state.chargers.map((c, i) => {
             let c_state = "";
@@ -198,7 +203,9 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                         <div class={"card-body " + c_body_classes}>
                             <h5 class="card-title">{c_state}</h5>
                             <p class="card-text">{c_info}</p>
+{/*#if MODULE_ECO_AVAILABLE*/}
                             {show_eco_chart ? <EcoChart charger_id={i} /> : null}
+{/*#endif*/}
                         </div>
                         <div class="card-footer">
                             <span>{c_status_text}</span>
