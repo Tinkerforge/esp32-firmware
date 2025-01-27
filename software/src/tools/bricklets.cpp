@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "bricklets.h"
+
 #include "bindings/bricklet_unknown.h"
 #include "bindings/errors.h"
 #include "event_log_prefix.h"

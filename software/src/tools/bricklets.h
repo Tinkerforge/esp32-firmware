@@ -26,3 +26,27 @@
 int check(int rc, const char *msg);
 
 int ensure_matching_firmware(TF_TFP *tfp, const char *name, const char *purpose, const uint8_t *firmware, size_t firmware_len, bool force);
+
+class TFPSwap
+{
+public:
+    TFPSwap(TF_TFP *tfp) :
+        tfp(tfp),
+        device(tfp->device),
+        cb_handler(tfp->cb_handler)
+    {
+        tfp->device = nullptr;
+        tfp->cb_handler = nullptr;
+    }
+
+    ~TFPSwap()
+    {
+        tfp->device = device;
+        tfp->cb_handler = cb_handler;
+    }
+
+private:
+    TF_TFP *tfp;
+    void *device;
+    TF_TFP_CallbackHandler cb_handler;
+};

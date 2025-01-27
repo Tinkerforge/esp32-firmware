@@ -143,31 +143,6 @@ std::unique_ptr<T[]> heap_alloc_array(size_t n) {
 }
 #endif
 
-
-class TFPSwap
-{
-public:
-    TFPSwap(TF_TFP *tfp) :
-        tfp(tfp),
-        device(tfp->device),
-        cb_handler(tfp->cb_handler)
-    {
-        tfp->device = nullptr;
-        tfp->cb_handler = nullptr;
-    }
-
-    ~TFPSwap()
-    {
-        tfp->device = device;
-        tfp->cb_handler = cb_handler;
-    }
-
-private:
-    TF_TFP *tfp;
-    void *device;
-    TF_TFP_CallbackHandler cb_handler;
-};
-
 // Remove seperator for nfc tags
 int remove_separator(const char *const in, char *out);
 

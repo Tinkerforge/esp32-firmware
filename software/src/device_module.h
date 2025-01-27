@@ -22,6 +22,7 @@
 #include "module.h"
 #include "config.h"
 #include "tools.h"
+#include "tools/bricklets.h"
 #include "header_logger.h"
 #include "bindings/base58.h"
 #include "bindings/hal_common.h"
