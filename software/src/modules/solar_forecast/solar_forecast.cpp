@@ -559,7 +559,7 @@ Option<uint32_t> SolarForecast::get_wh_range(const uint32_t start, const uint32_
 
     // We assume that we have valid data for the day if
     // there is at least one data point today
-    if (count != 0) {
+    if (count == 0) {
         return {};
     }
 
