@@ -28,6 +28,7 @@ import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, Server, Sliders } from "react-feather";
+import { EcoChart } from "modules/eco/main";
 import { ButtonGroup, Button } from "react-bootstrap";
 
 import { ConfigChargeMode } from "./config_charge_mode.enum";
@@ -148,6 +149,9 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
          || state.config.chargers.length == 0)
             return <StatusSection name="charge_manager" />;
 
+        let cm_eco = API.get("power_manager/charge_mode").mode >= ConfigChargeMode.Eco && API.get("power_manager/charge_mode").mode <= ConfigChargeMode.EcoMinPV;
+        let show_eco_chart = cm_eco && API.get("eco/config").enable && API.get("eco/charge_plan").enable
+
         let cards = state.state.chargers.map((c, i) => {
             let c_state = "";
             let c_info = "";
@@ -194,6 +198,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                         <div class={"card-body " + c_body_classes}>
                             <h5 class="card-title">{c_state}</h5>
                             <p class="card-text">{c_info}</p>
+                            {show_eco_chart ? <EcoChart charger_id={i} /> : null}
                         </div>
                         <div class="card-footer">
                             <span>{c_status_text}</span>

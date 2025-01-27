@@ -34,12 +34,13 @@ import { Switch } from "../../ts/components/switch";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputTime } from "../../ts/components/input_time";
-import { Button } from "react-bootstrap";
+import { Button, Collapse } from "react-bootstrap";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { is_day_ahead_prices_enabled, get_price_from_index, get_prices_as_15min, get_price_from_index_as_15min } from "../day_ahead_prices/main";
 import { Departure } from "./departure.enum";
 import { Resolution} from "../day_ahead_prices/resolution.enum";
+import { ConfigChargeMode } from "modules/charge_manager/config_charge_mode.enum";
 
 export function EcoNavbar() {
     return (
@@ -398,6 +399,9 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
             return <StatusSection name="eco" />
         }
 
+        let charge_mode = API.get('power_manager/charge_mode').mode;
+        let visible = charge_mode >= ConfigChargeMode.Eco && charge_mode <= ConfigChargeMode.EcoMinPV;
+
         // TODO: This function needs to go into translation_*.tsx
         let charge_plan_text = () => {
             let day = "bis Heute um";
@@ -435,6 +439,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
         };
 
         return <StatusSection name="eco">
+            <Collapse in={visible}><div>
             <FormRow label="Ladeplan" label_muted={charge_plan_text()}>
                 <div class="col-md-16">
                     <div class="input-group">
@@ -482,6 +487,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                     </Button>
                 </div>
             </FormRow>
+            </div></Collapse>
         </StatusSection>;
     }
 }
