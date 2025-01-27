@@ -82,7 +82,7 @@ private:
     Option<int32_t> price_maximum_today;
     Option<int32_t> price_maximum_tomorrow;
 
-    uint8_t prices_sorted_count = 0;
+    size_t prices_sorted_count = 0;
     typedef std::pair<uint8_t, int32_t> PriceSorted;
     PriceSorted *prices_sorted = nullptr;
     int32_t prices_sorted_first_date = 0;

@@ -180,7 +180,7 @@ void Eco::register_urls()
         uint32_t duration_remaining_1m = end_time_1m.second - current_time_1m;
         if (config.get("park_time")->asBool()) {
             const uint32_t park_time_duration_1m = config.get("park_time_duration")->asUint()*60;
-            duration_remaining_1m = MIN(park_time_duration_1m, duration_remaining_1m);
+            duration_remaining_1m = std::min(park_time_duration_1m, duration_remaining_1m);
         }
         const uint32_t duration_15m   = (duration_remaining_1m + 14)/15; // Round up to 15 minutes
         const uint32_t duration_uint8 = (duration_15m + 7)/8;
@@ -251,7 +251,7 @@ void Eco::set_chargers_state_chart_data(const uint8_t charger_id, bool *chart, u
             uint32_t duration_remaining_1m = end_time_1m.second - current_time_1m;
             if (config.get("park_time")->asBool()) {
                 const uint32_t park_time_duration_1m = config.get("park_time_duration")->asUint()*60;
-                duration_remaining_1m = MIN(park_time_duration_1m, duration_remaining_1m);
+                duration_remaining_1m = std::min(park_time_duration_1m, duration_remaining_1m);
             }
             const uint32_t duration_15m = (duration_remaining_1m + 14)/15; // Round up to 15 minutes
             const uint32_t amount_15m   = amount_1m/15;
@@ -428,7 +428,7 @@ void Eco::update()
             // Check time from start to end and limit to park_time_duration
             if (config.get("park_time")->asBool()) {
                 const uint32_t current_park_time = current_time_1m - start_time_1m;
-                duration_remaining_1m = MIN(duration_remaining_1m, park_time_duration_1m - current_park_time);
+                duration_remaining_1m = std::min(duration_remaining_1m, park_time_duration_1m - current_park_time);
             }
 
             // Check if the current day ahead price slot is cheap

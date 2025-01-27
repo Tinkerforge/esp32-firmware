@@ -331,7 +331,7 @@ static int accept_connections(TF_Net *net) {
 }*/
 
 static void drop_packet(TF_NetClient *client, uint8_t len) {
-    len = MIN(len, client->read_buf_used);
+    len = std::min(len, client->read_buf_used);
     memmove(client->read_buf, client->read_buf + len, client->read_buf_used - len);
     client->read_buf_used -= len;
     client->available_packet_valid = false;

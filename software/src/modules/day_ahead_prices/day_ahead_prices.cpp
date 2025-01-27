@@ -174,7 +174,7 @@ void DayAheadPrices::update_prices_sorted()
     }
 
     auto p = prices.get("prices");
-    const uint32_t num_prices = p->count();
+    const size_t num_prices = p->count();
 
     // No price data available
     if (num_prices == 0) {
@@ -185,16 +185,17 @@ void DayAheadPrices::update_prices_sorted()
     // Put prices in array with pair of index and price
     std::fill_n(prices_sorted, DAY_AHEAD_PRICE_MAX_AMOUNT, std::pair<uint8_t, int32_t>(-1, 0));
 
-    const uint8_t multiplier = config.get("resolution")->asEnum<Resolution>() == Resolution::Min60 ? 4 : 1;
-    prices_sorted_count = MIN(num_prices * multiplier, DAY_AHEAD_PRICE_MAX_AMOUNT);
-    for (uint8_t i = 0; i < prices_sorted_count/multiplier; i++) {
+    const size_t multiplier = config.get("resolution")->asEnum<Resolution>() == Resolution::Min60 ? 4 : 1;
+    prices_sorted_count = std::min(num_prices * multiplier, static_cast<size_t>(DAY_AHEAD_PRICE_MAX_AMOUNT));
+    for (size_t i = 0; i < prices_sorted_count/multiplier; i++) {
+        int32_t price = p->get(i)->asInt();
         if (config.get("resolution")->asEnum<Resolution>() == Resolution::Min15) {
-            prices_sorted[i] = std::make_pair(i, p->get(i)->asInt());
+            prices_sorted[i] = std::make_pair(i, price);
         } else {
-            prices_sorted[i*4+0] = std::make_pair(i*4+0, p->get(i)->asInt());
-            prices_sorted[i*4+1] = std::make_pair(i*4+1, p->get(i)->asInt());
-            prices_sorted[i*4+2] = std::make_pair(i*4+2, p->get(i)->asInt());
-            prices_sorted[i*4+3] = std::make_pair(i*4+3, p->get(i)->asInt());
+            prices_sorted[i*4+0] = std::make_pair(static_cast<uint8_t>(i*4+0), price);
+            prices_sorted[i*4+1] = std::make_pair(static_cast<uint8_t>(i*4+1), price);
+            prices_sorted[i*4+2] = std::make_pair(static_cast<uint8_t>(i*4+2), price);
+            prices_sorted[i*4+3] = std::make_pair(static_cast<uint8_t>(i*4+3), price);
         }
     }
 
@@ -471,7 +472,7 @@ Option<int32_t> DayAheadPrices::get_minimum_price_between(const uint32_t start, 
     for (uint32_t i = 0; i < num_prices; i++) {
         if(time_between(i, start, end, first_date, resolution)) {
             const int32_t price = p->get(i)->asInt();
-            min = MIN(min, price);
+            min = std::min(min, price);
             count++;
         }
     }
@@ -588,7 +589,7 @@ Option<int32_t> DayAheadPrices::get_maximum_price_between(const uint32_t start, 
     for (uint32_t i = 0; i < num_prices; i++) {
         if(time_between(i, start, end, first_date, resolution)) {
             const int32_t price = p->get(i)->asInt();
-            max = MAX(max, price);
+            max = std::max(max, price);
             count++;
         }
     }
