@@ -17,9 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component } from "preact";
+import { h, Component, Context } from "preact";
+import { useId, useContext } from "preact/hooks";
+import { register_id_context_component_type } from "./form_row";
 
 interface InputAnyFloatProps {
+    idContext?: Context<string>
     value: number,
     onValue: (value: number) => void,
     required?: boolean,
@@ -78,7 +81,10 @@ export class InputAnyFloat extends Component<InputAnyFloatProps, InputAnyFloatSt
     }
 
     render() {
+        const id = !this.props.idContext ? useId() : useContext(this.props.idContext);
+
         return <input
+            id={id}
             class="form-control"
             type="text"
             pattern={this.pattern}
@@ -93,3 +99,5 @@ export class InputAnyFloat extends Component<InputAnyFloatProps, InputAnyFloatSt
             }} />;
     }
 }
+
+register_id_context_component_type(InputAnyFloat);

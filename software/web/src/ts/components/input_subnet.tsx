@@ -17,13 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact";
+import { h, Context } from "preact";
 import { InputSelect, InputSelectProps } from "./input_select";
-
 import { unparseIP } from "../util";
 import { useMemo } from "preact/hooks";
+import { register_id_context_component_type } from "./form_row";
 
 export interface InputSubnetProps extends Omit<InputSelectProps, "items"> {
+    idContext?: Context<string>
     minPrefixLength?: number;
     maxPrefixLength?: number;
 }
@@ -45,3 +46,5 @@ export function InputSubnet(props: InputSubnetProps) {
                     {...rest}
                 />);
 }
+
+register_id_context_component_type(InputSubnet);
