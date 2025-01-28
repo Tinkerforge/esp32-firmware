@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "../../ts/translation";
 let x = {
     "charge_manager": {
         "status": {
@@ -116,7 +117,7 @@ let x = {
             "dlm_safety_margin_pct_muted": "Usually no additional margin is necessary.",
             "dlm_safety_margin_pct_help": "The load management will calculate a safety margin based on the grid current limit and the largest consumer current. This setting can be used to increase the safety marging above the calculated value.",
 
-            "managed_disabled": "Charge management settings will be ignored: Charger only controls itself or is controlled externally.",
+            "managed_disabled": <>To use {__("this_device")} as charge manager, the <a href="#charge_manager_chargers">{__("charge_manager.content.enable_charge_manager")}</a> must be set to “{__("charge_manager.content.mode_manager")}”.</>,
 
             "charge_manager_debug": "Debug",
             "debug_description": "Create protocol",
