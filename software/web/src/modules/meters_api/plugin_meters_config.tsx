@@ -29,6 +29,7 @@ import { Table, TableRow } from "../../ts/components/table";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from '../../ts/components/input_select';
+import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
 
 const MAX_VALUES = 96;
 
@@ -243,6 +244,17 @@ interface PresetSelectorState {
     preset: string
 }
 
+function get_default_location(preset: string) {
+    switch (preset) {
+    case "1":
+    case "2":
+    case "3":
+        return MeterLocation.Grid;
+    }
+
+    return MeterLocation.Unknown;
+}
+
 class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState> {
     presets: Readonly<number[][]> = [
         [],
@@ -273,41 +285,83 @@ class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState>
     }
 
     render() {
-        return <>
-            <InputSelect
-                items={[
-                    ["0", __("meters_api.content.api_meter_no_preset")],
-                    ["1", __("meters_api.content.meter_type_pv_only")],
-                    ["2", __("meters_api.content.meter_type_dlm_only")],
-                    ["3", __("meters_api.content.meter_type_pv_dlm_only")],
-                    ["4", __("meters.script.meter_type_1")],
-                    ["5", __("meters.script.meter_type_2")],
-                    ["6", __("meters.script.meter_type_3")]
-                ]}
-                value={this.state.preset}
-                onValue={async (v) => {
-                    let preset = parseInt(v);
-                    let value_ids: number[] = isNaN(preset) ? [] : this.presets[preset];
+        let children = [
+            <FormRow label={__("meters_api.content.api_meter_preset")}>
+                <InputSelect
+                    items={[
+                        ["0", __("meters_api.content.api_meter_no_preset")],
+                        ["1", __("meters_api.content.meter_type_pv_only")],
+                        ["2", __("meters_api.content.meter_type_dlm_only")],
+                        ["3", __("meters_api.content.meter_type_pv_dlm_only")],
+                        ["4", __("meters.script.meter_type_1")],
+                        ["5", __("meters.script.meter_type_2")],
+                        ["6", __("meters.script.meter_type_3")]
+                    ]}
+                    value={this.state.preset}
+                    onValue={async (v) => {
+                        let preset = parseInt(v);
+                        let value_ids: number[] = isNaN(preset) ? [] : this.presets[preset];
 
-                    if (this.props.config[1].value_ids.toString() !== this.presets[parseInt(this.state.preset)].toString()) {
-                        if (!await util.async_modal_ref.current.show({
-                            title: () => __("meters_api.content.override_modal_title"),
-                            body: () => __("meters_api.content.override_modal_body"),
-                            yes_text: () => __("meters_api.content.override_modal_confirm"),
-                            no_text: () => __("meters_api.content.override_modal_cancel"),
-                            yes_variant: "danger",
-                            no_variant: "secondary",
-                            nestingDepth: 2
-                        })) {
-                            this.setState({preset: this.state.preset});
-                            return;
+                        if (this.props.config[1].value_ids.toString() !== this.presets[parseInt(this.state.preset)].toString()) {
+                            if (!await util.async_modal_ref.current.show({
+                                title: () => __("meters_api.content.override_modal_title"),
+                                body: () => __("meters_api.content.override_modal_body"),
+                                yes_text: () => __("meters_api.content.override_modal_confirm"),
+                                no_text: () => __("meters_api.content.override_modal_cancel"),
+                                yes_variant: "danger",
+                                no_variant: "secondary",
+                                nestingDepth: 2
+                            })) {
+                                this.setState({preset: this.state.preset});
+                                return;
+                            }
                         }
-                    }
 
-                    this.setState({preset: v});
-                    this.props.on_config(util.get_updated_union(this.props.config, {value_ids: value_ids}));
-                }}/>
-        </>
+                        this.setState({preset: v});
+                        this.props.on_config(util.get_updated_union(this.props.config, {value_ids: value_ids, location: get_default_location(v)}));
+                    }}/>
+            </FormRow>,
+        ];
+
+        let default_location = get_default_location(this.state.preset);
+
+        if (default_location == MeterLocation.Unknown) {
+            children.push(
+                <FormRow label={__("meters_api.content.config_location")}>
+                    <InputSelect
+                        required
+                        items={get_meter_location_items()}
+                        placeholder={__("select")}
+                        value={this.props.config[1].location.toString()}
+                        onValue={(v) => {
+                            this.props.on_config(util.get_updated_union(this.props.config, {location: parseInt(v)}));
+                        }} />
+                </FormRow>);
+        }
+        else {
+            let enable_location_override = default_location != this.props.config[1].location;
+
+            children.push(
+                <FormRow label={__("meters_api.content.config_location")}>
+                    <SwitchableInputSelect
+                        required
+                        items={get_meter_location_items()}
+                        placeholder={__("select")}
+                        value={this.props.config[1].location.toString()}
+                        onValue={(v) => {
+                            this.props.on_config(util.get_updated_union(this.props.config, {location: parseInt(v)}));
+                        }}
+                        checked={enable_location_override}
+                        onSwitch={() => {
+                            this.props.on_config(util.get_updated_union(this.props.config, {location: (enable_location_override ? default_location : MeterLocation.Unknown)}));
+                        }}
+                        switch_label_active={__("meters_api.content.location_different")}
+                        switch_label_inactive={__("meters_api.content.location_matching")}
+                        />
+                </FormRow>);
+        }
+
+        return children;
     }
 }
 
@@ -328,19 +382,7 @@ export function init() {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }}/>
                     </FormRow>,
-                    <FormRow label={__("meters_api.content.config_location")}>
-                        <InputSelect
-                            required
-                            items={get_meter_location_items()}
-                            placeholder={__("select")}
-                            value={config[1].location.toString()}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {location: parseInt(v)}));
-                            }} />
-                    </FormRow>,
-                    <FormRow label={__("meters_api.content.api_meter_preset")}>
-                        <PresetSelector config={config} on_config={on_config} />
-                    </FormRow>,
+                    <PresetSelector config={config} on_config={on_config} />,
                     <FormRow label={__("meters_api.content.config_value_ids")}>
                         <MeterValueIDTable config={config} on_config={on_config} />
                     </FormRow>,

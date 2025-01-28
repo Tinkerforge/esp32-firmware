@@ -21,7 +21,9 @@ let x = {
             "override_modal_title": "Override meter values",
             "override_modal_body": "The meter values will be overridden. Are you sure?",
             "override_modal_confirm": "Override",
-            "override_modal_cancel": "Cancel"
+            "override_modal_cancel": "Cancel",
+            "location_matching": "Matching",
+            "location_different": "Different"
         }
     }
 }
