@@ -764,7 +764,7 @@ def main():
         frontend_modules.append(util.FlavoredName("Nightly").get())
         frontend_modules.append(util.FlavoredName("Debug").get())
 
-    branding_module = util.FlavoredName(branding + ' Branding').get()
+    branding_module = util.FlavoredName('Branding ' + branding).get()
     frontend_modules.append(branding_module)
     branding_mod_path = os.path.join('web', 'src', 'modules', branding_module.under)
 

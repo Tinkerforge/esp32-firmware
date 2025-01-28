@@ -53,6 +53,7 @@ let x = {
     },
     "power_manager": {
         "content": {
+            // TODO Fix this
             "cm_requirements_warning": "Keine kontrollierten Wallboxen eingetragen. Um das PV-Überschussladen zu nutzen, müssen alle angeschlossenen Wallboxen im Lastmanagement als kontrollierte Wallboxen eingetragen sein."
         }
     },

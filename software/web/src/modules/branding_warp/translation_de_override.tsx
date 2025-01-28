@@ -58,6 +58,7 @@ let x = {
     },
     "power_manager": {
         "content": {
+            //"cm_requirements_warning": <>Um das PV-Überschussladen zu nutzen, muss die <a href="#charge_manager_chargers">Fremdsteuerung</a> auf „Lastmanager / PV-Überschussladen“ eingestellt sein.</>
             "cm_requirements_warning": "Um das PV-Überschussladen zu nutzen, muss die Fremdsteuerung (siehe Menüpunkt „Wallboxen“) auf „Lastmanager / PV-Überschussladen“ eingestellt sein."
         }
     },

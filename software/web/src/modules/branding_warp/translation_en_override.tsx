@@ -52,6 +52,7 @@ let x = {
     },
     "power_manager": {
         "content": {
+            //"cm_requirements_warning": <>To use the PV excess charging, the <a href="#charge_manager_chargers">charge management mode</a> must be set to “Charge manager / PV excess charging”.</>
             "cm_requirements_warning": "To use the PV excess charging, the charge management mode (see sub page “Chargers”) must be set to “Charge manager / PV excess charging”."
         }
     },
