@@ -24,7 +24,7 @@ import { translate_unchecked, __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { Button, Collapse } from "react-bootstrap";
+import { Alert, Button, Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
 import { OutputFloat } from "../../ts/components/output_float";
@@ -232,15 +232,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
         return (
             <SubPage name="charge_manager_settings">
                 <ConfigForm id="charge_manager_config_form" title={__("charge_manager.content.charge_manager_settings")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <Collapse in={!API.get("charge_manager/config").enable_charge_manager}>
-                        <div>
-                            <FormRow label="">
-                                <div style="color:red">
-                                    {__("charge_manager.content.managed_disabled")}
-                                </div>
-                            </FormRow>
-                        </div>
-                    </Collapse>
+                    {!API.get("charge_manager/config").enable_charge_manager && <Alert variant="warning">{__("charge_manager.content.managed_disabled")}</Alert>}
 
                     {minimum_current}
 

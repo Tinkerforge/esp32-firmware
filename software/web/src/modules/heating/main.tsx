@@ -387,7 +387,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     </FormRow>
                     <FormSeparator heading={__("heating.content.extended_operation")} help={__("heating.content.extended_operation_help")}/>
                     <FormRow label={__("heating.content.pv_excess_control")}
-                             help={!meter_available && __("heating.content.meter_needs_activation")}
+                             error={__("heating.content.meter_needs_activation")}
+                             show_error={state.pv_excess_control && !meter_available}
                              class="mb-xs-1 mb-md-0">
                         <SwitchableInputNumber
                             disabled={!meter_available}
@@ -407,7 +408,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         <div></div>
                     </FormRow>
                     <FormRow label={__("heating.content.dpc_low")}
-                             help={!day_ahead_prices_enabled && __("heating.content.day_ahead_prices_needs_activation")}
+                             error={__("heating.content.day_ahead_prices_needs_activation")}
+                             show_error={state.extended && !day_ahead_prices_enabled}
                              class="mb-xs-1 mb-md-0">
                         <SwitchableInputNumber
                             disabled={!day_ahead_prices_enabled}
@@ -427,7 +429,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         <div></div>
                     </FormRow>
                     <FormRow label={__("heating.content.pv_yield_forecast")}
-                             help={!solar_forecast_enabled && __("heating.content.solar_forecast_needs_activation")}>
+                             error={__("heating.content.solar_forecast_needs_activation")}
+                             show_error={state.yield_forecast && state.extended && !solar_forecast_enabled}>
                         <SwitchableInputNumber
                             disabled={!solar_forecast_enabled || !state.extended}
                             switch_label_active={__("heating.content.active")}
@@ -444,7 +447,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     </FormRow>
                     <FormSeparator heading={__("heating.content.blocking_operation")} help={__("heating.content.blocking_operation_help")}/>
                     <FormRow label={__("heating.content.for_the_most_expensive")}
-                             help={!day_ahead_prices_enabled && __("heating.content.day_ahead_prices_needs_activation")}>
+                             error={__("heating.content.day_ahead_prices_needs_activation")}
+                             show_error={state.blocking && !day_ahead_prices_enabled}>
                         <SwitchableInputNumber
                             disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("heating.content.active")}

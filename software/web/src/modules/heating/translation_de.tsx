@@ -61,15 +61,9 @@ let x = {
             "sg_ready_muted": "Ausgang 1 und Ausgang 2",
             "average_price": "Durchschnittspreis",
             "solar_forecast": "PV-Ertragsprognose",
-            "solar_forecast_needs_activation": <>
-                <p style="color:red;">Für diese Konfiguration muss die <a href="#solar_forecast">PV-Ertragsprognose</a> aktiviert werden.</p>
-            </>,
-            "day_ahead_prices_needs_activation": <>
-                <p style="color:red;">Für diese Konfiguration müssen die <a href="#day_ahead_prices">dynamischen Strompreise</a> aktiviert werden.</p>
-            </>,
-            "meter_needs_activation": <>
-                <p style="color:red;">Für diese Konfiguration muss ein Stromzähler ausgewählt werden.</p>
-            </>,
+            "solar_forecast_needs_activation": <>Für diese Konfiguration muss die <a href="#solar_forecast">PV-Ertragsprognose</a> aktiviert werden.</>,
+            "day_ahead_prices_needs_activation": <>Für diese Konfiguration müssen die <a href="#day_ahead_prices">dynamischen Strompreise</a> aktiviert werden.</>,
+            "meter_needs_activation": <>Für diese Konfiguration muss ein Stromzähler ausgewählt werden.</>,
             "hours": /*SFN*/(h: number) => "" + h + " Stunden"/*NF*/,
             "update_now": "Jetzt aktualisieren",
             "extended_operation": "Erweiterter Betrieb",

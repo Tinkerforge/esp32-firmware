@@ -275,18 +275,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         return (
             <SubPage name="pv_excess_settings">
                 <ConfigForm id="pv_excess_config_form" title={__("power_manager.content.header_excess_charging")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-
-                    <Collapse in={enabled && !cm_ok}>
-                        <div>
-                            <FormRow label="">
-                                <div style="color:red">
-                                    {cm_requirements_warning}
-                                </div>
-                            </FormRow>
-                        </div>
-                    </Collapse>
-
-                    <FormRow label={__("power_manager.content.enable_excess_charging")} label_muted={__("power_manager.content.enable_excess_charging_muted")}>
+                    <FormRow label={__("power_manager.content.enable_excess_charging")} label_muted={__("power_manager.content.enable_excess_charging_muted")} show_error={enabled && !cm_ok} error={cm_requirements_warning}>
                         <Switch desc={__("power_manager.content.enable_excess_charging_desc")}
                             checked={s.excess_charging_enable}
                             disabled={s.phase_switching_mode == 3}

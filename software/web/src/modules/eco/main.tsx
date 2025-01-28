@@ -87,14 +87,14 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label="Ladeplanung aktivieren" help={<>{!day_ahead_prices_enabled && __("eco.content.day_ahead_prices_needs_activation")} {__("eco.content.charge_plan_enable_help")}</>}>
+                    <FormRow label="Ladeplanung aktivieren" help={__("eco.content.charge_plan_enable_help")} error={__("eco.content.day_ahead_prices_needs_activation")} show_error={state.enable && !day_ahead_prices_enabled}>
                         <Switch desc="Ladeplanung anhand von dynamischen Strompreisen und PV-Ertragsprognose."
                             disabled={!day_ahead_prices_enabled}
                             checked={state.enable && day_ahead_prices_enabled}
                             onClick={this.toggle('enable')}
                         />
                     </FormRow>
-                    <FormRow label="Modus nach Ablauf des Ladeplans" help={<>{!day_ahead_prices_enabled && __("eco.content.day_ahead_prices_needs_activation")} {__("eco.content.mode_after_help")}</>}>
+                    <FormRow label="Modus nach Ablauf des Ladeplans" help={__("eco.content.mode_after_help")}>
                         <InputSelect
                             disabled={!day_ahead_prices_enabled || !state.enable}
                             items={[
@@ -107,7 +107,7 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             onValue={(v) => this.setState({mode_after: parseInt(v)})}
                         />
                     </FormRow>
-                    <FormRow label="Maximale Standzeit" help={<>{!day_ahead_prices_enabled && __("eco.content.day_ahead_prices_needs_activation")} {__("eco.content.park_time_help")}</>}>
+                    <FormRow label="Maximale Standzeit" help={__("eco.content.park_time_help")}>
                         <SwitchableInputNumber
                             disabled={!day_ahead_prices_enabled || !state.enable}
                             switch_label_active={__("eco.content.active")}
@@ -122,7 +122,7 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             switch_label_min_width="110px"
                         />
                     </FormRow>
-                    <FormRow label="Immer laden wenn Preis unter" help={<>{!day_ahead_prices_enabled && __("eco.content.day_ahead_prices_needs_activation")} {__("eco.content.charge_below_help")}</>}>
+                    <FormRow label="Immer laden wenn Preis unter" help={__("eco.content.charge_below_help")}>
                         <SwitchableInputNumber
                             disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("eco.content.active")}
@@ -137,7 +137,7 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             switch_label_min_width="110px"
                         />
                     </FormRow>
-                    <FormRow label="Nie laden wenn Preis über" help={<>{!day_ahead_prices_enabled && __("eco.content.day_ahead_prices_needs_activation")} {__("eco.content.block_above_help")}</>}>
+                    <FormRow label="Nie laden wenn Preis über" help={__("eco.content.block_above_help")}>
                         <SwitchableInputNumber
                             disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("eco.content.active")}
@@ -152,7 +152,9 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             switch_label_min_width="110px"
                         />
                     </FormRow>
-                    <FormRow label="Nur wenn PV-Ertragsprognose unter" help={<>{!solar_forecast_enabled && __("eco.content.solar_forecast_needs_activation")} {__("eco.content.yield_forecast_threshold_help")}</>}>
+                    <FormRow label="Nur wenn PV-Ertragsprognose unter" help={__("eco.content.yield_forecast_threshold_help")}
+                             error={__("eco.content.solar_forecast_needs_activation")}
+                             show_error={state.yield_forecast && !solar_forecast_enabled}>
                     <SwitchableInputNumber
                             disabled={!solar_forecast_enabled}
                             switch_label_active={__("eco.content.active")}

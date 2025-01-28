@@ -61,15 +61,9 @@ let x = {
             "sg_ready_muted": "Output 1 and output 2",
             "average_price": "Average price",
             "solar_forecast": "Solar forecast",
-            "solar_forecast_needs_activation": <>
-                <p style="color:red;">The <a href="#solar_forecast">solar forecast</a> must be enabled for this configuration.</p>
-            </>,
-            "day_ahead_prices_needs_activation": <>
-                <p style="color:red;">The <a href="#day_ahead_prices">dynamic prices</a> must be enabled for this configuration.</p>
-            </>,
-            "meter_needs_activation": <>
-                <p style="color:red;">A meter must be selected for this configuration.</p>
-            </>,
+            "solar_forecast_needs_activation": <>The <a href="#solar_forecast">solar forecast</a> must be enabled for this configuration.</>,
+            "day_ahead_prices_needs_activation": <>The <a href="#day_ahead_prices">dynamic prices</a> must be enabled for this configuration.</>,
+            "meter_needs_activation": <>A meter must be selected for this configuration.</>,
             "hours": /*SFN*/(h: number) => "" + h + " hours"/*NF*/,
             "update_now": "Update now",
             "extended_operation": "Extended operation",
