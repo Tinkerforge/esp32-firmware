@@ -20,6 +20,7 @@
 
 import { h, Fragment, VNode } from "preact";
 import { signal, Signal } from "@preact/signals-core";
+import { toLocaleFixed } from "./util";
 
 {{{translation}}}
 

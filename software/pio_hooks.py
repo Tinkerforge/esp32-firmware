@@ -345,9 +345,16 @@ def update_translation(translation, update, override=False, parent_key=None):
         else:
             update_translation(translation[key], value, override=override, parent_key=parent_key + [key])
 
+# Header that is expected to be found in translation_*.tsx files
 TSX_HEADER = """/** @jsxImportSource preact */
 import { h } from "preact";
 let x = """
+
+# Additional lines that are allowed in translation_*.tsx files
+TSX_ADDITIONAL_HEADER_LINES = [
+    'import { toLocaleFixed } from "../../ts/util";',
+    'import { __ } from "../../ts/translation";'
+]
 
 TSX_LINE_COMMENT_PATTERN = re.compile(r'^[ \t]*//.*$', re.MULTILINE)
 
@@ -396,6 +403,8 @@ def collect_translation(path, override=False):
         with open(translation_path, 'r', encoding='utf-8') as f:
             content = f.read()
             if is_tsx:
+                for x in TSX_ADDITIONAL_HEADER_LINES:
+                    content = content.replace(x + "\n", "", 1)
                 content = content.replace(TSX_HEADER, "", 1)
                 content = re.sub(TSX_LINE_COMMENT_PATTERN, "", content)
                 content = re.sub(TSX_FUNCTION_PATTERN,
