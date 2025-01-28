@@ -1,4 +1,5 @@
 /** @jsxImportSource preact */
+import { toLocaleFixed } from "../../ts/util";
 import { h } from "preact";
 let x = {
     "power_manager": {
@@ -92,9 +93,9 @@ let x = {
             "block_mode": "Modus",
             "automation_block_charge_action_text": /*FFN*/(slot: number, block: boolean) => {
                 if (block) {
-                    return <><b>blockiere</b> das Laden durch Slot <b>{slot}</b>.</>
+                    return <><b>blockiere</b> das Laden durch Slot <b>{toLocaleFixed(slot, 0)}</b>.</>
                 }
-                return <><b>gebe</b> das Laden durch Slot <b>{slot} frei</b>.</>
+                return <><b>gebe</b> das Laden durch Slot <b>{toLocaleFixed(slot, 0)} frei</b>.</>
             }/*NF*/,
 
             "limit_max_current": "Begrenze maximalen Gesamtstrom",

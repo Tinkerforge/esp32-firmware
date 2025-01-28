@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { toLocaleFixed } from "../../ts/util";
 let x = {
     "automation": {
         "navbar": {
@@ -79,7 +80,7 @@ let x = {
                     if (minute == 0) {
                         time = <>, every hour</>;
                     } else {
-                        time = <>, every hour at minute <b>{minute}</b></>;
+                        time = <>, every hour at minute <b>{toLocaleFixed(minute)}</b></>;
                     }
                 } else {
                     time = <>, every minute</>

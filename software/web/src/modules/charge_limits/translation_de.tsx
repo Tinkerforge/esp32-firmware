@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { toLocaleFixed } from "../../ts/util";
 let x = {
     "charge_limits": {
         "content": {
@@ -73,7 +74,7 @@ let x = {
                     if (energy === -1) {
                         energy_limit = <>erlaube das aktuelle Energielimit nochmal</>
                     } else if (energy !== 0) {
-                        energy_limit = <><b>{energy / 1000} kWh</b></>
+                        energy_limit = <><b>{toLocaleFixed(energy / 1000, 3)} kWh</b></>
                     } else if (energy === 0) {
                         energy_limit = <>entferne das Energielimit</>
                     }
@@ -103,7 +104,7 @@ let x = {
                 if (energy === -1) {
                     energy_limit = <>lasse das Energielimit unverändert</>
                 } else {
-                    const energy_limit_value = energy === 0 ? <b>unbegrenzt</b> : <b>{energy / 1000} kWh</b>;
+                    const energy_limit_value = energy === 0 ? <b>unbegrenzt</b> : <b>{toLocaleFixed(energy / 1000, 3)} kWh</b>;
                     energy_limit = <> das Energielimit auf {energy_limit_value}</>
                 }
 
