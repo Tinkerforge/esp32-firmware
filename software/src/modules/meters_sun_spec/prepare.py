@@ -94,7 +94,7 @@ model_specs = [
     ModelSpec('DER High Frequency Trip',                    'FIXME',                            'FIXME',                               710,   False, 'Unknown',  False),
     ModelSpec('DER Frequency Droop',                        'FIXME',                            'FIXME',                               711,   False, 'Unknown',  False),
     ModelSpec('DER Watt-VAR',                               'FIXME',                            'FIXME',                               712,   False, 'Unknown',  False),
-    ModelSpec('DER Storage Capacity',                       'Storage Capacity',                 'Speicherkapazität',                   713,   True,  'Unknown',  True),
+    ModelSpec('DER Storage Capacity',                       'Storage Capacity',                 'Speicherkapazität',                   713,   True,  'Battery',  True),
     ModelSpec('DER DC Measurements',                        'DC Measurements',                  'DC-Messwerte',                        714,   True,  'Unknown',  True),
     ModelSpec('DER Control',                                'FIXME',                            'FIXME',                               715,   False, 'Unknown',  False),
     ModelSpec('Battery Base Deprecated',                    'FIXME',                            'FIXME',                               801,   False, 'Battery',  False),
