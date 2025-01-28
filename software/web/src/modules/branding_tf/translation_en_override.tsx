@@ -44,5 +44,8 @@ let x = {
         "content": {
             "registration": "Registrating Brick"
         }
+    },
+    "branding": {
+        "device": "Brick"
     }
 }

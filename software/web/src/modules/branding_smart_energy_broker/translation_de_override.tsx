@@ -61,5 +61,12 @@ let x = {
         "content": {
             "registration": "Registriere SEB"
         }
+    },
+    "branding": {
+        "device": "SEB",
+        "the": "der",
+        "The": "Der",
+        "this": "dieser",
+        "This": "Dieser"
     }
 }

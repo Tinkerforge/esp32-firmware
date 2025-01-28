@@ -66,5 +66,12 @@ let x = {
         "content": {
             "registration": "Registriere Wallbox"
         }
+    },
+    "branding": {
+        "device": "WARP Charger",
+        "the": "der",
+        "The": "Der",
+        "this": "dieser",
+        "This": "Dieser"
     }
 }

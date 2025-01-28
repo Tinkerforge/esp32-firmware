@@ -60,5 +60,8 @@ let x = {
         "content": {
             "registration": "Registrating charger"
         }
+    },
+    "branding": {
+        "device": "WARP Charger"
     }
 }

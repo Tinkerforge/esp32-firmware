@@ -54,5 +54,8 @@ let x = {
         "content": {
             "registration": "Registering Energy Manager"
         }
+    },
+    "branding": {
+        "device": "Energy Manager"
     }
 }

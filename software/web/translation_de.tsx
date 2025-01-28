@@ -108,5 +108,16 @@ let x = {
     "day": "Tag",
     "today": "Heute",
     "tomorrow": "Morgen",
-    "select": "Auswählen..."
+    "select": "Auswählen...",
+    "branding": {
+        "device": null,
+        "the": null,
+        "The": null,
+        "this": null,
+        "This": null
+    },
+    "the_device": <>__("branding.the") + " " + __("branding.device")</>,
+    "The_device": <>__("branding.The") + " " + __("branding.device")</>,
+    "this_device": <>__("branding.this") + " " + __("branding.device")</>,
+    "This_device": <>__("branding.This") + " " + __("branding.device")</>
 }

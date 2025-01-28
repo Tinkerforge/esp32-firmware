@@ -50,5 +50,12 @@ let x = {
         "content": {
             "registration": "Registriere Brick"
         }
+    },
+    "branding": {
+        "device": "Brick",
+        "the": "der",
+        "The": "Der",
+        "this": "dieser",
+        "This": "Dieser"
     }
 }
