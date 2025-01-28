@@ -269,7 +269,8 @@ void MeterSunSpec::scan_next()
                     }
                     else {
                         if (block_length != model_parser->get_model_length()) {
-                            logger.printfln("Configured SunSpec model found but has incorrect length. Expected %u, got %u.", model_parser->get_model_length(), block_length);
+                            logger.printfln("Configured SunSpec model %u/%u found but has incorrect length. Expected %u, got %u.",
+                                            model_id, model_instance, model_parser->get_model_length(), block_length);
                             scan_start_delay();
                         }
                         else {
