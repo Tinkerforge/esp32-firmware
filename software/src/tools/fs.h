@@ -28,5 +28,3 @@ bool mount_or_format_spiffs();
 bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories = true);
 
 void remove_directory(const char *path);
-
-void list_dir(fs::FS &fs, const char *dirname, uint8_t depth, uint8_t current_depth = 0);

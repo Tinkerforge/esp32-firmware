@@ -58,9 +58,6 @@ uint16_t internet_checksum(const uint8_t *data, size_t length);
 
 void trigger_reboot(const char *initiator, millis_t delay_ms = 0_ms);
 
-time_t ms_until_datetime(int *year, int *month, int *day, int *hour, int *minutes, int *seconds);
-time_t ms_until_time(int h, int m);
-
 // Unchecked snprintf that returns size_t
 [[gnu::format(__printf__, 2, 3)]]
 size_t sprintf_u(char *buf, const char *fmt, ...);

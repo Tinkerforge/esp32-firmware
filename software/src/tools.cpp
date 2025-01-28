@@ -262,37 +262,6 @@ void trigger_reboot(const char *initiator, millis_t delay_ms)
     }, delay_ms);
 }
 
-time_t ms_until_datetime(int *year, int *month, int *day, int *hour, int *minutes, int *seconds)
-{
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-
-	struct tm datetime;
-	localtime_r(&tv.tv_sec, &datetime);
-
-	if (year)    datetime.tm_year = *year    < 0 ? datetime.tm_year - *year    : *year  - 1900;
-	if (month)   datetime.tm_mon  = *month   < 0 ? datetime.tm_mon  - *month   : *month - 1;
-	if (day)     datetime.tm_mday = *day     < 0 ? datetime.tm_mday - *day     : *day;
-	if (hour)    datetime.tm_hour = *hour    < 0 ? datetime.tm_hour - *hour    : *hour;
-	if (minutes) datetime.tm_min  = *minutes < 0 ? datetime.tm_min  - *minutes : *minutes;
-	if (seconds) datetime.tm_sec  = *seconds < 0 ? datetime.tm_sec  - *seconds : *seconds;
-
-	time_t ts = mktime(&datetime);
-
-	return (ts - tv.tv_sec) * 1000 - tv.tv_usec / 1000;
-}
-
-time_t ms_until_time(int h, int m)
-{
-	int s = 0;
-	time_t delay = ms_until_datetime(NULL, NULL, NULL, &h, &m, &s);
-	if (delay <= 0) {
-		int d = -1;
-		delay = ms_until_datetime(NULL, NULL, &d, &h, &m, &s);
-	}
-	return delay;
-}
-
 size_t sprintf_u(char *buf, const char *fmt, ...)
 {
     va_list args;
