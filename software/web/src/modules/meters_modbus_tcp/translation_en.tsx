@@ -79,7 +79,7 @@ let x = {
             "registers": "Registers",
             "registers_add_title": "Add register",
             "registers_add_count": /*SFN*/(x: number, max: number) => x + " of " + max + " registers configured"/*NF*/,
-            "registers_add_select_address_mode": "Select address mode first...",
+            "registers_add_select_address_mode": "Select address mode first.",
             "registers_edit_title": "Edit register",
             "registers_register": /*SFN*/(start_address: number, value_id_name: string) => start_address + " as " + value_id_name/*NF*/,
             "registers_register_type": "Register type",
