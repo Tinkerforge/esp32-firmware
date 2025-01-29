@@ -22,7 +22,7 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";
 import { h, createRef, Fragment, Component, RefObject, ComponentChild } from "preact";
-import { Button, ButtonGroup } from "react-bootstrap";
+import { Button, ButtonGroup, ListGroup, ListGroupItem } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormSeparator } from "../../ts/components/form_separator";
@@ -44,7 +44,7 @@ import { InputTime } from "../../ts/components/input_time";
 import { InputText } from "../../ts/components/input_text";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
-import { HelpCircle, Zap, ZapOff, BarChart2 } from "react-feather";
+import { HelpCircle, Zap, ZapOff, BarChart2, Server, Battery, BatteryCharging, Home, Sun } from "react-feather";
 
 export function MetersNavbar() {
     return <NavbarItem name="meters" module="meters" title={__("meters.navbar.meters")} symbol={<BarChart2 />} />;
@@ -1311,30 +1311,45 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                     <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(this.state.meter_configs, this.state.status_meter_slot)}>
                         <OutputFloat value={status_power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
                     </FormRow></> : undefined}
-                {charger_power_sum != null ?
-                    <FormRow label={__("meters.status.charger_power_sum")} label_muted={__("meters.status.charger_power_sum_muted")}>
-                        <OutputFloat value={charger_power_sum} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
-                    </FormRow> : undefined}
-                {inverter_power_sum != null ?
-                    <FormRow label={__("meters.status.inverter_power_sum")} label_muted={__("meters.status.inverter_power_sum_muted")}>
-                        <OutputFloat value={inverter_power_sum} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
-                    </FormRow> : undefined}
-                {grid_power_sum != null ?
-                    <FormRow label={__("meters.status.grid_power_sum")} label_muted={__("meters.status.grid_power_sum_muted")}>
-                        <OutputFloat value={grid_power_sum} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
-                    </FormRow> : undefined}
-                {battery_power_sum != null ?
-                    <FormRow label={__("meters.status.battery_power_sum")} label_muted={__("meters.status.battery_power_sum_muted")}>
-                        <OutputFloat value={battery_power_sum} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
-                    </FormRow> : undefined}
-                {battery_soc_avg != null ?
-                    <FormRow label={__("meters.status.battery_soc_avg")} label_muted={__("meters.status.battery_soc_avg_muted")}>
-                        <OutputFloat value={battery_soc_avg} digits={0} scale={0} unit="%" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
-                    </FormRow> : undefined}
-                {load_power_sum != null ?
-                    <FormRow label={__("meters.status.load_power_sum")} label_muted={__("meters.status.load_power_sum_muted")}>
-                        <OutputFloat value={load_power_sum} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
-                    </FormRow> : undefined}
+                <FormRow label={__("meters.status.power_sums")}>
+                    <ListGroup>
+                        <ListGroupItem>
+                            <div class="row justify-content-end">
+                                <div class="col-auto pr-2 mb-2">
+                                    <span class="pr-2"><Server {...{style: "transform: rotate(180deg);"} as any} /></span>
+                                    <span style="vertical-align: middle;">{charger_power_sum !== null ? util.toLocaleFixed(charger_power_sum) : "---"} W</span>
+                                </div>
+                                <div class="col px-0" />
+                                <div class="col-auto pl-2 mb-2">
+                                    <span style="vertical-align: middle;">{battery_soc_avg !== null ? util.toLocaleFixed(battery_soc_avg) : "---"} % / {battery_power_sum !== null ? util.toLocaleFixed(battery_power_sum) : "---"} W</span>
+                                    <span class="pl-2">{battery_power_sum > 0 ? <BatteryCharging/> : <Battery/>}</span>
+                                </div>
+                            </div>
+                            <div class="row justify-content-end">
+                                <div class="col-auto pr-2 mb-2">
+                                    <span class="pr-2"><Sun/></span>
+                                    <span style="vertical-align: middle;">{inverter_power_sum !== null ? util.toLocaleFixed(inverter_power_sum) : "---"} W</span>
+                                </div>
+                                <div class="col px-0" />
+                                <div class="col-auto pl-2 mb-2">
+                                    <span style="vertical-align: middle;">{load_power_sum !== null ? util.toLocaleFixed(load_power_sum) : "---"} W</span>
+                                    <span class="pl-2"><Home/></span>
+                                </div>
+                            </div>
+                            <div class="row justify-content-end mb-n2">
+                                <div class="col-auto pr-2 mb-2">
+                                    <span class="pr-2"><Zap/></span>
+                                    <span style="vertical-align: middle;">{grid_power_sum !== null ? util.toLocaleFixed(grid_power_sum) : "---"} W</span>
+                                </div>
+                                <div class="col px-0" />
+                                <div class="col-auto pl-2 mb-2">
+                                    <span style="vertical-align: middle;"></span>
+                                    <span class="pl-2"></span>
+                                </div>
+                            </div>
+                        </ListGroupItem>
+                    </ListGroup>
+                </FormRow>
             </StatusSection>
         );
     }
