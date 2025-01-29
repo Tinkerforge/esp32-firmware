@@ -5,6 +5,7 @@ let x = {
         "status": {
             "power_history": null,
             "current_power": "Power",
+            "power_sums": "Powers",
             "charger_power_sum": "Charger power",
             "charger_power_sum_muted": "sum",
             "inverter_power_sum": "Inverter power",
