@@ -274,6 +274,15 @@ void FrontPanel::loop()
     this->DeviceModule::loop();
 }
 
+void FrontPanel::pre_reboot()
+{
+    // Stop the update() task from accessing the display
+    flash_update_in_progress = true;
+
+    tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_OFF);
+    set_led(LEDPattern::Blinking, LEDColor::Yellow);
+}
+
 int FrontPanel::set_led(const LEDPattern pattern, const LEDColor color)
 {
     int result = tf_warp_front_panel_set_led_state(

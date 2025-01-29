@@ -54,6 +54,8 @@ public:
     void setup() override;
     void register_urls() override;
     void loop() override;
+    void pre_reboot() override;
+
     void setup_bricklet();
     void check_bricklet_state();
     int set_led(const LEDPattern pattern, const LEDColor color);
