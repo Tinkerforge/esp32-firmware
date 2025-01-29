@@ -353,7 +353,8 @@ let x = """
 # Additional lines that are allowed in translation_*.tsx files
 TSX_ADDITIONAL_HEADER_LINES = [
     'import { toLocaleFixed } from "../../ts/util";',
-    'import { __ } from "../../ts/translation";'
+    'import { __ } from "../../ts/translation";',
+    'import { __ } from "./src/ts/translation";'
 ]
 
 TSX_LINE_COMMENT_PATTERN = re.compile(r'^[ \t]*//.*$', re.MULTILINE)

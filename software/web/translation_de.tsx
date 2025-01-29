@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "./src/ts/translation";
 let x = {
     "main": {
         "title": "{{{display_name}}} Webinterface",
@@ -116,8 +117,8 @@ let x = {
         "this": null,
         "This": null
     },
-    "the_device": <>__("branding.the") + " " + __("branding.device")</>,
-    "The_device": <>__("branding.The") + " " + __("branding.device")</>,
-    "this_device": <>__("branding.this") + " " + __("branding.device")</>,
-    "This_device": <>__("branding.This") + " " + __("branding.device")</>
+    "the_device": <>{__("branding.the")} {__("branding.device")}</>,
+    "The_device": <>{__("branding.The")} {__("branding.device")}</>,
+    "this_device": <>{__("branding.this")} {__("branding.device")}</>,
+    "This_device": <>{__("branding.This")} {__("branding.device")}</>
 }
