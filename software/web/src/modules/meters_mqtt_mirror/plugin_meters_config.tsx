@@ -22,11 +22,13 @@ import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterLocation } from "../meters/meter_location.enum";
+import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api";
 import { Switch          } from "../../ts/components/switch";
+import { InputSelect     } from "../../ts/components/input_select";
 
 export type MqttMirrorMetersConfig = [
     MeterClassID.MqttMirror,
@@ -56,6 +58,16 @@ export function init() {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }}
                         />
+                    </FormRow>,
+                    <FormRow label={__("meters_mqtt_mirror.content.config_location")}>
+                        <InputSelect
+                            required
+                            items={get_meter_location_items()}
+                            placeholder={__("select")}
+                            value={config[1].location.toString()}
+                            onValue={(v) => {
+                                on_config(util.get_updated_union(config, {location: parseInt(v)}));
+                            }} />
                     </FormRow>,
                     <FormRow label={__("meters_mqtt_mirror.content.auto")}>
                         <Switch desc={__("meters_mqtt_mirror.content.auto_desc")}

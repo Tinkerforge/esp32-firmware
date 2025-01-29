@@ -6,6 +6,7 @@ let x = {
             "meter_class": "MQTT Mirror",
 
             "config_display_name": "Anzeigename",
+            "config_location": "Messort",
             "auto": "Value-ID-Erkennung",
             "auto_desc": "Automatisch",
             "meter_path": "Zähler-Pfad",
