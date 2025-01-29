@@ -1198,8 +1198,8 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         if (!util.render_allowed() || !API.hasFeature("meters"))
             return <StatusSection name="meters" />;
 
+        let children = [];
         const value_ids = API.get_unchecked(`meters/${this.state.status_meter_slot}/value_ids`);
-        let status_power: number = null;
 
         // The meters feature is set if any meter is connected. This includes a WARP Charger Smart
         // with external meter for PV excess charging. But in this case the status plot should not
@@ -1211,63 +1211,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             let power_idx = get_meter_power_index(value_ids);
 
             if (power_idx >= 0 && values && values.length > power_idx) {
-                status_power = values[power_idx];
-            }
-        }
-
-        let inverter_powers:number [] = [];
-        let grid_powers: number[] = [];
-        let battery_powers: number[] = [];
-        let battery_socs: number[] = [];
-        let load_powers: number[] = [];
-
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            let location = get_meter_location(this.state.meter_configs, meter_slot);
-            const value_ids = API.get_unchecked(`meters/${meter_slot}/value_ids`);
-            const values = API.get_unchecked(`meters/${meter_slot}/values`);
-            let power_idx = get_meter_power_index(value_ids);
-
-            if (power_idx >= 0 && values && values.length > power_idx) {
-                let power = values[power_idx];
-
-                switch (location) {
-                case MeterLocation.Inverter: inverter_powers.push(power); break;
-                case MeterLocation.Grid: grid_powers.push(power); break;
-                case MeterLocation.Battery: battery_powers.push(power); break;
-                case MeterLocation.Load: load_powers.push(power); break;
-                }
-            }
-
-            if (location == MeterLocation.Battery) {
-                let soc_idx = value_ids.indexOf(MeterValueID.StateOfCharge);
-
-                if (soc_idx >= 0 && values && values.length > soc_idx) {
-                    let soc = values[soc_idx];
-
-                    battery_socs.push(soc);
-                }
-            }
-        }
-
-        let sum_or_null = (values: number[]) => {
-            let non_null_values = values.filter((x) => x !== null);
-
-            if (non_null_values.length == 0) {
-                return null;
-            }
-
-            return non_null_values.reduce((x, y) => x + y, 0);
-        }
-
-        let inverter_power_sum = sum_or_null(inverter_powers);
-        let grid_power_sum = sum_or_null(grid_powers);
-        let battery_power_sum = sum_or_null(battery_powers);
-        let battery_soc_avg = battery_socs.length > 0 ? sum_or_null(battery_socs) / battery_socs.length : null;
-        let load_power_sum = sum_or_null(load_powers);
-
-        return (
-            <StatusSection name="meters">
-                {status_power != null ? <>
+                children.push(
                     <FormRow label={__("meters.status.power_history")}>
                         <div class="card pl-1 pb-1">
                             <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
@@ -1304,10 +1248,65 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                 </UplotLoader>
                             </div>
                         </div>
-                    </FormRow>
+                    </FormRow>,
                     <FormRow label={__("meters.status.current_power")} label_muted={get_meter_name(this.state.meter_configs, this.state.status_meter_slot)}>
-                        <OutputFloat value={status_power} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
-                    </FormRow></> : undefined}
+                        <OutputFloat value={values[power_idx]} digits={0} scale={0} unit="W" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1}/>
+                    </FormRow>);
+            }
+        }
+
+        if (API.hasFeature("energy_manager")) {
+            let inverter_powers: number [] = [];
+            let grid_powers: number[] = [];
+            let battery_powers: number[] = [];
+            let battery_socs: number[] = [];
+            let load_powers: number[] = [];
+
+            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                let location = get_meter_location(this.state.meter_configs, meter_slot);
+                const value_ids = API.get_unchecked(`meters/${meter_slot}/value_ids`);
+                const values = API.get_unchecked(`meters/${meter_slot}/values`);
+                let power_idx = get_meter_power_index(value_ids);
+
+                if (power_idx >= 0 && values && values.length > power_idx) {
+                    let power = values[power_idx];
+
+                    switch (location) {
+                    case MeterLocation.Inverter: inverter_powers.push(power); break;
+                    case MeterLocation.Grid: grid_powers.push(power); break;
+                    case MeterLocation.Battery: battery_powers.push(power); break;
+                    case MeterLocation.Load: load_powers.push(power); break;
+                    }
+                }
+
+                if (location == MeterLocation.Battery) {
+                    let soc_idx = value_ids.indexOf(MeterValueID.StateOfCharge);
+
+                    if (soc_idx >= 0 && values && values.length > soc_idx) {
+                        let soc = values[soc_idx];
+
+                        battery_socs.push(soc);
+                    }
+                }
+            }
+
+            let sum_or_null = (values: number[]) => {
+                let non_null_values = values.filter((x) => x !== null);
+
+                if (non_null_values.length == 0) {
+                    return null;
+                }
+
+                return non_null_values.reduce((x, y) => x + y, 0);
+            }
+
+            let inverter_power_sum = sum_or_null(inverter_powers);
+            let grid_power_sum = sum_or_null(grid_powers);
+            let battery_power_sum = sum_or_null(battery_powers);
+            let battery_soc_avg = battery_socs.length > 0 ? sum_or_null(battery_socs) / battery_socs.length : null;
+            let load_power_sum = sum_or_null(load_powers);
+
+            children.push(
                 <FormRow label={__("meters.status.power_sums")}>
                     <ListGroup>
                         <ListGroupItem>
@@ -1335,7 +1334,12 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                             </div>
                         </ListGroupItem>
                     </ListGroup>
-                </FormRow>
+                </FormRow>);
+        }
+
+        return (
+            <StatusSection name="meters">
+                {children}
             </StatusSection>
         );
     }
