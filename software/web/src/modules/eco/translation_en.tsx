@@ -10,8 +10,8 @@ let x = {
             "eco": "Eco Mode",
             "active": "Active",
             "inactive": "Inactive",
-            "solar_forecast_needs_activation": <>The <a href="#solar_forecast">solar forecast</a> must be enabled for this configuration.</>,
-            "day_ahead_prices_needs_activation": <>The <a href="#day_ahead_prices">day ahead prices</a> must be enabled for this configuration.</>,
+            "solar_forecast_needs_activation": <>To be able to include the expected PV excess into the charge plan, the <a href="#solar_forecast">solar forecast</a> must be enabled.</>,
+            "day_ahead_prices_needs_activation": <>To be able to calculate the charge plan, the <a href="#day_ahead_prices">day ahead prices</a> must be enabled.</>,
             "charge_plan_enable_help": <>
                 <p>If the charge plan is enabled, a configurable charge plan is shown on the status page.</p>
                 <p>With the help of the charging plan as well as day ahead prices and an optional solar forecast, the charging of electric cars can be optimized.</p>

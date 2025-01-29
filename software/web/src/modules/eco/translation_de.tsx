@@ -10,8 +10,8 @@ let x = {
             "eco": "Eco-Modus",
             "active": "Aktiv",
             "inactive": "Inaktiv",
-            "solar_forecast_needs_activation": <>Für diese Konfiguration muss die <a href="#solar_forecast">PV-Ertragsprognose</a> aktiviert werden.</>,
-            "day_ahead_prices_needs_activation": <>Für diese Konfiguration müssen die <a href="#day_ahead_prices">dynamischen Strompreise</a> aktiviert werden.</>,
+            "solar_forecast_needs_activation": <>Um den erwarteten PV-Überschuss in den Ladeplan einbeziehen zu können, muss die <a href="#solar_forecast">PV-Ertragsprognose</a> aktiviert werden.</>,
+            "day_ahead_prices_needs_activation": <>Um den Ladeplan berechnen zu können, müssen die <a href="#day_ahead_prices">dynamischen Strompreise</a> aktiviert werden.</>,
             "charge_plan_enable_help": <>
                 <p>Wenn die Ladeplanung aktiviert ist wird auf der Status-Seite ein konfigurierbarer Ladeplan angezeigt.</p>
                 <p>Mit Hilfe des Ladeplans sowie dynamischen Strompreisen und einer optionalen PV-Ertragsprognose kann die Ladung des Elektroautos optimiert werden.</p>

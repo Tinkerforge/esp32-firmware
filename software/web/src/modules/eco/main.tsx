@@ -89,14 +89,12 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             onDirtyChange={this.setDirty}>
                     <FormRow label="Ladeplanung aktivieren" help={__("eco.content.charge_plan_enable_help")} error={__("eco.content.day_ahead_prices_needs_activation")} show_error={state.enable && !day_ahead_prices_enabled}>
                         <Switch desc="Ladeplanung anhand von dynamischen Strompreisen und PV-Ertragsprognose."
-                            disabled={!day_ahead_prices_enabled}
-                            checked={state.enable && day_ahead_prices_enabled}
+                            checked={state.enable}
                             onClick={this.toggle('enable')}
                         />
                     </FormRow>
                     <FormRow label="Modus nach Ablauf des Ladeplans" help={__("eco.content.mode_after_help")}>
                         <InputSelect
-                            disabled={!day_ahead_prices_enabled || !state.enable}
                             items={[
                                 ["0", "Schnell"],
                                 ["1", "Eco+PV"],
@@ -109,11 +107,10 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                     </FormRow>
                     <FormRow label="Maximale Standzeit" help={__("eco.content.park_time_help")}>
                         <SwitchableInputNumber
-                            disabled={!day_ahead_prices_enabled || !state.enable}
                             switch_label_active={__("eco.content.active")}
                             switch_label_inactive={__("eco.content.inactive")}
                             unit="h"
-                            checked={state.park_time && day_ahead_prices_enabled && state.enable}
+                            checked={state.park_time}
                             onClick={this.toggle('park_time')}
                             value={state.park_time_duration}
                             onValue={this.set("park_time_duration")}
@@ -124,11 +121,10 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                     </FormRow>
                     <FormRow label="Immer laden wenn Preis unter" help={__("eco.content.charge_below_help")}>
                         <SwitchableInputNumber
-                            disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("eco.content.active")}
                             switch_label_inactive={__("eco.content.inactive")}
                             unit="ct"
-                            checked={state.charge_below && day_ahead_prices_enabled}
+                            checked={state.charge_below}
                             onClick={this.toggle('charge_below')}
                             value={state.charge_below_threshold}
                             onValue={this.set("charge_below_threshold")}
@@ -139,11 +135,10 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                     </FormRow>
                     <FormRow label="Nie laden wenn Preis über" help={__("eco.content.block_above_help")}>
                         <SwitchableInputNumber
-                            disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("eco.content.active")}
                             switch_label_inactive={__("eco.content.inactive")}
                             unit="ct"
-                            checked={state.block_above && day_ahead_prices_enabled}
+                            checked={state.block_above}
                             onClick={this.toggle('block_above')}
                             value={state.block_above_threshold}
                             onValue={this.set("block_above_threshold")}
@@ -155,12 +150,11 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                     <FormRow label="Nur wenn PV-Ertragsprognose unter" help={__("eco.content.yield_forecast_threshold_help")}
                              error={__("eco.content.solar_forecast_needs_activation")}
                              show_error={state.yield_forecast && !solar_forecast_enabled}>
-                    <SwitchableInputNumber
-                            disabled={!solar_forecast_enabled}
+                        <SwitchableInputNumber
                             switch_label_active={__("eco.content.active")}
                             switch_label_inactive={__("eco.content.inactive")}
                             unit={"kWh/Tag"}
-                            checked={state.yield_forecast && solar_forecast_enabled}
+                            checked={state.yield_forecast}
                             onClick={this.toggle('yield_forecast')}
                             value={state.yield_forecast_threshold}
                             onValue={this.set("yield_forecast_threshold")}

@@ -391,11 +391,10 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                              show_error={state.pv_excess_control && !meter_available}
                              class="mb-xs-1 mb-md-0">
                         <SwitchableInputNumber
-                            disabled={!meter_available}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.watt")}
-                            checked={state.pv_excess_control && meter_available}
+                            checked={state.pv_excess_control}
                             onClick={this.toggle('pv_excess_control')}
                             value={state.pv_excess_control_threshold}
                             onValue={this.set("pv_excess_control_threshold")}
@@ -412,11 +411,10 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                              show_error={state.extended && !day_ahead_prices_enabled}
                              class="mb-xs-1 mb-md-0">
                         <SwitchableInputNumber
-                            disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
-                            checked={state.extended && day_ahead_prices_enabled}
+                            checked={state.extended}
                             onClick={this.toggle('extended', this.update_uplot)}
                             value={state.extended_hours}
                             onValue={(v) => {this.setState({extended_hours: v}, this.update_uplot)}}
@@ -432,11 +430,11 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                              error={__("heating.content.solar_forecast_needs_activation")}
                              show_error={state.yield_forecast && state.extended && !solar_forecast_enabled}>
                         <SwitchableInputNumber
-                            disabled={!solar_forecast_enabled || !state.extended}
+                            disabled={!state.extended}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.kwh_per_day")}
-                            checked={state.yield_forecast && state.extended && solar_forecast_enabled}
+                            checked={state.yield_forecast && state.extended}
                             onClick={this.toggle('yield_forecast', this.update_uplot)}
                             value={state.yield_forecast_threshold}
                             onValue={this.set("yield_forecast_threshold", this.update_uplot)}
@@ -450,11 +448,10 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                              error={__("heating.content.day_ahead_prices_needs_activation")}
                              show_error={state.blocking && !day_ahead_prices_enabled}>
                         <SwitchableInputNumber
-                            disabled={!day_ahead_prices_enabled}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
-                            checked={state.blocking && day_ahead_prices_enabled}
+                            checked={state.blocking}
                             onClick={this.toggle('blocking', this.update_uplot)}
                             value={state.blocking_hours}
                             onValue={(v) => {this.setState({blocking_hours: v}, this.update_uplot)}}
