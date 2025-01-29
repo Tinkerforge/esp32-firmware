@@ -117,7 +117,7 @@ let x = {
             "dlm_safety_margin_pct_muted": "Typischerweise ist keine zusätzliche Marge notwendig.",
             "dlm_safety_margin_pct_help": "Das Lastmanagement berechnet eine Sicherheitsmarge basierend auf dem maximalen Strom am Netzanschluss und dem Strombedarf des größten Einzelverbrauchers. Mit dieser Einstellung kann die Sicherheitsmarge über den berechneten Wert hinaus erhöht werden.",
 
-            "managed_disabled": <>Um {__("this_device")} als Lastmanager zu nutzen, muss die <a href="#charge_manager_chargers">{__("charge_manager.content.enable_charge_manager")}</a> auf „{__("charge_manager.content.mode_manager")}“ eingestellt sein.</>,
+            "managed_disabled": <>Damit {__("this_device")} als Lastmanager genutzt werden kann, muss die <a href="#charge_manager_chargers">{__("charge_manager.content.enable_charge_manager")}</a> auf „{__("charge_manager.content.mode_manager")}“ konfiguriert sein.</>,
 
             "charge_manager_debug": "Debug",
             "debug_description": "Protokoll erstellen",
