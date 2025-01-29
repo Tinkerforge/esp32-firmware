@@ -58,6 +58,7 @@ size_t union_buf_size = 0;
 static ConfigRoot nullconf = Config{Config::ConfVariant{}};
 static ConfigRoot confirmconf;
 
+// Locally expand esp_system_abort() macro that contains volatile assembly and never inline that in any function that uses the assertion.
 [[gnu::noinline]]
 [[gnu::noreturn]]
 void config_main_thread_assertion_fail()
