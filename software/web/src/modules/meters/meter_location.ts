@@ -35,7 +35,7 @@ export function translate_meter_location(location: MeterLocation): string {
 
 export function get_meter_location_items(): [string, string][] {
     return [
-        [MeterLocation.Charger.toString(), translate_meter_location(MeterLocation.Charger)],
+        //[MeterLocation.Charger.toString(), translate_meter_location(MeterLocation.Charger)],
         [MeterLocation.Inverter.toString(), translate_meter_location(MeterLocation.Inverter)],
         [MeterLocation.Grid.toString(), translate_meter_location(MeterLocation.Grid)],
         [MeterLocation.Battery.toString(), translate_meter_location(MeterLocation.Battery)],
