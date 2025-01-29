@@ -21,6 +21,7 @@ import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/meter_class_id.enum";
+import { MeterLocation } from "../meters/meter_location.enum";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
@@ -31,6 +32,7 @@ export type MqttMirrorMetersConfig = [
     MeterClassID.MqttMirror,
     {
         display_name: string;
+        location: number;
         auto: boolean;
         meter_path: string;
         value_ids: string;
@@ -41,7 +43,7 @@ export function init() {
     return {
         [MeterClassID.MqttMirror]: {
             name: () => __("meters_mqtt_mirror.content.meter_class"),
-            new_config: () => [MeterClassID.MqttMirror, {display_name: "", auto: true, meter_path: "source/abc/meters/0", value_ids: ""}] as MeterConfig,
+            new_config: () => [MeterClassID.MqttMirror, {display_name: "", location: MeterLocation.Unknown, auto: true, meter_path: "source/abc/meters/0", value_ids: ""}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: MqttMirrorMetersConfig, on_config: (config: MqttMirrorMetersConfig) => void): ComponentChildren => {
                 return [

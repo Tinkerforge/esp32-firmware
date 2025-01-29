@@ -29,7 +29,7 @@ void MetersMqttMirror::pre_setup()
 {
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
-        {"location",     Config::Enum(MeterLocation::Other)}, // FIXME
+        {"location",     Config::Enum(MeterLocation::Unknown)},
         {"auto",         Config::Bool(true)},
         {"meter_path",   Config::Str("", 3, 64)},
         {"value_ids",    Config::Str("", 0, 64)},
@@ -43,7 +43,7 @@ MeterClassID MetersMqttMirror::get_class() const
     return MeterClassID::MqttMirror;
 }
 
-IMeter *MetersMqttMirror::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
+IMeter *MetersMqttMirror::new_meter(uint32_t slot, Config */*state*/, Config */*errors*/)
 {
     return new MeterMqttMirror(slot);
 }
