@@ -25,11 +25,6 @@ let x = {
             "power_history": "Power history"
         }
     },
-    "remote_access": {
-        "content": {
-            "registration": "Registrating SEB"
-        }
-    },
     "branding": {
         "device": "SEB"
     }

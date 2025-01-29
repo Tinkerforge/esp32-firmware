@@ -19,7 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment } from "preact";
+import { h, Fragment, ComponentChildren } from "preact";
 import { Smartphone } from "react-feather";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -46,7 +46,7 @@ export function RemoteAccessNavbar() {
 
 interface RemoteAccessState {
     login_key: string,
-    status_modal_string: string,
+    status_modal_string: ComponentChildren,
     addUser: {
         email: string,
         password: string,

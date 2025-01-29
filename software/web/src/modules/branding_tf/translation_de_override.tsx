@@ -20,11 +20,6 @@ let x = {
             "install_state_19": "Firmware-Datei ist beschädigt (Firmware-Info-Seite fehlt)"
         }
     },
-    "remote_access": {
-        "content": {
-            "registration": "Registriere Brick"
-        }
-    },
     "branding": {
         "device": "Brick",
         "the": "der",

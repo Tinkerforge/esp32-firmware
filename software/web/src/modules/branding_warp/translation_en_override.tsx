@@ -25,11 +25,6 @@ let x = {
             "power_history": "Charge history"
         }
     },
-    "remote_access": {
-        "content": {
-            "registration": "Registrating charger"
-        }
-    },
     "branding": {
         "device": "WARP Charger"
     }

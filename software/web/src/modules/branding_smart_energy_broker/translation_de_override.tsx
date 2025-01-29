@@ -25,11 +25,6 @@ let x = {
             "power_history": "Leistungsverlauf"
         }
     },
-    "remote_access": {
-        "content": {
-            "registration": "Registriere SEB"
-        }
-    },
     "branding": {
         "device": "SEB",
         "the": "der",

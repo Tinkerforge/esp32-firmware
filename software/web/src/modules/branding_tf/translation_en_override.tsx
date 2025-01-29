@@ -20,11 +20,6 @@ let x = {
             "install_state_19": "Firmware file corrupted (info page missing)"
         }
     },
-    "remote_access": {
-        "content": {
-            "registration": "Registrating Brick"
-        }
-    },
     "branding": {
         "device": "Brick"
     }

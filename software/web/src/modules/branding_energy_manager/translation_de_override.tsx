@@ -25,11 +25,6 @@ let x = {
             "power_history": "Leistungsverlauf"
         }
     },
-    "remote_access": {
-        "content": {
-            "registration": "Registriere Energy Manager"
-        }
-    },
     "branding": {
         "device": "Energy Manager",
         "the": "der",

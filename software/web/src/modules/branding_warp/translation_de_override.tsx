@@ -25,11 +25,6 @@ let x = {
             "power_history": "Ladeverlauf"
         }
     },
-    "remote_access": {
-        "content": {
-            "registration": "Registriere Wallbox"
-        }
-    },
     "branding": {
         "device": "WARP Charger",
         "the": "der",

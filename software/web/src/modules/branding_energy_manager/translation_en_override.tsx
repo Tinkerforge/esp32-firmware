@@ -25,11 +25,6 @@ let x = {
             "power_history": "Power history"
         }
     },
-    "remote_access": {
-        "content": {
-            "registration": "Registering Energy Manager"
-        }
-    },
     "branding": {
         "device": "Energy Manager"
     }

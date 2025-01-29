@@ -1,6 +1,7 @@
 
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "../../ts/translation";
 let x = {
     "remote_access": {
         "navbar": {
@@ -23,7 +24,7 @@ let x = {
             "prepare_login": "Bereite Login vor",
             "logging_in": "Logge Benutzer ein",
             "prepare_encryption": "Bereite Verschlüsselung vor",
-            "registration": null,
+            "registration": <>Registriere {__("device")}</>,
             "login_failed": "Login Fehlgeschlagen:",
             "wrong_credentials": "Nutzername oder Passwort falsch",
             "add_user": "Nutzer hinzufügen",
