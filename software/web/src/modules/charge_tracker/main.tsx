@@ -80,20 +80,38 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
     );
 
     let have_charge_cost = props.electricity_price > 0 && props.charge.energy_charged != null;
-    let price_div = have_charge_cost ? <div>{wallet_icon}<span class="ml-1" style="vertical-align: middle;">{util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span></div> : <></>
 
     return <ListGroupItem>
-        <div class="row">
-            <div class="col">
-                <div class="mb-2"><User/><span class="ml-1" style="vertical-align: middle;">{display_name}</span></div>
-                <div><Calendar/><span class="ml-1" style="vertical-align: middle;">{util.timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span></div>
+        <div class="row justify-content-end">
+            <div class="col-auto pr-2 mb-2">
+                <span class="pr-2"><User/></span>
+                <span style="vertical-align: middle;">{display_name}</span>
             </div>
-            <div class="col-auto">
-                <div class="mb-2"><BatteryCharging/><span class="ml-1" style="vertical-align: middle;">{props.charge.energy_charged === null ? "N/A" : util.toLocaleFixed(props.charge.energy_charged, 3)} kWh</span></div>
-                <div class={have_charge_cost ? "mb-2" : ""}><Clock/><span class="ml-1" style="vertical-align: middle;">{util.format_timespan(props.charge.charge_duration)}</span></div>
-                {price_div}
+            <div class="col px-0" />
+            <div class="col-auto pl-2 mb-2">
+                <span style="vertical-align: middle;">{props.charge.energy_charged === null ? "N/A" : util.toLocaleFixed(props.charge.energy_charged, 3)} kWh</span>
+                <span class="pl-2"><BatteryCharging/></span>
             </div>
         </div>
+        <div class={"row justify-content-end" + (have_charge_cost ? "" : " mb-n2")}>
+            <div class="col-auto pr-2 mb-2">
+                <span class="pr-2"><Calendar/></span>
+                <span style="vertical-align: middle;">{util.timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span>
+            </div>
+            <div class="col px-0" />
+            <div class="col-auto pl-2 mb-2">
+                <span style="vertical-align: middle;">{util.format_timespan(props.charge.charge_duration)}</span>
+                <span class="pl-2"><Clock/></span>
+            </div>
+        </div>
+        {have_charge_cost ?
+            <div class="row justify-content-end mb-n2">
+                <div class="col px-0" />
+                <div class="col-auto pl-2 mb-2">
+                    <span style="vertical-align: middle;">{util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span>
+                    <span class="pl-2">{wallet_icon}</span>
+                </div>
+            </div> : undefined}
     </ListGroupItem>
 }
 
