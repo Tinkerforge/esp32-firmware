@@ -190,7 +190,7 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
         effect(() => this.update_uplot());
     }
 
-    update_uplot() {
+    async update_uplot() {
         // Use signal here to make effect() record its use, even
         // if this function might exit early on its first call
         let date_now = util.get_date_now_1m_update_rate();
@@ -226,16 +226,13 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
             };
 
             try {
-                const eco_chart = API.call("eco/chart", eco_chart_data, undefined, undefined, 2 * 60 * 1000);
+                const eco_chart = await API.call("eco/chart", eco_chart_data, undefined, undefined, 2 * 60 * 1000);
 
                 // Get array of bools from blob (binary bitfield)
-                eco_chart.then((blob) => {
-                    blob.arrayBuffer().then((buffer) => {
-                        const array = new Uint8Array(buffer);
-                        const bool_array = new Array(array.length*8).fill(false).map((_, i) => (array[Math.floor(i/8)] & (1 << (i % 8))) != 0);
-                        this.update_uplot_draw(date_now, bool_array);
-                    });
-                });
+                let buffer = await eco_chart.arrayBuffer();
+                const array = new Uint8Array(buffer);
+                const bool_array = new Array(array.length*8).fill(false).map((_, i) => (array[Math.floor(i/8)] & (1 << (i % 8))) != 0);
+                this.update_uplot_draw(date_now, bool_array);
             } catch (e) {
                 // The errors we can get here are mostly stuff like "no dap data available" or "no time available".
                 // We should not annoy the user with error popups for this.
