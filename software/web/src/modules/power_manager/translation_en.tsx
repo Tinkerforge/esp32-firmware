@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import { toLocaleFixed } from "../../ts/util";
+import { __ } from "../../ts/translation";
 let x = {
     "power_manager": {
         "status": {
@@ -28,7 +29,7 @@ let x = {
         },
         "content": {
             "em_proxy_warning": "When the Energy Manager is controlled by another charge manager, PV excess charging must be enabled on the charge manager, not here.",
-            "cm_requirements_warning": null,
+            "cm_requirements_warning": <>To use the PV excess charging, the <a href="#charge_manager_chargers">{__("charge_manager.content.enable_charge_manager")}</a> must be set to “{__("charge_manager.content.mode_manager")}”.</>,
 
             "phase_switching_mode": "Phase switching",
             "automatic": "Automatic",

@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "../../ts/translation";
 let x = {
     "charge_tracker": {
         "status": {
@@ -37,7 +38,7 @@ let x = {
             "remove_desc": "",
             "remove_btn": "Remove all tracked charges",
 
-            "charge_tracker_remove_modal_text": null,
+            "charge_tracker_remove_modal_text": <>All tracked charges and the username history will be removed. <b>This action cannot be undone!</b> {__("the_device")} then will restart.</>,
             "abort_remove": "Abort",
             "confirm_remove": "Delete",
             "price": "Electricity price",

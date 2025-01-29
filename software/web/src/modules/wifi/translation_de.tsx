@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "../../ts/translation";
 let x = {
     "wifi": {
         "status": {
@@ -21,7 +22,7 @@ let x = {
         "content": {
             "sta_settings": "WLAN-Verbindung",
             "sta_enable_sta": "WLAN-Verbindung aktiviert",
-            "sta_enable_sta_desc": null,
+            "sta_enable_sta_desc": <>{__("The_device")} verbindet sich beim Start automatisch zum konfigurierten Netzwerk</>,
             "sta_ssid": "Netzwerkname (SSID)",
             "sta_scan": "Netzwerksuche",
             "sta_bssid": "BSSID",
@@ -40,15 +41,14 @@ let x = {
             "ap_disabled": "Deaktiviert",
             "ap_ssid": "Netzwerkname (SSID)",
             "ap_hide_ssid": "Netzwerkname versteckt",
-            "ap_hide_ssid_desc_pre": null,
-            "ap_hide_ssid_desc_post": " erreichbar",
+            "ap_hide_ssid_desc": /*FFN*/(bssid: string) => <>{__("The_device")} ist unter der BSSID {bssid} erreichbar.</>/*NF*/,
             "ap_passphrase": "Passphrase",
             "ap_channel": "Kanal",
             "ap_channel_muted": "ignoriert wenn WLAN-Verbindung aktiv ist",
             "ap_channel_auto_select": "Automatische Auswahl",
 
             "confirm_title": "WLAN-Access-Point deaktivieren?",
-            "confirm_content": null,
+            "confirm_content": <>Soll der WLAN-Access-Point wirklich komplett deaktiviert werden? Falls zukünftig keine Verbindung zu einem konfigurierten Netzwerk möglich ist, <b>kann nicht mehr auf das Webinterface zugegriffen werden</b>. {__("The_device")} muss dann auf den Werkszustand zurückgesetzt werden. <a href="{{{manual_url}}}">Siehe Betriebsanleitung für Details.</a></>,
             "confirm_abort": "Abbrechen",
             "confirm_confirm": "Deaktivieren",
 

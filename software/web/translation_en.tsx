@@ -86,7 +86,7 @@ let x = {
     "util": {
         "reboot_title": "Rebooting...",
         "reboot_text": "The web interface will be reloaded automatically after the restart.",
-        "event_connection_lost_title": null,
+        "event_connection_lost_title": <>{__("branding.device")} connection lost!</>,
         "event_connection_lost": "Connection will be reestablished...",
 
         "upload_abort": "Upload aborted",
@@ -115,10 +115,13 @@ let x = {
         "the": "the",
         "The": "The",
         "this": "this",
-        "This": "This"
+        "This": "This",
+        "to_the": "to the"
     },
+    "device": <>{__("branding.device")}</>,
     "the_device": <>{__("branding.the")} {__("branding.device")}</>,
     "The_device": <>{__("branding.The")} {__("branding.device")}</>,
     "this_device": <>{__("branding.this")} {__("branding.device")}</>,
-    "This_device": <>{__("branding.This")} {__("branding.device")}</>
+    "This_device": <>{__("branding.This")} {__("branding.device")}</>,
+    "to_the_device": <>{__("branding.to_the")} {__("branding.device")}</>
 }

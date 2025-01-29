@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { createRef, RefObject } from "preact";
+import { ComponentChildren, createRef, RefObject } from "preact";
 import * as API from "./api";
 import { __, removeUnicodeHacks } from "./translation";
 import { AsyncModal } from "./components/async_modal";
@@ -33,13 +33,13 @@ export function reboot() {
 // react-bootstrap's Variant adds | string as the last union variant m(
 type StrictVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'dark' | 'light';
 
-let alerts: DeepSignal<Array<{id: string, variant: StrictVariant, title: () => string, text: () => string}>> = deepSignal([]);
+let alerts: DeepSignal<Array<{id: string, variant: StrictVariant, title: () => ComponentChildren, text: () => ComponentChildren}>> = deepSignal([]);
 
 export function get_alerts() {
     return alerts;
 }
 
-export function add_alert(id: string, variant: StrictVariant, title: () => string, text: () => string) {
+export function add_alert(id: string, variant: StrictVariant, title: () => ComponentChildren, text: () => ComponentChildren) {
     let idx = alerts.findIndex((alert) => alert.id == id);
     let alert = {id: id, variant: variant, title: title, text: text};
 

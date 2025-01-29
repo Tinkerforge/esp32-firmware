@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "../../ts/translation";
 let x = {
     "charge_tracker": {
         "status": {
@@ -37,7 +38,7 @@ let x = {
             "remove_desc": "",
             "remove_btn": "Ladevorgänge löschen",
 
-            "charge_tracker_remove_modal_text": null,
+            "charge_tracker_remove_modal_text": <>Alle aufgezeichneten Ladevorgänge und der Benutzernamen-Verlauf werden gelöscht. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Danach wird {__("the_device")} neugestartet.</>,
             "abort_remove": "Abbrechen",
             "confirm_remove": "Löschen",
             "price": "Strompreis",

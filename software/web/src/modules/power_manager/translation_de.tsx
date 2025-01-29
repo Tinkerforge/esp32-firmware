@@ -1,4 +1,5 @@
 /** @jsxImportSource preact */
+import { __ } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
 import { h } from "preact";
 let x = {
@@ -28,7 +29,7 @@ let x = {
         },
         "content": {
             "em_proxy_warning": "Wenn der Energy Manager von einem anderen Lastmanager gesteuert wird, muss PV-Überschussladen auf dem Lastmanager aktiviert werden und nicht hier.",
-            "cm_requirements_warning": null,
+            "cm_requirements_warning": <>Um das PV-Überschussladen zu nutzen, muss die <a href="#charge_manager_chargers">{__("charge_manager.content.enable_charge_manager")}</a> auf „{__("charge_manager.content.mode_manager")}“ konfiguriert sein.</>,
 
             "phase_switching_mode": "Phasenumschaltung",
             "automatic": "Automatisch",

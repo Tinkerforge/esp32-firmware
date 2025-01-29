@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "../../ts/translation";
 let x = {
     "firmware_update": {
         "status": {
@@ -68,7 +69,7 @@ let x = {
             "install_state_18": "Info page is too big",
             "install_state_19": null,
             "install_state_20": "Firmware file corrupted (checksum error)",
-            "install_state_21": null,
+            "install_state_21": <>Firmware file does not match the type of this {__("device")}.</>,
             "install_state_23": "Aborted",
             "install_state_24": "Rebooting",
             "install_state_25": "Download short read occurred",

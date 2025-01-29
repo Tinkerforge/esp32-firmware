@@ -86,7 +86,7 @@ let x = {
     "util": {
         "reboot_title": "Starte neu...",
         "reboot_text": "Das Webinterface wird nach dem Neustart automatisch neu geladen.",
-        "event_connection_lost_title": null,
+        "event_connection_lost_title": <>Verbindung {__("to_the_device")} verloren!</>,
         "event_connection_lost": "Verbindung wird wiederhergestellt...",
 
         "upload_abort": "Upload abgebrochen",
@@ -115,10 +115,13 @@ let x = {
         "the": null,
         "The": null,
         "this": null,
-        "This": null
+        "This": null,
+        "to_the": null
     },
+    "device": <>{__("branding.device")}</>,
     "the_device": <>{__("branding.the")} {__("branding.device")}</>,
     "The_device": <>{__("branding.The")} {__("branding.device")}</>,
     "this_device": <>{__("branding.this")} {__("branding.device")}</>,
-    "This_device": <>{__("branding.This")} {__("branding.device")}</>
+    "This_device": <>{__("branding.This")} {__("branding.device")}</>,
+    "to_the_device": <>{__("branding.to_the")} {__("branding.device")}</>
 }

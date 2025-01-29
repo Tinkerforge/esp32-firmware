@@ -13,7 +13,7 @@
         "content": {
             "ethernet": "LAN-Verbindung",
             "enable": "LAN-Verbindung aktiviert",
-            "enable_desc": null
+            "enable_desc": "Verbindung wird automatisch beim Start oder wenn ein Kabel eingesteckt wird aufgebaut"
         },
         "script": {
             "save_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen.",

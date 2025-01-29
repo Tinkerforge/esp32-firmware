@@ -94,7 +94,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                     </FormRow>
 
                     <FormRow label={__("wifi.content.ap_hide_ssid")}>
-                        <Switch desc={__("wifi.content.ap_hide_ssid_desc_pre") + (API.get("wifi/state")?.ap_bssid ?? " ") + __("wifi.content.ap_hide_ssid_desc_post")}
+                        <Switch desc={__("wifi.content.ap_hide_ssid_desc")((API.get("wifi/state")?.ap_bssid ?? " "))}
                                 checked={state.hide_ssid}
                                 onClick={this.toggle("hide_ssid")}
                         />
