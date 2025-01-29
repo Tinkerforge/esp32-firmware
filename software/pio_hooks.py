@@ -1199,16 +1199,16 @@ def main():
 
     translation_str = ''
 
-    def format_translation(translation, type_only, indent):
+    def format_translation(language, subtranslation, type_only, indent):
         output = ['{\n']
 
-        assert isinstance(translation, (dict, str)), type(translation)
+        assert isinstance(subtranslation, (dict, str)), type(subtranslation)
 
-        for key, value in sorted(translation.items()):
+        for key, value in sorted(subtranslation.items()):
             output += [indent + '    ', key, ': ']
 
             if isinstance(value, dict):
-                output += format_translation(value, type_only, indent + '    ')
+                output += format_translation(language, value, type_only, indent + '    ')
             else:
                 is_fragment = value.startswith("___START_FRAGMENT___") and value.endswith("___END_FRAGMENT___")
                 is_string_function = value.startswith("/*SFN*/") and value.endswith("/*NF*/")
@@ -1243,6 +1243,8 @@ def main():
                         string = string.replace('{{{apidoc_url}}}', apidoc_url)
                         string = string.replace('{{{firmware_url}}}', firmware_url)
 
+                    subtranslation[key] = string
+
                     output += [string, ',\n']
 
         output += [indent, '}']
@@ -1252,10 +1254,45 @@ def main():
 
         return output
 
-    translation_str += 'type Translation = ' + ''.join(format_translation(translation['en'], True, '')) + '\n\n'
+    def replace_placeholders_in_placeholders(language, output):
+        replacement_made = True
+
+        def lookup_translation(language, match):
+            nonlocal replacement_made
+            replacement_made = True
+            path: list = match.group(1).split(".")
+            tr = translation[language]
+
+            while len(path) > 0:
+                tr = tr[path.pop(0)]
+
+            return tr
+
+        while replacement_made:
+            replacement_made = False
+            for i, x in enumerate(output):
+                x = re.sub(r'__\("([^"]+)"\)', lambda match: lookup_translation(language, match), x)
+                # Simplify "a" + "b" to "ab"
+                x = x.replace('" + "', '')
+
+                # Simplify <>{"abc"}</> to abc
+                x = re.sub(r'{<>\"([^"{]*)\"</>}', r'\g<1>', x)
+
+                # Simplify {<>abc</>} to abc
+                x = re.sub(r'{<>([^<{]*)</>}', r'\g<1>', x)
+
+                # Simplify {"a"} to a
+                x = re.sub(r'{\"([^"]*)\"}', r'\g<1>', x)
+
+                output[i] = x
+        return output
+
+    translation_str += 'type Translation = ' + ''.join(format_translation('en', translation['en'], True, '')) + '\n\n'
 
     for language in sorted(translation):
-        translation_str += 'const translation_{0}: Translation = {1} as const\n\n'.format(language, ''.join(format_translation(translation[language], False, '')))
+        formatted = format_translation(language, translation[language], False, '')
+        formatted = replace_placeholders_in_placeholders(language, formatted)
+        translation_str += 'const translation_{0}: Translation = {1} as const\n\n'.format(language, ''.join(formatted))
 
     translation_str += 'const translation: {[index: string]: Translation} = {\n'
 
