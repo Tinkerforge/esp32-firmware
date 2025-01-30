@@ -1306,36 +1306,47 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             let battery_soc_avg = battery_socs.length > 0 ? sum_or_null(battery_socs) / battery_socs.length : null;
             let load_power_sum = sum_or_null(load_powers);
 
-            children.push(
-                <FormRow label={__("meters.status.power_sums")}>
-                    <ListGroup>
-                        <ListGroupItem>
-                            <div class="px-2">
-                                <div class="row align-items-center justify-content-between mb-n2">
-                                    <div class="col-auto px-2 mb-2 text-nowrap">
-                                        <span class="pr-2 meters-status-power-sums-icon"><Sun/></span>
-                                        <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{inverter_power_sum !== null ? util.toLocaleFixed(inverter_power_sum) : "---"} W</span>
-                                    </div>
-                                    <div class="col-auto px-2 mb-2 text-nowrap">
-                                        <span class="pr-2 meters-status-power-sums-icon"><Zap/></span>
-                                        <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{grid_power_sum !== null ? util.toLocaleFixed(grid_power_sum) : "---"} W</span>
-                                    </div>
-                                    <div class="col-auto px-2 mb-2 text-nowrap">
-                                        <span style="vertical-align: middle;" class="pr-2 meters-status-power-sums-icon">{battery_power_sum > 0 ? <BatteryCharging/> : <Battery/>}</span>
-                                        <span style="vertical-align: middle; display: inline-block;">
-                                            <div class="meters-status-power-sums-text-main">{battery_soc_avg !== null ? util.toLocaleFixed(battery_soc_avg) : "---"} %</div>
-                                            <div class="meters-status-power-sums-text-sub">{battery_power_sum !== null ? util.toLocaleFixed(battery_power_sum) : "---"} W</div>
-                                        </span>
-                                    </div>
-                                    <div class="col-auto px-2 mb-2 text-nowrap">
-                                        <span class="pr-2 meters-status-power-sums-icon"><Home/></span>
-                                        <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{load_power_sum !== null ? util.toLocaleFixed(load_power_sum) : "---"} W</span>
+            if (inverter_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null || battery_soc_avg !== null || load_power_sum !== null) {
+                children.push(
+                    <FormRow label={__("meters.status.power_sums")}>
+                        <ListGroup>
+                            <ListGroupItem>
+                                <div class="px-2">
+                                    <div class="row align-items-center justify-content-between mb-n2">
+                                        {inverter_power_sum !== null ?
+                                            <div class="col-auto px-2 mb-2 text-nowrap">
+                                                <span class="pr-2 meters-status-power-sums-icon"><Sun/></span>
+                                                <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{util.toLocaleFixed(inverter_power_sum)} W</span>
+                                            </div> : undefined}
+                                        {grid_power_sum !== null ?
+                                            <div class="col-auto px-2 mb-2 text-nowrap">
+                                                <span class="pr-2 meters-status-power-sums-icon"><Zap/></span>
+                                                <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{util.toLocaleFixed(grid_power_sum)} W</span>
+                                            </div> : undefined}
+                                        {battery_power_sum !== null || battery_soc_avg !== null ?
+                                            <div class="col-auto px-2 mb-2 text-nowrap">
+                                                <span style="vertical-align: middle;" class="pr-2 meters-status-power-sums-icon">{battery_power_sum !== null && battery_power_sum > 0 ? <BatteryCharging/> : <Battery/>}</span>
+                                                <span style="vertical-align: middle; display: inline-block;">
+                                                    {battery_power_sum !== null && battery_soc_avg !== null
+                                                        ? <><div class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
+                                                            <div class="meters-status-power-sums-text-sub">{util.toLocaleFixed(battery_power_sum)} W</div></>
+                                                        : (battery_soc_avg !== null
+                                                            ? <div class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
+                                                            : <div class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_power_sum)} W</div>
+                                                        )}
+                                                </span>
+                                            </div> : undefined}
+                                        {load_power_sum !== null ?
+                                            <div class="col-auto px-2 mb-2 text-nowrap">
+                                                <span class="pr-2 meters-status-power-sums-icon"><Home/></span>
+                                                <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{util.toLocaleFixed(load_power_sum)} W</span>
+                                            </div> : undefined}
                                     </div>
                                 </div>
-                            </div>
-                        </ListGroupItem>
-                    </ListGroup>
-                </FormRow>);
+                            </ListGroupItem>
+                        </ListGroup>
+                    </FormRow>);
+            }
         }
 
         return (
