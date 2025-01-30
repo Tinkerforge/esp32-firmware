@@ -125,10 +125,10 @@ void Eco::register_urls()
             return request.send(503, "text/plain", "Clock not yet synced");
         }
 
-        auto buf = heap_alloc_array<char>(1024);
         if (request.contentLength() > 1024) {
             return request.send(413);
         }
+        auto buf = heap_alloc_array<char>(1024);
 
         auto received = request.receive(buf.get(), 1024);
         if (received < 0) {
