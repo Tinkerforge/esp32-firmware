@@ -1310,26 +1310,27 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                 <FormRow label={__("meters.status.power_sums")}>
                     <ListGroup>
                         <ListGroupItem>
-                            <div class="row justify-content-end">
-                                <div class="col-auto pr-2 mb-2">
-                                    <span class="pr-2"><Sun/></span>
-                                    <span style="vertical-align: middle;">{inverter_power_sum !== null ? util.toLocaleFixed(inverter_power_sum) : "---"} W</span>
-                                </div>
-                                <div class="col px-0" />
-                                <div class="col-auto pl-2 mb-2">
-                                    <span style="vertical-align: middle;">{battery_soc_avg !== null ? util.toLocaleFixed(battery_soc_avg) : "---"} % / {battery_power_sum !== null ? util.toLocaleFixed(battery_power_sum) : "---"} W</span>
-                                    <span class="pl-2">{battery_power_sum > 0 ? <BatteryCharging/> : <Battery/>}</span>
-                                </div>
-                            </div>
-                            <div class="row justify-content-end mb-n2">
-                                <div class="col-auto pr-2 mb-2">
-                                    <span class="pr-2"><Zap/></span>
-                                    <span style="vertical-align: middle;">{grid_power_sum !== null ? util.toLocaleFixed(grid_power_sum) : "---"} W</span>
-                                </div>
-                                <div class="col px-0" />
-                                <div class="col-auto pl-2 mb-2">
-                                    <span style="vertical-align: middle;">{load_power_sum !== null ? util.toLocaleFixed(load_power_sum) : "---"} W</span>
-                                    <span class="pl-2"><Home/></span>
+                            <div class="px-2">
+                                <div class="row align-items-center justify-content-between mb-n2">
+                                    <div class="col-auto px-2 mb-2 text-nowrap">
+                                        <span class="pr-2 meters-status-power-sums-icon"><Sun/></span>
+                                        <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{inverter_power_sum !== null ? util.toLocaleFixed(inverter_power_sum) : "---"} W</span>
+                                    </div>
+                                    <div class="col-auto px-2 mb-2 text-nowrap">
+                                        <span class="pr-2 meters-status-power-sums-icon"><Zap/></span>
+                                        <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{grid_power_sum !== null ? util.toLocaleFixed(grid_power_sum) : "---"} W</span>
+                                    </div>
+                                    <div class="col-auto px-2 mb-2 text-nowrap">
+                                        <span style="vertical-align: middle;" class="pr-2 meters-status-power-sums-icon">{battery_power_sum > 0 ? <BatteryCharging/> : <Battery/>}</span>
+                                        <span style="vertical-align: middle; display: inline-block;">
+                                            <div class="meters-status-power-sums-text-main">{battery_soc_avg !== null ? util.toLocaleFixed(battery_soc_avg) : "---"} %</div>
+                                            <div class="meters-status-power-sums-text-sub">{battery_power_sum !== null ? util.toLocaleFixed(battery_power_sum) : "---"} W</div>
+                                        </span>
+                                    </div>
+                                    <div class="col-auto px-2 mb-2 text-nowrap">
+                                        <span class="pr-2 meters-status-power-sums-icon"><Home/></span>
+                                        <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{load_power_sum !== null ? util.toLocaleFixed(load_power_sum) : "---"} W</span>
+                                    </div>
                                 </div>
                             </div>
                         </ListGroupItem>
