@@ -172,7 +172,7 @@ void Eco::register_urls()
         );
 
         if (end_time_1m.first != 0) {
-            return request.send(400, "text/plain", "Charge plan not available");
+            return request.send(200, "application/octet-stream", "", 0);
         }
 
         uint32_t duration_remaining_1m = end_time_1m.second - current_time_1m;
@@ -226,6 +226,7 @@ std::pair<uint8_t, uint32_t> Eco::get_end_time_1m(const Departure departure, con
         // For daily departure the new period under consideration will restart
         // immediately after the time is reached.
         } else if (departure == Departure::Daily) {
+            // end_time is in UTC
             end_time_1m += 24*60;
         }
     }
