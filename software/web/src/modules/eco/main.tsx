@@ -97,7 +97,7 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                         <InputSelect
                             items={[
                                 ["0", "Schnell"],
-                                ["1", "Eco+PV"],
+                                ["1", "Eco + PV"],
                                 ["2", "PV"],
                                 ["3", "Aus"],
                             ]}
