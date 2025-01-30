@@ -32,7 +32,6 @@ private:
 
     ConfigRoot config;
     ConfigRoot charge_plan;
-    ConfigRoot charge_plan_update;
     ConfigRoot state;
     ConfigRoot state_chargers_prototype;
 

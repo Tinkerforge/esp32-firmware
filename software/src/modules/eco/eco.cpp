@@ -65,7 +65,6 @@ void Eco::pre_setup()
         {"time", Config::Uint(8*60, 0, 24*60)}, // localtime in minutes since 00:00
         {"amount", Config::Uint(4)}  // h or kWh depending on configuration (currently only h supported)
     });
-    charge_plan_update = charge_plan;
 
     state_chargers_prototype = Config::Object({
         {"start", Config::Uint(0)}, // Start of charge (minutes since epoch)
@@ -115,8 +114,7 @@ void Eco::register_urls()
     api.addState("eco/state",             &state);
 
     api.addState("eco/charge_plan", &charge_plan);
-    api.addCommand("eco/charge_plan_update", &charge_plan_update, {}, [this](String &/*errmsg*/) {
-        charge_plan = charge_plan_update;
+    api.addCommand("eco/charge_plan_update", &charge_plan, {}, [this](String &/*errmsg*/) {
         state.get("last_save")->updateUint(rtc.timestamp_minutes());
         update();
     }, false);
