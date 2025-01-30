@@ -352,7 +352,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
         });
 
         util.addApiEventListener('eco/charge_plan', () => {
-            if(this.state.charge_plan === undefined) {
+            if((this.state.charge_plan === undefined) || (this.state.charge_plan.enable != API.get('eco/charge_plan').enable)) {
                 this.setState({charge_plan: API.get('eco/charge_plan')})
             }
         });
