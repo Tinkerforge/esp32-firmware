@@ -31,7 +31,7 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { UplotWrapper, UplotData } from "../../ts/components/uplot_wrapper";
+import { UplotWrapperA, UplotData } from "../../ts/components/uplot_wrapper";
 import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS, METER_VALUE_ORDER } from "./meter_value_id";
 import { MeterClassID } from "./meter_class_id.enum";
 import { MeterLocation } from "../meters/meter_location.enum";
@@ -643,15 +643,15 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                 </FormSeparator></>
                 : undefined}
 
-                <div hidden={!show_plot}>
+                <div class="pb-3" hidden={!show_plot}>
                     <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader ref={this.uplot_loader_live_ref}
                                         show={false}
                                         marker_class={'h3'}
                                         no_data={__("meters.content.no_data")}
                                         loading={__("meters.content.loading")} >
-                            <UplotWrapper ref={this.uplot_wrapper_live_ref}
-                                            class="meters-chart pb-3"
+                            <UplotWrapperA ref={this.uplot_wrapper_live_ref}
+                                            class="meters-chart"
                                             sub_page="meters"
                                             color_cache_group="meters.default"
                                             show={false}
@@ -659,22 +659,22 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                             legend_time_label={__("meters.script.time")}
                                             legend_time_with_seconds={true}
                                             aspect_ratio={3}
-                                            x_height={35}
                                             x_format={{hour: '2-digit', minute: '2-digit'}}
                                             x_padding_factor={0}
                                             x_include_date={false}
                                             y_diff_min={100}
                                             y_unit="W"
                                             y_label={__("meters.script.power") + " [W]"}
-                                            y_digits={0} />
+                                            y_digits={0}
+                                            padding={[null, 15, null, null]} />
                         </UplotLoader>
                         <UplotLoader ref={this.uplot_loader_history_ref}
                                         show={true}
                                         marker_class={'h3'}
                                         no_data={__("meters.content.no_data")}
                                         loading={__("meters.content.loading")} >
-                            <UplotWrapper ref={this.uplot_wrapper_history_ref}
-                                            class="meters-chart pb-3"
+                            <UplotWrapperA ref={this.uplot_wrapper_history_ref}
+                                            class="meters-chart"
                                             sub_page="meters"
                                             color_cache_group="meters.default"
                                             show={true}
@@ -682,7 +682,6 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                             legend_time_label={__("meters.script.time")}
                                             legend_time_with_seconds={false}
                                             aspect_ratio={3}
-                                            x_height={50}
                                             x_format={{hour: '2-digit', minute: '2-digit'}}
                                             x_padding_factor={0}
                                             x_include_date={true}
@@ -690,7 +689,8 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                             y_max={1500}
                                             y_unit="W"
                                             y_label={__("meters.script.power") + " [W]"}
-                                            y_digits={0} />
+                                            y_digits={0}
+                                            padding={[null, 15, null, null]} />
                         </UplotLoader>
                     </div>
                 </div>
@@ -1213,14 +1213,14 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             if (power_idx >= 0 && values && values.length > power_idx) {
                 children.push(
                     <FormRow label={__("meters.status.power_history")}>
-                        <div class="card pl-1 pb-1">
+                        <div class="card">
                             <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                                 <UplotLoader ref={this.uplot_loader_ref}
                                             show={true}
                                             marker_class="h4"
                                             no_data={__("meters.content.no_data")}
                                             loading={__("meters.content.loading")} >
-                                    <UplotWrapper ref={this.uplot_wrapper_ref}
+                                    <UplotWrapperA ref={this.uplot_wrapper_ref}
                                                 class="status-meters-chart"
                                                 sub_page="status"
                                                 color_cache_group="meters.default"
@@ -1236,7 +1236,6 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                                 legend_time_label={__("meters.script.time")}
                                                 legend_time_with_seconds={false}
                                                 aspect_ratio={3}
-                                                x_height={50}
                                                 x_format={{hour: '2-digit', minute: '2-digit'}}
                                                 x_padding_factor={0}
                                                 x_include_date={true}
@@ -1244,7 +1243,8 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                                 y_max={1500}
                                                 y_unit="W"
                                                 y_label={__("meters.script.power") + " [W]"}
-                                                y_digits={0} />
+                                                y_digits={0}
+                                                padding={[null, 15, null, 5]} />
                                 </UplotLoader>
                             </div>
                         </div>

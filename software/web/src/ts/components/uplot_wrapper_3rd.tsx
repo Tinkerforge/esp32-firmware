@@ -23,7 +23,7 @@ import { h, Component, RefObject, createRef } from "preact";
 import { effect } from "@preact/signals-core";
 import * as util from "../util";
 import uPlot from "uplot";
-import type { UplotWrapper } from "./uplot_wrapper_2nd";
+import type { UplotWrapperB } from "./uplot_wrapper_2nd";
 import { UplotData } from "./uplot_wrapper_2nd";
 import { uPlotTimelinePlugin } from "../uplot-plugins";
 
@@ -37,8 +37,9 @@ interface UplotFlagsWrapperProps {
     legend_time_with_minutes: boolean;
     legend_div_ref?: RefObject<HTMLDivElement>;
     x_padding_factor: number;
-    y_sync_ref?: RefObject<UplotWrapper>;
+    y_sync_ref?: RefObject<UplotWrapperB>;
     y2_enable?: boolean;
+    padding?: uPlot.Padding;
 }
 
 export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
@@ -75,6 +76,12 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                 this.set_data(this.pending_data, this.pending_visible);
             }
         });
+
+        let padding: uPlot.Padding = this.props.padding;
+
+        if (!padding) {
+            padding = [null, null, null, null];
+        }
 
         let options: uPlot.Options = {
             ...this.get_size(),
@@ -183,7 +190,7 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     }
                 },
             },
-            padding: [null, 5, 0, null],
+            padding: padding,
             plugins: [
                 uPlotTimelinePlugin({
                     fill: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_fills && this.data.value_fills[seriesIdx] ? this.data.value_fills[seriesIdx][value] : 'rgb(0, 0, 0, 0.1)',

@@ -36,10 +36,10 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputTime } from "../../ts/components/input_time";
 import { Button, Collapse, InputGroup } from "react-bootstrap";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
+import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { is_day_ahead_prices_enabled, get_price_from_index, get_prices_as_15min, get_price_from_index_as_15min } from "../day_ahead_prices/main";
 import { Departure } from "./departure.enum";
-import { Resolution} from "../day_ahead_prices/resolution.enum";
+import { Resolution } from "../day_ahead_prices/resolution.enum";
 import { ConfigChargeMode } from "modules/charge_manager/config_charge_mode.enum";
 import { get_allowed_charge_modes } from "modules/charge_manager/main";
 
@@ -300,7 +300,7 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
                 marker_class={'h4'}
                 no_data={__("day_ahead_prices.content.no_data")}
                 loading={__("day_ahead_prices.content.loading")}>
-                <UplotWrapper
+                <UplotWrapperB
                     ref={this.uplot_wrapper_ref}
                     legend_show={false}
                     class="eco-chart"
@@ -311,7 +311,6 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
                     legend_time_label={__("day_ahead_prices.content.time")}
                     legend_time_with_minutes={true}
                     aspect_ratio={4}
-                    x_height={50}
                     x_format={{hour: '2-digit', minute: '2-digit'}}
                     x_padding_factor={0}
                     x_include_date={true}
@@ -321,7 +320,7 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
                     y_three_split={true}
                     only_show_visible={true}
                     grid_show={false}
-                    padding={[10, 10, null, 5]}
+                    padding={[null, 15, null, 5]}
                     height_min={100}
                 />
             </UplotLoader>

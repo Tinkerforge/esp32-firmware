@@ -36,7 +36,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { MeterValueID    } from "../meters/meter_value_id";
 import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_manager/main";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
+import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { is_solar_forecast_enabled, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
 import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
@@ -462,7 +462,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     </FormRow>
                     <FormSeparator heading={__("heating.content.status")} help={__("heating.content.status_help")}/>
                     <FormRow label={__("heating.content.price_based_heating_plan")} label_muted={__("heating.content.price_based_heating_plan_muted")}>
-                    <div class="card pl-1 pb-1">
+                    <div class="card">
                         <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                             <UplotLoader
                                 ref={this.uplot_loader_ref}
@@ -470,9 +470,9 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                 marker_class={'h4'}
                                 no_data={__("day_ahead_prices.content.no_data")}
                                 loading={__("day_ahead_prices.content.loading")}>
-                                <UplotWrapper
+                                <UplotWrapperB
                                     ref={this.uplot_wrapper_ref}
-                                    class="heating-chart pt-3"
+                                    class="heating-chart"
                                     sub_page="heating"
                                     color_cache_group="heating.default"
                                     show={true}
@@ -480,7 +480,6 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                     legend_time_label={__("day_ahead_prices.content.time")}
                                     legend_time_with_minutes={true}
                                     aspect_ratio={3}
-                                    x_height={50}
                                     x_format={{hour: '2-digit', minute: '2-digit'}}
                                     x_padding_factor={0}
                                     x_include_date={true}
@@ -488,7 +487,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                     y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
                                     y_digits={3}
                                     only_show_visible={true}
-                                    padding={[20, 20, null, 5]}
+                                    padding={[30, 15, null, 5]}
                                 />
                             </UplotLoader>
                         </div>
