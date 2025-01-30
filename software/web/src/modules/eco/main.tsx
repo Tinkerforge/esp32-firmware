@@ -233,10 +233,8 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
                 const bool_array = new Array(array.length*8).fill(false).map((_, i) => (array[Math.floor(i/8)] & (1 << (i % 8))) != 0);
                 this.update_uplot_draw(date_now, bool_array);
             } catch (e) {
-                // The errors we can get here are mostly stuff like "no dap data available" or "no time available".
-                // We should not annoy the user with error popups for this.
                 this.update_uplot_draw(date_now, []);
-                console.log("Error while fetching eco chart data:", e);
+                throw e;
             }
         }
     }
