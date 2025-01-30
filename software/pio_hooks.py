@@ -563,8 +563,11 @@ def main():
     config_type = env.GetProjectOption("custom_config_type")
     host_prefix = env.GetProjectOption("custom_host_prefix")
     display_name = env.GetProjectOption("custom_display_name")
-    display_name.encode('ascii')
-    assert re.match(r'^[ !#$%&\'\*+\.\^_`\|~0-9a-zA-Z-]+$', display_name)
+
+    display_name_user_agent_override = env.GetProjectOption("custom_display_name_user_agent_override")
+    display_name_user_agent = display_name_user_agent_override if display_name_user_agent_override != "" else display_name
+    display_name_user_agent.encode('ascii')
+    assert re.match(r'^[ !#$%&\'\*+\.\^_`\|~0-9a-zA-Z-]+$', display_name_user_agent)
 
     manual_url = env.GetProjectOption("custom_manual_url")
     apidoc_url = env.GetProjectOption("custom_apidoc_url")
@@ -724,7 +727,7 @@ def main():
     build_lines.append('#define BUILD_MANUFACTURER_FULL "{}"'.format(manufacturer_full))
     build_lines.append('#define BUILD_MANUFACTURER_USER_AGENT "{}"'.format(manufacturer_user_agent.replace(" ", "_")))
     build_lines.append('#define BUILD_DISPLAY_NAME "{}"'.format(display_name))
-    build_lines.append('#define BUILD_DISPLAY_NAME_USER_AGENT "{}"'.format(display_name.replace(" ", "_")))
+    build_lines.append('#define BUILD_DISPLAY_NAME_USER_AGENT "{}"'.format(display_name_user_agent.replace(" ", "_")))
     build_lines.append('#define BUILD_DISPLAY_NAME_UPPER "{}"'.format(display_name.upper()))
     build_lines.append('#define BUILD_REQUIRE_FIRMWARE_INFO {}'.format(require_firmware_info))
     build_lines.append('#define BUILD_MONITOR_SPEED {}'.format(monitor_speed))
