@@ -49,7 +49,7 @@ export interface UplotData {
     y_axes?: ('y' | 'y2')[];
 }
 
-interface UplotWrapperProps {
+interface UplotWrapperBProps {
     class: string;
     sub_page: string;
     color_cache_group: string;
@@ -61,7 +61,6 @@ interface UplotWrapperProps {
     legend_time_with_minutes: boolean;
     legend_div_ref?: RefObject<HTMLDivElement>;
     aspect_ratio: number;
-    x_height: number;
     x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
     x_include_date: boolean;
@@ -86,7 +85,7 @@ interface UplotWrapperProps {
     height_min?: number;
 }
 
-export class UplotWrapper extends Component<UplotWrapperProps, {}> {
+export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
     uplot: uPlot;
     data: UplotData;
     pending_data: UplotData;
@@ -131,6 +130,9 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             padding = [null, null, null, null];
         }
 
+        let legend_show = (this.props.legend_show === undefined) || this.props.legend_show;
+        let x_height = (this.props.x_include_date ? 55 : 35) - (legend_show ? 5 : 0);
+
         let options: uPlot.Options = {
             ...this.get_size(),
             pxAlign: 0,
@@ -165,7 +167,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                         show: (this.props.grid_show === undefined) || this.props.grid_show
                     },
                     font: '12px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
-                    size: this.props.x_height,
+                    size: x_height,
                     incrs: [
                         60,
                         60 * 2,
@@ -295,7 +297,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 },
             },
             legend: {
-                show: (this.props.legend_show === undefined) || this.props.legend_show,
+                show: legend_show,
                 live: !util.is_native_median_app(),
                 mount: (self: uPlot, legend: HTMLElement) => {
                     if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
@@ -333,7 +335,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                 let x1 = self.valToPos(xd[i1] + xpad, 'x', true);
                                 let y = self.valToPos(0, 'y', true);
 
-                                if (y > ctx.canvas.height - this.props.x_height * devicePixelRatio) {
+                                if (y > ctx.canvas.height - x_height * devicePixelRatio) {
                                     return;
                                 }
 
@@ -412,7 +414,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                         let metrics   = ctx.measureText(line.text);
                                         let text_mid  = metrics.width/2 + (xn-x)/2;
                                         ctx.fillStyle = `rgba(32, 32, 32, 1)`;
-                                        ctx.fillText(line.text, x + text_mid, 1 + (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent)/2);
+                                        ctx.fillText(line.text, x + text_mid, 12 * devicePixelRatio + (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent) / 2);
                                         ctx.restore();
                                     }
                                 });

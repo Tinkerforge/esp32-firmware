@@ -33,7 +33,7 @@ import { Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { UplotData, UplotWrapper, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
+import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
 import { Resolution } from "./resolution.enum";
@@ -376,7 +376,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                         </div>
                     </div>
                 </FormRow>
-                <div>
+                <div class="pb-3">
                     <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader
                             ref={this.uplot_loader_ref}
@@ -384,9 +384,9 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             marker_class={'h4'}
                             no_data={__("day_ahead_prices.content.no_data")}
                             loading={__("day_ahead_prices.content.loading")}>
-                            <UplotWrapper
+                            <UplotWrapperB
                                 ref={this.uplot_wrapper_ref}
-                                class="day-ahead-prices-chart pb-3 pt-2"
+                                class="day-ahead-prices-chart"
                                 sub_page="day_ahead_prices"
                                 color_cache_group="day_ahead_prices.default"
                                 show={true}
@@ -394,7 +394,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 legend_time_label={__("day_ahead_prices.content.time")}
                                 legend_time_with_minutes={true}
                                 aspect_ratio={3}
-                                x_height={50}
                                 x_format={{hour: '2-digit', minute: '2-digit'}}
                                 x_padding_factor={0}
                                 x_include_date={true}
@@ -403,7 +402,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
                                 y_digits={3}
                                 only_show_visible={true}
-                                padding={[20, 20, null, null]}
+                                padding={[30, 15, null, null]}
                             />
                         </UplotLoader>
                     </div>

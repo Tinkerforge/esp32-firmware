@@ -39,7 +39,7 @@ export interface UplotData {
     default_visibilty?: boolean[];
 }
 
-interface UplotWrapperProps {
+interface UplotWrapperAProps {
     class: string;
     sub_page: string;
     color_cache_group: string;
@@ -50,7 +50,6 @@ interface UplotWrapperProps {
     legend_time_with_seconds: boolean;
     legend_div_ref?: RefObject<HTMLDivElement>;
     aspect_ratio: number;
-    x_height: number;
     x_format: Intl.DateTimeFormatOptions;
     x_padding_factor: number;
     x_include_date: boolean;
@@ -61,9 +60,10 @@ interface UplotWrapperProps {
     y_label: string;
     y_digits: number;
     y_three_split?: boolean;
+    padding?: uPlot.Padding;
 }
 
-export class UplotWrapper extends Component<UplotWrapperProps, {}> {
+export class UplotWrapperA extends Component<UplotWrapperAProps, {}> {
     uplot: uPlot;
     data: UplotData;
     pending_data: UplotData;
@@ -93,6 +93,15 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 this.set_data(this.pending_data, this.pending_visible);
             }
         });
+
+        let padding: uPlot.Padding = this.props.padding;
+
+        if (!padding) {
+            padding = [null, null, null, null];
+        }
+
+        let legend_show = true;
+        let x_height = (this.props.x_include_date ? 55 : 35) - (legend_show ? 5 : 0);
 
         let options: uPlot.Options = {
             ...this.get_size(),
@@ -125,7 +134,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
             axes: [
                 {
                     font: '12px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
-                    size: this.props.x_height,
+                    size: x_height,
                     incrs: [
                         60,
                         60 * 2,
@@ -242,6 +251,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                 },
             },
             legend: {
+                show: legend_show,
                 live: !util.is_native_median_app(),
                 mount: (self: uPlot, legend: HTMLElement) => {
                     if (this.props.legend_div_ref && this.props.legend_div_ref.current) {
@@ -249,7 +259,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                     }
                 },
             },
-            padding: [null, 20, null, 5] as uPlot.Padding,
+            padding: padding,
             plugins: [
                 {
                     hooks: {
@@ -268,7 +278,7 @@ export class UplotWrapper extends Component<UplotWrapperProps, {}> {
                                 let x1 = self.valToPos(xd[i1] + xpad, 'x', true);
                                 let y = self.valToPos(0, 'y', true);
 
-                                if (y > ctx.canvas.height - this.props.x_height * devicePixelRatio) {
+                                if (y > ctx.canvas.height - x_height * devicePixelRatio) {
                                     return;
                                 }
 

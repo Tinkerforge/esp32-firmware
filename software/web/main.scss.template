@@ -564,6 +564,14 @@ body {
     display: none;
 }
 
+.u-legend tbody {
+    padding-bottom: 0.25rem;
+}
+
+.u-series>* {
+    padding: 2px 4px;
+}
+
 table ul {
     margin-bottom: 0 !important;
     padding-left: 1rem !important;

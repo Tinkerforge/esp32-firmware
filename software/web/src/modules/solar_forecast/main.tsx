@@ -33,7 +33,7 @@ import { Table } from "../../ts/components/table";
 import { InputNumber } from "../../ts/components/input_number";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { UplotData, UplotWrapper } from "../../ts/components/uplot_wrapper_2nd";
+import { UplotData, UplotWrapperB } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { StatusSection } from "../../ts/components/status_section";
@@ -522,7 +522,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                         </div>
                     </div>
                 </FormRow>
-                <div>
+                <div class="pb-3">
                     <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader
                             ref={this.uplot_loader_ref}
@@ -530,9 +530,9 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                             marker_class={'h4'}
                             no_data={__("solar_forecast.content.no_data")}
                             loading={__("solar_forecast.content.loading")}>
-                            <UplotWrapper
+                            <UplotWrapperB
                                 ref={this.uplot_wrapper_ref}
-                                class="solar-forecast-chart pb-3"
+                                class="solar-forecast-chart"
                                 sub_page="solar_forecast"
                                 color_cache_group="solar_forecast.default"
                                 show={true}
@@ -540,7 +540,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                 legend_time_label={__("solar_forecast.content.time")}
                                 legend_time_with_minutes={true}
                                 aspect_ratio={3}
-                                x_height={50}
                                 x_format={{hour: '2-digit', minute: '2-digit'}}
                                 x_padding_factor={0}
                                 x_include_date={true}
@@ -549,7 +548,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                 y_label={__("solar_forecast.script.power") + " [W]"}
                                 y_digits={2}
                                 only_show_visible={true}
-                                padding={[null, 20, null, null]}
+                                padding={[null, 15, null, null]}
                             />
                         </UplotLoader>
                     </div>
