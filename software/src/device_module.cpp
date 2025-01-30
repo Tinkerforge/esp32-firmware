@@ -19,8 +19,19 @@
 
 #include "device_module.h"
 
+#include "bindings/base58.h"
+#include "bindings/bricklet_unknown.h"
+#include "bindings/errors.h"
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
+#include "tools/bricklets.h"
+
+#include "gcc_warnings.h"
+
+extern TF_HAL hal;
+
+#define BOOTLOADER_MODE_FIRMWARE 1
+#define FIRMWARE_DEVICE_IDENTIFIER_OFFSET 8
 
 void DeviceModuleBase::pre_setup()
 {
@@ -56,9 +67,20 @@ void DeviceModuleBase::register_urls()
     api.addState(url_prefix_str + "/identity", &identity);
 }
 
+void DeviceModuleBase::loop()
+{
+    if (device_found && !initialized && deadline_elapsed(next_check)) {
+        next_check = now_us() + 10_s;
+
+        if (!is_in_bootloader(TF_E_TIMEOUT)) {
+            setup_function();
+        }
+    }
+}
+
 uint16_t DeviceModuleBase::get_device_id()
 {
-    return firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET] | (firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET + 1] << 8);
+    return static_cast<uint16_t>(firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET] | (firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET + 1] << 8));
 }
 
 void DeviceModuleBase::update_identity(TF_TFP *tfp)
@@ -102,4 +124,72 @@ void DeviceModuleBase::update_identity(TF_TFP *tfp)
     identity.get("fw_version")->updateString(value);
 
     identity.get("device_identifier")->updateUint(device_identifier);
+}
+
+bool DeviceModuleBase::is_in_bootloader(int rc)
+{
+    if (rc != TF_E_TIMEOUT && rc != TF_E_NOT_SUPPORTED) {
+        return false;
+    }
+
+    uint8_t mode;
+    int bootloader_rc = get_bootloader_mode(&mode);
+
+    if (bootloader_rc != TF_E_OK) {
+        return false;
+    }
+
+    if (mode == BOOTLOADER_MODE_FIRMWARE) {
+        return false;
+    }
+
+    initialized = false;
+
+    return true;
+}
+
+bool DeviceModuleBase::setup_device()
+{
+    uint16_t device_id = get_device_id();
+    TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, true);
+
+    if (!log_message_printed) {
+        if (tfp == nullptr && mandatory)
+            logger.printfln("No %s Bricklet found. Disabling %s support.", device_name, module_name);
+        else if (tfp != nullptr && !mandatory)
+            logger.printfln("%s Bricklet found. Enabling %s support.", device_name, module_name);
+    }
+    log_message_printed = true;
+
+    if (tfp == nullptr)
+        return false;
+
+    device_found = true;
+
+    int result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, false);
+
+    if (result != 0) {
+        logger.printfln("Flashing %s Bricklet failed (%d)", device_name, result);
+        logger.printfln("Retrying once.");
+        result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, false);
+        if (result != 0) {
+            logger.printfln("Flashing %s Bricklet failed twice (%d). Disabling completely.", device_name, result);
+            device_found = false;
+            return false;
+        }
+    }
+
+    char uid[7] = {0};
+
+    tf_base58_encode(tfp->uid_num, uid);
+
+    result = destroy_and_init(uid, &hal);
+
+    if (result != TF_E_OK) {
+        logger.printfln("Failed to initialize %s Bricklet (%d). Disabling %s support.", device_name, result, module_name);
+        return false;
+    }
+
+    update_identity(tfp);
+    return true;
 }

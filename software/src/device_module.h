@@ -19,20 +19,13 @@
 
 #pragma once
 
+#include <functional>
+#include <stdint.h>
+
 #include "module.h"
 #include "config.h"
-#include "tools.h"
-#include "tools/bricklets.h"
-#include "header_logger.h"
-#include "bindings/base58.h"
+#include "TFTools/Micros.h"
 #include "bindings/hal_common.h"
-#include "bindings/errors.h"
-#include "bindings/bricklet_unknown.h"
-
-extern TF_HAL hal;
-
-#define BOOTLOADER_MODE_FIRMWARE 1
-#define FIRMWARE_DEVICE_IDENTIFIER_OFFSET 8
 
 class DeviceModuleBase : public IModule
 {
@@ -41,30 +34,49 @@ public:
                      const size_t firmware_len,
                      const char *url_prefix,
                      const char *device_name,
-                     const char *module_name) :
+                     const char *module_name,
+                     std::function<void(void)> &&setup_function,
+                     bool mandatory) :
         firmware(firmware),
         firmware_len(firmware_len),
         url_prefix(url_prefix),
         device_name(device_name),
-        module_name(module_name) {}
+        module_name(module_name),
+        setup_function(std::move(setup_function)),
+        mandatory(mandatory) {}
+
     virtual ~DeviceModuleBase() {}
 
     void pre_setup() override;
     void register_urls() override;
-
-    uint16_t get_device_id();
+    void loop() override;
 
 protected:
-    virtual void reset() = 0;
+    uint16_t get_device_id();
     void update_identity(TF_TFP *tfp);
+    bool is_in_bootloader(int rc);
+    bool setup_device();
+    virtual void reset() = 0;
+
+private:
+    virtual int destroy_and_init(const char *, TF_HAL *hal) = 0;
+    virtual int get_bootloader_mode(uint8_t *mode) = 0;
+
+    micros_t next_check = 0_us;
+    ConfigRoot identity;
 
     const uint8_t *firmware;
     const size_t firmware_len;
     const char *url_prefix;
     const char *device_name;
     const char *module_name;
+    std::function<void(void)> setup_function;
+    bool mandatory;
 
-    ConfigRoot identity;
+    bool log_message_printed = false;
+
+protected:
+    bool device_found = false;
 };
 
 template <typename DeviceT,
@@ -72,7 +84,7 @@ template <typename DeviceT,
           int (*get_bootloader_mode_function)(DeviceT *, uint8_t *),
           int (*reset_function)(DeviceT *),
           int (*destroy_function)(DeviceT *),
-          bool mandatory = true>
+          bool is_mandatory = true>
 class DeviceModule : public DeviceModuleBase
 {
 public:
@@ -82,96 +94,24 @@ public:
                  const char *device_name,
                  const char *module_name,
                  std::function<void(void)> &&setup_function) :
-        DeviceModuleBase(firmware, firmware_len, url_prefix, device_name, module_name),
-        setup_function(std::move(setup_function)) {}
-
-    bool setup_device()
-    {
-        destroy_function(&device);
-
-        uint16_t device_id = get_device_id();
-        TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, true);
-
-        if (!log_message_printed) {
-            if (tfp == nullptr && mandatory)
-                header_printfln("device_module", "No %s Bricklet found. Disabling %s support.", device_name, module_name);
-            else if (tfp != nullptr && !mandatory)
-                header_printfln("device_module", "%s Bricklet found. Enabling %s support.", device_name, module_name);
-        }
-        log_message_printed = true;
-
-        if (tfp == nullptr)
-            return false;
-
-        device_found = true;
-
-        int result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, false);
-
-        if (result != 0) {
-            header_printfln("device_module", "Flashing %s Bricklet failed (%d)", device_name, result);
-            header_printfln("device_module", "Retrying once.");
-            result = ensure_matching_firmware(tfp, device_name, module_name, firmware, firmware_len, false);
-            if (result != 0) {
-                header_printfln("device_module", "Flashing %s Bricklet failed twice (%d). Disabling completely.", device_name, result);
-                device_found = false;
-                return false;
-            }
-        }
-
-        char uid[7] = {0};
-
-        tf_base58_encode(tfp->uid_num, uid);
-
-        result = init_function(&device, uid, &hal);
-
-        if (result != TF_E_OK) {
-            header_printfln("device_module", "Failed to initialize %s Bricklet (%d). Disabling %s support.", device_name, result, module_name);
-            return false;
-        }
-
-        update_identity(tfp);
-        return true;
-    }
-
-    void loop() override
-    {
-        if (device_found && !initialized && deadline_elapsed(last_check + 10000)) {
-            last_check = millis();
-
-            if (!is_in_bootloader(TF_E_TIMEOUT)) {
-                setup_function();
-            }
-        }
-    }
+        DeviceModuleBase(firmware, firmware_len, url_prefix, device_name, module_name, std::move(setup_function), is_mandatory) {}
 
     void reset() override
     {
         reset_function(&device);
     }
 
-    bool is_in_bootloader(int rc)
+    int destroy_and_init(const char *id, TF_HAL *hal) override
     {
-        if (rc != TF_E_TIMEOUT && rc != TF_E_NOT_SUPPORTED) {
-            return false;
-        }
+        destroy_function(&device);
 
-        uint8_t mode;
-        int bootloader_rc = get_bootloader_mode_function(&device, &mode);
-
-        if (bootloader_rc != TF_E_OK) {
-            return false;
-        }
-
-        if (mode != BOOTLOADER_MODE_FIRMWARE) {
-            initialized = false;
-        }
-
-        return mode != BOOTLOADER_MODE_FIRMWARE;
+        return init_function(&device, id, hal);
     }
 
-    std::function<void(void)> setup_function;
-    bool device_found = false;
-    uint32_t last_check = 0;
+    int get_bootloader_mode(uint8_t *mode) override
+    {
+        return get_bootloader_mode_function(&device, mode);
+    }
 
     // Think before making the device handle public again.
     // Instead of the usual python-esque approach of
@@ -182,7 +122,4 @@ public:
     // This simplifies reimplementing modules for other hardware.
 protected:
     DeviceT device;
-
-private:
-    bool log_message_printed = false;
 };
