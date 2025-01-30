@@ -96,7 +96,7 @@ void ChargeLimits::pre_setup()
         }),
         [this](const Config *conf) {
             if (conf->get("restart")->asBool()) {
-                api.callCommand("charge_limits/restart", {});
+                api.callCommand("charge_limits/restart");
             }
 
             int duration = conf->get("duration")->asInt();

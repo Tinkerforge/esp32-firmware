@@ -542,7 +542,7 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpCoils(uint16_t start_address, uint16_
         switch (i + start_address) {
             case 1000: REQUIRE(evse); evse_common.set_modbus_enabled(coil); break;
             case 1001: REQUIRE(evse); {
-                    String err = api.callCommand(coil ? "evse/start_charging" : "evse/stop_charging", nullptr);
+                    String err = api.callCommand(coil ? "evse/start_charging" : "evse/stop_charging");
                     if (err != "") {
                         logger.printfln("Failed to %s charging: %s", coil ? "start" : "stop", err.c_str());
                     }
@@ -648,7 +648,7 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpHoldingRegisters(uint16_t start_addre
 
             case 2000: REQUIRE(meter); {
                     if (val.u == 0x3E12E5E7) {
-                        String err = api.callCommand("meter/reset", {});
+                        String err = api.callCommand("meter/reset");
                         if (err != "") {
                             logger.printfln("Failed to reset energy meter: %s", err.c_str());
                         }

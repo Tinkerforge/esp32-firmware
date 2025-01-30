@@ -157,7 +157,7 @@ void MetersLegacyAPI::register_urls()
     // meter/error_counters registered in meters module
 
     api.addCommand("meter/reset", Config::Null(), {}, [this](String &errmsg) {
-        errmsg = api.callCommand(meters.get_path(this->linked_meter_slot, Meters::PathType::Reset).c_str(), nullptr);
+        errmsg = api.callCommand(meters.get_path(this->linked_meter_slot, Meters::PathType::Reset).c_str());
     }, true);
 
     api.addCommand("meter/state_update", &legacy_state_update, {}, [this](String &/*errmsg*/) {

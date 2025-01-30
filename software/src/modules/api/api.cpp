@@ -805,7 +805,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len)
     return result;
 }
 
-void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t len, const std::function<void(const String &errmsg)> &done_cb)
+void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t len, const std::function<void(const String &errmsg)> &done_cb)
 {
     if (running_in_main_task()) {
         String err = "callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!";
@@ -846,7 +846,7 @@ void API::callCommandNonBlocking(CommandRegistration &reg, char *payload, size_t
         });
 }
 
-String API::callCommand(const char *path, Config::ConfUpdate payload)
+String API::callCommand(const char *path, const Config::ConfUpdate &payload)
 {
     if (!running_in_main_task()) {
         return "Use char *, size_t overload of callCommand in non-main thread!";
