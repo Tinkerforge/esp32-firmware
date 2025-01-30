@@ -9,6 +9,7 @@ let x = {
         "content": {
             "solar_forecast": "PV-Ertragsprognose",
             "enable_solar_forecast": "PV-Ertragsprognose aktiviert",
+            "enable_solar_forecast_muted": <>Die Prognose wird von <a href="https://forecast.solar">Forecast.Solar</a> abgefragt.</>,
             "planes": "PV-Flächen",
             "plane": "PV-Fläche",
             "no_data": "Keine Daten vorhanden!",
@@ -30,7 +31,6 @@ let x = {
             "add_plane_config_done": "Alle PV-Flächen hinzugefügt (6 von 6)",
             "edit_plane_config_title": "PV-Fläche bearbeiten",
             "solar_forecast_desc": "Lädt automatisch die PV-Ertragsprognose herunter. Für diese Funktion muss das Gerät Zugriff auf das Internet haben.",
-            "solar_forecast_muted": "",
             "table_name": "Name",
             "table_azimuth": "Azimut",
             "table_declination": "Neigung",
