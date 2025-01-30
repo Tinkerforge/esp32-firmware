@@ -28,6 +28,8 @@
 
 #include "module_dependencies.h"
 
+extern TF_HAL hal;
+
 EVSE::EVSE() : DeviceModule(evse_bricklet_firmware_bin_data,
                             evse_bricklet_firmware_bin_length,
                             "evse",
