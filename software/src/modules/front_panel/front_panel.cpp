@@ -279,7 +279,32 @@ void FrontPanel::pre_reboot()
     // Stop the update() task from accessing the display
     flash_update_in_progress = true;
 
-    tf_warp_front_panel_set_display(&device, TF_WARP_FRONT_PANEL_DISPLAY_OFF);
+    size_t tile_count = config.get("tiles")->count();
+    for (size_t i = 0; i < tile_count; ++i) {
+        if (i == 1) {
+            tf_warp_front_panel_set_display_front_page_icon(
+                &device,
+                i,
+                true,
+                SPRITE_ICON_WRENCH,
+                "Re-   ",
+                FONT_24PX_FREEMONO_WHITE_ON_BLACK,
+                "start ",
+                FONT_24PX_FREEMONO_WHITE_ON_BLACK
+            );
+            continue;
+        }
+
+        update_front_page_empty_tile(i, TileType::EmptyTile, 0);
+    }
+
+    tf_warp_front_panel_set_status_bar(
+        &device,
+        static_cast<std::underlying_type<EthernetState>::type>(EthernetState::NotConfigured),
+        -127 |  (static_cast<std::underlying_type<WifiState>::type>(WifiState::NotConfigured) << 16),
+        0, 0, 0
+    );
+
     set_led(LEDPattern::Blinking, LEDColor::Yellow);
 }
 
