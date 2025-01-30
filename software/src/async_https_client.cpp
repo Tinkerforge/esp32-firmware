@@ -23,10 +23,16 @@
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
+#include "build.h"
 
 #define ASYNC_HTTPS_CLIENT_TIMEOUT 15000
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
+
+AsyncHTTPSClient::AsyncHTTPSClient(bool use_cookies) : use_cookies{use_cookies}
+{
+    this->add_default_headers();
+}
 
 AsyncHTTPSClient::~AsyncHTTPSClient()  {
     if (task_id != 0) {
@@ -293,6 +299,7 @@ void AsyncHTTPSClient::clear()
 
     cert.reset();
     headers = std::vector<std::pair<String, String>>();
+    this->add_default_headers();
     owned_body = String();
     in_progress = false;
 }
@@ -308,4 +315,8 @@ void AsyncHTTPSClient::parse_cookie(const char *cookie) {
 void AsyncHTTPSClient::abort_async()
 {
     abort_requested = true;
+}
+
+void AsyncHTTPSClient::add_default_headers() {
+    this->set_header("User-Agent", BUILD_MANUFACTURER_USER_AGENT "-" BUILD_DISPLAY_NAME_USER_AGENT "/" BUILD_VERSION_STRING);
 }
