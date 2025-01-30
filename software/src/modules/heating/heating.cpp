@@ -213,6 +213,8 @@ void Heating::update()
     bool sg_ready0_on = false;
     bool sg_ready1_on = false;
 
+    const bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
+
     if(!yield_forecast && !extended && !blocking && !pv_excess_control) {
         extended_logging("No control active.");
     } else {
@@ -233,9 +235,19 @@ void Heating::update()
             MeterValueAvailability meter_availability = meters.get_power(meter_slot_grid_power, &watt_current);
             if (meter_availability != MeterValueAvailability::Fresh) {
                 extended_logging("Meter value not available (meter %d has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
-            } else if ((-watt_current) > pv_excess_control_threshold) {
-                extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW.", (int)watt_current, pv_excess_control_threshold);
-                sg_ready1_on |= true;
+            } else {
+                const bool active_value = sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED;
+                if (sg_ready_output_1 == active_value) {
+                    if ((-watt_current) > 0) {
+                        extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: 0W (sgr1 is active).", (int)watt_current);
+                        sg_ready1_on |= true;
+                    }
+                } else {
+                    if ((-watt_current) > pv_excess_control_threshold) {
+                        extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW. (sgr1 is not active)", (int)watt_current, pv_excess_control_threshold);
+                        sg_ready1_on |= true;
+                    }
+                }
             }
         };
 
@@ -360,7 +372,6 @@ void Heating::update()
         sg_ready0_on = false;
     }
 
-    const bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
     if (sg_ready1_on) {
         state.get("sgr_extended")->updateBool(true);
         extended_logging("Heating decision: Turning on SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
