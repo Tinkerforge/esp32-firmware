@@ -470,6 +470,7 @@ void PowerManager::setup()
     // that across a reboot. This will still fail on a power cycle or bricklet update,
     // which set the contactor back to single phase.
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
+        logger.printfln("Setting external_control to %u", phase_switcher_backend->get_phases());
         external_control.get("phases_wanted")->updateUint(phase_switcher_backend->get_phases());
     }
 
@@ -543,13 +544,15 @@ void PowerManager::register_urls()
             }
 
             uint32_t phases_wanted = external_control_update.get("phases_wanted")->asUint();
+            uint32_t phases_last = this->external_control.get("phases_wanted")->asUint();
             uint32_t phases_current = this->get_phases();
 
-            if (phases_wanted == phases_current) {
+            if (phases_wanted == phases_last && phases_wanted == phases_current) {
                 logger.printfln("Ignoring external control phase change request: Value is already %u.", phases_wanted);
                 return;
             }
 
+            this->external_control.get("phases_wanted")->updateUint(phases_wanted);
             logger.printfln("External control phase change request: switching to %u", phases_wanted);
 
             if (phase_switcher_backend->switch_phases(phases_wanted)) {
