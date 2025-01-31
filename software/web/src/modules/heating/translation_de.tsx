@@ -30,7 +30,7 @@ let x = {
             "meter_slot_grid_power": "Stromzähler",
             "meter_slot_grid_power_muted": "typischerweise am Netzanschluss",
             "meter_slot_grid_power_none": "Kein Stromzähler konfiguriert",
-            "sg_ready": "SG-Ready",
+            "sg_ready": "SG Ready",
             "sg_ready_output": "SG-Ready-Ausgang",
             "sg_ready_output1_muted": "Ausgang 1 wird für den blockierenden Betrieb verwendet (SG-Ready-Zustand 1).",
             "sg_ready_output1_help": "Im blockierenden Betrieb läuft die Heizung nicht. Dieser Betriebszustand ist abwärtskompatibel zur häufig zu festen Uhrzeiten geschalteten EVU-Sperre.",
