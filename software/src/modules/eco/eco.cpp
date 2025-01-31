@@ -33,7 +33,11 @@
 #define extended_logging(fmt, ...) \
     do { \
         if (ECO_EXTENDED_LOGGING) { \
-            logger.tracefln(this->trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
+            if (!did_log_timestamp) { \
+                logger.trace_timestamp(this->trace_buffer_index); \
+                did_log_timestamp = true; \
+            } \
+            logger.tracefln_plain(this->trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
         } \
     } while (0)
 
@@ -287,6 +291,11 @@ void Eco::set_chargers_state_chart_data(const uint8_t charger_id, bool *chart, u
 
 void Eco::update()
 {
+#ifdef ECO_EXTENDED_LOGGING
+    // used in extended logging macro
+    bool did_log_timestamp = false;
+#endif
+
     // 48 hours with 15 minute resolution is the theortical maximum
     bool cheap_hours[48*4] = {false};
 
@@ -298,13 +307,16 @@ void Eco::update()
             state.get("chargers")->get(charger_id)->get("amount")->updateUint(0);
         } else {
             const uint32_t minutes_in_state_c = charger_state->time_in_state_c.to<minutes_t>().as<uint32_t>();
-            state.get("chargers")->get(charger_id)->get("amount")->updateUint(minutes_in_state_c);
-            extended_logging("Charger %d: Update minutes in state C to %d", charger_id, minutes_in_state_c);
+            if (state.get("chargers")->get(charger_id)->get("amount")->updateUint(minutes_in_state_c)) {
+                extended_logging("Charger %d: Update minutes in state C to %d", charger_id, minutes_in_state_c);
+            }
 
             if (charger_state->last_plug_in == 0_us) {
-                state.get("chargers")->get(charger_id)->get("start")->updateUint(0);
-                state.get("chargers")->get(charger_id)->get("amount")->updateUint(0);
-                extended_logging("Charger %d: Update amount and start time to 0", charger_id);
+                bool log = state.get("chargers")->get(charger_id)->get("start")->updateUint(0);
+                log |= state.get("chargers")->get(charger_id)->get("amount")->updateUint(0);
+                if (log) {
+                    extended_logging("Charger %d: Update amount and start time to 0", charger_id);
+                }
 
             // Only update "start" when there is a transition from one car to the next.
             // Otherwise the start time may "jitter" for a given charging-session since
@@ -314,8 +326,9 @@ void Eco::update()
 
                 const micros_t time_from_now_to_plug_in = now_us() - charger_state->last_plug_in;
                 const uint32_t epoch_to_plug_in_minutes = rtc.timestamp_minutes() - time_from_now_to_plug_in.to<minutes_t>().as<uint32_t>();
-                state.get("chargers")->get(charger_id)->get("start")->updateUint(epoch_to_plug_in_minutes);
-                extended_logging("Charger %d: Update start time to %d", charger_id, epoch_to_plug_in_minutes);
+                if (state.get("chargers")->get(charger_id)->get("start")->updateUint(epoch_to_plug_in_minutes)) {
+                    extended_logging("Charger %d: Update start time to %d", charger_id, epoch_to_plug_in_minutes);
+                }
             }
         }
     }
