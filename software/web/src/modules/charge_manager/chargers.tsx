@@ -562,7 +562,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                             value={state.emCharger.idx}
                             onValue={(v) => {
                                 const chg_idx = parseInt(v);
-                                const host = chg_idx < 254 ? state.chargers[chg_idx].host.toLowerCase() : "";
+                                const host = chg_idx < 254 ? state.chargers[chg_idx].host : "";
                                 this.setState({emCharger: {...state.emCharger, idx: chg_idx, host: host}});
                             }}
                             required={state.enable_charge_manager}
