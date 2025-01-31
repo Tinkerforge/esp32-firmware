@@ -623,7 +623,7 @@ static void stage_3(StageContext &sc) {
     // if phases are overloaded in every iteration.
     // Sort PV chargers before fast chargers (symmetric to stage 4)
     sort_chargers(
-        was_just_plugged_in(ctx.state) ? 1 : -get_highest_charge_mode_bit(ctx.state),
+        was_just_plugged_in(ctx.state) ? (ChargeMode::_max + 1) : get_highest_charge_mode_bit(ctx.state),
         // We only compare in groups, so was_just_plugged_in(right.state) is true iff it is for left.
         was_just_plugged_in(ctx.left.state) ? (ctx.left.state->just_plugged_in_timestamp < ctx.right.state->just_plugged_in_timestamp) : (ctx.left.state->last_switch_on < ctx.right.state->last_switch_on)
     );
@@ -901,7 +901,7 @@ static void stage_4(StageContext &sc) {
     int matched = filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge || ctx.state->is_charging) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0 && !ctx.state->off);
 
     sort_chargers(
-        get_highest_charge_mode_bit(ctx.state),
+        -get_highest_charge_mode_bit(ctx.state),
         ctx.left.state->allocated_average_power < ctx.right.state->allocated_average_power
     );
 
@@ -1004,7 +1004,7 @@ static void stage_5(StageContext &sc) {
     int matched = filter_chargers(ctx.allocated_phases == 1 && ctx.state->phase_switch_supported && deadline_elapsed(ctx.state->last_phase_switch + ctx.cfg->global_hysteresis) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
 
     sort_chargers(
-        get_highest_charge_mode_bit(ctx.state),
+        -get_highest_charge_mode_bit(ctx.state),
         ctx.left.state->allocated_average_power < ctx.right.state->allocated_average_power
     );
 
