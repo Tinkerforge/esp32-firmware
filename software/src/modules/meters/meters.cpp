@@ -896,8 +896,11 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     Config &value_ids = meter_slot.value_ids;
     Config &values    = meter_slot.values;
 
-    if (value_ids.count() != 0) {
-        logger.printfln("Meter in slot %u already declared %u values. Refusing to re-declare %u values.", slot, value_ids.count(), value_id_count);
+    size_t value_id_count_old = value_ids.count();
+    if (value_id_count_old != 0) {
+        const char *plural_s_old = value_id_count_old == 1 ? "" : "s";
+        const char *plural_s_new = value_id_count     == 1 ? "" : "s";
+        logger.printfln("Meter in slot %u already declared %u value%s. Refusing to re-declare %u value%s.", slot, value_id_count_old, plural_s_old, value_id_count, plural_s_new);
         return;
     }
 
@@ -1018,10 +1021,11 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
 
     meter_slot.values_declared = true;
 
+    const char *plural_s = total_value_id_count == 1 ? "" : "s";
     if (total_value_id_count == value_id_count) {
-        logger.printfln("Meter in slot %u declared %u values.", slot, total_value_id_count);
+        logger.printfln("Meter in slot %u declared %u value%s", slot, total_value_id_count, plural_s);
     } else {
-        logger.printfln("Meter in slot %u declared %u (%u) values.", slot, total_value_id_count, value_id_count);
+        logger.printfln("Meter in slot %u declared %u (%u) value%s", slot, total_value_id_count, value_id_count, plural_s);
     }
 
     if (!meters_feature_declared) {
