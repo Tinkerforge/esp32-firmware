@@ -60,6 +60,7 @@ protected:
 
 private:
     virtual int destroy_and_init(const char *, TF_HAL *hal) = 0;
+    virtual int destroy() = 0;
     virtual int get_bootloader_mode(uint8_t *mode) = 0;
 
     micros_t next_check = 0_us;
@@ -99,6 +100,11 @@ public:
     void reset() override
     {
         reset_function(&device);
+    }
+
+    int destroy() override
+    {
+        return destroy_function(&device);
     }
 
     int destroy_and_init(const char *id, TF_HAL *hal) override

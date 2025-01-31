@@ -150,6 +150,11 @@ bool DeviceModuleBase::is_in_bootloader(int rc)
 
 bool DeviceModuleBase::setup_device()
 {
+    // Destroy here in case the device was already initialized once.
+    // If we don't destroy it here, tf_hal_get_tfp will not return
+    // the TFP context because it is still marked as in use.
+    destroy();
+
     uint16_t device_id = get_device_id();
     TF_TFP *tfp = tf_hal_get_tfp(&hal, nullptr, nullptr, &device_id, true);
 
