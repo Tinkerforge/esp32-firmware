@@ -1639,7 +1639,7 @@ int allocate_current(
 
             charging_time /= 1000.0 * 1000.0 * 60.0 * 60.0;
             charger.allocated_average_power = charger.allocated_energy / (float)charging_time;
-            if (phases_to_set != 0 && charger.charger_state == 3) {
+            if (phases_to_set != 0 && charger.is_charging) {
                 // If this charger is in Eco+Min(+*),
                 // and the eco mode check returned that charging is currently expensive
                 // and we've allocated only the guaranteed current,
