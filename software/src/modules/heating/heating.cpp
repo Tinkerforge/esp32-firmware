@@ -40,7 +40,7 @@ static constexpr auto HEATING_UPDATE_INTERVAL = 1_m;
 
 void Heating::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer("heating", 1 << 20);
+    this->trace_buffer_index = logger.alloc_trace_buffer("heating", 1 << 18);
 
     config = ConfigRoot{Config::Object({
         {"sgr_blocking_type", Config::Uint(0, 0, 1)},

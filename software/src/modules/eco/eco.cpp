@@ -43,7 +43,7 @@
 
 void Eco::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer("eco", 1 << 20);
+    this->trace_buffer_index = logger.alloc_trace_buffer("eco", 1 << 18);
 
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
