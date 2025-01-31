@@ -44,7 +44,7 @@ import { InputTime } from "../../ts/components/input_time";
 import { InputText } from "../../ts/components/input_text";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
-import { HelpCircle, Zap, ZapOff, BarChart2, Server, Battery, BatteryCharging, Home, Sun } from "react-feather";
+import { HelpCircle, Zap, ZapOff, BarChart2, Battery, BatteryCharging, Home, Sun } from "react-feather";
 
 export function MetersNavbar() {
     return <NavbarItem name="meters" module="meters" title={__("meters.navbar.meters")} symbol={<BarChart2 />} />;
@@ -1320,7 +1320,14 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                             </div> : undefined}
                                         {grid_power_sum !== null ?
                                             <div class="col-auto px-2 mb-2 text-nowrap">
-                                                <span class="pr-2 meters-status-power-sums-icon"><Zap/></span>
+                                                <span class="pr-2 meters-status-power-sums-icon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="m8 21 4-18"/>
+                                                        <path d="m16 21-4-18"/>
+                                                        <path d="m6 9s0-3 3-3h6c3 0 3 3 3 3"/>
+                                                        <path d="m4 15s0-3 3-3h10c3 0 3 3 3 3"/>
+                                                    </svg>
+                                                </span>
                                                 <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{util.toLocaleFixed(grid_power_sum)} W</span>
                                             </div> : undefined}
                                         {battery_power_sum !== null || battery_soc_avg !== null ?
