@@ -59,7 +59,7 @@ protected:
     virtual void reset() = 0;
 
 private:
-    virtual int destroy_and_init(const char *, TF_HAL *hal) = 0;
+    virtual int init(const char *, TF_HAL *hal) = 0;
     virtual int destroy() = 0;
     virtual int get_bootloader_mode(uint8_t *mode) = 0;
 
@@ -102,16 +102,14 @@ public:
         reset_function(&device);
     }
 
+    int init(const char *id, TF_HAL *hal) override
+    {
+        return init_function(&device, id, hal);
+    }
+
     int destroy() override
     {
         return destroy_function(&device);
-    }
-
-    int destroy_and_init(const char *id, TF_HAL *hal) override
-    {
-        destroy_function(&device);
-
-        return init_function(&device, id, hal);
     }
 
     int get_bootloader_mode(uint8_t *mode) override

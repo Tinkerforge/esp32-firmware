@@ -188,7 +188,7 @@ bool DeviceModuleBase::setup_device()
 
     tf_base58_encode(tfp->uid_num, uid);
 
-    result = destroy_and_init(uid, &hal);
+    result = init(uid, &hal);
 
     if (result != TF_E_OK) {
         logger.printfln("Failed to initialize %s Bricklet (%d). Disabling %s support.", device_name, result, module_name);
