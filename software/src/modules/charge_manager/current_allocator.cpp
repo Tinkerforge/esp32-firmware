@@ -372,7 +372,7 @@ static void stage_1(StageContext &sc) {
         // We need both the clock-aligned rotation interval and the minimum active time to be elapsed before rotating a charger:
         // A charger that was just plugged in may not be rotated.
         bool rotate_for_waiting_b1  = rotation_allowed && sc.ca_state->global_hysteresis_elapsed && have_b1;
-        bool rotate_for_higher_prio = rotation_allowed && sc.ca_state->global_hysteresis_elapsed && state->charge_mode < highest_charge_mode_bit_seen;
+        bool rotate_for_higher_prio = rotation_allowed && sc.ca_state->global_hysteresis_elapsed && get_highest_charge_mode_bit(state) < highest_charge_mode_bit_seen;
 
         // 3p and 1p unknown rotated chargers are considered active on any phase.
         // They can be shut down if there is a charger waiting on any phase.
