@@ -566,6 +566,17 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         }
                     }
 
+                    let inverter_power_sum = data.power_sum[MeterLocation.Inverter][timestamp_slot];
+                    let grid_power_sum = data.power_sum[MeterLocation.Grid][timestamp_slot];
+                    let battery_power_sum = data.power_sum[MeterLocation.Battery][timestamp_slot];
+                    let load_power_sum = null;
+
+                    if (inverter_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null) {
+                        load_power_sum = grid_power_sum - inverter_power_sum - battery_power_sum;
+                    }
+
+                    data.power_sum[MeterLocation.Load][timestamp_slot] = load_power_sum;
+
                     data.price[timestamp_slot] = changed.price;
 
                     if (data.price[timestamp_slot] !== null) {
@@ -1800,6 +1811,19 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     data.power_sum_empty[location] = false;
                 }
             }
+        }
+
+        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+            let inverter_power_sum = data.power_sum[MeterLocation.Inverter][timestamp_slot];
+            let grid_power_sum = data.power_sum[MeterLocation.Grid][timestamp_slot];
+            let battery_power_sum = data.power_sum[MeterLocation.Battery][timestamp_slot];
+            let load_power_sum = null;
+
+            if (inverter_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null) {
+                load_power_sum = grid_power_sum - inverter_power_sum - battery_power_sum;
+            }
+
+            data.power_sum[MeterLocation.Load][timestamp_slot] = load_power_sum;
         }
 
         for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
