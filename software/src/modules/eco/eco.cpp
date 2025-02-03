@@ -238,9 +238,14 @@ std::pair<uint8_t, uint32_t> Eco::get_end_time_1m(const Departure departure, con
     return std::make_pair(0, end_time_1m);
 }
 
+// If charger id == 255 => update all chargers
+// Else update only the charger with the given id
+// If chart == nullptr and chart_length == 0 => set 0 chart (always normal mode)
+// If chart != nullptr and chart_length == 0 => set default chart (as if car is just plugged in)
+// If chart != nullptr and chart_length != 0 => set the given chart
 void Eco::set_chargers_state_chart_data(const uint8_t charger_id, bool *chart, uint8_t chart_length)
 {
-    // If chart is nullptr or chart_length is 0, we create a default chart with the current configuration
+    // If chart is not nullptr and chart_length is 0, we create a default chart with the current configuration
     if((chart_length == 0) && (chart != nullptr)) {
         const uint32_t current_time_1m = rtc.timestamp_minutes();
         const uint32_t amount_1m       = charge_plan.get("amount")->asUint()*60;
@@ -337,7 +342,7 @@ void Eco::update()
     int32_t current_price;
     if (!day_ahead_prices.get_current_price_net().try_unwrap(&current_price)) {
         std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
-        set_chargers_state_chart_data(255, cheap_hours, 0);
+        set_chargers_state_chart_data(255, nullptr, 0);
         extended_logging("Charger all: No current price available -> Normal");
         return;
     }
@@ -377,7 +382,7 @@ void Eco::update()
 
         if (end_time_1m.first == 1) {
             std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
-            set_chargers_state_chart_data(255, cheap_hours, 0);
+            set_chargers_state_chart_data(255, nullptr, 0);
             extended_logging("Charger all: Midnight not available -> Normal");
             return;
         }
@@ -385,7 +390,7 @@ void Eco::update()
         if (end_time_1m.first == 2) {
             disable_charge_plan();
             std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
-            set_chargers_state_chart_data(255, cheap_hours, 0);
+            set_chargers_state_chart_data(255, nullptr, 0);
             extended_logging("Charger all: Current time (%dm) after planned charge ending time (%dm) -> Normal", current_time_1m, end_time_1m.second);
             return;
         }
@@ -410,7 +415,7 @@ void Eco::update()
             // If the desired amount of charge is reached, we are done with fast charging for this car.
             if (desired_amount_1m <= charged_amount_1m) {
                 charge_decision[charger_id] = ChargeDecision::Normal;
-                set_chargers_state_chart_data(charger_id, cheap_hours, 0);
+                set_chargers_state_chart_data(charger_id, nullptr, 0);
                 extended_logging("Charger %d: Desired charge amount reached (%dm <= %dm) -> Normal", charger_id, desired_amount_1m, charged_amount_1m);
                 continue;
             }
