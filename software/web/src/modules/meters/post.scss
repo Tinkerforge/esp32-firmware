@@ -1,3 +1,8 @@
+.meters-status-power-sums-icon {
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .meters-status-power-sums-icon svg {
     width: 40px;
     height: 40px;
@@ -5,10 +10,14 @@
 }
 
 .meters-status-power-sums-text-main {
+    display: inline-block;
+    vertical-align: middle;
     font-size: 1.3rem;
 }
 
 .meters-status-power-sums-text-sub {
+    display: block;
+    vertical-align: middle;
     font-size: 0.75rem;
     padding-left: 1px;
     margin-top: -3px;
