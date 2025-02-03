@@ -36,6 +36,8 @@ export interface FormRowProps {
     help?: ComponentChildren;
     error?: ComponentChildren;
     show_error?: boolean;
+    warning?: ComponentChildren;
+    show_warning?: boolean;
     small?: boolean;
     symbol?: h.JSX.Element;
     class?: string;
@@ -89,6 +91,7 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
             inner = <div class={props.contentColClasses === undefined ? "col-lg-8" : props.contentColClasses}>
                 {inner}
                 {props.error ? <Collapse in={props.show_error} ><div><div class="alert alert-danger mt-2 mb-0">{props.error}</div></div></Collapse> : <></>}
+                {props.warning ? <Collapse in={props.show_warning} ><div><div class="alert alert-warning mt-2 mb-0">{props.warning}</div></div></Collapse> : <></>}
                 {props.help ? <Collapse in={state.help_expanded} >
                                 <div>{/*Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse*/}
                                     <div class="card mt-2">
