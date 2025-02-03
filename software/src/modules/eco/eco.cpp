@@ -421,18 +421,15 @@ void Eco::update()
                 if (kwh_threshold > 0) {
                     auto wh_expected = solar_forecast.get_wh_range(start_time_1m, end_time_1m.second);
                     if (wh_expected.is_none()) {
-                        charge_decision[charger_id] = ChargeDecision::Normal;
-                        set_chargers_state_chart_data(charger_id, cheap_hours, 0);
-                        extended_logging("Charger %d: Expected PV yield not available. Ignoring yield forecast. -> Normal", charger_id);
-                        continue;
-                    }
-
-                    const uint32_t kwh_expected = wh_expected.unwrap()/1000;
-                    if (kwh_expected > kwh_threshold) {
-                        charge_decision[charger_id] = ChargeDecision::Normal;
-                        set_chargers_state_chart_data(charger_id, cheap_hours, 0);
-                        extended_logging("Charger %d: Expected PV yield %d kWh is above threshold of %d kWh. -> Normal", charger_id, kwh_expected, kwh_threshold);
-                        continue;
+                        extended_logging("Charger %d: Expected PV yield not available. Ignoring yield forecast.");
+                    } else {
+                        const uint32_t kwh_expected = wh_expected.unwrap()/1000;
+                        if (kwh_expected > kwh_threshold) {
+                            charge_decision[charger_id] = ChargeDecision::Normal;
+                            set_chargers_state_chart_data(charger_id, nullptr, 0);
+                            extended_logging("Charger %d: Expected PV yield %d kWh is above threshold of %d kWh. -> Normal", charger_id, kwh_expected, kwh_threshold);
+                            continue;
+                        }
                     }
                 }
             }
