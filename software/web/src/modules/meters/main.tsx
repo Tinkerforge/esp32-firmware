@@ -1128,6 +1128,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 interface MetersStatusState {
     status_meter_slot: number,
     meter_configs: {[meter_slot: number]: MeterConfig},
+    power_sum_min_width: {[key: string]: number};
 }
 
 function get_meter_name(meter_configs: {[meter_slot: number]: MeterConfig}, meter_slot: number) {
@@ -1153,6 +1154,31 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
     on_mount_pending = false;
     uplot_loader_ref = createRef();
     uplot_wrapper_ref = createRef();
+    power_sum_interval_id: number = null;
+    power_sum_ref: {[key: string]: RefObject<HTMLDivElement>} = {
+        inverter: createRef(),
+        grid: createRef(),
+        battery: createRef(),
+        load: createRef(),
+    };
+    power_sum_widths: {[key: string]: number[]} = {
+        inverter: [0],
+        grid: [0],
+        battery: [0],
+        load: [0],
+    };
+    power_sum_min_width_locked: {[key: string]: boolean} = {
+        inverter: false,
+        grid: false,
+        battery: false,
+        load: false,
+    };
+    power_sum_min_width_unlock_timeout_id: {[key: string]: number} = {
+        inverter: null,
+        grid: null,
+        battery: null,
+        load: null,
+    };
 
     constructor() {
         super();
@@ -1160,6 +1186,12 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         this.state = {
             status_meter_slot: 0,
             meter_configs: {},
+            power_sum_min_width:  {
+                inverter: 0,
+                grid: 0,
+                battery: 0,
+                load: 0,
+            },
         };
 
         util.addApiEventListener_unchecked('evse/meter_config', () => {
@@ -1182,6 +1214,65 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                 }));
             });
         }
+    }
+
+    componentDidMount() {
+        if (this.power_sum_interval_id !== null) {
+            return;
+        }
+
+        this.power_sum_interval_id = setInterval(() => {
+            let history_length = 20;
+            let unlock_timeout = 5;
+            let power_sum_min_width = this.state.power_sum_min_width;
+
+            for (let key of ["inverter", "grid", "battery", "load"]) {
+                if (this.power_sum_ref[key].current) {
+                    let power_sum_width = parseFloat(getComputedStyle(this.power_sum_ref[key].current).width);
+
+                    this.power_sum_widths[key].push(power_sum_width);
+                    this.power_sum_widths[key] = this.power_sum_widths[key].slice(-history_length);
+
+                    if (power_sum_width >= power_sum_min_width[key]) {
+                        power_sum_min_width[key] = power_sum_width;
+                        this.power_sum_min_width_locked[key] = true;
+
+                        if (this.power_sum_min_width_unlock_timeout_id[key] !== null) {
+                            clearTimeout(this.power_sum_min_width_unlock_timeout_id[key]);
+                            this.power_sum_min_width_unlock_timeout_id[key] = null;
+                        }
+                    }
+                    else if (this.power_sum_min_width_locked[key]) {
+                        if (this.power_sum_min_width_unlock_timeout_id[key] === null) {
+                            this.power_sum_min_width_unlock_timeout_id[key] = setTimeout(() => {
+                                this.power_sum_min_width_unlock_timeout_id[key] = null;
+                                this.power_sum_min_width_locked[key] = false
+                            }, unlock_timeout);
+                        }
+                    }
+                    else {
+                        let power_sum_widths_avg = this.power_sum_widths[key].reduce((x, y) => x + y, 0) / this.power_sum_widths[key].length;
+
+                        if (power_sum_widths_avg < power_sum_min_width[key]) {
+                            --power_sum_min_width[key];
+                        }
+                    }
+                }
+            }
+
+            this.setState({
+                power_sum_min_width: power_sum_min_width,
+            });
+        }, 1000);
+    }
+
+    componentWillUnmount() {
+        if (this.power_sum_interval_id === null) {
+            return;
+        }
+
+        clearInterval(this.power_sum_interval_id);
+        this.power_sum_interval_id = null;
     }
 
     set_on_mount(on_mount: () => void) {
@@ -1317,38 +1408,46 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                     <div class="row align-items-center justify-content-between mb-n2">
                                         {inverter_power_sum !== null ?
                                             <div class="col-auto px-2 mb-2 text-nowrap">
-                                                <span class="pr-2 meters-status-power-sums-icon"><Sun/></span>
-                                                <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{util.toLocaleFixed(inverter_power_sum)} W</span>
+                                                <div class="meters-status-power-sums-icon pr-2"><Sun/></div>
+                                                <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width.inverter + "px;"}>
+                                                    <div ref={this.power_sum_ref.inverter} class="meters-status-power-sums-text-main">{util.toLocaleFixed(inverter_power_sum)} W</div>
+                                                </div>
                                             </div> : undefined}
                                         {grid_power_sum !== null ?
                                             <div class="col-auto px-2 mb-2 text-nowrap">
-                                                <span class="pr-2 meters-status-power-sums-icon">
+                                                <div class="meters-status-power-sums-icon pr-2">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                         <path d="m8 21 4-18"/>
                                                         <path d="m16 21-4-18"/>
                                                         <path d="m6 9s0-3 3-3h6c3 0 3 3 3 3"/>
                                                         <path d="m4 15s0-3 3-3h10c3 0 3 3 3 3"/>
                                                     </svg>
-                                                </span>
-                                                <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{util.toLocaleFixed(grid_power_sum)} W</span>
+                                                </div>
+                                                <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width.grid + "px;"}>
+                                                    <div ref={this.power_sum_ref.grid} class="meters-status-power-sums-text-main">{util.toLocaleFixed(grid_power_sum)} W</div>
+                                                </div>
                                             </div> : undefined}
                                         {battery_power_sum !== null || battery_soc_avg !== null ?
                                             <div class="col-auto px-2 mb-2 text-nowrap">
-                                                <span style="vertical-align: middle;" class="pr-2 meters-status-power-sums-icon">{battery_power_sum !== null && battery_power_sum > 0 ? <BatteryCharging/> : <Battery/>}</span>
-                                                <span style="vertical-align: middle; display: inline-block;">
-                                                    {battery_power_sum !== null && battery_soc_avg !== null
-                                                        ? <><div class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
-                                                            <div class="meters-status-power-sums-text-sub">{util.toLocaleFixed(battery_power_sum)} W</div></>
-                                                        : (battery_soc_avg !== null
-                                                            ? <div class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
-                                                            : <div class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_power_sum)} W</div>
-                                                        )}
-                                                </span>
+                                                <div class="meters-status-power-sums-icon pr-2">{battery_power_sum !== null && battery_power_sum > 0 ? <BatteryCharging/> : <Battery/>}</div>
+                                                <div class="text-right" style={"display: inline-block; vertical-align: middle; min-width: " + this.state.power_sum_min_width.battery + "px;"}>
+                                                    <div class="text-left">
+                                                        {battery_power_sum !== null && battery_soc_avg !== null
+                                                            ? <><div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
+                                                                <div class="meters-status-power-sums-text-sub">{util.toLocaleFixed(battery_power_sum)} W</div></>
+                                                            : (battery_soc_avg !== null
+                                                                ? <div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
+                                                                : <div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_power_sum)} W</div>
+                                                            )}
+                                                    </div>
+                                                </div>
                                             </div> : undefined}
                                         {load_power_sum !== null ?
                                             <div class="col-auto px-2 mb-2 text-nowrap">
-                                                <span class="pr-2 meters-status-power-sums-icon"><Home/></span>
-                                                <span style="vertical-align: middle;" class="meters-status-power-sums-text-main">{util.toLocaleFixed(load_power_sum)} W</span>
+                                                <div class="meters-status-power-sums-icon pr-2"><Home/></div>
+                                                <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width.load + "px;"}>
+                                                    <div ref={this.power_sum_ref.load} class="meters-status-power-sums-text-main">{util.toLocaleFixed(load_power_sum)} W</div>
+                                                </div>
                                             </div> : undefined}
                                     </div>
                                 </div>
