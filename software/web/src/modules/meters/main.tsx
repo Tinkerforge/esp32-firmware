@@ -1260,7 +1260,6 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             let grid_powers: number[] = [];
             let battery_powers: number[] = [];
             let battery_socs: number[] = [];
-            let load_powers: number[] = [];
 
             for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
                 let location = get_meter_location(this.state.meter_configs, meter_slot);
@@ -1275,7 +1274,6 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                     case MeterLocation.Inverter: inverter_powers.push(power); break;
                     case MeterLocation.Grid: grid_powers.push(power); break;
                     case MeterLocation.Battery: battery_powers.push(power); break;
-                    case MeterLocation.Load: load_powers.push(power); break;
                     }
                 }
 
@@ -1304,7 +1302,11 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             let grid_power_sum = sum_or_null(grid_powers);
             let battery_power_sum = sum_or_null(battery_powers);
             let battery_soc_avg = battery_socs.length > 0 ? sum_or_null(battery_socs) / battery_socs.length : null;
-            let load_power_sum = sum_or_null(load_powers);
+            let load_power_sum = null;
+
+            if (inverter_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null) {
+                load_power_sum = grid_power_sum - inverter_power_sum - battery_power_sum;
+            }
 
             if (inverter_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null || battery_soc_avg !== null || load_power_sum !== null) {
                 children.push(
