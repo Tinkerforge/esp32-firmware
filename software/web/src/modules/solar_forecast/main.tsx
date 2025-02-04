@@ -418,10 +418,10 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
 
         function get_next_update_string() {
             let now = util.get_date_now_1m_update_rate()/(60*1000);
-            if ((state.state.next_api_call == 0) || (get_active_planes().length == 0) || (state.state.next_api_call < now)) {
+            if ((state.state.next_api_call == 0) || (get_active_planes().length == 0)) {
                 return __("util.not_yet_known");
             } else {
-                let diff    = state.state.next_api_call - now;
+                let diff    = Math.max(0, state.state.next_api_call - now);
                 let hours   = Math.floor(diff / 60);
                 let minutes = Math.floor(diff % 60);
                 let update_string = (hours == 0) ? `${minutes}m`:`${hours}h ${minutes}m`;
