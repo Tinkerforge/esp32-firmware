@@ -398,7 +398,6 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
 
         return <StatusSection name="eco">
             <Collapse in={visible}><div>
-                <div class="col-md-16">
             <FormRow label={__("eco.status.charge_plan")}
                      label_muted={__("eco.script.charge_plan")(cpy,
                                                                state.state.chargers.length == 0 ? -1 : state.state.chargers[0].start,
@@ -422,10 +421,8 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                             onDate={(d: Date) => this.setState({charge_plan: {...state.charge_plan, time: this.get_minutes_from_date(d)}}, () => this.update_charge_plan({...state.charge_plan, time: this.get_minutes_from_date(d)}))}
                         />
                     </div>
-                </div>
-                <div class="col-md-16 mt-2">
-                    <div class="input-group flex-nowrap">
 
+                <div class="input-group flex-nowrap mt-2">
                         <div class="input-group-prepend"><span class="eco-fixed-size input-group-text">{__("eco.status.amount")}</span></div>
                         {/*TODO: fix rounded corners*/}
                         <InputNumber
@@ -436,7 +433,6 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                             min={1}
                             max={48}
                         />
-                    </div>
                 </div>
 
                 <div class="card mt-2">
