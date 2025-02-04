@@ -51,6 +51,18 @@
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS          819u
 
 #define DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS 0u
+#define DEYE_HYBRID_INVERTER_PV1_POWER_ADDRESS   672u
+#define DEYE_HYBRID_INVERTER_PV2_POWER_ADDRESS   673u
+#define DEYE_HYBRID_INVERTER_PV3_POWER_ADDRESS   674u
+#define DEYE_HYBRID_INVERTER_PV4_POWER_ADDRESS   675u
+#define DEYE_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS 676u
+#define DEYE_HYBRID_INVERTER_PV1_CURRENT_ADDRESS 677u
+#define DEYE_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS 678u
+#define DEYE_HYBRID_INVERTER_PV2_CURRENT_ADDRESS 679u
+#define DEYE_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS 680u
+#define DEYE_HYBRID_INVERTER_PV3_CURRENT_ADDRESS 681u
+#define DEYE_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS 682u
+#define DEYE_HYBRID_INVERTER_PV4_CURRENT_ADDRESS 683u
 
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER                 2007u
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY          2310u
@@ -347,6 +359,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         case DeyeHybridInverterVirtualMeter::Load:
             table = &deye_hybrid_inverter_load_table;
             default_location = MeterLocation::Load;
+            break;
+
+        case DeyeHybridInverterVirtualMeter::PV:
+            table = &deye_hybrid_inverter_pv_table;
+            default_location = MeterLocation::PV;
             break;
 
         default:
@@ -1107,6 +1124,12 @@ bool MeterModbusTCP::is_deye_hybrid_inverter_battery_meter() const
         && deye_hybrid_inverter_virtual_meter == DeyeHybridInverterVirtualMeter::Battery;
 }
 
+bool MeterModbusTCP::is_deye_hybrid_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::DeyeHybridInverter
+        && deye_hybrid_inverter_virtual_meter == DeyeHybridInverterVirtualMeter::PV;
+}
+
 bool MeterModbusTCP::is_shelly_pro_xem_monophase() const
 {
     return table_id == MeterModbusTCPTableID::ShellyProEM
@@ -1589,6 +1612,63 @@ void MeterModbusTCP::read_done_callback()
                         + victron_energy_gx_ac_consumption_l3_power;
 
             meters.update_value(slot, table->index[read_index + 1], power);
+        }
+    }
+    else if (is_deye_hybrid_inverter_pv_meter()) {
+        if (register_start_address == DEYE_HYBRID_INVERTER_PV1_POWER_ADDRESS) {
+            deye_hybrid_inverter_pv1_power = value;
+        }
+        else if (register_start_address == DEYE_HYBRID_INVERTER_PV2_POWER_ADDRESS) {
+            deye_hybrid_inverter_pv2_power = value;
+        }
+        else if (register_start_address == DEYE_HYBRID_INVERTER_PV3_POWER_ADDRESS) {
+            deye_hybrid_inverter_pv3_power = value;
+        }
+        else if (register_start_address == DEYE_HYBRID_INVERTER_PV4_POWER_ADDRESS) {
+            deye_hybrid_inverter_pv4_power = value;
+        }
+        else if (register_start_address == DEYE_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS) {
+            deye_hybrid_inverter_pv1_voltage = value;
+        }
+        else if (register_start_address == DEYE_HYBRID_INVERTER_PV1_CURRENT_ADDRESS) {
+            deye_hybrid_inverter_pv1_current = value;
+        }
+        else if (register_start_address == DEYE_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS) {
+            deye_hybrid_inverter_pv2_voltage = value;
+        }
+        else if (register_start_address == DEYE_HYBRID_INVERTER_PV2_CURRENT_ADDRESS) {
+            deye_hybrid_inverter_pv2_current = value;
+        }
+        else if (register_start_address == DEYE_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS) {
+            deye_hybrid_inverter_pv3_voltage = value;
+        }
+        else if (register_start_address == DEYE_HYBRID_INVERTER_PV3_CURRENT_ADDRESS) {
+            deye_hybrid_inverter_pv3_current = value;
+        }
+        else if (register_start_address == DEYE_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS) {
+            deye_hybrid_inverter_pv4_voltage = value;
+        }
+        else if (register_start_address == DEYE_HYBRID_INVERTER_PV4_CURRENT_ADDRESS) {
+            deye_hybrid_inverter_pv4_current = value;
+
+            float power = deye_hybrid_inverter_pv1_power
+                        + deye_hybrid_inverter_pv2_power
+                        + deye_hybrid_inverter_pv3_power
+                        + deye_hybrid_inverter_pv4_power;
+
+            float voltage = (deye_hybrid_inverter_pv1_voltage
+                          +  deye_hybrid_inverter_pv2_voltage
+                          +  deye_hybrid_inverter_pv3_voltage
+                          +  deye_hybrid_inverter_pv4_voltage) / 4; // FIXME: how to handle unused strings?
+
+            float current = deye_hybrid_inverter_pv1_current
+                          + deye_hybrid_inverter_pv2_current
+                          + deye_hybrid_inverter_pv3_current
+                          + deye_hybrid_inverter_pv4_current;
+
+            meters.update_value(slot, table->index[read_index + 1], power);
+            meters.update_value(slot, table->index[read_index + 2], voltage);
+            meters.update_value(slot, table->index[read_index + 3], current);
         }
     }
     else if (is_shelly_pro_xem_monophase()) {

@@ -104,6 +104,7 @@ private:
     bool is_victron_energy_gx_inverter_meter() const;
     bool is_victron_energy_gx_load_meter() const;
     bool is_deye_hybrid_inverter_battery_meter() const;
+    bool is_deye_hybrid_inverter_pv_meter() const;
     bool is_shelly_pro_xem_monophase() const;
     bool is_fronius_gen24_plus_hybrid_inverter_battery_meter() const;
     bool is_carlo_gavazzi_em100_or_et100() const;
@@ -150,6 +151,18 @@ private:
     // Deye
     DeyeHybridInverterVirtualMeter deye_hybrid_inverter_virtual_meter;
     int deye_hybrid_inverter_device_type = -1;
+    float deye_hybrid_inverter_pv1_power;
+    float deye_hybrid_inverter_pv2_power;
+    float deye_hybrid_inverter_pv3_power;
+    float deye_hybrid_inverter_pv4_power;
+    float deye_hybrid_inverter_pv1_voltage;
+    float deye_hybrid_inverter_pv1_current;
+    float deye_hybrid_inverter_pv2_voltage;
+    float deye_hybrid_inverter_pv2_current;
+    float deye_hybrid_inverter_pv3_voltage;
+    float deye_hybrid_inverter_pv3_current;
+    float deye_hybrid_inverter_pv4_voltage;
+    float deye_hybrid_inverter_pv4_current;
 
     // Alpha ESS
     AlphaESSHybridInverterVirtualMeter alpha_ess_hybrid_inverter_virtual_meter;

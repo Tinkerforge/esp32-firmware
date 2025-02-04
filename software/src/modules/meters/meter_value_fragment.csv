@@ -59,3 +59,14 @@ Charge,Charge,Laden
 Discharge,Discharge,Entladen
 Cha Dis Sum,Charge plus discharge,Laden plus Entladen
 Cha Dis Diff,Charge minus discharge,Laden minus Entladen
+PV1,PV1,PV1
+PV2,PV2,PV2
+PV3,PV3,PV3
+PV4,PV4,PV4
+PV5,PV5,PV5
+PV6,PV6,PV6
+PV7,PV7,PV7
+PV8,PV8,PV8
+PV9,PV9,PV9
+PV Avg,Average over PVx,Durchschnitt über PVx
+PV Sum,Sum over PVx,Summe über PVx

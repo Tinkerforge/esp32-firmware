@@ -78,7 +78,8 @@ let x = {
             "location_inverter": "Inverter",
             "location_grid": "Grid",
             "location_battery": "Battery",
-            "location_load": "Load"
+            "location_load": "Load",
+            "location_pv": "PV"
         },
         "automation": {
             "meter_reset": "Reset energy meter",

@@ -827,6 +827,7 @@ export function init() {
                             [DeyeHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [DeyeHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                             [DeyeHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [DeyeHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
@@ -835,6 +836,7 @@ export function init() {
                             case DeyeHybridInverterVirtualMeter.Grid: return MeterLocation.Grid;
                             case DeyeHybridInverterVirtualMeter.Battery: return MeterLocation.Battery;
                             case DeyeHybridInverterVirtualMeter.Load: return MeterLocation.Load;
+                            case DeyeHybridInverterVirtualMeter.PV: return MeterLocation.PV;
                             }
 
                             return MeterLocation.Unknown;
