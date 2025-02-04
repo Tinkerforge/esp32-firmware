@@ -2,12 +2,27 @@
 import { h } from "preact";
 let x = {
     "eco": {
-        "status": {},
+        "status": {
+            "charge_plan": "Ladeplan",
+            "daily": "Täglich",
+            "departure": "Abfahrt",
+            "amount": "Ladedauer",
+            "enable_charge_plan": "Ladeplan aktivieren",
+            "disable_charge_plan": "Ladeplan deaktivieren"
+        },
         "navbar": {
             "eco": "Eco-Modus"
         },
         "content": {
             "eco": "Eco-Modus",
+            "charge_plan_enable": "Ladeplanung aktivieren",
+            "charge_plan_enable_desc": "Ladeplanung anhand von dynamischen Strompreisen und PV-Ertragsprognose.",
+            "mode_after": "Modus nach Ablauf des Ladeplans",
+            "park_time": "Maximale Standzeit",
+            "charge_below": "Immer laden wenn Preis unter",
+            "block_above": "Nie laden wenn Preis über",
+            "yield_forecast_threshold": "Nur wenn PV-Ertragsprognose unter",
+
             "active": "Aktiv",
             "inactive": "Inaktiv",
             "solar_forecast_needs_activation": <>Um den erwarteten PV-Überschuss in den Ladeplan einbeziehen zu können, muss die <a href="#solar_forecast">PV-Ertragsprognose</a> aktiviert werden.</>,
@@ -42,7 +57,41 @@ let x = {
         },
         "script": {
             "save_failed": "Speichern der Eco-Einstellungen fehlgeschlagen",
-            "reboot_content_changed": "Eco-Einstellungen"
+            "reboot_content_changed": "Eco-Einstellungen",
+
+            "charge_plan": /*FFN*/(charge_plan: {departure: number, enable: boolean, time: Date, amount: number}, charger_zero_start: number, charger_zero_amount: number) => {
+                let day = "bis Heute um";
+                if (charge_plan.departure === 1) {
+                    day = "bis Morgen um";
+                } else if (charge_plan.departure === 2) {
+                    day = "täglich bis";
+                }
+
+                const active = charge_plan.enable ? "aktiv" : "nicht aktiv";
+                const time_str   = charge_plan.time.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                const plan   = `Aktueller Ladeplan: Nutze die günstigsten ${charge_plan.amount} Stunden ${day} ${time_str} Uhr. Der Ladeplan ist ${active}.`;
+                if (!charge_plan.enable || charger_zero_start == -1) {
+                    return <>{plan}</>;
+                }
+
+                const start  = charger_zero_start*60*1000;
+
+                if (start == 0) {
+                    const status = `Status: Kein Auto angeschlossen.`;
+                    return <div>{plan}<br/>{status}</div>;
+                }
+
+                const today     = new Date().setHours(0, 0, 0, 0);
+                const start_day = new Date(start).setHours(0, 0, 0, 0);
+
+                const begin = today == start_day ?
+                    `Ladebeginn: Heute, ${new Date(start).toLocaleString([], {hour: '2-digit', minute: '2-digit'})}` :
+                    `Ladebeginn: ${new Date(start).toLocaleString([], {weekday: 'long', hour: '2-digit', minute: '2-digit'})}`;
+                const charging_done = `Ladedauer bisher: ${charger_zero_amount} Minuten.`;
+                const charging_todo = `Ladedauer ausstehend: ${charge_plan.amount*60 - charger_zero_amount} Minuten.`;
+
+                return <div>{plan}<br/>{begin}<br/>{charging_done}<br/>{charging_todo}</div>;
+            }/*NF*/
         }
     }
 }
