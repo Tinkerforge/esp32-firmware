@@ -212,9 +212,11 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                         </h5>
                         <div class={"card-body " + c_body_classes}>
                             <h5 class="card-title">{c_state}</h5>
-                            <p class="card-text">{c_info}</p>
+                            <p class={"card-text" + (!show_eco_chart ? " mb-0" : "")}>{c_info}</p>
 {/*#if MODULE_ECO_AVAILABLE*/}
-                            {show_eco_chart ? <EcoChart charger_id={i} /> : null}
+                            <div hidden={!show_eco_chart}>
+                                <EcoChart charger_id={i} />
+                            </div>
 {/*#endif*/}
                         </div>
                         <div class="card-footer">
