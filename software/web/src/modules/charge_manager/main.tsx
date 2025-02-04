@@ -165,6 +165,8 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 //#if MODULE_ECO_AVAILABLE
         let cm_eco = API.get("power_manager/charge_mode").mode >= ConfigChargeMode.Eco && API.get("power_manager/charge_mode").mode <= ConfigChargeMode.EcoMinPV;
         let show_eco_chart = cm_eco && API.get("eco/config").enable && API.get("eco/charge_plan").enable;
+//#else
+        let show_eco_chart = false;
 //#endif
 
         let cards = state.state.chargers.map((c, i) => {
