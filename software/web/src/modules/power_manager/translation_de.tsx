@@ -5,16 +5,6 @@ import { h } from "preact";
 let x = {
     "power_manager": {
         "status": {
-            "mode": "Lademodus",
-            "mode_fast": "Schnell",
-            "mode_off": "Aus",
-            "mode_pv": "PV",
-            "mode_min_pv": "Min + PV",
-            "mode_eco": "Eco",
-            "mode_min": "Min",
-            "mode_eco_pv": "Eco + PV",
-            "mode_eco_min": "Eco + Min",
-            "mode_eco_min_pv": "Eco + Min + PV",
             "phase_switching": "Phasenumschaltung",
             "single_phase": "Einphasig",
             "three_phase":"Dreiphasig",
@@ -133,41 +123,6 @@ let x = {
                 return <>Wenn {not}<b>genug</b> Leistung zum Laden verfügbar ist, </>
             }/*NF*/,
 
-            "charge_mode_default": "Standardmodus",
-            "charge_mode_switch": "Wechsle Lademodus",
-            "charge_mode": "Lademodus",
-            "fast": "Schnell",
-            "disabled": "Deaktiviert",
-            "pv_excess": "PV-Überschuss",
-            "guaranteed_power": "Min + PV: Mindestladeleistung",
-            "charge_mode_switch_action_text": /*FFN*/(mode: number, default_mode: number) => {
-                const modes = ["Schnell", "Deaktiviert", "PV-Überschuss", "Min + PV"];
-
-                let ret = <></>;
-                switch (mode) {
-                    case 0:
-                        ret = <><b>Schnell</b></>
-                        break;
-
-                    case 1:
-                        ret = <><b>Deaktiviert</b></>
-                        break;
-
-                    case 2:
-                        ret = <><b>PV-Überschuss</b></>
-                        break;
-
-                    case 3:
-                        ret = <><b>Min + PV</b></>
-                        break;
-
-                    default:
-                        ret = <><b>Standardmodus ({modes[default_mode]})</b></>
-                        break;
-                }
-                return <>wechsle Lademodus auf {ret}.</>
-            }/*NF*/,
-
             "set_phases": "Schalte Phasen um",
             "phases_wanted": "Umschaltung auf",
             "single_phase": "auf einphasig",
@@ -177,7 +132,7 @@ let x = {
         "script": {
             "save_failed": "Speichern der Power Manager-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "Power Manager-Einstellungen",
-            "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen.",
+            "phase_change_failed": "Phasenumschaltung fehlgeschlagen.",
 
             "meter_slots_internal": "nur Wallbox",
             "meter_slots_no_values": "noch keine Werte"

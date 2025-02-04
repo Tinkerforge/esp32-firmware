@@ -5,16 +5,6 @@ import { __ } from "../../ts/translation";
 let x = {
     "power_manager": {
         "status": {
-            "mode": "Charging mode",
-            "mode_fast": "Fast",
-            "mode_off": "Off",
-            "mode_pv": "PV",
-            "mode_min_pv": "Min + PV",
-            "mode_eco": "Eco",
-            "mode_min": "Min",
-            "mode_eco_pv": "Eco + PV",
-            "mode_eco_min": "Eco + Min",
-            "mode_eco_min_pv": "Eco + Min + PV",
             "phase_switching": "Phase switching",
             "single_phase": "Single-phase",
             "three_phase":"Three-phase",
@@ -133,41 +123,6 @@ let x = {
                 return <>When {not}<b>enough</b> power for charging is available, </>
             }/*NF*/,
 
-            "charge_mode_default": "Default mode",
-            "charge_mode_switch": "Switch charge mode",
-            "charge_mode": "Charge mode",
-            "fast": "Fast",
-            "disabled": "Disabled",
-            "pv_excess": "PV-Excess",
-            "guaranteed_power": "Min + PV: Minimum charging power",
-            "charge_mode_switch_action_text": /*FFN*/(mode: number, default_mode: number) => {
-                const modes = ["Fast", "Disabled", "PV-Excess", "Min + PV"];
-
-                let ret = <></>;
-                switch (mode) {
-                    case 0:
-                        ret = <><b>Fast</b></>
-                        break;
-
-                    case 1:
-                        ret = <><b>Disabled</b></>
-                        break;
-
-                    case 2:
-                        ret = <><b>PV-Excess</b></>
-                        break;
-
-                    case 3:
-                        ret = <><b>Min + PV</b></>
-                        break;
-
-                    default:
-                        ret = <><b>Default mode ({modes[default_mode]})</b></>
-                        break;
-                }
-                return <>switch charge mode to {ret}.</>
-            }/*NF*/,
-
             "set_phases": "Switch phases",
             "phases_wanted": "Switch to",
             "single_phase": "to single phase",
@@ -177,7 +132,7 @@ let x = {
         "script": {
             "save_failed": "Failed to save power manager settings.",
             "reboot_content_changed": "power manager settings",
-            "mode_change_failed": "Failed to change charging mode.",
+            "phase_change_failed": "Failed to switch phases.",
 
             "meter_slots_internal": "charger only",
             "meter_slots_no_values": "no values yet"

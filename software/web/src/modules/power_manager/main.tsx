@@ -38,6 +38,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { BatteryMode } from "./battery_mode.enum";
 import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, Settings, Sun } from "react-feather";
+import { get_allowed_charge_modes } from "modules/charge_manager/main";
 
 const METER_SLOT_BATTERY_NO_BATTERY = 255;
 
@@ -105,7 +106,7 @@ export function get_noninternal_meter_slots(required_ids : Readonly<MeterValueID
 
 export class PowerManagerStatus extends Component {
     change_phase(phases: number) {
-        API.save('power_manager/external_control', {"phases_wanted": phases}, () => __("power_manager.script.mode_change_failed"));
+        API.save('power_manager/external_control', {"phases_wanted": phases}, () => __("power_manager.script.phase_change_failed"));
     }
 
     generate_config_error_label(generate: number, label: string) {
@@ -196,12 +197,8 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         if (!util.render_allowed())
             return <SubPage name="pv_excess_settings" />;
 
-        let mode_list: StringStringTuple[] = [];
-
-        mode_list.push(["1", __("power_manager.status.mode_off")]);
-        mode_list.push([s.excess_charging_enable ? "2" : "2-disabled", __("power_manager.status.mode_pv")]);
-        mode_list.push([s.excess_charging_enable ? "3" : "3-disabled", __("power_manager.status.mode_min_pv")]);
-        mode_list.push(["0", __("power_manager.status.mode_fast")]);
+        let mode_list: StringStringTuple[] = get_allowed_charge_modes({with_default: false, pv_enabled_override: s.excess_charging_enable})
+                                             .map(i => [i.toString(), __("charge_manager.status.mode_by_index")(i)]);
 
         let meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"));
         for (let i = 0; i < meter_slots.length; i++) {

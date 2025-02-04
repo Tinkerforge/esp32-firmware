@@ -48,7 +48,36 @@ export function ChargeManagerChargersNavbar() {
 }
 
 function change_charge_mode(mode: number) {
-    API.save('power_manager/charge_mode', {"mode": mode}, () => __("power_manager.script.mode_change_failed"));
+    API.save('power_manager/charge_mode', {"mode": mode}, () => __("charge_manager.script.mode_change_failed"));
+}
+
+export function get_allowed_charge_modes(params: {with_default: boolean, pv_enabled_override?: boolean, eco_enabled_override?: boolean, add_pv_if_disabled?: boolean}) {
+    const pv_enabled = params.pv_enabled_override !== undefined ? params.pv_enabled_override : API.get('power_manager/config').excess_charging_enable;
+    const eco_enabled = params.eco_enabled_override !== undefined ? params.eco_enabled_override : API.get_unchecked('eco/config')?.enable ?? false;
+
+    /*
+        PV Eco  Buttons
+        0   0   PV, Min+PV
+        0   1   Eco, Min+Eco
+        1   0   PV, Min+PV
+        1   1   PV, Eco+PV
+    */
+
+    let allowed_modes: ConfigChargeMode[] = [ConfigChargeMode.Off];
+    if (!pv_enabled && !eco_enabled && params.add_pv_if_disabled)
+        allowed_modes.push(ConfigChargeMode.PV, ConfigChargeMode.MinPV);
+    else if (!pv_enabled && eco_enabled)
+        allowed_modes.push(ConfigChargeMode.Eco, ConfigChargeMode.EcoMin);
+    else if (pv_enabled && !eco_enabled)
+        allowed_modes.push(ConfigChargeMode.PV, ConfigChargeMode.MinPV);
+    else if (pv_enabled && eco_enabled)
+        allowed_modes.push(ConfigChargeMode.PV, ConfigChargeMode.EcoPV);
+
+    allowed_modes.push(ConfigChargeMode.Fast);
+    if (params.with_default)
+        allowed_modes.push(ConfigChargeMode.Default);
+
+    return allowed_modes;
 }
 
 function ChargeModeButton(props: {current_mode: ConfigChargeMode, disabled?: boolean, mode: ConfigChargeMode, name: string}) {
@@ -71,37 +100,18 @@ export function ChargeModeButtons() {
     const eco_enabled = API.get_unchecked('eco/config')?.enable ?? false;
 
     const buttons = [
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Fast} name={__("power_manager.status.mode_fast")}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Off} name={__("power_manager.status.mode_off")}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.PV} name={__("power_manager.status.mode_pv")} disabled={!pv_enabled}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.MinPV} name={__("power_manager.status.mode_min_pv")} disabled={!pv_enabled}/>,
+        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Fast} name={__("charge_manager.status.mode_fast")}/>,
+        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Off} name={__("charge_manager.status.mode_off")}/>,
+        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.PV} name={__("charge_manager.status.mode_pv")} disabled={!pv_enabled}/>,
+        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.MinPV} name={__("charge_manager.status.mode_min_pv")} disabled={!pv_enabled}/>,
         null, //<ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Default} name={}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Min} name={__("power_manager.status.mode_min")}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Eco} name={__("power_manager.status.mode_eco")} disabled={!eco_enabled}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.EcoPV} name={__("power_manager.status.mode_eco_pv")} disabled={!eco_enabled || !pv_enabled}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.EcoMin} name={__("power_manager.status.mode_eco_min")} disabled={!eco_enabled}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.EcoMinPV} name={__("power_manager.status.mode_eco_min_pv")} disabled={!eco_enabled || !pv_enabled}/>,
+        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Min} name={__("charge_manager.status.mode_min")}/>,
+        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Eco} name={__("charge_manager.status.mode_eco")} disabled={!eco_enabled}/>,
+        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.EcoPV} name={__("charge_manager.status.mode_eco_pv")} disabled={!eco_enabled || !pv_enabled}/>,
+        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.EcoMin} name={__("charge_manager.status.mode_eco_min")} disabled={!eco_enabled}/>,
+        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.EcoMinPV} name={__("charge_manager.status.mode_eco_min_pv")} disabled={!eco_enabled || !pv_enabled}/>,
     ];
-
-/*
-PV Eco  Buttons
-0   0   PV, Min+PV
-0   1   Eco, Min+Eco
-1   0   PV, Min+PV
-1   1   PV, Eco+PV
-
-*/
-    let button_indices: ConfigChargeMode[] = [ConfigChargeMode.Off];
-    if (!pv_enabled && !eco_enabled)
-        button_indices.push(ConfigChargeMode.PV, ConfigChargeMode.MinPV);
-    else if (!pv_enabled && eco_enabled)
-        button_indices.push(ConfigChargeMode.Eco, ConfigChargeMode.EcoMin);
-    else if (pv_enabled && !eco_enabled)
-        button_indices.push(ConfigChargeMode.PV, ConfigChargeMode.MinPV);
-    else if (pv_enabled && eco_enabled)
-        button_indices.push(ConfigChargeMode.PV, ConfigChargeMode.EcoPV);
-
-    button_indices.push(ConfigChargeMode.Fast);
+    let button_indices: ConfigChargeMode[] = get_allowed_charge_modes({with_default: false, add_pv_if_disabled: true});
 
     // Add another button if another charge mode was selected via the API.
     if (mode >= ConfigChargeMode._min && mode <= ConfigChargeMode._max && button_indices.indexOf(mode) < 0)
@@ -110,7 +120,7 @@ PV Eco  Buttons
     let used_buttons = button_indices.map(i => buttons[i]);
 
     return <StatusSection name="charge_manager_charge_mode_buttons">
-        <FormRow label={__("power_manager.status.mode")}>
+        <FormRow label={__("charge_manager.status.mode")}>
             <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                 {used_buttons}
             </ButtonGroup>

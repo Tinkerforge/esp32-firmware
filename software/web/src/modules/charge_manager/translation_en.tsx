@@ -9,7 +9,37 @@ let x = {
             "manager": "Enabled",
             "error": "Error",
             "managed_boxes": "Managed chargers",
-            "available_current": "Available current"
+            "available_current": "Available current",
+            "mode": "Charging mode",
+            "mode_fast": "Fast",
+            "mode_off": "Off",
+            "mode_pv": "PV",
+            "mode_min_pv": "Min + PV",
+            "mode_default": "Default mode",
+            "mode_min": "Min",
+            "mode_eco": "Eco",
+            "mode_eco_pv": "Eco + PV",
+            "mode_eco_min": "Eco + Min",
+            "mode_eco_min_pv": "Eco + Min + PV",
+            "mode_by_index": /*SFN*/ (mode: number, default_mode?: number) => {
+                const modes = [
+                    __("charge_manager.status.mode_fast"),
+                    __("charge_manager.status.mode_off"),
+                    __("charge_manager.status.mode_pv"),
+                    __("charge_manager.status.mode_min_pv"),
+                    __("charge_manager.status.mode_default"),
+                    __("charge_manager.status.mode_min"),
+                    __("charge_manager.status.mode_eco"),
+                    __("charge_manager.status.mode_eco_pv"),
+                    __("charge_manager.status.mode_eco_min"),
+                    __("charge_manager.status.mode_eco_min_pv"),
+                ];
+
+                if (mode == 4 && default_mode !== undefined) {
+                    return modes[mode] + " (" + modes[default_mode] + ")";
+                }
+                return modes[mode];
+            }/*NF*/
         },
         "navbar": {
             "charge_manager_settings": "Charge Management",
@@ -147,7 +177,38 @@ let x = {
             "automation_trigger_text": <>When the <b>charge manager watchdog</b> gets triggered, </>,
             "set_charge_manager": "Set available current for charge manager",
             "automation_action_text": /*FFN*/(current: string) => <>set the current that is available for the <b>charge manager</b> to <b>{current} A</b>.</>/*NF*/,
-            "max_current": "Maximum current"
+            "max_current": "Maximum current",
+
+            "charge_mode_switch": "Switch charge mode",
+            "charge_mode": "Charge mode",
+            "charge_mode_switch_action_text": /*FFN*/(mode: number, default_mode: number) => {
+                const modes = ["Fast", "Disabled", "PV-Excess", "Min + PV"];
+
+                let ret = <></>;
+                switch (mode) {
+                    case 0:
+                        ret = <><b>Fast</b></>
+                        break;
+
+                    case 1:
+                        ret = <><b>Disabled</b></>
+                        break;
+
+                    case 2:
+                        ret = <><b>PV-Excess</b></>
+                        break;
+
+                    case 3:
+                        ret = <><b>Min + PV</b></>
+                        break;
+
+                    default:
+                        ret = <><b>Default mode ({modes[default_mode]})</b></>
+                        break;
+                }
+                return <>switch charge mode to {ret}.</>
+            }/*NF*/
+
         },
         "script": {
             "charge_state_0": "No vehicle connected",
@@ -199,7 +260,9 @@ let x = {
 
             "mode_explainer_0_em_with_ps": "This Energy Manager does not control any chargers. Phase switching is disabled.",
             "mode_explainer_1_em_with_ps": "This Energy Manager is controlled by another Energy Manager or WARP Charger and performs phase switching for a single controlled charger that is connected to its contactor.",
-            "mode_explainer_2_em_with_ps": "This Energy Manager controls one or more WARP chargers and can perform phase switching for a single controlled charger that is connected to its contactor."
+            "mode_explainer_2_em_with_ps": "This Energy Manager controls one or more WARP chargers and can perform phase switching for a single controlled charger that is connected to its contactor.",
+
+            "mode_change_failed": "Failed to change charging mode."
         }
     }
 }

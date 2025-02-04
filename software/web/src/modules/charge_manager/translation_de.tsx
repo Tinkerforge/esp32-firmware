@@ -9,7 +9,37 @@ let x = {
             "manager": "Aktiviert",
             "error": "Fehler",
             "managed_boxes": "Kontrollierte Wallboxen",
-            "available_current": "Verfügbarer Strom"
+            "available_current": "Verfügbarer Strom",
+            "mode": "Lademodus",
+            "mode_fast": "Schnell",
+            "mode_off": "Aus",
+            "mode_pv": "PV",
+            "mode_min_pv": "Min + PV",
+            "mode_default": "Standardmodus",
+            "mode_min": "Min",
+            "mode_eco": "Eco",
+            "mode_eco_pv": "Eco + PV",
+            "mode_eco_min": "Eco + Min",
+            "mode_eco_min_pv": "Eco + Min + PV",
+            "mode_by_index": /*SFN*/ (mode: number, default_mode?: number) => {
+                const modes = [
+                    __("charge_manager.status.mode_fast"),
+                    __("charge_manager.status.mode_off"),
+                    __("charge_manager.status.mode_pv"),
+                    __("charge_manager.status.mode_min_pv"),
+                    __("charge_manager.status.mode_default"),
+                    __("charge_manager.status.mode_min"),
+                    __("charge_manager.status.mode_eco"),
+                    __("charge_manager.status.mode_eco_pv"),
+                    __("charge_manager.status.mode_eco_min"),
+                    __("charge_manager.status.mode_eco_min_pv"),
+                ];
+
+                if (mode == 4 && default_mode !== undefined) {
+                    return modes[mode] + " (" + modes[default_mode] + ")";
+                }
+                return modes[mode];
+            }/*NF*/
         },
         "navbar": {
             "charge_manager_settings": "Lastmanagement",
@@ -147,7 +177,14 @@ let x = {
             "automation_trigger_text": <>Wenn der <b>Watchdog</b> des <b>Lastmanagements</b> auslöst, </>,
             "set_charge_manager": "Setze verfügbaren Strom für Lastmanagement",
             "automation_action_text": /*FFN*/(current: string) => <>setze den für das <b>Lastmanagement</b> verfügbaren Strom auf <b>{current} A</b>.</> /*NF*/,
-            "max_current": "Verfügbarer Strom"
+            "max_current": "Verfügbarer Strom",
+
+            "charge_mode_switch": "Wechsle Lademodus",
+            "charge_mode": "Lademodus",
+            "charge_mode_switch_action_text": /*FFN*/(mode: number, default_mode: number) => {
+                let mode_str = __("charge_manager.status.mode_by_index")(mode, default_mode);
+                return <>wechsle Lademodus auf <b>{mode_str}</b>.</>
+            }/*NF*/
         },
         "script": {
             "charge_state_0": "Kein Fahrzeug angeschlossen",
@@ -199,7 +236,9 @@ let x = {
 
             "mode_explainer_0_em_with_ps": "Dieser Energy Manager steuert keine Wallboxen. Phasenumschaltung ist deaktiviert.",
             "mode_explainer_1_em_with_ps": "Dieser Energy Manager wird von einem anderen Energy Manager oder WARP Charger gesteuert und führt Phasenumschaltungen für eine einzige mit seinem Schütz verbundene Wallbox durch.",
-            "mode_explainer_2_em_with_ps": "Dieser Energy Manager steuert einen oder mehrere WARP Charger und kann Phasenumschaltungen für eine einzige mit seinem Schütz verbundene Wallbox durchführen."
+            "mode_explainer_2_em_with_ps": "Dieser Energy Manager steuert einen oder mehrere WARP Charger und kann Phasenumschaltungen für eine einzige mit seinem Schütz verbundene Wallbox durchführen.",
+
+            "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen."
         }
     }
 }

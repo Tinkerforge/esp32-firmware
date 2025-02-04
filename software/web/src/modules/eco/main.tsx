@@ -41,6 +41,7 @@ import { is_day_ahead_prices_enabled, get_price_from_index, get_prices_as_15min,
 import { Departure } from "./departure.enum";
 import { Resolution} from "../day_ahead_prices/resolution.enum";
 import { ConfigChargeMode } from "modules/charge_manager/config_charge_mode.enum";
+import { get_allowed_charge_modes } from "modules/charge_manager/main";
 
 export function EcoNavbar() {
     return (
@@ -78,6 +79,9 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
         const solar_forecast_enabled   = is_solar_forecast_enabled();
         const day_ahead_prices_enabled = is_day_ahead_prices_enabled();
 
+        let mode_list: [string, string][] = get_allowed_charge_modes({with_default: false, eco_enabled_override: state.enable})
+                                            .map(i => [i.toString(), __("charge_manager.status.mode_by_index")(i)]);
+
         return (
             <SubPage name="eco">
                 <ConfigForm id="eco_config_form"
@@ -95,12 +99,7 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                     </FormRow>
                     <FormRow label="Modus nach Ablauf des Ladeplans" help={__("eco.content.mode_after_help")}>
                         <InputSelect
-                            items={[
-                                ["0", "Schnell"],
-                                ["1", "Eco + PV"],
-                                ["2", "PV"],
-                                ["3", "Aus"],
-                            ]}
+                            items={mode_list}
                             value={state.mode_after}
                             onValue={(v) => this.setState({mode_after: parseInt(v)})}
                         />
