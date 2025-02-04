@@ -36,66 +36,66 @@
 
 #define NUMBER_TO_ADDRESS(number) ((number) - 1u)
 
-#define SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS                 NUMBER_TO_ADDRESS(5002u)
-#define SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS              NUMBER_TO_ADDRESS(5036u)
-#define SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS        NUMBER_TO_ADDRESS(13001u)
-#define SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS      NUMBER_TO_ADDRESS(13021u)
-#define SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS        NUMBER_TO_ADDRESS(13022u)
-#define SUNGROW_STRING_INVERTER_TOTAL_ACTIVE_POWER_ADDRESS   NUMBER_TO_ADDRESS(5031u)
+#define SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS                               static_cast<size_t>(SungrowInverterOutputTypeAddress::OutputType)
+#define SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS                            static_cast<size_t>(SungrowHybridInverterGridAddress::GridFrequency)
+#define SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS                      static_cast<size_t>(SungrowHybridInverterBatteryAddress::RunningState)
+#define SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS                    static_cast<size_t>(SungrowHybridInverterBatteryAddress::BatteryCurrent)
+#define SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS                      static_cast<size_t>(SungrowHybridInverterBatteryAddress::BatteryPower)
+#define SUNGROW_STRING_INVERTER_TOTAL_ACTIVE_POWER_ADDRESS                 static_cast<size_t>(SungrowStringInverter1P2LAddress::TotalActivePowerExport)
 
-#define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L1_ADDRESS 808u
-#define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L2_ADDRESS 809u
-#define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L3_ADDRESS 810u
-#define VICTRON_ENERGY_GX_AC_CONSUMPTION_L1_ADDRESS          817u
-#define VICTRON_ENERGY_GX_AC_CONSUMPTION_L2_ADDRESS          818u
-#define VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS          819u
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L1_ADDRESS               static_cast<size_t>(VictronEnergyGXInverterAddress::ACCoupledPVOnOutputL1)
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L2_ADDRESS               static_cast<size_t>(VictronEnergyGXInverterAddress::ACCoupledPVOnOutputL2)
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L3_ADDRESS               static_cast<size_t>(VictronEnergyGXInverterAddress::ACCoupledPVOnOutputL3)
+#define VICTRON_ENERGY_GX_AC_CONSUMPTION_L1_ADDRESS                        static_cast<size_t>(VictronEnergyGXLoadAddress::ACConsumptionL1)
+#define VICTRON_ENERGY_GX_AC_CONSUMPTION_L2_ADDRESS                        static_cast<size_t>(VictronEnergyGXLoadAddress::ACConsumptionL2)
+#define VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS                        static_cast<size_t>(VictronEnergyGXLoadAddress::ACConsumptionL3)
 
-#define DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS 0u
-#define DEYE_HYBRID_INVERTER_PV1_POWER_ADDRESS   672u
-#define DEYE_HYBRID_INVERTER_PV2_POWER_ADDRESS   673u
-#define DEYE_HYBRID_INVERTER_PV3_POWER_ADDRESS   674u
-#define DEYE_HYBRID_INVERTER_PV4_POWER_ADDRESS   675u
-#define DEYE_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS 676u
-#define DEYE_HYBRID_INVERTER_PV1_CURRENT_ADDRESS 677u
-#define DEYE_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS 678u
-#define DEYE_HYBRID_INVERTER_PV2_CURRENT_ADDRESS 679u
-#define DEYE_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS 680u
-#define DEYE_HYBRID_INVERTER_PV3_CURRENT_ADDRESS 681u
-#define DEYE_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS 682u
-#define DEYE_HYBRID_INVERTER_PV4_CURRENT_ADDRESS 683u
+#define DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterDeviceTypeAddress::DeviceType)
+#define DEYE_HYBRID_INVERTER_PV1_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterPVAddress::PV1Power)
+#define DEYE_HYBRID_INVERTER_PV2_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterPVAddress::PV2Power)
+#define DEYE_HYBRID_INVERTER_PV3_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterPVAddress::PV3Power)
+#define DEYE_HYBRID_INVERTER_PV4_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterPVAddress::PV4Power)
+#define DEYE_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV1Voltage)
+#define DEYE_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV1Current)
+#define DEYE_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV2Voltage)
+#define DEYE_HYBRID_INVERTER_PV2_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV2Current)
+#define DEYE_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV3Voltage)
+#define DEYE_HYBRID_INVERTER_PV3_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV3Current)
+#define DEYE_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV4Voltage)
+#define DEYE_HYBRID_INVERTER_PV4_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV4Current)
 
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER                 2007u
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY          2310u
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_RETURNED_ENERGY 2312u
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_ACTIVE_POWER                 2027u
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_ENERGY          2330u
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_RETURNED_ENERGY 2332u
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_ACTIVE_POWER                 2047u
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY          2350u
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY 2352u
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER                    static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1ActivePower)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY             static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1TotalActiveEnergyPerpetualCount)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_RETURNED_ENERGY    static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1TotalActiveReturnedEnergyPerpetualCount)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_ACTIVE_POWER                    static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2ActivePower)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_ENERGY             static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2TotalActiveEnergyPerpetualCount)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_RETURNED_ENERGY    static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2TotalActiveReturnedEnergyPerpetualCount)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_ACTIVE_POWER                    static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3ActivePower)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY             static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveEnergyPerpetualCount)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY    static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveReturnedEnergyPerpetualCount)
 
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_INPUT_OR_MODEL_ID_ADDRESS NUMBER_TO_ADDRESS(40264u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCA_SF_ADDRESS            NUMBER_TO_ADDRESS(40256u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCV_SF_ADDRESS            NUMBER_TO_ADDRESS(40257u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCW_SF_ADDRESS            NUMBER_TO_ADDRESS(40258u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCWH_SF_ADDRESS           NUMBER_TO_ADDRESS(40259u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCA_ADDRESS        NUMBER_TO_ADDRESS(40313u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCV_ADDRESS        NUMBER_TO_ADDRESS(40314u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCW_ADDRESS        NUMBER_TO_ADDRESS(40315u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCWH_ADDRESS       NUMBER_TO_ADDRESS(40316u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCA_ADDRESS     NUMBER_TO_ADDRESS(40333u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCV_ADDRESS     NUMBER_TO_ADDRESS(40334u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCW_ADDRESS     NUMBER_TO_ADDRESS(40335u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCWH_ADDRESS    NUMBER_TO_ADDRESS(40336u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_ADDRESS          NUMBER_TO_ADDRESS(40352u)
-#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_SF_ADDRESS       NUMBER_TO_ADDRESS(40366u)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_INPUT_OR_MODEL_ID_ADDRESS       static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryTypeAddress::InputOrModelID)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCA_SF_ADDRESS                  static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::DCA_SF)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCV_SF_ADDRESS                  static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::DCV_SF)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCW_SF_ADDRESS                  static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::DCW_SF)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCWH_SF_ADDRESS                 static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::DCWH_SF)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCA_ADDRESS              static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::ChargeDCA)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCV_ADDRESS              static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::ChargeDCV)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCW_ADDRESS              static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::ChargeDCW)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCWH_ADDRESS             static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::ChargeDCWH)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCA_ADDRESS           static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::DischargeDCA)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCV_ADDRESS           static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::DischargeDCV)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCW_ADDRESS           static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::DischargeDCW)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DISCHARGE_DCWH_ADDRESS          static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::DischargeDCWH)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_ADDRESS                static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::ChaState)
+#define FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_SF_ADDRESS             static_cast<size_t>(FroniusGEN24PlusHybridInverterBatteryIntegerAddress::ChaState_SF)
 
-#define CARLO_GAVAZZI_EM100_OR_ET100_W               0x04
-#define CARLO_GAVAZZI_EM100_OR_ET100_KWH_PLUS_TOTAL  0x10
-#define CARLO_GAVAZZI_EM100_OR_ET100_KWH_MINUS_TOTAL 0x20
-#define CARLO_GAVAZZI_EM510_W                        0x04
-#define CARLO_GAVAZZI_EM510_KWH_PLUS_TOTAL           0x10
-#define CARLO_GAVAZZI_EM510_KWH_MINUS_TOTAL          0x20
+#define CARLO_GAVAZZI_EM100_OR_ET100_W                                     static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::W)
+#define CARLO_GAVAZZI_EM100_OR_ET100_KWH_POSITIVE_TOTAL                    static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::KWhPositiveTotal)
+#define CARLO_GAVAZZI_EM100_OR_ET100_KWH_NEGATIVE_TOTAL                    static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::KWhNegativeTotal)
+#define CARLO_GAVAZZI_EM510_W                                              static_cast<size_t>(CarloGavazziEM510atL1Address::W)
+#define CARLO_GAVAZZI_EM510_KWH_POSITIVE_TOTAL                             static_cast<size_t>(CarloGavazziEM510atL1Address::KWhPositiveTotal)
+#define CARLO_GAVAZZI_EM510_KWH_NEGATIVE_TOTAL                             static_cast<size_t>(CarloGavazziEM510atL1Address::KWhNegativeTotal)
 
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
@@ -200,6 +200,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     case MeterModbusTCPTableID::SungrowHybridInverter:
         sungrow_hybrid_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SungrowHybridInverterVirtualMeter>();
+        sungrow_inverter_output_type = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (sungrow_hybrid_inverter_virtual_meter) {
@@ -208,7 +209,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             return;
 
         case SungrowHybridInverterVirtualMeter::Inverter:
-            table = &sungrow_hybrid_inverter_output_type_table;
+            table = &sungrow_inverter_output_type_table;
             default_location = MeterLocation::Inverter;
             break;
 
@@ -244,7 +245,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             return;
 
         case SungrowStringInverterVirtualMeter::Inverter:
-            table = &sungrow_string_inverter_output_type_table;
+            table = &sungrow_inverter_output_type_table;
             default_location = MeterLocation::Inverter;
             break;
 
@@ -334,6 +335,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     case MeterModbusTCPTableID::DeyeHybridInverter:
         deye_hybrid_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<DeyeHybridInverterVirtualMeter>();
+        deye_hybrid_inverter_device_type = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (deye_hybrid_inverter_virtual_meter) {
@@ -660,6 +662,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     case MeterModbusTCPTableID::FroniusGEN24PlusHybridInverter:
         fronius_gen24_plus_hybrid_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<FroniusGEN24PlusHybridInverterVirtualMeter>();
+        fronius_gen24_plus_hybrid_inverter_input_or_model_id = 0;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (fronius_gen24_plus_hybrid_inverter_virtual_meter) {
@@ -1764,15 +1767,15 @@ void MeterModbusTCP::read_done_callback()
     }
     else if (is_carlo_gavazzi_em100_or_et100()) {
         if (register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_W
-         || register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_KWH_PLUS_TOTAL
-         || register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_KWH_MINUS_TOTAL) {
+         || register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_KWH_POSITIVE_TOTAL
+         || register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_KWH_NEGATIVE_TOTAL) {
             meters.update_value(slot, table->index[read_index + 1], value);
         }
     }
     else if (is_carlo_gavazzi_em510()) {
         if (register_start_address == CARLO_GAVAZZI_EM510_W
-         || register_start_address == CARLO_GAVAZZI_EM510_KWH_PLUS_TOTAL
-         || register_start_address == CARLO_GAVAZZI_EM510_KWH_MINUS_TOTAL) {
+         || register_start_address == CARLO_GAVAZZI_EM510_KWH_POSITIVE_TOTAL
+         || register_start_address == CARLO_GAVAZZI_EM510_KWH_NEGATIVE_TOTAL) {
             meters.update_value(slot, table->index[read_index + 1], value);
         }
     }

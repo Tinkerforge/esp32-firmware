@@ -161,9 +161,9 @@ inverter_values = [
         'variant': 'String',
     },
     {
-        'name': 'Total Output Energy [0.1 kWh]',
+        'name': 'Total Output Energy Alternative [0.1 kWh]',  # FIXME: use this instead of 5004, if available
         'value_id': 'VALUE_ID_DEBUG',
-        'start_address': 5144,  # FIXME: use this instead of 5004, if available
+        'start_address': 5144,
         'value_type': 'U32LE',
         'scale_factor': 0.1,
         'variant': 'String',
@@ -271,8 +271,7 @@ hybrid_inverter_phase_current_values = [
 
 specs = [
     {
-        'name': 'Sungrow {variant} Inverter Output Type',
-        'variants': ['Hybrid', 'String'],
+        'name': 'Sungrow Inverter Output Type',
         'register_type': 'InputRegister',
         'start_address_offset': 1,
         'values': [
@@ -319,7 +318,7 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Grid Frequency [0.01 Hz]',  # FIXME: use this instead of 5036, if available
+                'name': 'Grid Frequency Alternative [0.01 Hz]',  # FIXME: use this instead of 5036, if available
                 'value_id': 'VALUE_ID_DEBUG',
                 'start_address': 5148,
                 'value_type': 'U16',

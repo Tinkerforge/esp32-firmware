@@ -27,6 +27,7 @@ for spec in specs:
         spec_name = util.FlavoredName(spec['name'].format(variant=variant_spec)).get()
 
         value_names = []
+        value_addresses = []
         value_specs = []
         value_ids_raw = []
         value_ids = []
@@ -39,19 +40,26 @@ for spec in specs:
             if variant_value != None and variant_value not in variant_spec:
                 continue
 
-            if value["name"] in value_names:
+            if value['name'] in value_names:
                 print(f'Error: Value {spec_name.space} / {value["name"]} is duplicate')
                 sys.exit(1)
 
-            value_names.append(value["name"])
+            value_names.append(value['name'])
 
             start_address_offset = value.get('start_address_offset', spec.get('start_address_offset', 0))
+            start_address = value['start_address'] - start_address_offset if value['start_address'] != 'START_ADDRESS_VIRTUAL' else 'START_ADDRESS_VIRTUAL'
+
+            if start_address != "START_ADDRESS_VIRTUAL":
+                address_name_words = value['name'].split('|', 1)[-1].split('[')[0].replace('-', ' ').replace('/', ' ').split(' ')
+                address_name = ''.join([word[0].upper() + word[1:] for word in address_name_words if len(word) > 0])
+
+                value_addresses.append(f'    {address_name} = {start_address},')
 
             value_specs.append(
                 '    {\n'
                 f'        "{value["name"]}",\n'
                 f'        ModbusRegisterType::{value.get("register_type", spec["register_type"])},\n'
-                f'        {value["start_address"] - start_address_offset if value["start_address"] != "START_ADDRESS_VIRTUAL" else "START_ADDRESS_VIRTUAL"},\n'
+                f'        {start_address},\n'
                 f'        ModbusValueType::{value.get("value_type", "None")},\n'
                 f'        {"true" if value.get("drop_sign", False) else "false"},\n'
                 f'        {value.get("offset", 0.0)}f,\n'
@@ -64,15 +72,16 @@ for spec in specs:
             elif value['value_id'] == 'VALUE_ID_DEBUG':
                 value_index.append('    VALUE_INDEX_DEBUG,')
             else:
-                if value["value_id"] in value_ids_raw:
+                if value['value_id'] in value_ids_raw:
                     print(f'Error: Value {spec_name.space} / {value["name"]} has duplicate ID {value["value_id"]}')
                     sys.exit(1)
 
-                value_ids_raw.append(value["value_id"])
+                value_ids_raw.append(value['value_id'])
                 value_ids.append(f'    MeterValueID::{value["value_id"]},')
                 value_index.append(f'    {current_index},')
                 current_index += 1
 
+        spec_values.append(f'enum class {spec_name.camel}Address : uint16_t {{\n' + '\n'.join(value_addresses) + '\n};')
         spec_values.append(f'static const MeterModbusTCP::ValueSpec {spec_name.under}_specs[] = {{\n' + '\n'.join(value_specs) + '\n};')
 
         if len(value_ids) > 0:

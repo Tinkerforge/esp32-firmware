@@ -1332,19 +1332,19 @@ specs = [
                 'value_type': 'F32BE',
             },
             {
-                'name': '3‐Phasen‐Durchschnitt Spannung L-N [V]',
+                'name': 'Drei-Phasen-Durchschnitt Spannung L-N [V]',
                 'value_id': 'VoltageLNAvg',
                 'start_address': 57,
                 'value_type': 'F32BE',
             },
             {
-                'name': '3‐Phasen‐Durchschnitt Spannung L-L [V]',
+                'name': 'Drei-Phasen-Durchschnitt Spannung L-L [V]',
                 'value_id': 'VoltageLLAvg',
                 'start_address': 59,
                 'value_type': 'F32BE',
             },
             {
-                'name': '3‐Phasen‐Durchschnitt Strom [A]',
+                'name': 'Drei-Phasen-Durchschnitt Strom [A]',
                 'value_id': 'CurrentLAvgImExDiff',  # FIXME: direction?
                 'start_address': 61,
                 'value_type': 'F32BE',
@@ -1362,7 +1362,7 @@ specs = [
                 'value_type': 'F32BE',
             },
             {
-                'name': 'Gesamtwirkleistung [var]',
+                'name': 'Gesamtblindleistung [var]',
                 'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: direction?
                 'start_address': 67,
                 'value_type': 'F32BE',

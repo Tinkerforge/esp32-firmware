@@ -133,7 +133,7 @@ private:
     // Sungrow
     SungrowHybridInverterVirtualMeter sungrow_hybrid_inverter_virtual_meter;
     SungrowStringInverterVirtualMeter sungrow_string_inverter_virtual_meter;
-    int sungrow_inverter_output_type = -1;
+    int sungrow_inverter_output_type;
     uint16_t sungrow_hybrid_inverter_running_state;
 
     // Solarmax
@@ -150,7 +150,7 @@ private:
 
     // Deye
     DeyeHybridInverterVirtualMeter deye_hybrid_inverter_virtual_meter;
-    int deye_hybrid_inverter_device_type = -1;
+    int deye_hybrid_inverter_device_type;
     float deye_hybrid_inverter_pv1_power;
     float deye_hybrid_inverter_pv2_power;
     float deye_hybrid_inverter_pv3_power;
@@ -184,7 +184,7 @@ private:
 
     // Fronius
     FroniusGEN24PlusHybridInverterVirtualMeter fronius_gen24_plus_hybrid_inverter_virtual_meter;
-    uint16_t fronius_gen24_plus_hybrid_inverter_input_or_model_id = 0;
+    uint16_t fronius_gen24_plus_hybrid_inverter_input_or_model_id;
     size_t fronius_gen24_plus_hybrid_inverter_start_address_shift;
     int16_t fronius_gen24_plus_hybrid_inverter_dca_sf;
     int16_t fronius_gen24_plus_hybrid_inverter_dcv_sf;
