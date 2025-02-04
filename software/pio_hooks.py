@@ -697,6 +697,9 @@ def main():
         not_for_distribution = True
         build_flags.append('-DDEBUG_FS_ENABLE="\\"{0}\\""'.format(custom_wifi['debug_fs_enable']))
 
+    if 'w_error' in custom_wifi and custom_wifi['w_error']:
+        build_flags.append('-Werror')
+
     env.Replace(BUILD_FLAGS=build_flags)
 
     write_firmware_info(display_name, *version, timestamp)
