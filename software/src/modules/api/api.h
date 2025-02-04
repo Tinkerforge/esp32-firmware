@@ -58,8 +58,8 @@ struct CommandRegistration {
 struct ResponseRegistration {
     const char *const path;
     const char *const *const keys_to_censor_in_debug_report;
-    ConfigRoot *config;
-    std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback;
+    ConfigRoot *const config;
+    const std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback;
 
     const size_t path_len;
     const size_t keys_to_censor_in_debug_report_len;
