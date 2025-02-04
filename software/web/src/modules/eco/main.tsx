@@ -201,7 +201,7 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
             return;
         }
 
-        const eco_state       = API.get("eco/state")
+        const eco_state = API.get("eco/state")
 
         // this.props.charger_id is -1 for status page charger, we always show charger 0 on status page
         const charger_id = Math.max(0, this.props.charger_id)
