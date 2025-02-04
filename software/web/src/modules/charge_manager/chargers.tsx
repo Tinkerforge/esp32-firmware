@@ -574,13 +574,10 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
             <Collapse in={state.managementEnabled && state.chargers.length != 1}>
                 <div>
-                    <FormRow label="">
-                        <IndicatorGroup
-                            value={0}
-                            items={[
-                                state.chargers.length < 1 ? ["warning", __("charge_manager.content.em_proxy_warning_not_enough")] : ["danger", __("charge_manager.content.em_proxy_warning_too_many")],
-                            ]}
-                        />
+                    <FormRow label=""
+                             error={__("charge_manager.content.em_proxy_warning_too_many")} show_error={state.chargers.length > 1}
+                             warning={__("charge_manager.content.em_proxy_warning_not_enough")} show_warning={state.chargers.length < 1}>
+                        <></>
                     </FormRow>
                 </div>
             </Collapse>
