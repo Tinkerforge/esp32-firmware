@@ -426,7 +426,7 @@ void Eco::update()
                 if (kwh_threshold > 0) {
                     auto wh_expected = solar_forecast.get_wh_range(start_time_1m, end_time_1m.second);
                     if (wh_expected.is_none()) {
-                        extended_logging("Charger %d: Expected PV yield not available. Ignoring yield forecast.");
+                        extended_logging("Charger %d: Expected PV yield not available. Ignoring yield forecast.", charger_id);
                     } else {
                         const uint32_t kwh_expected = wh_expected.unwrap()/1000;
                         if (kwh_expected > kwh_threshold) {
