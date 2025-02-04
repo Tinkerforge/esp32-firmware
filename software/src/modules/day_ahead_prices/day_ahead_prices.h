@@ -117,6 +117,8 @@ public:
     bool is_start_time_cheap_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m);
     bool is_start_time_cheap_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h);
     int32_t get_grid_cost_plus_tax_plus_markup();
+    int32_t add_below(const int32_t start_time, const int32_t price, bool *hours, const uint32_t hours_length);
+    int32_t remove_above(const int32_t start_time, const int32_t price, bool *hours, const uint32_t hours_length);
 
     bool prices_sorted_available = false;
 

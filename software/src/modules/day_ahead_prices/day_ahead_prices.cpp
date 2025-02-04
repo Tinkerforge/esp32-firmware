@@ -653,6 +653,70 @@ int32_t DayAheadPrices::get_grid_cost_plus_tax_plus_markup()
     return config.get("grid_costs_and_taxes")->asUint() + config.get("supplier_markup")->asUint();
 }
 
+int32_t DayAheadPrices::add_below(const int32_t start_time, const int32_t price, bool *hours, const uint32_t hours_length)
+{
+    if (hours == nullptr) {
+        return -1;
+    }
+
+    auto p = prices.get("prices");
+    const uint8_t resolution_mul = (config.get("resolution")->asEnum<Resolution>() == Resolution::Min15) ? 1 : 4;
+    const size_t num_prices = p->count()*resolution_mul;
+
+    // No price data available
+    if (num_prices == 0) {
+        return -2;
+    }
+
+    const uint32_t first_date = prices.get("first_date")->asUint();
+    const int32_t start_index = (start_time - first_date) / 15;
+    if ((start_index < 0) || (start_index >= num_prices)) {
+        return -3;
+    }
+
+    int32_t last_changed_index = -1;
+    for (uint8_t i = start_index; (i < num_prices) && ((i-start_index) < hours_length); i++) {
+        if (p->get(i/resolution_mul)->asInt() < price) {
+            last_changed_index = i - start_index;
+            hours[last_changed_index] = true;
+        }
+    }
+
+    return last_changed_index+1;
+}
+
+int32_t DayAheadPrices::remove_above(const int32_t start_time, const int32_t price, bool *hours, const uint32_t hours_length)
+{
+    if (hours == nullptr) {
+        return -1;
+    }
+
+    auto p = prices.get("prices");
+    const uint8_t resolution_mul = (config.get("resolution")->asEnum<Resolution>() == Resolution::Min15) ? 1 : 4;
+    const size_t num_prices = p->count()*resolution_mul;
+
+    // No price data available
+    if (num_prices == 0) {
+        return -2;
+    }
+
+    const uint32_t first_date = prices.get("first_date")->asUint();
+    const int32_t start_index = (start_time - first_date) / 15;
+    if ((start_index < 0) || (start_index >= num_prices)) {
+        return -3;
+    }
+
+    int32_t last_changed_index = -1;
+    for (uint8_t i = start_index; (i < num_prices) && ((i-start_index) < hours_length); i++) {
+        if (p->get(i/resolution_mul)->asInt() > price) {
+            last_changed_index = i - start_index;
+            hours[last_changed_index] = false;
+        }
+    }
+
+    return last_changed_index+1;
+}
+
 bool DayAheadPrices::is_start_time_cheap_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m)
 {
     bool cheap_hours[duration_15m] = {false};
