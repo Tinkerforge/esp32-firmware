@@ -453,6 +453,11 @@ def hyphenate(s, key, lang):
         print("Found HTML entity soft hyphen in translation value {}: {}".format(key, s))
         sys.exit(1)
 
+    # s could be a string or fragment function. We don't want to hyphenate the translation keys in __() calls used in those.
+    # To prevent re.split(r'\W+', s) from seeing the key components (for example in __("power_manager.automation.foo") "automation" should not be hyphenated)
+    # "escape" them with a string that is probably not used in keys but does not form a word boundary: 'ÄÖÜÄÖÜ'
+    s = re.sub(r'__\("([^"]+)"\)', lambda match: f'__("{match.group(1).replace(".", "ÄÖÜÄÖÜ")}")', s)
+
     # Replace longest words first. This prevents replacing parts of longer words.
     for word in sorted(re.split(r'\W+', s), key=lambda x: len(x), reverse=True):
         for l, r in hyphenations:
@@ -463,11 +468,15 @@ def hyphenate(s, key, lang):
             is_too_long = len(word) > HYPHENATE_THRESHOLD
             is_camel_case = re.search(r'[a-z][A-Z]', word) is not None
             is_snake_case = "_" in word
-            if is_too_long and not is_camel_case and not is_snake_case and should_be_hyphenated(word):
+            is_escaped = 'ÄÖÜÄÖÜ' in word
+            if is_too_long and not is_camel_case and not is_snake_case and not is_escaped and should_be_hyphenated(word):
                 missing_hyphenation = missing_hyphenations.setdefault(lang, [])
 
                 if word not in missing_hyphenation:
                     missing_hyphenation.append(word)
+
+    # Reverse escaping of translation keys.
+    s = re.sub(r'__\("([^"]+)"\)', lambda match: f'__("{match.group(1).replace("ÄÖÜÄÖÜ", ".")}")', s)
 
     return s
 
@@ -1287,7 +1296,7 @@ def main():
         while replacement_made:
             replacement_made = False
             for i, x in enumerate(output):
-                x = re.sub(r'__\("([^"]+)"\)', lambda match: lookup_translation(language, match), x)
+                x = re.sub(r'__\("([^"]+)"\)(?=[^\(])', lambda match: lookup_translation(language, match), x)
                 # Simplify "a" + "b" to "ab"
                 x = x.replace('" + "', '')
 
