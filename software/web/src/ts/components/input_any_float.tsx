@@ -84,6 +84,7 @@ export class InputAnyFloat extends Component<InputAnyFloatProps, InputAnyFloatSt
     }
 
     render() {
+        const id = !this.props.idContext ? useId() : useContext(this.props.idContext);
         const out_of_range = (this.props.min !== undefined && this.props.value < this.props.min)
                           || (this.props.max !== undefined && this.props.value > this.props.max);
         let invalid_feedback = undefined;
