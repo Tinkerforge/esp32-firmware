@@ -41,13 +41,15 @@ def parse_file(input_path, defines, ifs_elses):
             if m != None:
                 directive = m.group(1)
                 end = m.group(2)
-                m = re.match(r'^(include\s|define\s|undef\s|ifdef\s|if\s|else|endif)\s*(.*?)\s*$', directive)
+                m = re.match(r'^(include\s|define\s|undef\s|ifdef\s|if\s|else|endif|region|endregion)\s*(.*?)\s*$', directive)
 
                 if m == None:
                     raise Exception(f'Malformed directive at {input_path}:{i + 1}: {line_rstripped}')
 
                 verb = m.group(1).strip()
                 arguments = m.group(2)
+
+                ignore_line = False
 
                 if verb == 'include':
                     m = re.match(r'^(?:"([^"]+)"|\'([^\']+)\')$', arguments)
@@ -161,8 +163,12 @@ def parse_file(input_path, defines, ifs_elses):
                         raise Exception(f'Missing #if directive for #endif directive at {input_path}:{i + 1}: {line_rstripped}')
 
                     ifs_elses.pop()
+                elif verb == 'region' or verb == 'endregion':
+                    # //#region is a typescript feature
+                    ignore_line = True
 
-                line = remove_end(line.rstrip(), end) + f' <DontUseJavaScriptLineCommentInJSX/>{end}\n'
+                if not ignore_line:
+                    line = remove_end(line.rstrip(), end) + f' <DontUseJavaScriptLineCommentInJSX/>{end}\n'
 
             for if_else in ifs_elses:
                 if if_else.value == 0:
