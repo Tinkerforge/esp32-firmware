@@ -55,38 +55,38 @@ em100_and_et100_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh(+) Total [0.1 kWh]',
+        'name': 'kWh Positive Total [0.1 kWh]',
         'value_id': 'EnergyActiveL1Import',  # FIXME: direction?
         'start_address': 0x10,
         'value_type': 'S32LE',
         'scale_factor': 0.1,
     },
     {
-        'name': 'L1+L2+L3 kWh(+) Total [0.1 kWh]',
+        'name': 'L1+L2+L3 kWh Positive Total [0.1 kWh]',
         'value_id': 'EnergyActiveLSumImport',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
     {
-        'name': 'kvarh(+) Total [0.1 kvarh]',
+        'name': 'kvarh Positive Total [0.1 kvarh]',
         'value_id': 'EnergyReactiveL1Inductive',  # FIXME: direction?
         'start_address': 0x12,
         'value_type': 'S32LE',
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh(-) Total [0.1 kWh]',
+        'name': 'kWh Negative Total [0.1 kWh]',
         'value_id': 'EnergyActiveL1Export',  # FIXME: direction?
         'start_address': 0x20,
         'value_type': 'S32LE',
         'scale_factor': 0.1,
     },
     {
-        'name': 'L1+L2+L3 kWh(-) Total [0.1 kWh]',
+        'name': 'L1+L2+L3 kWh Negative Total [0.1 kWh]',
         'value_id': 'EnergyActiveLSumExport',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
     {
-        'name': 'kvarh(-) Total [0.1 kvarh]',
+        'name': 'kvarh Negative Total [0.1 kvarh]',
         'value_id': 'EnergyReactiveL1Capacitive',  # FIXME: direction?
         'start_address': 0x22,
         'value_type': 'S32LE',
@@ -160,38 +160,38 @@ em510_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh(+) Total [0.1 kWh]',
+        'name': 'kWh Positive Total [0.1 kWh]',
         'value_id': 'EnergyActiveL1Import',  # FIXME: direction?
         'start_address': 0x10,
         'value_type': 'S32LE',
         'scale_factor': 0.1,
     },
     {
-        'name': 'L1+L2+L3 kWh(+) Total [0.1 kWh]',
+        'name': 'L1+L2+L3 kWh Positive Total [0.1 kWh]',
         'value_id': 'EnergyActiveLSumImport',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
     {
-        'name': 'kvarh(+) Total [0.1 kvarh]',
+        'name': 'kvarh Positive Total [0.1 kvarh]',
         'value_id': 'EnergyReactiveL1Inductive',  # FIXME: direction?
         'start_address': 0x12,
         'value_type': 'S32LE',
         'scale_factor': 0.1,
     },
     {
-        'name': 'kWh(-) Total [0.1 kWh]',
+        'name': 'kWh Negative Total [0.1 kWh]',
         'value_id': 'EnergyActiveL1Export',  # FIXME: direction?
         'start_address': 0x20,
         'value_type': 'S32LE',
         'scale_factor': 0.1,
     },
     {
-        'name': 'L1+L2+L3 kWh(-) Total [0.1 kWh]',
+        'name': 'L1+L2+L3 kWh Negative Total [0.1 kWh]',
         'value_id': 'EnergyActiveLSumExport',
         'start_address': 'START_ADDRESS_VIRTUAL',
     },
     {
-        'name': 'kvarh(-) Total [0.1 kvarh]',
+        'name': 'kvarh Negative Total [0.1 kvarh]',
         'value_id': 'EnergyReactiveL1Capacitive',  # FIXME: direction?
         'start_address': 0x22,
         'value_type': 'S32LE',
@@ -435,49 +435,49 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) Total [0.1 kWh]',
+                'name': 'kWh Positive Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
                 'start_address': 0x3E,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(+) Total [0.1 kvarh]',
+                'name': 'kvarh Positive Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
                 'start_address': 0x40,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L1 [0.1 kWh]',
+                'name': 'kWh Positive L1 [0.1 kWh]',
                 'value_id': 'EnergyActiveL1Import',  # FIXME: direction?
                 'start_address': 0x46,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L2 [0.1 kWh]',
+                'name': 'kWh Positive L2 [0.1 kWh]',
                 'value_id': 'EnergyActiveL2Import',  # FIXME: direction?
                 'start_address': 0x48,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L3 [0.1 kWh]',
+                'name': 'kWh Positive L3 [0.1 kWh]',
                 'value_id': 'EnergyActiveL3Import',  # FIXME: direction?
                 'start_address': 0x4A,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(-) Total [0.1 kWh]',
+                'name': 'kWh Negative Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
                 'start_address': 0x5C,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(-) Total [0.1 kvarh]',
+                'name': 'kvarh Negative Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumCapacitive',  # FIXME: direction?
                 'start_address': 0x5E,
                 'value_type': 'S32LE',
@@ -690,49 +690,49 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) Total [0.1 kWh]',
+                'name': 'kWh Positive Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
                 'start_address': 0x34,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(+) Total [0.1 kvarh]',
+                'name': 'kvarh Positive Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
                 'start_address': 0x36,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L1 [0.1 kWh]',
+                'name': 'kWh Positive L1 [0.1 kWh]',
                 'value_id': 'EnergyActiveL1Import',  # FIXME: direction?
                 'start_address': 0x40,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L2 [0.1 kWh]',
+                'name': 'kWh Positive L2 [0.1 kWh]',
                 'value_id': 'EnergyActiveL2Import',  # FIXME: direction?
                 'start_address': 0x42,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L3 [0.1 kWh]',
+                'name': 'kWh Positive L3 [0.1 kWh]',
                 'value_id': 'EnergyActiveL3Import',  # FIXME: direction?
                 'start_address': 0x44,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(-) Total [0.1 kWh]',
+                'name': 'kWh Negative Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
                 'start_address': 0x4E,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(-) Total [0.1 kvarh]',
+                'name': 'kvarh Negative Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumCapacitive',  # FIXME: direction?
                 'start_address': 0x50,
                 'value_type': 'S32LE',
@@ -956,21 +956,21 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) Total [0.1 kWh]',
+                'name': 'kWh Positive Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
                 'start_address': 0x34,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(+) Total [0.1 kvarh]',
+                'name': 'kvarh Positive Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
                 'start_address': 0x36,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(-) Total [0.1 kWh]',
+                'name': 'kWh Negative Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
                 'start_address': 0x4E,
                 'value_type': 'S32LE',
@@ -1067,14 +1067,14 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) Total [0.1 kWh]',
+                'name': 'kWh Positive Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
                 'start_address': 0x18,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(+) Total [0.1 kvarh]',
+                'name': 'kvarh Positive Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
                 'start_address': 0x1A,
                 'value_type': 'S32LE',
@@ -1157,35 +1157,35 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) Total [0.1 kWh]',
+                'name': 'kWh Positive Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
                 'start_address': 0x011E,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(+) Total [0.1 kvarh]',
+                'name': 'kvarh Positive Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
                 'start_address': 0x0120,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L1 [0.1 kWh]',
+                'name': 'kWh Positive L1 [0.1 kWh]',
                 'value_id': 'EnergyActiveL1Import',  # FIXME: direction?
                 'start_address': 0x012A,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L2 [0.1 kWh]',
+                'name': 'kWh Positive L2 [0.1 kWh]',
                 'value_id': 'EnergyActiveL2Import',  # FIXME: direction?
                 'start_address': 0x012C,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L3 [0.1 kWh]',
+                'name': 'kWh Positive L3 [0.1 kWh]',
                 'value_id': 'EnergyActiveL3Import',  # FIXME: direction?
                 'start_address': 0x012E,
                 'value_type': 'S32LE',
@@ -1309,35 +1309,35 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) Total [0.1 kWh]',
+                'name': 'kWh Positive Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
                 'start_address': 0x021E,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(+) Total [0.1 kvarh]',
+                'name': 'kvarh Positive Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
                 'start_address': 0x0220,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L1 [0.1 kWh]',
+                'name': 'kWh Positive L1 [0.1 kWh]',
                 'value_id': 'EnergyActiveL1Import',  # FIXME: direction?
                 'start_address': 0x022A,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L2 [0.1 kWh]',
+                'name': 'kWh Positive L2 [0.1 kWh]',
                 'value_id': 'EnergyActiveL2Import',  # FIXME: direction?
                 'start_address': 0x022C,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L3 [0.1 kWh]',
+                'name': 'kWh Positive L3 [0.1 kWh]',
                 'value_id': 'EnergyActiveL3Import',  # FIXME: direction?
                 'start_address': 0x022E,
                 'value_type': 'S32LE',
@@ -1594,49 +1594,49 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) Total [0.1 kWh]',
+                'name': 'kWh Positive Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
                 'start_address': 0x34,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(+) Total [0.1 kvarh]',
+                'name': 'kvarh Positive Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
                 'start_address': 0x36,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L1 [0.1 kWh]',
+                'name': 'kWh Positive L1 [0.1 kWh]',
                 'value_id': 'EnergyActiveL1Import',  # FIXME: direction?
                 'start_address': 0x40,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L2 [0.1 kWh]',
+                'name': 'kWh Positive L2 [0.1 kWh]',
                 'value_id': 'EnergyActiveL2Import',  # FIXME: direction?
                 'start_address': 0x42,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L3 [0.1 kWh]',
+                'name': 'kWh Positive L3 [0.1 kWh]',
                 'value_id': 'EnergyActiveL3Import',  # FIXME: direction?
                 'start_address': 0x44,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(-) Total [0.1 kWh]',
+                'name': 'kWh Negative Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
                 'start_address': 0x4E,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(-) Total [0.1 kvarh]',
+                'name': 'kvarh Negative Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumCapacitive',  # FIXME: direction?
                 'start_address': 0x50,
                 'value_type': 'S32LE',
@@ -1845,70 +1845,70 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) Total [0.1 kWh]',
+                'name': 'kWh Positive Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
                 'start_address': 0x34,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(+) Total [0.1 kvarh]',
+                'name': 'kvarh Positive Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
                 'start_address': 0x36,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L1 [0.1 kWh]',
+                'name': 'kWh Positive L1 [0.1 kWh]',
                 'value_id': 'EnergyActiveL1Import',  # FIXME: direction?
                 'start_address': 0x40,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L2 [0.1 kWh]',
+                'name': 'kWh Positive L2 [0.1 kWh]',
                 'value_id': 'EnergyActiveL2Import',  # FIXME: direction?
                 'start_address': 0x42,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L3 [0.1 kWh]',
+                'name': 'kWh Positive L3 [0.1 kWh]',
                 'value_id': 'EnergyActiveL3Import',  # FIXME: direction?
                 'start_address': 0x44,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(-) Total [0.1 kWh]',
+                'name': 'kWh Negative Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
                 'start_address': 0x4E,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(-) Total [0.1 kvarh]',
+                'name': 'kvarh Negative Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumCapacitive',  # FIXME: direction?
                 'start_address': 0x50,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(-) L1 [0.1 kWh]',
+                'name': 'kWh Negative L1 [0.1 kWh]',
                 'value_id': 'EnergyActiveL1Export',  # FIXME: direction?
                 'start_address': 0x60,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(-) L2 [0.1 kWh]',
+                'name': 'kWh Negative L2 [0.1 kWh]',
                 'value_id': 'EnergyActiveL2Export',  # FIXME: direction?
                 'start_address': 0x62,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(-) L3 [0.1 kWh]',
+                'name': 'kWh Negative L3 [0.1 kWh]',
                 'value_id': 'EnergyActiveL3Export',  # FIXME: direction?
                 'start_address': 0x64,
                 'value_type': 'S32LE',
@@ -2132,49 +2132,49 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) Total [0.1 kWh]',
+                'name': 'kWh Positive Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
                 'start_address': 0x34,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(+) Total [0.1 kvarh]',
+                'name': 'kvarh Positive Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
                 'start_address': 0x36,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L1 [0.1 kWh]',
+                'name': 'kWh Positive L1 [0.1 kWh]',
                 'value_id': 'EnergyActiveL1Import',  # FIXME: direction?
                 'start_address': 0x40,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L2 [0.1 kWh]',
+                'name': 'kWh Positive L2 [0.1 kWh]',
                 'value_id': 'EnergyActiveL2Import',  # FIXME: direction?
                 'start_address': 0x42,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(+) L3 [0.1 kWh]',
+                'name': 'kWh Positive L3 [0.1 kWh]',
                 'value_id': 'EnergyActiveL3Import',  # FIXME: direction?
                 'start_address': 0x44,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kWh(-) Total [0.1 kWh]',
+                'name': 'kWh Negative Total [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
                 'start_address': 0x4E,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'kvarh(-) Total [0.1 kvarh]',
+                'name': 'kvarh Negative Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumCapacitive',  # FIXME: direction?
                 'start_address': 0x50,
                 'value_type': 'S32LE',
