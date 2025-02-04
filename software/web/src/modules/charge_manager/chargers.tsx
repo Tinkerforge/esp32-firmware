@@ -473,7 +473,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                             <ListGroupItem key={c.hostname}
                                                         action type="button"
                                                         onClick={c.error != 0 ? undefined : () => {
-                                                            this.setState({addCharger: {host: c.hostname + ".local", name: c.display_name, rot: CMPhaseRotation.Unknown}})
+                                                            this.setState({addCharger: {host: c.hostname + ".local", name: c.display_name, rot: -1}})
                                                         }}
                                                         style={c.error == 0 ? "" : "cursor: default; background-color: #eeeeee !important;"}>
                                                 <div class="d-flex w-100 justify-content-between">
