@@ -53,6 +53,7 @@ let x = {
             "virtual_meter_battery": "Speicher",
             "virtual_meter_load": "Last",
             "virtual_meter_backup_load": "Backup-Last",
+            "virtual_meter_pv": "PV",
             "virtual_meter_meter": "Zähler",
             "virtual_meter_current_transformer_1": "Stromwandler 1",
             "virtual_meter_current_transformer_2": "Stromwandler 2",

@@ -78,7 +78,8 @@ let x = {
             "location_inverter": "Wechselrichter",
             "location_grid": "Netzanschluss",
             "location_battery": "Speicher",
-            "location_load": "Last"
+            "location_load": "Last",
+            "location_pv": "PV"
         },
         "automation": {
             "meter_reset": "Stromzähler zurücksetzen",

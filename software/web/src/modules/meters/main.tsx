@@ -90,6 +90,10 @@ export function get_meter_power_index(value_ids: Readonly<number[]>) {
 
             if (idx < 0) {
                 idx = value_ids.indexOf(MeterValueID.PowerDCChaDisDiff);
+
+                if (idx < 0) {
+                    idx = value_ids.indexOf(MeterValueID.PowerPVSum);
+                }
             }
         }
     }
@@ -787,7 +791,21 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                                     }
                                                     else {
                                                         energy_export = values_by_id[MeterValueID.EnergyDCDischarge];
-                                                        highlighted_value_ids.push(MeterValueID.EnergyDCDischarge);
+
+                                                        if (util.hasValue(energy_export)) {
+                                                            highlighted_value_ids.push(MeterValueID.EnergyDCDischarge);
+                                                        }
+                                                        else {
+                                                            energy_export = values_by_id[MeterValueID.EnergyPVSumResettable];
+
+                                                            if (util.hasValue(energy_export)) {
+                                                                highlighted_value_ids.push(MeterValueID.EnergyPVSumResettable);
+                                                            }
+                                                            else {
+                                                                energy_export = values_by_id[MeterValueID.EnergyPVSum];
+                                                                highlighted_value_ids.push(MeterValueID.EnergyPVSum);
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -1156,25 +1174,25 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
     uplot_wrapper_ref = createRef();
     power_sum_interval_id: number = null;
     power_sum_ref: {[key: string]: RefObject<HTMLDivElement>} = {
-        inverter: createRef(),
+        pv: createRef(),
         grid: createRef(),
         battery: createRef(),
         load: createRef(),
     };
     power_sum_widths: {[key: string]: number[]} = {
-        inverter: [0],
+        pv: [0],
         grid: [0],
         battery: [0],
         load: [0],
     };
     power_sum_min_width_locked: {[key: string]: boolean} = {
-        inverter: false,
+        pv: false,
         grid: false,
         battery: false,
         load: false,
     };
     power_sum_min_width_unlock_timeout_id: {[key: string]: number} = {
-        inverter: null,
+        pv: null,
         grid: null,
         battery: null,
         load: null,
@@ -1187,7 +1205,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             status_meter_slot: 0,
             meter_configs: {},
             power_sum_min_width:  {
-                inverter: 0,
+                pv: 0,
                 grid: 0,
                 battery: 0,
                 load: 0,
@@ -1226,7 +1244,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             let unlock_timeout = 5;
             let power_sum_min_width = this.state.power_sum_min_width;
 
-            for (let key of ["inverter", "grid", "battery", "load"]) {
+            for (let key of ["pv", "grid", "battery", "load"]) {
                 if (this.power_sum_ref[key].current) {
                     let power_sum_width = parseFloat(getComputedStyle(this.power_sum_ref[key].current).width);
 
@@ -1347,7 +1365,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         }
 
         if (API.hasFeature("energy_manager")) {
-            let inverter_powers: number [] = [];
+            let pv_powers: number [] = [];
             let grid_powers: number[] = [];
             let battery_powers: number[] = [];
             let battery_socs: number[] = [];
@@ -1362,7 +1380,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                     let power = values[power_idx];
 
                     switch (location) {
-                    case MeterLocation.Inverter: inverter_powers.push(power); break;
+                    case MeterLocation.PV: pv_powers.push(power); break;
                     case MeterLocation.Grid: grid_powers.push(power); break;
                     case MeterLocation.Battery: battery_powers.push(power); break;
                     }
@@ -1389,28 +1407,28 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                 return non_null_values.reduce((x, y) => x + y, 0);
             }
 
-            let inverter_power_sum = sum_or_null(inverter_powers);
+            let pv_power_sum = sum_or_null(pv_powers);
             let grid_power_sum = sum_or_null(grid_powers);
             let battery_power_sum = sum_or_null(battery_powers);
             let battery_soc_avg = battery_socs.length > 0 ? sum_or_null(battery_socs) / battery_socs.length : null;
             let load_power_sum = null;
 
-            if (inverter_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null) {
-                load_power_sum = grid_power_sum - inverter_power_sum - battery_power_sum;
+            if (pv_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null) {
+                load_power_sum = grid_power_sum - pv_power_sum - battery_power_sum;
             }
 
-            if (inverter_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null || battery_soc_avg !== null || load_power_sum !== null) {
+            if (pv_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null || battery_soc_avg !== null || load_power_sum !== null) {
                 children.push(
                     <FormRow label={__("meters.status.power_sums")}>
                         <ListGroup>
                             <ListGroupItem>
                                 <div class="px-2">
                                     <div class="row align-items-center justify-content-between mb-n2">
-                                        {inverter_power_sum !== null ?
+                                        {pv_power_sum !== null ?
                                             <div class="col-auto px-2 mb-2 text-nowrap">
                                                 <div class="meters-status-power-sums-icon pr-2"><Sun/></div>
-                                                <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width.inverter + "px;"}>
-                                                    <div ref={this.power_sum_ref.inverter} class="meters-status-power-sums-text-main">{util.toLocaleFixed(inverter_power_sum)} W</div>
+                                                <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width.pv + "px;"}>
+                                                    <div ref={this.power_sum_ref.pv} class="meters-status-power-sums-text-main">{util.toLocaleFixed(pv_power_sum)} W</div>
                                                 </div>
                                             </div> : undefined}
                                         {grid_power_sum !== null ?

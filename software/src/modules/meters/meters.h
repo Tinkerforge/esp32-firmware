@@ -172,4 +172,9 @@ private:
 #endif
 };
 
-extern uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id);
+extern uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, std::initializer_list<MeterValueID> ids);
+
+inline uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, MeterValueID id)
+{
+    return meters_find_id_index(value_ids, value_id_count, {id});
+}
