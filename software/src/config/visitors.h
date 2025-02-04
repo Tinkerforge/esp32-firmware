@@ -247,7 +247,7 @@ static size_t estimate_chars_per_uint(uint32_t v)
 {
 #if !defined(__XTENSA_EL__) || __XTENSA_EL__ != 1
     // __builtin_clz(v) is undefined for v == 0. Set the lowest bit to work around that.
-    // The workaround is not neccessary on Xtensa, which uses the NSAU instruction that handles 0 correctly.
+    // The workaround is not necessary on Xtensa, which uses the NSAU instruction that handles 0 correctly.
     v |= 1;
 #endif
 
@@ -264,7 +264,7 @@ static size_t estimate_chars_per_int(int32_t v)
 
 #if !defined(__XTENSA_EL__) || __XTENSA_EL__ != 1
     // __builtin_clz(v) is undefined for v == 0. Set the lowest bit to work around that.
-    // The workaround is not neccessary on Xtensa, which uses the NSAU instruction that handles 0 correctly.
+    // The workaround is not necessary on Xtensa, which uses the NSAU instruction that handles 0 correctly.
     v |= 1;
 #endif
 

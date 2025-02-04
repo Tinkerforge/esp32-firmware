@@ -288,7 +288,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
         return <StatusSection name="em_energy_analysis">
             <FormRow label={__("em_energy_analysis.status.power_history")}>
                 <div class="card pl-1 pb-1">
-                    <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                    <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader ref={this.uplot_loader_ref}
                                         show={true}
                                         marker_class={'h4'}
@@ -2353,7 +2353,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     : <InputMonth date={this.state.current_daily_date} onDate={(date) => this.set_current_daily_date(date)} buttons="month" style="width: 11rem">{data_select}</InputMonth>}
                 </PageHeader>
 
-                <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                     <UplotLoader ref={this.uplot_loader_5min_ref}
                                     show={true}
                                     marker_class="h3"

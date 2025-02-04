@@ -643,7 +643,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                 : undefined}
 
                 <div hidden={!show_plot}>
-                    <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                    <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader ref={this.uplot_loader_live_ref}
                                         show={false}
                                         marker_class={'h3'}
@@ -1210,7 +1210,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             <StatusSection name="meters">
                 <FormRow label={__("meters.status.power_history")}>
                     <div class="card pl-1 pb-1">
-                        <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                        <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                             <UplotLoader ref={this.uplot_loader_ref}
                                         show={true}
                                         marker_class="h4"

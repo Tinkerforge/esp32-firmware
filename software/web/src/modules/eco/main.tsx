@@ -300,7 +300,7 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
     }
 
     render(props: {}) {
-        return <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+        return <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
             <UplotLoader
                 ref={this.uplot_loader_ref}
                 show={true}

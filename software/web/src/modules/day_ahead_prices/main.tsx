@@ -381,7 +381,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     </div>
                 </FormRow>
                 <div>
-                    <div style="position: relative;"> {/* this plain div is neccessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                    <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader
                             ref={this.uplot_loader_ref}
                             show={true}
