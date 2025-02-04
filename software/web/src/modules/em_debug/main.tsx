@@ -67,13 +67,13 @@ export class EMDebug extends Component {
 
                 <FormSeparator heading={__("em_debug.content.internal_state")} />
                 <FormRow label="power at meter smooth">
-                    <OutputFloat value={pm_ll_state.power_at_meter} digits={3} scale={3} unit={'kW'} />
+                    <OutputFloat value={pm_ll_state.power_at_meter} digits={3} scale={3} unit="kW" />
                 </FormRow>
                 <FormRow label="power available">
-                    <OutputFloat value={pm_ll_state.power_available} digits={3} scale={3} unit={'kW'} />
+                    <OutputFloat value={pm_ll_state.power_available} digits={3} scale={3} unit="kW" />
                 </FormRow>
                 <FormRow label="max current limited">
-                    <OutputFloat value={pm_ll_state.max_current_limited} digits={3} scale={3} unit={'A'} />
+                    <OutputFloat value={pm_ll_state.max_current_limited} digits={3} scale={3} unit="A" />
                 </FormRow>
                 <FormRow label="is 3phase">
                     <IndicatorGroup
@@ -94,7 +94,7 @@ export class EMDebug extends Component {
                 </FormRow>
 
                 <FormRow label={__("em_debug.content.state_input_voltage")}>
-                    <OutputFloat value={ll_state.input_voltage} digits={3} scale={3} unit={'V'} />
+                    <OutputFloat value={ll_state.input_voltage} digits={3} scale={3} unit="V" />
                 </FormRow>
 
                 {ll_state_v1 ?

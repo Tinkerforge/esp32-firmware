@@ -484,7 +484,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                     x_format={{hour: '2-digit', minute: '2-digit'}}
                                     x_padding_factor={0}
                                     x_include_date={true}
-                                    y_unit={"ct/kWh"}
+                                    y_unit="ct/kWh"
                                     y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
                                     y_digits={3}
                                     only_show_visible={true}

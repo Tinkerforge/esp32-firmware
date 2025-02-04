@@ -152,7 +152,7 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                         <SwitchableInputNumber
                             switch_label_active={__("eco.content.active")}
                             switch_label_inactive={__("eco.content.inactive")}
-                            unit={"kWh/Tag"}
+                            unit="kWh/d"
                             checked={state.yield_forecast}
                             onClick={this.toggle('yield_forecast')}
                             value={state.yield_forecast_threshold}
@@ -322,8 +322,8 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
                     x_format={{hour: '2-digit', minute: '2-digit'}}
                     x_padding_factor={0}
                     x_include_date={true}
-                    y_unit={"ct/kWh"}
-                    y_label={"ct/kWh"}
+                    y_unit="ct/kWh"
+                    y_label="ct/kWh"
                     y_digits={3}
                     y_three_split={true}
                     only_show_visible={true}

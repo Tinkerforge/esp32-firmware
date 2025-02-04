@@ -340,13 +340,13 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     </FormRow>
                     <FormSeparator heading={__("day_ahead_prices.content.extra_costs")} help={__("day_ahead_prices.content.extra_costs_help")}/>
                     <FormRow label={__("day_ahead_prices.content.vat")} label_muted={__("day_ahead_prices.content.optional_muted")}>
-                        <InputFloat value={dap.vat} onValue={(v) => {this.setState({vat: v}, function() {this.update_uplot()})}} digits={2} unit={'%'} max={10000} min={0}/>
+                        <InputFloat value={dap.vat} onValue={(v) => {this.setState({vat: v}, function() {this.update_uplot()})}} digits={2} unit="%" max={10000} min={0}/>
                     </FormRow>
                     <FormRow label={__("day_ahead_prices.content.grid_fees_and_taxes")} label_muted={__("day_ahead_prices.content.optional_muted")}>
-                        <InputFloat value={dap.grid_costs_and_taxes} onValue={(v) => {this.setState({grid_costs_and_taxes: v}, function() {this.update_uplot()})}} digits={3} unit={'ct/kWh'} max={99000} min={0}/>
+                        <InputFloat value={dap.grid_costs_and_taxes} onValue={(v) => {this.setState({grid_costs_and_taxes: v}, function() {this.update_uplot()})}} digits={3} unit="ct/kWh" max={99000} min={0}/>
                     </FormRow>
                     <FormRow label={__("day_ahead_prices.content.electricity_provider_surcharge")} label_muted={__("day_ahead_prices.content.optional_muted")}>
-                        <InputFloat value={dap.supplier_markup} onValue={(v) => {this.setState({supplier_markup: v}, function() {this.update_uplot()})}} digits={3} unit={'ct/kWh'} max={99000} min={0}/>
+                        <InputFloat value={dap.supplier_markup} onValue={(v) => {this.setState({supplier_markup: v}, function() {this.update_uplot()})}} digits={3} unit="ct/kWh" max={99000} min={0}/>
                     </FormRow>
                     <FormRow label={__("day_ahead_prices.content.electricity_provider_base_fee")} label_muted={__("day_ahead_prices.content.optional_muted")}>
                         <InputFloat value={dap.supplier_base_fee} onValue={this.set('supplier_base_fee')} digits={2} unit={__("day_ahead_prices.content.euro_divided_by_month")} max={99000} min={0}/>
@@ -399,7 +399,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 x_padding_factor={0}
                                 x_include_date={true}
                                 y_min={0}
-                                y_unit={"ct/kWh"}
+                                y_unit="ct/kWh"
                                 y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
                                 y_digits={3}
                                 only_show_visible={true}

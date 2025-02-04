@@ -544,7 +544,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                 x_padding_factor={0}
                                 x_include_date={true}
                                 y_min={0}
-                                y_unit={"W"}
+                                y_unit="W"
                                 y_label={__("solar_forecast.script.power") + " [W]"}
                                 y_digits={2}
                                 only_show_visible={true}

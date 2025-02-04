@@ -50,15 +50,15 @@ function Charger (props: {i: number,
             <Card.Header as="h5">{`${props.i} - ${props.state.n} (${props.state.u})`}</Card.Header>
             <Card.Body>
                 <FormRow label="State">
-                    <CMDCardOutFloat value={props.state.s} digits={0} scale={0} unit={''}/>
+                    <CMDCardOutFloat value={props.state.s} digits={0} scale={0} unit=""/>
                 </FormRow>
 
                 <FormRow label="Error">
-                    <CMDCardOutFloat value={props.state.e} digits={0} scale={0} unit={''}/>
+                    <CMDCardOutFloat value={props.state.e} digits={0} scale={0} unit=""/>
                 </FormRow>
 
                 <FormRow label="Flags">
-                    <CMDCardOutFloat value={props.ll_state.b} digits={0} scale={0} unit={''}/>
+                    <CMDCardOutFloat value={props.ll_state.b} digits={0} scale={0} unit=""/>
                 </FormRow>
 
                 <FormRow label="Allocated">
@@ -70,11 +70,11 @@ function Charger (props: {i: number,
                 </FormRow>
 
                 <FormRow label="Requested">
-                    <CMDCardOutFloat value={props.ll_state.rc} digits={3} scale={3} unit={'A'}/>
+                    <CMDCardOutFloat value={props.ll_state.rc} digits={3} scale={3} unit="A"/>
                 </FormRow>
 
                 <FormRow label="Alloc'd energy">
-                    <CMDCardOutFloat value={props.ll_state.ae} digits={3} scale={3} unit={'kWh'}/>
+                    <CMDCardOutFloat value={props.ll_state.ae} digits={3} scale={3} unit="kWh"/>
                 </FormRow>
 
                 <FormRow label="Last switch">

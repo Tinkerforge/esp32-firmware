@@ -316,7 +316,7 @@ export class EMEnergyAnalysisStatus extends Component<{}, EMEnergyAnalysisStatus
                                             x_include_date={false}
                                             y_min={0}
                                             y_max={1500}
-                                            y_unit={"W"}
+                                            y_unit="W"
                                             y_label={__("em_energy_analysis.script.power") + " [W]"}
                                             y_digits={0}
                                             padding={[null, 15, null, 5]} />
@@ -2387,7 +2387,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         x_include_date={false}
                                         y_min={0}
                                         y_max={100}
-                                        y_unit={"W"}
+                                        y_unit="W"
                                         y_label={__("em_energy_analysis.script.power") + " [W]"}
                                         y_digits={0}
                                         y_skip_upper={true}
@@ -2395,7 +2395,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         y2_enable={true}
                                         y2_min={-2}
                                         y2_max={8}
-                                        y2_unit={"ct/kWh"}
+                                        y2_unit="ct/kWh"
                                         y2_label={__("em_energy_analysis.script.price") + " [ct/kWh]"}
                                         y2_digits={3}
                                         y2_skip_upper={true}
@@ -2425,13 +2425,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                                         x_include_date={false}
                                         y_min={0}
                                         y_max={10}
-                                        y_unit={"kWh"}
+                                        y_unit="kWh"
                                         y_label={__("em_energy_analysis.script.energy") + " [kWh]"}
                                         y_digits={2}
                                         y2_enable={true}
                                         y2_min={-1}
                                         y2_max={9}
-                                        y2_unit={"ct/kWh"}
+                                        y2_unit="ct/kWh"
                                         y2_label={__("em_energy_analysis.script.price") + " [ct/kWh]"}
                                         y2_digits={0}
                                         padding={[null, 5, null, null]} />

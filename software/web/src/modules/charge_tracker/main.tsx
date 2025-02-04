@@ -307,7 +307,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             <SubPage name="charge_tracker">
                 <ConfigForm id="charge_tracker_config_form" title={__("charge_tracker.content.charge_tracker")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("charge_tracker.content.price")}>
-                        <InputFloat class={state.electricity_price == 0 || state.electricity_price >= 100 ? "" : "is-invalid"} value={state.electricity_price} onValue={this.set('electricity_price')} digits={2} unit={'ct/kWh'} max={65535} min={0}/>
+                        <InputFloat class={state.electricity_price == 0 || state.electricity_price >= 100 ? "" : "is-invalid"} value={state.electricity_price} onValue={this.set('electricity_price')} digits={2} unit="ct/kWh" max={65535} min={0}/>
                         <div class="invalid-feedback">{__("charge_tracker.content.price_invalid")}</div>
                     </FormRow>
                 </ConfigForm>
