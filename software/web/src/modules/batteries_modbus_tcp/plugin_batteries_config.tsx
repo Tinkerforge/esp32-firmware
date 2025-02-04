@@ -27,7 +27,7 @@ import { BatteryConfig } from "../batteries/types";
 import { BatteryModbusTCPTableID } from "./battery_modbus_tcp_table_id.enum";
 import { ModbusRegisterType } from "../modbus_tcp_client/modbus_register_type.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
-import { InputText } from "../../ts/components/input_text";
+import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
 import { InputSelect } from "../../ts/components/input_select";
@@ -242,7 +242,7 @@ export function init() {
                             }} />
                     </FormRow>,
                     <FormRow label={__("batteries_modbus_tcp.content.host")}>
-                        <InputText
+                        <InputTextPatterned
                             required
                             maxLength={64}
                             pattern="^[a-zA-Z0-9\-\.]+$"
