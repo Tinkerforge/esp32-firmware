@@ -100,13 +100,6 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
                             onClick={this.toggle('enable')}
                         />
                     </FormRow>
-                    <FormRow label={__("eco.content.mode_after")} help={__("eco.content.mode_after_help")}>
-                        <InputSelect
-                            items={mode_list}
-                            value={state.mode_after}
-                            onValue={(v) => this.setState({mode_after: parseInt(v)})}
-                        />
-                    </FormRow>
                     <FormRow label={__("eco.content.park_time")} help={__("eco.content.park_time_help")}>
                         <SwitchableInputNumber
                             switch_label_active={__("eco.content.active")}

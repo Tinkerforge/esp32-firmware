@@ -47,7 +47,6 @@ void Eco::pre_setup()
 
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
-        {"mode_after", Config::Uint(3, 0, 3)},
         {"park_time", Config::Bool(false)},
         {"park_time_duration", Config::Uint(8)}, // in hours
         {"charge_below", Config::Bool(false)},

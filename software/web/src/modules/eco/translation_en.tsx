@@ -17,7 +17,6 @@ let x = {
             "eco": "Eco Mode",
             "charge_plan_enable": "TODO",
             "charge_plan_enable_desc": "TODO",
-            "mode_after": "TODO",
             "park_time": "TODO",
             "charge_below": "TODO",
             "block_above": "TODO",
@@ -31,11 +30,6 @@ let x = {
             "charge_plan_enable_help": <>
                 <p>If the charge plan is enabled, a configurable charge plan is shown on the status page.</p>
                 <p>With the help of the charging plan as well as day ahead prices and an optional solar forecast, the charging of electric cars can be optimized.</p>
-            </>,
-            "mode_after_help": <>
-                <p>Specifies which mode to switch to when the charge plan has expired.</p>
-                <p>Example: The charge plan is configured to 'Use the cheapest <b>4 hours</b> until <b>Tomorrow at 08:00</b>' and the mode after the charge plan has expired is set to 'PV'. In this case, the charge plan would be executed and <b>from tomorrow 08:00</b> the mode would be switched to <b>PV</b>. After that, only PV excess charging is possible (until a new charge plan is set).</p>
-                <p>If the charge plan is configured to 'Daily' this setting does not apply.</p>
             </>,
             "park_time_help": <>
                 <p>Specifies the maximum parking time of a vehicle.</p>

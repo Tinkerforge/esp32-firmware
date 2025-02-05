@@ -6,7 +6,6 @@ interface ChargerState {
 
 export interface config {
     enable: boolean;
-    mode_after: number;
     park_time: boolean;
     park_time_duration: number;
     charge_below: boolean;
