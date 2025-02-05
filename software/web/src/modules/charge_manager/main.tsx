@@ -32,7 +32,7 @@ import { CheckCircle, Circle, Server, Sliders } from "react-feather";
 //#if MODULE_ECO_AVAILABLE
 import { EcoChart } from "modules/eco/main";
 //#endif
-import { ButtonGroup, Button } from "react-bootstrap";
+import { ButtonGroup, Button, Collapse } from "react-bootstrap";
 
 import { ConfigChargeMode } from "./config_charge_mode.enum";
 
@@ -165,8 +165,6 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 //#if MODULE_ECO_AVAILABLE
         let cm_eco = API.get("power_manager/charge_mode").mode >= ConfigChargeMode.Eco && API.get("power_manager/charge_mode").mode <= ConfigChargeMode.EcoMinPV;
         let show_eco_chart = cm_eco && API.get("eco/config").enable && API.get("eco/charge_plan").enable;
-//#else
-        let show_eco_chart = false;
 //#endif
 
         let cards = state.state.chargers.map((c, i) => {
@@ -214,11 +212,13 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                         </h5>
                         <div class={"card-body " + c_body_classes}>
                             <h5 class="card-title">{c_state}</h5>
-                            <p class={"card-text" + (!show_eco_chart ? " mb-0" : "")}>{c_info}</p>
+                            <span class="card-text">{c_info}</span>
 {/*#if MODULE_ECO_AVAILABLE*/}
-                            <div hidden={!show_eco_chart}>
-                                <EcoChart charger_id={i} />
-                            </div>
+                            <Collapse in={show_eco_chart}>
+                                <div><div class="mt-3">
+                                    <EcoChart charger_id={i} />
+                                </div></div>
+                            </Collapse>
 {/*#endif*/}
                         </div>
                         <div class="card-footer">
