@@ -92,7 +92,7 @@ export function get_meter_power_index(value_ids: Readonly<number[]>) {
                 idx = value_ids.indexOf(MeterValueID.PowerDCChaDisDiff);
 
                 if (idx < 0) {
-                    idx = value_ids.indexOf(MeterValueID.PowerPVSum);
+                    idx = value_ids.indexOf(MeterValueID.PowerPVSumImExDiff);
                 }
             }
         }
@@ -796,14 +796,14 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                                             highlighted_value_ids.push(MeterValueID.EnergyDCDischarge);
                                                         }
                                                         else {
-                                                            energy_export = values_by_id[MeterValueID.EnergyPVSumResettable];
+                                                            energy_export = values_by_id[MeterValueID.EnergyPVSumExportResettable];
 
                                                             if (util.hasValue(energy_export)) {
-                                                                highlighted_value_ids.push(MeterValueID.EnergyPVSumResettable);
+                                                                highlighted_value_ids.push(MeterValueID.EnergyPVSumExportResettable);
                                                             }
                                                             else {
-                                                                energy_export = values_by_id[MeterValueID.EnergyPVSum];
-                                                                highlighted_value_ids.push(MeterValueID.EnergyPVSum);
+                                                                energy_export = values_by_id[MeterValueID.EnergyPVSumExport];
+                                                                highlighted_value_ids.push(MeterValueID.EnergyPVSumExport);
                                                             }
                                                         }
                                                     }
