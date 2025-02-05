@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "module_available.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, Component, RefObject } from "preact";
@@ -303,10 +305,22 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         if (!util.render_allowed())
             return <SubPage name="charge_tracker" />;
 
+        // TODO show hint that day ahead prices are not used here!
+
+//#if MODULE_POWER_MANAGER_AVAILABLE
+        let pv_enabled = false;
+//#endif
+        pv_enabled = API.get('power_manager/config').excess_charging_enable;
+
+        let dap_enabled = false;
+//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
+        dap_enabled = API.get('day_ahead_prices/config').enable;
+//#endif
+
         return (
             <SubPage name="charge_tracker">
                 <ConfigForm id="charge_tracker_config_form" title={__("charge_tracker.content.charge_tracker")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <FormRow label={__("charge_tracker.content.price")}>
+                    <FormRow label={__("charge_tracker.content.price")} warning={__("charge_tracker.content.price_not_dynamic_yet")(dap_enabled, pv_enabled)} show_warning={true}>
                         <InputFloat class={state.electricity_price == 0 || state.electricity_price >= 100 ? "" : "is-invalid"} value={state.electricity_price} onValue={this.set('electricity_price')} digits={2} unit="ct/kWh" max={65535} min={0}/>
                         <div class="invalid-feedback">{__("charge_tracker.content.price_invalid")}</div>
                     </FormRow>
