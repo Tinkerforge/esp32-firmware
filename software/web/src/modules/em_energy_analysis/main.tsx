@@ -566,13 +566,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         }
                     }
 
-                    let inverter_power_sum = data.power_sum[MeterLocation.Inverter][timestamp_slot];
+                    let pv_power_sum = data.power_sum[MeterLocation.PV][timestamp_slot];
                     let grid_power_sum = data.power_sum[MeterLocation.Grid][timestamp_slot];
                     let battery_power_sum = data.power_sum[MeterLocation.Battery][timestamp_slot];
                     let load_power_sum = null;
 
-                    if (inverter_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null) {
-                        load_power_sum = grid_power_sum - inverter_power_sum - battery_power_sum;
+                    if (pv_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null) {
+                        load_power_sum = grid_power_sum - pv_power_sum - battery_power_sum;
                     }
 
                     data.power_sum[MeterLocation.Load][timestamp_slot] = load_power_sum;
@@ -1273,12 +1273,12 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         let energy_manager_data = this.energy_manager_5min_cache[key];
 
         if (energy_manager_data) {
-            if (!energy_manager_data.power_sum_empty[MeterLocation.Inverter]) {
-                timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power_sum[MeterLocation.Inverter].length);
+            if (!energy_manager_data.power_sum_empty[MeterLocation.PV]) {
+                timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power_sum[MeterLocation.PV].length);
 
-                uplot_data.keys.push('em_power_sum_inverter');
-                uplot_data.names.push(translate_meter_location(MeterLocation.Inverter));
-                uplot_data.values.push(energy_manager_data.power_sum[MeterLocation.Inverter]);
+                uplot_data.keys.push('em_power_sum_pv');
+                uplot_data.names.push(translate_meter_location(MeterLocation.PV));
+                uplot_data.values.push(energy_manager_data.power_sum[MeterLocation.PV]);
                 uplot_data.stacked.push(false);
                 uplot_data.paths.push(UplotPath.Line);
             }
@@ -1814,13 +1814,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         }
 
         for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
-            let inverter_power_sum = data.power_sum[MeterLocation.Inverter][timestamp_slot];
+            let pv_power_sum = data.power_sum[MeterLocation.PV][timestamp_slot];
             let grid_power_sum = data.power_sum[MeterLocation.Grid][timestamp_slot];
             let battery_power_sum = data.power_sum[MeterLocation.Battery][timestamp_slot];
             let load_power_sum = null;
 
-            if (inverter_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null) {
-                load_power_sum = grid_power_sum - inverter_power_sum - battery_power_sum;
+            if (pv_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null) {
+                load_power_sum = grid_power_sum - pv_power_sum - battery_power_sum;
             }
 
             data.power_sum[MeterLocation.Load][timestamp_slot] = load_power_sum;
