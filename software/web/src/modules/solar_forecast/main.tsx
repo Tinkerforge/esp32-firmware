@@ -297,7 +297,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             </FormRow>
             <FormRow label={__("solar_forecast.content.plane_config_kwp")} label_muted={__("solar_forecast.content.plane_config_kwp_muted")}>
                 <InputFloat
-                    unit="kW"
+                    unit="kWp"
                     value={this.state.plane_config_tmp.wp}
                     onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, wp: v}})}
                     digits={3}
@@ -443,7 +443,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     onSave={this.save}
                     onReset={this.reset}
                     onDirtyChange={this.setDirty}>
-                    <FormRow label={__("solar_forecast.content.enable_solar_forecast")} label_muted={__("solar_forecast.content.enable_solar_forecast_muted")}>
+                    <FormRow label={__("solar_forecast.content.enable_solar_forecast")} label_muted={__("solar_forecast.content.enable_solar_forecast_muted")(state.api_url)}>
                         <Switch desc={__("solar_forecast.content.solar_forecast_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
@@ -501,7 +501,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                         value={util.get_value_with_unit(get_kwh_now_to_midnight(), "kWh", 2)}
                     />
                 </FormRow>
-                <FormRow label={__("solar_forecast.content.solar_forecast")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
+                <FormRow label={__("solar_forecast.content.solar_forecast_days_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
                     <div class="row mx-n1">
                         <div class="col-md-6 px-1">
                             <div class="input-group">
@@ -571,7 +571,7 @@ export class SolarForecastStatus extends Component
                     value={util.get_value_with_unit(get_kwh_now_to_midnight(), "kWh", 2)}
                 />
             </FormRow>
-            <FormRow label={__("solar_forecast.content.solar_forecast")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
+            <FormRow label={__("solar_forecast.content.solar_forecast_days_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
                 <div class="row mx-n1">
                     <div class="col-md-6 px-1">
                         <div class="input-group">

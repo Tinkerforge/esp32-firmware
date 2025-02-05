@@ -311,7 +311,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label={__("day_ahead_prices.content.enable_day_ahead_prices")} label_muted={__("day_ahead_prices.content.day_ahead_prices_muted")}>
+                    <FormRow label={__("day_ahead_prices.content.enable_day_ahead_prices")} label_muted={__("day_ahead_prices.content.day_ahead_prices_muted")(dap.api_url)}>
                         <Switch desc={__("day_ahead_prices.content.day_ahead_prices_desc")}
                                 checked={dap.enable}
                                 onClick={this.toggle('enable')}
@@ -339,16 +339,16 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                         />
                     </FormRow>
                     <FormSeparator heading={__("day_ahead_prices.content.extra_costs")} help={__("day_ahead_prices.content.extra_costs_help")}/>
-                    <FormRow label={__("day_ahead_prices.content.vat")} label_muted={__("day_ahead_prices.content.optional_muted")}>
+                    <FormRow label={__("day_ahead_prices.content.vat")} label_muted={__("day_ahead_prices.content.vat_muted")}>
                         <InputFloat value={dap.vat} onValue={(v) => {this.setState({vat: v}, function() {this.update_uplot()})}} digits={2} unit="%" max={10000} min={0}/>
                     </FormRow>
-                    <FormRow label={__("day_ahead_prices.content.grid_fees_and_taxes")} label_muted={__("day_ahead_prices.content.optional_muted")}>
+                    <FormRow label={__("day_ahead_prices.content.grid_fees_and_taxes")}>
                         <InputFloat value={dap.grid_costs_and_taxes} onValue={(v) => {this.setState({grid_costs_and_taxes: v}, function() {this.update_uplot()})}} digits={3} unit="ct/kWh" max={99000} min={0}/>
                     </FormRow>
-                    <FormRow label={__("day_ahead_prices.content.electricity_provider_surcharge")} label_muted={__("day_ahead_prices.content.optional_muted")}>
+                    <FormRow label={__("day_ahead_prices.content.electricity_provider_surcharge")}>
                         <InputFloat value={dap.supplier_markup} onValue={(v) => {this.setState({supplier_markup: v}, function() {this.update_uplot()})}} digits={3} unit="ct/kWh" max={99000} min={0}/>
                     </FormRow>
-                    <FormRow label={__("day_ahead_prices.content.electricity_provider_base_fee")} label_muted={__("day_ahead_prices.content.optional_muted")}>
+                    <FormRow label={__("day_ahead_prices.content.electricity_provider_base_fee")}>
                         <InputFloat value={dap.supplier_base_fee} onValue={this.set('supplier_base_fee')} digits={2} unit={__("day_ahead_prices.content.euro_divided_by_month")} max={99000} min={0}/>
                     </FormRow>
                 </ConfigForm>

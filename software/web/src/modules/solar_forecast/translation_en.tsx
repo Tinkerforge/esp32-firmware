@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "../../ts/translation";
 let x = {
     "solar_forecast": {
         "status": {},
@@ -9,13 +10,12 @@ let x = {
         "content": {
             "solar_forecast": "Solar Forecast",
             "enable_solar_forecast": "Solar forecast enabled",
-            "enable_solar_forecast_muted": <>The forecast is queried from <a href="https://forecast.solar">Forecast.Solar</a>.</>,
+            "enable_solar_forecast_muted": /*FFN*/(api_url: string) => <>The forecast is queried from <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a>.</>/*NF*/,
             "planes": "PV planes",
             "plane": "PV plane",
             "no_data": "No data available!",
             "loading": "Loading data...",
-            "plane_config_name": "Name",
-            "plane_config_name_muted": "Display name of the PV plane",
+            "plane_config_name": "Display name",
             "plane_config_latitude": "Latitude",
             "plane_config_latitude_muted": "e.g. 51.8846°",
             "plane_config_longitude": "Longitude",
@@ -24,13 +24,13 @@ let x = {
             "plane_config_declination_muted": "0° horizontal to 90° vertical",
             "plane_config_azimuth": "Azimuth",
             "plane_config_azimuth_muted": "-180° = north, -90° = East, 0° = south, 90° = west, 180° = north",
-            "plane_config_kwp": "kWp",
+            "plane_config_kwp": "Peak power",
             "plane_config_kwp_muted": "Peak power of the PV plane",
-            "add_plane_config_title": "New PV plane",
+            "add_plane_config_title": "Add PV plane",
             "add_plane_config_count": /*SFN*/(x: number, max: number) => x + " of " + max + " PV planes configured"/*NF*/,
             "add_plane_config_done": "All PV planes added (6 of 6)",
             "edit_plane_config_title": "Edit PV plane",
-            "solar_forecast_desc": "Automatic download of solar forecast. For this feature the device requires Internet access.",
+            "solar_forecast_desc": <>Automatic download of solar forecast data. {__("The_device")} must be connected to the internet.</>,
             "table_name": "Name",
             "table_azimuth": "Azimuth",
             "table_declination": "Declination",
@@ -40,6 +40,7 @@ let x = {
             "time": "Time of day",
             "solar_forecast_chart_heading": "Status",
             "solar_forecast_now_label": "Solar forecast from now",
+            "solar_forecast_days_label": "Solar forecast",
             "solar_forecast_today_label": "Today",
             "solar_forecast_today_label_muted": "00:00 to 23:59",
             "solar_forecast_tomorrow_label": "Tomorrow",
@@ -59,7 +60,7 @@ let x = {
             "last_successful_update": "Last successful update:",
             "next_update": "Next update:",
             "next_update_in": "Next update in",
-            "next_update_in_help": "The solar forecast may be queried twelve times in a two-hour interval. Each plane is queried individually. It shows when the next query is planned and how many queries are still allowed in the current interval.",
+            "next_update_in_help": "The solar forecast may be queried twelve times in a two-hour interval. Each plane is queried individually.",
             "remaining_queries": /*SFN*/(x: number, max: number) => "(Remaining queries: " + x + " of " + max + ")"/*NF*/,
             "not_yet_queried": "Not yet queried"
         },
