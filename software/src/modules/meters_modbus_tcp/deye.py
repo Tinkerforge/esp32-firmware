@@ -516,35 +516,35 @@ specs = [
         'values': [
             {
                 'name': 'Total PV Energy [0.1 kWh]',
-                'value_id': 'EnergyPVSum',
+                'value_id': 'EnergyPVSumExport',
                 'start_address': 534,
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'PV1 Power [10 W]',
-                'value_id': 'PowerPV1',
+                'value_id': 'PowerPV1Export',
                 'start_address': 672,
                 'value_type': 'U16',
                 'scale_factor': 10.0,
             },
             {
                 'name': 'PV2 Power [10 W]',
-                'value_id': 'PowerPV2',
+                'value_id': 'PowerPV2Export',
                 'start_address': 673,
                 'value_type': 'U16',
                 'scale_factor': 10.0,
             },
             {
                 'name': 'PV3 Power [10 W]',
-                'value_id': 'PowerPV3',
+                'value_id': 'PowerPV3Export',
                 'start_address': 674,
                 'value_type': 'U16',
                 'scale_factor': 10.0,
             },
             {
                 'name': 'PV4 Power [10 W]',
-                'value_id': 'PowerPV4',
+                'value_id': 'PowerPV4Export',
                 'start_address': 675,
                 'value_type': 'U16',
                 'scale_factor': 10.0,
@@ -558,7 +558,7 @@ specs = [
             },
             {
                 'name': 'PV1 Current [0.1 A]',
-                'value_id': 'CurrentPV1',
+                'value_id': 'CurrentPV1Export',
                 'start_address': 677,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
@@ -572,7 +572,7 @@ specs = [
             },
             {
                 'name': 'PV2 Current [0.1 A]',
-                'value_id': 'CurrentPV2',
+                'value_id': 'CurrentPV2Export',
                 'start_address': 679,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
@@ -586,7 +586,7 @@ specs = [
             },
             {
                 'name': 'PV3 Current [0.1 A]',
-                'value_id': 'CurrentPV3',
+                'value_id': 'CurrentPV3Export',
                 'start_address': 681,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
@@ -600,14 +600,19 @@ specs = [
             },
             {
                 'name': 'PV4 Current [0.1 A]',
-                'value_id': 'CurrentPV4',
+                'value_id': 'CurrentPV4Export',
                 'start_address': 683,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'PV Total Power [W]',
-                'value_id': 'PowerPVSum',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'PV Total Power Signed [W]',
+                'value_id': 'PowerPVSumImExDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
@@ -617,7 +622,7 @@ specs = [
             },
             {
                 'name': 'PV Total Current [0.1 A]',
-                'value_id': 'CurrentPVSum',
+                'value_id': 'CurrentPVSumExport',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
         ],

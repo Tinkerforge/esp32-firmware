@@ -1670,8 +1670,9 @@ void MeterModbusTCP::read_done_callback()
                           + deye_hybrid_inverter_pv4_current;
 
             meters.update_value(slot, table->index[read_index + 1], power);
-            meters.update_value(slot, table->index[read_index + 2], voltage);
-            meters.update_value(slot, table->index[read_index + 3], current);
+            meters.update_value(slot, table->index[read_index + 2], -power);
+            meters.update_value(slot, table->index[read_index + 3], voltage);
+            meters.update_value(slot, table->index[read_index + 4], current);
         }
     }
     else if (is_shelly_pro_xem_monophase()) {
