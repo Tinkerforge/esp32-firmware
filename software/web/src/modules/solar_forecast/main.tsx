@@ -249,7 +249,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
     // FormRows for onEditGetChildren and onAddGetChildren
     on_get_children() {
         return [<>
-            <FormRow label={__("solar_forecast.content.plane_config_name")} label_muted={__("solar_forecast.content.plane_config_name_muted")}>
+            <FormRow label={__("solar_forecast.content.plane_config_name")}>
                 <InputText
                     value={this.state.plane_config_tmp.name}
                     onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, name: v}})}
