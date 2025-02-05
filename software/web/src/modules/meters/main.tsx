@@ -1428,7 +1428,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                             <div class="col-auto px-2 mb-2 text-nowrap">
                                                 <div class="meters-status-power-sums-icon pr-2"><Sun/></div>
                                                 <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width.pv + "px;"}>
-                                                    <div ref={this.power_sum_ref.pv} class="meters-status-power-sums-text-main">{util.toLocaleFixed(pv_power_sum)} W</div>
+                                                    <div ref={this.power_sum_ref.pv} class="meters-status-power-sums-text-main">{util.toLocaleFixed(Math.abs(pv_power_sum))} W</div>
                                                 </div>
                                             </div> : undefined}
                                         {grid_power_sum !== null ?
