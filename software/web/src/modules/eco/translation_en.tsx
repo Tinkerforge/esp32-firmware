@@ -16,7 +16,7 @@ let x = {
         "content": {
             "eco": "Eco Mode",
             "charge_plan_enable": "Charge planning enabled",
-            "charge_plan_enable_desc": "Optimizes charges for economically and ecologically. The desired departure time, dynamic tariff pricing and solar forecast are taken into account. Charge plans are used in all \"Eco\" charge modes.",
+            "charge_plan_enable_desc": "Optimizes charges economically and ecologically. The desired departure time, dynamic tariff pricing and solar forecast are taken into account. Charge plans are used in all \"Eco\" charge modes.",
             "park_time": "Maximum parking time",
             "charge_below": "Always charge when cost below",
             "block_above": "Never charge when cost above",
@@ -27,25 +27,25 @@ let x = {
             "active": "Active",
             "inactive": "Inactive",
             "solar_forecast_needs_activation": <>To be able to include the expected PV excess into the charge plan, the <a href="#solar_forecast">solar forecast</a> must be enabled.</>,
-            "day_ahead_prices_needs_activation": <>To be able to calculate the charge plan, the <a href="#day_ahead_prices">day ahead prices</a> must be enabled.</>,
+            "day_ahead_prices_needs_activation": <>To be able to calculate the charge plan, <a href="#day_ahead_prices">dynamic tariff</a> must be enabled.</>,
             "charge_plan_enable_help": "When the charge plan is enabled, a configurable charge plan is shown on the status page if the charge mode is one of the \"Eco\" modes.",
             "park_time_help": <>
                 <p>Specifies for how long in the future a charge plan will be created <strong>starting at the moment a vehicle is plugged in</strong>.</p>
                 <p>Example: It is 08:00, the charge plan is configured to 'Use the cheapest <b>4 hours</b> until <b>Today at 20:00</b>' and the maximum <b>parking time</b> is set to <b>8 hours</b>. The charge plan will ensure that the <b>cheapest 4 hours</b> are used <b>before the maximum parking time expires</b> (for example until 16:00 if the vehicle is plugged in at 08:00, but until 18:00 if the vehicle is plugged in at 10:00).</p>
-                <p>With this configuration it is possible to take for example the working hours of employees into account.</p>
+                <p>With this configuration, it is possible to take the working hours of employees into account, for example.</p>
             </>,
             "charge_below_help": <>
                 <p>Specifies a price in cent below which a charge will <strong>always</strong> be started, regardless of the charge plan.</p>
-                <p>The configured price is compared with the net spot market price excluding any fees, taxes or surcharges.</p>
+                <p>The configured price is compared to the net spot market price, excluding any fees, taxes or surcharges.</p>
             </>,
             "block_above_help": <>
                 <p>Specifies a price in cent above which a charge will <strong>never</strong> be started, regardless of the charge plan.</p>
-                <p>The configured price is compared with the net spot market price excluding any fees, taxes or surcharges.</p>
+                <p>The configured price is compared to the net spot market price, excluding any fees, taxes or surcharges.</p>
             </>,
             "yield_forecast_threshold_help": <>
                 <p>Specifies a threshold in kWh above which a charge will only be started if PV excess is available (the charge plan is ignored).</p>
-                <p>Example: 'Only if PV yield forecast below' is configured to <b>75kWh/day</b> and the <b>PV yield forecast for today is 80kWh/day</b> (above 75kWh). In this case the <b>charge plan is not executed</b> and charging is only possible if PV excess is available.</p>
-                <p>Thus energy is not bought (even if it would be cheap to do so) if it is known that enough PV excess will be available.</p>
+                <p>Example: 'Only if PV yield forecast below' is configured to <b>75 kWh/day</b> and the <b>PV yield forecast for today is 80 kWh/day</b> (above 75 kWh). In this case, the <b>charge plan is not executed</b> and charging is only possible if PV excess is available.</p>
+                <p>Therefore, energy is not bought–even if it would be cheap to do so–if it is known that enough PV excess will be available.</p>
             </>
         },
         "script": {
@@ -55,7 +55,7 @@ let x = {
             "charge_plan": /*FFN*/(charge_plan: {departure: number, enable: boolean, time: Date, amount: number}, charger_zero_start: number, charger_zero_amount: number) => {
                 let day = "until today at";
                 if (charge_plan.departure === 1) {
-                    day = "until tormorrow at";
+                    day = "until tomorrow at";
                 } else if (charge_plan.departure === 2) {
                     day = "daily until";
                 }

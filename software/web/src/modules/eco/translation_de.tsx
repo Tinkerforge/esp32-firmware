@@ -43,7 +43,7 @@ let x = {
             </>,
             "yield_forecast_threshold_help": <>
                 <p>Gibt einen Schwellwert in Kilowattstunden an, über dem ein Ladevorgang nur bei PV-Überschuss freigegeben wird (der Ladeplan wird ignoriert).</p>
-                <p>Beispiel: 'Nur wenn PV-Ertragsprognose unter' ist auf <strong>75 kWh/Tag</strong> konfiguriert und die <strong>PV-Ertragsprognose für heute liegt bei 80 kWh/Tag</strong>. In diesem Fall würde der <strong>Ladeplan nicht ausgeführt</strong> und nur geladen wenn PV-Überschuss verfügbar ist.</p>
+                <p>Beispiel: 'Nur wenn PV-Ertragsprognose unter' ist auf <strong>75 kWh/Tag</strong> konfiguriert und die <strong>PV-Ertragsprognose für heute liegt bei 80 kWh/Tag</strong>. In diesem Fall würde der <strong>Ladeplan nicht ausgeführt</strong> und nur geladen wenn PV-Überschuss verfügbar ist.</p>
                 <p>Es wird also kein Strom eingekauft, auch nicht wenn er sehr günstig wäre, wenn bekannt ist, dass genug PV-Überschuss verfügbar sein wird.</p>
             </>
         },

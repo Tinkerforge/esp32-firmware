@@ -30,7 +30,7 @@ let x = {
             "add_plane_config_count": /*SFN*/(x: number, max: number) => x + " of " + max + " PV planes configured"/*NF*/,
             "add_plane_config_done": "All PV planes added (6 of 6)",
             "edit_plane_config_title": "Edit PV plane",
-            "solar_forecast_desc": <>Automatic download of solar forecast data. {__("The_device")} must be connected to the internet.</>,
+            "solar_forecast_desc": <>Automatic download of solar forecast data. {__("The_device")} must be connected to the Internet.</>,
             "table_name": "Name",
             "table_azimuth": "Azimuth",
             "table_declination": "Declination",

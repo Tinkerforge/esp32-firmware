@@ -17,13 +17,13 @@ let x = {
             "grid_fees_plus_taxes": "Grid fees and taxes",
             "surcharge": "Surcharge",
             "day_ahead_prices_muted": /*FFN*/(api_url: string) => <>The data is provided by <a href="https://www.entsoe.eu/about/" target="_blank">ENTSO-E</a> and fetched from <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a>.</>/*NF*/,
-            "day_ahead_prices_desc": <>Automatic download of day-ahead spot market prices. {__("The_device")} must be connected to the internet.</>,
+            "day_ahead_prices_desc": <>Automatic download of day-ahead spot market prices. {__("The_device")} must be connected to the Internet.</>,
             "region": "Region",
             "germany": "Germany",
             "austria": "Austria",
             "luxembourg": "Luxembourg",
             "resolution": "Resolution",
-            "resolution_muted": "electric utility dependant",
+            "resolution_muted": "depends on electric utility",
             "minutes15": "15 minutes",
             "minutes60": "60 minutes",
             "euro_divided_by_month": "€/month",
@@ -39,8 +39,8 @@ let x = {
             "vat": "Value-added tax",
             "vat_muted": "on market price",
             "extra_costs_help": <>
-                <p><strong>Optional: For control, only the net day-ahead spot market price is used, extra costs are only displayed.</strong></p>
-                <p>The day-ahead spot price is only a part of the electricity costs. Additional fixed taxes, grid fees, and surcharges apply.</p>
+                <p><strong>Optional: For control, only the net day-ahead spot market price is used; extra costs are only displayed.</strong></p>
+                <p>The day-ahead spot price is only a part of the electricity costs. Additional fixed taxes, grid fees and surcharges apply.</p>
                 One of the following variants of configuring the extra cost settings is recommended:
                 <ul class="mb-0">
                     <li>Don't configure extra costs: The net spot market price is displayed.</li>
