@@ -79,9 +79,6 @@ export class Eco extends ConfigComponent<'eco/config', {status_ref?: RefObject<E
         const solar_forecast_enabled   = is_solar_forecast_enabled();
         const day_ahead_prices_enabled = is_day_ahead_prices_enabled();
 
-        let mode_list: [string, string][] = get_allowed_charge_modes({with_default: false, eco_enabled_override: state.enable})
-                                            .map(i => [i.toString(), __("charge_manager.status.mode_by_index")(i)]);
-
         return (
             <SubPage name="eco">
                 <ConfigForm id="eco_config_form"
