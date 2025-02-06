@@ -121,6 +121,10 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 return;
             }
 
+            if (!SUN_SPEC_MODEL_IS_METER_LIKE[scan_result.model_id]) {
+                return;
+            }
+
             // this combination must be unique according to sunspec specification
             let unique_id = scan_result.manufacturer_name + scan_result.model_name + scan_result.serial_number;
 
@@ -364,10 +368,10 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 <FormRow label={__("meters_sun_spec.content.scan_results")}>
                     <ListGroup>
                         {this.state.scan_results
-                            .filter((scan_result) => SUN_SPEC_MODEL_IS_METER_LIKE[scan_result.model_id] && SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id])
+                            .filter((scan_result) => SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id])
                             .map((scan_result) => this.get_scan_result_item(scan_result))}
                         {this.state.scan_results
-                            .filter((scan_result) => SUN_SPEC_MODEL_IS_METER_LIKE[scan_result.model_id] && !SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id])
+                            .filter((scan_result) => !SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id])
                             .map((scan_result) => this.get_scan_result_item(scan_result))}
                     </ListGroup>
                 </FormRow>
