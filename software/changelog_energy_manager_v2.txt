@@ -1,7 +1,7 @@
 2024-12-12: 1.1.0 (3d3ba971)
 - Initial release
 
-2025-02-06: 1.2.0 (<unknown>)
+2025-02-06: 1.2.0 (99ab2456)
 - Add eco mode / charge plans
 - Add MQTT read only mode
 - Remote Access: Add registration via authorization token

@@ -682,7 +682,7 @@
 - Fix charge manager disabling unrelated chargers to activate waiting chargers
 - Improve translations
 
-2025-02-06: 2.7.0 (<unknown>)
+2025-02-06: 2.7.0 (99ab2456)
 - Add MQTT read only mode
 - Remote Access: Add registration via authorization token
 - Charge Manager: Rotate chargers in sync

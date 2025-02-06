@@ -299,7 +299,7 @@
 - Fix MQTT automation rules with prefix
 - Fix missing power graph for Victron Energy GX grid meter
 
-2025-02-06: 2.3.0 (<unknown>)
+2025-02-06: 2.3.0 (99ab2456)
 - Remove support of multiple chargers being phase switched with one contactor
 - Add charger proxy mode
 - Rewrite charge manager
