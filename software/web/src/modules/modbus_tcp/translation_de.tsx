@@ -120,7 +120,7 @@ let x = {
                         <td>User-ID</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>ID des Benutzers der den Ladevorgang gestartet hat. 0 falls eine Freigabe ohne Nutzerzuordnung erfolgt
+                        <td>ID des Benutzers der den Ladevorgang gestartet hat. 0 falls eine Freigabe ohne Benutzerzuordnung erfolgt
                             ist. 0xFFFFFFFF falls gerade kein Ladevorgang läuft.</td>
                     </tr>
                     <tr>
