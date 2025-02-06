@@ -364,7 +364,11 @@ void Eco::update()
                 last_seen_plug_in[charger_id] = charger_state->last_plug_in;
 
                 const micros_t time_from_now_to_plug_in = now_us() - charger_state->last_plug_in;
-                const uint32_t epoch_to_plug_in_minutes = rtc.timestamp_minutes() - time_from_now_to_plug_in.to<minutes_t>().as<uint32_t>();
+                // Subtract one: time_from_now_to_plug_in is truncated to minutes.
+                // We know that we sample once per minute (directly after the second changes from 59 to 00)
+                // If it is now XX:YY:00 The change of the charger's last_plug_in must have happened between XX:(YY-1):00 and XX:(YY-1):59
+                // -> The timestamp of the last minute is the one that is expected to be shown.
+                const uint32_t epoch_to_plug_in_minutes = rtc.timestamp_minutes() - time_from_now_to_plug_in.to<minutes_t>().as<uint32_t>() - 1;
                 if (state.get("chargers")->get(charger_id)->get("start")->updateUint(epoch_to_plug_in_minutes)) {
                     extended_logging("Charger %d: Update start time to %d", charger_id, epoch_to_plug_in_minutes);
                 }
