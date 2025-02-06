@@ -177,7 +177,7 @@ void RemoteAccess::pre_setup()
         Config::Object({{"uuid", Config::Str("", 0, 36)},
                         {"enable", Config::Bool(false)},
                         {"password", Config::Str("", 0, 32)},
-                        {"relay_host", Config::Str("my.warp-charger.com", 0, 64)},
+                        {"relay_host", Config::Str(BUILD_REMOTE_ACCESS_HOST, 0, 64)},
                         {"relay_port", Config::Uint16(443)},
                         {"cert_id", Config::Int8(-1)},
                         {"users", Config::Array({}, &users_config_prototype, 0, MAX_USERS, Config::type_id<Config::ConfObject>())}})};
