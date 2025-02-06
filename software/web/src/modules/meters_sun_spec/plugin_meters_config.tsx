@@ -439,6 +439,7 @@ export function init() {
                     <DeviceScanner host={config[1].host} port={config[1].port} onResultSelected={(result: DeviceScannerResult) => {
                         on_config(util.get_updated_union(config, {
                             display_name: result.display_name,
+                            location: get_default_location(result.model_id),
                             device_address: result.device_address,
                             manufacturer_name: result.manufacturer_name,
                             model_name: result.model_name,
