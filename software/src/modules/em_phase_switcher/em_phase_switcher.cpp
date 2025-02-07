@@ -359,6 +359,7 @@ void EMPhaseSwitcher::filter_state_packet(size_t charger_idx, cm_state_packet *s
     const bool has_phase_switch = (state_packet->v1.feature_flags >> CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS) & 1;
     const bool has_cp_disconnect = (state_packet->v1.feature_flags >> CM_FEATURE_FLAGS_CP_DISCONNECT_BIT_POS) & 1;
     const bool managed = (state_packet->v1.state_flags >> CM_STATE_FLAGS_MANAGED_BIT_POS) & 1;
+    const uint8_t phases = CM_STATE_V3_PHASES_CONNECTED_GET(state_packet->v3.phases);
 
     if (version >= 3 && !has_phase_switch && has_cp_disconnect && managed) {
         charger_usable = true;
@@ -377,6 +378,8 @@ void EMPhaseSwitcher::filter_state_packet(size_t charger_idx, cm_state_packet *s
     if (external_phase_override) {
         // Don't fake phase-switching support
         state_packet->v3.phases = static_cast<uint8_t>((static_cast<uint32_t>(state_packet->v3.phases) & ~CM_STATE_V3_PHASES_CONNECTED_MASK) | external_phase_override);
+    } else if (phases == 1) {
+        // Don't fake phase-switching support, just pass on single-phase mode
     } else {
         state_packet->v1.feature_flags |= CM_FEATURE_FLAGS_PHASE_SWITCH_MASK; // Fake phase-switching support
         state_packet->v3.phases = static_cast<uint8_t>((static_cast<uint32_t>(state_packet->v3.phases) & ~CM_STATE_V3_PHASES_CONNECTED_MASK) | em_phases | CM_STATE_V3_CAN_PHASE_SWITCH_MASK);
