@@ -271,6 +271,10 @@ def get_evse_uptime():
     global evse
     return retry_wrapper(lambda: evse.get_low_level_state().uptime, "get EVSE uptime")
 
+def reset_evse():
+    global evse
+    return retry_wrapper(lambda: evse.reset(), "reset EVSE")
+
 def led_wrap():
     stage3 = Stage3(
             is_front_panel_button_pressed_function=is_front_panel_button_pressed,
@@ -279,6 +283,13 @@ def led_wrap():
             has_evse_error_function=has_evse_error,
             switch_phases_function=switch_phases,
             get_evse_uptime_function=get_evse_uptime)
+    stage3 = Stage3(is_front_panel_button_pressed_function=is_front_panel_button_pressed,
+                    has_evse_error_function=has_evse_error,
+                    get_iec_state_function=get_iec_state,
+                    reset_dc_fault_function=reset_dc_fault,
+                    switch_phases_function=switch_phases,
+                    get_evse_uptime_function=get_evse_uptime,
+                    reset_evse_function=reset_evse)
 
     stage3.setup()
     stage3.set_led_strip_color((0, 0, 255))

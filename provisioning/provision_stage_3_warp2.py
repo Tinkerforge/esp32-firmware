@@ -90,13 +90,21 @@ EXPECTED_DEVICE_IDENTIFIERS = {
 }
 
 class Stage3:
-    def __init__(self, is_front_panel_button_pressed_function, has_evse_error_function, get_iec_state_function, reset_dc_fault_function, switch_phases_function, get_evse_uptime_function):
+    def __init__(self,
+                 is_front_panel_button_pressed_function,
+                 has_evse_error_function,
+                 get_iec_state_function,
+                 reset_dc_fault_function,
+                 switch_phases_function,
+                 get_evse_uptime_function,
+                 reset_evse_function):
         self.is_front_panel_button_pressed_function = is_front_panel_button_pressed_function
         self.has_evse_error_function = has_evse_error_function
         self.get_iec_state_function = get_iec_state_function
         self.reset_dc_fault_function = reset_dc_fault_function
         self.switch_phases_function = switch_phases_function
         self.get_evse_uptime_function = lambda: get_evse_uptime_function() / 1000.0
+        self.reset_evse_function = reset_evse_function
         self.ipcon = IPConnection()
         self.inventory = Inventory(self.ipcon)
         self.devices = {} # by position path
@@ -104,6 +112,7 @@ class Stage3:
         self.action_stop_queue = None
         self.action_enabled_ref = None
         self.action_thread = None
+        self.wall_clock_start = None
 
         self.ipcon.set_timeout(IPCON_TIMEOUT)
 
@@ -206,6 +215,14 @@ class Stage3:
                 fatal_error('Action did not complete in time')
 
             timeout_remaining -= time.monotonic() - start
+
+        if len(phases) > 0 and self.wall_clock_start != None:
+            self.verify_evse_not_crashed()
+            self.reset_evse_function()
+            time.sleep(5)
+
+            self.evse_uptime_start = self.get_evse_uptime_function()
+            self.wall_clock_start = time.time()
 
     # internal
     def connect_outlet(self, outlet):
@@ -772,6 +789,8 @@ class Stage3:
         assert self.get_iec_state_function != None
         assert self.reset_dc_fault_function != None
         assert self.get_evse_uptime_function != None
+        assert self.reset_evse_function != None
+
         if has_phase_switch:
             assert self.switch_phases_function != None
 
@@ -1235,7 +1254,8 @@ def main():
                     get_iec_state_function=lambda: 'A',
                     reset_dc_fault_function=lambda: None,
                     switch_phases_function=lambda x: None,
-                    get_evse_uptime_function=lambda x: None)
+                    get_evse_uptime_function=lambda: None,
+                    reset_evse_function=lambda: None)
 
     stage3.setup()
 
@@ -1246,31 +1266,31 @@ def main():
     button_power_on_smart.grid(row=0, column=0, padx=10, pady=10)
 
     button_power_on_pro = tk.Button(root, text='Power On - Pro', width=50, command=lambda: stage3.power_on('Pro'))
-    button_power_on_pro.grid(row=1, column=0, padx=10, pady=0)
+    button_power_on_pro.grid(row=1, column=0, padx=10, pady=10)
 
     button_power_on_cee = tk.Button(root, text='Power On - CEE', width=50, command=lambda: stage3.power_on('CEE'))
     button_power_on_cee.grid(row=2, column=0, padx=10, pady=10)
 
     button_power_off = tk.Button(root, text='Power Off', width=50, command=lambda: stage3.power_off())
-    button_power_off.grid(row=3, column=0, padx=10, pady=0)
+    button_power_off.grid(row=3, column=0, padx=10, pady=10)
 
     button_cp_pe_state_a = tk.Button(root, text='CP/PE State A', width=50, command=lambda: stage3.change_cp_pe_state('A'))
     button_cp_pe_state_a.grid(row=4, column=0, padx=10, pady=10)
 
     button_cp_pe_state_b = tk.Button(root, text='CP/PE State B', width=50, command=lambda: stage3.change_cp_pe_state('B'))
-    button_cp_pe_state_b.grid(row=5, column=0, padx=10, pady=0)
+    button_cp_pe_state_b.grid(row=5, column=0, padx=10, pady=10)
 
     button_cp_pe_state_c = tk.Button(root, text='CP/PE State C', width=50, command=lambda: stage3.change_cp_pe_state('C'))
     button_cp_pe_state_c.grid(row=6, column=0, padx=10, pady=10)
 
     button_cp_pe_state_d = tk.Button(root, text='CP/PE State D', width=50, command=lambda: stage3.change_cp_pe_state('D'))
-    button_cp_pe_state_d.grid(row=7, column=0, padx=10, pady=0)
+    button_cp_pe_state_d.grid(row=7, column=0, padx=10, pady=10)
 
     button_meter_state_type2_l1 = tk.Button(root, text='Meter State Type2 L1', width=50, command=lambda: stage3.change_meter_state('Type2-L1'))
     button_meter_state_type2_l1.grid(row=8, column=0, padx=10, pady=10)
 
     button_meter_state_type2_l2 = tk.Button(root, text='Meter State Type2 L2', width=50, command=lambda: stage3.change_meter_state('Type2-L2'))
-    button_meter_state_type2_l2.grid(row=9, column=0, padx=10, pady=0)
+    button_meter_state_type2_l2.grid(row=9, column=0, padx=10, pady=10)
 
     button_meter_state_type2_l3 = tk.Button(root, text='Meter State Type2 L3', width=50, command=lambda: stage3.change_meter_state('Type2-L3'))
     button_meter_state_type2_l3.grid(row=10, column=0, padx=10, pady=10)
