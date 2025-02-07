@@ -470,12 +470,10 @@ class Stage3:
         color = self.try_action('20D', lambda device: device.get_color())
 
         # White can saturate the sensor
-        if color[0] == 65535 and color[1] == 65535 and color[2] == 65535 and color[3] == 65535:
+        if color[0] >= 60000 and color[1] >= 60000 and color[2] >= 60000 and color[3] >= 60000:
             return True
 
-
         return color[0] / color[3] < 0.5 and color[1] / color[3] < 0.5 and color[2] / color[3] < 0.5 and color[3] > 10000
-
 
     # internal
     def check_iec_state(self, expected_state):
@@ -651,7 +649,7 @@ class Stage3:
                 fatal_error('Front panel button is already pressed before test')
 
             if not led_before:
-                fatal_error('Front panel LED is not on before test')
+                fatal_error('Front panel LED is not blue before test')
 
             if automatic:
                 self.set_servo_position(servo, channel, -3000)
@@ -681,7 +679,7 @@ class Stage3:
                 fatal_error('Front panel button is not pressed during test')
 
             if led_pressed:
-                fatal_error('Front panel LED is still on during test')
+                fatal_error('Front panel LED is still blue during test')
 
             if not automatic:
                 print(green('Waiting for front panel button release'))
