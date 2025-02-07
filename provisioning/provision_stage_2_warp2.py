@@ -42,7 +42,7 @@ evse = None
 power_off_on_error = True
 generation = None
 
-def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_wiring, ssid, stage3):
+def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
     global evse
     global generation
     enumerations = enumerate_devices(ipcon)
@@ -57,7 +57,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
     # Don't check len(enumeraions) if this is a basic:
     # In this case we are connected to localhost and there's a lot of bricks and bricklets connected to the test PC
 
-    if qr_variant != "B":
+    if scanner.qr_variant != "B":
         if nfc_enum is None:
             fatal_error("No NFC Bricklet found!")
         if len(enumerations) != 2:
@@ -71,7 +71,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
     is_smart = not is_basic and energy_meter_type == 0
     is_pro = not is_basic and energy_meter_type != 0
 
-    automatic = qr_stand == '0' or qr_stand_wiring == '0'
+    automatic = scanner.qr_stand == '0' or scanner.qr_stand_wiring == '0'
 
     stage3.test_front_panel_button(automatic)
     result["front_panel_button_tested"] = True
@@ -122,7 +122,7 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
 
     seen_tags = []
     if is_smart or is_pro:
-        if qr_stand != '0' and qr_stand_wiring != '0':
+        if scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0':
             def download_seen_tags():
                 with urllib.request.urlopen('http://{}/nfc/seen_tags'.format(ssid), timeout=3) as f:
                     nfc_str = f.read()
@@ -151,14 +151,14 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
 
     d = {"P": "Pro", "S": "Smart", "B": "Basic"}
 
-    if is_basic and qr_variant != "B":
-        fatal_error("Scanned QR code implies variant {}, but detected was Basic (i.e. an Master Brick was found)".format(d[qr_variant]))
+    if is_basic and scanner.qr_variant != "B":
+        fatal_error("Scanned QR code implies variant {}, but detected was Basic (i.e. an Master Brick was found)".format(d[scanner.qr_variant]))
 
-    if is_smart and qr_variant != "S":
-        fatal_error("Scanned QR code implies variant {}, but detected was Smart: An ESP32 Brick was found, but no energy meter. Is the meter not connected or the display not lighting up? Is the QR code correct?".format(d[qr_variant]))
+    if is_smart and scanner.qr_variant != "S":
+        fatal_error("Scanned QR code implies variant {}, but detected was Smart: An ESP32 Brick was found, but no energy meter. Is the meter not connected or the display not lighting up? Is the QR code correct?".format(d[scanner.qr_variant]))
 
-    if is_pro and qr_variant != "P":
-        fatal_error("Scanned QR code implies variant {}, but detected was Pro: An ESP32 Brick and an energy meter was found. Is the QR code correct?".format(d[qr_variant]))
+    if is_pro and scanner.qr_variant != "P":
+        fatal_error("Scanned QR code implies variant {}, but detected was Pro: An ESP32 Brick and an energy meter was found. Is the QR code correct?".format(d[scanner.qr_variant]))
 
     result["evse_version"] = evse_version
     print("EVSE version is {}".format(evse_version))
@@ -170,11 +170,11 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
         result["master_uid"] = master.uid
         print("Master UID is {}".format(master.uid))
 
-    if qr_power == "11" and jumper_config != 3:
-        fatal_error("Wrong jumper config detected: {} but expected {} as the configured power is {} kW.".format(jumper_config, 3, qr_power))
+    if scanner.qr_power == "11" and jumper_config != 3:
+        fatal_error("Wrong jumper config detected: {} but expected {} as the configured power is {} kW.".format(jumper_config, 3, scanner.qr_power))
 
-    if qr_power == "22" and jumper_config != 6:
-        fatal_error("Wrong jumper config detected: {} but expected {} as the configured power is {} kW.".format(jumper_config, 6, qr_power))
+    if scanner.qr_power == "22" and jumper_config != 6:
+        fatal_error("Wrong jumper config detected: {} but expected {} as the configured power is {} kW.".format(jumper_config, 6, scanner.qr_power))
 
     result["jumper_config_checked"] = True
     if has_lock_switch:
@@ -183,9 +183,9 @@ def run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_w
     result["diode_checked"] = True
 
     outgoing = evse.get_charging_slot(1).max_current
-    if qr_power == "11" and outgoing != 20000:
+    if scanner.qr_power == "11" and outgoing != 20000:
         fatal_error("Wrong type 2 cable config detected: Allowed current is {} but expected 20 A, as this is a 11 kW box.".format(outgoing / 1000))
-    if qr_power == "22" and outgoing != 32000:
+    if scanner.qr_power == "22" and outgoing != 32000:
         fatal_error("Wrong type 2 cable config detected: Allowed current is {} but expected 32 A, as this is a 22 kW box.".format(outgoing / 1000))
 
     result["resistor_checked"] = True
@@ -275,14 +275,99 @@ def reset_evse():
     global evse
     return retry_wrapper(lambda: evse.reset(), "reset EVSE")
 
+class Scanner:
+    def __init__(self):
+        # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
+        pattern = r'^T:WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-PC)?;V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
+        self.qr_charger_code = my_input("Scan the charger QR code:")
+        m = re.match(pattern, self.qr_charger_code)
+
+        while not m:
+            self.qr_charger_code = my_input("Scan the charger QR code:", red)
+            m = re.match(pattern, self.qr_charger_code)
+
+        self.qr_gen = m.group(1)
+        self.qr_variant = m.group(2)
+        self.qr_power = m.group(3)
+        self.qr_cable_len = m.group(4)
+        self.qr_hw_version = m.group(5)
+        self.qr_serial = m.group(6)
+        self.qr_built = m.group(7)
+        self.qr_accessories = m.group(8)
+
+        if self.qr_accessories == None:
+            self.qr_accessories = '0'
+
+        print("Charger QR code data:")
+        print("    WARP{} Charger {}".format(self.qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro"}[self.qr_variant]))
+        print("    {} kW".format(self.qr_power))
+
+        if self.qr_cable_len == 'CC':
+            print("    Custom Cable")
+        else:
+            print("    {:1.1f} m".format(int(self.qr_cable_len) / 10.0))
+
+        print("    HW Version: {}".format(self.qr_hw_version))
+        print("    Serial: {}".format(self.qr_serial))
+        print("    Build month: {}".format(self.qr_built))
+        print("    Accessories: {}".format(self.qr_accessories))
+
+        if self.qr_accessories == '0':
+            self.qr_accessories_code = None
+            self.qr_stand = '0'
+            self.qr_stand_wiring = '0'
+            self.qr_stand_lock = False
+            self.qr_supply_cable = 0.0
+            self.qr_cee = False
+            self.qr_custom_front_panel = False
+            self.qr_custom_type2_cable = False
+        else:
+            # S:1;W:1;E:2.5;C:1;CFP:1;CT2:1;;;
+            pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:CFP:(0|1);)?(?:CT2:(0|1);)?;;*$'
+            self.qr_accessories_code = my_input("Scan the accessories QR code:")
+            m = re.match(pattern, self.qr_accessories_code)
+
+            while not m:
+                self.qr_accessories_code = my_input("Scan the accessories QR code:", red)
+                m = re.match(pattern, self.qr_accessories_code)
+
+            self.qr_stand = m.group(1) if m.group(1) != None else '0'
+            self.qr_stand_wiring = m.group(2) if m.group(2) != None else '0'
+            self.qr_stand_lock = bool(int(m.group(3) if m.group(3) != None else '0'))
+            self.qr_supply_cable = float(m.group(4))
+            self.qr_cee = bool(int(m.group(5)))
+            self.qr_custom_front_panel = bool(int(m.group(6) if m.group(6) != None else '0'))
+            self.qr_custom_type2_cable = bool(int(m.group(7) if m.group(7) != None else '0'))
+
+            print("Accessories QR code data:")
+            print("    Stand: {}".format(self.qr_stand))
+            print("    Stand Wiring: {}".format(self.qr_stand_wiring))
+            print("    Stand Lock: {}".format(self.qr_stand_lock))
+            print("    Supply Cable: {} m".format(self.qr_supply_cable))
+            print("    CEE: {}".format(self.qr_cee))
+            print("    Custom Front Panel: {}".format(self.qr_custom_front_panel))
+            print("    Custom Type 2 Cable: {}".format(self.qr_custom_type2_cable))
+
+        if self.qr_variant != "B":
+            pattern = r"^WIFI:S:(warp{gen})-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58, gen=self.qr_gen)
+            self.qr_esp_code = getpass.getpass(green("Scan the ESP Brick QR code: "))
+            m = re.match(pattern, self.qr_esp_code)
+
+            while not m:
+                self.qr_esp_code = getpass.getpass(red("Scan the ESP Brick QR code: "))
+                m = re.match(pattern, self.qr_esp_code)
+
+            self.qr_hardware_type = m.group(1)
+            self.qr_esp_uid = m.group(2)
+            self.qr_passphrase = m.group(3)
+
+            print("ESP Brick QR code data:")
+            print("    Hardware type: {}".format(self.qr_hardware_type))
+            print("    UID: {}".format(self.qr_esp_uid))
+
+
 def led_wrap():
-    stage3 = Stage3(
-            is_front_panel_button_pressed_function=is_front_panel_button_pressed,
-            get_iec_state_function=get_iec_state,
-            reset_dc_fault_function=reset_dc_fault,
-            has_evse_error_function=has_evse_error,
-            switch_phases_function=switch_phases,
-            get_evse_uptime_function=get_evse_uptime)
+    scanner = Scanner()
     stage3 = Stage3(is_front_panel_button_pressed_function=is_front_panel_button_pressed,
                     has_evse_error_function=has_evse_error,
                     get_iec_state_function=get_iec_state,
@@ -294,7 +379,7 @@ def led_wrap():
     stage3.setup()
     stage3.set_led_strip_color((0, 0, 255))
     try:
-        main(stage3)
+        main(stage3, scanner)
     except BaseException:
         if power_off_on_error:
             stage3.power_off()
@@ -441,7 +526,7 @@ def collect_nfc_tag_ids(stage3, getter, beep_notify):
     print("\r3 NFC tags seen." + " " * 20)
     return seen_tags
 
-def main(stage3):
+def main(stage3, scanner):
     result = {"start": now()}
 
     github_reachable = True
@@ -456,132 +541,45 @@ def main(stage3):
         with ChangedDirectory(os.path.join("..", "..", "firmwares")):
             run(["git", "pull"])
 
-    # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
-    pattern = r'^T:WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-PC)?;V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
-    qr_code = my_input("Scan the wallbox QR code")
-    match = re.match(pattern, qr_code)
+    result["serial"] = scanner.qr_serial
+    result["qr_code"] = scanner.qr_charger_code
 
-    while not match:
-        qr_code = my_input("Scan the wallbox QR code", red)
-        match = re.match(pattern, qr_code)
-
-    qr_gen = match.group(1)
-    qr_variant = match.group(2)
-    qr_power = match.group(3)
-    qr_cable_len = match.group(4)
-    qr_hw_version = match.group(5)
-    qr_serial = match.group(6)
-    qr_built = match.group(7)
-    qr_accessories = match.group(8)
-
-    if qr_accessories == None:
-        qr_accessories = '0'
-
-    print("Wallbox QR code data:")
-    print("    WARP{} Charger {}".format(qr_gen, {"B": "Basic", "S": "Smart", "P": "Pro"}[qr_variant]))
-    print("    {} kW".format(qr_power))
-
-    if qr_cable_len == 'CC':
-        print("    Custom Cable")
-    else:
-        print("    {:1.1f} m".format(int(qr_cable_len) / 10.0))
-
-    print("    HW Version: {}".format(qr_hw_version))
-    print("    Serial: {}".format(qr_serial))
-    print("    Build month: {}".format(qr_built))
-    print("    Accessories: {}".format(qr_accessories))
-
-    result["serial"] = qr_serial
-    result["qr_code"] = match.group(0)
-
-    if qr_accessories == '0':
-        qr_stand = '0'
-        qr_stand_wiring = '0'
-        qr_stand_lock = False
-        qr_supply_cable = 0.0
-        qr_cee = False
-        qr_custom_front_panel = False
-        qr_custom_type2_cable = False
-    else:
-        # S:1;W:1;E:2.5;C:1;CFP:1;CT2:1;;;
-        pattern = r'^(?:S:(0|1|2|1-PC|2-PC);)?(?:W:(0|1|2);)?(?:L:(0|1);)?E:(\d+\.\d+);C:(0|1);(?:CFP:(0|1);)?(?:CT2:(0|1);)?;;*$'
-        qr_code = my_input("Scan the accessories QR code")
-        match = re.match(pattern, qr_code)
-
-        while not match:
-            qr_code = my_input("Scan the accessories QR code", red)
-            match = re.match(pattern, qr_code)
-
-        qr_stand = match.group(1) if match.group(1) != None else '0'
-        qr_stand_wiring = match.group(2) if match.group(2) != None else '0'
-        qr_stand_lock = bool(int(match.group(3) if match.group(3) != None else '0'))
-        qr_supply_cable = float(match.group(4))
-        qr_cee = bool(int(match.group(5)))
-        qr_custom_front_panel = bool(int(match.group(6) if match.group(6) != None else '0'))
-        qr_custom_type2_cable = bool(int(match.group(7) if match.group(7) != None else '0'))
-
-        print("Accessories QR code data:")
-        print("    Stand: {}".format(qr_stand))
-        print("    Stand Wiring: {}".format(qr_stand_wiring))
-        print("    Stand Lock: {}".format(qr_stand_lock))
-        print("    Supply Cable: {} m".format(qr_supply_cable))
-        print("    CEE: {}".format(qr_cee))
-        print("    Custom Front Panel: {}".format(qr_custom_front_panel))
-        print("    Custom Type 2 Cable: {}".format(qr_custom_type2_cable))
-
-        result["accessories_qr_code"] = match.group(0)
+    if scanner.qr_accessories_code != None:
+        result["accessories_qr_code"] = scanner.qr_accessories_code
 
     global generation
-    assert qr_gen in ("2", "3")
-    generation = int(qr_gen)
+    assert scanner.qr_gen in ("2", "3")
+    generation = int(scanner.qr_gen)
 
     evse_directory = os.path.join("..", "..", "firmwares", "bricklets", "evse_v2")
     evse_path = os.readlink(os.path.join(evse_directory, "bricklet_evse_v2_firmware_latest.zbin"))
     evse_path = os.path.join(evse_directory, evse_path)
 
-    firmware_directory = os.path.join("..", "..", "firmwares", "bricks", f"warp{generation}_charger")
-    firmware_path = os.readlink(os.path.join(firmware_directory, f"brick_warp{generation}_charger_firmware_latest.bin"))
+    firmware_directory = os.path.join("..", "..", "firmwares", "bricks", f"warp{scanner.qr_gen}_charger")
+    firmware_path = os.readlink(os.path.join(firmware_directory, f"brick_warp{scanner.qr_gen}_charger_firmware_latest.bin"))
     firmware_path = os.path.join(firmware_directory, firmware_path)
 
-    if qr_variant != "B":
-        pattern = r"^WIFI:S:(warp{gen})-([{BASE58}]{{3,6}});T:WPA;P:([{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}}-[{BASE58}]{{4}});;$".format(BASE58=BASE58, gen=generation)
-        qr_code = getpass.getpass(green("Scan the ESP Brick QR code"))
-        match = re.match(pattern, qr_code)
-
-        while not match:
-            qr_code = getpass.getpass(red("Scan the ESP Brick QR code"))
-            match = re.match(pattern, qr_code)
-
-        if (qr_stand != '0' and qr_stand_wiring != '0') or qr_supply_cable != 0 or qr_cee:
+    if scanner.qr_variant != "B":
+        if (scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0') or scanner.qr_supply_cable != 0 or scanner.qr_cee:
             stage3.power_on('CEE')
-        elif generation == 3:
+        elif scanner.qr_gen == "3":
             stage3.power_on('Smart')
         else:
-            stage3.power_on({"S": "Smart", "P": "Pro"}[qr_variant])
+            stage3.power_on({"S": "Smart", "P": "Pro"}[scanner.qr_variant])
 
-        hardware_type = match.group(1)
-        esp_uid_qr = match.group(2)
-        passphrase_qr = match.group(3)
-
-        print("ESP Brick QR code data:")
-        print("    Hardware type: {}".format(hardware_type))
-        print("    UID: {}".format(esp_uid_qr))
-
-        if qr_stand == '0' or qr_stand_wiring == '0':
+        if scanner.qr_stand == '0' or scanner.qr_stand_wiring == '0':
             seen_tags = collect_nfc_tag_ids(stage3, stage3.get_nfc_tag_ids, False)
 
-        result["uid"] = esp_uid_qr
-
-        ssid = hardware_type + "-" + esp_uid_qr
-
+        result["uid"] = scanner.qr_esp_uid
+        ssid = scanner.qr_hardware_type + "-" + scanner.qr_esp_uid
         event_log = connect_to_ethernet(ssid, "event_log").decode('utf-8')
 
-        m = re.search(r"WARP{gen} (?:CHARGER|Charger) V(\d+).(\d+).(\d+)".format(gen=generation), event_log)
+        m = re.search(r"WARP{gen} (?:CHARGER|Charger) V(\d+).(\d+).(\d+)".format(gen=scanner.qr_gen), event_log)
         if not m:
             fatal_error("Failed to find version number in event log!" + event_log)
 
         version = [int(x) for x in m.groups()]
-        latest_version = [int(x) for x in re.search(r"warp{gen}_charger_firmware_(\d+)_(\d+)_(\d+).bin".format(gen=generation), firmware_path).groups()]
+        latest_version = [int(x) for x in re.search(r"warp{gen}_charger_firmware_(\d+)_(\d+)_(\d+).bin".format(gen=scanner.qr_gen), firmware_path).groups()]
 
         if version > latest_version:
             fatal_error("Flashed firmware {}.{}.{} is not released yet! Latest released is {}.{}.{}".format(*version, *latest_version))
@@ -628,9 +626,9 @@ def main(stage3):
         except Exception as e:
             fatal_error("Failed to connect to ESP proxy. Is the router's DHCP cache full?")
 
-        seen_tags2 = run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_wiring, ssid, stage3)
+        seen_tags2 = run_bricklet_tests(ipcon, result, scanner, ssid, stage3)
 
-        if qr_stand != '0' and qr_stand_wiring != '0':
+        if scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0':
             seen_tags = seen_tags2
 
         try:
@@ -719,7 +717,7 @@ def main(stage3):
             fatal_error("Failed to configure NFC tags! {} {}!".format(e, e.read()))
         result["nfc_tags_configured"] = True
     else:
-        if (qr_stand != '0' and qr_stand_wiring != '0') or qr_supply_cable != 0 or qr_cee:
+        if (scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0') or scanner.qr_supply_cable != 0 or scanner.qr_cee:
             stage3.power_on('CEE')
         else:
             stage3.power_on('Basic')
@@ -739,7 +737,7 @@ def main(stage3):
         run(["python3", "comcu_flasher.py", evse_enum.uid, evse_path])
         result["evse_firmware"] = evse_path.split("/")[-1]
 
-        run_bricklet_tests(ipcon, result, qr_variant, qr_power, qr_stand, qr_stand_wiring, None, stage3)
+        run_bricklet_tests(ipcon, result, scanner, None, stage3)
 
     print("Checking if EVSE was tested...")
     if not exists_evse_test_report(result["evse_uid"]):
@@ -752,12 +750,12 @@ def main(stage3):
     print("EVSE test report found")
     result["evse_test_report_found"] = True
 
-    if qr_variant == "B":
-        ssid = f'warp{generation}-{result["evse_uid"]}'
+    if scanner.qr_variant == "B":
+        ssid = f'warp{scanner.qr_gen}-{result["evse_uid"]}'
 
     browser = None
     try:
-        if qr_variant != "B":
+        if scanner.qr_variant != "B":
             browser = webdriver.Firefox()
             browser.get("http://{}/#evse".format(ssid))
 
@@ -770,7 +768,7 @@ def main(stage3):
     print("Electrical tests passed")
     result["electrical_tests_passed"] = True
 
-    if qr_variant != "B":
+    if scanner.qr_variant != "B":
         print("Removing tracked charges")
         print("Connecting via ethernet to {}".format(ssid), end="")
         for i in range(45):
@@ -801,7 +799,7 @@ def main(stage3):
     handle_electrical_test_report('upload', None, 180)
 
     print('Downloading complete electrical test report from this test')
-    handle_electrical_test_report('download', qr_serial, 300)
+    handle_electrical_test_report('download', scanner.qr_serial, 300)
 
     print('Done!')
 
