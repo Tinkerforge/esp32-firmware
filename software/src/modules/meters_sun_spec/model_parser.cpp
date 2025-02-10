@@ -70,7 +70,6 @@ bool MetersSunSpecParser::detect_values(const uint16_t *const register_data[2], 
     meters.declare_value_ids(meter_slot, ids, detected_value_count);
     free(ids);
 
-    meter_values = static_cast<float *>(malloc(detected_value_count * sizeof(float)));
     return true;
 }
 
@@ -81,6 +80,7 @@ bool MetersSunSpecParser::parse_values(const uint16_t *const register_data[2], u
 
     const uint16_t *data = model->read_twice ? register_data[1] : register_data[0];
 
+    float meter_values[METERS_MAX_VALUES_PER_METER];
     size_t value_count = detected_values.size();
     for (size_t i = 0; i < value_count; i++) {
         meter_values[i] = detected_values[i]->get_value(data, quirks, false);

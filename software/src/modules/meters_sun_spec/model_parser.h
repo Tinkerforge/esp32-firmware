@@ -89,7 +89,6 @@ private:
     const uint32_t meter_slot;
     const ModelData *const model;
     std::vector<const ValueData *> detected_values;
-    float *meter_values;
 };
 
 extern const MetersSunSpecParser::AllModelData meters_sun_spec_all_model_data;
