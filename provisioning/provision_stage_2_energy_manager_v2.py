@@ -18,6 +18,7 @@ import datetime
 
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
 from provisioning.tinkerforge.bricklet_warp_energy_manager_v2 import BrickletWARPEnergyManagerV2
+from provisioning.tinkerforge.bricklet_warp_front_panel import BrickletWARPFrontPanel
 
 from provisioning.provision_common.provision_common import *
 from provisioning.provision_common.sdm_simulator import SDMSimulator
@@ -179,6 +180,10 @@ class EnergyManagerV2Tester:
         wem_bricklet_enum = next((e for e in enumerations if e.device_identifier == BrickletWARPEnergyManagerV2.DEVICE_IDENTIFIER), None)
         if wem_bricklet_enum == None:
             self.fatal_error("WARP Energy Manager Bricklet not found!")
+
+        fp_bricklet_enum = next((e for e in enumerations if e.device_identifier == BrickletWARPFrontPanel.DEVICE_IDENTIFIER), None)
+        if fp_bricklet_enum == None:
+            self.fatal_error("WARP Front Panel Bricklet not found!")
 
         self.wem = BrickletWARPEnergyManagerV2(wem_bricklet_enum.uid, wem_ipcon)
 
