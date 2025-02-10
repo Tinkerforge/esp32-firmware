@@ -82,10 +82,6 @@ function Charger (props: {i: number,
                         <div class="col">
                             <InputText value={(props.ll_state.ls == 0 ? 0 : util.format_timespan_ms(uptime - props.ll_state.ls))}/>
                         </div>
-                        <div class="col-auto"><span class="form-control" style="border: none;"> / </span></div>
-                        <div class="col">
-                            <InputText value={util.format_timespan(ll_cfg.min_active_time)}/>
-                        </div>
                     </div>
                 </FormRow>
 

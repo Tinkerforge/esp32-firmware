@@ -81,7 +81,6 @@ export interface low_level_state {
 export interface low_level_config {
     global_hysteresis: number
     alloc_energy_rot_thres: number
-    min_active_time: number
     wakeup_time: number
     plug_in_time: number
     enable_current_factor_pct: number
