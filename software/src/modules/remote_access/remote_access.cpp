@@ -19,6 +19,8 @@
 
 #include "remote_access.h"
 
+#include "module_dependencies.h"
+
 #include <LittleFS.h>
 #include <TFJson.h>
 #include <WiFi.h>
@@ -36,7 +38,6 @@
 #include "esp_tls.h"
 #include "esp_tls_errors.h"
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
 #include "tools.h"
 #include "tools/dns.h"
 

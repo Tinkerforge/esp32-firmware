@@ -26,12 +26,13 @@
 #define ETH_PHY_POWER 5
 #define ETH_CLK_MODE  ETH_CLOCK_GPIO0_IN
 
+#include "module_dependencies.h"
+
 #include <ETH.h>
 #include <WiFiGeneric.h> // for calculateSubnetCIDR
 #include <esp_eth.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
 
 #include "build.h"
 #include "tools.h"
