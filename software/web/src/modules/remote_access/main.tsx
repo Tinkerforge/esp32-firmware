@@ -188,6 +188,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
                 if (errCode === "400") {
                     util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
+                } else if (errCode === "10") {
+                    util.add_alert("registration", "danger", () => __("remote_access.script.http_client_error_10"), () => "");
                 } else {
                     util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
                 }
@@ -227,6 +229,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
                 if (errCode === "401") {
                     util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
+                } else if (errCode === "10") {
+                    util.add_alert("registration", "danger", () => __("remote_access.script.http_client_error_10"), () => "");
                 } else {
                     util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
                 }
@@ -311,8 +315,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
             await this.runRegistration(registration_data);
             this.setState({enable: true});
         } catch (err) {
-            console.error(`Failed to register charger: ${err}`);
-            util.add_alert("registration", "danger", () => "Failed to register", () => err);
+            const errCode = err.substring(err.lastIndexOf(" ") + 1);
+            if (errCode === "10") {
+                util.add_alert("registration", "danger", () => __("remote_access.script.http_client_error_10"), () => "");
+            } else {
+                util.add_alert("registration", "danger", () => "Failed to register", () => err);
+            }
             this.setState({status_modal_string: ""});
         }
     }
@@ -382,6 +390,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                 const errCode = errString.substring(errString.lastIndexOf(" ") + 1);
                 if (errCode === "401") {
                     util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => __("remote_access.content.wrong_credentials"));
+                } else if (errCode === "10") {
+                    util.add_alert("registration", "danger", () => __("remote_access.script.http_client_error_10"), () => "");
                 } else {
                     util.add_alert("registration", "danger", () => __("remote_access.content.login_failed"), () => errString);
                 }
@@ -453,8 +463,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         try {
             await this.runAddUser(add_user_data);
         } catch (err) {
-            console.error(`Failed to register charger: ${err}`);
-            util.add_alert("registration", "danger", () => "Failed to register", () => err);
+            const errCode = err.substring(err.lastIndexOf(" ") + 1);
+            if (errCode === "10") {
+                util.add_alert("registration", "danger", () => __("remote_access.script.http_client_error_10"), () => "");
+            } else {
+                util.add_alert("registration", "danger", () => "Failed to register", () => err);
+            }
             this.setState({status_modal_string: ""});
         }
     }

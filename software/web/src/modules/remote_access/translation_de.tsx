@@ -40,7 +40,8 @@ let x = {
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Fernzugriffs-Einstellungen"
+            "reboot_content_changed": "Fernzugriffs-Einstellungen",
+            "http_client_error_10": "Die Anfrage ist fehlgeschlagen mit HTTP-Clientfehler. Versuchen Sie den Relay-Server zu ändern."
         }
     }
 }
