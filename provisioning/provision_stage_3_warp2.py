@@ -384,7 +384,7 @@ class Stage3:
             if not self.try_action(servo, lambda device: device.get_enabled(channel)):
                 self.try_action(servo, lambda device: device.set_enable(channel, True))
 
-            self.set_servo_position(servo, channel, 6800)
+            self.set_servo_position(servo, channel, 7300)
             time.sleep(0.1)
             self.set_servo_position(servo, channel, 4000)
             time.sleep(0.1)
@@ -402,7 +402,7 @@ class Stage3:
             if not self.try_action(servo, lambda device: device.get_enabled(channel)):
                 self.try_action(servo, lambda device: device.set_enable(channel, True))
 
-            self.set_servo_position(servo, channel, 5500)
+            self.set_servo_position(servo, channel, 6200)
             time.sleep(0.1)
             self.set_servo_position(servo, channel, 3000)
             time.sleep(0.1)
@@ -1292,6 +1292,12 @@ def main():
 
     button_meter_state_type2_l3 = tk.Button(root, text='Meter State Type2 L3', width=50, command=lambda: stage3.change_meter_state('Type2-L3'))
     button_meter_state_type2_l3.grid(row=10, column=0, padx=10, pady=10)
+
+    button_meter_state_type2_l3 = tk.Button(root, text='Meter Run Button', width=50, command=lambda: stage3.click_meter_run_button())
+    button_meter_state_type2_l3.grid(row=11, column=0, padx=10, pady=10)
+
+    button_meter_state_type2_l3 = tk.Button(root, text='Meter Back Button', width=50, command=lambda: stage3.click_meter_back_button())
+    button_meter_state_type2_l3.grid(row=12, column=0, padx=10, pady=10)
 
     root.mainloop()
 
