@@ -458,7 +458,7 @@ static int32_t get_requested_current(const ChargerState *state, const CurrentAll
         reqd = state->supported_current;
     }
 
-    if (get_highest_charge_mode_bit(state) == ChargeMode::Min) {
+    if (get_highest_charge_mode_bit(state) == ChargeMode::Min && ((state->charge_mode & ChargeMode::PV) == 0)) {
         auto guaranteed_current = state->guaranteed_pv_current / allocated_phases;
         reqd = std::min(guaranteed_current, reqd);
     }
