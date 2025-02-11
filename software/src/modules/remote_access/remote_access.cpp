@@ -173,6 +173,9 @@ void RemoteAccess::pre_setup()
             {"public_key", Config::Str("", 0, 44)}
         });
 
+    // We cant reset this because it is a state since it contains values (uuid, password, users) that should
+    // never ever be writable by a user. The only way to fix this is to completely separate the
+    // "normal" config from the config that stores the chargers credentials.
     config = ConfigRoot{
         Config::Object({{"uuid", Config::Str("", 0, 36)},
                         {"enable", Config::Bool(false)},
