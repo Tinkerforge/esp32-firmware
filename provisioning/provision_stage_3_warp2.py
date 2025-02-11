@@ -1293,11 +1293,11 @@ def main():
     button_meter_state_type2_l3 = tk.Button(root, text='Meter State Type2 L3', width=50, command=lambda: stage3.change_meter_state('Type2-L3'))
     button_meter_state_type2_l3.grid(row=10, column=0, padx=10, pady=10)
 
-    button_meter_state_type2_l3 = tk.Button(root, text='Meter Run Button', width=50, command=lambda: stage3.click_meter_run_button())
-    button_meter_state_type2_l3.grid(row=11, column=0, padx=10, pady=10)
+    button_meter_run_button = tk.Button(root, text='Meter Run Button', width=50, command=lambda: stage3.click_meter_run_button())
+    button_meter_run_button.grid(row=11, column=0, padx=10, pady=10)
 
-    button_meter_state_type2_l3 = tk.Button(root, text='Meter Back Button', width=50, command=lambda: stage3.click_meter_back_button())
-    button_meter_state_type2_l3.grid(row=12, column=0, padx=10, pady=10)
+    button_meter_back_button = tk.Button(root, text='Meter Back Button', width=50, command=lambda: stage3.click_meter_back_button())
+    button_meter_back_button.grid(row=12, column=0, padx=10, pady=10)
 
     root.mainloop()
 
