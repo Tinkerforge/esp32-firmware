@@ -572,7 +572,7 @@ def main(stage3, scanner):
 
         result["uid"] = scanner.qr_esp_uid
         ssid = scanner.qr_hardware_type + "-" + scanner.qr_esp_uid
-        event_log, _ = connect_to_ethernet(ssid, "event_log").decode('utf-8')
+        event_log = connect_to_ethernet(ssid, "event_log")[0].decode('utf-8')
 
         m = re.search(r"WARP{gen} (?:CHARGER|Charger) V(\d+).(\d+).(\d+)".format(gen=scanner.qr_gen), event_log)
         if not m:
