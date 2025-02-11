@@ -650,7 +650,8 @@ MetersSunSpec::ScanState MetersSunSpec::scan_get_next_state_after_read_error()
         return ScanState::Done;
     }
 
-    if (scan->read_result == TFModbusTCPClientTransactionResult::ModbusGatewayTargetDeviceFailedToRespond
+    if (scan->read_result == TFModbusTCPClientTransactionResult::ModbusGatewayPathUnvailable
+     || scan->read_result == TFModbusTCPClientTransactionResult::ModbusGatewayTargetDeviceFailedToRespond
      || (scan->read_result == TFModbusTCPClientTransactionResult::Timeout && scan->read_retries <= 0)) {
         return ScanState::NextDeviceAddress;
     }
