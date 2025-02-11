@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "modbus_tcp_srvr"
+
 #include "modbus_tcp.h"
 
 #include <Arduino.h>
