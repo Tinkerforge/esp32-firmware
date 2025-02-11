@@ -41,7 +41,7 @@ let x = {
         "script": {
             "save_failed": "Failed to save the remote access settings.",
             "reboot_content_changed": "remote access settings",
-            "http_client_error_10": "The request failed with HTTP client error. Try to change the relay server."
+            "http_client_error_10": <>Can't reach relay server. Is {__("the_device")} connected to the internet? Is the relay server configuration correct?</>
         }
     }
 }

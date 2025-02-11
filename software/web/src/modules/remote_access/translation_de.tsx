@@ -41,7 +41,7 @@ let x = {
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "Fernzugriffs-Einstellungen",
-            "http_client_error_10": "Die Anfrage ist fehlgeschlagen mit HTTP-Clientfehler. Versuchen Sie den Relay-Server zu ändern."
+            "http_client_error_10": <>Relay-Server kann nicht erreicht werden. Verfügt {__("the_device")} über eine Internetverbindung? Ist der Relay-Server korrekt konfiguriert?</>
         }
     }
 }
