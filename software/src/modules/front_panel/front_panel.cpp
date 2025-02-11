@@ -58,7 +58,7 @@ static void static_flash_data_done_callback(struct TF_WARPFrontPanel *warp_front
 FrontPanel::FrontPanel() : DeviceModule(warp_front_panel_bricklet_firmware_bin_data,
                                         warp_front_panel_bricklet_firmware_bin_length,
                                         "front_panel",
-                                        "WARP Front Panel",
+                                        BUILD_DISPLAY_NAME " Front Panel",
                                         "Front Panel",
                                         [this](){this->setup_bricklet();}) {}
 

@@ -231,8 +231,8 @@ let x = {
             "mode_explainer_1": "Dieser WARP Charger ist Teil eines Lastmanagement-Verbunds mit anderen WARP Chargern und/oder einem WARP Energy Manager. Ein anderes Gerät steuert diesen Lastmanagement-Verbund, um sicherzustellen, dass nie mehr als der verfügbare Strom bezogen wird.",
             "mode_explainer_2": "Dieser WARP Charger verwendet entweder das PV-Überschussladen oder er steuert einen Lastmanagement-Verbund mit anderen WARP Chargern um sicherzustellen, dass nie mehr als der verfügbare Strom bezogen wird.",
 
-            "mode_explainer_0_em": "Dieser Energy Manager steuert keine Wallboxen.",
-            "mode_explainer_2_em": "Dieser Energy Manager steuert einen oder mehrere WARP Charger.",
+            "mode_explainer_0_em": <>{__("This_device")} steuert keine Wallboxen.</>,
+            "mode_explainer_2_em": <>{__("This_device")} steuert eine oder mehrere Wallboxen.</>,
 
             "mode_explainer_0_em_with_ps": "Dieser Energy Manager steuert keine Wallboxen. Phasenumschaltung ist deaktiviert.",
             "mode_explainer_1_em_with_ps": "Dieser Energy Manager wird von einem anderen Energy Manager oder WARP Charger gesteuert und führt Phasenumschaltungen für eine einzige mit seinem Schütz verbundene Wallbox durch.",

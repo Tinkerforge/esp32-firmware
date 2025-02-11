@@ -30,6 +30,11 @@ let x = {
             "day_ahead_prices_muted": /*FFN*/(api_url: string) => <>Die Daten werden von <a href="https://www.entsoe.eu/about/" target="_blank">ENTSO-E</a> bereitgestellt.</> /*NF*/
         }
     },
+    "meters_em": {
+        "content": {
+            "meter_class": "Am Smart Energy Broker angeschlossen"
+        }
+    },
     "branding": {
         "device": "SEB",
         "the": "der",

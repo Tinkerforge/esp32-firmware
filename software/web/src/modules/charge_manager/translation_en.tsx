@@ -255,8 +255,8 @@ let x = {
             "mode_explainer_1": "This WARP Charger is part of a charge management group with other WARP Chargers and/or a WARP Energy Manager. Another device controls this group to make sure the configured current is never exceeded.",
             "mode_explainer_2": "This WARP Charger either uses the PV excess charging or controls a charge management group with other WARP Chargers to make sure the configured current is never exceeded.",
 
-            "mode_explainer_0_em": "This Energy Manager does not control any chargers.",
-            "mode_explainer_2_em": "This Energy Manager controls one or more WARP chargers.",
+            "mode_explainer_0_em": <>{__("This_device")} does not control any chargers.</>,
+            "mode_explainer_2_em": <>{__("This_device")} controls one or more chargers.</>,
 
             "mode_explainer_0_em_with_ps": "This Energy Manager does not control any chargers. Phase switching is disabled.",
             "mode_explainer_1_em_with_ps": "This Energy Manager is controlled by another Energy Manager or WARP Charger and performs phase switching for a single controlled charger that is connected to its contactor.",
