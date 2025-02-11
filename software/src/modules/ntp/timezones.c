@@ -1,5 +1,5 @@
 /*
-2024b;2024-09-10T09:51:57.237946
+2025a;2025-02-11T10:08:00.517055+00:00
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -379,7 +379,7 @@ static const TableValue America_vals[] = {
     {true, {"<-03>3"}},
     {false, {.sub_table=&Argentina}},
     {true, {"AST4"}},
-    {true, {"<-04>4<-03>,M10.1.0/0,M3.4.0/0"}},
+    {true, {"<-03>3"}},
     {true, {"EST5"}},
     {true, {"HST10HDT,M3.2.0,M11.1.0"}},
     {true, {"<-03>3"}},
