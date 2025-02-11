@@ -371,16 +371,19 @@ void MeterSunSpec::scan_next()
                             quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
                             quirks |= SUN_SPEC_QUIRKS_FLOAT_IS_LE32;
                             quirks |= SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY;
-                        } else if (strncmp(m->Mn, "SMA", 32) == 0) {
+                        }
+                        else if (strncmp(m->Mn, "SMA", 32) == 0) {
                             if (model_id >= 100 && model_id < 200) {
                                 quirks |= SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16;
                             }
-                        } else if (equals_solar_edge(m->Mn)) {
+                        }
+                        else if (equals_solar_edge(m->Mn)) {
                             if (model_id >= 200 && model_id < 300) {
                                 // Only meters are inverted, inverters are not.
                                 quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;
                             }
-                        } else if (strncmp(m->Mn, "SUNGROW", 32) == 0) {
+                        }
+                        else if (strncmp(m->Mn, "SUNGROW", 32) == 0) {
                             quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY;
                         }
 
