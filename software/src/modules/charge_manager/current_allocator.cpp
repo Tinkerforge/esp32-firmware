@@ -1169,7 +1169,7 @@ static void stage_7(StageContext &sc) {
         auto allocated_current = sc.current_allocation[sc.idx_array[i]];
         auto allocated_phases = sc.phase_allocation[sc.idx_array[i]];
 
-        auto current = state->observe_pv_limit ? std::max(state->guaranteed_pv_current / allocated_phases, fair.pv / allocated_phases) : 32000;
+        auto current = state->observe_pv_limit ? std::max(state->guaranteed_pv_current / allocated_phases - allocated_current, fair.pv / allocated_phases) : 32000;
 
         if (state->phase_rotation == PhaseRotation::Unknown) {
             current = std::min(current, fair.min_phase());
@@ -1236,7 +1236,7 @@ static void stage_8(StageContext &sc) {
                         std::max(
                             0,
                             state->observe_pv_limit
-                                ? std::max(state->guaranteed_pv_current / allocated_phases, sc.limits->raw.pv / allocated_phases)
+                                ? std::max(state->guaranteed_pv_current / allocated_phases - allocated_current, sc.limits->raw.pv / allocated_phases)
                                 : 32000),
                         current_capacity(sc.limits, state, allocated_current, allocated_phases, sc.cfg));
 
