@@ -25,6 +25,11 @@ let x = {
             "power_history": "Leistungsverlauf"
         }
     },
+    "day_ahead_prices": {
+        "content": {
+            "day_ahead_prices_muted": /*FFN*/(api_url: string) => <>Die Daten werden von <a href="https://www.entsoe.eu/about/" target="_blank">ENTSO-E</a> bereitgestellt.</> /*NF*/
+        }
+    },
     "branding": {
         "device": "SEB",
         "the": "der",
