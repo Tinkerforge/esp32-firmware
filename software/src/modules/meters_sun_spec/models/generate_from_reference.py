@@ -35,7 +35,7 @@ value_id_mappings_inverter = {
     "PPVphAB" : [ "VoltageL1L2",                 None  ],
     "PPVphBC" : [ "VoltageL2L3",                 None  ],
     "PPVphCA" : [ "VoltageL3L1",                 None  ],
-    "TmpCab"  : [ "TemperatureCabinet",          None  ], # Reihenfolge des Models
+    "TmpCab"  : [ "TemperatureCabinet",          None  ], # Model order
     "TmpOt"   : [ "Temperature",                 None  ],
     "TmpSnk"  : [ "TemperatureHeatSink",         None  ],
     "TmpTrns" : [ "TemperatureTransformer",      None  ],
@@ -156,10 +156,10 @@ value_id_mappings_der = {
     "AL3"          : [ "CurrentL3ImExSum",             None  ],
     "A"            : [ "CurrentLSumImExSum",           None  ],
 
-    "WL1"          : [ "PowerActiveL1ImExDiff",        None  ],
-    "WL2"          : [ "PowerActiveL2ImExDiff",        None  ],
-    "WL3"          : [ "PowerActiveL3ImExDiff",        None  ],
-    "W"            : [ "PowerActiveLSumImExDiff",      None  ], # Power values might be sign-inverted
+    "WL1"          : [ "PowerActiveL1ImExDiff",        -1.0  ],
+    "WL2"          : [ "PowerActiveL2ImExDiff",        -1.0  ],
+    "WL3"          : [ "PowerActiveL3ImExDiff",        -1.0  ],
+    "W"            : [ "PowerActiveLSumImExDiff",      -1.0  ],
     "VarL1"        : [ "PowerReactiveL1IndCapDiff",    None  ],
     "VarL2"        : [ "PowerReactiveL2IndCapDiff",    None  ],
     "VarL3"        : [ "PowerReactiveL3IndCapDiff",    None  ],
@@ -187,10 +187,10 @@ value_id_mappings_der = {
     "TotVarhInj"   : [ "EnergyReactiveLSumInductive",  0.001 ],
     "TotVarhAbs"   : [ "EnergyReactiveLSumCapacitive", 0.001 ],
 
-    "PFL1"         : [ "PowerFactorL1Directional",     None  ],
-    "PFL2"         : [ "PowerFactorL2Directional",     None  ],
-    "PFL3"         : [ "PowerFactorL3Directional",     None  ],
-    "PF"           : [ "PowerFactorLSumDirectional",   None  ],
+    "PFL1"         : [ "PowerFactorL1Directional",     -1.0  ],
+    "PFL2"         : [ "PowerFactorL2Directional",     -1.0  ],
+    "PFL3"         : [ "PowerFactorL3Directional",     -1.0  ],
+    "PF"           : [ "PowerFactorLSumDirectional",   -1.0  ],
 
     "Hz"           : [ "FrequencyLAvg",                None  ],
 

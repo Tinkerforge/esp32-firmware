@@ -7531,7 +7531,7 @@ static float get_model_701_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= (get_scale_factor(model->W_SF) * -1.0f);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -7562,7 +7562,7 @@ static float get_model_701_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= (get_scale_factor(model->PF_SF) * -1.0f);
     return fval;
 }
 
@@ -7692,7 +7692,7 @@ static float get_model_701_WL1(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->WL1;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= (get_scale_factor(model->W_SF) * -1.0f);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -7723,7 +7723,7 @@ static float get_model_701_PFL1(const void *register_data, uint32_t quirks, bool
     int16_t val = model->PFL1;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= (get_scale_factor(model->PF_SF) * -1.0f);
     return fval;
 }
 
@@ -7803,7 +7803,7 @@ static float get_model_701_WL2(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->WL2;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= (get_scale_factor(model->W_SF) * -1.0f);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -7834,7 +7834,7 @@ static float get_model_701_PFL2(const void *register_data, uint32_t quirks, bool
     int16_t val = model->PFL2;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= (get_scale_factor(model->PF_SF) * -1.0f);
     return fval;
 }
 
@@ -7914,7 +7914,7 @@ static float get_model_701_WL3(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->WL3;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= (get_scale_factor(model->W_SF) * -1.0f);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -7945,7 +7945,7 @@ static float get_model_701_PFL3(const void *register_data, uint32_t quirks, bool
     int16_t val = model->PFL3;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= (get_scale_factor(model->PF_SF) * -1.0f);
     return fval;
 }
 
