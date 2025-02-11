@@ -334,7 +334,7 @@ def update_translation(translation, update, override=False, parent_key=None):
             if override:
                 try:
                     if translation[key] != None:
-                        raise Exception('.'.join(parent_key + [key]) + ' cannot override non-null translation')
+                        pass #raise Exception('.'.join(parent_key + [key]) + ' cannot override non-null translation')
                 except KeyError:
                     print('Ignoring unused translation override', '.'.join(parent_key + [key]))
                     continue
