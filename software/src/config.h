@@ -599,14 +599,22 @@ public:
     const ConstWrap get(int8_t ) const = delete;
                Wrap get(int16_t)       = delete;
     const ConstWrap get(int16_t) const = delete;
-               Wrap get(long   )       = delete;
-    const ConstWrap get(long   ) const = delete;
+    // int32_t is long, not int on Xtensa since ESP-IDF 5.0.
+               Wrap get(int32_t)       = delete;
+    const ConstWrap get(int32_t) const = delete;
+
+    // Passing negative indices to get() should not be allowed.
+    // However get() with a literal (for example foo.get(2)) should work.
+    // -> We have to allow int but not any other signed type.
     inline            Wrap get(int      i)       {return get(static_cast<size_t>(i));} // These casts should be safe, as negative values become huge positive values,
     inline const ConstWrap get(int      i) const {return get(static_cast<size_t>(i));} // and the nested get() performs an array bounds check.
     inline            Wrap get(uint8_t  i)       {return get(static_cast<size_t>(i));}
     inline const ConstWrap get(uint8_t  i) const {return get(static_cast<size_t>(i));}
     inline            Wrap get(uint16_t i)       {return get(static_cast<size_t>(i));}
     inline const ConstWrap get(uint16_t i) const {return get(static_cast<size_t>(i));}
+    inline            Wrap get(uint32_t i)       {return get(static_cast<size_t>(i));}
+    inline const ConstWrap get(uint32_t i) const {return get(static_cast<size_t>(i));}
+
     Wrap get(size_t i);
     const ConstWrap get(size_t i) const;
     Wrap add();
