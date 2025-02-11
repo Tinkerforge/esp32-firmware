@@ -700,3 +700,11 @@
 - Fix Caps Lock detection of password inputs
 - Fix multiple remote access bugs
 - Improve translations
+
+2025-02-11: 2.7.1 (<unknown>)
+- Add meter location
+- Charge Manager: Fix Min+PV charge mode
+- Charge Manager: Fix Min charge mode
+- Fix multiple remote access bugs
+- Update timezone database
+- Improve translations
