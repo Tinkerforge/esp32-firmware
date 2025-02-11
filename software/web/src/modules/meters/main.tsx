@@ -587,7 +587,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 
     override async sendReset(topic: null) {
         for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            await API.reset_unchecked(`meters/${meter_slot}/config`, this.error_string, this.reboot_string);
+            await API.reset_unchecked(`meters/${meter_slot}/config`, this.error_string, meter_slot == METERS_SLOTS - 1 ? this.reboot_string : undefined);
         }
     }
 
