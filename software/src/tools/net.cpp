@@ -20,10 +20,11 @@
 #include <esp_netif.h>
 #include <lwip/udp.h>
 
+#include "main_dependencies.h"
+
 #include "net.h"
 
 #include "event_log_prefix.h"
-#include "main_dependencies.h"
 
 bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check)
 {
