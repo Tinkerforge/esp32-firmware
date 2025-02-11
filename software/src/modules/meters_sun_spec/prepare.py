@@ -82,7 +82,7 @@ model_specs = [
     ModelSpec('Solar Module A',                             'FIXME',                            'FIXME',                               501,   False, 'Unknown',  False),
     ModelSpec('Solar Module B',                             'FIXME',                            'FIXME',                               502,   False, 'Unknown',  False),
     ModelSpec('Tracker Controller',                         'FIXME',                            'FIXME',                               601,   False, 'Unknown',  False),
-    ModelSpec('DER AC Measurements',                        'AC Measurements',                  'AC-Messwerte',                        701,   True,  'Unknown',  True),
+    ModelSpec('DER AC Measurements',                        'AC Measurements',                  'AC-Messwerte',                        701,   True,  'Inverter', True),
     ModelSpec('DER Capacity',                               'FIXME',                            'FIXME',                               702,   False, 'Unknown',  False),
     ModelSpec('DER Enter Service',                          'FIXME',                            'FIXME',                               703,   False, 'Unknown',  False),
     ModelSpec('DER AC Controls',                            'FIXME',                            'FIXME',                               704,   False, 'Unknown',  False),
