@@ -535,6 +535,16 @@ def repair_meters_modbus_tcp_dir():
         except FileNotFoundError:
             pass
 
+def repair_meters_sun_spec_dir():
+    path = os.path.abspath("src/modules/meters_sun_spec")
+
+    for name in ["sun_spec_model_id.cpp",
+                 "sun_spec_model_id.h"]:
+        try:
+            os.remove(os.path.join(path, name))
+        except FileNotFoundError:
+            pass
+
 def find_module_space(modules, name_space):
     index = 0
     for module in modules:
@@ -557,6 +567,7 @@ def main():
     repair_rtc_dir()
     repair_firmware_update_dir()
     repair_meters_modbus_tcp_dir()
+    repair_meters_sun_spec_dir()
 
     check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
 

@@ -26,7 +26,7 @@
 #include "module_dependencies.h"
 #include "meter_sun_spec.h"
 #include "tools.h"
-#include "sun_spec_model_id.h"
+#include "sun_spec_model_specs.h"
 #include "modules/meters/meter_location.enum.h"
 
 #include "gcc_warnings.h"

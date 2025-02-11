@@ -21,6 +21,8 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "sun_spec_model_specs.h"
+#include "modules/meters/meter_location.enum.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 #include "modules/meters_sun_spec/models/model_001.h"
 
@@ -51,8 +53,21 @@ void MeterSunSpec::setup(Config *ephemeral_config)
     serial_number     = ephemeral_config->get("serial_number")->asString();
     model_id          = static_cast<uint16_t>(ephemeral_config->get("model_id")->asUint());
     model_instance    = static_cast<uint16_t>(ephemeral_config->get("model_instance")->asUint());
+    model_parser      = MetersSunSpecParser::new_parser(slot, model_id);
 
-    model_parser = MetersSunSpecParser::new_parser(slot, model_id);
+    MeterLocation default_location = MeterLocation::Unknown;
+
+    for (size_t i = 0; i < sun_spec_model_specs_length; ++i) {
+        if (model_id == static_cast<uint16_t>(sun_spec_model_specs[i].model_id)) {
+            default_location = sun_spec_model_specs[i].meter_location;
+            break;
+        }
+    }
+
+    if (ephemeral_config->get("location")->asEnum<MeterLocation>() == MeterLocation::Unknown && default_location != MeterLocation::Unknown) {
+        ephemeral_config->get("location")->updateEnum(default_location);
+    }
+
     if (!model_parser) {
         logger.printfln("No parser available for model %u", model_id);
         return;

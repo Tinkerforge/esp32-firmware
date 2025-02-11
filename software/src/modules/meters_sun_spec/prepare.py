@@ -128,7 +128,7 @@ for model_spec in model_specs:
     enum_key = model_spec.model_name.replace(' ', '').replace('-', '')
 
     enum_values.append(f'    {enum_key} = {model_spec.model_id},\n')
-    spec_values.append(f'    {{\n        SunSpecModelID::{enum_key},\n        "{model_spec.model_name}",\n    }},\n')
+    spec_values.append(f'    {{\n        SunSpecModelID::{enum_key},\n        "{model_spec.model_name}",\n        MeterLocation::{model_spec.meter_location},\n    }},\n')
 
     if model_spec.is_meter_like:
         translation_values['en'].append(f'"model_{model_spec.model_id}": "{model_spec.display_name_en}"')
@@ -139,10 +139,11 @@ for model_spec in model_specs:
     model_meter_location.append(f'    {model_spec.model_id}: MeterLocation.{model_spec.meter_location},\n')
     model_is_supported.append(f'    {model_spec.model_id}: {str(model_spec.is_supported).lower()},\n')
 
-with open('sun_spec_model_id.h', 'w', encoding='utf-8') as f:
+with open('sun_spec_model_specs.h', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#include <stdint.h>\n')
     f.write('#include <stdlib.h>\n\n')
+    f.write('#include "modules/meters/meter_location.enum.h"\n\n')
     f.write('#pragma once\n\n')
     f.write('enum class SunSpecModelID : uint16_t {\n')
     f.write(''.join(enum_values))
@@ -150,13 +151,14 @@ with open('sun_spec_model_id.h', 'w', encoding='utf-8') as f:
     f.write('struct SunSpecModelSpec {\n')
     f.write('    SunSpecModelID model_id;\n')
     f.write('    const char *model_name;\n')
+    f.write('    MeterLocation meter_location;\n')
     f.write('};\n\n')
     f.write('extern const SunSpecModelSpec sun_spec_model_specs[];\n\n')
     f.write('extern const size_t sun_spec_model_specs_length;\n')
 
-with open('sun_spec_model_id.cpp', 'w', encoding='utf-8') as f:
+with open('sun_spec_model_specs.cpp', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
-    f.write('#include "sun_spec_model_id.h"\n\n')
+    f.write('#include "sun_spec_model_specs.h"\n\n')
     f.write('const SunSpecModelSpec sun_spec_model_specs[] = {\n')
     f.write(''.join(spec_values))
     f.write('};\n\n')
