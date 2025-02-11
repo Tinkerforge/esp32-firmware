@@ -109,12 +109,12 @@ for name, tz in timezones.items():
 generate("global", nested_dict)
 
 tfutil.specialize_template("timezones.c.template", "timezones.c", {
-    '{{{generated_comment}}}': "/*\n{};{}\n*/".format(installed_db_version, datetime.datetime.now(datetime.UTC).isoformat()),
+    '{{{generated_comment}}}': "/*\n{};{}\n*/".format(installed_db_version, datetime.datetime.now(datetime.timezone.utc).isoformat()),
     '{{{table_inits}}}': "\n\n".join(inits)
 })
 
 
 tfutil.specialize_template("../../../web/src/modules/ntp/timezones.ts.template", "../../../web/src/modules/ntp/timezones.ts", {
-    '{{{generated_comment}}}': "/*\n{};{}\n*/".format(installed_db_version, datetime.datetime.now(datetime.UTC).isoformat()),
+    '{{{generated_comment}}}': "/*\n{};{}\n*/".format(installed_db_version, datetime.datetime.now(datetime.timezone.utc).isoformat()),
     '{{{json}}}': json.dumps(empty_nested_dict, indent=4)
 })
