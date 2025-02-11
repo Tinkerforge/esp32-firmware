@@ -498,7 +498,7 @@ def connect_to_ethernet(ssid, url):
     else:
         fatal_error("Failed to connect via ethernet! Is the router's DHCP cache full?")
     print(" Connected.")
-    return result
+    return result, ssid + ("" if i % 2 == 0 else ".local")
 
 def collect_nfc_tag_ids(stage3, getter, beep_notify):
     print(green("Waiting for NFC tags"), end="")
@@ -572,7 +572,7 @@ def main(stage3, scanner):
 
         result["uid"] = scanner.qr_esp_uid
         ssid = scanner.qr_hardware_type + "-" + scanner.qr_esp_uid
-        event_log = connect_to_ethernet(ssid, "event_log").decode('utf-8')
+        event_log, _ = connect_to_ethernet(ssid, "event_log").decode('utf-8')
 
         m = re.search(r"WARP{gen} (?:CHARGER|Charger) V(\d+).(\d+).(\d+)".format(gen=scanner.qr_gen), event_log)
         if not m:
@@ -618,11 +618,11 @@ def main(stage3, scanner):
 
         result["firmware"] = firmware_path.split("/")[-1]
 
-        connect_to_ethernet(ssid, "hidden_proxy/enable")
+        _, host = connect_to_ethernet(ssid, "hidden_proxy/enable")
 
         ipcon = IPConnection()
         try:
-            ipcon.connect(ssid, 4223)
+            ipcon.connect(host, 4223)
         except Exception as e:
             fatal_error("Failed to connect to ESP proxy. Is the router's DHCP cache full?")
 
