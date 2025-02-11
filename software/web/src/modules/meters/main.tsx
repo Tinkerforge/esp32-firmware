@@ -1448,15 +1448,18 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                         {battery_power_sum !== null || battery_soc_avg !== null ?
                                             <div class="col-auto px-2 mb-2 text-nowrap">
                                                 <div class="meters-status-power-sums-icon pr-2">{battery_power_sum !== null && battery_power_sum > 0 ? <BatteryCharging/> : <Battery/>}</div>
-                                                <div class="text-right" style={"display: inline-block; vertical-align: middle; min-width: " + this.state.power_sum_min_width.battery + "px;"}>
-                                                    <div class="text-left">
-                                                        {battery_power_sum !== null && battery_soc_avg !== null
-                                                            ? <><div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
-                                                                <div class="meters-status-power-sums-text-sub">{util.toLocaleFixed(battery_power_sum)} W</div></>
-                                                            : (battery_soc_avg !== null
-                                                                ? <div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
-                                                                : <div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_power_sum)} W</div>
-                                                            )}
+                                                <div style={"display: inline-block; vertical-align: middle; min-width: " + this.state.power_sum_min_width.battery + "px;"}>
+                                                    <div class="row no-gutters">
+                                                        <div class="col"></div>
+                                                        <div class="col-auto">
+                                                            {battery_power_sum !== null && battery_soc_avg !== null
+                                                                ? <><div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main text-left">{util.toLocaleFixed(battery_soc_avg)} %</div>
+                                                                    <div class="meters-status-power-sums-text-sub text-left">{util.toLocaleFixed(battery_power_sum)} W</div></>
+                                                                : (battery_soc_avg !== null
+                                                                    ? <div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
+                                                                    : <div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_power_sum)} W</div>
+                                                                )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div> : undefined}
