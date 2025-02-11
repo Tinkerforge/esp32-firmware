@@ -871,6 +871,11 @@ de_hyph = [
     "La-de-be-ginn",
     "Nenn-leis-tung",
     "Be-nutzer-zu-ord-nung",
+    "Leis-tun-gen",
+    "Mit-tel-wert",
+    "Über-ein-stim-mend",
+    "Ab-wei-chend",
+    "In-ter-net-ver-bin-dung",
 ]
 
 en_hyph = [
