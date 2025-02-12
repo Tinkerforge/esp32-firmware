@@ -394,6 +394,7 @@ void ChargeManager::update_charger_state_from_mode(ChargerState *state, int char
                 // TODO maybe support guaranteed power == enable_current of this specific charger?
                 state->off = false;
                 state->guaranteed_pv_current = this->guaranteed_pv_current;
+                state->observe_pv_limit = true;
                 continue;
             }
 
