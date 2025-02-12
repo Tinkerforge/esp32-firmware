@@ -101,6 +101,8 @@ public:
     uint8_t config_cm_to_cm(ConfigChargeMode power_manager_charge_mode);
     ConfigChargeMode cm_to_config_cm(uint8_t mode);
 
+    bool fast_charger_in_c = false;
+
 private:
     bool seen_all_chargers();
     void start_manager_task();
