@@ -58,7 +58,7 @@ model_specs = [
     ModelSpec('Inverter LFRT Extended Curve',               'FIXME',                            'FIXME',                               143,   False, 'Inverter', False),
     ModelSpec('Inverter HFRT Extended Curve',               'FIXME',                            'FIXME',                               144,   False, 'Inverter', False),
     ModelSpec('Inverter Extended Settings',                 'FIXME',                            'FIXME',                               145,   False, 'Inverter', False),
-    ModelSpec('Inverter Multiple MPPT Extension',           'FIXME',                            'FIXME',                               160,   False, 'Inverter', False),
+    ModelSpec('Inverter Multiple MPPT Extension',           'MPPT Extension',                   'MPPT-Erweiterung',                    160,   True,  'PV',       True),
     ModelSpec('Meter Single Phase Integer',                 'Meter',                            'Zähler',                              201,   True,  'Unknown',  True),
     ModelSpec('Meter Split Phase Integer',                  'Meter',                            'Zähler',                              202,   True,  'Unknown',  True),
     ModelSpec('Meter Wye Three Phase Integer',              'Meter',                            'Zähler',                              203,   True,  'Unknown',  True),
