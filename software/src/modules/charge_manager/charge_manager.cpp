@@ -504,10 +504,10 @@ void ChargeManager::setup()
 
     // TODO: Change all currents everywhere to int32_t or int16_t.
     int def_cur = (int) default_current;
-    this->limits.raw = {3 * def_cur, def_cur, def_cur, def_cur};
-    this->limits.min = {3 * def_cur, def_cur, def_cur, def_cur};
-    this->limits.spread = {3 * def_cur, def_cur, def_cur, def_cur};
-    this->limits.max_pv = 3 * def_cur;
+    this->limits.raw = {0, def_cur, def_cur, def_cur};
+    this->limits.min = {0, def_cur, def_cur, def_cur};
+    this->limits.spread = {0, def_cur, def_cur, def_cur};
+    this->limits.max_pv = 0;
 
     start_manager_task();
 
