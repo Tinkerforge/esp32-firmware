@@ -76,6 +76,8 @@ public:
 
     uint8_t translate_charge_mode(ConfigChargeMode power_manager_charge_mode);
 
+    bool fast_charger_in_c = false;
+
 private:
     bool seen_all_chargers();
     void start_manager_task();
