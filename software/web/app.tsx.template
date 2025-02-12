@@ -31,6 +31,7 @@ import { InputText } from "./ts/components/input_text";
 import { InputPassword } from "./ts/components/input_password";
 import { RemoteCloseButton } from "./ts/components/remote_close_button";
 import { InnerNavbar } from "./ts/components/inner_navbar";
+import { DeviceInfo } from "./ts/components/device_info";
 import { Key, Home, Menu } from "react-feather";
 import Container from "react-bootstrap/Container";
 import Tab from "react-bootstrap/Tab";
@@ -214,10 +215,12 @@ export class App extends Component<AppProps, AppState> {
                 <Row>
                     <Collapse in={this.state.sidebar_open}>
                     <nav hidden={util.is_native_median_app()} id="sidebar-menu" class={util.is_native_median_app() ? "" : "col-md-3 col-lg-2 d-md-block bg-light sidebar navbar-collapse"}>
-                        <div class="sidebar-sticky pt-3 pb-3">
+                        <div class="sidebar-sticky pt-3 pb-3 d-flex flex-column">
                             <InnerNavbar mode={this.state.mode} visible={this.state.visible}>
                                 {{{navbar}}}
                             </InnerNavbar>
+                            <div class="flex-grow-1 pb-1 pt-1"></div>
+                            <DeviceInfo />
                         </div>
                     </nav>
                     </Collapse>
