@@ -642,6 +642,7 @@ void ChargeManager::setup()
             this->state.get("l_max_pv")->updateInt(this->limits.max_pv);
             this->low_level_state.get("last_hyst_reset")->updateUptime(this->ca_state->last_hysteresis_reset);
 
+            fast_charger_in_c = false;
             for (int i = 0; i < this->charger_count; ++i) {
                 update_charger_state_config(i);
                 this->charger_decisions[i].zero.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d0"));
@@ -649,6 +650,7 @@ void ChargeManager::setup()
                 this->charger_decisions[i].three.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d3"));
                 this->charger_decisions[i].current.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("dc"));
             }
+            logger.printfln_debug("fast_charger_in_c %d", fast_charger_in_c);
 
             this->state.get("state")->updateUint(result);
         }, 1_s);
@@ -949,6 +951,11 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     ll_charger_cfg->get("ip")->updateUptime(charger.use_supported_current);
 
     charge_mode.get(idx)->updateEnum(this->cm_to_config_cm(charger.charge_mode));
+
+    bool is_fast = (charger.charge_mode & ChargeMode::Fast) != 0;
+    bool is_eco_fast = (charger.charge_mode & ChargeMode::Eco) != 0 && charger.eco_fast;
+    if (charger.is_charging && (is_fast || is_eco_fast))
+        fast_charger_in_c = true;
 }
 
 uint32_t ChargeManager::get_maximum_available_current()
