@@ -63,8 +63,8 @@ export function InputSelect(props: InputSelectProps) {
         <>
             <select
                 {...p}
-                readOnly={onValue === undefined}
-                disabled={onValue === undefined}
+                readOnly={onValue === undefined || p.readOnly}
+                disabled={onValue === undefined || p.disabled}
                 value={value}
                 class={(className ?? "") + " custom-select"}
                 style={style ?? ""}
