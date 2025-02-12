@@ -691,11 +691,17 @@ static void stage_3(StageContext &sc) {
         if (alloc_phases == 0 || was_just_plugged_in(state) || !state->observe_pv_limit)
             continue;
 
+        auto min_cost = get_minimum_cost(alloc_phases, state->phase_rotation, sc.cfg);
+
+        // This is a Min(+PV?) charger that is guaranteed enough PV current to continue charging.
+        if (state->observe_pv_limit && min_cost.pv <= state->guaranteed_pv_current)
+            continue;
+
         trace("3: wnd_min %d > max_pv %d", wnd_min.pv, sc.limits->max_pv);
 
         // We don't have to recalculate the window but instead can just change the minimum.
         // The window minimum does not have dependencies between chargers.
-        wnd_min -= get_minimum_cost(alloc_phases, state->phase_rotation, sc.cfg);
+        wnd_min -= min_cost;
         sc.phase_allocation[sc.idx_array[i]] = 0;
 
         trace("3: shut down %d", sc.idx_array[i]);
