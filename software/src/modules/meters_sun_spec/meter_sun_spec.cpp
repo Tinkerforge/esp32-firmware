@@ -157,20 +157,27 @@ void MeterSunSpec::read_done_callback()
         return;
     }
 
+    size_t registers_to_read = 0;
+    bool restart_read = false;
+
     if (!values_declared) {
-        size_t registers_to_read = 0;
-        if (!model_parser->detect_values(generic_read_request.data, quirks, &registers_to_read)) {
+        if (!model_parser->detect_values(generic_read_request.data, generic_read_request.register_count, quirks, &registers_to_read)) {
             logger.printfln("Detecting values of model %u in slot %u failed.", model_id, slot);
             return;
         }
+
         values_declared = true;
-        generic_read_request.register_count = registers_to_read;
+        restart_read = generic_read_request.register_count != registers_to_read;
     }
 
-    if (!model_parser->parse_values(generic_read_request.data, quirks)) {
+    if (!model_parser->parse_values(generic_read_request.data, generic_read_request.register_count, quirks)) {
         auto inconsistency = errors->get("inconsistency");
         inconsistency->updateUint(inconsistency->asUint() + 1);
         // TODO: Read again if parsing failed?
+    }
+
+    if (restart_read) {
+        read_start(registers_to_read);
     }
 }
 
@@ -286,9 +293,9 @@ void MeterSunSpec::scan_next()
                         start_generic_read();
                     }
                     else {
-                        if (block_length != model_parser->get_model_length()) {
-                            logger.printfln("Configured SunSpec model %u/%u found but has incorrect length. Expected %u, got %u.",
-                                            model_id, model_instance, model_parser->get_model_length(), block_length);
+                        if (!model_parser->is_model_length_supported(block_length)) {
+                            logger.printfln("Configured SunSpec model %u/%u found but has unsupported length: %u",
+                                            model_id, model_instance, block_length);
                             scan_start_delay();
                         }
                         else {

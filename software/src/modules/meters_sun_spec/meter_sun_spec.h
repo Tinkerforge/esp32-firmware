@@ -90,7 +90,7 @@ private:
     uint16_t scan_model_counter;
 
     uint32_t quirks = 0;
-    MetersSunSpecParser *model_parser;
+    IMetersSunSpecParser *model_parser;
 };
 
 #if defined(__GNUC__)

@@ -22,11 +22,16 @@
 #include <stdlib.h>
 
 #include "module_dependencies.h"
+#include "model_parser_160.h"
 
 #include "gcc_warnings.h"
 
-MetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t meter_slot, uint16_t model_id)
+IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t meter_slot, uint16_t model_id)
 {
+    if (model_id == 160) {
+        return new MetersSunSpecParser160(meter_slot);
+    }
+
     for (size_t i = 0; i < meters_sun_spec_all_model_data.model_count; i++) {
         auto *model_data = meters_sun_spec_all_model_data.model_data[i];
         if (model_data->model_id == model_id) {
@@ -37,7 +42,7 @@ MetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t meter_slot, uint16
     return nullptr;
 }
 
-bool MetersSunSpecParser::detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read)
+bool MetersSunSpecParser::detect_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks, size_t *registers_to_read)
 {
     if (!model->validator(register_data))
         return false;
@@ -73,7 +78,7 @@ bool MetersSunSpecParser::detect_values(const uint16_t *const register_data[2], 
     return true;
 }
 
-bool MetersSunSpecParser::parse_values(const uint16_t *const register_data[2], uint32_t quirks)
+bool MetersSunSpecParser::parse_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks)
 {
     if (!model->validator(register_data))
         return false;
@@ -94,9 +99,9 @@ bool MetersSunSpecParser::must_read_twice()
     return model->read_twice;
 }
 
-uint32_t MetersSunSpecParser::get_model_length()
+bool MetersSunSpecParser::is_model_length_supported(uint32_t model_length)
 {
-    return model->model_length;
+    return model_length == model->model_length;
 }
 
 uint32_t MetersSunSpecParser::get_interesting_registers_count()

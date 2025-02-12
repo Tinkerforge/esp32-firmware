@@ -35,7 +35,10 @@ static const float scale_factors[21] = {
     10000000000.0f,             // 10^10
 };
 
-static float get_scale_factor(int32_t sunssf)
+float get_sun_spec_scale_factor(int32_t sunssf);
+
+[[gnu::const]]
+float get_sun_spec_scale_factor(int32_t sunssf)
 {
     if (sunssf < -10) {
         if (sunssf == INT16_MIN) { // scale factor not implemented
@@ -46,8 +49,8 @@ static float get_scale_factor(int32_t sunssf)
     } else if (sunssf > 10) {
         return NAN;
     }
-    return scale_factors[sunssf + 10];
 
+    return scale_factors[sunssf + 10];
 }
 
 static inline uint32_t convert_me_uint32(const uint32_t *me32, bool is_already_le32 = false)
@@ -133,7 +136,7 @@ static float get_model_101_A(const void *register_data, uint32_t quirks, bool de
     uint16_t val = model->A;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -150,7 +153,7 @@ static float get_model_101_AphA(const void *register_data, uint32_t quirks, bool
         int16_t sval = static_cast<int16_t>(val);
         fval = static_cast<float>(sval);
     }
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -167,7 +170,7 @@ static float get_model_101_AphB(const void *register_data, uint32_t quirks, bool
         int16_t sval = static_cast<int16_t>(val);
         fval = static_cast<float>(sval);
     }
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -184,7 +187,7 @@ static float get_model_101_AphC(const void *register_data, uint32_t quirks, bool
         int16_t sval = static_cast<int16_t>(val);
         fval = static_cast<float>(sval);
     }
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -194,7 +197,7 @@ static float get_model_101_PPVphAB(const void *register_data, uint32_t quirks, b
     uint16_t val = model->PPVphAB;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -204,7 +207,7 @@ static float get_model_101_PPVphBC(const void *register_data, uint32_t quirks, b
     uint16_t val = model->PPVphBC;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -214,7 +217,7 @@ static float get_model_101_PPVphCA(const void *register_data, uint32_t quirks, b
     uint16_t val = model->PPVphCA;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -224,7 +227,7 @@ static float get_model_101_PhVphA(const void *register_data, uint32_t quirks, bo
     uint16_t val = model->PhVphA;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -234,7 +237,7 @@ static float get_model_101_PhVphB(const void *register_data, uint32_t quirks, bo
     uint16_t val = model->PhVphB;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -244,7 +247,7 @@ static float get_model_101_PhVphC(const void *register_data, uint32_t quirks, bo
     uint16_t val = model->PhVphC;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -254,7 +257,7 @@ static float get_model_101_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->W_SF) * -1.0f);
+    fval *= (get_sun_spec_scale_factor(model->W_SF) * -1.0f);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -265,7 +268,7 @@ static float get_model_101_Hz(const void *register_data, uint32_t quirks, bool d
     uint16_t val = model->Hz;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Hz_SF);
+    fval *= get_sun_spec_scale_factor(model->Hz_SF);
     return fval;
 }
 
@@ -275,7 +278,7 @@ static float get_model_101_VA(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->VA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -285,7 +288,7 @@ static float get_model_101_VAr(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->VAr;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAr_SF);
+    fval *= get_sun_spec_scale_factor(model->VAr_SF);
     return fval;
 }
 
@@ -295,7 +298,7 @@ static float get_model_101_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -310,7 +313,7 @@ static float get_model_101_WH(const void *register_data, uint32_t quirks, bool d
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->WH_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->WH_SF) * 0.001f);
     return fval;
 }
 
@@ -320,7 +323,7 @@ static float get_model_101_DCA(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->DCA;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCA_SF);
+    fval *= get_sun_spec_scale_factor(model->DCA_SF);
     return fval;
 }
 
@@ -330,7 +333,7 @@ static float get_model_101_DCV(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->DCV;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCV_SF);
+    fval *= get_sun_spec_scale_factor(model->DCV_SF);
     return fval;
 }
 
@@ -340,7 +343,7 @@ static float get_model_101_DCW(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->DCW;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCW_SF);
+    fval *= get_sun_spec_scale_factor(model->DCW_SF);
     return fval;
 }
 
@@ -350,7 +353,7 @@ static float get_model_101_TmpCab(const void *register_data, uint32_t quirks, bo
     int16_t val = model->TmpCab;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -360,7 +363,7 @@ static float get_model_101_TmpSnk(const void *register_data, uint32_t quirks, bo
     int16_t val = model->TmpSnk;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -370,7 +373,7 @@ static float get_model_101_TmpTrns(const void *register_data, uint32_t quirks, b
     int16_t val = model->TmpTrns;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -380,7 +383,7 @@ static float get_model_101_TmpOt(const void *register_data, uint32_t quirks, boo
     int16_t val = model->TmpOt;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -454,7 +457,7 @@ static float get_model_102_A(const void *register_data, uint32_t quirks, bool de
     uint16_t val = model->A;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -471,7 +474,7 @@ static float get_model_102_AphA(const void *register_data, uint32_t quirks, bool
         int16_t sval = static_cast<int16_t>(val);
         fval = static_cast<float>(sval);
     }
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -488,7 +491,7 @@ static float get_model_102_AphB(const void *register_data, uint32_t quirks, bool
         int16_t sval = static_cast<int16_t>(val);
         fval = static_cast<float>(sval);
     }
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -505,7 +508,7 @@ static float get_model_102_AphC(const void *register_data, uint32_t quirks, bool
         int16_t sval = static_cast<int16_t>(val);
         fval = static_cast<float>(sval);
     }
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -515,7 +518,7 @@ static float get_model_102_PPVphAB(const void *register_data, uint32_t quirks, b
     uint16_t val = model->PPVphAB;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -525,7 +528,7 @@ static float get_model_102_PPVphBC(const void *register_data, uint32_t quirks, b
     uint16_t val = model->PPVphBC;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -535,7 +538,7 @@ static float get_model_102_PPVphCA(const void *register_data, uint32_t quirks, b
     uint16_t val = model->PPVphCA;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -545,7 +548,7 @@ static float get_model_102_PhVphA(const void *register_data, uint32_t quirks, bo
     uint16_t val = model->PhVphA;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -555,7 +558,7 @@ static float get_model_102_PhVphB(const void *register_data, uint32_t quirks, bo
     uint16_t val = model->PhVphB;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -565,7 +568,7 @@ static float get_model_102_PhVphC(const void *register_data, uint32_t quirks, bo
     uint16_t val = model->PhVphC;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -575,7 +578,7 @@ static float get_model_102_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->W_SF) * -1.0f);
+    fval *= (get_sun_spec_scale_factor(model->W_SF) * -1.0f);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -586,7 +589,7 @@ static float get_model_102_Hz(const void *register_data, uint32_t quirks, bool d
     uint16_t val = model->Hz;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Hz_SF);
+    fval *= get_sun_spec_scale_factor(model->Hz_SF);
     return fval;
 }
 
@@ -596,7 +599,7 @@ static float get_model_102_VA(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->VA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -606,7 +609,7 @@ static float get_model_102_VAr(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->VAr;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAr_SF);
+    fval *= get_sun_spec_scale_factor(model->VAr_SF);
     return fval;
 }
 
@@ -616,7 +619,7 @@ static float get_model_102_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -631,7 +634,7 @@ static float get_model_102_WH(const void *register_data, uint32_t quirks, bool d
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->WH_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->WH_SF) * 0.001f);
     return fval;
 }
 
@@ -641,7 +644,7 @@ static float get_model_102_DCA(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->DCA;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCA_SF);
+    fval *= get_sun_spec_scale_factor(model->DCA_SF);
     return fval;
 }
 
@@ -651,7 +654,7 @@ static float get_model_102_DCV(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->DCV;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCV_SF);
+    fval *= get_sun_spec_scale_factor(model->DCV_SF);
     return fval;
 }
 
@@ -661,7 +664,7 @@ static float get_model_102_DCW(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->DCW;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCW_SF);
+    fval *= get_sun_spec_scale_factor(model->DCW_SF);
     return fval;
 }
 
@@ -671,7 +674,7 @@ static float get_model_102_TmpCab(const void *register_data, uint32_t quirks, bo
     int16_t val = model->TmpCab;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -681,7 +684,7 @@ static float get_model_102_TmpSnk(const void *register_data, uint32_t quirks, bo
     int16_t val = model->TmpSnk;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -691,7 +694,7 @@ static float get_model_102_TmpTrns(const void *register_data, uint32_t quirks, b
     int16_t val = model->TmpTrns;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -701,7 +704,7 @@ static float get_model_102_TmpOt(const void *register_data, uint32_t quirks, boo
     int16_t val = model->TmpOt;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -775,7 +778,7 @@ static float get_model_103_A(const void *register_data, uint32_t quirks, bool de
     uint16_t val = model->A;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -792,7 +795,7 @@ static float get_model_103_AphA(const void *register_data, uint32_t quirks, bool
         int16_t sval = static_cast<int16_t>(val);
         fval = static_cast<float>(sval);
     }
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -809,7 +812,7 @@ static float get_model_103_AphB(const void *register_data, uint32_t quirks, bool
         int16_t sval = static_cast<int16_t>(val);
         fval = static_cast<float>(sval);
     }
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -826,7 +829,7 @@ static float get_model_103_AphC(const void *register_data, uint32_t quirks, bool
         int16_t sval = static_cast<int16_t>(val);
         fval = static_cast<float>(sval);
     }
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -836,7 +839,7 @@ static float get_model_103_PPVphAB(const void *register_data, uint32_t quirks, b
     uint16_t val = model->PPVphAB;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -846,7 +849,7 @@ static float get_model_103_PPVphBC(const void *register_data, uint32_t quirks, b
     uint16_t val = model->PPVphBC;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -856,7 +859,7 @@ static float get_model_103_PPVphCA(const void *register_data, uint32_t quirks, b
     uint16_t val = model->PPVphCA;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -866,7 +869,7 @@ static float get_model_103_PhVphA(const void *register_data, uint32_t quirks, bo
     uint16_t val = model->PhVphA;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -876,7 +879,7 @@ static float get_model_103_PhVphB(const void *register_data, uint32_t quirks, bo
     uint16_t val = model->PhVphB;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -886,7 +889,7 @@ static float get_model_103_PhVphC(const void *register_data, uint32_t quirks, bo
     uint16_t val = model->PhVphC;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -896,7 +899,7 @@ static float get_model_103_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->W_SF) * -1.0f);
+    fval *= (get_sun_spec_scale_factor(model->W_SF) * -1.0f);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -907,7 +910,7 @@ static float get_model_103_Hz(const void *register_data, uint32_t quirks, bool d
     uint16_t val = model->Hz;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Hz_SF);
+    fval *= get_sun_spec_scale_factor(model->Hz_SF);
     return fval;
 }
 
@@ -917,7 +920,7 @@ static float get_model_103_VA(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->VA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -927,7 +930,7 @@ static float get_model_103_VAr(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->VAr;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAr_SF);
+    fval *= get_sun_spec_scale_factor(model->VAr_SF);
     return fval;
 }
 
@@ -937,7 +940,7 @@ static float get_model_103_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -952,7 +955,7 @@ static float get_model_103_WH(const void *register_data, uint32_t quirks, bool d
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->WH_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->WH_SF) * 0.001f);
     return fval;
 }
 
@@ -962,7 +965,7 @@ static float get_model_103_DCA(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->DCA;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCA_SF);
+    fval *= get_sun_spec_scale_factor(model->DCA_SF);
     return fval;
 }
 
@@ -972,7 +975,7 @@ static float get_model_103_DCV(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->DCV;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCV_SF);
+    fval *= get_sun_spec_scale_factor(model->DCV_SF);
     return fval;
 }
 
@@ -982,7 +985,7 @@ static float get_model_103_DCW(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->DCW;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCW_SF);
+    fval *= get_sun_spec_scale_factor(model->DCW_SF);
     return fval;
 }
 
@@ -992,7 +995,7 @@ static float get_model_103_TmpCab(const void *register_data, uint32_t quirks, bo
     int16_t val = model->TmpCab;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -1002,7 +1005,7 @@ static float get_model_103_TmpSnk(const void *register_data, uint32_t quirks, bo
     int16_t val = model->TmpSnk;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -1012,7 +1015,7 @@ static float get_model_103_TmpTrns(const void *register_data, uint32_t quirks, b
     int16_t val = model->TmpTrns;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -1022,7 +1025,7 @@ static float get_model_103_TmpOt(const void *register_data, uint32_t quirks, boo
     int16_t val = model->TmpOt;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -1807,7 +1810,7 @@ static float get_model_201_A(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->A;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -1817,7 +1820,7 @@ static float get_model_201_AphA(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -1827,7 +1830,7 @@ static float get_model_201_AphB(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -1837,7 +1840,7 @@ static float get_model_201_AphC(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -1847,7 +1850,7 @@ static float get_model_201_PhV(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->PhV;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -1857,7 +1860,7 @@ static float get_model_201_PhVphA(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -1867,7 +1870,7 @@ static float get_model_201_PhVphB(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -1877,7 +1880,7 @@ static float get_model_201_PhVphC(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -1887,7 +1890,7 @@ static float get_model_201_PPV(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->PPV;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -1897,7 +1900,7 @@ static float get_model_201_PPVphAB(const void *register_data, uint32_t quirks, b
     int16_t val = model->PPVphAB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -1907,7 +1910,7 @@ static float get_model_201_PPVphBC(const void *register_data, uint32_t quirks, b
     int16_t val = model->PPVphBC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -1917,7 +1920,7 @@ static float get_model_201_PPVphCA(const void *register_data, uint32_t quirks, b
     int16_t val = model->PPVphCA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -1927,7 +1930,7 @@ static float get_model_201_Hz(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->Hz;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Hz_SF);
+    fval *= get_sun_spec_scale_factor(model->Hz_SF);
     return fval;
 }
 
@@ -1937,7 +1940,7 @@ static float get_model_201_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -1948,7 +1951,7 @@ static float get_model_201_WphA(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -1959,7 +1962,7 @@ static float get_model_201_WphB(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -1970,7 +1973,7 @@ static float get_model_201_WphC(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -1981,7 +1984,7 @@ static float get_model_201_VA(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->VA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -1991,7 +1994,7 @@ static float get_model_201_VAphA(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -2001,7 +2004,7 @@ static float get_model_201_VAphB(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -2011,7 +2014,7 @@ static float get_model_201_VAphC(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -2021,7 +2024,7 @@ static float get_model_201_VAR(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->VAR;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -2031,7 +2034,7 @@ static float get_model_201_VARphA(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -2041,7 +2044,7 @@ static float get_model_201_VARphB(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -2051,7 +2054,7 @@ static float get_model_201_VARphC(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -2061,7 +2064,7 @@ static float get_model_201_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -2074,7 +2077,7 @@ static float get_model_201_PFphA(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -2087,7 +2090,7 @@ static float get_model_201_PFphB(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -2100,7 +2103,7 @@ static float get_model_201_PFphC(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -2115,7 +2118,7 @@ static float get_model_201_TotWhExp(const void *register_data, uint32_t quirks, 
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2128,7 +2131,7 @@ static float get_model_201_TotWhExpPhA(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2141,7 +2144,7 @@ static float get_model_201_TotWhExpPhB(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2154,7 +2157,7 @@ static float get_model_201_TotWhExpPhC(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2166,7 +2169,7 @@ static float get_model_201_TotWhImp(const void *register_data, uint32_t quirks, 
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2179,7 +2182,7 @@ static float get_model_201_TotWhImpPhA(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2192,7 +2195,7 @@ static float get_model_201_TotWhImpPhB(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2205,7 +2208,7 @@ static float get_model_201_TotWhImpPhC(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2218,7 +2221,7 @@ static float get_model_201_TotVAhExp(const void *register_data, uint32_t quirks,
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -2231,7 +2234,7 @@ static float get_model_201_TotVAhExpPhA(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -2244,7 +2247,7 @@ static float get_model_201_TotVAhExpPhB(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -2257,7 +2260,7 @@ static float get_model_201_TotVAhExpPhC(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -2270,7 +2273,7 @@ static float get_model_201_TotVAhImp(const void *register_data, uint32_t quirks,
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -2283,7 +2286,7 @@ static float get_model_201_TotVAhImpPhA(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -2296,7 +2299,7 @@ static float get_model_201_TotVAhImpPhB(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -2309,7 +2312,7 @@ static float get_model_201_TotVAhImpPhC(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -2322,7 +2325,7 @@ static float get_model_201_TotVArhImpQ1(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2335,7 +2338,7 @@ static float get_model_201_TotVArhImpQ1PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2348,7 +2351,7 @@ static float get_model_201_TotVArhImpQ1PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2361,7 +2364,7 @@ static float get_model_201_TotVArhImpQ1PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2374,7 +2377,7 @@ static float get_model_201_TotVArhImpQ2(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2387,7 +2390,7 @@ static float get_model_201_TotVArhImpQ2PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2400,7 +2403,7 @@ static float get_model_201_TotVArhImpQ2PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2413,7 +2416,7 @@ static float get_model_201_TotVArhImpQ2PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2426,7 +2429,7 @@ static float get_model_201_TotVArhExpQ3(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2439,7 +2442,7 @@ static float get_model_201_TotVArhExpQ3PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2452,7 +2455,7 @@ static float get_model_201_TotVArhExpQ3PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2465,7 +2468,7 @@ static float get_model_201_TotVArhExpQ3PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2478,7 +2481,7 @@ static float get_model_201_TotVArhExpQ4(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2491,7 +2494,7 @@ static float get_model_201_TotVArhExpQ4PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2504,7 +2507,7 @@ static float get_model_201_TotVArhExpQ4PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2517,7 +2520,7 @@ static float get_model_201_TotVArhExpQ4PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -2627,7 +2630,7 @@ static float get_model_202_A(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->A;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -2637,7 +2640,7 @@ static float get_model_202_AphA(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -2647,7 +2650,7 @@ static float get_model_202_AphB(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -2657,7 +2660,7 @@ static float get_model_202_AphC(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -2667,7 +2670,7 @@ static float get_model_202_PhV(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->PhV;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -2677,7 +2680,7 @@ static float get_model_202_PhVphA(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -2687,7 +2690,7 @@ static float get_model_202_PhVphB(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -2697,7 +2700,7 @@ static float get_model_202_PhVphC(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -2707,7 +2710,7 @@ static float get_model_202_PPV(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->PPV;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -2717,7 +2720,7 @@ static float get_model_202_PhVphAB(const void *register_data, uint32_t quirks, b
     int16_t val = model->PhVphAB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -2727,7 +2730,7 @@ static float get_model_202_PhVphBC(const void *register_data, uint32_t quirks, b
     int16_t val = model->PhVphBC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -2737,7 +2740,7 @@ static float get_model_202_PhVphCA(const void *register_data, uint32_t quirks, b
     int16_t val = model->PhVphCA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -2747,7 +2750,7 @@ static float get_model_202_Hz(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->Hz;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Hz_SF);
+    fval *= get_sun_spec_scale_factor(model->Hz_SF);
     return fval;
 }
 
@@ -2757,7 +2760,7 @@ static float get_model_202_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -2768,7 +2771,7 @@ static float get_model_202_WphA(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -2779,7 +2782,7 @@ static float get_model_202_WphB(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -2790,7 +2793,7 @@ static float get_model_202_WphC(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -2801,7 +2804,7 @@ static float get_model_202_VA(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->VA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -2811,7 +2814,7 @@ static float get_model_202_VAphA(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -2821,7 +2824,7 @@ static float get_model_202_VAphB(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -2831,7 +2834,7 @@ static float get_model_202_VAphC(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -2841,7 +2844,7 @@ static float get_model_202_VAR(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->VAR;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -2851,7 +2854,7 @@ static float get_model_202_VARphA(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -2861,7 +2864,7 @@ static float get_model_202_VARphB(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -2871,7 +2874,7 @@ static float get_model_202_VARphC(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -2881,7 +2884,7 @@ static float get_model_202_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -2894,7 +2897,7 @@ static float get_model_202_PFphA(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -2907,7 +2910,7 @@ static float get_model_202_PFphB(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -2920,7 +2923,7 @@ static float get_model_202_PFphC(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -2935,7 +2938,7 @@ static float get_model_202_TotWhExp(const void *register_data, uint32_t quirks, 
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2948,7 +2951,7 @@ static float get_model_202_TotWhExpPhA(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2961,7 +2964,7 @@ static float get_model_202_TotWhExpPhB(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2974,7 +2977,7 @@ static float get_model_202_TotWhExpPhC(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2986,7 +2989,7 @@ static float get_model_202_TotWhImp(const void *register_data, uint32_t quirks, 
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -2999,7 +3002,7 @@ static float get_model_202_TotWhImpPhA(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -3012,7 +3015,7 @@ static float get_model_202_TotWhImpPhB(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -3025,7 +3028,7 @@ static float get_model_202_TotWhImpPhC(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -3038,7 +3041,7 @@ static float get_model_202_TotVAhExp(const void *register_data, uint32_t quirks,
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3051,7 +3054,7 @@ static float get_model_202_TotVAhExpPhA(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3064,7 +3067,7 @@ static float get_model_202_TotVAhExpPhB(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3077,7 +3080,7 @@ static float get_model_202_TotVAhExpPhC(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3090,7 +3093,7 @@ static float get_model_202_TotVAhImp(const void *register_data, uint32_t quirks,
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3103,7 +3106,7 @@ static float get_model_202_TotVAhImpPhA(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3116,7 +3119,7 @@ static float get_model_202_TotVAhImpPhB(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3129,7 +3132,7 @@ static float get_model_202_TotVAhImpPhC(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3142,7 +3145,7 @@ static float get_model_202_TotVArhImpQ1(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3155,7 +3158,7 @@ static float get_model_202_TotVArhImpQ1PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3168,7 +3171,7 @@ static float get_model_202_TotVArhImpQ1PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3181,7 +3184,7 @@ static float get_model_202_TotVArhImpQ1PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3194,7 +3197,7 @@ static float get_model_202_TotVArhImpQ2(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3207,7 +3210,7 @@ static float get_model_202_TotVArhImpQ2PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3220,7 +3223,7 @@ static float get_model_202_TotVArhImpQ2PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3233,7 +3236,7 @@ static float get_model_202_TotVArhImpQ2PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3246,7 +3249,7 @@ static float get_model_202_TotVArhExpQ3(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3259,7 +3262,7 @@ static float get_model_202_TotVArhExpQ3PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3272,7 +3275,7 @@ static float get_model_202_TotVArhExpQ3PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3285,7 +3288,7 @@ static float get_model_202_TotVArhExpQ3PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3298,7 +3301,7 @@ static float get_model_202_TotVArhExpQ4(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3311,7 +3314,7 @@ static float get_model_202_TotVArhExpQ4PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3324,7 +3327,7 @@ static float get_model_202_TotVArhExpQ4PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3337,7 +3340,7 @@ static float get_model_202_TotVArhExpQ4PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3447,7 +3450,7 @@ static float get_model_203_A(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->A;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -3457,7 +3460,7 @@ static float get_model_203_AphA(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -3467,7 +3470,7 @@ static float get_model_203_AphB(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -3477,7 +3480,7 @@ static float get_model_203_AphC(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -3487,7 +3490,7 @@ static float get_model_203_PhV(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->PhV;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -3497,7 +3500,7 @@ static float get_model_203_PhVphA(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -3507,7 +3510,7 @@ static float get_model_203_PhVphB(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -3517,7 +3520,7 @@ static float get_model_203_PhVphC(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -3527,7 +3530,7 @@ static float get_model_203_PPV(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->PPV;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -3537,7 +3540,7 @@ static float get_model_203_PhVphAB(const void *register_data, uint32_t quirks, b
     int16_t val = model->PhVphAB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -3547,7 +3550,7 @@ static float get_model_203_PhVphBC(const void *register_data, uint32_t quirks, b
     int16_t val = model->PhVphBC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -3557,7 +3560,7 @@ static float get_model_203_PhVphCA(const void *register_data, uint32_t quirks, b
     int16_t val = model->PhVphCA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -3567,7 +3570,7 @@ static float get_model_203_Hz(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->Hz;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Hz_SF);
+    fval *= get_sun_spec_scale_factor(model->Hz_SF);
     return fval;
 }
 
@@ -3577,7 +3580,7 @@ static float get_model_203_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -3588,7 +3591,7 @@ static float get_model_203_WphA(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -3599,7 +3602,7 @@ static float get_model_203_WphB(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -3610,7 +3613,7 @@ static float get_model_203_WphC(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -3621,7 +3624,7 @@ static float get_model_203_VA(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->VA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -3631,7 +3634,7 @@ static float get_model_203_VAphA(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -3641,7 +3644,7 @@ static float get_model_203_VAphB(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -3651,7 +3654,7 @@ static float get_model_203_VAphC(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -3661,7 +3664,7 @@ static float get_model_203_VAR(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->VAR;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -3671,7 +3674,7 @@ static float get_model_203_VARphA(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -3681,7 +3684,7 @@ static float get_model_203_VARphB(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -3691,7 +3694,7 @@ static float get_model_203_VARphC(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -3701,7 +3704,7 @@ static float get_model_203_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -3714,7 +3717,7 @@ static float get_model_203_PFphA(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -3727,7 +3730,7 @@ static float get_model_203_PFphB(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -3740,7 +3743,7 @@ static float get_model_203_PFphC(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -3755,7 +3758,7 @@ static float get_model_203_TotWhExp(const void *register_data, uint32_t quirks, 
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -3768,7 +3771,7 @@ static float get_model_203_TotWhExpPhA(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -3781,7 +3784,7 @@ static float get_model_203_TotWhExpPhB(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -3794,7 +3797,7 @@ static float get_model_203_TotWhExpPhC(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -3806,7 +3809,7 @@ static float get_model_203_TotWhImp(const void *register_data, uint32_t quirks, 
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -3819,7 +3822,7 @@ static float get_model_203_TotWhImpPhA(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -3832,7 +3835,7 @@ static float get_model_203_TotWhImpPhB(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -3845,7 +3848,7 @@ static float get_model_203_TotWhImpPhC(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -3858,7 +3861,7 @@ static float get_model_203_TotVAhExp(const void *register_data, uint32_t quirks,
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3871,7 +3874,7 @@ static float get_model_203_TotVAhExpPhA(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3884,7 +3887,7 @@ static float get_model_203_TotVAhExpPhB(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3897,7 +3900,7 @@ static float get_model_203_TotVAhExpPhC(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3910,7 +3913,7 @@ static float get_model_203_TotVAhImp(const void *register_data, uint32_t quirks,
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3923,7 +3926,7 @@ static float get_model_203_TotVAhImpPhA(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3936,7 +3939,7 @@ static float get_model_203_TotVAhImpPhB(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3949,7 +3952,7 @@ static float get_model_203_TotVAhImpPhC(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -3962,7 +3965,7 @@ static float get_model_203_TotVArhImpQ1(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3975,7 +3978,7 @@ static float get_model_203_TotVArhImpQ1PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -3988,7 +3991,7 @@ static float get_model_203_TotVArhImpQ1PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4001,7 +4004,7 @@ static float get_model_203_TotVArhImpQ1PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4014,7 +4017,7 @@ static float get_model_203_TotVArhImpQ2(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4027,7 +4030,7 @@ static float get_model_203_TotVArhImpQ2PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4040,7 +4043,7 @@ static float get_model_203_TotVArhImpQ2PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4053,7 +4056,7 @@ static float get_model_203_TotVArhImpQ2PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4066,7 +4069,7 @@ static float get_model_203_TotVArhExpQ3(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4079,7 +4082,7 @@ static float get_model_203_TotVArhExpQ3PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4092,7 +4095,7 @@ static float get_model_203_TotVArhExpQ3PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4105,7 +4108,7 @@ static float get_model_203_TotVArhExpQ3PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4118,7 +4121,7 @@ static float get_model_203_TotVArhExpQ4(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4131,7 +4134,7 @@ static float get_model_203_TotVArhExpQ4PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4144,7 +4147,7 @@ static float get_model_203_TotVArhExpQ4PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4157,7 +4160,7 @@ static float get_model_203_TotVArhExpQ4PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4267,7 +4270,7 @@ static float get_model_204_A(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->A;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -4277,7 +4280,7 @@ static float get_model_204_AphA(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -4287,7 +4290,7 @@ static float get_model_204_AphB(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -4297,7 +4300,7 @@ static float get_model_204_AphC(const void *register_data, uint32_t quirks, bool
     int16_t val = model->AphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -4307,7 +4310,7 @@ static float get_model_204_PhV(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->PhV;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -4317,7 +4320,7 @@ static float get_model_204_PhVphA(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -4327,7 +4330,7 @@ static float get_model_204_PhVphB(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -4337,7 +4340,7 @@ static float get_model_204_PhVphC(const void *register_data, uint32_t quirks, bo
     int16_t val = model->PhVphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -4347,7 +4350,7 @@ static float get_model_204_PPV(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->PPV;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -4357,7 +4360,7 @@ static float get_model_204_PhVphAB(const void *register_data, uint32_t quirks, b
     int16_t val = model->PhVphAB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -4367,7 +4370,7 @@ static float get_model_204_PhVphBC(const void *register_data, uint32_t quirks, b
     int16_t val = model->PhVphBC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -4377,7 +4380,7 @@ static float get_model_204_PhVphCA(const void *register_data, uint32_t quirks, b
     int16_t val = model->PhVphCA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -4387,7 +4390,7 @@ static float get_model_204_Hz(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->Hz;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Hz_SF);
+    fval *= get_sun_spec_scale_factor(model->Hz_SF);
     return fval;
 }
 
@@ -4397,7 +4400,7 @@ static float get_model_204_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -4408,7 +4411,7 @@ static float get_model_204_WphA(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -4419,7 +4422,7 @@ static float get_model_204_WphB(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -4430,7 +4433,7 @@ static float get_model_204_WphC(const void *register_data, uint32_t quirks, bool
     int16_t val = model->WphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->W_SF);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -4441,7 +4444,7 @@ static float get_model_204_VA(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->VA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -4451,7 +4454,7 @@ static float get_model_204_VAphA(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -4461,7 +4464,7 @@ static float get_model_204_VAphB(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -4471,7 +4474,7 @@ static float get_model_204_VAphC(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VAphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -4481,7 +4484,7 @@ static float get_model_204_VAR(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->VAR;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -4491,7 +4494,7 @@ static float get_model_204_VARphA(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -4501,7 +4504,7 @@ static float get_model_204_VARphB(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -4511,7 +4514,7 @@ static float get_model_204_VARphC(const void *register_data, uint32_t quirks, bo
     int16_t val = model->VARphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VAR_SF);
+    fval *= get_sun_spec_scale_factor(model->VAR_SF);
     return fval;
 }
 
@@ -4521,7 +4524,7 @@ static float get_model_204_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -4534,7 +4537,7 @@ static float get_model_204_PFphA(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -4547,7 +4550,7 @@ static float get_model_204_PFphB(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphB;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -4560,7 +4563,7 @@ static float get_model_204_PFphC(const void *register_data, uint32_t quirks, boo
     int16_t val = model->PFphC;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->PF_SF);
+    fval *= get_sun_spec_scale_factor(model->PF_SF);
     if ((quirks & SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY) == 0) {
         fval *= 0.01f;
     }
@@ -4575,7 +4578,7 @@ static float get_model_204_TotWhExp(const void *register_data, uint32_t quirks, 
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -4588,7 +4591,7 @@ static float get_model_204_TotWhExpPhA(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -4601,7 +4604,7 @@ static float get_model_204_TotWhExpPhB(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -4614,7 +4617,7 @@ static float get_model_204_TotWhExpPhC(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -4626,7 +4629,7 @@ static float get_model_204_TotWhImp(const void *register_data, uint32_t quirks, 
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -4639,7 +4642,7 @@ static float get_model_204_TotWhImpPhA(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -4652,7 +4655,7 @@ static float get_model_204_TotWhImpPhB(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -4665,7 +4668,7 @@ static float get_model_204_TotWhImpPhC(const void *register_data, uint32_t quirk
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -4678,7 +4681,7 @@ static float get_model_204_TotVAhExp(const void *register_data, uint32_t quirks,
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -4691,7 +4694,7 @@ static float get_model_204_TotVAhExpPhA(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -4704,7 +4707,7 @@ static float get_model_204_TotVAhExpPhB(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -4717,7 +4720,7 @@ static float get_model_204_TotVAhExpPhC(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -4730,7 +4733,7 @@ static float get_model_204_TotVAhImp(const void *register_data, uint32_t quirks,
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -4743,7 +4746,7 @@ static float get_model_204_TotVAhImpPhA(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -4756,7 +4759,7 @@ static float get_model_204_TotVAhImpPhB(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -4769,7 +4772,7 @@ static float get_model_204_TotVAhImpPhC(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVAh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVAh_SF) * 0.001f);
     return fval;
 }
 
@@ -4782,7 +4785,7 @@ static float get_model_204_TotVArhImpQ1(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4795,7 +4798,7 @@ static float get_model_204_TotVArhImpQ1PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4808,7 +4811,7 @@ static float get_model_204_TotVArhImpQ1PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4821,7 +4824,7 @@ static float get_model_204_TotVArhImpQ1PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4834,7 +4837,7 @@ static float get_model_204_TotVArhImpQ2(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4847,7 +4850,7 @@ static float get_model_204_TotVArhImpQ2PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4860,7 +4863,7 @@ static float get_model_204_TotVArhImpQ2PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4873,7 +4876,7 @@ static float get_model_204_TotVArhImpQ2PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4886,7 +4889,7 @@ static float get_model_204_TotVArhExpQ3(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4899,7 +4902,7 @@ static float get_model_204_TotVArhExpQ3PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4912,7 +4915,7 @@ static float get_model_204_TotVArhExpQ3PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4925,7 +4928,7 @@ static float get_model_204_TotVArhExpQ3PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4938,7 +4941,7 @@ static float get_model_204_TotVArhExpQ4(const void *register_data, uint32_t quir
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4951,7 +4954,7 @@ static float get_model_204_TotVArhExpQ4PhA(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4964,7 +4967,7 @@ static float get_model_204_TotVArhExpQ4PhB(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -4977,7 +4980,7 @@ static float get_model_204_TotVArhExpQ4PhC(const void *register_data, uint32_t q
     if (val == not_implemented_val) return NAN;
     if (val > INT32_MAX && quirks & SUN_SPEC_QUIRKS_ACC32_IS_INT32) val = -val;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVArh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVArh_SF) * 0.001f);
     return fval;
 }
 
@@ -7531,7 +7534,7 @@ static float get_model_701_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->W_SF) * -1.0f);
+    fval *= (get_sun_spec_scale_factor(model->W_SF) * -1.0f);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -7542,7 +7545,7 @@ static float get_model_701_VA(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->VA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -7552,7 +7555,7 @@ static float get_model_701_Var(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->Var;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Var_SF);
+    fval *= get_sun_spec_scale_factor(model->Var_SF);
     return fval;
 }
 
@@ -7562,7 +7565,7 @@ static float get_model_701_PF(const void *register_data, uint32_t quirks, bool d
     int16_t val = model->PF;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->PF_SF) * -1.0f);
+    fval *= (get_sun_spec_scale_factor(model->PF_SF) * -1.0f);
     return fval;
 }
 
@@ -7572,7 +7575,7 @@ static float get_model_701_A(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->A;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -7582,7 +7585,7 @@ static float get_model_701_LLV(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->LLV;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -7592,7 +7595,7 @@ static float get_model_701_LNV(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->LNV;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -7602,7 +7605,7 @@ static float get_model_701_Hz(const void *register_data, uint32_t quirks, bool d
     uint32_t val = convert_me_uint32(&model->Hz);
     if (val == UINT32_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Hz_SF);
+    fval *= get_sun_spec_scale_factor(model->Hz_SF);
     return fval;
 }
 
@@ -7612,7 +7615,7 @@ static float get_model_701_TotWhInj(const void *register_data, uint32_t quirks, 
     uint64_t val = convert_me_uint64(&model->TotWhInj);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -7622,7 +7625,7 @@ static float get_model_701_TotWhAbs(const void *register_data, uint32_t quirks, 
     uint64_t val = convert_me_uint64(&model->TotWhAbs);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -7632,7 +7635,7 @@ static float get_model_701_TotVarhInj(const void *register_data, uint32_t quirks
     uint64_t val = convert_me_uint64(&model->TotVarhInj);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVarh_SF) * 0.001f);
     return fval;
 }
 
@@ -7642,7 +7645,7 @@ static float get_model_701_TotVarhAbs(const void *register_data, uint32_t quirks
     uint64_t val = convert_me_uint64(&model->TotVarhAbs);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVarh_SF) * 0.001f);
     return fval;
 }
 
@@ -7652,7 +7655,7 @@ static float get_model_701_TmpCab(const void *register_data, uint32_t quirks, bo
     int16_t val = model->TmpCab;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -7662,7 +7665,7 @@ static float get_model_701_TmpSnk(const void *register_data, uint32_t quirks, bo
     int16_t val = model->TmpSnk;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -7672,7 +7675,7 @@ static float get_model_701_TmpTrns(const void *register_data, uint32_t quirks, b
     int16_t val = model->TmpTrns;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -7682,7 +7685,7 @@ static float get_model_701_TmpOt(const void *register_data, uint32_t quirks, boo
     int16_t val = model->TmpOt;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Tmp_SF);
+    fval *= get_sun_spec_scale_factor(model->Tmp_SF);
     return fval;
 }
 
@@ -7692,7 +7695,7 @@ static float get_model_701_WL1(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->WL1;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->W_SF) * -1.0f);
+    fval *= (get_sun_spec_scale_factor(model->W_SF) * -1.0f);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -7703,7 +7706,7 @@ static float get_model_701_VAL1(const void *register_data, uint32_t quirks, bool
     int16_t val = model->VAL1;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -7713,7 +7716,7 @@ static float get_model_701_VarL1(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VarL1;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Var_SF);
+    fval *= get_sun_spec_scale_factor(model->Var_SF);
     return fval;
 }
 
@@ -7724,7 +7727,7 @@ static float get_model_701_PFL1(const void *register_data, uint32_t quirks, bool
     int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MAX : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->PF_SF) * -1.0f);
+    fval *= (get_sun_spec_scale_factor(model->PF_SF) * -1.0f);
     return fval;
 }
 
@@ -7735,7 +7738,7 @@ static float get_model_701_AL1(const void *register_data, uint32_t quirks, bool 
     int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MAX : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -7745,7 +7748,7 @@ static float get_model_701_VL1L2(const void *register_data, uint32_t quirks, boo
     uint16_t val = model->VL1L2;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -7755,7 +7758,7 @@ static float get_model_701_VL1(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->VL1;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -7765,7 +7768,7 @@ static float get_model_701_TotWhInjL1(const void *register_data, uint32_t quirks
     uint64_t val = convert_me_uint64(&model->TotWhInjL1);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -7775,7 +7778,7 @@ static float get_model_701_TotWhAbsL1(const void *register_data, uint32_t quirks
     uint64_t val = convert_me_uint64(&model->TotWhAbsL1);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -7785,7 +7788,7 @@ static float get_model_701_TotVarhInjL1(const void *register_data, uint32_t quir
     uint64_t val = convert_me_uint64(&model->TotVarhInjL1);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVarh_SF) * 0.001f);
     return fval;
 }
 
@@ -7795,7 +7798,7 @@ static float get_model_701_TotVarhAbsL1(const void *register_data, uint32_t quir
     uint64_t val = convert_me_uint64(&model->TotVarhAbsL1);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVarh_SF) * 0.001f);
     return fval;
 }
 
@@ -7805,7 +7808,7 @@ static float get_model_701_WL2(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->WL2;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->W_SF) * -1.0f);
+    fval *= (get_sun_spec_scale_factor(model->W_SF) * -1.0f);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -7816,7 +7819,7 @@ static float get_model_701_VAL2(const void *register_data, uint32_t quirks, bool
     int16_t val = model->VAL2;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -7826,7 +7829,7 @@ static float get_model_701_VarL2(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VarL2;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Var_SF);
+    fval *= get_sun_spec_scale_factor(model->Var_SF);
     return fval;
 }
 
@@ -7837,7 +7840,7 @@ static float get_model_701_PFL2(const void *register_data, uint32_t quirks, bool
     int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MAX : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->PF_SF) * -1.0f);
+    fval *= (get_sun_spec_scale_factor(model->PF_SF) * -1.0f);
     return fval;
 }
 
@@ -7848,7 +7851,7 @@ static float get_model_701_AL2(const void *register_data, uint32_t quirks, bool 
     int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MAX : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -7858,7 +7861,7 @@ static float get_model_701_VL2L3(const void *register_data, uint32_t quirks, boo
     uint16_t val = model->VL2L3;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -7868,7 +7871,7 @@ static float get_model_701_VL2(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->VL2;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -7878,7 +7881,7 @@ static float get_model_701_TotWhInjL2(const void *register_data, uint32_t quirks
     uint64_t val = convert_me_uint64(&model->TotWhInjL2);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -7888,7 +7891,7 @@ static float get_model_701_TotWhAbsL2(const void *register_data, uint32_t quirks
     uint64_t val = convert_me_uint64(&model->TotWhAbsL2);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -7898,7 +7901,7 @@ static float get_model_701_TotVarhInjL2(const void *register_data, uint32_t quir
     uint64_t val = convert_me_uint64(&model->TotVarhInjL2);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVarh_SF) * 0.001f);
     return fval;
 }
 
@@ -7908,7 +7911,7 @@ static float get_model_701_TotVarhAbsL2(const void *register_data, uint32_t quir
     uint64_t val = convert_me_uint64(&model->TotVarhAbsL2);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVarh_SF) * 0.001f);
     return fval;
 }
 
@@ -7918,7 +7921,7 @@ static float get_model_701_WL3(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->WL3;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->W_SF) * -1.0f);
+    fval *= (get_sun_spec_scale_factor(model->W_SF) * -1.0f);
     if (quirks & SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED) fval = -fval;
     return fval;
 }
@@ -7929,7 +7932,7 @@ static float get_model_701_VAL3(const void *register_data, uint32_t quirks, bool
     int16_t val = model->VAL3;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->VA_SF);
+    fval *= get_sun_spec_scale_factor(model->VA_SF);
     return fval;
 }
 
@@ -7939,7 +7942,7 @@ static float get_model_701_VarL3(const void *register_data, uint32_t quirks, boo
     int16_t val = model->VarL3;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Var_SF);
+    fval *= get_sun_spec_scale_factor(model->Var_SF);
     return fval;
 }
 
@@ -7950,7 +7953,7 @@ static float get_model_701_PFL3(const void *register_data, uint32_t quirks, bool
     int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MAX : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->PF_SF) * -1.0f);
+    fval *= (get_sun_spec_scale_factor(model->PF_SF) * -1.0f);
     return fval;
 }
 
@@ -7961,7 +7964,7 @@ static float get_model_701_AL3(const void *register_data, uint32_t quirks, bool 
     int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MAX : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->A_SF);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
     return fval;
 }
 
@@ -7971,7 +7974,7 @@ static float get_model_701_VL3L1(const void *register_data, uint32_t quirks, boo
     uint16_t val = model->VL3L1;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -7981,7 +7984,7 @@ static float get_model_701_VL3(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->VL3;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->V_SF);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
     return fval;
 }
 
@@ -7991,7 +7994,7 @@ static float get_model_701_TotWhInjL3(const void *register_data, uint32_t quirks
     uint64_t val = convert_me_uint64(&model->TotWhInjL3);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -8001,7 +8004,7 @@ static float get_model_701_TotWhAbsL3(const void *register_data, uint32_t quirks
     uint64_t val = convert_me_uint64(&model->TotWhAbsL3);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotWh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotWh_SF) * 0.001f);
     return fval;
 }
 
@@ -8011,7 +8014,7 @@ static float get_model_701_TotVarhInjL3(const void *register_data, uint32_t quir
     uint64_t val = convert_me_uint64(&model->TotVarhInjL3);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVarh_SF) * 0.001f);
     return fval;
 }
 
@@ -8021,7 +8024,7 @@ static float get_model_701_TotVarhAbsL3(const void *register_data, uint32_t quir
     uint64_t val = convert_me_uint64(&model->TotVarhAbsL3);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= (get_scale_factor(model->TotVarh_SF) * 0.001f);
+    fval *= (get_sun_spec_scale_factor(model->TotVarh_SF) * 0.001f);
     return fval;
 }
 
@@ -8119,7 +8122,7 @@ static float get_model_713_SoC(const void *register_data, uint32_t quirks, bool 
     uint16_t val = model->SoC;
     if (val == UINT16_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->Pct_SF);
+    fval *= get_sun_spec_scale_factor(model->Pct_SF);
     return fval;
 }
 
@@ -8161,7 +8164,7 @@ static float get_model_714_DCA(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->DCA;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCA_SF);
+    fval *= get_sun_spec_scale_factor(model->DCA_SF);
     return fval;
 }
 
@@ -8171,7 +8174,7 @@ static float get_model_714_DCW(const void *register_data, uint32_t quirks, bool 
     int16_t val = model->DCW;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCW_SF);
+    fval *= get_sun_spec_scale_factor(model->DCW_SF);
     return fval;
 }
 
@@ -8181,7 +8184,7 @@ static float get_model_714_DCWhInj(const void *register_data, uint32_t quirks, b
     uint64_t val = convert_me_uint64(&model->DCWhInj);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCWH_SF);
+    fval *= get_sun_spec_scale_factor(model->DCWH_SF);
     return fval;
 }
 
@@ -8191,7 +8194,7 @@ static float get_model_714_DCWhAbs(const void *register_data, uint32_t quirks, b
     uint64_t val = convert_me_uint64(&model->DCWhAbs);
     if (val == UINT64_MAX) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_scale_factor(model->DCWH_SF);
+    fval *= get_sun_spec_scale_factor(model->DCWH_SF);
     return fval;
 }
 

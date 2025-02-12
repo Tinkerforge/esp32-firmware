@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "modules/meters/meter_value_id.h"
+#include "imodel_parser.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -40,7 +41,7 @@
 #define SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16            (1u << 6) // FIXME: currently this quirk only handles the non-implemented value
 #define SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16       (1u << 7) // FIXME: currently this quirk only handles the non-implemented value
 
-class MetersSunSpecParser
+class MetersSunSpecParser : public IMetersSunSpecParser
 {
 public:
     typedef float (*get_value_fn)(const void *register_data, uint32_t quirks, bool detection);
@@ -75,17 +76,16 @@ public:
     #pragma GCC diagnostic pop
 #endif
 
-    static MetersSunSpecParser *new_parser(uint32_t meter_slot, uint16_t model_id);
+    static IMetersSunSpecParser *new_parser(uint32_t meter_slot, uint16_t model_id);
 
-    bool detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read);
-    bool parse_values(const uint16_t *const register_data[2], uint32_t quirks);
+    bool detect_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks, size_t *registers_to_read) override;
+    bool parse_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks) override;
 
-    bool must_read_twice();
-    uint32_t get_model_length();
-    uint32_t get_interesting_registers_count();
+    bool must_read_twice() override;
+    bool is_model_length_supported(uint32_t model_length) override;
+    uint32_t get_interesting_registers_count() override;
 
 private:
-    MetersSunSpecParser() : meter_slot(0), model(nullptr) {}
     MetersSunSpecParser(uint32_t meter_slot_, const ModelData *model_) : meter_slot(meter_slot_), model(model_) {}
 
     const uint32_t meter_slot;

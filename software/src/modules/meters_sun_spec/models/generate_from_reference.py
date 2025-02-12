@@ -17,7 +17,7 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 xlsx_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "..", "..", "..", "wallbox", "sunspec", "SunSpec_Information_Model_Reference_20211209.xlsx")
-model_ids = [1, 101, 102, 103, 111, 112, 113,  201, 202, 203, 204, 211, 212, 213, 214, 701, 713, 714]
+model_ids = [1, 101, 102, 103, 111, 112, 113, 201, 202, 203, 204, 211, 212, 213, 214, 701, 713, 714]
 
 value_id_mappings_inverter = {
     "A"       : [ "CurrentLSumExport",           None  ],
@@ -512,7 +512,10 @@ static const float scale_factors[21] = {
     10000000000.0f,             // 10^10
 };
 
-static float get_scale_factor(int32_t sunssf)
+float get_sun_spec_scale_factor(int32_t sunssf);
+
+[[gnu::const]]
+float get_sun_spec_scale_factor(int32_t sunssf)
 {
     if (sunssf < -10) {
         if (sunssf == INT16_MIN) { // scale factor not implemented
@@ -523,8 +526,8 @@ static float get_scale_factor(int32_t sunssf)
     } else if (sunssf > 10) {
         return NAN;
     }
-    return scale_factors[sunssf + 10];
 
+    return scale_factors[sunssf + 10];
 }
 
 static inline uint32_t convert_me_uint32(const uint32_t *me32, bool is_already_le32 = false)
@@ -702,7 +705,7 @@ for model in models:
                 value['max_register'] = scale_factor_max_register
 
             if field_type in ["int16", "uint16", "int32", "uint32", "int64", "uint64", "acc32"]:
-                scale_factor = f"get_scale_factor(model->{scale_factor})"
+                scale_factor = f"get_sun_spec_scale_factor(model->{scale_factor})"
             else:
                 print(f"Unexpected scale factor '{scale_factor}' for field '{name}'")
                 exit(1)
