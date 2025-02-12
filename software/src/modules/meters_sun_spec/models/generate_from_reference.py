@@ -151,10 +151,10 @@ value_id_mappings_der = {
     "VL3L1"        : [ "VoltageL3L1",                  None  ],
     "LNV"          : [ "VoltageLNAvg",                 None  ],
     "LLV"          : [ "VoltageLLAvg",                 None  ],
-    "AL1"          : [ "CurrentL1ImExSum",             None  ],
-    "AL2"          : [ "CurrentL2ImExSum",             None  ],
-    "AL3"          : [ "CurrentL3ImExSum",             None  ],
-    "A"            : [ "CurrentLSumImExSum",           None  ],
+    "AL1"          : [ "CurrentL1ImExDiff",            None  ],
+    "AL2"          : [ "CurrentL2ImExDiff",            None  ],
+    "AL3"          : [ "CurrentL3ImExDiff",            None  ],
+    "A"            : [ "CurrentLSumImExDiff",          None  ],
 
     "WL1"          : [ "PowerActiveL1ImExDiff",        -1.0  ],
     "WL2"          : [ "PowerActiveL2ImExDiff",        -1.0  ],
@@ -615,6 +615,8 @@ for model in models:
         value_is_inverter_current = model_id >= 100 and model_id < 200 and re.match(r"^CurrentL.Export$", value_id_mapping[0])
         value_is_integer_meter_power_factor = model_id >= 200 and model_id < 210 and re.match(r"^PowerFactorL.+Directional$", value_id_mapping[0])
         value_is_integer_inverter_power_factor = model_id >= 100 and model_id < 110 and re.match(r"^PowerFactorL.+Directional$", value_id_mapping[0])
+        value_is_der_phase_current = model_id >= 700 and model_id < 800 and re.match(r"^CurrentL[123]ImExDiff$", value_id_mapping[0])
+        value_is_der_phase_power_factor = model_id >= 700 and model_id < 800 and re.match(r"^PowerFactorL[123]Directional$", value_id_mapping[0])
 
         get_fn_name =  f"get_model_{model_id:03d}_{name}"
         value['get_fn_name'] = get_fn_name
@@ -645,7 +647,14 @@ for model in models:
 
         # Check for non-implemented value
         if field_type == "int16":
-            print_cpp(r"    if (val == INT16_MIN) return NAN;")
+            if value_is_der_phase_current:
+                print_cpp(r"    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MAX : -1;")
+                print_cpp(r"    if (val == not_implemented_val) return NAN;")
+            elif value_is_der_phase_power_factor:
+                print_cpp(r"    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MAX : -1;")
+                print_cpp(r"    if (val == not_implemented_val) return NAN;")
+            else:
+                print_cpp(r"    if (val == INT16_MIN) return NAN;")
         elif field_type == "uint16":
             if value_is_inverter_current:
                 print_cpp(r"    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;")

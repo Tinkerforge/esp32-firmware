@@ -7721,7 +7721,8 @@ static float get_model_701_PFL1(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->PFL1;
-    if (val == INT16_MIN) return NAN;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MAX : -1;
+    if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= (get_scale_factor(model->PF_SF) * -1.0f);
     return fval;
@@ -7731,7 +7732,8 @@ static float get_model_701_AL1(const void *register_data, uint32_t quirks, bool 
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->AL1;
-    if (val == INT16_MIN) return NAN;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MAX : -1;
+    if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->A_SF);
     return fval;
@@ -7832,7 +7834,8 @@ static float get_model_701_PFL2(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->PFL2;
-    if (val == INT16_MIN) return NAN;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MAX : -1;
+    if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= (get_scale_factor(model->PF_SF) * -1.0f);
     return fval;
@@ -7842,7 +7845,8 @@ static float get_model_701_AL2(const void *register_data, uint32_t quirks, bool 
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->AL2;
-    if (val == INT16_MIN) return NAN;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MAX : -1;
+    if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->A_SF);
     return fval;
@@ -7943,7 +7947,8 @@ static float get_model_701_PFL3(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->PFL3;
-    if (val == INT16_MIN) return NAN;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MAX : -1;
+    if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= (get_scale_factor(model->PF_SF) * -1.0f);
     return fval;
@@ -7953,7 +7958,8 @@ static float get_model_701_AL3(const void *register_data, uint32_t quirks, bool 
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->AL3;
-    if (val == INT16_MIN) return NAN;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MAX : -1;
+    if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_scale_factor(model->A_SF);
     return fval;
@@ -8053,7 +8059,7 @@ static const MetersSunSpecParser::ModelData model_701_data = {
         { &get_model_701_VA, MeterValueID::PowerApparentLSumImExDiff, 118 },
         { &get_model_701_Var, MeterValueID::PowerReactiveLSumIndCapDiff, 119 },
         { &get_model_701_PF, MeterValueID::PowerFactorLSumDirectional, 117 },
-        { &get_model_701_A, MeterValueID::CurrentLSumImExSum, 113 },
+        { &get_model_701_A, MeterValueID::CurrentLSumImExDiff, 113 },
         { &get_model_701_LLV, MeterValueID::VoltageLLAvg, 114 },
         { &get_model_701_LNV, MeterValueID::VoltageLNAvg, 114 },
         { &get_model_701_Hz, MeterValueID::FrequencyLAvg, 115 },
@@ -8069,7 +8075,7 @@ static const MetersSunSpecParser::ModelData model_701_data = {
         { &get_model_701_VAL1, MeterValueID::PowerApparentL1ImExDiff, 118 },
         { &get_model_701_VarL1, MeterValueID::PowerReactiveL1IndCapDiff, 119 },
         { &get_model_701_PFL1, MeterValueID::PowerFactorL1Directional, 117 },
-        { &get_model_701_AL1, MeterValueID::CurrentL1ImExSum, 113 },
+        { &get_model_701_AL1, MeterValueID::CurrentL1ImExDiff, 113 },
         { &get_model_701_VL1L2, MeterValueID::VoltageL1L2, 114 },
         { &get_model_701_VL1, MeterValueID::VoltageL1N, 114 },
         { &get_model_701_TotWhInjL1, MeterValueID::EnergyActiveL1Export, 120 },
@@ -8080,7 +8086,7 @@ static const MetersSunSpecParser::ModelData model_701_data = {
         { &get_model_701_VAL2, MeterValueID::PowerApparentL2ImExDiff, 118 },
         { &get_model_701_VarL2, MeterValueID::PowerReactiveL2IndCapDiff, 119 },
         { &get_model_701_PFL2, MeterValueID::PowerFactorL2Directional, 117 },
-        { &get_model_701_AL2, MeterValueID::CurrentL2ImExSum, 113 },
+        { &get_model_701_AL2, MeterValueID::CurrentL2ImExDiff, 113 },
         { &get_model_701_VL2L3, MeterValueID::VoltageL2L3, 114 },
         { &get_model_701_VL2, MeterValueID::VoltageL2N, 114 },
         { &get_model_701_TotWhInjL2, MeterValueID::EnergyActiveL2Export, 120 },
@@ -8091,7 +8097,7 @@ static const MetersSunSpecParser::ModelData model_701_data = {
         { &get_model_701_VAL3, MeterValueID::PowerApparentL3ImExDiff, 118 },
         { &get_model_701_VarL3, MeterValueID::PowerReactiveL3IndCapDiff, 119 },
         { &get_model_701_PFL3, MeterValueID::PowerFactorL3Directional, 117 },
-        { &get_model_701_AL3, MeterValueID::CurrentL3ImExSum, 113 },
+        { &get_model_701_AL3, MeterValueID::CurrentL3ImExDiff, 113 },
         { &get_model_701_VL3L1, MeterValueID::VoltageL3L1, 114 },
         { &get_model_701_VL3, MeterValueID::VoltageL3N, 114 },
         { &get_model_701_TotWhInjL3, MeterValueID::EnergyActiveL3Export, 120 },

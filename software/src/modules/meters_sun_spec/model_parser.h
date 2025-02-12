@@ -37,6 +37,8 @@
 #define SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED               (1u << 3)
 #define SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY (1u << 4)
 #define SUN_SPEC_QUIRKS_FLOAT_IS_LE32                          (1u << 5)
+#define SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16            (1u << 6) // FIXME: currently this quirk only handles the non-implemented value
+#define SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16       (1u << 7) // FIXME: currently this quirk only handles the non-implemented value
 
 class MetersSunSpecParser
 {
