@@ -112,7 +112,7 @@ void MeterSunSpec::disconnect_callback()
     read_allowed = false;
 }
 
-void MeterSunSpec::read_start(size_t model_start_address, size_t model_regcount)
+void MeterSunSpec::read_start(size_t model_regcount)
 {
     free(generic_read_request.data[0]);
 
@@ -129,7 +129,6 @@ void MeterSunSpec::read_start(size_t model_start_address, size_t model_regcount)
     }
 
     generic_read_request.register_type = ModbusRegisterType::HoldingRegister;
-    generic_read_request.start_address = model_start_address;
     generic_read_request.register_count = model_regcount;
 
     generic_read_request.data[0] = buffer;
@@ -293,7 +292,7 @@ void MeterSunSpec::scan_next()
 
                             logger.printfln("Configured SunSpec model %u/%u found at %s:%u:%u:%u",
                                             model_id, model_instance, host_name.c_str(), port, device_address, generic_read_request.start_address);
-                            read_start(generic_read_request.start_address, model_parser->get_interesting_registers_count());
+                            read_start(model_parser->get_interesting_registers_count());
                         }
                     }
                 }
