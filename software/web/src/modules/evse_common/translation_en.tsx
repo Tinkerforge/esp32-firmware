@@ -13,7 +13,8 @@ let x = {
             "allowed_charging_current": "Allowed charging current",
             "charge_control": "Charge control",
             "start_charging": "Start",
-            "stop_charging": "Stop"
+            "stop_charging": "Stop",
+            "start_charge_for_user": "for user"
         },
         "navbar": {
             "evse": "Charge Status",

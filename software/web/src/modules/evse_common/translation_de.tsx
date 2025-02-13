@@ -13,7 +13,8 @@ let x = {
             "allowed_charging_current": "Erlaubter Ladestrom",
             "charge_control": "Ladesteuerung",
             "start_charging": "Start",
-            "stop_charging": "Stop"
+            "stop_charging": "Stop",
+            "start_charge_for_user": "für Benutzer"
         },
         "navbar": {
             "evse": "Ladestatus",

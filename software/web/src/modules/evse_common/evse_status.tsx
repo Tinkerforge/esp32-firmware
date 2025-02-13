@@ -158,7 +158,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                     {__("evse.status.start_charging")}
                 </Dropdown.Toggle>
                 <Dropdown.Menu alignRight>
-                    <Dropdown.Header>für Benutzer</Dropdown.Header>
+                    <Dropdown.Header>{__("evse.status.start_charge_for_user")}</Dropdown.Header>
                     {this.get_nfc_tag_list()}
                 </Dropdown.Menu>
             </Dropdown>
