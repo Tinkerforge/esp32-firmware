@@ -725,16 +725,16 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
     switch (iec_state) {
         case IEC_STATE_B: // State B: The user wants to start charging. If we already have a tracked charge, stop charging to allow switching to another user.
             if (charge_tracker.currentlyCharging()) {
-                if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && deadline_elapsed(last_charge_action_triggered + deadtime_post_start))
+                if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && (auth_type == USERS_AUTH_TYPE_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_start)))
                     this->stop_charging(user_id, false);
                 return false;
             }
-            if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START) && deadline_elapsed(last_charge_action_triggered + deadtime_post_stop))
+            if ((action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_START) && (auth_type == USERS_AUTH_TYPE_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_stop)))
                 return this->start_charging(user_id, current_limit, auth_type, auth_info);
             return false;
         case IEC_STATE_C: // State C: The user wants to stop charging.
             // Debounce here a bit, an impatient user can otherwise accidentially trigger a stop if a start_charging takes too long.
-            if (tscs > 3000 && (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && deadline_elapsed(last_charge_action_triggered + deadtime_post_start))
+            if (tscs > 3000 && (action == TRIGGER_CHARGE_ANY || action == TRIGGER_CHARGE_STOP) && (auth_type == USERS_AUTH_TYPE_NFC_INJECTION || deadline_elapsed(last_charge_action_triggered + deadtime_post_start)))
                 this->stop_charging(user_id, false);
             return false;
         default: //Don't do anything in state A, D, and E/F
