@@ -20,22 +20,32 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 
-import { h } from "preact";
+import { h, Fragment } from "preact";
 
 export function DeviceInfo() {
     if (!util.render_allowed())
         return <div></div>
 
-    let i = API.get("info/name");
-    let display_name = API.get("info/display_name").display_name
-    let dev_name_changed = i.name != display_name;
+    // Can't use ifdef here: This is not a module.
+    // Moving this into the device_name module would also not work
+    // because then app.tsx.template would have to check for the device_name module.
+
+    let name_and_type = <strong>Unknown name and firmware type:<br/>Device name module missing!<br/></strong>
+    let uid = ""
+
+    let i = API.get_unchecked("info/name");
+    if (i !== null) {
+        let display_name = API.get_unchecked("info/display_name")?.display_name
+        name_and_type = <><strong>{display_name}</strong><br/>{i.display_type}<br/></>
+        if (i.name != display_name)
+            uid = " | " + i.uid;
+    }
     let [version, timestamp] = API.get("info/version").firmware.split("+")
 
     return <div class="pt-2 mx-3 text-muted text-center" style="border-top: 1px rgba(0,0,0,.1) solid;">
         <small>
-        <strong>{display_name}</strong><br/>
-        {i.display_type}<br/>
-        <strong>{version}</strong>{"+" + timestamp}{dev_name_changed ? (" | " + i.uid) : ""}
+        {name_and_type}
+        <strong>{version}</strong>{"+" + timestamp}{uid}
         </small>
     </div>;
 }
