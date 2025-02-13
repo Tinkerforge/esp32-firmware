@@ -18,16 +18,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "module_available.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __ } from "../../ts/translation";
 import { h, Fragment, Component } from "preact";
-import { Button } from "react-bootstrap";
+import { Button, Dropdown } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputFloat } from "../../ts/components/input_float";
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
+import { useId } from "preact/hooks";
 
 interface EVSEStatusState {
     hidden: boolean;
@@ -111,11 +114,62 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
         API.save('evse/global_current', {"current": current}, () => __("evse.script.set_charging_current_failed"));
     }
 
+//#if MODULE_NFC_AVAILABLE
+    get_nfc_tag_list() {
+        // We only care about tags that are mapped to a user
+        const users = API.get("users/config").users;
+        const tags = API.get("nfc/config").authorized_tags.filter(t => t.user_id > 0);
+
+        let result = [];
+
+        for (let u of users) {
+            const users_tags = tags.filter(t => t.user_id == u.id);
+            let user_has_multiple_tags = users_tags.length > 1;
+
+            result.push(...users_tags.map(
+                t =>
+                    <Dropdown.Item as="button"
+                                   className="py-2"
+                                   onClick={() => {API.call("nfc/inject_tag_start",
+                                                            {tag_type: t.tag_type, tag_id: t.tag_id},
+                                                            () => __("evse.script.start_charging_failed"));
+                                                   API.call("evse/start_charging", {}, () => __("evse.script.start_charging_failed"));}
+                                   }>
+                        {u.display_name + (user_has_multiple_tags ? " (" + t.tag_id +")" : "")}
+                    </Dropdown.Item>
+                ))
+        }
+        return result;
+    }
+//#endif
+
     render(props: {}, state: EVSEStatusState) {
         if (!util.render_allowed() || !API.hasFeature("evse") || state.hidden)
             return <StatusSection name="evse" />;
 
         let theoretical_max = Math.min(state.slots[0].max_current, state.slots[1].max_current);
+
+//#if MODULE_NFC_AVAILABLE
+        let nfc_start_button = <Dropdown className="flex-grow-1 mr-2">
+                <Dropdown.Toggle variant="primary"
+                                 id={useId()}
+                                 className="form-control rounded-right"
+                                 disabled={!(state.state.iec61851_state == 1 && (state.slots[4].max_current == 0 || state.slots[6].max_current == 0))}>
+                    {__("evse.status.start_charging")}
+                </Dropdown.Toggle>
+                <Dropdown.Menu alignRight>
+                    <Dropdown.Header>für Benutzer</Dropdown.Header>
+                    {this.get_nfc_tag_list()}
+                </Dropdown.Menu>
+            </Dropdown>
+//#endif
+
+        let evse_start_button = <Button
+                className="form-control mr-2 rounded-right"
+                disabled={!(state.state.iec61851_state == 1 && state.slots[4].max_current == 0)}
+                onClick={() =>  API.call('evse/start_charging', {}, () => __("evse.script.start_charging_failed"))}>
+                {__("evse.status.start_charging")}
+            </Button>
 
         return <StatusSection name="evse">
                 <FormRow label={__("evse.status.evse")}>
@@ -135,16 +189,26 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
 
                 <FormRow label={__("evse.status.charge_control")}>
                         <div class="input-group">
-                        <Button
-                            className="form-control mr-2 rounded-right"
-                            disabled={!(state.state.iec61851_state == 1 && state.slots[4].max_current == 0)}
-                            onClick={() =>  API.call('evse/start_charging', {}, () => __("evse.script.start_charging_failed"))}>
-                            {__("evse.status.start_charging")}
-                        </Button>
+{/*#if MODULE_NFC_AVAILABLE*/}
+                        {state.slots[6].active ? nfc_start_button : evse_start_button}
+{/*#else*/}
+                        {evse_start_button}
+{/*#endif*/}
                         <Button
                             className="form-control rounded-left"
                             disabled={!(state.state.charger_state == 2 || state.state.charger_state == 3 || (state.state.iec61851_state == 1 && state.slots[4].max_current != 0))}
-                            onClick={() => API.call('evse/stop_charging', {}, () => __("evse.script.stop_charging_failed"))}>
+                            onClick={() => {
+{/*#if MODULE_NFC_AVAILABLE*/}
+{/*#if MODULE_CHARGE_TRACKER_AVAILABLE*/}
+                                let cc = API.get("charge_tracker/current_charge")
+                                if (cc.authorization_type == 2 || cc.authorization_type == 3)
+                                    API.call('nfc/inject_tag_stop',
+                                             cc.authorization_info,
+                                             () => __("evse.script.stop_charging_failed"));
+{/*#endif*/}
+{/*#endif*/}
+                                API.call('evse/stop_charging', {}, () => __("evse.script.stop_charging_failed"));
+                            }}>
                             {__("evse.status.stop_charging")}
                         </Button>
                     </div>
