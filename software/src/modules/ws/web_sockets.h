@@ -72,6 +72,7 @@ public:
     bool haveActiveClient();
     void pingActiveClients();
     void checkActiveClients();
+    void closeLRUClient();
     void receivedPong(int fd);
 
     void cleanUpQueue();

@@ -151,8 +151,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
         if (aux->ws_handshake_detect) {
             WebSockets *ws = (WebSockets *)req->user_ctx;
             if (!ws->haveFreeSlot()) {
-                request.send(503);
-                return ESP_FAIL;
+                ws->closeLRUClient();
             }
 
             struct httpd_data *hd = (struct httpd_data *)ws->httpd;
@@ -351,6 +350,32 @@ void WebSockets::checkActiveClients()
             this->keepAliveCloseDead(keep_alive_fds[i]);
         }
     }
+}
+
+void WebSockets::closeLRUClient()
+{
+    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] == -1)
+            return; //Found free slot
+
+        if (httpd_ws_get_fd_info(httpd, keep_alive_fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
+            // Found non-websocket fd.
+            // Probably was a websocket, was then closed
+            // and re-opened as non-websocket-fd.
+            this->keepAliveCloseDead(keep_alive_fds[i]);
+            return;
+        }
+    }
+
+    auto min_fd_idx = 0;
+    for (int i = 1; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_last_pong[i] < keep_alive_last_pong[min_fd_idx]) {
+            min_fd_idx = i;
+        }
+    }
+
+    this->keepAliveCloseDead(keep_alive_fds[min_fd_idx]);
 }
 
 void WebSockets::receivedPong(int fd)
