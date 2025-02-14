@@ -34,6 +34,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void pre_reboot() override;
 
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;

@@ -23,6 +23,7 @@
 #include "main_dependencies.h"
 #include "tools.h"
 #include "tools/net.h"
+#include "tools/memory.h"
 #include "esp_httpd_priv.h"
 
 #define KEEP_ALIVE_TIMEOUT_MS 10000
@@ -580,6 +581,14 @@ void WebSockets::updateDebugState()
 
 void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t httpd, const char *supported_subprotocol)
 {
+    if (string_is_in_rodata(uri)) {
+        this->handler_uri = uri;
+    } else {
+        char *dst;
+        asprintf(&dst, "%s", uri);
+        this->handler_uri = dst;
+    }
+
     this->httpd = httpd;
 
     httpd_uri_t ws = {};
@@ -635,4 +644,23 @@ void WebSockets::onConnect_HTTPThread(std::function<void(WebSocketsClient)> &&fn
 void WebSockets::onBinaryDataReceived_HTTPThread(std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> &&fn)
 {
     on_binary_data_received_fn = std::move(fn);
+}
+
+void WebSockets::pre_reboot() {
+    this->sendToAll("0", 1, HTTPD_WS_TYPE_CLOSE);
+    worker_active = WEBSOCKET_WORKER_ENQUEUED;
+    httpd_queue_work(httpd, work, this);
+    // Give http thread 200ms to send the close frames.
+    for(int i = 0; i < 10 && worker_active != WEBSOCKET_WORKER_DONE; ++i)
+        delay(20);
+
+    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] != -1)
+            continue;
+
+        this->keepAliveCloseDead(keep_alive_fds[i]);
+    }
+
+    httpd_unregister_uri_handler(this->httpd, handler_uri, HTTP_GET);
 }

@@ -60,6 +60,7 @@ public:
     WebSockets() : worker_active(WEBSOCKET_WORKER_DONE) {}
 
     void pre_setup();
+    void pre_reboot();
     void start(const char *uri, const char *state_path, httpd_handle_t httpd, const char *supported_subprotocol = nullptr);
 
     bool sendToClient(const char *payload, size_t payload_len, int sock, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
@@ -108,4 +109,6 @@ public:
     std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> on_binary_data_received_fn;
 
     ConfigRoot state;
+
+    const char *handler_uri;
 };

@@ -222,3 +222,7 @@ IAPIBackend::WantsStateUpdate WS::wantsStateUpdate(size_t stateIdx)
            IAPIBackend::WantsStateUpdate::AsString :
            IAPIBackend::WantsStateUpdate::No;
 }
+
+void WS::pre_reboot() {
+    web_sockets.pre_reboot();
+}
