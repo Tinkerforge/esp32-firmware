@@ -306,7 +306,10 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                     }
 
                     <FormSeparator heading={__("evse.content.debug")}/>
-                    <DebugLogger translationPrefix="evse" />
+                    <DebugLogger description={__("evse.content.debug_description")}
+                                 description_muted={__("evse.content.debug_description_muted")}
+                                 name={__("evse.script.debug_name")}
+                                 filename={__("evse.script.debug_filename")}/>
 
                     <CollapsedSection>
                         <FormRow label={__("evse.content.led_state")}>

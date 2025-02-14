@@ -10,8 +10,6 @@
             "protocol": "Energy Manager-Protokoll",
             "debug_description": "Protokoll erstellen",
             "debug_description_muted": "zur Diagnose bei Problemen",
-            "debug_start": "Start",
-            "debug_stop": "Stop + Download",
 
             "internal_state": "Interner Zustand",
 
@@ -42,18 +40,8 @@
             "reflash_em": "Neu flashen"
         },
         "script": {
-            "loading_debug_report": "Lade Debug-Report",
-            "loading_debug_report_failed": "Laden des Debug-Reports fehlgeschlagen",
-            "loading_event_log": "Lade Event-Log",
-            "loading_event_log_failed": "Laden des Event-Logs fehlgeschlagen",
-            "tab_close_warning": "Die Aufzeichnung des Event-Logs wird abgebrochen, wenn der Tab geschlossen wird.",
-            "starting_debug": "Aktiviere Aufzeichnung des Energy Manager-Logs.",
-            "starting_debug_failed": "Aktivierung der Aufzeichnung des Energy Manager-Logs fehlgeschlagen.",
-            "debug_running": "Aufzeichnung läuft. Tab nicht schließen!",
-            "debug_stop_failed": "Stoppen der Aufzeichnung des Energy Manager-Logs fehlgeschlagen.",
-            "debug_stopped": "Aufzeichnung des Energy Manager-Logs gestoppt.",
-            "debug_done": "Abgeschlossen.",
-            "debug_file": "Energy-Manager-Protokoll"
+            "debug_name": "Energy-Manager",
+            "debug_filename": "Energy-Manager-Protokoll"
         }
     }
 }

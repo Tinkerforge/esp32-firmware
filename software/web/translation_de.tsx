@@ -81,6 +81,21 @@ let x = {
         },
         "remote_close_button": {
             "close": "Fernzugriff schließen"
+        },
+        "debug_logger": {
+            "loading_debug_report": "Lade Debug-Report",
+            "loading_debug_report_failed": "Laden des Debug-Reports fehlgeschlagen",
+            "loading_event_log": "Lade Event-Log",
+            "loading_event_log_failed": "Laden des Event-Logs fehlgeschlagen",
+            "tab_close_warning": /*SFN*/ (debug_module: string) => `Die Aufzeichnung des ${debug_module}-Logs wird abgebrochen, wenn der Tab geschlossen wird.`/*NF*/,
+            "starting_debug": /*SFN*/ (debug_module: string) => `Aktiviere Aufzeichnung des ${debug_module}-Logs.`/*NF*/,
+            "starting_debug_failed": /*SFN*/ (debug_module: string) => `Aktivierung der Aufzeichnung des ${debug_module}-Logs fehlgeschlagen.`/*NF*/,
+            "debug_running": "Aufzeichnung läuft. Tab nicht schließen!",
+            "debug_stop_failed": /*SFN*/ (debug_module: string) => `Stoppen der Aufzeichnung des ${debug_module}-Logs fehlgeschlagen.`/*NF*/,
+            "debug_stopped": /*SFN*/ (debug_module: string) => `Aufzeichnung des ${debug_module}-Logs gestoppt.`/*NF*/,
+            "debug_done": "Abgeschlossen.",
+            "debug_start": "Start",
+            "debug_stop": "Stop + Download"
         }
     },
     "util": {

@@ -10,8 +10,6 @@
             "protocol": "Energy Manager Protocol",
             "debug_description": "Create protocol",
             "debug_description_muted": "for diagnosing issues",
-            "debug_start": "Start",
-            "debug_stop": "Stop + Download",
 
             "internal_state": "Internal state",
 
@@ -42,18 +40,8 @@
             "reflash_em": "Reflash"
         },
         "script": {
-            "loading_debug_report": "Loading debug protocol",
-            "loading_debug_report_failed": "Loading debug protocol failed",
-            "loading_event_log": "Loading event log",
-            "loading_event_log_failed": "Loading event log failed",
-            "tab_close_warning": "Event log capture will be aborted if this tab is closed.",
-            "starting_debug": "Starting recording debug protocol",
-            "starting_debug_failed": "Starting recording debug protocol failed",
-            "debug_running": "Recording in progress. Do not close tab!",
-            "debug_stop_failed": "Stopping recording debug protocol failed",
-            "debug_stopped": "Recording debug protocol stopped",
-            "debug_done": "Done.",
-            "debug_file": "Energy-Manager-protocol"
+            "debug_name": "Energy Manager",
+            "debug_filename": "Energy-Manager-protocol"
         }
     }
 }

@@ -81,6 +81,21 @@ let x = {
         },
         "remote_close_button": {
             "close": "Close remote access"
+        },
+        "debug_logger": {
+            "loading_debug_report": "Loading debug report",
+            "loading_debug_report_failed": "Loading debug report failed",
+            "loading_event_log": "Loading event log",
+            "loading_event_log_failed": "Loading event log failed",
+            "tab_close_warning": /*SFN*/ (debug_module: string) => `${debug_module} capture will be aborted if this tab is closed.`/*NF*/,
+            "starting_debug": /*SFN*/ (debug_module: string) => `Starting to record ${debug_module} log`/*NF*/,
+            "starting_debug_failed": /*SFN*/ (debug_module: string) => `Starting to record ${debug_module} log failed`/*NF*/,
+            "debug_running": "Recording. Do not close tab!",
+            "debug_stop_failed": /*SFN*/ (debug_module: string) => `Stopping to record ${debug_module} log failed`/*NF*/,
+            "debug_stopped": /*SFN*/ (debug_module: string) => `Stupped recording ${debug_module} log`/*NF*/,
+            "debug_done": "Done.",
+            "debug_start": "Start",
+            "debug_stop": "Stop + Download"
         }
     },
     "util": {
