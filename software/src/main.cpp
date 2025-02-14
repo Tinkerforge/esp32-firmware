@@ -128,6 +128,7 @@ static void pre_reboot_helper()
 {
     std::vector<IModule *> imodules;
     modules_get_imodules(&imodules);
+    std::reverse(imodules.begin(), imodules.end());
 
     for (IModule *imodule : imodules) {
         imodule->pre_reboot();
