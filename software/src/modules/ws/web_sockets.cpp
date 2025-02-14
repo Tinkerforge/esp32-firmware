@@ -26,10 +26,10 @@
 #include "tools/memory.h"
 #include "esp_httpd_priv.h"
 
-#define KEEP_ALIVE_TIMEOUT_MS 10000
+static constexpr micros_t KEEP_ALIVE_TIMEOUT = 10_s;
 
 #if MODULE_WATCHDOG_AVAILABLE()
-#define WORKER_WATCHDOG_TIMEOUT (5 * 60 * 1000)
+static constexpr micros_t WORKER_WATCHDOG_TIMEOUT = 5_m;
 static int watchdog_handle = -1;
 #endif
 
@@ -243,9 +243,9 @@ void WebSockets::keepAliveAdd(int fd)
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] == fd) {
-            // fd is alreaedy in the keep alive array. Only update last_pong to prevent instantly closing the new connection.
+            // fd is already in the keep alive array. Only update last_pong to prevent instantly closing the new connection.
             // This can happen if web sockets are opened and closed rapidly (so that LWIP "reuses" the fd) and we miss a close frame.
-            keep_alive_last_pong[i] = millis();
+            keep_alive_last_pong[i] = now_us();
             return;
         }
     }
@@ -254,7 +254,7 @@ void WebSockets::keepAliveAdd(int fd)
         if (keep_alive_fds[i] != -1)
             continue;
         keep_alive_fds[i] = fd;
-        keep_alive_last_pong[i] = millis();
+        keep_alive_last_pong[i] = now_us();
         return;
     }
 }
@@ -267,7 +267,7 @@ void WebSockets::keepAliveRemove(int fd)
             if (keep_alive_fds[i] != fd)
                 continue;
             keep_alive_fds[i] = -1;
-            keep_alive_last_pong[i] = 0;
+            keep_alive_last_pong[i] = 0_us;
             break;
         }
     }
@@ -347,7 +347,7 @@ void WebSockets::checkActiveClients()
         if (keep_alive_fds[i] == -1)
             continue;
 
-        if (httpd_ws_get_fd_info(httpd, keep_alive_fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET || deadline_elapsed(keep_alive_last_pong[i] + KEEP_ALIVE_TIMEOUT_MS)) {
+        if (httpd_ws_get_fd_info(httpd, keep_alive_fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET || deadline_elapsed(keep_alive_last_pong[i] + KEEP_ALIVE_TIMEOUT)) {
             this->keepAliveCloseDead(keep_alive_fds[i]);
         }
     }
@@ -360,7 +360,7 @@ void WebSockets::receivedPong(int fd)
         if (keep_alive_fds[i] != fd)
             continue;
 
-        keep_alive_last_pong[i] = millis();
+        keep_alive_last_pong[i] = now_us();
     }
 }
 
@@ -511,7 +511,7 @@ void WebSockets::triggerHttpThread()
     // Don't schedule work task if no work is pending.
     // Schedule it anyway once in a while to reset the watchdog.
 #if MODULE_WATCHDOG_AVAILABLE()
-    if (!deadline_elapsed(last_worker_run + WORKER_WATCHDOG_TIMEOUT / 8))
+    if (!deadline_elapsed(last_worker_run + WORKER_WATCHDOG_TIMEOUT / 8_us))
 #endif
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
@@ -528,7 +528,7 @@ void WebSockets::triggerHttpThread()
     errno = 0;
     err_t err = httpd_queue_work(httpd, work, this);
     if (err == ESP_OK) {
-        last_worker_run = millis();
+        last_worker_run = now_us();
         worker_poll_count = 0;
     } else {
         logger.printfln("Failed to start WebSocket worker: %i | %s (%i)", err, strerror(errno), errno);
@@ -562,7 +562,7 @@ void WebSockets::updateDebugState()
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
 
         state.get("worker_active"  )->updateUint(worker_active);
-        state.get("last_worker_run")->updateUint(last_worker_run);
+        state.get("last_worker_run")->updateUint(last_worker_run.to<millis_t>().as<uint32_t>());
         state.get("queue_len"      )->updateUint(work_queue.size());
     }
 
@@ -574,7 +574,7 @@ void WebSockets::updateDebugState()
 
         for (size_t i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
             state_keep_alive_fds->get(i)->updateInt(keep_alive_fds[i]);
-            state_keep_alive_pongs->get(i)->updateUint(keep_alive_last_pong[i]);
+            state_keep_alive_pongs->get(i)->updateUint(keep_alive_last_pong[i].to<millis_t>().as<uint32_t>());
         }
     }
 }
@@ -614,7 +614,7 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
     watchdog_handle = watchdog.add(
         "websocket_worker",
         "Websocket worker was not able to start for five minutes. The control socket is probably dead.",
-        WORKER_WATCHDOG_TIMEOUT);
+        WORKER_WATCHDOG_TIMEOUT.to<millis_t>().as<uint32_t>());
 #endif
 
     task_scheduler.scheduleWithFixedDelay([this](){

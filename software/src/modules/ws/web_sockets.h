@@ -94,13 +94,13 @@ public:
     // it could be called by another method that locked the mutex.
     std::recursive_mutex keep_alive_mutex;
     int keep_alive_fds[MAX_WEB_SOCKET_CLIENTS];
-    uint32_t keep_alive_last_pong[MAX_WEB_SOCKET_CLIENTS];
+    micros_t keep_alive_last_pong[MAX_WEB_SOCKET_CLIENTS];
 
     std::recursive_mutex work_queue_mutex;
     std::deque<ws_work_item> work_queue;
 
     std::atomic<uint8_t> worker_active;
-    uint32_t last_worker_run = 0;
+    micros_t last_worker_run = 0_us;
     uint32_t worker_poll_count = 0;
 
     httpd_handle_t httpd;
