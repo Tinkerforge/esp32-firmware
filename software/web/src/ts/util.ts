@@ -371,6 +371,20 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
     continuation(ws, eventTarget);
 }
 
+let visibility_disconnect_timeout: number = undefined;
+export function visibiltyHandler(visibilityState: DocumentVisibilityState) {
+    window.clearTimeout(visibility_disconnect_timeout);
+    visibility_disconnect_timeout = undefined;
+
+    if (visibilityState == "hidden") {
+        visibility_disconnect_timeout = window.setTimeout(pauseWebSockets, 60 * 1000);
+    } else if (visibilityState == "visible" && ws == null) {
+        resumeWebSockets();
+    }
+}
+
+document.addEventListener("visibilitychange", () => visibiltyHandler(document.visibilityState));
+
 export function pauseiFrameSocket() {
     window.parent.postMessage("pauseWS");
     if (wsReconnectTimeout != null) {
