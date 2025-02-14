@@ -27,6 +27,8 @@
 #include "string_builder.h"
 #include "build.h"
 
+#include "unsafe_ports.h"
+
 #if MODULE_ETHERNET_AVAILABLE()
 #include "modules/ethernet/ethernet_state.enum.h"
 #endif
@@ -39,11 +41,18 @@ extern char local_uid_str[32];
 
 void Network::pre_setup()
 {
-    config = Config::Object({
+    config = ConfigRoot{Config::Object({
         {"hostname", Config::Str("replaceme", 0, 32)},
         {"enable_mdns", Config::Bool(true)},
         {"web_server_port", Config::Uint16(80)}
-    });
+    }), [this](Config &update, ConfigSource source) -> String {
+        auto new_port = update.get("web_server_port")->asUint();
+        for(size_t i = 0; i < unsafe_ports_length; ++i)
+            if (unsafe_ports[i] == new_port)
+                return "Selected web server port is regarded as unsafe by web browsers. Please select another port.";
+
+        return "";
+    }};
 
     state = Config::Object({
         {"connected", Config::Bool(false)}
