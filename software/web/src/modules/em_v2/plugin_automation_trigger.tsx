@@ -34,9 +34,31 @@ export type EMInputAutomationTrigger = [
         closed: boolean;
     },
 ];
+export type EMRelaySwitchAutomationTrigger = [
+    AutomationTriggerID.EMRelaySwitch,
+    {
+        index: number;
+        closed: boolean;
+    },
+];
+export type EMSGReadySwitchAutomationTrigger = [
+    AutomationTriggerID.EMSGReadySwitch,
+    {
+        index: number;
+        closed: boolean;
+    },
+];
 
 function get_em_input_table_children(trigger: EMInputAutomationTrigger) {
     return __("energy_manager.automation.automation_input_text")(trigger[1].index + 1, trigger[1].closed);
+}
+
+function get_em_relay_switch_table_children(trigger: EMRelaySwitchAutomationTrigger) {
+    return __("em_v2.automation.automation_relay_text")(trigger[1].index + 1, trigger[1].closed);
+}
+
+function get_em_sg_ready_switch_table_children(trigger: EMSGReadySwitchAutomationTrigger) {
+    return __("em_v2.automation.automation_sgready_text")(trigger[1].index + 1, trigger[1].closed);
 }
 
 function get_em_input_edit_children(trigger: EMInputAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
@@ -46,6 +68,60 @@ function get_em_input_edit_children(trigger: EMInputAutomationTrigger, on_trigge
                 required
                 min={1}
                 max={4}
+                value={trigger[1].index + 1}
+                onValue={(v) => {on_trigger(util.get_updated_union(trigger, {index: v - 1}));}}
+            />
+        </FormRow>,
+
+        <FormRow label={__("energy_manager.automation.state")}>
+            <InputSelect
+                value={trigger[1].closed ? '1' : '0'}
+                items = {[
+                    ['0', __("energy_manager.automation.open")],
+                    ['1', __("energy_manager.automation.closed")],
+                ]}
+                onValue={(v) => {
+                    on_trigger(util.get_updated_union(trigger, {closed: v === '1'}));
+                }}
+            />
+        </FormRow>,
+    ];
+}
+
+function get_em_relay_switch_edit_children(trigger: EMRelaySwitchAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
+    return [
+        <FormRow label={__("em_v2.automation.relay_index")}>
+            <InputNumber
+                required
+                min={1}
+                max={2}
+                value={trigger[1].index + 1}
+                onValue={(v) => {on_trigger(util.get_updated_union(trigger, {index: v - 1}));}}
+            />
+        </FormRow>,
+
+        <FormRow label={__("energy_manager.automation.state")}>
+            <InputSelect
+                value={trigger[1].closed ? '1' : '0'}
+                items = {[
+                    ['0', __("energy_manager.automation.open")],
+                    ['1', __("energy_manager.automation.closed")],
+                ]}
+                onValue={(v) => {
+                    on_trigger(util.get_updated_union(trigger, {closed: v === '1'}));
+                }}
+            />
+        </FormRow>,
+    ];
+}
+
+function get_em_sg_ready_switch_edit_children(trigger: EMSGReadySwitchAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
+    return [
+        <FormRow label={__("em_v2.automation.sgready_index")}>
+            <InputNumber
+                required
+                min={1}
+                max={2}
                 value={trigger[1].index + 1}
                 onValue={(v) => {on_trigger(util.get_updated_union(trigger, {index: v - 1}));}}
             />
@@ -76,6 +152,26 @@ function new_em_input_config(): AutomationTrigger {
     ];
 }
 
+function new_em_relay_switch_config(): AutomationTrigger {
+    return [
+        AutomationTriggerID.EMRelaySwitch,
+        {
+            index: 0,
+            closed: true,
+        },
+    ];
+}
+
+function new_em_sg_ready_switch_config(): AutomationTrigger {
+    return [
+        AutomationTriggerID.EMSGReadySwitch,
+        {
+            index: 0,
+            closed: true,
+        },
+    ];
+}
+
 export function init(): InitResult {
     return {
         trigger_components: {
@@ -85,6 +181,20 @@ export function init(): InitResult {
                 clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
                 get_table_children: get_em_input_table_children,
                 get_edit_children: get_em_input_edit_children,
+            },
+            [AutomationTriggerID.EMRelaySwitch]: {
+                translation_name: () => __("em_v2.automation.relay_switches"),
+                new_config: new_em_relay_switch_config,
+                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+                get_table_children: get_em_relay_switch_table_children,
+                get_edit_children: get_em_relay_switch_edit_children,
+            },
+            [AutomationTriggerID.EMSGReadySwitch]: {
+                translation_name: () => __("em_v2.automation.sgready_switches"),
+                new_config: new_em_sg_ready_switch_config,
+                clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
+                get_table_children: get_em_sg_ready_switch_table_children,
+                get_edit_children: get_em_sg_ready_switch_edit_children,
             },
         },
     };

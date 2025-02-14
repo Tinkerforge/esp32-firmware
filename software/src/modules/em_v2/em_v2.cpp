@@ -104,6 +104,22 @@ void EMV2::pre_setup()
         })
     );
 
+    automation.register_trigger(
+        AutomationTriggerID::EMRelaySwitch,
+        Config::Object({
+            {"index",  Config::Uint(0, 0, 1)},
+            {"closed", Config::Bool(false)},
+        })
+    );
+
+    automation.register_trigger(
+        AutomationTriggerID::EMSGReadySwitch,
+        Config::Object({
+            {"index",  Config::Uint(0, 0, 1)},
+            {"closed", Config::Bool(false)},
+        })
+    );
+
     automation.register_action(
         AutomationActionID::EMRelaySwitch,
         Config::Object({
@@ -170,6 +186,14 @@ void EMV2::setup()
         for (size_t i = 0; i < ARRAY_SIZE(this->all_data.input); i++) {
             uint32_t index = i;
             automation.trigger(AutomationTriggerID::EMInput, &index, this);
+        }
+        for (size_t i = 0; i < ARRAY_SIZE(this->all_data.output_relay); i++) {
+            uint32_t index = i;
+            automation.trigger(AutomationTriggerID::EMRelaySwitch, &index, this);
+        }
+        for (size_t i = 0; i < ARRAY_SIZE(this->all_data.output_sg_ready); i++) {
+            uint32_t index = i;
+            automation.trigger(AutomationTriggerID::EMSGReadySwitch, &index, this);
         }
     });
 #endif
@@ -395,6 +419,34 @@ bool EMV2::has_triggered(const Config *conf, void *data)
             return is_closed == want_closed;
         }
 
+        case AutomationTriggerID::EMRelaySwitch: {
+            const uint32_t triggered_index = *static_cast<uint32_t *>(data);
+            const Config *cfg = static_cast<const Config *>(conf->get());
+            const uint32_t cfg_index = cfg->get("index")->asUint();
+
+            if (triggered_index != cfg_index) {
+                return false;
+            }
+
+            const bool is_closed = this->all_data.output_relay[triggered_index];
+            const bool want_closed = cfg->get("closed")->asBool();
+            return is_closed == want_closed;
+        }
+
+        case AutomationTriggerID::EMSGReadySwitch: {
+            const uint32_t triggered_index = *static_cast<uint32_t *>(data);
+            const Config *cfg = static_cast<const Config *>(conf->get());
+            const uint32_t cfg_index = cfg->get("index")->asUint();
+
+            if (triggered_index != cfg_index) {
+                return false;
+            }
+
+            const bool is_closed = this->all_data.output_sg_ready[triggered_index];
+            const bool want_closed = cfg->get("closed")->asBool();
+            return is_closed == want_closed;
+        }
+
         default:
             break;
     }
@@ -436,12 +488,18 @@ void EMV2::update_all_data()
 
     Config *state_sg_ready = static_cast<Config *>(em_common.state.get("sg_ready_outputs"));
     for (size_t i = 0; i < ARRAY_SIZE(all_data.output_sg_ready); i++) {
-        state_sg_ready->get(i)->updateBool(all_data.output_sg_ready[i]);
+        if(state_sg_ready->get(i)->updateBool(all_data.output_sg_ready[i])) {
+            uint32_t index = i;
+            AUTOMATION_TRIGGER(EMSGReadySwitch, &index);
+        }
     }
 
     Config *state_relays = static_cast<Config *>(em_common.state.get("relays"));
     for (size_t i = 0; i < ARRAY_SIZE(all_data.output_relay); i++) {
-        state_relays->get(i)->updateBool(all_data.output_relay[i]);
+        if(state_relays->get(i)->updateBool(all_data.output_relay[i])) {
+            uint32_t index = i;
+            AUTOMATION_TRIGGER(EMRelaySwitch, &index);
+        }
     }
 
 #if MODULE_METERS_EM_AVAILABLE()
