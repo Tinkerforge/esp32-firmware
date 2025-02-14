@@ -31,6 +31,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void pre_reboot() override;
 
     bool on_tag_seen(const char *tag_id);
 

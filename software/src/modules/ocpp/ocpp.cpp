@@ -198,3 +198,9 @@ bool Ocpp::on_tag_seen(const char *tag_id)
     return true;
 }
 #endif
+
+void Ocpp::pre_reboot() {
+    if (cp) {
+        cp->stop();
+    }
+}
