@@ -356,6 +356,7 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
     console.log("Connecting to web socket");
     if (ws != null) {
         ws.close();
+        ws = null;
     }
     ws = new WebSocket((location.protocol == 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
 
@@ -381,6 +382,7 @@ export function pauseiFrameSocket() {
 export function pauseWebSockets() {
     if (ws !== null) {
         ws.close();
+        ws = null;
     }
     if (wsReconnectTimeout != null) {
         clearTimeout(wsReconnectTimeout);
@@ -395,6 +397,7 @@ export function resumeWebSockets() {
 export function postReboot(alert_title: string, alert_text: string) {
     if (ws !== null) {
         ws.close();
+        ws = null;
     }
     clearTimeout(wsReconnectTimeout);
     add_alert("reboot", "success", () => alert_title, () => alert_text);
