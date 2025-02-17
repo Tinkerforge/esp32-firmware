@@ -146,10 +146,6 @@ void MeterRCTPower::disconnect_callback()
 
 void MeterRCTPower::read_next()
 {
-    if (connected_client == nullptr) {
-        esp_system_abort("meter_rct_power: Not connected while trying to read");
-    }
-
     if (value_specs_length == 0) {
         return;
     }
