@@ -104,7 +104,6 @@ void MeterRCTPower::setup(Config *ephemeral_config)
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (read_allowed) {
-            read_allowed = false;
             read_next();
         }
     }, 2_s, 250_ms);
@@ -154,6 +153,8 @@ void MeterRCTPower::read_next()
     if (value_specs_length == 0) {
         return;
     }
+
+    read_allowed = false;
 
     if (value_specs_index >= value_specs_length) {
         value_specs_index = 0;

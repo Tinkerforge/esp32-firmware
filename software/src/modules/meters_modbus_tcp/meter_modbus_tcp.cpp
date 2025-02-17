@@ -983,7 +983,6 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (read_allowed) {
-            read_allowed = false;
             read_next();
         }
     }, 2_s, 1_s);
@@ -1054,6 +1053,8 @@ bool MeterModbusTCP::prepare_read()
 
 void MeterModbusTCP::read_next()
 {
+    read_allowed = false;
+
     if (register_buffer_index < generic_read_request.register_count
      && generic_read_request.register_type == table->specs[read_index].register_type
      && generic_read_request.start_address + register_buffer_index == table->specs[read_index].start_address
