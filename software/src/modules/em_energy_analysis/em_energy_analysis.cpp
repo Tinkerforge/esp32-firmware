@@ -389,9 +389,7 @@ void EMEnergyAnalysis::collect_data_points()
             float total_import; // kWh
             availability = meters.get_energy_import(slot, &total_import, max_age);
             if (availability == MeterValueAvailability::Fresh) {
-                if (isnan(total_import)) {
-                    logger.printfln("Meter in slot %u claims fresh 'import' value but returned NaN.", slot);
-                } else {
+                if (!isnan(total_import)) {
                     have_data = true;
                     energy_import[slot] = clamp<uint64_t>(0,
                                                           roundf(total_import * 100.0), // kWh -> daWh
@@ -407,9 +405,7 @@ void EMEnergyAnalysis::collect_data_points()
             float total_export; // kWh
             availability = meters.get_energy_export(slot, &total_export, max_age);
             if (availability == MeterValueAvailability::Fresh) {
-                if (isnan(total_export)) {
-                    logger.printfln("Meter in slot %u claims fresh 'export' value but returned NaN.", slot);
-                } else {
+                if (!isnan(total_export)) {
                     have_data = true;
                     energy_export[slot] = clamp<uint64_t>(0,
                                                           roundf(total_export * 100.0), // kWh -> daWh
