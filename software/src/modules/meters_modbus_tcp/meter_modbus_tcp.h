@@ -127,100 +127,138 @@ private:
     size_t register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
     size_t register_start_address;
 
-    // custom
-    ValueTable *custom_table;
+    union {
+        // custom
+        struct {
+            ValueTable *table;
+        } custom;
 
-    // Sungrow
-    SungrowHybridInverterVirtualMeter sungrow_hybrid_inverter_virtual_meter;
-    SungrowStringInverterVirtualMeter sungrow_string_inverter_virtual_meter;
-    int sungrow_inverter_output_type;
-    uint16_t sungrow_hybrid_inverter_running_state;
+        // Sungrow
+        struct {
+            SungrowHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
+            SungrowStringInverterVirtualMeter string_inverter_virtual_meter;
+            int inverter_output_type;
+            uint16_t hybrid_inverter_running_state;
+        } sungrow;
 
-    // Solarmax
-    SolarmaxMaxStorageVirtualMeter solarmax_max_storage_virtual_meter;
+        // Solarmax
+        struct {
+            SolarmaxMaxStorageVirtualMeter max_storage_virtual_meter;
+        } solarmax;
 
-    // Victron Energy
-    VictronEnergyGXVirtualMeter victron_energy_gx_virtual_meter;
-    float victron_energy_gx_ac_coupled_pv_on_output_l1_power;
-    float victron_energy_gx_ac_coupled_pv_on_output_l2_power;
-    float victron_energy_gx_ac_coupled_pv_on_output_l3_power;
-    float victron_energy_gx_ac_consumption_l1_power;
-    float victron_energy_gx_ac_consumption_l2_power;
-    float victron_energy_gx_ac_consumption_l3_power;
+        // Victron Energy GX
+        struct {
+            VictronEnergyGXVirtualMeter virtual_meter;
+            float ac_coupled_pv_on_output_l1_power;
+            float ac_coupled_pv_on_output_l2_power;
+            float ac_coupled_pv_on_output_l3_power;
+            float ac_consumption_l1_power;
+            float ac_consumption_l2_power;
+            float ac_consumption_l3_power;
+        } victron_energy_gx;
 
-    // Deye
-    DeyeHybridInverterVirtualMeter deye_hybrid_inverter_virtual_meter;
-    int deye_hybrid_inverter_device_type;
-    float deye_hybrid_inverter_pv1_power;
-    float deye_hybrid_inverter_pv2_power;
-    float deye_hybrid_inverter_pv3_power;
-    float deye_hybrid_inverter_pv4_power;
-    float deye_hybrid_inverter_pv1_voltage;
-    float deye_hybrid_inverter_pv1_current;
-    float deye_hybrid_inverter_pv2_voltage;
-    float deye_hybrid_inverter_pv2_current;
-    float deye_hybrid_inverter_pv3_voltage;
-    float deye_hybrid_inverter_pv3_current;
-    float deye_hybrid_inverter_pv4_voltage;
-    float deye_hybrid_inverter_pv4_current;
+        // Deye
+        struct {
+            DeyeHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
+            int hybrid_inverter_device_type;
+            float hybrid_inverter_pv1_power;
+            float hybrid_inverter_pv2_power;
+            float hybrid_inverter_pv3_power;
+            float hybrid_inverter_pv4_power;
+            float hybrid_inverter_pv1_voltage;
+            float hybrid_inverter_pv1_current;
+            float hybrid_inverter_pv2_voltage;
+            float hybrid_inverter_pv2_current;
+            float hybrid_inverter_pv3_voltage;
+            float hybrid_inverter_pv3_current;
+            float hybrid_inverter_pv4_voltage;
+            float hybrid_inverter_pv4_current;
+        } deye;
 
-    // Alpha ESS
-    AlphaESSHybridInverterVirtualMeter alpha_ess_hybrid_inverter_virtual_meter;
+        // Alpha ESS
+        struct {
+            AlphaESSHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
+        } alpha_ess;
 
-    // Shelly Pro EM
-    ShellyEMMonophaseChannel shelly_pro_em_monophase_channel;
-    ShellyEMMonophaseMapping shelly_pro_em_monophase_mapping;
+        // Shelly Pro EM
+        struct {
+            ShellyEMMonophaseChannel monophase_channel;
+            ShellyEMMonophaseMapping monophase_mapping;
+        } shelly_pro_em;
 
-    // Shelly Pro 3EM
-    ShellyPro3EMDeviceProfile shelly_pro_3em_device_profile;
-    ShellyEMMonophaseChannel shelly_pro_3em_monophase_channel;
-    ShellyEMMonophaseMapping shelly_pro_3em_monophase_mapping;
+        // Shelly Pro 3EM
+        struct {
+            ShellyPro3EMDeviceProfile device_profile;
+            ShellyEMMonophaseChannel monophase_channel;
+            ShellyEMMonophaseMapping monophase_mapping;
+        } shelly_pro_3em;
 
-    // Goodwe
-    GoodweHybridInverterVirtualMeter goodwe_hybrid_inverter_virtual_meter;
+        // Goodwe
+        struct {
+            GoodweHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
+        } goodwe;
 
-    // Solax
-    SolaxHybridInverterVirtualMeter solax_hybrid_inverter_virtual_meter;
+        // Solax
+        struct {
+            SolaxHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
+        } solax;
 
-    // Fronius
-    FroniusGEN24PlusHybridInverterVirtualMeter fronius_gen24_plus_hybrid_inverter_virtual_meter;
-    uint16_t fronius_gen24_plus_hybrid_inverter_input_or_model_id;
-    size_t fronius_gen24_plus_hybrid_inverter_start_address_shift;
-    int16_t fronius_gen24_plus_hybrid_inverter_dca_sf;
-    int16_t fronius_gen24_plus_hybrid_inverter_dcv_sf;
-    int16_t fronius_gen24_plus_hybrid_inverter_dcw_sf;
-    int16_t fronius_gen24_plus_hybrid_inverter_dcwh_sf;
-    float fronius_gen24_plus_hybrid_inverter_charge_dca;
-    float fronius_gen24_plus_hybrid_inverter_charge_dcv;
-    float fronius_gen24_plus_hybrid_inverter_charge_dcw;
-    float fronius_gen24_plus_hybrid_inverter_charge_dcwh;
-    float fronius_gen24_plus_hybrid_inverter_discharge_dca;
-    float fronius_gen24_plus_hybrid_inverter_discharge_dcv;
-    float fronius_gen24_plus_hybrid_inverter_discharge_dcw;
-    float fronius_gen24_plus_hybrid_inverter_discharge_dcwh;
-    float fronius_gen24_plus_hybrid_inverter_chastate;
-    int16_t fronius_gen24_plus_hybrid_inverter_chastate_sf;
+        // Fronius
+        struct {
+            FroniusGEN24PlusHybridInverterVirtualMeter gen24_plus_hybrid_inverter_virtual_meter;
+            uint16_t gen24_plus_hybrid_inverter_input_or_model_id;
+            size_t gen24_plus_hybrid_inverter_start_address_shift;
+            int16_t gen24_plus_hybrid_inverter_dca_sf;
+            int16_t gen24_plus_hybrid_inverter_dcv_sf;
+            int16_t gen24_plus_hybrid_inverter_dcw_sf;
+            int16_t gen24_plus_hybrid_inverter_dcwh_sf;
+            float gen24_plus_hybrid_inverter_charge_dca;
+            float gen24_plus_hybrid_inverter_charge_dcv;
+            float gen24_plus_hybrid_inverter_charge_dcw;
+            float gen24_plus_hybrid_inverter_charge_dcwh;
+            float gen24_plus_hybrid_inverter_discharge_dca;
+            float gen24_plus_hybrid_inverter_discharge_dcv;
+            float gen24_plus_hybrid_inverter_discharge_dcw;
+            float gen24_plus_hybrid_inverter_discharge_dcwh;
+            float gen24_plus_hybrid_inverter_chastate;
+            int16_t gen24_plus_hybrid_inverter_chastate_sf;
+        } fronius;
 
-    // Hailei
-    HaileiHybridInverterVirtualMeter hailei_hybrid_inverter_virtual_meter;
+        // Hailei
+        struct {
+            HaileiHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
+        } hailei;
 
-    // Fox ESS H3
-    FoxESSH3HybridInverterVirtualMeter fox_ess_h3_hybrid_inverter_virtual_meter;
+        // Fox ESS H3
+        struct {
+            FoxESSH3HybridInverterVirtualMeter hybrid_inverter_virtual_meter;
+        } fox_ess_h3;
 
-    // Carlo Gavazzi EM100
-    CarloGavazziPhase carlo_gavazzi_em100_phase;
+        // Carlo Gavazzi EM100
+        struct {
+            CarloGavazziPhase phase;
+        } carlo_gavazzi_em100;
 
-    // Carlo Gavazzi ET100
-    CarloGavazziPhase carlo_gavazzi_et100_phase;
+        // Carlo Gavazzi ET100
+        struct {
+            CarloGavazziPhase phase;
+        } carlo_gavazzi_et100;
 
-    // Carlo Gavazzi EM270
-    CarloGavazziEM270VirtualMeter carlo_gavazzi_em270_virtual_meter;
+        // Carlo Gavazzi EM270
+        struct {
+            CarloGavazziEM270VirtualMeter virtual_meter;
+        } carlo_gavazzi_em270;
 
-    // Carlo Gavazzi EM280
-    CarloGavazziEM280VirtualMeter carlo_gavazzi_em280_virtual_meter;
+        // Carlo Gavazzi EM280
+        struct {
+            CarloGavazziEM280VirtualMeter virtual_meter;
+        } carlo_gavazzi_em280;
 
-    // Carlo Gavazzi EM510
-    CarloGavazziPhase carlo_gavazzi_em510_phase;
+        // Carlo Gavazzi EM510
+        struct {
+            CarloGavazziPhase phase;
+        } carlo_gavazzi_em510;
+    };
 };
 
 #if defined(__GNUC__)
