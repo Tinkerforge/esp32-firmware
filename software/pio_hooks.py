@@ -564,6 +564,9 @@ def main():
     if env.IsCleanTarget():
         return
 
+    # Enable this for class_size script
+    #env.Append(CXXFLAGS=["-fdump-lang-class"])
+
     repair_rtc_dir()
     repair_firmware_update_dir()
     repair_meters_modbus_tcp_dir()

@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("env")
+args = parser.parse_args()
+
+class_sizes = {}
+
+for root, dirs, files in os.walk(os.path.join('.pio', 'build', args.env, 'src')):
+    for name in files:
+        if not name.endswith('.class'):
+            continue
+
+        path = os.path.join(root, name)
+
+        with open(path, 'r') as f:
+            class_name = None
+
+            for line in f.readlines():
+                if line.startswith('Class '):
+                    class_name = line.split(' ', 1)[1].strip()
+                elif line.startswith('   size='):
+                    size = int(line.split('   size=')[1].split(' ')[0])
+
+                    if class_name in class_sizes:
+                        if size not in class_sizes[class_name]:
+                            class_sizes[class_name].append(size)
+                    else:
+                        class_sizes[class_name] = [size]
+
+sortable_class_sizes = []
+
+for class_name in class_sizes:
+    sortable_class_sizes.append((class_sizes[class_name], class_name))
+
+for class_size in sorted(sortable_class_sizes):
+    print(class_size[0], class_size[1])
