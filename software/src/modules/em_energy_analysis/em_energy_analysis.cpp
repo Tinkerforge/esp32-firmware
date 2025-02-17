@@ -390,7 +390,7 @@ void EMEnergyAnalysis::collect_data_points()
             availability = meters.get_energy_import(slot, &total_import, max_age);
             if (availability == MeterValueAvailability::Fresh) {
                 if (isnan(total_import)) {
-                    logger.printfln("Meter claims fresh 'import' value but returned NaN.");
+                    logger.printfln("Meter in slot %u claims fresh 'import' value but returned NaN.", slot);
                 } else {
                     have_data = true;
                     energy_import[slot] = clamp<uint64_t>(0,
@@ -408,7 +408,7 @@ void EMEnergyAnalysis::collect_data_points()
             availability = meters.get_energy_export(slot, &total_export, max_age);
             if (availability == MeterValueAvailability::Fresh) {
                 if (isnan(total_export)) {
-                    logger.printfln("Meter claims fresh 'export' value but returned NaN.");
+                    logger.printfln("Meter in slot %u claims fresh 'export' value but returned NaN.", slot);
                 } else {
                     have_data = true;
                     energy_export[slot] = clamp<uint64_t>(0,
