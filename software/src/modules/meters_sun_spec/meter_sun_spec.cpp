@@ -68,7 +68,7 @@ void MeterSunSpec::setup(Config *ephemeral_config)
         ephemeral_config->get("location")->updateEnum(default_location);
     }
 
-    if (!model_parser) {
+    if (model_parser == nullptr) {
         logger.printfln("No parser available for model %u", model_id);
         return;
     }
@@ -83,6 +83,10 @@ void MeterSunSpec::setup(Config *ephemeral_config)
 
 void MeterSunSpec::register_events()
 {
+    if (model_parser == nullptr) {
+        return;
+    }
+
     event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
         if (connected->asBool()) {
             start_connection();

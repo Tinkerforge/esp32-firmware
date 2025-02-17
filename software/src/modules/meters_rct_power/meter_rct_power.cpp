@@ -112,6 +112,10 @@ void MeterRCTPower::setup(Config *ephemeral_config)
 
 void MeterRCTPower::register_events()
 {
+    if (value_specs == nullptr) {
+        return;
+    }
+
     event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
         if (connected->asBool()) {
             start_connection();

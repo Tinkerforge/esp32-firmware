@@ -991,6 +991,10 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
 void MeterModbusTCP::register_events()
 {
+    if (table == nullptr) {
+        return;
+    }
+
     event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
         if (connected->asBool()) {
             start_connection();
@@ -1031,10 +1035,6 @@ void MeterModbusTCP::disconnect_callback()
 
 bool MeterModbusTCP::prepare_read()
 {
-    if (table == nullptr) {
-        return false;
-    }
-
     bool overflow = false;
 
     while (
@@ -1054,10 +1054,6 @@ bool MeterModbusTCP::prepare_read()
 
 void MeterModbusTCP::read_next()
 {
-    if (table == nullptr) {
-        return;
-    }
-
     if (register_buffer_index < generic_read_request.register_count
      && generic_read_request.register_type == table->specs[read_index].register_type
      && generic_read_request.start_address + register_buffer_index == table->specs[read_index].start_address
