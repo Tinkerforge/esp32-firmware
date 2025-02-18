@@ -7724,7 +7724,7 @@ static float get_model_701_PFL1(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->PFL1;
-    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MAX : -1;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MIN : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= (get_sun_spec_scale_factor(model->PF_SF) * -1.0f);
@@ -7735,7 +7735,7 @@ static float get_model_701_AL1(const void *register_data, uint32_t quirks, bool 
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->AL1;
-    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MAX : -1;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MIN : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_sun_spec_scale_factor(model->A_SF);
@@ -7837,7 +7837,7 @@ static float get_model_701_PFL2(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->PFL2;
-    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MAX : -1;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MIN : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= (get_sun_spec_scale_factor(model->PF_SF) * -1.0f);
@@ -7848,7 +7848,7 @@ static float get_model_701_AL2(const void *register_data, uint32_t quirks, bool 
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->AL2;
-    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MAX : -1;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MIN : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_sun_spec_scale_factor(model->A_SF);
@@ -7950,7 +7950,7 @@ static float get_model_701_PFL3(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->PFL3;
-    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MAX : -1;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MIN : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= (get_sun_spec_scale_factor(model->PF_SF) * -1.0f);
@@ -7961,7 +7961,7 @@ static float get_model_701_AL3(const void *register_data, uint32_t quirks, bool 
 {
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     int16_t val = model->AL3;
-    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MAX : -1;
+    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MIN : -1;
     if (val == not_implemented_val) return NAN;
     float fval = static_cast<float>(val);
     fval *= get_sun_spec_scale_factor(model->A_SF);

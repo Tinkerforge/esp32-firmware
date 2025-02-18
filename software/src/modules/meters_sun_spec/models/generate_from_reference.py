@@ -651,10 +651,10 @@ for model in models:
         # Check for non-implemented value
         if field_type == "int16":
             if value_is_der_phase_current:
-                print_cpp(r"    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MAX : -1;")
+                print_cpp(r"    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16) == 0 ? INT16_MIN : -1;")
                 print_cpp(r"    if (val == not_implemented_val) return NAN;")
             elif value_is_der_phase_power_factor:
-                print_cpp(r"    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MAX : -1;")
+                print_cpp(r"    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MIN : -1;")
                 print_cpp(r"    if (val == not_implemented_val) return NAN;")
             else:
                 print_cpp(r"    if (val == INT16_MIN) return NAN;")
