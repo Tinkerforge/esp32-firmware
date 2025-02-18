@@ -103,7 +103,18 @@ function hsvToHex(x: {color_h: number, color_s: number, color_v: number}) {
 }
 
 function hexToHsv(hex: string) {
-    let rgb = util.hexToRgb(hex);
+    let rgb;
+    if (hex.startsWith("#")) {
+        rgb = util.hexToRgb(hex);
+    } else {
+        // There is a bug in chrome that breaks the pipette of the color picker on some systems https://issues.chromium.org/issues/40777177
+        // This stops the webinterface from crashing when the pipette is used.
+        rgb = {
+            r: 0,
+            b: 0,
+            g: 0,
+        }
+    }
     let hsv = util.rgbToHsv(rgb.r, rgb.g, rgb.b);
     return {color_h: Math.round(hsv[0] * 359), color_s: Math.round(hsv[1] * 255), color_v: Math.round(hsv[2] * 255)};
 }
