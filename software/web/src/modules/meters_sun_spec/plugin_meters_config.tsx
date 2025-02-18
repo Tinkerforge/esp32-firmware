@@ -163,7 +163,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         });
     }
 
-    async componentWillUnmount() {
+    async abort_scan() {
         if (this.scan_continue_timer !== undefined) {
             clearTimeout(this.scan_continue_timer);
             this.scan_continue_timer = undefined;
@@ -202,6 +202,10 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             scan_cookie: null,
             scan_log: scan_log,
         });
+    }
+
+    async componentWillUnmount() {
+        await this.abort_scan();
     }
 
     get_scan_result_item(scan_result: DeviceScannerResult) {
@@ -272,7 +276,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
     render() {
         return <>
             <FormRow label={__("meters_sun_spec.content.scan_title")} label_muted={__("meters_sun_spec.content.scan_title_muted")}>
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col-sm-6">
                         <InputNumber
                             required
@@ -294,10 +298,9 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                             }} />
                     </div>
                 </div>
-            </FormRow>
-            <FormRow label="">
             {!this.state.scan_running ?
-                <Button variant="primary"
+                <Button key="scan"
+                        variant="primary"
                         className="form-control"
                         onClick={async () => {
                             let scan_cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
@@ -346,9 +349,21 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                         }}
                         disabled={this.props.host.trim().length == 0 || !util.hasValue(this.props.port) || this.state.scan_running}>
                     {__("meters_sun_spec.content.scan")}
-                </Button>
-                : <Progress progress={this.state.scan_progress / 100} />}
+                </Button> :
+                <Button key="scan_abort"
+                        variant="primary"
+                        className="form-control"
+                        onClick={async () => await this.abort_scan()}
+                        >
+                    {__("meters_sun_spec.content.scan_abort")}
+                </Button>}
             </FormRow>
+
+            {this.state.scan_running ?
+                <FormRow label="">
+                    <Progress progress={this.state.scan_progress / 100} />
+                </FormRow>
+                : undefined}
 
             {this.state.scan_show_log ?
                 <><FormRow label="">

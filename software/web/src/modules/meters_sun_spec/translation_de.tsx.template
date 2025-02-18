@@ -25,6 +25,7 @@ let x = {
             "scan_title": "Gerätesuche",
             "scan_title_muted": "erste Geräteadresse, letzte Geräteadresse",
             "scan": "Suche starten",
+            "scan_abort": "Suche abbrechen",
             "scan_results": "Gefundene Geräte",
             "scan_log": "Log",
             "scan_log_file": "SunSpec-Gerätesuche",

@@ -25,6 +25,7 @@ let x = {
             "scan_title": "Device search",
             "scan_title_muted": "first device address, last device address",
             "scan": "Start search",
+            "scan_abort": "Abort search",
             "scan_results": "Discovered devices",
             "scan_log": "Log",
             "scan_log_file": "SunSpec-scan-log",
