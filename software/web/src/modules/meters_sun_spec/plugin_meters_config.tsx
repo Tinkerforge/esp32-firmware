@@ -30,6 +30,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
 import { FormRow } from "../../ts/components/form_row";
+import { Progress } from "../../ts/components/progress";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { Button, ListGroup, ListGroupItem } from "react-bootstrap";
 import { Download } from 'react-feather';
@@ -346,11 +347,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                         disabled={this.props.host.trim().length == 0 || !util.hasValue(this.props.port) || this.state.scan_running}>
                     {__("meters_sun_spec.content.scan")}
                 </Button>
-                : <div class="form-progress">
-                    <div class="progress-bar form-control progress-bar-no-transition"
-                        role="progressbar" style={"padding: 0; width: " + this.state.scan_progress + "%"} aria-valuenow={this.state.scan_progress} aria-valuemin={0}
-                        aria-valuemax={100}>{Math.round(this.state.scan_progress) + "%"}</div>
-                </div>}
+                : <Progress progress={this.state.scan_progress / 100} />}
             </FormRow>
 
             {this.state.scan_show_log ?
@@ -380,7 +377,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                     </ListGroup>
                 </FormRow>
                 : undefined}
-        </>
+        </>;
     }
 }
 
