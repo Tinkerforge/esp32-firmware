@@ -21,6 +21,7 @@ let x = {
             "config_model_id": "Model",
             "config_model_instance": "Model instance",
             "config_location": "Location",
+            "config_manual_override": "Manually configure device",
 
             "scan_title": "Device search",
             "scan_title_muted": "first device address, last device address",

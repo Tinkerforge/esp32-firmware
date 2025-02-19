@@ -410,166 +410,207 @@ function get_default_location(model_id: number) {
     return location;
 }
 
+
+interface EditChildrenProps {
+    config: SunSpecMetersConfig;
+    on_config: (config: SunSpecMetersConfig) => void;
+}
+
+interface EditChildrenState {
+    manual_override: boolean;
+}
+
+class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
+    constructor() {
+        super();
+
+        this.state = {
+            manual_override: false,
+        } as any;
+    }
+
+    render() {
+        let model_ids: [string, string][] = [];
+
+        for (let model_info of SUN_SPEC_MODEL_INFOS) {
+            if (model_info.is_supported) {
+                model_ids.push([model_info.model_id.toString(), translate_unchecked(`meters_sun_spec.content.model_${model_info.model_id}`) + ` [${model_info.model_id}]`]);
+            }
+        }
+
+        let edit_children = [
+            <FormRow label={__("meters_sun_spec.content.config_host")}>
+                <InputTextPatterned
+                    required
+                    maxLength={64}
+                    pattern="^[a-zA-Z0-9\-\.]+$"
+                    value={this.props.config[1].host}
+                    onValue={(v) => {
+                        this.props.on_config(util.get_updated_union(this.props.config, {host: v}));
+                    }}
+                    invalidFeedback={__("meters_sun_spec.content.config_host_invalid")} />
+            </FormRow>,
+            <FormRow label={__("meters_sun_spec.content.config_port")} label_muted={__("meters_sun_spec.content.config_port_muted")}>
+                <InputNumber
+                    required
+                    min={1}
+                    max={65535}
+                    value={this.props.config[1].port}
+                    onValue={(v) => {
+                        this.props.on_config(util.get_updated_union(this.props.config, {port: v}));
+                    }} />
+            </FormRow>,
+            <hr/>,
+            <DeviceScanner host={this.props.config[1].host} port={this.props.config[1].port} onResultSelected={(result: DeviceScannerResult) => {
+                this.setState({manual_override: false});
+
+                this.props.on_config(util.get_updated_union(this.props.config, {
+                    display_name: result.display_name,
+                    location: get_default_location(result.model_id),
+                    device_address: result.device_address,
+                    manufacturer_name: result.manufacturer_name,
+                    model_name: result.model_name,
+                    serial_number: result.serial_number,
+                    model_id: result.model_id,
+                    model_instance: result.model_instance,
+                }));
+            }} />,
+            <hr/>,
+            <FormRow label={__("meters_sun_spec.content.config_display_name")}>
+                <InputText
+                    required
+                    maxLength={65}
+                    value={this.props.config[1].display_name}
+                    onValue={(v) => {
+                        this.props.on_config(util.get_updated_union(this.props.config, {display_name: v}));
+                    }} />
+            </FormRow>,
+            <FormRow label="">
+                <Button variant="primary"
+                        className="form-control"
+                        disabled={this.state.manual_override}
+                        onClick={() => this.setState({manual_override: true})}
+                        >
+                    {__("meters_sun_spec.content.config_manual_override")}
+                </Button>
+            </FormRow>,
+            <FormRow label={__("meters_sun_spec.content.config_device_address")}>
+                <InputNumber
+                    required
+                    disabled={!this.state.manual_override}
+                    min={1}
+                    max={247}
+                    value={this.props.config[1].device_address}
+                    onValue={(v) => {
+                        this.props.on_config(util.get_updated_union(this.props.config, {device_address: v}));
+                    }} />
+            </FormRow>,
+            <FormRow label={__("meters_sun_spec.content.config_unique_id")} label_muted={__("meters_sun_spec.content.config_unique_id_muted")}>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <InputText
+                            disabled={!this.state.manual_override}
+                            maxLength={32}
+                            value={this.props.config[1].manufacturer_name}
+                            onValue={(v) => {
+                                this.props.on_config(util.get_updated_union(this.props.config, {manufacturer_name: v}));
+                            }} />
+                    </div>
+                    <div class="col-sm-4">
+                        <InputText
+                            disabled={!this.state.manual_override}
+                            maxLength={32}
+                            value={this.props.config[1].model_name}
+                            onValue={(v) => {
+                                this.props.on_config(util.get_updated_union(this.props.config, {model_name: v}));
+                            }} />
+                    </div>
+                    <div class="col-sm-4">
+                        <InputText
+                            disabled={!this.state.manual_override}
+                            maxLength={32}
+                            value={this.props.config[1].serial_number}
+                            onValue={(v) => {
+                                this.props.on_config(util.get_updated_union(this.props.config, {serial_number: v}));
+                            }} />
+                    </div>
+                </div>
+            </FormRow>,
+            <FormRow label={__("meters_sun_spec.content.config_model_id")}>
+                <InputSelect
+                    required
+                    disabled={!this.state.manual_override}
+                    items={model_ids}
+                    placeholder={__("select")}
+                    value={util.hasValue(this.props.config[1].model_id) ? this.props.config[1].model_id.toString() : this.props.config[1].model_id}
+                    onValue={(v) => {
+                        this.props.on_config(util.get_updated_union(this.props.config, {model_id: parseInt(v), location: get_default_location(parseInt(v))}));
+                    }} />
+            </FormRow>,
+            <FormRow label={__("meters_sun_spec.content.config_model_instance")}>
+                <InputNumber
+                    required
+                    disabled={!this.state.manual_override}
+                    min={0}
+                    max={65535}
+                    value={this.props.config[1].model_instance}
+                    onValue={(v) => {
+                        this.props.on_config(util.get_updated_union(this.props.config, {model_instance: v}));
+                    }} />
+            </FormRow>
+        ];
+
+        let default_location = get_default_location(this.props.config[1].model_id);
+
+        if (default_location == MeterLocation.Unknown) {
+            edit_children.push(
+                <FormRow label={__("meters_sun_spec.content.config_location")}>
+                    <InputSelect
+                        required
+                        disabled={this.props.config[1].model_id == null}
+                        items={get_meter_location_items()}
+                        placeholder={__("select")}
+                        value={this.props.config[1].location.toString()}
+                        onValue={(v) => {
+                            this.props.on_config(util.get_updated_union(this.props.config, {location: parseInt(v)}));
+                        }} />
+                </FormRow>);
+        }
+        else {
+            let enable_location_override = this.props.config[1].model_id != null && default_location != this.props.config[1].location;
+
+            edit_children.push(
+                <FormRow label={__("meters_sun_spec.content.config_location")}>
+                    <SwitchableInputSelect
+                        required
+                        items={get_meter_location_items()}
+                        placeholder={__("select")}
+                        value={this.props.config[1].location.toString()}
+                        onValue={(v) => {
+                            this.props.on_config(util.get_updated_union(this.props.config, {location: parseInt(v)}));
+                        }}
+                        checked={enable_location_override}
+                        onSwitch={() => {
+                            this.props.on_config(util.get_updated_union(this.props.config, {location: (enable_location_override ? default_location : MeterLocation.Unknown)}));
+                        }}
+                        switch_label_active={__("meters_sun_spec.content.location_different")}
+                        switch_label_inactive={__("meters_sun_spec.content.location_matching")}
+                        />
+                </FormRow>);
+        }
+
+        return edit_children;
+    }
+}
+
 export function init() {
     return {
         [MeterClassID.SunSpec]: {
             name: () => __("meters_sun_spec.content.meter_class"),
-            new_config: () => [MeterClassID.SunSpec, {display_name: "", location: MeterLocation.Unknown, host: "", port: 502, device_address: null, manufacturer_name: null, model_name: null, serial_number: null, model_id: null}] as MeterConfig,
+            new_config: () => [MeterClassID.SunSpec, {display_name: "", location: MeterLocation.Unknown, host: "", port: 502, device_address: null, manufacturer_name: null, model_name: null, serial_number: null, model_id: null, model_instance: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: SunSpecMetersConfig, on_config: (config: SunSpecMetersConfig) => void): ComponentChildren => {
-                let model_ids: [string, string][] = [];
-
-                for (let model_info of SUN_SPEC_MODEL_INFOS) {
-                    if (model_info.is_supported) {
-                        model_ids.push([model_info.model_id.toString(), translate_unchecked(`meters_sun_spec.content.model_${model_info.model_id}`) + ` [${model_info.model_id}]`]);
-                    }
-                }
-
-                let edit_children = [
-                    <FormRow label={__("meters_sun_spec.content.config_host")}>
-                        <InputTextPatterned
-                            required
-                            maxLength={64}
-                            pattern="^[a-zA-Z0-9\-\.]+$"
-                            value={config[1].host}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {host: v}));
-                            }}
-                            invalidFeedback={__("meters_sun_spec.content.config_host_invalid")} />
-                    </FormRow>,
-                    <FormRow label={__("meters_sun_spec.content.config_port")} label_muted={__("meters_sun_spec.content.config_port_muted")}>
-                        <InputNumber
-                            required
-                            min={1}
-                            max={65535}
-                            value={config[1].port}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {port: v}));
-                            }} />
-                    </FormRow>,
-                    <hr/>,
-                    <DeviceScanner host={config[1].host} port={config[1].port} onResultSelected={(result: DeviceScannerResult) => {
-                        on_config(util.get_updated_union(config, {
-                            display_name: result.display_name,
-                            location: get_default_location(result.model_id),
-                            device_address: result.device_address,
-                            manufacturer_name: result.manufacturer_name,
-                            model_name: result.model_name,
-                            serial_number: result.serial_number,
-                            model_id: result.model_id,
-                            model_instance: result.model_instance,
-                        }));
-                    }} />,
-                    <hr/>,
-                    <FormRow label={__("meters_sun_spec.content.config_display_name")}>
-                        <InputText
-                            required
-                            maxLength={65}
-                            value={config[1].display_name}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {display_name: v}));
-                            }} />
-                    </FormRow>,
-                    <FormRow label={__("meters_sun_spec.content.config_device_address")}>
-                        <InputNumber
-                            required
-                            min={1}
-                            max={247}
-                            value={config[1].device_address}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {device_address: v}));
-                            }} />
-                    </FormRow>,
-                    <FormRow label={__("meters_sun_spec.content.config_unique_id")} label_muted={__("meters_sun_spec.content.config_unique_id_muted")}>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <InputText
-                                    maxLength={32}
-                                    value={config[1].manufacturer_name}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {manufacturer_name: v}));
-                                    }} />
-                            </div>
-                            <div class="col-sm-4">
-                                <InputText
-                                    maxLength={32}
-                                    value={config[1].model_name}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {model_name: v}));
-                                    }} />
-                            </div>
-                            <div class="col-sm-4">
-                                <InputText
-                                    maxLength={32}
-                                    value={config[1].serial_number}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {serial_number: v}));
-                                    }} />
-                            </div>
-                        </div>
-                    </FormRow>,
-                    <FormRow label={__("meters_sun_spec.content.config_model_id")}>
-                        <InputSelect
-                            required
-                            items={model_ids}
-                            placeholder={__("select")}
-                            value={util.hasValue(config[1].model_id) ? config[1].model_id.toString() : config[1].model_id}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {model_id: parseInt(v), location: get_default_location(parseInt(v))}));
-                            }} />
-                    </FormRow>,
-                    <FormRow label={__("meters_sun_spec.content.config_model_instance")}>
-                        <InputNumber
-                            required
-                            min={0}
-                            max={65535}
-                            value={config[1].model_instance}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {model_instance: v}));
-                            }} />
-                    </FormRow>
-                ];
-
-                let default_location = get_default_location(config[1].model_id);
-
-                if (default_location == MeterLocation.Unknown) {
-                    edit_children.push(
-                        <FormRow label={__("meters_sun_spec.content.config_location")}>
-                            <InputSelect
-                                required
-                                disabled={config[1].model_id == null}
-                                items={get_meter_location_items()}
-                                placeholder={__("select")}
-                                value={config[1].location.toString()}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {location: parseInt(v)}));
-                                }} />
-                        </FormRow>);
-                }
-                else {
-                    let enable_location_override = config[1].model_id != null && default_location != config[1].location;
-
-                    edit_children.push(
-                        <FormRow label={__("meters_sun_spec.content.config_location")}>
-                            <SwitchableInputSelect
-                                required
-                                items={get_meter_location_items()}
-                                placeholder={__("select")}
-                                value={config[1].location.toString()}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {location: parseInt(v)}));
-                                }}
-                                checked={enable_location_override}
-                                onSwitch={() => {
-                                    on_config(util.get_updated_union(config, {location: (enable_location_override ? default_location : MeterLocation.Unknown)}));
-                                }}
-                                switch_label_active={__("meters_sun_spec.content.location_different")}
-                                switch_label_inactive={__("meters_sun_spec.content.location_matching")}
-                                />
-                        </FormRow>);
-                }
-
-                return edit_children;
+                return <EditChildren config={config} on_config={on_config} />;
             },
         },
     };

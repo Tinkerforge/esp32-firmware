@@ -21,6 +21,7 @@ let x = {
             "config_model_id": "Modell",
             "config_model_instance": "Modellinstanz",
             "config_location": "Messort",
+            "config_manual_override": "Gerät manuell einrichten",
 
             "scan_title": "Gerätesuche",
             "scan_title_muted": "erste Geräteadresse, letzte Geräteadresse",
