@@ -237,6 +237,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     case MeterModbusTCPTableID::SungrowStringInverter:
         sungrow.string_inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SungrowStringInverterVirtualMeter>();
+        sungrow.inverter_output_type = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (sungrow.string_inverter_virtual_meter) {
