@@ -157,27 +157,26 @@ void MeterSunSpec::read_done_callback()
         return;
     }
 
-    size_t registers_to_read = 0;
-    bool restart_read = false;
-
     if (!values_declared) {
-        if (!model_parser->detect_values(generic_read_request.data, generic_read_request.register_count, quirks, &registers_to_read)) {
+        size_t registers_to_read = generic_read_request.register_count;
+
+        if (!model_parser->detect_values(generic_read_request.data, quirks, &registers_to_read)) {
             logger.printfln("Detecting values of model %u in slot %u failed.", model_id, slot);
             return;
         }
 
         values_declared = true;
-        restart_read = generic_read_request.register_count != registers_to_read;
+
+        if (registers_to_read != generic_read_request.register_count) {
+            read_start(registers_to_read);
+            return;
+        }
     }
 
-    if (!model_parser->parse_values(generic_read_request.data, generic_read_request.register_count, quirks)) {
+    if (!model_parser->parse_values(generic_read_request.data, quirks)) {
         auto inconsistency = errors->get("inconsistency");
         inconsistency->updateUint(inconsistency->asUint() + 1);
         // TODO: Read again if parsing failed?
-    }
-
-    if (restart_read) {
-        read_start(registers_to_read);
     }
 }
 

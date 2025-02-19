@@ -42,7 +42,7 @@ IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t meter_slot, uint1
     return nullptr;
 }
 
-bool MetersSunSpecParser::detect_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks, size_t *registers_to_read)
+bool MetersSunSpecParser::detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read)
 {
     if (!model->validator(register_data))
         return false;
@@ -78,7 +78,7 @@ bool MetersSunSpecParser::detect_values(const uint16_t *const register_data[2], 
     return true;
 }
 
-bool MetersSunSpecParser::parse_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks)
+bool MetersSunSpecParser::parse_values(const uint16_t *const register_data[2], uint32_t quirks)
 {
     if (!model->validator(register_data))
         return false;

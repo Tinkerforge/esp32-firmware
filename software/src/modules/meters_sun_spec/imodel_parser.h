@@ -27,8 +27,8 @@ class IMetersSunSpecParser
 public:
     virtual ~IMetersSunSpecParser() = default;
 
-    virtual bool detect_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks, size_t *registers_to_read) = 0;
-    virtual bool parse_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks) = 0;
+    virtual bool detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read) = 0;
+    virtual bool parse_values(const uint16_t *const register_data[2], uint32_t quirks) = 0;
 
     virtual bool must_read_twice() = 0;
     virtual bool is_model_length_supported(uint32_t model_length) = 0;

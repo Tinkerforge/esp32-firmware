@@ -78,8 +78,8 @@ public:
 
     static IMetersSunSpecParser *new_parser(uint32_t meter_slot, uint16_t model_id);
 
-    bool detect_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks, size_t *registers_to_read) override;
-    bool parse_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks) override;
+    bool detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read) override;
+    bool parse_values(const uint16_t *const register_data[2], uint32_t quirks) override;
 
     bool must_read_twice() override;
     bool is_model_length_supported(uint32_t model_length) override;

@@ -26,8 +26,8 @@ class MetersSunSpecParser160 : public IMetersSunSpecParser
 public:
     MetersSunSpecParser160(uint32_t meter_slot_) : meter_slot(meter_slot_) {}
 
-    bool detect_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks, size_t *registers_to_read) override;
-    bool parse_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks) override;
+    bool detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read) override;
+    bool parse_values(const uint16_t *const register_data[2], uint32_t quirks) override;
 
     bool must_read_twice() override;
     bool is_model_length_supported(uint32_t model_length) override;
@@ -37,4 +37,5 @@ private:
     bool is_valid(const uint16_t *const register_data[2]);
 
     const uint32_t meter_slot;
+    size_t cached_mppt_count = 0;
 };

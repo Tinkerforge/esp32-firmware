@@ -133,47 +133,44 @@ static float acc32_to_float(uint32_t val, int32_t sunssf)
     return static_cast<float>(u.u32) * get_sun_spec_scale_factor(sunssf);
 }
 
-bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks, size_t *registers_to_read)
+bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read)
 {
-    if (register_count < MODEL_160_REGISTER_COUNT || !is_valid(register_data)) {
-        return false;
-    }
-
-    const struct Model160_s *block0 = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data[1]));
-    size_t mppt_count = block0->N;
-
-    if (mppt_count > MODEL_160_MAX_MPPT_COUNT) {
-        // FIXME: remove this limitation that is caused by the 125 register read limit
-        logger.printfln("SunSpec model 160 has %zu MPPT modules, only reading the first %i", mppt_count, MODEL_160_MAX_MPPT_COUNT);
-
-        mppt_count = MODEL_160_MAX_MPPT_COUNT;
-    }
-
-    *registers_to_read = MODEL_160_REGISTER_COUNT + mppt_count * MODEL_160_MPPT_REGISTER_COUNT;
-
-    meters.declare_value_ids(meter_slot, model_160_ids, MODEL_160_ID_COUNT + MODEL_160_MPPT_ID_COUNT * mppt_count);
-
-    return true;
-}
-
-bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2], size_t register_count, uint32_t quirks)
-{
-    if (register_count < MODEL_160_REGISTER_COUNT || !is_valid(register_data)) {
+    if (!is_valid(register_data)) {
         return false;
     }
 
     const struct Model160_s *block1 = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data[1]));
 
-    float values[ARRAY_SIZE(model_160_ids)];
+    cached_mppt_count = block1->N;
+
+    if (cached_mppt_count > MODEL_160_MAX_MPPT_COUNT) {
+        // FIXME: remove this limitation that is caused by the 125 register read limit
+        logger.printfln("SunSpec model 160 has %zu MPPT modules, only reading the first %i", cached_mppt_count, MODEL_160_MAX_MPPT_COUNT);
+
+        cached_mppt_count = MODEL_160_MAX_MPPT_COUNT;
+    }
+
+    *registers_to_read = MODEL_160_REGISTER_COUNT + cached_mppt_count * MODEL_160_MPPT_REGISTER_COUNT;
+
+    meters.declare_value_ids(meter_slot, model_160_ids, MODEL_160_ID_COUNT + MODEL_160_MPPT_ID_COUNT * cached_mppt_count);
+
+    return true;
+}
+
+bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2], uint32_t quirks)
+{
+    if (!is_valid(register_data)) {
+        return false;
+    }
+
+    const struct Model160_s *block1 = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data[1]));
     size_t mppt_count = block1->N;
 
-    if (mppt_count > MODEL_160_MAX_MPPT_COUNT) {
-        mppt_count = MODEL_160_MAX_MPPT_COUNT;
+    if (mppt_count > cached_mppt_count) {
+        mppt_count = cached_mppt_count;
     }
 
-    if (register_count < MODEL_160_REGISTER_COUNT + mppt_count * MODEL_160_MPPT_REGISTER_COUNT) {
-        return true; // fake consistent data
-    }
+    float values[ARRAY_SIZE(model_160_ids)];
 
     values[0] = NAN;
     values[1] = NAN;
@@ -270,7 +267,7 @@ bool MetersSunSpecParser160::is_model_length_supported(uint32_t model_length)
 [[gnu::const]]
 uint32_t MetersSunSpecParser160::get_interesting_registers_count()
 {
-    return MODEL_160_REGISTER_COUNT;
+    return MODEL_160_REGISTER_COUNT + cached_mppt_count * MODEL_160_MPPT_REGISTER_COUNT;
 }
 
 bool MetersSunSpecParser160::is_valid(const uint16_t *const register_data[2])
