@@ -82,6 +82,7 @@ private:
     String serial_number;
     uint16_t model_id;
     uint16_t model_instance;
+    DCPortType dc_port_type;
     size_t scan_base_address_index;
     ScanState scan_state;
     ScanState scan_state_next;

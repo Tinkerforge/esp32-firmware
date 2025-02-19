@@ -20,6 +20,7 @@ let x = {
             "config_unique_id_muted": "optional; Hersteller, Modell, Seriennummer",
             "config_model_id": "Modell",
             "config_model_instance": "Modellinstanz",
+            "config_dc_port_type": "DC-Anschlussart",
             "config_location": "Messort",
             "config_manual_override": "Gerät manuell einrichten",
 
@@ -30,6 +31,14 @@ let x = {
             "scan_results": "Gefundene Geräte",
             "scan_log": "Log",
             "scan_log_file": "SunSpec-Gerätesuche",
+
+            "dc_port_type_photovoltaic": "PV",
+            "dc_port_type_energy_storage_system": "Speicher",
+            "dc_port_type_electric_vehicle": "Elektrofahrzeug",
+            "dc_port_type_generic_injecting": "Generisch (abgebend)",
+            "dc_port_type_generic_absorbing": "Generisch (aufnehmened)",
+            "dc_port_type_generic_bidirectional": "Generisch (bidirektional)",
+            "dc_port_type_dc_dc": "DC/DC",
 
             "location_matching": "Übereinstimmend",
             "location_different": "Abweichend",

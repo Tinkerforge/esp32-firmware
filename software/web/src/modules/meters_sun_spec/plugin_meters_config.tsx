@@ -25,6 +25,7 @@ import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterLocation } from "../meters/meter_location.enum";
 import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
+import { DCPortType } from "./dc_port_type.enum";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
@@ -51,6 +52,7 @@ export type SunSpecMetersConfig = [
         serial_number: string;
         model_id: number;
         model_instance: number;
+        dc_port_type: number;
     },
 ];
 
@@ -396,8 +398,30 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
     }
 }
 
-function get_default_location(model_id: number) {
+function get_default_location(model_id: number, dc_port_type: number) {
     if (!util.hasValue(model_id)) {
+        return MeterLocation.Unknown;
+    }
+
+    if (model_id == 714) {
+        switch (dc_port_type) {
+        case DCPortType.Photovoltaic:
+            return MeterLocation.PV;
+
+        case DCPortType.EnergyStorageSystem:
+            return MeterLocation.Battery;
+
+        case DCPortType.ElectricVehicle:
+        case DCPortType.GenericInjecting:
+        case DCPortType.GenericAbsorbing:
+        case DCPortType.GenericBidirectional:
+        case DCPortType.DCDC:
+            return MeterLocation.Other;
+
+        case DCPortType.NotImplemented:
+            return MeterLocation.Unknown;
+        }
+
         return MeterLocation.Unknown;
     }
 
@@ -466,13 +490,14 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
 
                 this.props.on_config(util.get_updated_union(this.props.config, {
                     display_name: result.display_name,
-                    location: get_default_location(result.model_id),
+                    location: get_default_location(result.model_id, DCPortType.NotImplemented),
                     device_address: result.device_address,
                     manufacturer_name: result.manufacturer_name,
                     model_name: result.model_name,
                     serial_number: result.serial_number,
                     model_id: result.model_id,
                     model_instance: result.model_instance,
+                    dc_port_type: DCPortType.NotImplemented,
                 }));
             }} />,
             <hr/>,
@@ -544,7 +569,7 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
                     placeholder={__("select")}
                     value={util.hasValue(this.props.config[1].model_id) ? this.props.config[1].model_id.toString() : this.props.config[1].model_id}
                     onValue={(v) => {
-                        this.props.on_config(util.get_updated_union(this.props.config, {model_id: parseInt(v), location: get_default_location(parseInt(v))}));
+                        this.props.on_config(util.get_updated_union(this.props.config, {model_id: parseInt(v), location: get_default_location(parseInt(v), DCPortType.NotImplemented), dc_port_type: DCPortType.NotImplemented}));
                     }} />
             </FormRow>,
             <FormRow label={__("meters_sun_spec.content.config_model_instance")}>
@@ -560,14 +585,36 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
             </FormRow>
         ];
 
-        let default_location = get_default_location(this.props.config[1].model_id);
+        if (this.props.config[1].model_id == 714) {
+            edit_children.push(
+                <FormRow label={__("meters_sun_spec.content.config_dc_port_type")}>
+                    <InputSelect
+                        required
+                        items={[
+                            [DCPortType.Photovoltaic.toString(), __("meters_sun_spec.content.dc_port_type_photovoltaic")],
+                            [DCPortType.EnergyStorageSystem.toString(), __("meters_sun_spec.content.dc_port_type_energy_storage_system")],
+                            [DCPortType.ElectricVehicle.toString(), __("meters_sun_spec.content.dc_port_type_electric_vehicle")],
+                            [DCPortType.GenericInjecting.toString(), __("meters_sun_spec.content.dc_port_type_generic_injecting")],
+                            [DCPortType.GenericAbsorbing.toString(), __("meters_sun_spec.content.dc_port_type_generic_absorbing")],
+                            [DCPortType.GenericBidirectional.toString(), __("meters_sun_spec.content.dc_port_type_generic_bidirectional")],
+                            [DCPortType.DCDC.toString(), __("meters_sun_spec.content.dc_port_type_dc_dc")],
+                        ]}
+                        placeholder={__("select")}
+                        value={this.props.config[1].dc_port_type.toString()}
+                        onValue={(v) => {
+                            this.props.on_config(util.get_updated_union(this.props.config, {dc_port_type: parseInt(v), location: get_default_location(this.props.config[1].model_id, parseInt(v))}));
+                        }} />
+                </FormRow>);
+        }
+
+        let default_location = get_default_location(this.props.config[1].model_id, this.props.config[1].dc_port_type);
 
         if (default_location == MeterLocation.Unknown) {
             edit_children.push(
                 <FormRow label={__("meters_sun_spec.content.config_location")}>
                     <InputSelect
                         required
-                        disabled={this.props.config[1].model_id == null}
+                        disabled={this.props.config[1].model_id === null || (this.props.config[1].model_id == 714 && this.props.config[1].dc_port_type == DCPortType.NotImplemented)}
                         items={get_meter_location_items()}
                         placeholder={__("select")}
                         value={this.props.config[1].location.toString()}
@@ -577,7 +624,7 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
                 </FormRow>);
         }
         else {
-            let enable_location_override = this.props.config[1].model_id != null && default_location != this.props.config[1].location;
+            let enable_location_override = this.props.config[1].model_id !== null && default_location != this.props.config[1].location;
 
             edit_children.push(
                 <FormRow label={__("meters_sun_spec.content.config_location")}>
@@ -607,7 +654,7 @@ export function init() {
     return {
         [MeterClassID.SunSpec]: {
             name: () => __("meters_sun_spec.content.meter_class"),
-            new_config: () => [MeterClassID.SunSpec, {display_name: "", location: MeterLocation.Unknown, host: "", port: 502, device_address: null, manufacturer_name: null, model_name: null, serial_number: null, model_id: null, model_instance: null}] as MeterConfig,
+            new_config: () => [MeterClassID.SunSpec, {display_name: "", location: MeterLocation.Unknown, host: "", port: 502, device_address: null, manufacturer_name: null, model_name: null, serial_number: null, model_id: null, model_instance: null, dc_port_type: DCPortType.NotImplemented}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: SunSpecMetersConfig, on_config: (config: SunSpecMetersConfig) => void): ComponentChildren => {
                 return <EditChildren config={config} on_config={on_config} />;

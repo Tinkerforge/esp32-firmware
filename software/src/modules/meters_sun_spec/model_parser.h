@@ -25,6 +25,7 @@
 
 #include "modules/meters/meter_value_id.h"
 #include "imodel_parser.h"
+#include "dc_port_type.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -76,7 +77,7 @@ public:
     #pragma GCC diagnostic pop
 #endif
 
-    static IMetersSunSpecParser *new_parser(uint32_t meter_slot, uint16_t model_id);
+    static IMetersSunSpecParser *new_parser(uint32_t meter_slot, uint16_t model_id, DCPortType dc_port_type);
 
     bool detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read) override;
     bool parse_values(const uint16_t *const register_data[2], uint32_t quirks) override;

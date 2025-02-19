@@ -20,6 +20,7 @@ let x = {
             "config_unique_id_muted": "optional; manufacturer, model, serial number",
             "config_model_id": "Model",
             "config_model_instance": "Model instance",
+            "config_dc_port_type": "DC port type",
             "config_location": "Location",
             "config_manual_override": "Manually configure device",
 
@@ -30,6 +31,14 @@ let x = {
             "scan_results": "Discovered devices",
             "scan_log": "Log",
             "scan_log_file": "SunSpec-scan-log",
+
+            "dc_port_type_photovoltaic": "PV",
+            "dc_port_type_energy_storage_system": "Battery",
+            "dc_port_type_electric_vehicle": "Electric vehicle",
+            "dc_port_type_generic_injecting": "Generic (injecting)",
+            "dc_port_type_generic_absorbing": "Generic (absorbing)",
+            "dc_port_type_generic_bidirectional": "Generic (bidirectional)",
+            "dc_port_type_dc_dc": "DC/DC",
 
             "location_matching": "Matching",
             "location_different": "Different",

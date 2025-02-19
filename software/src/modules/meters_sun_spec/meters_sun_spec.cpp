@@ -28,6 +28,7 @@
 #include "tools.h"
 #include "sun_spec_model_specs.h"
 #include "modules/meters/meter_location.enum.h"
+#include "dc_port_type.enum.h"
 
 #include "gcc_warnings.h"
 
@@ -61,6 +62,7 @@ void MetersSunSpec::pre_setup()
         {"serial_number", Config::Str("", 0, 32)},
         {"model_id", Config::Uint16(0)}, // 0 == invalid
         {"model_instance", Config::Uint16(0)},
+        {"dc_port_type", Config::Enum(DCPortType::NotImplemented)},
     });
 
     errors_prototype = Config::Object({

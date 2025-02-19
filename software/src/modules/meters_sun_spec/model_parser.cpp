@@ -23,13 +23,18 @@
 
 #include "module_dependencies.h"
 #include "model_parser_160.h"
+#include "model_parser_714.h"
 
 #include "gcc_warnings.h"
 
-IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t meter_slot, uint16_t model_id)
+IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t meter_slot, uint16_t model_id, DCPortType dc_port_type)
 {
     if (model_id == 160) {
         return new MetersSunSpecParser160(meter_slot);
+    }
+
+    if (model_id == 714) {
+        return new MetersSunSpecParser714(meter_slot, dc_port_type);
     }
 
     for (size_t i = 0; i < meters_sun_spec_all_model_data.model_count; i++) {
