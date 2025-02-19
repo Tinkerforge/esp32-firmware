@@ -1157,10 +1157,6 @@ bool MeterModbusTCP::is_carlo_gavazzi_em510() const
 
 void MeterModbusTCP::read_done_callback()
 {
-    if (table == nullptr) {
-        return;
-    }
-
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
         logger.tracefln(trace_buffer_index,
                         "m%u t%u i%zu e%u a%zu",
