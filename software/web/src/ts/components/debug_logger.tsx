@@ -93,8 +93,6 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
     async resetDebugWd() {
         try {
             await util.download("/debug_protocol/continue");
-            // Don't let visibility check close the web socket connection if a debug log is being created.
-            util.visibiltyHandler('visible');
         }
         catch{
             this.setState({debug_running: false, debug_status: __("component.debug_logger.starting_debug_failed")(this.props.name)});
