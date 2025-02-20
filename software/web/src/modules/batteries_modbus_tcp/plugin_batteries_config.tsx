@@ -22,8 +22,8 @@ import * as API from "../../ts/api";
 import { h, Fragment, Component, ComponentChildren } from "preact";
 import { Button } from "react-bootstrap";
 import { __ } from "../../ts/translation";
-import { BatteryClassID } from "../batteries/battery_class_id.enum";
-import { BatteryConfig } from "../batteries/types";
+import { BatteryClassID } from "../battery_control/battery_class_id.enum";
+import { BatteryConfig } from "../battery_control/types";
 import { BatteryModbusTCPTableID } from "./battery_modbus_tcp_table_id.enum";
 import { ModbusRegisterType } from "../modbus_tcp_client/modbus_register_type.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
@@ -283,7 +283,7 @@ export function init() {
                             <div class="mb-2 ml-auto col-auto">
                                 <Button variant="primary"
                                         /* FIXME: don't hardcode battery slot 0 here */
-                                        onClick={() => API.call('batteries/0/permit_grid_charge', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
+                                        onClick={() => API.call('battery_control/0/permit_grid_charge', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
                                         {__("batteries_modbus_tcp.content.execute")}
                                 </Button>
                             </div>
@@ -321,7 +321,7 @@ export function init() {
                             <div class="mb-2 ml-auto col-auto">
                                 <Button variant="primary"
                                         /* FIXME: don't hardcode battery slot 0 here */
-                                        onClick={() => API.call('batteries/0/revoke_grid_charge_override', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
+                                        onClick={() => API.call('battery_control/0/revoke_grid_charge_override', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
                                         {__("batteries_modbus_tcp.content.execute")}
                                 </Button>
                             </div>
@@ -359,7 +359,7 @@ export function init() {
                             <div class="mb-2 ml-auto col-auto">
                                 <Button variant="primary"
                                         /* FIXME: don't hardcode battery slot 0 here */
-                                        onClick={() => API.call('batteries/0/forbid_discharge', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
+                                        onClick={() => API.call('battery_control/0/forbid_discharge', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
                                         {__("batteries_modbus_tcp.content.execute")}
                                 </Button>
                             </div>
@@ -397,7 +397,7 @@ export function init() {
                             <div class="mb-2 ml-auto col-auto">
                                 <Button variant="primary"
                                         /* FIXME: don't hardcode battery slot 0 here */
-                                        onClick={() => API.call('batteries/0/revoke_discharge_override', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
+                                        onClick={() => API.call('battery_control/0/revoke_discharge_override', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
                                         {__("batteries_modbus_tcp.content.execute")}
                                 </Button>
                             </div>

@@ -24,7 +24,7 @@
 #include "config.h"
 #include "module.h"
 #include "battery_modbus_tcp_table_id.enum.h"
-#include "modules/batteries/ibattery_generator.h"
+#include "modules/battery_control/ibattery_generator.h"
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic push

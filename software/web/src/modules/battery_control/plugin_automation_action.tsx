@@ -39,7 +39,7 @@ function new_permit_grid_charge_config(): AutomationAction {
 }
 
 function get_permit_grid_charge_table_children(action: PermitGridChargeAutomationAction) {
-    return __("batteries.automation.permit_grid_charge");
+    return __("battery_control.automation.permit_grid_charge");
 }
 
 function get_permit_grid_charge_edit_children(action: PermitGridChargeAutomationAction, on_action: (action: AutomationAction) => void): ComponentChildren {
@@ -63,7 +63,7 @@ function new_revoke_grid_charge_override_config(): AutomationAction {
 }
 
 function get_revoke_grid_charge_override_table_children(action: RevokeGridChargeOverrideAutomationAction) {
-    return __("batteries.automation.revoke_grid_charge_override");
+    return __("battery_control.automation.revoke_grid_charge_override");
 }
 
 function get_revoke_grid_charge_override_edit_children(action: RevokeGridChargeOverrideAutomationAction, on_action: (action: AutomationAction) => void): ComponentChildren {
@@ -87,7 +87,7 @@ function new_forbid_discharge_config(): AutomationAction {
 }
 
 function get_forbid_discharge_table_children(action: ForbidDischargeAutomationAction) {
-    return __("batteries.automation.forbid_discharge");
+    return __("battery_control.automation.forbid_discharge");
 }
 
 function get_forbid_discharge_edit_children(action: ForbidDischargeAutomationAction, on_action: (action: AutomationAction) => void): ComponentChildren {
@@ -111,7 +111,7 @@ function new_revoke_discharge_override_config(): AutomationAction {
 }
 
 function get_revoke_discharge_override_table_children(action: RevokeDischargeOverrideAutomationAction) {
-    return __("batteries.automation.revoke_discharge_override");
+    return __("battery_control.automation.revoke_discharge_override");
 }
 
 function get_revoke_discharge_override_edit_children(action: RevokeDischargeOverrideAutomationAction, on_action: (action: AutomationAction) => void): ComponentChildren {
@@ -122,28 +122,28 @@ export function init(): InitResult {
     return {
         action_components: {
             [AutomationActionID.PermitGridCharge]: {
-                translation_name: () => __("batteries.automation.permit_grid_charge"),
+                translation_name: () => __("battery_control.automation.permit_grid_charge"),
                 new_config: new_permit_grid_charge_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_table_children: get_permit_grid_charge_table_children,
                 get_edit_children: get_permit_grid_charge_edit_children,
             },
             [AutomationActionID.RevokeGridChargeOverride]: {
-                translation_name: () => __("batteries.automation.revoke_grid_charge_override"),
+                translation_name: () => __("battery_control.automation.revoke_grid_charge_override"),
                 new_config: new_revoke_grid_charge_override_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_table_children: get_revoke_grid_charge_override_table_children,
                 get_edit_children: get_revoke_grid_charge_override_edit_children,
             },
             [AutomationActionID.ForbidDischarge]: {
-                translation_name: () => __("batteries.automation.forbid_discharge"),
+                translation_name: () => __("battery_control.automation.forbid_discharge"),
                 new_config: new_forbid_discharge_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_table_children: get_forbid_discharge_table_children,
                 get_edit_children: get_forbid_discharge_edit_children,
             },
             [AutomationActionID.RevokeDischargeOverride]: {
-                translation_name: () => __("batteries.automation.revoke_discharge_override"),
+                translation_name: () => __("battery_control.automation.revoke_discharge_override"),
                 new_config: new_revoke_discharge_override_config,
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_table_children: get_revoke_discharge_override_table_children,

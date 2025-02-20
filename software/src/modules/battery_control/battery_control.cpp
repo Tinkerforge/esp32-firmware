@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "batteries.h"
+#include "battery_control.h"
 
 #include <Arduino.h>
 
@@ -39,9 +39,9 @@ static const char *batteries_path_postfixes[] = {
     "revoke_discharge_override",
 };
 
-static_assert(ARRAY_SIZE(batteries_path_postfixes) == static_cast<uint32_t>(Batteries::PathType::_max) + 1, "Path postfix length mismatch");
+static_assert(ARRAY_SIZE(batteries_path_postfixes) == static_cast<uint32_t>(BatteryControl::PathType::_max) + 1, "Path postfix length mismatch");
 
-void Batteries::pre_setup()
+void BatteryControl::pre_setup()
 {
     config = Config::Object({
         {"block_discharge_during_fast_charge", Config::Bool(false)},
@@ -62,7 +62,7 @@ void Batteries::pre_setup()
 #if MODULE_AUTOMATION_AVAILABLE()
     for (uint32_t i = 0; i <= static_cast<uint32_t>(IBattery::Action::_max); ++i) {
         AutomationActionID automation_id = static_cast<AutomationActionID>(static_cast<uint32_t>(AutomationActionID::PermitGridCharge) + i);
-        Batteries::PathType path_type = static_cast<Batteries::PathType>(static_cast<uint32_t>(Batteries::PathType::PermitGridCharge) + i);
+        BatteryControl::PathType path_type = static_cast<BatteryControl::PathType>(static_cast<uint32_t>(BatteryControl::PathType::PermitGridCharge) + i);
 
         automation.register_action(
             automation_id,
@@ -86,7 +86,7 @@ void Batteries::pre_setup()
 #endif
 }
 
-void Batteries::setup()
+void BatteryControl::setup()
 {
     api.restorePersistentConfig("battery_control/config", &config);
 
@@ -116,7 +116,7 @@ void Batteries::setup()
             Config::Union(*get_generator_for_class(battery_class)->get_config_prototype(), battery_class, config_prototypes, class_count);
 
         // Load config.
-        api.restorePersistentConfig(get_path(slot, Batteries::PathType::Config), &battery_slot.config_union);
+        api.restorePersistentConfig(get_path(slot, BatteryControl::PathType::Config), &battery_slot.config_union);
 
         BatteryClassID configured_battery_class = battery_slot.config_union.getTag<BatteryClassID>();
 
@@ -175,11 +175,11 @@ void Batteries::setup()
 
                 next_blocked_update = now_us() + seconds_t{this->low_level_config.get("rewrite_period")->asUint()};
             }
-        }, 3_s, 1_s);
+        }, 5_s, 1_s);
     }
 }
 
-void Batteries::register_urls()
+void BatteryControl::register_urls()
 {
     api.addPersistentConfig("battery_control/config", &config);
     api.addPersistentConfig("battery_control/low_level_config", &low_level_config);
@@ -189,13 +189,13 @@ void Batteries::register_urls()
         BatterySlot &battery_slot = battery_slots[slot];
         IBattery *battery = battery_slot.battery;
 
-        api.addPersistentConfig(get_path(slot, Batteries::PathType::Config), &battery_slot.config_union);
-        api.addState(get_path(slot, Batteries::PathType::State), &battery_slot.state);
-        api.addState(get_path(slot, Batteries::PathType::Errors), &battery_slot.errors);
+        api.addPersistentConfig(get_path(slot, BatteryControl::PathType::Config), &battery_slot.config_union);
+        api.addState(get_path(slot, BatteryControl::PathType::State), &battery_slot.state);
+        api.addState(get_path(slot, BatteryControl::PathType::Errors), &battery_slot.errors);
 
         for (uint32_t i = 0; i <= static_cast<uint32_t>(IBattery::Action::_max); ++i) {
             IBattery::Action action = static_cast<IBattery::Action>(i);
-            Batteries::PathType path_type = static_cast<Batteries::PathType>(static_cast<uint32_t>(Batteries::PathType::PermitGridCharge) + i);
+            BatteryControl::PathType path_type = static_cast<BatteryControl::PathType>(static_cast<uint32_t>(BatteryControl::PathType::PermitGridCharge) + i);
 
             if (battery->supports_action(action)) {
                 api.addCommand(get_path(slot, path_type), Config::Null(), {}, [battery, action](String &errmsg) {
@@ -213,26 +213,26 @@ void Batteries::register_urls()
                 }, true);
             }
 
-            battery->register_urls(get_path(slot, Batteries::PathType::Base));
+            battery->register_urls(get_path(slot, BatteryControl::PathType::Base));
         }
     }
 }
 
-void Batteries::register_events()
+void BatteryControl::register_events()
 {
     for (uint32_t slot = 0; slot < BATTERIES_SLOTS; slot++) {
         battery_slots[slot].battery->register_events();
     }
 }
 
-void Batteries::pre_reboot()
+void BatteryControl::pre_reboot()
 {
     for (uint32_t slot = 0; slot < BATTERIES_SLOTS; slot++) {
         battery_slots[slot].battery->pre_reboot();
     }
 }
 
-void Batteries::register_battery_generator(BatteryClassID battery_class, IBatteryGenerator *generator)
+void BatteryControl::register_battery_generator(BatteryClassID battery_class, IBatteryGenerator *generator)
 {
     for (const auto &generator_tuple : generators) {
         BatteryClassID known_class = std::get<0>(generator_tuple);
@@ -247,7 +247,7 @@ void Batteries::register_battery_generator(BatteryClassID battery_class, IBatter
     generators.push_back({battery_class, generator});
 }
 
-IBatteryGenerator *Batteries::get_generator_for_class(BatteryClassID battery_class)
+IBatteryGenerator *BatteryControl::get_generator_for_class(BatteryClassID battery_class)
 {
     for (auto generator_tuple : generators) {
         BatteryClassID known_class = std::get<0>(generator_tuple);
@@ -266,7 +266,7 @@ IBatteryGenerator *Batteries::get_generator_for_class(BatteryClassID battery_cla
     return get_generator_for_class(BatteryClassID::None);
 }
 
-IBattery *Batteries::new_battery_of_class(BatteryClassID battery_class, uint32_t slot, Config *state, Config *errors)
+IBattery *BatteryControl::new_battery_of_class(BatteryClassID battery_class, uint32_t slot, Config *state, Config *errors)
 {
     IBatteryGenerator *generator = get_generator_for_class(battery_class);
 
@@ -277,7 +277,7 @@ IBattery *Batteries::new_battery_of_class(BatteryClassID battery_class, uint32_t
     return generator->new_battery(slot, state, errors);
 }
 
-IBattery *Batteries::get_battery(uint32_t slot)
+IBattery *BatteryControl::get_battery(uint32_t slot)
 {
     if (slot >= BATTERIES_SLOTS) {
         return nullptr;
@@ -286,7 +286,7 @@ IBattery *Batteries::get_battery(uint32_t slot)
     return battery_slots[slot].battery;
 }
 
-uint32_t Batteries::get_batterys(BatteryClassID battery_class, IBattery **found_batterys, uint32_t found_batterys_capacity)
+uint32_t BatteryControl::get_batteries(BatteryClassID battery_class, IBattery **found_batteries, uint32_t found_batteries_capacity)
 {
     uint32_t found_count = 0;
 
@@ -294,8 +294,8 @@ uint32_t Batteries::get_batterys(BatteryClassID battery_class, IBattery **found_
         IBattery *battery = battery_slots[i].battery;
 
         if (battery->get_class() == battery_class) {
-            if (found_count < found_batterys_capacity) {
-                found_batterys[found_count] = battery;
+            if (found_count < found_batteries_capacity) {
+                found_batteries[found_count] = battery;
             }
 
             ++found_count;
@@ -305,7 +305,7 @@ uint32_t Batteries::get_batterys(BatteryClassID battery_class, IBattery **found_
     return found_count;
 }
 
-BatteryClassID Batteries::get_battery_class(uint32_t slot)
+BatteryClassID BatteryControl::get_battery_class(uint32_t slot)
 {
     if (slot >= BATTERIES_SLOTS) {
         return BatteryClassID::None;
@@ -314,9 +314,9 @@ BatteryClassID Batteries::get_battery_class(uint32_t slot)
     return battery_slots[slot].battery->get_class();
 }
 
-String Batteries::get_path(uint32_t slot, Batteries::PathType path_type)
+String BatteryControl::get_path(uint32_t slot, BatteryControl::PathType path_type)
 {
-    String path = "batteries/";
+    String path = "battery_control/";
 
     path.concat(slot);
     path.concat('/');
@@ -325,7 +325,7 @@ String Batteries::get_path(uint32_t slot, Batteries::PathType path_type)
     return path;
 }
 
-void Batteries::start_action_all(IBattery::Action action)
+void BatteryControl::start_action_all(IBattery::Action action)
 {
     for (size_t i = 0; i < BATTERIES_SLOTS; i++) {
         IBattery *battery = battery_slots[i].battery;

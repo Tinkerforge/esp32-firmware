@@ -20,7 +20,7 @@
 import * as API from "../../ts/api";
 import { ComponentChildren } from "preact";
 
-export type BatteryConfig = API.getType["batteries/0/config"];
+export type BatteryConfig = API.getType["battery_control/0/config"];
 
 export type BatteryConfigPlugin = {
     name: () => string

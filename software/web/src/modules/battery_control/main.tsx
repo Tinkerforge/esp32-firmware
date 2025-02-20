@@ -36,27 +36,27 @@ import { plugins_init } from "./plugins";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Battery } from "react-feather";
 
-export function BatteriesNavbar() {
-    return <NavbarItem name="batteries" module="batteries" title={__("batteries.navbar.batteries")} symbol={<Battery />} />;
+export function BatteryControlNavbar() {
+    return <NavbarItem name="battery_control" module="battery_control" title={__("battery_control.navbar.battery_control")} symbol={<Battery />} />;
 }
 
 let config_plugins: {[battery_class: number]: BatteryConfigPlugin} = {};
 
-interface BatteriesState {
+interface BatteryControlState {
     configs: {[battery_slot: number]: BatteryConfig};
 }
 
-export class Batteries extends ConfigComponent<'battery_control/config', {}, BatteriesState> {
+export class BatteryControl extends ConfigComponent<'battery_control/config', {}, BatteryControlState> {
     constructor() {
         super('battery_control/config',
-              () => __("batteries.script.save_failed"),
-              () => __("batteries.script.reboot_content_changed"), {
+              () => __("battery_control.script.save_failed"),
+              () => __("battery_control.script.reboot_content_changed"), {
                   configs: {},
               });
 
         for (let battery_slot = 0; battery_slot < BATTERIES_SLOTS; ++battery_slot) {
-            util.addApiEventListener_unchecked(`batteries/${battery_slot}/config`, () => {
-                let config = API.get_unchecked(`batteries/${battery_slot}/config`);
+            util.addApiEventListener_unchecked(`battery_control/${battery_slot}/config`, () => {
+                let config = API.get_unchecked(`battery_control/${battery_slot}/config`);
 
                 if (!this.isDirty()) {
                     this.setState((prevState) => ({
@@ -73,9 +73,9 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
     override async sendSave(topic: 'battery_control/config', new_config: API.getType['battery_control/config']) {
         for (let battery_slot = 0; battery_slot < BATTERIES_SLOTS; ++battery_slot) {
             await API.save_unchecked(
-                `batteries/${battery_slot}/config`,
+                `battery_control/${battery_slot}/config`,
                 this.state.configs[battery_slot],
-                () => __("batteries.script.save_failed"));
+                () => __("battery_control.script.save_failed"));
         }
 
         await super.sendSave(topic, new_config);
@@ -83,7 +83,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
 
     override async sendReset(topic: 'battery_control/config') {
         for (let battery_slot = 0; battery_slot < BATTERIES_SLOTS; ++battery_slot) {
-            await API.reset_unchecked(`batteries/${battery_slot}/config`, this.error_string);
+            await API.reset_unchecked(`battery_control/${battery_slot}/config`, this.error_string);
         }
 
         await super.sendReset(topic);
@@ -91,7 +91,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
 
     override getIsModified(topic: 'battery_control/config'): boolean {
         for (let battery_slot = 0; battery_slot < BATTERIES_SLOTS; ++battery_slot) {
-            if (API.is_modified_unchecked(`batteries/${battery_slot}/config`))
+            if (API.is_modified_unchecked(`battery_control/${battery_slot}/config`))
                 return true;
         }
 
@@ -100,11 +100,11 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
 
     render(props: {}, s: Readonly<API.getType['battery_control/config']>) {
         if (!util.render_allowed())
-            return <SubPage name="batteries" />;
+            return <SubPage name="battery_control" />;
 
         const bc_state = API.get("battery_control/state");
 
-        let classes: [string, string][] = [[BatteryClassID.None.toString(), __("batteries.content.battery_class_none")]];
+        let classes: [string, string][] = [[BatteryClassID.None.toString(), __("battery_control.content.battery_class_none")]];
         let battery_slot = 0
 
         for (let battery_class in config_plugins) {
@@ -112,29 +112,29 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         }
 
         return (
-            <SubPage name="batteries">
-                <ConfigForm id="batteries_config_form" title={__("batteries.content.batteries")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <FormRow label={__("batteries.content.discharge_blocked")}>
+            <SubPage name="battery_control">
+                <ConfigForm id="battery_control_config_form" title={__("battery_control.content.battery_control")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                    <FormRow label={__("battery_control.content.discharge_blocked")}>
                         <IndicatorGroup
                             style="width: 100%"
                             class="flex-wrap"
                             value={bc_state.discharge_blocked ? 1 : 0}
                             items={[
-                                ["success", __("batteries.content.discharge_blocked_no")],
-                                ["warning", __("batteries.content.discharge_blocked_yes")],
+                                ["success", __("battery_control.content.discharge_blocked_no")],
+                                ["warning", __("battery_control.content.discharge_blocked_yes")],
                             ]}/>
                     </FormRow>
 
-                    <FormRow label={__("batteries.content.block_discharge_during_fast_charge")}>
-                        <Switch desc={__("batteries.content.block_discharge_during_fast_charge_desc")}
+                    <FormRow label={__("battery_control.content.block_discharge_during_fast_charge")}>
+                        <Switch desc={__("battery_control.content.block_discharge_during_fast_charge_desc")}
                             checked={s.block_discharge_during_fast_charge}
                             onClick={this.toggle("block_discharge_during_fast_charge")}
                         />
                     </FormRow>
 
-                    <FormSeparator heading={__("batteries.content.header_battery")} />
+                    <FormSeparator heading={__("battery_control.content.header_battery")} />
 
-                    <FormRow label={__("batteries.content.battery_class")}>
+                    <FormRow label={__("battery_control.content.battery_class")}>
                         <InputSelect
                             items={classes}
                             onValue={(v) => {
@@ -169,7 +169,7 @@ export function init() {
     for (let plugins of result) {
         for (let i in plugins) {
             if (config_plugins[i]) {
-                console.log('Batteries: Overwriting class ID ' + i);
+                console.log('BatteryControl: Overwriting class ID ' + i);
             }
 
             config_plugins[i] = plugins[i];

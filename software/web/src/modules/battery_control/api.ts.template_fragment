@@ -1,4 +1,4 @@
-//APIPath:batteries/{{{battery_id}}}/
+//APIPath:battery_control/{{{battery_id}}}/
 export type config___{{{battery_id}}} = BatteryConfig;
 
 export interface permit_grid_charge___{{{battery_id}}} {

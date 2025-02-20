@@ -1,14 +1,14 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 let x = {
-    "batteries": {
+    "battery_control": {
         "status": {
         },
         "navbar": {
-            "batteries": "Battery Control"
+            "battery_control": "Battery Control"
         },
         "content": {
-            "batteries": "Battery Control",
+            "battery_control": "Battery Control",
 
             "discharge_blocked": "Battery discharge",
             "discharge_blocked_no": "Not forbidden",

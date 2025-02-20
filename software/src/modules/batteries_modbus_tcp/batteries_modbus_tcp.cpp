@@ -97,7 +97,7 @@ void BatteriesModbusTCP::pre_setup()
         {"timeout", Config::Uint32(0)},
     });*/
 
-    batteries.register_battery_generator(get_class(), this);
+    battery_control.register_battery_generator(get_class(), this);
 }
 
 [[gnu::const]] BatteryClassID BatteriesModbusTCP::get_class() const
