@@ -24,10 +24,13 @@ import { __, translate_unchecked } from "../../ts/translation";
 import { h, Fragment, ComponentChild } from "preact";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
+import { FormSeparator } from "../../ts/components/form_separator";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputSelect } from "../../ts/components/input_select";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { SubPage } from "../../ts/components/sub_page";
+import { Switch } from "../../ts/components/switch";
 import { BatteryClassID } from "./battery_class_id.enum";
 import { BatteryConfig, BatteryConfigPlugin } from "./types";
 import { plugins_init } from "./plugins";
@@ -44,9 +47,9 @@ interface BatteriesState {
     configs: {[battery_slot: number]: BatteryConfig};
 }
 
-export class Batteries extends ConfigComponent<null, {}, BatteriesState> {
+export class Batteries extends ConfigComponent<'battery_control/config', {}, BatteriesState> {
     constructor() {
-        super(null,
+        super('battery_control/config',
               () => __("batteries.script.save_failed"),
               () => __("batteries.script.reboot_content_changed"), {
                   configs: {},
@@ -68,34 +71,39 @@ export class Batteries extends ConfigComponent<null, {}, BatteriesState> {
         }
     }
 
-    override async sendSave(topic: null, new_config: null) {
+    override async sendSave(topic: 'battery_control/config', new_config: API.getType['battery_control/config']) {
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
             await API.save_unchecked(
                 `batteries/${battery_slot}/config`,
                 this.state.configs[battery_slot],
-                () => __("batteries.script.save_failed"),
-                battery_slot == options.BATTERIES_MAX_SLOTS - 1 ? this.reboot_string : undefined);
+                () => __("batteries.script.save_failed"));
         }
+
+        await super.sendSave(topic, new_config);
     }
 
-    override async sendReset(topic: null) {
+    override async sendReset(topic: 'battery_control/config') {
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
-            await API.reset_unchecked(`batteries/${battery_slot}/config`, this.error_string, this.reboot_string);
+            await API.reset_unchecked(`batteries/${battery_slot}/config`, this.error_string);
         }
+
+        await super.sendReset(topic);
     }
 
-    override getIsModified(topic: null): boolean {
+    override getIsModified(topic: 'battery_control/config'): boolean {
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
             if (API.is_modified_unchecked(`batteries/${battery_slot}/config`))
                 return true;
         }
 
-        return false;
+        return super.getIsModified(topic);
     }
 
-    render() {
+    render(props: {}, s: Readonly<API.getType['battery_control/config']>) {
         if (!util.render_allowed())
             return <SubPage name="batteries" />;
+
+        const bc_state = API.get("battery_control/state");
 
         let classes: [string, string][] = [[BatteryClassID.None.toString(), __("batteries.content.battery_class_none")]];
         let battery_slot = 0
@@ -107,6 +115,26 @@ export class Batteries extends ConfigComponent<null, {}, BatteriesState> {
         return (
             <SubPage name="batteries">
                 <ConfigForm id="batteries_config_form" title={__("batteries.content.batteries")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                    <FormRow label={__("batteries.content.discharge_blocked")}>
+                        <IndicatorGroup
+                            style="width: 100%"
+                            class="flex-wrap"
+                            value={bc_state.discharge_blocked ? 1 : 0}
+                            items={[
+                                ["success", __("batteries.content.discharge_blocked_no")],
+                                ["warning", __("batteries.content.discharge_blocked_yes")],
+                            ]}/>
+                    </FormRow>
+
+                    <FormRow label={__("batteries.content.block_discharge_during_fast_charge")}>
+                        <Switch desc={__("batteries.content.block_discharge_during_fast_charge_desc")}
+                            checked={s.block_discharge_during_fast_charge}
+                            onClick={this.toggle("block_discharge_during_fast_charge")}
+                        />
+                    </FormRow>
+
+                    <FormSeparator heading={__("batteries.content.header_battery")} />
+
                     <FormRow label={__("batteries.content.battery_class")}>
                         <InputSelect
                             items={classes}
