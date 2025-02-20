@@ -209,6 +209,14 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
             if (this.props.departure == undefined || this.props.time == undefined || this.props.amount == undefined) {
                 return;
             }
+
+            const charge_mode = API.get('power_manager/charge_mode').mode;
+            const visible = charge_mode >= ConfigChargeMode.Eco && charge_mode <= ConfigChargeMode.EcoMinPV;
+            // Don't poll eco/chart if the chart is not visible
+            if (!visible) {
+                return;
+            }
+
             const eco_chart_data = {
                 departure: this.props.departure,
                 time: this.props.time,
