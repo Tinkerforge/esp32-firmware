@@ -58,13 +58,13 @@ void Batteries::pre_setup()
             }),
             [this, path_type](const Config *config) {
                 uint32_t battery_slot = config->get("battery_slot")->asUint();
-                String path = get_path(battery_slot, path_type);
-                const String errmsg = api.callCommand(path.c_str(), {});
-                String action_name = batteries_path_postfixes[static_cast<uint32_t>(path_type)];
-
-                action_name.replace("_", " ");
+                const String path = get_path(battery_slot, path_type);
+                const String errmsg = api.callCommand(path.c_str());
 
                 if (!errmsg.isEmpty()) {
+                    String action_name = batteries_path_postfixes[static_cast<uint32_t>(path_type)];
+                    action_name.replace("_", " ");
+
                     logger.printfln("Automation couldn't %s for battery slot %u: %s", action_name.c_str(), battery_slot, errmsg.c_str());
                 }
             }
