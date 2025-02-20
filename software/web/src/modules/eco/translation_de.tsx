@@ -16,7 +16,7 @@ let x = {
         "content": {
             "eco": "Eco-Modus",
             "charge_plan_enable": "Ladeplanung aktiviert",
-            "charge_plan_enable_desc": "Optimiert Ladevorgänge ökonomisch und ökologisch anhand der gewünschten Abfahrtszeit, dynamischer Strompreise und PV-Ertragsprognose. Ladepläne werden jedem der \"Eco\"-Lademodi verwendet.",
+            "charge_plan_enable_desc": "Optimiert Ladevorgänge ökonomisch und ökologisch anhand der gewünschten Abfahrtszeit, dynamischer Strompreise und PV-Ertragsprognose. Ladepläne werden in jedem der \"Eco\"-Lademodi verwendet.",
             "park_time": "Maximale Standzeit",
             "charge_below": "Immer laden wenn Preis unter",
             "block_above": "Nie laden wenn Preis über",
