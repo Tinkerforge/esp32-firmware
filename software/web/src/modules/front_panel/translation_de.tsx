@@ -28,8 +28,8 @@ let x = {
             "unconfigured": "nicht konfiguriert"
         },
         "script": {
-            "save_failed": "Speichern der Displayeinstellungen fehlgeschlagen",
-            "reboot_content_changed": "Dusplayeinstellungen"
+            "save_failed": "Speichern der Display-Einstellungen fehlgeschlagen",
+            "reboot_content_changed": "Display-Einstellungen"
         }
     }
 }

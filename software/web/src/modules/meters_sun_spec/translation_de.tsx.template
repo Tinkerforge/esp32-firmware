@@ -36,7 +36,7 @@ let x = {
             "dc_port_type_energy_storage_system": "Speicher",
             "dc_port_type_electric_vehicle": "Elektrofahrzeug",
             "dc_port_type_generic_injecting": "Generisch (abgebend)",
-            "dc_port_type_generic_absorbing": "Generisch (aufnehmened)",
+            "dc_port_type_generic_absorbing": "Generisch (aufnehmend)",
             "dc_port_type_generic_bidirectional": "Generisch (bidirektional)",
             "dc_port_type_dc_dc": "DC/DC",
 
