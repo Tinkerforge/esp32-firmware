@@ -347,7 +347,7 @@
 - Update timezone database
 - Improve translations
 
-2025-02-20: 2.3.2 (<unknown>)
+2025-02-20: 2.3.2 (99d728f5)
 - SunSpec: Add support for MPPT extension model 160 and DER DC measurement model 714
 - SunSpec: Add abort button for device scan
 - SunSpec: Fix sign of power and power factor values in DER AC measurement model 701
