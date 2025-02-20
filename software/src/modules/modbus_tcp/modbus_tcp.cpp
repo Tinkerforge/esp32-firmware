@@ -154,7 +154,7 @@ void ModbusTcp::pre_setup()
     });
 }
 
-// TODO this requires the NFC module!
+#if MODULE_NFC_AVAILABLE()
 static inline void fillTagCache(Option<NFC::tag_info_t> &tag) {
     if (tag.is_none()) {
         const auto &seen_tag = nfc.old_tags[0];
@@ -169,6 +169,7 @@ static inline void fillTagCache(Option<NFC::tag_info_t> &tag) {
         //swap_bytes(tag.unwrap().tag_id, 20);
     }
 }
+#endif
 
 static inline uint32_t swapBytes(uint32_t x) {
     return ((x & 0x000000FF) << 24)
@@ -190,7 +191,9 @@ static inline uint16_t swapBytes(uint16_t x) {
 Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpInputRegister(uint16_t reg, void *ctx_ptr) {
     struct Ctx{
         Option<float> energy_abs = {};
+#if MODULE_NFC_AVAILABLE()
         Option<NFC::tag_info_t> tag = {};
+#endif
     };
     Ctx *ctx = (Ctx*) ctx_ptr;
 
@@ -250,6 +253,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpInputRegister(uint16_t reg, void *c
         case 3100: val.u = power_manager.get_phases(); break;
         case 3102: REQUIRE(phase_switch); val.u = cache->power_manager_state->get("external_control")->asUint(); break;
 
+#if MODULE_NFC_AVAILABLE()
         //4000... handled below
         case 4010: REQUIRE(nfc); {
                 fillTagCache(ctx->tag);
@@ -263,6 +267,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpInputRegister(uint16_t reg, void *c
                     val.u += 0x70;
             } break;
         case 4012: REQUIRE(nfc); fillTagCache(ctx->tag); val.u = 0x30303000 + ('0' + ctx->tag.unwrap().tag_type); break;
+#endif
 
         default: report_illegal_data_address = true; break;
     }
@@ -287,7 +292,9 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpInputRegister(uint16_t reg, void *c
             auto value_idx = (reg - 2100) / 2;
             val.f = cache->meter_all_values->get(value_idx)->asFloat();
         }
-    } else if (reg >= 4000 && reg < 4000 + NFC_TAG_ID_LENGTH) {
+    }
+#if MODULE_NFC_AVAILABLE()
+    else if (reg >= 4000 && reg < 4000 + NFC_TAG_ID_LENGTH) {
         report_illegal_data_address = false;
 
         if (cache->has_feature_nfc) {
@@ -298,6 +305,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpInputRegister(uint16_t reg, void *c
             val.u = swapBytes(val.u);
         }
     }
+#endif
 
     if (this->send_illegal_data_address && report_illegal_data_address)
         return {};
@@ -308,7 +316,9 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpInputRegister(uint16_t reg, void *c
 TFModbusTCPExceptionCode ModbusTcp::getWarpInputRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
     struct {
         Option<float> energy_abs = {};
+#if MODULE_NFC_AVAILABLE()
         Option<NFC::tag_info_t> tag = {};
+#endif
     } ctx;
 
     FILL_FEATURE_CACHE(evse)
@@ -374,6 +384,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpHoldingRegister(uint16_t reg) {
         default: report_illegal_data_address = true;
     }
 
+#if MODULE_NFC_AVAILABLE()
     if (reg >= 4000 && reg < 4014) {
         report_illegal_data_address = false;
 
@@ -386,6 +397,7 @@ Option<ModbusTcp::TwoRegs> ModbusTcp::getWarpHoldingRegister(uint16_t reg) {
         }
         logger.printfln_debug("READ %u %.*s", reg, 4, val.chars);
     }
+#endif
 
     if (this->send_illegal_data_address && report_illegal_data_address)
         return {};
@@ -670,6 +682,7 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpHoldingRegisters(uint16_t start_addre
             default: report_illegal_data_address = true;
         }
 
+#if MODULE_NFC_AVAILABLE()
         if (reg >= 4000 && reg < 4014) {
             report_illegal_data_address = false;
 
@@ -717,6 +730,7 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpHoldingRegisters(uint16_t start_addre
                 }
             }
         }
+#endif
     }
 
     return (this->send_illegal_data_address && report_illegal_data_address) ? TFModbusTCPExceptionCode::IllegalDataAddress : TFModbusTCPExceptionCode::Success;
