@@ -650,7 +650,6 @@ void ChargeManager::setup()
                 this->charger_decisions[i].three.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d3"));
                 this->charger_decisions[i].current.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("dc"));
             }
-            logger.printfln_debug("fast_charger_in_c %d", fast_charger_in_c);
 
             this->state.get("state")->updateUint(result);
         }, 1_s);
