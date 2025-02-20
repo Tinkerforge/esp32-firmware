@@ -131,6 +131,7 @@ void Batteries::register_urls()
 {
     for (uint32_t slot = 0; slot < OPTIONS_BATTERIES_MAX_SLOTS(); slot++) {
         BatterySlot &battery_slot = battery_slots[slot];
+        IBattery *battery = battery_slot.battery;
 
         api.addPersistentConfig(get_path(slot, Batteries::PathType::Config), &battery_slot.config_union);
         api.addState(get_path(slot, Batteries::PathType::State), &battery_slot.state);
@@ -140,23 +141,23 @@ void Batteries::register_urls()
             IBattery::Action action = static_cast<IBattery::Action>(i);
             Batteries::PathType path_type = static_cast<Batteries::PathType>(static_cast<uint32_t>(Batteries::PathType::PermitGridCharge) + i);
 
-            if (battery_slot.battery->supports_action(action)) {
-                api.addCommand(get_path(slot, path_type), Config::Null(), {}, [battery_slot, action](String &errmsg) {
+            if (battery->supports_action(action)) {
+                api.addCommand(get_path(slot, path_type), Config::Null(), {}, [battery, action](String &errmsg) {
                     IBattery::Action current_action;
 
-                    if (battery_slot.battery->get_current_action(&current_action)) {
+                    if (battery->get_current_action(&current_action)) {
                         errmsg = "Another action is already in progress";
                         return;
                     }
 
-                    if (!battery_slot.battery->start_action(action)) {
+                    if (!battery->start_action(action)) {
                         errmsg = "Could not start action";
                         return;
                     }
                 }, true);
             }
 
-            battery_slot.battery->register_urls(get_path(slot, Batteries::PathType::Base));
+            battery->register_urls(get_path(slot, Batteries::PathType::Base));
         }
     }
 }
