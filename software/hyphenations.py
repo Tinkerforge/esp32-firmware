@@ -876,6 +876,11 @@ de_hyph = [
     "Über-ein-stim-mend",
     "Ab-wei-chend",
     "In-ter-net-ver-bin-dung",
+    "An-schluss-art",
+    "Elek-tro-fahr-zeug",
+    "auf-neh-mend",
+    "bi-di-rek-tio-nal",
+    "Er-wei-te-rung",
 ]
 
 en_hyph = [
@@ -1102,6 +1107,7 @@ en_hyph = [
     "eco-log-i-cal-ly",
     "fore-cast-ed",
     "con-fig-urable",
+    "bi-di-rec-tion-al",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
