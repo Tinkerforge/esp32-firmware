@@ -287,14 +287,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
         if (!util.render_allowed())
             return <SubPage name="heating" />;
 
-        const meter_slots = get_noninternal_meter_slots([
-                MeterValueID.PowerActiveLSumImExDiff,
-                MeterValueID.PowerDCImExDiff,
-                MeterValueID.PowerDCChaDisDiff,
-                MeterValueID.PowerPVSumImExDiff,
-            ],
-            NoninternalMeterSelector.AnyValue,
-            __("power_manager.content.meter_slot_grid_power_missing_value"));
+        const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"));
 
         const solar_forecast_enabled   = is_solar_forecast_enabled();
         const day_ahead_prices_enabled = is_day_ahead_prices_enabled();
