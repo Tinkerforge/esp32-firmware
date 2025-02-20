@@ -150,6 +150,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
         let theoretical_max = Math.min(state.slots[0].max_current, state.slots[1].max_current);
 
 //#if MODULE_NFC_AVAILABLE
+        let nfc_tag_list = this.get_nfc_tag_list();
         let nfc_start_button = <Dropdown className="flex-grow-1 mr-2">
                 <Dropdown.Toggle variant="primary"
                                  id={useId()}
@@ -158,8 +159,8 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                     {__("evse.status.start_charging")}
                 </Dropdown.Toggle>
                 <Dropdown.Menu alignRight>
-                    <Dropdown.Header>{__("evse.status.start_charge_for_user")}</Dropdown.Header>
-                    {this.get_nfc_tag_list()}
+                    <Dropdown.Header class="text-wrap">{nfc_tag_list.length > 0 ? __("evse.status.start_charge_for_user") : __("evse.status.start_charge_no_tags")}</Dropdown.Header>
+                    {nfc_tag_list}
                 </Dropdown.Menu>
             </Dropdown>
 //#endif

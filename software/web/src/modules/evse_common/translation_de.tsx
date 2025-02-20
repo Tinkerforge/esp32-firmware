@@ -14,7 +14,8 @@ let x = {
             "charge_control": "Ladesteuerung",
             "start_charging": "Start",
             "stop_charging": "Stop",
-            "start_charge_for_user": "für Benutzer"
+            "start_charge_for_user": "Für Benutzer",
+            "start_charge_no_tags": "Kein Benutzer mit NFC-Tag vorhanden"
         },
         "navbar": {
             "evse": "Ladestatus",
