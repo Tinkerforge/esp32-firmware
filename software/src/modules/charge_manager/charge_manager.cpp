@@ -609,7 +609,6 @@ void ChargeManager::setup()
             for (int i = 0; i < this->charger_count; ++i) {
                 update_charger_state_config(i);
             }
-            logger.printfln_debug("fast_charger_in_c %d", fast_charger_in_c);
 
             this->state.get("state")->updateUint(result);
         }, 1_s);
