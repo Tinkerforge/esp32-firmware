@@ -329,6 +329,10 @@ void Eco::set_chargers_state_chart_data(const uint8_t charger_id, bool *chart_in
 
 void Eco::update()
 {
+    if (!config.get("enable")->asBool()) {
+        return;
+    }
+
 #ifdef ECO_EXTENDED_LOGGING
     // used in extended logging macro
     bool did_log_timestamp = false;
@@ -405,7 +409,7 @@ void Eco::update()
         }
     }
 
-    if (config.get("enable")->asBool() && charge_plan.get("enable")->asBool()) {
+    if (charge_plan.get("enable")->asBool()) {
         const uint32_t desired_amount_1m = charge_plan.get("amount")->asUint()*60;
         const uint32_t current_time_1m   = rtc.timestamp_minutes();
 
@@ -522,6 +526,10 @@ void Eco::disable_charge_plan()
 
 Eco::ChargeDecision Eco::get_charge_decision(const uint8_t charger_id)
 {
+    if (!config.get("enable")->asBool()) {
+        return ChargeDecision::Normal;
+    }
+
     if (charger_id >= state.get("chargers")->count()) {
         return ChargeDecision::Normal;
     }
