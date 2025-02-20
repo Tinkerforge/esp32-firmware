@@ -10,6 +10,15 @@ let x = {
         "content": {
             "batteries": "Speichersteuerung",
 
+            "discharge_blocked": "Batterieentladung",
+            "discharge_blocked_no": "Nicht verboten",
+            "discharge_blocked_yes": "Verboten",
+
+            "block_discharge_during_fast_charge": "Batterieentladung beim Schnellladen verbieten",
+            "block_discharge_during_fast_charge_desc": "Verbietet dem Speicher, sich zu entladen, während ein Fahrzeug schnell lädt oder sein Eco-Ladeplan es erlaubt.",
+
+            "header_battery": "Batteriespeicher",
+
             "battery_class": "Klasse",
             "battery_class_none": "Keine"
         },

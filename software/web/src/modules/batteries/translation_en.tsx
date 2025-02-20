@@ -10,6 +10,15 @@ let x = {
         "content": {
             "batteries": "Battery Control",
 
+            "discharge_blocked": "Battery discharge",
+            "discharge_blocked_no": "Not forbidden",
+            "discharge_blocked_yes": "Forbidden",
+
+            "block_discharge_during_fast_charge": "Forbid discharge during fast charge",
+            "block_discharge_during_fast_charge_desc": "Will forbid the battery to discharge while a vehicle is fast charging or is allowed to do so by its Eco charge plan.",
+
+            "header_battery": "Battery",
+
             "battery_class": "Class",
             "battery_class_none": "None"
         },
