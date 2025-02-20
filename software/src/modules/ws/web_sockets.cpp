@@ -609,9 +609,7 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
     if (string_is_in_rodata(uri)) {
         this->handler_uri = uri;
     } else {
-        char *dst;
-        asprintf(&dst, "%s", uri);
-        this->handler_uri = dst;
+        this->handler_uri = strdup(uri);
     }
 
     this->httpd = httpd;
