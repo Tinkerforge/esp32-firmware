@@ -57,7 +57,10 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
         async_event.error_http_client = ESP_OK;
         async_event.error_http_status = -1;
 
-        that->callback(&async_event);
+        if (!that->abort_requested) {
+            that->callback(&async_event);
+        }
+
         break;
 
     case HTTP_EVENT_ON_HEADER:
@@ -83,7 +86,10 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
             async_event.error_http_client = ESP_OK;
             async_event.error_http_status = http_status;
 
-            that->callback(&async_event);
+            if (!that->abort_requested) {
+                that->callback(&async_event);
+            }
+
             break;
         }
 
@@ -96,7 +102,10 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
 
         that->received_len += event->data_len;
 
-        that->callback(&async_event);
+        if (!that->abort_requested) {
+            that->callback(&async_event);
+        }
+
         break;
 
     default:
