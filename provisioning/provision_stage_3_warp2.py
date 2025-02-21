@@ -611,7 +611,7 @@ class Stage3:
 
         time.sleep(RELAY_SETTLE_DURATION)
 
-    def power_on(self, outlet):
+    def power_on(self, outlet, phases=['L1']):
         assert self.prepared
         assert outlet in ['Basic', 'Smart', 'Pro', 'CEE']
 
@@ -630,7 +630,7 @@ class Stage3:
 
         time.sleep(RELAY_SETTLE_DURATION)
 
-        self.connect_warp_power(['L1'])
+        self.connect_warp_power(phases)
 
         time.sleep(RELAY_SETTLE_DURATION)
 
@@ -1267,9 +1267,12 @@ def main():
         button.grid(row=len(buttons), column=0, padx=10, pady=10)
         buttons.append(button)
 
-    add_button('Power On - Smart', lambda: stage3.power_on('Smart'))
-    add_button('Power On - Pro', lambda: stage3.power_on('Pro'))
-    add_button('Power On - CEE', lambda: stage3.power_on('CEE'))
+    add_button('Power On - Smart L1', lambda: stage3.power_on('Smart'))
+    add_button('Power On - Smart L1/L2/L3', lambda: stage3.power_on('Smart', phases=['L1', 'L2', 'L3']))
+    add_button('Power On - Pro L1', lambda: stage3.power_on('Pro'))
+    add_button('Power On - Pro L1/L2/L3', lambda: stage3.power_on('Pro', phases=['L1', 'L2', 'L3']))
+    add_button('Power On - CEE L1', lambda: stage3.power_on('CEE'))
+    add_button('Power On - CEE L1/L2/L3', lambda: stage3.power_on('CEE', phases=['L1', 'L2', 'L3']))
     add_button('Power Off', lambda: stage3.power_off())
     add_button('CP/PE State A', lambda: stage3.change_cp_pe_state('A'))
     add_button('CP/PE State B', lambda: stage3.change_cp_pe_state('B'))
