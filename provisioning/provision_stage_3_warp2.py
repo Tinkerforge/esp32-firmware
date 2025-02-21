@@ -1258,46 +1258,28 @@ def main():
     stage3.setup()
 
     root = tk.Tk()
-    root.title('WARP2 Manual Power')
+    root.title('WARP2 Manual Control')
 
-    button_power_on_smart = tk.Button(root, text='Power On - Smart', width=50, command=lambda: stage3.power_on('Smart'))
-    button_power_on_smart.grid(row=0, column=0, padx=10, pady=10)
+    buttons = []
 
-    button_power_on_pro = tk.Button(root, text='Power On - Pro', width=50, command=lambda: stage3.power_on('Pro'))
-    button_power_on_pro.grid(row=1, column=0, padx=10, pady=10)
+    def add_button(text, command):
+        button = tk.Button(root, text=text, width=50, command=command)
+        button.grid(row=len(buttons), column=0, padx=10, pady=10)
+        buttons.append(button)
 
-    button_power_on_cee = tk.Button(root, text='Power On - CEE', width=50, command=lambda: stage3.power_on('CEE'))
-    button_power_on_cee.grid(row=2, column=0, padx=10, pady=10)
-
-    button_power_off = tk.Button(root, text='Power Off', width=50, command=lambda: stage3.power_off())
-    button_power_off.grid(row=3, column=0, padx=10, pady=10)
-
-    button_cp_pe_state_a = tk.Button(root, text='CP/PE State A', width=50, command=lambda: stage3.change_cp_pe_state('A'))
-    button_cp_pe_state_a.grid(row=4, column=0, padx=10, pady=10)
-
-    button_cp_pe_state_b = tk.Button(root, text='CP/PE State B', width=50, command=lambda: stage3.change_cp_pe_state('B'))
-    button_cp_pe_state_b.grid(row=5, column=0, padx=10, pady=10)
-
-    button_cp_pe_state_c = tk.Button(root, text='CP/PE State C', width=50, command=lambda: stage3.change_cp_pe_state('C'))
-    button_cp_pe_state_c.grid(row=6, column=0, padx=10, pady=10)
-
-    button_cp_pe_state_d = tk.Button(root, text='CP/PE State D', width=50, command=lambda: stage3.change_cp_pe_state('D'))
-    button_cp_pe_state_d.grid(row=7, column=0, padx=10, pady=10)
-
-    button_meter_state_type2_l1 = tk.Button(root, text='Meter State Type2 L1', width=50, command=lambda: stage3.change_meter_state('Type2-L1'))
-    button_meter_state_type2_l1.grid(row=8, column=0, padx=10, pady=10)
-
-    button_meter_state_type2_l2 = tk.Button(root, text='Meter State Type2 L2', width=50, command=lambda: stage3.change_meter_state('Type2-L2'))
-    button_meter_state_type2_l2.grid(row=9, column=0, padx=10, pady=10)
-
-    button_meter_state_type2_l3 = tk.Button(root, text='Meter State Type2 L3', width=50, command=lambda: stage3.change_meter_state('Type2-L3'))
-    button_meter_state_type2_l3.grid(row=10, column=0, padx=10, pady=10)
-
-    button_meter_run_button = tk.Button(root, text='Meter Run Button', width=50, command=lambda: stage3.click_meter_run_button())
-    button_meter_run_button.grid(row=11, column=0, padx=10, pady=10)
-
-    button_meter_back_button = tk.Button(root, text='Meter Back Button', width=50, command=lambda: stage3.click_meter_back_button())
-    button_meter_back_button.grid(row=12, column=0, padx=10, pady=10)
+    add_button('Power On - Smart', lambda: stage3.power_on('Smart'))
+    add_button('Power On - Pro', lambda: stage3.power_on('Pro'))
+    add_button('Power On - CEE', lambda: stage3.power_on('CEE'))
+    add_button('Power Off', lambda: stage3.power_off())
+    add_button('CP/PE State A', lambda: stage3.change_cp_pe_state('A'))
+    add_button('CP/PE State B', lambda: stage3.change_cp_pe_state('B'))
+    add_button('CP/PE State C', lambda: stage3.change_cp_pe_state('C'))
+    add_button('CP/PE State D', lambda: stage3.change_cp_pe_state('D'))
+    add_button('Meter State Type2 L1', lambda: stage3.change_meter_state('Type2-L1'))
+    add_button('Meter State Type2 L2', lambda: stage3.change_meter_state('Type2-L2'))
+    add_button('Meter State Type2 L3', lambda: stage3.change_meter_state('Type2-L3'))
+    add_button('Meter Run Button', lambda: stage3.click_meter_run_button())
+    add_button('Meter Back Button', lambda: stage3.click_meter_back_button())
 
     root.mainloop()
 
