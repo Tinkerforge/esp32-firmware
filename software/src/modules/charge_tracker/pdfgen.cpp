@@ -1142,6 +1142,8 @@ static int utf8_to_pdfencoding(struct pdf_doc *pdf, const char *utf8, int len,
         /* We support *some* minimal UTF-8 characters */
         // See Appendix D of
         // https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/pdf_reference_archives/PDFReference.pdf
+        // or
+        // https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.7old.pdf
         // These are all in WinAnsiEncoding
         switch (code) {
         case 0x160: // Latin Capital Letter S with Caron
@@ -1175,10 +1177,20 @@ static int utf8_to_pdfencoding(struct pdf_doc *pdf, const char *utf8, int len,
             *res = 0200;
             break;
         default:
-            return pdf_set_err(pdf, -EINVAL,
-                               "Unsupported UTF-8 character: 0x%x 0o%o", code,
-                               code);
+            // Replace unknown unicode code points with '•' as per Appendix D:
+            /*
+            In WinAnsiEncoding, all unused codes greater than 40 map to the bullet character.
+            However, only code 225 is specifically assigned to the bullet character; other codes are
+            subject to future reassignment
+            */
+            *res = 0225;
+            break;
         }
+    } else if (code >= 0x80 && code <= 0x9F) {
+        // Replace unicode control characters that are not in cp1252 with '•'.
+        // See above and https://en.wikipedia.org/wiki/ISO/IEC_8859-1#Code_page_layout
+        // Other control characters (code >= 0 && code <= 0x1F) are passed through.
+        *res = 0225;
     } else {
         *res = code;
     }
