@@ -79,6 +79,10 @@ window.addEventListener('languagechange', update_active_language);
 // language from navigator.languages is used, if there is no languagechange event.
 update_active_language();
 
+export function get_active_language() {
+    return active_language;
+}
+
 function translate<S extends string>(key: string): GetDictValue<S, Translation> {
     let subtranslation: any = translation[active_language.value];
 

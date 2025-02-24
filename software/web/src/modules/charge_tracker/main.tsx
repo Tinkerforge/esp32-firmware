@@ -22,7 +22,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, Component, RefObject } from "preact";
-import { __ } from "../../ts/translation";
+import { __, get_active_language } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { InputText } from "../../ts/components/input_text";
@@ -400,7 +400,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                 try {
                                     let pdf = await API.call("charge_tracker/pdf", {
                                         api_not_final_acked: true,
-                                        english: navigator.languages.indexOf("de") < 0 || (navigator.languages.indexOf("de") > navigator.languages.indexOf("en")),
+                                        english: get_active_language().value != 'de',
                                         start_timestamp_min: start.getTime() / 1000 / 60,
                                         end_timestamp_min: end.getTime() / 1000 / 60,
                                         user_filter: parseInt(state.user_filter),
