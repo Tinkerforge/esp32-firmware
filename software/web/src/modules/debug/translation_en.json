@@ -35,6 +35,14 @@
             "conf_object_buf": "ConfObject",
             "conf_union_buf": "ConfUnion",
 
+            "config_slots": "Config slots",
+            "slots_used": "Used",
+            "slots_hwm": "HWM",
+            "slots_allocated": "Allocated",
+            "slots_first_free": "First free",
+            "slots_last_used": "Last used",
+            "slots_holes": "Holes",
+
             "stack_hwm_header": "Stack high water marks",
             "task_name": "Task name",
             "free_stack": "Free stack",

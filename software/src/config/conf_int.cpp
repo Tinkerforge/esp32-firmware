@@ -18,12 +18,14 @@
  */
 
 #include "config/private.h"
+#include "config/slot_allocator.h"
+#include "tools/malloc.h"
 
-bool Config::ConfInt::slotEmpty(size_t i)
+bool Config::ConfInt::slotEmpty(const Slot *slot)
 {
-    return int_buf[i].val == 0
-        && int_buf[i].min == 0
-        && int_buf[i].max == 0;
+    return slot->val == 0
+        && slot->min == 0
+        && slot->max == 0;
 }
 
 Config::ConfInt::Slot *Config::ConfInt::allocSlotBuf(size_t elements)
@@ -31,20 +33,15 @@ Config::ConfInt::Slot *Config::ConfInt::allocSlotBuf(size_t elements)
     return (Config::ConfInt::Slot *)calloc_32bit_addressed(elements, sizeof(Config::ConfInt::Slot));
 }
 
-void Config::ConfInt::freeSlotBuf(Config::ConfInt::Slot *buf)
-{
-    free_any(buf);
-}
+int32_t* Config::ConfInt::getVal() { return &get_slot<Config::ConfInt>(idx)->val; }
+const int32_t* Config::ConfInt::getVal() const { return &get_slot<Config::ConfInt>(idx)->val; }
 
-int32_t* Config::ConfInt::getVal() { return &int_buf[idx].val; }
-const int32_t* Config::ConfInt::getVal() const { return &int_buf[idx].val; }
-
-const Config::ConfInt::Slot *Config::ConfInt::getSlot() const { return &int_buf[idx]; }
-Config::ConfInt::Slot *Config::ConfInt::getSlot() { return &int_buf[idx]; }
+const Config::ConfInt::Slot *Config::ConfInt::getSlot() const { return get_slot<Config::ConfInt>(idx); }
+Config::ConfInt::Slot *Config::ConfInt::getSlot() { return get_slot<Config::ConfInt>(idx); }
 
 Config::ConfInt::ConfInt(int32_t val, int32_t min, int32_t max)
 {
-    idx = nextSlot<Config::ConfInt>(int_buf, int_buf_size);
+    idx = nextSlot<Config::ConfInt>();
     auto *slot = this->getSlot();
     slot->val = val;
     slot->min = min;
@@ -53,7 +50,7 @@ Config::ConfInt::ConfInt(int32_t val, int32_t min, int32_t max)
 
 Config::ConfInt::ConfInt(const ConfInt &cpy)
 {
-    idx = nextSlot<Config::ConfInt>(int_buf, int_buf_size);
+    idx = nextSlot<Config::ConfInt>();
     auto tmp = *cpy.getSlot();
     *this->getSlot() = std::move(tmp);
 }
@@ -67,6 +64,8 @@ Config::ConfInt::~ConfInt()
     slot->val = 0;
     slot->min = 0;
     slot->max = 0;
+
+    notify_free_slot<Config::ConfInt>(idx);
 }
 
 Config::ConfInt &Config::ConfInt::operator=(const ConfInt &cpy)

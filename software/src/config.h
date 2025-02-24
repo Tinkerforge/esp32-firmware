@@ -48,7 +48,6 @@ struct Config;
 
 class StringBuilder;
 
-void config_pre_init();
 void config_post_setup();
 
 struct ConfigRoot;
@@ -81,10 +80,9 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(size_t i);
+        static bool slotEmpty(const Slot *slot);
         static constexpr const char *variantName = "ConfString";
         static Slot *allocSlotBuf(size_t elements);
-        static void freeSlotBuf(Slot *buf);
 
         CoolString *getVal();
         const CoolString *getVal() const;
@@ -113,10 +111,9 @@ struct Config {
         void setSlot(float val, float min, float max);
 
     public:
-        static bool slotEmpty(size_t i);
+        static bool slotEmpty(const Slot *slot);
         static constexpr const char *variantName = "ConfFloat";
         static Slot *allocSlotBuf(size_t elements);
-        static void freeSlotBuf(Slot *buf);
 
         float getVal() const;
         float getMin() const;
@@ -143,10 +140,9 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(size_t i);
+        static bool slotEmpty(const Slot *slot);
         static constexpr const char *variantName = "ConfInt";
         static Slot *allocSlotBuf(size_t elements);
-        static void freeSlotBuf(Slot *buf);
 
         int32_t *getVal();
         const int32_t *getVal() const;
@@ -171,10 +167,9 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(size_t i);
+        static bool slotEmpty(const Slot *slot);
         static constexpr const char *variantName = "ConfUint";
         static Slot *allocSlotBuf(size_t elements);
-        static void freeSlotBuf(Slot *buf);
 
         uint32_t *getVal();
         const uint32_t *getVal() const;
@@ -207,10 +202,9 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(size_t i);
+        static bool slotEmpty(const Slot *slot);
         static constexpr const char *variantName = "ConfArray";
         static Slot *allocSlotBuf(size_t elements);
-        static void freeSlotBuf(Slot *buf);
 
         Config *get(size_t i);
         const Config *get(size_t i) const;
@@ -236,10 +230,9 @@ struct Config {
         uint16_t idx;
 
     public:
-        static bool slotEmpty(size_t i);
+        static bool slotEmpty(const Slot *slot);
         static constexpr const char *variantName = "ConfObject";
         static Slot *allocSlotBuf(size_t elements);
-        static void freeSlotBuf(Slot *buf);
 
         Config *get(const char *s, size_t s_len);
         const Config *get(const char *s, size_t s_len) const;
@@ -265,10 +258,9 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(size_t i);
+        static bool slotEmpty(const Slot *slot);
         static constexpr const char *variantName = "ConfUnion";
         static Slot *allocSlotBuf(size_t elements);
-        static void freeSlotBuf(Slot *buf);
 
         uint8_t getTag() const;
         bool changeUnionVariant(uint8_t tag);

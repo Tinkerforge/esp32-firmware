@@ -29,10 +29,10 @@
 #include <soc/spi_reg.h>
 
 #include "event_log_prefix.h"
+#include "config/slot_allocator.h"
 #include "module_dependencies.h"
 #include "backtrace.h"
 #include "string_builder.h"
-#include "config/private.h"
 #include "tools/memory.h"
 #include "tools/fs.h"
 
@@ -73,6 +73,16 @@ static void malloc_failed_hook(size_t size, uint32_t caps, const char *function_
         esp_backtrace_print(INT32_MAX);
     }
 }
+
+static void (*const slot_debug_info_fns[7])(SlotDebugInfo *slot_info) = {
+    &get_slot_debug_info<Config::ConfUint>,
+    &get_slot_debug_info<Config::ConfInt>,
+    &get_slot_debug_info<Config::ConfFloat>,
+    &get_slot_debug_info<Config::ConfString>,
+    &get_slot_debug_info<Config::ConfArray>,
+    &get_slot_debug_info<Config::ConfObject>,
+    &get_slot_debug_info<Config::ConfUnion>,
+};
 
 void Debug::pre_setup()
 {
@@ -156,6 +166,24 @@ void Debug::pre_setup()
         {"conf_union_buf_size", Config::Uint32(0)},
     });
 
+    state_slots_prototype = Config::Array({},
+        Config::get_prototype_uint16_0(),
+        5, 5, Config::type_id<Config::ConfUint>()
+    );
+
+    state_slots = Config::Array({},
+        &state_slots_prototype,
+        7, 7, Config::type_id<Config::ConfArray>()
+    );
+
+    for (size_t i = 0; i < 7; i++) {
+        state_slots.add();
+        for (size_t j = 0; j < 5; j++) {
+            // add() can trigger a move of ConfObjects, so get() must be called inside the loop.
+            state_slots.get(i)->add();
+        }
+    }
+
     state_hwm_prototype = Config::Object({
         {"task_name",  Config::Str("", 0, CONFIG_FREERTOS_MAX_TASK_NAME_LEN)},
         {"hwm",        Config::Uint32(0)},
@@ -206,13 +234,24 @@ void Debug::setup()
         state_slow.get("min_free_dram")->updateUint(dram_info.minimum_free_bytes);
         state_slow.get("min_free_psram")->updateUint(psram_info.minimum_free_bytes);
 
-        state_slow.get("conf_uint_buf_size")->updateUint(uint_buf_size * sizeof(ConfUintSlot));
-        state_slow.get("conf_int_buf_size")->updateUint(int_buf_size * sizeof(ConfIntSlot));
-        state_slow.get("conf_float_buf_size")->updateUint(float_buf_size * sizeof(ConfFloatSlot));
-        state_slow.get("conf_string_buf_size")->updateUint(string_buf_size * sizeof(ConfStringSlot));
-        state_slow.get("conf_array_buf_size")->updateUint(array_buf_size * sizeof(ConfArraySlot));
-        state_slow.get("conf_object_buf_size")->updateUint(object_buf_size * sizeof(ConfObjectSlot));
-        state_slow.get("conf_union_buf_size")->updateUint(union_buf_size * sizeof(ConfUnionSlot));
+        state_slow.get("conf_uint_buf_size"  )->updateUint(get_allocated_slot_memory<Config::ConfUint>());
+        state_slow.get("conf_int_buf_size"   )->updateUint(get_allocated_slot_memory<Config::ConfInt>());
+        state_slow.get("conf_float_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfFloat>());
+        state_slow.get("conf_string_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfString>());
+        state_slow.get("conf_array_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfArray>());
+        state_slow.get("conf_object_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfObject>());
+        state_slow.get("conf_union_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfUnion>());
+
+        for (size_t i = 0; i < 7; i++) {
+            SlotDebugInfo slot_info;
+            slot_debug_info_fns[i](&slot_info);
+            auto arr = state_slots.get(i);
+            arr->get(0)->updateUint(slot_info.used_slots);
+            arr->get(1)->updateUint(slot_info.slots_hwm);
+            arr->get(2)->updateUint(slot_info.allocated_slots);
+            arr->get(3)->updateUint(slot_info.first_free_slot);
+            arr->get(4)->updateUint(slot_info.last_used_slot);
+        }
 
         if (dram_info.largest_free_block < 2000) {
             logger.printfln("Heap full. Largest block is %u bytes.", dram_info.largest_free_block);
@@ -327,6 +366,7 @@ void Debug::register_urls()
     api.addState("debug/state_static", &state_static);
     api.addState("debug/state_fast", &state_fast);
     api.addState("debug/state_slow", &state_slow);
+    api.addState("debug/state_slots", &state_slots);
     api.addState("debug/state_hwm", &state_hwm);
 
 #ifdef DEBUG_FS_ENABLE

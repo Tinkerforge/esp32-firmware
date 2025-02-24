@@ -41,6 +41,14 @@
             "conf_object_buf": "ConfObject",
             "conf_union_buf": "ConfUnion",
 
+            "config_slots": "Config-Slots",
+            "slots_used": "Belegt",
+            "slots_hwm": "HWM",
+            "slots_allocated": "Kontingent",
+            "slots_first_free": "Erster frei",
+            "slots_last_used": "Letzter belegt",
+            "slots_holes": "Löcher",
+
             "heap_integrity_header": "Heap-Integrität",
             "heap_integrity_result": "Prüfergebnis",
             "heap_integrity_ok": "Bestanden",

@@ -18,23 +18,19 @@
  */
 
 #include "config/private.h"
+#include "config/slot_allocator.h"
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 
-bool Config::ConfArray::slotEmpty(size_t i)
+bool Config::ConfArray::slotEmpty(const Slot *slot)
 {
-    return !array_buf[i].inUse;
+    return !slot->inUse;
 }
 
 Config::ConfArray::Slot *Config::ConfArray::allocSlotBuf(size_t elements)
 {
     return new Config::ConfArray::Slot[elements];
-}
-
-void Config::ConfArray::freeSlotBuf(Config::ConfArray::Slot *buf)
-{
-    delete[] buf;
 }
 
 [[gnu::noinline]]
@@ -65,15 +61,15 @@ const Config *Config::ConfArray::get(size_t i) const
     return &(*val)[i];
 }
 
-std::vector<Config> *Config::ConfArray::getVal() { return &array_buf[idx].val; }
-const std::vector<Config> *Config::ConfArray::getVal() const { return &array_buf[idx].val; }
+std::vector<Config> *Config::ConfArray::getVal() { return &get_slot<Config::ConfArray>(idx)->val; }
+const std::vector<Config> *Config::ConfArray::getVal() const { return &get_slot<Config::ConfArray>(idx)->val; }
 
-const Config::ConfArray::Slot *Config::ConfArray::getSlot() const { return &array_buf[idx]; }
-Config::ConfArray::Slot *Config::ConfArray::getSlot() { return &array_buf[idx]; }
+const Config::ConfArray::Slot *Config::ConfArray::getSlot() const { return get_slot<Config::ConfArray>(idx); }
+Config::ConfArray::Slot *Config::ConfArray::getSlot() { return get_slot<Config::ConfArray>(idx); }
 
 Config::ConfArray::ConfArray(std::vector<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType)
 {
-    idx = nextSlot<Config::ConfArray>(array_buf, array_buf_size);
+    idx = nextSlot<Config::ConfArray>();
     auto *slot = this->getSlot();
     slot->inUse = true;
 
@@ -92,7 +88,7 @@ Config::ConfArray::ConfArray(std::vector<Config> val, const Config *prototype, u
 
 Config::ConfArray::ConfArray(const ConfArray &cpy)
 {
-    idx = nextSlot<Config::ConfArray>(array_buf, array_buf_size);
+    idx = nextSlot<Config::ConfArray>();
     // We have to mark this slot as in use here:
     // This array could contain a nested array that will be copied over
     // The inner array's copy constructor then takes the first free slot, i.e.
@@ -119,6 +115,8 @@ Config::ConfArray::~ConfArray()
     slot->minElements = 0;
     slot->maxElements = 0;
     slot->variantType = 0;
+
+    notify_free_slot<Config::ConfArray>(idx);
 }
 
 Config::ConfArray &Config::ConfArray::operator=(const ConfArray &cpy)

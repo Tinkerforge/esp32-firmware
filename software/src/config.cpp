@@ -27,34 +27,6 @@
 #include "tools.h"
 #include "string_builder.h"
 
-#define UINT_SLOTS 512
-Config::ConfUint::Slot *uint_buf = nullptr;
-size_t uint_buf_size = 0;
-
-#define INT_SLOTS 128
-Config::ConfInt::Slot *int_buf = nullptr;
-size_t int_buf_size = 0;
-
-#define FLOAT_SLOTS 384
-Config::ConfFloat::Slot *float_buf = nullptr;
-size_t float_buf_size = 0;
-
-#define STRING_SLOTS 384
-Config::ConfString::Slot *string_buf = nullptr;
-size_t string_buf_size = 0;
-
-#define ARRAY_SLOTS 64
-Config::ConfArray::Slot *array_buf = nullptr;
-size_t array_buf_size = 0;
-
-#define OBJECT_SLOTS 256
-Config::ConfObject::Slot *object_buf = nullptr;
-size_t object_buf_size = 0;
-
-#define UNION_SLOTS 32
-Config::ConfUnion::Slot *union_buf = nullptr;
-size_t union_buf_size = 0;
-
 static ConfigRoot nullconf = Config{Config::ConfVariant{}};
 static ConfigRoot confirmconf;
 
@@ -817,78 +789,4 @@ void Config::set_updated(uint8_t api_backend_flag)
 {
     ASSERT_MAIN_THREAD();
     value.updated |= api_backend_flag;
-}
-
-void config_pre_init()
-{
-    uint_buf = Config::ConfUint::allocSlotBuf(UINT_SLOTS);
-    int_buf = Config::ConfInt::allocSlotBuf(INT_SLOTS);
-    float_buf = Config::ConfFloat::allocSlotBuf(FLOAT_SLOTS);
-    string_buf = Config::ConfString::allocSlotBuf(STRING_SLOTS);
-    array_buf = Config::ConfArray::allocSlotBuf(ARRAY_SLOTS);
-    object_buf = Config::ConfObject::allocSlotBuf(OBJECT_SLOTS);
-    union_buf = Config::ConfUnion::allocSlotBuf(UNION_SLOTS);
-
-    uint_buf_size = UINT_SLOTS;
-    int_buf_size = INT_SLOTS;
-    float_buf_size = FLOAT_SLOTS;
-    string_buf_size = STRING_SLOTS;
-    array_buf_size = ARRAY_SLOTS;
-    object_buf_size = OBJECT_SLOTS;
-    union_buf_size = UNION_SLOTS;
-}
-
-template<typename T>
-static void shrinkToFit(typename T::Slot * &buf, size_t &buf_size) {
-    ASSERT_MAIN_THREAD();
-    size_t last_used_slot = 0;
-    int empty_slots = 0;
-
-    // Search for last used slot first.
-    // All empty slots behind the last used slot will be cut off.
-    size_t pos = buf_size;
-    while (pos > 0) {
-        pos--;
-        if (!T::slotEmpty(pos)) {
-            last_used_slot = pos;
-            break;
-        }
-    }
-    while (pos > 0) {
-        pos--;
-        if (T::slotEmpty(pos)) {
-            empty_slots++;
-        }
-    }
-
-    // Shrink the buffer so that the last used slot fits
-    // (we are not allowed to move used slots in the buffer!)
-    // and we have SLOT_HEADROOM free slots.
-    // If there are empty slots before the last used one, prefer those.
-    // If there are not enough, add some empty slots behind the last used one.
-    size_t new_size = last_used_slot + 1 + (size_t)std::max(0, SLOT_HEADROOM - empty_slots);
-
-    // Don't increase buffer size. It will be increased automatically when required.
-    if (new_size >= buf_size)
-        return;
-
-    auto new_buf = T::allocSlotBuf(new_size);
-
-    for (size_t i = 0; i <= last_used_slot; ++i)
-        new_buf[i] = std::move(buf[i]);
-
-    T::freeSlotBuf(buf);
-    buf = new_buf;
-    buf_size = new_size;
-}
-
-void config_post_setup()
-{
-    shrinkToFit<Config::ConfUint>(uint_buf, uint_buf_size);
-    shrinkToFit<Config::ConfInt>(int_buf, int_buf_size);
-    shrinkToFit<Config::ConfFloat>(float_buf, float_buf_size);
-    shrinkToFit<Config::ConfString>(string_buf, string_buf_size);
-    shrinkToFit<Config::ConfArray>(array_buf, array_buf_size);
-    shrinkToFit<Config::ConfObject>(object_buf, object_buf_size);
-    shrinkToFit<Config::ConfUnion>(union_buf, union_buf_size);
 }

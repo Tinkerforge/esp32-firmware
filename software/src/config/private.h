@@ -20,9 +20,6 @@
 #pragma once
 
 #include "config.h"
-#include "tools/malloc.h"
-
-#define SLOT_HEADROOM 20
 
 struct ConfStringSlot {
     CoolString val = "";
@@ -77,47 +74,3 @@ struct ConfUnionSlot {
     Config val;
     const ConfUnionPrototypeInternal *prototypes = nullptr;
 };
-
-extern Config::ConfUint::Slot *uint_buf;
-extern size_t uint_buf_size;
-
-extern Config::ConfInt::Slot *int_buf;
-extern size_t int_buf_size;
-
-extern Config::ConfFloat::Slot *float_buf;
-extern size_t float_buf_size;
-
-extern Config::ConfString::Slot *string_buf;
-extern size_t string_buf_size;
-
-extern Config::ConfArray::Slot *array_buf;
-extern size_t array_buf_size;
-
-extern Config::ConfObject::Slot *object_buf;
-extern size_t object_buf_size;
-
-extern Config::ConfUnion::Slot *union_buf;
-extern size_t union_buf_size;
-
-template<typename T>
-static size_t nextSlot(typename T::Slot *&buf, size_t &buf_size) {
-    ASSERT_MAIN_THREAD();
-    for (size_t i = 0; i < buf_size; i++)
-    {
-        if (!T::slotEmpty(i))
-            continue;
-
-        return i;
-    }
-
-    auto new_buf = T::allocSlotBuf(buf_size + SLOT_HEADROOM);
-
-    for (size_t i = 0; i < buf_size; ++i)
-        new_buf[i] = std::move(buf[i]);
-
-    T::freeSlotBuf(buf);
-    buf = new_buf;
-    size_t result = buf_size;
-    buf_size = buf_size + SLOT_HEADROOM;
-    return result;
-}

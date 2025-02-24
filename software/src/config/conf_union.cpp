@@ -18,10 +18,11 @@
  */
 
 #include "config/private.h"
+#include "config/slot_allocator.h"
 
-bool Config::ConfUnion::slotEmpty(size_t i)
+bool Config::ConfUnion::slotEmpty(const Slot *slot)
 {
-    return union_buf[i].prototypes == nullptr;
+    return slot->prototypes == nullptr;
 }
 
 Config::ConfUnion::Slot *Config::ConfUnion::allocSlotBuf(size_t elements)
@@ -29,36 +30,32 @@ Config::ConfUnion::Slot *Config::ConfUnion::allocSlotBuf(size_t elements)
     return new Config::ConfUnion::Slot[elements];
 }
 
-void Config::ConfUnion::freeSlotBuf(Config::ConfUnion::Slot *buf)
-{
-    delete[] buf;
-}
-
 bool Config::ConfUnion::changeUnionVariant(uint8_t tag)
 {
-    auto &slot = union_buf[idx];
-    for (int i = 0; i < slot.prototypes_len; ++i) {
-        if (slot.prototypes[i].tag == tag) {
-            union_buf[idx].tag = tag;
-            slot.val = slot.prototypes[i].config;
-            slot.val.set_updated(0xFF);
+    Slot *slot = get_slot<Config::ConfUnion>(idx);
+    for (int i = 0; i < slot->prototypes_len; ++i) {
+        if (slot->prototypes[i].tag == tag) {
+            slot->tag = tag;
+            slot->val = slot->prototypes[i].config;
+            slot->val.set_updated(0xFF);
             return true;
         }
     }
 
     return false;
 }
-uint8_t Config::ConfUnion::getTag() const { return union_buf[idx].tag; }
 
-Config* Config::ConfUnion::getVal() { return &union_buf[idx].val; }
-const Config* Config::ConfUnion::getVal() const { return &union_buf[idx].val; }
+uint8_t Config::ConfUnion::getTag() const { return get_slot<Config::ConfUnion>(idx)->tag; }
 
-const Config::ConfUnion::Slot* Config::ConfUnion::getSlot() const { return &union_buf[idx]; }
-Config::ConfUnion::Slot* Config::ConfUnion::getSlot() { return &union_buf[idx]; }
+Config* Config::ConfUnion::getVal() { return &get_slot<Config::ConfUnion>(idx)->val; }
+const Config* Config::ConfUnion::getVal() const { return &get_slot<Config::ConfUnion>(idx)->val; }
+
+const Config::ConfUnion::Slot* Config::ConfUnion::getSlot() const { return get_slot<Config::ConfUnion>(idx); }
+Config::ConfUnion::Slot* Config::ConfUnion::getSlot() { return get_slot<Config::ConfUnion>(idx); }
 
 Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_len, const ConfUnionPrototypeInternal prototypes[])
 {
-    idx = nextSlot<Config::ConfUnion>(union_buf, union_buf_size);
+    idx = nextSlot<Config::ConfUnion>();
 
     auto *slot = this->getSlot();
     slot->tag = tag;
@@ -69,7 +66,7 @@ Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_
 
 Config::ConfUnion::ConfUnion(const ConfUnion &cpy)
 {
-    idx = nextSlot<Config::ConfUnion>(union_buf, union_buf_size);
+    idx = nextSlot<Config::ConfUnion>();
 
     // We have to mark this slot as in use here:
     // This union could contain a nested union that will be copied over
@@ -96,6 +93,8 @@ Config::ConfUnion::~ConfUnion()
     slot->tag = 0;
     slot->prototypes_len = 0;
     slot->prototypes = nullptr;
+
+    notify_free_slot<Config::ConfUnion>(idx);
 }
 
 Config::ConfUnion &Config::ConfUnion::operator=(const ConfUnion &cpy)
@@ -106,10 +105,8 @@ Config::ConfUnion &Config::ConfUnion::operator=(const ConfUnion &cpy)
 
     *this->getSlot() = *cpy.getSlot();
 
-
     return *this;
 }
-
 
 Config::ConfUnion::ConfUnion(ConfUnion &&cpy) {
     this->idx = cpy.idx;

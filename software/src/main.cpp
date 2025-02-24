@@ -320,8 +320,6 @@ void setup()
     // However if BUILD_MONITOR_SPEED is not the ROM bootloader's preferred speed, this call will change the speed.
     Serial.begin(BUILD_MONITOR_SPEED);
 
-    config_pre_init();
-
     std::vector<IModule *> imodules;
     modules_get_imodules(&imodules);
 

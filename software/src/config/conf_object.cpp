@@ -18,24 +18,20 @@
  */
 
 #include "config/private.h"
+#include "config/slot_allocator.h"
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 #include "tools/memory.h"
 
-bool Config::ConfObject::slotEmpty(size_t i)
+bool Config::ConfObject::slotEmpty(const Slot *slot)
 {
-    return object_buf[i].schema == nullptr;
+    return slot->schema == nullptr;
 }
 
 Config::ConfObject::Slot *Config::ConfObject::allocSlotBuf(size_t elements)
 {
     return (Config::ConfObject::Slot *)calloc_32bit_addressed(elements, sizeof(Config::ConfObject::Slot));
-}
-
-void Config::ConfObject::freeSlotBuf(Config::ConfObject::Slot *buf)
-{
-    free_any(buf);
 }
 
 [[gnu::noinline]]
@@ -113,8 +109,8 @@ const Config *Config::ConfObject::get(const char *needle, size_t needle_len) con
     abort_on_key_not_found(needle);
 }
 
-const Config::ConfObject::Slot *Config::ConfObject::getSlot() const { return &object_buf[idx]; }
-Config::ConfObject::Slot *Config::ConfObject::getSlot() { return &object_buf[idx]; }
+const Config::ConfObject::Slot *Config::ConfObject::getSlot() const { return get_slot<Config::ConfObject>(idx); }
+Config::ConfObject::Slot *Config::ConfObject::getSlot() { return get_slot<Config::ConfObject>(idx); }
 
 Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&val)
 {
@@ -133,7 +129,7 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
         schema->keys[i].length = strlen(key);
     }
 
-    idx = nextSlot<Config::ConfObject>(object_buf, object_buf_size);
+    idx = nextSlot<Config::ConfObject>();
     auto *slot = this->getSlot();
     slot->schema = schema;
 
@@ -146,7 +142,7 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
 
 Config::ConfObject::ConfObject(const ConfObject &cpy)
 {
-    idx = nextSlot<Config::ConfObject>(object_buf, object_buf_size);
+    idx = nextSlot<Config::ConfObject>();
 
     // TODO: could we just use *this = cpy here?
 
@@ -179,6 +175,8 @@ Config::ConfObject::~ConfObject()
         delete[] slot->values;
 
     slot->values = nullptr;
+
+    notify_free_slot<Config::ConfObject>(idx);
 }
 
 Config::ConfObject &Config::ConfObject::operator=(const ConfObject &cpy)

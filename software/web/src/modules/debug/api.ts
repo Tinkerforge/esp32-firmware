@@ -45,6 +45,10 @@ export interface state_slow {
     conf_union_buf_size: number;
 }
 
+type slot_info = number[];
+
+export type state_slots = slot_info[];
+
 interface task_hwm {
     task_name: string;
     hwm: number;

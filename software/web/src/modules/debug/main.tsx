@@ -56,7 +56,18 @@ export class Debug extends Component {
         let state_static = API.get('debug/state_static');
         let state_fast   = API.get('debug/state_fast');
         let state_slow   = API.get('debug/state_slow');
+        let state_slots  = API.get('debug/state_slots');
         let state_hwm    = API.get('debug/state_hwm');
+
+        const config_type_names = [
+            __("debug.content.conf_uint_buf"),
+            __("debug.content.conf_int_buf"),
+            __("debug.content.conf_float_buf"),
+            __("debug.content.conf_string_buf"),
+            __("debug.content.conf_array_buf"),
+            __("debug.content.conf_object_buf"),
+            __("debug.content.conf_union_buf"),
+        ];
 
         return (
             <SubPage name="debug">
@@ -158,6 +169,56 @@ export class Debug extends Component {
 
                 <Row label={__("debug.content.conf_union_buf")}
                      l={<OutputFloat value={state_slow.conf_union_buf_size} digits={0} scale={0} unit="B"/>}/>
+
+                <FormSeparator heading={__("debug.content.config_slots")} first={false} />
+
+                <FormRow label="">
+                    <div class="row">
+                    <div class="mb-1 col-12 col-sm-2">
+                            <p class="mb-0 form-label text-center">{__("debug.content.slots_used")}</p>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-2">
+                            <p class="mb-0 form-label text-center">{__("debug.content.slots_hwm")}</p>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-2">
+                            <p class="mb-0 form-label text-center">{__("debug.content.slots_allocated")}</p>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-2">
+                            <p class="mb-0 form-label text-center">{__("debug.content.slots_first_free")}</p>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-2">
+                            <p class="mb-0 form-label text-center">{__("debug.content.slots_last_used")}</p>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-2">
+                            <p class="mb-0 form-label text-center">{__("debug.content.slots_holes")}</p>
+                        </div>
+                    </div>
+                </FormRow>
+
+                {state_slots.map((slot, idx) => {
+                    return <FormRow label={config_type_names[idx]}>
+                        <div class="row">
+                            <div class="mb-1 col-12 col-sm-2">
+                                <OutputFloat value={slot[0]} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                            </div>
+                            <div class="mb-1 col-12 col-sm-2">
+                                <OutputFloat value={slot[1] + 1} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                            </div>
+                            <div class="mb-1 col-12 col-sm-2">
+                                <OutputFloat value={slot[2]} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                            </div>
+                            <div class="mb-1 col-12 col-sm-2">
+                                <OutputFloat value={slot[3] + 1} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                            </div>
+                            <div class="mb-1 col-12 col-sm-2">
+                                <OutputFloat value={slot[4] + 1} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                            </div>
+                            <div class="mb-1 col-12 col-sm-2">
+                                <OutputFloat value={slot[4] + 1 - slot[0]} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                            </div>
+                        </div>
+                    </FormRow>
+                })}
 
                 <FormSeparator heading={__("debug.content.stack_hwm_header")} first={false} />
 
