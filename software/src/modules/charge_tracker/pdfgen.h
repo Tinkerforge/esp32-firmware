@@ -1,4 +1,4 @@
-// This is based on https://github.com/AndreRenaud/PDFGen
+// This is based on https://github.com/AndreRenaud/PDFGen/commit/8a7298e7fa934b6ab1c21c876f9474756a44931d
 // But modified to stream out the PDF while it is generated.
 // This reduced the memory requirement to about 10 to 15k for charge tracker reports.
 
