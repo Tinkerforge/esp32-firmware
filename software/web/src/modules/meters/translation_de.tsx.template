@@ -6,6 +6,7 @@ let x = {
             "power_history": null,
             "current_power": "Leistung",
             "power_sums": "Leistungen",
+            "meters_without_location": /*FFN*/(meter_names: string[]) => <p>Für {meter_names.length > 1 ? <>die</> : <>den</>} folgenden Stromzähler ist kein Messort konfiguriert. Bitte einen Messort für {meter_names.length > 1 ? <>diese</> : <>diesen</>} <a href="/#meters">Stromzähler</a> wählen, um {meter_names.length > 1 ? <>diese</> : <>diesen</>} in die Leistungen und den Leistungsverlauf miteinzubeziehen:</p>/*NF*/,
             "inverter_power_sum": "Wechselrichter-Leistung",
             "inverter_power_sum_muted": "Summe",
             "grid_power_sum": "Netzanschluss-Leistung",

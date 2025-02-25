@@ -22,7 +22,7 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";
 import { h, createRef, Fragment, Component, RefObject, ComponentChild } from "preact";
-import { Button, ButtonGroup, ListGroup, ListGroupItem } from "react-bootstrap";
+import { Button, ButtonGroup, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormSeparator } from "../../ts/components/form_separator";
@@ -1365,6 +1365,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         }
 
         if (API.hasFeature("energy_manager")) {
+            let meters_without_location = [];
             let pv_powers: number [] = [];
             let grid_powers: number[] = [];
             let battery_powers: number[] = [];
@@ -1372,6 +1373,11 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
 
             for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
                 let location = get_meter_location(this.state.meter_configs, meter_slot);
+
+                if (this.state.meter_configs[meter_slot][0] != MeterClassID.None && location == MeterLocation.Unknown) {
+                    meters_without_location.push(this.state.meter_configs[meter_slot][1].display_name);
+                }
+
                 const value_ids = API.get_unchecked(`meters/${meter_slot}/value_ids`);
                 const values = API.get_unchecked(`meters/${meter_slot}/values`);
                 let power_idx = get_meter_power_index(value_ids);
@@ -1417,9 +1423,20 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                 load_power_sum = grid_power_sum - pv_power_sum - battery_power_sum;
             }
 
-            if (pv_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null || battery_soc_avg !== null || load_power_sum !== null) {
+            let any_power_sum = pv_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null || battery_soc_avg !== null || load_power_sum !== null;
+
+            if (meters_without_location.length > 0 || any_power_sum) {
                 children.push(
                     <FormRow label={__("meters.status.power_sums")}>
+                        {meters_without_location.length > 0 ?
+                            <Alert variant="warning" className={!any_power_sum ? "mb-0" : ""}>
+                                {__("meters.status.meters_without_location")(meters_without_location)}
+                                <ul class="mb-0">
+                                    {meters_without_location.map((meter_name) => <li>{meter_name}</li>)}
+                                </ul>
+                            </Alert> : undefined
+                        }
+                        {any_power_sum ?
                         <ListGroup>
                             <ListGroupItem>
                                 <div class="px-2">
@@ -1474,6 +1491,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                 </div>
                             </ListGroupItem>
                         </ListGroup>
+                        : undefined}
                     </FormRow>);
             }
         }
