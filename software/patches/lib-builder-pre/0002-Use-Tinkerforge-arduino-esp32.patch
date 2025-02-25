@@ -12,7 +12,7 @@ index a027cef..19d58ea 100755
 --- a/tools/config.sh
 +++ b/tools/config.sh
 @@ -28,7 +28,7 @@ fi
- AR_USER="espressif"
+ AR_USER="${GITHUB_REPOSITORY_OWNER:-espressif}"
  
  # The full name of the repository
 -AR_REPO="$AR_USER/arduino-esp32"
