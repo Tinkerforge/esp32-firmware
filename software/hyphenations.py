@@ -393,7 +393,6 @@ de_hyph = [
     "Über-nehmen",
     "über-tragene",
     "üb-licher-weise",
-
     "Aus-reichend",
     "Be-nutzer-de-fi-nier-ter",
     "Datei-system",
@@ -687,7 +686,6 @@ de_hyph = [
     "Ver-schlüs-se-lung",
     "Ver-schlüs-se-le",
     "Re-gis-trie-re",
-
     "Strom-wand-ler",
     "Rechts-dre-hend",
     "Links-dre-hend",
@@ -881,6 +879,7 @@ de_hyph = [
     "auf-neh-mend",
     "bi-di-rek-tio-nal",
     "Er-wei-te-rung",
+    "mit-ein-zu-be-zie-hen",
 ]
 
 en_hyph = [
