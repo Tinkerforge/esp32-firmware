@@ -132,8 +132,8 @@ void SolarForecast::register_urls()
     api.addState("solar_forecast/state", &state);
     for (size_t plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
         SolarForecastPlane &plane = planes[plane_index];
-        api.addPersistentConfig(get_path(plane, SolarForecast::PathType::Config), &plane.config);
-        api.addState(get_path(plane, SolarForecast::PathType::State),    &plane.state);
+        api.addPersistentConfig(get_path(plane, SolarForecast::PathType::Config), &plane.config, {}, {"lat", "long"});
+        api.addState(get_path(plane, SolarForecast::PathType::State),    &plane.state, {}, {"place"});
         api.addState(get_path(plane, SolarForecast::PathType::Forecast), &plane.forecast);
     }
 
