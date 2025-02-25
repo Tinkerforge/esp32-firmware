@@ -749,3 +749,8 @@
 - Disconnect least recently active web interface if all connections are in use and a new web interface connects
 - Don't allow setting the web interface listen port to an "unsafe" port
 - Close WS and OCPP network connections before reboot
+
+2025-02-25: 2.7.4 (<unknown>)
+- SunSpec: Remove quirk for Kostal endian-swapped floats, it creates more problems than it fixes
+- Charge Tracker: Fix language selection for PDF export
+- Charge Tracker: Fix encoding of non-CP-1252 characters for PDF export
