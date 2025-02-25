@@ -329,7 +329,7 @@ bool Wifi::apply_sta_config_and_connect()
     dns.fromString(sta_config_in_use.get("dns")->asEphemeralCStr());
     dns2.fromString(sta_config_in_use.get("dns2")->asEphemeralCStr());
 
-    if (ip != 0) {
+    if (ip != IPAddress(0,0,0,0)) {
         WiFi.config(ip, gateway, subnet, dns, dns2);
     } else {
         WiFi.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
