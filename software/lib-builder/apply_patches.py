@@ -36,7 +36,11 @@ for root, dirs, files in os.walk(patch_dir):
             if i < skip:
                 print("Skipping", patch)
                 continue
-            print("Calling", *["git", "am", patch], "in", os.path.join(root_dir, dir_to_apply_in))
-            subprocess.call(["git", "am", patch], stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
+            if (os.path.splitext(patch)[1] == ".rawpatch"):
+                print(f"Calling patch --no-backup-if-mismatch < {patch} in {os.path.join(root_dir, dir_to_apply_in)}")
+                subprocess.call(f"patch --no-backup-if-mismatch < {patch}", stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr, shell=True)
+            else:
+                print("Calling", *["git", "am", patch], "in", os.path.join(root_dir, dir_to_apply_in))
+                subprocess.call(["git", "am", patch], stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
     #print(os.path.relpath(root, start=patch_dir), dirs, files)
 
