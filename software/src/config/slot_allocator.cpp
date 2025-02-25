@@ -47,8 +47,10 @@ template<typename ConfT> uint16_t RootBlock<ConfT>::used_slots       = 0;
 template<typename ConfT> uint16_t RootBlock<ConfT>::last_used_slot   = 0;
 template<typename ConfT> uint16_t RootBlock<ConfT>::slots_hwm        = 0;
 
+#ifdef DEBUG_FS_ENABLE
 template<typename ConfT> size_t RootBlock<ConfT>::allocs             = 0;
 template<typename ConfT> size_t RootBlock<ConfT>::frees              = 0;
+#endif
 #endif
 
 template<typename ConfigT>
@@ -84,7 +86,9 @@ size_t nextSlot()
 
 #if MODULE_DEBUG_AVAILABLE()
                     RootBlock<ConfigT>::used_slots++;
+#ifdef DEBUG_FS_ENABLE
                     RootBlock<ConfigT>::allocs++;
+#endif
 
                     if (idx > RootBlock<ConfigT>::last_used_slot) {
                         RootBlock<ConfigT>::last_used_slot = idx;
@@ -144,12 +148,14 @@ template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(size_t idx);
 template Config::ConfObject::Slot *get_slot<Config::ConfObject>(size_t idx);
 template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(size_t idx);
 
+#ifdef DEBUG_FS_ENABLE
 template<typename ConfigT>
 static void check_slot_accounting()
 {
     size_t last_idx = RootBlock<ConfigT>::first_free_slot;
     Superblock<ConfigT> *superblock = RootBlock<ConfigT>::first_superblock;
 
+#if MODULE_DEBUG_AVAILABLE()
     size_t used_slots = 0;
 
     while (superblock) {
@@ -174,6 +180,7 @@ static void check_slot_accounting()
         logger.printfln("used_slots mismatch for %s. Counted %zu, expected %hu. allocs %zu  frees %zu  diff %zu",
             ConfigT::variantName, used_slots, RootBlock<ConfigT>::used_slots, RootBlock<ConfigT>::allocs, RootBlock<ConfigT>::frees, RootBlock<ConfigT>::allocs - RootBlock<ConfigT>::frees);
     }
+#endif
 
     superblock = RootBlock<ConfigT>::first_superblock;
 
@@ -221,6 +228,7 @@ static void check_slot_accounting()
     }
 
 }
+#endif
 
 void config_post_setup()
 {

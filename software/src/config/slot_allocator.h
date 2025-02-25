@@ -108,8 +108,10 @@ struct RootBlock {
     static uint16_t last_used_slot;
     static uint16_t slots_hwm;
 
+#ifdef DEBUG_FS_ENABLE
     static size_t allocs;
     static size_t frees;
+#endif
 #endif
 };
 
@@ -175,7 +177,9 @@ inline void notify_free_slot(size_t idx)
 
 #if MODULE_DEBUG_AVAILABLE()
     RootBlock<ConfigT>::used_slots--;
+#ifdef DEBUG_FS_ENABLE
     RootBlock<ConfigT>::frees++;
+#endif
 
     if (idx == RootBlock<ConfigT>::last_used_slot && RootBlock<ConfigT>::last_used_slot > 0) {
         RootBlock<ConfigT>::last_used_slot = find_last_used_slot(RootBlock<ConfigT>::first_superblock, RootBlock<ConfigT>::last_used_slot - 1u);
