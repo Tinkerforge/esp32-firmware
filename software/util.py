@@ -389,6 +389,10 @@ def find_frontend_plugins(host_module_name, plugin_name):
     for module_name in metadata['frontend_modules']:
         module_path = os.path.join(project_dir, 'web', 'src', 'modules', module_name)
 
+        if not os.path.isdir(module_path):
+            print(f"Front-end module {module_name} from custom_frontend_modules does not exist", file=sys.stderr)
+            sys.exit(-1)
+
         for file_name in os.listdir(module_path):
             if file_name not in plugin_file_names:
                 continue
