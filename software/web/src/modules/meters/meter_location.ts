@@ -29,7 +29,6 @@ export function translate_meter_location(location: MeterLocation): string {
     case MeterLocation.Battery:  return __("meters.content.location_battery");
     case MeterLocation.Load:     return __("meters.content.location_load");
     case MeterLocation.PV:       return __("meters.content.location_pv");
-    case MeterLocation.Unknown:       return "Unbekannt";
     }
 
     return "<unknown>";
@@ -44,6 +43,5 @@ export function get_meter_location_items(): [string, string][] {
         [MeterLocation.Load.toString(), translate_meter_location(MeterLocation.Load)],
         [MeterLocation.PV.toString(), translate_meter_location(MeterLocation.PV)],
         [MeterLocation.Other.toString(), translate_meter_location(MeterLocation.Other)],
-        [MeterLocation.Unknown.toString(), translate_meter_location(MeterLocation.Unknown)],
     ];
 }
