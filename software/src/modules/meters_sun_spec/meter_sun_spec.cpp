@@ -379,7 +379,6 @@ void MeterSunSpec::scan_next()
                     if (scan_device_found) {
                         if (strncmp(m->Mn, "KOSTAL", 32) == 0) {
                             quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
-                            quirks |= SUN_SPEC_QUIRKS_FLOAT_IS_LE32;
                             quirks |= SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY;
                         }
                         else if (strncmp(m->Mn, "SMA", 32) == 0) {
