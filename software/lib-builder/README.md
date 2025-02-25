@@ -64,7 +64,6 @@ cp sdkconfig sdkconfig.vanilla
 ```bash
 cd ~/esp32-arduino-lib-builder
 ../esp32-firmware/software/lib-builder/apply_patches.py . ../esp32-firmware/software/patches/lib-builder
-# TODO apply .rawpatch files with patch --no-backup-if-mismatch < foo.rawpatch in the correct managed component directory
 ```
 
 **Replace .esp32brick with .esp32ethernetbrick in the next sections for ESP32 Ethernet, WARP2, WARP3 and WEM firmwares**
