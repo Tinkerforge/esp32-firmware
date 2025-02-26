@@ -117,7 +117,7 @@ void MeterSunSpec::disconnect_callback()
     read_allowed = false;
 }
 
-void MeterSunSpec::read_start(size_t model_regcount)
+bool MeterSunSpec::alloc_read_buffer(size_t model_regcount)
 {
     free(generic_read_request.data[0]);
 
@@ -126,20 +126,32 @@ void MeterSunSpec::read_start(size_t model_regcount)
 
     bool read_twice = model_parser->must_read_twice();
     size_t buffer_regcount = read_twice ? model_regcount * 2 : model_regcount;
-
     uint16_t *buffer = static_cast<uint16_t *>(malloc(sizeof(uint16_t) * buffer_regcount));
-    if (!buffer) {
+
+    if (buffer == nullptr) {
         logger.printfln("Cannot alloc read buffer.");
+        return false;
+    }
+
+    generic_read_request.data[0] = buffer;
+
+    if (read_twice) {
+        generic_read_request.data[1] = buffer + model_regcount;
+    }
+
+    generic_read_request.read_twice = read_twice;
+
+    return true;
+}
+
+void MeterSunSpec::read_start(size_t model_regcount)
+{
+    if (!alloc_read_buffer(model_regcount)) {
         return;
     }
 
     generic_read_request.register_type = ModbusRegisterType::HoldingRegister;
     generic_read_request.register_count = model_regcount;
-
-    generic_read_request.data[0] = buffer;
-    if (read_twice)
-        generic_read_request.data[1] = buffer + model_regcount;
-    generic_read_request.read_twice = read_twice;
     generic_read_request.done_callback = [this]{ read_done_callback(); };
 
     start_generic_read();
@@ -168,8 +180,15 @@ void MeterSunSpec::read_done_callback()
 
         values_declared = true;
 
-        if (registers_to_read != generic_read_request.register_count) {
-            read_start(registers_to_read);
+        bool more_registers_to_read = registers_to_read > generic_read_request.register_count;
+
+        generic_read_request.register_count = registers_to_read;
+
+        if (more_registers_to_read) {
+            if (!alloc_read_buffer(registers_to_read)) {
+                read_allowed = false;
+            }
+
             return;
         }
     }

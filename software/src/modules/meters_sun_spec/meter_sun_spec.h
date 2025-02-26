@@ -63,6 +63,7 @@ private:
     void connect_callback() override;
     void disconnect_callback() override;
 
+    bool alloc_read_buffer(size_t model_regcount);
     void read_start(size_t model_regcount);
 
     void scan_start_delay();
