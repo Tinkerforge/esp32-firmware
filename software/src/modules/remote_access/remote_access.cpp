@@ -496,15 +496,15 @@ void RemoteAccess::register_urls()
                 std::snprintf(buf, 50, "10.123.%i.2", i);
                 serializer.addMemberString("charger_address", buf);
                 serializer.addMemberString("charger_public", key["charger_public"]);
-                serializer.addMemberNumber("connection_no", i);
+                serializer.addMemberNumber("connection_no", (int32_t)i);
                 std::snprintf(buf, 50, "10.123.%i.3", i);
                 serializer.addMemberString("web_address", buf);
                 CoolString wg_key = CoolString{key["web_private"].as<String>()};
 
                 // TODO optimize: this is always 44 bytes + crypto_box_SEALBYTES -> stack alloc
-                char output[44 + crypto_box_SEALBYTES];
+                unsigned char output[44 + crypto_box_SEALBYTES];
 
-                int ret = crypto_box_seal((unsigned char *)output, (unsigned char *)wg_key.c_str(), wg_key.length(), pk);
+                int ret = crypto_box_seal(output, (unsigned char *)wg_key.c_str(), wg_key.length(), pk);
                 if (ret < 0) {
                     this->request_cleanup();
                     logger.printfln("Failed to encrypt Wireguard keys: %i", ret);
@@ -519,8 +519,8 @@ void RemoteAccess::register_urls()
                 serializer.endArray();
 
                 CoolString psk = key["psk"];
-                char encrypted_psk[44 + crypto_box_SEALBYTES];
-                ret = crypto_box_seal((unsigned char *)encrypted_psk, (unsigned char *)psk.c_str(), psk.length(), pk);
+                unsigned char encrypted_psk[44 + crypto_box_SEALBYTES];
+                ret = crypto_box_seal(encrypted_psk, (unsigned char *)psk.c_str(), psk.length(), pk);
                 if (ret < 0) {
                     this->request_cleanup();
                     logger.printfln("Failed to encrypt psk: %i", ret);
@@ -593,13 +593,13 @@ void RemoteAccess::register_urls()
             serializer.addMemberString("token", token.c_str());
             snprintf(url,
                     128,
-                    "https://%s:%u/api/add_with_token",
+                    "https://%s:%lu/api/add_with_token",
                     registration_config.get("relay_host")->asEphemeralCStr(),
                     registration_config.get("relay_port")->asUint());
         } else {
             snprintf(url,
                     128,
-                    "https://%s:%u/api/charger/add",
+                    "https://%s:%lu/api/charger/add",
                     registration_config.get("relay_host")->asEphemeralCStr(),
                     registration_config.get("relay_port")->asUint());
         }
@@ -840,7 +840,7 @@ void RemoteAccess::register_urls()
             }
             serializer.endArray();
 
-            serializer.addMemberNumber("connection_no", connection_number);
+            serializer.addMemberNumber("connection_no", (int32_t)connection_number);
             i++;
             serializer.endObject();
         }
@@ -851,7 +851,7 @@ void RemoteAccess::register_urls()
         char url[128];
         snprintf(url,
                  128,
-                 "https://%s:%u/api/allow_user",
+                 "https://%s:%lu/api/allow_user",
                  config.get("relay_host")->asEphemeralCStr(),
                  config.get("relay_port")->asUint());
 
@@ -951,7 +951,7 @@ void RemoteAccess::register_urls()
             char url[256];
             snprintf(url,
                      256,
-                     "https://%s:%u/api/selfdestruct",
+                     "https://%s:%lu/api/selfdestruct",
                      config.get("relay_host")->asEphemeralCStr(),
                      config.get("relay_port")->asUint());
             run_request_with_next_stage(url, HTTP_METHOD_DELETE, json, json_size, config, [this](ConfigRoot cfg) {
@@ -984,9 +984,9 @@ void RemoteAccess::register_urls()
                     uint32_t conn = this->connection_state.get(i + 1)->get("connection")->asUint();
                     uint32_t user = this->connection_state.get(i + 1)->get("user")->asUint();
                     if (state == 2) {
-                        logger.printfln("Connection %u for user %u connected", conn, user);
+                        logger.printfln("Connection %lu for user %lu connected", conn, user);
                     } else if (state == 1 && conn != 255 && user != 255) {
-                        logger.printfln("Connection %u for user %u disconnected", conn, user);
+                        logger.printfln("Connection %lu for user %lu disconnected", conn, user);
                     }
                 }
             }
@@ -1145,7 +1145,7 @@ void RemoteAccess::get_login_salt(ConfigRoot config)
     registration_state.get("message")->updateString("");
     char url[196] = {};
     sprintf(url,
-            "https://%s:%u/api/auth/get_login_salt?email=%s",
+            "https://%s:%lu/api/auth/get_login_salt?email=%s",
             config.get("relay_host")->asEphemeralCStr(),
             config.get("relay_port")->asUint(),
             config.get("email")->asEphemeralCStr());
@@ -1191,7 +1191,7 @@ void RemoteAccess::login(ConfigRoot config, CoolString &login_key)
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
     registration_state.get("message")->updateString("");
     char url[128] = {};
-    sprintf(url, "https://%s:%u/api/auth/login", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint());
+    sprintf(url, "https://%s:%lu/api/auth/login", config.get("relay_host")->asEphemeralCStr(), config.get("relay_port")->asUint());
 
     String body;
     DynamicJsonDocument doc(512);
@@ -1225,7 +1225,7 @@ void RemoteAccess::get_secret(ConfigRoot config)
     char url[128] = {};
     snprintf(url,
              128,
-             "https://%s:%u/api/user/get_secret",
+             "https://%s:%lu/api/user/get_secret",
              config.get("relay_host")->asEphemeralCStr(),
              config.get("relay_port")->asUint());
 
@@ -1854,7 +1854,7 @@ void RemoteAccess::run_management()
             if ((*conn) == nullptr) {
                 uint32_t conn_id = command->connection_no % MAX_KEYS_PER_USER;
                 uint32_t user_id = command->connection_no / MAX_KEYS_PER_USER;
-                logger.printfln("Opening connection %u for user %u", conn_id, user_id);
+                logger.printfln("Opening connection %lu for user %lu", conn_id, user_id);
             }
 
             uint16_t local_port = 51821;
@@ -1878,7 +1878,7 @@ void RemoteAccess::run_management()
                 logger.printfln("Not found");
                 break;
             }
-            logger.printfln("Closing connection %u for user %u",
+            logger.printfln("Closing connection %lu for user %lu",
                             connection_state.get(conn_idx + 1)->get("connection")->asUint(),
                             connection_state.get(conn_idx + 1)->get("user")->asUint());
             (*conn)->end();
