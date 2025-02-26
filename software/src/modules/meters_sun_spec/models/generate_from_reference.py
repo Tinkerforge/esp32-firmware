@@ -486,8 +486,7 @@ r"""// WARNING: This file is generated.
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic ignored "-Wpedantic"
-    #pragma GCC diagnostic ignored "-Waddress-of-packed-member"
-    #warning "-Waddress-of-packed-member disabled! We should fix this soon."
+    #pragma GCC diagnostic ignored "-Waddress-of-packed-member" // We should fix this soon.
 #endif
 
 static const float scale_factors[21] = {
