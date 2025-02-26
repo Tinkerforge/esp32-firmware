@@ -1,16 +1,16 @@
 {
     "time": {
         "navbar": {
-            "time": "Time Synchronization"
+            "time": "System Time"
         },
         "status": {
-            "time": "Time synchronization",
+            "time": "System time",
             "disabled": "Disabled",
             "not_synced": "Not synchronized",
             "synced": "Synchronized"
         },
         "content": {
-            "time": "System time",
+            "time": "System Time",
             "enable": "Time synchronization enabled",
             "enable_desc": "Synchronizes the internal clock over the network (NTP)",
             "use_dhcp": "Use DHCP",
