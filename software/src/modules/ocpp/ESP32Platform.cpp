@@ -911,8 +911,13 @@ const char *platform_get_charge_point_vendor()
 char model[21] = {0};
 const char *platform_get_charge_point_model()
 {
+#if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
     device_name.get20CharDisplayType().toCharArray(model, ARRAY_SIZE(model));
     return model;
+#else
+    return "Unknown Device";
+#endif
+
 }
 
 const char *platform_get_charge_point_serial_number()
