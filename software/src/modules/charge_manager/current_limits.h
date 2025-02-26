@@ -132,19 +132,19 @@ struct Cost {
         return rhs * lhs;
     }
 
-    int32_t min() const {
+    int min() const {
         return std::min({this->pv, this->l1, this->l2, this->l3});
     }
 
-    int32_t min_phase() const {
+    int min_phase() const {
         return std::min({this->l1, this->l2, this->l3});
     }
 
-    int32_t max() const {
+    int max() const {
         return std::max({this->pv, this->l1, this->l2, this->l3});
     }
 
-    int32_t max_phase() const {
+    int max_phase() const {
         return std::max({this->l1, this->l2, this->l3});
     }
 

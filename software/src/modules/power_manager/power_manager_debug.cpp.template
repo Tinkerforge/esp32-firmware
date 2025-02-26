@@ -15,8 +15,10 @@
 extern inline const char* fmt(bool          ) {return "%i";  } // implicitly converted to int
 extern inline const char* fmt(uint8_t       ) {return "%i";  } // implicitly converted to int
 extern inline const char* fmt(uint16_t      ) {return "%i";  } // implicitly converted to int
-extern inline const char* fmt(int32_t       ) {return "%i";  }
-extern inline const char* fmt(uint32_t      ) {return "%u";  }
+extern inline const char* fmt(int32_t       ) {return "%li"; }
+extern inline const char* fmt(uint32_t      ) {return "%lu"; }
+extern inline const char* fmt(int           ) {return "%i";  }
+extern inline const char* fmt(unsigned int  ) {return "%u";  }
 extern inline const char* fmt(float         ) {return "%03f";}
 extern inline const char* fmt(void          ) {return "";    }
 
