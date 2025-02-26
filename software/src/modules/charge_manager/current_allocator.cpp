@@ -49,7 +49,7 @@
 
 #define trace(fmt, ...) logger.tracefln_plain(charge_manager.trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__)
 
-static constexpr int32_t UNLIMITED = 10 * 1000 * 1000; /* mA */
+static constexpr int UNLIMITED = 10 * 1000 * 1000; /* mA */
 static constexpr micros_t KEEP_ACTIVE_AFTER_PHASE_SWITCH_TIME = 1_m;
 
 static void print_alloc(int stage, const StageContext &sc) {
@@ -205,10 +205,10 @@ static inline Cost get_phase_factors(uint8_t allocated_phases, PhaseRotation rot
 // if the allocation of a charger was changed from
 // [allocated_current]@[allocated_phases]
 // to [current_to_allocate]@{phases_to_allocate].
-Cost get_cost(int32_t current_to_allocate,
+Cost get_cost(int current_to_allocate,
               ChargerPhase phases_to_allocate,
               PhaseRotation rot,
-              int32_t allocated_current,
+              int allocated_current,
               ChargerPhase allocated_phases)
 {
     auto allocated = allocated_current * get_phase_factors((uint8_t)allocated_phases, rot);
@@ -451,8 +451,8 @@ static void stage_2(StageContext &sc) {
 
 // Use the supported current in case the last allocation was able to fulfill the requested current.
 // In that case we want a fast ramp-up until we know the new limit of the charger (or don't have any current left)
-static int32_t get_requested_current(const ChargerState *state, const CurrentAllocatorConfig *cfg, uint8_t allocated_phases) {
-    int32_t reqd = state->requested_current;
+static int get_requested_current(const ChargerState *state, const CurrentAllocatorConfig *cfg, uint8_t allocated_phases) {
+    int reqd = state->requested_current;
 
     if (!deadline_elapsed(state->use_supported_current + seconds_t{cfg->requested_current_threshold})) {
         reqd = state->supported_current;
@@ -1098,7 +1098,7 @@ static void stage_6(StageContext &sc) {
 }
 
 // The current capacity of a charger is the maximum amount of current that can be allocated to the charger additionally to the already allocated current on the allocated phases.
-static int32_t current_capacity(const CurrentLimits *limits, const ChargerState *state, int32_t allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *cfg) {
+static int current_capacity(const CurrentLimits *limits, const ChargerState *state, int allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *cfg) {
     auto requested_current = get_requested_current(state, cfg, allocated_phases);
 
     // TODO: add margin again if exactly one charger is active and requested_current > 6000. Also add in calculate_window? -> Maybe not necessary any more?
@@ -1412,7 +1412,7 @@ int allocate_current(
     LOCAL_LOG_FULL("", "Allocating current");
 
     assert(cfg->charger_count > 0 && cfg->charger_count <= MAX_CONTROLLED_CHARGERS);
-    int32_t current_array[MAX_CONTROLLED_CHARGERS] = {0};
+    int current_array[MAX_CONTROLLED_CHARGERS] = {0};
     uint8_t phases_array[MAX_CONTROLLED_CHARGERS] = {0};
     int idx_array[MAX_CONTROLLED_CHARGERS] = {0};
     for(int i = 0; i < cfg->charger_count; ++i) {
@@ -1728,7 +1728,7 @@ static uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_curren
     if (charger_state == 2)
         return 3; // Waiting for the car to start charging
 
-    logger.printfln("Unknown state! cs %u sc %u ct %u tac %u", charger_state, supported_current, car_stopped_charging, target_allocated_current);
+    logger.printfln("Unknown state! cs %u sc %u ct %lu tac %u", charger_state, supported_current, car_stopped_charging, target_allocated_current);
     return 5;
 }
 
@@ -1754,7 +1754,7 @@ bool update_from_client_packet(
     // is not working. As last_update will now hang too,
     // the management will stop all charging after some time.
     if (target.uptime == v1->evse_uptime) {
-        logger.printfln("Received stale charger state from %s (%s). Reported EVSE uptime (%u) is the same as in the last state. Is the EVSE still reachable?",
+        logger.printfln("Received stale charger state from %s (%s). Reported EVSE uptime (%lu) is the same as in the last state. Is the EVSE still reachable?",
             get_charger_name(client_id), hosts[client_id],
             v1->evse_uptime);
         if (deadline_elapsed(target.last_update + 10000)) {
@@ -1846,7 +1846,7 @@ bool update_from_client_packet(
     uint16_t requested_current = v1->supported_current;
 
     if (v2 != nullptr && v1->charger_state == 3 && v2->time_since_state_change >= cfg->requested_current_threshold * 1000) {
-        int32_t max_phase_current = -1;
+        int max_phase_current = -1;
 
         for (int i = 0; i < 3; i++) {
             if (isnan(v1->line_currents[i])) {
@@ -1855,7 +1855,7 @@ bool update_from_client_packet(
                 break;
             }
 
-            max_phase_current = std::max(max_phase_current, (int32_t)(v1->line_currents[i] * 1000.0f));
+            max_phase_current = std::max(max_phase_current, (int)(v1->line_currents[i] * 1000.0f));
         }
         // The CM protocol sends 0 instead of nan.
         if (max_phase_current == 0)

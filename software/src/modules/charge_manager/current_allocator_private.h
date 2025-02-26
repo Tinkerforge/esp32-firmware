@@ -23,7 +23,7 @@
 
 struct StageContext {
     int *idx_array;
-    int32_t *current_allocation;
+    int *current_allocation;
     uint8_t *phase_allocation;
     CurrentLimits *limits;
     const ChargerState *charger_state;
@@ -36,7 +36,7 @@ struct StageContext {
 
 
 struct FilterContext {
-    int32_t allocated_current;
+    int allocated_current;
     uint8_t allocated_phases;
     const CurrentAllocatorConfig *cfg;
     const ChargerState *state;
@@ -44,7 +44,7 @@ struct FilterContext {
 };
 
 struct GroupContext {
-    int32_t allocated_current;
+    int allocated_current;
     uint8_t allocated_phases;
     const ChargerState *state;
     const CurrentAllocatorConfig *cfg;
@@ -52,7 +52,7 @@ struct GroupContext {
 };
 
 struct CompareInfo {
-    int32_t allocated_current;
+    int allocated_current;
     uint8_t allocated_phases;
     const ChargerState *state;
 };
@@ -93,10 +93,10 @@ void sort_chargers_impl(group_fn group, compare_fn compare, StageContext &sc);
 
 GridPhase get_phase(PhaseRotation rot, ChargerPhase phase);
 
-Cost get_cost(int32_t current_to_allocate,
+Cost get_cost(int current_to_allocate,
               ChargerPhase phases_to_allocate,
               PhaseRotation rot,
-              int32_t allocated_current,
+              int allocated_current,
               ChargerPhase allocated_phases);
 
 bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool observe_pv_limit);

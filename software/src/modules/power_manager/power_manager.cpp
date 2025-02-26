@@ -470,7 +470,7 @@ void PowerManager::setup()
     // that across a reboot. This will still fail on a power cycle or bricklet update,
     // which set the contactor back to single phase.
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
-        logger.printfln("Setting external_control to %u", phase_switcher_backend->get_phases());
+        logger.printfln("Setting external_control to %lu", phase_switcher_backend->get_phases());
         external_control.get("phases_wanted")->updateUint(phase_switcher_backend->get_phases());
     }
 
@@ -548,12 +548,12 @@ void PowerManager::register_urls()
             uint32_t phases_current = this->get_phases();
 
             if (phases_wanted == phases_last && phases_wanted == phases_current) {
-                logger.printfln("Ignoring external control phase change request: Value is already %u.", phases_wanted);
+                logger.printfln("Ignoring external control phase change request: Value is already %lu.", phases_wanted);
                 return;
             }
 
             this->external_control.get("phases_wanted")->updateUint(phases_wanted);
-            logger.printfln("External control phase change request: switching to %u", phases_wanted);
+            logger.printfln("External control phase change request: switching to %lu", phases_wanted);
 
             if (phase_switcher_backend->switch_phases(phases_wanted)) {
                 state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
@@ -603,7 +603,7 @@ void PowerManager::zero_limits()
 static void abort_on_invalid_history_length(int32_t history_length)
 {
     char msg[52]; // Message buffer must be on the stack to be included in a coredump.
-    snprintf(msg, ARRAY_SIZE(msg), "Invalid minmax filter history length %i", history_length);
+    snprintf(msg, ARRAY_SIZE(msg), "Invalid minmax filter history length %li", history_length);
     esp_system_abort(msg);
 }
 
@@ -890,7 +890,7 @@ void PowerManager::update_energy()
 
                 // Sanity check
                 if (cm_allocated_power_w < 0) {
-                    logger.printfln("Negative cm_allocated_power_w: %i  cm_allocated_currents(%i %i %i %i)", cm_allocated_power_w, cm_allocated_currents->pv, cm_allocated_currents->l1, cm_allocated_currents->l2, cm_allocated_currents->l3);
+                    logger.printfln("Negative cm_allocated_power_w: %li  cm_allocated_currents(%i %i %i %i)", cm_allocated_power_w, cm_allocated_currents->pv, cm_allocated_currents->l1, cm_allocated_currents->l2, cm_allocated_currents->l3);
                     cm_allocated_power_w = 0;
                 }
             } else {
@@ -946,10 +946,10 @@ void PowerManager::update_energy()
         if (isnan(power_at_meter_raw_w)) {
             trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "   N/A ");
         } else {
-            trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6i ", static_cast<int32_t>(power_at_meter_raw_w));
+            trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6li ", static_cast<int32_t>(power_at_meter_raw_w));
         }
 
-        trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6i %6i %6i %6i %6i",
+        trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6li %6li %6li %6li %6li",
             power_available_w, pv_raw_ma, current_pv_minmax_ma.max, current_pv_minmax_ma.min, pv_long_min_ma);
 #endif
     }
@@ -1081,7 +1081,7 @@ void PowerManager::update_energy()
                     trace_log[trace_log_len] = '|';
                     trace_log_len += 1;
                 }
-                trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6i %6i %6i %6i %6i %6i %6i",
+                trace_log_len += snprintf_u(trace_log + trace_log_len, sizeof(trace_log) - trace_log_len, "%6li %6li %6li %6li %6li %6li %6li",
                     phase_current_meter_ma, phase_preproc_ma, current_error_ma, current_adjust_ma,
                     phase_limit_raw_ma, phase_min_ma->min, phase_long_min_ma);
 #endif

@@ -33,8 +33,8 @@ struct CurrentAllocatorConfig {
 
     seconds_t rotation_interval;
 
-    int32_t minimum_current_3p;
-    int32_t minimum_current_1p;
+    int minimum_current_3p;
+    int minimum_current_1p;
     float enable_current_factor;
     std::unique_ptr<char[]> distribution_log;
     size_t distribution_log_len;
@@ -143,7 +143,7 @@ struct ChargerState {
     bool off;
     bool observe_pv_limit;
     bool eco_fast;
-    int32_t guaranteed_pv_current;
+    int guaranteed_pv_current;
 };
 
 struct ChargerAllocationState {
