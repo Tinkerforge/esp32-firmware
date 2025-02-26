@@ -195,7 +195,7 @@ void Heating::update()
     }
 
     if (remaining_holding_time > 0) {
-        extended_logging("Minimum control holding time not reached. Current time: %dmin, last change: %dmin, minimum holding time: %dmin.", minutes, last_sg_ready_change, min_hold_time);
+        extended_logging("Minimum control holding time not reached. Current time: %limin, last change: %limin, minimum holding time: %hhumin.", minutes, last_sg_ready_change, min_hold_time);
         return;
     }
 
@@ -234,7 +234,7 @@ void Heating::update()
             float watt_current = 0;
             MeterValueAvailability meter_availability = meters.get_power(meter_slot_grid_power, &watt_current);
             if (meter_availability != MeterValueAvailability::Fresh) {
-                extended_logging("Meter value not available (meter %d has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
+                extended_logging("Meter value not available (meter %lu has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
             } else {
                 const bool active_value = sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED;
                 if (sg_ready_output_1 == active_value) {
@@ -244,7 +244,7 @@ void Heating::update()
                     }
                 } else {
                     if ((-watt_current) > pv_excess_control_threshold) {
-                        extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: %dW. (sgr1 is not active)", (int)watt_current, pv_excess_control_threshold);
+                        extended_logging("Current PV excess is above threshold. Current PV excess: %iW, threshold: %luW. (sgr1 is not active)", (int)watt_current, pv_excess_control_threshold);
                         sg_ready1_on |= true;
                     }
                 }
@@ -343,9 +343,9 @@ void Heating::update()
                 extended_logging("Expected PV yield not available. Ignoring yield forecast.");
             } else {
                 if (wh_expected/1000 < yield_forecast_threshold) {
-                    extended_logging("Expected PV yield %dkWh is below threshold of %dkWh.", wh_expected/1000, yield_forecast_threshold);
+                    extended_logging("Expected PV yield %lukWh is below threshold of %lukWh.", wh_expected/1000, yield_forecast_threshold);
                 } else {
-                    extended_logging("Expected PV yield %dkWh is above or equal to threshold of %dkWh.", wh_expected/1000, yield_forecast_threshold);
+                    extended_logging("Expected PV yield %lukWh is above or equal to threshold of %lukWh.", wh_expected/1000, yield_forecast_threshold);
                     return true;
                 }
             }

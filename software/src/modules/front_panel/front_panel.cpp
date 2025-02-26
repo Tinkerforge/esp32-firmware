@@ -850,7 +850,7 @@ void FrontPanel::check_flash_metadata()
     }
 
     logger.printfln(
-        "Flash metadata mismatch. Version: %u vs %u vs %u, Length: %u vs %u vs %u, Checksum: %x vs %x vs %x",
+        "Flash metadata mismatch. Version: %lu vs %lu vs %u, Length: %lu vs %lu vs %u, Checksum: %lx vs %lx vs %x",
         version_flash,  version_bricklet,  METADATA_VERSION,
         length_flash,   length_bricklet,   METADATA_LENGTH,
         checksum_flash, checksum_bricklet, METADATA_CHECKSUM
@@ -964,7 +964,7 @@ void FrontPanel::reflash_map_erase()
         if (ret == XZ_FORMAT_ERROR) {
             logger.printfln("xz header has wrong format. Probably not an xz file.");
         } else {
-            logger.printfln("xz header decompression failed: %u", static_cast<uint32_t>(ret));
+            logger.printfln("xz header decompression failed: %u", static_cast<std::underlying_type<decltype(ret)>::type>(ret));
         }
         reflash_map_end();
         return;
@@ -1008,7 +1008,7 @@ void FrontPanel::reflash_map_write_next()
             xz_ret ret = xz_dec_run(flash_writer->decoder, xzbuf);
             if (ret != XZ_OK) {
                 if (ret != XZ_STREAM_END) {
-                    logger.printfln("XZ decompression failed: %u", static_cast<uint32_t>(ret));
+                    logger.printfln("XZ decompression failed: %u", static_cast<std::underlying_type<decltype(ret)>::type>(ret));
                     reflash_map_end();
                     return;
                 }
@@ -1042,7 +1042,7 @@ void FrontPanel::reflash_map_write_next()
                 logger.printfln("set_flash_data failed: %s (%i)", tf_hal_strerror(rc), rc);
             }
             if (rc != TF_E_OK) {
-                logger.printfln("Writing flash data failed: %s (%i). Page %u, sub-page %u, status %u.", tf_hal_strerror(rc), rc, next_page_index, next_sub_page_index, status);
+                logger.printfln("Writing flash data failed: %s (%i). Page %lu, sub-page %hhu, status %hhu.", tf_hal_strerror(rc), rc, next_page_index, next_sub_page_index, status);
                 reflash_map_end();
                 return;
             }
@@ -1074,7 +1074,7 @@ void FrontPanel::reflash_map_write_next()
                     return; // Try again
                 }
 
-                logger.printfln("Write page %u timed out: status %u (error %s (%i)) Giving up.", next_page_index, status, tf_hal_strerror(rc), rc);
+                logger.printfln("Write page %lu timed out: status %u (error %s (%i)) Giving up.", next_page_index, status, tf_hal_strerror(rc), rc);
                 reflash_map_end();
                 return;
             }
