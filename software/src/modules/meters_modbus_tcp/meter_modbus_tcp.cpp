@@ -1159,7 +1159,7 @@ void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
         logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu e%u a%zu",
+                        "m%lu t%hhu i%zu e%lu a%zu",
                         slot,
                         static_cast<uint8_t>(table_id),
                         read_index,
@@ -1180,7 +1180,7 @@ void MeterModbusTCP::read_done_callback()
      && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS) {
         if (sungrow.inverter_output_type < 0) {
             logger.tracefln(trace_buffer_index,
-                            "m%u t%u i%zu u16 a%zu r%u v%u",
+                            "m%lu t%hhu i%zu u16 a%zu r%hu v%hu",
                             slot,
                             static_cast<uint8_t>(table_id),
                             read_index,
@@ -1243,7 +1243,7 @@ void MeterModbusTCP::read_done_callback()
      && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
         if (deye.hybrid_inverter_device_type < 0) {
             logger.tracefln(trace_buffer_index,
-                            "m%u t%u i%zu u16 a%zu r%u v%u",
+                            "m%lu t%hhu i%zu u16 a%zu r%hu v%hu",
                             slot,
                             static_cast<uint8_t>(table_id),
                             read_index,
@@ -1291,7 +1291,7 @@ void MeterModbusTCP::read_done_callback()
      && generic_read_request.start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_INPUT_OR_MODEL_ID_ADDRESS) {
         if (fronius.gen24_plus_hybrid_inverter_input_or_model_id == 0) {
             logger.tracefln(trace_buffer_index,
-                            "m%u t%u i%zu u16 a%zu r%u v%u",
+                            "m%lu t%hhu i%zu u16 a%zu r%hu v%hu",
                             slot,
                             static_cast<uint8_t>(table_id),
                             read_index,
@@ -1384,14 +1384,14 @@ void MeterModbusTCP::read_done_callback()
         break;
 
     default:
-        logger.printfln("%s / %s has unsupported register count: %u", get_meter_modbus_tcp_table_id_name(table_id), table->specs[read_index].name, register_count);
+        logger.printfln("%s / %s has unsupported register count: %zu", get_meter_modbus_tcp_table_id_name(table_id), table->specs[read_index].name, register_count);
         return;
     }
 
     switch (value_type) {
     case ModbusValueType::None:
         logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu n a%zu",
+                        "m%lu t%hhu i%zu n a%zu",
                         slot,
                         static_cast<uint8_t>(table_id),
                         read_index,
@@ -1400,7 +1400,7 @@ void MeterModbusTCP::read_done_callback()
 
     case ModbusValueType::U16:
         logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu u16 a%zu r%u v%u",
+                        "m%lu t%hhu i%zu u16 a%zu r%hu v%hu",
                         slot,
                         static_cast<uint8_t>(table_id),
                         read_index,
@@ -1413,7 +1413,7 @@ void MeterModbusTCP::read_done_callback()
 
     case ModbusValueType::S16:
         logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu s16 a%zu r%u v%d",
+                        "m%lu t%hhu i%zu s16 a%zu r%hu v%hi",
                         slot,
                         static_cast<uint8_t>(table_id),
                         read_index,
@@ -1427,7 +1427,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::U32BE:
     case ModbusValueType::U32LE:
         logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu u32%s a%zu r%u,%u v%u",
+                        "m%lu t%hhu i%zu u32%s a%zu r%hu,%hu v%lu",
                         slot,
                         static_cast<uint8_t>(table_id),
                         read_index,
@@ -1443,7 +1443,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::S32BE:
     case ModbusValueType::S32LE:
         logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu s32%s a%zu r%u,%u v%d",
+                        "m%lu t%hhu i%zu s32%s a%zu r%hu,%hu v%li",
                         slot,
                         static_cast<uint8_t>(table_id),
                         read_index,
@@ -1459,7 +1459,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::F32BE:
     case ModbusValueType::F32LE:
         logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu f32%s a%zu r%u,%u v%f",
+                        "m%lu t%hhu i%zu f32%s a%zu r%hu,%hu v%f",
                         slot,
                         static_cast<uint8_t>(table_id),
                         read_index,
@@ -1475,7 +1475,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::U64BE:
     case ModbusValueType::U64LE:
         logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu u64%s a%zu r%u,%u,%u,%u v%llu",
+                        "m%lu t%hhu i%zu u64%s a%zu r%hu,%hu,%hu,%hu v%llu",
                         slot,
                         static_cast<uint8_t>(table_id),
                         read_index,
@@ -1493,7 +1493,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::S64BE:
     case ModbusValueType::S64LE:
         logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu s64%s a%zu r%u,%u,%u,%u v%lld",
+                        "m%lu t%hhu i%zu s64%s a%zu r%hu,%hu,%hu,%hu v%lli",
                         slot,
                         static_cast<uint8_t>(table_id),
                         read_index,
@@ -1511,7 +1511,7 @@ void MeterModbusTCP::read_done_callback()
     case ModbusValueType::F64BE:
     case ModbusValueType::F64LE:
         logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu f64%s a%zu r%u,%u,%u,%u v%f",
+                        "m%lu t%hhu i%zu f64%s a%zu r%hu,%hu,%hu,%hu v%f",
                         slot,
                         static_cast<uint8_t>(table_id),
                         read_index,

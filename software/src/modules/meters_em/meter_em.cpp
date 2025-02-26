@@ -72,7 +72,7 @@ void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
         state->get("type")->updateUint(meter_type);
 
         MeterValueID ids[METER_ALL_VALUES_RESETTABLE_COUNT];
-        uint32_t id_count = METER_ALL_VALUES_RESETTABLE_COUNT;
+        size_t id_count = METER_ALL_VALUES_RESETTABLE_COUNT;
         sdm_helper_parse_values(meter_type, all_values, &id_count, ids, value_packing_cache);
         value_count = id_count;
         meters.declare_value_ids(slot, ids, id_count);
