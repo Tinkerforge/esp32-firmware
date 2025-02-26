@@ -497,7 +497,7 @@ void Wifi::setup()
 
                 // FIXME: Use a better way of time keeping here.
                 if (connected_for < 0x7FFFFFFF)
-                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for %u seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
+                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for %lu seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
                 else
                     logger.printfln("Disconnected from '%s': %s (%u). Was connected for a long time.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
 
@@ -785,7 +785,7 @@ void Wifi::get_scan_results(StringBuilder *sb, int16_t network_count)
         json.addString(WiFi.SSID(i).c_str());
         json.end();
 
-        sb->printf("{\"ssid\":%s,\"bssid\":\"%s\",\"rssi\":%d,\"channel\":%d,\"encryption\":%d}",
+        sb->printf("{\"ssid\":%s,\"bssid\":\"%s\",\"rssi\":%ld,\"channel\":%ld,\"encryption\":%d}",
                    json_buf, WiFi.BSSIDstr(i).c_str(), WiFi.RSSI(i), WiFi.channel(i), WiFi.encryptionType(i));
     }
 

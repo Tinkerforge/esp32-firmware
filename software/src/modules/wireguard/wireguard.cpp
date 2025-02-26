@@ -138,7 +138,7 @@ void Wireguard::start_wireguard()
     private_key = config.get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
     remote_host = config.get("remote_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
 
-    logger.printfln("Got NTP sync. Connecting to WireGuard peer %s:%u", remote_host.c_str(), config.get("remote_port")->asUint());
+    logger.printfln("Got NTP sync. Connecting to WireGuard peer %s:%lu", remote_host.c_str(), config.get("remote_port")->asUint());
 
     wg.begin(internal_ip,
              internal_subnet,
@@ -167,7 +167,7 @@ void Wireguard::start_wireguard()
                 uint32_t connected_for = millis() - this->last_connected_ms;
                 state.get("connection_end")->updateUint(now);
                 if (connected_for < 0x7FFFFFFF) {
-                    logger.printfln("Wireguard connection lost. Was connected for %u seconds.", connected_for / 1000);
+                    logger.printfln("Wireguard connection lost. Was connected for %lu seconds.", connected_for / 1000);
                 } else {
                     logger.printfln("Wireguard connection lost. Was connected for a long time.");
                 }

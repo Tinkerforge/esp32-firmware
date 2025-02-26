@@ -2141,7 +2141,7 @@ static int pdf_add_png_data(struct pdf_doc *pdf, struct pdf_object *page,
         const uint32_t chunk_length = ntohl(chunk->length);
         // chunk length + 4-bytes of CRC
         if (chunk_length > png_data_length - pos - 4) {
-            pdf_set_err(pdf, -EINVAL, "PNG chunk exceeds file: %d vs %u",
+            pdf_set_err(pdf, -EINVAL, "PNG chunk exceeds file: %" PRIi32 " vs %" PRIu32,
                         chunk_length, png_data_length - pos - 4);
             return -EINVAL;
         }
