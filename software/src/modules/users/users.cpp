@@ -515,8 +515,10 @@ static void check_waiting_for_start()
     bool waiting_for_start = (api.getState("evse/state", false)->get("iec61851_state")->asUint() == 1)
                           && (user_slot->get("max_current")->asUint() == 0);
 
+#if MODULE_EVSE_LED_AVAILABLE()
     if (waiting_for_start)
         evse_led.set_module(EvseLed::Blink::Nag, 2000);
+#endif
 }
 
 void Users::register_urls()
