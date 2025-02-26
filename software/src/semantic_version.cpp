@@ -83,9 +83,9 @@ bool SemanticVersion::from_string(const char *buf)
 int SemanticVersion::to_string(char *buf, size_t len) const
 {
     if (beta != 255) {
-        return snprintf(buf, len, "%u.%u.%u-beta.%u+%x", major, minor, patch, beta, timestamp);
+        return snprintf(buf, len, "%u.%u.%u-beta.%u+%lx", major, minor, patch, beta, timestamp);
     }
     else {
-        return snprintf(buf, len, "%u.%u.%u+%x", major, minor, patch, timestamp);
+        return snprintf(buf, len, "%u.%u.%u+%lx", major, minor, patch, timestamp);
     }
 }
