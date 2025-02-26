@@ -55,6 +55,10 @@ Config::ConfUnion::Slot* Config::ConfUnion::getSlot() { return get_slot<Config::
 
 Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_len, const ConfUnionPrototypeInternal prototypes[])
 {
+    if (prototypes == nullptr) {
+        esp_system_abort("Invalid ConfUnion: prototypes cannot be a nullptr");
+    }
+
     idx = nextSlot<Config::ConfUnion>();
 
     auto *slot = this->getSlot();

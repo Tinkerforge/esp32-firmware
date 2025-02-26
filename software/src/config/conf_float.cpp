@@ -17,24 +17,40 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <math.h>
+
 #include "config/private.h"
 #include "config/slot_allocator.h"
 #include "tools/malloc.h"
-
-bool Config::ConfFloat::slotEmpty(const Slot *slot) {
-    return slot->val == 0
-        && slot->min == 0
-        && slot->max == 0;
-}
-Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements)
-{
-    return (Config::ConfFloat::Slot *)calloc_32bit_addressed(elements, sizeof(Config::ConfFloat::Slot));
-}
 
 typedef union {
     float f;
     uint32_t u;
 } float_uint;
+
+bool Config::ConfFloat::slotEmpty(const Slot *slot) {
+    float_uint max;
+    max.u = slot->max;
+    asm("" : : "r" (max.u)); // prevent slot->max access from being optimized into a float load
+    return isnan(max.f);
+}
+
+Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements)
+{
+    Config::ConfFloat::Slot *block = static_cast<decltype(block)>(malloc_32bit_addressed(elements * sizeof(*block)));
+
+    float_uint v;
+    v.f = NAN;
+
+    for (size_t i = 0; i < elements; i++) {
+        Config::ConfFloat::Slot *slot = block + i;
+
+        slot->min = v.u;
+        slot->max = v.u;
+    }
+
+    return block;
+}
 
 float Config::ConfFloat::getVal() const {
     float_uint result;
@@ -77,6 +93,10 @@ Config::ConfFloat::Slot *Config::ConfFloat::getSlot() { return get_slot<Config::
 
 Config::ConfFloat::ConfFloat(float val, float min, float max)
 {
+    if (isnan(min) || isnan(max)) {
+        esp_system_abort("Invalid ConfFloat limits: min and max cannot be NaN");
+    }
+
     idx = nextSlot<Config::ConfFloat>();
     this->setSlot(val, min, max);
 }
@@ -93,10 +113,12 @@ Config::ConfFloat::~ConfFloat()
     if (idx == std::numeric_limits<decltype(idx)>::max())
         return;
 
+    float_uint v;
+    v.f = NAN;
+
     auto *slot = this->getSlot();
-    slot->val = 0;
-    slot->min = 0;
-    slot->max = 0;
+    slot->min = v.u;
+    slot->max = v.u;
 
     notify_free_slot<Config::ConfFloat>(idx);
 }

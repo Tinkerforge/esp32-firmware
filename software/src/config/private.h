@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include <limits>
+#include <math.h>
+
 #include "config.h"
 
 struct ConfStringSlot {
@@ -27,21 +30,26 @@ struct ConfStringSlot {
     uint16_t maxChars = 0;
 };
 
+static constexpr const union {
+    float f;
+    uint32_t u;
+} nan_uint = {.f = NAN};
+
 struct ConfFloatSlot {
     uint32_t val = 0;
-    uint32_t min = 0;
-    uint32_t max = 0;
+    uint32_t min = nan_uint.u;
+    uint32_t max = nan_uint.u;
 };
 
 struct ConfIntSlot {
     int32_t val = 0;
     int32_t min = 0;
-    int32_t max = 0;
+    int32_t max = -1; // Use -1 because it fits into an int12 immediate when compiled. INT32_MIN and MAX do not.
 };
 
 struct ConfUintSlot {
     uint32_t val = 0;
-    uint32_t min = 0;
+    uint32_t min = std::numeric_limits<decltype(min)>::max();
     uint32_t max = 0;
 };
 

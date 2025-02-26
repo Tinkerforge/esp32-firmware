@@ -17,19 +17,29 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <limits>
+
 #include "config/private.h"
 #include "config/slot_allocator.h"
 #include "tools/malloc.h"
 
 bool Config::ConfUint::slotEmpty(const Slot *slot) {
-    return slot->val == 0
-        && slot->min == 0
+    return slot->min == std::numeric_limits<decltype(slot->min)>::max()
         && slot->max == 0;
 }
 
 Config::ConfUint::Slot *Config::ConfUint::allocSlotBuf(size_t elements)
 {
-    return (Config::ConfUint::Slot *)calloc_32bit_addressed(elements, sizeof(Config::ConfUint::Slot));
+    Config::ConfUint::Slot *block = static_cast<decltype(block)>(malloc_32bit_addressed(elements * sizeof(*block)));
+
+    for (size_t i = 0; i < elements; i++) {
+        Config::ConfUint::Slot *slot = block + i;
+
+        slot->min = std::numeric_limits<decltype(slot->min)>::max();
+        slot->max = 0;
+    }
+
+    return block;
 }
 
 uint32_t* Config::ConfUint::getVal() { return &get_slot<Config::ConfUint>(idx)->val; }
@@ -40,6 +50,10 @@ Config::ConfUint::Slot *Config::ConfUint::getSlot() { return get_slot<Config::Co
 
 Config::ConfUint::ConfUint(uint32_t val, uint32_t min, uint32_t max)
 {
+    if (min > max) {
+        esp_system_abort("Invalid ConfUint limits: min > max");
+    }
+
     idx = nextSlot<Config::ConfUint>();
     auto *slot = this->getSlot();
     slot->val = val;
@@ -60,8 +74,7 @@ Config::ConfUint::~ConfUint()
         return;
 
     auto *slot = this->getSlot();
-    slot->val = 0;
-    slot->min = 0;
+    slot->min = std::numeric_limits<decltype(slot->min)>::max();
     slot->max = 0;
 
     notify_free_slot<Config::ConfUint>(idx);

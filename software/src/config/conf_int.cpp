@@ -23,14 +23,22 @@
 
 bool Config::ConfInt::slotEmpty(const Slot *slot)
 {
-    return slot->val == 0
-        && slot->min == 0
-        && slot->max == 0;
+    return slot->min == 0
+        && slot->max == -1;
 }
 
 Config::ConfInt::Slot *Config::ConfInt::allocSlotBuf(size_t elements)
 {
-    return (Config::ConfInt::Slot *)calloc_32bit_addressed(elements, sizeof(Config::ConfInt::Slot));
+    Config::ConfInt::Slot *block = static_cast<decltype(block)>(malloc_32bit_addressed(elements * sizeof(*block)));
+
+    for (size_t i = 0; i < elements; i++) {
+        Config::ConfInt::Slot *slot = block + i;
+
+        slot->min = 0;
+        slot->max = -1;
+    }
+
+    return block;
 }
 
 int32_t* Config::ConfInt::getVal() { return &get_slot<Config::ConfInt>(idx)->val; }
@@ -41,6 +49,10 @@ Config::ConfInt::Slot *Config::ConfInt::getSlot() { return get_slot<Config::Conf
 
 Config::ConfInt::ConfInt(int32_t val, int32_t min, int32_t max)
 {
+    if (min > max) {
+        esp_system_abort("Invalid ConfInt limits: min > max");
+    }
+
     idx = nextSlot<Config::ConfInt>();
     auto *slot = this->getSlot();
     slot->val = val;
@@ -63,7 +75,7 @@ Config::ConfInt::~ConfInt()
     auto *slot = this->getSlot();
     slot->val = 0;
     slot->min = 0;
-    slot->max = 0;
+    slot->max = -1;
 
     notify_free_slot<Config::ConfInt>(idx);
 }
