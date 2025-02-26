@@ -162,7 +162,7 @@ void *platform_init(const char *websocket_url, BasicAuthCredentials *credentials
     return client;
 }
 
-bool platform_has_fixed_cable(int connectorId)
+bool platform_has_fixed_cable(int32_t connectorId)
 {
     return true;
 }
@@ -808,7 +808,7 @@ void platform_unlock_cable(int32_t connectorId)
 
 void platform_set_charging_current(int32_t connectorId, uint32_t milliAmps)
 {
-    uint16_t current = (uint16_t)std::min(32000u, (uint32_t)milliAmps);
+    uint16_t current = (uint16_t)std::min(32000ul, (uint32_t)milliAmps);
     if (evse_common.get_ocpp_current() != current)
         evse_common.set_ocpp_current(current);
 }
@@ -852,7 +852,7 @@ OcppDirEnt *platform_read_dir(void *dir_fd)
 {
     File *dir = (File *)dir_fd;
     File f;
-    while (f = dir->openNextFile()) {
+    while ((f = dir->openNextFile())) {
         dir_ent.is_dir = f.isDirectory();
         strncpy(dir_ent.name, f.name(), ARRAY_SIZE(dir_ent.name) - 1);
         return &dir_ent;

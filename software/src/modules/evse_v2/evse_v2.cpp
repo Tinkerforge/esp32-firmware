@@ -659,11 +659,11 @@ void EVSEV2::get_debug_line(StringBuilder *sb)
              "%u,%u,%u,%u,%u,%u,%u,%u,,"
              "%u,%c,%u,%u,,"
              "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%c,%c,%c,%c,%c,%c,,"
-             "%u,%u,%u,%u,%u,%u,,"
-             "%u,%u,%u,%u,%u,,"
+             "%lu,%lu,%lu,%lu,%lu,%lu,,"
+             "%u,%u,%u,%lu,%lu,,"
              "%u,%u,%u,%u,%u,%u,%u,,"
              "%d,%d,%d,%d,%d,%d,%d,,"
-             "%u,%u,,"
+             "%lu,%lu,,"
              "%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,%c,,"
              "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u",
              iec61851_state,
@@ -813,7 +813,7 @@ PhaseSwitcherBackend::SwitchingState EVSEV2::get_phase_switching_state()
 bool EVSEV2::switch_phases(uint32_t phases_wanted)
 {
     if (phases_wanted > 3) {
-        logger.printfln("Invalid phases wanted: %u", phases_wanted);
+        logger.printfln("Invalid phases wanted: %lu", phases_wanted);
         return false;
     }
 

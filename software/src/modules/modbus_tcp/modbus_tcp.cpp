@@ -1052,10 +1052,10 @@ void ModbusTcp::start_server() {
     server.start(
         0, config.get("port")->asUint(),
         [](uint32_t peer_address, uint16_t port) {
-            logger.printfln("client connected: peer_address=%u port=%u", peer_address, port);
+            logger.printfln("client connected: peer_address=%lu port=%u", peer_address, port);
         },
         [](uint32_t peer_address, uint16_t port, TFModbusTCPServerDisconnectReason reason, int error_number) {
-            logger.printfln("client disconnected: peer_address=%u port=%u reason=%s error_number=%d", peer_address, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
+            logger.printfln("client disconnected: peer_address=%lu port=%u reason=%s error_number=%d", peer_address, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
         },
         [this, table](uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values) {
             switch(function_code) {
