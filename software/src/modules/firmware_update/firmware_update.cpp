@@ -469,7 +469,7 @@ void FirmwareUpdate::register_urls()
             firmware_url.printf("_beta_%u", version.beta);
         }
 
-        firmware_url.printf("_%x", version.timestamp);
+        firmware_url.printf("_%lx", version.timestamp);
         firmware_url.puts(firmware_url_suffix, firmware_url_suffix_len);
 
         char *firmware_url_ptr = firmware_url.take();
