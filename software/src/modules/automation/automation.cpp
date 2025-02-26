@@ -177,7 +177,7 @@ void Automation::register_action(AutomationActionID id, Config cfg, ActionCb &&c
 #ifdef DEBUG_FS_ENABLE
         esp_system_abort("Registering actions is only allowed during the pre-setup stage.");
 #else
-        logger.printfln("Registering actions is only allowed during the pre-setup stage. Ignoring action ID %u.", static_cast<uint32_t>(id));
+        logger.printfln("Registering actions is only allowed during the pre-setup stage. Ignoring action ID %lu.", static_cast<uint32_t>(id));
         return;
 #endif
     }
@@ -197,7 +197,7 @@ void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorC
 #ifdef DEBUG_FS_ENABLE
         esp_system_abort("Registering triggers is only allowed during the pre-setup stage.");
 #else
-        logger.printfln("Registering triggers is only allowed during the pre-setup stage. Ignoring trigger ID %u.", static_cast<uint32_t>(id));
+        logger.printfln("Registering triggers is only allowed during the pre-setup stage. Ignoring trigger ID %lu.", static_cast<uint32_t>(id));
         return;
 #endif
     }

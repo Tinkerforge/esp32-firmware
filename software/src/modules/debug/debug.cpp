@@ -53,7 +53,7 @@ static void malloc_failed_log_detailed(size_t size, uint32_t caps, const char *f
     char backtrace_buf[384];
     size_t backtrace_len = strn_backtrace(backtrace_buf, sizeof(backtrace_buf), 1);
 
-    logger.printfln("malloc_failed_hook sz=%u frBl=%u frTot=%u caps=0x%x fn=%s t=%s", size, ram_info.largest_free_block, ram_info.total_free_bytes, caps, function_name, task_name);
+    logger.printfln("malloc_failed_hook sz=%u frBl=%u frTot=%u caps=0x%lx fn=%s t=%s", size, ram_info.largest_free_block, ram_info.total_free_bytes, caps, function_name, task_name);
     logger.print_plain(backtrace_buf, backtrace_len);
     logger.print_plain("\n", 1);
 }
@@ -265,7 +265,7 @@ void Debug::setup()
             if (conf_task_hwm->get("hwm")->updateUint(hwm) && hwm < 256) {
                 const char *task_name = conf_task_hwm->get("task_name")->asUnsafeCStr();
                 if (hwm < 40 || strcmp(task_name, "watchdog_task") != 0) {
-                    logger.printfln("HWM of task '%s' changed: %u", task_name, hwm);
+                    logger.printfln("HWM of task '%s' changed: %lu", task_name, hwm);
                 }
             }
         }
@@ -736,7 +736,7 @@ static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_c
         }
     } else {
         *spi_mode = "invalid mode";
-        logger.printfln("fread_qio=%u fread_dio=%u fread_quad=%u fread_dual=%u", fread_qio, fread_dio, fread_quad, fread_dual);
+        logger.printfln("fread_qio=%lu fread_dio=%lu fread_quad=%lu fread_dual=%lu", fread_qio, fread_dio, fread_quad, fread_dual);
     }
 
     // Clock
