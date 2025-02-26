@@ -9,6 +9,7 @@ import configparser
 import subprocess
 import getpass
 import hashlib
+from shutil import which
 from zlib import crc32
 
 directory = os.path.normpath(os.path.dirname(__file__))
@@ -94,7 +95,9 @@ def keepassxc(preset, prefix, action, args, entry, password=None, input=None):
 
 
 def notify_send(message):
-    subprocess.call(['notify-send', '-t', '3600000', '-i', os.path.abspath(make_path('icon.png')), 'esp32-firmware', message])
+    notify_send_path = which('notify-send')
+    if notify_send_path:
+        subprocess.call([notify_send_path, '-t', '3600000', '-i', os.path.abspath(make_path('icon.png')), 'esp32-firmware', message])
 
 
 def main():
