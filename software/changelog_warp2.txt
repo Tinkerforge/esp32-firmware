@@ -755,7 +755,7 @@
 - Charge Tracker: Fix language selection for PDF export
 - Charge Tracker: Fix encoding of non-CP-1252 characters for PDF export
 
-2025-02-26: 2.7.5 (<unknown>)
+2025-02-26: 2.7.5 (acbfc184)
 - SunSpec: Fix partial reading of model data
 - Charge Limits: Support custom energy limit
 - Improve translations
