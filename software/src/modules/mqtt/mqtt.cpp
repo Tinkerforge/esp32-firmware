@@ -55,11 +55,12 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 int Mqtt::subscribe_internal(esp_mqtt_client_handle_t client, const char *topic, int qos) {
     if (this->read_only)
         return ESP_OK;
-    return esp_mqtt_client_subscribe(client, topic, qos);
+    return esp_mqtt_client_subscribe_single(client, topic, qos);
 }
 
 #pragma GCC poison esp_mqtt_client_subscribe
-
+#pragma GCC poison esp_mqtt_client_subscribe_single
+#pragma GCC poison esp_mqtt_client_subscribe_multiple
 void Mqtt::pre_setup()
 {
     // The real UID will be patched in later
