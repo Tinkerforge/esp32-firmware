@@ -865,15 +865,17 @@ void ChargeTracker::register_urls()
 
         uint8_t configured_users[MAX_ACTIVE_USERS] = {};
         uint32_t electricity_price;
-        String dev_name;
+        String dev_name = "unknown device";
         auto await_result = task_scheduler.await([this, configured_users, &electricity_price, &dev_name]() mutable {
             electricity_price = this->config.get("electricity_price")->asUint();
             for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
                 configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
             }
+#if MODULE_DEVICE_NAME_AVAILABLE()
             dev_name = device_name.display_name.get("display_name")->asString();
             if (device_name.display_name.get("display_name")->asString() != device_name.name.get("name")->asString())
                 dev_name += " (" + device_name.name.get("name")->asString() + ")";
+#endif
         });
 
         if (await_result == TaskScheduler::AwaitResult::Timeout) {
