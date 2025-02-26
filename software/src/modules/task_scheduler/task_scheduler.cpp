@@ -375,7 +375,7 @@ void TaskScheduler::wall_clock_worker() {
 
         if(!task.runner_task) {
             logger.printfln("Attempted to schedule WallClockTask execution but runner_task is invalid. Is this task still enqueued?");
-            logger.printfln("    task_id=%llu interval_minutes=%u run_on_first_sync=%d", task.task_id, task.interval_minutes.as<uint32_t>(), task.run_on_first_sync);
+            logger.printfln("    task_id=%llu interval_minutes=%lu run_on_first_sync=%d", task.task_id, task.interval_minutes.as<uint32_t>(), task.run_on_first_sync);
             continue;
         }
 

@@ -45,7 +45,7 @@ void EventLog::pre_init()
     event_buf.setup();
 
     printfln_prefixed("", 0, "    **** " BUILD_MANUFACTURER_UPPER " " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
-    printfln_prefixed("", 0, "         %uK RAM SYSTEM   %u HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
+    printfln_prefixed("", 0, "         %luK RAM SYSTEM   %lu HEAP BYTES FREE", ESP.getHeapSize() / 1024, ESP.getFreeHeap());
     printfln_prefixed("", 0, "READY.");
     printfln_prefixed("", 0, "Last reset reason was: %s", tf_reset_reason());
 }
