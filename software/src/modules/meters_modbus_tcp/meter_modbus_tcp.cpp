@@ -1328,7 +1328,7 @@ void MeterModbusTCP::parse_next()
         break;
 
     default:
-        logger.printfln("%s / %s has unsupported register count: %u", get_meter_modbus_tcp_table_id_name(table_id), table->specs[read_index].name, register_count);
+        logger.printfln("%s / %s has unsupported register count: %zu", get_meter_modbus_tcp_table_id_name(table_id), table->specs[read_index].name, register_count);
         return;
     }
 

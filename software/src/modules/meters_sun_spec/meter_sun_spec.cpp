@@ -219,7 +219,7 @@ void MeterSunSpec::read_done_callback()
         size_t registers_to_read = generic_read_request.register_count;
 
         if (!model_parser->detect_values(generic_read_request.data, quirks, &registers_to_read)) {
-            logger.printfln("Detecting values of model %u in slot %u failed.", model_id, slot);
+            logger.printfln("Detecting values of model %hu in slot %lu failed.", model_id, slot);
             return;
         }
 
@@ -464,7 +464,7 @@ void MeterSunSpec::scan_next()
                         }
 
                         if (quirks) {
-                            logger.printfln("Enabling quirks mode 0x%02x for %.32s device.", quirks, m->Mn);
+                            logger.printfln("Enabling quirks mode 0x%02lx for %.32s device.", quirks, m->Mn);
                         }
                     }
                 }

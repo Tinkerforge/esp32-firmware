@@ -1074,7 +1074,7 @@ struct to_owned {
 struct api_info {
     void operator()(const Config::ConfString &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"string\",\"val\":\"%s\",\"minChars\":%u,\"maxChars\":%u}", x.getSlot()->val.c_str(), x.getSlot()->minChars, x.getSlot()->maxChars);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"string\",\"val\":\"%s\",\"minChars\":%hu,\"maxChars\":%hu}", x.getSlot()->val.c_str(), x.getSlot()->minChars, x.getSlot()->maxChars);
     }
     void operator()(const Config::ConfFloat &x)
     {
@@ -1082,11 +1082,11 @@ struct api_info {
     }
     void operator()(const Config::ConfInt &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"int\",\"val\":%d,\"min\":%d,\"max\":%d}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"int\",\"val\":%li,\"min\":%li,\"max\":%li}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfUint &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"uint\",\"val\":%u,\"min\":%u,\"max\":%u}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"uint\",\"val\":%lu,\"min\":%lu,\"max\":%lu}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfBool &x)
     {

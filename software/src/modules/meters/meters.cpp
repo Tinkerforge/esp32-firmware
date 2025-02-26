@@ -201,7 +201,7 @@ void Meters::pre_setup()
             uint32_t meter_slot = config->get("meter_slot")->asUint();
             const String err = api.callCommand(get_path(meter_slot, Meters::PathType::Reset).c_str());
             if (!err.isEmpty()) {
-                logger.printfln("Automation couldn't reset meter %u: %s", meter_slot, err.c_str());
+                logger.printfln("Automation couldn't reset meter %lu: %s", meter_slot, err.c_str());
             }
         }
     );

@@ -143,7 +143,7 @@ PhaseSwitcherBackend::SwitchingState EMPhaseSwitcher::get_phase_switching_state(
 bool EMPhaseSwitcher::switch_phases(uint32_t phases_wanted)
 {
     if (phases_wanted > 3) {
-        logger.printfln("Invalid phases wanted: %u", phases_wanted);
+        logger.printfln("Invalid phases wanted: %lu", phases_wanted);
         return false;
     }
 
@@ -304,7 +304,7 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
                         switching_state = SwitchingState::WaitUntilCPReconnect;
                     }
                 } else {
-                    logger.printfln("Incorrect number of phases after switching, wanted %u. Trying again.", allocated_phases);
+                    logger.printfln("Incorrect number of phases after switching, wanted %lu. Trying again.", allocated_phases);
                     switching_state = SwitchingState::TogglingContactor;
                 }
             }
@@ -328,7 +328,7 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
             break;
         }
         default:
-            logger.printfln("Unexpected switching state for cmd: %u", static_cast<uint32_t>(switching_state));
+            logger.printfln("Unexpected switching state for cmd: %hhu", static_cast<uint8_t>(switching_state));
             break;
     }
 
@@ -437,7 +437,7 @@ void EMPhaseSwitcher::filter_state_packet(size_t charger_idx, cm_state_packet *s
             break;
         }
         default:
-            logger.printfln("Unexpected switching state for state: %u", static_cast<uint32_t>(switching_state));
+            logger.printfln("Unexpected switching state for state: %hhu", static_cast<uint8_t>(switching_state));
             break;
     }
 

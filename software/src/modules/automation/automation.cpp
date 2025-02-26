@@ -262,7 +262,7 @@ void Automation::set_enabled(AutomationTriggerID id, bool enable)
 bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBackend *backend)
 {
     if (config_in_use.is_null()) {
-        logger.printfln("Received trigger '%s' (%u) before loading config. Event lost.", get_automation_trigger_id_name(number), static_cast<uint32_t>(number));
+        logger.printfln("Received trigger '%s' (%u) before loading config. Event lost.", get_automation_trigger_id_name(number), static_cast<unsigned>(number));
         return false;
     }
     bool triggered = false;

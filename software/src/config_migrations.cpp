@@ -733,7 +733,7 @@ static const ConfigMigration migrations[] = {
                         json["requested_current_margin"] = 3000;
                         write_config_file("charge_manager/config", json);
                     } else {
-                        logger.printfln("CM migration: Not resetting custom requested_current_margin of %u.", requested_current_margin_old);
+                        logger.printfln("CM migration: Not resetting custom requested_current_margin of %lu.", requested_current_margin_old);
                     }
                 } else {
                     logger.printfln("CM migration skipped, requested_current_margin not present");
@@ -863,7 +863,7 @@ static const ConfigMigration migrations[] = {
                     cm_cfg["default_available_current"] = max_current;
                     write_config_file("charge_manager/config", cm_cfg);
                 } else {
-                    logger.printfln("Not migrating user-configured default_available_current of %u", default_current);
+                    logger.printfln("Not migrating user-configured default_available_current of %lu", default_current);
                 }
 
                 charger_count = cm_cfg["chargers"].size();

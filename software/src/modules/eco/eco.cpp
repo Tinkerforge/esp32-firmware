@@ -351,7 +351,7 @@ void Eco::update()
         } else {
             const uint32_t minutes_in_state_c = charger_state->time_in_state_c.to<minutes_t>().as<uint32_t>();
             if (state.get("chargers")->get(charger_id)->get("amount")->updateUint(minutes_in_state_c)) {
-                extended_logging("Charger %d: Update minutes in state C to %d", charger_id, minutes_in_state_c);
+                extended_logging("Charger %hhu: Update minutes in state C to %lu", charger_id, minutes_in_state_c);
             }
 
             if (charger_state->last_plug_in == 0_us) {
@@ -374,7 +374,7 @@ void Eco::update()
                 // -> The timestamp of the last minute is the one that is expected to be shown.
                 const uint32_t epoch_to_plug_in_minutes = rtc.timestamp_minutes() - time_from_now_to_plug_in.to<minutes_t>().as<uint32_t>() - 1;
                 if (state.get("chargers")->get(charger_id)->get("start")->updateUint(epoch_to_plug_in_minutes)) {
-                    extended_logging("Charger %d: Update start time to %d", charger_id, epoch_to_plug_in_minutes);
+                    extended_logging("Charger %hhu: Update start time to %lu", charger_id, epoch_to_plug_in_minutes);
                 }
             }
         }
@@ -394,7 +394,7 @@ void Eco::update()
         const int32_t charge_below = config.get("charge_below_threshold")->asInt()*1000; // *1000 since the current price is in ct/1000
         if (current_price < charge_below) {
             std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Fast);
-            extended_logging("Charger all: Current price (%d) below threshold (%d)-> Fast", current_price, charge_below);
+            extended_logging("Charger all: Current price (%li) below threshold (%li)-> Fast", current_price, charge_below);
             decision_is_done = true;
         }
     }
@@ -405,7 +405,7 @@ void Eco::update()
         if (current_price > block_above) {
             std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
             decision_is_done = true;
-            extended_logging("Charger all: Current price (%d) above threshold (%d)-> Normal", current_price, block_above);
+            extended_logging("Charger all: Current price (%li) above threshold (%li)-> Normal", current_price, block_above);
         }
     }
 
@@ -433,7 +433,7 @@ void Eco::update()
             disable_charge_plan();
             if (!decision_is_done) {
                 std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
-                extended_logging("Charger all: Current time (%dm) after planned charge ending time (%dm) -> Normal", current_time_1m, end_time_1m.second);
+                extended_logging("Charger all: Current time (%lum) after planned charge ending time (%lum) -> Normal", current_time_1m, end_time_1m.second);
             }
             set_chargers_state_chart_data(255, nullptr, 0, false);
             return;
@@ -452,7 +452,7 @@ void Eco::update()
             if (start_time_1m == 0) {
                 if (!decision_is_done) {
                     charge_decision[charger_id] = ChargeDecision::Normal;
-                    extended_logging("Charger %d: Car not charging (start_time = 0) -> Normal", charger_id);
+                    extended_logging("Charger %hhu: Car not charging (start_time = 0) -> Normal", charger_id);
                 }
                 set_chargers_state_chart_data(charger_id, nullptr, 0, true);
                 continue;
@@ -462,7 +462,7 @@ void Eco::update()
             if (desired_amount_1m <= charged_amount_1m) {
                 if (!decision_is_done) {
                     charge_decision[charger_id] = ChargeDecision::Normal;
-                    extended_logging("Charger %d: Desired charge amount reached (%dm <= %dm) -> Normal", charger_id, desired_amount_1m, charged_amount_1m);
+                    extended_logging("Charger %hhu: Desired charge amount reached (%lum <= %lum) -> Normal", charger_id, desired_amount_1m, charged_amount_1m);
                 }
                 set_chargers_state_chart_data(charger_id, nullptr, 0, false);
                 continue;
@@ -474,13 +474,13 @@ void Eco::update()
                 if (kwh_threshold > 0) {
                     auto wh_expected = solar_forecast.get_wh_range(start_time_1m, end_time_1m.second);
                     if (wh_expected.is_none()) {
-                        extended_logging("Charger %d: Expected PV yield not available. Ignoring yield forecast.", charger_id);
+                        extended_logging("Charger %hhu: Expected PV yield not available. Ignoring yield forecast.", charger_id);
                     } else {
                         const uint32_t kwh_expected = wh_expected.unwrap()/1000;
                         if (kwh_expected > kwh_threshold) {
                             if (!decision_is_done) {
                                 charge_decision[charger_id] = ChargeDecision::Normal;
-                                extended_logging("Charger %d: Expected PV yield %d kWh is above threshold of %d kWh. -> Normal", charger_id, kwh_expected, kwh_threshold);
+                                extended_logging("Charger %hhu: Expected PV yield %lu kWh is above threshold of %lu kWh. -> Normal", charger_id, kwh_expected, kwh_threshold);
                             }
                             set_chargers_state_chart_data(charger_id, nullptr, 0, false);
                             continue;
@@ -506,7 +506,7 @@ void Eco::update()
                 } else {
                     charge_decision[charger_id] = ChargeDecision::Normal;
                 }
-                extended_logging("Charger %d: Current price (%d) is %s -> %s [current_time %dm, duration_remaining %dm, desired_amount %dm, charged_amount %dm]", charger_id, current_price, (charge_decision[charger_id] == ChargeDecision::Fast) ? "cheap" : "expensive", (charge_decision[charger_id] == ChargeDecision::Fast) ? "Fast" : "Normal", current_time_1m, duration_remaining_1m, desired_amount_1m, charged_amount_1m);
+                extended_logging("Charger %hhu: Current price (%li) is %s -> %s [current_time %lum, duration_remaining %lum, desired_amount %lum, charged_amount %lum]", charger_id, current_price, (charge_decision[charger_id] == ChargeDecision::Fast) ? "cheap" : "expensive", (charge_decision[charger_id] == ChargeDecision::Fast) ? "Fast" : "Normal", current_time_1m, duration_remaining_1m, desired_amount_1m, charged_amount_1m);
             }
             set_chargers_state_chart_data(charger_id, cheap_hours, duration_remaining_15m, false);
         }

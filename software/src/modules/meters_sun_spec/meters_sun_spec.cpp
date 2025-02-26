@@ -421,7 +421,7 @@ void MetersSunSpec::loop()
                 scan->state = ScanState::ReadModelHeader;
             }
             else {
-                scan_printfln("No SunSpec ID found (sun-spec-id: %08x)", sun_spec_id);
+                scan_printfln("No SunSpec ID found (sun-spec-id: 0x%08lx)", sun_spec_id);
 
                 scan->state = ScanState::NextBaseAddress;
             }

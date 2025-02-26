@@ -296,7 +296,7 @@ void DayAheadPrices::update()
                 break;
 
             case AsyncHTTPSClientError::NoCert:
-                logger.printfln("Certificate with ID %d is not available", config.get("cert_id")->asInt());
+                logger.printfln("Certificate with ID %li is not available", config.get("cert_id")->asInt());
                 break;
 
             case AsyncHTTPSClientError::NoResponse:
