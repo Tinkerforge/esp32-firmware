@@ -58,6 +58,7 @@ int Mqtt::subscribe_internal(esp_mqtt_client_handle_t client, const char *topic,
     return esp_mqtt_client_subscribe_single(client, topic, qos);
 }
 
+#undef esp_mqtt_client_subscribe
 #pragma GCC poison esp_mqtt_client_subscribe
 #pragma GCC poison esp_mqtt_client_subscribe_single
 #pragma GCC poison esp_mqtt_client_subscribe_multiple
