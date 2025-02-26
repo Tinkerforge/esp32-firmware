@@ -158,7 +158,7 @@ int init_pdf_generator(WebServerRequest *request,
         if (stream_num == 0) {
             float width = 0.0f;
             char buf[32] = {};
-            snprintf(buf, ARRAY_SIZE(buf), "Seite %d von %d", page_num + 1, pages_to_be_created);
+            snprintf(buf, ARRAY_SIZE(buf), "Seite %ld von %d", page_num + 1, pages_to_be_created);
             pdf_get_font_text_width(pdf_doc, DEFAULT_FONT, buf, FONT_SIZE, &width);
             return pdf_add_text(pdf_doc, NULL, buf, FONT_SIZE, (PDF_A4_WIDTH - width) / 2, BOTTOM_MARGIN, PDF_BLACK);
         }

@@ -261,7 +261,7 @@ void Meters::setup()
 
         IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_errors);
         if (!meter) {
-            logger.printfln("Failed to create meter of class %u in slot %u.", static_cast<uint32_t>(configured_meter_class), slot);
+            logger.printfln("Failed to create meter of class %lu in slot %lu.", static_cast<uint32_t>(configured_meter_class), slot);
             meter = new_meter_of_class(MeterClassID::None, slot, meter_state, meter_errors);
         }
         if (configured_meter_class != MeterClassID::None) {
@@ -522,7 +522,7 @@ void Meters::register_meter_generator(MeterClassID meter_class, IMeterGenerator 
     for (const auto &generator_tuple : generators) {
         MeterClassID known_class = std::get<0>(generator_tuple);
         if (meter_class == known_class) {
-            logger.printfln("Tried to register meter generator for already registered meter class %u.", static_cast<uint32_t>(meter_class));
+            logger.printfln("Tried to register meter generator for already registered meter class %lu.", static_cast<uint32_t>(meter_class));
             return;
         }
     }
@@ -544,7 +544,7 @@ IMeterGenerator *Meters::get_generator_for_class(MeterClassID meter_class)
         return nullptr;
     }
 
-    logger.printfln("No generator for meter class %u.", static_cast<uint32_t>(meter_class));
+    logger.printfln("No generator for meter class %lu.", static_cast<uint32_t>(meter_class));
     return get_generator_for_class(MeterClassID::None);
 }
 
@@ -770,12 +770,12 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
         return;
 
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to update value %u for meter in non-existent slot %u.", index, slot);
+        logger.printfln("Tried to update value %lu for meter in non-existent slot %lu.", index, slot);
         return;
     }
 
     if (index == UINT32_MAX) {
-        logger.printfln("Tried to update a value for meter in slot %u that is known to not exist (index = UINT32_MAX).", slot);
+        logger.printfln("Tried to update a value for meter in slot %lu that is known to not exist (index = UINT32_MAX).", slot);
         return;
     }
 
@@ -807,7 +807,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 void Meters::update_all_values(uint32_t slot, const float new_values[])
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to update all values from array for meter in non-existent slot %u.", slot);
+        logger.printfln("Tried to update all values from array for meter in non-existent slot %lu.", slot);
         return;
     }
 
@@ -850,7 +850,7 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
 void Meters::update_all_values(uint32_t slot, const Config *new_values)
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to update all values from Config for meter in non-existent slot %u.", slot);
+        logger.printfln("Tried to update all values from Config for meter in non-existent slot %lu.", slot);
         return;
     }
 
@@ -872,7 +872,7 @@ void Meters::update_all_values(uint32_t slot, const Config *new_values)
 void Meters::finish_update(uint32_t slot)
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to finish an update for meter in non-existent slot %u.", slot);
+        logger.printfln("Tried to finish an update for meter in non-existent slot %lu.", slot);
         return;
     }
 
@@ -887,7 +887,7 @@ void Meters::finish_update(uint32_t slot)
 void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[], uint32_t value_id_count)
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to declare value IDs for meter in non-existent slot %u.", slot);
+        logger.printfln("Tried to declare value IDs for meter in non-existent slot %lu.", slot);
         return;
     }
 
@@ -900,12 +900,12 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     if (value_id_count_old != 0) {
         const char *plural_s_old = value_id_count_old == 1 ? "" : "s";
         const char *plural_s_new = value_id_count     == 1 ? "" : "s";
-        logger.printfln("Meter in slot %u already declared %u value%s. Refusing to re-declare %u value%s.", slot, value_id_count_old, plural_s_old, value_id_count, plural_s_new);
+        logger.printfln("Meter in slot %lu already declared %u value%s. Refusing to re-declare %lu value%s.", slot, value_id_count_old, plural_s_old, value_id_count, plural_s_new);
         return;
     }
 
     if (value_id_count <= 0) {
-        logger.printfln("Cannot declare zero value IDs for meter in slot %u.", value_id_count);
+        logger.printfln("Cannot declare zero value IDs for meter in slot %lu.", value_id_count);
         return;
     }
 
@@ -1023,9 +1023,9 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
 
     const char *plural_s = total_value_id_count == 1 ? "" : "s";
     if (total_value_id_count == value_id_count) {
-        logger.printfln("Meter in slot %u declared %u value%s", slot, total_value_id_count, plural_s);
+        logger.printfln("Meter in slot %lu declared %lu value%s", slot, total_value_id_count, plural_s);
     } else {
-        logger.printfln("Meter in slot %u declared %u (%u) value%s", slot, total_value_id_count, value_id_count, plural_s);
+        logger.printfln("Meter in slot %lu declared %lu (%lu) value%s", slot, total_value_id_count, value_id_count, plural_s);
     }
 
     if (!meters_feature_declared) {
@@ -1043,7 +1043,7 @@ bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
 void Meters::fill_index_cache(uint32_t slot, size_t find_value_count, const MeterValueID find_value_ids[], uint32_t index_cache[])
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to fill an index cache for meter in non-existent slot %u.", slot);
+        logger.printfln("Tried to fill an index cache for meter in non-existent slot %lu.", slot);
         return;
     }
 

@@ -178,7 +178,7 @@ void ValueHistory::tick(uint32_t now, bool update_history, METER_VALUE_HISTORY_V
 
 void ValueHistory::format_live(uint32_t now, StringBuilder *sb)
 {
-    sb->printf("{\"offset\":%u,\"samples_per_second\":%f,\"samples\":[", now - live_last_update, static_cast<double>(samples_per_second()));
+    sb->printf("{\"offset\":%lu,\"samples_per_second\":%f,\"samples\":[", now - live_last_update, static_cast<double>(samples_per_second()));
     format_live_samples(sb);
     sb->puts("]}");
 }
@@ -209,7 +209,7 @@ void ValueHistory::format_live_samples(StringBuilder *sb)
 
 void ValueHistory::format_history(uint32_t now, StringBuilder *sb)
 {
-    sb->printf("{\"offset\":%u,\"samples\":[", now - history_last_update);
+    sb->printf("{\"offset\":%lu,\"samples\":[", now - history_last_update);
     format_history_samples(sb);
     sb->puts("]}");
 }
