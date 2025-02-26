@@ -275,6 +275,8 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
 #if MODULE_EVSE_LED_AVAILABLE()
         if (!blink_handled)
             evse_led.set_module(EvseLed::Blink::Ack, 2000);
+#else
+        (void) blink_handled;
 #endif
 
         auth_info.get("tag_type")->updateUint(tag->tag_type);

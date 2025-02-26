@@ -637,7 +637,7 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpHoldingRegisters(uint16_t start_addre
                         logger.printfln("Received write to EVSE LED indication but without duration! Please write all 4 registers starting at 1004 in one request.");
                         break;
                     }
-
+#if MODULE_EVSE_LED_AVAILABLE()
                     uint16_t duration = swapBytes(data_values[i + 1]);
                     i += 2;
 
@@ -653,7 +653,9 @@ TFModbusTCPExceptionCode ModbusTcp::setWarpHoldingRegisters(uint16_t start_addre
                         v = data_values[i + 1] >> 8;
                         i += 2;
                     }
+
                     evse_led.set_api(EvseLed::Blink(val.u), duration, h, s, v);
+#endif
                 } break;
             case 1006: REQUIRE(evse); logger.printfln("Received write to EVSE LED duration but without indication! Please write all 4 registers starting at 1004 in one request."); break;
             case 1008: REQUIRE(evse); logger.printfln("Received write to EVSE LED hue but without indication! Please write all 10 registers starting at 1004 in one request."); break;
