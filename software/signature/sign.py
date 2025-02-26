@@ -93,6 +93,10 @@ def keepassxc(preset, prefix, action, args, entry, password=None, input=None):
         return None
 
 
+def notify_send(message):
+    subprocess.call(['notify-send', '-t', '3600000', '-i', os.path.abspath(make_path('icon.png')), 'esp32-firmware', message])
+
+
 def main():
     libsodium = load_libsodium()
 
@@ -160,6 +164,7 @@ def main():
 
         if preset['sodium_secret_key_protection'] == 'password':
             if args.sodium_secret_key_password == None:
+                notify_send('Enter password for sodium secret key file')
                 print(f'Enter password for sodium secret key file {sodium_secret_key_path}:')
 
                 try:
@@ -265,6 +270,7 @@ def main():
 
             if preset['gpg_keyring_passphrase_protection'] == 'password':
                 if args.gpg_keyring_passphrase_password == None:
+                    notify_send('Enter password for GPG keyring passphrase file')
                     print(f'Enter password for GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
 
                     try:
