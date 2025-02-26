@@ -59,3 +59,7 @@
 2025-02-25: 1.2.3 (d34a5007)
 - Add web interface hint about missing meter location
 - SunSpec: Remove quirk for Kostal endian-swapped floats, it creates more problems than it fixes
+
+2025-02-26: 1.2.4 (<unknown>)
+- SunSpec: Fix partial reading of model data
+- Improve translations
