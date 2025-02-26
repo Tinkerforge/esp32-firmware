@@ -911,7 +911,7 @@ void RemoteAccess::register_urls()
 
         uint32_t req_id = doc["id"];
         int idx = 0;
-        for (const auto user : config.get("users")) {
+        for (const auto &user : config.get("users")) {
             if (user.get("id")->asUint() == req_id) {
                 break;
             }
@@ -927,7 +927,7 @@ void RemoteAccess::register_urls()
         }
 
         bool one_left = false;
-        for (const auto user : config.get("users")) {
+        for (const auto &user : config.get("users")) {
             if (user.get("id")->asUint() != 255) {
                 one_left = true;
                 break;
