@@ -24,8 +24,59 @@ import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import { StatusSection } from "../../ts/components/status_section";
+import { InputFloat } from "ts/components/input_float";
+import { Button, Modal } from "react-bootstrap";
+import { ItemModal } from "ts/components/item_modal";
+import { useState } from "preact/hooks";
 
-export class ChargeLimitsStatus extends Component {
+export function CustomLimitModal(props: {show: boolean, onHide: () => void, onSubmit: (custom_limit: number) => void}) {
+    const [customLimit, setCustomLimit] = useState(0);
+
+    const electricity_price = API.get("charge_tracker/config").electricity_price;
+
+    const hideFn = async () => {setCustomLimit(0); props.onHide()};
+
+    return <ItemModal
+        size="lg"
+        show={props.show}
+        onHide={hideFn}
+        onSubmit={async () => {
+            props.onSubmit(customLimit);
+            //API.call("charge_limits/override_energy", {energy_wh: customLimit}, () => __("charge_limits.script.override_failed"));
+            hideFn()
+        }}
+        title={__("charge_limits.content.custom_energy_modal_title")}
+        no_variant="secondary" no_text={__("main.abort")}
+        yes_variant="primary" yes_text={__("charge_limits.content.custom_energy_modal_apply")}
+        >
+        <FormRow label={__("charge_limits.content.custom_energy_limit_label")}>
+        <InputFloat
+                value={customLimit}
+                onValue={setCustomLimit}
+                min={1}
+                max={999999}
+                digits={3}
+                unit="kWh"/>
+        </FormRow>
+
+        {electricity_price > 0 ?
+            <FormRow label={__("charge_limits.content.custom_energy_limit_cost_label")}>
+            <InputFloat
+                    disabled
+                    value={electricity_price / 100 * customLimit / 1000}
+                    digits={2}
+                    unit="€"/>
+            </FormRow>
+            : undefined}
+    </ItemModal>
+}
+
+export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: number, show_custom_energy_modal: boolean}> {
+    constructor() {
+        super();
+        this.state = {last_custom_energy: 0, show_custom_energy_modal: false};
+    }
+
     render() {
         if (!util.render_allowed() || !API.hasFeature("evse"))
             return <StatusSection name="charge_limits" />;
@@ -115,10 +166,13 @@ export class ChargeLimitsStatus extends Component {
                 ["80000", util.toLocaleFixed(80, 0) + " kWh"],
                 ["90000", util.toLocaleFixed(90, 0) + " kWh"],
                 ["100000", util.toLocaleFixed(100, 0) + " kWh"],
+                ["custom", __("charge_limits.content.custom_energy_limit")]
             ];
 
             if (electricity_price > 0) {
                 for (let i = 1; i < energy_items.length; ++i) {
+                    if (energy_items[i][0] == "custom")
+                        continue;
                     energy_items[i][1] += ` (~ ${util.toLocaleFixed(electricity_price / 10000 * parseFloat(energy_items[i][0]) / 1000, 2)} €)`
                 }
             }
@@ -126,7 +180,7 @@ export class ChargeLimitsStatus extends Component {
             let energy_placeholder = __("charge_limits.content.unlimited");
 
             if (config_in_use.energy_wh != 0)
-                energy_placeholder = util.toLocaleFixed(config_in_use.energy_wh / 1000, 0) + " kWh | " + get_energy_left() + __("charge_limits.content.left");
+                energy_placeholder = (config_in_use.energy_wh % 1000 == 0 ? util.toLocaleFixed(config_in_use.energy_wh / 1000, 0) : util.toLocaleFixed(config_in_use.energy_wh / 1000.0, 3)) + " kWh | " + get_energy_left() + __("charge_limits.content.left");
 
             let conf_idx = energy_items.findIndex(x => x[0] == config.energy_wh.toString());
             if (conf_idx == -1)
@@ -150,9 +204,18 @@ export class ChargeLimitsStatus extends Component {
                     placeholder={energy_placeholder}
                     value={""}
                     onValue={(v) => {
-                        this.setState({config_in_use: {...config_in_use, energy_wh: Number(v)}})
-                        API.call("charge_limits/override_energy", {energy_wh: Number(v)}, () => __("charge_limits.script.override_failed"));
+                        if (v == "custom") {
+                            this.setState({show_custom_energy_modal: true});
+                            return;
+                        }
+
+                        API.call("charge_limits/override_energy", {energy_wh: parseInt(v)}, () => __("charge_limits.script.override_failed"));
                 }}/>
+
+                <CustomLimitModal
+                    show={this.state.show_custom_energy_modal}
+                    onHide={() => this.setState({show_custom_energy_modal: false})}
+                    onSubmit={limit => API.call("charge_limits/override_energy", {energy_wh: limit}, () => __("charge_limits.script.override_failed"))}/>
             </FormRow>
         }
 
@@ -162,8 +225,7 @@ export class ChargeLimitsStatus extends Component {
                         placeholder={duration_placeholder}
                         value={""}
                         onValue={(v) => {
-                            this.setState({config_in_use: {...config_in_use, duration: Number(v)}})
-                            API.call("charge_limits/override_duration", {duration: Number(v)}, () => __("charge_limits.script.override_failed"));
+                            API.call("charge_limits/override_duration", {duration: parseInt(v)}, () => __("charge_limits.script.override_failed"));
                     }}/>
                 </FormRow>
                 {energy_row}

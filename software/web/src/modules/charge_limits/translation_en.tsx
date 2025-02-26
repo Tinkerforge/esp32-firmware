@@ -22,7 +22,13 @@ let x = {
             "h4": "4 hours",
             "h6": "6 hours",
             "h8": "8 hours",
-            "h12": "12 hours"
+            "h12": "12 hours",
+
+            "custom_energy_limit": "Custom...",
+            "custom_energy_modal_title": "Custom energy limit",
+            "custom_energy_modal_apply": "Apply",
+            "custom_energy_limit_label": "Energy limit",
+            "custom_energy_limit_cost_label": "Price ~"
         },
         "automation": {
             "restart": "Reset charge limit",

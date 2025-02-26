@@ -30,6 +30,7 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { Switch } from "../../ts/components/switch";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
+import { CustomLimitModal } from "modules/charge_limits/main";
 
 export function EVSESettingsNavbar() {
     return <NavbarItem name="evse_settings" title={__("evse.navbar.evse_settings")} symbol={<Settings />} hidden={!API.hasModule("evse_v2") && !API.hasModule("evse")} />;
@@ -50,6 +51,7 @@ interface EVSESettingsState {
     is_evse_v2: boolean
     is_evse_v3: boolean
     have_meter: boolean
+    show_custom_energy_modal: boolean
 }
 
 type ChargeLimitsConfig = API.getType["charge_limits/default_limits"];
@@ -193,25 +195,43 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             disable_three_phase_entry = (p[0] && !p[1] && !p[2]);
         }
 
+        let energy_items: [string, string][] = [
+            ["0", __("charge_limits.content.unlimited")],
+            ["5000", util.toLocaleFixed(5, 0) + " kWh"],
+            ["10000", util.toLocaleFixed(10, 0) + " kWh"],
+            ["15000", util.toLocaleFixed(15, 0) + " kWh"],
+            ["20000", util.toLocaleFixed(20, 0) + " kWh"],
+            ["25000", util.toLocaleFixed(25, 0) + " kWh"],
+            ["30000", util.toLocaleFixed(30, 0) + " kWh"],
+            ["40000", util.toLocaleFixed(40, 0) + " kWh"],
+            ["50000", util.toLocaleFixed(50, 0) + " kWh"],
+            ["60000", util.toLocaleFixed(60, 0) + " kWh"],
+            ["70000", util.toLocaleFixed(70, 0) + " kWh"],
+            ["80000", util.toLocaleFixed(80, 0) + " kWh"],
+            ["90000", util.toLocaleFixed(90, 0) + " kWh"],
+            ["100000", util.toLocaleFixed(100, 0) + " kWh"],
+            ["custom", __("charge_limits.content.custom_energy_limit")]
+        ]
+        let conf_idx = energy_items.findIndex(x => x[0] == s.energy_wh.toString());
+        if (conf_idx == -1)
+            energy_items.splice(1, 0, [s.energy_wh.toString(), (s.energy_wh % 1000 == 0 ? util.toLocaleFixed(s.energy_wh / 1000, 0) : util.toLocaleFixed(s.energy_wh / 1000.0, 3)) + " kWh"]);
+
         const energy_settings = <FormRow label={__("charge_limits.content.energy")} label_muted={__("charge_limits.content.energy_muted")}>
-            <InputSelect items={[
-                ["0", __("charge_limits.content.unlimited")],
-                ["5000", util.toLocaleFixed(5, 0) + " kWh"],
-                ["10000", util.toLocaleFixed(10, 0) + " kWh"],
-                ["15000", util.toLocaleFixed(15, 0) + " kWh"],
-                ["20000", util.toLocaleFixed(20, 0) + " kWh"],
-                ["25000", util.toLocaleFixed(25, 0) + " kWh"],
-                ["30000", util.toLocaleFixed(30, 0) + " kWh"],
-                ["40000", util.toLocaleFixed(40, 0) + " kWh"],
-                ["50000", util.toLocaleFixed(50, 0) + " kWh"],
-                ["60000", util.toLocaleFixed(60, 0) + " kWh"],
-                ["70000", util.toLocaleFixed(70, 0) + " kWh"],
-                ["80000", util.toLocaleFixed(80, 0) + " kWh"],
-                ["90000", util.toLocaleFixed(90, 0) + " kWh"],
-                ["100000", util.toLocaleFixed(100, 0) + " kWh"]
-            ]}
+            <InputSelect items={energy_items}
             value={s.energy_wh}
-            onValue={(v) => this.setState({energy_wh: Number(v)})}/>
+            onValue={(v) => {
+                if (v == "custom") {
+                    this.setState({show_custom_energy_modal: true});
+                    return;
+                }
+
+                this.setState({energy_wh: Number(v)})
+            }}/>
+
+            <CustomLimitModal
+                show={this.state.show_custom_energy_modal}
+                onHide={() => this.setState({show_custom_energy_modal: false})}
+                onSubmit={limit => this.setState({energy_wh: limit})}/>
         </FormRow>;
 
         const require_meter = <FormRow label={__("evse.content.meter_monitoring")}>
