@@ -139,7 +139,7 @@ void EMEnergyAnalysis::register_events()
 
             uint32_t power_index;
             if (meters.get_cached_power_index(slot, &power_index)) {
-                event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {power_index}, [this, slot](const Config *config_power) {
+                event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {static_cast<size_t>(power_index)}, [this, slot](const Config *config_power) {
                     update_history_meter_power(slot, config_power->asFloat());
                     return EventResult::OK;
                 });
@@ -929,7 +929,7 @@ static uint32_t price_to_10bit(int32_t price)
         return PRICE_UINT10_MAX;
     }
 
-    return clamp(PRICE_INT10_MIN, price, PRICE_INT10_MAX) - PRICE_INT10_MIN;
+    return static_cast<uint32_t>(clamp(static_cast<int32_t>(PRICE_INT10_MIN), price, static_cast<int32_t>(PRICE_INT10_MAX)) - static_cast<int32_t>(PRICE_INT10_MIN));
 }
 
 static int32_t price_from_10bit(uint32_t price)
