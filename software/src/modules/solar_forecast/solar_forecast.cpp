@@ -199,7 +199,7 @@ void SolarForecast::handle_new_data()
         JsonInteger code      = js_message["code"];
         if (code != 0) {
             JsonString text = js_message["text"];
-            logger.printfln("Solar Forecast server returned error code %ld (%s)", code, text.c_str());
+            logger.printfln("Solar Forecast server returned error code %lld (%s)", code, text.c_str());
             if(code == 429) { // 429 = rate limit reached
                 logger.printfln("Solar Forecast rate limit reached, next solar forecast API call will be in 2 hours");
                 next_sync_forced = rtc.timestamp_minutes() + 120;
@@ -394,7 +394,7 @@ void SolarForecast::update()
                 break;
 
             case AsyncHTTPSClientError::NoCert:
-                logger.printfln("Certificate with ID %d is not available", config.get("cert_id")->asInt());
+                logger.printfln("Certificate with ID %ld is not available", config.get("cert_id")->asInt());
                 break;
 
             case AsyncHTTPSClientError::NoResponse:
