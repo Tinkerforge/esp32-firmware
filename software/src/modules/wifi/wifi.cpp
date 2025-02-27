@@ -630,17 +630,13 @@ void Wifi::setup()
     }
 
     WiFi.setAutoReconnect(false);
-    WiFi.disconnect(false, true);
 
-    wifi_country_t config;
-    config.cc[0] = 'D';
-    config.cc[1] = 'E';
-    config.cc[2] = ' ';
-    config.schan = 1;
-    config.nchan = 13;
-    config.policy = WIFI_COUNTRY_POLICY_AUTO;
-    esp_wifi_set_country(&config);
+    // Check if WiFi connected automatically and erase configuration in that case.
+    if (WiFi.status() != WL_STOPPED) {
+        WiFi.disconnect(false, true);
+    }
 
+    esp_wifi_set_country_code("DE", true);
     esp_wifi_set_ps(WIFI_PS_NONE);
 
     // We don't need the additional speed of HT40 and it only causes more errors.
