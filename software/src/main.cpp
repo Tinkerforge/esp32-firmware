@@ -150,7 +150,7 @@ static void pre_reboot()
             "pre_reboot_task",
             640,
             nullptr,
-            ESP_TASK_PRIO_MAX,
+            configMAX_PRIORITIES - 1U, // Cannot use ESP_TASK_PRIO_MAX because it is incorrectly defined.
             nullptr,
             1);
 
