@@ -149,10 +149,10 @@ void Co2Ampel::setup()
         t -= m * 60 * 1000;
         uint32_t s = t / 1000;
 
-        snprintf(t_buf, ARRAY_SIZE(t_buf), "%02u %02u", d, h);
+        snprintf(t_buf, ARRAY_SIZE(t_buf), "%02lu %02lu", d, h);
         tf_lcd_128x64_write_line(&lcd, 6, 8, t_buf);
 
-        snprintf(t_buf, ARRAY_SIZE(t_buf), "%02u %02u", m, s);
+        snprintf(t_buf, ARRAY_SIZE(t_buf), "%02lu %02lu", m, s);
         tf_lcd_128x64_write_line(&lcd, 7, 8, t_buf);
 
         if(co2_concentration > red_limit) {
