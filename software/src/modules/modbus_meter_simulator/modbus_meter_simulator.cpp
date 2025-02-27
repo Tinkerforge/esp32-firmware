@@ -74,7 +74,7 @@ void ModbusMeterSimulator::setup()
     }
 
     if (meter_id == 0) {
-        logger.printfln("Unsupported meter type %u. Disabling simulator.", meter_type);
+        logger.printfln("Unsupported meter type %lu. Disabling simulator.", meter_type);
         initialized = true; // Mark as initialized so that the front-end shows up.
         return;
     }
@@ -162,23 +162,23 @@ void ModbusMeterSimulator::setupRS485()
 
     // Unused callbacks
     tf_rs485_register_modbus_slave_write_single_coil_request_callback(&bricklet, [](TF_RS485 *rs485, uint8_t request_id, uint32_t coil_address, bool coil_value, void *user_data) {
-        logger.printfln("No handler implementation for request 'write single coil' with coil address %u", coil_address);
+        logger.printfln("No handler implementation for request 'write single coil' with coil address %lu", coil_address);
     }, this);
 
     tf_rs485_register_modbus_slave_write_multiple_coils_request_low_level_callback(&bricklet, [](struct TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t coils_length, uint16_t coils_chunk_offset, bool coils_chunk_data[440], void *user_data) {
-        logger.printfln("No handler implementation for request 'write multiple coils' with starting address %u", starting_address);
+        logger.printfln("No handler implementation for request 'write multiple coils' with starting address %lu", starting_address);
     }, this);
 
     tf_rs485_register_modbus_slave_write_single_register_request_callback(&bricklet, [](TF_RS485 *device, uint8_t request_id, uint32_t register_address, uint16_t register_value, void *user_data) {
-        logger.printfln("No handler implementation for request 'write single register' with register address %u", register_address);
+        logger.printfln("No handler implementation for request 'write single register' with register address %lu", register_address);
     }, this);
 
     tf_rs485_register_modbus_slave_read_coils_request_callback(&bricklet, [](TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data) {
-        logger.printfln("No handler implementation for request 'read coils' with starting address %u", starting_address);
+        logger.printfln("No handler implementation for request 'read coils' with starting address %lu", starting_address);
     }, this);
 
     tf_rs485_register_modbus_slave_read_discrete_inputs_request_callback(&bricklet, [](TF_RS485 *rs485, uint8_t request_id, uint32_t starting_address, uint16_t count, void *user_data) {
-        logger.printfln("No handler implementation for request 'read discrete inputs' with starting address %u", starting_address);
+        logger.printfln("No handler implementation for request 'read discrete inputs' with starting address %lu", starting_address);
     }, this);
 
     initialized = true;
@@ -242,7 +242,7 @@ void ModbusMeterSimulator::modbus_slave_write_multiple_registers_request_handler
         logger.printfln("Setting system type to %f", static_cast<double>(float_val));
         system_type = float_val;
     } else {
-        logger.printfln("Received unexpected write_multiple_registers request to address %u with length %u", starting_address, registers_length);
+        logger.printfln("Received unexpected write_multiple_registers request to address %lu with length %hu", starting_address, registers_length);
     }
     tf_rs485_modbus_slave_answer_write_multiple_registers_request(&bricklet, request_id);
 }
@@ -258,7 +258,7 @@ void ModbusMeterSimulator::modbus_slave_read_holding_registers_request_handler(u
         logger.printfln("Master reading meter ID");
         regs[0] = meter_id;
     } else {
-        logger.printfln("Received unexpected read_holding_registers request to address %u with length %u", starting_address, count);
+        logger.printfln("Received unexpected read_holding_registers request to address %lu with length %hu", starting_address, count);
         return;
     }
 
@@ -272,7 +272,7 @@ void ModbusMeterSimulator::modbus_slave_read_input_registers_request_handler(uin
     uint16_t regs[125];
 
     if (count > ARRAY_SIZE(regs)) {
-        logger.printfln("Received unexpected read_input_registers request to address %u with length %u", starting_address, count);
+        logger.printfln("Received unexpected read_input_registers request to address %lu with length %hu", starting_address, count);
         return;
     }
 

@@ -40,12 +40,12 @@ void MeterMqttMirror::setup(Config *ephemeral_config)
     bool automatic = ephemeral_config->get("auto")->asBool();
 
     if (meter_path.length() < 3) {
-        logger.printfln("Meter %u source path too short: '%s'", slot, meter_path.c_str());
+        logger.printfln("Meter %lu source path too short: '%s'", slot, meter_path.c_str());
         return;
     }
 
     if (meter_path.startsWith(mqtt.config.get("global_topic_prefix")->asString())) {
-        logger.printfln("Meter %u cannot listen to itself: Source meter path cannot start with the topic prefix from the MQTT config.", slot);
+        logger.printfln("Meter %lu cannot listen to itself: Source meter path cannot start with the topic prefix from the MQTT config.", slot);
         return;
     }
 
@@ -75,7 +75,7 @@ void MeterMqttMirror::onMessage(const char *topic, size_t topic_len, char *data,
 
     DeserializationError error = deserializeJson(doc, data, data_len);
     if (error) {
-        logger.printfln("Meter %u failed to deserialize payload received on MQTT topic %*s: %s", slot, static_cast<int>(topic_len), topic, error.c_str());
+        logger.printfln("Meter %lu failed to deserialize payload received on MQTT topic %*s: %s", slot, static_cast<int>(topic_len), topic, error.c_str());
         return;
     }
 
@@ -87,12 +87,12 @@ void MeterMqttMirror::handle_mqtt_value_ids(const JsonArrayConst &array)
 {
     size_t array_size = array.size();
     if (array_size > METERS_MAX_VALUES_PER_METER) {
-        logger.printfln("Meter %u: Too many value IDs from mirrored meter: %u > %i", slot, array_size, METERS_MAX_VALUES_PER_METER);
+        logger.printfln("Meter %lu: Too many value IDs from mirrored meter: %zu > %i", slot, array_size, METERS_MAX_VALUES_PER_METER);
         return;
     }
 
     if (array_size == 0) {
-        logger.printfln("Meter %u: Ignoring zero-length value IDs update.", slot);
+        logger.printfln("Meter %lu: Ignoring zero-length value IDs update.", slot);
         return;
     }
 
@@ -140,15 +140,15 @@ void MeterMqttMirror::handle_mqtt_value_ids(const JsonArrayConst &array)
         if (accepting_updates) {
             //logger.printfln("Ignoring matching value IDs update.");
         } else {
-            logger.printfln("Meter %u: Received matching value IDs update; resuming value updates.", slot);
+            logger.printfln("Meter %lu: Received matching value IDs update; resuming value updates.", slot);
             accepting_updates = true;
         }
     } else { // non-matching
         if (accepting_updates) {
-            logger.printfln("Meter %u: Received non-matching value IDs update; suspending value updates.", slot);
+            logger.printfln("Meter %lu: Received non-matching value IDs update; suspending value updates.", slot);
             accepting_updates = false;
         } else {
-            logger.printfln("Meter %u: Ignoring repeated non-matching value IDs update.", slot);
+            logger.printfln("Meter %lu: Ignoring repeated non-matching value IDs update.", slot);
         }
     }
 }
@@ -159,7 +159,7 @@ void MeterMqttMirror::handle_mqtt_values(const JsonArrayConst &array)
         return;
 
     if (array.size() != declared_values_count) {
-        logger.printfln("Meter %u: Unexpected amount of values from mirrored meter: %u, expected %u", slot, array.size(), declared_values_count);
+        logger.printfln("Meter %lu: Unexpected amount of values from mirrored meter: %zu, expected %zu", slot, array.size(), declared_values_count);
         return;
     }
 
