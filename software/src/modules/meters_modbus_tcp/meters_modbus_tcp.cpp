@@ -165,6 +165,11 @@ void MetersModbusTCP::pre_setup()
     table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM530, carlo_gavazzi});
     table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM540, carlo_gavazzi});
 
+    table_prototypes.push_back({MeterModbusTCPTableID::SolaredgeInverter, Config::Object({
+        {"virtual_meter", Config::Enum(SolaredgeInverterVirtualMeter::None)},
+        {"device_address", Config::Uint(1, 1, 247)},
+    })});
+
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"location",       Config::Enum(MeterLocation::Unknown)},

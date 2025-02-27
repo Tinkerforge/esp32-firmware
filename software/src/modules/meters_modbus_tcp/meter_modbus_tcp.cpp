@@ -974,6 +974,37 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         table = &carlo_gavazzi_em530_and_em540_table;
         break;
 
+    case MeterModbusTCPTableID::SolaredgeInverter:
+        solaredge.inverter_virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SolaredgeInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+
+        switch (solaredge.inverter_virtual_meter) {
+        case SolaredgeInverterVirtualMeter::None:
+            logger.printfln("No Solaredge Inverter Virtual Meter selected");
+            return;
+
+        case SolaredgeInverterVirtualMeter::InverterUnused:
+            logger.printfln("Invalid Solaredge Inverter Virtual Meter: %u", static_cast<uint8_t>(solaredge.inverter_virtual_meter));
+            default_location = MeterLocation::Inverter;
+            return;
+
+        case SolaredgeInverterVirtualMeter::GridUnused:
+            logger.printfln("Invalid Solaredge Inverter Virtual Meter: %u", static_cast<uint8_t>(solaredge.inverter_virtual_meter));
+            default_location = MeterLocation::Grid;
+            return;
+
+        case SolaredgeInverterVirtualMeter::Battery:
+            table = &solaredge_inverter_battery_table;
+            default_location = MeterLocation::Battery;
+            break;
+
+        default:
+            logger.printfln("Unknown Solaredge Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(solaredge.inverter_virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
