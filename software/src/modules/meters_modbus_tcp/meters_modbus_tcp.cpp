@@ -210,3 +210,11 @@ const Config *MetersModbusTCP::get_errors_prototype()
 {
     return &errors_prototype;
 }
+
+void MetersModbusTCP::trace_timestamp()
+{
+    if (last_trace_timestamp < 0_us || deadline_elapsed(last_trace_timestamp + 1_s)) {
+        last_trace_timestamp = now_us();
+        logger.trace_timestamp(trace_buffer_index);
+    }
+}

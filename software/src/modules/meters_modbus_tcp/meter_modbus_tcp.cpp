@@ -100,6 +100,11 @@
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
 
+#define trace(fmt, ...) \
+    do { \
+        meters_modbus_tcp.trace_timestamp(); \
+        logger.tracefln_plain(trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
+    } while (0)
 
 static const float fronius_scale_factors[21] = {
               0.0000000001f,    // 10^-10
@@ -1158,13 +1163,12 @@ bool MeterModbusTCP::is_carlo_gavazzi_em510() const
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu e%u a%zu",
-                        slot,
-                        static_cast<uint8_t>(table_id),
-                        read_index,
-                        static_cast<uint32_t>(generic_read_request.result),
-                        table->specs[read_index].start_address);
+        trace("m%u t%u i%zu e%u a%zu",
+              slot,
+              static_cast<uint8_t>(table_id),
+              read_index,
+              static_cast<uint32_t>(generic_read_request.result),
+              table->specs[read_index].start_address);
 
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
             auto timeout = errors->get("timeout");
@@ -1179,14 +1183,13 @@ void MeterModbusTCP::read_done_callback()
     if (is_sungrow_inverter_meter()
      && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS) {
         if (sungrow.inverter_output_type < 0) {
-            logger.tracefln(trace_buffer_index,
-                            "m%u t%u i%zu u16 a%zu r%u v%u",
-                            slot,
-                            static_cast<uint8_t>(table_id),
-                            read_index,
-                            table->specs[read_index].start_address,
-                            register_buffer[register_buffer_index],
-                            register_buffer[register_buffer_index]);
+            trace("m%u t%u i%zu u16 a%zu r%u v%u",
+                  slot,
+                  static_cast<uint8_t>(table_id),
+                  read_index,
+                  table->specs[read_index].start_address,
+                  register_buffer[register_buffer_index],
+                  register_buffer[register_buffer_index]);
 
             switch (register_buffer[register_buffer_index]) {
             case 0:
@@ -1242,14 +1245,13 @@ void MeterModbusTCP::read_done_callback()
     if (is_deye_hybrid_inverter_battery_meter()
      && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
         if (deye.hybrid_inverter_device_type < 0) {
-            logger.tracefln(trace_buffer_index,
-                            "m%u t%u i%zu u16 a%zu r%u v%u",
-                            slot,
-                            static_cast<uint8_t>(table_id),
-                            read_index,
-                            table->specs[read_index].start_address,
-                            register_buffer[register_buffer_index],
-                            register_buffer[register_buffer_index]);
+            trace("m%u t%u i%zu u16 a%zu r%u v%u",
+                  slot,
+                  static_cast<uint8_t>(table_id),
+                  read_index,
+                  table->specs[read_index].start_address,
+                  register_buffer[register_buffer_index],
+                  register_buffer[register_buffer_index]);
 
             switch (register_buffer[register_buffer_index]) {
             case 0x0002:
@@ -1290,14 +1292,13 @@ void MeterModbusTCP::read_done_callback()
     if (is_fronius_gen24_plus_hybrid_inverter_battery_meter()
      && generic_read_request.start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_INPUT_OR_MODEL_ID_ADDRESS) {
         if (fronius.gen24_plus_hybrid_inverter_input_or_model_id == 0) {
-            logger.tracefln(trace_buffer_index,
-                            "m%u t%u i%zu u16 a%zu r%u v%u",
-                            slot,
-                            static_cast<uint8_t>(table_id),
-                            read_index,
-                            table->specs[read_index].start_address,
-                            register_buffer[register_buffer_index],
-                            register_buffer[register_buffer_index]);
+            trace("m%u t%u i%zu u16 a%zu r%u v%u",
+                  slot,
+                  static_cast<uint8_t>(table_id),
+                  read_index,
+                  table->specs[read_index].start_address,
+                  register_buffer[register_buffer_index],
+                  register_buffer[register_buffer_index]);
 
             switch (register_buffer[register_buffer_index]) {
             case 1: // module/1/ID: Input ID
@@ -1390,138 +1391,129 @@ void MeterModbusTCP::read_done_callback()
 
     switch (value_type) {
     case ModbusValueType::None:
-        logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu n a%zu",
-                        slot,
-                        static_cast<uint8_t>(table_id),
-                        read_index,
-                        table->specs[read_index].start_address);
+        trace("m%u t%u i%zu n a%zu",
+              slot,
+              static_cast<uint8_t>(table_id),
+              read_index,
+              table->specs[read_index].start_address);
         break;
 
     case ModbusValueType::U16:
-        logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu u16 a%zu r%u v%u",
-                        slot,
-                        static_cast<uint8_t>(table_id),
-                        read_index,
-                        table->specs[read_index].start_address,
-                        register_buffer[register_buffer_index],
-                        register_buffer[register_buffer_index]);
+        trace("m%u t%u i%zu u16 a%zu r%u v%u",
+              slot,
+              static_cast<uint8_t>(table_id),
+              read_index,
+              table->specs[read_index].start_address,
+              register_buffer[register_buffer_index],
+              register_buffer[register_buffer_index]);
 
         value = static_cast<float>(register_buffer[register_buffer_index]);
         break;
 
     case ModbusValueType::S16:
-        logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu s16 a%zu r%u v%d",
-                        slot,
-                        static_cast<uint8_t>(table_id),
-                        read_index,
-                        table->specs[read_index].start_address,
-                        register_buffer[register_buffer_index],
-                        static_cast<int16_t>(register_buffer[register_buffer_index]));
+        trace("m%u t%u i%zu s16 a%zu r%u v%d",
+              slot,
+              static_cast<uint8_t>(table_id),
+              read_index,
+              table->specs[read_index].start_address,
+              register_buffer[register_buffer_index],
+              static_cast<int16_t>(register_buffer[register_buffer_index]));
 
         value = static_cast<float>(static_cast<int16_t>(register_buffer[register_buffer_index]));
         break;
 
     case ModbusValueType::U32BE:
     case ModbusValueType::U32LE:
-        logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu u32%s a%zu r%u,%u v%u",
-                        slot,
-                        static_cast<uint8_t>(table_id),
-                        read_index,
-                        endian,
-                        table->specs[read_index].start_address,
-                        register_buffer[register_buffer_index + 0],
-                        register_buffer[register_buffer_index + 1],
-                        c32.u);
+        trace("m%u t%u i%zu u32%s a%zu r%u,%u v%u",
+              slot,
+              static_cast<uint8_t>(table_id),
+              read_index,
+              endian,
+              table->specs[read_index].start_address,
+              register_buffer[register_buffer_index + 0],
+              register_buffer[register_buffer_index + 1],
+              c32.u);
 
         value = static_cast<float>(c32.u);
         break;
 
     case ModbusValueType::S32BE:
     case ModbusValueType::S32LE:
-        logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu s32%s a%zu r%u,%u v%d",
-                        slot,
-                        static_cast<uint8_t>(table_id),
-                        read_index,
-                        endian,
-                        table->specs[read_index].start_address,
-                        register_buffer[register_buffer_index + 0],
-                        register_buffer[register_buffer_index + 1],
-                        static_cast<int32_t>(c32.u));
+        trace("m%u t%u i%zu s32%s a%zu r%u,%u v%d",
+              slot,
+              static_cast<uint8_t>(table_id),
+              read_index,
+              endian,
+              table->specs[read_index].start_address,
+              register_buffer[register_buffer_index + 0],
+              register_buffer[register_buffer_index + 1],
+              static_cast<int32_t>(c32.u));
 
         value = static_cast<float>(static_cast<int32_t>(c32.u));
         break;
 
     case ModbusValueType::F32BE:
     case ModbusValueType::F32LE:
-        logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu f32%s a%zu r%u,%u v%f",
-                        slot,
-                        static_cast<uint8_t>(table_id),
-                        read_index,
-                        endian,
-                        table->specs[read_index].start_address,
-                        register_buffer[register_buffer_index + 0],
-                        register_buffer[register_buffer_index + 1],
-                        static_cast<double>(c32.f));
+        trace("m%u t%u i%zu f32%s a%zu r%u,%u v%f",
+              slot,
+              static_cast<uint8_t>(table_id),
+              read_index,
+              endian,
+              table->specs[read_index].start_address,
+              register_buffer[register_buffer_index + 0],
+              register_buffer[register_buffer_index + 1],
+              static_cast<double>(c32.f));
 
         value = c32.f;
         break;
 
     case ModbusValueType::U64BE:
     case ModbusValueType::U64LE:
-        logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu u64%s a%zu r%u,%u,%u,%u v%llu",
-                        slot,
-                        static_cast<uint8_t>(table_id),
-                        read_index,
-                        endian,
-                        table->specs[read_index].start_address,
-                        register_buffer[register_buffer_index + 0],
-                        register_buffer[register_buffer_index + 1],
-                        register_buffer[register_buffer_index + 2],
-                        register_buffer[register_buffer_index + 3],
-                        c64.u);
+        trace("m%u t%u i%zu u64%s a%zu r%u,%u,%u,%u v%llu",
+              slot,
+              static_cast<uint8_t>(table_id),
+              read_index,
+              endian,
+              table->specs[read_index].start_address,
+              register_buffer[register_buffer_index + 0],
+              register_buffer[register_buffer_index + 1],
+              register_buffer[register_buffer_index + 2],
+              register_buffer[register_buffer_index + 3],
+              c64.u);
 
         value = static_cast<float>(c64.u);
         break;
 
     case ModbusValueType::S64BE:
     case ModbusValueType::S64LE:
-        logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu s64%s a%zu r%u,%u,%u,%u v%lld",
-                        slot,
-                        static_cast<uint8_t>(table_id),
-                        read_index,
-                        endian,
-                        table->specs[read_index].start_address,
-                        register_buffer[register_buffer_index + 0],
-                        register_buffer[register_buffer_index + 1],
-                        register_buffer[register_buffer_index + 2],
-                        register_buffer[register_buffer_index + 3],
-                        static_cast<int64_t>(c64.u));
+        trace("m%u t%u i%zu s64%s a%zu r%u,%u,%u,%u v%lld",
+              slot,
+              static_cast<uint8_t>(table_id),
+              read_index,
+              endian,
+              table->specs[read_index].start_address,
+              register_buffer[register_buffer_index + 0],
+              register_buffer[register_buffer_index + 1],
+              register_buffer[register_buffer_index + 2],
+              register_buffer[register_buffer_index + 3],
+              static_cast<int64_t>(c64.u));
 
         value = static_cast<float>(static_cast<int64_t>(c64.u));
         break;
 
     case ModbusValueType::F64BE:
     case ModbusValueType::F64LE:
-        logger.tracefln(trace_buffer_index,
-                        "m%u t%u i%zu f64%s a%zu r%u,%u,%u,%u v%f",
-                        slot,
-                        static_cast<uint8_t>(table_id),
-                        read_index,
-                        endian,
-                        table->specs[read_index].start_address,
-                        register_buffer[register_buffer_index + 0],
-                        register_buffer[register_buffer_index + 1],
-                        register_buffer[register_buffer_index + 2],
-                        register_buffer[register_buffer_index + 3],
-                        c64.f);
+        trace("m%u t%u i%zu f64%s a%zu r%u,%u,%u,%u v%f",
+              slot,
+              static_cast<uint8_t>(table_id),
+              read_index,
+              endian,
+              table->specs[read_index].start_address,
+              register_buffer[register_buffer_index + 0],
+              register_buffer[register_buffer_index + 1],
+              register_buffer[register_buffer_index + 2],
+              register_buffer[register_buffer_index + 3],
+              c64.f);
 
         value = static_cast<float>(c64.f);
         break;

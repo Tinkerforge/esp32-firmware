@@ -20,6 +20,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <TFTools/Micros.h>
 
 #include "module.h"
 #include "modules/meters/imeter_generator.h"
@@ -47,6 +48,8 @@ public:
     [[gnu::const]] virtual const Config *get_state_prototype()  override;
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
+    void trace_timestamp();
+
 private:
     Config config_prototype;
     Config table_custom_registers_prototype;
@@ -54,6 +57,7 @@ private:
     Config errors_prototype;
 
     size_t trace_buffer_index;
+    micros_t last_trace_timestamp = -1_us;
 };
 
 #if defined(__GNUC__)
