@@ -32,6 +32,12 @@
 #define COMMON_MODEL_ID 1
 #define NON_IMPLEMENTED_UINT16 0xFFFF
 
+#define trace(fmt, ...) \
+    do { \
+        meters_sun_spec.trace_timestamp(); \
+        logger.tracefln_plain(trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
+    } while (0)
+
 static const uint16_t scan_base_addresses[] {
     40000,
     50000,
@@ -157,17 +163,56 @@ void MeterSunSpec::read_start(size_t model_regcount)
     start_generic_read();
 }
 
+static const char *lookup = "0123456789abcdef";
+
+static void registers_to_string(uint16_t *data, size_t data_len, char *buf, size_t *buf_used)
+{
+    for (size_t i = 0; i < data_len; ++i) {
+        for (size_t n = 0; n < 4; ++n) {
+            buf[4 * i + n] = lookup[(data[i] >> (12 - 4 * n)) & 0x0f];
+        }
+    }
+
+    *buf_used = 4 * data_len;
+}
+
 void MeterSunSpec::read_done_callback()
 {
     read_allowed = true;
 
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
+        trace("m%u a%zu c%zu e%u",
+              slot,
+              generic_read_request.start_address,
+              generic_read_request.register_count,
+              static_cast<uint32_t>(generic_read_request.result));
+
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
             auto timeout = errors->get("timeout");
             timeout->updateUint(timeout->asUint() + 1);
         }
 
         return;
+    }
+
+    char data_buf[125 * 4 + 1]; // 4 nibble per register for 125 registers plus \n
+    size_t data_buf_used;
+
+    for (size_t i = 0; i < 2; ++i) {
+        if (generic_read_request.data[i] != nullptr) {
+            registers_to_string(generic_read_request.data[i], generic_read_request.register_count, data_buf, &data_buf_used);
+
+            trace("m%u a%zu c%zu d%zu",
+                  slot,
+                  generic_read_request.start_address,
+                  generic_read_request.register_count,
+                  i);
+
+            data_buf[data_buf_used] = '\n';
+            ++data_buf_used;
+
+            logger.trace_plain(trace_buffer_index, data_buf, data_buf_used);
+        }
     }
 
     if (!values_declared) {

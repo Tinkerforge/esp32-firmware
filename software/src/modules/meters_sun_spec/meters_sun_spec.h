@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <unordered_map>
 #include <TFModbusTCPClient.h>
+#include <TFTools/Micros.h>
 #include <lwip/ip_addr.h>
 
 #include "module.h"
@@ -51,6 +52,8 @@ public:
     [[gnu::const]] virtual const Config *get_config_prototype() override;
     [[gnu::const]] virtual const Config *get_state_prototype()  override;
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
+
+    void trace_timestamp();
 
 private:
     enum class ScanState : uint8_t {
@@ -121,6 +124,9 @@ private:
     };
 
     Scan *scan = nullptr;
+
+    size_t trace_buffer_index;
+    micros_t last_trace_timestamp = -1_us;
 };
 
 #if defined(__GNUC__)
