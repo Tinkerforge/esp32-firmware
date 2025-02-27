@@ -51,6 +51,8 @@ static const uint16_t base_addresses[] {
 
 void MetersSunSpec::pre_setup()
 {
+    this->trace_buffer_index = logger.alloc_trace_buffer("meters_sun_spec", 8192);
+
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 65)}, // 32 chars manufacturer name; space; 32 chars model name
         {"location", Config::Enum(MeterLocation::Unknown)},
@@ -625,7 +627,7 @@ MeterClassID MetersSunSpec::get_class() const
 
 IMeter *MetersSunSpec::new_meter(uint32_t slot, Config *state, Config *errors)
 {
-    return new MeterSunSpec(slot, state, errors, modbus_tcp_client.get_pool());
+    return new MeterSunSpec(slot, state, errors, modbus_tcp_client.get_pool(), trace_buffer_index);
 }
 
 [[gnu::const]]
@@ -644,6 +646,14 @@ const Config *MetersSunSpec::get_state_prototype()
 const Config *MetersSunSpec::get_errors_prototype()
 {
     return &errors_prototype;
+}
+
+void MetersSunSpec::trace_timestamp()
+{
+    if (last_trace_timestamp < 0_us || deadline_elapsed(last_trace_timestamp + 1_s)) {
+        last_trace_timestamp = now_us();
+        logger.trace_timestamp(trace_buffer_index);
+    }
 }
 
 MetersSunSpec::ScanState MetersSunSpec::scan_get_next_state_after_read_error()
