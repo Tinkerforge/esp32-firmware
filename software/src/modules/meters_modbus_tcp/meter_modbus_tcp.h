@@ -47,6 +47,7 @@
 #include "carlo_gavazzi_phase.enum.h"
 #include "carlo_gavazzi_em270_virtual_meter.enum.h"
 #include "carlo_gavazzi_em280_virtual_meter.enum.h"
+#include "solaredge_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -258,6 +259,11 @@ private:
         struct {
             CarloGavazziPhase phase;
         } carlo_gavazzi_em510;
+
+        // Solaredge
+        struct {
+            SolaredgeInverterVirtualMeter inverter_virtual_meter;
+        } solaredge;
     };
 };
 

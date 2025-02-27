@@ -47,6 +47,7 @@ let x = {
             "table_carlo_gavazzi_em510": "Carlo Gavazzi EM510",
             "table_carlo_gavazzi_em530": "Carlo Gavazzi EM530",
             "table_carlo_gavazzi_em540": "Carlo Gavazzi EM540",
+            "table_solaredge_inverter": "Solaredge inverter",
             "virtual_meter": "Virtual meter",
             "virtual_meter_inverter": "Inverter",
             "virtual_meter_grid": "Grid",
