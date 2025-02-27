@@ -116,7 +116,7 @@ void PowerCycleTester::trigger_on_poti_pos(POTI_POS poti_pos, uint32_t delay)
     }
 
     if (pos >= low && pos <= high) {
-        logger.printfln("Triggering power cycle in %u ms.", delay);
+        logger.printfln("Triggering power cycle in %lu ms.", delay);
         if (delay < 2000)
             tf_rgb_led_v2_set_rgb_value(&led, 0, 255, 0);
         else {
