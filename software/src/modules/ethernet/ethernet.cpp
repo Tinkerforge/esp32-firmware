@@ -253,6 +253,8 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_STOP);
 
+    ETH.setTaskStackSize(2048);
+
     ETH.begin();
 }
 
