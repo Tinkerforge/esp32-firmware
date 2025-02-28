@@ -1194,12 +1194,13 @@ bool MeterModbusTCP::is_carlo_gavazzi_em510() const
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        trace("m%u t%u i%zu e%u a%zu",
+        trace("m%u t%u a%zu:%x c%zu e%u",
               slot,
               static_cast<uint8_t>(table_id),
-              read_index,
-              static_cast<uint32_t>(generic_read_request.result),
-              table->specs[read_index].start_address);
+              generic_read_request.start_address,
+              generic_read_request.start_address,
+              generic_read_request.register_count,
+              static_cast<uint32_t>(generic_read_request.result));
 
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
             auto timeout = errors->get("timeout");
@@ -1363,6 +1364,13 @@ void MeterModbusTCP::read_done_callback()
     }
 
     union {
+        uint16_t u;
+        uint16_t r;
+    } c16;
+
+    c16.r = 0; // avoid compiler warning about unintialized value
+
+    union {
         uint32_t u;
         float f;
         uint16_t r[2];
@@ -1381,6 +1389,7 @@ void MeterModbusTCP::read_done_callback()
 
     switch (register_count) {
     case 1:
+        c16.r = register_buffer[register_buffer_index];
         break;
 
     case 2:
@@ -1422,44 +1431,48 @@ void MeterModbusTCP::read_done_callback()
 
     switch (value_type) {
     case ModbusValueType::None:
-        trace("m%u t%u i%zu n a%zu",
+        trace("m%u t%u i%zu n a%zu:%x",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
+              table->specs[read_index].start_address,
               table->specs[read_index].start_address);
         break;
 
     case ModbusValueType::U16:
-        trace("m%u t%u i%zu u16 a%zu r%u v%u",
+        trace("m%u t%u i%zu u16 a%zu:%x r%u v%u",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
               table->specs[read_index].start_address,
+              table->specs[read_index].start_address,
               register_buffer[register_buffer_index],
-              register_buffer[register_buffer_index]);
+              c16.u);
 
-        value = static_cast<float>(register_buffer[register_buffer_index]);
+        value = static_cast<float>(c16.u);
         break;
 
     case ModbusValueType::S16:
-        trace("m%u t%u i%zu s16 a%zu r%u v%d",
+        trace("m%u t%u i%zu s16 a%zu:%x r%u v%d",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
               table->specs[read_index].start_address,
+              table->specs[read_index].start_address,
               register_buffer[register_buffer_index],
-              static_cast<int16_t>(register_buffer[register_buffer_index]));
+              static_cast<int16_t>(c16.u));
 
-        value = static_cast<float>(static_cast<int16_t>(register_buffer[register_buffer_index]));
+        value = static_cast<float>(static_cast<int16_t>(c16.u));
         break;
 
     case ModbusValueType::U32BE:
     case ModbusValueType::U32LE:
-        trace("m%u t%u i%zu u32%s a%zu r%u,%u v%u",
+        trace("m%u t%u i%zu u32%s a%zu:%x r%u,%u v%u",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
               endian,
+              table->specs[read_index].start_address,
               table->specs[read_index].start_address,
               register_buffer[register_buffer_index + 0],
               register_buffer[register_buffer_index + 1],
@@ -1470,11 +1483,12 @@ void MeterModbusTCP::read_done_callback()
 
     case ModbusValueType::S32BE:
     case ModbusValueType::S32LE:
-        trace("m%u t%u i%zu s32%s a%zu r%u,%u v%d",
+        trace("m%u t%u i%zu s32%s a%zu:%x r%u,%u v%d",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
               endian,
+              table->specs[read_index].start_address,
               table->specs[read_index].start_address,
               register_buffer[register_buffer_index + 0],
               register_buffer[register_buffer_index + 1],
@@ -1485,11 +1499,12 @@ void MeterModbusTCP::read_done_callback()
 
     case ModbusValueType::F32BE:
     case ModbusValueType::F32LE:
-        trace("m%u t%u i%zu f32%s a%zu r%u,%u v%f",
+        trace("m%u t%u i%zu f32%s a%zu:%x r%u,%u v%f",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
               endian,
+              table->specs[read_index].start_address,
               table->specs[read_index].start_address,
               register_buffer[register_buffer_index + 0],
               register_buffer[register_buffer_index + 1],
@@ -1500,11 +1515,12 @@ void MeterModbusTCP::read_done_callback()
 
     case ModbusValueType::U64BE:
     case ModbusValueType::U64LE:
-        trace("m%u t%u i%zu u64%s a%zu r%u,%u,%u,%u v%llu",
+        trace("m%u t%u i%zu u64%s a%zu:%x r%u,%u,%u,%u v%llu",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
               endian,
+              table->specs[read_index].start_address,
               table->specs[read_index].start_address,
               register_buffer[register_buffer_index + 0],
               register_buffer[register_buffer_index + 1],
@@ -1517,11 +1533,12 @@ void MeterModbusTCP::read_done_callback()
 
     case ModbusValueType::S64BE:
     case ModbusValueType::S64LE:
-        trace("m%u t%u i%zu s64%s a%zu r%u,%u,%u,%u v%lld",
+        trace("m%u t%u i%zu s64%s a%zu:%x r%u,%u,%u,%u v%lld",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
               endian,
+              table->specs[read_index].start_address,
               table->specs[read_index].start_address,
               register_buffer[register_buffer_index + 0],
               register_buffer[register_buffer_index + 1],
@@ -1534,11 +1551,12 @@ void MeterModbusTCP::read_done_callback()
 
     case ModbusValueType::F64BE:
     case ModbusValueType::F64LE:
-        trace("m%u t%u i%zu f64%s a%zu r%u,%u,%u,%u v%f",
+        trace("m%u t%u i%zu f64%s a%zu:%x r%u,%u,%u,%u v%f",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
               endian,
+              table->specs[read_index].start_address,
               table->specs[read_index].start_address,
               register_buffer[register_buffer_index + 0],
               register_buffer[register_buffer_index + 1],
@@ -1587,7 +1605,7 @@ void MeterModbusTCP::read_done_callback()
     }
     else if (is_sungrow_battery_meter()) {
         if (register_start_address == SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS) {
-            sungrow.hybrid_inverter_running_state = register_buffer[0];
+            sungrow.hybrid_inverter_running_state = c16.u;
         }
         else if (register_start_address == SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS) {
             if ((sungrow.hybrid_inverter_running_state & (1 << 2)) != 0) {
@@ -1709,16 +1727,16 @@ void MeterModbusTCP::read_done_callback()
         size_t start_address = register_start_address - fronius.gen24_plus_hybrid_inverter_start_address_shift;
 
         if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCA_SF_ADDRESS) {
-            fronius.gen24_plus_hybrid_inverter_dca_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
+            fronius.gen24_plus_hybrid_inverter_dca_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
         }
         else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCV_SF_ADDRESS) {
-            fronius.gen24_plus_hybrid_inverter_dcv_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
+            fronius.gen24_plus_hybrid_inverter_dcv_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
         }
         else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCW_SF_ADDRESS) {
-            fronius.gen24_plus_hybrid_inverter_dcw_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
+            fronius.gen24_plus_hybrid_inverter_dcw_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
         }
         else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_DCWH_SF_ADDRESS) {
-            fronius.gen24_plus_hybrid_inverter_dcwh_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
+            fronius.gen24_plus_hybrid_inverter_dcwh_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
         }
         else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHARGE_DCA_ADDRESS) {
             fronius.gen24_plus_hybrid_inverter_charge_dca = value; // SunSpec: uint16
@@ -1752,7 +1770,7 @@ void MeterModbusTCP::read_done_callback()
             fronius.gen24_plus_hybrid_inverter_chastate = value; // SunSpec: uint16
         }
         else if (start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_CHASTATE_SF_ADDRESS) {
-            fronius.gen24_plus_hybrid_inverter_chastate_sf = static_cast<int16_t>(register_buffer[register_buffer_index]); // SunSpec: sunssf
+            fronius.gen24_plus_hybrid_inverter_chastate_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
 
             float dca_scale_factor = get_fronius_scale_factor(fronius.gen24_plus_hybrid_inverter_dca_sf);
             float dcv_scale_factor = get_fronius_scale_factor(fronius.gen24_plus_hybrid_inverter_dcv_sf);
