@@ -1096,7 +1096,7 @@ void MeterModbusTCP::read_next()
      && generic_read_request.register_type == table->specs[read_index].register_type
      && generic_read_request.start_address + register_buffer_index == table->specs[read_index].start_address
      && register_buffer_index + MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[read_index].value_type) <= generic_read_request.register_count) {
-        read_done_callback();
+        parse_next();
     }
     else {
         generic_read_request.register_type = table->specs[read_index].register_type;
@@ -1212,6 +1212,11 @@ void MeterModbusTCP::read_done_callback()
         return;
     }
 
+    parse_next();
+}
+
+void MeterModbusTCP::parse_next()
+{
     union {
         uint16_t u;
         uint16_t r;
