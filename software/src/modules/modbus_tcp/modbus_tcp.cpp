@@ -22,8 +22,6 @@
 #include "modbus_tcp.h"
 
 #include <Arduino.h>
-#include <esp_modbus_common.h>
-#include <esp_modbus_slave.h>
 #include <esp_netif.h>
 #include <math.h>
 
