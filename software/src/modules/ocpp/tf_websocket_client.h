@@ -1,16 +1,9 @@
-// Copyright 2015-2018 Espressif Systems (Shanghai) PTE LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// From https://github.com/espressif/esp-protocols/tree/master/components/esp_websocket_client Version 1.4.0
+/*
+ * SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #ifndef _TF_WEBSOCKET_CLIENT_H_
 #define _TF_WEBSOCKET_CLIENT_H_
@@ -23,6 +16,7 @@
 #include "esp_err.h"
 #include "esp_event.h"
 #include <sys/socket.h>
+#include "esp_transport_ws.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,9 +36,37 @@ typedef enum {
     WEBSOCKET_EVENT_DISCONNECTED,   /*!< The connection has been disconnected */
     WEBSOCKET_EVENT_DATA,           /*!< When receiving data from the server, possibly multiple portions of the packet */
     WEBSOCKET_EVENT_CLOSED,         /*!< The connection has been closed cleanly */
-    WEBSOCKET_EVENT_PONG,
+    WEBSOCKET_EVENT_BEFORE_CONNECT, /*!< The event occurs before connecting */
+    WEBSOCKET_EVENT_BEGIN,          /*!< The event occurs once after thread creation, before event loop */
+    WEBSOCKET_EVENT_FINISH,         /*!< The event occurs once after event loop, before thread destruction */
+    WEBSOCKET_EVENT_PONG,           /*!< When receiving a pong frame from the server */
     WEBSOCKET_EVENT_MAX
 } tf_websocket_event_id_t;
+
+/**
+ * @brief Websocket connection error codes propagated via ERROR event
+ */
+typedef enum {
+    WEBSOCKET_ERROR_TYPE_NONE = 0,
+    WEBSOCKET_ERROR_TYPE_TCP_TRANSPORT,
+    WEBSOCKET_ERROR_TYPE_PONG_TIMEOUT,
+    WEBSOCKET_ERROR_TYPE_HANDSHAKE
+} tf_websocket_error_type_t;
+
+/**
+ * @brief Websocket error code structure to be passed as a contextual information into ERROR event
+ */
+typedef struct {
+    /* compatible portion of the struct corresponding to struct esp_tls_last_error */
+    esp_err_t esp_tls_last_esp_err;             /*!< last esp_err code reported from esp-tls component */
+    int       esp_tls_stack_err;                /*!< tls specific error code reported from underlying tls stack */
+    int       esp_tls_cert_verify_flags;        /*!< tls flags reported from underlying tls stack during certificate verification */
+    /* esp-websocket specific structure extension */
+    tf_websocket_error_type_t error_type;
+    int esp_ws_handshake_status_code;           /*!< http status code of the websocket upgrade handshake */
+    /* tcp_transport extension */
+    int       esp_transport_sock_errno;         /*!< errno from the underlying socket */
+} tf_websocket_error_codes_t;
 
 /**
  * @brief Websocket event data
@@ -52,11 +74,13 @@ typedef enum {
 typedef struct {
     const char *data_ptr;                   /*!< Data pointer */
     int data_len;                           /*!< Data length */
+    bool fin;                               /*!< Fin flag */
     uint8_t op_code;                        /*!< Received opcode */
     tf_websocket_client_handle_t client;   /*!< tf_websocket_client_handle_t context */
     void *user_context;                     /*!< user_data context, from tf_websocket_client_config_t user_data */
     int payload_len;                        /*!< Total payload length, payloads exceeding buffer will be posted through multiple events */
     int payload_offset;                     /*!< Actual offset for the data associated with this event */
+    tf_websocket_error_codes_t error_handle; /*!< esp-websocket error handle including esp-tls errors as well as internal websocket errors */
 } tf_websocket_event_data_t;
 
 /**
@@ -75,20 +99,24 @@ typedef struct {
     const char                  *uri;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
     const char                  *host;                      /*!< Domain or IP as string */
     int                         port;                       /*!< Port to connect, default depend on tf_websocket_transport_t (80 or 443) */
-    const char                  *username;                  /*!< Using for Http authentication - Not supported for now */
-    const char                  *password;                  /*!< Using for Http authentication - Not supported for now */
+    const char                  *username;                  /*!< Using for Http authentication, only support basic auth now */
+    const char                  *password;                  /*!< Using for Http authentication */
     const char                  *path;                      /*!< HTTP Path, if not set, default is `/` */
     bool                        disable_auto_reconnect;     /*!< Disable the automatic reconnect function when disconnected */
     void                        *user_context;              /*!< HTTP user data context */
     int                         task_prio;                  /*!< Websocket task priority */
+    const char                 *task_name;                  /*!< Websocket task name */
     int                         task_stack;                 /*!< Websocket task stack */
     int                         buffer_size;                /*!< Websocket buffer size */
     const char                  *cert_pem;                  /*!< Pointer to certificate data in PEM or DER format for server verify (with SSL), default is NULL, not required to verify the server. PEM-format must have a terminating NULL-character. DER-format requires the length to be passed in cert_len. */
     size_t                      cert_len;                   /*!< Length of the buffer pointed to by cert_pem. May be 0 for null-terminated pem */
-    const char                  *client_cert;               /*!< Pointer to certificate data in PEM or DER format for SSL mutual authentication, default is NULL, not required if mutual authentication is not needed. If it is not NULL, also `client_key` has to be provided. PEM-format must have a terminating NULL-character. DER-format requires the length to be passed in client_cert_len. */
+    const char                  *client_cert;               /*!< Pointer to certificate data in PEM or DER format for SSL mutual authentication, default is NULL, not required if mutual authentication is not needed. If it is not NULL, also `client_key` or `client_ds_data` (if supported) has to be provided. PEM-format must have a terminating NULL-character. DER-format requires the length to be passed in client_cert_len. */
     size_t                      client_cert_len;            /*!< Length of the buffer pointed to by client_cert. May be 0 for null-terminated pem */
-    const char                  *client_key;                /*!< Pointer to private key data in PEM or DER format for SSL mutual authentication, default is NULL, not required if mutual authentication is not needed. If it is not NULL, also `client_cert` has to be provided. PEM-format must have a terminating NULL-character. DER-format requires the length to be passed in client_key_len */
+    const char                  *client_key;                /*!< Pointer to private key data in PEM or DER format for SSL mutual authentication, default is NULL, not required if mutual authentication is not needed. If it is not NULL, also `client_cert` has to be provided and `client_ds_data` (if supported) gets ignored. PEM-format must have a terminating NULL-character. DER-format requires the length to be passed in client_key_len */
     size_t                      client_key_len;             /*!< Length of the buffer pointed to by client_key_pem. May be 0 for null-terminated pem */
+#if CONFIG_ESP_TLS_USE_DS_PERIPHERAL
+    void                        *client_ds_data;            /*!< Pointer to the encrypted private key data for SSL mutual authentication using the DS peripheral, default is NULL, not required if mutual authentication is not needed. If it is not NULL, also `client_cert` has to be provided. It is ignored if `client_key` is provided */
+#endif
     tf_websocket_transport_t   transport;                  /*!< Websocket transport type, see `tf_websocket_transport_t */
     const char                  *subprotocol;               /*!< Websocket subprotocol */
     const char                  *user_agent;                /*!< Websocket user-agent */
@@ -97,13 +125,17 @@ typedef struct {
     bool                        disable_pingpong_discon;    /*!< Disable auto-disconnect due to no PONG received within pingpong_timeout_sec */
     bool                        use_global_ca_store;        /*!< Use a global ca_store for all the connections in which this bool is set. */
     esp_err_t (*crt_bundle_attach)(void *conf);             /*!< Function pointer to esp_crt_bundle_attach. Enables the use of certification bundle for server verification, MBEDTLS_CERTIFICATE_BUNDLE must be enabled in menuconfig. Include esp_crt_bundle.h, and use `esp_crt_bundle_attach` here to include bundled CA certificates. */
+    const char                  *cert_common_name;          /*!< Expected common name of the server certificate */
     bool                        skip_cert_common_name_check;/*!< Skip any validation of server certificate CN field */
     bool                        keep_alive_enable;          /*!< Enable keep-alive timeout */
     int                         keep_alive_idle;            /*!< Keep-alive idle time. Default is 5 (second) */
     int                         keep_alive_interval;        /*!< Keep-alive interval time. Default is 5 (second) */
     int                         keep_alive_count;           /*!< Keep-alive packet retry send count. Default is 3 counts */
+    int                         reconnect_timeout_ms;       /*!< Reconnect after this value in miliseconds if disable_auto_reconnect is not enabled (defaults to 10s) */
+    int                         network_timeout_ms;         /*!< Abort network operation if it is not completed after this value, in milliseconds (defaults to 10s) */
     size_t                      ping_interval_sec;          /*!< Websocket ping interval, defaults to 10 seconds if not set */
     struct ifreq                *if_name;                   /*!< The name of interface for data to go through. Use the default interface without setting */
+    esp_transport_handle_t      ext_transport;              /*!< External WebSocket tcp_transport handle to the client; or if null, the client will create its own transport handle. */
 } tf_websocket_client_config_t;
 
 /**
@@ -132,15 +164,33 @@ tf_websocket_client_handle_t tf_websocket_client_init(const tf_websocket_client_
 esp_err_t tf_websocket_client_set_uri(tf_websocket_client_handle_t client, const char *uri);
 
 /**
- * @brief      Set headers for client
- *             Must stop the WebSocket client before set headers if the client has been connected
+ * @brief      Set additional websocket headers for the client, when performing this behavior, the headers will replace the old ones
+ * @pre        Must stop the WebSocket client before set headers if the client has been connected
  *
- * @param[in]  client  The client
- * @param[in]  headers The headers
+ *    - This API should be used after the WebSocket client connection has succeeded (i.e., once the transport layer is initialized).
+ *    - If you wish to set or append headers before the WebSocket client connection is established(before handshake), consider the following options:
+ *       1. Input headers directly into the config options, terminating each item with [CR][LF]. This approach will replace any previous headers.
+ *          Example: websocket_cfg.headers = "Sec-WebSocket-Key: my_key\r\nPassword: my_pass\r\n";
+ *       2. Use the `tf_websocket_client_append_header` API to append a single header to the current set.
+ *
+ * @param[in]  client  The WebSocket client handle
+ * @param[in]  headers Additional header strings each terminated with [CR][LF]
  *
  * @return     esp_err_t
  */
 esp_err_t tf_websocket_client_set_headers(tf_websocket_client_handle_t client, const char *headers);
+
+/**
+ * @brief      Appends a new key-value pair to the headers of a WebSocket client.
+ * @pre        Ensure that this function is called before starting the WebSocket client.
+ *
+ * @param[in]  client  The WebSocket client handle
+ * @param[in]  key     The header key to append
+ * @param[in]  value   The associated value for the given key
+ *
+ * @return     esp_err_t
+ */
+esp_err_t tf_websocket_client_append_header(tf_websocket_client_handle_t client, const char *key, const char *value);
 
 /**
  * @brief      Open the WebSocket connection
@@ -183,18 +233,16 @@ esp_err_t tf_websocket_client_stop(tf_websocket_client_handle_t client);
 esp_err_t tf_websocket_client_destroy(tf_websocket_client_handle_t client);
 
 /**
- * @brief      Generic write data to the WebSocket connection; defaults to binary send
+ * @brief      If this API called, WebSocket client will destroy and free all resources at the end of event loop.
  *
- * @param[in]  client  The client
- * @param[in]  data    The data
- * @param[in]  len     The length
- * @param[in]  timeout Write data timeout in RTOS ticks
+ *  Notes:
+ *  - After event loop finished, client handle would be dangling and should never be used
  *
- * @return
- *     - Number of data was sent
- *     - (-1) if any errors
+ * @param[in]  client      The client
+ *
+ * @return     esp_err_t
  */
-int tf_websocket_client_send(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
+esp_err_t tf_websocket_client_destroy_on_exit(tf_websocket_client_handle_t client);
 
 /**
  * @brief      Write binary data to the WebSocket connection (data send with WS OPCODE=02, i.e. binary)
@@ -211,6 +259,24 @@ int tf_websocket_client_send(tf_websocket_client_handle_t client, const char *da
 int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
 
 /**
+ * @brief      Write binary data to the WebSocket connection and sends it without setting the FIN flag(data send with WS OPCODE=02, i.e. binary)
+ *
+ *  Notes:
+ *   - To send continuation frame, you should use 'tf_websocket_client_send_cont_msg(...)' API.
+ *   - To mark the end of fragmented data, you should use the 'tf_websocket_client_send_fin(...)' API. This sends a FIN frame.
+ *
+ * @param[in]  client  The client
+ * @param[in]  data    The data
+ * @param[in]  len     The length
+ * @param[in]  timeout Write data timeout in RTOS ticks
+ *
+ * @return
+ *     - Number of data was sent
+ *     - (-1) if any errors
+ */
+int tf_websocket_client_send_bin_partial(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
+
+/**
  * @brief      Write textual data to the WebSocket connection (data send with WS OPCODE=01, i.e. text)
  *
  * @param[in]  client  The client
@@ -223,6 +289,75 @@ int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char
  *     - (-1) if any errors
  */
 int tf_websocket_client_send_text(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
+
+/**
+ * @brief      Write textual data to the WebSocket connection and sends it without setting the FIN flag(data send with WS OPCODE=01, i.e. text)
+ *
+ *  Notes:
+ *   - To send continuation frame, you should use 'tf_websocket_client_send_cont_mgs(...)' API.
+ *   - To mark the end of fragmented data, you should use the 'tf_websocket_client_send_fin(...)' API. This sends a FIN frame.
+ *
+ * @param[in]  client  The client
+ * @param[in]  data    The data
+ * @param[in]  len     The length
+ * @param[in]  timeout Write data timeout in RTOS ticks
+ *
+ * @return
+ *     - Number of data was sent
+ *     - (-1) if any errors
+ */
+int tf_websocket_client_send_text_partial(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
+
+/**
+ * @brief      Write textual data to the WebSocket connection and sends it as continuation frame (OPCODE=0x0)
+ *
+ *  Notes:
+ *   - Continuation frames have an opcode of 0x0 and do not explicitly signify whether they are continuing a text or a binary message.
+ *   - You determine the type of message (text or binary) being continued by looking at the opcode of the initial frame in the sequence of fragmented frames.
+ *   - To mark the end of fragmented data, you should use the 'tf_websocket_client_send_fin(...)' API. This sends a FIN frame.
+ *
+ * @param[in]  client  The client
+ * @param[in]  data    The data
+ * @param[in]  len     The length
+ * @param[in]  timeout Write data timeout in RTOS ticks
+ *
+ * @return
+ *     - Number of data was sent
+ *     - (-1) if any errors
+ */
+int tf_websocket_client_send_cont_msg(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
+
+/**
+ * @brief      Sends FIN frame
+ *
+ * @param[in]  client  The client
+ * @param[in]  timeout Write data timeout in RTOS ticks
+ *
+ * @return
+ *     - Number of data was sent
+ *     - (-1) if any errors
+ */
+int tf_websocket_client_send_fin(tf_websocket_client_handle_t client, TickType_t lock_timeout, TickType_t write_timeout);
+
+/**
+ * @brief      Write opcode data to the WebSocket connection
+ *
+ * @param[in]  client  The client
+ * @param[in]  opcode  The opcode
+ * @param[in]  data    The data
+ * @param[in]  len     The length
+ * @param[in]  timeout Write data timeout in RTOS ticks
+ *
+ *  Notes:
+ *  - In order to send a zero payload, data and len should be set to NULL/0
+ *  - This API sets the FIN bit on the last fragment of message
+ *
+ *
+ * @return
+ *     - Number of data was sent
+ *     - (-1) if any errors
+ */
+int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
 
 /**
  * @brief      Close the WebSocket connection in a clean way
@@ -269,7 +404,7 @@ esp_err_t tf_websocket_client_close_with_code(tf_websocket_client_handle_t clien
  * @return
  *     - (-1) if any errors
  */
-esp_err_t tf_websocket_client_send_ping(tf_websocket_client_handle_t client, TickType_t timeout);
+esp_err_t tf_websocket_client_send_ping(tf_websocket_client_handle_t client, TickType_t lock_timeout, TickType_t write_timeout);
 
 /**
  * @brief      Check the WebSocket client connection state
@@ -281,6 +416,48 @@ esp_err_t tf_websocket_client_send_ping(tf_websocket_client_handle_t client, Tic
  *     - false
  */
 bool tf_websocket_client_is_connected(tf_websocket_client_handle_t client);
+
+/**
+ * @brief      Get the ping interval sec for client.
+ *
+ * @param[in]  client             The client
+ *
+ * @return     The ping interval in sec
+ */
+size_t tf_websocket_client_get_ping_interval_sec(tf_websocket_client_handle_t client);
+
+/**
+ * @brief      Set new ping interval sec for client.
+ *
+ * @param[in]  client             The client
+ * @param[in]  ping_interval_sec  The new interval
+ *
+ * @return     esp_err_t
+ */
+esp_err_t tf_websocket_client_set_ping_interval_sec(tf_websocket_client_handle_t client, size_t ping_interval_sec);
+
+/**
+ * @brief      Get the next reconnect timeout for client. Returns -1 when client is not initialized or automatic reconnect is disabled.
+ *
+ * @param[in]  client             The client
+ *
+ * @return     Reconnect timeout in msec
+ */
+int tf_websocket_client_get_reconnect_timeout(tf_websocket_client_handle_t client);
+
+/**
+ * @brief      Set next reconnect timeout for client.
+ *
+ *  Notes:
+ *  - Changing this value when reconnection delay is already active does not immediately affect the active delay and may have unexpected result.
+ *  - Good place to change this value is when handling WEBSOCKET_EVENT_DISCONNECTED or WEBSOCKET_EVENT_ERROR events.
+ *
+ * @param[in]  client             The client
+ * @param[in]  reconnect_timeout_ms  The new timeout
+ *
+ * @return     esp_err_t
+ */
+esp_err_t tf_websocket_client_set_reconnect_timeout(tf_websocket_client_handle_t client, int reconnect_timeout_ms);
 
 /**
  * @brief Register the Websocket Events
