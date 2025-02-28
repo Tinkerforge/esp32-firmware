@@ -455,7 +455,7 @@ static void boot_other_partition(const char *other_partition_label, String &errm
 
     if (other_partition_label != nullptr) {
         if (strcmp(running_partition->label, other_partition_label) == 0) {
-            errmsg = String("Partition ") + running_partition->label + (" already running");
+            errmsg = String("Partition ") + running_partition->label + (" is already running");
             return;
         }
     }
