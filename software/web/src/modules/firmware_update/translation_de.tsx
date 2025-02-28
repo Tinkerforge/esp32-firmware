@@ -4,6 +4,17 @@ import { __ } from "../../ts/translation";
 let x = {
     "firmware_update": {
         "status": {
+            "firmware_update": "Firmware-Aktualisierung",
+            "rolled_back_version": /*FFN*/(rolled_back_version: string, version: string, display_type: string) => {
+                let result = [<>{`Firmware ${rolled_back_version} scheint instabil zu sein. Es wurde automatisch auf die vorherige Firmware ${version} zurückgewechselt.`}</>];
+
+                if ("{{{support_email}}}".length > 0) {
+                    result.push(<> Bitte einen <a href="/#event_log">Debug-Report</a> herunterladen und an <a href={`mailto:{{{support_email}}}?subject=${display_type} Firmware ${rolled_back_version} scheint instabil`}>{{{support_email}}}</a> schicken.</>);
+                }
+
+                return <>{result}</>;
+            }/*NF*/,
+            "clear_rolled_back_version_failed": "Entfernen der Warnung fehlgeschlagen"
         },
         "navbar": {
             "firmware_update": "Firmware-Aktualisierung"

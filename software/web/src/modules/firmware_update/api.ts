@@ -10,6 +10,7 @@ export interface state {
     update_version: string,
     install_progress: number,
     install_state: number,
+    rolled_back_version: string,
 }
 
 export interface check_for_update {
@@ -21,4 +22,10 @@ export interface install_firmware {
 
 export interface override_signature {
     cookie: number,
+}
+
+export interface clear_rolled_back_version {
+}
+
+export interface validate_firmware_now {
 }

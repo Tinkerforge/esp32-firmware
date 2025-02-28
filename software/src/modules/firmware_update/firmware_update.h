@@ -78,8 +78,9 @@ public:
 
     void handle_index_data(const void *data, size_t data_len);
 
-    void change_running_partition_from_pending_verify_to_valid(bool silent = false);
-    void change_running_partition_from_pending_verify_to_new(bool silent = false);
+    int change_running_partition_from_pending_verify_to_valid(bool silent = false);
+    int change_running_partition_from_pending_verify_to_new(bool silent = false);
+    int change_update_partition_from_aborted_to_invalid(bool silent = false);
 
 private:
     bool is_vehicle_blocking_update() const;
@@ -87,6 +88,7 @@ private:
     InstallState check_firmware_info(bool detect_downgrade, bool log, TFJsonSerializer *json_ptr);
     void check_for_update();
     void install_firmware(const char *url);
+    void check_for_rollback();
 
     ConfigRoot config;
     ConfigRoot state;

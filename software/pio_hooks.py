@@ -597,6 +597,7 @@ def main():
     firmware_url = env.GetProjectOption("custom_firmware_url")
     firmware_update_url = env.GetProjectOption("custom_firmware_update_url")
     remote_access_host = env.GetProjectOption("custom_remote_access_host")
+    support_email = env.GetProjectOption("custom_support_email")
     day_ahead_price_api_url = env.GetProjectOption("custom_day_ahead_price_api_url")
     solar_forecast_api_url = env.GetProjectOption("custom_solar_forecast_api_url")
     require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
@@ -772,6 +773,15 @@ def main():
     build_lines.append('const char *build_info_str();')
     build_lines.append('const char *build_filename_str();')
     build_lines.append('const char *build_commit_id_str();')
+    build_lines.append('#define BUILD_CUSTOM_APP_DESC_MAGIC 0xBCDE6543')
+    build_lines.append('#define BUILD_CUSTOM_APP_DESC_VERSION 1')
+    build_lines.append('typedef struct {')
+    build_lines.append('    uint32_t magic; // CUSTOM_APP_DESC_MAGIC')
+    build_lines.append('    uint8_t version; // BUILD_CUSTOM_APP_DESC_VERSION')
+    build_lines.append('    uint8_t padding[3];')
+    build_lines.append('    uint8_t fw_version[4]; // major, minor, patch, beta')
+    build_lines.append('    uint32_t fw_build_time;')
+    build_lines.append('} build_custom_app_desc_t;')
     tfutil.write_file_if_different(os.path.join('src', 'build.h'), '\n'.join(build_lines))
 
     firmware_basename = '{}_firmware{}{}{}_{}_{:x}{}'.format(
@@ -795,6 +805,19 @@ def main():
     build_lines.append('const char *build_info_str() {{ return "git url: {}, git branch: {}, git commit id: {}"; }}'.format(git_url, branch_name, git_commit_id))
     build_lines.append('const char *build_filename_str() {{ return "{}"; }}'.format(firmware_basename))
     build_lines.append('const char *build_commit_id_str() {{ return "{}"; }}'.format(git_commit_id))
+    build_lines.append('static_assert(sizeof(build_custom_app_desc_t) == 16, "build_custom_app_desc_t has wrong size");')
+    build_lines.append('extern const __attribute__((section(".rodata_custom_desc"))) build_custom_app_desc_t build_custom_app_desc = {')
+    build_lines.append('    BUILD_CUSTOM_APP_DESC_MAGIC,')
+    build_lines.append('    BUILD_CUSTOM_APP_DESC_VERSION,')
+    build_lines.append('    {0, 0, 0},')
+    build_lines.append('    {')
+    build_lines.append('        BUILD_VERSION_MAJOR,')
+    build_lines.append('        BUILD_VERSION_MINOR,')
+    build_lines.append('        BUILD_VERSION_PATCH,')
+    build_lines.append('        BUILD_VERSION_BETA,')
+    build_lines.append('    },')
+    build_lines.append('    {},'.format(timestamp))
+    build_lines.append('};')
     tfutil.write_file_if_different(os.path.join('src', 'build.cpp'), '\n'.join(build_lines))
     del build_lines
 
@@ -1156,6 +1179,7 @@ def main():
     translation_data = translation_data.replace('{{{manual_url}}}', manual_url)
     translation_data = translation_data.replace('{{{apidoc_url}}}', apidoc_url)
     translation_data = translation_data.replace('{{{firmware_url}}}', firmware_url)
+    translation_data = translation_data.replace('{{{support_email}}}', support_email)
     tfutil.write_file_if_different(os.path.join('web', 'src', 'ts', 'translation.json'), translation_data)
     del translation_data
 
@@ -1285,6 +1309,7 @@ def main():
                         string = string.replace('{{{manual_url}}}', manual_url)
                         string = string.replace('{{{apidoc_url}}}', apidoc_url)
                         string = string.replace('{{{firmware_url}}}', firmware_url)
+                        string = string.replace('{{{support_email}}}', support_email)
 
                     subtranslation[key] = string
 

@@ -19,22 +19,27 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment, Component } from "preact";
+import { h, Fragment, Component, RefObject } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputFile } from "../../ts/components/input_file";
-import { Button } from "react-bootstrap";
+import { Button, Alert } from "react-bootstrap";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Progress } from "../../ts/components/progress";
+import { StatusSection } from "../../ts/components/status_section";
 import { Upload } from "react-feather";
 import { CheckState } from "./check_state.enum";
 import { InstallState } from "./install_state.enum";
 
 export function FirmwareUpdateNavbar() {
     return <NavbarItem name="firmware_update" module="firmware_update" title={__("firmware_update.navbar.firmware_update")} symbol={<Upload />} />;
+}
+
+interface FirmwareUpdateProps {
+    status_ref?: RefObject<FirmwareUpdateStatus>;
 }
 
 interface FirmwareUpdateState {
@@ -48,7 +53,7 @@ interface FirmwareUpdateState {
     install_progress: number,
 };
 
-export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
+export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdateState> {
     constructor() {
         super();
 
@@ -315,6 +320,27 @@ export class FirmwareUpdate extends Component<{}, FirmwareUpdateState> {
                 }
             </SubPage>
         );
+    }
+}
+
+export class FirmwareUpdateStatus extends Component
+{
+    render() {
+        if (!util.render_allowed())
+            return <StatusSection name="firmware_update" />
+
+        let state = API.get('firmware_update/state');
+        let version = API.get('info/version').firmware;
+        let display_type = API.get('info/name').display_type;
+
+        return <StatusSection name="firmware_update">
+            {state.rolled_back_version.length > 0 ?
+                <FormRow label={__("firmware_update.status.firmware_update")}>
+                    <Alert variant="warning" className="mb-0" onClose={() => API.call("firmware_update/clear_rolled_back_version", {}, () => __("firmware_update.status.clear_rolled_back_version_failed"))} dismissible>
+                        {__("firmware_update.status.rolled_back_version")(state.rolled_back_version, version, display_type)}
+                    </Alert>
+                </FormRow> : undefined}
+            </StatusSection>;
     }
 }
 

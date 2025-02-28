@@ -4,6 +4,17 @@ import { __ } from "../../ts/translation";
 let x = {
     "firmware_update": {
         "status": {
+            "firmware_update": "Firmware update",
+            "rolled_back_version": /*FFN*/(rolled_back_version: string, version: string, display_type: string) => {
+                let result = [<>{`Firmware ${rolled_back_version} seems unstable. An automatic rollback to the previous firmware ${version} has occurred.`}</>];
+
+                if ("{{{support_email}}}".length > 0) {
+                    result.push(<> Please download a <a href="/#event_log">debug report</a> and send it to <a href={`mailto:{{{support_email}}}?subject=${display_type} firmware ${rolled_back_version} seems unstable`}>{{{support_email}}}</a>.</>);
+                }
+
+                return <>{result}</>;
+            }/*NF*/,
+            "clear_rolled_back_version_failed": "Clearing the warning failed"
         },
         "navbar": {
             "firmware_update": "Firmware Update"
