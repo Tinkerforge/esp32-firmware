@@ -23,6 +23,8 @@
 
 #include "meter_modbus_tcp.h"
 
+#include <float.h>
+
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "modules/meters/meter_location.enum.h"
@@ -1364,7 +1366,17 @@ void MeterModbusTCP::parse_next()
               register_buffer[register_buffer_index + 1],
               static_cast<double>(c32.f));
 
-        value = c32.f;
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+        if (!table->f32_negative_max_as_nan || c32.f != -FLT_MAX) { // Really compare exactly with -FLT_MAX
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+            value = c32.f;
+        }
+
         break;
 
     case ModbusValueType::U64BE:
