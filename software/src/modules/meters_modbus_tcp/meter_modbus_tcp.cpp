@@ -1212,157 +1212,6 @@ void MeterModbusTCP::read_done_callback()
         return;
     }
 
-    if (is_sungrow_inverter_meter()
-     && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS) {
-        if (sungrow.inverter_output_type < 0) {
-            trace("m%u t%u i%zu u16 a%zu r%u v%u",
-                  slot,
-                  static_cast<uint8_t>(table_id),
-                  read_index,
-                  table->specs[read_index].start_address,
-                  register_buffer[register_buffer_index],
-                  register_buffer[register_buffer_index]);
-
-            switch (register_buffer[register_buffer_index]) {
-            case 0:
-                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    table = &sungrow_hybrid_inverter_1p2l_table;
-                }
-                else { // MeterModbusTCPTableID::SungrowStringInverter
-                    table = &sungrow_string_inverter_1p2l_table;
-                }
-
-                break;
-
-            case 1:
-                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    table = &sungrow_hybrid_inverter_3p4l_table;
-                }
-                else { // MeterModbusTCPTableID::SungrowStringInverter
-                    table = &sungrow_string_inverter_3p4l_table;
-                }
-
-                break;
-
-            case 2:
-                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    table = &sungrow_hybrid_inverter_3p3l_table;
-                }
-                else { // MeterModbusTCPTableID::SungrowStringInverter
-                    table = &sungrow_string_inverter_3p3l_table;
-                }
-
-                break;
-
-            default:
-                table = nullptr;
-                logger.printfln("%s has unknown Output Type: %u", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[register_buffer_index]);
-                return;
-            }
-
-            sungrow.inverter_output_type = register_buffer[register_buffer_index];
-
-            meters.declare_value_ids(slot, table->ids, table->ids_length);
-        }
-
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-
-        return;
-    }
-
-    if (is_deye_hybrid_inverter_battery_meter()
-     && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
-        if (deye.hybrid_inverter_device_type < 0) {
-            trace("m%u t%u i%zu u16 a%zu r%u v%u",
-                  slot,
-                  static_cast<uint8_t>(table_id),
-                  read_index,
-                  table->specs[read_index].start_address,
-                  register_buffer[register_buffer_index],
-                  register_buffer[register_buffer_index]);
-
-            switch (register_buffer[register_buffer_index]) {
-            case 0x0002:
-            case 0x0003:
-            case 0x0004:
-                logger.printfln("%s has unsupported Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[register_buffer_index]);
-                return;
-
-            case 0x0005:
-                table = &deye_hybrid_inverter_low_voltage_battery_table;
-                break;
-
-            case 0x0006:
-            case 0x0106:
-                table = &deye_hybrid_inverter_high_voltage_battery_table;
-                break;
-
-            default:
-                table = nullptr;
-                logger.printfln("%s has unknown Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[register_buffer_index]);
-                return;
-            }
-
-            deye.hybrid_inverter_device_type = register_buffer[register_buffer_index];
-
-            meters.declare_value_ids(slot, table->ids, table->ids_length);
-        }
-
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-
-        return;
-    }
-
-    if (is_fronius_gen24_plus_hybrid_inverter_battery_meter()
-     && generic_read_request.start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_INPUT_OR_MODEL_ID_ADDRESS) {
-        if (fronius.gen24_plus_hybrid_inverter_input_or_model_id == 0) {
-            trace("m%u t%u i%zu u16 a%zu r%u v%u",
-                  slot,
-                  static_cast<uint8_t>(table_id),
-                  read_index,
-                  table->specs[read_index].start_address,
-                  register_buffer[register_buffer_index],
-                  register_buffer[register_buffer_index]);
-
-            switch (register_buffer[register_buffer_index]) {
-            case 1: // module/1/ID: Input ID
-                table = &fronius_gen24_plus_hybrid_inverter_battery_integer_table;
-                fronius.gen24_plus_hybrid_inverter_start_address_shift = 0;
-                break;
-
-            case 160: // ID: SunSpec Model ID
-                table = &fronius_gen24_plus_hybrid_inverter_battery_float_table;
-                fronius.gen24_plus_hybrid_inverter_start_address_shift = 10;
-                break;
-
-            default:
-                table = nullptr;
-                logger.printfln("%s has unknown input or model ID: %u", get_meter_modbus_tcp_table_id_name(table_id), register_buffer[register_buffer_index]);
-                return;
-            }
-
-            fronius.gen24_plus_hybrid_inverter_input_or_model_id = register_buffer[register_buffer_index];
-
-            meters.declare_value_ids(slot, table->ids, table->ids_length);
-        }
-
-        read_allowed = true;
-        read_index = 0;
-        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
-
-        prepare_read();
-
-        return;
-    }
-
     union {
         uint16_t u;
         uint16_t r;
@@ -1587,6 +1436,130 @@ void MeterModbusTCP::read_done_callback()
 #endif
         // Don't convert 0.0f into -0.0f if the scale factor is negative
         value *= table->specs[read_index].scale_factor;
+    }
+
+    if (is_sungrow_inverter_meter()
+     && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS) {
+        if (sungrow.inverter_output_type < 0) {
+            switch (c16.u) {
+            case 0:
+                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
+                    table = &sungrow_hybrid_inverter_1p2l_table;
+                }
+                else { // MeterModbusTCPTableID::SungrowStringInverter
+                    table = &sungrow_string_inverter_1p2l_table;
+                }
+
+                break;
+
+            case 1:
+                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
+                    table = &sungrow_hybrid_inverter_3p4l_table;
+                }
+                else { // MeterModbusTCPTableID::SungrowStringInverter
+                    table = &sungrow_string_inverter_3p4l_table;
+                }
+
+                break;
+
+            case 2:
+                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
+                    table = &sungrow_hybrid_inverter_3p3l_table;
+                }
+                else { // MeterModbusTCPTableID::SungrowStringInverter
+                    table = &sungrow_string_inverter_3p3l_table;
+                }
+
+                break;
+
+            default:
+                table = nullptr;
+                logger.printfln("%s has unknown Output Type: %u", get_meter_modbus_tcp_table_id_name(table_id), c16.u);
+                return;
+            }
+
+            sungrow.inverter_output_type = c16.u;
+
+            meters.declare_value_ids(slot, table->ids, table->ids_length);
+        }
+
+        read_allowed = true;
+        read_index = 0;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+
+        prepare_read();
+        return;
+    }
+
+    if (is_deye_hybrid_inverter_battery_meter()
+     && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
+        if (deye.hybrid_inverter_device_type < 0) {
+            switch (c16.u) {
+            case 0x0002:
+            case 0x0003:
+            case 0x0004:
+                logger.printfln("%s has unsupported Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), c16.u);
+                return;
+
+            case 0x0005:
+                table = &deye_hybrid_inverter_low_voltage_battery_table;
+                break;
+
+            case 0x0006:
+            case 0x0106:
+                table = &deye_hybrid_inverter_high_voltage_battery_table;
+                break;
+
+            default:
+                table = nullptr;
+                logger.printfln("%s has unknown Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), c16.u);
+                return;
+            }
+
+            deye.hybrid_inverter_device_type = c16.u;
+
+            meters.declare_value_ids(slot, table->ids, table->ids_length);
+        }
+
+        read_allowed = true;
+        read_index = 0;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+
+        prepare_read();
+        return;
+    }
+
+    if (is_fronius_gen24_plus_hybrid_inverter_battery_meter()
+     && generic_read_request.start_address == FRONIUS_GEN24_PLUS_HYBRID_INVERTER_INPUT_OR_MODEL_ID_ADDRESS) {
+        if (fronius.gen24_plus_hybrid_inverter_input_or_model_id == 0) {
+            switch (c16.u) {
+            case 1: // module/1/ID: Input ID
+                table = &fronius_gen24_plus_hybrid_inverter_battery_integer_table;
+                fronius.gen24_plus_hybrid_inverter_start_address_shift = 0;
+                break;
+
+            case 160: // ID: SunSpec Model ID
+                table = &fronius_gen24_plus_hybrid_inverter_battery_float_table;
+                fronius.gen24_plus_hybrid_inverter_start_address_shift = 10;
+                break;
+
+            default:
+                table = nullptr;
+                logger.printfln("%s has unknown input or model ID: %u", get_meter_modbus_tcp_table_id_name(table_id), c16.u);
+                return;
+            }
+
+            fronius.gen24_plus_hybrid_inverter_input_or_model_id = c16.u;
+
+            meters.declare_value_ids(slot, table->ids, table->ids_length);
+        }
+
+        read_allowed = true;
+        read_index = 0;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+
+        prepare_read();
+        return;
     }
 
     if (is_sungrow_grid_meter()) {
