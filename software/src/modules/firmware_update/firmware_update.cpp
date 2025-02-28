@@ -54,6 +54,8 @@
 // So we have to skip the first 0x10000 - 0x1000 bytes, after them the actual firmware starts.
 #define FIRMWARE_OFFSET (0x10000 - 0x1000)
 
+#define MAX_VERSION_STRING_LENGTH 32
+
 #if !MODULE_CERTS_AVAILABLE()
 #define MAX_CERT_ID -1
 #endif
@@ -161,13 +163,14 @@ void FirmwareUpdate::pre_setup()
         {"publisher", Config::Str(signature_publisher, 0, strlen(signature_publisher))},
         {"check_timestamp", Config::Uint(0)},
         {"check_state", Config::Uint8(static_cast<uint8_t>(CheckState::Idle))},
-        {"update_version", Config::Str("", 0, 32)},
+        {"update_version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
         {"install_progress", Config::Uint(0, 0, 100)},
         {"install_state", Config::Uint8(static_cast<uint8_t>(InstallState::Idle))},
+        {"rolled_back_version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
     });
 
     install_firmware_config = ConfigRoot{Config::Object({
-        {"version", Config::Str("", 0, 32)},
+        {"version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
     }), [this](Config &update, ConfigSource source) -> String {
         SemanticVersion version;
 
@@ -185,23 +188,6 @@ void FirmwareUpdate::pre_setup()
 
 void FirmwareUpdate::setup()
 {
-    const esp_partition_t *running_partition = esp_ota_get_running_partition();
-
-    if (running_partition == nullptr) {
-        logger.printfln("Could not get running partition");
-    }
-    else {
-        esp_ota_img_states_t ota_state;
-        esp_err_t err = esp_ota_get_state_partition(running_partition, &ota_state);
-
-        if (err != ESP_OK) {
-            logger.printfln("Could not get running %s partition state: %d", running_partition->label, err);
-        }
-        else if (ota_state == ESP_OTA_IMG_PENDING_VERIFY) {
-            logger.printfln("Running %s partition state is %s", running_partition->label, get_esp_ota_img_state_name(ota_state));
-        }
-    }
-
     if (strlen(BUILD_FIRMWARE_UPDATE_URL) > 0) {
         api.restorePersistentConfig("firmware_update/config", &config);
     }
@@ -223,6 +209,8 @@ void FirmwareUpdate::setup()
 #else
     logger.printfln("Firmware is not signed");
 #endif
+
+    check_for_rollback();
 
     task_scheduler.scheduleOnce([this]() {
         change_running_partition_from_pending_verify_to_valid();
@@ -621,6 +609,16 @@ void FirmwareUpdate::register_urls()
         boot_other_partition(nullptr, errmsg);
     }, true);
 
+    api.addCommand("firmware_update/clear_rolled_back_version", Config::Null(), {}, [this](String &errmsg) {
+        if (change_update_partition_from_aborted_to_invalid() > 0) {
+            state.get("rolled_back_version")->updateString("");
+        }
+    }, true);
+
+    api.addCommand("firmware_update/validate_firmware_now", Config::Null(), {}, [this](String &errmsg) {
+        change_running_partition_from_pending_verify_to_valid();
+    }, true);
+
     server.on_HTTPThread("/check_firmware", HTTP_POST, [this](WebServerRequest request) {
         char json_buf[256] = "";
         TFJsonSerializer json{json_buf, sizeof(json_buf)};
@@ -751,7 +749,122 @@ void FirmwareUpdate::pre_reboot()
     change_running_partition_from_pending_verify_to_new();
 }
 
-static void change_running_partition_from_pending_verify_to(esp_ota_img_states_t ota_state, bool silent)
+static bool read_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, bool silent)
+{
+    const esp_partition_t *ota_partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_OTA, nullptr);
+
+    if (ota_partition == nullptr) {
+        if (!silent) {
+            logger.printfln("Could not find OTA partition");
+        }
+
+        return false;
+    }
+
+    esp_err_t err = esp_partition_read(ota_partition, SPI_FLASH_SEC_SIZE * ota_index, ota_data, sizeof(esp_ota_select_entry_t));
+
+    if (err != ESP_OK) {
+        if (!silent) {
+            logger.printfln("Could not read OTA partition page %d: %d", ota_index, err);
+        }
+
+        return false;
+    }
+
+    return true;
+}
+
+static bool write_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, bool silent)
+{
+    const esp_partition_t *ota_partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_OTA, nullptr);
+
+    if (ota_partition == nullptr) {
+        if (!silent) {
+            logger.printfln("Could not find OTA partition");
+        }
+
+        return false;
+    }
+
+    esp_err_t err = esp_partition_erase_range(ota_partition, SPI_FLASH_SEC_SIZE * ota_index, SPI_FLASH_SEC_SIZE);
+
+    if (err != ESP_OK) {
+        if (!silent) {
+            logger.printfln("Could not erase OTA partition page %d: %d", ota_index, err);
+        }
+
+        return false;
+    }
+
+    err = esp_partition_write(ota_partition, SPI_FLASH_SEC_SIZE * ota_index, ota_data, sizeof(esp_ota_select_entry_t));
+
+    if (err != ESP_OK) {
+        if (!silent) {
+            logger.printfln("Could not write OTA partition page %d: %d", ota_index, err);
+        }
+
+        return false;
+    }
+
+    return true;
+}
+
+static int change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t old_ota_state, esp_ota_img_states_t new_ota_state, bool silent)
+{
+    size_t ota_index;
+
+    if (strcmp(partition->label, "app0") == 0) {
+        ota_index = 0;
+    }
+    else if (strcmp(partition->label, "app1") == 0) {
+        ota_index = 1;
+    }
+    else {
+        if (!silent) {
+            logger.printfln("Unexpected partition: %s", partition->label);
+        }
+
+        return -1;
+    }
+
+    esp_ota_select_entry_t ota_data;
+
+    if (!read_ota_data(ota_index, &ota_data, silent)) {
+        if (!silent) {
+            logger.printfln("Could not read %s partition OTA data", partition->label);
+        }
+
+        return -1;
+    }
+
+    if (ota_data.ota_state != old_ota_state) {
+        return 0;
+    }
+
+    ota_data.ota_state = new_ota_state;
+
+    if (!write_ota_data(ota_index, &ota_data, silent)) {
+        if (!silent) {
+            logger.printfln("Could not change %s partition OTA state from %s to %s",
+                            partition->label,
+                            get_esp_ota_img_state_name(static_cast<esp_ota_img_states_t>(old_ota_state)),
+                            get_esp_ota_img_state_name(static_cast<esp_ota_img_states_t>(new_ota_state)));
+        }
+
+        return -1;
+    }
+
+    if (!silent) {
+        logger.printfln("Changed %s partition OTA state from %s to %s",
+                        partition->label,
+                        get_esp_ota_img_state_name(static_cast<esp_ota_img_states_t>(old_ota_state)),
+                        get_esp_ota_img_state_name(static_cast<esp_ota_img_states_t>(new_ota_state)));
+    }
+
+    return 1;
+}
+
+int FirmwareUpdate::change_running_partition_from_pending_verify_to_valid(bool silent)
 {
     const esp_partition_t *running_partition = esp_ota_get_running_partition();
 
@@ -760,101 +873,40 @@ static void change_running_partition_from_pending_verify_to(esp_ota_img_states_t
             logger.printfln("Could not get running partition");
         }
 
-        return;
+        return -1;
     }
 
-    size_t ota_index;
-
-    if (strcmp(running_partition->label, "app0") == 0) {
-        ota_index = 0;
-    }
-    else if (strcmp(running_partition->label, "app1") == 0) {
-        ota_index = 1;
-    }
-    else {
-        if (!silent) {
-            logger.printfln("Unexpected running partition: %s", running_partition->label);
-        }
-
-        return;
-    }
-
-    esp_ota_img_states_t current_ota_state;
-    esp_err_t err = esp_ota_get_state_partition(running_partition, &current_ota_state);
-
-    if (err != ESP_OK) {
-        if (!silent) {
-            logger.printfln("Could not get running %s partition state: %d", running_partition->label, err);
-        }
-
-        return;
-    }
-
-    if (current_ota_state == ESP_OTA_IMG_PENDING_VERIFY) {
-        const esp_partition_t *ota_partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_OTA, nullptr);
-
-        if (ota_partition == nullptr) {
-            if (!silent) {
-                logger.printfln("Could not find OTA partition");
-            }
-
-            return;
-        }
-
-        spi_flash_mmap_handle_t handle;
-        const void *result;
-
-        err = esp_partition_mmap(ota_partition, 0, ota_partition->size, SPI_FLASH_MMAP_DATA, &result, &handle);
-
-        if (err != ESP_OK) {
-            if (!silent) {
-                logger.printfln("Could not mmap OTA partition: %d", err);
-            }
-
-            return;
-        }
-
-        esp_ota_select_entry_t ota_data;
-
-        memcpy(&ota_data, (uint8_t *)result + SPI_FLASH_SEC_SIZE * ota_index, sizeof(ota_data));
-        spi_flash_munmap(handle);
-
-        ota_data.ota_state = ota_state;
-
-        err = esp_partition_erase_range(ota_partition, SPI_FLASH_SEC_SIZE * ota_index, SPI_FLASH_SEC_SIZE);
-
-        if (err != ESP_OK) {
-            if (!silent) {
-                logger.printfln("Could not erase OTA partition page %d: %d", ota_index, err);
-            }
-
-            return;
-        }
-
-        err = esp_partition_write(ota_partition, SPI_FLASH_SEC_SIZE * ota_index, &ota_data, sizeof(ota_data));
-
-        if (!silent) {
-            if (err != ESP_OK) {
-                logger.printfln("Could not mark running %s partition as %s: %d", running_partition->label, get_esp_ota_img_state_name(ota_state), err);
-            }
-            else {
-                logger.printfln("Marked running %s partition as %s", running_partition->label, get_esp_ota_img_state_name(ota_state));
-            }
-        }
-    }
-    else {
-        logger.printfln("Nothing to do, running %s partition state is %s", running_partition->label, get_esp_ota_img_state_name(current_ota_state));
-    }
+    return change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_PENDING_VERIFY, ESP_OTA_IMG_VALID, silent);
 }
 
-void FirmwareUpdate::change_running_partition_from_pending_verify_to_valid(bool silent)
+int FirmwareUpdate::change_running_partition_from_pending_verify_to_new(bool silent)
 {
-    change_running_partition_from_pending_verify_to(ESP_OTA_IMG_VALID, silent);
+    const esp_partition_t *running_partition = esp_ota_get_running_partition();
+
+    if (running_partition == nullptr) {
+        if (!silent) {
+            logger.printfln("Could not get running partition");
+        }
+
+        return -1;
+    }
+
+    return change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_PENDING_VERIFY, ESP_OTA_IMG_NEW, silent);
 }
 
-void FirmwareUpdate::change_running_partition_from_pending_verify_to_new(bool silent)
+int FirmwareUpdate::change_update_partition_from_aborted_to_invalid(bool silent)
 {
-    change_running_partition_from_pending_verify_to(ESP_OTA_IMG_NEW, silent);
+    const esp_partition_t *update_partition = esp_ota_get_next_update_partition(nullptr);
+
+    if (update_partition == nullptr) {
+        if (!silent) {
+            logger.printfln("Could not get update partition");
+        }
+
+        return -1;
+    }
+
+    return change_partition_ota_state_from_to(update_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_INVALID, silent);
 }
 
 bool FirmwareUpdate::is_vehicle_blocking_update() const
@@ -1246,4 +1298,68 @@ void FirmwareUpdate::install_firmware(const char *url)
         }
     });
 #endif
+}
+
+static bool read_custom_app_desc(const esp_partition_t *partition, build_custom_app_desc_t *custom_app_desc)
+{
+    esp_err_t err = esp_partition_read(partition, sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t), custom_app_desc, sizeof(build_custom_app_desc_t));
+
+    if (err != ESP_OK) {
+        logger.printfln("Could not read %s partition custom app description: %d", partition->label, err);
+        return false;
+    }
+
+    if (custom_app_desc->magic != BUILD_CUSTOM_APP_DESC_MAGIC) {
+        logger.printfln("Custom app description of %s partition has wrong magic: 0x%08x", partition->label, custom_app_desc->magic);
+        return false;
+    }
+
+    if (custom_app_desc->version != BUILD_CUSTOM_APP_DESC_VERSION) {
+        logger.printfln("Custom app description of %s partition has wrong version: %u", partition->label, custom_app_desc->version);
+        return false;
+    }
+
+    return true;
+}
+
+void FirmwareUpdate::check_for_rollback()
+{
+    const esp_partition_t *update_partition = esp_ota_get_next_update_partition(nullptr);
+
+    if (update_partition == nullptr) {
+        logger.printfln("Could not get update partition");
+        return;
+    }
+
+    esp_ota_img_states_t ota_state;
+    esp_err_t err = esp_ota_get_state_partition(update_partition, &ota_state);
+
+    if (err != ESP_OK) {
+        logger.printfln("Could not get update %s partition state: %d", update_partition->label, err);
+        return;
+    }
+
+    char version[MAX_VERSION_STRING_LENGTH + 1] = "";
+
+    if (ota_state == ESP_OTA_IMG_ABORTED) {
+        build_custom_app_desc_t custom_app_desc;
+
+        if (!read_custom_app_desc(update_partition, &custom_app_desc)) {
+            snprintf(version, MAX_VERSION_STRING_LENGTH, "0.0.0+00000000");
+        }
+        else {
+            char beta[12] = "";
+
+            if (custom_app_desc.fw_version[3] != 255) {
+                snprintf(beta, ARRAY_SIZE(beta), "-beta.%u", custom_app_desc.fw_version[3]);
+            }
+
+            snprintf(version, ARRAY_SIZE(version), "%u.%u.%u%s+%x",
+                     custom_app_desc.fw_version[0], custom_app_desc.fw_version[1], custom_app_desc.fw_version[2], beta, custom_app_desc.fw_build_time);
+        }
+
+        logger.printfln("Firmware %s rolled back to %s", version, build_version_full_str());
+    }
+
+    state.get("rolled_back_version")->updateString(version);
 }
