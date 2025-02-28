@@ -1,16 +1,9 @@
-// Copyright 2015-2018 Espressif Systems (Shanghai) PTE LTD
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// From https://github.com/espressif/esp-protocols/tree/master/components/esp_websocket_client Version 1.4.0
+/*
+ * SPDX-FileCopyrightText: 2015-2024 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #include <stdio.h>
 
@@ -18,7 +11,6 @@
 #include "esp_transport.h"
 #include "esp_transport_tcp.h"
 #include "esp_transport_ssl.h"
-#include "esp_transport_ws.h"
 /* using uri parser */
 #include "http_parser.h"
 #include "freertos/task.h"
@@ -27,8 +19,12 @@
 #include "freertos/event_groups.h"
 #include "esp_log.h"
 #include "esp_timer.h"
+#include "esp_tls_crypto.h"
+#include "esp_system.h"
+#include <errno.h>
+#include <arpa/inet.h>
 
-static const char *TAG = "WEBSOCKET_CLIENT";
+static const char *TAG = "websocket_client";
 
 #define WEBSOCKET_TCP_DEFAULT_PORT      (80)
 #define WEBSOCKET_SSL_DEFAULT_PORT      (443)
@@ -62,13 +58,18 @@ static const char *TAG = "WEBSOCKET_CLIENT";
         action;                                                                                     \
         }
 
+#define WS_OVER_TCP_SCHEME  "ws"
+#define WS_OVER_TLS_SCHEME  "wss"
+#define WS_HTTP_BASIC_AUTH  "Basic "
+
 const static int STOPPED_BIT = BIT0;
 const static int CLOSE_FRAME_SENT_BIT = BIT1;   // Indicates that a close frame was sent by the client
-                                        // and we are waiting for the server to continue with clean close
+// and we are waiting for the server to continue with clean close
 
 ESP_EVENT_DEFINE_BASE(WEBSOCKET_EVENTS);
 
 typedef struct {
+    const char                 *task_name;
     int                         task_stack;
     int                         task_prio;
     char                        *uri;
@@ -77,6 +78,7 @@ typedef struct {
     char                        *scheme;
     char                        *username;
     char                        *password;
+    char                        *auth;
     int                         port;
     bool                        auto_reconnect;
     void                        *user_context;
@@ -86,6 +88,20 @@ typedef struct {
     char                        *headers;
     int                         pingpong_timeout_sec;
     size_t                      ping_interval_sec;
+    const char                  *cert;
+    size_t                      cert_len;
+    const char                  *client_cert;
+    size_t                      client_cert_len;
+    const char                  *client_key;
+    size_t                      client_key_len;
+#if CONFIG_ESP_TLS_USE_DS_PERIPHERAL
+    void                        *client_ds_data;
+#endif
+    bool                        use_global_ca_store;
+    bool                        skip_cert_common_name_check;
+    const char                  *cert_common_name;
+    esp_err_t                   (*crt_bundle_attach)(void *conf);
+    esp_transport_handle_t      ext_transport;
 } websocket_config_storage_t;
 
 typedef enum {
@@ -100,6 +116,7 @@ typedef enum {
 struct tf_websocket_client {
     esp_event_loop_handle_t     event_handle;
     TaskHandle_t                task_handle;
+    tf_websocket_error_codes_t error_handle;
     esp_transport_list_handle_t transport_list;
     esp_transport_handle_t      transport;
     websocket_config_storage_t *config;
@@ -109,14 +126,17 @@ struct tf_websocket_client {
     uint64_t                    ping_tick_ms;
     uint64_t                    pingpong_tick_ms;
     int                         wait_timeout_ms;
-    int                         auto_reconnect;
     bool                        run;
     bool                        wait_for_pong_resp;
+    bool                        selected_for_destroying;
     EventGroupHandle_t          status_bits;
-    xSemaphoreHandle            lock;
+    SemaphoreHandle_t           lock;
+    size_t                      errormsg_size;
+    char                        *errormsg_buffer;
     char                        *rx_buffer;
     char                        *tx_buffer;
     int                         buffer_size;
+    bool                        last_fin;
     ws_transport_opcodes_t      last_opcode;
     int                         payload_len;
     int                         payload_offset;
@@ -126,7 +146,46 @@ struct tf_websocket_client {
 
 static uint64_t _tick_get_ms(void)
 {
-    return esp_timer_get_time()/1000;
+    return esp_timer_get_time() / 1000;
+}
+
+static esp_err_t tf_websocket_new_buf(tf_websocket_client_handle_t client, bool is_tx)
+{
+#ifdef CONFIG_ESP_WS_CLIENT_ENABLE_DYNAMIC_BUFFER
+    if (is_tx) {
+        if (client->tx_buffer) {
+            free(client->tx_buffer);
+        }
+
+        client->tx_buffer = calloc(1, client->buffer_size);
+        ESP_WS_CLIENT_MEM_CHECK(TAG, client->tx_buffer, return ESP_ERR_NO_MEM);
+    } else {
+        if (client->rx_buffer) {
+            free(client->rx_buffer);
+        }
+
+        client->rx_buffer = calloc(1, client->buffer_size);
+        ESP_WS_CLIENT_MEM_CHECK(TAG, client->rx_buffer, return ESP_ERR_NO_MEM);
+    }
+#endif
+    return ESP_OK;
+}
+
+static void tf_websocket_free_buf(tf_websocket_client_handle_t client, bool is_tx)
+{
+#ifdef CONFIG_ESP_WS_CLIENT_ENABLE_DYNAMIC_BUFFER
+    if (is_tx) {
+        if (client->tx_buffer) {
+            free(client->tx_buffer);
+            client->tx_buffer = NULL;
+        }
+    } else {
+        if (client->rx_buffer) {
+            free(client->rx_buffer);
+            client->rx_buffer = NULL;
+        }
+    }
+#endif
 }
 
 static esp_err_t tf_websocket_client_dispatch_event(tf_websocket_client_handle_t client,
@@ -141,9 +200,22 @@ static esp_err_t tf_websocket_client_dispatch_event(tf_websocket_client_handle_t
     event_data.user_context = client->config->user_context;
     event_data.data_ptr = data;
     event_data.data_len = data_len;
+    event_data.fin = client->last_fin;
     event_data.op_code = client->last_opcode;
     event_data.payload_len = client->payload_len;
     event_data.payload_offset = client->payload_offset;
+
+    if (client->error_handle.error_type == WEBSOCKET_ERROR_TYPE_TCP_TRANSPORT) {
+        event_data.error_handle.esp_tls_last_esp_err = esp_tls_get_and_clear_last_error(esp_transport_get_error_handle(client->transport),
+                &client->error_handle.esp_tls_stack_err,
+                &client->error_handle.esp_tls_cert_verify_flags);
+        event_data.error_handle.esp_tls_stack_err = client->error_handle.esp_tls_stack_err;
+        event_data.error_handle.esp_tls_cert_verify_flags = client->error_handle.esp_tls_cert_verify_flags;
+        event_data.error_handle.esp_transport_sock_errno = esp_transport_get_errno(client->transport);
+    }
+    event_data.error_handle.error_type = client->error_handle.error_type;
+    event_data.error_handle.esp_ws_handshake_status_code = client->error_handle.esp_ws_handshake_status_code;
+
 
     if ((err = esp_event_post_to(client->event_handle,
                                  WEBSOCKET_EVENTS, event,
@@ -155,19 +227,80 @@ static esp_err_t tf_websocket_client_dispatch_event(tf_websocket_client_handle_t
     return esp_event_loop_run(client->event_handle, 0);
 }
 
-static esp_err_t tf_websocket_client_abort_connection(tf_websocket_client_handle_t client)
+static esp_err_t tf_websocket_client_abort_connection(tf_websocket_client_handle_t client, tf_websocket_error_type_t error_type)
 {
     ESP_WS_CLIENT_STATE_CHECK(TAG, client, return ESP_FAIL);
     esp_transport_close(client->transport);
 
-    if (client->config->auto_reconnect) {
-        client->wait_timeout_ms = WEBSOCKET_RECONNECT_TIMEOUT_MS;
+    if (!client->config->auto_reconnect) {
+        client->run = false;
+        client->state = WEBSOCKET_STATE_UNKNOW;
+    } else {
         client->reconnect_tick_ms = _tick_get_ms();
         ESP_LOGI(TAG, "Reconnect after %d ms", client->wait_timeout_ms);
+        client->state = WEBSOCKET_STATE_WAIT_TIMEOUT;
     }
-    client->state = WEBSOCKET_STATE_WAIT_TIMEOUT;
+    client->error_handle.error_type = error_type;
     tf_websocket_client_dispatch_event(client, WEBSOCKET_EVENT_DISCONNECTED, NULL, 0);
     return ESP_OK;
+}
+
+static esp_err_t tf_websocket_client_error(tf_websocket_client_handle_t client, const char *format, ...) __attribute__ ((format (printf, 2, 3)));
+static esp_err_t tf_websocket_client_error(tf_websocket_client_handle_t client, const char *format, ...)
+{
+    va_list myargs;
+    va_start(myargs, format);
+
+    size_t needed_size = vsnprintf(NULL, 0, format, myargs);
+    needed_size++; // null terminator
+
+    if (needed_size > client->errormsg_size) {
+        if (client->errormsg_buffer) {
+            free(client->errormsg_buffer);
+        }
+        client->errormsg_buffer = malloc(needed_size);
+        if (client->errormsg_buffer == NULL) {
+            client->errormsg_size = 0;
+            ESP_LOGE(TAG, "Failed to allocate...");
+            return ESP_ERR_NO_MEM;
+        }
+        client->errormsg_size = needed_size;
+    }
+
+    needed_size = vsnprintf(client->errormsg_buffer, client->errormsg_size, format, myargs);
+
+    va_end(myargs);
+
+    ESP_LOGE(TAG, "%s", client->errormsg_buffer);
+
+    tf_websocket_client_dispatch_event(client, WEBSOCKET_EVENT_ERROR, client->errormsg_buffer, needed_size);
+    return ESP_OK;
+}
+
+static char *http_auth_basic(const char *username, const char *password)
+{
+    int out;
+    char *user_info = NULL;
+    char *digest = NULL;
+    size_t n = 0;
+
+    if (asprintf(&user_info, "%s:%s", username, password) < 0) {
+        return NULL;
+    }
+
+    if (!user_info) {
+        ESP_LOGE(TAG, "No enough memory for user information");
+        return NULL;
+    }
+
+    esp_crypto_base64_encode(NULL, 0, &n, (const unsigned char *)user_info, strlen(user_info));
+    digest = calloc(1, strlen(WS_HTTP_BASIC_AUTH) + n + 1);
+    if (digest) {
+        strcpy(digest, WS_HTTP_BASIC_AUTH);
+        esp_crypto_base64_encode((unsigned char *)digest + 6, n, (size_t *)&out, (const unsigned char *)user_info, strlen(user_info));
+    }
+    free(user_info);
+    return digest;
 }
 
 static esp_err_t tf_websocket_client_set_config(tf_websocket_client_handle_t client, const tf_websocket_client_config_t *config)
@@ -177,6 +310,8 @@ static esp_err_t tf_websocket_client_set_config(tf_websocket_client_handle_t cli
     if (cfg->task_prio <= 0) {
         cfg->task_prio = WEBSOCKET_TASK_PRIORITY;
     }
+
+    cfg->task_name = config->task_name;
 
     cfg->task_stack = config->task_stack;
     if (cfg->task_stack == 0) {
@@ -202,6 +337,12 @@ static esp_err_t tf_websocket_client_set_config(tf_websocket_client_handle_t cli
         free(cfg->password);
         cfg->password = strdup(config->password);
         ESP_WS_CLIENT_MEM_CHECK(TAG, cfg->password, return ESP_ERR_NO_MEM);
+    }
+
+    if (cfg->username && cfg->password) {
+        free(cfg->auth);
+        cfg->auth = http_auth_basic(cfg->username, cfg->password);
+        ESP_WS_CLIENT_MEM_CHECK(TAG, cfg->auth, return ESP_ERR_NO_MEM);
     }
 
     if (config->uri) {
@@ -230,19 +371,26 @@ static esp_err_t tf_websocket_client_set_config(tf_websocket_client_handle_t cli
         ESP_WS_CLIENT_MEM_CHECK(TAG, cfg->headers, return ESP_ERR_NO_MEM);
     }
 
-    cfg->network_timeout_ms = WEBSOCKET_NETWORK_TIMEOUT_MS;
+
     cfg->user_context = config->user_context;
     cfg->auto_reconnect = true;
     if (config->disable_auto_reconnect) {
         cfg->auto_reconnect = false;
     }
 
-    if (config->disable_pingpong_discon){
+    if (config->disable_pingpong_discon) {
         cfg->pingpong_timeout_sec = 0;
     } else if (config->pingpong_timeout_sec) {
         cfg->pingpong_timeout_sec = config->pingpong_timeout_sec;
     } else {
         cfg->pingpong_timeout_sec = WEBSOCKET_PINGPONG_TIMEOUT_SEC;
+    }
+
+    if (config->network_timeout_ms <= 0) {
+        cfg->network_timeout_ms = WEBSOCKET_NETWORK_TIMEOUT_MS;
+        ESP_LOGW(TAG, "`network_timeout_ms` is not set, or it is less than or equal to zero, using default time out %d (milliseconds)", WEBSOCKET_NETWORK_TIMEOUT_MS);
+    } else {
+        cfg->network_timeout_ms = config->network_timeout_ms;
     }
 
     if (config->ping_interval_sec == 0) {
@@ -269,6 +417,7 @@ static esp_err_t tf_websocket_client_destroy_config(tf_websocket_client_handle_t
     free(cfg->scheme);
     free(cfg->username);
     free(cfg->password);
+    free(cfg->auth);
     free(cfg->subprotocol);
     free(cfg->user_agent);
     free(cfg->headers);
@@ -278,20 +427,233 @@ static esp_err_t tf_websocket_client_destroy_config(tf_websocket_client_handle_t
     return ESP_OK;
 }
 
+static void destroy_and_free_resources(tf_websocket_client_handle_t client)
+{
+    if (client->event_handle) {
+        esp_event_loop_delete(client->event_handle);
+    }
+    if (client->if_name) {
+        free(client->if_name);
+    }
+    tf_websocket_client_destroy_config(client);
+    if (client->transport_list) {
+        esp_transport_list_destroy(client->transport_list);
+    }
+    vSemaphoreDelete(client->lock);
+    free(client->tx_buffer);
+    free(client->rx_buffer);
+    free(client->errormsg_buffer);
+    if (client->status_bits) {
+        vEventGroupDelete(client->status_bits);
+    }
+    free(client);
+    client = NULL;
+}
+
+static esp_err_t stop_wait_task(tf_websocket_client_handle_t client)
+{
+    /* A running client cannot be stopped from the websocket task/event handler */
+    TaskHandle_t running_task = xTaskGetCurrentTaskHandle();
+    if (running_task == client->task_handle) {
+        ESP_LOGE(TAG, "Client cannot be stopped from websocket task");
+        return ESP_FAIL;
+    }
+
+    client->run = false;
+    xEventGroupWaitBits(client->status_bits, STOPPED_BIT, false, true, portMAX_DELAY);
+    client->state = WEBSOCKET_STATE_UNKNOW;
+    return ESP_OK;
+}
+
 static esp_err_t set_websocket_transport_optional_settings(tf_websocket_client_handle_t client, const char *scheme)
 {
     esp_transport_handle_t trans = esp_transport_list_get_transport(client->transport_list, scheme);
     if (trans) {
         const esp_transport_ws_config_t config = {
-                .ws_path = client->config->path,
-                .sub_protocol = client->config->subprotocol,
-                .user_agent = client->config->user_agent,
-                .headers = client->config->headers,
-                .propagate_control_frames = true
+            .ws_path = client->config->path,
+            .sub_protocol = client->config->subprotocol,
+            .user_agent = client->config->user_agent,
+            .headers = client->config->headers,
+            .auth = client->config->auth,
+            .propagate_control_frames = true
         };
         return esp_transport_ws_set_config(trans, &config);
     }
     return ESP_ERR_INVALID_ARG;
+}
+
+static esp_err_t tf_websocket_client_create_transport(tf_websocket_client_handle_t client)
+{
+    if (!client->config->scheme) {
+        ESP_LOGE(TAG, "No scheme found");
+        return ESP_FAIL;
+    }
+
+    if (client->transport_list) {
+        esp_transport_list_destroy(client->transport_list);
+        client->transport_list = NULL;
+    }
+
+    client->transport_list = esp_transport_list_init();
+    ESP_WS_CLIENT_MEM_CHECK(TAG, client->transport_list, return ESP_ERR_NO_MEM);
+    if (strcasecmp(client->config->scheme, WS_OVER_TCP_SCHEME) == 0) {
+        esp_transport_handle_t tcp = esp_transport_tcp_init();
+        ESP_WS_CLIENT_MEM_CHECK(TAG, tcp, return ESP_ERR_NO_MEM);
+
+        esp_transport_set_default_port(tcp, WEBSOCKET_TCP_DEFAULT_PORT);
+        esp_transport_list_add(client->transport_list, tcp, "_tcp"); // need to save to transport list, for cleanup
+        if (client->keep_alive_cfg.keep_alive_enable) {
+            esp_transport_tcp_set_keep_alive(tcp, &client->keep_alive_cfg);
+        }
+        if (client->if_name) {
+            esp_transport_tcp_set_interface_name(tcp, client->if_name);
+        }
+
+        esp_transport_handle_t ws = esp_transport_ws_init(tcp);
+        ESP_WS_CLIENT_MEM_CHECK(TAG, ws, return ESP_ERR_NO_MEM);
+
+        esp_transport_set_default_port(ws, WEBSOCKET_TCP_DEFAULT_PORT);
+        esp_transport_list_add(client->transport_list, ws, WS_OVER_TCP_SCHEME);
+        ESP_WS_CLIENT_ERR_OK_CHECK(TAG, set_websocket_transport_optional_settings(client, WS_OVER_TCP_SCHEME), return ESP_FAIL;)
+    } else if (strcasecmp(client->config->scheme, WS_OVER_TLS_SCHEME) == 0) {
+        esp_transport_handle_t ssl = esp_transport_ssl_init();
+        ESP_WS_CLIENT_MEM_CHECK(TAG, ssl, return ESP_ERR_NO_MEM);
+
+        esp_transport_set_default_port(ssl, WEBSOCKET_SSL_DEFAULT_PORT);
+        esp_transport_list_add(client->transport_list, ssl, "_ssl"); // need to save to transport list, for cleanup
+        if (client->keep_alive_cfg.keep_alive_enable) {
+            esp_transport_ssl_set_keep_alive(ssl, &client->keep_alive_cfg);
+        }
+        if (client->if_name) {
+            esp_transport_ssl_set_interface_name(ssl, client->if_name);
+        }
+
+        if (client->config->use_global_ca_store == true) {
+            esp_transport_ssl_enable_global_ca_store(ssl);
+        } else if (client->config->cert) {
+            if (!client->config->cert_len) {
+                esp_transport_ssl_set_cert_data(ssl, client->config->cert, strlen(client->config->cert));
+            } else {
+                esp_transport_ssl_set_cert_data_der(ssl, client->config->cert, client->config->cert_len);
+            }
+        }
+        if (client->config->client_cert) {
+            if (!client->config->client_cert_len) {
+                esp_transport_ssl_set_client_cert_data(ssl, client->config->client_cert, strlen(client->config->client_cert));
+            } else {
+                esp_transport_ssl_set_client_cert_data_der(ssl, client->config->client_cert, client->config->client_cert_len);
+            }
+        }
+        if (client->config->client_key) {
+            if (!client->config->client_key_len) {
+                esp_transport_ssl_set_client_key_data(ssl, client->config->client_key, strlen(client->config->client_key));
+            } else {
+                esp_transport_ssl_set_client_key_data_der(ssl, client->config->client_key, client->config->client_key_len);
+            }
+#if CONFIG_ESP_TLS_USE_DS_PERIPHERAL
+        } else if (client->config->client_ds_data) {
+            esp_transport_ssl_set_ds_data(ssl, client->config->client_ds_data);
+#endif
+        }
+        if (client->config->crt_bundle_attach) {
+#ifdef CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
+            esp_transport_ssl_crt_bundle_attach(ssl, client->config->crt_bundle_attach);
+#else //CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
+            ESP_LOGE(TAG, "crt_bundle_attach configured but not enabled in menuconfig: Please enable MBEDTLS_CERTIFICATE_BUNDLE option");
+#endif
+        }
+        if (client->config->skip_cert_common_name_check) {
+            esp_transport_ssl_skip_common_name_check(ssl);
+        }
+        if (client->config->cert_common_name) {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
+            esp_transport_ssl_set_common_name(ssl, client->config->cert_common_name);
+#else
+            ESP_LOGE(TAG, "cert_common_name requires ESP-IDF 5.1.0 or later");
+#endif
+        }
+
+        esp_transport_handle_t wss = esp_transport_ws_init(ssl);
+        ESP_WS_CLIENT_MEM_CHECK(TAG, wss, return ESP_ERR_NO_MEM);
+
+        esp_transport_set_default_port(wss, WEBSOCKET_SSL_DEFAULT_PORT);
+
+        esp_transport_list_add(client->transport_list, wss, WS_OVER_TLS_SCHEME);
+        ESP_WS_CLIENT_ERR_OK_CHECK(TAG, set_websocket_transport_optional_settings(client, WS_OVER_TLS_SCHEME), return ESP_FAIL;)
+    } else {
+        ESP_LOGE(TAG, "Not support this websocket scheme %s, only support %s and %s", client->config->scheme, WS_OVER_TCP_SCHEME, WS_OVER_TLS_SCHEME);
+        return ESP_FAIL;
+    }
+    return ESP_OK;
+}
+
+static int tf_websocket_client_send_with_exact_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
+{
+    int ret = -1;
+    int need_write = len;
+    int wlen = 0, widx = 0;
+    bool contained_fin = opcode & WS_TRANSPORT_OPCODES_FIN;
+
+    if (client == NULL || len < 0 || (data == NULL && len > 0)) {
+        ESP_LOGE(TAG, "Invalid arguments");
+        return -1;
+    }
+
+    if (!tf_websocket_client_is_connected(client)) {
+        ESP_LOGE(TAG, "Websocket client is not connected");
+        return -1;
+    }
+
+    if (client->transport == NULL) {
+        ESP_LOGE(TAG, "Invalid transport");
+        return -1;
+    }
+
+    if (xSemaphoreTakeRecursive(client->lock, lock_timeout) != pdPASS) {
+        ESP_LOGE(TAG, "Could not lock ws-client within %" PRIu32 " lock_timeout", lock_timeout);
+        return -1;
+    }
+
+    if (tf_websocket_new_buf(client, true) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to setup tx buffer");
+        goto unlock_and_return;
+    }
+
+    while (widx < len || opcode) {  // allow for sending "current_opcode" only message with len==0
+        if (need_write > client->buffer_size) {
+            need_write = client->buffer_size;
+            opcode = opcode & ~WS_TRANSPORT_OPCODES_FIN;
+        } else if (contained_fin) {
+            opcode = opcode | WS_TRANSPORT_OPCODES_FIN;
+        }
+        memcpy(client->tx_buffer, data + widx, need_write);
+        // send with ws specific way and specific opcode
+        wlen = esp_transport_ws_send_raw(client->transport, opcode, (char *)client->tx_buffer, need_write,
+                                         (write_timeout == portMAX_DELAY) ? -1 : write_timeout * portTICK_PERIOD_MS);
+        if (wlen < 0 || (wlen == 0 && need_write != 0)) {
+            ret = wlen;
+            tf_websocket_free_buf(client, true);
+            esp_tls_error_handle_t error_handle = esp_transport_get_error_handle(client->transport);
+            if (error_handle) {
+                tf_websocket_client_error(client, "esp_transport_write() returned %d, transport_error=%s, tls_error_code=%i, tls_flags=%i, errno=%d",
+                                           ret, esp_err_to_name(error_handle->last_error), error_handle->esp_tls_error_code,
+                                           error_handle->esp_tls_flags, errno);
+            } else {
+                tf_websocket_client_error(client, "esp_transport_write() returned %d, errno=%d", ret, errno);
+            }
+            tf_websocket_client_abort_connection(client, WEBSOCKET_ERROR_TYPE_TCP_TRANSPORT);
+            goto unlock_and_return;
+        }
+        opcode = 0;
+        widx += wlen;
+        need_write = len - widx;
+    }
+    tf_websocket_free_buf(client, true);
+    ret = widx;
+
+unlock_and_return:
+    xSemaphoreGiveRecursive(client->lock);
+    return ret;
 }
 
 tf_websocket_client_handle_t tf_websocket_client_init(const tf_websocket_client_config_t *config)
@@ -329,76 +691,41 @@ tf_websocket_client_handle_t tf_websocket_client_init(const tf_websocket_client_
     client->config = calloc(1, sizeof(websocket_config_storage_t));
     ESP_WS_CLIENT_MEM_CHECK(TAG, client->config, goto _websocket_init_fail);
 
-    client->transport_list = esp_transport_list_init();
-    ESP_WS_CLIENT_MEM_CHECK(TAG, client->transport_list, goto _websocket_init_fail);
-
-    esp_transport_handle_t tcp = esp_transport_tcp_init();
-    ESP_WS_CLIENT_MEM_CHECK(TAG, tcp, goto _websocket_init_fail);
-
-    esp_transport_set_default_port(tcp, WEBSOCKET_TCP_DEFAULT_PORT);
-    esp_transport_list_add(client->transport_list, tcp, "_tcp"); // need to save to transport list, for cleanup
-    esp_transport_tcp_set_keep_alive(tcp, &client->keep_alive_cfg);
-    esp_transport_tcp_set_interface_name(tcp, client->if_name);
-
-    esp_transport_handle_t ws = esp_transport_ws_init(tcp);
-    ESP_WS_CLIENT_MEM_CHECK(TAG, ws, goto _websocket_init_fail);
-
-    esp_transport_set_default_port(ws, WEBSOCKET_TCP_DEFAULT_PORT);
-    esp_transport_list_add(client->transport_list, ws, "ws");
     if (config->transport == WEBSOCKET_TRANSPORT_OVER_TCP) {
-        asprintf(&client->config->scheme, "ws");
+        asprintf(&client->config->scheme, WS_OVER_TCP_SCHEME);
+        ESP_WS_CLIENT_MEM_CHECK(TAG, client->config->scheme, goto _websocket_init_fail);
+    } else if (config->transport == WEBSOCKET_TRANSPORT_OVER_SSL) {
+        asprintf(&client->config->scheme, WS_OVER_TLS_SCHEME);
         ESP_WS_CLIENT_MEM_CHECK(TAG, client->config->scheme, goto _websocket_init_fail);
     }
 
-    esp_transport_handle_t ssl = esp_transport_ssl_init();
-    ESP_WS_CLIENT_MEM_CHECK(TAG, ssl, goto _websocket_init_fail);
+    if (!config->disable_auto_reconnect && config->reconnect_timeout_ms <= 0) {
+        client->wait_timeout_ms = WEBSOCKET_RECONNECT_TIMEOUT_MS;
+        ESP_LOGW(TAG, "`reconnect_timeout_ms` is not set, or it is less than or equal to zero, using default time out %d (milliseconds)", WEBSOCKET_RECONNECT_TIMEOUT_MS);
+    } else {
+        client->wait_timeout_ms = config->reconnect_timeout_ms;
+    }
 
-    esp_transport_set_default_port(ssl, WEBSOCKET_SSL_DEFAULT_PORT);
-    esp_transport_list_add(client->transport_list, ssl, "_ssl"); // need to save to transport list, for cleanup
-    if (config->use_global_ca_store == true) {
-        esp_transport_ssl_enable_global_ca_store(ssl);
-    } else if (config->cert_pem) {
-        if (!config->cert_len) {
-            esp_transport_ssl_set_cert_data(ssl, config->cert_pem, strlen(config->cert_pem));
-        } else {
-            esp_transport_ssl_set_cert_data_der(ssl, config->cert_pem, config->cert_len);
-        }
+    // configure ssl related parameters
+    if (config->cert_common_name != NULL && config->skip_cert_common_name_check) {
+        ESP_LOGE(TAG, "Both cert_common_name and skip_cert_common_name_check are set, only one of them can be set");
+        goto _websocket_init_fail;
     }
-    if (config->client_cert) {
-        if (!config->client_cert_len) {
-            esp_transport_ssl_set_client_cert_data(ssl, config->client_cert, strlen(config->client_cert));
-        } else {
-            esp_transport_ssl_set_client_cert_data_der(ssl, config->client_cert, config->client_cert_len);
-        }
-    }
-    if (config->client_key) {
-        if (!config->client_key_len) {
-            esp_transport_ssl_set_client_key_data(ssl, config->client_key, strlen(config->client_key));
-        } else {
-            esp_transport_ssl_set_client_key_data_der(ssl, config->client_key, config->client_key_len);
-        }
-    }
-    if (config->crt_bundle_attach) {
-#ifdef CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
-        esp_transport_ssl_crt_bundle_attach(ssl, config->crt_bundle_attach);
-#else //CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
-        ESP_LOGE(TAG, "crt_bundle_attach configured but not enabled in menuconfig: Please enable MBEDTLS_CERTIFICATE_BUNDLE option");
+
+    client->config->use_global_ca_store = config->use_global_ca_store;
+    client->config->cert = config->cert_pem;
+    client->config->cert_len = config->cert_len;
+    client->config->client_cert = config->client_cert;
+    client->config->client_cert_len = config->client_cert_len;
+    client->config->client_key = config->client_key;
+    client->config->client_key_len = config->client_key_len;
+#if CONFIG_ESP_TLS_USE_DS_PERIPHERAL
+    client->config->client_ds_data = config->client_ds_data;
 #endif
-    }
-    if (config->skip_cert_common_name_check) {
-        esp_transport_ssl_skip_common_name_check(ssl);
-    }
-
-    esp_transport_handle_t wss = esp_transport_ws_init(ssl);
-    ESP_WS_CLIENT_MEM_CHECK(TAG, wss, goto _websocket_init_fail);
-
-    esp_transport_set_default_port(wss, WEBSOCKET_SSL_DEFAULT_PORT);
-
-    esp_transport_list_add(client->transport_list, wss, "wss");
-    if (config->transport == WEBSOCKET_TRANSPORT_OVER_SSL) {
-        asprintf(&client->config->scheme, "wss");
-        ESP_WS_CLIENT_MEM_CHECK(TAG, client->config->scheme, goto _websocket_init_fail);
-    }
+    client->config->skip_cert_common_name_check = config->skip_cert_common_name_check;
+    client->config->cert_common_name = config->cert_common_name;
+    client->config->crt_bundle_attach = config->crt_bundle_attach;
+    client->config->ext_transport = config->ext_transport;
 
     if (config->uri) {
         if (tf_websocket_client_set_uri(client, config->uri) != ESP_OK) {
@@ -413,22 +740,23 @@ tf_websocket_client_handle_t tf_websocket_client_init(const tf_websocket_client_
     }
 
     if (client->config->scheme == NULL) {
-        asprintf(&client->config->scheme, "ws");
+        asprintf(&client->config->scheme, WS_OVER_TCP_SCHEME);
         ESP_WS_CLIENT_MEM_CHECK(TAG, client->config->scheme, goto _websocket_init_fail);
     }
-
-    ESP_WS_CLIENT_ERR_OK_CHECK(TAG, set_websocket_transport_optional_settings(client, "ws"), goto _websocket_init_fail;)
-    ESP_WS_CLIENT_ERR_OK_CHECK(TAG, set_websocket_transport_optional_settings(client, "wss"), goto _websocket_init_fail;)
 
     client->keepalive_tick_ms = _tick_get_ms();
     client->reconnect_tick_ms = _tick_get_ms();
     client->ping_tick_ms = _tick_get_ms();
     client->wait_for_pong_resp = false;
+    client->selected_for_destroying = false;
 
     int buffer_size = config->buffer_size;
     if (buffer_size <= 0) {
         buffer_size = WEBSOCKET_BUFFER_SIZE_BYTE;
     }
+    client->errormsg_buffer = NULL;
+    client->errormsg_size = 0;
+#ifndef CONFIG_ESP_WS_CLIENT_ENABLE_DYNAMIC_BUFFER
     client->rx_buffer = malloc(buffer_size);
     ESP_WS_CLIENT_MEM_CHECK(TAG, client->rx_buffer, {
         goto _websocket_init_fail;
@@ -437,10 +765,12 @@ tf_websocket_client_handle_t tf_websocket_client_init(const tf_websocket_client_
     ESP_WS_CLIENT_MEM_CHECK(TAG, client->tx_buffer, {
         goto _websocket_init_fail;
     });
+#endif
     client->status_bits = xEventGroupCreate();
     ESP_WS_CLIENT_MEM_CHECK(TAG, client->status_bits, {
         goto _websocket_init_fail;
     });
+    xEventGroupSetBits(client->status_bits, STOPPED_BIT);
 
     client->buffer_size = buffer_size;
     return client;
@@ -455,46 +785,23 @@ esp_err_t tf_websocket_client_destroy(tf_websocket_client_handle_t client)
     if (client == NULL) {
         return ESP_ERR_INVALID_ARG;
     }
-    if (client->run) {
-        tf_websocket_client_stop(client);
+
+    if (client->status_bits && (STOPPED_BIT & xEventGroupGetBits(client->status_bits)) == 0) {
+        stop_wait_task(client);
     }
-    if (client->event_handle) {
-        esp_event_loop_delete(client->event_handle);
-    }
-    if (client->if_name) {
-        free(client->if_name);
-    }
-    tf_websocket_client_destroy_config(client);
-    esp_transport_list_destroy(client->transport_list);
-    vQueueDelete(client->lock);
-    free(client->tx_buffer);
-    free(client->rx_buffer);
-    if (client->status_bits) {
-        vEventGroupDelete(client->status_bits);
-    }
-    free(client);
-    client = NULL;
+
+    destroy_and_free_resources(client);
     return ESP_OK;
 }
 
-esp_err_t tf_websocket_client_set_headers(tf_websocket_client_handle_t client, const char *headers) {
-    if (client == NULL || headers == NULL) {
+esp_err_t tf_websocket_client_destroy_on_exit(tf_websocket_client_handle_t client)
+{
+    if (client == NULL) {
         return ESP_ERR_INVALID_ARG;
     }
-
-    if (client->config->headers) {
-        free(client->config->headers);
-    }
-
-    client->config->headers = strdup(headers);
-    ESP_WS_CLIENT_MEM_CHECK(TAG, client->config->headers, return ESP_ERR_NO_MEM);
-
-    ESP_WS_CLIENT_ERR_OK_CHECK(TAG, set_websocket_transport_optional_settings(client, "ws"), printf("ws fail\n"); return ESP_FAIL;)
-    ESP_WS_CLIENT_ERR_OK_CHECK(TAG, set_websocket_transport_optional_settings(client, "wss"), printf("wss fail\n"); return ESP_FAIL;)
-
+    client->selected_for_destroying = true;
     return ESP_OK;
 }
-
 
 esp_err_t tf_websocket_client_set_uri(tf_websocket_client_handle_t client, const char *uri)
 {
@@ -529,12 +836,12 @@ esp_err_t tf_websocket_client_set_uri(tf_websocket_client_handle_t client, const
             asprintf(&client->config->path, "/?%.*s", puri.field_data[UF_QUERY].len, uri + puri.field_data[UF_QUERY].off);
         } else {
             asprintf(&client->config->path, "%.*s?%.*s", puri.field_data[UF_PATH].len, uri + puri.field_data[UF_PATH].off,
-                    puri.field_data[UF_QUERY].len, uri + puri.field_data[UF_QUERY].off);
+                     puri.field_data[UF_QUERY].len, uri + puri.field_data[UF_QUERY].off);
         }
         ESP_WS_CLIENT_MEM_CHECK(TAG, client->config->path, return ESP_ERR_NO_MEM);
     }
     if (puri.field_data[UF_PORT].off) {
-        client->config->port = strtol((const char*)(uri + puri.field_data[UF_PORT].off), NULL, 10);
+        client->config->port = strtol((const char *)(uri + puri.field_data[UF_PORT].off), NULL, 10);
     }
 
     if (puri.field_data[UF_USERINFO].len) {
@@ -560,21 +867,93 @@ esp_err_t tf_websocket_client_set_uri(tf_websocket_client_handle_t client, const
     return ESP_OK;
 }
 
+esp_err_t tf_websocket_client_set_headers(tf_websocket_client_handle_t client, const char *headers)
+{
+    if (client == NULL || client->state != WEBSOCKET_STATE_CONNECTED || headers == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    xSemaphoreTakeRecursive(client->lock, portMAX_DELAY);
+    esp_err_t ret = esp_transport_ws_set_headers(client->transport, headers);
+    xSemaphoreGiveRecursive(client->lock);
+
+    return ret;
+}
+
+esp_err_t tf_websocket_client_append_header(tf_websocket_client_handle_t client, const char *key, const char *value)
+{
+    // Validate the input parameters
+    if (client == NULL || key == NULL || value == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    websocket_config_storage_t *cfg = client->config;
+
+    // Calculate the length for "key: value\r\n"
+    size_t len = strlen(key) + strlen(value) + 5; // 5 accounts for ": \r\n" and null-terminator
+
+    // If no previous headers exist
+    if (cfg->headers == NULL) {
+        cfg->headers = (char *)malloc(len);
+        if (cfg->headers == NULL) {
+            ESP_LOGE(TAG, "Failed to allocate...");
+            return ESP_ERR_NO_MEM;
+        }
+        snprintf(cfg->headers, len, "%s: %s\r\n", key, value);
+        return ESP_OK;
+    }
+
+    // Extend the current headers to accommodate the new key-value pair
+    size_t current_len = strlen(cfg->headers);
+    size_t new_len = current_len + len;
+
+    // Allocate memory for new headers
+    char *new_headers = (char *)malloc(new_len);
+    if (new_headers == NULL) {
+        ESP_LOGE(TAG, "Failed to allocate...");
+        return ESP_ERR_NO_MEM;
+    }
+
+    // Copy old headers and append the new header
+    strcpy(new_headers, cfg->headers);
+    snprintf(new_headers + current_len, len, "%s: %s\r\n", key, value);
+
+    // Free old headers and assign the new header pointer to cfg->headers
+    free(cfg->headers);
+    cfg->headers = new_headers;
+
+    return ESP_OK;
+}
+
 static esp_err_t tf_websocket_client_recv(tf_websocket_client_handle_t client)
 {
     int rlen;
     client->payload_offset = 0;
+    if (tf_websocket_new_buf(client, false) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to setup rx buffer");
+        return ESP_FAIL;
+    }
     do {
         rlen = esp_transport_read(client->transport, client->rx_buffer, client->buffer_size, client->config->network_timeout_ms);
         if (rlen < 0) {
-            ESP_LOGE(TAG, "Error read data");
+            tf_websocket_free_buf(client, false);
+            esp_tls_error_handle_t error_handle = esp_transport_get_error_handle(client->transport);
+            if (error_handle) {
+                tf_websocket_client_error(client, "esp_transport_read() failed with %d, transport_error=%s, tls_error_code=%i, tls_flags=%i, errno=%d",
+                                           rlen, esp_err_to_name(error_handle->last_error), error_handle->esp_tls_error_code,
+                                           error_handle->esp_tls_flags, errno);
+            } else {
+                tf_websocket_client_error(client, "esp_transport_read() failed with %d, errno=%d", rlen, errno);
+            }
             return ESP_FAIL;
         }
         client->payload_len = esp_transport_ws_get_read_payload_len(client->transport);
+        client->last_fin = esp_transport_ws_get_fin_flag(client->transport);
         client->last_opcode = esp_transport_ws_get_read_opcode(client->transport);
 
         if (rlen == 0 && client->last_opcode == WS_TRANSPORT_OPCODES_NONE ) {
             ESP_LOGV(TAG, "esp_transport_read timeouts");
+            tf_websocket_free_buf(client, false);
             return ESP_OK;
         }
 
@@ -596,11 +975,9 @@ static esp_err_t tf_websocket_client_recv(tf_websocket_client_handle_t client)
         ESP_LOGD(TAG, "Received close frame");
         client->state = WEBSOCKET_STATE_CLOSING;
     }
-
+    tf_websocket_free_buf(client, false);
     return ESP_OK;
 }
-
-static int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t lock_timeout, TickType_t write_timeout);
 
 static int tf_websocket_client_send_close(tf_websocket_client_handle_t client, int code, const char *additional_data, int total_len, TickType_t timeout);
 
@@ -611,7 +988,9 @@ static void tf_websocket_client_task(void *pv)
     client->run = true;
 
     //get transport by scheme
-    client->transport = esp_transport_list_get_transport(client->transport_list, client->config->scheme);
+    if (client->transport == NULL && client->config->ext_transport == NULL) {
+        client->transport = esp_transport_list_get_transport(client->transport_list, client->config->scheme);
+    }
 
     if (client->transport == NULL) {
         ESP_LOGE(TAG, "There are no transports valid, stop websocket client");
@@ -624,6 +1003,7 @@ static void tf_websocket_client_task(void *pv)
 
     client->state = WEBSOCKET_STATE_INIT;
     xEventGroupClearBits(client->status_bits, STOPPED_BIT | CLOSE_FRAME_SENT_BIT);
+    tf_websocket_client_dispatch_event(client, WEBSOCKET_EVENT_BEGIN, NULL, 0);
     int read_select = 0;
     while (client->run) {
         if (xSemaphoreTakeRecursive(client->lock, lock_timeout) != pdPASS) {
@@ -631,105 +1011,122 @@ static void tf_websocket_client_task(void *pv)
             break;
         }
         switch ((int)client->state) {
-            case WEBSOCKET_STATE_INIT:
-                if (client->transport == NULL) {
-                    ESP_LOGE(TAG, "There are no transport");
-                    client->run = false;
-                    break;
-                }
-                if (esp_transport_connect(client->transport,
-                                          client->config->host,
-                                          client->config->port,
-                                          client->config->network_timeout_ms) < 0) {
-                    ESP_LOGE(TAG, "Error transport connect");
-                    tf_websocket_client_abort_connection(client);
-                    break;
-                }
-                ESP_LOGD(TAG, "Transport connected to %s://%s:%d", client->config->scheme, client->config->host, client->config->port);
-
-                client->state = WEBSOCKET_STATE_CONNECTED;
-                client->wait_for_pong_resp = false;
-                tf_websocket_client_dispatch_event(client, WEBSOCKET_EVENT_CONNECTED, NULL, 0);
-
+        case WEBSOCKET_STATE_INIT:
+            if (client->transport == NULL) {
+                ESP_LOGE(TAG, "There are no transport");
+                client->run = false;
                 break;
-            case WEBSOCKET_STATE_CONNECTED:
-                if ((CLOSE_FRAME_SENT_BIT & xEventGroupGetBits(client->status_bits)) == 0) { // only send and check for PING
-                                                                                                          // if closing hasn't been initiated
-                    if (_tick_get_ms() - client->ping_tick_ms > client->config->ping_interval_sec*1000ull) {
-                        client->ping_tick_ms = _tick_get_ms();
-                        ESP_LOGD(TAG, "Sending PING...");
-                        esp_transport_ws_send_raw(client->transport, WS_TRANSPORT_OPCODES_PING | WS_TRANSPORT_OPCODES_FIN, NULL, 0, client->config->network_timeout_ms);
+            }
+            tf_websocket_client_dispatch_event(client, WEBSOCKET_EVENT_BEFORE_CONNECT, NULL, 0);
+            int result = esp_transport_connect(client->transport,
+                                               client->config->host,
+                                               client->config->port,
+                                               client->config->network_timeout_ms);
+            if (result < 0) {
+                esp_tls_error_handle_t error_handle = esp_transport_get_error_handle(client->transport);
+                client->error_handle.esp_ws_handshake_status_code  = esp_transport_ws_get_upgrade_request_status(client->transport);
+                if (error_handle) {
+                    tf_websocket_client_error(client, "esp_transport_connect() failed with %d, "
+                                               "transport_error=%s, tls_error_code=%i, tls_flags=%i, esp_ws_handshake_status_code=%d, errno=%d",
+                                               result, esp_err_to_name(error_handle->last_error), error_handle->esp_tls_error_code,
+                                               error_handle->esp_tls_flags, client->error_handle.esp_ws_handshake_status_code, errno);
+                } else {
+                    tf_websocket_client_error(client, "esp_transport_connect() failed with %d, esp_ws_handshake_status_code=%d, errno=%d",
+                                               result, client->error_handle.esp_ws_handshake_status_code, errno);
+                }
+                tf_websocket_client_abort_connection(client, WEBSOCKET_ERROR_TYPE_TCP_TRANSPORT);
+                break;
+            }
+            ESP_LOGD(TAG, "Transport connected to %s://%s:%d", client->config->scheme, client->config->host, client->config->port);
 
-                        if (!client->wait_for_pong_resp && client->config->pingpong_timeout_sec) {
-                            client->pingpong_tick_ms = _tick_get_ms();
-                            client->wait_for_pong_resp = true;
-                        }
+            client->state = WEBSOCKET_STATE_CONNECTED;
+            client->wait_for_pong_resp = false;
+            client->error_handle.error_type = WEBSOCKET_ERROR_TYPE_NONE;
+            tf_websocket_client_dispatch_event(client, WEBSOCKET_EVENT_CONNECTED, NULL, 0);
+            break;
+        case WEBSOCKET_STATE_CONNECTED:
+            if ((CLOSE_FRAME_SENT_BIT & xEventGroupGetBits(client->status_bits)) == 0) { // only send and check for PING
+                // if closing hasn't been initiated
+                if (_tick_get_ms() - client->ping_tick_ms > client->config->ping_interval_sec * 1000) {
+                    client->ping_tick_ms = _tick_get_ms();
+                    ESP_LOGD(TAG, "Sending PING...");
+                    esp_transport_ws_send_raw(client->transport, WS_TRANSPORT_OPCODES_PING | WS_TRANSPORT_OPCODES_FIN, NULL, 0, client->config->network_timeout_ms);
+
+                    if (!client->wait_for_pong_resp && client->config->pingpong_timeout_sec) {
+                        client->pingpong_tick_ms = _tick_get_ms();
+                        client->wait_for_pong_resp = true;
                     }
+                }
 
-                    if ( _tick_get_ms() - client->pingpong_tick_ms > client->config->pingpong_timeout_sec*1000ull ) {
-                        if (client->wait_for_pong_resp) {
-                            ESP_LOGE(TAG, "Error, no PONG received for more than %d seconds after PING", client->config->pingpong_timeout_sec);
-                            tf_websocket_client_abort_connection(client);
-                            break;
-                        }
+                if ( _tick_get_ms() - client->pingpong_tick_ms > client->config->pingpong_timeout_sec * 1000 ) {
+                    if (client->wait_for_pong_resp) {
+                        tf_websocket_client_error(client, "Error, no PONG received for more than %d seconds after PING", client->config->pingpong_timeout_sec);
+                        tf_websocket_client_abort_connection(client, WEBSOCKET_ERROR_TYPE_PONG_TIMEOUT);
+                        break;
                     }
                 }
+            }
 
-                if (read_select == 0) {
-                    ESP_LOGV(TAG, "Read poll timeout: skipping esp_transport_read()...");
-                    break;
-                }
-                client->ping_tick_ms = _tick_get_ms();
 
-                if (tf_websocket_client_recv(client) == ESP_FAIL) {
-                    ESP_LOGE(TAG, "Error receive data");
-                    tf_websocket_client_abort_connection(client);
-                    break;
-                }
+            if (read_select == 0) {
+                ESP_LOGV(TAG, "Read poll timeout: skipping esp_transport_read()...");
                 break;
-            case WEBSOCKET_STATE_WAIT_TIMEOUT:
+            }
+            client->ping_tick_ms = _tick_get_ms();
 
-                if (!client->config->auto_reconnect) {
-                    client->run = false;
-                    break;
-                }
-                if (_tick_get_ms() - client->reconnect_tick_ms > client->wait_timeout_ms) {
-                    client->state = WEBSOCKET_STATE_INIT;
-                    client->reconnect_tick_ms = _tick_get_ms();
-                    ESP_LOGD(TAG, "Reconnecting...");
-                }
+            if (tf_websocket_client_recv(client) == ESP_FAIL) {
+                ESP_LOGE(TAG, "Error receive data");
+                tf_websocket_client_abort_connection(client, WEBSOCKET_ERROR_TYPE_TCP_TRANSPORT);
                 break;
-            case WEBSOCKET_STATE_CLOSING:
-                // if closing not initiated by the client echo the close message back
-                if ((CLOSE_FRAME_SENT_BIT & xEventGroupGetBits(client->status_bits)) == 0) {
-                    ESP_LOGD(TAG, "Closing initiated by the server, sending close frame");
-                    esp_transport_ws_send_raw(client->transport, WS_TRANSPORT_OPCODES_CLOSE | WS_TRANSPORT_OPCODES_FIN, NULL, 0, client->config->network_timeout_ms);
-                    xEventGroupSetBits(client->status_bits, CLOSE_FRAME_SENT_BIT);
-                }
-                break;
-            default:
-                ESP_LOGD(TAG, "Client run iteration in a default state: %d", client->state);
-                break;
+            }
+            break;
+        case WEBSOCKET_STATE_WAIT_TIMEOUT:
+
+            if (_tick_get_ms() - client->reconnect_tick_ms > client->wait_timeout_ms) {
+                client->state = WEBSOCKET_STATE_INIT;
+                client->reconnect_tick_ms = _tick_get_ms();
+                ESP_LOGD(TAG, "Reconnecting...");
+            }
+            break;
+        case WEBSOCKET_STATE_CLOSING:
+            // if closing not initiated by the client echo the close message back
+            if ((CLOSE_FRAME_SENT_BIT & xEventGroupGetBits(client->status_bits)) == 0) {
+                ESP_LOGD(TAG, "Closing initiated by the server, sending close frame");
+                esp_transport_ws_send_raw(client->transport, WS_TRANSPORT_OPCODES_CLOSE | WS_TRANSPORT_OPCODES_FIN, NULL, 0, client->config->network_timeout_ms);
+                xEventGroupSetBits(client->status_bits, CLOSE_FRAME_SENT_BIT);
+            }
+            break;
+        default:
+            ESP_LOGD(TAG, "Client run iteration in a default state: %d", client->state);
+            break;
         }
         xSemaphoreGiveRecursive(client->lock);
         if (WEBSOCKET_STATE_CONNECTED == client->state) {
             read_select = esp_transport_poll_read(client->transport, 1000); //Poll every 1000ms
             if (read_select < 0) {
-                ESP_LOGE(TAG, "Network error: esp_transport_poll_read() returned %d, errno=%d", read_select, errno);
-                tf_websocket_client_abort_connection(client);
+                esp_tls_error_handle_t error_handle = esp_transport_get_error_handle(client->transport);
+                if (error_handle) {
+                    tf_websocket_client_error(client, "esp_transport_poll_read() returned %d, transport_error=%s, tls_error_code=%i, tls_flags=%i, errno=%d",
+                                               read_select, esp_err_to_name(error_handle->last_error), error_handle->esp_tls_error_code,
+                                               error_handle->esp_tls_flags, errno);
+                } else {
+                    tf_websocket_client_error(client, "esp_transport_poll_read() returned %d, errno=%d", read_select, errno);
+                }
+                xSemaphoreTakeRecursive(client->lock, lock_timeout);
+                tf_websocket_client_abort_connection(client, WEBSOCKET_ERROR_TYPE_TCP_TRANSPORT);
+                xSemaphoreGiveRecursive(client->lock);
             }
         } else if (WEBSOCKET_STATE_WAIT_TIMEOUT == client->state) {
             // waiting for reconnecting...
-            vTaskDelay(client->wait_timeout_ms / 2 / portTICK_RATE_MS);
+            vTaskDelay(client->wait_timeout_ms / 2 / portTICK_PERIOD_MS);
         } else if (WEBSOCKET_STATE_CLOSING == client->state &&
-                  (CLOSE_FRAME_SENT_BIT & xEventGroupGetBits(client->status_bits))) {
+                   (CLOSE_FRAME_SENT_BIT & xEventGroupGetBits(client->status_bits))) {
             ESP_LOGD(TAG, " Waiting for TCP connection to be closed by the server");
             int ret = esp_transport_ws_poll_connection_closed(client->transport, 1000);
             if (ret == 0) {
-                // still waiting
-                break;
-            }
-            if (ret < 0) {
+                ESP_LOGW(TAG, "Did not get TCP close within expected delay");
+
+            } else if (ret < 0) {
                 ESP_LOGW(TAG, "Connection terminated while waiting for clean TCP close");
             }
             client->run = false;
@@ -739,9 +1136,13 @@ static void tf_websocket_client_task(void *pv)
         }
     }
 
+    tf_websocket_client_dispatch_event(client, WEBSOCKET_EVENT_FINISH, NULL, 0);
     esp_transport_close(client->transport);
     xEventGroupSetBits(client->status_bits, STOPPED_BIT);
     client->state = WEBSOCKET_STATE_UNKNOW;
+    if (client->selected_for_destroying == true) {
+        destroy_and_free_resources(client);
+    }
     vTaskDelete(NULL);
 }
 
@@ -754,11 +1155,22 @@ esp_err_t tf_websocket_client_start(tf_websocket_client_handle_t client)
         ESP_LOGE(TAG, "The client has started");
         return ESP_FAIL;
     }
-    if (xTaskCreate(tf_websocket_client_task, "websocket_task", client->config->task_stack, client, client->config->task_prio, &client->task_handle) != pdTRUE) {
+
+    client->transport = client->config->ext_transport;
+    if (!client->transport) {
+        if (tf_websocket_client_create_transport(client) != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to create websocket transport");
+            return ESP_FAIL;
+        }
+    }
+
+    if (xTaskCreate(tf_websocket_client_task, client->config->task_name ? client->config->task_name : "websocket_task",
+                    client->config->task_stack, client, client->config->task_prio, &client->task_handle) != pdTRUE) {
         ESP_LOGE(TAG, "Error create websocket task");
         return ESP_FAIL;
     }
     xEventGroupClearBits(client->status_bits, STOPPED_BIT | CLOSE_FRAME_SENT_BIT);
+    ESP_LOGI(TAG, "Started");
     return ESP_OK;
 }
 
@@ -767,23 +1179,13 @@ esp_err_t tf_websocket_client_stop(tf_websocket_client_handle_t client)
     if (client == NULL) {
         return ESP_ERR_INVALID_ARG;
     }
-    if (!client->run) {
+
+    if (xEventGroupGetBits(client->status_bits) & STOPPED_BIT) {
         ESP_LOGW(TAG, "Client was not started");
         return ESP_FAIL;
     }
 
-    /* A running client cannot be stopped from the websocket task/event handler */
-    TaskHandle_t running_task = xTaskGetCurrentTaskHandle();
-    if (running_task == client->task_handle) {
-        ESP_LOGE(TAG, "Client cannot be stopped from websocket task");
-        return ESP_FAIL;
-    }
-
-
-    client->run = false;
-    xEventGroupWaitBits(client->status_bits, STOPPED_BIT, false, true, portMAX_DELAY);
-    client->state = WEBSOCKET_STATE_UNKNOW;
-    return ESP_OK;
+    return stop_wait_task(client);
 }
 
 static int tf_websocket_client_send_close(tf_websocket_client_handle_t client, int code, const char *additional_data, int total_len, TickType_t timeout)
@@ -822,9 +1224,9 @@ static esp_err_t tf_websocket_client_close_with_optional_body(tf_websocket_clien
     }
 
     if (send_body) {
-        tf_websocket_client_send_close(client, code, data, len + 2, timeout); // len + 2 -> always sending the code
+        tf_websocket_client_send_close(client, code, data, len + 2, portMAX_DELAY); // len + 2 -> always sending the code
     } else {
-        tf_websocket_client_send_close(client, 0, NULL, 0, timeout); // only opcode frame
+        tf_websocket_client_send_close(client, 0, NULL, 0, portMAX_DELAY); // only opcode frame
     }
 
     // Set closing bit to prevent from sending PING frames while connected
@@ -856,9 +1258,14 @@ int tf_websocket_client_send_text(tf_websocket_client_handle_t client, const cha
     return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_TEXT, (const uint8_t *)data, len, lock_timeout, write_timeout);
 }
 
-int tf_websocket_client_send(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
+int tf_websocket_client_send_text_partial(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
 {
-    return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_BINARY, (const uint8_t *)data, len, lock_timeout, write_timeout);
+    return tf_websocket_client_send_with_exact_opcode(client, WS_TRANSPORT_OPCODES_TEXT, (const uint8_t *)data, len, lock_timeout, write_timeout);
+}
+
+int tf_websocket_client_send_cont_msg(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
+{
+    return tf_websocket_client_send_with_exact_opcode(client, WS_TRANSPORT_OPCODES_CONT, (const uint8_t *)data, len, lock_timeout, write_timeout);
 }
 
 int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
@@ -866,62 +1273,23 @@ int tf_websocket_client_send_bin(tf_websocket_client_handle_t client, const char
     return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_BINARY, (const uint8_t *)data, len, lock_timeout, write_timeout);
 }
 
-int tf_websocket_client_send_ping(tf_websocket_client_handle_t client, TickType_t timeout) {
-    return tf_websocket_client_send_with_opcode(client, WS_TRANSPORT_OPCODES_PING | WS_TRANSPORT_OPCODES_FIN, NULL, 0, timeout, timeout);
+int tf_websocket_client_send_bin_partial(tf_websocket_client_handle_t client, const char *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
+{
+    return tf_websocket_client_send_with_exact_opcode(client, WS_TRANSPORT_OPCODES_BINARY, (const uint8_t *)data, len, lock_timeout, write_timeout);
 }
 
-static int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
+int tf_websocket_client_send_fin(tf_websocket_client_handle_t client, TickType_t lock_timeout, TickType_t write_timeout)
 {
-    int need_write = len;
-    int wlen = 0, widx = 0;
-    int ret = ESP_FAIL;
+    return tf_websocket_client_send_with_exact_opcode(client, WS_TRANSPORT_OPCODES_FIN, NULL, 0, lock_timeout, write_timeout);
+}
 
-    if (client == NULL || len < 0 ||
-        (opcode != WS_TRANSPORT_OPCODES_CLOSE && (data == NULL && len > 0))) {
-        ESP_LOGE(TAG, "Invalid arguments");
-        return ESP_FAIL;
-    }
+int tf_websocket_client_send_ping(tf_websocket_client_handle_t client, TickType_t lock_timeout, TickType_t write_timeout) {
+    return tf_websocket_client_send_with_exact_opcode(client, WS_TRANSPORT_OPCODES_PING | WS_TRANSPORT_OPCODES_FIN, NULL, 0, lock_timeout, write_timeout);
+}
 
-    if (xSemaphoreTakeRecursive(client->lock, lock_timeout) != pdPASS) {
-        ESP_LOGE(TAG, "Could not lock ws-client within %ld timeout", lock_timeout);
-        return ESP_FAIL;
-    }
-
-    if (!tf_websocket_client_is_connected(client)) {
-        ESP_LOGE(TAG, "Websocket client is not connected");
-        goto unlock_and_return;
-    }
-
-    if (client->transport == NULL) {
-        ESP_LOGE(TAG, "Invalid transport");
-        goto unlock_and_return;
-    }
-    uint32_t current_opcode = opcode;
-    while (widx < len || current_opcode) {  // allow for sending "current_opcode" only message with len==0
-        if (need_write > client->buffer_size) {
-            need_write = client->buffer_size;
-        } else {
-            current_opcode |= WS_TRANSPORT_OPCODES_FIN;
-        }
-        memcpy(client->tx_buffer, data + widx, need_write);
-        // send with ws specific way and specific opcode
-        wlen = esp_transport_ws_send_raw(client->transport, current_opcode, (char *)client->tx_buffer, need_write,
-                                        (write_timeout==portMAX_DELAY)? -1 : write_timeout * portTICK_PERIOD_MS);
-        if (wlen < 0 || (wlen == 0 && need_write != 0)) {
-            ret = wlen;
-            ESP_LOGE(TAG, "Network error: esp_transport_write() returned %d, errno=%d", ret, errno);
-            tf_websocket_client_abort_connection(client);
-            goto unlock_and_return;
-        }
-        current_opcode = 0;
-        widx += wlen;
-        need_write = len - widx;
-
-    }
-    ret = widx;
-unlock_and_return:
-    xSemaphoreGiveRecursive(client->lock);
-    return ret;
+int tf_websocket_client_send_with_opcode(tf_websocket_client_handle_t client, ws_transport_opcodes_t opcode, const uint8_t *data, int len, TickType_t lock_timeout, TickType_t write_timeout)
+{
+    return tf_websocket_client_send_with_exact_opcode(client, opcode | WS_TRANSPORT_OPCODES_FIN, data, len, lock_timeout, write_timeout);
 }
 
 bool tf_websocket_client_is_connected(tf_websocket_client_handle_t client)
@@ -930,6 +1298,75 @@ bool tf_websocket_client_is_connected(tf_websocket_client_handle_t client)
         return false;
     }
     return client->state == WEBSOCKET_STATE_CONNECTED;
+}
+
+size_t tf_websocket_client_get_ping_interval_sec(tf_websocket_client_handle_t client)
+{
+    if (client == NULL) {
+        ESP_LOGW(TAG, "Client was not initialized");
+        return 0;
+    }
+
+    if (client->config == NULL) {
+        ESP_LOGW(TAG, "No config available to change the ping interval");
+        return 0;
+    }
+
+    return client->config->ping_interval_sec;
+}
+
+esp_err_t tf_websocket_client_set_ping_interval_sec(tf_websocket_client_handle_t client, size_t ping_interval_sec)
+{
+    if (client == NULL) {
+        ESP_LOGW(TAG, "Client was not initialized");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (client->config == NULL) {
+        ESP_LOGW(TAG, "No config available to change the ping interval");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    client->config->ping_interval_sec = ping_interval_sec == 0 ? WEBSOCKET_PING_INTERVAL_SEC : ping_interval_sec;
+
+    return ESP_OK;
+}
+
+int tf_websocket_client_get_reconnect_timeout(tf_websocket_client_handle_t client)
+{
+    if (client == NULL) {
+        ESP_LOGW(TAG, "Client was not initialized");
+        return -1;
+    }
+
+    if (!client->config->auto_reconnect) {
+        ESP_LOGW(TAG, "Automatic reconnect is disabled");
+        return -1;
+    }
+
+    return client->wait_timeout_ms;
+}
+
+esp_err_t tf_websocket_client_set_reconnect_timeout(tf_websocket_client_handle_t client, int reconnect_timeout_ms)
+{
+    if (client == NULL) {
+        ESP_LOGW(TAG, "Client was not initialized");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (reconnect_timeout_ms <= 0) {
+        ESP_LOGW(TAG, "Invalid reconnect timeout");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (!client->config->auto_reconnect) {
+        ESP_LOGW(TAG, "Automatic reconnect is disabled");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    client->wait_timeout_ms = reconnect_timeout_ms;
+
+    return ESP_OK;
 }
 
 esp_err_t tf_websocket_register_events(tf_websocket_client_handle_t client,
