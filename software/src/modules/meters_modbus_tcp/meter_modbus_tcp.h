@@ -99,6 +99,7 @@ private:
     void disconnect_callback() override;
     bool prepare_read();
     void read_next();
+    void parse_next();
     bool is_sungrow_inverter_meter() const;
     bool is_sungrow_grid_meter() const;
     bool is_sungrow_battery_meter() const;
