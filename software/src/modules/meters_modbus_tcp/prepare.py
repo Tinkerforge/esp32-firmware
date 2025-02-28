@@ -33,6 +33,7 @@ for spec in specs:
         value_ids_raw = []
         value_ids = []
         value_index = []
+        f32_negative_max_as_nan = 'true' if spec.get('f32_negative_max_as_nan', False) else 'false'
         current_index = 0
 
         for value in spec['values']:
@@ -101,6 +102,7 @@ for spec in specs:
                                '    0,\r')
 
         spec_values.append(f'    {spec_name.under}_index,\n'
+                           f'    {f32_negative_max_as_nan},\n'
                            '};')
 
 with open('meters_modbus_tcp_defs.inc', 'w', encoding='utf-8') as f:

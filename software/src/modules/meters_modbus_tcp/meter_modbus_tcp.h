@@ -76,6 +76,7 @@ public:
         const MeterValueID *ids;
         size_t ids_length;
         const uint32_t *index;
+        bool f32_negative_max_as_nan;
     };
 
     MeterModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_, size_t trace_buffer_index_) :
