@@ -33,14 +33,14 @@ specs = [
                 'name': 'Battery 1 Lifetime Export Energy Counter [0.1 kWh]',
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 0xE176,
-                'value_type': 'F32LE',
+                'value_type': 'U64LE',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Battery 1 Lifetime Import Energy Counter [0.1 kWh]',
                 'value_id': 'EnergyDCCharge',
                 'start_address': 0xE17A,
-                'value_type': 'F32LE',
+                'value_type': 'U64LE',
                 'scale_factor': 0.1,
             },
             {
