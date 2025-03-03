@@ -12,7 +12,7 @@ diff --git a/mdns.c b/mdns.c
 index b658b16ea1..97600c5ee1 100644
 --- a/mdns.c
 +++ b/mdns.c
-@@ -1138,7 +1138,7 @@ static uint8_t _mdns_append_answer(uint8_t * packet, uint16_t * index, mdns_out_
+@@ -1489,7 +1489,7 @@ static uint8_t _mdns_append_answer(uint8_t * packet, uint16_t * index, mdns_out_
   */
  static void _mdns_dispatch_tx_packet(mdns_tx_packet_t * p)
  {
