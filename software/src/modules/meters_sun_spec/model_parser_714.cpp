@@ -172,7 +172,7 @@ bool MetersSunSpecParser714::detect_values(const uint16_t *const register_data[2
         cached_port_count = MODEL_714_MAX_PORT_COUNT;
     }
 
-    *registers_to_read = MODEL_714_REGISTER_COUNT + cached_port_count * MODEL_714_PORT_REGISTER_COUNT;
+    *registers_to_read = get_interesting_registers_count();
 
     switch (port_type) {
     case DCPortType::Photovoltaic:
