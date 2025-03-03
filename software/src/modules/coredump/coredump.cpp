@@ -118,12 +118,13 @@ void Coredump::register_urls()
 
         request.beginChunkedResponse(200, "application/octet-stream");
 
-        char buffer[4096];
-
+        constexpr size_t BUFFER_SIZE = 2048;
         constexpr size_t OFFSET_BEFORE_ELF_HEADER = 24;
 
-        for (size_t i = 0; i < size; i += 4096) {
-            size_t to_send = std::min(4096U, size - i);
+        char buffer[BUFFER_SIZE];
+
+        for (size_t i = 0; i < size; i += BUFFER_SIZE) {
+            size_t to_send = std::min(BUFFER_SIZE, size - i);
             if (esp_flash_read(NULL, buffer, addr + i, to_send) != ESP_OK) {
                 String s = "ESP_FLASH_READ failed. Core dump truncated";
                 request.sendChunk(s.c_str(), s.length());
