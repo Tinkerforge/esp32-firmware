@@ -24,7 +24,8 @@ def find_gdb():
 
 PREFIX = b"___tf_coredump_info_start___"
 SUFFIX = b"___tf_coredump_info_end___"
-EXTRA_INFO_HEADER = b'\xA5\x02\x00\x00EXTRA_INFO'
+EXTRA_INFO_HEADER = b'\xA5\x02\x00\x00ESP_EXTRA_INFO'
+OFFSET_BEFORE_ELF_HEADER = 24
 
 def extra_info_reg_name(reg):
     return {
@@ -201,8 +202,8 @@ def download_core_dump(port):
         raise Exception("Failed to get core dump partition offset or size from partition table!")
 
     # Remove header before ELF file
-    core_dump_offset += 20
-    core_dump_size -= 20
+    core_dump_offset += OFFSET_BEFORE_ELF_HEADER
+    core_dump_size -= OFFSET_BEFORE_ELF_HEADER
 
     os.system("pio pkg exec esptool.py -- --port {} --chip esp32 --baud 921600 read_flash {} {} {}".format(port, core_dump_offset, core_dump_size, core_dump_path))
 

@@ -120,6 +120,8 @@ void Coredump::register_urls()
 
         char buffer[4096];
 
+        constexpr size_t OFFSET_BEFORE_ELF_HEADER = 24;
+
         for (size_t i = 0; i < size; i += 4096) {
             size_t to_send = std::min(4096U, size - i);
             if (esp_flash_read(NULL, buffer, addr + i, to_send) != ESP_OK) {
@@ -127,7 +129,7 @@ void Coredump::register_urls()
                 request.sendChunk(s.c_str(), s.length());
                 return request.endChunkedResponse();
             }
-            request.sendChunk(buffer + (i == 0 ? 20 : 0), to_send - (i == 0 ? 20 : 0));
+            request.sendChunk(buffer + (i == 0 ? OFFSET_BEFORE_ELF_HEADER : 0), to_send - (i == 0 ? OFFSET_BEFORE_ELF_HEADER : 0));
         }
 
         return request.endChunkedResponse();
