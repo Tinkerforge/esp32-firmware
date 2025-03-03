@@ -99,6 +99,21 @@
 #define CARLO_GAVAZZI_EM510_KWH_POSITIVE_TOTAL                             static_cast<size_t>(CarloGavazziEM510atL1Address::KWhPositiveTotal)
 #define CARLO_GAVAZZI_EM510_KWH_NEGATIVE_TOTAL                             static_cast<size_t>(CarloGavazziEM510atL1Address::KWhNegativeTotal)
 
+#define SOLAREDGE_INVERTER_BATTERY_1_TEMPERATURE                           static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery1AverageTemperature)
+#define SOLAREDGE_INVERTER_BATTERY_1_VOLTAGE                               static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery1InstantaneousVoltage)
+#define SOLAREDGE_INVERTER_BATTERY_1_CURRENT                               static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery1InstantaneousCurrent)
+#define SOLAREDGE_INVERTER_BATTERY_1_POWER                                 static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery1InstantaneousPower)
+#define SOLAREDGE_INVERTER_BATTERY_1_EXPORT_ENERGY                         static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery1LifetimeExportEnergyCounter)
+#define SOLAREDGE_INVERTER_BATTERY_1_IMPORT_ENERGY                         static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery1LifetimeImportEnergyCounter)
+#define SOLAREDGE_INVERTER_BATTERY_1_STATE_OF_CHARGE                       static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery1StateOfEnergy)
+#define SOLAREDGE_INVERTER_BATTERY_2_TEMPERATURE                           static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery2AverageTemperature)
+#define SOLAREDGE_INVERTER_BATTERY_2_VOLTAGE                               static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery2InstantaneousVoltage)
+#define SOLAREDGE_INVERTER_BATTERY_2_CURRENT                               static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery2InstantaneousCurrent)
+#define SOLAREDGE_INVERTER_BATTERY_2_POWER                                 static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery2InstantaneousPower)
+#define SOLAREDGE_INVERTER_BATTERY_2_EXPORT_ENERGY                         static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery2LifetimeExportEnergyCounter)
+#define SOLAREDGE_INVERTER_BATTERY_2_IMPORT_ENERGY                         static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery2LifetimeImportEnergyCounter)
+#define SOLAREDGE_INVERTER_BATTERY_2_STATE_OF_CHARGE                       static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery2StateOfEnergy)
+
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
 
@@ -145,6 +160,32 @@ static float get_fronius_scale_factor(int16_t sf)
     }
 
     return fronius_scale_factors[sf + 10];
+}
+
+static float nan_safe_sum(float a, float b)
+{
+    if (isnan(a)) {
+        return b;
+    }
+
+    if (isnan(b)) {
+        return a;
+    }
+
+    return a + b;
+}
+
+static float nan_safe_avg(float a, float b)
+{
+    if (isnan(a)) {
+        return b;
+    }
+
+    if (isnan(b)) {
+        return a;
+    }
+
+    return (a + b) / 2.0f;
 }
 
 MeterClassID MeterModbusTCP::get_class() const
@@ -1193,6 +1234,12 @@ bool MeterModbusTCP::is_carlo_gavazzi_em510() const
     return table_id == MeterModbusTCPTableID::CarloGavazziEM510;
 }
 
+bool MeterModbusTCP::is_solaredge_inverter_battery_meter() const
+{
+    return table_id == MeterModbusTCPTableID::SolaredgeInverter
+        && solaredge.inverter_virtual_meter == SolaredgeInverterVirtualMeter::Battery;
+}
+
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
@@ -1803,6 +1850,50 @@ void MeterModbusTCP::parse_next()
          || register_start_address == CARLO_GAVAZZI_EM510_KWH_POSITIVE_TOTAL
          || register_start_address == CARLO_GAVAZZI_EM510_KWH_NEGATIVE_TOTAL) {
             meters.update_value(slot, table->index[read_index + 1], value);
+        }
+    }
+    else if (is_solaredge_inverter_battery_meter()) {
+        if (register_start_address == SOLAREDGE_INVERTER_BATTERY_1_TEMPERATURE) {
+            solaredge.battery_1_temperature = value;
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_1_VOLTAGE) {
+            solaredge.battery_1_voltage = value;
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_1_CURRENT) {
+            solaredge.battery_1_current = -value; // current is negative while charging
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_1_POWER) {
+            solaredge.battery_1_power = value;
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_1_EXPORT_ENERGY) {
+            solaredge.battery_1_export_energy = value;
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_1_IMPORT_ENERGY) {
+            solaredge.battery_1_import_energy = value;
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_1_STATE_OF_CHARGE) {
+            solaredge.battery_1_state_of_charge = value;
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_2_TEMPERATURE) {
+            value = nan_safe_sum(solaredge.battery_1_temperature, value);
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_2_VOLTAGE) {
+            value = nan_safe_avg(solaredge.battery_1_voltage, value);
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_2_CURRENT) {
+            value = nan_safe_sum(solaredge.battery_1_current, -value); // current is negative while charging
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_2_POWER) {
+            value = nan_safe_sum(solaredge.battery_1_power, value);
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_2_EXPORT_ENERGY) {
+            value = nan_safe_sum(solaredge.battery_1_export_energy, value);
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_2_IMPORT_ENERGY) {
+            value = nan_safe_sum(solaredge.battery_1_import_energy, value);
+        }
+        else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_2_STATE_OF_CHARGE) {
+            value = nan_safe_avg(solaredge.battery_1_state_of_charge, value);
         }
     }
 
