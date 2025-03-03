@@ -33,7 +33,7 @@ export interface SwitchProps {
 export function Switch(props: SwitchProps) {
     const id = !props.idContext ? useId() : useContext(props.idContext);
 
-    let inner = <div class={"borderless-form-control custom-control custom-switch "}>
+    let inner = <div class={"borderless-form-control custom-control custom-switch"}>
             <input type="checkbox" class="custom-control-input" id={id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
             <label class="custom-control-label" for={id}>{props.desc}</label>
         </div>;
