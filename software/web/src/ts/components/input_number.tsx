@@ -73,7 +73,7 @@ export function InputNumber(props: InputNumberProps) {
                     }}
                 inputMode="numeric"
                 {...props}
-                disabled={props.onValue === undefined || props.disabled}
+                readonly={props.onValue === undefined || props.readonly}
         />
         {props.unit || props.onValue ? <div class="input-group-append">
             {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}

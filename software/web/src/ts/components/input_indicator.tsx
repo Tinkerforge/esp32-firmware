@@ -44,8 +44,8 @@ export function InputIndicator(props: InputIndicatorProps) {
                id={id}
                type="text"
                onInput={props.onValue ? (e) => props.onValue((e.target as HTMLInputElement).value) : undefined}
-               readonly={!props.onValue}
-               {...props}/>
+               {...props}
+               readonly={!props.onValue || props.readonly}/>
     );
     if (!props.onReset || props.resetHidden)
         return inner;

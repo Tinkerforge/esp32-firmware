@@ -62,7 +62,7 @@ export function CustomLimitModal(props: {show: boolean, onHide: () => void, onSu
         {electricity_price > 0 ?
             <FormRow label={__("charge_limits.content.custom_energy_limit_cost_label")}>
             <InputFloat
-                    disabled
+                    readonly
                     value={electricity_price / 100 * customLimit / 1000}
                     digits={2}
                     unit="€"/>

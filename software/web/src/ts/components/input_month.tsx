@@ -71,7 +71,8 @@ export function InputMonth(props: InputMonthProps) {
                         props.onDate(valueToDate(timeString));
                     } : undefined
                 }
-                disabled={!props.onDate}
+                readonly={!props.onDate || props.readonly}
+                disabled={props.disabled}
                 value={dateToValue(props.date)}/>
         </>
 

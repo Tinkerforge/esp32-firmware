@@ -63,7 +63,7 @@ export function OutputFloat(props: OutputFloatProps) {
                    style={pad_right}
                    id={id}
                    type="text"
-                   disabled
+                   readonly
                    value={val}/>
             {props.maxUnitLengthOnPage == 0 && props.unit == "" ? undefined :
                 <div class="input-group-append">

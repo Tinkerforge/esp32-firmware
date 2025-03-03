@@ -75,7 +75,7 @@ function InputTextInternal<T extends InputTextInternalProps>(props: util.NoExtra
                         else
                             onValue(props.value as string);
                     } : undefined}
-                    readonly={!onValue}/>
+                    readonly={!onValue || props.readonly}/>
 
     if (prefixChildren || props.children) {
         return <div class="input-group">

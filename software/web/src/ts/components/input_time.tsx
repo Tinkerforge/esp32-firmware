@@ -70,7 +70,8 @@ export function InputTime(props: InputTimeProps) {
                            props.onDate(valueToDate(timeString));
                        } : undefined
                    }
-                   disabled={!props.onDate || props.disabled}
+                   readonly={!props.onDate || props.readonly}
+                   disabled={props.disabled}
                    // Show seconds if showSeconds is true or undefined (i.e. default is true)
                    value={props.showSeconds === false ? dateToHourMinValue(props.date) : dateToHourMinSecValue(props.date)} />
         </>;

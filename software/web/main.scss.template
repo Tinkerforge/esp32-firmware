@@ -649,3 +649,7 @@ table ul {
 .form-row-help p:last-child {
     margin-bottom: 0;
 }
+
+input.borderless-form-control:disabled, input.form-control:disabled {
+    color: #6c757d;
+}
