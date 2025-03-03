@@ -28,6 +28,7 @@
 #include <lwipopts.h>
 #include <soc/rtc.h>
 #include <soc/spi_reg.h>
+#include <freertos/task.h>
 
 #include "event_log_prefix.h"
 #include "config/slot_allocator.h"
@@ -389,6 +390,12 @@ void Debug::register_urls()
     });
 
 #ifdef DEBUG_FS_ENABLE
+    server.on_HTTPThread("/debug/rtos_tasks", HTTP_GET, [](WebServerRequest req) {
+        char buf[2048]; // "This buffer is assumed to be large enough to contain the generated report. Approximately 40 bytes per task should be sufficient." - vTaskGetRunTimeStats@FreeRTOS
+        vTaskGetRunTimeStats(buf);
+        return req.send(200, "text/plain", buf, HTTPD_RESP_USE_STRLEN);
+    });
+
     server.on_HTTPThread("/debug/fs/*", HTTP_GET, [this](WebServerRequest request) {
         String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
         if (path.length() > 1 && path[path.length() - 1] == '/')
