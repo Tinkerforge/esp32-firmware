@@ -1,0 +1,31 @@
+From d2cefc90e18944e0ba7e30b589559a26b56add00 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Fri, 28 Feb 2025 22:54:08 +0100
+Subject: [PATCH] Don't build unused variants
+
+---
+ configs/builds.json | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/configs/builds.json b/configs/builds.json
+index ddfb8e4..a8e0a6c 100644
+--- a/configs/builds.json
++++ b/configs/builds.json
+@@ -120,13 +120,9 @@
+ 			"features":["qio_ram"],
+ 			"idf_libs":["qio","80m"],
+ 			"bootloaders":[
+-				["qio","80m"],
+-				["dio","80m"],
+-				["qio","40m"],
+-				["dio","40m"]
++				["qio","80m"]
+ 			],
+ 			"mem_variants":[
+-				["dio","80m"]
+ 			]
+ 		},
+ 		{
+-- 
+2.39.5
+
