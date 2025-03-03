@@ -1,0 +1,27 @@
+From c634a1deace94ce5dad519842ceca63bdc90d52a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Mon, 3 Mar 2025 16:33:38 +0100
+Subject: [PATCH] lwIP: Force-enable LWIP_ESP_NETIF_DATA for WireGuard
+
+---
+ components/lwip/port/include/lwipopts.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/components/lwip/port/include/lwipopts.h b/components/lwip/port/include/lwipopts.h
+index b88e33a2ca..d25ebf595c 100644
+--- a/components/lwip/port/include/lwipopts.h
++++ b/components/lwip/port/include/lwipopts.h
+@@ -770,7 +770,9 @@ static inline uint32_t timeout_from_offered(uint32_t lease, uint32_t min)
+ #ifndef CONFIG_LWIP_NUM_NETIF_CLIENT_DATA
+ #define CONFIG_LWIP_NUM_NETIF_CLIENT_DATA 0
+ #endif
+-#if defined(CONFIG_ESP_NETIF_BRIDGE_EN) || defined(CONFIG_LWIP_PPP_SUPPORT)
++
++// Force-enable because netif->state is used by WireGuard.
++#if defined(CONFIG_ESP_NETIF_BRIDGE_EN) || defined(CONFIG_LWIP_PPP_SUPPORT) || 1
+ /*
+  * If special lwip interfaces (like bridge, ppp) enabled
+  * `netif->state` is used internally and we must store esp-netif ptr
+-- 
+2.39.5
+
