@@ -30,18 +30,18 @@ specs = [
                 'value_type': 'F32LE',
             },
             {
-                'name': 'Battery 1 Lifetime Export Energy Counter [0.1 kWh]',
+                'name': 'Battery 1 Lifetime Export Energy Counter [0.001 kWh]',
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 0xE176,
                 'value_type': 'U64LE',
-                'scale_factor': 0.1,
+                'scale_factor': 0.001,
             },
             {
-                'name': 'Battery 1 Lifetime Import Energy Counter [0.1 kWh]',
+                'name': 'Battery 1 Lifetime Import Energy Counter [0.001 kWh]',
                 'value_id': 'EnergyDCCharge',
                 'start_address': 0xE17A,
                 'value_type': 'U64LE',
-                'scale_factor': 0.1,
+                'scale_factor': 0.001,
             },
             {
                 'name': 'Battery 1 State of Energy [%]',
