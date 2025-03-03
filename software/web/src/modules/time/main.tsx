@@ -133,7 +133,7 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                         <OutputDatetime date={date}
                                         onClick={() => this.set_current_time()}
                                         buttonText={__("time.content.set_time")}
-                                        disabled={this.state.auto_sync}
+                                        buttonDisabled={this.state.auto_sync}
                                         invalidDateText={__("time.content.time_not_set")}/>
                     </FormRow>
 

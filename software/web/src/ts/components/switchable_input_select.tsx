@@ -78,7 +78,6 @@ export function SwitchableInputSelect(props: SwitchableInputSelectProps) {
             <select
                 {...p}
                 value={value}
-                readOnly={!checked || props.disabled}
                 disabled={!checked || props.disabled}
                 class={(className ?? "") + " form-control custom-select"}
                 style={style ?? ""}

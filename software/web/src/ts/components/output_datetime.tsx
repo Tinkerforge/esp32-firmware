@@ -29,7 +29,7 @@ interface OutputDatetimeProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputE
     date: Date;
     onClick?: () => void;
     buttonText?: string;
-    disabled?: boolean;
+    buttonDisabled?: boolean;
     invalidDateText?: string;
 }
 
@@ -40,7 +40,7 @@ export function OutputDatetime(props: OutputDatetimeProps) {
                     id={id}
                     type="datetime-local"
                     step={1}
-                    disabled={true}
+                    readonly
                     value={util.toIsoString(props.date)}
                     required
                     />;
@@ -49,7 +49,7 @@ export function OutputDatetime(props: OutputDatetimeProps) {
         inner = <input class={"form-control " + props.className}
             id={id}
             type="text"
-            disabled={true}
+            readonly
             value={props.invalidDateText}
             required
             />;
@@ -61,7 +61,7 @@ export function OutputDatetime(props: OutputDatetimeProps) {
         <div class="input-group">
             {inner}
             <div class="input-group-append">
-                <button class="btn btn-primary form-control rounded-right" type="button" onClick={props.onClick} disabled={props.disabled}>{props.buttonText}</button>
+                <button class="btn btn-primary form-control rounded-right" type="button" onClick={props.onClick} disabled={props.buttonDisabled}>{props.buttonText}</button>
             </div>
         </div>
 

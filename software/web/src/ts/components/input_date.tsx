@@ -99,7 +99,8 @@ export function InputDate(props: InputDateProps) {
                        setLastEvent('click');
                    }}
                    onfocusout={props.onDate ? () => sendInFlight() : undefined}
-                   disabled={!props.onDate}
+                   readonly={!props.onDate || props.readonly}
+                   disabled={props.disabled}
                    value={value} />
         </>;
 

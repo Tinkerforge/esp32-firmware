@@ -34,6 +34,7 @@ interface InputFloatReadonlyProps {
     class?: string;
     invalidFeedback?: string
     required?: boolean
+    readonly?: boolean
     disabled?: boolean
 }
 
@@ -126,7 +127,8 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                }}
                onfocusout={'onValue' in props ? () => sendInFlight() : undefined}
                value={value}
-               disabled={!('onValue' in props) || props.disabled}
+               readonly={!('onValue' in props) || props.readonly}
+               disabled={props.disabled}
                inputMode="decimal"
                style="min-width: 5em;"
                required={props.required}/>
@@ -138,7 +140,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                 </div>
                 : undefined
             }
-            {'onValue' in props && !props.disabled ?
+            {'onValue' in props && !props.readonly && !props.disabled ?
                 <>
                     <Button variant="primary"
                             disabled={props.disabled || (props.value == props.min)}
