@@ -112,6 +112,7 @@ private:
     bool is_fronius_gen24_plus_hybrid_inverter_battery_meter() const;
     bool is_carlo_gavazzi_em100_or_et100() const;
     bool is_carlo_gavazzi_em510() const;
+    bool is_solaredge_inverter_battery_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -265,6 +266,13 @@ private:
         // Solaredge
         struct {
             SolaredgeInverterVirtualMeter inverter_virtual_meter;
+            float battery_1_temperature;
+            float battery_1_voltage;
+            float battery_1_current;
+            float battery_1_power;
+            float battery_1_export_energy;
+            float battery_1_import_energy;
+            float battery_1_state_of_charge;
         } solaredge;
     };
 };
