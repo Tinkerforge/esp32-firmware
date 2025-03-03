@@ -150,7 +150,7 @@ bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data[2
         cached_mppt_count = MODEL_160_MAX_MPPT_COUNT;
     }
 
-    *registers_to_read = MODEL_160_REGISTER_COUNT + cached_mppt_count * MODEL_160_MPPT_REGISTER_COUNT;
+    *registers_to_read = get_interesting_registers_count();
 
     meters.declare_value_ids(meter_slot, model_160_ids, MODEL_160_ID_COUNT + MODEL_160_MPPT_ID_COUNT * cached_mppt_count);
 
