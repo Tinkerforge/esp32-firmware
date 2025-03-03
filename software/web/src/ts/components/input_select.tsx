@@ -66,7 +66,7 @@ export function InputSelect(props: InputSelectProps) {
                 readOnly={onValue === undefined || p.readOnly}
                 disabled={onValue === undefined || p.disabled}
                 value={value}
-                class={(className ?? "") + " custom-select"}
+                class={(className ?? "") + " form-control custom-select"}
                 style={style ?? ""}
                 id={id}
                 onInput={onValue === undefined ? undefined : (e) => onValue((e.target as HTMLSelectElement).value)}
