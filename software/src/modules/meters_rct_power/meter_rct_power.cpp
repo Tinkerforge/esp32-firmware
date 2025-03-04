@@ -71,11 +71,11 @@ void MeterRCTPower::setup(Config *ephemeral_config)
 
     switch (virtual_meter) {
     case VirtualMeter::None:
-        logger.printfln("No Virtual Meter selected");
+        logger.printfln_meter("No Virtual Meter selected");
         return;
 
     case VirtualMeter::InverterUnused:
-        logger.printfln("Invalid Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));
+        logger.printfln_meter("Invalid Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));
         default_location = MeterLocation::Inverter;
         return;
 
@@ -94,7 +94,7 @@ void MeterRCTPower::setup(Config *ephemeral_config)
         break;
 
     default:
-        logger.printfln("Unknown Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));
+        logger.printfln_meter("Unknown Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));
         return;
     }
 
@@ -168,10 +168,10 @@ void MeterRCTPower::read_next()
                 checksum_mismatch->updateUint(checksum_mismatch->asUint() + 1);
             }
             else {
-                logger.printfln("Error reading ID 0x%08lx: %s [%i]",
-                                value_specs[value_specs_index].id,
-                                get_rct_power_client_transaction_result_name(result),
-                                static_cast<int>(result));
+                logger.printfln_meter("Error reading ID 0x%08lx: %s [%i]",
+                                      value_specs[value_specs_index].id,
+                                      get_rct_power_client_transaction_result_name(result),
+                                      static_cast<int>(result));
             }
         }
         else {

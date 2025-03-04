@@ -167,7 +167,7 @@ bool MetersSunSpecParser714::detect_values(const uint16_t *const register_data[2
 
     if (cached_port_count > MODEL_714_MAX_PORT_COUNT) {
         // FIXME: remove this limitation that is caused by the 125 register read limit
-        logger.printfln("SunSpec model 714 has %zu ports, only reading the first %i", cached_port_count, MODEL_714_MAX_PORT_COUNT);
+        logger.printfln_meter("SunSpec model 714 has %zu ports, only reading the first %i", cached_port_count, MODEL_714_MAX_PORT_COUNT);
 
         cached_port_count = MODEL_714_MAX_PORT_COUNT;
     }
@@ -176,11 +176,11 @@ bool MetersSunSpecParser714::detect_values(const uint16_t *const register_data[2
 
     switch (port_type) {
     case DCPortType::Photovoltaic:
-        meters.declare_value_ids(meter_slot, model_714_pv_ids, MODEL_714_PV_ID_COUNT + MODEL_714_PORT_PV_ID_COUNT * cached_port_count);
+        meters.declare_value_ids(slot, model_714_pv_ids, MODEL_714_PV_ID_COUNT + MODEL_714_PORT_PV_ID_COUNT * cached_port_count);
         break;
 
     case DCPortType::EnergyStorageSystem:
-        meters.declare_value_ids(meter_slot, model_714_battery_ids, MODEL_714_BATTERY_ID_COUNT);
+        meters.declare_value_ids(slot, model_714_battery_ids, MODEL_714_BATTERY_ID_COUNT);
         break;
 
     case DCPortType::ElectricVehicle:
@@ -188,7 +188,7 @@ bool MetersSunSpecParser714::detect_values(const uint16_t *const register_data[2
     case DCPortType::GenericAbsorbing:
     case DCPortType::GenericBidirectional:
     case DCPortType::DCDC:
-        meters.declare_value_ids(meter_slot, model_714_other_ids, MODEL_714_OTHER_ID_COUNT);
+        meters.declare_value_ids(slot, model_714_other_ids, MODEL_714_OTHER_ID_COUNT);
         break;
 
     case DCPortType::NotImplemented:
@@ -314,7 +314,7 @@ bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data[2]
         values[3] = -values[2];
     }
 
-    meters.update_all_values(meter_slot, values);
+    meters.update_all_values(slot, values);
 
     return true;
 }

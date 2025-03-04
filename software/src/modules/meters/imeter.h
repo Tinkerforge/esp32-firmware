@@ -25,6 +25,10 @@
 #include "config.h"
 #include "meter_class_id.enum.h"
 
+#define printfln_meter(fmt, ...) printfln("Meter %lu: " fmt, slot __VA_OPT__(,) __VA_ARGS__)
+
+char *format_meter_slot(uint32_t slot);
+
 class IMeter
 {
 public:

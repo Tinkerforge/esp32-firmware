@@ -54,13 +54,13 @@ void MeterMeta::setup(Config *ephemeral_config)
 void MeterMeta::register_events()
 {
     if (source_meter_a == slot || (source_mode == SourceMode::Double && source_meter_b == slot)) {
-        logger.printfln("Invalid source meter. Meta meter cannot listen to itself in slot %lu. Slot A is %lu, slot b is %lu.", slot, source_meter_a, source_meter_b);
+        logger.printfln_meter("Invalid source meter. Meta meter cannot listen to itself. Slot A is %lu, slot b is %lu", source_meter_a, source_meter_b);
         return;
     }
 
     if (source_mode == SourceMode::Double) {
         if (source_meter_a == source_meter_b) {
-            logger.printfln("Meter %lu: Source meters A and B cannot be the same.", slot);
+            logger.printfln_meter("Source meters A and B cannot be the same");
             return;
         }
     }
@@ -127,7 +127,7 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
     const Config *value_ids_a = api.getState(meters.get_path(source_meter_a, Meters::PathType::ValueIDs));
     size_t value_count_a = value_ids_a->count();
     if (value_count_a == 0) {
-        logger.printfln("Meter %lu: Meter A value IDs not available yet.", slot);
+        logger.printfln_meter("Meter A value IDs not available yet");
         return EventResult::OK;
     }
 
@@ -138,7 +138,7 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
         value_count_b = value_ids_b->count();
 
         if (value_count_b == 0) {
-            logger.printfln("Meter %lu: Meter B value IDs not available yet.", slot);
+            logger.printfln_meter("Meter B value IDs not available yet");
             return EventResult::OK;
         }
     } else {
@@ -146,7 +146,7 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
     }
 
     if (mode == ConfigMode::Add || mode == ConfigMode::Mul) {
-        logger.printfln("Mode %lu not supported yet.", static_cast<uint32_t>(mode));
+        logger.printfln_meter("Mode %lu not supported yet", static_cast<uint32_t>(mode));
         return EventResult::Deregister;
     } else if (mode == ConfigMode::Sum || mode == ConfigMode::Diff) {
         std::vector<struct value_id_pair> value_id_pairs;
@@ -191,18 +191,18 @@ EventResult MeterMeta::on_value_ids_change(const Config *value_ids)
 
         for (size_t i = 0; i < ARRAY_SIZE(index_cache); i++) {
             if (index_cache[i] == UINT32_MAX) {
-                logger.printfln("Meter %lu: Value ID %lu in position %zu not provided by meter", slot, static_cast<uint32_t>(value_ids_pf2current[i]), i);
+                logger.printfln_meter("Value ID %lu in position %zu not provided by meter", static_cast<uint32_t>(value_ids_pf2current[i]), i);
                 return EventResult::OK; // Try again, if possible.
             }
             if (index_cache[i] > UINT8_MAX) {
-                logger.printfln("Meter %lu: Index %lu of value ID %lu in position %zu is out of range", slot, index_cache[i], static_cast<uint32_t>(value_ids_pf2current[i]), i);
+                logger.printfln_meter("Index %lu of value ID %lu in position %zu is out of range", index_cache[i], static_cast<uint32_t>(value_ids_pf2current[i]), i);
                 return EventResult::OK; // Try again, if possible.
             }
         }
 
         value_indices = static_cast<uint8_t(*)[][2]>(malloc(sizeof((*value_indices)[0][0]) * 2 * ARRAY_SIZE(value_ids_pf2current)));
         if (!value_indices) {
-            logger.printfln("Meter %lu: Not enough memory for value_indices", slot);
+            logger.printfln_meter("Not enough memory for value_indices");
             return EventResult::OK; // Try again, if possible.
         }
 
@@ -271,7 +271,7 @@ void MeterMeta::on_values_change_single(const Config *source_values)
 
         meters.update_all_values(slot, values);
     } else {
-        logger.printfln("Unsupported single values mode %lu", static_cast<uint32_t>(mode));
+        logger.printfln_meter("Unsupported single values mode %lu", static_cast<uint32_t>(mode));
     }
 }
 
@@ -299,12 +299,12 @@ void MeterMeta::on_values_change_task_double()
     }
 
     if (availability_a != MeterValueAvailability::Fresh) {
-        //logger.printfln("Meter A values not fresh.");
+        //logger.printfln_meter("Meter A values not fresh");
         return;
     }
 
     if (availability_b != MeterValueAvailability::Fresh) {
-        //logger.printfln("Meter B values not fresh.");
+        //logger.printfln_meter("Meter B values not fresh");
         return;
     }
 
@@ -320,7 +320,7 @@ void MeterMeta::on_values_change_task_double()
         } else if (mode == ConfigMode::Diff) {
             value = value_a - value_b;
         } else {
-            logger.printfln("Unsupported mode %lu", static_cast<uint32_t>(mode));
+            logger.printfln_meter("Unsupported mode %lu", static_cast<uint32_t>(mode));
             value = NAN;
         }
 

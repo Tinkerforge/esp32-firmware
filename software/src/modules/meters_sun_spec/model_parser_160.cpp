@@ -145,14 +145,14 @@ bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data[2
 
     if (cached_mppt_count > MODEL_160_MAX_MPPT_COUNT) {
         // FIXME: remove this limitation that is caused by the 125 register read limit
-        logger.printfln("SunSpec model 160 has %zu MPPT modules, only reading the first %i", cached_mppt_count, MODEL_160_MAX_MPPT_COUNT);
+        logger.printfln_meter("SunSpec model 160 has %zu MPPT modules, only reading the first %i", cached_mppt_count, MODEL_160_MAX_MPPT_COUNT);
 
         cached_mppt_count = MODEL_160_MAX_MPPT_COUNT;
     }
 
     *registers_to_read = get_interesting_registers_count();
 
-    meters.declare_value_ids(meter_slot, model_160_ids, MODEL_160_ID_COUNT + MODEL_160_MPPT_ID_COUNT * cached_mppt_count);
+    meters.declare_value_ids(slot, model_160_ids, MODEL_160_ID_COUNT + MODEL_160_MPPT_ID_COUNT * cached_mppt_count);
 
     return true;
 }
@@ -247,7 +247,7 @@ bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2]
 
     values[3] = -values[2];
 
-    meters.update_all_values(meter_slot, values);
+    meters.update_all_values(slot, values);
 
     return true;
 }

@@ -39,8 +39,8 @@ protected:
         std::function<void(void)> done_callback;
     };
 
-    GenericModbusTCPClient(const char *event_log_prefix_override_, TFModbusTCPClientPool *pool) :
-        GenericTCPClientPoolConnector(event_log_prefix_override_, pool) {}
+    GenericModbusTCPClient(const char *event_log_prefix_override, const char *event_log_message_prefix, TFModbusTCPClientPool *pool) :
+        GenericTCPClientPoolConnector(event_log_prefix_override, event_log_message_prefix, pool) {}
 
     void connect_callback() override;
     void start_generic_read();

@@ -57,7 +57,7 @@ void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
             // This happens if the EVSE restarts without the ESP also restarting.
             // The meter will be detected again in a few seconds.
             if (!meter_change_warning_printed && all_data.energy_meter_type != METER_TYPE_NONE) {
-                logger.printfln("Meter change detected. This is not supported.");
+                logger.printfln_meter("Meter change detected. This is not supported");
                 meter_change_warning_printed = true;
             }
             return;

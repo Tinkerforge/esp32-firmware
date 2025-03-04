@@ -26,8 +26,8 @@
 class GenericTCPClientPoolConnector : protected GenericTCPClientConnectorBase
 {
 protected:
-    GenericTCPClientPoolConnector(const char *event_log_prefix_override_, TFGenericTCPClientPool *pool_) :
-        GenericTCPClientConnectorBase(event_log_prefix_override_), pool(pool_) {}
+    GenericTCPClientPoolConnector(const char *event_log_prefix_override, const char *event_log_message_prefix, TFGenericTCPClientPool *pool_) :
+        GenericTCPClientConnectorBase(event_log_prefix_override, event_log_message_prefix), pool(pool_) {}
 
 private:
     void connect_internal() override;
