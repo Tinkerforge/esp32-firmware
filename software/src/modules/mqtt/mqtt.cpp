@@ -234,7 +234,6 @@ bool Mqtt::publish(const String &topic, const String &payload, bool retain)
 //#if defined(BOARD_HAS_PSRAM)
 //    return esp_mqtt_client_enqueue(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain, true) >= 0;
 //#else
-    return true;
     return esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain) >= 0;
 //#endif
 }
