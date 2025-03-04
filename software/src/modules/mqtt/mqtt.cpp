@@ -309,7 +309,7 @@ void Mqtt::onMqttConnect()
             print_path = true;
             break;
     }
-    logger.printfln("Connected to broker at %s%s:%u%s.", schema, this->config.get("broker_host")->asEphemeralCStr(), this->config.get("broker_port")->asUint(), print_path ? this->config.get("broker_path")->asEphemeralCStr() : "");
+    logger.printfln("Connected to broker at %s%s:%u%s.", schema, this->config.get("broker_host")->asEphemeralCStr(), this->config.get("broker_port")->asUint(), print_path ? this->config.get("path")->asEphemeralCStr() : "");
 
     this->state.get("connection_state")->updateEnum(MqttConnectionState::Connected);
 
