@@ -1243,7 +1243,7 @@ bool MeterModbusTCP::is_solaredge_inverter_battery_meter() const
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        trace("m%u t%u a%zu:%x c%zu e%u",
+        trace("m%lu t%u a%zu:%x c%zu e%lu",
               slot,
               static_cast<uint8_t>(table_id),
               generic_read_request.start_address,
@@ -1334,7 +1334,7 @@ void MeterModbusTCP::parse_next()
 
     switch (value_type) {
     case ModbusValueType::None:
-        trace("m%u t%u i%zu n a%zu:%x",
+        trace("m%lu t%u i%zu n a%zu:%x",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
@@ -1343,7 +1343,7 @@ void MeterModbusTCP::parse_next()
         break;
 
     case ModbusValueType::U16:
-        trace("m%u t%u i%zu u16 a%zu:%x r%u v%u",
+        trace("m%lu t%u i%zu u16 a%zu:%x r%u v%u",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
@@ -1356,7 +1356,7 @@ void MeterModbusTCP::parse_next()
         break;
 
     case ModbusValueType::S16:
-        trace("m%u t%u i%zu s16 a%zu:%x r%u v%d",
+        trace("m%lu t%u i%zu s16 a%zu:%x r%u v%d",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
@@ -1370,7 +1370,7 @@ void MeterModbusTCP::parse_next()
 
     case ModbusValueType::U32BE:
     case ModbusValueType::U32LE:
-        trace("m%u t%u i%zu u32%s a%zu:%x r%u,%u v%u",
+        trace("m%lu t%u i%zu u32%s a%zu:%x r%u,%u v%lu",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
@@ -1386,7 +1386,7 @@ void MeterModbusTCP::parse_next()
 
     case ModbusValueType::S32BE:
     case ModbusValueType::S32LE:
-        trace("m%u t%u i%zu s32%s a%zu:%x r%u,%u v%d",
+        trace("m%lu t%u i%zu s32%s a%zu:%x r%u,%u v%ld",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
@@ -1402,7 +1402,7 @@ void MeterModbusTCP::parse_next()
 
     case ModbusValueType::F32BE:
     case ModbusValueType::F32LE:
-        trace("m%u t%u i%zu f32%s a%zu:%x r%u,%u v%f",
+        trace("m%lu t%u i%zu f32%s a%zu:%x r%u,%u v%f",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
@@ -1428,7 +1428,7 @@ void MeterModbusTCP::parse_next()
 
     case ModbusValueType::U64BE:
     case ModbusValueType::U64LE:
-        trace("m%u t%u i%zu u64%s a%zu:%x r%u,%u,%u,%u v%llu",
+        trace("m%lu t%u i%zu u64%s a%zu:%x r%u,%u,%u,%u v%llu",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
@@ -1446,7 +1446,7 @@ void MeterModbusTCP::parse_next()
 
     case ModbusValueType::S64BE:
     case ModbusValueType::S64LE:
-        trace("m%u t%u i%zu s64%s a%zu:%x r%u,%u,%u,%u v%lld",
+        trace("m%lu t%u i%zu s64%s a%zu:%x r%u,%u,%u,%u v%lld",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,
@@ -1464,7 +1464,7 @@ void MeterModbusTCP::parse_next()
 
     case ModbusValueType::F64BE:
     case ModbusValueType::F64LE:
-        trace("m%u t%u i%zu f64%s a%zu:%x r%u,%u,%u,%u v%f",
+        trace("m%lu t%u i%zu f64%s a%zu:%x r%u,%u,%u,%u v%f",
               slot,
               static_cast<uint8_t>(table_id),
               read_index,

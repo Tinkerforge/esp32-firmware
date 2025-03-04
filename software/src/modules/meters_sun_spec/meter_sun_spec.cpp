@@ -181,7 +181,7 @@ void MeterSunSpec::read_done_callback()
     read_allowed = true;
 
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        trace("m%u a%zu c%zu e%u",
+        trace("m%lu a%zu c%zu e%lu",
               slot,
               generic_read_request.start_address,
               generic_read_request.register_count,
@@ -202,7 +202,7 @@ void MeterSunSpec::read_done_callback()
         if (generic_read_request.data[i] != nullptr) {
             registers_to_string(generic_read_request.data[i], generic_read_request.register_count, data_buf, &data_buf_used);
 
-            trace("m%u a%zu c%zu d%zu",
+            trace("m%lu a%zu c%zu d%zu",
                   slot,
                   generic_read_request.start_address,
                   generic_read_request.register_count,
