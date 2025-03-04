@@ -85,64 +85,33 @@ cd ~/esp32-arduino-lib-builder
 
 ### Test built libs:
 
-TODO UPDATE
-
 ```bash
-cd ~/esp32-firmware/software/packages
-
-# Copy the latest package; Directories ending in -dev are not cleaned up by the firmware build scripts. Remember to use warp2-x.y.z if building WARP2, WARP3 or WEM firmwares (i.e. something that runs on an ESP with ethernet and PSRAM)
-cp -r arduino-esp32#warp-x.y.z_commit_id arduino-esp32#warp-x.y.z-dev
-cd arduino-esp32#warp-x.y.z-dev
-rm platform.txt
-rm -r tools/sdk
-
-# Either
-cp -r ~/esp32-arduino-lib-builder/out/* .
-# Or
-ln -s ~/esp32-arduino-lib-builder/out/platform.txt platform.txt
-ln -s ~/esp32-arduino-lib-builder/out/tools/sdk tools/sdk
-# (If you set symlinks as above, you don't have to copy the lib-builder's output every time you recompile)
-
 # Update platformio.ini's platform_packages entry (of env:base_esp32 for WARP1, env.base_esp32_ethernet for WARP2/3/WEM)
-# to point to the dev-package:
+# to point to the output directory of the lib builder:
 # Change
 platform_packages = platformio/framework-arduinoespressif32 @ symlink://packages/arduino-esp32#warp-x.y.z_commit_id
 # to
-platform_packages = platformio/framework-arduinoespressif32 @ symlink://packages/arduino-esp32#warp-x.y.z-dev
+platform_packages = platformio/framework-arduinoespressif32 @ symlink:///home/[user]/esp32-arduino-lib-builder/out/tools/esp32-arduino-libs
 # Then rebuild the firmware as usual
 pio run -e warp
 ```
 
 ### Add built libs to arduino-esp32 Repo:
 
-TODO UPDATE
-
 ```bash
-(git clone https://github.com/Tinkerforge/arduino-esp32)
-# Go to https://github.com/Tinkerforge/arduino-esp32, switch to "release/v2.x" and click "sync fork" (so that our "release/v2.x" == espressif's "release/v2.x")
-cd ~/arduino-esp32
-git switch release/v2.x
+(git clone https://github.com/Tinkerforge/esp32-arduino-libs)
+# Go to https://github.com/Tinkerforge/esp32-arduino-libs and click "sync fork" (so that our main == espressif's main)
+cd ~/esp32-arduino-libs
+git switch main
 git pull
-git checkout -b warp-x.y.z #or warp2-x.y.z for ESP32 Ethernet Brick
-rm platform.txt
-rm -r tools/sdk
-cp ~/esp32-arduino-lib-builder/out/* .
+git checkout -b tf-esp-[yyyymmdd] #or tf-esp-ethernet-[yyyymmdd] for ESP32 Ethernet Brick
+cp ~/esp32-arduino-lib-builder/out/tools/esp32-arduino-libs/* .
 git add .
-git commit -m "Add libs for warp-x.y.z."
-```
-
-### Push arduino-esp32
-
-TODO UPDATE
-
-```bash
-cd ~/arduino-esp32
-git push -u origin warp-x.y.z #or warp2-x.y.z for ESP32 Ethernet Brick)
+git commit -m "Update precompiled libs."
+git push
 ```
 
 ### Update packages
-
-TODO UPDATE
 
 ```bash
 cd ~/esp32-firmware/software
