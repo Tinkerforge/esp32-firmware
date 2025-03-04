@@ -46,7 +46,9 @@ void GenericModbusTCPClient::start_generic_read()
 
     if (deadline_elapsed(last_successful_read + successful_read_timeout)) {
         logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                 "Last successful read occurred too long ago, reconnecting to %s:%u", host_name.c_str(), port);
+                                 "%sLast successful read occurred too long ago, reconnecting to %s:%u",
+                                 event_log_message_prefix,
+                                 host_name.c_str(), port);
         force_reconnect();
         return;
     }
@@ -106,7 +108,8 @@ void GenericModbusTCPClient::read_next()
         if (result != TFModbusTCPClientTransactionResult::Success) {
             if (result != TFModbusTCPClientTransactionResult::Timeout || (last_read_result_burst_length % 10) == 0) {
                 logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                         "Modbus read error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u regcnt=%u burstlen=%zu): %s (%d)",
+                                         "%sModbus read error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u regcnt=%u burstlen=%zu): %s (%d)",
+                                         event_log_message_prefix,
                                          host_name.c_str(),
                                          port,
                                          device_address,

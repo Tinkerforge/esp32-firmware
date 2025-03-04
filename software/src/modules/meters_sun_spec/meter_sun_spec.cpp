@@ -76,7 +76,7 @@ void MeterSunSpec::setup(Config *ephemeral_config)
     }
 
     if (model_parser == nullptr) {
-        logger.printfln("No parser available for model %u", model_id);
+        logger.printfln_meter("No parser available for model %u", model_id);
         return;
     }
 
@@ -135,7 +135,7 @@ bool MeterSunSpec::alloc_read_buffer(size_t model_regcount)
     uint16_t *buffer = static_cast<uint16_t *>(malloc(sizeof(uint16_t) * buffer_regcount));
 
     if (buffer == nullptr) {
-        logger.printfln("Cannot alloc read buffer.");
+        logger.printfln_meter("Cannot alloc read buffer");
         return false;
     }
 
@@ -219,7 +219,7 @@ void MeterSunSpec::read_done_callback()
         size_t registers_to_read = generic_read_request.register_count;
 
         if (!model_parser->detect_values(generic_read_request.data, quirks, &registers_to_read)) {
-            logger.printfln("Detecting values of model %u in slot %u failed.", model_id, slot);
+            logger.printfln_meter("Detecting values of model %u in slot %u failed", model_id, slot);
             return;
         }
 
@@ -262,7 +262,7 @@ void MeterSunSpec::scan_start()
     // Buffer must be big enough for the Common model.
     uint16_t *buffer = static_cast<uint16_t *>(malloc(sizeof(uint16_t) * 68));
     if (!buffer) {
-        logger.printfln("Cannot alloc read buffer.");
+        logger.printfln_meter("Cannot alloc read buffer");
         return;
     }
 
@@ -323,7 +323,7 @@ void MeterSunSpec::scan_next()
                     ++scan_base_address_index;
 
                     if (scan_base_address_index >= ARRAY_SIZE(scan_base_addresses)) {
-                        logger.printfln("No SunSpec device found at %s:%u:%u", host_name.c_str(), port, device_address);
+                        logger.printfln_meter("No SunSpec device found at %s:%u:%u", host_name.c_str(), port, device_address);
                         scan_start_delay();
                     }
                     else {
@@ -343,8 +343,8 @@ void MeterSunSpec::scan_next()
                 size_t block_length = scan_deserializer.read_uint16();
 
                 if (scan_model_id == NON_IMPLEMENTED_UINT16) { // End model found
-                    logger.printfln("Configured SunSpec model %u/%u not found at %s:%u:%u",
-                                    model_id, model_instance, host_name.c_str(), port, device_address);
+                    logger.printfln_meter("Configured SunSpec model %u/%u not found at %s:%u:%u",
+                                          model_id, model_instance, host_name.c_str(), port, device_address);
                     scan_start_delay();
                 }
                 else if (scan_device_found && scan_model_id == model_id) {
@@ -358,15 +358,15 @@ void MeterSunSpec::scan_next()
                     }
                     else {
                         if (!model_parser->is_model_length_supported(block_length)) {
-                            logger.printfln("Configured SunSpec model %u/%u found but has unsupported length: %u",
-                                            model_id, model_instance, block_length);
+                            logger.printfln_meter("Configured SunSpec model %u/%u found but has unsupported length: %u",
+                                                  model_id, model_instance, block_length);
                             scan_start_delay();
                         }
                         else {
                             scan_state_next = ScanState::Idle;
 
-                            logger.printfln("Configured SunSpec model %u/%u found at %s:%u:%u:%u",
-                                            model_id, model_instance, host_name.c_str(), port, device_address, generic_read_request.start_address);
+                            logger.printfln_meter("Configured SunSpec model %u/%u found at %s:%u:%u:%u",
+                                                  model_id, model_instance, host_name.c_str(), port, device_address, generic_read_request.start_address);
                             read_start(model_parser->get_interesting_registers_count());
                         }
                     }
@@ -396,7 +396,7 @@ void MeterSunSpec::scan_next()
                     modbus_bswap_registers(common_model->registers + 2, 64);
                     const SunSpecCommonModel001_s *m = &common_model->model;
 
-                    logger.printfln("Looking for device Mn='%s' Md='%s' SN='%s'", manufacturer_name.c_str(), model_name.c_str(), serial_number.c_str());
+                    logger.printfln_meter("Looking for device Mn='%s' Md='%s' SN='%s'", manufacturer_name.c_str(), model_name.c_str(), serial_number.c_str());
 
                     // The manufacturer name for SolarEdge devices sometimes has a trailing space. Compare only the first 9 characters.
                     #define equals_solar_edge(value) (strncmp(value, "SolarEdge", 9) == 0)
@@ -432,13 +432,13 @@ void MeterSunSpec::scan_next()
                                             strncmp(m->SN, serial_number.c_str(), 32) == 0;
                     }
 
-                    logger.printfln("Device Mn='%.*s' Md='%.*s' Opt='%.*s' Vr='%.*s' SN='%.*s' is %smatching",
-                                    static_cast<int>(strnlen(m->Mn, 32)), m->Mn,
-                                    static_cast<int>(strnlen(m->Md, 32)), m->Md,
-                                    static_cast<int>(strnlen(m->Opt, 16)), m->Opt,
-                                    static_cast<int>(strnlen(m->Vr, 16)), m->Vr,
-                                    static_cast<int>(strnlen(m->SN, 32)), m->SN,
-                                    !scan_device_found ? "not " :"");
+                    logger.printfln_meter("Device Mn='%.*s' Md='%.*s' Opt='%.*s' Vr='%.*s' SN='%.*s' is %smatching",
+                                          static_cast<int>(strnlen(m->Mn, 32)), m->Mn,
+                                          static_cast<int>(strnlen(m->Md, 32)), m->Md,
+                                          static_cast<int>(strnlen(m->Opt, 16)), m->Opt,
+                                          static_cast<int>(strnlen(m->Vr, 16)), m->Vr,
+                                          static_cast<int>(strnlen(m->SN, 32)), m->SN,
+                                          !scan_device_found ? "not " :"");
 
                     if (scan_device_found) {
                         if (strncmp(m->Mn, "KOSTAL", 32) == 0) {
@@ -464,12 +464,12 @@ void MeterSunSpec::scan_next()
                         }
 
                         if (quirks) {
-                            logger.printfln("Enabling quirks mode 0x%02x for %.32s device.", quirks, m->Mn);
+                            logger.printfln_meter("Enabling quirks mode 0x%02x for %.32s device", quirks, m->Mn);
                         }
                     }
                 }
                 else {
-                    logger.printfln("Read full model %u for no reason.", scan_model_id);
+                    logger.printfln_meter("Read full model %u for no reason", scan_model_id);
                 }
 
                 generic_read_request.start_address += 2 + block_length;

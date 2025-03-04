@@ -214,17 +214,17 @@ void MetersLegacyAPI::register_urls()
 
     api.addCommand("meter/all_values_update", &legacy_all_values_update, {}, [this](String &/*errmsg*/) {
         if (!this->meter_writable) {
-            logger.printfln("Meter %u cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
+            logger.printfln("Meter in slot %u cannot be updated via the API. Only an API meter can be updated", this->linked_meter_slot);
             return;
         }
 
         if (this->linked_meter_value_count == 0) {
-            logger.printfln("Cannot update meter %u that holds no values.", this->linked_meter_slot);
+            logger.printfln("Cannot update meter in slot %u that holds no values", this->linked_meter_slot);
             return;
         }
 
         if (this->linked_meter_value_count > METERS_MAX_VALUES_PER_METER) {
-            logger.printfln("Cannot update meter %u with too many many values (%u)", this->linked_meter_slot, this->linked_meter_value_count);
+            logger.printfln("Cannot update meter in slot %u with too many many values (%u)", this->linked_meter_slot, this->linked_meter_value_count);
             return;
         }
 
@@ -332,7 +332,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     meter_setup_done = true;
 
     if (linked_meter_value_count > METERS_MAX_VALUES_PER_METER) {
-        logger.printfln("Linked meter has too many values (%u)", linked_meter_value_count);
+        logger.printfln("Linked meter in slot %u has too many values (%u)", linked_meter_slot, linked_meter_value_count);
         return EventResult::Deregister;
     }
 

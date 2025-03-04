@@ -48,7 +48,7 @@ void MeterPvFaker::setup(Config *ephemeral_config)
     peak_at_lux_shifted = peak_at_lux - zero_at_lux;
 
     if (zero_at_lux >= peak_at_lux) {
-        logger.printfln("Lux value for zero production must be less than lux value for peak production.");
+        logger.printfln_meter("Lux value for zero production must be less than lux value for peak production");
         return;
     }
 
@@ -57,12 +57,12 @@ void MeterPvFaker::setup(Config *ephemeral_config)
     const String &global_topic_prefix = mqtt.config.get("global_topic_prefix")->asString();
 
     if (illuminance_topic.startsWith(global_topic_prefix)) {
-        logger.printfln("Cannot listen to itself: Illuminance topic cannot start with the topic prefix from the MQTT config.");
+        logger.printfln_meter("Cannot listen to itself: Illuminance topic cannot start with the topic prefix from the MQTT config");
         return;
     }
 
     if (illuminance_topic.length() < 3) {
-        logger.printfln("Illuminance topic too short: %u", illuminance_topic.length());
+        logger.printfln_meter("Illuminance topic too short: %u", illuminance_topic.length());
         return;
     }
 
@@ -70,7 +70,7 @@ void MeterPvFaker::setup(Config *ephemeral_config)
         StaticJsonDocument<JSON_OBJECT_SIZE(10)> doc;
         DeserializationError error = deserializeJson(doc, data, data_len);
         if (error) {
-            logger.printfln("Failed to deserialize MQTT payload: %s", error.c_str());
+            logger.printfln_meter("Failed to deserialize MQTT payload: %s", error.c_str());
             return;
         }
 
@@ -82,12 +82,12 @@ void MeterPvFaker::setup(Config *ephemeral_config)
         limited_power = peak_power;
     } else {
         if (limiter_topic.startsWith(global_topic_prefix)) {
-            logger.printfln("Cannot listen to itself: Limiter topic cannot start with the topic prefix from the MQTT config.");
+            logger.printfln_meter("Cannot listen to itself: Limiter topic cannot start with the topic prefix from the MQTT config");
             return;
         }
 
         if (limiter_topic.length() < 3) {
-            logger.printfln("Limter topic too short: %u", limiter_topic.length());
+            logger.printfln_meter("Limter topic too short: %u", limiter_topic.length());
             return;
         }
 
@@ -97,7 +97,7 @@ void MeterPvFaker::setup(Config *ephemeral_config)
             StaticJsonDocument<JSON_OBJECT_SIZE(10)> doc;
             DeserializationError error = deserializeJson(doc, data, data_len);
             if (error) {
-                logger.printfln("Failed to deserialize MQTT payload: %s", error.c_str());
+                logger.printfln_meter("Failed to deserialize MQTT payload: %s", error.c_str());
                 return;
             }
 

@@ -123,7 +123,7 @@ void MetersRS485Bricklet::checkRS485State()
         return;
     }
     if (mode != TF_RS485_MODE_MODBUS_MASTER_RTU) {
-        logger.printfln("RS485 mode invalid (%u). Did the bricklet reset?", mode);
+        logger.printfln("RS485 mode invalid (%u). Did the Bricklet reset?", mode);
         if (meter_instance != nullptr)
             meter_instance->errors->get("bricklet_reset")->updateUint(meter_instance->errors->get("bricklet_reset")->asUint() + 1);
         setupRS485();
@@ -163,7 +163,7 @@ MeterClassID MetersRS485Bricklet::get_class() const
 IMeter *MetersRS485Bricklet::new_meter(uint32_t slot, Config *state, Config *errors)
 {
     if (meter_instance != nullptr) {
-        logger.printfln("Cannot create more than one meter of class ModbusRTU.");
+        logger.printfln_meter("Cannot create more than one meter of class RS485 Bricklet");
         return nullptr;
     }
     // FIXME: sdm630_reset_prototype should be copied?

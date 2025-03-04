@@ -27,20 +27,20 @@
 
 #include "gcc_warnings.h"
 
-IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t meter_slot, uint16_t model_id, DCPortType dc_port_type)
+IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, uint16_t model_id, DCPortType dc_port_type)
 {
     if (model_id == 160) {
-        return new MetersSunSpecParser160(meter_slot);
+        return new MetersSunSpecParser160(slot);
     }
 
     if (model_id == 714) {
-        return new MetersSunSpecParser714(meter_slot, dc_port_type);
+        return new MetersSunSpecParser714(slot, dc_port_type);
     }
 
     for (size_t i = 0; i < meters_sun_spec_all_model_data.model_count; i++) {
         auto *model_data = meters_sun_spec_all_model_data.model_data[i];
         if (model_data->model_id == model_id) {
-            return new MetersSunSpecParser(meter_slot, model_data);
+            return new MetersSunSpecParser(slot, model_data);
         }
     }
 

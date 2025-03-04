@@ -155,9 +155,9 @@ void MeterSMASpeedwire::setup(Config */*ephemeral_config*/)
 {
     IPAddress mc_groupIP(239, 12, 255, 254);
     if (udp.beginMulticast(mc_groupIP, 9522)) {
-        logger.printfln("Joined multicast group %s:9522", mc_groupIP.toString().c_str());
+        logger.printfln_meter("Joined multicast group %s:9522", mc_groupIP.toString().c_str());
     } else {
-        logger.printfln("Couldn't join multicast group %s:9522", mc_groupIP.toString().c_str());
+        logger.printfln_meter("Couldn't join multicast group %s:9522", mc_groupIP.toString().c_str());
         return;
     }
 

@@ -169,6 +169,17 @@ static void init_uint32_array(uint32_t *arr, size_t len, uint32_t val)
     } while (arr < arr_end);
 }
 
+char *format_meter_slot(uint32_t slot)
+{
+    char *result;
+
+    if (asprintf(&result, "Meter %u: ", slot) < 0) {
+        result = strdup("Meter ?: ");
+    }
+
+    return result;
+}
+
 void Meters::pre_setup()
 {
     for (MeterSlot &meter_slot : meter_slots) {
@@ -198,10 +209,10 @@ void Meters::pre_setup()
             {"meter_slot", Config::Uint(0, 0, METERS_SLOTS - 1)}
         }),
         [this](const Config *config) {
-            uint32_t meter_slot = config->get("meter_slot")->asUint();
-            const String err = api.callCommand(get_path(meter_slot, Meters::PathType::Reset).c_str());
+            uint32_t slot = config->get("meter_slot")->asUint();
+            const String err = api.callCommand(get_path(slot, Meters::PathType::Reset).c_str());
             if (!err.isEmpty()) {
-                logger.printfln("Automation couldn't reset meter %u: %s", meter_slot, err.c_str());
+                logger.printfln_meter("Automation couldn't reset meter: %s", err.c_str());
             }
         }
     );
@@ -260,8 +271,8 @@ void Meters::setup()
         Config *meter_errors = &meter_slot.errors;
 
         IMeter *meter = new_meter_of_class(configured_meter_class, slot, meter_state, meter_errors);
-        if (!meter) {
-            logger.printfln("Failed to create meter of class %u in slot %u.", static_cast<uint32_t>(configured_meter_class), slot);
+        if (meter == nullptr) {
+            logger.printfln_meter("Failed to create meter of class %u", static_cast<uint32_t>(configured_meter_class));
             meter = new_meter_of_class(MeterClassID::None, slot, meter_state, meter_errors);
         }
         if (configured_meter_class != MeterClassID::None) {
@@ -749,7 +760,7 @@ void Meters::apply_filters(MeterSlot &meter_slot, size_t base_value_count, const
         const value_combiner_filter_data *filter_data = meter_slot.value_combiner_filters_data + filter_count;
         filter->fn(filter_data, base_value_count, base_values, extra_values);
 
-        //logger.printfln("Applying filter %s for slot %u", filter->name, slot);
+        //logger.printfln_meter("Applying filter %s", filter->name);
 
         value_combiner_filter_bitmask &= ~(1u << 31 >> filter_num);
         filter_count++;
@@ -770,12 +781,12 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
         return;
 
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to update value %u for meter in non-existent slot %u.", index, slot);
+        logger.printfln_meter("Tried to update value %u for non-existent slot", index);
         return;
     }
 
     if (index == UINT32_MAX) {
-        logger.printfln("Tried to update a value for meter in slot %u that is known to not exist (index = UINT32_MAX).", slot);
+        logger.printfln_meter("Tried to update a value that is known to not exist (index = UINT32_MAX)");
         return;
     }
 
@@ -807,7 +818,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 void Meters::update_all_values(uint32_t slot, const float new_values[])
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to update all values from array for meter in non-existent slot %u.", slot);
+        logger.printfln_meter("Tried to update all values from array for non-existent slot");
         return;
     }
 
@@ -850,14 +861,14 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
 void Meters::update_all_values(uint32_t slot, const Config *new_values)
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to update all values from Config for meter in non-existent slot %u.", slot);
+        logger.printfln_meter("Tried to update all values from Config for non-existent slot");
         return;
     }
 
     size_t value_count = meter_slots[slot].base_value_count;
 
     if (new_values->count() != value_count) {
-        logger.printfln("Update all values element count mismatch: %u != %u", new_values->count(), value_count);
+        logger.printfln_meter("Update all values element count mismatch: %u != %u", new_values->count(), value_count);
         return;
     }
 
@@ -872,7 +883,7 @@ void Meters::update_all_values(uint32_t slot, const Config *new_values)
 void Meters::finish_update(uint32_t slot)
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to finish an update for meter in non-existent slot %u.", slot);
+        logger.printfln_meter("Tried to finish an update for non-existent slot");
         return;
     }
 
@@ -887,7 +898,7 @@ void Meters::finish_update(uint32_t slot)
 void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[], uint32_t value_id_count)
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to declare value IDs for meter in non-existent slot %u.", slot);
+        logger.printfln_meter("Tried to declare value IDs for meter in non-existent slot");
         return;
     }
 
@@ -900,12 +911,12 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     if (value_id_count_old != 0) {
         const char *plural_s_old = value_id_count_old == 1 ? "" : "s";
         const char *plural_s_new = value_id_count     == 1 ? "" : "s";
-        logger.printfln("Meter in slot %u already declared %u value%s. Refusing to re-declare %u value%s.", slot, value_id_count_old, plural_s_old, value_id_count, plural_s_new);
+        logger.printfln_meter("Meter already declared %u value%s. Refusing to re-declare %u value%s", value_id_count_old, plural_s_old, value_id_count, plural_s_new);
         return;
     }
 
     if (value_id_count <= 0) {
-        logger.printfln("Cannot declare zero value IDs for meter in slot %u.", value_id_count);
+        logger.printfln_meter("Cannot declare zero value IDs for meter");
         return;
     }
 
@@ -936,7 +947,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
 
             uint32_t pos = total_value_id_count + filter_output_id_count;
             if (pos >= ARRAY_SIZE(total_value_ids)) {
-                logger.printfln("Too many values (>%u) after applying filter '%s'", ARRAY_SIZE(total_value_ids), filter->name);
+                logger.printfln_meter("Too many values (>%u) after applying filter '%s'", ARRAY_SIZE(total_value_ids), filter->name);
                 filter_not_applicable = true;
                 break;
             }
@@ -945,7 +956,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         }
 
         if (filter_not_applicable) {
-            //logger.printfln("Found output ID for slot %u", slot);
+            //logger.printfln_meter("Found output ID");
             continue;
         }
 
@@ -970,7 +981,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         }
 
         if (filter_not_applicable) {
-            //logger.printfln("Input ID for slot %u not found", slot);
+            //logger.printfln_meter("Input ID not found");
             all_filter_data.pop_back();
             continue;
         }
@@ -979,7 +990,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
 
         uint32_t filter_bitmask = 1u << 31 >> i_f;
         meter_slot.value_combiner_filters_bitmask |= filter_bitmask;
-        //logger.printfln("Applying filter %s for slot %u", filter->name, slot);
+        //logger.printfln_meter("Applying filter %s", filter->name);
     }
 
     size_t filter_count = all_filter_data.size();
@@ -1023,9 +1034,9 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
 
     const char *plural_s = total_value_id_count == 1 ? "" : "s";
     if (total_value_id_count == value_id_count) {
-        logger.printfln("Meter in slot %u declared %u value%s", slot, total_value_id_count, plural_s);
+        logger.printfln_meter("Meter declared %u value%s", total_value_id_count, plural_s);
     } else {
-        logger.printfln("Meter in slot %u declared %u (%u) value%s", slot, total_value_id_count, value_id_count, plural_s);
+        logger.printfln_meter("Meter declared %u (%u) value%s", total_value_id_count, value_id_count, plural_s);
     }
 
     if (!meters_feature_declared) {
@@ -1043,7 +1054,7 @@ bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
 void Meters::fill_index_cache(uint32_t slot, size_t find_value_count, const MeterValueID find_value_ids[], uint32_t index_cache[])
 {
     if (slot >= METERS_SLOTS) {
-        logger.printfln("Tried to fill an index cache for meter in non-existent slot %u.", slot);
+        logger.printfln_meter("Tried to fill an index cache for non-existent slot");
         return;
     }
 

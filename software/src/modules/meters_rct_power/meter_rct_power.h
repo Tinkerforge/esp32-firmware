@@ -31,7 +31,7 @@ class MeterRCTPower final : protected GenericTCPClientPoolConnector, public IMet
 {
 public:
     MeterRCTPower(uint32_t slot_, Config *state_, Config *errors_, RCTPowerClientPool *pool) :
-        GenericTCPClientPoolConnector("meter_rct_power", pool), slot(slot_), state(state_), errors(errors_) {}
+        GenericTCPClientPoolConnector("meter_rct_power", format_meter_slot(slot_), pool), slot(slot_), state(state_), errors(errors_) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(Config *ephemeral_config) override;
