@@ -33,7 +33,7 @@ struct ConfStringSlot {
 static constexpr const union {
     float f;
     uint32_t u;
-} nan_uint = {.f = NAN};
+} nan_uint = {NAN};
 
 struct ConfFloatSlot {
     uint32_t val = 0;
