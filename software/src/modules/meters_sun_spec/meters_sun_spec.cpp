@@ -24,6 +24,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "build.h"
 #include "meter_sun_spec.h"
 #include "tools.h"
 #include "sun_spec_model_specs.h"
@@ -112,7 +113,7 @@ void MetersSunSpec::register_urls()
         scan->device_address = scan->device_address_first;
         scan->last_keep_alive = now_us();
 
-        scan_printfln("Starting scan");
+        scan_printfln("Starting scan (" BUILD_DISPLAY_NAME ", version: %s)", build_version_full_str());
     }, true);
 
     api.addCommand("meters_sun_spec/scan_continue", &scan_continue_config, {}, [this](String &errmsg) {
