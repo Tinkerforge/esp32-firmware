@@ -20,7 +20,7 @@
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { h, Fragment, Component, ComponentChildren } from "preact";
-import { __, translate_unchecked } from "../../ts/translation";
+import { __, translate_unchecked, removeUnicodeHacks } from "../../ts/translation";
 import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterLocation } from "../meters/meter_location.enum";
 import { get_meter_location_items } from "../meters/meter_location";
@@ -140,7 +140,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                     unique_id: unique_id,
                     manufacturer_name: scan_result.manufacturer_name,
                     model_name: scan_result.model_name,
-                    display_name: ((scan_result.model_name.startsWith(scan_result.manufacturer_name) ? scan_result.model_name.trim() : scan_result.manufacturer_name.trim() + ' ' + scan_result.model_name.trim()) + ': ' + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)).substring(0, 65),
+                    display_name: removeUnicodeHacks((scan_result.model_name.startsWith(scan_result.manufacturer_name) ? scan_result.model_name.trim() : scan_result.manufacturer_name.trim() + ' ' + scan_result.model_name.trim()) + ': ' + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)).substring(0, 65),
                     serial_number: scan_result.serial_number,
                     device_address: scan_result.device_address,
                     model_id: scan_result.model_id,
