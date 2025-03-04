@@ -191,7 +191,8 @@ def test_rtc_time(ip, wait_for_ntp):
 def get_esp_ssid(serial_port, result):
 
     print("Checking ESP state")
-    mac_address = check_if_esp_is_sane_and_get_mac(allowed_revision=3, override_port=serial_port)
+    allowed_revision=3.1 if firmware_type == "warp3" else 3
+    mac_address = check_if_esp_is_sane_and_get_mac(allowed_revision=allowed_revision, override_port=serial_port)
     print("MAC Address is {}".format(mac_address))
     result["mac"] = mac_address
 
