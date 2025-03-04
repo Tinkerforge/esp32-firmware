@@ -234,6 +234,7 @@ bool Mqtt::publish(const String &topic, const String &payload, bool retain)
 //#if defined(BOARD_HAS_PSRAM)
 //    return esp_mqtt_client_enqueue(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain, true) >= 0;
 //#else
+    return true;
     return esp_mqtt_client_publish(this->client, topic.c_str(), payload.c_str(), payload.length(), 0, retain) >= 0;
 //#endif
 }
@@ -311,7 +312,7 @@ void Mqtt::onMqttConnect()
             print_path = true;
             break;
     }
-    logger.printfln("Connected to broker at %s%s:%lu%s.", schema, this->config.get("broker_host")->asEphemeralCStr(), this->config.get("broker_port")->asUint(), print_path ? this->config.get("broker_path")->asEphemeralCStr() : "");
+    logger.printfln("Connected to broker at %s%s:%lu%s.", schema, this->config.get("broker_host")->asEphemeralCStr(), this->config.get("broker_port")->asUint(), print_path ? this->config.get("path")->asEphemeralCStr() : "");
 
     this->state.get("connection_state")->updateEnum(MqttConnectionState::Connected);
 
