@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "model_parser_160.h"
 #include "model_parser_714.h"
@@ -34,6 +35,11 @@ IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, uint16_t mo
     }
 
     if (model_id == 714) {
+        if (dc_port_type == DCPortType::NotImplemented) {
+            logger.printfln_meter("No DC Port Type selected");
+            return nullptr;
+        }
+
         return new MetersSunSpecParser714(slot, dc_port_type);
     }
 
