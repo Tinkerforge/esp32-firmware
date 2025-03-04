@@ -1,14 +1,14 @@
 [
     {
-        "base": "arduino-esp32",
-        "branch": "warp-2.5.0",
-        "commit": "25d0dcdc720fd830c1d95ec37b6adabd2d8d6b0c",
-        "url": "https://github.com/Tinkerforge/arduino-esp32"
+        "base": "esp32-arduino-libs",
+        "branch": "tf-esp-20250304",
+        "commit": "225593a01746171e7a97e927eb7e579ebc5b6658",
+        "url": "https://github.com/Tinkerforge/esp32-arduino-libs"
     },
     {
-        "base": "arduino-esp32",
-        "branch": "warp2-2.5.0",
-        "commit": "fa7be5ff52b565b6a071ea5ccd17371e9e1f02a0",
-        "url": "https://github.com/Tinkerforge/arduino-esp32"
+        "base": "esp32-arduino-libs",
+        "branch": "tf-esp-ethernet-20250304",
+        "commit": "c0360d6a12e4581e25a4119f2928efc477a77947",
+        "url": "https://github.com/Tinkerforge/esp32-arduino-libs"
     }
 ]
