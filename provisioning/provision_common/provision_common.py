@@ -170,7 +170,7 @@ def check_if_esp_is_sane_and_get_mac(ignore_flash_errors=False, allowed_revision
                                 ("chip revision", chip_revision, allowed_revision),
                                 ("crystal", crystal, "40MHz"),
                                 ("flash_size", flash_size, "16MB" if not ignore_flash_errors else None)]:
-        if expected is not None and val != expected:
+        if expected is not None and ((isinstance(expected, list) and val not in expected) or (not isinstance(expected, list) and val != expected)):
             fatal_error("{} was {}, not the expected {}".format(name, val, expected), "esptool output was:", '\n'.join(output))
 
     return mac
