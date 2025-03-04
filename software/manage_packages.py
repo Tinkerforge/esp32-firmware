@@ -79,7 +79,7 @@ def main():
             print('Error: Package already exists')
             return
 
-        url = get(f' Base (default: https://github.com/Tinkerforge/{base}):', f'https://github.com/Tinkerforge/{base}').rstrip('/')
+        url = get(f' URL (default: https://github.com/Tinkerforge/{base}):', f'https://github.com/Tinkerforge/{base}').rstrip('/')
 
         download_package_json(package_name, url, commit)
 
