@@ -17,7 +17,7 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 xlsx_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "..", "..", "..", "wallbox", "sunspec", "SunSpec_Information_Model_Reference_20211209.xlsx")
-model_ids = [1, 101, 102, 103, 111, 112, 113, 201, 202, 203, 204, 211, 212, 213, 214, 701, 713, 714]
+model_ids = [1, 101, 102, 103, 111, 112, 113, 201, 202, 203, 204, 211, 212, 213, 214, 701, 713, 714, 802]
 
 value_id_mappings_inverter = {
     "A"       : [ "CurrentLSumExport",           None  ],
@@ -207,6 +207,13 @@ value_id_mappings_der = {
     "SoC"          : [ "StateOfCharge",                None  ],
 }
 
+value_id_mappings_battery = {
+    "V"   : [ "VoltageDC",            None ],
+    "A"   : [ "CurrentDCChaDisDiff",  None ],
+    "W"   : [ "PowerDCChaDisDiff",    None ],
+    "SoC" : [ "StateOfCharge",        None ],
+}
+
 # Unmapped SunSpec IDs
 #    "ID"  : None,
 #    "L"   : None,
@@ -287,6 +294,8 @@ for model_id in model_ids:
         value_id_mappings = value_id_mappings_meter
     elif model_id >= 700 and model_id <= 799:
         value_id_mappings = value_id_mappings_der
+    elif model_id >= 800 and model_id <= 899:
+        value_id_mappings = value_id_mappings_battery
     else:
         print(f"No value ID mappings available for model ID {model_id}.", file=sys.stderr)
         exit(1)

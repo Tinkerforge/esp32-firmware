@@ -98,7 +98,7 @@ model_specs = [
     ModelSpec('DER DC Measurements',                        'DC Measurements',                  'DC-Messwerte',                        714,   True,  'Unknown',  True),
     ModelSpec('DER Control',                                'FIXME',                            'FIXME',                               715,   False, 'Unknown',  False),
     ModelSpec('Battery Base Deprecated',                    'FIXME',                            'FIXME',                               801,   False, 'Battery',  False),
-    ModelSpec('Battery Base',                               'Battery',                          'Batterie',                            802,   True,  'Battery',  False),
+    ModelSpec('Battery Base',                               'Battery',                          'Batterie',                            802,   True,  'Battery',  True),
     ModelSpec('Battery Lithium-Ion',                        'FIXME',                            'FIXME',                               803,   False, 'Battery',  False),
     ModelSpec('Battery Lithium-Ion String',                 'FIXME',                            'FIXME',                               804,   False, 'Battery',  False),
     ModelSpec('Battery Lithium-Ion Module',                 'FIXME',                            'FIXME',                               805,   False, 'Battery',  False),
