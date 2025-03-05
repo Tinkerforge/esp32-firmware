@@ -8230,9 +8230,94 @@ static const MetersSunSpecParser::ModelData model_714_data = {
     }
 };
 
+// ========================
+// 802 - Battery Base Model
+// ========================
+
+#include "model_802.h"
+
+static float get_model_802_SoC(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecBatteryBaseModelModel802_s *model = static_cast<const struct SunSpecBatteryBaseModelModel802_s *>(register_data);
+    uint16_t val = model->SoC;
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_sun_spec_scale_factor(model->SoC_SF);
+    return fval;
+}
+
+static float get_model_802_V(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecBatteryBaseModelModel802_s *model = static_cast<const struct SunSpecBatteryBaseModelModel802_s *>(register_data);
+    uint16_t val = model->V;
+    if (val == UINT16_MAX) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_sun_spec_scale_factor(model->V_SF);
+    return fval;
+}
+
+static float get_model_802_A(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecBatteryBaseModelModel802_s *model = static_cast<const struct SunSpecBatteryBaseModelModel802_s *>(register_data);
+    int16_t val = model->A;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_sun_spec_scale_factor(model->A_SF);
+    return fval;
+}
+
+static float get_model_802_W(const void *register_data, uint32_t quirks, bool detection)
+{
+    const struct SunSpecBatteryBaseModelModel802_s *model = static_cast<const struct SunSpecBatteryBaseModelModel802_s *>(register_data);
+    int16_t val = model->W;
+    if (val == INT16_MIN) return NAN;
+    float fval = static_cast<float>(val);
+    fval *= get_sun_spec_scale_factor(model->W_SF);
+    return fval;
+}
+
+static bool model_802_validator(const uint16_t * const register_data[2])
+{
+    const SunSpecBatteryBaseModelModel802_s *block0 = reinterpret_cast<const SunSpecBatteryBaseModelModel802_s *>(register_data[0]);
+    const SunSpecBatteryBaseModelModel802_s *block1 = reinterpret_cast<const SunSpecBatteryBaseModelModel802_s *>(register_data[1]);
+    if (block0->ID != 802) return false;
+    if (block1->ID != 802) return false;
+    if (block0->L  !=  62) return false;
+    if (block1->L  !=  62) return false;
+    if (block0->AHRtg_SF != block1->AHRtg_SF) return false;
+    if (block0->WHRtg_SF != block1->WHRtg_SF) return false;
+    if (block0->WChaDisChaMax_SF != block1->WChaDisChaMax_SF) return false;
+    if (block0->DisChaRte_SF != block1->DisChaRte_SF) return false;
+    if (block0->SoC_SF != block1->SoC_SF) return false;
+    if (block0->DoD_SF != block1->DoD_SF) return false;
+    if (block0->SoH_SF != block1->SoH_SF) return false;
+    if (block0->V_SF != block1->V_SF) return false;
+    if (block0->CellV_SF != block1->CellV_SF) return false;
+    if (block0->A_SF != block1->A_SF) return false;
+    if (block0->AMax_SF != block1->AMax_SF) return false;
+    if (block0->W_SF != block1->W_SF) return false;
+    return true;
+}
+
+static const MetersSunSpecParser::ModelData model_802_data = {
+    802, // model_id
+    62, // model_length
+    64, // interesting_registers_count
+    false, // is_meter
+    true, // read_twice
+    &model_802_validator,
+    4,  // value_count
+    {    // value_data
+        { &get_model_802_SoC, MeterValueID::StateOfCharge, 56 },
+        { &get_model_802_V, MeterValueID::VoltageDC, 59 },
+        { &get_model_802_A, MeterValueID::CurrentDCChaDisDiff, 61 },
+        { &get_model_802_W, MeterValueID::PowerDCChaDisDiff, 63 },
+    }
+};
+
 
 const MetersSunSpecParser::AllModelData meters_sun_spec_all_model_data {
-    18, // model_count
+    19, // model_count
     { // model_data
         &model_001_data,
         &model_101_data,
@@ -8252,5 +8337,6 @@ const MetersSunSpecParser::AllModelData meters_sun_spec_all_model_data {
         &model_701_data,
         &model_713_data,
         &model_714_data,
+        &model_802_data,
     }
 };
