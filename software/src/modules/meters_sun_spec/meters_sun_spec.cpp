@@ -76,7 +76,7 @@ void MetersSunSpec::pre_setup()
 
     scan_config = ConfigRoot{Config::Object({
         {"host", Config::Str("", 0, 64)},
-        {"port", Config::Uint16(0)},
+        {"port", Config::Uint16(502)},
         {"device_address_first", Config::Uint(1, 1, 247)},
         {"device_address_last", Config::Uint(247, 1, 247)},
         {"cookie", Config::Uint32(0)},
