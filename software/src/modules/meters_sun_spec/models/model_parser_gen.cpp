@@ -8262,7 +8262,7 @@ static float get_model_802_A(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->A;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_sun_spec_scale_factor(model->A_SF);
+    fval *= (get_sun_spec_scale_factor(model->A_SF) * -1.0f);
     return fval;
 }
 
@@ -8272,7 +8272,7 @@ static float get_model_802_W(const void *register_data, uint32_t quirks, bool de
     int16_t val = model->W;
     if (val == INT16_MIN) return NAN;
     float fval = static_cast<float>(val);
-    fval *= get_sun_spec_scale_factor(model->W_SF);
+    fval *= (get_sun_spec_scale_factor(model->W_SF) * -1.0f);
     return fval;
 }
 
