@@ -731,3 +731,13 @@
 - SunSpec: Fix partial reading of model data
 - Charge Limits: Support custom energy limit
 - Improve translations
+
+2025-03-06: 2.7.5 (<unknown>)
+- Fix switch to three-phase charging requiring too much PV current
+- Modbus TCP: Add support for SolarEdge batterie storage
+- SunSpec: Add support for batterie storage model 802
+- MQTT auto discovery: Add allowed charging current
+- MQTT auto discovery: Change globalcurrent unit from mA to A
+- MQTT auto discovery: Round power and energy values
+- Fix MQTT over WS(S)
+- Fix colors of disabled inputs in web interface
