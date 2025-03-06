@@ -732,7 +732,7 @@
 - Charge Limits: Support custom energy limit
 - Improve translations
 
-2025-03-06: 2.7.5 (<unknown>)
+2025-03-06: 2.7.5 (f5a21336)
 - Fix switch to three-phase charging requiring too much PV current
 - Modbus TCP: Add support for SolarEdge batterie storage
 - SunSpec: Add support for batterie storage model 802
