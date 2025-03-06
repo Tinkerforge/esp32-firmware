@@ -209,8 +209,8 @@ value_id_mappings_der = {
 
 value_id_mappings_battery = {
     "V"   : [ "VoltageDC",            None ],
-    "A"   : [ "CurrentDCChaDisDiff",  None ],
-    "W"   : [ "PowerDCChaDisDiff",    None ],
+    "A"   : [ "CurrentDCChaDisDiff",  -1.0 ],
+    "W"   : [ "PowerDCChaDisDiff",    -1.0 ],
     "SoC" : [ "StateOfCharge",        None ],
 }
 
