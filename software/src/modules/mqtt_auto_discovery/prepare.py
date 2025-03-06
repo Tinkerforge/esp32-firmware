@@ -85,21 +85,21 @@ topic_template = """    {{
 entities = [
 
 Entity(True, Component.SENSOR, Feature.METER, "powernow", "meter/values", "Leistungsaufnahme", "Power draw", "", "", "",
-    {"value_template":"{{value_json.power}}",
+    {"value_template":"{{value_json.power | round(0)}}",
      "unit_of_measurement":"W",
      "device_class":"power",
      "state_class": "measurement"},
     {}),
 
 Entity(True, Component.SENSOR, Feature.METER, "energyabs", "meter/values", "Stromverbrauch absolut", "Energy consumption (absolute)", "", "", "",
-    {"value_template":"{{value_json.energy_abs}}",
+    {"value_template":"{{value_json.energy_abs | round(3)}}",
      "unit_of_measurement":"kWh",
      "device_class":"energy",
      "state_class": "total"},
     {}),
 
 Entity(True, Component.SENSOR, Feature.METER, "energyrel", "meter/values", "Stromverbrauch relativ", "Energy consumption (relative)", "", "", "",
-    {"value_template":"{{value_json.energy_rel}}",
+    {"value_template":"{{value_json.energy_rel | round(3)}}",
      "unit_of_measurement":"kWh",
      "device_class":"energy",
      "state_class": "total"},
