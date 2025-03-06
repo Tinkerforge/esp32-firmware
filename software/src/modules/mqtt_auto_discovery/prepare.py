@@ -120,6 +120,15 @@ Entity(True, Component.NUMBER, Feature.EVSE, "globalcurrent", "evse/external_cur
      "icon": "mdi:gauge"},
     {}),
 
+Entity(True, Component.SENSOR, Feature.EVSE, "allowedcurrent", "evse/state", "Erlaubter Ladestrom", "Allowed charging current", "", "", "",
+    {"value_template":"{{(value_json.allowed_charging_current | float / 1000) | round(3)}}",
+     "unit_of_measurement":"A",
+     "device_class":"current",
+     "state_class": "measurement",
+     "min": 0,
+     "max": 32},
+    {}),
+
 Entity(True, Component.BUTTON, Feature.EVSE, "startcharge", "evse/start_charging", "Ladevorgang starten", "Start charging", "", "", "",
     {"payload_press": "null",   # for Home Assistant
      "payload_on":"null",       # for Domoticz
