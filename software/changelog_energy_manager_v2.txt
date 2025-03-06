@@ -51,3 +51,10 @@
 2025-02-26: 1.2.4 (acbfc184)
 - SunSpec: Fix partial reading of model data
 - Improve translations
+
+2025-03-06: 1.2.5 (<unknown>)
+- Fix switch to three-phase charging requiring too much PV current
+- Modbus TCP: Add support for SolarEdge batterie storage
+- SunSpec: Add support for batterie storage model 802
+- Fix MQTT over WS(S)
+- Fix colors of disabled inputs in web interface
