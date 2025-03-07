@@ -163,7 +163,7 @@ void FrontPanel::setup()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         this->check_bricklet_state();
-    }, 5_m, 5_m);
+    }, 5_min, 5_min);
 
     task_scheduler.scheduleOnce([this](){
         this->check_flash_metadata();

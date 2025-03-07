@@ -445,7 +445,7 @@ void NFC::setup()
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->check_nfc_state();
-    }, 5_m, 5_m);
+    }, 5_min, 5_min);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->update_seen_tags();

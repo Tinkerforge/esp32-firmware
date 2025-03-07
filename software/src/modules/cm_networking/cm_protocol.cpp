@@ -475,7 +475,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
             tf_ip4addr_ntoa(&this->manager_addr, manager_str, sizeof(manager_str));
             tf_ip4addr_ntoa(&from_addr,          from_str,    sizeof(from_str   ));
 
-            if (deadline_elapsed(this->last_manager_addr_change + 1_m)) {
+            if (deadline_elapsed(this->last_manager_addr_change + 1_min)) {
                 if (this->manager_addr.s2_len > 0) {
                     logger.printfln("Manager address changed from %s to %s", manager_str, from_str);
                 }
@@ -498,7 +498,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
             }
         } else { // Manager address unchanged
             if (!this->manager_addr_valid && this->manager_addr.s2_len > 0) {
-                if (deadline_elapsed(this->last_manager_addr_change + 1_m)) {
+                if (deadline_elapsed(this->last_manager_addr_change + 1_min)) {
                     char manager_str[16];
                     tf_ip4addr_ntoa(&this->manager_addr, manager_str, sizeof(manager_str));
 

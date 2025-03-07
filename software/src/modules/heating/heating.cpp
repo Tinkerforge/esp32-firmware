@@ -26,7 +26,7 @@
 #include "build.h"
 #include "control_period.enum.h"
 
-static constexpr auto HEATING_UPDATE_INTERVAL = 1_m;
+static constexpr auto HEATING_UPDATE_INTERVAL = 1_min;
 
 #define HEATING_SG_READY_ACTIVE_CLOSED 0
 #define HEATING_SG_READY_ACTIVE_OPEN   1

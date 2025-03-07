@@ -90,7 +90,7 @@ void UptimeTracker::setup()
             logger.printfln("Wrote last uptime to flash");
         }
 
-    }, 5_m);
+    }, 5_min);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
             uint32_t tmp = data.uptime;

@@ -370,7 +370,7 @@ void TaskScheduler::wall_clock_worker() {
         if (last_minute == -1 && !task.run_on_first_sync)
             continue;
 
-        if (last_minute != -1 && (minutes_since_midnight % task.interval_minutes) != 0_m)
+        if (last_minute != -1 && (minutes_since_midnight % task.interval_minutes) != 0_min)
             continue;
 
         if(!task.runner_task) {

@@ -92,7 +92,7 @@ void WarpEsp32Rtc::setup_rtc() {
     i2c_cmd_link_delete(cmd);
     if (errRc != 0) {
         logger.printfln("RTC write control reg failed: %d", errRc);
-        task_scheduler.scheduleOnce([this](){ this->setup_rtc(); }, 1_m);
+        task_scheduler.scheduleOnce([this](){ this->setup_rtc(); }, 1_min);
         return;
     }
 

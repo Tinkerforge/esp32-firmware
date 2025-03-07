@@ -211,7 +211,7 @@ void Eco::register_urls()
 
     task_scheduler.scheduleWallClock([this]() {
         this->update();
-    }, 1_m, 0_ms, true);
+    }, 1_min, 0_ms, true);
 }
 
 

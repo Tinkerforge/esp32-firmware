@@ -28,7 +28,7 @@
 #include "build.h"
 #include "musl_libc_timegm.h"
 
-static constexpr minutes_t RTC_TO_SYS_INTERVAL = 10_m;
+static constexpr minutes_t RTC_TO_SYS_INTERVAL = 10_min;
 
 static const char *get_quality_name(Rtc::Quality quality)
 {
@@ -230,7 +230,7 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
             break;
         case Quality::RTC:
         case Quality::Low:
-            max_age = 10_m;
+            max_age = 10_min;
             break;
         case Quality::High:
         case Quality::Force:

@@ -246,10 +246,10 @@ int main(int argc, char **argv) {
 
     CurrentAllocatorConfig cfg {
         .allocation_interval = 1000_s,
-        .global_hysteresis = 3_m,
-        .wakeup_time = 3_m,
-        .plug_in_time = 3_m,
-        .minimum_active_time = 15_m,
+        .global_hysteresis = 3_min,
+        .wakeup_time = 3_min,
+        .plug_in_time = 3_min,
+        .minimum_active_time = 15_min,
         .allocated_energy_rotation_threshold = 5,
 
         .minimum_current_3p = 9200,

@@ -30,8 +30,8 @@
 #include "tools.h"
 #include <cmath>
 
-static constexpr auto CHECK_INTERVAL = 1_m;
-static constexpr auto PRICE_UPDATE_INTERVAL = 15_m;
+static constexpr auto CHECK_INTERVAL = 1_min;
+static constexpr auto PRICE_UPDATE_INTERVAL = 15_min;
 
 static const char * const region_str[] {
     "de", "at", "lu"

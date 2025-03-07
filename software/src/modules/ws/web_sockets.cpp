@@ -29,7 +29,7 @@
 static constexpr micros_t KEEP_ALIVE_TIMEOUT = 10_s;
 
 #if MODULE_WATCHDOG_AVAILABLE()
-static constexpr micros_t WORKER_WATCHDOG_TIMEOUT = 5_m;
+static constexpr micros_t WORKER_WATCHDOG_TIMEOUT = 5_min;
 static int watchdog_handle = -1;
 #endif
 

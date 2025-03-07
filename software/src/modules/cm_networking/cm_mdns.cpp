@@ -122,7 +122,7 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
 
     if ((this->needs_mdns & (1ull << charger_idx)) != 0) {
         if (!periodic_scan_task_started)
-            task_scheduler.scheduleWithFixedDelay([this](){this->start_scan();}, 1_m);
+            task_scheduler.scheduleWithFixedDelay([this](){this->start_scan();}, 1_min);
         periodic_scan_task_started = true;
         return;
     }

@@ -241,6 +241,6 @@ void config_post_setup()
         check_slot_accounting<Config::ConfArray>();
         check_slot_accounting<Config::ConfObject>();
         check_slot_accounting<Config::ConfUnion>();
-    }, 1_m, 1_m);
+    }, 1_min, 1_min);
 #endif
 }

@@ -100,7 +100,7 @@ void EMEnergyAnalysis::setup()
 
     all_data_common = em_common.get_all_data_common();
 
-    task_scheduler.scheduleWallClock([this]() {collect_data_points();}, 5_m, 100_ms, true);
+    task_scheduler.scheduleWallClock([this]() {collect_data_points();}, 5_min, 100_ms, true);
     task_scheduler.scheduleWithFixedDelay([this]() {set_pending_data_points();}, 15_s, 100_ms);
     task_scheduler.scheduleOnce([this]() {this->show_blank_value_id_update_warnings = true;}, 250_ms);
 }

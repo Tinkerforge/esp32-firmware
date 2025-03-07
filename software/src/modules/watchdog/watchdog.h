@@ -31,6 +31,6 @@ public:
     void pre_setup() override;
     void setup() override;
 
-    int add(const char *name, const char *message, millis_t timeout = 5_m, millis_t initial_deadline = 30_m, bool force = false);
+    int add(const char *name, const char *message, millis_t timeout = 5_min, millis_t initial_deadline = 30_min, bool force = false);
     void reset(int handle);
 };

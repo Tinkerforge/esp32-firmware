@@ -232,7 +232,7 @@ void EVSEV2::post_setup()
         if (timeinfo.tm_hour == 3) {
             tf_evse_v2_trigger_dc_fault_test(&device, 0xDCFAE550, nullptr);
         }
-    }, 1_m/* wait for ntp sync */, 1_h);
+    }, 1_min/* wait for ntp sync */, 1_h);
 }
 
 void EVSEV2::post_register_urls()

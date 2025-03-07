@@ -108,13 +108,13 @@ int Watchdog::add(const char *name, const char *message, millis_t timeout, milli
 {
     // This makes sure that we don't reboot too often, giving the user a chance to connect
     // to the web interface to diagnose and potentially fix the issue that will trigger the watchdog.
-    if (!force && initial_deadline < 30_m) {
+    if (!force && initial_deadline < 30_min) {
         logger.printfln("Can't register %s to watchdog: Initial deadline %lu not allowed as it is less than 30 minutes", name, initial_deadline.as<uint32_t>());
         return -1;
     }
 
     // Some tasks (for example firmware updates via a crappy WiFi connection) can take quite some time.
-    if (!force && timeout < 5_m) {
+    if (!force && timeout < 5_min) {
         logger.printfln("Can't register %s to watchdog: Timeout %lu not allowed as it is less than 5 minutes", name, timeout.as<uint32_t>());
         return -1;
     }
