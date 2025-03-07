@@ -27,6 +27,8 @@
 #include "tools/fs.h"
 #include "build.h"
 
+#include "ocpp/Configuration.h"
+
 extern char local_uid_str[32];
 
 void Ocpp::pre_setup()
@@ -88,40 +90,40 @@ void Ocpp::pre_setup()
     const uint16_t STR_LEN = 500;
 
     configuration = Config::Object({
-        {"AuthorizeRemoteTxRequests", Config::Str("", 0, BOOL_LEN)},
-        {"ClockAlignedDataInterval", Config::Str("", 0, INT_LEN)},
-        {"ConnectionTimeOut", Config::Str("", 0, INT_LEN)},
-        {"ConnectorPhaseRotation", Config::Str("", 0, STR_LEN)},
-        {"ConnectorPhaseRotationMaxLength", Config::Str("", 0, INT_LEN)},
-        {"GetConfigurationMaxKeys", Config::Str("", 0, INT_LEN)},
-        {"HeartbeatInterval", Config::Str("", 0, INT_LEN)},
-        {"LocalAuthorizeOffline", Config::Str("", 0, BOOL_LEN)},
-        {"LocalPreAuthorize", Config::Str("", 0, BOOL_LEN)},
-        {"MessageTimeout", Config::Str("", 0, INT_LEN)},
-        {"MeterValuesAlignedData", Config::Str("", 0, STR_LEN)},
-        {"MeterValuesAlignedDataMaxLength", Config::Str("", 0, INT_LEN)},
-        {"MeterValuesSampledData", Config::Str("", 0, STR_LEN)},
-        {"MeterValuesSampledDataMaxLength", Config::Str("", 0, INT_LEN)},
-        {"MeterValueSampleInterval", Config::Str("", 0, INT_LEN)},
-        {"NumberOfConnectors", Config::Str("", 0, INT_LEN)},
-        {"ResetRetries", Config::Str("", 0, INT_LEN)},
-        {"StopTransactionOnEVSideDisconnect", Config::Str("", 0, BOOL_LEN)},
-        {"StopTransactionOnInvalidId", Config::Str("", 0, BOOL_LEN)},
-        {"StopTransactionMaxMeterValues", Config::Str("", 0, INT_LEN)},
-        {"StopTxnAlignedData", Config::Str("", 0, STR_LEN)},
-        {"StopTxnAlignedDataMaxLength", Config::Str("", 0, INT_LEN)},
-        {"StopTxnSampledData", Config::Str("", 0, STR_LEN)},
-        {"StopTxnSampledDataMaxLength", Config::Str("", 0, INT_LEN)},
-        {"SupportedFeatureProfiles", Config::Str("", 0, STR_LEN)},
-        {"TransactionMessageAttempts", Config::Str("", 0, INT_LEN)},
-        {"TransactionMessageRetryInterval", Config::Str("", 0, INT_LEN)},
-        {"UnlockConnectorOnEVSideDisconnect", Config::Str("", 0, BOOL_LEN)},
-        {"WebSocketPingInterval", Config::Str("", 0, INT_LEN)},
-        {"ChargeProfileMaxStackLevel", Config::Str("", 0, INT_LEN)},
-        {"ChargingScheduleAllowedChargingRateUnit", Config::Str("", 0, STR_LEN)},
-        {"ChargingScheduleMaxPeriods", Config::Str("", 0, INT_LEN)},
-        {"ConnectorSwitch3to1PhaseSupported", Config::Str("", 0, BOOL_LEN)},
-        {"MaxChargingProfilesInstalled", Config::Str("", 0, INT_LEN)}
+        {config_keys[(size_t)ConfigKey::AuthorizeRemoteTxRequests], Config::Str("", 0, BOOL_LEN)},
+        {config_keys[(size_t)ConfigKey::ClockAlignedDataInterval], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::ConnectionTimeOut], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::ConnectorPhaseRotation], Config::Str("", 0, STR_LEN)},
+        {config_keys[(size_t)ConfigKey::ConnectorPhaseRotationMaxLength], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::GetConfigurationMaxKeys], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::HeartbeatInterval], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::LocalAuthorizeOffline], Config::Str("", 0, BOOL_LEN)},
+        {config_keys[(size_t)ConfigKey::LocalPreAuthorize], Config::Str("", 0, BOOL_LEN)},
+        {config_keys[(size_t)ConfigKey::MessageTimeout], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::MeterValuesAlignedData], Config::Str("", 0, STR_LEN)},
+        {config_keys[(size_t)ConfigKey::MeterValuesAlignedDataMaxLength], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::MeterValuesSampledData], Config::Str("", 0, STR_LEN)},
+        {config_keys[(size_t)ConfigKey::MeterValuesSampledDataMaxLength], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::MeterValueSampleInterval], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::NumberOfConnectors], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::ResetRetries], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::StopTransactionOnEVSideDisconnect], Config::Str("", 0, BOOL_LEN)},
+        {config_keys[(size_t)ConfigKey::StopTransactionOnInvalidId], Config::Str("", 0, BOOL_LEN)},
+        {config_keys[(size_t)ConfigKey::StopTransactionMaxMeterValues], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::StopTxnAlignedData], Config::Str("", 0, STR_LEN)},
+        {config_keys[(size_t)ConfigKey::StopTxnAlignedDataMaxLength], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::StopTxnSampledData], Config::Str("", 0, STR_LEN)},
+        {config_keys[(size_t)ConfigKey::StopTxnSampledDataMaxLength], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::SupportedFeatureProfiles], Config::Str("", 0, STR_LEN)},
+        {config_keys[(size_t)ConfigKey::TransactionMessageAttempts], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::TransactionMessageRetryInterval], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::UnlockConnectorOnEVSideDisconnect], Config::Str("", 0, BOOL_LEN)},
+        {config_keys[(size_t)ConfigKey::WebSocketPingInterval], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::ChargeProfileMaxStackLevel], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::ChargingScheduleAllowedChargingRateUnit], Config::Str("", 0, STR_LEN)},
+        {config_keys[(size_t)ConfigKey::ChargingScheduleMaxPeriods], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::ConnectorSwitch3to1PhaseSupported], Config::Str("", 0, BOOL_LEN)},
+        {config_keys[(size_t)ConfigKey::MaxChargingProfilesInstalled], Config::Str("", 0, INT_LEN)}
     });
 #endif
 }
