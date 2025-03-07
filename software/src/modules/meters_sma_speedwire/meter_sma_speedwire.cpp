@@ -29,6 +29,11 @@
 
 #include "gcc_warnings.h"
 
+#if defined(__GNUC__)
+    #pragma GCC diagnostic ignored "-Wattributes"
+    #pragma GCC diagnostic ignored "-Wpacked"
+#endif
+
 static float convert_uint32(const uint8_t *buf)
 {
     uint32_t u32 = static_cast<uint32_t>(buf[0]) << 24 |
@@ -185,34 +190,104 @@ void MeterSMASpeedwire::setup(Config */*ephemeral_config*/)
     }, 500_ms);
 }
 
+int MeterSMASpeedwire::parse_header(SpeedwireHeader *header)
+{
+    header->length         = ntohs(header->length);
+    header->tag0           = ntohs(header->tag0);
+    header->group          = ntohl(header->group);
+    header->data_length    = ntohs(header->data_length);
+    header->tag            = ntohs(header->tag);
+    header->protocol_id    = ntohs(header->protocol_id);
+    header->susy_id        = ntohs(header->susy_id);
+    header->serial_number  = ntohl(header->serial_number);
+    header->measuring_time = ntohl(header->measuring_time);
+
+    logger.tracefln(trace_buffer_index, "slot=%lu, v=%c%c%c, l=%u, t=%u, g=%lu, d=%u, t=%u, p=%u, s=%u, s=%lu, m=%lu",
+                    slot,
+                    header->vendor[0], header->vendor[1], header->vendor[2],
+                    header->length,
+                    header->tag0,
+                    header->group,
+                    header->data_length,
+                    header->tag,
+                    header->protocol_id,
+                    header->susy_id,
+                    header->serial_number,
+                    header->measuring_time);
+
+    if (header->vendor[0] != 'S' || header->vendor[1] != 'M' || header->vendor[2] != 'A' || header->vendor[3] != '\0') {
+        logger.printfln_meter("Invalid vendor: %c%c%c", header->vendor[0], header->vendor[1], header->vendor[2]);
+        return 0;
+    }
+
+    if (header->length != 4) {
+        logger.printfln_meter("Invalid length: %u", header->length);
+        return 0;
+    }
+
+    if (header->tag != 16) {
+        logger.printfln_meter("Invalid tag: %u", header->tag);
+        return 0;
+    }
+
+    if (header->data_length > sizeof(SpeedwirePacket::data)) {
+        logger.printfln_meter("Invalid data_length: %u", header->data_length);
+        return 0;
+    }
+
+    // Protocol ID 0x6065 is for control packets. This is not officially documented by SMA, but it is reverse-engineered.
+    // See e.g. https://github.com/erijo/energy-utils/blob/master/sma.py#L194
+    // We ignore these packets for now.
+    if (header->protocol_id == 0x6065) {
+        return 0;
+    }
+
+    if (header->protocol_id != 0x6069) {
+        logger.printfln_meter("Invalid protocol_id: %u", header->protocol_id);
+        return 0;
+    }
+
+    return header->data_length - 10; // The length includes part of the header, we only return the lenght of the actual data part
+}
+
 void MeterSMASpeedwire::parse_packet()
 {
     if (udp.parsePacket() > 0) {
-        uint8_t buf[1024];
-        int len = udp.read(buf, sizeof(buf));
+        SpeedwirePacket packet;
+        memset(&packet, 0, sizeof(packet));
 
-        if (len == 608) { // Supports only the currently known packet length.
-            if (!values_parsed) {
-                parse_values(buf, len);
-                values_parsed = true;
-            }
-
-            float values[METERS_SMA_SPEEDWIRE_VALUE_COUNT];
-
-            for (size_t i = 0; i < ARRAY_SIZE(obis_value_positions); i++) {
-                size_t position = obis_value_positions[i];
-                if (position > 0) {
-                    auto mapping = obis_value_mappings[i];
-                    values[i] = mapping.parser_fn(buf + position) * mapping.scaling_factor;
-                } else {
-                    values[i] = NAN;
-                }
-            }
-
-            values[METERS_SMA_SPEEDWIRE_VALUE_COUNT - 1] = values[power_import_index] - values[power_export_index];
-
-            meters.update_all_values(slot, values);
+        const int read_length = udp.read(reinterpret_cast<char*>(&packet), sizeof(packet));
+        const int data_length = parse_header(&packet.header);
+        if (data_length <= 0) {
+            return;
         }
+
+        const int data_length_with_header = data_length + static_cast<int>(sizeof(SpeedwireHeader));
+        if (read_length < data_length_with_header) {
+            logger.printfln_meter("Speedwire packet too short: %d < %d", read_length, data_length_with_header);
+            return;
+        }
+
+        if (!values_parsed) {
+            parse_values(packet.data, data_length);
+            values_parsed = true;
+        }
+
+        float values[METERS_SMA_SPEEDWIRE_VALUE_COUNT];
+
+        for (size_t i = 0; i < ARRAY_SIZE(obis_value_positions); i++) {
+            size_t position = obis_value_positions[i];
+            if (position > 0) {
+                auto mapping = obis_value_mappings[i];
+                values[i] = mapping.parser_fn(packet.data + position) * mapping.scaling_factor;
+            } else {
+                values[i] = NAN;
+            }
+        }
+
+        values[METERS_SMA_SPEEDWIRE_VALUE_COUNT - 1] = values[power_import_index] - values[power_export_index];
+
+        meters.update_all_values(slot, values);
     }
 }
 
@@ -220,7 +295,7 @@ void MeterSMASpeedwire::parse_values(const uint8_t *buf, int buflen)
 {
     // TODO: Properly parse packet structure instead of probing values.
     for (size_t i = 0; i < METERS_SMA_SPEEDWIRE_OBIS_COUNT; i++) {
-        for (int pos = 28; pos < buflen - 4; pos += 4) {
+        for (int pos = 0; pos < buflen - 4; pos += 4) {
             const uint8_t *value_start = buf + pos;
             obis_code obis_code{value_start[0], value_start[1], value_start[2], value_start[3]};
             if (obis_code.u32 == obis_value_mappings[i].obis.u32) {

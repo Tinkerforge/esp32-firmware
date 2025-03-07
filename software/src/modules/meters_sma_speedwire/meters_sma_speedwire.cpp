@@ -27,6 +27,8 @@
 
 void MetersSMASpeedwire::pre_setup()
 {
+    this->trace_buffer_index = logger.alloc_trace_buffer("meters_swire", 8192);
+
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
         {"location", Config::Enum(MeterLocation::Unknown)},
@@ -42,7 +44,7 @@ MeterClassID MetersSMASpeedwire::get_class() const
 
 IMeter *MetersSMASpeedwire::new_meter(uint32_t slot, Config * /*state*/, Config * /*errors*/)
 {
-    return new MeterSMASpeedwire(slot);
+    return new MeterSMASpeedwire(slot, trace_buffer_index);
 }
 
 const Config *MetersSMASpeedwire::get_config_prototype()
