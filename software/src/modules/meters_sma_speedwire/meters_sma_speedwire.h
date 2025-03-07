@@ -46,6 +46,7 @@ public:
 
 private:
     ConfigRoot config_prototype;
+    size_t trace_buffer_index;
 };
 
 #if defined(__GNUC__)
