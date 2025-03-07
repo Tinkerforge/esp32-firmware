@@ -12,7 +12,7 @@ let x = {
             "config_display_name": "Display name",
             "config_host": "Host",
             "config_port": "Port",
-            "config_port_muted": "typically 502",
+            "config_port_muted": "typically 502 or 1502",
             "config_device_address": "Device address",
             "config_serial_number": "Serial number",
             "config_unique_id": "Unique ID",

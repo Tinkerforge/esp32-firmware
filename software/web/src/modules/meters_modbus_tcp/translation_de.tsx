@@ -12,7 +12,7 @@ let x = {
             "display_name": "Anzeigename",
             "host": "Host",
             "port": "Port",
-            "port_muted": "typischerweise 502",
+            "port_muted": "typischerweise 502 oder 1502",
             "table": "Registertabelle",
             "table_custom": "Benutzerdefiniert",
             "table_sungrow_hybrid_inverter": "Sungrow Hybrid-Wechselrichter (SH-Serie)",
