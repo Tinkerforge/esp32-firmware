@@ -12,7 +12,7 @@ let x = {
             "display_name": "Display name",
             "host": "Hostname or IP address",
             "port": "Port",
-            "port_muted": "typically 502",
+            "port_muted": "typically 502 or 1502",
             "table": "Register table",
             "table_custom": "Custom",
             "table_sungrow_hybrid_inverter": "Sungrow hybrid inverter (SH series)",
