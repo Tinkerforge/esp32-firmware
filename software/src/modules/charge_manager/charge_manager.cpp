@@ -612,9 +612,10 @@ bool ChargeManager::seen_all_chargers()
     if (all_chargers_seen)
         return true;
 
-    // Don't claim to have seen "all" chargers when none are configured.
-    if (charger_count == 0)
-        return false;
+    if (now_us() > 30_s) {
+        all_chargers_seen = true;
+        return true;
+    }
 
     for (size_t i = 0; i < charger_count; ++i)
         if (this->charger_state[i].last_update == 0_us)
