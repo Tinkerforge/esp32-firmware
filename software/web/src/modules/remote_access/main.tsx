@@ -29,6 +29,7 @@ import { InputText } from "../../ts/components/input_text";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { SubPage } from "../../ts/components/sub_page";
 import { Switch } from "../../ts/components/switch";
+import { InputHost } from "../../ts/components/input_host";
 import { __ } from "../../ts/translation";
 import "./wireguard";
 import { add_user, config, RegistrationState, config_update, register } from "./api";
@@ -681,12 +682,9 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                     </FormRow>
                     <CollapsedSection heading={__("remote_access.content.advanced_settings")}>
                         <FormRow label={__("remote_access.content.relay_host")} label_muted={__("remote_access.content.relay_host_muted")}>
-                            <InputText required
-                                    maxLength={64}
+                            <InputHost required
                                     value={this.state.relay_host}
-                                    onValue={(v) => {
-                                            this.setState({relay_host: v})
-                                    }} />
+                                    onValue={(v) => this.setState({relay_host: v})} />
                         </FormRow>
                         <FormRow label={__("remote_access.content.relay_port")}>
                             <InputNumber required

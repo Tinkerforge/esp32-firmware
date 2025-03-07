@@ -11,7 +11,6 @@ let x = {
 
             "display_name": "Anzeigename",
             "host": "Host",
-            "host_invalid": "Host ist ungültig",
             "port": "Port",
             "port_muted": "typischerweise 502",
             "table": "Registertabelle",

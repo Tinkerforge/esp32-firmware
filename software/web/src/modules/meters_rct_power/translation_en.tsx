@@ -7,7 +7,6 @@ let x = {
 
             "display_name": "Display name",
             "host": "Host",
-            "host_invalid": "Host is invalid",
             "port": "Port",
             "port_muted": "typically 8899",
             "virtual_meter": "Virtual meter",

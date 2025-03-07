@@ -11,7 +11,6 @@ let x = {
 
             "display_name": "Display name",
             "host": "Host",
-            "host_invalid": "Host is invalid",
             "port": "Port",
             "port_muted": "typically 502",
             "table": "Register table",

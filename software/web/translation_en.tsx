@@ -74,6 +74,9 @@ let x = {
         "input_file": {
             "uploading": "uploading..."
         },
+        "input_host": {
+            "invalid_feedback": "Hostname or IP address is invalid"
+        },
         "table": {
             "abort": "Discard",
             "add": "Add",

@@ -24,7 +24,8 @@ import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterLocation } from "../meters/meter_location.enum";
 import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
-import { InputText, InputTextPatterned } from "../../ts/components/input_text";
+import { InputText } from "../../ts/components/input_text";
+import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
@@ -72,15 +73,10 @@ export function init() {
                         />
                     </FormRow>,
                     <FormRow label={__("meters_rct_power.content.host")}>
-                        <InputTextPatterned
+                        <InputHost
                             required
-                            maxLength={64}
-                            pattern="^[a-zA-Z0-9\-\.]+$"
                             value={config[1].host}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {host: v}));
-                            }}
-                            invalidFeedback={__("meters_rct_power.content.host_invalid")} />
+                            onValue={(v) => on_config(util.get_updated_union(config, {host: v}))} />
                     </FormRow>,
                     <FormRow label={__("meters_rct_power.content.port")} label_muted={__("meters_rct_power.content.port_muted")}>
                         <InputNumber
