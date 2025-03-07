@@ -106,8 +106,8 @@ private:
 
     bool reset_requested = false;
 
-    micros_t callback_deadline = 0;
-    micros_t next_read_deadline = 0;
+    micros_t callback_deadline = 0_us;
+    micros_t next_read_deadline = 0_us;
 
     uint16_t meter_type = METER_TYPE_NONE;
 };

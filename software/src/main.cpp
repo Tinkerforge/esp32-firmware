@@ -108,7 +108,7 @@ static void pre_reboot_task(void *arg)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
     // portTICK_PERIOD_MS expands to an old style cast.
-    vTaskDelay(PRE_REBOOT_MAX_DURATION.to<millis_t>().as<uint32_t>() / portTICK_PERIOD_MS);
+    vTaskDelay(((millis_t)PRE_REBOOT_MAX_DURATION).as<uint32_t>() / portTICK_PERIOD_MS);
 #pragma GCC diagnostic pop
 
     esp_system_abort(pre_reboot_message);
