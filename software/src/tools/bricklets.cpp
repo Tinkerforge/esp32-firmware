@@ -34,7 +34,7 @@ int check(int rc, const char *msg)
         return rc;
     }
 
-    logger.printfln("%lu Failed to %s rc: %s", millis(), msg, tf_hal_strerror(rc));
+    logger.printfln("Failed to %s rc: %s", msg, tf_hal_strerror(rc));
     delay(10);
 
     return rc;

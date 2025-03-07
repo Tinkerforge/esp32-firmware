@@ -80,5 +80,5 @@ private:
     CoolString eap_password;
     CoolString eap_identity;
 
-    uint32_t last_connected_ms = 0;
+    micros_t last_connected = 0_us;
 };

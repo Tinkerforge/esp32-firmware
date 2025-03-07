@@ -23,6 +23,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <limits>
+#include <TFTools/Micros.h>
 
 #include "ringbuffer.h"
 #include "tools/malloc.h"
@@ -74,22 +75,22 @@ public:
     void register_urls(String base_url);
     void register_urls_empty(String base_url);
     void add_sample(float sample);
-    void tick(uint32_t now, bool update_history, METER_VALUE_HISTORY_VALUE_TYPE *live_sample, METER_VALUE_HISTORY_VALUE_TYPE *history_sample);
-    void format_live(uint32_t now, StringBuilder *sb);
+    void tick(micros_t now, bool update_history, METER_VALUE_HISTORY_VALUE_TYPE *live_sample, METER_VALUE_HISTORY_VALUE_TYPE *history_sample);
+    void format_live(micros_t now, StringBuilder *sb);
     void format_live_samples(StringBuilder *sb);
-    void format_history(uint32_t now, StringBuilder *sb);
+    void format_history(micros_t now, StringBuilder *sb);
     void format_history_samples(StringBuilder *sb);
     float samples_per_second();
 
     int64_t sum_this_interval = 0;
     int all_samples_this_interval = 0;
     int valid_samples_this_interval = 0;
-    uint32_t begin_this_interval = 0;
-    uint32_t end_this_interval = 0;
+    micros_t begin_this_interval = 0_us;
+    micros_t end_this_interval = 0_us;
 
     int samples_last_interval = 0;
-    uint32_t begin_last_interval = 0;
-    uint32_t end_last_interval = 0;
+    micros_t begin_last_interval = 0_us;
+    micros_t end_last_interval = 0_us;
 
     uint32_t sample_count = 0;
     float sample_sum = 0;
@@ -106,7 +107,7 @@ public:
                   malloc_32bit_addressed,
 #endif
                   free_any> live;
-    uint32_t live_last_update = 0;
+    micros_t live_last_update = 0_us;
 
     TF_PackedRingbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
                   HISTORY_RING_BUF_SIZE,
@@ -117,7 +118,7 @@ public:
                   malloc_32bit_addressed,
 #endif
                   free_any> history;
-    uint32_t history_last_update = 0;
+    micros_t history_last_update = 0_us;
 
     size_t chars_per_value = -1;
 };

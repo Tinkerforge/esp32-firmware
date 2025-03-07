@@ -160,17 +160,14 @@ void Wireguard::start_wireguard()
         {
             if (up) {
                 logger.printfln("Wireguard connection established");
-                last_connected_ms = millis();
-                state.get("connection_start")->updateUint(last_connected_ms);
+                last_connected = now_us();
+                state.get("connection_start")->updateUint(last_connected.to<millis_t>().as<uint32_t>());
             } else {
-                uint32_t now = millis();
-                uint32_t connected_for = millis() - this->last_connected_ms;
-                state.get("connection_end")->updateUint(now);
-                if (connected_for < 0x7FFFFFFF) {
-                    logger.printfln("Wireguard connection lost. Was connected for %lu seconds.", connected_for / 1000);
-                } else {
-                    logger.printfln("Wireguard connection lost. Was connected for a long time.");
-                }
+                auto now = now_us();
+                state.get("connection_end")->updateUint(now.to<millis_t>().as<uint32_t>());
+
+                auto connected_for = now - this->last_connected;
+                logger.printfln("Wireguard connection lost. Was connected for %lu seconds.", connected_for.to<millis_t>().as<uint32_t>());
             }
         }
     }, 1_s, 1_s);

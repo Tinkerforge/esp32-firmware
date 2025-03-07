@@ -66,7 +66,7 @@ void ValueHistory::register_urls(String base_url)
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
 
-        format_history(millis(), &sb);
+        format_history(now_us(), &sb);
 
         return request.send(200, "application/json; charset=utf-8", sb.getPtr(), static_cast<ssize_t>(sb.getLength()));
     });
@@ -78,7 +78,7 @@ void ValueHistory::register_urls(String base_url)
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
 
-        format_live(millis(), &sb);
+        format_live(now_us(), &sb);
 
         return request.send(200, "application/json; charset=utf-8", sb.getPtr(), static_cast<ssize_t>(sb.getLength()));
     });
@@ -109,7 +109,7 @@ void ValueHistory::add_sample(float sample)
     sample_sum += sample;
 }
 
-void ValueHistory::tick(uint32_t now, bool update_history, METER_VALUE_HISTORY_VALUE_TYPE *live_sample, METER_VALUE_HISTORY_VALUE_TYPE *history_sample)
+void ValueHistory::tick(micros_t now, bool update_history, METER_VALUE_HISTORY_VALUE_TYPE *live_sample, METER_VALUE_HISTORY_VALUE_TYPE *history_sample)
 {
     METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
     METER_VALUE_HISTORY_VALUE_TYPE live_val = val_min;
@@ -176,9 +176,9 @@ void ValueHistory::tick(uint32_t now, bool update_history, METER_VALUE_HISTORY_V
     }
 }
 
-void ValueHistory::format_live(uint32_t now, StringBuilder *sb)
+void ValueHistory::format_live(micros_t now, StringBuilder *sb)
 {
-    sb->printf("{\"offset\":%lu,\"samples_per_second\":%f,\"samples\":[", now - live_last_update, static_cast<double>(samples_per_second()));
+    sb->printf("{\"offset\":%lu,\"samples_per_second\":%f,\"samples\":[", (now - live_last_update).to<millis_t>().as<uint32_t>(), static_cast<double>(samples_per_second()));
     format_live_samples(sb);
     sb->puts("]}");
 }
@@ -207,9 +207,9 @@ void ValueHistory::format_live_samples(StringBuilder *sb)
     }
 }
 
-void ValueHistory::format_history(uint32_t now, StringBuilder *sb)
+void ValueHistory::format_history(micros_t now, StringBuilder *sb)
 {
-    sb->printf("{\"offset\":%lu,\"samples\":[", now - history_last_update);
+    sb->printf("{\"offset\":%lu,\"samples\":[", (now - history_last_update).to<millis_t>().as<uint32_t>());
     format_history_samples(sb);
     sb->puts("]}");
 }
@@ -248,12 +248,12 @@ float ValueHistory::samples_per_second()
     // In this case 0 samples_per_second is reported for the next
     // interval (i.e. four minutes).
     if (samples_last_interval > 1) {
-        uint32_t duration = end_last_interval - begin_last_interval;
+        auto duration = end_last_interval - begin_last_interval;
 
-        if (duration > 0) {
+        if (duration > 0_us) {
             // (samples_last_interval - 1) because there are N samples but only (N - 1) gaps
             // between them covering (end_last_interval - begin_last_interval) milliseconds
-            samples_per_second = static_cast<float>((samples_last_interval - 1) * 1000) / static_cast<float>(duration);
+            samples_per_second = static_cast<float>((samples_last_interval - 1) * 1000) / duration.to<millis_t>().as<float>();
         }
     }
     // Checking only for > 0 in this branch is fine: If we have seen
@@ -261,12 +261,12 @@ float ValueHistory::samples_per_second()
     // we can only report that samples_per_second is 0.
     // This fixes itself when the next sample arrives.
     else if (all_samples_this_interval > 0) {
-        uint32_t duration = end_this_interval - begin_this_interval;
+        auto duration = end_this_interval - begin_this_interval;
 
-        if (duration > 0) {
+        if (duration > 0_us) {
             // (all_samples_this_interval - 1) because there are N samples but only (N - 1) gaps
             // between them covering (end_this_interval - begin_this_interval) milliseconds
-            samples_per_second = static_cast<float>((all_samples_this_interval - 1) * 1000) / static_cast<float>(duration);
+            samples_per_second = static_cast<float>((all_samples_this_interval - 1) * 1000) / duration.to<millis_t>().as<float>();
         }
     }
 

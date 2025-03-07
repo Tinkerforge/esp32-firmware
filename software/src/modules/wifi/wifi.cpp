@@ -203,7 +203,7 @@ void apply_weight(float *channels, int channel, float weight)
 
 void Wifi::apply_soft_ap_config_and_start()
 {
-    static uint32_t scan_start_time = 0;
+    static micros_t scan_start_time = 0_us;
     static int channel_to_use = ap_config_in_use.get("channel")->asUint();
 
     // We don't want apply_soft_ap_config_and_start
@@ -212,11 +212,11 @@ void Wifi::apply_soft_ap_config_and_start()
     soft_ap_running = true;
 
     if (channel_to_use == 0) {
-        if (scan_start_time == 0) {
+        if (scan_start_time == 0_us) {
             logger.printfln("Starting scan to select unoccupied channel for soft AP");
             WiFi.scanDelete();
             WiFi.scanNetworks(true, true);
-            scan_start_time = millis();
+            scan_start_time = now_us();
             task_scheduler.scheduleOnce([this]() {
                 this->apply_soft_ap_config_and_start();
             }, 500_ms);
@@ -224,7 +224,7 @@ void Wifi::apply_soft_ap_config_and_start()
         } else { // Scan already started
             int16_t network_count = WiFi.scanComplete();
 
-            if (network_count == WIFI_SCAN_RUNNING && !deadline_elapsed(scan_start_time + 10000)) {
+            if (network_count == WIFI_SCAN_RUNNING && !deadline_elapsed(scan_start_time + 10_s)) {
                 task_scheduler.scheduleOnce([this]() {
                     this->apply_soft_ap_config_and_start();
                 }, 500_ms);
@@ -492,17 +492,13 @@ void Wifi::setup()
             if (!this->was_connected) {
                 logger.printfln("Failed to connect to '%s': %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
             } else {
-                uint32_t now = millis();
-                uint32_t connected_for = now - last_connected_ms;
+                auto now = now_us();
+                auto connected_for = now - last_connected;
+                logger.printfln("Disconnected from '%s': %s (%u). Was connected for %lu seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for.to<seconds_t>().as<uint32_t>());
 
-                // FIXME: Use a better way of time keeping here.
-                if (connected_for < 0x7FFFFFFF)
-                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for %lu seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for / 1000);
-                else
-                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for a long time.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
-
-                task_scheduler.scheduleOnce([this, now](){
-                    state.get("connection_end")->updateUint(now);
+                uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
+                task_scheduler.scheduleOnce([this, now_ms](){
+                    state.get("connection_end")->updateUint(now_ms);
                 });
             }
 
@@ -520,11 +516,11 @@ void Wifi::setup()
             this->was_connected = true;
 
             logger.printfln("Connected to '%s', BSSID %s", WiFi.SSID().c_str(), WiFi.BSSIDstr().c_str());
-            auto now = millis();
-            last_connected_ms = now;
+            last_connected = now_us();
 
-            task_scheduler.scheduleOnce([this, now](){
-                state.get("connection_start")->updateUint(now);
+            uint32_t now_ms = last_connected.to<millis_t>().as<uint32_t>();
+            task_scheduler.scheduleOnce([this, now_ms](){
+                state.get("connection_start")->updateUint(now_ms);
             });
         },
         ARDUINO_EVENT_WIFI_STA_CONNECTED);

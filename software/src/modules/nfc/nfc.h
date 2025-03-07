@@ -95,7 +95,7 @@ public:
     ConfigRoot seen_tags;
     ConfigRoot state;
     ConfigRoot inject_tag;
-    uint32_t last_tag_injection = 0;
+    micros_t last_tag_injection = 0_us;
     int tag_injection_action = 0;
 
     tag_info_t *old_tags = nullptr;

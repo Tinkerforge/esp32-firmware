@@ -154,17 +154,17 @@ private:
     std::vector<std::tuple<MeterClassID, IMeterGenerator *>> generators;
 
     size_t history_chars_per_value;
-    uint32_t last_live_update = 0;
-    uint32_t last_history_update = 0;
+    micros_t last_live_update = 0_us;
+    micros_t last_history_update = 0_us;
     uint32_t last_history_slot = UINT32_MAX;
 
     int samples_this_interval = 0;
-    uint32_t begin_this_interval = 0;
-    uint32_t end_this_interval = 0;
+    micros_t begin_this_interval = 0_us;
+    micros_t end_this_interval = 0_us;
 
     int samples_last_interval = 0;
-    uint32_t begin_last_interval = 0;
-    uint32_t end_last_interval = 0;
+    micros_t begin_last_interval = 0_us;
+    micros_t end_last_interval = 0_us;
 
     // For reproducable screenshots, the ScreenshotDataFaker injects values into the power_history of the first meter.
 #ifdef SCREENSHOT_DATA_FAKER_PRO

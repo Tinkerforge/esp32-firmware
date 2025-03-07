@@ -297,8 +297,8 @@ void Meters::setup()
     ++history_chars_per_value;
 
     task_scheduler.scheduleWithFixedDelay([this](){
-        uint32_t now = millis();
-        uint32_t current_history_slot = now / (HISTORY_MINUTE_INTERVAL * 60 * 1000);
+        micros_t now = now_us();
+        uint32_t current_history_slot = (now / minutes_t{HISTORY_MINUTE_INTERVAL}).as<uint32_t>();
         bool update_history = current_history_slot != last_history_slot;
         METER_VALUE_HISTORY_VALUE_TYPE live_samples[METERS_SLOTS];
         METER_VALUE_HISTORY_VALUE_TYPE history_samples[METERS_SLOTS];
@@ -453,7 +453,7 @@ void Meters::register_urls()
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
 
-        sb.printf("{\"offset\":%lu,\"samples\":[", millis() - last_history_update);
+        sb.printf("{\"offset\":%lu,\"samples\":[", (now_us() - last_history_update).to<millis_t>().as<uint32_t>());
         request.beginChunkedResponse(200, "application/json; charset=utf-8");
 
         for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
@@ -483,7 +483,7 @@ void Meters::register_urls()
             return request.send(500, "text/plain", "Failed to allocate buffer");
         }
 
-        sb.printf("{\"offset\":%lu,\"samples_per_second\":%f,\"samples\":[", millis() - last_live_update, static_cast<double>(live_samples_per_second()));
+        sb.printf("{\"offset\":%lu,\"samples_per_second\":%f,\"samples\":[", (now_us() - last_live_update).to<millis_t>().as<uint32_t>(), static_cast<double>(live_samples_per_second()));
         request.beginChunkedResponse(200, "application/json; charset=utf-8");
 
         for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
@@ -1109,12 +1109,12 @@ float Meters::live_samples_per_second()
     // In this case 0 samples_per_second is reported for the next
     // interval (i.e. four minutes).
     if (samples_last_interval > 1) {
-        uint32_t duration = end_last_interval - begin_last_interval;
+        auto duration = end_last_interval - begin_last_interval;
 
-        if (duration > 0) {
+        if (duration > 0_us) {
             // (samples_last_interval - 1) because there are N samples but only (N - 1) gaps
             // between them covering (end_last_interval - begin_last_interval) milliseconds
-            samples_per_second = static_cast<float>((samples_last_interval - 1) * 1000) / static_cast<float>(duration);
+            samples_per_second = static_cast<float>((samples_last_interval - 1) * 1000) / duration.to<millis_t>().as<float>();
         }
     }
     // Checking only for > 0 in this branch is fine: If we have seen
@@ -1122,12 +1122,12 @@ float Meters::live_samples_per_second()
     // we can only report that samples_per_second is 0.
     // This fixes itself when the next sample arrives.
     else if (samples_this_interval > 0) {
-        uint32_t duration = end_this_interval - begin_this_interval;
+        auto duration = end_this_interval - begin_this_interval;
 
-        if (duration > 0) {
+        if (duration > 0_us) {
             // (samples_this_interval - 1) because there are N samples but only (N - 1) gaps
             // between them covering (end_this_interval - begin_this_interval) milliseconds
-            samples_per_second = static_cast<float>((samples_this_interval - 1) * 1000) / static_cast<float>(duration);
+            samples_per_second = static_cast<float>((samples_this_interval - 1) * 1000) / duration.to<millis_t>().as<float>();
         }
     }
 

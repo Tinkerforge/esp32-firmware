@@ -43,7 +43,7 @@ private:
     String private_key;
     String remote_host;
 
-    uint32_t last_connected_ms = 0;
+    micros_t last_connected = 0_us;
 };
 
 String check_key(const String &key, bool enable);

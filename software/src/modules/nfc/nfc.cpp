@@ -167,12 +167,8 @@ void NFC::pre_setup()
         [this](const Config *config) {
             inject_tag.get("tag_type")->updateUint(config->get("tag_type")->asUint());
             inject_tag.get("tag_id")->updateString(config->get("tag_id")->asString());
-            last_tag_injection = millis();
+            last_tag_injection = now_us();
             tag_injection_action = config->get("action")->asUint();
-            // 0 is the marker that no injection happened or the last one was handled.
-            // Fake that we were one ms faster.
-            if (last_tag_injection == 0)
-                last_tag_injection -= 1;
         },
         nullptr,
         false
@@ -337,15 +333,16 @@ void NFC::update_seen_tags()
         tag_id_bytes_to_string(tag_id_bytes, tag_id_len, new_tags[i].tag_id);
     }
 
-    if (last_tag_injection == 0 || deadline_elapsed(last_tag_injection + 1000 * 60 * 60 * 24)) {
-        last_tag_injection = 0;
+    // The NFC bricklet removes tags after 24h. Do the same with injected tags.
+    if (last_tag_injection == 0_us || deadline_elapsed(last_tag_injection + 24_h)) {
+        last_tag_injection = 0_us;
         new_tags[TAG_LIST_LENGTH - 1].tag_type = 0;
         new_tags[TAG_LIST_LENGTH - 1].tag_id[0] = '\0';
         new_tags[TAG_LIST_LENGTH - 1].last_seen = 0;
     } else {
         new_tags[TAG_LIST_LENGTH - 1].tag_type = inject_tag.get("tag_type")->asUint();
         strncpy(new_tags[TAG_LIST_LENGTH - 1].tag_id, inject_tag.get("tag_id")->asEphemeralCStr(), sizeof(new_tags[TAG_LIST_LENGTH - 1].tag_id));
-        new_tags[TAG_LIST_LENGTH - 1].last_seen = millis() - last_tag_injection;
+        new_tags[TAG_LIST_LENGTH - 1].last_seen = now_us().to<millis_t>().as<uint32_t>() - last_tag_injection.to<millis_t>().as<uint32_t>();
     }
 
     // update state
@@ -457,30 +454,18 @@ void NFC::register_urls()
     api.addState("nfc/seen_tags", &seen_tags, {}, {"tag_id", "tag_type"});
     api.addPersistentConfig("nfc/config", &config, {}, {"tag_id", "tag_type"});
     api.addCommand("nfc/inject_tag", &inject_tag, {"tag_id", "tag_type"}, [this](String &/*errmsg*/) {
-        last_tag_injection = millis();
+        last_tag_injection = now_us();
         tag_injection_action = TRIGGER_CHARGE_ANY;
-        // 0 is the marker that no injection happened or the last one was handled.
-        // Fake that we were one ms faster.
-        if (last_tag_injection == 0)
-            last_tag_injection -= 1;
     }, true);
 
     api.addCommand("nfc/inject_tag_start", &inject_tag, {"tag_id", "tag_type"}, [this](String &/*errmsg*/) {
-        last_tag_injection = millis();
+        last_tag_injection = now_us();
         tag_injection_action = TRIGGER_CHARGE_START;
-        // 0 is the marker that no injection happened or the last one was handled.
-        // Fake that we were one ms faster.
-        if (last_tag_injection == 0)
-            last_tag_injection -= 1;
     }, true);
 
     api.addCommand("nfc/inject_tag_stop", &inject_tag, {"tag_id", "tag_type"}, [this](String &/*errmsg*/) {
-        last_tag_injection = millis();
+        last_tag_injection = now_us();
         tag_injection_action = TRIGGER_CHARGE_STOP;
-        // 0 is the marker that no injection happened or the last one was handled.
-        // Fake that we were one ms faster.
-        if (last_tag_injection == 0)
-            last_tag_injection -= 1;
     }, true);
 
     this->DeviceModule::register_urls();
