@@ -181,38 +181,20 @@ void MetersSunSpec::loop()
             if (result == TFGenericTCPClientConnectResult::Connected) {
                 scan->state = ScanState::ReadSunSpecID;
             }
-            else if (result == TFGenericTCPClientConnectResult::ResolveFailed) {
-                if (error_number == EINVAL) {
-                    scan_printfln("Couldn't resolve %s, no DNS server is configured", scan->host.c_str());
-                }
-                else if (error_number >= 0) {
-                    scan_printfln("Couldn't resolve %s: %s (%d)", scan->host.c_str(), strerror(error_number), error_number);
-                }
-                else {
-                    scan_printfln("Couldn't resolve %s", scan->host.c_str());
-                }
-
-                scan->state = ScanState::Done;
-            }
-            else if (error_number >= 0) {
-                scan_printfln("Could not connect to %s:%u: %s / %s (%d)", scan->host.c_str(), scan->port, get_tf_generic_tcp_client_connect_result_name(result), strerror(error_number), error_number);
-                scan->state = ScanState::Done;
-            }
             else {
-                scan_printfln("Could not connect to %s:%u: %s", scan->host.c_str(), scan->port, get_tf_generic_tcp_client_connect_result_name(result));
+                char buf[256] = "";
+
+                GenericTCPClientConnectorBase::format_connect_error(result, error_number, scan->host.c_str(), scan->port, buf, sizeof(buf));
+                scan_printfln("%s", buf);
+
                 scan->state = ScanState::Done;
             }
         },
         [this](TFGenericTCPClientDisconnectReason reason, int error_number) {
-            if (reason == TFGenericTCPClientDisconnectReason::Requested) {
-                scan_printfln("Disconnected from %s:%u", scan->host.c_str(), scan->port);
-            }
-            else if (error_number >= 0) {
-                scan_printfln("Disconnected from %s:%u: %s / %s (%d)", scan->host.c_str(), scan->port, get_tf_generic_tcp_client_disconnect_reason_name(reason), strerror(error_number), error_number);
-            }
-            else {
-                scan_printfln("Disconnected from %s:%u: %s", scan->host.c_str(), scan->port, get_tf_generic_tcp_client_disconnect_reason_name(reason));
-            }
+            char buf[256] = "";
+
+            GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, scan->host.c_str(), scan->port, buf, sizeof(buf));
+            scan_printfln("%s", buf);
 
             scan->state = ScanState::Done;
         });

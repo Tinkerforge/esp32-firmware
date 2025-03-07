@@ -68,41 +68,10 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
     }
     else {
         if (last_connect_result != result || last_connect_error_number != error_number) {
-            if (result == TFGenericTCPClientConnectResult::ResolveFailed) {
-                if (error_number == EINVAL) {
-                    logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                             "%sCould not resolve hostname %s, no DNS server available",
-                                             event_log_message_prefix, host_name.c_str());
-                }
-                else if (error_number >= 0) {
-                    logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                             "%sCould not resolve hostname %s: %s (%d)",
-                                             event_log_message_prefix,
-                                             host_name.c_str(),
-                                             strerror(error_number), error_number);
-                }
-                else {
-                    logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                             "%sCould not resolve hostname %s",
-                                             event_log_message_prefix,
-                                             host_name.c_str());
-                }
-            }
-            else if (error_number >= 0) {
-                logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                         "%sCould not connect to %s:%u: %s / %s (%d)",
-                                         event_log_message_prefix,
-                                         host_name.c_str(), port,
-                                         get_tf_generic_tcp_client_connect_result_name(result),
-                                         strerror(error_number), error_number);
-            }
-            else {
-                logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                         "%sCould not connect to %s:%u: %s",
-                                         event_log_message_prefix,
-                                         host_name.c_str(), port,
-                                         get_tf_generic_tcp_client_connect_result_name(result));
-            }
+            char buf[256] = "";
+
+            format_connect_error(result, error_number, host_name.c_str(), port, buf, sizeof(buf));
+            logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s%s", event_log_message_prefix, buf);
         }
 
         if (result == TFGenericTCPClientConnectResult::ResolveFailed) {
@@ -133,27 +102,10 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
 
 void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClientDisconnectReason reason, int error_number)
 {
-    if (reason == TFGenericTCPClientDisconnectReason::Requested) {
-        logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                 "%sDisconnected from %s:%u",
-                                 event_log_message_prefix,
-                                 host_name.c_str(), port);
-    }
-    else if (error_number >= 0) {
-        logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                 "%sDisconnected from %s:%u: %s / %s (%d)",
-                                 event_log_message_prefix,
-                                 host_name.c_str(), port,
-                                 get_tf_generic_tcp_client_disconnect_reason_name(reason),
-                                 strerror(error_number), error_number);
-    }
-    else {
-        logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                 "%sDisconnected from %s:%u: %s",
-                                 event_log_message_prefix,
-                                 host_name.c_str(), port,
-                                 get_tf_generic_tcp_client_disconnect_reason_name(reason));
-    }
+    char buf[256] = "";
+
+    format_disconnect_reason(reason, error_number, host_name.c_str(), port, buf, sizeof(buf));
+    logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s%s", event_log_message_prefix, buf);
 
     disconnect_callback();
 
@@ -161,5 +113,69 @@ void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClien
         task_scheduler.scheduleOnce([this]() {
             connect_internal();
         });
+    }
+}
+
+void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConnectResult result, int error_number,
+                                                         const char *host_name, uint16_t port, char *buf, size_t buf_len)
+{
+    if (result == TFGenericTCPClientConnectResult::Connected) {
+        if (buf_len > 0) {
+            *buf = '\0';
+        }
+    }
+    else if (result == TFGenericTCPClientConnectResult::ResolveFailed) {
+        if (error_number == EINVAL) {
+            snprintf(buf, buf_len,
+                     "Could not resolve hostname %s, no DNS server available",
+                     host_name);
+        }
+        else if (error_number >= 0) {
+            snprintf(buf, buf_len,
+                     "Could not resolve hostname %s: %s (%d)",
+                     host_name,
+                     strerror(error_number), error_number);
+        }
+        else {
+            snprintf(buf, buf_len,
+                     "Could not resolve hostname %s",
+                     host_name);
+        }
+    }
+    else if (error_number >= 0) {
+        snprintf(buf, buf_len,
+                 "Could not connect to %s:%u: %s / %s (%d)",
+                 host_name, port,
+                 get_tf_generic_tcp_client_connect_result_name(result),
+                 strerror(error_number), error_number);
+    }
+    else {
+        snprintf(buf, buf_len,
+                 "Could not connect to %s:%u: %s",
+                 host_name, port,
+                 get_tf_generic_tcp_client_connect_result_name(result));
+    }
+}
+
+void GenericTCPClientConnectorBase::format_disconnect_reason(TFGenericTCPClientDisconnectReason reason, int error_number,
+                                                             const char *host_name, uint16_t port, char *buf, size_t buf_len)
+{
+    if (reason == TFGenericTCPClientDisconnectReason::Requested) {
+        snprintf(buf, buf_len,
+                 "Disconnected from %s:%u",
+                 host_name, port);
+    }
+    else if (error_number >= 0) {
+        snprintf(buf, buf_len,
+                 "Disconnected from %s:%u: %s / %s (%d)",
+                 host_name, port,
+                 get_tf_generic_tcp_client_disconnect_reason_name(reason),
+                 strerror(error_number), error_number);
+    }
+    else {
+        snprintf(buf, buf_len,
+                 "Disconnected from %s:%u: %s",
+                 host_name, port,
+                 get_tf_generic_tcp_client_disconnect_reason_name(reason));
     }
 }
