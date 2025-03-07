@@ -221,7 +221,7 @@ void EMEnergyAnalysis::collect_data_points()
         // 5min data
         for (size_t i = 0; i < charge_manager.get_charger_count(); ++i) {
             auto *charger = charge_manager.get_mutable_charger_state(i);
-            uint32_t last_update = charger->last_update;
+            uint32_t last_update = charger->last_update.to<millis_t>().as<uint32_t>();
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
                 uint32_t uid = charger->uid;
@@ -332,7 +332,7 @@ void EMEnergyAnalysis::collect_data_points()
         // daily data
         for (size_t i = 0; i < charge_manager.get_charger_count(); ++i) {
             const auto *charger = charge_manager.get_charger_state(i);
-            uint32_t last_update = charger->last_update;
+            uint32_t last_update = charger->last_update.to<millis_t>().as<uint32_t>();
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
                 bool have_data = false;
