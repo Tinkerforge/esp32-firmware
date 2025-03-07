@@ -26,9 +26,9 @@ import { translate_unchecked, __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { InputText, InputTextPatterned } from "../../ts/components/input_text";
+import { InputText } from "../../ts/components/input_text";
+import { InputHost } from "../../ts/components/input_host";
 import { Collapse, ListGroup, ListGroupItem } from "react-bootstrap";
-import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
@@ -403,10 +403,9 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                         />
                                     </FormRow>
                                     <FormRow label={__("charge_manager.content.edit_charger_host")}>
-                                        <InputTextPatterned value={state.editCharger.host}
+                                        <InputHost
+                                            value={state.editCharger.host}
                                             onValue={(v) => this.setState({editCharger: {...state.editCharger, host: v}})}
-                                            maxLength={64}
-                                            pattern="^[a-zA-Z0-9\-\.]+$"
                                             required
                                             disabled={!energyManagerMode && (charger.host == '127.0.0.1' || charger.host == 'localhost')}
                                             class={check_host(state.editCharger.host, i) != undefined ? "is-invalid" : ""}
@@ -458,10 +457,9 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                 />
                             </FormRow>
                             <FormRow label={__("charge_manager.content.add_charger_host")}>
-                                <InputTextPatterned value={state.addCharger.host}
+                                <InputHost
+                                    value={state.addCharger.host}
                                     onValue={(v) => this.setState({addCharger: {...state.addCharger, host: v}})}
-                                    maxLength={64}
-                                    pattern="^[a-zA-Z0-9\-\.]+$"
                                     required
                                     class={check_host(state.addCharger.host, -1) != undefined ? "is-invalid" : ""}
                                     invalidFeedback={check_host(state.addCharger.host, -1)}/>

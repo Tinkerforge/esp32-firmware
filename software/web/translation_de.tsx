@@ -74,6 +74,9 @@ let x = {
         "input_file": {
             "uploading": "wird hochgeladen..."
         },
+        "input_host": {
+            "invalid_feedback": "Hostname oder IP-Address ist ungültig"
+        },
         "table": {
             "abort": "Verwerfen",
             "add": "Hinzufügen",

@@ -26,7 +26,8 @@ import { MeterLocation } from "../meters/meter_location.enum";
 import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { DCPortType } from "./dc_port_type.enum";
-import { InputText, InputTextPatterned } from "../../ts/components/input_text";
+import { InputText } from "../../ts/components/input_text";
+import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
@@ -464,15 +465,10 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
 
         let edit_children = [
             <FormRow label={__("meters_sun_spec.content.config_host")}>
-                <InputTextPatterned
+                <InputHost
                     required
-                    maxLength={64}
-                    pattern="^[a-zA-Z0-9\-\.]+$"
                     value={this.props.config[1].host}
-                    onValue={(v) => {
-                        this.props.on_config(util.get_updated_union(this.props.config, {host: v}));
-                    }}
-                    invalidFeedback={__("meters_sun_spec.content.config_host_invalid")} />
+                    onValue={(v) => this.props.on_config(util.get_updated_union(this.props.config, {host: v}))} />
             </FormRow>,
             <FormRow label={__("meters_sun_spec.content.config_port")} label_muted={__("meters_sun_spec.content.config_port_muted")}>
                 <InputNumber

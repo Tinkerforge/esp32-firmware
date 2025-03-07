@@ -47,7 +47,8 @@ import { CarloGavazziPhase } from "./carlo_gavazzi_phase.enum";
 import { CarloGavazziEM270VirtualMeter } from "./carlo_gavazzi_em270_virtual_meter.enum";
 import { CarloGavazziEM280VirtualMeter } from "./carlo_gavazzi_em280_virtual_meter.enum";
 import { SolaredgeInverterVirtualMeter } from "./solaredge_inverter_virtual_meter.enum";
-import { InputText, InputTextPatterned } from "../../ts/components/input_text";
+import { InputText } from "../../ts/components/input_text";
+import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
 import { InputSelect } from "../../ts/components/input_select";
@@ -658,15 +659,10 @@ export function init() {
                             }} />
                     </FormRow>,
                     <FormRow label={__("meters_modbus_tcp.content.host")}>
-                        <InputTextPatterned
+                        <InputHost
                             required
-                            maxLength={64}
-                            pattern="^[a-zA-Z0-9\-\.]+$"
                             value={config[1].host}
-                            onValue={(v) => {
-                                on_config(util.get_updated_union(config, {host: v}));
-                            }}
-                            invalidFeedback={__("meters_modbus_tcp.content.host_invalid")} />
+                            onValue={(v) => on_config(util.get_updated_union(config, {host: v}))} />
                     </FormRow>,
                     <FormRow label={__("meters_modbus_tcp.content.port")} label_muted={__("meters_modbus_tcp.content.port_muted")}>
                         <InputNumber
