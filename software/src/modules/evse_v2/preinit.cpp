@@ -144,7 +144,7 @@ void evse_v2_button_recovery_handler()
         FactoryResetData data;
         data.stage = stage + 1;
         data.magic = FACTORY_RESET_DATA_MAGIC;
-        data.uptime = now_us().to<micros_t>().as<uint32_t>();
+        data.uptime = now_us().to<millis_t>().as<uint32_t>();
         data.padding = 0;
         data.checksum = 0;
         memcpy(buf, &data, sizeof(data));
