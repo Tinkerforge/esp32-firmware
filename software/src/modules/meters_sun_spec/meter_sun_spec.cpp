@@ -51,7 +51,7 @@ MeterClassID MeterSunSpec::get_class() const
 
 void MeterSunSpec::setup(Config *ephemeral_config)
 {
-    host_name         = ephemeral_config->get("host")->asString();
+    host              = ephemeral_config->get("host")->asString();
     port              = static_cast<uint16_t>(ephemeral_config->get("port")->asUint());
     device_address    = static_cast<uint8_t>(ephemeral_config->get("device_address")->asUint());
     manufacturer_name = ephemeral_config->get("manufacturer_name")->asString();
@@ -323,7 +323,7 @@ void MeterSunSpec::scan_next()
                     ++scan_base_address_index;
 
                     if (scan_base_address_index >= ARRAY_SIZE(scan_base_addresses)) {
-                        logger.printfln_meter("No SunSpec device found at %s:%u:%u", host_name.c_str(), port, device_address);
+                        logger.printfln_meter("No SunSpec device found at %s:%u:%u", host.c_str(), port, device_address);
                         scan_start_delay();
                     }
                     else {
@@ -344,7 +344,7 @@ void MeterSunSpec::scan_next()
 
                 if (scan_model_id == NON_IMPLEMENTED_UINT16) { // End model found
                     logger.printfln_meter("Configured SunSpec model %u/%u not found at %s:%u:%u",
-                                          model_id, model_instance, host_name.c_str(), port, device_address);
+                                          model_id, model_instance, host.c_str(), port, device_address);
                     scan_start_delay();
                 }
                 else if (scan_device_found && scan_model_id == model_id) {
@@ -366,7 +366,7 @@ void MeterSunSpec::scan_next()
                             scan_state_next = ScanState::Idle;
 
                             logger.printfln_meter("Configured SunSpec model %u/%u found at %s:%u:%u:%u",
-                                                  model_id, model_instance, host_name.c_str(), port, device_address, generic_read_request.start_address);
+                                                  model_id, model_instance, host.c_str(), port, device_address, generic_read_request.start_address);
                             read_start(model_parser->get_interesting_registers_count());
                         }
                     }

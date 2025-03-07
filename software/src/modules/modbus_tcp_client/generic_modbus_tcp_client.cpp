@@ -48,7 +48,7 @@ void GenericModbusTCPClient::start_generic_read()
         logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
                                  "%sLast successful read occurred too long ago, reconnecting to %s:%u",
                                  event_log_message_prefix,
-                                 host_name.c_str(), port);
+                                 host.c_str(), port);
         force_reconnect();
         return;
     }
@@ -110,7 +110,7 @@ void GenericModbusTCPClient::read_next()
                 logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
                                          "%sModbus read error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u regcnt=%u burstlen=%zu): %s (%d)",
                                          event_log_message_prefix,
-                                         host_name.c_str(),
+                                         host.c_str(),
                                          port,
                                          device_address,
                                          static_cast<int>(function_code),

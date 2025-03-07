@@ -23,7 +23,7 @@
 
 void GenericTCPClientPoolConnector::connect_internal()
 {
-    pool->acquire(host_name.c_str(), port,
+    pool->acquire(host.c_str(), port,
     [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client) {
         if (result == TFGenericTCPClientConnectResult::Connected) {
             connected_client = shared_client;

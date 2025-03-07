@@ -57,7 +57,7 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
         logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
                                  "%sConnected to %s:%u",
                                  event_log_message_prefix,
-                                 host_name.c_str(), port);
+                                 host.c_str(), port);
 
         connect_backoff = 1_s;
         last_connect_result = TFGenericTCPClientConnectResult::Connected;
@@ -70,7 +70,7 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
         if (last_connect_result != result || last_connect_error_number != error_number) {
             char buf[256] = "";
 
-            format_connect_error(result, error_number, host_name.c_str(), port, buf, sizeof(buf));
+            format_connect_error(result, error_number, host.c_str(), port, buf, sizeof(buf));
             logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s%s", event_log_message_prefix, buf);
         }
 
@@ -104,7 +104,7 @@ void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClien
 {
     char buf[256] = "";
 
-    format_disconnect_reason(reason, error_number, host_name.c_str(), port, buf, sizeof(buf));
+    format_disconnect_reason(reason, error_number, host.c_str(), port, buf, sizeof(buf));
     logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s%s", event_log_message_prefix, buf);
 
     disconnect_callback();

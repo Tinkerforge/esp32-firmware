@@ -195,7 +195,7 @@ MeterClassID MeterModbusTCP::get_class() const
 
 void MeterModbusTCP::setup(Config *ephemeral_config)
 {
-    host_name = ephemeral_config->get("host")->asString();
+    host      = ephemeral_config->get("host")->asString();
     port      = static_cast<uint16_t>(ephemeral_config->get("port")->asUint());
     table_id  = ephemeral_config->get("table")->getTag<MeterModbusTCPTableID>();
 

@@ -23,7 +23,7 @@
 
 void GenericTCPClientConnector::connect_internal()
 {
-    client->connect(host_name.c_str(), port,
+    client->connect(host.c_str(), port,
     [this](TFGenericTCPClientConnectResult result, int error_number) {
         if (result == TFGenericTCPClientConnectResult::Connected) {
             connected_client = shared_client;
