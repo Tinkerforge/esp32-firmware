@@ -212,8 +212,19 @@ bool BufferedChunkedResponse::writef(const char *fmt, ...)
     va_list args;
 
     va_start(args, fmt);
-    int required_or_error = vsnprintf(nullptr, 0, fmt, args);
+    bool result = vwritef(fmt, args);
     va_end(args);
+
+    return result;
+}
+
+bool BufferedChunkedResponse::vwritef(const char *fmt, va_list args)
+{
+    va_list args_copy;
+
+    va_copy(args_copy, args);
+    int required_or_error = vsnprintf(nullptr, 0, fmt, args_copy);
+    va_end(args_copy);
 
     if (required_or_error < 0) {
         printf("vsnprintf(1) failed: %d\n", required_or_error);
@@ -237,9 +248,7 @@ bool BufferedChunkedResponse::writef(const char *fmt, ...)
         }
     }
 
-    va_start(args, fmt);
     int written_or_error = vsnprintf(pending_ptr(), pending_free(), fmt, args);
-    va_end(args);
 
     if (written_or_error < 0) {
         printf("vsnprintf(2) failed: %d\n", written_or_error);

@@ -79,7 +79,8 @@ private:
 class IChunkedResponse : public IBaseChunkedResponse
 {
 public:
-    virtual bool writef(const char *fmt, ...) = 0;
+    [[gnu::format(__printf__, 2, 3)]] virtual bool writef(const char *fmt, ...) = 0;
+    virtual bool vwritef(const char *fmt, va_list args) = 0;
     virtual bool flush() = 0;
 
     void *metadata = nullptr;
@@ -91,7 +92,8 @@ public:
     BufferedChunkedResponse(IBaseChunkedResponse *internal) : internal(internal) {};
 
     void begin(bool success);
-    bool writef(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] bool writef(const char *fmt, ...);
+    bool vwritef(const char *fmt, va_list args);
     bool flush();
     void end(String error);
     void alive();
