@@ -29,8 +29,8 @@
 #include "tools.h"
 #include "tools/fs.h"
 
-#define BUTTON_MIN_PRESS_THRES 10000
-#define BUTTON_MAX_PRESS_THRES 30000
+static constexpr micros_t BUTTON_MIN_PRESS_THRES = 10_s;
+static constexpr micros_t BUTTON_MAX_PRESS_THRES = 30_s;
 #define BUTTON_IS_PRESSED 0xFFFFFFFF
 #define FACTORY_RESET_DATA_MAGIC 0x0BADB007; //stage is written over the first 0. so this counts the number of bad boot(-up)s.
 
@@ -72,7 +72,7 @@ void evse_v2_button_recovery_handler()
         tf_evse_v2_set_indicator_led(&evse, 2005, 3000, 60, 255, 255, nullptr);
     }
 
-    uint32_t start = millis();
+    auto start = now_us();
 
     uint32_t button_press_time = BUTTON_IS_PRESSED;
     bool first = true;
@@ -100,8 +100,11 @@ void evse_v2_button_recovery_handler()
         return;
     }
 
-    if (button_press_time < BUTTON_MIN_PRESS_THRES || button_press_time > BUTTON_MAX_PRESS_THRES){
-        logger.printfln("Button was pressed for more %s. Continuing normal boot.", (button_press_time < BUTTON_MIN_PRESS_THRES) ? "less than 10 seconds" : "more than 30 seconds");
+    auto min_ms = BUTTON_MIN_PRESS_THRES.to<millis_t>().as<uint32_t>();
+    auto max_ms = BUTTON_MAX_PRESS_THRES.to<millis_t>().as<uint32_t>();
+
+    if (button_press_time < min_ms || button_press_time > max_ms){
+        logger.printfln("Button was pressed for more %s. Continuing normal boot.", (button_press_time < min_ms) ? "less than 10 seconds" : "more than 30 seconds");
         return;
     }
 
@@ -141,7 +144,7 @@ void evse_v2_button_recovery_handler()
         FactoryResetData data;
         data.stage = stage + 1;
         data.magic = FACTORY_RESET_DATA_MAGIC;
-        data.uptime = millis();
+        data.uptime = now_us().to<micros_t>().as<uint32_t>();
         data.padding = 0;
         data.checksum = 0;
         memcpy(buf, &data, sizeof(data));

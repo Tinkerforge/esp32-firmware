@@ -637,7 +637,7 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
     watchdog_handle = watchdog.add(
         "websocket_worker",
         "Websocket worker was not able to start for five minutes. The control socket is probably dead.",
-        WORKER_WATCHDOG_TIMEOUT.to<millis_t>().as<uint32_t>());
+        WORKER_WATCHDOG_TIMEOUT.to<millis_t>());
 #endif
 
     task_scheduler.scheduleWithFixedDelay([this](){

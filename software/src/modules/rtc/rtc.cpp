@@ -179,10 +179,10 @@ void Rtc::register_backend(IRtcBackend *_backend)
     bool not_synced = last_sync < 0_us;
     update_system_time_from_rtc();
     if (not_synced && last_sync >= 0_us) {
-        auto now = millis();
-        auto secs = now / 1000;
-        auto ms = now % 1000;
-        logger.printfln("System time set from RTC at %lu,%03lu", secs, ms);
+        auto now = now_us();
+        auto secs = now.to<seconds_t>();
+        auto ms = (now - secs).to<millis_t>();
+        logger.printfln("System time set from RTC at %lu,%03lu", secs.as<uint32_t>(), ms.as<uint32_t>());
     }
 
     api.addFeature("rtc");
@@ -252,7 +252,7 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
         size_t written = strftime(buf, ARRAY_SIZE(buf), "%F %T", &timeinfo);
         snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", time.tv_usec / 1000);
 
-        logger.tracefln(this->trace_buffer_index, "Set time to %s at %lu. Quality %s", buf, millis(), get_quality_name(quality));
+        logger.tracefln(this->trace_buffer_index, "Set time to %s at %llu. Quality %s", buf, now_us().to<millis_t>().as<uint64_t>(), get_quality_name(quality));
 
         settimeofday(&time, NULL);
 

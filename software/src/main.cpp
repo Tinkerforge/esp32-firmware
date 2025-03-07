@@ -97,7 +97,7 @@ static WebServerRequestReturnProtect send_index_html(WebServerRequest &request) 
     return request.send(200, "text/html; charset=utf-8", index_html_data, index_html_length);
 }
 
-#define PRE_REBOOT_MAX_DURATION (5 * 60 * 1000)
+static constexpr minutes_t PRE_REBOOT_MAX_DURATION = 5_m;
 
 static const char *pre_reboot_message = "Pre-reboot stage lasted longer than five minutes";
 
@@ -108,7 +108,7 @@ static void pre_reboot_task(void *arg)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
     // portTICK_PERIOD_MS expands to an old style cast.
-    vTaskDelay(PRE_REBOOT_MAX_DURATION / portTICK_PERIOD_MS);
+    vTaskDelay(PRE_REBOOT_MAX_DURATION.to<millis_t>().as<uint32_t>() / portTICK_PERIOD_MS);
 #pragma GCC diagnostic pop
 
     esp_system_abort(pre_reboot_message);
@@ -143,7 +143,7 @@ static void pre_reboot()
 
     if (running_in_main_task()) {
 #if MODULE_WATCHDOG_AVAILABLE()
-        watchdog.add("pre_reboot", pre_reboot_message, PRE_REBOOT_MAX_DURATION, 0, true);
+        watchdog.add("pre_reboot", pre_reboot_message, PRE_REBOOT_MAX_DURATION, 0_ms, true);
 #else
         auto err = xTaskCreatePinnedToCore(
             pre_reboot_task,
@@ -387,7 +387,7 @@ void setup()
     }
 
 #if MODULE_WATCHDOG_AVAILABLE()
-    watchdog_handle = watchdog.add("main_loop", "Main thread blocked", 30000, 0, true);
+    watchdog_handle = watchdog.add("main_loop", "Main thread blocked", 30_s, 0_ms, true);
 #endif
 
     if (esp_register_shutdown_handler(pre_reboot) != ESP_OK) {

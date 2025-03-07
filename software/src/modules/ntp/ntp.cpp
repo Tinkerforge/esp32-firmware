@@ -145,7 +145,7 @@ void NTP::time_synced_NTPThread() {
 
     if (this->first_sync) {
         this->first_sync = false;
-        auto now = millis();
+        auto now = now_us().to<millis_t>().as<uint32_t>();
 
         task_scheduler.scheduleOnce([this, now](){
             this->set_synced(true);

@@ -165,17 +165,17 @@ void EventLog::format_timestamp(char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */
         size_t written = strftime(buf, EVENT_LOG_TIMESTAMP_LENGTH + 1, "%F %T", &timeinfo);
         snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", tv_now.tv_usec / 1000);
     } else {
-        uint32_t now = millis();
-        uint32_t secs = now / 1000;
-        uint32_t ms = now % 1000;
-        size_t to_write = snprintf_u(nullptr, 0, "%" PRIu32, secs) + 4; // +4 for the decimal sign and fractional part
+        auto now = now_us();
+        auto secs = now.to<seconds_t>();
+        auto ms = (now - secs).to<millis_t>();
+        size_t to_write = snprintf_u(nullptr, 0, "%" PRIu32, secs.as<uint32_t>()) + 4; // +4 for the decimal sign and fractional part
         size_t start = EVENT_LOG_TIMESTAMP_LENGTH - to_write;
 
         for (size_t i = 0; i < start; ++i) {
             buf[i] = ' ';
         }
 
-        snprintf(buf + start, to_write + 1, "%" PRIu32 ",%03" PRIu32, secs, ms); // +1 for the NUL-terminator
+        snprintf(buf + start, to_write + 1, "%" PRIu32 ",%03" PRIu32, secs.as<uint32_t>(), ms.as<uint32_t>()); // +1 for the NUL-terminator
     }
 
     buf[EVENT_LOG_TIMESTAMP_LENGTH] = '\0';

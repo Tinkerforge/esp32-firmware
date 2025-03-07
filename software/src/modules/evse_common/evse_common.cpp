@@ -430,12 +430,12 @@ void EvseCommon::register_urls()
     }, 100_ms, 100_ms);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        if (!deadline_elapsed(last_current_update + 30000))
+        if (!deadline_elapsed(last_current_update + 30_s))
             return;
         if (!management_enabled.get("enabled")->asBool()) {
             // Push back the next check for 30 seconds: If managed gets enabled,
             // we want to wait 30 seconds before setting the current for the first time.
-            last_current_update = millis();
+            last_current_update = now_us();
             return;
         }
         if(!shutdown_logged) {
@@ -471,7 +471,7 @@ void EvseCommon::register_urls()
         // Only reset the watchdog if this was a "valid" current.
         // We don't want to return an error if this current is invalid to not break home automation UIs.
         if (current == 0 || (current >= 6000 && current <= 32000))
-            this->last_external_update = millis();
+            this->last_external_update = now_us();
         backend->set_charging_slot_max_current(CHARGING_SLOT_EXTERNAL, external_current_update.get("current")->asUint());
     }, false);
 
@@ -632,7 +632,7 @@ void EvseCommon::register_urls()
     if (automation.has_task_with_trigger(AutomationTriggerID::EVSEExternalCurrentWd)) {
         task_scheduler.scheduleWithFixedDelay([this](){
             static bool was_triggered = false;
-            const bool elapsed = deadline_elapsed(last_external_update + 30000);
+            const bool elapsed = deadline_elapsed(last_external_update + 30_s);
             if (external_enabled.get("enabled")->asBool() && elapsed && !was_triggered) {
                 automation.trigger(AutomationTriggerID::EVSEExternalCurrentWd, nullptr, this);
                 was_triggered = true;
@@ -671,7 +671,7 @@ void EvseCommon::register_events()
 void EvseCommon::set_managed_current(uint16_t current)
 {
     backend->set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, current);
-    last_current_update = millis();
+    last_current_update = now_us();
     shutdown_logged = false;
 }
 

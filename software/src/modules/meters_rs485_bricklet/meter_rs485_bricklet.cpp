@@ -284,7 +284,7 @@ void MeterRS485Bricklet::tick()
     if (this->meter_in_use == nullptr)
         return;
 
-    if (callback_data.done == UserDataDone::NOT_DONE && !deadline_elapsed(callback_deadline_ms))
+    if (callback_data.done == UserDataDone::NOT_DONE && !deadline_elapsed(callback_deadline))
         return;
 
     if (callback_data.done == UserDataDone::NOT_DONE) {
@@ -292,7 +292,7 @@ void MeterRS485Bricklet::tick()
         generator->checkRS485State();
     }
 
-    if (callback_data.done != UserDataDone::NOT_DONE && !deadline_elapsed(next_read_deadline_ms))
+    if (callback_data.done != UserDataDone::NOT_DONE && !deadline_elapsed(next_read_deadline))
         return;
 
     if (reset_requested) {
@@ -341,20 +341,20 @@ void MeterRS485Bricklet::tick()
         if (trigger_slow_read_done) {
             // Try to measure each 500 ms, but don't pile up measurements
             // if we are already a complete slot behind.
-            next_read_deadline_ms = next_read_deadline_ms + 500;
-            if (deadline_elapsed(next_read_deadline_ms))
-                next_read_deadline_ms = millis() + 500;
+            next_read_deadline = next_read_deadline + 500_ms;
+            if (deadline_elapsed(next_read_deadline))
+                next_read_deadline = now_us() + 500_ms;
         }
     } else if (last_callback_data_done == UserDataDone::ERROR) {
-        next_read_deadline_ms = millis() + 500;
+        next_read_deadline = now_us() + 500_ms;
         errors->get("meter")->updateUint(errors->get("meter")->asUint() + 1);
     } else {
-        next_read_deadline_ms = millis() + 500;
+        next_read_deadline = now_us() + 500_ms;
         errors->get("bricklet")->updateUint(errors->get("bricklet")->asUint() + 1);
     }
 
     // This protects against lost callback responses.
     // If the callback packet is lost,
     // callback_data.done would never be set to ::DONE.
-    callback_deadline_ms = millis() + 3000;
+    callback_deadline = now_us() + 3_s;
 }

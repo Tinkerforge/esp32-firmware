@@ -20,6 +20,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <TFTools/Micros.h>
 
 #include "module.h"
 
@@ -30,6 +31,6 @@ public:
     void pre_setup() override;
     void setup() override;
 
-    int add(const char *name, const char *message, uint32_t timeout_ms = 5 * 60 * 1000, uint32_t initial_deadline_ms = 30 * 60 * 1000, bool force = false);
+    int add(const char *name, const char *message, millis_t timeout = 5_m, millis_t initial_deadline = 30_m, bool force = false);
     void reset(int handle);
 };

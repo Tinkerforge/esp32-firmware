@@ -228,7 +228,7 @@ void platform_ws_register_pong_callback(void *ctx, void (*cb)(void *), void *use
 
 uint32_t platform_now_ms()
 {
-    return millis();
+    return now_us().to<millis_t>().as<uint32_t>();
 }
 
 time_t last_system_time = 0;
@@ -976,13 +976,15 @@ void platform_update_connector_state(int32_t connector_id,
     if (connector_id != 1)
         return;
 
+    auto now = now_us().to<millis_t>().as<uint32_t>();
+
     ocpp.state.get("connector_state")->updateUint((uint8_t)state);
     ocpp.state.get("connector_status")->updateUint((uint8_t)last_sent_status);
     ocpp.state.get("tag_id")->updateString(auth_for.tagId);
     ocpp.state.get("parent_tag_id")->updateString(auth_for.parentTagId);
     ocpp.state.get("tag_expiry_date")->updateInt((int32_t)auth_for.expiryDate);
-    ocpp.state.get("tag_timeout")->updateUint(tag_deadline == 0 ? 0xFFFFFFFF : (tag_deadline - millis()));
-    ocpp.state.get("cable_timeout")->updateUint(cable_deadline == 0 ? 0xFFFFFFFF : (cable_deadline - millis()));
+    ocpp.state.get("tag_timeout")->updateUint(tag_deadline == 0 ? 0xFFFFFFFF : (tag_deadline - now));
+    ocpp.state.get("cable_timeout")->updateUint(cable_deadline == 0 ? 0xFFFFFFFF : (cable_deadline - now));
     ocpp.state.get("txn_id")->updateInt(txn_id);
     ocpp.state.get("txn_start_time")->updateInt((int32_t)transaction_start_time);
     ocpp.state.get("current")->updateUint(current_allowed);
@@ -1003,18 +1005,20 @@ void platform_update_connection_state(CallAction message_in_flight_type,
                                       uint32_t last_ping_sent,
                                       uint32_t pong_deadline)
 {
+    auto now = now_us().to<millis_t>().as<uint32_t>();
+
     ocpp.state.get("message_in_flight_type")->updateUint((uint8_t)message_in_flight_type);
     ocpp.state.get("message_in_flight_id_high")->updateUint(message_in_flight_id >> 32);
     ocpp.state.get("message_in_flight_id_low")->updateUint(message_in_flight_id & (0xFFFFFFFF));
     ocpp.state.get("message_in_flight_len")->updateUint(message_in_flight_len);
-    ocpp.state.get("message_timeout")->updateUint(message_timeout_deadline == 0 ? 0xFFFFFFFF : (message_timeout_deadline - millis()));
-    ocpp.state.get("txn_msg_retry_timeout")->updateUint(txn_msg_retry_deadline == 0 ? 0xFFFFFFFF : (txn_msg_retry_deadline - millis()));
+    ocpp.state.get("message_timeout")->updateUint(message_timeout_deadline == 0 ? 0xFFFFFFFF : (message_timeout_deadline - now));
+    ocpp.state.get("txn_msg_retry_timeout")->updateUint(txn_msg_retry_deadline == 0 ? 0xFFFFFFFF : (txn_msg_retry_deadline - now));
     ocpp.state.get("message_queue_depth")->updateUint(message_queue_depth);
     ocpp.state.get("status_queue_depth")->updateUint(status_notification_queue_depth);
     ocpp.state.get("connected")->updateBool(connected);
     ocpp.state.get("connected_change_time")->updateUint(connected_change_time);
-    ocpp.state.get("last_ping_sent")->updateUint(millis() - last_ping_sent);
-    ocpp.state.get("pong_timeout")->updateUint(pong_deadline == 0 ? 0xFFFFFFFF : (pong_deadline - millis()));
+    ocpp.state.get("last_ping_sent")->updateUint(now - last_ping_sent);
+    ocpp.state.get("pong_timeout")->updateUint(pong_deadline == 0 ? 0xFFFFFFFF : (pong_deadline - now));
 }
 
 void platform_update_config_state(ConfigKey key,

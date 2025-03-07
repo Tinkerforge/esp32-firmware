@@ -280,13 +280,13 @@ uint64_t TaskScheduler::currentTaskId()
     return 0;
 }
 
-TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t millis_to_wait)
+TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
 {
     if (this->rebooting)
         return TaskScheduler::AwaitResult::Timeout;
 
-    if (millis_to_wait == 0) {
-        logger.printfln("Calling TaskScheduler::await with millis_to_wait == 0 is not allowed. This is not scheduleOnce!");
+    if (millis_to_wait == 0_us) {
+        logger.printfln("Calling TaskScheduler::await with millis_to_wait == 0_us is not allowed. This is not scheduleOnce!");
         return TaskScheduler::AwaitResult::Error;
     }
 
@@ -328,7 +328,7 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t milli
         task->awaited_by = thisThread;
     }
 
-    if (ulTaskNotifyTake(true, pdMS_TO_TICKS(millis_to_wait)) == 0) {
+    if (ulTaskNotifyTake(true, pdMS_TO_TICKS(millis_to_wait.as<uint32_t>())) == 0) {
         switch (this->cancel(task_id)) {
             case TaskScheduler::CancelResult::WillBeCancelled:
                 esp_system_abort("Awaited task timed out and can't be cancelled. Giving up.");
@@ -343,7 +343,7 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, uint32_t milli
     return TaskScheduler::AwaitResult::Done;
 }
 
-TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, uint32_t millis_to_wait)
+TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait)
 {
     return await(scheduleOnce(std::move(fn), 0_ms), millis_to_wait);
 }

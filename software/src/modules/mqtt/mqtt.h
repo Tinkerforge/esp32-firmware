@@ -107,7 +107,7 @@ private:
     };
 
     struct MqttState {
-        uint32_t last_send_ms;
+        micros_t last_send;
     };
 
     struct MqttMessage {
@@ -122,9 +122,9 @@ private:
     size_t backend_idx;
 
     esp_mqtt_client_handle_t client = nullptr;
-    uint32_t send_interval_ms;
+    micros_t send_interval;
 
-    uint32_t last_connected_ms = 0;
+    micros_t last_connected = 0_us;
     bool was_connected = false;
     bool global_topic_prefix_subscribed = false;
     bool initial_network_event_seen = false;

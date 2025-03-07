@@ -140,7 +140,7 @@ void Co2Ampel::setup()
         check(tf_lcd_128x64_draw_text(&lcd, static_cast<uint8_t>(128 - written * 6), 40, TF_LCD_128X64_FONT_6X24, TF_LCD_128X64_COLOR_BLACK, hum_buf), "call draw_text");
 
         char t_buf[22] = {0};
-        uint32_t t = millis();
+        uint32_t t = now_us().to<millis_t>().as<uint32_t>();
         uint32_t d = t / (24 * 60 * 60 * 1000);
         t -= d * 24 * 60 * 60 * 1000;
         uint32_t h = t / (60 * 60 * 1000);

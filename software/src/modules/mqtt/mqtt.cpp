@@ -209,7 +209,7 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 
 void Mqtt::addState(size_t stateIdx, const StateRegistration &reg)
 {
-    this->states.push_back({0});
+    this->states.push_back({0_us});
 }
 
 void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)
@@ -242,13 +242,13 @@ bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String 
 {
     auto &state = this->states[stateIdx];
 
-    if (!deadline_elapsed(state.last_send_ms + this->send_interval_ms))
+    if (!deadline_elapsed(state.last_send + this->send_interval))
         return false;
 
     bool success = this->publish_with_prefix(path, payload);
 
     if (success) {
-        state.last_send_ms = millis();
+        state.last_send = now_us();
     }
 
     return success;
@@ -288,8 +288,8 @@ void Mqtt::resubscribe()
 
 void Mqtt::onMqttConnect()
 {
-    last_connected_ms = millis();
-    state.get("connection_start")->updateUint(last_connected_ms);
+    last_connected = now_us();
+    state.get("connection_start")->updateUint(last_connected.to<millis_t>().as<uint32_t>());
     was_connected = true;
 
     const char *schema = "";
@@ -344,14 +344,11 @@ void Mqtt::onMqttDisconnect()
     this->state.get("connection_state")->updateEnum(MqttConnectionState::NotConnected);
     if (was_connected) {
         was_connected = false;
-        uint32_t now = millis();
-        uint32_t connected_for = now - last_connected_ms;
-        state.get("connection_end")->updateUint(now);
-        if (connected_for < 0x7FFFFFFF) {
-            logger.printfln("Was connected for %lu seconds.", connected_for / 1000);
-        } else {
-            logger.printfln("Was connected for a long time.");
-        }
+        auto now = now_us();
+        state.get("connection_end")->updateUint(now.to<millis_t>().as<uint32_t>());
+
+        auto connected_for = now_us() - last_connected;
+        logger.printfln("Was connected for %lu seconds.", connected_for.to<seconds_t>().as<uint32_t>());
     }
 }
 
@@ -577,7 +574,7 @@ void Mqtt::setup()
     }
 
     global_topic_prefix = this->config.get("global_topic_prefix")->asString();
-    send_interval_ms = this->config.get("interval")->asUint() * 1000;
+    send_interval = seconds_t{this->config.get("interval")->asUint()};
     client_name = this->config.get("client_name")->asString();
     read_only = this->config.get("read_only")->asBool();
 

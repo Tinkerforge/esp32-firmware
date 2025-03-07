@@ -127,7 +127,7 @@ class EvseCommon final : public IModule
 public: // We need to access the backend in cm_networking for the phase switch. FIXME: Let EvseCommon implement PhaseSwitcherBackend instead.
     IEvseBackend *backend = nullptr;
 private:
-    unsigned long last_external_update = 0;
+    micros_t last_external_update = 0_us;
 
 public:
     EvseCommon();
@@ -181,7 +181,7 @@ public:
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 
-    uint32_t last_current_update = 0;
+    micros_t last_current_update = 0_us;
     bool shutdown_logged = false;
 
 private:

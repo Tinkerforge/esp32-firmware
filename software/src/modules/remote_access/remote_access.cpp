@@ -1001,16 +1001,16 @@ void RemoteAccess::register_urls()
                 state = management->is_peer_up(nullptr, nullptr) ? 2 : 1;
             }
             if (state == 2) {
-                this->last_mgmt_alive = millis();
+                this->last_mgmt_alive = now_us();
             }
 
             // Check if we got unlucky timing and management request ran
             // without the management connection getting connected afterwards
-            if (deadline_elapsed(this->last_mgmt_alive + 60000) && this->management_request_done) {
+            if (deadline_elapsed(this->last_mgmt_alive + 60_s) && this->management_request_done) {
                 logger.printfln("Management connection timed out");
 
                 // Reset the timeout to prevent log and reconnect spamming
-                this->last_mgmt_alive = millis();
+                this->last_mgmt_alive = now_us();
                 this->management_request_done = false;
             }
 
@@ -1497,7 +1497,7 @@ void RemoteAccess::resolve_management()
         }
 
         this->management_request_done = true;
-        this->last_mgmt_alive = millis();
+        this->last_mgmt_alive = now_us();
         this->request_cleanup();
         this->connect_management();
         this->connection_state.get(0)->get("state")->updateUint(1);

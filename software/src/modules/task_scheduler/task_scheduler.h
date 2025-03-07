@@ -130,12 +130,12 @@ public:
         Error
     };
 
-    AwaitResult await(std::function<void(void)> &&fn, uint32_t millis_to_wait = 10000);
+    AwaitResult await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s);
 
     TaskScheduler *_task_scheduler_context(const char *f, int l);
 
 private:
-    AwaitResult await(uint64_t task_id, uint32_t millis_to_wait = 10000);
+    AwaitResult await(uint64_t task_id, millis_t millis_to_wait = 10_s);
 
     std::mutex task_mutex;
     TaskQueue tasks;
