@@ -1478,8 +1478,13 @@ int allocate_current(
 
             // Charger does not respond anymore
             if (deadline_elapsed(charger.last_update + TIMEOUT_MS)) {
-                unreachable_evse_found = true;
-                LOCAL_LOG("Can't reach EVSE of %s (%s): last_update too old.", get_charger_name(i), hosts[i]);
+                // Only shut down this charger.
+                // If a charger does not receive manager packets anymore,
+                // it will shut down after 30 seconds.
+                charger.off = true;
+
+                if (charger_alloc.error != CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE)
+                    LOCAL_LOG("Can't reach EVSE of %s (%s): last_update too old.", get_charger_name(i), hosts[i]);
 
                 bool state_was_not_five = charger_alloc.state != 5;
                 charger_alloc.state = 5;
@@ -1492,6 +1497,7 @@ int allocate_current(
                 }
             } else if (charger_alloc.error == CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE) {
                 charger_alloc.error = CM_NETWORKING_ERROR_NO_ERROR;
+                LOCAL_LOG("EVSE of %s (%s) reachable again.", get_charger_name(i), hosts[i]);
             }
 
             // Charger did not update the charging current or phases in time.
