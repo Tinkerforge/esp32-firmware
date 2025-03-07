@@ -12,7 +12,7 @@ let x = {
             "email": "E-Mail-Adresse",
             "password": "Passwort",
             "password_muted": "wird nur zur Registrierung verwendet und nicht gespeichert",
-            "relay_host": "Relay-Server-Hostname",
+            "relay_host": "Relay-Server-Hostname oder -IP-Adresse",
             "relay_host_muted": "Um einen anderen Relay-Server zu verwenden müssen alle Accounts entfernt werden",
             "relay_port": "Relay-Server-Port",
             "enable": "Fernzugriff aktiviert",

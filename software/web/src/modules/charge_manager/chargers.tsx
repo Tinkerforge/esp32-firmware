@@ -466,23 +466,23 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                             </FormRow>
                             <FormRow label={__("charge_manager.content.add_charger_found")}>
                                 <ListGroup>{
-                                    state.scanResult.filter(c => !state.chargers.some(c1 => c1.host == c.hostname + ".local" || c1.host == c.ip))
-                                        .map(c => (
-                                            <ListGroupItem key={c.hostname}
+                                    state.scanResult.filter(s => !state.chargers.some(c => c.host == s.hostname + ".local" || c.host == s.ip))
+                                        .map(s => (
+                                            <ListGroupItem key={s.hostname}
                                                         action type="button"
-                                                        onClick={c.error != 0 ? undefined : () => {
-                                                            this.setState({addCharger: {host: c.hostname + ".local", name: c.display_name, rot: -1}})
+                                                        onClick={s.error != 0 ? undefined : () => {
+                                                            this.setState({addCharger: {host: s.hostname + ".local", name: s.display_name, rot: -1}})
                                                         }}
-                                                        style={c.error == 0 ? "" : "cursor: default; background-color: #eeeeee !important;"}>
+                                                        style={s.error == 0 ? "" : "cursor: default; background-color: #eeeeee !important;"}>
                                                 <div class="d-flex w-100 justify-content-between">
-                                                    <span class="h5 text-left">{c.display_name}</span>
-                                                    {c.error == 0 ? null :
-                                                        <span class="text-right" style="color:red">{translate_unchecked(`charge_manager.content.scan_error_${c.error}`)}</span>
+                                                    <span class="h5 text-left">{s.display_name}</span>
+                                                    {s.error == 0 ? null :
+                                                        <span class="text-right" style="color:red">{translate_unchecked(`charge_manager.content.scan_error_${s.error}`)}</span>
                                                     }
                                                 </div>
                                                 <div class="d-flex w-100 justify-content-between">
-                                                    {util.remoteAccessMode ? <span>{c.hostname + ".local"}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + c.hostname + ".local"}>{c.hostname + ".local"}</a>}
-                                                    {util.remoteAccessMode ? <span>{c.ip}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + c.ip}>{c.ip}</a>}
+                                                    {util.remoteAccessMode ? <span>{s.hostname + ".local"}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + s.hostname + ".local"}>{s.hostname + ".local"}</a>}
+                                                    {util.remoteAccessMode ? <span>{s.ip}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + s.ip}>{s.ip}</a>}
                                                 </div>
                                             </ListGroupItem>))
                                 }</ListGroup>

@@ -10,7 +10,7 @@ let x = {
             "meter_class": "Modbus/TCP",
 
             "display_name": "Display name",
-            "host": "Host",
+            "host": "Hostname or IP address",
             "port": "Port",
             "port_muted": "typically 502",
             "table": "Register table",

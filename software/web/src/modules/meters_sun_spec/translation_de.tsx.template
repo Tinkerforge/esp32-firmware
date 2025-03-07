@@ -10,7 +10,7 @@ let x = {
             "meter_class": "SunSpec",
 
             "config_display_name": "Anzeigename",
-            "config_host": "Host",
+            "config_host": "Hostname oder IP-Adresse",
             "config_port": "Port",
             "config_port_muted": "typischerweise 502",
             "config_device_address": "Geräteadresse",

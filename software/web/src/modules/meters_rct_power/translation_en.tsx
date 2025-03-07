@@ -6,7 +6,7 @@ let x = {
             "meter_class": "RCT Power",
 
             "display_name": "Display name",
-            "host": "Host",
+            "host": "Hostname or IP address",
             "port": "Port",
             "port_muted": "typically 8899",
             "virtual_meter": "Virtual meter",

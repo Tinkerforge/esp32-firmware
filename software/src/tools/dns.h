@@ -23,9 +23,9 @@
 #include <lwip/dns.h>
 
 // Helper function to execute dns_gethostbyname in lwIP's TCPIP context.
-err_t dns_gethostbyname_lwip_ctx(const char *hostname, ip_addr_t *addr, dns_found_callback found, void *callback_arg);
+err_t dns_gethostbyname_lwip_ctx(const char *host, ip_addr_t *addr, dns_found_callback found, void *callback_arg);
 // Helper function to execute dns_gethostbyname_addrtype in lwIP's TCPIP context.
-err_t dns_gethostbyname_addrtype_lwip_ctx(const char *hostname, ip_addr_t *addr, dns_found_callback found, void *callback_arg, u8_t dns_addrtype);
+err_t dns_gethostbyname_addrtype_lwip_ctx(const char *host, ip_addr_t *addr, dns_found_callback found, void *callback_arg, u8_t dns_addrtype);
 
 struct dns_gethostbyname_addrtype_lwip_ctx_async_data
 {
@@ -36,7 +36,7 @@ struct dns_gethostbyname_addrtype_lwip_ctx_async_data
     void *user; // input/output
 };
 
-void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
+void dns_gethostbyname_addrtype_lwip_ctx_async(const char *host,
                                                std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback,
                                                dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg,
                                                u8_t dns_addrtype);

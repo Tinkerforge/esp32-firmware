@@ -89,9 +89,9 @@ void EMPhaseSwitcher::setup()
     }
 
     if (proxy_mode) {
-        charger_hostname = strdup(charge_manager.get_charger_host(0).c_str());
+        charger_host = strdup(charge_manager.get_charger_host(0).c_str());
 
-        cm_networking.register_manager(&charger_hostname, 1, nullptr, nullptr);
+        cm_networking.register_manager(&charger_host, 1, nullptr, nullptr);
         cm_networking.register_client(nullptr);
     } else {
 #if MODULE_POWER_MANAGER_AVAILABLE()

@@ -117,7 +117,7 @@ void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClien
 }
 
 void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConnectResult result, int error_number,
-                                                         const char *host_name, uint16_t port, char *buf, size_t buf_len)
+                                                         const char *host, uint16_t port, char *buf, size_t buf_len)
 {
     if (result == TFGenericTCPClientConnectResult::Connected) {
         if (buf_len > 0) {
@@ -128,54 +128,54 @@ void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConne
         if (error_number == EINVAL) {
             snprintf(buf, buf_len,
                      "Could not resolve hostname %s, no DNS server available",
-                     host_name);
+                     host);
         }
         else if (error_number >= 0) {
             snprintf(buf, buf_len,
                      "Could not resolve hostname %s: %s (%d)",
-                     host_name,
+                     host,
                      strerror(error_number), error_number);
         }
         else {
             snprintf(buf, buf_len,
                      "Could not resolve hostname %s",
-                     host_name);
+                     host);
         }
     }
     else if (error_number >= 0) {
         snprintf(buf, buf_len,
                  "Could not connect to %s:%u: %s / %s (%d)",
-                 host_name, port,
+                 host, port,
                  get_tf_generic_tcp_client_connect_result_name(result),
                  strerror(error_number), error_number);
     }
     else {
         snprintf(buf, buf_len,
                  "Could not connect to %s:%u: %s",
-                 host_name, port,
+                 host, port,
                  get_tf_generic_tcp_client_connect_result_name(result));
     }
 }
 
 void GenericTCPClientConnectorBase::format_disconnect_reason(TFGenericTCPClientDisconnectReason reason, int error_number,
-                                                             const char *host_name, uint16_t port, char *buf, size_t buf_len)
+                                                             const char *host, uint16_t port, char *buf, size_t buf_len)
 {
     if (reason == TFGenericTCPClientDisconnectReason::Requested) {
         snprintf(buf, buf_len,
                  "Disconnected from %s:%u",
-                 host_name, port);
+                 host, port);
     }
     else if (error_number >= 0) {
         snprintf(buf, buf_len,
                  "Disconnected from %s:%u: %s / %s (%d)",
-                 host_name, port,
+                 host, port,
                  get_tf_generic_tcp_client_disconnect_reason_name(reason),
                  strerror(error_number), error_number);
     }
     else {
         snprintf(buf, buf_len,
                  "Disconnected from %s:%u: %s",
-                 host_name, port,
+                 host, port,
                  get_tf_generic_tcp_client_disconnect_reason_name(reason));
     }
 }

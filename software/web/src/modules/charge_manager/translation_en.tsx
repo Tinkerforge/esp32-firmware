@@ -84,7 +84,7 @@ let x = {
 
             "add_charger_title": "Add charger",
             "add_charger_name": "Display name",
-            "add_charger_host": "IP address or hostname",
+            "add_charger_host": "Hostname or IP address",
             "add_charger_found": "Discovered chargers",
             "add_charger_count": /*SFN*/(x: number, max: number) => x + " of " + max + " chargers configured"/*NF*/,
             "add_charger_rotation": "Phase rotation",
@@ -105,7 +105,7 @@ let x = {
 
             "edit_charger_title": "Edit charger",
             "edit_charger_name": "Display name",
-            "edit_charger_host": "IP address or hostname",
+            "edit_charger_host": "Hostname or IP address",
             "edit_charger_rotation": "Phase rotation",
 
             "multi_broadcast_modal_title": "Reserved, multi- or broadcast IP address(es) found",

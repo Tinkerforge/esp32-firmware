@@ -73,7 +73,7 @@ private:
     micros_t last_state_packet = -1_h; // System boot is time 0. Timestamps must be initialized with old enough values for correct deadline calculation after start-up.
     micros_t next_state_change_after;
 
-    const char *charger_hostname;
+    const char *charger_host;
     SwitchingState switching_state = SwitchingState::Idle;
     bool charger_usable = false;
     bool allocated_current_after_last_disconnect = true;

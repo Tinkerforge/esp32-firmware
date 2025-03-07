@@ -25,7 +25,7 @@
 #include "gcc_warnings.h"
 
 struct gethostbyname_parameters {
-    const char *hostname;
+    const char *host;
     ip_addr_t *addr;
     dns_found_callback found_callback;
     void *callback_arg;
@@ -35,13 +35,13 @@ struct gethostbyname_parameters {
 static esp_err_t gethostbyname_lwip_ctx(void *ctx)
 {
     gethostbyname_parameters *parameters = static_cast<gethostbyname_parameters *>(ctx);
-    return dns_gethostbyname(parameters->hostname, parameters->addr, parameters->found_callback, parameters->callback_arg);
+    return dns_gethostbyname(parameters->host, parameters->addr, parameters->found_callback, parameters->callback_arg);
 }
 
-err_t dns_gethostbyname_lwip_ctx(const char *hostname, ip_addr_t *addr, dns_found_callback found_callback, void *callback_arg)
+err_t dns_gethostbyname_lwip_ctx(const char *host, ip_addr_t *addr, dns_found_callback found_callback, void *callback_arg)
 {
     gethostbyname_parameters parameters;
-    parameters.hostname = hostname;
+    parameters.host = host;
     parameters.addr = addr;
     parameters.found_callback = found_callback;
     parameters.callback_arg = callback_arg;
@@ -52,13 +52,13 @@ err_t dns_gethostbyname_lwip_ctx(const char *hostname, ip_addr_t *addr, dns_foun
 static esp_err_t gethostbyname_addrtype_lwip_ctx(void *ctx)
 {
     gethostbyname_parameters *parameters = static_cast<gethostbyname_parameters *>(ctx);
-    return dns_gethostbyname_addrtype(parameters->hostname, parameters->addr, parameters->found_callback, parameters->callback_arg, parameters->dns_addrtype);
+    return dns_gethostbyname_addrtype(parameters->host, parameters->addr, parameters->found_callback, parameters->callback_arg, parameters->dns_addrtype);
 }
 
-err_t dns_gethostbyname_addrtype_lwip_ctx(const char *hostname, ip_addr_t *addr, dns_found_callback found_callback, void *callback_arg, u8_t dns_addrtype)
+err_t dns_gethostbyname_addrtype_lwip_ctx(const char *host, ip_addr_t *addr, dns_found_callback found_callback, void *callback_arg, u8_t dns_addrtype)
 {
     gethostbyname_parameters parameters;
-    parameters.hostname = hostname;
+    parameters.host = host;
     parameters.addr = addr;
     parameters.found_callback = found_callback;
     parameters.callback_arg = callback_arg;
@@ -67,7 +67,7 @@ err_t dns_gethostbyname_addrtype_lwip_ctx(const char *hostname, ip_addr_t *addr,
     return static_cast<err_t>(esp_netif_tcpip_exec(gethostbyname_addrtype_lwip_ctx, &parameters));
 }
 
-static void gethostbyname_addrtype_lwip_ctx_async(const char */*hostname*/, const ip_addr_t *addr, void *callback_arg)
+static void gethostbyname_addrtype_lwip_ctx_async(const char */*host*/, const ip_addr_t *addr, void *callback_arg)
 {
     dns_gethostbyname_addrtype_lwip_ctx_async_data *data = static_cast<dns_gethostbyname_addrtype_lwip_ctx_async_data *>(callback_arg);
 
@@ -86,13 +86,13 @@ static void gethostbyname_addrtype_lwip_ctx_async(const char */*hostname*/, cons
     });
 }
 
-void dns_gethostbyname_addrtype_lwip_ctx_async(const char *hostname,
+void dns_gethostbyname_addrtype_lwip_ctx_async(const char *host,
                                                std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback,
                                                dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg,
                                                u8_t dns_addrtype)
 {
     callback_arg->found_callback = std::move(found_callback);
-    err_t err = dns_gethostbyname_addrtype_lwip_ctx(hostname, &callback_arg->addr, gethostbyname_addrtype_lwip_ctx_async, callback_arg, dns_addrtype);
+    err_t err = dns_gethostbyname_addrtype_lwip_ctx(host, &callback_arg->addr, gethostbyname_addrtype_lwip_ctx_async, callback_arg, dns_addrtype);
 
     // Don't set the callback_arg's err if the result is not available yet.
     // The callback handler might be executed before dns_gethostbyname_addrtype_lwip_ctx returns.

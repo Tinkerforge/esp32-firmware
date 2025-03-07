@@ -129,7 +129,7 @@ void ChargeManager::pre_setup()
         for (size_t i = 0; i < chargers->count(); i++)
             for (size_t a = i + 1; a < chargers->count(); a++)
                 if (chargers->get(i)->get("host")->asString() == chargers->get(a)->get("host")->asString())
-                    return "there must not be two chargers with the same hostname or ip-address";
+                    return "there must not be two chargers with the same hostname or IP address";
 
         return "";
     }};

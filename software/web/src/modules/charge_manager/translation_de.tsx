@@ -84,7 +84,7 @@ let x = {
 
             "add_charger_title": "Wallbox hinzufügen",
             "add_charger_name": "Anzeigename",
-            "add_charger_host": "IP-Adresse oder Hostname",
+            "add_charger_host": "Hostname oder IP-Adresse",
             "add_charger_found": "Gefundene Wallboxen",
             "add_charger_count": /*SFN*/(x: number, max: number) => x + " von " + max + " Wallboxen konfiguriert"/*NF*/,
             "add_charger_rotation": "Phasenrotation",
@@ -105,7 +105,7 @@ let x = {
 
             "edit_charger_title": "Wallbox bearbeiten",
             "edit_charger_name": "Anzeigename",
-            "edit_charger_host": "IP-Adresse oder Hostname",
+            "edit_charger_host": "Hostname oder IP-Adresse",
             "edit_charger_rotation": "Phasenrotation",
 
             "multi_broadcast_modal_title": "Reservierte, Multi- oder Broadcast IP-Adresse(n) gefunden",
