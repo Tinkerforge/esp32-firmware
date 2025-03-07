@@ -37,7 +37,7 @@ public:
     void register_backend(IDebugProtocolBackend *backend);
     void check_debug();
 
-    uint32_t last_debug_keep_alive = 0;
+    micros_t last_debug_keep_alive = 0_us;
     bool debug = false;
     std::vector<IDebugProtocolBackend *> backends;
 };

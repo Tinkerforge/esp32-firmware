@@ -95,13 +95,8 @@ void Ethernet::print_con_duration()
 {
     if (was_connected) {
         was_connected = false;
-        uint32_t now = millis();
-        uint32_t connected_for = now - last_connected;
-        if (connected_for < 0x7FFFFFFF) {
-            logger.printfln("Was connected for %lu seconds.", connected_for / 1000);
-        } else {
-            logger.printfln("Was connected for a long time.");
-        }
+        auto connected_for = now_us() - last_connected;
+        logger.printfln("Was connected for %lu seconds.", connected_for.to<seconds_t>().as<uint32_t>());
     }
 }
 
@@ -184,7 +179,7 @@ void Ethernet::setup()
             auto subnet = ETH.subnetMask();
             logger.printfln("Got IP address: %s/%u", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet));
 
-            uint32_t now = millis();
+            auto now = now_us();
             was_connected = true;
             last_connected = now;
 
@@ -194,7 +189,7 @@ void Ethernet::setup()
                 state.get("connection_state")->updateEnum(connection_state);
                 state.get("ip")->updateString(ip);
                 state.get("subnet")->updateString(subnet.toString());
-                state.get("connection_start")->updateUint(now);
+                state.get("connection_start")->updateUint(now.to<millis_t>().as<uint32_t>());
             });
         },
         ARDUINO_EVENT_ETH_GOT_IP);
@@ -208,7 +203,7 @@ void Ethernet::setup()
             logger.printfln("Lost IP address.");
             this->print_con_duration();
 
-            uint32_t now = millis();
+            auto now = now_us();
 
             connection_state = EthernetState::Connecting;
 
@@ -216,7 +211,7 @@ void Ethernet::setup()
                 state.get("connection_state")->updateEnum(connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
-                state.get("connection_end")->updateUint(now);
+                state.get("connection_end")->updateUint(now.to<millis_t>().as<uint32_t>());
             });
         },
         ARDUINO_EVENT_ETH_LOST_IP);
@@ -225,7 +220,7 @@ void Ethernet::setup()
             logger.printfln("Disconnected");
             this->print_con_duration();
 
-            uint32_t now = millis();
+            auto now = now_us();
 
             connection_state = EthernetState::NotConnected;
 
@@ -233,7 +228,7 @@ void Ethernet::setup()
                 state.get("connection_state")->updateEnum(connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
-                state.get("connection_end")->updateUint(now);
+                state.get("connection_end")->updateUint(now.to<millis_t>().as<uint32_t>());
             });
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
@@ -242,13 +237,13 @@ void Ethernet::setup()
             logger.printfln("Stopped");
             this->print_con_duration();
 
-            uint32_t now = millis();
+            auto now = now_us();
 
             connection_state = EthernetState::NotConnected;
 
             task_scheduler.scheduleOnce([this, now](){
                 state.get("connection_state")->updateEnum(connection_state);
-                state.get("connection_end")->updateUint(now);
+                state.get("connection_end")->updateUint(now.to<millis_t>().as<uint32_t>());
             });
         },
         ARDUINO_EVENT_ETH_STOP);

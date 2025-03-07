@@ -69,7 +69,7 @@ namespace ChargeMode {
 
 // Check alignment/padding when adding stuff.
 struct ChargerState {
-    uint32_t last_update;
+    micros_t last_update;
     uint32_t uid;
     uint32_t uptime;
     uint32_t power_total_count;

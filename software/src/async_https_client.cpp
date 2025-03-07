@@ -25,7 +25,7 @@
 #include "main_dependencies.h"
 #include "build.h"
 
-#define ASYNC_HTTPS_CLIENT_TIMEOUT 15000
+static constexpr micros_t ASYNC_HTTPS_CLIENT_TIMEOUT = 15_s;
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
@@ -75,7 +75,7 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
         break;
 
     case HTTP_EVENT_ON_DATA:
-        that->last_async_alive = millis();
+        that->last_async_alive = now_us();
         http_status = esp_http_client_get_status_code(that->http_client);
 
         if (http_status != 200) {
@@ -201,7 +201,7 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
         }
     }
 
-    last_async_alive = millis();
+    last_async_alive = now_us();
 
     task_id = task_scheduler.scheduleWithFixedDelay([this]() {
         bool no_response = false;

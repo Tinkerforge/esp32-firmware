@@ -56,7 +56,7 @@ void DebugProtocol::register_urls()
         sb.putc('"');
         ws.pushRawStateUpdateEnd(&sb);
 
-        last_debug_keep_alive = millis();
+        last_debug_keep_alive = now_us();
 
         if (debug)
             return request.send(200);
@@ -69,7 +69,7 @@ void DebugProtocol::register_urls()
 
     // TODO: Make this an API command?
     server.on("/debug_protocol/continue", HTTP_GET, [this](WebServerRequest request) {
-        last_debug_keep_alive = millis();
+        last_debug_keep_alive = now_us();
         return request.send(200);
     });
 
@@ -82,9 +82,9 @@ void DebugProtocol::register_urls()
 
 void DebugProtocol::loop()
 {
-    static uint32_t last_debug = 0;
-    if (debug && deadline_elapsed(last_debug + 50)) {
-        last_debug = millis();
+    static micros_t last_debug = 0_us;
+    if (debug && deadline_elapsed(last_debug + 50_ms)) {
+        last_debug = now_us();
 
         StringBuilder sb;
         size_t payload_len = 1 + 10 + 1; // "%u"
@@ -97,7 +97,7 @@ void DebugProtocol::loop()
             return;
         }
 
-        sb.printf("\"%lu", last_debug);
+        sb.printf("\"%lu", last_debug.to<millis_t>().as<uint32_t>());
 
         for (IDebugProtocolBackend *backend : backends) {
             sb.putc(',');
@@ -121,7 +121,7 @@ void DebugProtocol::register_backend(IDebugProtocolBackend *backend)
 void DebugProtocol::check_debug()
 {
     task_scheduler.scheduleOnce([this](){
-        if (deadline_elapsed(last_debug_keep_alive + 60000) && debug) {
+        if (deadline_elapsed(last_debug_keep_alive + 60_s) && debug) {
             logger.printfln("Debug protocol creation canceled because no continue call was received for more than 60 seconds.");
             debug = false;
         }

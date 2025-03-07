@@ -23,6 +23,7 @@
 #include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
 #include <esp_http_client.h>
 #include <vector>
+#include <TFTools/Micros.h>
 
 enum class AsyncHTTPSClientError
 {
@@ -101,7 +102,7 @@ private:
     bool in_progress = false;
     bool abort_requested = false;
     esp_http_client_handle_t http_client = nullptr;
-    uint32_t last_async_alive = 0;
+    micros_t last_async_alive = 0_us;
     size_t received_len = 0;
     bool use_cookies;
     uint64_t task_id = 0;

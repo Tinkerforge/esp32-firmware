@@ -32,7 +32,7 @@ public:
     void register_urls() override;
 
     bool was_connected = false;
-    uint32_t last_connected = 0;
+    micros_t last_connected = 0_us;
 
     EthernetState get_connection_state() const;
     bool is_enabled() const;

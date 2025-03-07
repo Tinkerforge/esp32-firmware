@@ -86,7 +86,7 @@ private:
 
     size_t charger_count = 0;
 
-    uint32_t last_available_current_update = 0;
+    micros_t last_available_current_update = 0_us;
 
     ChargerState *charger_state = nullptr;
 

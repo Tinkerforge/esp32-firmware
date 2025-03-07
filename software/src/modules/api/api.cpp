@@ -693,7 +693,7 @@ void API::register_urls()
 
     server.on("/debug_report", HTTP_GET, [this](WebServerRequest request) {
         String result = "{\"uptime\": ";
-        result += String(millis());
+        result += String(now_us().to<millis_t>().as<uint32_t>());
         result += ",\n \"free_heap_bytes\":";
         result += heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         result += ",\n \"largest_free_heap_block\":";

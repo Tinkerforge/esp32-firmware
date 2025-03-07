@@ -43,7 +43,7 @@
 
 #define LOCAL_LOG(fmt, ...) LOCAL_LOG_FULL("    ", fmt __VA_OPT__(,) __VA_ARGS__)
 
-#define TIMEOUT_MS 32000
+static constexpr micros_t TIMEOUT = 32_s;
 
 #define PRINT_COST(x) logger.printfln("%s %d %d %d %d", #x, x[0], x[1], x[2], x[3])
 
@@ -1455,7 +1455,7 @@ int allocate_current(
             }
 
             // Charger does not respond anymore
-            if (deadline_elapsed(charger.last_update + TIMEOUT_MS)) {
+            if (deadline_elapsed(charger.last_update + TIMEOUT)) {
                 // Only shut down this charger.
                 // If a charger does not receive manager packets anymore,
                 // it will shut down after 30 seconds.
@@ -1485,7 +1485,7 @@ int allocate_current(
             if ((charger_alloc.allocated_current < charger.allowed_current
                 || (charger_alloc.allocated_phases != 0 && charger_alloc.allocated_phases < charger.phases)
                 || (charger_alloc.allocated_phases == 0 && charger.is_charging))
-               && deadline_elapsed(charger_alloc.last_sent_config + millis_t{TIMEOUT_MS})) {
+               && deadline_elapsed(charger_alloc.last_sent_config + TIMEOUT)) {
                 unreachable_evse_found = true;
                 LOCAL_LOG("EVSE of %s (%s) did not react in time. Expected %d mA @ %dp but is %d mA @ %dp",
                           get_charger_name(i),
@@ -1763,7 +1763,7 @@ bool update_from_client_packet(
         logger.printfln("Received stale charger state from %s (%s). Reported EVSE uptime (%lu) is the same as in the last state. Is the EVSE still reachable?",
             get_charger_name(client_id), hosts[client_id],
             v1->evse_uptime);
-        if (deadline_elapsed(target.last_update + 10000)) {
+        if (deadline_elapsed(target.last_update + 10_s)) {
             target_alloc.state = 5;
             target_alloc.error = CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE;
         }
@@ -1831,7 +1831,7 @@ bool update_from_client_packet(
 
         // Wait for A -> non-A transitions, but ignore chargers that are already in a non-A state in their first packet.
         // Only set the timestamp if plug_in_time is != 0: This feature is deactivated if the time is set to 0.
-        if (target.last_update != 0 && target.charger_state == 0 && v1->charger_state != 0 && cfg->plug_in_time != 0_us)
+        if (target.last_update != 0_us && target.charger_state == 0 && v1->charger_state != 0 && cfg->plug_in_time != 0_us)
             target.just_plugged_in_timestamp = now_us();
     }
 
@@ -1847,7 +1847,7 @@ bool update_from_client_packet(
     }
 
     target.charger_state = v1->charger_state;
-    target.last_update = millis();
+    target.last_update = now_us();
 
     uint16_t requested_current = v1->supported_current;
 

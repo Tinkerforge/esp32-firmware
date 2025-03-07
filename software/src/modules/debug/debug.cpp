@@ -226,7 +226,7 @@ void Debug::setup()
         heap_caps_get_info(&dram_info,  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         heap_caps_get_info(&psram_info, MALLOC_CAP_SPIRAM);
 
-        state_fast.get("uptime")->updateUint(millis());
+        state_fast.get("uptime")->updateUint(now_us().to<millis_t>().as<uint32_t>());
         state_fast.get("free_dram")->updateUint(dram_info.total_free_bytes);
         state_fast.get("free_iram")->updateUint(free_internal - dram_info.total_free_bytes);
         state_fast.get("free_psram")->updateUint(psram_info.total_free_bytes);

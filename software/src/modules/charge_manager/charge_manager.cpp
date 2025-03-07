@@ -33,7 +33,7 @@
 #include "tools.h"
 #include "cm_phase_rotation.enum.h"
 
-#define WATCHDOG_TIMEOUT_MS 30000
+static constexpr micros_t WATCHDOG_TIMEOUT = 30_s;
 
 // If this is an energy manager, we have exactly one charger and the margin is still the default,
 // double it to react faster if more current is available.
@@ -585,21 +585,21 @@ void ChargeManager::setup()
 
 void ChargeManager::check_watchdog()
 {
-    if (this->watchdog_triggered || !deadline_elapsed(last_available_current_update + WATCHDOG_TIMEOUT_MS))
+    if (this->watchdog_triggered || !deadline_elapsed(last_available_current_update + WATCHDOG_TIMEOUT))
         return;
 
     this->watchdog_triggered = true;
 
     uint32_t default_available_current = config.get("default_available_current")->asUint();
 
-    logger.printfln("Watchdog triggered! Received no available current update for %d ms. Setting available current to %lu mA", WATCHDOG_TIMEOUT_MS, default_available_current);
+    logger.printfln("Watchdog triggered! Received no available current update for %d s. Setting available current to %lu mA", WATCHDOG_TIMEOUT.to<seconds_t>().as<int>(), default_available_current);
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.trigger(AutomationTriggerID::ChargeManagerWd, nullptr, this);
 #endif
     this->available_current.get("current")->updateUint(default_available_current);
 
-    last_available_current_update = millis();
+    last_available_current_update = now_us();
 }
 
 size_t ChargeManager::get_charger_count()
@@ -607,8 +607,6 @@ size_t ChargeManager::get_charger_count()
     return charger_count;
 }
 
-// Check is not 100% reliable after an uptime of 49 days because last_update might legitimately 0.
-// Work around that by caching the value once all chargers were seen once.
 bool ChargeManager::seen_all_chargers()
 {
     if (all_chargers_seen)
@@ -619,7 +617,7 @@ bool ChargeManager::seen_all_chargers()
         return false;
 
     for (size_t i = 0; i < charger_count; ++i)
-        if (this->charger_state[i].last_update == 0)
+        if (this->charger_state[i].last_update == 0_us)
             return false;
 
     logger.printfln("Seen all chargers.");
@@ -672,7 +670,7 @@ void ChargeManager::register_urls()
     api.addCommand("charge_manager/available_current_update", &available_current_update, {}, [this](String &/*errmsg*/) {
         uint32_t current = this->available_current_update.get("current")->asUint();
         this->available_current.get("current")->updateUint(current);
-        this->last_available_current_update = millis();
+        this->last_available_current_update = now_us();
         this->watchdog_triggered = false;
 
         for(size_t i = 1; i < 4; ++i) {
@@ -717,7 +715,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     charger_cfg->get("ap")->updateUint(charger_alloc.allocated_phases);
     charger_cfg->get("sc")->updateUint(charger.supported_current);
     charger_cfg->get("sp")->updateUint((charger.phase_switch_supported ? 4 : 0) | (charger.phases));
-    charger_cfg->get("lu")->updateUint(charger.last_update);
+    charger_cfg->get("lu")->updateUint(charger.last_update.to<millis_t>().as<uint32_t>());
     charger_cfg->get("u")->updateUint(charger.uid);
 
     uint8_t bits = (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;

@@ -434,7 +434,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
 
     task_scheduler.scheduleWithFixedDelay([this, client_callback](){
         static uint16_t last_seen_seq_num = 255;
-        static uint32_t last_successful_recv = millis();
+        static micros_t last_successful_recv = now_us();
 
         struct cm_command_packet command_pkt;
 
@@ -448,7 +448,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
 
             // If we have not received a valid packet for one minute, invalidate manager_addr.
             // Otherwise we would send state packets to this address forever.
-            if (deadline_elapsed(last_successful_recv + 60 * 1000))
+            if (deadline_elapsed(last_successful_recv + 60_s))
                 manager_addr_valid = false;
 
             return;
@@ -515,7 +515,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
             }
         }
 
-        last_successful_recv = millis();
+        last_successful_recv = now_us();
 
         if (client_callback) {
             client_callback(command_pkt.v1.allocated_current,
