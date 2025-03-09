@@ -94,6 +94,9 @@ private:
 
     uint32_t quirks = 0;
     IMetersSunSpecParser *model_parser;
+
+    bool check_phase_voltages = false;
+    uint32_t phase_voltage_index_cache[3];
 };
 
 #if defined(__GNUC__)
