@@ -223,6 +223,22 @@ void MeterSunSpec::read_done_callback()
             return;
         }
 
+        MeterValueID phase_voltage_ids[3] = {
+            MeterValueID::VoltageL1N,
+            MeterValueID::VoltageL2N,
+            MeterValueID::VoltageL3N,
+        };
+
+        meters.fill_index_cache(slot, ARRAY_SIZE(phase_voltage_ids), phase_voltage_ids, phase_voltage_index_cache);
+
+        for (size_t i = 0; i < ARRAY_SIZE(phase_voltage_index_cache); ++i) {
+            if (phase_voltage_index_cache[i] != UINT32_MAX) {
+                logger.printfln_meter("Checking phase voltages for float-is-le32 quirk");
+                check_phase_voltages = true;
+                break;
+            }
+        }
+
         values_declared = true;
 
         bool more_registers_to_read = registers_to_read > generic_read_request.register_count;
@@ -242,6 +258,44 @@ void MeterSunSpec::read_done_callback()
         auto inconsistency = errors->get("inconsistency");
         inconsistency->updateUint(inconsistency->asUint() + 1);
         // TODO: Read again if parsing failed?
+        return;
+    }
+
+    if (check_phase_voltages) {
+        bool parse_again = false;
+
+        for (size_t i = 0; i < ARRAY_SIZE(phase_voltage_index_cache); ++i) {
+            if (phase_voltage_index_cache[i] == UINT32_MAX) {
+                continue;
+            }
+
+            float value = 0;
+
+            meters.get_value_by_index(slot, phase_voltage_index_cache[i], &value);
+
+            if (value < -5 || value > 280) {
+                logger.printfln_meter("Enabling float-is-le32 quirk due to abnormal L%zu-N voltage value: %.1f V", i + 1, static_cast<double>(value));
+                quirks |= SUN_SPEC_QUIRKS_FLOAT_IS_LE32;
+                parse_again = true;
+            }
+            else if (value > 200) {
+                logger.printfln_meter("Check for float-is-le32 quirk completed due to normal L%zu-N voltage value: %.1f V", i + 1, static_cast<double>(value));
+            }
+            else {
+                continue; // phase voltage in no-mans-land, cannot decide
+            }
+
+            check_phase_voltages = false;
+            break;
+        }
+
+        if (parse_again) {
+            if (!model_parser->parse_values(generic_read_request.data, quirks)) {
+                auto inconsistency = errors->get("inconsistency");
+                inconsistency->updateUint(inconsistency->asUint() + 1);
+                // TODO: Read again if parsing failed?
+            }
+        }
     }
 }
 
