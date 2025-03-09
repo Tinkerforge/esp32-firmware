@@ -44,6 +44,9 @@ def main():
         if config == None:
             continue
 
+        if len(value_ids) == 0:
+            continue
+
         display_name = ''
 
         if config[1] != None:
