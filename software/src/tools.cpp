@@ -76,11 +76,6 @@ bool a_after_b(uint32_t a, uint32_t b)
     return ((uint32_t)(a - b)) < (UINT32_MAX / 2);
 }
 
-bool deadline_elapsed(uint32_t deadline_ms)
-{
-    return a_after_b(millis(), deadline_ms);
-}
-
 // implement TFTools/Micros.h now_us
 micros_t now_us()
 {
@@ -220,20 +215,20 @@ void set_main_task_handle()
     mainTaskHandle = xTaskGetCurrentTaskHandle();
 }
 
-void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms)
+void led_blink(int8_t led_pin, int interval_ms, int blinks_per_interval, int off_time_ms)
 {
     if (led_pin < 0)
         return;
 
-    int t_in_second = millis() % interval;
-    if (off_time_ms != 0 && (interval - t_in_second <= off_time_ms)) {
+    int t_in_second = now_us().to<millis_t>().as<int64_t>() % interval_ms;
+    if (off_time_ms != 0 && (interval_ms - t_in_second <= off_time_ms)) {
         digitalWrite(led_pin, 1);
         return;
     }
 
     // We want blinks_per_interval blinks and blinks_per_interval pauses between them. The off_time counts as pause.
     int state_count = ((2 * blinks_per_interval) - (off_time_ms != 0 ? 1 : 0));
-    int state_interval = (interval - off_time_ms) / state_count;
+    int state_interval = (interval_ms - off_time_ms) / state_count;
     bool led = (t_in_second / state_interval) % 2 != 0;
 
     digitalWrite(led_pin, led);
