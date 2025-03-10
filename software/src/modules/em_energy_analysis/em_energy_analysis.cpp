@@ -160,7 +160,7 @@ void EMEnergyAnalysis::update_history_meter_power(uint32_t slot, float power /* 
         auto duration = now - history_meter_power_timestamp[slot];
 
         double power_last_interval_w = (double)history_meter_power_value[slot];
-        double duration_s = duration.to<seconds_t>().as<double>();
+        double duration_s = duration.as<double>() / 1000000.0; // Don't use to<seconds_t>() before cast, divide afterwards to get fractional seconds.
         double energy_ws = power_last_interval_w * duration_s;
 
         history_meter_power_sum[slot] += energy_ws;
