@@ -1,0 +1,25 @@
+{
+    "modbus_tcp_debug": {
+        "status": {
+        },
+        "navbar": {
+            "modbus_tcp_debug": "Modbus/TCP Debug"
+        },
+        "content": {
+            "modbus_tcp_debug": "Modbus/TCP Debug",
+
+            "host": "Hostname or IP address",
+            "port": "Port",
+            "port_muted": "typically 502",
+            "device_address": "Device address",
+            "function_code": "Function code",
+            "function_code_read_holding_registers": "Read holding registers",
+            "function_code_read_input_registers": "Read input registers",
+            "start_address": "Start address",
+            "start_address_muted": "begins at 0",
+            "data_count": "Count"
+        },
+        "script": {
+        }
+    }
+}
