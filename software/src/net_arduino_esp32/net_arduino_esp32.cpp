@@ -131,11 +131,11 @@ static int server_accept(int server_fd) {
 }
 
 static uint32_t tf_net_current_time_us(TF_Net *net) {
-    return micros();
+    return esp_timer_get_time();
 }
 
 static uint32_t tf_net_current_time_ms(TF_Net *net) {
-    return millis();
+    return esp_timer_get_time() / 1000;
 }
 
 static void remove_client(TF_Net *net, uint32_t client_idx) {
