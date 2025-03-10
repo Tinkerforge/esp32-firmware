@@ -125,7 +125,7 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
                         onValue={(v) => this.setState({data_count: v})} />
                 </FormRow>
                 <FormRow label="">
-                    <Button class="form-control" variant="primary" onClick={async () => {
+                    <Button variant="primary" className="form-control" onClick={async () => {
                         let response;
 
                         try {
