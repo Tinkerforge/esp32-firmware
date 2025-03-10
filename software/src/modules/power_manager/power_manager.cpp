@@ -470,8 +470,9 @@ void PowerManager::setup()
     // that across a reboot. This will still fail on a power cycle or bricklet update,
     // which set the contactor back to single phase.
     if (phase_switching_mode == PHASE_SWITCHING_EXTERNAL_CONTROL) {
-        logger.printfln("Setting external_control to %u", phase_switcher_backend->get_phases());
-        external_control.get("phases_wanted")->updateUint(phase_switcher_backend->get_phases());
+        const uint32_t phases = phase_switcher_backend->get_phases();
+        logger.printfln("Restoring external_control to %u", phases);
+        external_control.get("phases_wanted")->updateUint(phases);
     }
 
     // supply_cable_max_current_ma must be set before reset
@@ -503,9 +504,16 @@ void PowerManager::register_urls()
             || !config.get("enabled")->asBool())
         && phase_switcher_backend->is_external_control_allowed() && phase_switcher_backend->phase_switching_capable()) {
 
-        logger.printfln("External phase switching API enabled");
+        // If external phase switching is enabled, assume that the last requested amount of phases
+        // is whatever the contactor is switched to at the moment, in order to preserve
+        // that across a reboot. This will still fail on a power cycle or bricklet update,
+        // which set the contactor back to single phase.
+        const uint32_t phases = phase_switcher_backend->get_phases();
+        external_control.get("phases_wanted")->updateUint(phases);
 
-        if (MODULE_EM_V1_AVAILABLE()) {
+        logger.printfln("External phase switching API enabled, starting with %lup", phases);
+
+        if (MODULE_EM_V1_AVAILABLE() && !dynamic_load_enabled) {
             // Try to enable faster allocator runs because the EM Phase Switcher needs it.
             charge_manager.enable_fast_single_charger_mode();
         }
