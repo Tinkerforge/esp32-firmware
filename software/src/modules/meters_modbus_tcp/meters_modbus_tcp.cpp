@@ -170,6 +170,10 @@ void MetersModbusTCP::pre_setup()
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
+    table_prototypes.push_back({MeterModbusTCPTableID::EastronSDM630TCP, Config::Object({
+        {"device_address", Config::Uint(1, 1, 247)},
+    })});
+
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"location",       Config::Enum(MeterLocation::Unknown)},

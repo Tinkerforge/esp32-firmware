@@ -47,6 +47,7 @@ let x = {
             "table_carlo_gavazzi_em530": "Carlo Gavazzi EM530",
             "table_carlo_gavazzi_em540": "Carlo Gavazzi EM540",
             "table_solaredge_inverter": "Solaredge Wechselrichter",
+            "table_eastron_sdm630_tcp": "Eastron SDM630 TCP",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_inverter": "Wechselrichter",
             "virtual_meter_grid": "Netzanschluss",

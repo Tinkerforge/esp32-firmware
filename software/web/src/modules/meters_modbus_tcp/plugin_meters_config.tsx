@@ -327,6 +327,13 @@ type TableConfigSolaredgeInverter = [
     },
 ];
 
+type TableConfigEastronSDM630TCP = [
+    MeterModbusTCPTableID.EastronSDM630TCP,
+    {
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -360,7 +367,8 @@ type TableConfig = TableConfigNone |
                    TableConfigCarloGavazziEM510 |
                    TableConfigCarloGavazziEM530 |
                    TableConfigCarloGavazziEM540 |
-                   TableConfigSolaredgeInverter;
+                   TableConfigSolaredgeInverter |
+                   TableConfigEastronSDM630TCP;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -473,6 +481,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.SolaredgeInverter:
             return [MeterModbusTCPTableID.SolaredgeInverter, {virtual_meter: null, device_address: 1}];
+
+        case MeterModbusTCPTableID.EastronSDM630TCP:
+            return [MeterModbusTCPTableID.EastronSDM630TCP, {device_address: 1}];
 
         default:
             return [MeterModbusTCPTableID.None, null];
@@ -693,6 +704,7 @@ export function init() {
                                 [MeterModbusTCPTableID.CarloGavazziEM530.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em530")],
                                 [MeterModbusTCPTableID.CarloGavazziEM540.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em540")],
                                 [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
+                                [MeterModbusTCPTableID.EastronSDM630TCP.toString(), __("meters_modbus_tcp.content.table_eastron_sdm630_tcp")],
                                 [MeterModbusTCPTableID.FoxESSH3HybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus_hybrid_inverter")],
                                 [MeterModbusTCPTableID.GoodweHybridInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_hybrid_inverter")],
@@ -753,7 +765,8 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM510
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM530
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM540
-                  || config[1].table[0] == MeterModbusTCPTableID.SolaredgeInverter)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.SolaredgeInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.EastronSDM630TCP)) {
                     let virtual_meter_items: [string, string][] = [];
                     let get_default_location = (virtual_meter: number) => MeterLocation.Unknown;
                     let device_address_default: number = 1;
