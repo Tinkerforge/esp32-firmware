@@ -71,4 +71,7 @@
 #pragma GCC diagnostic error "-Wformat-overflow=2"
 #pragma GCC diagnostic error "-Wold-style-cast"
 #pragma GCC diagnostic error "-Wshadow"
+
+#pragma GCC poison millis
+#pragma GCC poison micros
 #endif
