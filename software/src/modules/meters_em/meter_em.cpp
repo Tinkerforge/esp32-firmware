@@ -36,7 +36,7 @@ MeterClassID MeterEM::get_class() const
 void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
 {
     // Reject stale data older than five seconds.
-    if (deadline_elapsed(all_data.last_update + 5 * 1000))
+    if (deadline_elapsed(all_data.last_update + 5_s))
         return;
 
     // Always update error counters, even if no meter could be detected.

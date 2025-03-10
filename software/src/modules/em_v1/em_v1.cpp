@@ -464,7 +464,7 @@ void EMV1::update_all_data_struct()
     em_common.check_bricklet_reachable(rc, "update_all_data_struct");
 
     if (rc == TF_E_OK) {
-        all_data.common.last_update = millis();
+        all_data.common.last_update = now_us();
         all_data.common.is_valid = true;
     }
 }

@@ -21,9 +21,10 @@
 #pragma once
 
 #include <stdint.h>
+#include <TFTools/Micros.h>
 
 typedef struct {
-    uint32_t last_update;
+    micros_t last_update;
     bool is_valid;
 
     float power;
