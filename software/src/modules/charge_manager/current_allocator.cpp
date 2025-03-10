@@ -1531,7 +1531,6 @@ int allocate_current(
         }
     }
 
-    //auto start = micros();
     StageContext sc{
         idx_array,
         current_array,
@@ -1566,7 +1565,6 @@ int allocate_current(
 
     stage_9(sc);
     trace_alloc(9, sc);
-    //auto end = micros();
     //logger.printfln("Took %u µs", end - start);
 
     auto now = now_us();

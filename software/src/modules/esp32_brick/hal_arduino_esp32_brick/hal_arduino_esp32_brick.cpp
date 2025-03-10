@@ -109,7 +109,7 @@ int tf_hal_transceive(TF_HAL *hal, uint8_t port_id, const uint8_t *write_buffer,
 }
 
 uint32_t tf_hal_current_time_us(TF_HAL *hal) {
-    return micros();
+    return esp_timer_get_time();
 }
 
 void tf_hal_sleep_us(TF_HAL *hal, uint32_t us) {
