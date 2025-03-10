@@ -1048,6 +1048,12 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::EastronSDM630TCP:
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
+        table = &eastron_sdm630_tcp_table;
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
