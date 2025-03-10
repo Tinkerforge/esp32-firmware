@@ -26,13 +26,6 @@
 
 RTC_NOINIT_ATTR uptime_data_t data;
 
-static bool verify_data(uint8_t *data, uint16_t checksum)
-{
-    if (internet_checksum(data, sizeof(uint32_t)) == checksum)
-        return true;
-    return false;
-}
-
 void UptimeTracker::pre_setup()
 {
     uptimes_prototype = Config::Object({
@@ -54,52 +47,46 @@ void UptimeTracker::setup()
 {
     old_uptime = data;
 
-    data.overflow_count = 0;
-    data.uptime = millis();
-
-    verified = verify_data((uint8_t *)&old_uptime.uptime, old_uptime.checksum);
+    verified = internet_checksum((const uint8_t *)&data, sizeof(data)) == 0;
 
     if (!verified)
         data.boot_count = 0;
     data.boot_count++;
 
+    data.uptime = now_us().to<millis_t>().as<uint64_t>();
+
     api.restorePersistentConfig("info/last_boots", &uptimes);
 
     initialized = true;
 
+    task_scheduler.scheduleWithFixedDelay([this]() {
+            data.uptime = now_us().to<millis_t>().as<uint64_t>();
+            data.checksum = internet_checksum((const uint8_t *)&data, sizeof(data) - sizeof(data.checksum));
+    }, 10_s);
+
+    if (!verified)
+        return;
+
     task_scheduler.scheduleOnce([this]() {
         struct timeval timestamp;
 
-        if (verified)
-        {
-            if (uptimes.count() >= MAX_UPTIMES)
-                uptimes.remove(0);
-            auto last_uptime = uptimes.add();
+        if (uptimes.count() >= MAX_UPTIMES)
+            uptimes.remove(0);
+        auto last_uptime = uptimes.add();
 
-            //timestamp_min initialized with 0. 0 means not synced
-            if (rtc.clock_synced(&timestamp))
-                last_uptime->get("timestamp_min")->updateUint((timestamp.tv_sec - millis() / 1000) / 60);
+        //timestamp_min initialized with 0. 0 means not synced
+        if (rtc.clock_synced(&timestamp))
+            last_uptime->get("timestamp_min")->updateUint((seconds_t{timestamp.tv_sec} - now_us()).to<minutes_t>().as<uint32_t>());
 
-            last_uptime->get("reset_reason")->updateUint(esp_reset_reason());
-            last_uptime->get("uptime")->updateUint(old_uptime.uptime);
-            last_uptime->get("uptime_overflows")->updateUint(old_uptime.overflow_count);
-            last_uptime->get("boot_count")->updateUint(data.boot_count);
+        last_uptime->get("reset_reason")->updateUint(esp_reset_reason());
+        last_uptime->get("uptime")->updateUint(old_uptime.uptime);
+        last_uptime->get("uptime_overflows")->updateUint(old_uptime.uptime >> 32);
+        last_uptime->get("boot_count")->updateUint(data.boot_count);
 
-            api.writeConfig("info/last_boots", &uptimes);
+        api.writeConfig("info/last_boots", &uptimes);
 
-            logger.printfln("Wrote last uptime to flash");
-        }
-
+        logger.printfln("Wrote last uptime to flash");
     }, 5_min);
-
-    task_scheduler.scheduleWithFixedDelay([this]() {
-            uint32_t tmp = data.uptime;
-
-            data.uptime = millis();
-            data.checksum = internet_checksum((uint8_t *)&data.uptime, sizeof(uint32_t));
-            if (tmp > data.uptime)
-                data.overflow_count++;
-        }, 10_s);
 }
 
 void UptimeTracker::register_urls()

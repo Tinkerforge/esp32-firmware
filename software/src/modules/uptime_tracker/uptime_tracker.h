@@ -23,13 +23,13 @@
 #include "config.h"
 
 typedef struct uptime_data_s {
-    uint16_t overflow_count;
-    uint16_t checksum;
+    uint64_t uptime;
     uint32_t boot_count;
-    uint32_t uptime;
+    uint16_t padding; // always 0
+    uint16_t checksum;
 } uptime_data_t;
 
-static_assert(sizeof(uptime_data_s) == 12, "Unexpected size of uptime_data_s");
+static_assert(sizeof(uptime_data_s) == 16, "Unexpected size of uptime_data_s");
 
 class UptimeTracker final : public IModule
 {
