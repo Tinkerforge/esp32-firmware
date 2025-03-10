@@ -28,7 +28,7 @@
 #include "module_dependencies.h"
 #include "modules/charge_manager/charge_manager_private.h"
 
-#define MAX_DATA_AGE 30000 // milliseconds
+static constexpr micros_t MAX_DATA_AGE = 30_s;
 #define DATA_INTERVAL_5MIN 5 // minutes
 #define MAX_PENDING_DATA_POINTS 250
 
@@ -154,19 +154,13 @@ void EMEnergyAnalysis::register_events()
 
 void EMEnergyAnalysis::update_history_meter_power(uint32_t slot, float power /* W, must not be NaN */)
 {
-    uint32_t now = millis();
+    micros_t now = now_us();
 
     if (!isnan(history_meter_power_value[slot])) {
-        uint32_t duration_ms;
-
-        if (now >= history_meter_power_timestamp[slot]) {
-            duration_ms = now - history_meter_power_timestamp[slot];
-        } else {
-            duration_ms = UINT32_MAX - history_meter_power_timestamp[slot] + now + 1;
-        }
+        auto duration = now - history_meter_power_timestamp[slot];
 
         double power_last_interval_w = (double)history_meter_power_value[slot];
-        double duration_s = (double)duration_ms / 1000.0;
+        double duration_s = duration.to<seconds_t>().as<double>();
         double energy_ws = power_last_interval_w * duration_s;
 
         history_meter_power_sum[slot] += energy_ws;
@@ -221,7 +215,7 @@ void EMEnergyAnalysis::collect_data_points()
         // 5min data
         for (size_t i = 0; i < charge_manager.get_charger_count(); ++i) {
             auto *charger = charge_manager.get_mutable_charger_state(i);
-            uint32_t last_update = charger->last_update.to<millis_t>().as<uint32_t>();
+            micros_t last_update = charger->last_update;
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
                 uint32_t uid = charger->uid;
@@ -257,8 +251,8 @@ void EMEnergyAnalysis::collect_data_points()
             }
 #ifdef DEBUG_LOGGING
             else {
-                logger.printfln("collect_data_points: skipping 5min u%u, data too old %u",
-                                charger->uid, last_update);
+                logger.printfln("collect_data_points: skipping 5min u%u, data too old %lu",
+                                charger->uid, last_update.to<millis_t>().as<uint32_t>());
             }
 #endif
         }
@@ -332,7 +326,7 @@ void EMEnergyAnalysis::collect_data_points()
         // daily data
         for (size_t i = 0; i < charge_manager.get_charger_count(); ++i) {
             const auto *charger = charge_manager.get_charger_state(i);
-            uint32_t last_update = charger->last_update.to<millis_t>().as<uint32_t>();
+            micros_t last_update = charger->last_update;
 
             if (!deadline_elapsed(last_update + MAX_DATA_AGE)) {
                 bool have_data = false;
@@ -365,8 +359,8 @@ void EMEnergyAnalysis::collect_data_points()
             }
 #ifdef DEBUG_LOGGING
             else {
-                logger.printfln("collect_data_points: skipping daily u%u, data too old %u",
-                                charger->uid, last_update);
+                logger.printfln("collect_data_points: skipping daily u%u, data too old %lu",
+                                charger->uid, last_update.to<millis_t>().as<uint32_t>());
             }
 #endif
         }

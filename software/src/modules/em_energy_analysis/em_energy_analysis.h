@@ -67,7 +67,7 @@ private:
     ConfigRoot history_energy_manager_daily;
     bool history_meter_setup_done[METERS_SLOTS];
     float history_meter_power_value[METERS_SLOTS]; // W
-    uint32_t history_meter_power_timestamp[METERS_SLOTS];
+    micros_t history_meter_power_timestamp[METERS_SLOTS];
     double history_meter_power_sum[METERS_SLOTS] = {0}; // watt seconds
     double history_meter_power_duration[METERS_SLOTS] = {0}; // seconds
     double history_meter_energy_import[METERS_SLOTS] = {0}; // daWh
