@@ -34,18 +34,13 @@
 #define MD5_LEN 32
 
 static bool getMD5(uint8_t * data, uint16_t len, char * output){//33 bytes or more
-    mbedtls_md5_context _ctx;
     uint8_t i;
     uint8_t _buf[16];
     memset(_buf, 0x00, 16);
 
-    mbedtls_md5_init(&_ctx);
-    if (!mbedtls_md5_starts(&_ctx))
+    if (mbedtls_md5(data, len, _buf))
         return false;
-    if (!mbedtls_md5_update(&_ctx, data, len))
-        return false;
-    if (!mbedtls_md5_finish(&_ctx, _buf))
-        return false;
+
     for(i = 0; i < 16; i++) {
         sprintf(output + (i * 2), "%02x", _buf[i]);
     }
