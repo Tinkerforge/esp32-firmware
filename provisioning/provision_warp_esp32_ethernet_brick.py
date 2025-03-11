@@ -217,9 +217,9 @@ def test_wifi(ssid, passphrase, ethernet_ip, result):
         req = urllib.request.Request("http://10.0.0.1/ethernet/config_update",
                                      data=json.dumps({"enable_ethernet":True,
                                                       "ip": ethernet_ip,
-                                                      "gateway":"192.168.1.1",
-                                                      "subnet":"255.255.0.0",
-                                                      "dns":"192.168.1.1",
+                                                      "gateway":"10.4.1.1",
+                                                      "subnet":"255.255.255.0",
+                                                      "dns":"10.4.1.1",
                                                       "dns2":"0.0.0.0"}).encode("utf-8"),
                                      method='PUT',
                                      headers={"Content-Type": "application/json"})
@@ -456,7 +456,7 @@ def main():
 
     for k, v in list(relay_to_serial.items()):
         try:
-            test_wifi(relay_to_ssid[k], relay_to_passphrase[k], f"192.168.1.{9 + k}", test_reports[k])
+            test_wifi(relay_to_ssid[k], relay_to_passphrase[k], f"10.4.1.{4 + k}", test_reports[k])
         except BaseException as e:
             print(red(f"Failed to test WiFi for {k} {v}: {e}"))
             relay_to_serial.pop(k)
@@ -465,8 +465,8 @@ def main():
         return lambda: run_stage_1_tests(serial_port, ethernet_ip, lambda: iqr.set_selected_value(relay_pin, False), lambda: iqr.set_selected_value(relay_pin, True), test_report)
 
     for k, v in relay_to_serial.items():
-        print(green(f"{k}: 192.168.1.{9 + k}"))
-        t = ThreadWithReturnValue(target=run_stage_1_tests_fn(v, f"192.168.1.{9 + k}", k, test_reports[k]))
+        print(green(f"{k}: 10.4.1.{4 + k}"))
+        t = ThreadWithReturnValue(target=run_stage_1_tests_fn(v, f"10.4.1.{4 + k}", k, test_reports[k]))
         t.start()
         threads.append((k, v, t))
 
