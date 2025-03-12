@@ -71,8 +71,10 @@ private:
         ReadSunSpecIDDone,
         ReadCommonModelBlock,
         ReadCommonModelBlockDone,
-        ReadModelHeader,
-        ReadModelHeaderDone,
+        ReadModelID,
+        ReadModelIDDone,
+        ReadModelBlockLength,
+        ReadModelBlockLengthDone,
         ReportModelResult,
     };
 
