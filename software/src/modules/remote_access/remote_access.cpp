@@ -1020,6 +1020,8 @@ void RemoteAccess::register_urls()
                     in_seq_number = 0;
                     this->management_request_done = false;
                     logger.printfln("Management connection disconnected");
+                    // Close all remote access connections when management connection is lost
+                    this->close_all_remote_connections();
                 }
             }
         },
@@ -1886,5 +1888,21 @@ void RemoteAccess::run_management()
             connection_state.get(conn_idx + 1)->get("user")->updateUint(255);
             connection_state.get(conn_idx + 1)->get("connection")->updateUint(255);
             break;
+    }
+}
+
+void RemoteAccess::close_all_remote_connections() {
+    for (uint8_t i = 0; i < 5; i++) {
+        if (remote_connections[i].conn != nullptr) {
+            logger.printfln("Closing connection %lu for user %lu",
+                            connection_state.get(i + 1)->get("connection")->asUint(),
+                            connection_state.get(i + 1)->get("user")->asUint());
+            remote_connections[i].conn->end();
+            delete remote_connections[i].conn;
+            remote_connections[i].conn = nullptr;
+            remote_connections[i].id = 255;
+            connection_state.get(i + 1)->get("user")->updateUint(255);
+            connection_state.get(i + 1)->get("connection")->updateUint(255);
+        }
     }
 }
