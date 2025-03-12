@@ -128,7 +128,7 @@ void WS::register_urls()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         char *payload;
-        int len = asprintf(&payload, "{\"topic\":\"info/keep_alive\",\"payload\":{\"uptime\":%lu}}\n", now_us().to<millis_t>().as<uint32_t>());
+        int len = asprintf(&payload, "{\"topic\":\"info/keep_alive\",\"payload\":{\"uptime\":%llu}}\n", now_us().to<millis_t>().as<uint64_t>());
         if (len > 0)
             web_sockets.sendToAllOwned(payload, len);
     }, 1_s, 1_s);
