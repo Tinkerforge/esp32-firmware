@@ -628,6 +628,24 @@ MeterValueAvailability Meters::get_values(uint32_t slot, const Config **values, 
     }
 }
 
+MeterValueAvailability Meters::get_value_ids(uint32_t slot, const Config **value_ids)
+{
+    if (slot >= METERS_SLOTS) {
+        *value_ids = nullptr;
+        return MeterValueAvailability::Unavailable;
+    }
+
+    const MeterSlot &meter_slot = meter_slots[slot];
+
+    *value_ids = &meter_slot.value_ids;
+
+    if ((*value_ids)->count() == 0) {
+        return MeterValueAvailability::CurrentlyUnknown;
+    } else {
+        return MeterValueAvailability::Fresh;
+    }
+}
+
 MeterValueAvailability Meters::get_value_by_index(uint32_t slot, uint32_t index, float *value_out, micros_t max_age)
 {
     if (slot >= METERS_SLOTS || index == UINT32_MAX) {
