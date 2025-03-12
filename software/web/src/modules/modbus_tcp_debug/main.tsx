@@ -147,7 +147,7 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
                         this.setState({response: response});
                     }} >Transact</Button>
                 </FormRow>
-                <FormRow label="">
+                <FormRow label={__("modbus_tcp_debug.content.response")}>
                     <OutputTextarea rows={10} resize='vertical' value={this.state.response} />
                 </FormRow>
             </SubPage>
