@@ -69,6 +69,8 @@ void WS::register_urls()
             return;
         }
 
+        sb.printf("{\"topic\":\"info/keep_alive\",\"payload\":{\"uptime\":%llu}}\n", now_us().to<millis_t>().as<uint64_t>());
+
         int i = 0;
         bool done = false;
 
