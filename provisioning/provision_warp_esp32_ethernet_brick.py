@@ -394,11 +394,11 @@ def main():
     ipcon.connect("localhost", 4223)
 
     devs = enumerate_devices(ipcon)
-    iqr_uids = [x for x in devs if x.device_identifier == BrickletIndustrialQuadRelayV2.DEVICE_IDENTIFIER and x.uid not in IQR_UID_BLACKLIST]
-    if len(iqr_uids != 1):
+    iqr_uids = [x.uid for x in devs if x.device_identifier == BrickletIndustrialQuadRelayV2.DEVICE_IDENTIFIER and x.uid not in IQR_UID_BLACKLIST]
+    if len(iqr_uids) != 1:
         fatal_error("Industrial quad relay not found. Found the following devices:", enumerate_devices(ipcon))
 
-    iqr = BrickletIndustrialQuadRelayV2(iqr_uid, ipcon)
+    iqr = BrickletIndustrialQuadRelayV2(iqr_uids[0], ipcon)
     iqr.set_response_expected_all(True)
 
     iqr.set_value([True, True, True, True])
