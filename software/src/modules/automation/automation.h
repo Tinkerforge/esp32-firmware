@@ -28,6 +28,8 @@
 #include "automation_action_id.enum.h"
 #include "automation_backend.h"
 
+constexpr size_t MAX_AUTOMATION_RULES = 14;
+
 class Automation : public IModule, public IAutomationBackend
 {
 public:
@@ -77,4 +79,5 @@ private:
     TriggerMap  trigger_map;
     std::vector<ConfUnionPrototype<AutomationTriggerID>>    trigger_prototypes;
     std::vector<ConfUnionPrototype<AutomationActionID>>     action_prototypes;
+    std::unique_ptr<micros_t[]> last_run;
 };

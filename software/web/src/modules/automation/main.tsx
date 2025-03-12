@@ -34,6 +34,7 @@ import { plugins_init } from "./plugins";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Tool } from "react-feather";
+import { InputNumber } from "ts/components/input_number";
 
 export function AutomationNavbar() {
     return <NavbarItem name="automation" module="automation" title={__("automation.navbar.automation")} symbol={<Tool />} />;
@@ -44,11 +45,13 @@ const MAX_RULES = 14;
 type AutomationState = {
     displayed_trigger: number;
     displayed_action: number;
+    displayed_delay: number;
     edit_task: Task;
     registered_triggers: number[];
     registered_actions: number[];
     enabled_triggers: number[];
     enabled_actions: number[];
+    last_run: number[]
 };
 
 let automation_trigger_components: AutomationTriggerComponents = {};
@@ -64,7 +67,8 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                   displayed_action: AutomationActionID.None,
                   edit_task: {
                       trigger: [AutomationTriggerID.None, null],
-                      action: [AutomationActionID.None, null]
+                      action: [AutomationActionID.None, null],
+                      delay: 0
                   }
              });
 
@@ -76,6 +80,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                 registered_actions: state.registered_actions,
                 enabled_triggers: state.enabled_triggers,
                 enabled_actions: state.enabled_actions,
+                last_run: state.last_run,
             })
         });
     }
@@ -126,10 +131,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                     onValue={(v) => {
                         this.setState({
                             displayed_trigger: parseInt(v),
-                            edit_task: {
-                                trigger: automation_trigger_components[parseInt(v)].new_config(),
-                                action: this.state.edit_task.action
-                            },
+                            edit_task: {...this.state.edit_task, trigger: automation_trigger_components[parseInt(v)].new_config()}
                         });
                     }}
                     value={this.state.displayed_trigger.toString()}
@@ -155,10 +157,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                     onValue={(v) => {
                         this.setState({
                             displayed_action: parseInt(v),
-                            edit_task: {
-                                trigger: this.state.edit_task.trigger,
-                                action: automation_action_components[parseInt(v)].new_config()
-                            }
+                            edit_task: {...this.state.edit_task, action: automation_action_components[parseInt(v)].new_config()}
                         });
                     }}
                     value={this.state.displayed_action.toString()}
@@ -200,18 +199,43 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             preview.push(<span key={`action_preview_${this.state.displayed_trigger}`}>{action_component.get_table_children(this.state.edit_task.action)}</span>);
         }
 
+        let delaySelector: ComponentChild[] = [
+            <FormRow key="delay_row" label={__("automation.content.delay")}>
+                <InputNumber
+                    unit="s"
+                    onValue={(v) => {
+                        this.setState({
+                            displayed_delay: v,
+                            edit_task: {...this.state.edit_task, delay: v}
+                        });
+                    }}
+                    value={this.state.displayed_delay}
+                />
+            </FormRow>,
+        ];
+
+        actionSelector = actionSelector.concat(delaySelector);
+
         if (preview.length === 0) {
             return triggerSelector.concat(actionSelector);
         }
 
-        return triggerSelector.concat(actionSelector).concat(<hr key="action_preview_separator"/>).concat(<FormRow label={__("automation.content.preview")}><div class="form-control" style="height: unset;">{preview}</div></FormRow>);
+        return triggerSelector
+                .concat(actionSelector)
+                .concat(<hr key="action_preview_separator"/>)
+                .concat(<FormRow label={__("automation.content.preview")}><div class="form-control" style="height: unset;">{preview}</div></FormRow>);
     }
 
     assembleTable() {
         let rows: TableRow[] = [];
+
+        let uptime_s = API.get("info/keep_alive").uptime / 1000;
+        let now_s = new Date().valueOf() / 1000;
+
         this.state.tasks.forEach((task, idx) => {
             let trigger_id: number = task.trigger[0];
             let action_id: number = task.action[0];
+            let last_run: number = this.state.last_run[idx];
 
             const trigger_component = automation_trigger_components[trigger_id];
             const action_component = automation_action_components[action_id];
@@ -219,6 +243,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
             const task_copy: Task = {
                 trigger: trigger_component.clone_config(task.trigger),
                 action: action_component.clone_config(task.action),
+                delay: task.delay,
             };
 
             const trigger_children = trigger_component.get_table_children(task.trigger);
@@ -231,21 +256,26 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                                     ? (<span class="text-danger">[{action_component.get_disabled_reason ? action_component.get_disabled_reason(task.action) : __("automation.content.action_disabled")}]</span>)
                                     : undefined;
 
+            let last_run_timestamp = last_run == 0 ? __("automation.content.never") : (last_run > uptime_s ? util.format_timespan(last_run - uptime_s) : util.timestamp_sec_to_date((now_s - (uptime_s - last_run))));
+
             let row: TableRow = {
                 columnValues: [
                     [idx + 1],
                     [<Fragment key={`trigger_${trigger_id}`}>{trigger_disabled}{" "}{trigger_children}</Fragment>],
                     [<Fragment key={`actionr_${action_id}`}>{action_disabled}{" "}{action_children}</Fragment>],
+                    [last_run_timestamp]
                 ],
-                fieldNames: ["", ""],
-                fieldValues: [__("automation.content.rule") + " #" + (idx + 1) as ComponentChild, <div class="pb-3">{trigger_disabled}{" "}{trigger_children}<hr class="my-2"/>{action_disabled}{" "}{action_children}</div>],
+                fieldNames: ["", "", __("automation.content.last_run")],
+                fieldValues: [__("automation.content.rule") + " #" + (idx + 1) as ComponentChild, <div class="pb-3">{trigger_disabled}{" "}{trigger_children}<hr class="my-2"/>{action_disabled}{" "}{action_children}</div>, last_run_timestamp],
                 onEditShow: async () => {
                     this.setState({
                         displayed_trigger: task.trigger[0] as number,
                         displayed_action: task.action[0] as number,
+                        displayed_delay: task.delay,
                         edit_task: {
                             trigger: task_copy.trigger,
                             action: task_copy.action,
+                            delay: task_copy.delay,
                         },
                     });
                 },
@@ -283,7 +313,8 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                     columnNames={[
                         "#",
                         __("automation.content.condition"),
-                        __("automation.content.action")]}
+                        __("automation.content.action"),
+                        __("automation.content.last_run")]}
                     rows={this.assembleTable()}
                     addEnabled={this.state.tasks.length < MAX_RULES}
                     addTitle={__("automation.content.add_rule_title")}
@@ -292,9 +323,11 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                         this.setState({
                             displayed_trigger: AutomationTriggerID.None,
                             displayed_action: AutomationActionID.None,
+                            displayed_delay: 0,
                             edit_task: {
                                 trigger: [AutomationTriggerID.None, null],
-                                action: [AutomationActionID.None, null]
+                                action: [AutomationActionID.None, null],
+                                delay: 0
                             }
                         });
                     }}
