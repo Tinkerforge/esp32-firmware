@@ -41,7 +41,7 @@ const CMDFormRow = (props: any) => <FormRow labelColClasses="col-lg-2" contentCo
 function Charger (props: {i: number,
                           state: API.getType['charge_manager/state']['chargers'][0],
                           ll_state: API.getType['charge_manager/low_level_state']['chargers'][0]} ) {
-    const uptime = API.get('info/keep_alive')?.uptime ?? 0;
+    const uptime = API.get('info/keep_alive').uptime;
     const ll_cfg = API.get("charge_manager/low_level_config");
     const cfg = API.get("charge_manager/config");
 
@@ -136,8 +136,7 @@ export function ChargeManagerDebug(props: {dynamicLoadConfig: API.getType['power
     if (!util.render_allowed())
         return undefined;
 
-    // For some reason info/keep_alive can be missing even if render_allowed is true?
-    const uptime      = API.get('info/keep_alive')?.uptime ?? 0;
+    const uptime      = API.get('info/keep_alive').uptime;
     const ll_cfg      = API.get('charge_manager/low_level_config');
     const state       = API.get('charge_manager/state');
     const ll_state    = API.get('charge_manager/low_level_state');
