@@ -400,7 +400,7 @@ void MetersSunSpec::loop()
             if (sun_spec_id == SUN_SPEC_ID) {
                 scan_printfln("SunSpec ID found");
 
-                scan->state = ScanState::ReadModelHeader;
+                scan->state = ScanState::ReadModelID;
             }
             else {
                 scan_printfln("No SunSpec ID found (sun-spec-id: 0x%08lx)", sun_spec_id);
@@ -469,7 +469,7 @@ void MetersSunSpec::loop()
                 ++scan->read_address; // skip padding
             }
 
-            scan->state = ScanState::ReadModelHeader;
+            scan->state = ScanState::ReadModelID;
         }
         else {
             scan_printfln("Could not read Common Model block (error: %s [%d])",
@@ -481,42 +481,87 @@ void MetersSunSpec::loop()
 
         break;
 
-    case ScanState::ReadModelHeader:
+    case ScanState::ReadModelID:
         if (scan->abort) {
             scan->state = ScanState::Disconnect;
             break;
         }
 
-        scan_printfln("Reading Model header (address: %zu)", scan->read_address);
+        scan_printfln("Reading Model ID (address: %zu)", scan->read_address);
 
-        scan->read_size = 2;
-        scan->read_state = ScanState::ReadModelHeaderDone;
+        scan->read_size = 1;
+        scan->read_state = ScanState::ReadModelIDDone;
         scan->state = ScanState::Read;
 
         break;
 
-    case ScanState::ReadModelHeaderDone:
+    case ScanState::ReadModelIDDone:
         if (scan->abort) {
             scan->state = ScanState::Disconnect;
             break;
         }
 
         if (scan->read_result == TFModbusTCPClientTransactionResult::Success) {
-            uint16_t model_id = scan->deserializer.read_uint16();
+            scan->model_id = scan->deserializer.read_uint16();
+
+            if (scan->model_id == 3) {
+                scan_printfln("Skipping model 3");
+                scan->read_address += 59; // skip model length and block
+                scan->state = ScanState::ReadModelID;
+            }
+            else if (scan->model_id == 6) {
+                scan_printfln("Skipping model 6");
+                scan->read_address += 91; // skip model length and block
+                scan->state = ScanState::ReadModelID;
+            }
+            else {
+                scan->state = ScanState::ReadModelBlockLength;
+            }
+        }
+        else {
+            scan_printfln("Could not read Model ID (error: %s [%d])",
+                          get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
+                          static_cast<int>(scan->read_result));
+
+            scan->state = scan_get_next_state_after_read_error();
+        }
+
+        break;
+
+    case ScanState::ReadModelBlockLength:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        scan_printfln("Reading Model %u block length (address: %zu)", scan->model_id, scan->read_address);
+
+        scan->read_size = 1;
+        scan->read_state = ScanState::ReadModelBlockLengthDone;
+        scan->state = ScanState::Read;
+
+        break;
+
+    case ScanState::ReadModelBlockLengthDone:
+        if (scan->abort) {
+            scan->state = ScanState::Disconnect;
+            break;
+        }
+
+        if (scan->read_result == TFModbusTCPClientTransactionResult::Success) {
             size_t block_length = scan->deserializer.read_uint16();
 
-            if (model_id == NON_IMPLEMENTED_UINT16 && (block_length == 0 || block_length == NON_IMPLEMENTED_UINT16)) {
+            if (scan->model_id == NON_IMPLEMENTED_UINT16 && (block_length == 0 || block_length == NON_IMPLEMENTED_UINT16)) {
                 // accept non-implemented block length as a SUNGROW quirk
-                scan_printfln("End Model found (block-length: %zu)", block_length);
+                scan_printfln("End Model found (model-id: %u, block-length: %zu)", scan->model_id, block_length);
 
                 scan->state = ScanState::NextDeviceAddress;
             }
-            else if (model_id == COMMON_MODEL_ID && (block_length == 65 || block_length == 66)) {
-                scan_printfln("Common Model found (block-length: %zu)", block_length);
+            else if (scan->model_id == COMMON_MODEL_ID && (block_length == 65 || block_length == 66)) {
+                scan_printfln("Common Model found (model-id: %u, block-length: %zu)", scan->model_id, block_length);
 
                 scan->model_instances.clear();
 
-                scan->model_id = model_id;
                 scan->block_length = block_length;
                 scan->state = ScanState::ReadCommonModelBlock;
             }
@@ -524,14 +569,14 @@ void MetersSunSpec::loop()
                 const char *model_name = nullptr;
 
                 for (size_t i = 0; i < sun_spec_model_specs_length; ++i) {
-                    if (model_id == static_cast<uint16_t>(sun_spec_model_specs[i].model_id)) {
+                    if (scan->model_id == static_cast<uint16_t>(sun_spec_model_specs[i].model_id)) {
                         model_name = sun_spec_model_specs[i].model_name;
                         break;
                     }
                 }
 
                 if (model_name == nullptr) {
-                    if (model_id >= 64000) {
+                    if (scan->model_id >= 64000) {
                         model_name = "Vendor Specific";
                     }
                     else {
@@ -539,23 +584,22 @@ void MetersSunSpec::loop()
                     }
                 }
 
-                if (scan->model_instances.find(model_id) == scan->model_instances.end()) {
-                    scan->model_instances.insert({model_id, 0});
+                if (scan->model_instances.find(scan->model_id) == scan->model_instances.end()) {
+                    scan->model_instances.insert({scan->model_id, 0});
                 }
                 else {
-                    ++scan->model_instances[model_id];
+                    ++scan->model_instances[scan->model_id];
                 }
 
                 scan_printfln("%s Model found (model-id/instance: %u/%u, block-length: %zu)",
-                              model_name, model_id, scan->model_instances.at(model_id), block_length);
+                              model_name, scan->model_id, scan->model_instances.at(scan->model_id), block_length);
 
-                scan->model_id = model_id;
                 scan->block_length = block_length;
                 scan->state = ScanState::ReportModelResult;
             }
         }
         else {
-            scan_printfln("Could not read Model header (error: %s [%d])",
+            scan_printfln("Could not read Model block length (error: %s [%d])",
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
                           static_cast<int>(scan->read_result));
 
@@ -589,7 +633,7 @@ void MetersSunSpec::loop()
             }
 
             scan->read_address += scan->block_length; // skip block
-            scan->state = ScanState::ReadModelHeader;
+            scan->state = ScanState::ReadModelID;
         }
 
         break;
