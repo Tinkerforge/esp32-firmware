@@ -202,6 +202,8 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
         let delaySelector: ComponentChild[] = [
             <FormRow key="delay_row" label={__("automation.content.delay")}>
                 <InputNumber
+                    min={0}
+                    max={24*60*60}
                     unit="s"
                     onValue={(v) => {
                         this.setState({
