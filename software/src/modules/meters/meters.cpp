@@ -610,24 +610,6 @@ bool Meters::meter_has_value_changed(uint32_t slot, micros_t max_age_us)
     return max_age_us == 0_us || !deadline_elapsed(meter_slots[slot].values_last_changed_at + max_age_us);
 }
 
-MeterValueAvailability Meters::get_values(uint32_t slot, const Config **values, micros_t max_age)
-{
-    if (slot >= METERS_SLOTS) {
-        *values = nullptr;
-        return MeterValueAvailability::Unavailable;
-    }
-
-    const MeterSlot &meter_slot = meter_slots[slot];
-
-    *values = &meter_slot.values;
-
-    if (!this->meter_is_fresh(slot, max_age)) {
-        return MeterValueAvailability::Stale;
-    } else {
-        return MeterValueAvailability::Fresh;
-    }
-}
-
 MeterValueAvailability Meters::get_value_ids(uint32_t slot, const Config **value_ids)
 {
     if (slot >= METERS_SLOTS) {
@@ -641,6 +623,24 @@ MeterValueAvailability Meters::get_value_ids(uint32_t slot, const Config **value
 
     if ((*value_ids)->count() == 0) {
         return MeterValueAvailability::CurrentlyUnknown;
+    } else {
+        return MeterValueAvailability::Fresh;
+    }
+}
+
+MeterValueAvailability Meters::get_values(uint32_t slot, const Config **values, micros_t max_age)
+{
+    if (slot >= METERS_SLOTS) {
+        *values = nullptr;
+        return MeterValueAvailability::Unavailable;
+    }
+
+    const MeterSlot &meter_slot = meter_slots[slot];
+
+    *values = &meter_slot.values;
+
+    if (!this->meter_is_fresh(slot, max_age)) {
+        return MeterValueAvailability::Stale;
     } else {
         return MeterValueAvailability::Fresh;
     }
