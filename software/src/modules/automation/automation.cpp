@@ -59,6 +59,7 @@ void Automation::pre_setup()
         {"registered_actions",  Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
         {"enabled_triggers",    Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
         {"enabled_actions",     Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
+        {"last_run",            Config::Array({}, Config::get_prototype_uint32_0(), 0, MAX_AUTOMATION_RULES, Config::type_id<Config::ConfBool>())},
     });
 }
 
@@ -96,13 +97,14 @@ void Automation::setup()
             action_prototypes.data(),
             action_prototypes.size()
         )},
+        {"delay", Config::Uint(0, 0, 24*60*60)}
     });
 
     config = ConfigRoot{Config::Object({
             {"tasks", Config::Array(
                 {},
                 &config_tasks_prototype,
-                0, 14, Config::type_id<Config::ConfObject>())
+                0, MAX_AUTOMATION_RULES, Config::type_id<Config::ConfObject>())
             }
         }),
         [this](const Config &cfg, ConfigSource source) -> String {
@@ -142,6 +144,11 @@ void Automation::setup()
 
     api.restorePersistentConfig("automation/config", &config);
     config_in_use = config;
+
+    for(size_t i = 0; i < config.get("tasks")->count(); ++i)
+        this->state.get("last_run")->add();
+
+    last_run = heap_alloc_array<micros_t>(config.get("tasks")->count());
 
     if (has_task_with_trigger(AutomationTriggerID::Cron)) {
         task_scheduler.scheduleWithFixedDelay([this]() {
@@ -267,17 +274,42 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
     }
     bool triggered = false;
     int current_rule = 1;
-    for (Config &conf : config_in_use.get("tasks")) {
-        Config *trigger = static_cast<Config *>(conf.get("trigger"));
+    for (size_t i = 0; i < config_in_use.get("tasks")->count(); ++i) {
+        const Config *conf = static_cast<const Config *>(config_in_use.get("tasks")->get(i));
+        Config *last_run_cfg = static_cast<Config *>(state.get("last_run")->get(i));
+        micros_t *last_run_timestamp = &last_run[i];
+
+        // If last_run is in the future, this rule's trigger has fired
+        // but the configured delay is not elapsed yet.
+        // Don't allow executing the rule again until the action is done
+        if (!deadline_elapsed(*last_run_timestamp))
+            continue;
+
+        const Config *trigger = static_cast<const Config *>(conf->get("trigger"));
+
         if (trigger->getTag<AutomationTriggerID>() == number && backend->has_triggered(trigger, data)) {
+            auto delay = seconds_t{conf->get("delay")->asUint()};
+            *last_run_timestamp = now_us() + delay;
+            last_run_cfg->updateUint(last_run_timestamp->to<seconds_t>().as<uint32_t>());
+
             triggered = true;
-            logger.printfln("Running rule #%d", current_rule);
-            const Config *action = static_cast<const Config *>(conf.get("action"));
+            const Config *action = static_cast<const Config *>(conf->get("action"));
             AutomationActionID action_ident = action->getTag<AutomationActionID>();
-            if (action_ident != AutomationActionID::None && action_map.find(action_ident) != action_map.end()) {
-                action_map[action_ident].callback(static_cast<const Config *>(action->get()));
-            } else {
+
+            if (action_ident != AutomationActionID::None && action_map.find(action_ident) == action_map.end()) {
                 logger.printfln("There is no action with ID %u!", (uint8_t)action_ident);
+                continue;
+            }
+
+            auto cb = action_map[action_ident].callback;
+            if (delay > 0_s) {
+                logger.printfln("Running rule #%d in %lu seconds", current_rule, delay.as<uint32_t>());
+                task_scheduler.scheduleOnce([cb, action](){
+                    cb(static_cast<const Config *>(action->get()));
+                }, delay);
+            } else {
+                logger.printfln("Running rule #%d", current_rule);
+                cb(static_cast<const Config *>(action->get()));
             }
         }
         current_rule++;

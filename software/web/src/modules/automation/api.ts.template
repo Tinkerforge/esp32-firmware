@@ -11,11 +11,13 @@ export interface state {
     registered_actions: number[]
     enabled_triggers: number[]
     enabled_actions: number[]
+    last_run: number[]
 }
 
 interface Task {
     trigger: AutomationTrigger,
-    action: AutomationAction
+    action: AutomationAction,
+    delay: number
 }
 
 type AutomationTrigger =
