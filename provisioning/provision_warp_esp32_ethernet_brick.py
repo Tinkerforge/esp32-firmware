@@ -383,11 +383,22 @@ def brick_removed(relay_to_rgb_led):
         else:
             raise
 
+IQR_UID_BLACKLIST = [
+    "RVG",  # Front Switch, CP B, CP C, CP D
+    "RNW",  # PP 13A, 20A, 32A, 63A
+    "RzF",  # Enable, 230V, Contactor Check 0, Contactor Check 1
+]
+
 def main():
     ipcon = IPConnection()
     ipcon.connect("localhost", 4223)
 
-    iqr = BrickletIndustrialQuadRelayV2("2bkV", ipcon)
+    devs = enumerate_devices(ipcon)
+    iqr_uids = [x for x in devs if x.device_identifier == BrickletIndustrialQuadRelayV2.DEVICE_IDENTIFIER and x.uid not in IQR_UID_BLACKLIST]
+    if len(iqr_uids != 1):
+        fatal_error("Industrial quad relay not found. Found the following devices:", enumerate_devices(ipcon))
+
+    iqr = BrickletIndustrialQuadRelayV2(iqr_uid, ipcon)
     iqr.set_response_expected_all(True)
 
     iqr.set_value([True, True, True, True])
