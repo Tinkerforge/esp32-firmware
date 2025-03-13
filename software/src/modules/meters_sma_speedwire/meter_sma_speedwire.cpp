@@ -22,6 +22,7 @@
 #include "meter_sma_speedwire.h"
 
 #include <math.h>
+#include <arpa/inet.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -202,18 +203,19 @@ int MeterSMASpeedwire::parse_header(SpeedwireHeader *header)
     header->serial_number  = ntohl(header->serial_number);
     header->measuring_time = ntohl(header->measuring_time);
 
-    logger.tracefln(trace_buffer_index, "slot=%lu, v=%c%c%c, l=%u, t=%u, g=%lu, d=%u, t=%u, p=%u, s=%u, s=%lu, m=%lu",
-                    slot,
-                    header->vendor[0], header->vendor[1], header->vendor[2],
-                    header->length,
-                    header->tag0,
-                    header->group,
-                    header->data_length,
-                    header->tag,
-                    header->protocol_id,
-                    header->susy_id,
-                    header->serial_number,
-                    header->measuring_time);
+    meters_sma_speedwire.trace_timestamp();
+    logger.tracefln_plain(trace_buffer_index, "m%u v%c%c%c l%u t%u g%u d%u t%u pi%u si%u sn%u mt%u",
+                          slot,
+                          header->vendor[0], header->vendor[1], header->vendor[2],
+                          header->length,
+                          header->tag0,
+                          header->group,
+                          header->data_length,
+                          header->tag,
+                          header->protocol_id,
+                          header->susy_id,
+                          header->serial_number,
+                          header->measuring_time);
 
     if (header->vendor[0] != 'S' || header->vendor[1] != 'M' || header->vendor[2] != 'A' || header->vendor[3] != '\0') {
         logger.printfln_meter("Invalid vendor: %c%c%c", header->vendor[0], header->vendor[1], header->vendor[2]);
@@ -231,7 +233,7 @@ int MeterSMASpeedwire::parse_header(SpeedwireHeader *header)
     }
 
     if (header->data_length > sizeof(SpeedwirePacket::data)) {
-        logger.printfln_meter("Invalid data_length: %u", header->data_length);
+        logger.printfln_meter("Invalid data length: %u", header->data_length);
         return 0;
     }
 
@@ -243,7 +245,7 @@ int MeterSMASpeedwire::parse_header(SpeedwireHeader *header)
     }
 
     if (header->protocol_id != 0x6069) {
-        logger.printfln_meter("Invalid protocol_id: %u", header->protocol_id);
+        logger.printfln_meter("Invalid protocol ID: %u", header->protocol_id);
         return 0;
     }
 

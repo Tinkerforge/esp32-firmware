@@ -61,3 +61,11 @@ const Config *MetersSMASpeedwire::get_errors_prototype()
 {
     return Config::Null();
 }
+
+void MetersSMASpeedwire::trace_timestamp()
+{
+    if (last_trace_timestamp < 0_us || deadline_elapsed(last_trace_timestamp + 1_s)) {
+        last_trace_timestamp = now_us();
+        logger.trace_timestamp(trace_buffer_index);
+    }
+}
