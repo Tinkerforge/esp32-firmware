@@ -17,9 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h } from "preact";
+import { Context, h } from "preact";
 import { __ } from "../translation";
 import { InputTextPatterned } from "./input_text";
+import { register_id_context_component_type } from "./form_row";
 
 interface InputHostProps {
     class?: string
@@ -28,6 +29,7 @@ interface InputHostProps {
     value: string
     onValue?: (value: string) => void
     invalidFeedback?: string
+    idContext?: Context<string>
 };
 
 export function InputHost(props: InputHostProps) {
@@ -39,3 +41,5 @@ export function InputHost(props: InputHostProps) {
 
     return <InputTextPatterned {...props} invalidFeedback={invalidFeedback} maxLength={64} pattern="^[a-zA-Z0-9\-\.]+$" />
 }
+
+register_id_context_component_type(InputHost);
