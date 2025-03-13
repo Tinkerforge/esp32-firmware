@@ -67,7 +67,7 @@ static PhaseRotation convert_phase_rotation(CMPhaseRotation pr) {
 
 void ChargeManager::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer("charge_manager", 1 << 20);
+    this->trace_buffer_index = logger.alloc_trace_buffer("charge_manager", 2 << 20);
 
     config_chargers_prototype = Config::Object({
         {"host", Config::Str("", 0, 64)},
