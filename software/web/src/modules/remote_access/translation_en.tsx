@@ -34,6 +34,7 @@ let x = {
             "note": "Note",
             "note_muted": /*FFN*/(host: string) => <>will be shown at <a href={`https://${host}/`} target="_blank">{host}</a>. Optional</>/*NF*/,
             "user_exists": "This account already exists",
+            "token_corrupted": "Authorization token corrupted. Please remove and re-add.",
             "auth_token": "Authorization token",
             "auth_token_invalid": "Invalid authorization token",
             "auth_method": "Authorization method"

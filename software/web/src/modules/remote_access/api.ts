@@ -12,7 +12,8 @@ export interface config {
 interface user {
     id: number,
     email: string,
-    public_key: string
+    uuid: string,
+    public_key: string,
 }
 
 export interface remove_user {

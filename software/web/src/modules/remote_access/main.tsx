@@ -92,6 +92,44 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         this.setState({status_modal_string: "", removeUsers: []});
     }
 
+
+    async parseAuthorizationToken(authToken: string) {
+        const decodedToken = util.decodeBase58(authToken);
+        const binaryToken = decodedToken.subarray(0, decodedToken.length - 32);
+        const tokenDigest = decodedToken.subarray(binaryToken.length);
+
+        // Use argon2 here since browsers think it's a good idea to block crypto.subtle due to insecure contexts
+        const calculatedDigest = await hash({
+            pass: binaryToken,
+            salt: new Uint8Array(8),
+            time: 2,
+            mem: 19 * 1024,
+            hashLen: 32,
+            parallelism: 1,
+            type: ArgonType.Argon2id
+        });
+        if (!util.compareArrays(Array.from(calculatedDigest.hash), Array.from(tokenDigest))) {
+            throw new Error(__("remote_access.content.token_corrupted"));
+        }
+
+        // Magic number explanation: https://github.com/Tinkerforge/esp32-remote-access/blob/main/data_type_definitions.md
+        const token = btoa(String.fromCharCode(...binaryToken.slice(0, 32)));
+        const decoder = new TextDecoder();
+        const uuid = decoder.decode(binaryToken.slice(32, 32 + 36));
+        const pubKey = btoa(String.fromCharCode(...binaryToken.slice(32 + 36, 32 + 36 + 32)));
+        const email = decoder.decode(binaryToken.slice(32 + 36 + 32));
+
+        if (this.checkUserExisting(email, uuid)) {
+            throw new Error(__("remote_access.content.user_exists"));
+        }
+        return {
+            token,
+            uuid,
+            pubKey,
+            email
+        }
+    }
+
     async get_login_salt(cfg: util.NoExtraProperties<API.getType["remote_access/register"]["config"]>) {
         this.setState({status_modal_string: __("remote_access.content.prepare_login")});
         const getLoginSaltPromise: Promise<string> = new Promise((resolve, reject) => {
@@ -512,12 +550,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         API.reset("remote_access/config", () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
     }
 
-    checkUserExisting(email?: string) {
+    checkUserExisting(email?: string, userId?: string) {
         if (email === undefined) {
             email = this.state.addUser.email;
         }
         for (const user of this.state.users) {
-            if (user.email.toLowerCase() === email.toLowerCase()) {
+            if (user.email.toLowerCase() === email.toLowerCase() || user.uuid === userId) {
                 return true;
             }
         }
@@ -603,34 +641,14 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                                                     class={invalidFeedback !== "" ? "is-invalid" : undefined}
                                                     value={authToken}
                                                     invalidFeedback={invalidFeedback}
-                                                    onValue={(v) => {
+                                                    onValue={ async (v) => {
                                                         setAuthToken(v);
                                                         try {
-                                                            const decodedToken = util.decodeBase58ToJson(v);
-                                                            if (decodedToken.user_email === undefined) {
-                                                                setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
-                                                                return;
-                                                            }
-                                                            if (this.checkUserExisting(decodedToken.user_email)) {
-                                                                setInvalidFeedback(__("remote_access.content.user_exists"));
-                                                                return;
-                                                            }
-                                                            if (decodedToken.user_public_key === undefined) {
-                                                                setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
-                                                                return;
-                                                            }
-                                                            if (decodedToken.token === undefined) {
-                                                                setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
-                                                                return;
-                                                            }
-                                                            if (decodedToken.user_uuid === undefined) {
-                                                                setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
-                                                                return;
-                                                            }
-                                                            this.setState({addUser: {...this.state.addUser, email: decodedToken.user_email, password: "", public_key: decodedToken.user_public_key, auth_token: decodedToken.token, user_id: decodedToken.user_uuid}});
+                                                            const parsedToken = await this.parseAuthorizationToken(v);
+                                                            this.setState({addUser: {...this.state.addUser, email: parsedToken.email, password: "", public_key: parsedToken.pubKey, auth_token: parsedToken.token, user_id: parsedToken.uuid}});
                                                             setInvalidFeedback("");
-                                                        } catch {
-                                                            setInvalidFeedback(__("remote_access.content.auth_token_invalid"));
+                                                        } catch (e) {
+                                                            setInvalidFeedback(e.message);
                                                         }
                                                     }} />
                                             </FormRow>
