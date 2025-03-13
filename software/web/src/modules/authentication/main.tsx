@@ -53,6 +53,12 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
         return YaMD5.YaMD5.hashStr(username + ":esp32-lib:" + password);
     }
 
+    override async transformSave(cfg: AuthenticationState) {
+        cfg.digest_hash = this.hash(cfg.username, this.state.password)
+
+        return cfg;
+    }
+
     override render(props: {}, state: AuthenticationState & {password: string}) {
         if (!util.render_allowed())
             return <SubPage name="authentication" />;
@@ -81,7 +87,7 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
                     <FormRow label={__("authentication.content.password")}>
                         <InputPassword maxLength={64}
                                        value={state.password}
-                                       onValue={(v) => {this.setState({password: v, digest_hash: this.hash(state.username, v)})}}
+                                       onValue={this.set("password")}
                                        required={pass_required}
                                        placeholder={pass_required ? __("component.input_password.required") : (API.get("authentication/config").digest_hash == "" ? __("component.input_password.not_set") : __("component.input_password.unchanged"))}
                                        hideClear />
