@@ -44,9 +44,13 @@ public:
     [[gnu::const]] virtual const Config *get_state_prototype()  override;
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
+    void trace_timestamp();
+
 private:
     ConfigRoot config_prototype;
+
     size_t trace_buffer_index;
+    micros_t last_trace_timestamp = -1_us;
 };
 
 #if defined(__GNUC__)
