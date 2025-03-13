@@ -207,7 +207,7 @@ def get_esp_ssid(serial_port, result):
 
     return ssid, passphrase
 
-def test_wifi(ssid, passphrase, ethernet_ip, result):
+def test_wifi(ssid, passphrase, ethernet_ip, ethernet_gateway, ethernet_subnet, ethernet_dns, result):
     print("Waiting for ESP wifi. Takes about one minute.")
     if not wait_for_wifi(ssid, 90):
         fatal_error("ESP wifi not found after 90 seconds")
@@ -217,9 +217,9 @@ def test_wifi(ssid, passphrase, ethernet_ip, result):
         req = urllib.request.Request("http://10.0.0.1/ethernet/config_update",
                                      data=json.dumps({"enable_ethernet":True,
                                                       "ip": ethernet_ip,
-                                                      "gateway":"10.4.1.1",
-                                                      "subnet":"255.255.255.0",
-                                                      "dns":"10.4.1.1",
+                                                      "gateway": ethernet_gateway,
+                                                      "subnet": ethernet_subnet,
+                                                      "dns": ethernet_dns,
                                                       "dns2":"0.0.0.0"}).encode("utf-8"),
                                      method='PUT',
                                      headers={"Content-Type": "application/json"})
@@ -390,6 +390,12 @@ IQR_UID_BLACKLIST = [
 ]
 
 def main():
+    config = json.loads(Path("provision_warp_esp32_ethernet_config.json").read_text())
+    static_ips = config["static_ips"]
+    static_subnet = config["subnet"]
+    gateway = config["gateway"]
+    dns = config["dns"]
+
     ipcon = IPConnection()
     ipcon.connect("localhost", 4223)
 
@@ -467,7 +473,7 @@ def main():
 
     for k, v in list(relay_to_serial.items()):
         try:
-            test_wifi(relay_to_ssid[k], relay_to_passphrase[k], f"10.4.1.{4 + k}", test_reports[k])
+            test_wifi(relay_to_ssid[k], relay_to_passphrase[k], static_ips[k], gateway, subnet, dns, test_reports[k])
         except BaseException as e:
             print(red(f"Failed to test WiFi for {k} {v}: {e}"))
             relay_to_serial.pop(k)
@@ -476,8 +482,8 @@ def main():
         return lambda: run_stage_1_tests(serial_port, ethernet_ip, lambda: iqr.set_selected_value(relay_pin, False), lambda: iqr.set_selected_value(relay_pin, True), test_report)
 
     for k, v in relay_to_serial.items():
-        print(green(f"{k}: 10.4.1.{4 + k}"))
-        t = ThreadWithReturnValue(target=run_stage_1_tests_fn(v, f"10.4.1.{4 + k}", k, test_reports[k]))
+        print(green(f"{k}: {static_ips[k]}"))
+        t = ThreadWithReturnValue(target=run_stage_1_tests_fn(v, static_ips[k], k, test_reports[k]))
         t.start()
         threads.append((k, v, t))
 
