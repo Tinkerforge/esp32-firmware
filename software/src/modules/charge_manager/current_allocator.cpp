@@ -733,6 +733,7 @@ static constexpr int CHECK_SPREAD = 16;
 static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch, uint16_t guaranteed_pv_current) {
     // Spread
     bool check_spread = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & CHECK_SPREAD) != 0;
+    bool check_improvement = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) != 0;
     bool improves_all_spread = true;
     for (size_t p = 0; p < 4; ++p) {
         if ((check_phase[p] & CHECK_SPREAD) == 0 || new_cost[p] <= 0)
@@ -746,7 +747,7 @@ static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost
     }
 
     // Improvement - Check only if spread was not checked or was checked but new charger did not fit.
-    if (!check_spread || !improves_all_spread) {
+    if (check_improvement && (!check_spread || !improves_all_spread)) {
         bool improves_pv = (check_phase.pv & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || (new_cost.pv > 0 && (wnd_max.pv < limits->min.pv || new_cost.pv <= guaranteed_pv_current));
         if (!improves_pv) {
             sw.printf(" No: !impr_pv");
@@ -780,7 +781,7 @@ static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost
             if (!enable)
                 return false;
         }
-    } else {
+    } else if (check_improvement) {
         sw.printf(" impr_spread ");
     }
 
@@ -851,18 +852,25 @@ static bool try_activate(StringWriter &sw, const ChargerState *state, bool activ
 
     get_enable_cost(state, activate_3p, have_active_chargers, &new_cost, &new_enable_cost, cfg);
 
+    // If this charger's mode is at least Min, it has a guaranteed PV current > 0.
+    // If this current is sufficient to enable the charger, we don't have to check
+    // for any improvement: If there's enough current available to enable a Min
+    // charger, enable it.
+    int improve_check = state->guaranteed_pv_current >= new_cost.pv ? 0 : CHECK_SPREAD | CHECK_IMPROVEMENT;
+    logger.printfln("%d %d %d", state->guaranteed_pv_current, new_cost.pv, improve_check);
+
     // If there are no chargers active, don't require the enable cost on PV.
     // Still require the enable cost on the phases:
     // Phase limits are hard limits. PV can be exceeded for some time.
     // Ignore PV limit completely if this charger is not PV charging.
     Cost check_phase{
         (!state->observe_pv_limit ? 0 :
-            CHECK_SPREAD | CHECK_IMPROVEMENT | (have_active_chargers
+            improve_check | (have_active_chargers
                                                 ? CHECK_MIN_WINDOW_ENABLE
                                                 : CHECK_MIN_WINDOW_MIN)),
-        CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
-        CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE,
-        CHECK_SPREAD | CHECK_IMPROVEMENT | CHECK_MIN_WINDOW_ENABLE
+        improve_check | CHECK_MIN_WINDOW_ENABLE,
+        improve_check | CHECK_MIN_WINDOW_ENABLE,
+        improve_check | CHECK_MIN_WINDOW_ENABLE
     };
 
     bool result = can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg, false, state->guaranteed_pv_current);
@@ -1029,18 +1037,28 @@ static void stage_5(StageContext &sc) {
         Cost new_cost = min_3p * Cost{3, 1, 1, 1};
         Cost new_enable_cost = min_3p * sc.cfg->enable_current_factor * Cost{3, 1, 1, 1};
 
+        auto already_allocated = get_minimum_cost(1, state->phase_rotation, sc.cfg);
+
         auto old_factors = get_phase_factors(1, state->phase_rotation);
         // TODO use already allocated current here
-        new_cost -= get_minimum_cost(1, state->phase_rotation, sc.cfg);
+        new_cost -= already_allocated;
         // TODO should we subtract the 1p enable cost here?
-        new_enable_cost -= get_minimum_cost(1, state->phase_rotation, sc.cfg);
+        new_enable_cost -= already_allocated;
+
+        // If this charger's mode is at least Min, it has a guaranteed PV current > 0.
+        // If this current is sufficient to enable the charger, we don't have to check
+        // for any improvement: If there's enough current available to enable a Min
+        // charger, enable it.
+        // This is the same check as the one in try_activate, except that we already have some
+        // current allocated to the charger for it to run 1p.
+        int improve_check = (state->guaranteed_pv_current - already_allocated.pv >= new_cost.pv) ? 0 : CHECK_IMPROVEMENT_ALL_PHASE;
 
         // Only switch from one to three phase if there is still current available on all phases except the P1 phase of this charger: P1 is used by this charger anyway.
         Cost check_phase{
-            !state->observe_pv_limit ? 0 : (CHECK_IMPROVEMENT_ALL_PHASE | check_pv_min),
-            (old_factors.l1 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
-            (old_factors.l2 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE,
-            (old_factors.l3 > 0 ? 0 : CHECK_IMPROVEMENT_ALL_PHASE) | CHECK_MIN_WINDOW_ENABLE
+            !state->observe_pv_limit ? 0 : (improve_check | check_pv_min),
+            (old_factors.l1 > 0 ? 0 : improve_check) | CHECK_MIN_WINDOW_ENABLE,
+            (old_factors.l2 > 0 ? 0 : improve_check) | CHECK_MIN_WINDOW_ENABLE,
+            (old_factors.l3 > 0 ? 0 : improve_check) | CHECK_MIN_WINDOW_ENABLE
         };
 
         char buf[256];
