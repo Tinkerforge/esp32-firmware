@@ -508,11 +508,23 @@ void MetersSunSpec::loop()
             scan_printfln("Found Model %u", scan->model_id);
 
             if (scan->model_id == 3) {
-                scan->read_address += 59; // skip model length and block
+                scan_printfln("Assuming block length of 58 registers");
+                scan->read_address += 1 + 58; // skip model length and block
+                scan->state = ScanState::ReadModelID;
+            }
+            else if (scan->model_id == 4) {
+                scan_printfln("Assuming block length of 60 registers");
+                scan->read_address += 1 + 60; // skip model length and block
+                scan->state = ScanState::ReadModelID;
+            }
+            else if (scan->model_id == 5) {
+                scan_printfln("Assuming block length of 88 registers");
+                scan->read_address += 1 + 88; // skip model length and block
                 scan->state = ScanState::ReadModelID;
             }
             else if (scan->model_id == 6) {
-                scan->read_address += 91; // skip model length and block
+                scan_printfln("Assuming block length of 90 registers");
+                scan->read_address += 1 + 90; // skip model length and block
                 scan->state = ScanState::ReadModelID;
             }
             else {
