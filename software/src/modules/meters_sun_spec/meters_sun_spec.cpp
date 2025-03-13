@@ -505,13 +505,13 @@ void MetersSunSpec::loop()
         if (scan->read_result == TFModbusTCPClientTransactionResult::Success) {
             scan->model_id = scan->deserializer.read_uint16();
 
+            scan_printfln("Found Model %u", scan->model_id);
+
             if (scan->model_id == 3) {
-                scan_printfln("Skipping model 3");
                 scan->read_address += 59; // skip model length and block
                 scan->state = ScanState::ReadModelID;
             }
             else if (scan->model_id == 6) {
-                scan_printfln("Skipping model 6");
                 scan->read_address += 91; // skip model length and block
                 scan->state = ScanState::ReadModelID;
             }
@@ -600,7 +600,8 @@ void MetersSunSpec::loop()
             }
         }
         else {
-            scan_printfln("Could not read Model block length (error: %s [%d])",
+            scan_printfln("Could not read Model %u block length (error: %s [%d])",
+                          scan->model_id,
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
                           static_cast<int>(scan->read_result));
 
