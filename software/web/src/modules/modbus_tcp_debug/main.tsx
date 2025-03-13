@@ -49,6 +49,14 @@ interface ModbusTCPDebugState {
     response: string;
 }
 
+function printable_ascii(x: number) {
+    if (x >= 32 && x <= 126) {
+        return String.fromCharCode(x);
+    }
+
+    return '.';
+}
+
 export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
     constructor() {
         super();
@@ -57,7 +65,7 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
             host: "",
             port: 502,
             device_address: 1,
-            function_code: null,
+            function_code: 3,
             start_address: 0,
             data_count: 1,
             write_data: "",
@@ -83,7 +91,6 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
                 </FormRow>
                 <FormRow label={__("modbus_tcp_debug.content.port")} label_muted={__("modbus_tcp_debug.content.port_muted")}>
                     <InputNumber
-                        required
                         min={1}
                         max={65535}
                         value={this.state.port}
@@ -91,7 +98,6 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
                 </FormRow>
                 <FormRow label={__("modbus_tcp_debug.content.device_address")}>
                     <InputNumber
-                        required
                         min={0}
                         max={255}
                         value={this.state.device_address}
@@ -99,18 +105,16 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
                 </FormRow>
                 <FormRow label={__("modbus_tcp_debug.content.function_code")}>
                     <InputSelect
-                        required
                         items={[
                             ["3", __("modbus_tcp_debug.content.function_code_read_holding_registers")],
                             ["4", __("modbus_tcp_debug.content.function_code_read_input_registers")],
                         ]}
                         placeholder={__("select")}
-                        value={this.state.function_code}
+                        value={this.state.function_code.toString()}
                         onValue={(v) => this.setState({function_code: parseInt(v)})} />
                 </FormRow>
                 <FormRow label={__("modbus_tcp_debug.content.start_address")} label_muted={__("modbus_tcp_debug.content.start_address_muted")}>
                     <InputNumber
-                        required
                         min={0}
                         max={65535}
                         value={this.state.start_address}
@@ -118,7 +122,6 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
                 </FormRow>
                 <FormRow label={__("modbus_tcp_debug.content.data_count")}>
                     <InputNumber
-                        required
                         min={1}
                         max={65535 /* FIXME: depends on function code */}
                         value={this.state.data_count}
@@ -126,6 +129,8 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
                 </FormRow>
                 <FormRow label="">
                     <Button variant="primary" className="form-control" onClick={async () => {
+                        this.setState({response: "Waiting..."});
+
                         let response;
 
                         try {
@@ -140,15 +145,49 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
                                 timeout: this.state.timeout,
                                 byte_order: this.state.byte_order})).text();
                         } catch (e) {
+                            this.setState({response: "" + e});
                             console.log('Modbus/TCP Debug: Could not transact: ' + e);
                             return;
                         }
 
-                        this.setState({response: response});
+                        let output = response;
+
+                        if (response.startsWith("READDATA:")) {
+                            let readdata = response.substring(9);
+                            let header = " Addr  Off   Hex   UInt";
+
+                            output = header + "\n";
+
+                            for (let r = 0; r < readdata.length / 4; ++r) {
+                                let a_pad = "    " + (this.state.start_address + r);
+
+                                a_pad = a_pad.substring(a_pad.length - 5);
+
+                                let r_pad = "  " + r;
+
+                                r_pad = r_pad.substring(r_pad.length - 3);
+
+                                let hex = readdata.substring(r * 4, r * 4 + 4);
+                                let int_pad = "    " + parseInt(hex, 16);
+
+                                int_pad = int_pad.substring(int_pad.length - 5);
+
+                                let ascii_0 = printable_ascii(parseInt(hex.substring(0, 2), 16));
+                                let ascii_1 = printable_ascii(parseInt(hex.substring(2, 4), 16));
+
+                                output += "\n" + a_pad + "  " + r_pad + "  " + hex + "  " + int_pad + "  " + ascii_0 + ascii_1;
+
+                                if (r % 20 == 19 && r < readdata.length / 4 - 1) {
+                                    output += "\n\n" + header + "\n";
+                                }
+                            }
+                        }
+
+                        this.setState({response: output});
                     }} >Transact</Button>
                 </FormRow>
                 <FormRow label={__("modbus_tcp_debug.content.response")}>
-                    <OutputTextarea rows={10} resize='vertical' value={this.state.response} />
+                    <OutputTextarea rows={35} resize='vertical' value={this.state.response} />
                 </FormRow>
             </SubPage>
         );
