@@ -939,7 +939,7 @@ export function is_date_today(date: Date): boolean {
            date.getFullYear() == today.getFullYear();
 }
 
-export function decodeBase58ToJson(encoded: string): any {
+export function decodeBase58(encoded: string): Uint8Array {
     const ALPHABET = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
     const BASE = 58;
 
@@ -977,10 +977,5 @@ export function decodeBase58ToJson(encoded: string): any {
     }
 
     decoded = decoded.reverse();
-    let jsonString = new TextDecoder().decode(new Uint8Array(decoded));
-    try {
-        return JSON.parse(jsonString);
-    } catch (e) {
-        throw new Error('Decoded string is not valid JSON');
-    }
+    return new Uint8Array(decoded);
 }
