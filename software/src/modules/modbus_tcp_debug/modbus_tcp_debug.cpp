@@ -112,12 +112,10 @@ void ModbusTCPDebug::register_urls()
                 return;
             }
 
-            uint16_t buffer[TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT] = {0};
-
             // FIXME: write data into buffer for write function codes
 
-            client->transact(device_address, function_code, start_address, data_count, buffer, timeout,
-            [this, response, ownership, owner_id, data_count, &buffer](TFModbusTCPClientTransactionResult transact_result) {
+            client->transact(device_address, function_code, start_address, data_count, transact_buffer, timeout,
+            [this, response, ownership, owner_id, data_count](TFModbusTCPClientTransactionResult transact_result) {
                 if (transact_result != TFModbusTCPClientTransactionResult::Success) {
                     report_errorf(response, ownership, owner_id,
                                   "Transaction failed: %s (%d)",
@@ -138,18 +136,20 @@ void ModbusTCPDebug::register_urls()
                 // FIXME: format coils for coil function codes
 
                 static const char *lookup = "0123456789abcdef";
-                char read_data[TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT * 4 + 1];
-
-                for (size_t i = 0; i < data_count; ++i) {
-                    for (size_t n = 0; n < 4; ++n) {
-                        read_data[4 * i + n] = lookup[(buffer[i] >> (12 - 4 * n)) & 0x0f];
-                    }
-                }
-
-                read_data[data_count * 4] = '\0';
 
                 response->begin(true);
-                response->writef("READDATA:%s", read_data);
+                response->write("READDATA:");
+
+                for (size_t i = 0; i < data_count; ++i) {
+                    char nibbles[4];
+
+                    for (size_t n = 0; n < 4; ++n) {
+                        nibbles[n] = lookup[(transact_buffer[i] >> (12 - 4 * n)) & 0x0f];
+                    }
+
+                    response->write(nibbles, 4);
+                }
+
                 response->flush();
                 response->end("");
 
