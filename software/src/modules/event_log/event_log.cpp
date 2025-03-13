@@ -31,6 +31,7 @@
 #undef  tracefln_debug
 
 #include <Arduino.h>
+#include <limits>
 #include <time.h>
 #include <inttypes.h>
 #include <TFJson.h>
@@ -69,7 +70,7 @@ size_t EventLog::alloc_trace_buffer(const char *name, size_t size) {
     ++trace_buffers_in_use;
     return trace_buffers_in_use - 1;
 #else
-    return -1;
+    return std::numeric_limits<size_t>::max();
 #endif
 }
 
@@ -379,16 +380,16 @@ size_t EventLog::get_trace_buffer_idx(const char *name) {
 #else
     (void)name;
 #endif
-    return -1;
+    return std::numeric_limits<size_t>::max();
 }
 
 void EventLog::trace_drop(size_t trace_buf_idx, size_t count)
 {
 #if defined(BOARD_HAS_PSRAM)
-    char c = '\n';
-
-    if (trace_buf_idx == -1)
+    if (trace_buf_idx >= trace_buffers_in_use)
         return;
+
+    char c = '\n';
 
     auto *trace_buffer = &this->trace_buffers[trace_buf_idx];
 
@@ -422,7 +423,7 @@ void EventLog::trace_timestamp(size_t trace_buf_idx)
 size_t EventLog::trace_plain(size_t trace_buf_idx, const char *buf, size_t len)
 {
 #if defined(BOARD_HAS_PSRAM)
-    if (trace_buf_idx == -1)
+    if (trace_buf_idx >= trace_buffers_in_use)
         return 0;
 
     auto *trace_buffer = &this->trace_buffers[trace_buf_idx];
