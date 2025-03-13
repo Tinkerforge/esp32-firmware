@@ -1570,7 +1570,7 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
         if (write_success) {
             for (int k = 0; k < 7 && write_success; ++k) {
                 if (p->power[k] != INT32_MAX) {
-                    write_success = response->writef(",%ld", p->power[k]);
+                    write_success = response->writef(",%d", p->power[k]);
                 } else {
                     write_success = response->writef(",null");
                 }
@@ -1836,7 +1836,7 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
                 int32_t price_max = price_from_10bit( data_chunk_data[i]        & 0x3FF);
 
                 if (price_min != INT32_MAX) {
-                    write_success = response->writef("%ld", price_min);
+                    write_success = response->writef("%d", price_min);
                 }
                 else {
                     write_success = response->writef("null");
@@ -1844,7 +1844,7 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
 
                 if (write_success) {
                     if (price_avg != INT32_MAX) {
-                        write_success = response->writef(",%ld", price_avg);
+                        write_success = response->writef(",%d", price_avg);
                     }
                     else {
                         write_success = response->writef(",null");
@@ -1853,7 +1853,7 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
 
                 if (write_success) {
                     if (price_max != INT32_MAX) {
-                        write_success = response->writef(",%ld", price_max);
+                        write_success = response->writef(",%d", price_max);
                     }
                     else {
                         write_success = response->writef(",null");

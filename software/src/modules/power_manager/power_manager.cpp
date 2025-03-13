@@ -511,7 +511,7 @@ void PowerManager::register_urls()
         const uint32_t phases = phase_switcher_backend->get_phases();
         external_control.get("phases_wanted")->updateUint(phases);
 
-        logger.printfln("External phase switching API enabled, starting with %lup", phases);
+        logger.printfln("External phase switching API enabled, starting with %up", phases);
 
         if (MODULE_EM_V1_AVAILABLE() && !dynamic_load_enabled) {
             // Try to enable faster allocator runs because the EM Phase Switcher needs it.
