@@ -392,7 +392,7 @@ IQR_UID_BLACKLIST = [
 def main():
     config = json.loads(Path("provision_warp_esp32_ethernet_config.json").read_text())
     static_ips = config["static_ips"]
-    static_subnet = config["subnet"]
+    subnet = config["subnet"]
     gateway = config["gateway"]
     dns = config["dns"]
 
