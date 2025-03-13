@@ -222,7 +222,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                             onValue={(v) => this.setState({minimum_current_1p: v})}
                             digits={3}
                             min={6000}
-                            max={state.maximum_available_current}
+                            max={Math.min(state.maximum_available_current, 17000)}
                         />
                     </FormRow>
                 </div>
