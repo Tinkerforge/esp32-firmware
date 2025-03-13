@@ -37,4 +37,5 @@ private:
     ConfigRoot transact;
     TFModbusTCPClient *client = nullptr;
     bool client_disconnect = false;
+    uint16_t transact_buffer[TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT];
 };
