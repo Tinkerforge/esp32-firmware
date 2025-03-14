@@ -163,7 +163,7 @@ export class App extends Component<AppProps, AppState> {
             }, 0);
         });
 
-        util.ifLoggedInElseReload(this.props.init);
+        this.props.init();
     }
 
     setup_login() {
