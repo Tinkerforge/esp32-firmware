@@ -107,9 +107,12 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
 
         if (this.first_render) {
             this.first_render = false;
-            if (API.get("rtc/config").auto_sync && !API.get("ntp/state").synced) {
-                this.set_current_time();
-            }
+            // Don't immediately spam requests after the websockets are connected.
+            window.setTimeout(() => {
+                if (API.get("rtc/config").auto_sync && !API.get("ntp/state").synced) {
+                    this.set_current_time();
+                }
+            }, 10000);
         }
 
         let splt = state.timezone.split("/");
