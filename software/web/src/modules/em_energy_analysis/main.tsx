@@ -376,16 +376,20 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     uplot_loader_daily_ref = createRef();
     uplot_wrapper_daily_ref = createRef();
     uplot_update_timeout: number = null;
-    uplot_5min_flags_cache: {[id: string]: CachedUplotData} = {};
-    uplot_5min_power_cache: {[id: string]: CachedUplotData} = {};
-    uplot_5min_status_cache: {[id: string]: CachedUplotData} = {};
+    uplot_5min_flags_cache: {[key: string]: CachedUplotData} = {};
+    uplot_5min_power_cache: {[key: string]: CachedUplotData} = {};
+    uplot_5min_status_cache: {[key: string]: CachedUplotData} = {};
     uplot_5min_cache_initalized: boolean = false;
-    uplot_daily_cache: {[id: string]: CachedUplotData} = {};
+    uplot_daily_cache: {[key: string]: CachedUplotData} = {};
     uplot_daily_cache_initalized: boolean = false;
-    wallbox_5min_cache: {[id: number]: { [id: string]: Wallbox5minData}} = {};
-    wallbox_daily_cache: {[id: string]: { [id: string]: WallboxDailyData}} = {};
-    energy_manager_5min_cache: {[id: string]: EnergyManager5minData} = {};
-    energy_manager_daily_cache: {[id: string]: EnergyManagerDailyData} = {};
+    wallbox_5min_cache_update_promise: {[uid: number]: {[key: string]: Promise<boolean>}} = {};
+    wallbox_5min_cache: {[uid: number]: {[key: string]: Wallbox5minData}} = {};
+    wallbox_daily_cache_update_promise: {[uid: number]: {[key: string]: Promise<boolean>}} = {};
+    wallbox_daily_cache: {[uid: string]: {[key: string]: WallboxDailyData}} = {};
+    energy_manager_5min_cache_update_promise: {[key: string]: Promise<boolean>} = {};
+    energy_manager_5min_cache: {[key: string]: EnergyManager5minData} = {};
+    energy_manager_daily_cache_update_promise: {[key: string]: Promise<boolean>} = {};
+    energy_manager_daily_cache: {[key: string]: EnergyManagerDailyData} = {};
     cache_limit = 100;
     chargers: Charger[] = [];
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
@@ -1672,53 +1676,72 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return true;
         }
 
-        this.set_5min_loading();
+        if (!this.wallbox_5min_cache_update_promise[uid] || !this.wallbox_5min_cache_update_promise[uid][key]) {
+            let promise = new Promise<boolean>(async (resolve, reject) => {
+                this.set_5min_loading();
 
-        let year: number = date.getFullYear();
-        let month: number = date.getMonth() + 1;
-        let day: number = date.getDate();
-        let response: string = '';
+                let year: number = date.getFullYear();
+                let month: number = date.getMonth() + 1;
+                let day: number = date.getDate();
+                let response: string = '';
 
-        try {
-            response = await (await util.put('energy_manager/history_wallbox_5min', {uid: uid, year: year, month: month, day: day})).text();
-        } catch (e) {
-            console.log('Energy Analysis: Could not get wallbox 5min data: ' + e);
-            return false;
-        }
+                try {
+                    response = await (await util.put('energy_manager/history_wallbox_5min', {uid: uid, year: year, month: month, day: day})).text();
+                } catch (e) {
+                    console.log('Energy Analysis: Could not get wallbox 5min data: ' + e);
+                    return false;
+                }
 
-        // reload now timestamp, because of the await call before, the previous value is
-        // old and might result in wrong cache ordering because an uplot cache update could
-        // have occurred during the await call
-        now = Date.now();
+                // reload now timestamp, because of the await call before, the previous value is
+                // old and might result in wrong cache ordering because an uplot cache update could
+                // have occurred during the await call
+                now = Date.now();
 
-        let payload = JSON.parse(response);
-        let timestamp_slot_count = payload.length / 2;
-        let data: Wallbox5minData = {
-            update_timestamp: now,
-            use_timestamp: now,
-            empty: true,
-            complete: key < this.date_to_5min_key(new Date(now)),
-            flags: new Array(timestamp_slot_count),
-            power: new Array(timestamp_slot_count),
-        };
+                let payload = JSON.parse(response);
+                let timestamp_slot_count = payload.length / 2;
+                let data: Wallbox5minData = {
+                    update_timestamp: now,
+                    use_timestamp: now,
+                    empty: true,
+                    complete: key < this.date_to_5min_key(new Date(now)),
+                    flags: new Array(timestamp_slot_count),
+                    power: new Array(timestamp_slot_count),
+                };
 
-        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
-            data.flags[timestamp_slot] = payload[timestamp_slot * 2];
-            data.power[timestamp_slot] = payload[timestamp_slot * 2 + 1];
+                for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+                    data.flags[timestamp_slot] = payload[timestamp_slot * 2];
+                    data.power[timestamp_slot] = payload[timestamp_slot * 2 + 1];
 
-            if (data.flags[timestamp_slot] !== null) {
-                data.empty = false;
+                    if (data.flags[timestamp_slot] !== null) {
+                        data.empty = false;
+                    }
+                }
+
+                if (!this.wallbox_5min_cache[uid]) {
+                    this.wallbox_5min_cache[uid] = {};
+                }
+
+                this.wallbox_5min_cache[uid][key] = data;
+                this.expire_cache(this.wallbox_5min_cache[uid]);
+
+                resolve(true);
+            });
+
+            if (!this.wallbox_5min_cache_update_promise[uid]) {
+                this.wallbox_5min_cache_update_promise[uid] = {};
             }
+
+            this.wallbox_5min_cache_update_promise[uid][key] = promise;
+
+            promise.then(() => {
+                this.wallbox_5min_cache_update_promise[uid][key] = undefined;
+            },
+            () => {
+                this.wallbox_5min_cache_update_promise[uid][key] = undefined;
+            });
         }
 
-        if (!this.wallbox_5min_cache[uid]) {
-            this.wallbox_5min_cache[uid] = {};
-        }
-
-        this.wallbox_5min_cache[uid][key] = data;
-        this.expire_cache(this.wallbox_5min_cache[uid]);
-
-        return true;
+        return this.wallbox_5min_cache_update_promise[uid][key];
     }
 
     async update_energy_manager_5min_cache(date: Date) {
@@ -1742,102 +1765,118 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return true;
         }
 
-        this.set_5min_loading();
+        if (!this.energy_manager_5min_cache_update_promise[key]) {
+            let promise = new Promise<boolean>(async (resolve, reject) => {
+                this.set_5min_loading();
 
-        let year: number = date.getFullYear();
-        let month: number = date.getMonth() + 1;
-        let day: number = date.getDate();
-        let response: string = '';
+                let year: number = date.getFullYear();
+                let month: number = date.getMonth() + 1;
+                let day: number = date.getDate();
+                let response: string = '';
 
-        try {
-            response = await (await util.put('energy_manager/history_energy_manager_5min', {year: year, month: month, day: day})).text();
-        } catch (e) {
-            console.log('Energy Analysis: Could not get energy manager 5min data: ' + e);
-            return false;
-        }
-
-        // reload now timestamp, because of the await call before, the previous value is
-        // old and might result in wrong cache ordering because an uplot cache update could
-        // have occurred during the await call
-        now = Date.now();
-
-        let payload = JSON.parse(response);
-        let timestamp_slot_count = payload.length / 9;
-        let data: EnergyManager5minData = {
-            update_timestamp: now,
-            use_timestamp: now,
-            empty: true,
-            complete: key < this.date_to_5min_key(new Date(now)),
-            flags: new Array(timestamp_slot_count),
-            power: new Array(METERS_SLOTS),
-            power_empty: new Array(METERS_SLOTS),
-            power_sum: new Array(MeterLocation._max + 1),
-            power_sum_empty: new Array(MeterLocation._max + 1),
-            price: new Array(timestamp_slot_count),
-            price_empty: true,
-        };
-
-        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
-            data.flags[timestamp_slot] = payload[timestamp_slot * 9];
-
-            if (data.flags[timestamp_slot] !== null) {
-                data.empty = false;
-            }
-        }
-
-        data.power_empty.fill(true);
-
-        for (let location = MeterLocation._min; location <= MeterLocation._max; ++location) {
-            data.power_sum[location] = new Array(timestamp_slot_count);
-            data.power_sum[location].fill(null);
-        }
-
-        data.power_sum_empty.fill(true);
-
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            data.power[meter_slot] = new Array(timestamp_slot_count);
-
-            let location = get_meter_location(this.state.meter_configs, meter_slot);
-
-            for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
-                let power = payload[timestamp_slot * 9 + 1 + meter_slot];
-
-                data.power[meter_slot][timestamp_slot] = power;
-
-                if (power !== null) {
-                    data.power_empty[meter_slot] = false;
-
-                    data.power_sum[location][timestamp_slot] += power;
-                    data.power_sum_empty[location] = false;
+                try {
+                    response = await (await util.put('energy_manager/history_energy_manager_5min', {year: year, month: month, day: day})).text();
+                } catch (e) {
+                    console.log('Energy Analysis: Could not get energy manager 5min data: ' + e);
+                    resolve(false);
+                    return;
                 }
-            }
+
+                // reload now timestamp, because of the await call before, the previous value is
+                // old and might result in wrong cache ordering because an uplot cache update could
+                // have occurred during the await call
+                now = Date.now();
+
+                let payload = JSON.parse(response);
+                let timestamp_slot_count = payload.length / 9;
+                let data: EnergyManager5minData = {
+                    update_timestamp: now,
+                    use_timestamp: now,
+                    empty: true,
+                    complete: key < this.date_to_5min_key(new Date(now)),
+                    flags: new Array(timestamp_slot_count),
+                    power: new Array(METERS_SLOTS),
+                    power_empty: new Array(METERS_SLOTS),
+                    power_sum: new Array(MeterLocation._max + 1),
+                    power_sum_empty: new Array(MeterLocation._max + 1),
+                    price: new Array(timestamp_slot_count),
+                    price_empty: true,
+                };
+
+                for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+                    data.flags[timestamp_slot] = payload[timestamp_slot * 9];
+
+                    if (data.flags[timestamp_slot] !== null) {
+                        data.empty = false;
+                    }
+                }
+
+                data.power_empty.fill(true);
+
+                for (let location = MeterLocation._min; location <= MeterLocation._max; ++location) {
+                    data.power_sum[location] = new Array(timestamp_slot_count);
+                    data.power_sum[location].fill(null);
+                }
+
+                data.power_sum_empty.fill(true);
+
+                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                    data.power[meter_slot] = new Array(timestamp_slot_count);
+
+                    let location = get_meter_location(this.state.meter_configs, meter_slot);
+
+                    for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+                        let power = payload[timestamp_slot * 9 + 1 + meter_slot];
+
+                        data.power[meter_slot][timestamp_slot] = power;
+
+                        if (power !== null) {
+                            data.power_empty[meter_slot] = false;
+
+                            data.power_sum[location][timestamp_slot] += power;
+                            data.power_sum_empty[location] = false;
+                        }
+                    }
+                }
+
+                for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+                    let pv_power_sum = data.power_sum[MeterLocation.PV][timestamp_slot];
+                    let grid_power_sum = data.power_sum[MeterLocation.Grid][timestamp_slot];
+                    let battery_power_sum = data.power_sum[MeterLocation.Battery][timestamp_slot];
+                    let load_power_sum = null;
+
+                    if (pv_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null) {
+                        load_power_sum = grid_power_sum - pv_power_sum - battery_power_sum;
+                    }
+
+                    data.power_sum[MeterLocation.Load][timestamp_slot] = load_power_sum;
+                }
+
+                for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+                    data.price[timestamp_slot] = payload[timestamp_slot * 9 + 8];
+
+                    if (data.price[timestamp_slot] !== null) {
+                        data.price_empty = false;
+                    }
+                }
+
+                this.energy_manager_5min_cache[key] = data;
+                this.expire_cache(this.energy_manager_5min_cache);
+
+                resolve(true);
+            });
+
+            this.energy_manager_5min_cache_update_promise[key] = promise;
+
+            promise.then(() => {
+                this.energy_manager_5min_cache_update_promise[key] = undefined;
+            },
+            () => {
+                this.energy_manager_5min_cache_update_promise[key] = undefined;
+            });
         }
 
-        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
-            let pv_power_sum = data.power_sum[MeterLocation.PV][timestamp_slot];
-            let grid_power_sum = data.power_sum[MeterLocation.Grid][timestamp_slot];
-            let battery_power_sum = data.power_sum[MeterLocation.Battery][timestamp_slot];
-            let load_power_sum = null;
-
-            if (pv_power_sum !== null || grid_power_sum !== null || battery_power_sum !== null) {
-                load_power_sum = grid_power_sum - pv_power_sum - battery_power_sum;
-            }
-
-            data.power_sum[MeterLocation.Load][timestamp_slot] = load_power_sum;
-        }
-
-        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
-            data.price[timestamp_slot] = payload[timestamp_slot * 9 + 8];
-
-            if (data.price[timestamp_slot] !== null) {
-                data.price_empty = false;
-            }
-        }
-
-        this.energy_manager_5min_cache[key] = data;
-        this.expire_cache(this.energy_manager_5min_cache);
-
-        return true;
+        return this.energy_manager_5min_cache_update_promise[key];
     }
 
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
@@ -1920,50 +1959,70 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return true;
         }
 
-        this.set_daily_loading();
+        if (!this.wallbox_daily_cache_update_promise[uid] || !this.wallbox_daily_cache_update_promise[uid][key]) {
+            let promise = new Promise<boolean>(async (resolve, reject) => {
+                this.set_daily_loading();
 
-        let year: number = date.getFullYear();
-        let month: number = date.getMonth() + 1;
-        let response: string = '';
+                let year: number = date.getFullYear();
+                let month: number = date.getMonth() + 1;
+                let response: string = '';
 
-        try {
-            response = await (await util.put('energy_manager/history_wallbox_daily', {uid: uid, year: year, month: month})).text();
-        } catch (e) {
-            console.log('Energy Analysis: Could not get wallbox daily data: ' + e);
-            return false;
-        }
+                try {
+                    response = await (await util.put('energy_manager/history_wallbox_daily', {uid: uid, year: year, month: month})).text();
+                } catch (e) {
+                    console.log('Energy Analysis: Could not get wallbox daily data: ' + e);
+                    resolve(false);
+                    return;
+                }
 
-        // reload now timestamp, because of the await call before, the previous value is
-        // old and might result in wrong cache ordering because an uplot cache update could
-        // have orccured during the await call
-        now = Date.now();
+                // reload now timestamp, because of the await call before, the previous value is
+                // old and might result in wrong cache ordering because an uplot cache update could
+                // have orccured during the await call
+                now = Date.now();
 
-        let payload = JSON.parse(response);
-        let timestamp_slot_count = payload.length;
-        let data: WallboxDailyData = {
-            update_timestamp: now,
-            use_timestamp: now,
-            empty: true,
-            complete: key < this.date_to_daily_key(new Date(now)),
-            energy: new Array(timestamp_slot_count),
-        };
+                let payload = JSON.parse(response);
+                let timestamp_slot_count = payload.length;
+                let data: WallboxDailyData = {
+                    update_timestamp: now,
+                    use_timestamp: now,
+                    empty: true,
+                    complete: key < this.date_to_daily_key(new Date(now)),
+                    energy: new Array(timestamp_slot_count),
+                };
 
-        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
-            data.energy[timestamp_slot] = payload[timestamp_slot];
+                for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+                    data.energy[timestamp_slot] = payload[timestamp_slot];
 
-            if (data.energy[timestamp_slot] !== null) {
-                data.empty = false;
+                    if (data.energy[timestamp_slot] !== null) {
+                        data.empty = false;
+                    }
+                }
+
+                if (!this.wallbox_daily_cache[uid]) {
+                    this.wallbox_daily_cache[uid] = {};
+                }
+
+                this.wallbox_daily_cache[uid][key] = data;
+                this.expire_cache(this.wallbox_daily_cache[uid]);
+
+                resolve(true);
+            });
+
+            if (!this.wallbox_daily_cache_update_promise[uid]) {
+                this.wallbox_daily_cache_update_promise[uid] = {};
             }
+
+            this.wallbox_daily_cache_update_promise[uid][key] = promise;
+
+            promise.then(() => {
+                this.wallbox_daily_cache_update_promise[uid][key] = undefined;
+            },
+            () => {
+                this.wallbox_daily_cache_update_promise[uid][key] = undefined;
+            });
         }
 
-        if (!this.wallbox_daily_cache[uid]) {
-            this.wallbox_daily_cache[uid] = {};
-        }
-
-        this.wallbox_daily_cache[uid][key] = data;
-        this.expire_cache(this.wallbox_daily_cache[uid]);
-
-        return true;
+        return this.wallbox_daily_cache_update_promise[uid][key];
     }
 
     async update_energy_manager_daily_cache(date: Date, update_previous?: boolean) {
@@ -1993,81 +2052,97 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             return true;
         }
 
-        this.set_daily_loading();
+        if (!this.energy_manager_daily_cache_update_promise[key]) {
+            let promise = new Promise<boolean>(async (resolve, reject) => {
+                this.set_daily_loading();
 
-        let year: number = date.getFullYear();
-        let month: number = date.getMonth() + 1;
-        let response: string = '';
+                let year: number = date.getFullYear();
+                let month: number = date.getMonth() + 1;
+                let response: string = '';
 
-        try {
-            response = await (await util.put('energy_manager/history_energy_manager_daily', {year: year, month: month})).text();
-        } catch (e) {
-            console.log('Energy Analysis: Could not get energy manager daily data: ' + e);
-            return false;
-        }
-
-        // reload now timestamp, because of the await call before, the previous value is
-        // old and might result in wrong cache ordering because an uplot cache update could
-        // have orccured during the await call
-        now = Date.now();
-
-        let payload = JSON.parse(response);
-        let timestamp_slot_count = payload.length / 17;
-        let data: EnergyManagerDailyData = {
-            update_timestamp: now,
-            use_timestamp: now,
-            empty: true,
-            complete: key < this.date_to_daily_key(new Date(now)),
-            energy_import: new Array(METERS_SLOTS),
-            energy_export: new Array(METERS_SLOTS),
-            price_min: new Array(timestamp_slot_count),
-            price_avg: new Array(timestamp_slot_count),
-            price_max: new Array(timestamp_slot_count),
-        };
-
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            data.energy_import[meter_slot] = new Array(timestamp_slot_count);
-            data.energy_export[meter_slot] = new Array(timestamp_slot_count);
-
-            for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
-                data.energy_import[meter_slot][timestamp_slot] = payload[timestamp_slot * 17 + meter_slot];
-
-                if (data.energy_import[meter_slot][timestamp_slot] !== null) {
-                    data.empty = false;
+                try {
+                    response = await (await util.put('energy_manager/history_energy_manager_daily', {year: year, month: month})).text();
+                } catch (e) {
+                    console.log('Energy Analysis: Could not get energy manager daily data: ' + e);
+                    resolve(false);
+                    return;
                 }
 
-                data.energy_export[meter_slot][timestamp_slot] = payload[timestamp_slot * 17 + 7 + meter_slot];
+                // reload now timestamp, because of the await call before, the previous value is
+                // old and might result in wrong cache ordering because an uplot cache update could
+                // have orccured during the await call
+                now = Date.now();
 
-                if (data.energy_export[meter_slot][timestamp_slot] !== null) {
-                    data.empty = false;
+                let payload = JSON.parse(response);
+                let timestamp_slot_count = payload.length / 17;
+                let data: EnergyManagerDailyData = {
+                    update_timestamp: now,
+                    use_timestamp: now,
+                    empty: true,
+                    complete: key < this.date_to_daily_key(new Date(now)),
+                    energy_import: new Array(METERS_SLOTS),
+                    energy_export: new Array(METERS_SLOTS),
+                    price_min: new Array(timestamp_slot_count),
+                    price_avg: new Array(timestamp_slot_count),
+                    price_max: new Array(timestamp_slot_count),
+                };
+
+                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                    data.energy_import[meter_slot] = new Array(timestamp_slot_count);
+                    data.energy_export[meter_slot] = new Array(timestamp_slot_count);
+
+                    for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+                        data.energy_import[meter_slot][timestamp_slot] = payload[timestamp_slot * 17 + meter_slot];
+
+                        if (data.energy_import[meter_slot][timestamp_slot] !== null) {
+                            data.empty = false;
+                        }
+
+                        data.energy_export[meter_slot][timestamp_slot] = payload[timestamp_slot * 17 + 7 + meter_slot];
+
+                        if (data.energy_export[meter_slot][timestamp_slot] !== null) {
+                            data.empty = false;
+                        }
+                    }
                 }
-            }
+
+                for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
+                    data.price_min[timestamp_slot] = payload[timestamp_slot * 17 + 14];
+
+                    if (data.price_min[timestamp_slot] !== null) {
+                        data.empty = false;
+                    }
+
+                    data.price_avg[timestamp_slot] = payload[timestamp_slot * 17 + 15];
+
+                    if (data.price_avg[timestamp_slot] !== null) {
+                        data.empty = false;
+                    }
+
+                    data.price_max[timestamp_slot] = payload[timestamp_slot * 17 + 16];
+
+                    if (data.price_max[timestamp_slot] !== null) {
+                        data.empty = false;
+                    }
+                }
+
+                this.energy_manager_daily_cache[key] = data;
+                this.expire_cache(this.energy_manager_daily_cache);
+
+                resolve(true);
+            });
+
+            this.energy_manager_daily_cache_update_promise[key] = promise;
+
+            promise.then(() => {
+                this.energy_manager_daily_cache_update_promise[key] = undefined;
+            },
+            () => {
+                this.energy_manager_daily_cache_update_promise[key] = undefined;
+            });
         }
 
-        for (let timestamp_slot = 0; timestamp_slot < timestamp_slot_count; ++timestamp_slot) {
-            data.price_min[timestamp_slot] = payload[timestamp_slot * 17 + 14];
-
-            if (data.price_min[timestamp_slot] !== null) {
-                data.empty = false;
-            }
-
-            data.price_avg[timestamp_slot] = payload[timestamp_slot * 17 + 15];
-
-            if (data.price_avg[timestamp_slot] !== null) {
-                data.empty = false;
-            }
-
-            data.price_max[timestamp_slot] = payload[timestamp_slot * 17 + 16];
-
-            if (data.price_max[timestamp_slot] !== null) {
-                data.empty = false;
-            }
-        }
-
-        this.energy_manager_daily_cache[key] = data;
-        this.expire_cache(this.energy_manager_daily_cache);
-
-        return true;
+        return this.energy_manager_daily_cache_update_promise[key];
     }
 
     set_current_5min_date(date: Date) {
