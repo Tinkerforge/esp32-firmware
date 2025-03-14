@@ -18,6 +18,7 @@
             "start_address": "Startadresse",
             "start_address_muted": "beginnt bei 0",
             "data_count": "Anzahl",
+            "execute": "Ausführen",
             "response": "Antwort"
         },
         "script": {
