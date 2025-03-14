@@ -424,7 +424,6 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                         <FormRow label={__("users.content.edit_user_password")}>
                                             <InputPassword
                                                 required={this.require_password(state.editUser)}
-                                                maxLength={64}
                                                 value={state.editUser.password === undefined ? state.editUser.digest_hash : state.editUser.password}
                                                 onValue={(v) => this.setState({editUser: {...state.editUser, password: v}})}
                                                 clearPlaceholder={__("users.script.login_disabled")}

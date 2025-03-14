@@ -85,8 +85,7 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
                     </FormRow>
 
                     <FormRow label={__("authentication.content.password")}>
-                        <InputPassword maxLength={64}
-                                       value={state.password}
+                        <InputPassword value={state.password}
                                        onValue={this.set("password")}
                                        required={pass_required}
                                        placeholder={pass_required ? __("component.input_password.required") : (API.get("authentication/config").digest_hash == "" ? __("component.input_password.not_set") : __("component.input_password.unchanged"))}
