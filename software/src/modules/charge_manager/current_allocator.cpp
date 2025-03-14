@@ -857,7 +857,6 @@ static bool try_activate(StringWriter &sw, const ChargerState *state, bool activ
     // for any improvement: If there's enough current available to enable a Min
     // charger, enable it.
     int improve_check = state->guaranteed_pv_current >= new_cost.pv ? 0 : CHECK_SPREAD | CHECK_IMPROVEMENT;
-    logger.printfln("%d %d %d", state->guaranteed_pv_current, new_cost.pv, improve_check);
 
     // If there are no chargers active, don't require the enable cost on PV.
     // Still require the enable cost on the phases:
