@@ -177,7 +177,7 @@ export class EventLog extends Component<{}, EventLogState> {
             debug_log += "\n\n";
             debug_log += this.state.log;
 
-            let trace_log = (await util.download("/trace_log").then(blob => blob.text())).replace(/\s+$/, "");
+            let trace_log = (await util.download("/trace_log", 20000).then(blob => blob.text())).replace(/\s+$/, "");
 
             if (trace_log.length > 0) {
                 debug_log += "\n\n___TRACE_LOG_START___\n\n";
