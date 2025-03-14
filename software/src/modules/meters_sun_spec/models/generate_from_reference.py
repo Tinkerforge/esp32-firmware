@@ -16,7 +16,7 @@ except ModuleNotFoundError:
     print("Xlsx2csv not found. Please run:\npython3 -m venv venv\n. venv/bin/activate\npip install Xlsx2csv", file=sys.stderr)
     sys.exit(1)
 
-xlsx_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "..", "..", "..", "wallbox", "sunspec", "SunSpec_Information_Model_Reference_20211209.xlsx")
+xlsx_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "..", "..", "..", "wallbox", "sunspec", "SunSpec_Information_Model_Reference_20240701_-1.xlsx")
 model_ids = [1, 101, 102, 103, 111, 112, 113, 201, 202, 203, 204, 211, 212, 213, 214, 701, 713, 714, 802]
 
 value_id_mappings_inverter = {
