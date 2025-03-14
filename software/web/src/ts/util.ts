@@ -604,6 +604,7 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
 
     if (remoteAccessMode) {
         url = path + (url.startsWith("/") ? "" : "/") + url;
+        timeout_ms *= 2;
     }
 
     return new Promise<void>((resolve, reject) => {
@@ -643,12 +644,9 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
     });
 }
 
-export async function download(url: string) {
-    let timeout_ms;
+export async function download(url: string, timeout_ms: number = 5000) {
     if (remoteAccessMode) {
-        timeout_ms = 10000;
-    } else {
-        timeout_ms = 5000;
+        timeout_ms *= 2;
     }
 
     let abort = new AbortController();
@@ -672,6 +670,10 @@ export async function download(url: string) {
 }
 
 export async function put(url: string, payload: any, timeout_ms: number = 5000) {
+    if (remoteAccessMode) {
+        timeout_ms *= 2;
+    }
+
     let abort = new AbortController();
     let timeout = setTimeout(() => abort.abort(), timeout_ms);
 
