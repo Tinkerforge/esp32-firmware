@@ -21,6 +21,8 @@
 
 #include <esp_partition.h>
 #include <esp_ota_ops.h>
+#include <esp_app_format.h>
+#include <spi_flash_mmap.h>
 #include <Update.h>
 #include <TFJson.h>
 
@@ -214,7 +216,7 @@ void FirmwareUpdate::setup()
 
     task_scheduler.scheduleOnce([this]() {
         change_running_partition_from_pending_verify_to_valid();
-    }, 5_m);
+    }, 5_min);
 
     initialized = true;
 }
@@ -1310,7 +1312,7 @@ static bool read_custom_app_desc(const esp_partition_t *partition, build_custom_
     }
 
     if (custom_app_desc->magic != BUILD_CUSTOM_APP_DESC_MAGIC) {
-        logger.printfln("Custom app description of %s partition has wrong magic: 0x%08x", partition->label, custom_app_desc->magic);
+        logger.printfln("Custom app description of %s partition has wrong magic: 0x%08lx", partition->label, custom_app_desc->magic);
         return false;
     }
 
@@ -1354,7 +1356,7 @@ void FirmwareUpdate::check_for_rollback()
                 snprintf(beta, ARRAY_SIZE(beta), "-beta.%u", custom_app_desc.fw_version[3]);
             }
 
-            snprintf(version, ARRAY_SIZE(version), "%u.%u.%u%s+%x",
+            snprintf(version, ARRAY_SIZE(version), "%u.%u.%u%s+%lx",
                      custom_app_desc.fw_version[0], custom_app_desc.fw_version[1], custom_app_desc.fw_version[2], beta, custom_app_desc.fw_build_time);
         }
 
