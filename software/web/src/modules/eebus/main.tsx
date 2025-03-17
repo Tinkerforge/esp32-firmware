@@ -48,7 +48,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}> {
         if (!util.render_allowed())
             return <SubPage name="eebus" />;
 
-        let ski = API.get_unchecked('eebus/state').ski
+        let ski = API.get('eebus/state').ski
         if (ski == "") {
             ski = __("eebus.content.unknown");
         }
